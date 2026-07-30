@@ -262,6 +262,31 @@ The rule text lands in `library-stack`; `testing` cross-references it if it beco
 recorded in the standard's own `open-evolutions` section so the v2.12.0 pass picks it up from either
 side.
 
+### Module versioning (the other half of the same rule)
+
+Vendor-sync is about the copies agreeing. Versioning is about LibStub being *able to tell* which copy
+is newer — and it is the reason a missed sync is silent rather than loud. LibStub compares minor
+integers and keeps the highest, so a released change that skips its bump reaches no host that already
+carries the old copy, with nothing to indicate it.
+
+What `LibKa0s` implements, and what the standard should require of any Ka0s-owned lib:
+
+- one LibStub major per module, and a **minor per file** within that major, bumped on every released
+  change to that file — never in lockstep across files, which would discard the narrow-skew property
+  that made per-module majors worth choosing;
+- a repo semver tag for humans that is explicitly **not** the same number as any file minor;
+- a **published registry of live per-file minors** (`lib.MODULES`) so version skew is answerable at
+  runtime rather than by reading source — with six consumers each carrying a copy, "which panel is
+  attached to which probe?" is a question someone will need answered from in-game;
+- a mechanical coupling between a bump and its changelog entry. `tests/test_versioning.lua` asserts
+  every file registers, every minor is a positive integer, the attached panel matches the live probe,
+  and `CHANGELOG.md` accounts for each file's current minor. It found two missing entries on its first
+  run, and a test that patches source anchored on a literal minor will break on the next bump — anchor
+  on `%d+`.
+
+Belongs with the vendor-sync rule in `library-stack`, with `versioning-git` noting that a lib's file
+minors are a separate axis from the addon's own semver.
+
 ### Plugin
 
 The `wow-addon` plugin needs almost nothing, which validates its design. `agents/standards-audit.md`
