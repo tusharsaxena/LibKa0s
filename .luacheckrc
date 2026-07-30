@@ -21,4 +21,4 @@ globals = { "_G" }
 -- deliberately reads `lib` rather than `self`: a LibStub minor upgrade mutates the shared library
 -- table in place, and `self` is only whatever table the caller happened to be holding. The implicit
 -- self is therefore unused on purpose, and not a warning worth carrying.
-self = false
+ignore = { "212/self", "212/event" }

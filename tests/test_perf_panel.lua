@@ -13,6 +13,8 @@ local mocks = T.mocks
 local test, assertEqual, assertTrue, assertFalse =
   T.test, T.assertEqual, T.assertTrue, T.assertFalse
 local Fixture = dofile("tests/fixture.lua")
+local Loader = dofile("tests/loader.lua")
+local buildMocks = dofile("tests/wow_mock.lua")
 
 -- Drive one sampler frame by hand, same idiom as test_perf_run.lua.
 local function tick(p, seconds, combat)
@@ -488,4 +490,26 @@ test("lib: every step label names what it acts on", function()
   assertEqual(f.buttons.cancel.__label, "Cancel perf run", "cancel")
   p.Cancel()
   p.HidePanel()
+end)
+
+-- ── panel-less hosts ────────────────────────────────────────────────────────────────────────
+--
+-- Every fixture above loads Perf.lua and PerfPanel.lua together, so `p.STEPS` and friends are
+-- always the real thing by the time a test sees them. A copy of the lib without PerfPanel.lua is
+-- also a shipping shape (README documents ShowPanel/HidePanel/TogglePanel/RefreshPanel/IsPanelShown
+-- as safe to call either way); this loads Perf.lua alone into a fresh env to prove STEPS,
+-- PanelStateOf and PanelIsActionable degrade the same way rather than leaving P.STEPS nil and
+-- P.PanelStateOf erroring.
+
+test("lib: a panel-less instance answers STEPS, PanelStateOf and PanelIsActionable safely", function()
+  local noPanelMocks = buildMocks()
+  Loader.load("LibKa0s/Perf.lua", noPanelMocks)
+  local lib = noPanelMocks.LibStub("LibKa0s-Perf-1.0")
+  local p = lib:New({
+    name = "NoPanel", sv = "NoPanelPerfDB",
+    suspend = function() end, resume = function() end,
+  })
+  assertEqual(#p.STEPS, 0, "no panel means no rows to draw")
+  assertEqual(p.PanelStateOf("start"), "locked", "same nil-safe default the panel itself uses")
+  assertFalse(p.PanelIsActionable("start"), "nothing is clickable without a panel to click")
 end)

@@ -66,9 +66,20 @@ local addonName, NS = ...
 local lib = LibStub and LibStub("LibKa0s-Perf-1.0", true)
 if not lib then
     -- A missing vendored lib must degrade, not error at load: the addon's own function is unaffected
-    -- by the absence of a diagnostics harness. The stub carries just enough surface for the bracket
-    -- idiom and the show-decision ladder to keep working.
-    NS.Perf = { on = false, suspended = false, Note = function() end }
+    -- by the absence of a diagnostics harness. The stub therefore has to cover EVERY member the
+    -- addon calls, not just the bracket idiom (`on`/`Note`) and the show-decision ladder
+    -- (`suspended`) — `/at perf` is registered unconditionally, so OnCommand has to answer too, and
+    -- an honest "it is not installed" beats a Lua error in exactly the install this branch exists
+    -- for.
+    NS.Perf = {
+        on        = false,
+        suspended = false,
+        Note      = function() end,
+        OnCommand = function()
+            return { "Performance measurement is unavailable: the LibKa0s library is missing from " ..
+                "this installation of Absorb Tracker (expected in libs/LibKa0s)." }
+        end,
+    }
     return
 end
 
@@ -240,11 +251,13 @@ Both must be 0/0 before a release — `lua tests/run.lua` reports `N passed, 0 f
 authoritative case count. Regenerate it in the same change that adds or removes a test:
 
 ```bash
-lua tests/run.lua --list > docs/test-cases.md
+lua tests/run.lua --list | sed 's/$/\r/' > docs/test-cases.md
 ```
 
 `--list` builds every suite and prints the case names without running them, so it is also the
-quickest way to see whether a new suite file is actually wired into `SUITES`.
+quickest way to see whether a new suite file is actually wired into `SUITES`. The plain redirect
+would write LF; the `sed` keeps the regenerated file CRLF, matching `docs/`'s `.gitattributes`
+convention.
 
 Two version numbers, and they are not the same thing. The repo carries a semver tag for humans; each
 module separately carries a LibStub **minor** integer, bumped on every released change to that

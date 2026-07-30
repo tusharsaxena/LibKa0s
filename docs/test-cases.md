@@ -1,6 +1,6 @@
 # Test Cases
 
-_Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list > docs/test-cases.md`._
+_Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list | sed 's/$/\r/' > docs/test-cases.md` — the plain `--list > ...` redirect writes LF, and this repo's `*.md text eol=crlf` (`.gitattributes`) means the committed file is CRLF._
 
 ### test_perf_core.lua (49)
 
@@ -90,7 +90,7 @@ _Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list > doc
 - lib: cancelling a suspended run restores the host
 - lib: the stopwatch is driven per window
 
-### test_perf_panel.lua (39)
+### test_perf_panel.lua (40)
 
 - lib: before a run Start is the one offered step
 - lib: Start reads done while a run is in flight
@@ -131,6 +131,7 @@ _Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list > doc
 - lib: the panel titles itself like the debug console
 - lib: a locale table filled in after New still reaches the rows
 - lib: every step label names what it acts on
+- lib: a panel-less instance answers STEPS, PanelStateOf and PanelIsActionable safely
 
 ### test_perf_command.lua (17)
 
@@ -170,7 +171,7 @@ _Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list > doc
 |-------|-------|
 | test_perf_core.lua | 49 |
 | test_perf_run.lua | 33 |
-| test_perf_panel.lua | 39 |
+| test_perf_panel.lua | 40 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
-| **Total** | **147** |
+| **Total** | **148** |
