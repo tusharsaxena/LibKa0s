@@ -29,6 +29,7 @@ _G.LK_TEST = {
 
 local SUITES = {
   "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
+  "test_versioning",
 }
 
 -- A SUITES entry naming a file that does not exist yet is skipped rather than fatal, so a suite can

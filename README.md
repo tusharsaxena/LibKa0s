@@ -259,19 +259,34 @@ quickest way to see whether a new suite file is actually wired into `SUITES`. Th
 would write LF; the `sed` keeps the regenerated file CRLF, matching `docs/`'s `.gitattributes`
 convention.
 
+### Versioning
+
 Two version numbers, and they are not the same thing. The repo carries a semver tag for humans; each
-module separately carries a LibStub **minor** integer, bumped on every released change to that
-module — that is what LibStub compares when it picks a winner between two vendored copies.
+**file** in `LibKa0s/` separately carries a LibStub **minor** integer, bumped on every released change
+to that file — that is what LibStub compares when it picks a winner between two vendored copies, so a
+released change that skips its bump reaches no host that already carries the old copy.
+
+`lib.MODULES` publishes the live minor of every file (`{ Perf = 1, PerfPanel = 1 }`), which is how you
+answer "which panel is attached to which probe?" from in-game once several addons each ship their own
+vendored copy. `tests/test_versioning.lua` enforces that `MODULES` and `CHANGELOG.md`'s version block
+agree, so a bump cannot land without its changelog entry, nor an entry without its bump.
+
+Full release order — bump, changelog, regenerate, tag, then **re-vendor every consumer** — is in
+[docs/releasing.md](docs/releasing.md). That last step is the one that gets forgotten: it already
+happened once, with both repos' suites green throughout.
 
 ## Repo layout
 
 ```
 LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs/LibKa0s/
   LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block
-  Perf.lua           -- LibKa0s-Perf-1.0
-  PerfPanel.lua       -- the clickable step panel, part of the same module
+  Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file
+  PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
 tests/               -- headless Lua test harness (not shipped)
 docs/                -- development docs (not shipped)
+  releasing.md       -- the two version numbers, the release order, the re-vendor rule
+  record-schema.md   -- the capture record, field by field
+  test-cases.md      -- generated case inventory
 LICENSE
 README.md
 CHANGELOG.md

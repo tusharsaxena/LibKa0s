@@ -1,6 +1,6 @@
 # Test Cases
 
-_Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list | sed 's/$/\r/' > docs/test-cases.md` — the plain `--list > ...` redirect writes LF, and this repo's `*.md text eol=crlf` (`.gitattributes`) means the committed file is CRLF._
+_Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list > docs/test-cases.md`._
 
 ### test_perf_core.lua (49)
 
@@ -165,6 +165,13 @@ _Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list | sed
 - iso: an older copy loading second replaces neither half
 - iso: a higher panel minor over the same probe still wins
 
+### test_versioning.lua (4)
+
+- versioning: every file in the major registers its live version
+- versioning: every registered version is a positive integer
+- versioning: the changelog accounts for the version every file is at
+- versioning: the panel records which probe it attached to
+
 ## Totals
 
 | Suite | Count |
@@ -174,4 +181,5 @@ _Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list | sed
 | test_perf_panel.lua | 40 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
-| **Total** | **148** |
+| test_versioning.lua | 4 |
+| **Total** | **152** |

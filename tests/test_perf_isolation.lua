@@ -121,11 +121,15 @@ local function copyOf(tag, perfMinor, panelMinor)
     assertEqual(n, 1, "patching " .. what .. " in the real source")
     return out
   end
-  local perf = sub(PERF_SRC, 'local MAJOR, MINOR = "LibKa0s%-Perf%-1%.0", 1',
+  -- Matched on `%d+` rather than on today's literal minors: these patterns have to survive the next
+  -- release bumping them, or a routine bump would break three tests that have nothing to do with the
+  -- change. The counted substitution above still fails loudly if a pattern stops matching for a real
+  -- reason (a renamed local, a reformatted line).
+  local perf = sub(PERF_SRC, 'local MAJOR, MINOR = "LibKa0s%-Perf%-1%.0", %d+',
     'local MAJOR, MINOR = "LibKa0s-Perf-1.0", ' .. perfMinor, "the probe minor")
   perf = sub(perf, "lib%.MAJOR, lib%.MINOR = MAJOR, MINOR",
     'lib.MAJOR, lib.MINOR = MAJOR, MINOR lib.__probeTag = "' .. tag .. '"', "the probe tag")
-  local panel = sub(PANEL_SRC, "local PANEL_MINOR = 1",
+  local panel = sub(PANEL_SRC, "local PANEL_MINOR = %d+",
     "local PANEL_MINOR = " .. panelMinor, "the panel minor")
   panel = sub(panel, "lib%.__panelProbeMinor = lib%.MINOR",
     'lib.__panelProbeMinor = lib.MINOR lib.__panelTag = "' .. tag .. '"', "the panel tag")
