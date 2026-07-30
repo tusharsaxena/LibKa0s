@@ -38,7 +38,7 @@ written against minor 1 keeps working unmodified against any later minor.
 | `resume` | function | yes | Restores everything `suspend` took away. See the host contract below. |
 | `log` | function(line) | no | Console-only sink. Defaults to `print`. |
 | `print` | function(line) | no | Chat-and-console sink, for what the user must see while looking at the game. Defaults to `print`. |
-| `showLog` | function | no | Reveals the host's own log/console window. Defaults to a no-op. The lib owns no console frame of its own, so this is how `report`/`dump` bring the log into view. |
+| `showLog` | function | no | Reveals the host's own log/console window. Defaults to a no-op. The lib owns no console frame of its own, so this is how `start`, `report` and `dump` bring the log into view. |
 | `onChange` | function | no | Called after every state transition, once the panel has already repainted. Lets the host republish on its own message bus. Defaults to a no-op. |
 | `L` | table | no | Locale override table, keyed identically to `lib.STRINGS`. Hosts on the Ka0s standard pass their `NS.L`; unlocalised hosts pass nothing and get the built-in English strings. |
 | `slash` | string | no | The command prefix shown in the panel's command column and in `Usage()`/`StatusLines()`. Defaults to `"/" .. name:lower()`. |
@@ -72,9 +72,6 @@ NS.Perf = Lib:New{
   log     = function(line) NS.DebugLog:Add("Perf", line) end,
   print   = print,
   showLog = function() NS.DebugLog:Show() end,
-  onChange = function()
-    if NS.bus and NS.MSG and NS.MSG.PERF then NS.bus:SendMessage(NS.MSG.PERF) end
-  end,
   L = NS.L,
 
   buckets = {
