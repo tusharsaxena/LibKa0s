@@ -299,9 +299,13 @@ function lib:New(descriptor)
         or ((P.run and completed.suspended and not bBusy) and "ready")
         or "locked"
     -- `used` is green like `done` but stays clickable: these are read-only actions worth repeating.
+    -- Checked before `finished`: `finish` can close a run with neither arm ever armed (an aborted
+    -- attempt closed out rather than left dangling), and `report`/`dump` are reachable as typed
+    -- commands regardless — a mark earned that way must stick rather than read as still-locked.
     local function review(key)
+        if reviewed[key] then return "used" end
         if not finished then return "locked" end
-        return reviewed[key] and "used" or "ready"
+        return "ready"
     end
 
     return {
@@ -736,6 +740,161 @@ function lib:New(descriptor)
     P.Log("addon RESUMED \226\128\148 events and frames restored")
     d.resume()
     return true
+  end
+
+  -- ── Command surface ──────────────────────────────────────────────────────────────────────
+  --
+  -- The lib MUST NOT register a slash command of its own — the Ka0s standard mandates schema-driven
+  -- dispatch through each addon's own COMMANDS table, and third-party hosts do not use that pattern
+  -- at all. What the lib supplies is behaviour and help text; the host owns its slash surface and
+  -- decides how `perf` is reached. OnCommand returns lines rather than printing them, which is also
+  -- what lets a panel click and a typed command run the identical code path.
+
+  --- Help text for the host to print. Returned rather than printed, so a host can fold it into its
+  --- own help output however it likes.
+  function P.Usage()
+    local s = P.slash
+    return {
+      ("usage: |cFFFFFF00%s perf <start|measure|finish|cancel|report|dump|show|hide|toggle>|r"):format(s)
+        .. " \226\128\148 or just click the panel",
+      "  |cFFFFFF00start [label]|r  begin a run; zeroes the counters and records who/where you are.",
+      "                 The label is appended to the timestamp so runs are tellable apart.",
+      "  |cFFFFFF00measure a|r      arm Experiment A \226\128\148 addon ACTIVE. Recording starts the moment",
+      "                 combat does and ends when combat ends. Nothing between is measured.",
+      "  |cFFFFFF00measure b|r      arm Experiment B \226\128\148 same, but suspends the addon first, so the",
+      "                 two experiments differ by the addon and nothing else.",
+      ("  |cFFFFFF00finish|r         end the run, save it to %s and lift any suspend."):format(d.sv),
+      "                 Prints nothing \226\128\148 use `report` when you want to read it. `/reload` to flush.",
+      "  |cFFFFFF00cancel|r         abandon the run \226\128\148 discards it unsaved and restores the addon.",
+      "                 Only available while a run is actually in flight.",
+      "  |cFFFFFF00report|r         print the summary; opens the log window if it is hidden.",
+      "  |cFFFFFF00dump|r           render the run as one line of JSON in the log, for pasting",
+      "                 somewhere. Same data the summary is built from.",
+      "  |cFFFFFF00show|r / |cFFFFFF00hide|r / |cFFFFFF00toggle|r   the step panel. Hiding it never touches the run.",
+    }
+  end
+
+  -- Sub-verb handlers, one entry each. A dispatch table rather than an if/elseif ladder: the ladder
+  -- form measured CCN 24 under `lizard`, the worst in the addon this was extracted from, purely
+  -- from the shape of the dispatch. Each handler here is CCN 1-3 and reads on its own.
+  --
+  -- Handlers take (out, rest) and append chat lines to `out`. Returning lines rather than printing
+  -- them is what lets the host own its output — and is why the lib needs no chat frame of its own.
+  local SUBS = {}
+
+  -- `rest` is the free text after the sub-verb: an optional capture label. Captures accumulate in a
+  -- ring across sessions, so an auto-timestamp alone makes two runs from the same afternoon
+  -- near-impossible to tell apart when reading the SavedVariables file later. A supplied label is
+  -- appended to the timestamp, never replaces it.
+  function SUBS.start(out, rest)
+    local stamp = date and date("%Y-%m-%d %H:%M") or "capture"
+    local label = (rest or ""):match("^%s*(.-)%s*$")
+    P.Start(label ~= "" and (stamp .. " " .. label) or stamp)
+    P.Announce("perf run |cff40ff40STARTED|r \226\128\148 %s", P.label or "unlabelled")
+    for _, line in ipairs(P.ContextLines(P.context)) do out[#out + 1] = line end
+    showLog()
+    -- The clickable equivalent of the steps just printed. Chat scrolls away the moment combat
+    -- starts; the panel does not.
+    P.ShowPanel()
+  end
+
+  function SUBS.measure(out, rest)
+    local token = (rest or ""):match("^(%S*)")
+    local armName, err = P.Measure(token)
+    if not armName then
+      if err == "no experiment" then
+        out[#out + 1] = ("start one first \226\128\148 `%s perf start`"):format(P.slash)
+      else
+        out[#out + 1] = ("unknown window '%s' \226\128\148 use `measure a` or `measure b`")
+          :format(token ~= "" and token or "?")
+      end
+      return
+    end
+    out[#out + 1] = ("Experiment |cFFFFFF00%s|r |cffffff00ARMED|r (%s) \226\128\148 recording starts "
+      .. "when combat does, and ends when combat does"):format(token:upper(),
+      armName == "suspended" and "addon |cffff4040SUSPENDED|r" or "addon |cff40ff40active|r")
+  end
+
+  function SUBS.show()   P.ShowPanel()   end
+  function SUBS.hide()   P.HidePanel()   end
+  function SUBS.toggle() P.TogglePanel() end
+
+  function SUBS.cancel(out)
+    if not P.Cancel() then
+      out[#out + 1] = "no perf run to cancel"
+      return
+    end
+    out[#out + 1] = "perf run |cffcc5252CANCELLED|r \226\128\148 nothing saved"
+  end
+
+  function SUBS.finish(out)
+    if not P.run then
+      out[#out + 1] = ("no perf run is active \226\128\148 `%s perf start`"):format(P.slash)
+      return
+    end
+    local record = P.Stop()
+    -- Resume BEFORE saving or formatting. Experiment B leaves the host inert, and with no manual
+    -- resume verb the only other way back is a /reload — so an error in Save or FormatReport must
+    -- not be able to strand the addon dead for the rest of the session.
+    if P.suspended then
+      P.Resume()
+      out[#out + 1] = "addon |cff40ff40RESUMED|r \226\128\148 restored"
+    end
+    P.Save(record)
+    -- Deliberately does NOT print the summary. `finish` fires the moment a fight ends, when the log
+    -- is buried under combat output and the numbers scroll past unread.
+    P.Announce("perf run |cffff4040FINISHED|r \226\128\148 saved; `Report` or `Dump` in the panel "
+      .. "to read it, `/reload` to flush it to SavedVariables")
+  end
+
+  function SUBS.report()
+    showLog()
+    for _, line in ipairs(P.FormatReport(P.BuildRecord(P.label))) do P.Log(line) end
+    P.MarkReviewed("report")
+  end
+
+  -- Writes the JSON to the log, NOT a popup. The log is the window you already have open and can
+  -- scroll; popping a modal over the game for something you may only want to glance at is the wrong
+  -- default.
+  function SUBS.dump()
+    showLog()
+    P.Log(lib.EncodeJSON(P.BuildRecord(P.label)))
+    P.MarkReviewed("dump")
+  end
+
+  --- Phase summary plus the usage. Bare `<slash> perf` IS the entry point: the panel's first row
+  --- starts a run, so this is how someone who remembers one command reaches all of them.
+  function P.StatusLines()
+    local phase = "|cffff4040stopped|r"
+    if P.recording then
+      phase = ("|cff40ff40SAMPLING window %s|r"):format(P.recording)
+    elseif P.armed then
+      phase = ("|cffffff00window %s armed|r \226\128\148 waiting for combat"):format(P.armed)
+    elseif P.run then
+      phase = "|cffffff00run active|r \226\128\148 no experiment armed"
+    end
+    local out = { ("perf %s, addon %s"):format(phase,
+      P.suspended and "|cffff4040SUSPENDED|r" or "|cff40ff40active|r") }
+    for _, line in ipairs(P.Usage()) do out[#out + 1] = line end
+    return out
+  end
+
+  --- Run one perf sub-command. `args` is everything after the host's own `perf` verb. Returns the
+  --- chat lines the host should print — never nil, so a caller can always ipairs() the result.
+  function P.OnCommand(args)
+    args = tostring(args or "")
+    -- A panel row hands back its full command ("perf measure a"); a slash handler hands back only
+    -- what followed its own verb. Accept both so the two paths cannot diverge.
+    args = args:gsub("^%s*perf%s*", "")
+    local sub = (args:match("^(%S*)") or ""):lower()
+    local handler = SUBS[sub]
+    if not handler then
+      P.ShowPanel()
+      return P.StatusLines()
+    end
+    local out = {}
+    handler(out, args:match("^%S*%s+(.*)$"))
+    return out
   end
 
   -- No-panel fallbacks: a host can call these unconditionally, whether or not PerfPanel.lua was
