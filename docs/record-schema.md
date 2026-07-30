@@ -41,8 +41,9 @@ is not re-read or re-migrated by the addon after adopting the library.
   "timestamp": 1785110400,                // epoch seconds; 0 if the client has no time()
   "label": "2026-07-30 14:02 dummy-blooddk",
 
-  // Who / where / what, captured once at Start(). Existence-checked field by field, so a headless
-  // harness (or a client missing one of these globals) degrades to "?" rather than erroring.
+  // OPTIONAL — see the field note below. Who / where / what, captured once at Start().
+  // Existence-checked field by field, so a headless harness (or a client missing one of these
+  // globals) degrades to "?" rather than erroring.
   "context": {
     "character": "Kaosdk", "realm": "Silvermoon", "level": 80,
     "class": "Death Knight", "spec": "Blood",
@@ -81,6 +82,10 @@ the encoder.
   descriptor never declared still appears here, just without a `within` key — membership in
   `buckets` (the descriptor field) controls only *presentation order and nesting*, never whether a
   measurement is captured.
+- **`context`** is the one **optional** top-level field, and it is absent entirely rather than
+  empty when it is missing. It is snapshotted by `Start()`, so a record built before any run — which
+  `report` and `dump` will happily do on a fresh instance — carries no `"context"` key at all, and
+  the report simply prints no who/where/group lines. Every record from a real capture has it.
 - **`fps.deltaMsPerFrame`** is `0` unless *both* arms were sampled — with one arm empty, subtracting
   would report the whole frame time as the host's cost, which is worse than reporting nothing.
 - **`interface`** comes from the host's own TOC metadata (`C_AddOns.GetAddOnMetadata`, or the

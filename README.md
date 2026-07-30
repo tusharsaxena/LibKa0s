@@ -56,46 +56,112 @@ it owns.
 
 ## A worked integration example
 
-The shape a host wires up — illustrative of the descriptor as implemented, not a literal file (the
-first real consumer, AbsorbTracker's `core/PerfSetup.lua`, lands in a later task):
+The first real consumer, AbsorbTracker's `core/PerfSetup.lua`, verbatim. Read the
+`suspend`/`resume` contract below before writing your own pair — those two are the only part of a
+descriptor that can make a capture silently lie rather than fail:
 
 ```lua
 local addonName, NS = ...
 
-local Lib = LibStub("LibKa0s-Perf-1.0")
+local lib = LibStub and LibStub("LibKa0s-Perf-1.0", true)
+if not lib then
+    -- A missing vendored lib must degrade, not error at load: the addon's own function is unaffected
+    -- by the absence of a diagnostics harness. The stub carries just enough surface for the bracket
+    -- idiom and the show-decision ladder to keep working.
+    NS.Perf = { on = false, suspended = false, Note = function() end }
+    return
+end
 
-NS.Perf = Lib:New{
-  name    = addonName,
-  sv      = "AbsorbTrackerPerfDB",
-  version = NS.version,
+NS.Perf = lib:New({
+    name    = addonName,
+    title   = "Absorb Tracker",
+    slash   = "/at",
+    version = NS.version,
+    sv      = "AbsorbTrackerPerfDB",
 
-  log     = function(line) NS.DebugLog:Add("Perf", line) end,
-  print   = print,
-  showLog = function() NS.DebugLog:Show() end,
-  L = NS.L,
+    -- Ordered for the report, and the nesting is DECLARED rather than left as prose: repaintPass
+    -- contains the three per-bar buckets, so their totals must never be summed as if disjoint.
+    buckets = {
+        { key = "absorbEvent" },                        -- addon:OnAbsorbChanged
+        { key = "repaintPass" },                        -- doRepaint, one coalesced pass over every unit
+        { key = "paintBar",    within = "repaintPass" },-- NS.UpdateAbsorbBar, per bar
+        { key = "appearance",  within = "repaintPass" },-- NS.UpdateBarAppearance, per bar
+        { key = "visibility",  within = "repaintPass" },-- NS.ApplyVisibility, per bar
+    },
 
-  buckets = {
-    { key = "absorbEvent" },                              -- addon:OnAbsorbChanged
-    { key = "repaintPass" },                               -- doRepaint, one coalesced pass
-    { key = "paintBar",    within = "repaintPass" },        -- NS.UpdateAbsorbBar, per bar
-    { key = "appearance",  within = "repaintPass" },        -- NS.UpdateBarAppearance, per bar
-    { key = "visibility",  within = "repaintPass" },        -- NS.ApplyVisibility, per bar
-  },
+    --- Make the addon inert without a /reload.
+    ---
+    --- Visibility is NOT enforced by hiding frames here. NS.ShouldShowBar checks NS.Perf.suspended
+    --- as step 0 of its ladder, so publishing VISIBILITY is enough and nothing — a combat
+    --- transition, a target swap, a settings change — can re-show a bar behind suspend's back.
+    suspend = function()
+        local addon = NS.addon
+        if addon then
+            local frames = addon.__unitEventFrames
+            if frames then
+                for _, f in pairs(frames) do f:UnregisterAllEvents() end
+            end
+            if addon.UnregisterEvent then
+                for _, event in ipairs({
+                    "PLAYER_ENTERING_WORLD", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
+                    "PLAYER_TARGET_CHANGED", "PLAYER_FOCUS_CHANGED",
+                }) do
+                    addon:UnregisterEvent(event)
+                end
+            end
+        end
+        if NS.CancelPendingRepaint then NS.CancelPendingRepaint() end
+        if NS.bus then NS.bus:SendMessage(NS.MSG.VISIBILITY) end
+    end,
 
-  -- See "The host contract for suspend/resume" below before writing these two.
-  suspend = function()
-    local addon = NS.addon
-    if addon and addon.__unitEventFrames then
-      for _, f in pairs(addon.__unitEventFrames) do f:UnregisterAllEvents() end
-    end
-    if NS.bus then NS.bus:SendMessage(NS.MSG.VISIBILITY) end
-  end,
-  resume = function()
-    local addon = NS.addon
-    if addon and addon.SyncUnitEventFrames then addon:SyncUnitEventFrames() end
-    if NS.bus then NS.bus:SendMessage(NS.MSG.VISIBILITY) end
-  end,
-}
+    --- Restore everything suspend took away. SyncUnitEventFrames rebuilds the per-unit registrations
+    --- from the CURRENT enabled set, so a unit toggled while suspended comes back correctly.
+    resume = function()
+        local addon = NS.addon
+        if addon then
+            if addon.RegisterLifecycleEvents then addon:RegisterLifecycleEvents() end
+            if addon.SyncUnitEventFrames then addon:SyncUnitEventFrames() end
+        end
+        if NS.bus then
+            NS.bus:SendMessage(NS.MSG.VISIBILITY)
+            NS.bus:SendMessage(NS.MSG.APPEARANCE)
+            NS.bus:SendMessage(NS.MSG.REPAINT)
+        end
+    end,
+
+    -- Perf output is deliberately NOT gated on NS.State.debug, unlike NS.Debug. That gate keeps the
+    -- addon free when idle, and a perf run is explicit user action — none of it executes unless
+    -- someone typed `/at perf start`. Gating it meant a user who started a run without first
+    -- enabling debug logging watched a console that stayed empty while a capture was plainly running.
+    log = function(line)
+        if NS.DebugLog and NS.DebugLog.Add then
+            NS.DebugLog:Add("Perf", line)
+        else
+            NS.Print(line)
+        end
+    end,
+
+    print = function(line) NS.Print(line) end,
+
+    -- `start`, `report` and `dump` want the console in front of the user. Everything else must not
+    -- pop it open — a lifecycle line mid-combat is the last moment to throw a window on screen.
+    showLog = function()
+        if NS.DebugLog and NS.DebugLog.Show and not NS.DebugLog:IsShown() then
+            NS.DebugLog:Show()
+        end
+    end,
+
+    -- Built by the debug console's own close-button factory rather than a lookalike, so the two
+    -- windows cannot drift apart. Guarded only because a close button is worth degrading over,
+    -- not erroring over.
+    decorate = function(frame, api)
+        if NS.DebugLog and NS.DebugLog.MakeCloseButton then
+            local close = NS.DebugLog.MakeCloseButton(frame, api.Hide)
+            close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6, -(api.TITLE_H - 18) / 2)
+            frame.closeButton = close
+        end
+    end,
+})
 ```
 
 Every hot-path call site then reads the frozen idiom straight off the instance:
@@ -141,7 +207,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `FormatReport(record)` | Render a record as plain lines, for `Log`/testing. |
 | `Start(label)` | Begin an experiment. Samples nothing until a window is armed. |
 | `Measure(token)` | Arm window `"a"` or `"b"`; sets suspend state as the independent variable. |
-| `Stop()` | End the experiment, detach the sampler, return the record. |
+| `Stop()` | End the experiment, detach the sampler, return the record. **Does not resume.** If Experiment B ran, the host is still inert when `Stop()` returns and stays that way until something calls `Resume()` — a host driving this API directly owns that call. The asymmetry is deliberate: `OnCommand("finish")` resumes *before* it saves, so that an error in `Save` or `FormatReport` cannot strand the addon dead for the session, and it can only order it that way because `Stop()` leaves the suspend state alone. |
 | `Cancel()` | Abandon a run in flight; discards everything, restores the host if suspended. |
 | `Suspend()` | Make the host inert; calls the descriptor's `suspend`. |
 | `Resume()` | Restore the host; calls the descriptor's `resume`. |
@@ -151,6 +217,9 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `ShowPanel()` / `HidePanel()` / `TogglePanel()` | Show, hide, or toggle the step panel. |
 | `RefreshPanel()` | Repaint every panel row from `Progress()`. |
 | `IsPanelShown()` | Whether the panel frame is currently shown. |
+| `STEPS` | The panel's rows in workflow order, each `{ key, string, label, command }`. `key` indexes `Progress()`, `string` is the `STRINGS`/`L` key, `label` is the resolved text (re-resolved on every repaint, so a locale table filled in after `New()` still lands), and `command` is the sub-verb a click dispatches. |
+| `PanelStateOf(key)` | The current state of one `STEPS` row, straight from `Progress()`. Nil-safe: `"locked"` before there is anything to render. |
+| `PanelIsActionable(key)` | Whether that row may be clicked — `ready`, `cancel` or `used`. A host drawing its own chrome in `decorate` reads these two rather than reaching into `Progress()` itself. |
 | `EncodeJSON(value)` | The lib's hand-rolled JSON encoder, mirrored onto every instance. |
 | `SCHEMA` | The record schema version this build of the lib emits. |
 | `on` | Plain boolean field — read directly by every hot-path bracket. |
@@ -166,6 +235,16 @@ luacheck .
 
 Both must be 0/0 before a release — `lua tests/run.lua` reports `N passed, 0 failed, N total`,
 `luacheck .` reports `0 warnings / 0 errors`.
+
+`docs/test-cases.md` is the generated inventory of what the suite covers, and it is the
+authoritative case count. Regenerate it in the same change that adds or removes a test:
+
+```bash
+lua tests/run.lua --list > docs/test-cases.md
+```
+
+`--list` builds every suite and prints the case names without running them, so it is also the
+quickest way to see whether a new suite file is actually wired into `SUITES`.
 
 Two version numbers, and they are not the same thing. The repo carries a semver tag for humans; each
 module separately carries a LibStub **minor** integer, bumped on every released change to that
