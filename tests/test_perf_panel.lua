@@ -4,9 +4,9 @@
 -- test_perf_run.lua. This suite covers what the panel itself adds: the frame, the buttons, their
 -- state-driven colour and clickability, and show/hide/toggle.
 --
--- A click that would dispatch through runCommand is NOT exercised here — P.OnCommand does not
--- exist until Task 6 wires the slash layer, and this suite does not reach past PanelIsActionable
--- into what a click actually does. Those tests belong to Task 6.
+-- What a click actually DISPATCHES lives in test_perf_command.lua, next to the typed form of the
+-- same command: the two must produce identical output, and asserting that in one place is what
+-- keeps them from drifting.
 
 local T = _G.LK_TEST
 local mocks = T.mocks
@@ -456,6 +456,22 @@ test("lib: the panel titles itself like the debug console", function()
   local p = Fixture.new()
   p.ShowPanel()
   assertTrue(p.__panel().title ~= nil, "it has a title")
+  p.HidePanel()
+end)
+
+test("lib: a locale table filled in after New still reaches the rows", function()
+  -- Hosts on the Ka0s standard build NS.L from a separate locale file, which is under no obligation
+  -- to have loaded by the time :New() runs. Resolving every label once at :New() froze the panel to
+  -- the built-in English for those hosts, silently and permanently.
+  local L = {}
+  local p = Fixture.new({ L = L })
+  L.STEP_START = "Demarrer"
+  L.STEP_CANCEL = "Annuler"
+  p.ShowPanel()
+  local f = p.__panel()
+  assertEqual(f.buttons.start.__label, "Demarrer", "the override took")
+  assertEqual(f.buttons.cancel.__label, "Annuler", "for every overridden row")
+  assertEqual(f.buttons.finish.__label, "Finish perf run", "and the rest keep the built-in string")
   p.HidePanel()
 end)
 

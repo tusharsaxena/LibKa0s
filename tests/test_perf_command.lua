@@ -123,6 +123,38 @@ test("cmd: clicking a ready panel row takes the same path as typing it", functio
   assertTrue(p.run, "the click started the run")
 end)
 
+test("cmd: a panel click prints exactly what typing the command prints", function()
+  -- The panel and the typed command must be ONE path. OnCommand returns its chat lines rather than
+  -- printing them, so the click wiring has to print them itself; discarding them made clicking
+  -- through a run produce a fraction of the output typing it did — the "ARMED" acknowledgement
+  -- above all, which is the line telling the user the window is live.
+  local typedP, typedRec = Fixture.new()
+  local clickP, clickRec = Fixture.new()
+
+  -- Typed: the host's slash layer prints whatever OnCommand hands back.
+  local function typed(p, rec, cmd)
+    for _, line in ipairs(p.OnCommand(cmd)) do rec.chat[#rec.chat + 1] = line end
+  end
+  typed(typedP, typedRec, "start")
+  typed(typedP, typedRec, "measure a")
+  typed(typedP, typedRec, "cancel")
+
+  clickP.ShowPanel()
+  local f = clickP.__panel()
+  f.buttons.start:__fire("OnClick")
+  f.buttons.measureA:__fire("OnClick")
+  f.buttons.cancel:__fire("OnClick")
+
+  assertEqual(#clickRec.chat, #typedRec.chat,
+    "clicking produced " .. #clickRec.chat .. " chat lines, typing produced " .. #typedRec.chat)
+  for i, line in ipairs(typedRec.chat) do
+    assertEqual(clickRec.chat[i], line, "chat line " .. i)
+  end
+  assertTrue(table.concat(clickRec.chat, "\n"):find("ARMED", 1, true) ~= nil,
+    "including the acknowledgement that the window is armed")
+  clickP.HidePanel()
+end)
+
 test("cmd: clicking a locked panel row does nothing", function()
   local p = Fixture.new()
   p.ShowPanel()

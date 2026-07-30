@@ -269,6 +269,23 @@ test("lib: the sampler ignores ticks once the experiment is over", function()
   assertEqual(p.__fpsArms().active.frames, 0, "nothing accumulated after Stop")
 end)
 
+test("lib: Stop deliberately leaves a suspended host suspended", function()
+  -- Pinning documented behaviour, not endorsing it. SUBS.finish resumes BEFORE it saves, so that an
+  -- error in Save or FormatReport cannot strand the host inert — and it can only order it that way
+  -- because Stop() leaves the suspend state alone. The cost is that a host driving this API
+  -- directly owns the matching Resume(); the README's Stop() row says so.
+  local p = Fixture.new()
+  p.Start("direct")
+  p.Measure("b")
+  assertTrue(p.suspended, "window B suspended the host")
+  p.Stop()
+  assertTrue(p.suspended, "and Stop left it that way")
+  assertFalse(p.run, "with no run to reach it through")
+  assertEqual(p.Progress().cancel, "locked", "nor a cancel step to come back via")
+  assertTrue(p.Resume(), "Resume is the documented way out")
+  assertFalse(p.suspended, "and it works")
+end)
+
 test("lib: two completed windows produce a delta", function()
   local p = Fixture.new()
   startExperiment(p)

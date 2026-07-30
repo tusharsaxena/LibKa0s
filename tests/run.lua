@@ -27,11 +27,12 @@ _G.LK_TEST = {
   assertEqual = assertEqual, assertTrue = assertTrue, assertFalse = assertFalse,
 }
 
-local SUITES = { "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command" }
+local SUITES = {
+  "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
+}
 
--- Suites are added one per task as the extraction proceeds (Tasks 2-6), so a later entry in
--- SUITES naming a file that does not exist yet is expected, not an error — skip it rather than
--- letting dofile blow up the whole run over a file this task hasn't written.
+-- A SUITES entry naming a file that does not exist yet is skipped rather than fatal, so a suite can
+-- be listed here while it is being written without taking the whole run down with it.
 local function fileExists(path)
   local f = io.open(path, "r")
   if f then f:close(); return true end

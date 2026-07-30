@@ -19,6 +19,39 @@ test("lib: New requires a name, an sv global and a suspend/resume pair", functio
   T.assertFalse(ok, "missing sv must error")
   ok = pcall(function() lib:New({ name = "X", sv = "XDB", resume = function() end }) end)
   T.assertFalse(ok, "missing suspend must error")
+  ok = pcall(function() lib:New({ name = "X", sv = "XDB", suspend = function() end }) end)
+  T.assertFalse(ok, "missing resume must error \226\128\148 the way back is not optional")
+end)
+
+test("lib: New rejects a bucket entry with no key, in the library's own words", function()
+  -- Without this the loop raised a raw "table index is nil" from inside Perf.lua, which names
+  -- neither the descriptor nor the offending entry.
+  local function withBuckets(buckets)
+    return function()
+      lib:New({ name = "X", sv = "XDB", buckets = buckets,
+        suspend = function() end, resume = function() end })
+    end
+  end
+  local ok, err = pcall(withBuckets({ { within = "outer" } }))
+  T.assertFalse(ok, "a bucket with no key must error")
+  T.assertTrue(tostring(err):find("descriptor.buckets[1].key must be a string", 1, true) ~= nil,
+    "framed like every other descriptor error, got: " .. tostring(err))
+  T.assertFalse(pcall(withBuckets({ {} })), "and a bare entry must not vanish silently")
+  T.assertFalse(pcall(withBuckets({ "outer" })), "nor must a bare string")
+end)
+
+test("lib: a ring of zero is clamped to one, not left to empty itself", function()
+  -- ring = 0 trimmed the record away on the very Save that wrote it, while `finish` still announced
+  -- the capture as saved.
+  local p = Fixture.new({ ring = 0 })
+  assertEqual(p.ringMax, 1, "clamped")
+  p.Save(p.BuildRecord("kept"))
+  assertEqual(#_G.TestHostPerfDB.runs, 1, "the record survives its own Save")
+  assertEqual(_G.TestHostPerfDB.runs[1].label, "kept", "and it is the one just written")
+end)
+
+test("lib: a negative ring is clamped too", function()
+  assertEqual(Fixture.new({ ring = -5 }).ringMax, 1)
 end)
 
 test("lib: two instances share no state", function()
@@ -107,11 +140,23 @@ test("lib: EncodeJSON coerces non-finite numbers rather than emitting invalid JS
   assertEqual(lib.EncodeJSON({ n = math.huge }), '{"n":0}')
 end)
 
-test("lib: EncodeJSON round-trips a full record without error", function()
+test("lib: EncodeJSON encodes a whole record, not just its buckets", function()
+  -- `dump` encodes BuildRecord()'s output, so that is what has to survive the encoder — nested
+  -- arms, a context table and all. Encoding the bucket table alone exercised none of it.
   local p = Fixture.new()
+  p.Start("json run")
   p.Note("outer", 1.25)
-  local json = lib.EncodeJSON(p.__buckets())
-  T.assertTrue(json:find('"outer"', 1, true) ~= nil, "carries the bucket")
+  local arms = p.__fpsArms()
+  arms.active.seconds, arms.active.frames = 10, 800
+  arms.suspended.seconds, arms.suspended.frames = 10, 1000
+  local json = lib.EncodeJSON(p.BuildRecord("json run"))
+  for _, key in ipairs({ "schema", "addon", "source", "version", "interface", "timestamp",
+                         "label", "buckets", "fps", "context" }) do
+    T.assertTrue(json:find('"' .. key .. '":', 1, true) ~= nil, "record carries " .. key)
+  end
+  T.assertTrue(json:find('"outer":{"calls":1', 1, true) ~= nil, "with the bucket inside it")
+  T.assertTrue(json:find('"deltaMsPerFrame":2.5000', 1, true) ~= nil, "and the computed delta")
+  p.Stop()
 end)
 
 -- ── record assembly ─────────────────────────────────────────────────────────────────────────
@@ -173,6 +218,52 @@ test("lib: a nested bucket carries its parent into the record", function()
   local r = p.BuildRecord("cap")
   assertEqual(r.buckets.inner.within, "outer", "declared nesting travels with the record")
   assertEqual(r.buckets.outer.within, nil, "a top-level bucket carries none")
+end)
+
+test("lib: a record stamps the host's interface version and the capture time", function()
+  -- Both are read off the client through existence-checked accessors, so both have a degraded path
+  -- that nothing was pinning: an `interface` silently stuck at 0 makes every archived capture
+  -- unattributable to a game build.
+  local p = Fixture.new()
+  local r = p.BuildRecord("cap")
+  assertEqual(r.interface, 120007, "from the host's own TOC metadata")
+  T.assertTrue(type(r.timestamp) == "number" and r.timestamp > 0, "epoch seconds")
+end)
+
+test("lib: the record's context names the character's class", function()
+  local p = Fixture.new()
+  p.Start("ctx")
+  local r = p.BuildRecord("ctx")
+  assertEqual(r.context.class, "Death Knight", "UnitClass's localised name, not the token")
+  assertEqual(r.context.character, "Testchar", "and the rest of the snapshot travels with it")
+  p.Stop()
+end)
+
+test("lib: a record built before Start has no context at all", function()
+  -- `report` and `dump` are reachable on a fresh instance, and the context is only snapshotted by
+  -- Start() — so the key is genuinely absent rather than an empty table. Documented as optional in
+  -- docs/record-schema.md; pinned here so it cannot quietly become an error instead.
+  local p = Fixture.new()
+  local r = p.BuildRecord("no run yet")
+  assertEqual(r.context, nil, "absent, not empty")
+  T.assertTrue(lib.EncodeJSON(r):find('"context"', 1, true) == nil, "and absent from the JSON")
+  local lines = table.concat(p.FormatReport(r), "\n")
+  assertEqual(lines:find("who:", 1, true), nil, "the report simply prints no context lines")
+  T.assertTrue(lines:find("capture:", 1, true) ~= nil, "and everything else still renders")
+end)
+
+test("lib: a Note key the descriptor never declared still lands in the record", function()
+  -- Membership in descriptor.buckets controls PRESENTATION only. A bracket added in a hurry, or one
+  -- in a code path the descriptor's author forgot, must never silently drop its measurement.
+  local p = Fixture.new()
+  p.Note("undeclared", 3)
+  p.Note("outer", 1)
+  local r = p.BuildRecord("cap")
+  assertEqual(r.buckets.undeclared.calls, 1, "recorded")
+  assertEqual(r.buckets.undeclared.totalMs, 3, "with its total")
+  local lines = table.concat(p.FormatReport(r), "\n")
+  assertEqual(lines:find("undeclared", 1, true), nil, "but it is not in the report")
+  T.assertTrue(lines:find("outer", 1, true) ~= nil, "which still prints the declared ones")
 end)
 
 -- ── the SavedVariables ring ─────────────────────────────────────────────────────────────────
@@ -335,4 +426,54 @@ end)
 test("lib: ContextLines tolerates a record with no context", function()
   local p = Fixture.new()
   assertEqual(#p.ContextLines(nil), 0, "returns nothing rather than erroring")
+end)
+
+-- ── the minimal descriptor ──────────────────────────────────────────────────────────────────
+--
+-- Everything except name/sv/suspend/resume is optional, and the README promises each omission
+-- degrades rather than errors. Nothing pinned that: every other fixture passes a full descriptor,
+-- so an accidental dereference of an optional field would have sailed through the whole suite.
+
+test("lib: a host passing only the four required fields gets working defaults", function()
+  local printed = {}
+  local realPrint = _G.print
+  _G.print = function(line) printed[#printed + 1] = line end
+  _G.MinPerfDB = nil
+
+  local ok, err = pcall(function()
+    local p = lib:New({
+      name = "Min", sv = "MinPerfDB",
+      suspend = function() end, resume = function() end,
+    })
+
+    assertEqual(p.slash, "/min", "slash defaults to the lowercased name")
+    assertEqual(p.title, "Min", "title defaults to the name")
+    assertEqual(p.ringMax, lib.DEFAULT_RING, "ring defaults to the library's")
+    assertEqual(#p.BUCKET_ORDER, 0, "no declared buckets")
+
+    -- Both sinks fall back to print, so nothing below may raise for want of a host callback.
+    p.OnCommand("start")
+    p.Note("anything", 2)
+    p.OnCommand("measure a")
+    T.mocks.__inCombat = true
+    p.__sampler():__fire("OnUpdate", 0.5)
+    T.mocks.__inCombat = false
+    p.__sampler():__fire("OnUpdate", 0.5)
+    p.OnCommand("finish")
+    p.OnCommand("report")
+    p.OnCommand("dump")           -- showLog defaults to a no-op, so this must not reach for one
+    p.ShowPanel()
+    T.assertTrue(p.IsPanelShown(), "and it still gets a panel")
+    p.HidePanel()
+
+    assertEqual(#_G.MinPerfDB.runs, 1, "the run was saved under the host's own global")
+    assertEqual(_G.MinPerfDB.runs[1].version, "?", "an unstated version records as unknown")
+    assertEqual(_G.MinPerfDB.runs[1].buckets.anything.calls, 1, "undeclared bucket still captured")
+  end)
+
+  _G.print = realPrint
+  T.assertTrue(ok, "a minimal host must degrade, not error: " .. tostring(err))
+  T.assertTrue(#printed > 0, "both sinks fell back to print")
+  T.assertTrue(table.concat(printed, "\n"):find("capture:", 1, true) ~= nil,
+    "including the report, which has nowhere else to go")
 end)

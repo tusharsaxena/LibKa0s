@@ -23,6 +23,16 @@ function Loader.load(path, mocks)
   return chunk()
 end
 
+--- Load library source held in a string rather than read straight off disk. The multi-copy tests
+--- need two builds of the same file at different LibStub minors, which only exists as a patched
+--- copy of the real source — loading the real file twice would just re-run minor 1.
+function Loader.loadSource(src, chunkname, mocks)
+  local chunk, err = loadstring(src, chunkname)
+  if not chunk then error("loadstring(" .. tostring(chunkname) .. "): " .. tostring(err)) end
+  setfenv(chunk, makeEnv(mocks))
+  return chunk()
+end
+
 function Loader.loadAll(paths, mocks)
   for _, p in ipairs(paths) do
     Loader.load(p, mocks)

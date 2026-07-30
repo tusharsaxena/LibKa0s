@@ -85,12 +85,16 @@ return function()
   -- is the character's rather than a hard-coded string.
   M.__context = {
     name = "Testchar", realm = "Testrealm", level = 80,
+    class = "Death Knight", classToken = "DEATHKNIGHT",
     spec = "Blood", zone = "Silvermoon City", subZone = "Falconwing Square",
     inInstance = false, instanceType = "none", inGroup = false, inRaid = false, groupSize = 0,
   }
   M.UnitName = function() return M.__context.name end
   M.GetRealmName = function() return M.__context.realm end
   M.UnitLevel = function() return M.__context.level end
+  -- Localised name first, then the token, as the real API returns them. Without this the record's
+  -- context.class silently fell through to "?" in every test that claimed to cover the context.
+  M.UnitClass = function() return M.__context.class, M.__context.classToken end
   M.GetZoneText = function() return M.__context.zone end
   M.GetSubZoneText = function() return M.__context.subZone end
   M.GetSpecialization = function() return 1 end
