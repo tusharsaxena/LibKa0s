@@ -28,17 +28,35 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 ## Re-vendoring consumers
 
-The payload is the inner `LibKa0s/` folder and nothing else. `tests/`, `docs/`, `README.md` and
-`LICENSE` stay here.
+Two payloads, with different destinations and different reasons for existing.
+
+**The library** is the inner `LibKa0s/` folder and nothing else. `docs/`, `README.md`, `CHANGELOG.md`
+and `LICENSE` stay here.
 
 ```
-cp LibKa0s/LibKa0s.xml LibKa0s/Perf.lua LibKa0s/PerfPanel.lua <Addon>/libs/LibKa0s/
+cp -r LibKa0s/. <Addon>/libs/LibKa0s/
 diff -r LibKa0s <Addon>/libs/LibKa0s        # must be empty
 cd <Addon> && lua tests/run.lua && luacheck .
 ```
 
+**The test kit** is `testkit/`, and it goes to `<Addon>/tests/_kit/` — never to `libs/`, because
+`libs/` is the ship payload and the kit must never be zipped. Under `tests/` it is already covered
+by the `- tests` entry every addon's `.pkgmeta` already carries, so adopting it needs no packaging
+change.
+
+```
+cp -r testkit/. <Addon>/tests/_kit/
+diff -r testkit <Addon>/tests/_kit          # must be empty
+```
+
 Rules, and the reason each exists:
 
+- **Copy the WHOLE folder, always. Never one module.** With one major per module and independent
+  minors, per-module re-vendoring is exactly how cross-major skew gets manufactured: an addon ends
+  up carrying a new `Options.lua` over an old `Core.lua`, and the symptom is a nil-value error at
+  panel-build time in whichever addon the user happens to open. There is no version negotiation
+  between majors, and the paired-minor guard that protects a secondary file within a major does not
+  generalise across them. Whole-folder copying is the mitigation.
 - **The vendored copy MUST be byte-identical to the ship folder.** `diff -r` empty, every time. A
   hand-patched `libs/` copy is a fork nobody knows about.
 - **A library change MUST be followed by a re-vendor commit in every consumer that depends on it**,

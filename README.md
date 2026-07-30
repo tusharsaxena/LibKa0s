@@ -251,13 +251,25 @@ Both must be 0/0 before a release — `lua tests/run.lua` reports `N passed, 0 f
 authoritative case count. Regenerate it in the same change that adds or removes a test:
 
 ```bash
-lua tests/run.lua --list | sed 's/$/\r/' > docs/test-cases.md
+lua tests/run.lua --list > docs/test-cases.md
 ```
 
 `--list` builds every suite and prints the case names without running them, so it is also the
-quickest way to see whether a new suite file is actually wired into `SUITES`. The plain redirect
-would write LF; the `sed` keeps the regenerated file CRLF, matching `docs/`'s `.gitattributes`
-convention.
+quickest way to see whether a new suite file is actually wired into the suite list. The renderer in
+`testkit/framework.lua` writes CRLF itself, matching `docs/`'s `.gitattributes` convention — there
+is no `| sed 's/$/\r/'` to remember, because a regeneration command with a pipeline in it is one
+someone eventually runs without the pipeline.
+
+### The shared test kit
+
+`testkit/` holds the registry, the assertions, the source loader and the universal half of the
+WoW-API mock, shared across the collection and vendored into each addon as `tests/_kit/`. It is
+**not** a LibStub major and never ships. See [`testkit/README.md`](./testkit/README.md) for the
+vendoring discipline, what a consuming `tests/run.lua` looks like, and the mock-fidelity rules.
+
+This repo consumes its own kit through `tests/_kit/` rather than reaching into `testkit/` directly,
+so LibKa0s is a consumer on the same terms as every addon: `diff -r testkit tests/_kit` is the same
+gate here as it is downstream, and a kit change that would break a consumer breaks this repo first.
 
 ### Versioning
 

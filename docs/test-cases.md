@@ -1,6 +1,10 @@
 # Test Cases
 
-_Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list > docs/test-cases.md`._
+The full inventory of every headless test case in this repo, grouped by the suite file it
+lives in. The `## Totals` table below is the **authoritative pass count** — the README test
+badge and any count quoted in the docs must agree with it.
+
+**Generated — do not hand-edit.** Regenerate with `lua tests/run.lua --list > docs/test-cases.md`.
 
 ### test_perf_core.lua (49)
 
@@ -165,21 +169,24 @@ _Generated — do not hand-edit. Regenerate with `lua tests/run.lua --list > doc
 - iso: an older copy loading second replaces neither half
 - iso: a higher panel minor over the same probe still wins
 
-### test_versioning.lua (4)
+### test_versioning.lua (7)
 
-- versioning: every file in the major registers its live version
+- versioning: every declared major is actually registered
+- versioning: every file in every major registers its live version
+- versioning: no file registers under a major it does not belong to
 - versioning: every registered version is a positive integer
+- versioning: file basenames are unique across every major
 - versioning: the changelog accounts for the version every file is at
-- versioning: the panel records which probe it attached to
+- versioning: every paired secondary file records which primary it attached to
 
 ## Totals
 
-| Suite | Count |
-|-------|-------|
+| Suite | Cases |
+|-------|------:|
 | test_perf_core.lua | 49 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
-| test_versioning.lua | 4 |
-| **Total** | **152** |
+| test_versioning.lua | 7 |
+| **Total** | **155** |

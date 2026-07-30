@@ -13,7 +13,7 @@ local mocks = T.mocks
 local test, assertEqual, assertTrue, assertFalse =
   T.test, T.assertEqual, T.assertTrue, T.assertFalse
 local Fixture = dofile("tests/fixture.lua")
-local Loader = dofile("tests/loader.lua")
+local Loader = dofile("tests/_kit/loader.lua")
 local buildMocks = dofile("tests/wow_mock.lua")
 
 -- Drive one sampler frame by hand, same idiom as test_perf_run.lua.
@@ -503,7 +503,7 @@ end)
 
 test("lib: a panel-less instance answers STEPS, PanelStateOf and PanelIsActionable safely", function()
   local noPanelMocks = buildMocks()
-  Loader.load("LibKa0s/Perf.lua", noPanelMocks)
+  Loader.load("LibKa0s/Perf.lua", nil, noPanelMocks)
   local lib = noPanelMocks.LibStub("LibKa0s-Perf-1.0")
   local p = lib:New({
     name = "NoPanel", sv = "NoPanelPerfDB",

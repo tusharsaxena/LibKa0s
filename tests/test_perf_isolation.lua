@@ -99,7 +99,7 @@ end)
 -- panel stays bolted to it. These tests load real, minor-patched copies of both files into a fresh
 -- environment and assert the two halves came from the same copy.
 
-local Loader     = dofile("tests/loader.lua")
+local Loader     = dofile("tests/_kit/loader.lua")
 local buildMocks = dofile("tests/wow_mock.lua")
 
 local function readSource(path)
@@ -139,8 +139,8 @@ end
 -- Load whole copies in the order the client would, each copy's two files together.
 local function loadCopies(env, ...)
   for _, copy in ipairs({ ... }) do
-    Loader.loadSource(copy.perf, copy.tag .. "/Perf.lua", env)
-    Loader.loadSource(copy.panel, copy.tag .. "/PerfPanel.lua", env)
+    Loader.loadSource(copy.perf, copy.tag .. "/Perf.lua", nil, env)
+    Loader.loadSource(copy.panel, copy.tag .. "/PerfPanel.lua", nil, env)
   end
   return env.LibStub("LibKa0s-Perf-1.0")
 end
