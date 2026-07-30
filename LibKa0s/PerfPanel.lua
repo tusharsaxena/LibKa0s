@@ -76,9 +76,12 @@ function lib.__AttachPanel(P, d, tr, runCommand)
   local frame
   local decorate = type(d.decorate) == "function" and d.decorate or nil
 
+  -- `string` travels with the step and `label` is re-resolved on every repaint. A host on the Ka0s
+  -- standard populates its locale table from a separate file, which may well load after :New() runs
+  -- — resolving once here froze every row to the built-in English.
   P.STEPS = {}
   for i, s in ipairs(STEPS) do
-    P.STEPS[i] = { key = s.key, label = tr(s.string), command = s.command }
+    P.STEPS[i] = { key = s.key, string = s.string, label = tr(s.string), command = s.command }
   end
 
   local function setColor(fs, state)
@@ -203,6 +206,7 @@ function lib.__AttachPanel(P, d, tr, runCommand)
       local b = frame.buttons[step.key]
       if b then
         local state = P.PanelStateOf(step.key)
+        step.label = tr(step.string)
         b.text:SetText(step.label)
         setColor(b.text, state)
         -- The dot carries the state at a glance: green behind you, gold on the step that is
