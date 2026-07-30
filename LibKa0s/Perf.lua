@@ -182,18 +182,22 @@ function lib:New(descriptor)
   local showLog  = type(d.showLog) == "function" and d.showLog or noop -- luacheck: ignore (Task 5's panel)
   local onChange = type(d.onChange)== "function" and d.onChange or noop
   local L        = d.L or {}
-  local function tr(key) return L[key] or self.STRINGS[key] or key end
+  local function tr(key) return L[key] or lib.STRINGS[key] or key end
+
+  -- Everything below reads `lib`, never `self`. A LibStub minor upgrade mutates the shared library
+  -- table in place, so an instance that cached `self.SCHEMA` at :New() time would keep reporting the
+  -- old number while BuildRecord (which reads lib.SCHEMA) emitted the new one.
 
   -- Mirrored onto the instance as a convenience: call sites that hold only `NS.Perf` should not
   -- have to reach back through LibStub for the schema number or the encoder.
-  P.SCHEMA     = self.SCHEMA
-  P.EncodeJSON = self.EncodeJSON
+  P.SCHEMA     = lib.SCHEMA
+  P.EncodeJSON = lib.EncodeJSON
 
   P.descriptor = d
   P.name    = d.name
   P.slash   = d.slash or ("/" .. d.name:lower())
   P.title   = d.title or d.name
-  P.ringMax = tonumber(d.ring) or self.DEFAULT_RING
+  P.ringMax = tonumber(d.ring) or lib.DEFAULT_RING
 
   -- Report order, and the declared nesting. Membership controls only PRESENTATION — Note() accepts
   -- any key, so a bracket nobody declared still records, it just does not print.

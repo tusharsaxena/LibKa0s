@@ -8,8 +8,16 @@
 local lib = LibStub and LibStub("LibKa0s-Perf-1.0", true)
 if not lib then return end
 local PANEL_MINOR = 1
-if lib.__panelMinor and lib.__panelMinor >= PANEL_MINOR then return end
+-- Paired on the PROBE's minor as well as the panel's own. The panel counter alone is not enough:
+-- two vendored copies can ship the same panel minor over different Perf.lua minors, and then the
+-- higher probe wins the LibStub race while the first-loaded copy's panel stays attached to it —
+-- exactly the mismatched pairing the single-major design is supposed to make impossible. Recording
+-- which probe the attached panel was built against makes a copy re-attach whenever the probe
+-- underneath it changed.
+if lib.__panelMinor and lib.__panelMinor >= PANEL_MINOR
+  and lib.__panelProbeMinor == lib.MINOR then return end
 lib.__panelMinor = PANEL_MINOR
+lib.__panelProbeMinor = lib.MINOR
 
 -- Three columns: status dot, step, slash command. The command column is the point — it teaches the
 -- typed form while you click, so the panel is a crutch you can stop needing.

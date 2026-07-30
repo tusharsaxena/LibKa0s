@@ -17,3 +17,8 @@ read_globals = {
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes
 -- through _G[name]. That is the one sanctioned _G mutation in this library.
 globals = { "_G" }
+-- `lib:New(descriptor)` keeps the colon form because that is how every host calls it, but its body
+-- deliberately reads `lib` rather than `self`: a LibStub minor upgrade mutates the shared library
+-- table in place, and `self` is only whatever table the caller happened to be holding. The implicit
+-- self is therefore unused on purpose, and not a warning worth carrying.
+self = false
