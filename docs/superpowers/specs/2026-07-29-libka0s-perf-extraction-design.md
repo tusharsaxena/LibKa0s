@@ -226,7 +226,7 @@ across the collection and makes "run `/xx perf` and send me the JSON" true of an
 
 | Section | Change |
 |---|---|
-| `library-stack` | New "Ka0s shared libs" table with `LibKa0s`; Ka0s-owned, vendored like Ace3, module-per-major |
+| `library-stack` | New "Ka0s shared libs" table with `LibKa0s`; Ka0s-owned, vendored like Ace3, module-per-major. **Plus a vendor-sync rule** — see below |
 | `savedvariables` | Carve-out for the diagnostics global — the only sanctioned non-AceDB SV |
 | `toc-file` | Second SV global; `LibKa0s` placement in the lib load block, after Ace3 |
 | `slash-commands` | Reserve `perf` |
@@ -235,6 +235,32 @@ across the collection and makes "run `/xx perf` and send me the JSON" true of an
 | `debug-logging` | The panel's `decorate` relationship to the console |
 | `anti-patterns` | Two entries: ungated instrumentation in hot paths; shared frames for measurement (the instrument corrupting its own attribution) |
 | `open-evolutions` | Record `LibKa0s` as the path for future shared modules |
+| `AUDIT.md` | A vendor-sync check per Ka0s-owned lib — see below |
+
+### The vendor-sync rule (added 2026-07-30, from the extraction itself)
+
+`library-stack-§3` already mandates vendoring, and for a third-party lib that is the whole story:
+upstream releases, you copy, the copy is stable for months. A **Ka0s-owned** lib breaks that
+assumption, because the same person edits the library and its consumers in the same afternoon. The
+vendored copy can fall behind the source repo between two commits, and nothing in either repo's green
+gate notices — the library's tests pass against the library, the addon's tests pass against a stale
+copy that still works.
+
+This is not hypothetical. It happened during rollout step 1: a library fix added the no-panel
+fallbacks, AbsorbTracker was not re-vendored, and `diff -r` after the fact was the only thing that
+caught it. Both suites were green throughout.
+
+What the standard should require:
+
+- the vendored payload MUST be byte-identical to the source repo's ship folder;
+- a change to a Ka0s-owned lib MUST be followed by a re-vendor commit in every consumer that depends
+  on it, and the re-vendor SHOULD be its own commit so the sync is legible in history;
+- `diff -r <LibRepo>/<Lib> <Addon>/libs/<Lib>` belongs in `AUDIT.md`'s evidence set, and arguably in
+  each consumer's green gate, so the check is mechanical rather than remembered.
+
+The rule text lands in `library-stack`; `testing` cross-references it if it becomes a gate step. Also
+recorded in the standard's own `open-evolutions` section so the v2.12.0 pass picks it up from either
+side.
 
 ### Plugin
 
