@@ -138,7 +138,7 @@ end
 -- Derive the reportable figures for one FPS arm. An arm that never ran (e.g. `suspended` in a
 -- capture where the user never suspended) yields zeros rather than nil, so the record shape is
 -- fixed and consumers never branch on presence.
-local function arm(a)
+local function deriveArm(a)
     local seconds, frames = a.seconds, a.frames
     return {
         seconds    = seconds,
@@ -376,7 +376,7 @@ function lib:New(descriptor)
 
   --- Assemble the capture into the shared record schema (docs/record-schema.md).
   function P.BuildRecord(label)
-    local active, suspended = arm(fpsArms.active), arm(fpsArms.suspended)
+    local active, suspended = deriveArm(fpsArms.active), deriveArm(fpsArms.suspended)
 
     -- Positive delta = the addon costs this much per frame. Only meaningful when BOTH arms ran;
     -- with one arm empty its msPerFrame is 0 and the delta would read as the whole frame time, so
@@ -499,6 +499,243 @@ function lib:New(descriptor)
     end
 
     return lines
+  end
+
+  -- ── Measurement windows + the FPS sampler ──────────────────────────────────────────────────
+  --
+  -- An experiment is a sequence of explicitly-armed, COMBAT-GATED windows:
+  --
+  --     perf.Start(label)     begin the experiment (samples nothing yet)
+  --     perf.Measure("a")     arm window A - starts the moment combat does, ends when it does
+  --     perf.Measure("b")     arm window B - same, with the host suspended
+  --     perf.Stop()           report both windows and hand back the record
+  --
+  -- Why windows rather than sampling continuously and splitting by suspend state (the original
+  -- design): continuous sampling silently folds every difference between the arms into the result.
+  -- Two real captures were lost to exactly that - one where the active arm was ~78% combat against a
+  -- suspended arm at ~100%, and one where the arms ran 72.3s and 59.2s. Both produced a delta that
+  -- described the environment rather than the addon. A window that opens on PLAYER combat and closes
+  -- when it ends measures a comparable slice by construction, and lets the user walk to the pull,
+  -- reset a dungeon, or wait out a respawn between arms without contaminating anything.
+  --
+  -- Combat is read from UnitAffectingCombat("player") on the sampler's own OnUpdate rather than from
+  -- the combat EVENTS, deliberately: P.Suspend() calls the host's suspend callback, which is free to
+  -- unregister the host's event frames - so window B, the suspended arm, would never see
+  -- PLAYER_REGEN_DISABLED fire if this polled events instead. Polling a cheap C call on a frame that
+  -- only exists during an experiment sidesteps that entirely.
+  --
+  -- Window A maps to the `active` arm and window B to `suspended`, so the record schema and the delta
+  -- computation are unchanged. `measure b` suspends the host and `measure a` resumes it, so the two
+  -- windows differ by the host and nothing else - there is no way to forget the suspend.
+
+  -- Window token -> FPS arm.
+  P.EXPERIMENTS = { a = "active", b = "suspended" }
+
+  -- Reverse map, so every message names the experiment the way the user typed it.
+  P.LABELS = { active = "A", suspended = "B" }
+
+  local sampler
+
+  -- Created on first experiment and reused. The OnUpdate script is attached only while an
+  -- experiment is running - an idle instance must not pay for a per-frame callback that exists
+  -- purely to measure.
+  local function ensureSampler()
+    if sampler then return sampler end
+    if type(CreateFrame) ~= "function" then return nil end
+    -- Created under the CALLING HOST's ownership, never shared between instances. A shared sampler
+    -- would bill its OnUpdate to whichever addon created it — the precise attribution failure this
+    -- library exists to work around.
+    sampler = CreateFrame("Frame", d.name .. "PerfSampler")
+    sampler:Hide()
+    return sampler
+  end
+
+  function P.__sampler() return sampler end
+
+  -- Blizzard's stopwatch, driven so the user has an on-screen timer for the window actually being
+  -- measured. Called as Lua functions rather than by running "/sw play" as a macro: RunMacroText is
+  -- protected and would taint or fail outright in combat, whereas these FrameXML helpers are plain
+  -- and safe to call mid-fight. Every one is existence-checked, so a client that has renamed or
+  -- removed them degrades to no stopwatch rather than an error mid-capture.
+  local function stopwatch(action)
+    if action == "reset" then
+      if type(Stopwatch_Clear) == "function" then Stopwatch_Clear() end
+      if StopwatchFrame and StopwatchFrame.Show then StopwatchFrame:Show() end
+    elseif action == "play" then
+      if type(Stopwatch_Play) == "function" then Stopwatch_Play() end
+    elseif action == "pause" then
+      if type(Stopwatch_Pause) == "function" then Stopwatch_Pause() end
+    end
+  end
+
+  local function inCombat()
+    return UnitAffectingCombat and UnitAffectingCombat("player") and true or false
+  end
+
+  -- Both a chat line and a debug line, deliberately. These fire mid-combat, when the debug console is
+  -- usually not what the user is looking at — the chat line is what tells them the recording actually
+  -- started — while the console line is what survives into the copied log for later analysis.
+  local function openWindow()
+    P.recording = P.armed
+    P.armed = nil
+    P.on = true              -- the brackets record only inside an experiment
+    stopwatch("play")
+    publishState()
+    P.Announce("Experiment |cFFFFFF00%s|r |cff40ff40RECORDING|r \226\128\148 combat started",
+        P.LABELS[P.recording] or P.recording)
+  end
+
+  local function closeWindow()
+    local w = P.recording
+    P.recording = nil
+    P.on = false
+    stopwatch("pause")
+    if not w then return end
+    completed[w] = true
+    publishState()
+    local a = fpsArms[w]
+    P.Announce("Experiment |cFFFFFF00%s|r |cffff4040ENDED|r \226\128\148 %s, %s frames, %s fps",
+        P.LABELS[w] or w, ("%.1fs"):format(a.seconds), a.frames,
+        ("%.1f"):format(a.seconds > 0 and (a.frames / a.seconds) or 0))
+  end
+
+  local function onUpdate(_, elapsed)
+    if not P.run then return end
+    local combat = inCombat()
+
+    -- Open first, then fall THROUGH to accumulate: the frame that opens a window is itself an
+    -- in-combat frame and belongs in the sample. Returning after openWindow() silently dropped it,
+    -- which is invisible over a 60s pull but wrong, and wrong in a way that biases both arms.
+    if not P.recording then
+      if not (P.armed and combat) then return end
+      openWindow()
+    end
+
+    if combat then
+      local a = fpsArms[P.recording]
+      a.seconds = a.seconds + elapsed
+      a.frames  = a.frames + 1
+    else
+      closeWindow()
+    end
+  end
+
+  --- Begin an experiment. Samples nothing until a window is armed with Measure().
+  function P.Start(label)
+    P.Reset()
+    P.label = label
+    P.run = true
+    P.armed, P.recording = nil, nil
+    P.on = false
+    -- Lifecycle lines are never gated behind a host debug flag, unlike a host's own debug logging
+    -- (that gate exists to keep the host quiet while idle). A perf run is explicit user action, so
+    -- a user who started a run should not have to have debug logging enabled first to see it working.
+    P.context = P.Context()
+    P.Log("run started \226\128\148 %s", P.label or "unlabelled")
+    for _, line in ipairs(P.ContextLines(P.context)) do P.Log(line) end
+    local s = ensureSampler()
+    if s then
+      s:SetScript("OnUpdate", onUpdate)
+      s:Show()
+    end
+    publishState()
+  end
+
+  --- Arm a measurement window. Returns the arm name, or nil plus the offending token.
+  ---
+  --- Re-arming a window that already has data ZEROES it first, so a botched pull can simply be redone
+  --- with the same command instead of silently averaging into the previous attempt.
+  function P.Measure(token)
+    if not P.run then return nil, "no experiment" end
+    local arm = P.EXPERIMENTS[tostring(token or ""):lower()]
+    if not arm then return nil, "unknown window" end
+
+    if P.recording then closeWindow() end
+
+    -- The suspend state IS the independent variable, so it is set here rather than left to the
+    -- user: window B with the host still running would look like a null result.
+    if arm == "suspended" then P.Suspend() else P.Resume() end
+
+    fpsArms[arm].seconds, fpsArms[arm].frames = 0, 0
+    completed[arm] = false          -- re-arming redoes the step, so it is no longer done
+    P.armed = arm
+    stopwatch("reset")
+    P.Log("experiment %s armed (addon %s) \226\128\148 waiting for combat",
+        P.LABELS[arm] or arm, arm == "suspended" and "SUSPENDED" or "active")
+    publishState()
+    return arm
+  end
+
+  --- End the experiment and hand back the assembled record. Detaches the sampler so the OnUpdate cost
+  --- goes away entirely rather than idling.
+  function P.Stop()
+    if P.recording then closeWindow() end
+    P.run = false
+    P.armed = nil
+    P.on = false
+    stopwatch("pause")
+    P.Log("run finished \226\128\148 A %s / %s frames, B %s / %s frames",
+        ("%.1fs"):format(fpsArms.active.seconds), fpsArms.active.frames,
+        ("%.1fs"):format(fpsArms.suspended.seconds), fpsArms.suspended.frames)
+    if sampler then
+      sampler:SetScript("OnUpdate", nil)
+      sampler:Hide()
+    end
+    publishState()
+    return P.BuildRecord(P.label)
+  end
+
+  --- Abandon a run. Everything measured is discarded — nothing is saved to the ring — the host is
+  --- restored, and the counters are zeroed so the next Start() begins clean.
+  ---
+  --- Deliberately does NOT go through closeWindow(): that marks the experiment completed and announces
+  --- it ENDED, which would be a lie about a run being thrown away.
+  function P.Cancel()
+    if not (P.run or P.armed or P.recording) then return false end
+
+    P.run, P.armed, P.recording = false, nil, nil
+    P.on = false
+    stopwatch("pause")
+    if sampler then
+      sampler:SetScript("OnUpdate", nil)
+      sampler:Hide()
+    end
+    -- Restore before zeroing: Resume() lets the host republish its own state, and that needs to
+    -- happen whatever else follows.
+    if P.suspended then P.Resume() end
+    P.Reset()
+    P.label = nil
+    P.Log("run CANCELLED \226\128\148 measurements discarded, nothing saved")
+    publishState()
+    return true
+  end
+
+  -- ── Suspend / resume ─────────────────────────────────────────────────────────────────────
+  --
+  -- The host owns what "inert" means; the lib owns only the state and the announcement. Two rules
+  -- the host contract depends on, both learned the hard way and both documented in the README:
+  --
+  --   * Suspend MUST make the addon inert WITHOUT a reload. Reloading or disabling an addon shifts
+  --     shared-frame ownership, which is the confound that makes the built-in Addon Profiler
+  --     useless for this question.
+  --   * Visibility MUST be enforced at the source — a `perf.suspended` check inside the host's own
+  --     show-decision — rather than by imperatively hiding frames here. Otherwise a combat
+  --     transition, a target swap or a settings change re-shows a bar behind suspend's back.
+
+  function P.Suspend()
+    if P.suspended then return false end
+    P.suspended = true
+    P.Log("addon SUSPENDED \226\128\148 inert")
+    d.suspend()
+    return true
+  end
+
+  function P.Resume()
+    if not P.suspended then return false end
+    P.suspended = false
+    P.Log("addon RESUMED \226\128\148 events and frames restored")
+    d.resume()
+    return true
   end
 
   return P
