@@ -182,7 +182,7 @@ function lib:New(descriptor)
   local showLog  = type(d.showLog) == "function" and d.showLog or noop -- luacheck: ignore (Task 5's panel)
   local onChange = type(d.onChange)== "function" and d.onChange or noop
   local L        = d.L or {}
-  local function tr(key) return L[key] or self.STRINGS[key] or key end -- luacheck: ignore (Task 5's panel)
+  local function tr(key) return L[key] or self.STRINGS[key] or key end
 
   -- Mirrored onto the instance as a convenience: call sites that hold only `NS.Perf` should not
   -- have to reach back through LibStub for the schema number or the encoder.
@@ -737,6 +737,18 @@ function lib:New(descriptor)
     d.resume()
     return true
   end
+
+  -- No-panel fallbacks: a host can call these unconditionally, whether or not PerfPanel.lua was
+  -- loaded alongside this file. lib.__AttachPanel overwrites every one of them when it runs.
+  P.ShowPanel     = function() end
+  P.HidePanel     = function() end
+  P.TogglePanel   = function() end
+  P.RefreshPanel  = function() end
+  P.IsPanelShown  = function() return false end
+
+  -- The panel is part of this module; a copy of the lib without PerfPanel.lua loaded still works,
+  -- it just has no panel. Hosts reach it through P.ShowPanel and friends.
+  if lib.__AttachPanel then lib.__AttachPanel(P, d, tr, function(cmd) return P.OnCommand(cmd) end) end
 
   return P
 end

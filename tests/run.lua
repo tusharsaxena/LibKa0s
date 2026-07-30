@@ -20,7 +20,7 @@ local function assertTrue(c, msg) if not c then fail(msg or "assertTrue failed",
 local function assertFalse(c, msg) if c then fail(msg or "assertFalse failed", 1) end end
 
 local mocks = buildMocks()
-Loader.loadAll({ "LibKa0s/Perf.lua" }, mocks)
+Loader.loadAll({ "LibKa0s/Perf.lua", "LibKa0s/PerfPanel.lua" }, mocks)
 
 _G.LK_TEST = {
   mocks = mocks, lib = mocks.LibStub("LibKa0s-Perf-1.0"), test = test,
