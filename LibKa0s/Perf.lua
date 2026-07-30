@@ -133,6 +133,29 @@ local function render(fmt, ...)
     return fmt:format(unpack(parts))
 end
 
+-- ── Record assembly ────────────────────────────────────────────────────────────────────────
+
+-- Derive the reportable figures for one FPS arm. An arm that never ran (e.g. `suspended` in a
+-- capture where the user never suspended) yields zeros rather than nil, so the record shape is
+-- fixed and consumers never branch on presence.
+local function arm(a)
+    local seconds, frames = a.seconds, a.frames
+    return {
+        seconds    = seconds,
+        frames     = frames,
+        avgFps     = seconds > 0 and (frames / seconds) or 0,
+        msPerFrame = frames > 0 and (seconds * 1000 / frames) or 0,
+    }
+end
+
+-- The host's TOC Interface value as a number. C_AddOns is the modern accessor and the global is the
+-- pre-10.1 one; a client with neither degrades to 0 rather than erroring mid-capture.
+local function interfaceVersion(name)
+  local getMeta = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
+  local raw = getMeta and getMeta(name, "Interface")
+  return tonumber(raw) or 0
+end
+
 -- ── Instances ──────────────────────────────────────────────────────────────────────────────
 
 local function required(d, key, wanted)
@@ -294,6 +317,188 @@ function lib:New(descriptor)
         -- cancel, and a live-looking button that discards nothing is just a way to worry someone.
         cancel = (P.run or P.armed or P.recording) and "cancel" or "locked",
     }
+  end
+
+  -- Who / where / what, captured once at the start of a run. A saved capture is read weeks later,
+  -- and "119 fps" means nothing without knowing it was a Blood DK soloing a dummy rather than a
+  -- healer in a 20-man. Every lookup is existence-checked so the headless harness (and any client
+  -- that renames one of these) degrades to "?" rather than erroring at the start of a capture.
+  local function groupContext()
+      local inInstance, instanceType
+      if IsInInstance then inInstance, instanceType = IsInInstance() end
+      local n = (GetNumGroupMembers and GetNumGroupMembers()) or 0
+      local base = "solo"
+      if IsInRaid and IsInRaid() then
+          base = ("raid (%d)"):format(n)
+      elseif IsInGroup and IsInGroup() then
+          base = ("party (%d)"):format(n)
+      end
+      if inInstance and instanceType and instanceType ~= "none" then
+          return base .. " / " .. instanceType
+      end
+      return base
+  end
+
+  function P.Context()
+      local ctx = {
+          character = "?", realm = "?", class = "?", spec = "?",
+          level = 0, zone = "?", subZone = "", group = "solo",
+      }
+      if UnitName then ctx.character = UnitName("player") or "?" end
+      if GetRealmName then ctx.realm = GetRealmName() or "?" end
+      if UnitClass then ctx.class = (UnitClass("player")) or "?" end
+      if UnitLevel then ctx.level = UnitLevel("player") or 0 end
+      if GetSpecialization and GetSpecializationInfo then
+          local index = GetSpecialization()
+          if index then
+              local _, name = GetSpecializationInfo(index)
+              ctx.spec = name or "?"
+          end
+      end
+      if GetZoneText then ctx.zone = GetZoneText() or "?" end
+      if GetSubZoneText then ctx.subZone = GetSubZoneText() or "" end
+      ctx.group = groupContext()
+      return ctx
+  end
+
+  --- The context as display lines, shared by the chat ack and the report so they cannot drift.
+  function P.ContextLines(ctx)
+      if not ctx then return {} end
+      local where = ctx.zone or "?"
+      if ctx.subZone and ctx.subZone ~= "" then where = where .. " \226\128\148 " .. ctx.subZone end
+      return {
+          ("who:       %s-%s, level %s %s %s"):format(ctx.character, ctx.realm,
+              tostring(ctx.level), ctx.spec, ctx.class),
+          ("where:     %s"):format(where),
+          ("group:     %s"):format(ctx.group),
+      }
+  end
+
+  --- Assemble the capture into the shared record schema (docs/record-schema.md).
+  function P.BuildRecord(label)
+    local active, suspended = arm(fpsArms.active), arm(fpsArms.suspended)
+
+    -- Positive delta = the addon costs this much per frame. Only meaningful when BOTH arms ran;
+    -- with one arm empty its msPerFrame is 0 and the delta would read as the whole frame time, so
+    -- report zero instead of a number that invites a wrong conclusion.
+    local delta = 0
+    if active.frames > 0 and suspended.frames > 0 then
+        delta = active.msPerFrame - suspended.msPerFrame
+    end
+
+    local out = {}
+    for key, b in pairs(buckets) do
+      out[key] = { calls = b.calls, totalMs = b.totalMs, maxMs = b.maxMs, within = P.BUCKET_WITHIN[key] }
+    end
+
+    return {
+      schema    = lib.SCHEMA,
+      addon     = d.name,
+      source    = "ingame",
+      version   = d.version or "?",
+      interface = interfaceVersion(d.name),
+      timestamp = time and time() or 0,
+      label     = label or "",
+      buckets   = out,
+      fps       = { active = active, suspended = suspended, deltaMsPerFrame = delta },
+      context   = P.context,
+    }
+  end
+
+  --- Append a record to the host's SavedVariables ring, trimming the oldest past ringMax.
+  ---
+  --- Writes _G[sv] directly rather than going through the host's settings DB. A perf ring inside an
+  --- AceDB profile tree would be copied by "copy profile", wiped by "reset profile", and would swap
+  --- out from under a capture on a profile switch — none of which is wanted for diagnostics.
+  ---
+  --- A ring stored under a different schema is DISCARDED rather than migrated: these are diagnostic
+  --- snapshots, not user data, and a half-converted record is worse than an absent one.
+  function P.Save(record)
+    local db = _G[d.sv]
+    if type(db) ~= "table" then
+      db = {}
+      _G[d.sv] = db
+    end
+    if db.schema ~= lib.SCHEMA then
+      local dropped = db.runs and #db.runs or 0
+      if dropped > 0 then
+        P.Log("perf ring was schema %s, now %s \226\128\148 discarded %s old record(s)",
+          tostring(db.schema), tostring(lib.SCHEMA), tostring(dropped))
+      end
+      db.runs = nil
+    end
+    db.schema = lib.SCHEMA
+    db.runs = db.runs or {}
+    db.runs[#db.runs + 1] = record
+    while #db.runs > P.ringMax do table.remove(db.runs, 1) end
+    return db
+  end
+
+  --- Render a record as a list of plain strings. Returns a table (not a printed side effect) so the
+  --- headless suite can assert on the exact lines without frames or a chat sink.
+  function P.FormatReport(record)
+    local lines = {}
+    local function add(fmt, ...)
+      lines[#lines + 1] = select("#", ...) > 0 and fmt:format(...) or fmt
+    end
+
+    local f = record.fps
+    add("capture: %s  (%s, schema %d, v%s)", record.label ~= "" and record.label or "unlabelled",
+        record.addon, record.schema, record.version)
+    for _, line in ipairs(P.ContextLines(record.context)) do add(line) end
+
+    -- FPS arms first: this is the headline the whole harness exists to produce.
+    for _, name in ipairs({ "active", "suspended" }) do
+      local a = f[name]
+      if a.frames > 0 then
+        add("%-10s %7.1fs  %6d frames  %6.1f fps  %6.2f ms/frame",
+            name .. ":", a.seconds, a.frames, a.avgFps, a.msPerFrame)
+      else
+        add("%-10s (not sampled)", name .. ":")
+      end
+    end
+    if f.active.frames > 0 and f.suspended.frames > 0 then
+      add("%-10s %45s%+6.2f ms/frame", "delta:", "", f.deltaMsPerFrame)
+    else
+      add("delta:     (needs both arms \226\128\148 arm Experiment B mid-capture)")
+    end
+
+    -- Buckets in declared order, indented by nesting depth. ms/s divides by the ACTIVE seconds
+    -- only: no bucket can accrue while suspended, so including that arm would understate every rate.
+    local function depthOf(key)
+      local n, parent = 0, record.buckets[key] and record.buckets[key].within or P.BUCKET_WITHIN[key]
+      while parent and n < 8 do                        -- the guard is against a malformed descriptor
+        n, parent = n + 1, P.BUCKET_WITHIN[parent]
+      end
+      return n
+    end
+
+    local secs = f.active.seconds
+    add("")
+    add("%-14s %8s %10s %10s %9s", "bucket", "calls", "total ms", "ms/s", "max ms")
+    for _, key in ipairs(P.BUCKET_ORDER) do
+      local b = record.buckets[key]
+      if b then
+        local name = ("  "):rep(depthOf(key)) .. key
+        add("%-14s %8d %10.2f %10.3f %9.3f",
+            name, b.calls, b.totalMs, secs > 0 and (b.totalMs / secs) or 0, b.maxMs)
+      end
+    end
+
+    -- Nested totals are not disjoint and must never be summed. Spelling out which contains which
+    -- beats trusting the reader to notice the indentation.
+    local pairsOut = {}
+    for _, key in ipairs(P.BUCKET_ORDER) do
+      local parent = P.BUCKET_WITHIN[key]
+      if parent and record.buckets[key] then
+        pairsOut[#pairsOut + 1] = ("%s contains %s"):format(parent, key)
+      end
+    end
+    if #pairsOut > 0 then
+      add("(buckets nest: %s \226\128\148 do not sum)", table.concat(pairsOut, ", "))
+    end
+
+    return lines
   end
 
   return P
