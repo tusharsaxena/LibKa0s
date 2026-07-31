@@ -112,6 +112,89 @@ badge and any count quoted in the docs must agree with it.
 - sl: with no annotator set, nothing is appended
 - sl: Slash refuses to register without Core
 
+### test_options.lua (34)
+
+- options: the major registers all three of its files
+- options: an instance carries the shell, the widget makers and the scroll patch
+- options: two instances own separate panel registries
+- options: CreatePanel returns a ctx wired to a panel, a body and an empty refresher list
+- options: CreatePanel names the panel with the plain title for the category tree
+- options: CreatePanel starts the panel hidden and registers it
+- options: the header title takes the parent breadcrumb, and isMain opts out
+- options: __panelFor finds a registered page by key
+- options: CreatePanel only DECLARES the Defaults button, never builds it
+- options: CreatePanel records no Defaults intent when the page did not ask
+- options: EnsureDefaultsButton builds it once, wires the parked handler, then no-ops
+- options: EnsureDefaultsButton is a safe no-op without AceGUI and on a nil panel
+- options: EnsureDefaultsButton leaves a panel that never wanted one alone
+- options: RestoreDefaults resets every row on the named page and no other
+- options: RestoreDefaults runs the ctx refreshers, and survives one that throws
+- options: RestoreDefaults on a page with no rows is a harmless no-op
+- options: RestoreAllDefaults resets every row, then fires the host's afterRestoreAll
+- options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the panels
+- options: RestoreAllDefaults honours the host's skipRestoreAll veto
+- options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower
+- options: registered page builders run in registration order, once, at CreateOptionsPanel
+- options: CreateOptionsPanel hands the host the AceGUI it resolved
+- options: CreateOptionsPanel says so and returns when AceGUI is missing
+- options: the main canvas is registered under the host's brand
+- options: the main page's body is deferred to its first OnShow, and built once
+- options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay
+- options: OpenOptionsPanel opens the registered category out of combat
+- options: OpenOptionsPanel is a silent no-op before CreateOptionsPanel has run
+- options: LSMValues returns a DEFERRED closure, not a snapshot
+- options: LSMValues yields an empty list rather than erroring without LibSharedMedia
+- options: EnsureScroll is lazy, created once, and patched
+- options: the scrollbar patch is idempotent
+- options: FixScroll disables the bar when the content fits, enables it when it does not
+- options: OnRelease restores AceGUI's own FixScroll and clears the marker
+
+### test_options_widgets.lua (43)
+
+- widgets: the cross-slice layout constants are published on the instance
+- widgets: a bool row renders a CheckBox labelled and seeded from the schema
+- widgets: clicking a checkbox writes through the descriptor's set
+- widgets: a checkbox registers a refresher that re-reads after an external change
+- widgets: every widget gets tooltip callbacks wired from the schema desc
+- widgets: relativeWidth is applied when given, full width otherwise
+- widgets: SessionCheckbox reads and writes the caller's get/set, never the store
+- widgets: a number row renders a Slider carrying the schema's range and step
+- widgets: a slider falls back to the row default when the stored value is not a number
+- widgets: releasing a slider snaps the value to the row's step
+- widgets: slider snapping is relative to the row's min, not to zero
+- widgets: a string row with values renders a Dropdown, sorted alphabetically by default
+- widgets: a row with explicit `sorting` keeps that order instead of alphabetising
+- widgets: a dropdown falls back to a plain Dropdown when its dialogControl is unregistered
+- widgets: a dropdown uses its dialogControl widget when that IS registered
+- widgets: a dropdown writes the chosen value, and its refresher re-applies the LIST
+- widgets: a string row asking for an EditBox gets one, not a dropdown
+- widgets: an edit box commits on OnEnterPressed and re-reads on refresh
+- widgets: a color row renders a ColorPicker seeded through the descriptor's codec
+- widgets: a color picker substitutes 1s for a missing or corrupt stored colour
+- widgets: the colour codec is the descriptor's, so an array-storing host is not translated
+- widgets: disabledIf greys the swatch out while its sibling toggle is on
+- widgets: OnValueConfirmed commits immediately — cancel must not wait on the throttle
+- widgets: OnValueChanged throttles a drag to ONE timer and commits the LAST value
+- widgets: a colour drag does NOT refresh every panel
+- widgets: every other maker's write DOES refresh every panel
+- widgets: RenderField dispatches each schema type to its widget
+- widgets: RenderField returns nil for an unrecognised type instead of erroring
+- widgets: RenderField adds the widget to the parent it was given
+- widgets: RenderSchema pairs widgets two-to-a-row inside full-width Flow groups
+- widgets: a `solo` row is rendered alone on its own line
+- widgets: a `solo` row flushes the row in progress rather than joining it
+- widgets: a `skipRender` row is left to the host and never drawn
+- widgets: RenderRows emits one Heading per group, in first-seen order
+- widgets: an afterGroup callback fires exactly once, after its group's last row
+- widgets: a pairWith partner attaches to the named row, is one-shot, and stays 50/50
+- widgets: a pairWith partner declines a row it would make three-wide
+- widgets: RenderRows runs a layout pass at the end
+- widgets: Section emits a full-width Heading and tracks the group
+- widgets: ClearScroll releases the children AND resets ctx.refreshers
+- widgets: ClearScroll reassigns ctx.refreshers rather than wiping it in place
+- widgets: InlineButtonPair lays two inset buttons into one Flow row and pcalls the click
+- widgets: InlineButtonPair tolerates a missing second spec
+
 ### test_perf_core.lua (49)
 
 - lib: registers under its major with a schema and a default ring
@@ -292,10 +375,12 @@ badge and any count quoted in the docs must agree with it.
 | test_core.lua | 15 |
 | test_debuglog.lua | 36 |
 | test_slash.lua | 46 |
+| test_options.lua | 34 |
+| test_options_widgets.lua | 43 |
 | test_perf_core.lua | 49 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
-| **Total** | **252** |
+| **Total** | **329** |

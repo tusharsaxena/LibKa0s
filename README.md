@@ -3,7 +3,7 @@
 ## What it is
 
 A Ka0s-owned shared library, vendored into Ka0s WoW addons the way Ace3 is — copied into each
-addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Four
+addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Five
 modules ship today:
 
 - **`LibKa0s-Core-1.0`** — the small stateless seams every other module sits on: secret-safe
@@ -12,12 +12,14 @@ modules ship today:
   formatters, the buffer, and the seam that turns logging on and off.
 - **`LibKa0s-Slash-1.0`** — the slash dispatcher, the help renderer, the schema CLI
   (`list`/`get`/`set`/`reset`/`resetall`/`version`) and the type-aware value parser.
+- **`LibKa0s-Options-1.0`** — the Blizzard settings-canvas shell, the schema-row to AceGUI widget
+  translation, and the two-column flow engine that lays a page out. Three files, one major.
 - **`LibKa0s-Perf-1.0`** — a repeatable A/B performance capture for one host addon.
 
-DebugLog, Slash and Perf each require Core and refuse to register without it.
+DebugLog, Slash, Options and Perf each require Core and refuse to register without it.
 
 Everything from *Why it exists* down to *The public surface* documents `LibKa0s-Perf-1.0`. Core,
-DebugLog and Slash have their own sections, below those.
+DebugLog, Slash and Options have their own sections, below those.
 
 ## Why it exists
 
@@ -508,6 +510,112 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `SetRowAnnotator(fn)` | Install a host suffix appended to a rendered setting — most usefully a note that the stored value is not the one in effect. Applied at exactly three sites: a list row, a get echo and a set echo. Never on reset or resetall, where an explanation of what a value means is noise stapled to an acknowledgement that the value went away. |
 | `Text(key)` | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
 
+## `LibKa0s-Options-1.0`
+
+The settings panel: the canvas shell, the page registry, the lazy Defaults button, the reset and
+refresh trio, the five widget makers, and the two-column flow engine that turns a list of schema
+rows into a laid-out page.
+
+Three files, one major — `Options.lua` (shell), `OptionsWidgets.lua` (makers and flow),
+`OptionsScroll.lua` (the always-shown scrollbar patch). One major because they are one feature: a
+host that ended up with a shell from one vendored copy and a flow engine from another would build
+panels that lay out wrong, and no version negotiation would catch it. The basenames are namespaced
+rather than `Widgets.lua` / `ScrollPatch.lua`, because the changelog check plain-searches one file
+for `<Basename> minor <N>` and those bare names are exactly what a future window module would want.
+
+Like the others it depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework. AceGUI-3.0
+is resolved through LibStub at panel-build time and its absence is survivable — one honest line and
+no panel — which is not the same thing as a dependency.
+
+### What stays the host's
+
+The library never learns a settings path, a page name, or a database. It also never learns what a
+page *contains*: a host registers builders, and each builder draws its own page through the makers.
+What the library owns is everything that is the same in every addon — the canvas registration, the
+header and breadcrumb, the button that must not be built too early, the row-pairing arithmetic, and
+the refresh fan-out.
+
+### Two divergences absorbed rather than decided
+
+**Colour storage** is a descriptor codec. AbsorbTracker stores `{r=,g=,b=,a=}`; KickCD stores
+arrays. Baking either in would force the other to translate at every read site in the addon, so
+`colorDecode` / `colorEncode` are descriptor options and the named-key form is only the default.
+
+**The fifth widget type** ships in `-1.0` rather than being added later. KickCD has a free-text
+edit box; AbsorbTracker has no equivalent. Adding a *type* later is additive, but retrofitting one
+into a dispatch table the major has already frozen is not. It is opted into with
+`dialogControl = "EditBox"` rather than inferred from a missing `values` list, because inference
+would silently turn a row whose values function happened to return empty into a free-text field.
+
+### The panel descriptor
+
+Everything a host supplies to `lib:New(descriptor)`.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `parentTitle` | string | yes | The brand. Shown on the main page and as the breadcrumb prefix on every sub-page. |
+| `mainPanelName` | string | yes | Frame name for the main canvas, so `/framestack` attributes it to the host and two addons cannot collide. |
+| `print` | function(line) | no | Where a user-facing line goes. Hosts pass their prefixed printer. |
+| `get` | function(path) | yes | Read one stored value. |
+| `set` | function(path, v) | yes | Write one. Route it through the host's single write seam, so a panel change takes the same path a slash command does — same debug line, same `onChange`, same refresh. |
+| `applyDefault` | function(row) | yes | Reset one row. Same reasoning. |
+| `rowsForPage` | function(pageKey, filter) | yes | The rows of one page, in render order. `filter` is `ctx.unit`, passed through untouched — the library never interprets it. |
+| `allRows` | function | yes | Every row, for `RestoreAllDefaults`. |
+| `skipRestoreAll` | function(row) | no | Return true to exclude a row from a global reset. AbsorbTracker vetoes its profiles page, where a reset would delete user data. |
+| `afterRestoreAll` | function | no | Runs after the rows are reset and **before** the panels refresh, for state no schema row owns — a dragged frame's saved position. The order is load-bearing: a refresh first would paint the pre-hook values. |
+| `scheduleTimer` | function(fn, delay) | no | Backs the 50 ms colour-drag throttle. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. |
+| `getLSM` | function | no | Returns LibSharedMedia-3.0, for `LSMValues`. |
+| `validate` | function | no | Runs once, before the page builders. A host's schema-shape check. |
+| `onAceGUI` | function(AceGUI) | no | Handed the resolved AceGUI so the host can stash it (Ka0s standard §3.4) for its own page files. |
+| `buildMain` | function(ctx) | no | Draws the main page's body, on its first OnShow. |
+| `colorDecode` | function(stored) | no | → `r, g, b, a`. Defaults to the `{r=,g=,b=,a=}` shape. |
+| `colorEncode` | function(r,g,b,a) | no | → stored. Defaults to the same. |
+| `debug` | function(tag, fmt, …) | no | Developer log line. |
+
+### The public surface
+
+Everything `lib:New(descriptor)` returns on the instance.
+
+| Name | Meaning |
+|---|---|
+| `CreatePanel(name, title, opts)` | A canvas Frame with the unified header stamped on top, returning the `ctx` every render call threads through. `opts` = `{ pageKey, isMain, defaultsButton, defaultsTooltip }`. Registers the ctx so the refresh fan-out reaches it. |
+| `EnsureDefaultsButton(panel)` | Builds the header's Defaults button on the panel's **first OnShow**, never at build time. Idempotent, and a no-op on a panel that did not ask. |
+| `EnsureScroll(ctx)` | The lazy AceGUI ScrollFrame, patched for an always-visible scrollbar. |
+| `ClearScroll(ctx)` | Release the children, reset the section tracker, and **reassign** `ctx.refreshers`. |
+| `Section(ctx, label)` | A full-width Heading, with the inter-section spacers. |
+| `AddSpacer(scroll, height)` | An invisible full-width row. |
+| `AttachTooltip(widget, label, tooltip)` | Works on AceGUI widgets and on plain frames. |
+| `InlineButtonPair(ctx, left, right)` | Two action buttons (not settings) in one Flow row, each inset to `BUTTON_PAIR_REL`. A throwing `onClick` is reported, never propagated into AceGUI's dispatch. |
+| `RenderField(ctx, row, parent, relWidth)` | Dispatch by `row.type` to one of the five makers. Returns nil for an unknown type rather than erroring — a misspelled type costs one row, not the page. |
+| `SessionCheckbox(ctx, parent, relWidth, spec)` | A checkbox wired to caller-supplied `get`/`set` instead of a settings path, for runtime-only toggles that must never persist. |
+| `RenderRows(ctx, rows, afterGroup, pairWith)` | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. |
+| `RenderSchema(ctx, pageKey, afterGroup, pairWith)` | The per-page wrapper. |
+| `RegisterOptionsPage(key, name, builder)` | Queue a page. Builders run once, in order, at `CreateOptionsPanel`. |
+| `CreateOptionsPanel()` | Resolve AceGUI, hand it to the host, validate, register the main canvas, run every builder. |
+| `OpenOptionsPanel()` | Open the category. **Refuses** under combat and never defers-and-replays. |
+| `RestoreDefaults(pageKey, ctx)` | The per-page Defaults button. Refreshes only the ctx it was given. |
+| `RestoreAllDefaults()` | Every non-vetoed row, then `afterRestoreAll`, then a full refresh. |
+| `RefreshAllPanels()` | Re-run every registered panel's refreshers, each pcall'd, so one dead widget cannot take the UI with it. |
+| `LSMValues(mediaType)` | A **deferred** closure pulling the live media hash at dropdown-render time. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. |
+| `PatchAlwaysShowScrollbar(scroll)` | The scrollbar override. Idempotent, and reversed on `OnRelease` — AceGUI pools ScrollFrames, so an unreleased patch escapes into whichever addon recycles the widget next. |
+| `ROW_VSPACER` / `SECTION_HEADING_H` / `BUTTON_PAIR_REL` | The cross-slice layout constants, so a host's own page code stays in lockstep with the engine's spacing. |
+| `__panels()` / `__panelFor(pageKey)` | Test seams, following Perf's `__buckets()` idiom. The registry is private, so a host suite otherwise has no handle on a live ctx — and a real bug once shipped precisely because one page's ctx was unreachable. |
+
+### Row fields the flow engine reads
+
+Beyond `path`, `type`, `label`, `desc` and `default`, which the makers read:
+
+| Field | Meaning |
+|---|---|
+| `group` | Section heading. A new value emits a `Section` and flushes the row in progress. |
+| `solo` | Render alone in the left half of its own line, for visual pivots. |
+| `skipRender` | Keep the row in the schema — so resets and the CLI still see it — but let the host draw it bespoke. |
+| `min` / `max` / `step` | Slider range. Snapping is relative to `min`, not to zero. |
+| `values` / `sorting` | Dropdown list; `values` may be a function. `sorting` keeps a deliberate order instead of alphabetising. |
+| `dialogControl` | An in-tree widget type (`LSM30_*`, `EditBox`). Unregistered types fall back to a plain Dropdown, so an optional media-widget library staying absent costs a swatch, not the option. |
+| `hasAlpha` / `disabledIf` | Colour picker: alpha channel, and the sibling path whose truth greys the swatch out. |
+| `maxLetters` | Edit box only. |
+
 ## Development
 
 Green gate before every commit, run from the repo root:
@@ -576,6 +684,9 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Core.lua           -- LibKa0s-Core-1.0, MINOR at the top of the file
   DebugLog.lua       -- LibKa0s-DebugLog-1.0, MINOR at the top of the file; needs Core
   Slash.lua          -- LibKa0s-Slash-1.0, MINOR at the top of the file; needs Core
+  Options.lua        -- LibKa0s-Options-1.0, MINOR at the top of the file; needs Core
+  OptionsWidgets.lua -- the makers + the flow engine, same module, WIDGETS_MINOR of its own
+  OptionsScroll.lua  -- the always-shown scrollbar patch, same module, SCROLL_MINOR of its own
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
 testkit/             -- the shared headless harness, vendored into each addon as tests/_kit/

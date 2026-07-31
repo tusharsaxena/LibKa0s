@@ -15,6 +15,7 @@ local buildMocks = dofile("tests/wow_mock.lua")
 -- `local addonName, NS = ...` header.
 local mocks = buildMocks()
 Loader.loadAll({ "LibKa0s/Core.lua", "LibKa0s/DebugLog.lua", "LibKa0s/Slash.lua",
+  "LibKa0s/Options.lua", "LibKa0s/OptionsWidgets.lua", "LibKa0s/OptionsScroll.lua",
   "LibKa0s/Perf.lua", "LibKa0s/PerfPanel.lua" }, nil, mocks)
 
 -- Every major this library ships and the files that make it up, in LibKa0s.xml order.
@@ -42,6 +43,15 @@ local MAJORS = {
     primary = "Slash",
   },
   {
+    major = "LibKa0s-Options-1.0",
+    files = { "Options", "OptionsWidgets", "OptionsScroll" },
+    primary = "Options",
+    paired = {
+      { file = "OptionsWidgets", minorField = "__widgetsMinor", probeField = "__widgetsShellMinor" },
+      { file = "OptionsScroll",  minorField = "__scrollMinor",  probeField = "__scrollShellMinor" },
+    },
+  },
+  {
     major = "LibKa0s-Perf-1.0",
     files = { "Perf", "PerfPanel" },
     primary = "Perf",
@@ -57,13 +67,14 @@ _G.LK_TEST = Kit.expose{
   core = mocks.LibStub("LibKa0s-Core-1.0"),
   debuglog = mocks.LibStub("LibKa0s-DebugLog-1.0"),
   slash = mocks.LibStub("LibKa0s-Slash-1.0"),
+  options = mocks.LibStub("LibKa0s-Options-1.0"),
   majors = MAJORS,
 }
 
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_debuglog", "test_slash",
+    "test_core", "test_debuglog", "test_slash", "test_options", "test_options_widgets",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
     "test_versioning",
   },

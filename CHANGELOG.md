@@ -12,7 +12,28 @@ enforces that the block and `lib.MODULES` agree, so the two cannot drift. Releas
 ## Unreleased
 
 Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Slash minor 1**,
+**Options minor 1**, **OptionsWidgets minor 1**, **OptionsScroll minor 1**,
 **Perf minor 2**, **PerfPanel minor 2**.
+
+- New module `LibStub("LibKa0s-Options-1.0")` — the Blizzard settings-canvas shell, the schema-row
+  to AceGUI translation and the two-column flow engine, in three files under one major
+  (`Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua`). `lib:New{ parentTitle, get, set,
+  applyDefault, rowsForPage, allRows, … }` returns an instance owning its own panel registry, so
+  one addon's Defaults button can never run another's refreshers. The basenames are namespaced
+  because the changelog check below plain-searches one file for `<Basename> minor <N>`, and
+  `Widgets`/`Panel` are exactly what a future window module would want.
+- Five widget types ship in `-1.0`, not four: the edit box (`dialogControl = "EditBox"`) is here
+  because adding a type later is additive but retrofitting one into a frozen dispatch table is not.
+  No AbsorbTracker row uses it; KickCD's label rows do.
+- Colour storage is a descriptor codec rather than a baked-in shape, because AbsorbTracker stores
+  `{r=,g=,b=,a=}` and KickCD stores arrays, and picking a winner would force one of them to
+  translate at every read site in the addon. The 50 ms colour-drag throttle likewise takes the
+  host's `scheduleTimer`: embedding AceTimer would be this library's second dependency breach.
+- `OpenOptionsPanel` REFUSES under combat and never defers-and-replays, and the gate lives inside
+  the open rather than in a host's dispatcher, so a `/run` script is refused too.
+- The always-shown scrollbar marker is `_ka0sAlwaysScrollbar`. AceGUI pools ScrollFrames across
+  every addon in a session, so per-addon marker names would let two addons each patch a widget the
+  other had already patched.
 
 - New module `LibStub("LibKa0s-Slash-1.0")` — the slash dispatcher, the help renderer, the schema
   CLI (`list`/`get`/`set`/`reset`/`resetall`/`version`) and the type-aware value parser. The parser

@@ -1,0 +1,409 @@
+-- tests/test_options.lua — LibKa0s-Options-1.0's panel shell: the ctx factory, the panel registry,
+-- the lazy Defaults button, the reset/refresh trio, the page registry with its combat-refusing
+-- open, the LSM values factory and the always-shown scrollbar patch.
+--
+-- The widget makers and the two-column flow engine are next door in tests/test_options_widgets.lua.
+-- The split follows the files: this suite is Options.lua and OptionsScroll.lua, that one is
+-- OptionsWidgets.lua.
+--
+-- Every case builds its own host through tests/fixture_options.lua, so no case can be made to pass
+-- by another one's leftovers — which matters more here than in most suites, because the panel
+-- registry is deliberately process-lived state.
+
+local T = _G.LK_TEST
+local test, assertEqual, assertTrue, assertFalse, assertNil =
+  T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil
+local mocks = T.mocks
+local Fixture = dofile("tests/fixture_options.lua")
+
+local lib = T.options
+
+-- ── the descriptor and the module identity ─────────────────────────────────────────────────
+
+test("options: the major registers all three of its files", function()
+  assertEqual(lib.MODULES.Options, lib.MINOR, "Options.lua is the primary")
+  assertTrue(type(lib.MODULES.OptionsWidgets) == "number", "OptionsWidgets.lua attached")
+  assertTrue(type(lib.MODULES.OptionsScroll) == "number", "OptionsScroll.lua attached")
+end)
+
+test("options: an instance carries the shell, the widget makers and the scroll patch", function()
+  local O = Fixture.new()
+  for _, name in ipairs({
+    "CreatePanel", "EnsureDefaultsButton", "EnsureScroll", "ClearScroll", "Section", "AddSpacer",
+    "AttachTooltip", "InlineButtonPair", "RestoreDefaults", "RestoreAllDefaults",
+    "RefreshAllPanels", "LSMValues", "RegisterOptionsPage", "CreateOptionsPanel",
+    "OpenOptionsPanel", "RenderField", "RenderRows", "RenderSchema", "SessionCheckbox",
+    "PatchAlwaysShowScrollbar", "__panels", "__panelFor",
+  }) do
+    assertTrue(type(O[name]) == "function", name .. " is on the instance")
+  end
+end)
+
+test("options: two instances own separate panel registries", function()
+  -- Every host gets its own; a lib-level registry would have one addon's Defaults button refresh
+  -- another addon's widgets.
+  local A = Fixture.new()
+  local B = Fixture.new()
+  A.CreatePanel("SepA", "Sep A", {})
+  assertEqual(#A.__panels(), 1)
+  assertEqual(#B.__panels(), 0, "the second host's registry is untouched by the first's panel")
+end)
+
+-- ── CreatePanel + the registry ─────────────────────────────────────────────────────────────
+
+test("options: CreatePanel returns a ctx wired to a panel, a body and an empty refresher list",
+  function()
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelA", "Test A", { pageKey = "general" })
+  assertTrue(ctx.panel ~= nil, "ctx carries the canvas frame")
+  assertTrue(ctx.body ~= nil, "and its body child")
+  assertEqual(ctx.pageKey, "general")
+  assertEqual(#ctx.refreshers, 0)
+  assertNil(ctx.scroll, "the AceGUI scroll frame stays lazy until first render")
+end)
+
+test("options: CreatePanel names the panel with the plain title for the category tree", function()
+  -- The header FontString gets the "<Parent> > <Page>" breadcrumb; panel.name is what Blizzard
+  -- renders in the left tree and must stay unprefixed or the tree reads doubled up.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelB", "Test B", {})
+  assertEqual(ctx.panel.name, "Test B")
+end)
+
+test("options: CreatePanel starts the panel hidden and registers it", function()
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelC", "Test C", {})
+  assertFalse(ctx.panel:IsShown(), "Blizzard shows the canvas when its category is selected")
+  assertEqual(O.__panels()[1], ctx, "and the ctx joined the registry")
+end)
+
+test("options: the header title takes the parent breadcrumb, and isMain opts out", function()
+  local O = Fixture.new()
+  local sub  = O.CreatePanel("TestPanelD", "Bar", {})
+  local main = O.CreatePanel("TestPanelE", "Test Host", { isMain = true })
+  assertTrue(sub.panel.titleText:find("Test Host", 1, true) ~= nil,
+    "a sub-page is prefixed with the host's brand: " .. tostring(sub.panel.titleText))
+  assertTrue(sub.panel.titleText:find("Bar", 1, true) ~= nil, "and with its own name")
+  assertEqual(main.panel.titleText, "Test Host",
+    "the main page renders unprefixed, or it would read 'Test Host > Test Host'")
+end)
+
+test("options: __panelFor finds a registered page by key", function()
+  local O = Fixture.new()
+  O.CreatePanel("TestPanelF1", "One", { pageKey = "general" })
+  local bar = O.CreatePanel("TestPanelF2", "Two", { pageKey = "bar" })
+  assertEqual(O.__panelFor("bar"), bar)
+  assertNil(O.__panelFor("nosuchpage"))
+end)
+
+-- ── the lazy Defaults button ───────────────────────────────────────────────────────────────
+
+test("options: CreatePanel only DECLARES the Defaults button, never builds it", function()
+  -- options-ui-§5: the widget must be created on first OnShow, after every addon (including UI
+  -- skinners hooking AceGUI:RegisterAsWidget) has loaded. Building it here is a load-order race
+  -- that renders the button unskinned for the rest of the session.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelG", "Test G", { defaultsButton = true })
+  assertTrue(ctx.panel.wantsDefaultsButton, "the intent is recorded")
+  assertNil(ctx.panel.defaultsBtn, "but no widget exists yet")
+end)
+
+test("options: CreatePanel records no Defaults intent when the page did not ask", function()
+  local O = Fixture.new()
+  assertFalse(O.CreatePanel("TestPanelH", "Test H", {}).panel.wantsDefaultsButton)
+end)
+
+test("options: EnsureDefaultsButton builds it once, wires the parked handler, then no-ops",
+  function()
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelI", "Test I",
+    { defaultsButton = true, defaultsTooltip = "Reset this page" })
+  local clicked = 0
+  ctx.panel.defaultsOnClick = function() clicked = clicked + 1 end
+
+  O.EnsureDefaultsButton(ctx.panel)
+  local btn = ctx.panel.defaultsBtn
+  assertTrue(btn ~= nil, "the first call builds it")
+  assertEqual(btn.text, "Defaults")
+  assertTrue(btn.callbacks.OnClick ~= nil, "the handler parked on the panel got wired to it")
+  assertTrue(btn.callbacks.OnEnter ~= nil, "and the tooltip is attached")
+
+  O.EnsureDefaultsButton(ctx.panel)
+  assertEqual(ctx.panel.defaultsBtn, btn, "a second call reuses the same widget")
+
+  btn.callbacks.OnClick(btn, "OnClick")
+  assertEqual(clicked, 1)
+end)
+
+test("options: EnsureDefaultsButton is a safe no-op without AceGUI and on a nil panel", function()
+  local O, rec = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelJ", "Test J", { defaultsButton = true })
+  local saved = O.AceGUI
+  O.AceGUI = nil
+  local ok = pcall(O.EnsureDefaultsButton, ctx.panel)
+  O.AceGUI = saved
+  assertTrue(ok, "must not raise when AceGUI is absent")
+  assertNil(ctx.panel.defaultsBtn, "and must not half-build anything")
+  assertTrue(pcall(O.EnsureDefaultsButton, nil), "must not raise on a nil panel")
+  assertEqual(#rec.chat, 0, "and says nothing — this is a build-order path, not a user error")
+end)
+
+test("options: EnsureDefaultsButton leaves a panel that never wanted one alone", function()
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelK", "Test K", {})
+  O.EnsureDefaultsButton(ctx.panel)
+  assertNil(ctx.panel.defaultsBtn)
+end)
+
+-- ── RestoreDefaults / RestoreAllDefaults / RefreshAllPanels ────────────────────────────────
+
+test("options: RestoreDefaults resets every row on the named page and no other", function()
+  local O, rec = Fixture.new()
+  rec.store.barWidth = 333
+  rec.store.locked   = true
+  O.RestoreDefaults("bar")
+  assertEqual(rec.store.barWidth, 200, "the bar page went back to its default")
+  assertEqual(rec.store.locked, true, "a general-page value survives a bar-page reset")
+end)
+
+test("options: RestoreDefaults runs the ctx refreshers, and survives one that throws", function()
+  -- Refreshers touch live AceGUI widgets; one dead widget must not abort the rest of the reset.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelL", "Test L", { pageKey = "bar" })
+  local ran = 0
+  ctx.refreshers[1] = function() error("dead widget") end
+  ctx.refreshers[2] = function() ran = ran + 1 end
+  assertTrue(pcall(O.RestoreDefaults, "bar", ctx), "RestoreDefaults must not propagate")
+  assertEqual(ran, 1, "the refresher after the failing one still ran")
+end)
+
+test("options: RestoreDefaults on a page with no rows is a harmless no-op", function()
+  local O = Fixture.new()
+  assertTrue(pcall(O.RestoreDefaults, "nosuchpage"))
+end)
+
+test("options: RestoreAllDefaults resets every row, then fires the host's afterRestoreAll",
+  function()
+  local O, rec = Fixture.new()
+  rec.store.barWidth = 333
+  rec.store.locked   = true
+  O.RestoreAllDefaults()
+  assertEqual(rec.store.barWidth, 200)
+  assertEqual(rec.store.locked, false)
+  assertEqual(rec.restoredAll, 1,
+    "the host hook is what clears state no schema row owns — a dragged frame position")
+end)
+
+test("options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the panels", function()
+  -- The hook exists to mutate state (AbsorbTracker clears every saved bar position through it), so
+  -- a refresh that ran first would paint the panel from the pre-hook values.
+  local order = {}
+  local O = Fixture.new{ afterRestoreAll = function() order[#order + 1] = "hook" end }
+  local ctx = O.CreatePanel("TestPanelM", "Test M", {})
+  ctx.refreshers[1] = function() order[#order + 1] = "refresh" end
+  O.RestoreAllDefaults()
+  assertEqual(table.concat(order, ","), "hook,refresh")
+end)
+
+test("options: RestoreAllDefaults honours the host's skipRestoreAll veto", function()
+  -- AbsorbTracker's profiles page: resetting it would delete user data, so it must never be swept
+  -- up in a global reset. The library takes the predicate rather than knowing the page name.
+  local O, rec = Fixture.new{ skipRestoreAll = function(row) return row.page == "bar" end }
+  rec.store.barWidth = 333
+  rec.store.locked   = true
+  O.RestoreAllDefaults()
+  assertEqual(rec.store.barWidth, 333, "the vetoed page was skipped")
+  assertEqual(rec.store.locked, false, "and every other page was still reset")
+end)
+
+test("options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower",
+  function()
+  local O = Fixture.new()
+  local bad  = O.CreatePanel("TestPanelN", "Test N", {})
+  local good = O.CreatePanel("TestPanelO", "Test O", {})
+  local ran = 0
+  bad.refreshers[1]  = function() error("dead widget") end
+  good.refreshers[1] = function() ran = ran + 1 end
+  assertTrue(pcall(O.RefreshAllPanels), "one dead panel must not break the others")
+  assertEqual(ran, 1)
+end)
+
+-- ── the page registry, CreateOptionsPanel and the combat-refusing open ─────────────────────
+
+test("options: registered page builders run in registration order, once, at CreateOptionsPanel",
+  function()
+  local O, rec = Fixture.new()
+  local seen = {}
+  O.RegisterOptionsPage("general", "General", function() seen[#seen + 1] = "general" end)
+  O.RegisterOptionsPage("bar", "Bar", function() seen[#seen + 1] = "bar" end)
+  assertEqual(#seen, 0, "registration alone builds nothing")
+  O.CreateOptionsPanel()
+  assertEqual(table.concat(seen, ","), "general,bar")
+  assertEqual(rec.validated, 1, "and the host's schema validator ran once, before the builders")
+end)
+
+test("options: CreateOptionsPanel hands the host the AceGUI it resolved", function()
+  -- Ka0s standard §3.4: resolve once, then read the upvalue. The host stashes it for its own page
+  -- files, so the library has to hand it over rather than keep it private.
+  local got
+  local O = Fixture.new{ onAceGUI = function(ag) got = ag end }
+  O.CreateOptionsPanel()
+  assertTrue(got ~= nil, "the callback fired")
+  assertEqual(got, O.AceGUI, "with the same handle the instance kept")
+end)
+
+test("options: CreateOptionsPanel says so and returns when AceGUI is missing", function()
+  local O, rec = Fixture.new()
+  local saved = mocks.__libs["AceGUI-3.0"]
+  mocks.__libs["AceGUI-3.0"] = nil
+  local built = 0
+  O.RegisterOptionsPage("general", "General", function() built = built + 1 end)
+  local ok, err = pcall(O.CreateOptionsPanel)
+  mocks.__libs["AceGUI-3.0"] = saved
+  if not ok then error(err) end
+  assertEqual(built, 0, "no page was built")
+  assertTrue(table.concat(rec.chat, "\n"):find("AceGUI", 1, true) ~= nil,
+    "and the user is told which library is missing: " .. table.concat(rec.chat, "\n"))
+end)
+
+test("options: the main canvas is registered under the host's brand", function()
+  local O = Fixture.new()
+  O.CreateOptionsPanel()
+  assertTrue(mocks.__mainPanel ~= nil, "a canvas category was registered")
+  assertEqual(mocks.__mainPanel.name, "Test Host",
+    "panel.name is what Blizzard renders in the category tree")
+  assertEqual(mocks.__mainPanel.titleText, "Test Host",
+    "and the main page's own header is unprefixed")
+end)
+
+test("options: the main page's body is deferred to its first OnShow, and built once", function()
+  -- AceGUI lays children out against the parent's CURRENT width, which is zero at enable time.
+  local built = 0
+  local O = Fixture.new{ buildMain = function() built = built + 1 end }
+  O.CreateOptionsPanel()
+  assertEqual(built, 0, "nothing is drawn at registration")
+  mocks.__mainPanel:__fire("OnShow")
+  assertEqual(built, 1)
+  mocks.__mainPanel:__fire("OnShow")
+  assertEqual(built, 1, "a second show must not stack a second copy of the body")
+end)
+
+test("options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay", function()
+  -- options-ui-§2. Settings.OpenToCategory is protected; calling it under lockdown taints the
+  -- panel for the session. Deferring to PLAYER_REGEN_ENABLED is the other wrong answer — a panel
+  -- that opens itself the instant combat drops steals focus during post-pull recovery.
+  local O, rec = Fixture.new()
+  O.CreateOptionsPanel()
+  local opened = 0
+  local savedOpen, savedCombat = mocks.Settings.OpenToCategory, mocks.InCombatLockdown
+  mocks.Settings.OpenToCategory = function() opened = opened + 1 end
+  mocks.InCombatLockdown = function() return true end
+  local ok, err = pcall(O.OpenOptionsPanel)
+  mocks.Settings.OpenToCategory, mocks.InCombatLockdown = savedOpen, savedCombat
+  if not ok then error(err) end
+
+  assertEqual(opened, 0, "the protected call must not be made")
+  local joined = table.concat(rec.chat, "\n")
+  assertTrue(joined:find("combat", 1, true) ~= nil, "and the refusal says why: " .. joined)
+end)
+
+test("options: OpenOptionsPanel opens the registered category out of combat", function()
+  local O = Fixture.new()
+  O.CreateOptionsPanel()
+  local openedWith
+  local savedOpen = mocks.Settings.OpenToCategory
+  mocks.Settings.OpenToCategory = function(id) openedWith = id end
+  local ok, err = pcall(O.OpenOptionsPanel)
+  mocks.Settings.OpenToCategory = savedOpen
+  if not ok then error(err) end
+  assertEqual(openedWith, 1, "the ID the canvas registration handed back")
+end)
+
+test("options: OpenOptionsPanel is a silent no-op before CreateOptionsPanel has run", function()
+  -- `/at config` before PLAYER_LOGIN, or on a build where the canvas API is unavailable. There is
+  -- no category to open and nothing has gone wrong.
+  local O, rec = Fixture.new()
+  assertTrue(pcall(O.OpenOptionsPanel))
+  assertEqual(#rec.chat, 0)
+end)
+
+-- ── LSMValues ──────────────────────────────────────────────────────────────────────────────
+
+test("options: LSMValues returns a DEFERRED closure, not a snapshot", function()
+  -- Every LSM-backed row evaluates this inside a schema-row literal at FILE LOAD, long before
+  -- LibSharedMedia has been populated by the addons that register into it. Returning a table here
+  -- would freeze the media list at whatever was registered first.
+  local O, rec = Fixture.new()
+  local values = O.LSMValues("statusbar")
+  assertEqual(type(values), "function")
+  rec.lsm = { HashTable = function(_, kind)
+    assertEqual(kind, "statusbar", "the media type is carried through to the call")
+    return { Blizzard = "path/a", Smooth = "path/b" }
+  end }
+  local out = values()
+  assertEqual(out.Blizzard, "Blizzard", "keyed on the name, valued with the name (an AceGUI list)")
+  assertEqual(out.Smooth, "Smooth")
+end)
+
+test("options: LSMValues yields an empty list rather than erroring without LibSharedMedia",
+  function()
+  local O = Fixture.new()
+  local out = O.LSMValues("font")()
+  assertEqual(type(out), "table")
+  assertEqual(next(out), nil)
+end)
+
+-- ── the always-shown scrollbar patch (OptionsScroll.lua) ───────────────────────────────────
+
+test("options: EnsureScroll is lazy, created once, and patched", function()
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelP", "Test P", {})
+  assertNil(ctx.scroll, "no scroll frame until something is rendered")
+  local first = O.EnsureScroll(ctx)
+  assertEqual(O.EnsureScroll(ctx), first, "subsequent calls reuse it")
+  assertTrue(first._ka0sAlwaysScrollbar, "OptionsScroll.lua patched it")
+  assertTrue(first.scrollBarShown, "the scrollbar and its gutter stay shown across pages")
+  assertEqual(first.content.width, first.content.original_width - 20,
+    "the content is inset by the gutter so every page's right edge lines up")
+end)
+
+test("options: the scrollbar patch is idempotent", function()
+  local O = Fixture.new()
+  local scroll = O.EnsureScroll(O.CreatePanel("TestPanelQ", "Test Q", {}))
+  local patched = scroll.FixScroll
+  O.PatchAlwaysShowScrollbar(scroll)
+  assertEqual(scroll.FixScroll, patched, "a second patch must not wrap the override again")
+end)
+
+test("options: FixScroll disables the bar when the content fits, enables it when it does not",
+  function()
+  local O = Fixture.new()
+  local scroll = O.EnsureScroll(O.CreatePanel("TestPanelR", "Test R", {}))
+  -- The stub's GetHeight always answers 0, so both heights are rawset here rather than driven
+  -- through setters the stub does not implement.
+  scroll.scrollbar.Disable = function(s) s.__disabled = true  end
+  scroll.scrollbar.Enable  = function(s) s.__disabled = false end
+  scroll.scrollframe.GetHeight = function() return 200 end
+
+  scroll.content.GetHeight = function() return 50 end        -- fits
+  scroll:FixScroll()
+  assertTrue(scroll.scrollbar.__disabled, "nothing to scroll, so the bar greys out")
+  assertTrue(scroll.scrollBarShown, "but it is still SHOWN \226\128\148 that is the patch's point")
+
+  scroll.content.GetHeight = function() return 1000 end      -- overflows
+  scroll.localstatus.offset = 100
+  scroll:FixScroll()
+  assertFalse(scroll.scrollbar.__disabled, "overflowing content re-enables it")
+end)
+
+test("options: OnRelease restores AceGUI's own FixScroll and clears the marker", function()
+  -- AceGUI pools ScrollFrames. A widget handed back still carrying our override would take it into
+  -- whichever addon recycles it next.
+  local O = Fixture.new()
+  local scroll = O.EnsureScroll(O.CreatePanel("TestPanelS", "Test S", {}))
+  local stock = scroll.__stockFixScroll
+  assertTrue(stock ~= nil, "the patch kept the original to hand back")
+  scroll:OnRelease()
+  assertEqual(scroll.FixScroll, stock, "AceGUI's own implementation is back")
+  assertNil(scroll._ka0sAlwaysScrollbar, "and the marker is gone, so a re-acquire re-patches")
+end)

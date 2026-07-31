@@ -15,19 +15,19 @@ Read the spec first — this plan does not restate its reasoning, only its conse
 | M3 | `LibKa0s-Core-1.0` + Perf consumes it | **done** |
 | M4 | `LibKa0s-DebugLog-1.0` | **done** |
 | M5 | `LibKa0s-Slash-1.0` | **done** |
-| M6 | `LibKa0s-Options-1.0` | not started |
+| M6 | `LibKa0s-Options-1.0` | **done** |
 | M7 | Documentation | not started |
 | M8 | `/wow-addon:review` gate | not started |
 | M9 | In-game smoke tests | not started |
 | M10–M12 | Standard, plugin, adoption prompt | not started |
 
-State at the pause after M5: **AbsorbTracker 433 passed / 0 failed, LibKa0s 252 passed / 0 failed,
+State at the pause after M6: **AbsorbTracker 434 passed / 0 failed, LibKa0s 329 passed / 0 failed,
 `luacheck .` 0/0 in both.** `diff -r` empty for `LibKa0s` → `libs/LibKa0s` and for `testkit` →
 `tests/_kit`. The `tests/perf.lua` parity figures are unchanged from the pre-extraction baseline —
 `paintPass` 12.0 api/iter and 312.0 bytes/iter, `probeOverheadOn` 312.3 bytes/iter — which is the
-artefact proving neither the harness move nor the Core extraction touched the measured paths.
+artefact proving that none of the five extractions touched the measured paths.
 
-Next session starts at M6.
+All five modules are extracted. Next session starts at M7 (documentation), and M8/M9 are yours.
 
 ### Where the work is
 
@@ -40,6 +40,7 @@ milestone per repo, library first:
 | M3 | `4a248d5` Core + Perf's secret-guard fix | `a701d89` consume Core, delete `core/Util.lua` |
 | M4 | `bfb22cc` DebugLog | `90a9555` consume it, delete `core/DebugLog.lua` |
 | M5 | `d2d90bb` Slash | `ee02774` consume it, `/at reset` takes a path |
+| M6 | Options (3 files) + kit comment | consume it, delete the four toolkit files |
 | — | | `2e53fdd` doc recount (not a milestone) |
 
 ### The working method, established over M3–M5
@@ -63,18 +64,18 @@ The gate, every time, in both repos: `lua tests/run.lua` green, `luacheck .` 0/0
 `diff -r LibKa0s/LibKa0s AbsorbTracker/libs/LibKa0s` empty, `diff -r LibKa0s/testkit
 AbsorbTracker/tests/_kit` empty, and `lua tests/perf.lua`'s `probeOverheadOn` still 312.3 bytes/iter.
 
-### Read before starting M6
+### Read before starting M7
 
-- The **Open items carried forward** section below — it holds four known defects in this plan and
-  its spec, and the standing rules that have each already cost a milestone.
-- **M6's own hazard**, stated in the spec and worth reading twice: `settings/Bar.lua` evaluates
-  `NS.Helpers.LSMValues("statusbar")` inside a schema-row literal *at file load*. With `LSMValues`
-  nil the file never finishes loading, `RegisterSchemaRows` never runs for that page, and a third of
-  `NS.Schema` vanishes — taking `/at list`, `/at set`, `/at reset` and the profile defaults with it.
-  Options is therefore the ONE module that gets a load-completing stub rather than the
-  member-answering shape the other four use.
-- **`LK/tests/fixture_slash.lua`** already provides a fixture schema and settings store. M6's plan
-  text asks for one to be built in the kit; reuse or promote this instead of writing a second.
+- The **Open items carried forward** section below — it holds the known defects in this plan and its
+  spec, and the standing rules that have each already cost a milestone.
+- M7 rewrites documentation that M6 made stale in bulk. `AT/docs/ARCHITECTURE.md`,
+  `file-index.md`, `module-map.md`, `settings-panel.md`, `testing.md`, `agent-context.md`,
+  `common-tasks.md` and `complexity.md` all still describe `settings/Panel.lua`,
+  `settings/Helpers.lua`, `settings/ScrollPatch.lua` and `settings/Widgets.lua` by name, in detail,
+  and in `settings-panel.md`'s case as the substance of the document. M6 deliberately fixed only
+  the stale references in **code comments** (the class the plan required fixed in-milestone at M3)
+  and left every `docs/` reference to M7, which exists for exactly this. Grep for those four
+  filenames before declaring M7 finished.
 
 ---
 
@@ -615,10 +616,9 @@ finishes it.*
   resets every Bar setting across all three units" is `AT/tests/test_helpers.lua:385`, and predates
   this branch. Recorded as M5c; the plan text above still asks for it and should not be followed
   literally.
-- **M6 schedules "a fixture schema + fixture db to the kit", but M5 needed them first.** They were
-  built as `LK/tests/fixture_slash.lua` rather than in `testkit/`, deliberately: anything in the kit
-  must be mirrored to `tests/_kit/` and re-vendored downstream, which is blast radius M5 had no use
-  for. M6 should reuse or promote that file rather than build a second one.
+- ~~**M6 schedules "a fixture schema + fixture db to the kit", but M5 needed them first.**~~ Settled
+  in M6 as **M6b** below: neither fixture went into the kit, and M6 wrote its own rather than
+  reusing M5's, for a reason recorded there.
 
 ### Deferred work with a known trigger
 
@@ -634,6 +634,14 @@ finishes it.*
 - **The two user-visible changes need eyes in-game (M9).** `/at reset <path>` replacing the page
   form, and the About page's command rows re-rendering in the help colours. Neither is caught by any
   automated check in either repo — the About page has no rendered-output assertion at all.
+
+- **`AT/tests/test_widgets.lua`'s `sorting` case cannot fail.** "A row with explicit `sorting` keeps
+  that order instead of sorting" runs against `fontFlags`, whose values sort alphabetically into
+  their own declared order — so an implementation that ignored `sorting` entirely would pass it.
+  Found by mutation while auditing the library's equivalent (M6c), which was reshaped; this one
+  predates the branch and is the addon's own to fix, with a schema row whose declared order is not
+  its alphabetical one. Not urgent: the library's case now covers the behaviour, and this one is
+  merely uninformative rather than wrong.
 
 - **Six AbsorbTracker `.lua` files are LF on disk, not CRLF**: `settings/Schema.lua`,
   `settings/Widgets.lua`, `tests/run.lua`, `tests/test_display.lua`, `tests/test_schema.lua`,
@@ -936,6 +944,83 @@ the library's `allowedValues` had gained a `tostring` the host copy never got. D
 the four downstream cases duplicating LibKa0s's own. `NS.FormatSchemaValue` was a live second
 implementation, kept only for the `[Set]` debug line; it is now a delegate, so the `/at get` echo
 and the debug line cannot disagree.
+
+**M6a — the layout constants live in `Options.lua`, in one table, not in `OptionsWidgets.lua`.**
+M6's plan text assigns "the layout constants" to `OptionsWidgets.lua`. Four of the nine are the
+shell's: `PADDING_X`, `HEADER_TOP`, `HEADER_HEIGHT` and `DEFAULTS_W` decide where the header sits
+and therefore where the body starts, and `Options.lua` is the only file that reads them. Splitting
+the table would have put the two halves of one measurement in two files, and they are not
+independent — `HEADER_HEIGHT` decides where the body begins and `ROW_VSPACER` decides how it fills,
+so a header that moved without its rows following looks broken in exactly the way nobody files a
+bug about. `lib.LAYOUT` holds all nine; `OptionsWidgets.lua` reads it rather than keeping a copy;
+the three cross-slice values a host needs are re-exported on the instance under the names
+`settings/Helpers.lua` published them under, so no page file or suite changed.
+
+**M6b — the Options fixture is a third file, not a promotion of `fixture_slash.lua`.** The open item
+above asked M6 to reuse or promote M5's fixture rather than write a second one. It wrote a third,
+and the reason is the row SHAPE rather than tidiness.
+
+`fixture_slash.lua`'s rows are chosen to reach the parser and formatter branches — a clamped number,
+an enum, an empty string, a colour — and carry no `group`, `label`, `order`, `solo` or `skipRender`,
+because the dispatcher reads none of them. Every branch the Options module has is in exactly those
+fields. Bolting them on would either mutate a table two suites share, or leave each fixture carrying
+the other's dead weight. Promoting the shared half — a store, a `deepCopy` and a `byPath` index,
+about twenty lines — into the kit would additionally have made a test fixture something that must be
+mirrored to `tests/_kit/` and re-vendored into every consuming addon, for twenty lines neither
+consumer's own suites use.
+
+What the third file is NOT is a second copy of anything the first one tests: no parser, no
+formatter, no dispatcher. It is a schema, a store and three structural readers.
+
+**M6c — the Options fixture's schema was reshaped twice by the mutation audit, and three assertions
+were unfalsifiable before it.** Each was green, each read as coverage, and each was found by
+mutating the implementation rather than by reading the test:
+
+- **`solo` flushing the row in progress.** The solo row led its group, so the group's own Section
+  heading flushed the pending row anyway and a maker that ignored `solo` entirely still left it
+  alone on its line. Deleting the flush left the suite at 329/0. The fixture now orders a non-solo
+  row ahead of it in the same group.
+- **Slider snapping being relative to `min`.** The row under test ran 0.05–1 in 0.05 steps, and a
+  `min` that is an exact multiple of `step` makes the two implementations agree on every input.
+  Snapping from zero left the suite green. The fixture's `barHeight` now runs 15–105 in 10s.
+- **An explicit `sorting` beating the alphabetical default.** The enum was `NONE` / `OUTLINE` /
+  `THICKOUTLINE`, which sorts alphabetically into its own declared order, so ignoring `sorting`
+  changed nothing. Replaced with `TOP` / `CENTER` / `BOTTOM`. Worth noting that
+  **`AT/tests/test_widgets.lua` carries the same weakness on `fontFlags`** and has since before this
+  branch; it is not M6's to fix, and it is recorded in the open items below.
+
+The alphabetical case was also strengthened from "non-decreasing" to the exact sequence: `pairs`
+order is arbitrary in Lua, so a dropped `table.sort` could satisfy a monotonicity check by luck.
+
+**M6d — one mechanical retargeting in an existing AbsorbTracker suite, and it is a real seam
+change.** `tests/test_helpers.lua`'s "EnsureDefaultsButton is a safe no-op without AceGUI" nil'd
+`NS.AceGUI`. Since the extraction `NS.Helpers` IS the LibKa0s-Options instance and stashes AceGUI on
+ITSELF (Ka0s standard §3.4 — one lookup, not one per builder); `NS.AceGUI` is the copy the library
+hands the host for its own page files, through the descriptor's `onAceGUI`. In game the two are
+always the same object, so the case now nils `NS.Helpers.AceGUI` — the same scenario read at the
+seam the code under test actually uses. No assertion changed.
+
+The only other existing-suite edit is the planned one: `test_widgets.lua`'s
+`_atAlwaysScrollbar` → `_ka0sAlwaysScrollbar`, in the same change as the rename.
+
+**M6e — `NS.Helpers` IS the instance, not a table decorated from it.** The alternative was a host
+table copying the library's members across. Two things then break. `settings/UnitPanel.lua` and
+`settings/About.lua` decorate the same table the library's own members live on, so `RenderUnitPanel`
+reaches `RenderRows` through `Helpers` exactly as every page file does; and a suite that swaps a
+member out to spy on it — `tests/test_helpers.lua` does precisely that with `ResetAllPositions`, to
+prove the panel button and `/at resetposition` are one implementation — is swapping the one the
+library's own callers see. A copy-across would have made that assertion pass while proving nothing.
+
+It also means forty-odd call sites across the page files and the suites kept indexing `NS.Helpers`
+unchanged, which is the parity artefact §7.2 asks for in a milestone with no numeric output.
+
+**M6f — `loadDegraded()` derives its list from the TOC rather than naming files.** The plan says to
+"extend it to the full file list". Extending a hand-maintained list is the failure mode this
+programme has now hit twice (M3c, M4h), and the loader already parses the TOC for the main runner.
+It is one call. The R1 case that rides on it was confirmed by two mutations: reverting the list to
+its pre-M6 stopping point at `settings/Slash.lua` failed **that case alone**, at 433/1 — which is
+the plan's claim about the old list proved rather than asserted — and removing `LSMValues` from the
+degradation stub took the whole degraded environment down with it.
 
 **M5k — `git checkout <file>` destroyed an uncommitted rewrite mid-milestone.** Restoring one
 mutated file after a mutation test, `git checkout settings/Slash.lua` reverted the entire M5 rewrite

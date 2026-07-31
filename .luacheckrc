@@ -6,6 +6,9 @@ read_globals = {
   "LibStub", "CreateFrame", "UIParent", "UISpecialFrames", "DEFAULT_CHAT_FRAME",
   "time", "date", "debugprofilestop", "UnitAffectingCombat", "InCombatLockdown",
   "C_AddOns", "GetAddOnMetadata",
+  -- The settings canvas (LibKa0s-Options-1.0). `Settings` is the public registration API;
+  -- `SettingsPanel` is private and only ever reached inside a pcall, for expanding the left tree.
+  "Settings", "SettingsPanel", "GameTooltip",
   -- Blizzard stopwatch, driven by the measurement windows. Called as Lua functions rather than
   -- via "/sw play": RunMacroText is protected and would fail in combat.
   "Stopwatch_Clear", "Stopwatch_Play", "Stopwatch_Pause", "StopwatchFrame",
