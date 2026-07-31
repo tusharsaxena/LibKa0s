@@ -29,6 +29,53 @@ artefact proving neither the harness move nor the Core extraction touched the me
 
 Next session starts at M6.
 
+### Where the work is
+
+Both repos are on `feature/libka0s-five-module-extraction`, both trees clean. One commit per
+milestone per repo, library first:
+
+| M | LibKa0s | AbsorbTracker |
+|---|---|---|
+| M1+M2 | `daf26b2` testkit + N-major versioning | `8a8cd20` adopt the kit, derive the load list |
+| M3 | `4a248d5` Core + Perf's secret-guard fix | `a701d89` consume Core, delete `core/Util.lua` |
+| M4 | `bfb22cc` DebugLog | `90a9555` consume it, delete `core/DebugLog.lua` |
+| M5 | `d2d90bb` Slash | `ee02774` consume it, `/at reset` takes a path |
+| — | | `2e53fdd` doc recount (not a milestone) |
+
+### The working method, established over M3–M5
+
+Each of these caught something the previous step missed, so the order is not incidental:
+
+1. **Recon before code.** A parallel read across the spec's normative sections, the AbsorbTracker
+   implementation being replaced, its consumers, its suites, and the previous milestone as the
+   template. The spec is frequently silent where the plan is specific — when they disagree, the
+   SOURCE wins under the parity rule, and the gap gets recorded rather than guessed at.
+2. **Failing tests first, and confirm they fail for the stated reason.** Not "the suite is red" —
+   the individual message. M4 wrote the module before seeing the reds individually and paid for it.
+3. **Then the module, then the consumer.**
+4. **Adversarial verification before committing.** Three passes: code against spec, a test audit
+   that MUTATES the implementation to find assertions that cannot fail, and a stale-doc sweep. This
+   has found a real defect in every milestone it has run on — including one in M5 that would have
+   shipped, and four assertions in M4 that were green and worthless.
+5. **Fix, re-verify by mutation, regenerate `docs/test-cases.md`, record deviations, then ask.**
+
+The gate, every time, in both repos: `lua tests/run.lua` green, `luacheck .` 0/0,
+`diff -r LibKa0s/LibKa0s AbsorbTracker/libs/LibKa0s` empty, `diff -r LibKa0s/testkit
+AbsorbTracker/tests/_kit` empty, and `lua tests/perf.lua`'s `probeOverheadOn` still 312.3 bytes/iter.
+
+### Read before starting M6
+
+- The **Open items carried forward** section below — it holds four known defects in this plan and
+  its spec, and the standing rules that have each already cost a milestone.
+- **M6's own hazard**, stated in the spec and worth reading twice: `settings/Bar.lua` evaluates
+  `NS.Helpers.LSMValues("statusbar")` inside a schema-row literal *at file load*. With `LSMValues`
+  nil the file never finishes loading, `RegisterSchemaRows` never runs for that page, and a third of
+  `NS.Schema` vanishes — taking `/at list`, `/at set`, `/at reset` and the profile defaults with it.
+  Options is therefore the ONE module that gets a load-completing stub rather than the
+  member-answering shape the other four use.
+- **`LK/tests/fixture_slash.lua`** already provides a fixture schema and settings store. M6's plan
+  text asks for one to be built in the kit; reuse or promote this instead of writing a second.
+
 ---
 
 ## Global constraints
