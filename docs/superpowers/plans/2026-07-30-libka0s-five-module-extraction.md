@@ -40,7 +40,7 @@ milestone per repo, library first:
 | M3 | `4a248d5` Core + Perf's secret-guard fix | `a701d89` consume Core, delete `core/Util.lua` |
 | M4 | `bfb22cc` DebugLog | `90a9555` consume it, delete `core/DebugLog.lua` |
 | M5 | `d2d90bb` Slash | `ee02774` consume it, `/at reset` takes a path |
-| M6 | Options (3 files) + kit comment | consume it, delete the four toolkit files |
+| M6 | `cc29f8e` Options (3 files) + kit comment | `952b375` consume it, delete the four toolkit files |
 | — | | `2e53fdd` doc recount (not a milestone) |
 
 ### The working method, established over M3–M5
