@@ -16,8 +16,8 @@ Read the spec first — this plan does not restate its reasoning, only its conse
 | M4 | `LibKa0s-DebugLog-1.0` | **done** |
 | M5 | `LibKa0s-Slash-1.0` | **done** |
 | M6 | `LibKa0s-Options-1.0` | **done** |
-| M7 | Documentation | not started |
-| M8 | `/wow-addon:review` gate | not started |
+| M7 | Documentation | **done** |
+| M8 | `/wow-addon:review` gate | in progress |
 | M9 | In-game smoke tests | not started |
 | M10–M12 | Standard, plugin, adoption prompt | not started |
 
@@ -27,7 +27,9 @@ State at the pause after M6: **AbsorbTracker 434 passed / 0 failed, LibKa0s 329 
 `paintPass` 12.0 api/iter and 312.0 bytes/iter, `probeOverheadOn` 312.3 bytes/iter — which is the
 artefact proving that none of the five extractions touched the measured paths.
 
-All five modules are extracted. Next session starts at M7 (documentation), and M8/M9 are yours.
+All five modules are extracted and the documentation is caught up. M9 (in-game) is the hard stop:
+it needs a live client, so nothing in `WowAddonStandards`, the plugin or the adoption prompt moves
+until someone runs it.
 
 ### Where the work is
 
@@ -42,6 +44,7 @@ milestone per repo, library first:
 | M5 | `d2d90bb` Slash | `ee02774` consume it, `/at reset` takes a path |
 | M6 | `cc29f8e` Options (3 files) + kit comment | `952b375` consume it, delete the four toolkit files |
 | — | | `2e53fdd` doc recount (not a milestone) |
+| M7 | `9d82849` per-module README order, releasing.md, kit re-vendor | `771affa` retire the four toolkit files from docs |
 
 ### The working method, established over M3–M5
 
@@ -64,18 +67,14 @@ The gate, every time, in both repos: `lua tests/run.lua` green, `luacheck .` 0/0
 `diff -r LibKa0s/LibKa0s AbsorbTracker/libs/LibKa0s` empty, `diff -r LibKa0s/testkit
 AbsorbTracker/tests/_kit` empty, and `lua tests/perf.lua`'s `probeOverheadOn` still 312.3 bytes/iter.
 
-### Read before starting M7
+### Read before starting M8
 
 - The **Open items carried forward** section below — it holds the known defects in this plan and its
   spec, and the standing rules that have each already cost a milestone.
-- M7 rewrites documentation that M6 made stale in bulk. `AT/docs/ARCHITECTURE.md`,
-  `file-index.md`, `module-map.md`, `settings-panel.md`, `testing.md`, `agent-context.md`,
-  `common-tasks.md` and `complexity.md` all still describe `settings/Panel.lua`,
-  `settings/Helpers.lua`, `settings/ScrollPatch.lua` and `settings/Widgets.lua` by name, in detail,
-  and in `settings-panel.md`'s case as the substance of the document. M6 deliberately fixed only
-  the stale references in **code comments** (the class the plan required fixed in-milestone at M3)
-  and left every `docs/` reference to M7, which exists for exactly this. Grep for those four
-  filenames before declaring M7 finished.
+- M9 cannot be automated. It needs a live client, and M10–M12 are gated on it by design: writing a
+  normative section from a design rather than from a verified extraction is how a standard acquires
+  rules that do not survive their second implementation. The checklist is now in
+  `AT/docs/smoke-tests.md` rather than only in the spec.
 
 ---
 
@@ -1028,3 +1027,38 @@ to HEAD, because the milestone was not yet committed. The file was rebuilt from 
 verified identical in behaviour, but the lesson is cheaper learned than repeated: during a
 milestone, restore a mutated file from a `cp` backup taken immediately before the mutation, never
 from git. `cp` the file, mutate, run, `cp` back, and diff against the backup to prove the restore.
+
+**M7a — the doc rewrite broke the byte-identity gate it was documenting.** M7 improved
+`LK/testkit/README.md` and did not re-vendor it, so `diff -r testkit tests/_kit` failed in LibKa0s
+and `diff -r LK/testkit AT/tests/_kit` failed downstream — while three separate documents
+(`LK/README.md`, `LK/docs/releasing.md`, `AT/docs/file-index.md`) asserted in the same change that
+the gate passes. The three `.lua` files were identical throughout; only the README diverged, which
+is exactly why nothing caught it: no test loads a README, and both suites stayed green. This is
+`releasing.md`'s own "the step that gets forgotten" happening inside the commit that documents it.
+The kit is not only code — every file under `testkit/` is vendored, and the mirror check is the
+only thing that says so.
+
+**M7b — the rewrite made one correct claim wrong, and a mutation-style audit found it.** The
+pre-M7 text said the `NS.Debug` call sites span "five files" and was right; the rewrite changed it
+to "sixteen call sites across six files" by counting a `grep` hit that is a COMMENT in
+`core/DebugLogSetup.lua`, and by counting the binding site as a call site. Truth is fifteen calls
+across five files. The lesson is the one M4 and M5 already paid for in tests, restated for prose: a
+count copied from a `grep | wc -l` is not verified, because `grep` does not know what a call site
+is. Every count this milestone wrote was re-derived from the source, and this is the one that was
+re-derived carelessly.
+
+**M7c — two stale code comments were fixed inside a documentation milestone.** `core/CoreSetup.lua`
+said five settings files capture `local print = NS.Print` (four do — `Schema`, `Slash`,
+`OptionsSetup`, `General`) and `defaults/Profile.lua` said four master toggles (three — `hidden`
+went in the v4 migration). Both are comment-only, neither moves a byte of behaviour, and both were
+the SOURCE the docs had been copying, so fixing the docs without them would have left the next
+writer to reintroduce the error from the code. AbsorbTracker publishes no per-file minors, so
+neither edit owes a version bump.
+
+**M7d — 69 references to the deleted files survive on purpose.** `docs/audits/` and
+`docs/superpowers/` are frozen dated documents — an audit that described the tree as it was is not
+stale, it is a record, and rewriting it would destroy the only evidence of what was true then. The
+13 remaining hits in live docs are deliberate archival references: `complexity.md`'s extraction
+table and its struck-through CCN rows, `file-index.md`'s note on the old TOC slot, `testing.md`'s
+history line. The grep the plan asks for before declaring M7 finished returns 82, and 82 is the
+right answer.
