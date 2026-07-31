@@ -11,8 +11,19 @@ enforces that the block and `lib.MODULES` agree, so the two cannot drift. Releas
 
 ## Unreleased
 
-Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Perf minor 2**,
-**PerfPanel minor 2**.
+Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Slash minor 1**,
+**Perf minor 2**, **PerfPanel minor 2**.
+
+- New module `LibStub("LibKa0s-Slash-1.0")` — the slash dispatcher, the help renderer, the schema
+  CLI (`list`/`get`/`set`/`reset`/`resetall`/`version`) and the type-aware value parser. The parser
+  is the reason this shape won rather than the coercing one the other copies carry: a number clamps
+  to its row's range instead of storing a value the panel cannot honour, a string outside its enum
+  is refused with the allowed values listed, and a colour parses `r g b [a]` instead of printing a
+  table address. `SetRowAnnotator` lets a host append a note at the three sites that render a
+  setting — list, get and set — and at no others.
+- The COMMANDS table stays the host's and is passed into the descriptor. A host renders the same
+  table on its own About page, so a library owning it would force the options module to consume
+  this one — and two libraries reaching for each other is a real dependency cycle.
 
 - New module `LibStub("LibKa0s-DebugLog-1.0")` — the on-screen debug console, which was the most
   duplicated thing in the collection: seven hand-transcribed copies of a window the standard already

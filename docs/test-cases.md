@@ -63,6 +63,55 @@ badge and any count quoted in the docs must agree with it.
 - dbg: a host that overrides a string gets its own wording
 - dbg: DebugLog re-exports Core's close button so a host has one factory, not two
 
+### test_slash.lua (46)
+
+- sl: an empty message prints the help index
+- sl: whitespace-only input is treated as empty
+- sl: an unknown verb names it, then prints the help index
+- sl: the verb is lowercased but the argument keeps its case
+- sl: an alias is rewritten to its target verb
+- sl: a handler receives the rest of the line, not the verb
+- sl: New requires a slash prefix and a commands table
+- sl: a help row is gold command, single-spaced em dash, white description
+- sl: HelpRows indents for chat; LandingRows does not
+- sl: help rows name each verb with the host's own slash prefix
+- sl: the help header carries the version and the chat alias
+- sl: a host with no chat alias gets a header without the alias clause
+- sl: no rendered line ends in a colon
+- sl: FormatKV is a gold key, ' = ', a white value, and no trailing colon
+- sl: FormatValue renders every schema type the library knows
+- sl: a number row with no fmt renders bare
+- sl: booleans accept the whole human vocabulary
+- sl: a junk boolean is rejected and the accepted words are listed
+- sl: a number is clamped to the row's range rather than rejected
+- sl: a non-numeric value for a number row is rejected
+- sl: a string is validated against its enum, case-sensitively
+- sl: an enum supplied as a function is evaluated at parse time
+- sl: a colour parses r g b with an optional alpha
+- sl: a colour given in 0-255 is rescaled, and all three channels together
+- sl: a colour missing a channel is rejected with the expected form
+- sl: an unknown row type is rejected by name
+- sl: list groups rows under the host's own group keys, indented
+- sl: the list keeps its own colours — green header, azure group headings
+- sl: list says so when nothing is registered
+- sl: get echoes the canonical path and the stored value
+- sl: a stored false renders as false, not as nil
+- sl: get with no path prints usage; an unknown path says so
+- sl: set writes through the host and echoes what was STORED, not what was typed
+- sl: set with no path points at the list verb
+- sl: a rejected value is not written, and the reason is a second, indented line
+- sl: set accepts a value made of several tokens
+- sl: reset restores one setting to its default
+- sl: reset leaves every other setting alone
+- sl: reset with no path prints usage; an unknown path says so
+- sl: reset does not lowercase its argument
+- sl: resetall applies every row's default
+- sl: version prints one line and nothing else
+- sl: the annotator fires on list, get and set — and on nothing else
+- sl: the annotation follows the coloured pair rather than interrupting it
+- sl: with no annotator set, nothing is appended
+- sl: Slash refuses to register without Core
+
 ### test_perf_core.lua (49)
 
 - lib: registers under its major with a schema and a default ring
@@ -242,10 +291,11 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | test_core.lua | 15 |
 | test_debuglog.lua | 36 |
+| test_slash.lua | 46 |
 | test_perf_core.lua | 49 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
-| **Total** | **206** |
+| **Total** | **252** |

@@ -3,19 +3,21 @@
 ## What it is
 
 A Ka0s-owned shared library, vendored into Ka0s WoW addons the way Ace3 is — copied into each
-addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Three
+addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Four
 modules ship today:
 
 - **`LibKa0s-Core-1.0`** — the small stateless seams every other module sits on: secret-safe
   stringification, the window skin and its close button, and a prefixed chat printer.
 - **`LibKa0s-DebugLog-1.0`** — the on-screen debug console: the window, the copy window, the two
   formatters, the buffer, and the seam that turns logging on and off.
+- **`LibKa0s-Slash-1.0`** — the slash dispatcher, the help renderer, the schema CLI
+  (`list`/`get`/`set`/`reset`/`resetall`/`version`) and the type-aware value parser.
 - **`LibKa0s-Perf-1.0`** — a repeatable A/B performance capture for one host addon.
 
-DebugLog and Perf both require Core and refuse to register without it.
+DebugLog, Slash and Perf each require Core and refuse to register without it.
 
-Everything from *Why it exists* down to *The public surface* documents `LibKa0s-Perf-1.0`. Core and
-DebugLog have their own sections, below those.
+Everything from *Why it exists* down to *The public surface* documents `LibKa0s-Perf-1.0`. Core,
+DebugLog and Slash have their own sections, below those.
 
 ## Why it exists
 
@@ -28,8 +30,8 @@ shared-frame ownership held fixed throughout.
 ## Installing
 
 1. Copy `LibKa0s/` into `<Addon>/libs/LibKa0s/` — the whole folder, every time. The modules are
-   siblings that ship as one released copy, and both `DebugLog.lua` and `Perf.lua` return without
-   registering at all when `Core.lua` is missing or older than the minor they need.
+   siblings that ship as one released copy, and `DebugLog.lua`, `Slash.lua` and `Perf.lua` each
+   return without registering at all when `Core.lua` is missing or older than the minor they need.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
 3. If you adopt Perf, declare `## SavedVariables: <Addon>PerfDB` in the TOC (the global name you'll
    pass as the descriptor's `sv`). Core and DebugLog persist nothing.
@@ -395,6 +397,117 @@ The checkbox toggles the window's **visibility** only, never the logging flag. T
 controls, and a user who closes the console does not expect logging to stop — which is exactly what
 the tooltip says, composed from the descriptor's `slash`.
 
+## `LibKa0s-Slash-1.0`
+
+The slash dispatcher, the help renderer, the schema CLI and the value parser — everything between
+"the user typed `/at something`" and "a setting changed", minus the settings themselves.
+
+Four-plus copies of it exist across the collection, in two different shapes, and the divergence is
+not cosmetic. One shape parses values by bare coercion, so `set barWidth 99999` stores 99999 and a
+`get` on a colour prints a table address. This library takes the type-aware shape — clamping, enum
+validation, colour tuples — on the view that a CLI silently accepting a value it cannot honour is
+worse than one that refuses.
+
+Like DebugLog and Perf, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and
+it returns before `NewLibrary` if Core is missing or below the minor it needs.
+
+### Why the commands table stays the host's
+
+`commands` is required, and it is the host's own ordered `{ name, description, handler }` table,
+passed in rather than owned. That is the load-bearing decision in this module.
+
+A host owns its verbs; it also renders them on its own About or landing page. If the library owned
+the table, the options module drawing that page would have to resolve `LibKa0s-Slash-1.0` to read
+it — and an options library and a slash library each reaching for the other is a real dependency
+cycle between two majors at load time. The table crossing between them as plain data is what keeps
+them independent. It is the same argument as DebugLog's `ConsoleCheckbox()` data contract, run in
+the other direction.
+
+The practical consequence is that the seven-or-so verbs a host actually implements (`lock`, `test`,
+`toggle`, …) never leave the host, so adopting this library cannot break them. What moves here is
+the dispatch, the help rendering, and the schema verbs.
+
+### `reset` takes a path, not a page
+
+`Sl:CliReset(rest)` resets **one** setting, named by its path. There is deliberately no page-shaped
+form (`reset general`, `reset bar`): a page is a property of a settings panel, not of the data, and
+every schema-driven panel already carries a Defaults button that resets its page across every unit.
+The capability is not lost, it just lives where the concept does. `CliResetAll()` is unaffected and
+resets everything.
+
+### The lib-level formatters and parser
+
+Stateless and lib-level, never per-instance: a host's tests call them directly, and nothing about a
+rendered row depends on which instance rendered it.
+
+| Name | Meaning |
+|---|---|
+| `lib.FormatRow(command, description)` | One command row: `\|cFFFFFF00` command, an em dash with a single space either side, `\|cFFFFFFFF` description. **Not** indented — the indent belongs to whoever renders, because a chat line sits under a header and a settings-panel label does not. This is the one command-row formatter in the collection; the `/at list` header, its group headings and any host annotation are a different, lower-case-hex family and stay that way. |
+| `lib.FormatKV(path, valueStr)` | One `key = value` pair, gold key and white value, no trailing colon. Used by the list rows and by the get/set echo, so a setting reads identically wherever it is printed. |
+| `lib.FormatValue(row, v)` | Render a stored value by the row's declared type — a colour as `{r, g, b, a}` to two places, a number through the row's `fmt`, an empty string as `STRINGS.NONE`, anything else through Core's `SafeToString`. |
+| `lib.ParseValue(row, text)` | The type-aware parser. Returns the value, or `nil` plus a reason. |
+| `lib.STRINGS` | Every user-visible string, keyed for the descriptor's `L` override. |
+
+`ParseValue` is where the type-awareness lives, and its two failure modes are deliberately not the
+same. A **number out of range clamps** rather than failing, because a user typing a width larger
+than the panel allows means "as wide as it goes". A **string outside its enum fails**, because there
+is no such reading of a misspelt texture name. A row's `values` may be a function, evaluated at call
+time rather than at load, since a host's media list is populated by another addon and is not
+knowable when the schema row is declared. Colours accept `r g b [a]` in either 0–1 or 0–255 and are
+rescaled **jointly** — `255 128 0` is one colour expressed in one scale, and dividing only the
+channels that happen to exceed 1 would mangle the rest.
+
+Failure is signalled by a `nil` first return plus a message. No row type has a valid value that is
+itself `nil`, which is what makes that unambiguous; adding one would be a contract change rather
+than a new type.
+
+### The dispatcher descriptor
+
+Everything a host supplies to `lib:New(descriptor)`.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `slash` | string | yes | The command prefix, **with** its slash: `"/at"`. Every usage line and every help row is composed from it. |
+| `commands` | table | yes | The host's ordered `{ name, description, handler }` triples. Passed in, never owned — see above. The handler is called with the rest of the line, verbatim. |
+| `slashAliases` | table | no | Other chat commands reaching the same dispatcher. The first is named in the help header. Registering them is the host's job; this library registers no slash command of its own. |
+| `aliases` | table | no | Map of typed verb → real verb, for backwards compatibility (`{ options = "config" }`). |
+| `print` | function(line) | no | Where lines go. Defaults to the chat frame. Hosts pass their prefixed printer. |
+| `version` | function | no | Returns the host's version string, for the help header and `version`. |
+| `get` | function(path) | no | Read one setting by path. |
+| `set` | function(path, v) | no | Write one setting by path. |
+| `findRow` | function(path) | no | Resolve a path to a schema row, or nil. |
+| `allRows` | function | no | Every row, in declaration order — which is the order `list` prints. |
+| `applyDefault` | function(row) | no | Restore one row to its default. |
+| `parse` | function(row, text) | no | Defaults to `lib.ParseValue`. |
+| `groupKey` | function(row) | no | Row → the heading it lists under. Defaults to `row.page`. |
+| `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. |
+
+Only `slash` and `commands` are required, and both raise rather than defaulting: a dispatcher with
+no prefix has nothing to compose usage lines from, and one with no verb table answers every input
+with "unknown command". Everything schema-shaped is optional, so a host with no settings schema gets
+a working dispatcher and help renderer and simply never wires the CLI verbs into `commands`.
+
+### The public surface
+
+Everything `lib:New(descriptor)` returns on the instance.
+
+| Name | Meaning |
+|---|---|
+| `OnSlash(msg)` | The entry point. An empty line prints help; otherwise the first token is lowercased, mapped through `aliases`, and dispatched. Only the verb is lowercased — `rest` keeps its case, because schema paths are case-sensitive, and its internal spacing, because a colour is several tokens. An unknown verb says so and then prints help. |
+| `PrintHelp()` | The header, then `HelpRows()`, through the descriptor's `print`. |
+| `HelpHeader()` | `v<version> — slash commands`, plus the alias note when `slashAliases` has one. |
+| `HelpRows()` | The command rows, indented two spaces, because each sits under a header in chat. |
+| `LandingRows()` | The same rows, same colours and spacing, **no** indent — for a settings panel, where each row is its own label and a leading indent reads as a mistake. |
+| `BuildListLines()` | The `list` output as lines, without printing: header, then each `groupKey` heading in declaration order with its rows beneath. Returns the empty-state line when there are no rows. Grouped in declaration order rather than alphabetically, because a schema's order is the order its panel shows and a listing that disagreed with the panel would be its own puzzle. |
+| `CliList()` | `BuildListLines()`, printed. |
+| `CliGet(rest)` | Echo one setting. |
+| `CliSet(rest)` | Parse and store one setting, then echo it by **re-reading** — a clamped number is only visible to the user because the echo reports what was actually stored, not what was typed. |
+| `CliReset(rest)` | Reset one setting by path, and echo it. Never annotated. |
+| `CliResetAll()` | `applyDefault` over every row, then one acknowledgement. |
+| `CliVersion()` | The host's version. |
+| `SetRowAnnotator(fn)` | Install a host suffix appended to a rendered setting — most usefully a note that the stored value is not the one in effect. Applied at exactly three sites: a list row, a get echo and a set echo. Never on reset or resetall, where an explanation of what a value means is noise stapled to an acknowledgement that the value went away. |
+| `Text(key)` | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
+
 ## Development
 
 Green gate before every commit, run from the repo root:
@@ -439,8 +552,9 @@ to that file — that is what LibStub compares when it picks a winner between tw
 released change that skips its bump reaches no host that already carries the old copy.
 
 `lib.MODULES` publishes the live minor of every file — today
-`{ Core = 1, DebugLog = 1, Perf = 2, PerfPanel = 2 }` — which is how you answer "which panel is
-attached to which probe?" from in-game, once several addons each ship their own vendored copy.
+`{ Core = 1, DebugLog = 1, Slash = 1, Perf = 2, PerfPanel = 2 }` — which is how you answer "which
+panel is attached to which probe?" from in-game, once several addons each ship their own vendored
+copy.
 `tests/test_versioning.lua` enforces that `MODULES` and `CHANGELOG.md`'s version block agree, so a
 bump cannot land without its changelog entry, nor an entry without its bump.
 
@@ -461,6 +575,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block; Core first
   Core.lua           -- LibKa0s-Core-1.0, MINOR at the top of the file
   DebugLog.lua       -- LibKa0s-DebugLog-1.0, MINOR at the top of the file; needs Core
+  Slash.lua          -- LibKa0s-Slash-1.0, MINOR at the top of the file; needs Core
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
 testkit/             -- the shared headless harness, vendored into each addon as tests/_kit/

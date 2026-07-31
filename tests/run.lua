@@ -14,8 +14,8 @@ local buildMocks = dofile("tests/wow_mock.lua")
 -- Loader.addonName stays nil: library chunks take no arguments, unlike an addon's
 -- `local addonName, NS = ...` header.
 local mocks = buildMocks()
-Loader.loadAll({ "LibKa0s/Core.lua", "LibKa0s/DebugLog.lua", "LibKa0s/Perf.lua",
-  "LibKa0s/PerfPanel.lua" }, nil, mocks)
+Loader.loadAll({ "LibKa0s/Core.lua", "LibKa0s/DebugLog.lua", "LibKa0s/Slash.lua",
+  "LibKa0s/Perf.lua", "LibKa0s/PerfPanel.lua" }, nil, mocks)
 
 -- Every major this library ships and the files that make it up, in LibKa0s.xml order.
 --
@@ -37,6 +37,11 @@ local MAJORS = {
     primary = "DebugLog",
   },
   {
+    major = "LibKa0s-Slash-1.0",
+    files = { "Slash" },
+    primary = "Slash",
+  },
+  {
     major = "LibKa0s-Perf-1.0",
     files = { "Perf", "PerfPanel" },
     primary = "Perf",
@@ -51,13 +56,14 @@ _G.LK_TEST = Kit.expose{
   lib = mocks.LibStub("LibKa0s-Perf-1.0"),
   core = mocks.LibStub("LibKa0s-Core-1.0"),
   debuglog = mocks.LibStub("LibKa0s-DebugLog-1.0"),
+  slash = mocks.LibStub("LibKa0s-Slash-1.0"),
   majors = MAJORS,
 }
 
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_debuglog",
+    "test_core", "test_debuglog", "test_slash",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
     "test_versioning",
   },

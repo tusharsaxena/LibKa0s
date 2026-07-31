@@ -14,20 +14,20 @@ Read the spec first — this plan does not restate its reasoning, only its conse
 | M2 | `testkit/` extracted; both repos consume it | **done** |
 | M3 | `LibKa0s-Core-1.0` + Perf consumes it | **done** |
 | M4 | `LibKa0s-DebugLog-1.0` | **done** |
-| M5 | `LibKa0s-Slash-1.0` | not started |
+| M5 | `LibKa0s-Slash-1.0` | **done** |
 | M6 | `LibKa0s-Options-1.0` | not started |
 | M7 | Documentation | not started |
 | M8 | `/wow-addon:review` gate | not started |
 | M9 | In-game smoke tests | not started |
 | M10–M12 | Standard, plugin, adoption prompt | not started |
 
-State at the pause after M4: **AbsorbTracker 432 passed / 0 failed, LibKa0s 201 passed / 0 failed,
+State at the pause after M5: **AbsorbTracker 433 passed / 0 failed, LibKa0s 252 passed / 0 failed,
 `luacheck .` 0/0 in both.** `diff -r` empty for `LibKa0s` → `libs/LibKa0s` and for `testkit` →
 `tests/_kit`. The `tests/perf.lua` parity figures are unchanged from the pre-extraction baseline —
 `paintPass` 12.0 api/iter and 312.0 bytes/iter, `probeOverheadOn` 312.3 bytes/iter — which is the
 artefact proving neither the harness move nor the Core extraction touched the measured paths.
 
-Next session starts at M5.
+Next session starts at M6.
 
 ---
 
@@ -357,7 +357,7 @@ Slash:New{
   groupKey,                        -- list-grouping strategy; AT returns "bar / player"
 }
 Sl.OnSlash(msg) / Sl.PrintHelp() / Sl.HelpRows() / Sl.LandingRows()
-Sl.BuildListLines() / Sl.CliList/CliGet/CliSet/CliResetAll/CliVersion
+Sl.BuildListLines() / Sl.CliList/CliGet/CliSet/CliReset/CliResetAll/CliVersion
 Sl.SetRowAnnotator(fn)             -- MirrorNote
 ```
 
@@ -390,9 +390,10 @@ page-validation branch. Rewrite `test_slashcmds.lua`'s reset block against the n
 this block is *rewritten, not retargeted*, and it is the only sanctioned exception to the
 no-weakened-assertions rule in this programme.
 
-Add one host test that did not exist before: **the Bar page's Defaults button still resets every
-Bar setting across all three units.** That is where `/at reset bar`'s behaviour now lives, and
-nothing currently pins the equivalence.
+~~Add one host test that did not exist before: the Bar page's Defaults button still resets every
+Bar setting across all three units.~~ **It already exists** — `tests/test_helpers.lua:385`, across
+all three units, predating this branch. Verify it, do not duplicate it. That is where
+`/at reset bar`'s behaviour now lives, and it was already pinned.
 
 `settings/About.lua` switches to `Sl.LandingRows()` and its rendered output changes (spec D3).
 Every *other* user-visible string is preserved. Any further assertion that has to change is
@@ -546,6 +547,76 @@ ConsumableMaster is riskiest for the harness; prettychat is riskiest for Core.
 
 Adoption order: **KickCD first**, per the Perf precedent — the most structurally complex, so the
 most likely to expose a descriptor assumption that only held for AbsorbTracker.
+
+---
+
+## Open items carried forward
+
+*Everything known-outstanding, in one place. A deviation records a decision already taken; this
+records work not yet done. Anything finished here gets struck from the list in the same commit that
+finishes it.*
+
+### Defects in this plan and its spec, found during execution
+
+- **Spec §7.1 (line ~586) still lists `reset <page>` under "Stays in AbsorbTracker".** D1 deletes it.
+  §7.1 is stale and D1 governs, being the later explicit decision. Fix when the spec is next touched;
+  do not follow §7.1 on this point.
+- **M5's "Interfaces produced" block lists `Sl.CliResetAll` but no `Sl.CliReset`**, while its Step 1
+  test list requires "CliReset resetting one path and rejecting an unknown one". Both members exist
+  and are needed; the interface block was simply short.
+- **M5 Step 3 asks for a host test that already existed.** "The Bar page's Defaults button still
+  resets every Bar setting across all three units" is `AT/tests/test_helpers.lua:385`, and predates
+  this branch. Recorded as M5c; the plan text above still asks for it and should not be followed
+  literally.
+- **M6 schedules "a fixture schema + fixture db to the kit", but M5 needed them first.** They were
+  built as `LK/tests/fixture_slash.lua` rather than in `testkit/`, deliberately: anything in the kit
+  must be mirrored to `tests/_kit/` and re-vendored downstream, which is blast radius M5 had no use
+  for. M6 should reuse or promote that file rather than build a second one.
+
+### Deferred work with a known trigger
+
+- **M2a — the frame-stub fidelity fix.** `CreateTexture`/`CreateFontString` still return the frame
+  itself. Fixing it moves `AT/tests/perf.lua`'s `api/iter` parity figure and edits assertions in
+  `test_display.lua`, so it needs its own change, its own test updates and a fresh baseline. It is
+  the reason several suites reach for `__label`/`titleText`-style recorded fields instead of reading
+  a font string back.
+- **D3's cost lands in M12.** BankLedger, LootHistory and PanelMaster render their landing pages in
+  the *About* shape, not the `/at help` shape. Converging AbsorbTracker means all three change when
+  they adopt. The spec names this as the accepted direct cost of D3; it is not to be re-litigated,
+  only paid.
+- **The two user-visible changes need eyes in-game (M9).** `/at reset <path>` replacing the page
+  form, and the About page's command rows re-rendering in the help colours. Neither is caught by any
+  automated check in either repo — the About page has no rendered-output assertion at all.
+
+- **Six AbsorbTracker `.lua` files are LF on disk, not CRLF**: `settings/Schema.lua`,
+  `settings/Widgets.lua`, `tests/run.lua`, `tests/test_display.lua`, `tests/test_schema.lua`,
+  `tests/test_widgets.lua`. `.gitattributes` pins `*.lua eol=crlf`, but git compares normalised
+  content, so an LF working file reads as unmodified and nothing flags it. It is invisible to the
+  repo and to the packager (which builds from a fresh checkout, and therefore gets CRLF), so it is
+  cosmetic — but an edit script that splits on `\r\n` silently does nothing to these six. Check the
+  file's own convention before editing it. Worth one normalising commit of its own; not worth
+  churning six files inside an unrelated milestone.
+
+### Standing rules that keep being rediscovered
+
+- **`sed -i` with a `$` anchor never matches a CRLF line.** It reports success and changes nothing.
+  This silently left a dangling `test_util` entry in a suite list for a whole milestone (M4h). Use a
+  CRLF-aware edit for anything anchored to end-of-line.
+- **A suite listed in a runner but missing from disk is skipped, not failed.** So is a library file
+  omitted from a hand-maintained load list — the dependent module just refuses to register and the
+  runner measures a stub. Both have happened (M3c, M4h). `test_loadorder.lua` now covers the second.
+- **Restore a mutated file from a `cp` backup, never from `git checkout`.** During a milestone the
+  work is uncommitted, so `git checkout <file>` reverts it to HEAD rather than to what you had a
+  moment ago. This destroyed an entire M5 rewrite (M5k). Back up, mutate, run, restore, diff.
+- **`and`/`or` is not a conditional when the value can be `false`.** It has now silently eaten a
+  legitimate value twice, in two different modules, three milestones apart (M4c, M5g). Spell the
+  `if` out whenever the middle term is host-supplied.
+- **A test that cannot fail is worse than no test**, because it reads as coverage. Every case
+  asserting a NEGATIVE — a thing not resolved, a value not written, a note not appended — needs a
+  mutation run against it before it is believed (M5h, M5i, and four in M4).
+- **Line count is not a proxy for duplication removed.** M5e: `settings/Slash.lua` did not shrink,
+  because a descriptor plus the degradation stub §6.3 mandates cost what the extracted logic saved.
+  What matters is that no copy of a formatter, a parser or a rendered string remains downstream.
 
 ---
 
@@ -731,3 +802,97 @@ design, so the run stayed green at 432 with a dangling pointer — the same sile
 M3c, one milestone later, in a file M4 had already edited. The cause was mechanical: a `sed`
 expression anchored with `$`, which never matches a CRLF line ending, reported success and changed
 nothing.
+
+**M5a — the reset block is nine cases, and only five were rewritten.** D1 suspends the
+no-weakened-assertions rule for "`tests/test_slashcmds.lua`'s reset block". That block is not what
+it looks like: seven cases sit under the `reset / resetall / resetposition` banner and two more hide
+a few hundred lines away under `qualified per-unit slash paths`. Of the nine, only the five taking a
+PAGE argument describe behaviour D1 removes. `resetall` (two cases) and `resetposition` (two) both
+survive untouched — `resetposition` is a host verb the plan keeps, and `resetall` is in M5's own
+interface list. Rewriting those four would have been an unsanctioned weakening wearing D1's
+exemption, so the line was drawn at five.
+
+One of the five inverts rather than dies. "`/at reset` lower-cases the page name" encoded a rule
+that was only safe because pages were a closed lower-case set; a path is case-sensitive, so the
+replacement asserts the opposite — `reset UNITS.PLAYER.BARWIDTH` must NOT resolve. A mechanical
+retarget would have installed the wrong contract while staying green.
+
+**M5b — four cases that have nothing to do with reset used it as teardown.** `slash("reset bar")`
+was the cleanup line in the colour-parse case and three profile cases. With the verb's meaning
+changed those stop cleaning up, leaving `barColor` at `{0.1, 0.2, 0.3, 0.4}` and `barWidth` at 456
+for every later case in a suite that shares one database — a cascade in the mirror and profile
+blocks that would have looked nothing like a reset problem. All four now call
+`NS.Helpers.RestoreDefaults("bar")`, which is what they always meant.
+
+**M5c — the test the plan asks for already exists.** M5's Step 3 says to add "one host test that did
+not exist before: the Bar page's Defaults button still resets every Bar setting across all three
+units", because "nothing currently pins the equivalence". `tests/test_helpers.lua:385` pins exactly
+that, across all three units, and has since before this branch. Nothing was added; the plan is wrong
+rather than the suite being short, and D1's "the capability is not lost, only the CLI route to it"
+was already under test.
+
+**M5d — D3 is scoped to the command-row formatter and nothing else.** The decision says "uppercase
+hex, single spaces around the em dash, white description", and every hex code it names belongs to
+the help/landing ROW. The `/at list` header (`33ff99`), its group headings (`3399ff`) and the mirror
+note (`808080`) are lower-case today, are a different formatter, and were left exactly as they are —
+recasing them would be a user-visible change outside what was asked for. The library carries them as
+lower-case strings with a comment saying why, and a case pins them.
+
+**M5e — the AbsorbTracker file did not shrink.** §6.1 predicts `settings/Slash.lua` "shrinks from
+446 lines"; it is 462. The duplicated logic genuinely left — the dispatcher, the help renderer, both
+formatters, the list builder and the parser are all gone — but a descriptor and the member-answering
+degradation stub §6.3 requires cost about what they saved. The stub deliberately carries NO copy of
+the row formatter, the parser or the key/value shape: hand-copying the strings whose drift the
+extraction exists to end is the duplicate `testing-§8` most specifically forbids, so a degraded help
+row renders plainly and the schema verbs say which library is missing. Line count was the wrong
+proxy for the thing being measured.
+
+**M5f — D3 had no test behind it anywhere, in either repo.** Grepping both AbsorbTracker slash
+suites for the em dash, the two-space help indent and the four-space list indent returns nothing:
+colour escapes were pinned, spacing never was, and the About page has no rendered-output assertion at
+all (`test_widgets.lua` only pcalls its OnShow). The convergence could therefore have gone in either
+direction with both suites green. It is pinned upstream now — the formatter byte for byte, the
+indent difference between `HelpRows` and `LandingRows`, and the list's own colours — and each of
+those was confirmed by mutating the implementation and watching the case fail.
+
+**M5g — the `and`/`or` idiom collapsed a stored `false`, and nearly shipped.** The library's
+`read(path)` was written `type(d.get) == "function" and d.get(path) or nil`. A stored `false` makes
+the whole chain yield nil, so every unticked checkbox in a host addon — `locked`,
+`showOnlyInCombat`, two of the three `enabled` flags, all nine `useClassColor*` toggles — would have
+rendered as `nil` instead of `false` in `/at list`, `/at get` and every `set` echo. `FormatValue`
+itself was correct; the value was destroyed two calls earlier.
+
+Both suites were green. The upstream fixture's only false-valued bool was never read back through
+`CliGet` or `CliList`, and no AbsorbTracker case asserted a false bool's rendered line — a gap that
+predates the extraction. It is the same idiom, in the same shape, as the one M4c fixed in DebugLog's
+prefix resolution three milestones earlier. Both are now spelled out with an explicit `if`, both
+carry a comment saying why, and a regression case in each repo pins a stored `false` rendering as
+`false`.
+
+**M5h — two assertions about case-sensitivity could not fail.** `/at reset UNITS.PLAYER.BARWIDTH`
+was asserted to leave the value alone and print "Setting not found" — but the lower-cased form is
+*also* not a registered path, so both halves held whether or not the implementation folded case.
+Confirmed by mutation: adding `path = path:lower()` to `CliReset` left both cases passing. They now
+assert the ECHOED path, which is the only thing that differs between the two implementations.
+
+**M5i — D3 was unguarded in the repo where it is visible.** Three mutations to the row formatter —
+lower-casing the hex, replacing the em dash, dropping the chat indent — each left AbsorbTracker at
+436 passed / 0 failed. The About page's rows were reached only by a `pcall` smoke test that asserts
+nothing, so the deliberate visible change had no regression net under it and a silent revert to the
+old shape would have shipped green. Two cases now pin the landing rows byte for byte and their
+relationship to the chat form, and all three mutations fail.
+
+**M5j — the host kept two dead copies of what moved.** `NS.ParseSchemaValue` and its five private
+helpers were still in `settings/Schema.lua`, unreachable in production (the descriptor passes no
+`parse`, so the library's parser is what runs) and still under test — and already drifting, since
+the library's `allowedValues` had gained a `tostring` the host copy never got. Deleted, along with
+the four downstream cases duplicating LibKa0s's own. `NS.FormatSchemaValue` was a live second
+implementation, kept only for the `[Set]` debug line; it is now a delegate, so the `/at get` echo
+and the debug line cannot disagree.
+
+**M5k — `git checkout <file>` destroyed an uncommitted rewrite mid-milestone.** Restoring one
+mutated file after a mutation test, `git checkout settings/Slash.lua` reverted the entire M5 rewrite
+to HEAD, because the milestone was not yet committed. The file was rebuilt from the edit record and
+verified identical in behaviour, but the lesson is cheaper learned than repeated: during a
+milestone, restore a mutated file from a `cp` backup taken immediately before the mutation, never
+from git. `cp` the file, mutate, run, `cp` back, and diff against the backup to prove the restore.
