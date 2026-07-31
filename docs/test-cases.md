@@ -24,7 +24,7 @@ badge and any count quoted in the docs must agree with it.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
-### test_debuglog.lua (39)
+### test_debuglog.lua (42)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
 - dbg: FormatPlain tolerates a nil tag
@@ -65,8 +65,11 @@ badge and any count quoted in the docs must agree with it.
 - dbg: a newer Core loading after DebugLog supplies the console's close button
 - dbg: an instance built after the upgrade draws the newer Core's button
 - dbg: Add renders a secret message as the sentinel
+- an L whose metatable synthesises every key does NOT mask the module's own strings
+- a REAL entry in an L that also has a fallback still overrides
+- a plain L table overrides exactly as before
 
-### test_slash.lua (48)
+### test_slash.lua (51)
 
 - sl: an empty message prints the help index
 - sl: whitespace-only input is treated as empty
@@ -116,6 +119,9 @@ badge and any count quoted in the docs must agree with it.
 - sl: the annotation follows the coloured pair rather than interrupting it
 - sl: with no annotator set, nothing is appended
 - sl: Slash refuses to register without Core
+- sl: an L whose metatable synthesises every key does NOT mask the module's strings
+- sl: a REAL entry in an L that also has a fallback still overrides
+- sl: a plain L table overrides exactly as before
 
 ### test_options.lua (39)
 
@@ -206,7 +212,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: InlineButtonPair lays two inset buttons into one Flow row and pcalls the click
 - widgets: InlineButtonPair tolerates a missing second spec
 
-### test_perf_core.lua (49)
+### test_perf_core.lua (52)
 
 - lib: registers under its major with a schema and a default ring
 - lib: New requires a name, an sv global and a suspend/resume pair
@@ -257,6 +263,9 @@ badge and any count quoted in the docs must agree with it.
 - lib: ContextLines omits an empty sub-zone cleanly
 - lib: ContextLines tolerates a record with no context
 - lib: a host passing only the four required fields gets working defaults
+- perf: an L whose metatable synthesises every key does NOT mask the module's strings
+- perf: a step label is never its own SCREAMING_SNAKE_CASE key
+- perf: a REAL entry in an L that also has a fallback still overrides
 
 ### test_perf_run.lua (33)
 
@@ -389,15 +398,15 @@ badge and any count quoted in the docs must agree with it.
 | Suite | Cases |
 |-------|------:|
 | test_core.lua | 15 |
-| test_debuglog.lua | 39 |
-| test_slash.lua | 48 |
+| test_debuglog.lua | 42 |
+| test_slash.lua | 51 |
 | test_options.lua | 39 |
 | test_options_widgets.lua | 44 |
-| test_perf_core.lua | 49 |
+| test_perf_core.lua | 52 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 2 |
-| **Total** | **342** |
+| **Total** | **351** |

@@ -40,8 +40,9 @@ That changes the sequencing and it changes what "done" means:
 - **A test that passed before and after proves nothing if the code path moved.** The library-vs-host
   question is "does this render the same bytes", not "does this still run".
 - **Some divergences fail silently and only in-game.** Colour codecs, EditBox-vs-Dropdown dispatch,
-  `hasAlpha`, an unknown `row.type` dropping one row from a page. Those are named per addon below.
-  None of them raises. None of them shows up headless unless you write the assertion.
+  `hasAlpha`, an unknown `row.type` dropping one row from a page, and **the `L` trap below**. Those
+  are named per addon below. None of them raises. None of them shows up headless unless you write
+  the assertion.
 
 ### Read these first, in this order. Do not work from memory or from this prompt's summaries.
 
@@ -62,6 +63,37 @@ That changes the sequencing and it changes what "done" means:
    addon's write seam, schema vocabulary and load order are almost certainly different.
 
 The library repo is a sibling: `../LibKa0s` relative to this addon's repo root.
+
+### The `L` trap — read this before you write a single descriptor
+
+This one has already shipped a broken panel, in the first addon to adopt after AbsorbTracker, and it
+is the cheapest mistake in the whole exercise to make.
+
+Every module that takes an `L` override resolves the descriptor's table first and falls through to
+its own `STRINGS` only when the override **is not a string**. Your addon's locale table answers
+*every* key with a string, because the standard mandates the metatable fallback:
+
+```lua
+local L = setmetatable({}, { __index = function(_, k) return k end })   -- locales/enUS.lua
+```
+
+So `L = NS.L` in a descriptor means `L["STEP_START"]` returns `"STEP_START"`, the library's own
+strings are never reached, and the addon renders **raw keys** in place of English. KickCD shipped a
+perf panel reading `Ka0s KickCDPANEL_TITLE_SUFFIX` / `STEP_START` / `STEP_MEASURE_A` exactly this
+way. It fails for every key at once and only in game.
+
+- **Translating nothing? Omit `L`.** That is the common case and what AbsorbTracker does everywhere —
+  which is precisely why AbsorbTracker never hit this and why copying its shape does not protect you.
+- **Translating something?** Pass a **plain** table of only those keys. The values may come from your
+  locale table; the table you pass must not be it.
+- The README's per-module descriptor tables used to say *"hosts on the Ka0s standard pass their
+  `NS.L`"*. That advice was wrong and has been corrected — see **The `L` trap** in `LibKa0s/README.md`.
+
+Pin it with one cheap assertion per adopted module: a rendered label **MUST NOT** match
+`^[A-Z][A-Z0-9_]+$`. A resolved string is prose; an unresolved one is the key, and no English label
+is SCREAMING_SNAKE_CASE. Assert on the string the library actually rendered — a case that guards on
+`if label then` passes vacuously when the accessor does not exist, which is how the first attempt at
+this test proved nothing.
 
 ### Before you write anything: work out what this addon actually does
 
@@ -408,6 +440,8 @@ Then confirm, explicitly:
 - the degradation stub for each adopted major answers every member the addon calls;
 - every formatter that changed hands has a byte-level assertion, and you name the rendered strings
   that deliberately changed;
+- no descriptor was handed an addon-wide locale table, and each adopted module has a case proving
+  its user-visible strings resolve to prose rather than to their own keys;
 - the `[tests]` badge, `docs/test-cases.md` and the suite all agree.
 
 Follow this repo's own `CLAUDE.md` on committing and version bumps — **do not** bump the addon

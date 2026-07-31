@@ -477,3 +477,46 @@ test("lib: a host passing only the four required fields gets working defaults", 
   T.assertTrue(table.concat(printed, "\n"):find("capture:", 1, true) ~= nil,
     "including the report, which has nowhere else to go")
 end)
+
+-- ── the `L` trap ────────────────────────────────────────────────────────────
+--
+-- This is the one that actually shipped broken: KickCD's perf panel rendered
+-- "Ka0s KickCDPANEL_TITLE_SUFFIX" and seven STEP_* keys in place of its labels,
+-- because it passed its addon-wide locale table as `L` and that table answers
+-- every key with the key. PerfPanel receives `tr` from Perf.lua, so fixing the
+-- resolver here fixes the panel too.
+
+local function fallbackLocale()
+  return setmetatable({}, { __index = function(_, k) return k end })
+end
+
+test("perf: an L whose metatable synthesises every key does NOT mask the module's strings", function()
+  -- red under: reverting tr() to `L[key] or lib.STRINGS[key]`
+  local P = Fixture.new({ L = fallbackLocale() })
+  for _, step in ipairs(P.STEPS) do
+    assertEqual(step.label, lib.STRINGS[step.string],
+      "step '" .. step.key .. "' must resolve to the module's own string")
+  end
+end)
+
+test("perf: a step label is never its own SCREAMING_SNAKE_CASE key", function()
+  -- The shape a host can cheaply assert, stated here so the library owns it too.
+  local P = Fixture.new({ L = fallbackLocale() })
+  for _, step in ipairs(P.STEPS) do
+    assertEqual(step.label:match("^[A-Z][A-Z0-9_]+$"), nil,
+      "step '" .. step.key .. "' rendered its raw key: " .. step.label)
+  end
+end)
+
+test("perf: a REAL entry in an L that also has a fallback still overrides", function()
+  local L = fallbackLocale()
+  rawset(L, "STEP_START", "Demarrer")
+  local P = Fixture.new({ L = L })
+  for _, step in ipairs(P.STEPS) do
+    if step.string == "STEP_START" then
+      assertEqual(step.label, "Demarrer", "a real entry must still win")
+    else
+      assertEqual(step.label, lib.STRINGS[step.string], "neighbours must fall through")
+    end
+  end
+end)

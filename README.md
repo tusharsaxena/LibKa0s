@@ -129,7 +129,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `initSummary` | function | no | Returns one line naming version/schema/profile. The library owns *when* it is emitted (on enable, as the `[Init]` line); only the host can know what it says. |
 | `onVisibilityChanged` | function | no | Fired on both `OnShow` and `OnHide`, so a host can repaint a settings panel whose checkbox mirrors the console's visibility. |
 | `slash` | string | no | Composes the checkbox tooltip's `"<slash> debug"` reference. |
-| `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. |
+| `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap) below. |
 | `skin` | table | no | Overrides `Core.SKIN`. |
 
 ### The public surface
@@ -259,7 +259,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `applyDefault` | function(row) | no | Restore one row to its default. |
 | `parse` | function(row, text) | no | Defaults to `lib.ParseValue`. |
 | `groupKey` | function(row) | no | Row → the heading it lists under. Defaults to `row.page or "settings"` — a row with no page still lists somewhere. |
-| `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. |
+| `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap) below. |
 
 Only `slash` and `commands` are required, and both raise rather than defaulting: a dispatcher with
 no prefix has nothing to compose usage lines from, and one with no verb table answers every input
@@ -430,7 +430,7 @@ written against minor 1 keeps working unmodified against any later minor.
 | `print` | function(line) | no | Chat-and-console sink, for what the user must see while looking at the game. Defaults to `print`. |
 | `showLog` | function | no | Reveals the host's own log/console window. Defaults to a no-op. The lib owns no console frame of its own, so this is how `start`, `report` and `dump` bring the log into view. |
 | `onChange` | function | no | Called after every state transition, once the panel has already repainted. Lets the host republish on its own message bus. Defaults to a no-op. |
-| `L` | table | no | Locale override table, keyed identically to `lib.STRINGS`. Hosts on the Ka0s standard pass their `NS.L`; unlocalised hosts pass nothing and get the built-in English strings. |
+| `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap) below. Unlocalised hosts pass nothing and get the built-in English strings. |
 | `slash` | string | no | The command prefix shown in the panel's command column and in `Usage()`/`StatusLines()`. Defaults to `"/" .. name:lower()`. |
 | `title` | string | no | Panel title (before the `— Perf Run` suffix). Defaults to `name`. |
 | `ring` | number | no | Depth of the SavedVariables capture ring. Defaults to `lib.DEFAULT_RING` (10). |
@@ -634,6 +634,45 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `on` | Plain boolean field — read directly by every hot-path bracket. |
 | `suspended` | Plain boolean field, the one the host contract above tells a show-decision to consult. Set by `Suspend()`/`Resume()`; `Stop()` leaves it alone. |
 | `__buckets()` / `__fpsArms()` / `__completed()` / `__reviewed()` / `__sampler()` / `__panel()` | Test seams over state that is otherwise private. A host suite asserting that a declared bucket was actually reached has no other handle on it. |
+
+## The `L` trap
+
+Every module that takes an `L` override resolves it with **`rawget`** — the host's table first, then
+the module's own `STRINGS`. `rawget` is deliberate, and it is what makes the override safe against
+**a locale table with a metatable fallback** — which is what every Ka0s addon has, because the
+standard mandates one (anti-patterns #2, "AceLocale strict mode — use metatable fallback"):
+
+```lua
+local L = setmetatable({}, { __index = function(_, k) return k end })   -- locales/enUS.lua
+```
+
+`L["STEP_START"]` on such a table answers `"STEP_START"`. Before `DebugLog` minor 3 / `Slash` minor 3
+/ `Perf` minor 4 the resolver used a plain index, accepted that synthesised string, and so never
+reached this library's own strings — the host rendered raw keys (`STEP_START`,
+`PANEL_TITLE_SUFFIX`, `LIST_HEADER`) in place of English, for every key at once, visible only in
+game. KickCD shipped a perf panel titled `Ka0s KickCDPANEL_TITLE_SUFFIX` this way.
+
+`rawget` asks the only question that matters — *did the host actually put a value here?* — so a
+genuine entry still overrides and a fallback-only table correctly falls through. **You no longer have
+to strip your locale table before passing it.** The guidance below is still the clearer habit, and it
+is what keeps a host working against an older vendored copy:
+
+- **Translating nothing?** Omit `L`. This is the common case, and it is what AbsorbTracker does for
+  every module.
+- **Translating something?** Build a plain table of just those keys:
+
+  ```lua
+  L = { LIST_HEADER = ("|cff33ff99%s|r"):format(NS.L["Available settings"]) },
+  ```
+
+  The values may come from the locale table; the **table you pass** must not be it.
+- **SHOULD NOT** pass `NS.L`, an AceLocale table, or anything else whose `__index` synthesises a
+  value for an unknown key. It is safe from the minors above, but a host that does so gets no
+  override at all from the keys it *did* translate through the fallback, and it breaks outright
+  against any older vendored copy still carrying the plain-index resolver.
+
+A host suite can pin this cheaply: assert that a rendered label does not match `^[A-Z][A-Z0-9_]+$`.
+A resolved string is prose; an unresolved one is the key, and no English label is SCREAMING_SNAKE_CASE.
 
 ## Development
 

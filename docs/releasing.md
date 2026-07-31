@@ -117,11 +117,11 @@ which hosts' descriptors a change to one module can reach.
 
 | Module | Consumers | Where the wiring lives |
 |---|---|---|
-| `LibKa0s-Core-1.0` | AbsorbTracker | `core/CoreSetup.lua` |
-| `LibKa0s-DebugLog-1.0` | AbsorbTracker | `core/DebugLogSetup.lua` |
-| `LibKa0s-Slash-1.0` | AbsorbTracker | `settings/Slash.lua` |
-| `LibKa0s-Options-1.0` | AbsorbTracker | `settings/OptionsSetup.lua`, plus `settings/UnitPanel.lua` |
-| `LibKa0s-Perf-1.0` | AbsorbTracker | `core/PerfSetup.lua` |
+| `LibKa0s-Core-1.0` | AbsorbTracker, KickCD | `core/CoreSetup.lua` (both) |
+| `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD | `core/DebugLogSetup.lua` (both) |
+| `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD | `settings/Slash.lua` (both) |
+| `LibKa0s-Options-1.0` | AbsorbTracker, KickCD | AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua` |
+| `LibKa0s-Perf-1.0` | AbsorbTracker, KickCD | `core/PerfSetup.lua` (both) |
 
 AbsorbTracker vendors to `libs/LibKa0s/` and is consumer #1 for all five. Its `settings/UnitPanel.lua`
 is the one non-obvious entry: it **decorates the library instance itself** — `NS.Helpers` *is* the
@@ -129,9 +129,22 @@ is the one non-obvious entry: it **decorates the library instance itself** — `
 generalise, `ResetAllPositions` and `RenderUnitPanel`. A change to the Options instance surface can
 therefore collide with a host member, which no other module can do.
 
+KickCD is consumer #2 for all five, and two of its wirings are worth knowing about before changing a
+descriptor:
+
+- **`LibKa0s-Slash-1.0` has no colour codec, and KickCD is why that surfaced.** `lib.FormatValue` is
+  lib-level and reached from the instance's private `kv()`, so there is no seam a host can inject one
+  into — unlike `LibKa0s-Options-1.0`, which solves the identical problem with `colorDecode` /
+  `colorEncode`. KickCD initially closed the gap with `get`/`parse` closures in its setup file and
+  then removed them by migrating its stored colour shape instead. The asymmetry between the two
+  modules is still there for the next host that stores colours its own way.
+- **`RenderRows` does not pcall each row.** KickCD's own flow engine did, so one corrupt saved value
+  or one throwing `values` function cost that row and nothing else; the library guards the known
+  corruption but lets a raising maker take the whole page. Not descriptor-expressible.
+
 Add each addon here as it adopts a module, so "every consumer" in step 7 is a list rather than a
-memory. Planned, per `docs/adoption-prompt.md`: KickCD first (deliberately, as the most structurally
-complex), then BankLedger, ConsumableMaster, LootHistory, PanelMaster, prettychat and WhatGroup.
+memory. Remaining, per `docs/adoption-prompt.md`: BankLedger, ConsumableMaster, LootHistory,
+PanelMaster, prettychat and WhatGroup.
 `WhoGotLoots` and `BuffTextNotifications` are out of scope until they are on the standard at all.
 
 ## Before the first public release

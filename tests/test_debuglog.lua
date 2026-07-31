@@ -505,3 +505,45 @@ test("dbg: Add renders a secret message as the sentinel", function()
   T.assertTrue(D:LastLine():find(T.core.SECRET, 1, true) ~= nil,
     "Add is the path a host's perf output takes; it must guard like the gated sink does")
 end)
+
+-- ── the `L` trap ────────────────────────────────────────────────────────────
+--
+-- A host's locale table carries a metatable fallback that answers EVERY key with
+-- the key itself — the Ka0s standard mandates one (anti-patterns #2). Resolving
+-- an override with a plain index therefore accepts that synthesised value for
+-- every key, this module's own STRINGS become unreachable, and the host renders
+-- raw keys. It shipped: KickCD's perf panel read "STEP_START" / "Ka0s
+-- KickCDPANEL_TITLE_SUFFIX" in game, and no headless case caught it.
+--
+-- rawget is the fix, and it is the RIGHT one rather than a heuristic: it asks
+-- "did the host actually put a value here?", which is precisely the question.
+
+local function fallbackLocale()
+  return setmetatable({}, { __index = function(_, k) return k end })
+end
+
+test("an L whose metatable synthesises every key does NOT mask the module's own strings", function()
+  -- red under: reverting D:Text to `strings[key]`
+  local d = newLog({ L = fallbackLocale() })
+  assertEqual(d:Text("DEBUG_ON"), debuglog.STRINGS.DEBUG_ON,
+    "a synthesised override must fall through to the module's own string")
+  assertEqual(d:Text("COPY_TITLE"), debuglog.STRINGS.COPY_TITLE)
+end)
+
+test("a REAL entry in an L that also has a fallback still overrides", function()
+  -- The half rawget must not break: a host with a genuine translation sitting in
+  -- a table that also has the fallback still gets its translation.
+  local L = fallbackLocale()
+  rawset(L, "DEBUG_ON", "Debogage: ACTIF")
+  local d = newLog({ L = L })
+  assertEqual(d:Text("DEBUG_ON"), "Debogage: ACTIF", "a real entry must still win")
+  assertEqual(d:Text("DEBUG_OFF"), debuglog.STRINGS.DEBUG_OFF,
+    "and its neighbours must still fall through")
+end)
+
+test("a plain L table overrides exactly as before", function()
+  -- The existing-consumer path, unchanged.
+  local d = newLog({ L = { DEBUG_ON = "ON!" } })
+  assertEqual(d:Text("DEBUG_ON"), "ON!")
+  assertEqual(d:Text("DEBUG_OFF"), debuglog.STRINGS.DEBUG_OFF)
+end)

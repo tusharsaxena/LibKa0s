@@ -440,3 +440,37 @@ test("sl: Slash refuses to register without Core", function()
   Loader.load("LibKa0s/Slash.lua", nil, bare)
   T.assertNil(bare.LibStub("LibKa0s-Slash-1.0", true), "no Core, no dispatcher")
 end)
+
+-- ── the `L` trap ────────────────────────────────────────────────────────────
+--
+-- See tests/test_debuglog.lua for the full account. In short: a Ka0s host's
+-- locale table answers EVERY key with the key itself (the standard mandates the
+-- metatable fallback), so resolving an override with a plain index makes this
+-- module's own STRINGS unreachable and the host prints raw keys.
+
+local function fallbackLocale()
+  return setmetatable({}, { __index = function(_, k) return k end })
+end
+
+test("sl: an L whose metatable synthesises every key does NOT mask the module's strings", function()
+  -- red under: reverting Sl:Text to `strings[key]`
+  local Sl = F.new({ L = fallbackLocale() })
+  assertEqual(Sl:Text("LIST_HEADER"), slash.STRINGS.LIST_HEADER,
+    "a synthesised override must fall through to the module's own string")
+  assertEqual(Sl:Text("NOT_FOUND"), slash.STRINGS.NOT_FOUND)
+end)
+
+test("sl: a REAL entry in an L that also has a fallback still overrides", function()
+  local L = fallbackLocale()
+  rawset(L, "LIST_HEADER", "Reglages disponibles")
+  local Sl = F.new({ L = L })
+  assertEqual(Sl:Text("LIST_HEADER"), "Reglages disponibles", "a real entry must still win")
+  assertEqual(Sl:Text("NOT_FOUND"), slash.STRINGS.NOT_FOUND,
+    "and its neighbours must still fall through")
+end)
+
+test("sl: a plain L table overrides exactly as before", function()
+  local Sl = F.new({ L = { LIST_HEADER = "Settings!" } })
+  assertEqual(Sl:Text("LIST_HEADER"), "Settings!")
+  assertEqual(Sl:Text("NOT_FOUND"), slash.STRINGS.NOT_FOUND)
+end)

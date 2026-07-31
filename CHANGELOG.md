@@ -12,12 +12,40 @@ cannot drift. Release order is in
 
 ## Unreleased
 
-Versions in this release: **Core minor 2**, **DebugLog minor 2**, **Slash minor 2**,
+Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 3**,
 **Options minor 2**, **OptionsWidgets minor 2**, **OptionsScroll minor 2**,
-**Perf minor 3**, **PerfPanel minor 3**.
+**Perf minor 4**, **PerfPanel minor 3**.
 
 Grouped by major, newest first. A file's entries live under the major that owns it, so "what changed
 in Perf" is one heading rather than a hunt.
+
+### The `L` trap — `DebugLog.lua`, `Slash.lua`, `Perf.lua`
+
+An `L` override is now resolved with `rawget` rather than a plain index, in all three modules that
+take one.
+
+Every Ka0s host's locale table carries a metatable fallback that answers an unknown key **with the
+key** — the standard mandates it (anti-patterns #2). A plain index therefore accepted that
+synthesised string for *every* key, so a host that passed its addon-wide locale table made these
+modules' own `STRINGS` unreachable and rendered raw keys in place of English. It fails for every
+string at once, cannot fail in a headless case that only checks a label is non-empty, and is visible
+only in game.
+
+It shipped: KickCD's perf panel rendered `Ka0s KickCDPANEL_TITLE_SUFFIX` and seven `STEP_*` keys.
+AbsorbTracker was unaffected because it passes no `L` at all.
+
+`rawget` asks the only question that matters — did the host actually put a value here? A genuine
+entry still overrides; a fallback-only table correctly falls through. **Additive and
+behaviour-preserving for every existing consumer**: a real entry is `rawget`-visible, so no host that
+was working changes.
+
+`PerfPanel.lua` does NOT bump: it receives `tr` as a parameter from `Perf.lua`, so the fix reaches
+the step panel without the file changing.
+
+The README's per-module descriptor tables previously said *"hosts on the Ka0s standard pass their
+`NS.L`"*, which was precisely the advice that caused this. Corrected, and a **The `L` trap** section
+added to the README and to `docs/adoption-prompt.md` with the one-line assertion that catches it:
+a rendered label must not match `^[A-Z][A-Z0-9_]+$`.
 
 ### Review fixes — all five majors
 
