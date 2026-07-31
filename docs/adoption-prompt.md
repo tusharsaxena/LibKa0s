@@ -334,6 +334,62 @@ to land once the other four are green.
 - **Counting `tests/perf.lua`'s scenarios** in `docs/test-cases.md` or the `[tests]` badge. They are
   not test cases.
 
+### When the library itself has to change
+
+Expect this. AbsorbTracker is one addon, and every descriptor field was shaped against it — so the
+first thing a second adopter does is find the assumptions. A gap here is the most valuable output of
+the whole exercise, and it is **not** something to work around locally.
+
+**Never edit `libs/`.** The next re-vendor reverts it silently and the revert reads as a regression
+with no cause anywhere in this repo's history. A library problem is fixed in `../LibKa0s` and
+re-vendored back. That is the whole rule, and it has no exceptions.
+
+**First, decide whether it is actually a library problem.** Most misfits are host-shaped and belong
+in the adapter you write in the setup file — a 3-arg write seam wrapped down to 2, a `groupKey` that
+reads a differently-named row field, a colour codec. Reach for a library change only when the
+descriptor genuinely cannot express what the host needs. If you can write it as a closure in the
+setup file, it is not a library change.
+
+**The contract is additive-only within `-1.0`.** You may ADD an optional field with a default that
+preserves today's behaviour for every existing consumer. You may **not** remove a field, rename one,
+change what one means, or make an optional field required — several addons have vendored copies and
+you cannot know who holds what. If the change cannot be expressed additively, stop and report it
+rather than doing it: that is a `-2.0` conversation, not a migration step.
+
+When it is a real, additive library change, do it in this order and do not skip the middle:
+
+1. **Write the failing test in `../LibKa0s` first**, in that module's own suite, and confirm it fails
+   for the reason you expect — the individual message, not "the suite is red".
+2. **Make the change.** Default the new field so an existing consumer that does not pass it behaves
+   exactly as it does today.
+3. **Bump that file's `MINOR`** — `MINOR` in `Core.lua` / `DebugLog.lua` / `Slash.lua` /
+   `Options.lua` / `Perf.lua`, `WIDGETS_MINOR` in `OptionsWidgets.lua`, `SCROLL_MINOR` in
+   `OptionsScroll.lua`, `PANEL_MINOR` in `PerfPanel.lua`. Only the files you touched.
+4. **Update `../LibKa0s/CHANGELOG.md`.** The version block must contain the literal substring
+   `<FileBasename> minor <N>` for every file, at its new number. `tests/test_versioning.lua` fails
+   otherwise — this is enforced, not remembered.
+5. **Document the new field** in `../LibKa0s/README.md`'s descriptor table for that module. A field
+   that exists and is undocumented is a field the next adopter re-invents.
+6. **Green the library**: `lua tests/run.lua` and `luacheck .` (0/0) in `../LibKa0s`.
+7. **Re-vendor into EVERY consumer, not just this addon.** The consumer list is in
+   `../LibKa0s/docs/releasing.md`. It starts at AbsorbTracker and grows by one every time an addon
+   completes this migration — so check it, do not assume it is still just the one.
+8. **Run each existing consumer's full suite** and confirm it is unchanged. This is the step that
+   proves your "additive" change was additive. AbsorbTracker is 449 passed / 0 failed at the time of
+   writing; if that number moves, your change was not additive and you need to know before it ships
+   rather than after.
+9. **Commit the library change in `../LibKa0s` on its own**, then the re-vendor in each consumer as
+   its own commit, so the sync is legible in history rather than buried in a feature diff.
+10. **Add this addon to the Consumers table** in `../LibKa0s/docs/releasing.md`, per module, naming
+    the file its wiring lives in.
+
+**If you have to raise a `NEEDS_CORE` floor, stop and say so.** That is a breaking change to the
+*vendoring* rather than to the API: every consumer whose `libs/` still holds the older `Core.lua`
+loses the whole module until it is re-vendored. It is legitimate, but it is a decision, not a step.
+
+**Report every library change you made, and every one you decided against.** The ones you rejected
+are as useful as the ones you made — they are the record of where the contract held under pressure.
+
 ### The gate
 
 Run in this addon's repo and paste the real output — do not summarise a run you did not do:
