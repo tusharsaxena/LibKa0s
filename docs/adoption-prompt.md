@@ -26,8 +26,8 @@ buckets is yours to decide.
    `testing-§7`/`§8`, `debug-logging-§12`, and anti-patterns **#43/#44/#45**.
 2. **`LibKa0s/README.md`** — the `LibKa0s-Perf-1.0` descriptor contract, field by field, the
    `suspend`/`resume` host contract, and that module's public surface (the README also documents
-   `LibKa0s-Core-1.0` and `LibKa0s-DebugLog-1.0`, which are not this task). This is authoritative
-   over anything below.
+   `LibKa0s-Core-1.0`, `LibKa0s-DebugLog-1.0`, `LibKa0s-Slash-1.0` and `LibKa0s-Options-1.0` — four
+   other modules, none of which is this task). This is authoritative over anything below.
 3. **`LibKa0s/docs/record-schema.md`** and **`LibKa0s/docs/releasing.md`**.
 4. **The worked reference: `AbsorbTracker/core/PerfSetup.lua`** — consumer #1, in a sibling repo.
    Read it as a shape to follow, not text to copy: its buckets, its suspend body, and its show-decision
@@ -66,7 +66,10 @@ file:line evidence in your report:
    make here.
 2. **TOC.** Add `libs\LibKa0s\LibKa0s.xml` to the `# Libraries` block **after** Ace3. Add
    `core\PerfSetup.lua` positioned **before** any file that will take `local Perf = NS.Perf` as a
-   load-time upvalue. Add `<Addon>PerfDB` to `## SavedVariables:` as the second global.
+   load-time upvalue, and **after** the file that publishes the host's printer — the descriptor's
+   `log`, `print` and `showLog` all route through it. In AbsorbTracker that puts `PerfSetup.lua`
+   immediately after `core/CoreSetup.lua`. Add `<Addon>PerfDB` to `## SavedVariables:` as the second
+   global.
 3. **`core/PerfSetup.lua`** — the descriptor. Required: `name`, `sv`, `suspend`, `resume`. Supply
    `version`, `slash`, `title`, `buckets`, `log`, `print`, `showLog`, `decorate` as this addon's own
    seams allow. It **must degrade, not error**, when the library is absent: build a stub carrying

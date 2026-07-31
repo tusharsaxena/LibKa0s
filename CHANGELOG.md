@@ -5,8 +5,9 @@ Two version numbers, and they are not the same thing. The repo carries a semver 
 that file — that is what LibStub compares when it picks a winner between vendored copies, and a
 released change that forgets its bump silently does not reach any host that already has the old copy.
 
-Every release therefore opens with a version block naming each file's live minor. `tests/run.lua`
-enforces that the block and `lib.MODULES` agree, so the two cannot drift. Release order is in
+Every release therefore opens with a version block naming each file's live minor.
+`tests/test_versioning.lua` enforces that the block and every major's `lib.MODULES` agree, so the two
+cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
 ## Unreleased
@@ -15,13 +16,18 @@ Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Slash minor 
 **Options minor 1**, **OptionsWidgets minor 1**, **OptionsScroll minor 1**,
 **Perf minor 2**, **PerfPanel minor 2**.
 
+Grouped by major, newest first. A file's entries live under the major that owns it, so "what changed
+in Perf" is one heading rather than a hunt.
+
+### `LibKa0s-Options-1.0`
+
 - New module `LibStub("LibKa0s-Options-1.0")` — the Blizzard settings-canvas shell, the schema-row
   to AceGUI translation and the two-column flow engine, in three files under one major
   (`Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua`). `lib:New{ parentTitle, get, set,
   applyDefault, rowsForPage, allRows, … }` returns an instance owning its own panel registry, so
   one addon's Defaults button can never run another's refreshers. The basenames are namespaced
   because the changelog check below plain-searches one file for `<Basename> minor <N>`, and
-  `Widgets`/`Panel` are exactly what a future window module would want.
+  `Widgets.lua`/`Panel.lua` are exactly what a future window module would want.
 - Five widget types ship in `-1.0`, not four: the edit box (`dialogControl = "EditBox"`) is here
   because adding a type later is additive but retrofitting one into a frozen dispatch table is not.
   No AbsorbTracker row uses it; KickCD's label rows do.
@@ -35,6 +41,8 @@ Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Slash minor 
   every addon in a session, so per-addon marker names would let two addons each patch a widget the
   other had already patched.
 
+### `LibKa0s-Slash-1.0`
+
 - New module `LibStub("LibKa0s-Slash-1.0")` — the slash dispatcher, the help renderer, the schema
   CLI (`list`/`get`/`set`/`reset`/`resetall`/`version`) and the type-aware value parser. The parser
   is the reason this shape won rather than the coercing one the other copies carry: a number clamps
@@ -45,6 +53,8 @@ Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Slash minor 
 - The COMMANDS table stays the host's and is passed into the descriptor. A host renders the same
   table on its own About page, so a library owning it would force the options module to consume
   this one — and two libraries reaching for each other is a real dependency cycle.
+
+### `LibKa0s-DebugLog-1.0`
 
 - New module `LibStub("LibKa0s-DebugLog-1.0")` — the on-screen debug console, which was the most
   duplicated thing in the collection: seven hand-transcribed copies of a window the standard already
@@ -57,6 +67,8 @@ Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Slash minor 
 - The buffer cap is now covered: no addon suite ever wrote 501 lines, so the eviction path had never
   run under test.
 
+### `LibKa0s-Core-1.0`
+
 - New module `LibStub("LibKa0s-Core-1.0")` — the two seams every other module sits on. The
   secret-safe seam (`IsConcatSafe`, `SafeToString`, `SECRET`) carries AbsorbTracker's canonical
   `table.concat` probe, the only detector that fails on what a real combat-protected value actually
@@ -64,6 +76,9 @@ Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Slash minor 
   the close × a host's windows share. `lib:New{ prefix, sep, sink }` returns the prefixed,
   secret-safe chat printer, with `prefix` re-read on every call so a host whose tag constant loads
   later can pass a function instead of capturing nil forever.
+
+### `LibKa0s-Perf-1.0`
+
 - **Fixed:** a combat-protected value logged by a perf run rendered as its raw self, then raised
   inside the host's `table.concat(buffer, "\n")` when the user pressed Copy — killing the Copy
   button for the rest of the session. `Perf minor 2` deletes the private stringifier that caused it
@@ -85,6 +100,9 @@ Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Slash minor 
   re-resolve on every repaint; and a panel click prints exactly what typing the same command prints.
 - `lib.MODULES` publishes the live minor of every file in the major, so version skew across vendored
   copies is answerable from in-game rather than by reading source.
+
+### Documentation
+
 - Documentation: the descriptor contract, the `suspend`/`resume` host contract, the public surface,
   and the record schema (v2) are written up in `README.md` and `docs/record-schema.md` (issue
   [#4](https://github.com/tusharsaxena/LibKa0s/issues/4)).
