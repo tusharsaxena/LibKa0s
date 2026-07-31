@@ -13,7 +13,7 @@ Read the spec first — this plan does not restate its reasoning, only its conse
 | M1 | Prerequisites — strict LibStub mock, TOC-derived load list, N-major versioning | **done** |
 | M2 | `testkit/` extracted; both repos consume it | **done** |
 | M3 | `LibKa0s-Core-1.0` + Perf consumes it | **done** |
-| M4 | `LibKa0s-DebugLog-1.0` | not started |
+| M4 | `LibKa0s-DebugLog-1.0` | **done** |
 | M5 | `LibKa0s-Slash-1.0` | not started |
 | M6 | `LibKa0s-Options-1.0` | not started |
 | M7 | Documentation | not started |
@@ -21,13 +21,13 @@ Read the spec first — this plan does not restate its reasoning, only its conse
 | M9 | In-game smoke tests | not started |
 | M10–M12 | Standard, plugin, adoption prompt | not started |
 
-State at the pause after M3: **AbsorbTracker 440 passed / 0 failed, LibKa0s 170 passed / 0 failed,
+State at the pause after M4: **AbsorbTracker 432 passed / 0 failed, LibKa0s 201 passed / 0 failed,
 `luacheck .` 0/0 in both.** `diff -r` empty for `LibKa0s` → `libs/LibKa0s` and for `testkit` →
 `tests/_kit`. The `tests/perf.lua` parity figures are unchanged from the pre-extraction baseline —
 `paintPass` 12.0 api/iter and 312.0 bytes/iter, `probeOverheadOn` 312.3 bytes/iter — which is the
 artefact proving neither the harness move nor the Core extraction touched the measured paths.
 
-Next session starts at M4.
+Next session starts at M5.
 
 ---
 
@@ -647,3 +647,87 @@ if `CoreSetup.lua` published nothing at all. `AT/tests/test_coresetup.lua` cover
 only this repo can break: that `NS.SafeToString`/`NS.IsConcatSafe` are the library's own function
 values and not a leftover copy, that a printed line carries the `[AT]` tag, that `NS.Print` and
 `NS.Util.print` are one object across the AceConsole reclaim, and the degraded build.
+
+**M4a — `print` does NOT default to a Core printer instance.** The descriptor table says `print`
+"defaults to Core's", but §3.2 rule 1 forbids a `Core:New` result crossing between modules, and
+Core's printer requires a `prefix` DebugLog has no way to know. So the default writes to
+`DEFAULT_CHAT_FRAME` untagged — which is Core's *default sink*, the part of "Core's" that can
+travel — and the descriptor documents that a host wanting its tag passes its own printer, which
+every Ka0s addon does. `safeToString` genuinely does default to Core's, because that one is a
+stateless function and rule 1 permits exactly that.
+
+**M4b — `lib.MakeCloseButton` is re-exported from Core, on the plan's authority, not the spec's.**
+The spec never mentions it; all three of its `MakeCloseButton` references are Core to Perf. But the
+plan's M4 interface list names it, and the live code needs it: `core/PerfSetup.lua` hands
+`NS.DebugLog.MakeCloseButton` to Perf through `decorate`, so dropping the member breaks the perf
+panel's close button. Re-exporting the *same function object* rather than a wrapper is what makes
+"one factory" true — a test asserts the identity. Note this freezes a new name into `-1.0`
+forever, which is why it is recorded here rather than assumed.
+
+**M4c — a second test seam, `_frameForTest`.** The visibility callback is hooked to the frame's
+OnShow/OnHide rather than called from `Show()`/`Hide()`, deliberately: Esc and the close button both
+hide the window without going through either method, and a host whose settings checkbox mirrors
+visibility has to follow those too. The headless mock's `Show()` tracks visibility without firing
+OnShow, so the only way to exercise the hook is to drive the handler directly. Same justification as
+the existing `_toggleClickForTest`, and written into the file next to it.
+
+**M4d — `.luacheckrc` gained `432/self`.** A module whose instance carries methods defines them as
+`function D:Method()` inside the `lib:New` body, so each one's implicit `self` shadows New's own.
+The shadowing is the point, and the outer `self` is the one the config's existing paragraph already
+says never to read. M5 and M6 have the same shape, so this is a one-time config change rather than a
+per-file annotation.
+
+**M4e — `AT/tests/test_util.lua` is deleted, not modified.** The plan's file list says "modify". It
+held exactly two cases by the start of M4, both of them the shared sink's, and both moved upstream.
+Leaving a suite file with no cases in the runner's list is worse than deleting it: the framework
+silently skips a listed file that does not exist, so an empty one reads as coverage that is not
+there.
+
+**M4f — the buffer cap is tested for the first time.** `MAX_BUFFER = 500` and the
+`table.remove(buffer, 1)` eviction have shipped since the console was written, and no addon suite
+ever wrote 501 lines, so the eviction path had never once executed under test. The upstream case
+writes `MAX_BUFFER + 10` lines and asserts both that the length holds at the cap and that the line
+dropped is the OLDEST — a cap that evicted the newest would keep the length correct and the console
+useless.
+
+**M4g — `DebugLogSetup.lua` keeps `DebugLog.lua`'s TOC slot, not the one §6.1 draws.** The spec's
+core block puts `core\\DebugLogSetup.lua` immediately after `core\\CoreSetup.lua` and before
+`core\\PerfSetup.lua`. The shipped TOC leaves it where `core/DebugLog.lua` was, after
+`core\\LSMPatch.lua` — so `PerfSetup` still loads *first*, exactly as it did before the extraction.
+
+Recorded rather than silently taken, because it is load-bearing in a way that reads like an
+oversight. `core/PerfSetup.lua`'s `decorate` reaches for `NS.DebugLog.MakeCloseButton`, and it is
+allowed to only because `decorate` fires at frame-build time, long after every file has loaded —
+which is the invariant the plan says to write into the file, and which exists *because* of this
+ordering. Moving DebugLogSetup up to where §6.1 draws it would make `NS.DebugLog` already present
+when PerfSetup loads, and the next reader would then delete the lazy-lookup comment as pointless,
+re-arming the hazard for whichever addon adopts next with the opposite order. Zero TOC churn was
+also the stated goal of §3.1. `tests/test_perf.lua`'s `loadDegraded()` list mirrors the real order
+for the same reason.
+
+**M4h — the review pass rewrote more of M4 than it flagged.** Worth recording because the findings
+were not stylistic. Three were behavioural drift I had introduced while transcribing the console:
+the Copy and Clear title-bar buttons ended up in the opposite order with different widths, the
+title-bar divider silently took the *status* divider's colour and inset, and the drag bar lost its
+one-pixel inset — every one of them a host literal that had quietly failed to find a home, and every
+one inherited by all seven addons that adopt. One was a live hazard: `ApplySkin` indexed
+`skin.bg[1]` unguarded while the descriptor documents `skin` only as "overrides Core.SKIN", so a
+host passing a plain WoW backdrop table would raise *after* the frame was assigned but *before*
+`Hide()` and the Esc wiring — a visible, un-closable console that `EnsureFrame` would never rebuild.
+The skin call now runs after both, alongside the scroll sync, for the reason that comment already
+gave.
+
+Four more were tests that could not fail: the console title assertion reduced to `frame ~= nil`
+(the mock's `CreateFontString` returns the frame itself), `ShowCopy` asserted only that `pcall`
+survived, `Hide` "never builds" was unfalsifiable because the builder ends in `Hide()` anyway, and
+the coloured formatter's *delivery* was pinned nowhere — swapping it for the plain one left both
+suites green. Each is now driven through a real seam (`frame.titleText`, a new `D:CopyText()`, the
+`_frameForTest` build probe, and a recorder rawset on the message frame), and each was confirmed by
+mutating the implementation and watching the case go red.
+
+And one was the failure mode this plan keeps rediscovering: `tests/run.lua` still listed
+`test_util`, deleted in this very milestone. The framework skips a listed-but-missing suite by
+design, so the run stayed green at 432 with a dangling pointer — the same silent load-list rot as
+M3c, one milestone later, in a file M4 had already edited. The cause was mechanical: a `sed`
+expression anchored with `$`, which never matches a CRLF line ending, reported success and changed
+nothing.

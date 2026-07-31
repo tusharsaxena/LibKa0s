@@ -21,4 +21,9 @@ globals = { "_G" }
 -- deliberately reads `lib` rather than `self`: a LibStub minor upgrade mutates the shared library
 -- table in place, and `self` is only whatever table the caller happened to be holding. The implicit
 -- self is therefore unused on purpose, and not a warning worth carrying.
-ignore = { "212/self", "212/event" }
+-- 432/self is the same fact seen from the inside. A module whose instance carries methods defines
+-- them as `function D:Method()` inside the `lib:New` body, so each one's implicit `self` shadows
+-- New's own unused implicit `self`. The shadowing is the point — the inner `self` is the instance,
+-- which is what every one of those bodies means — and the outer one is exactly what the paragraph
+-- above says never to read.
+ignore = { "212/self", "212/event", "432/self" }

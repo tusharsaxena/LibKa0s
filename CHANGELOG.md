@@ -11,7 +11,19 @@ enforces that the block and `lib.MODULES` agree, so the two cannot drift. Releas
 
 ## Unreleased
 
-Versions in this release: **Core minor 1**, **Perf minor 2**, **PerfPanel minor 2**.
+Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Perf minor 2**,
+**PerfPanel minor 2**.
+
+- New module `LibStub("LibKa0s-DebugLog-1.0")` — the on-screen debug console, which was the most
+  duplicated thing in the collection: seven hand-transcribed copies of a window the standard already
+  specifies down to the hex codes. `lib:New{ name, title, font, isEnabled, setEnabled, … }` returns
+  an instance owning its own buffer and its own frames, with every frame global derived from `name`
+  so two addons cannot collide on `UISpecialFrames`. The enable flag stays the host's: the library
+  reads and writes it through the `isEnabled`/`setEnabled` pair rather than keeping a second copy
+  that its slash command and its settings panel would disagree with. `initSummary` makes the
+  `[Init]` line a host callback, which is what five of the sister addons already do.
+- The buffer cap is now covered: no addon suite ever wrote 501 lines, so the eviction path had never
+  run under test.
 
 - New module `LibStub("LibKa0s-Core-1.0")` — the two seams every other module sits on. The
   secret-safe seam (`IsConcatSafe`, `SafeToString`, `SECRET`) carries AbsorbTracker's canonical

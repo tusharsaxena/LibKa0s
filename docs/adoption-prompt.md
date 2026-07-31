@@ -24,8 +24,10 @@ buckets is yours to decide.
    <https://github.com/tusharsaxena/WowAddonStandards> — fetched with `curl -fsSL`, not WebFetch
    (its summarizer mangles verbatim content). Also read `library-stack-§7`, `savedvariables-§4`,
    `testing-§7`/`§8`, `debug-logging-§12`, and anti-patterns **#43/#44/#45**.
-2. **`LibKa0s/README.md`** — the descriptor contract, field by field, the `suspend`/`resume` host
-   contract, and the public surface. This is authoritative over anything below.
+2. **`LibKa0s/README.md`** — the `LibKa0s-Perf-1.0` descriptor contract, field by field, the
+   `suspend`/`resume` host contract, and that module's public surface (the README also documents
+   `LibKa0s-Core-1.0` and `LibKa0s-DebugLog-1.0`, which are not this task). This is authoritative
+   over anything below.
 3. **`LibKa0s/docs/record-schema.md`** and **`LibKa0s/docs/releasing.md`**.
 4. **The worked reference: `AbsorbTracker/core/PerfSetup.lua`** — consumer #1, in a sibling repo.
    Read it as a shape to follow, not text to copy: its buckets, its suspend body, and its show-decision

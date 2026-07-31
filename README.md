@@ -3,13 +3,19 @@
 ## What it is
 
 A Ka0s-owned shared library, vendored into Ka0s WoW addons the way Ace3 is — copied into each
-addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Two modules
-ship today: `LibKa0s-Core-1.0`, the small stateless seams every other module sits on — secret-safe
-stringification, the window skin, and a prefixed chat printer — and `LibKa0s-Perf-1.0`, a repeatable
-A/B performance capture for one host addon, which requires Core and refuses to register without it.
+addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Three
+modules ship today:
 
-Everything from *The descriptor* down to *The public surface* documents `LibKa0s-Perf-1.0`. Core has
-its own section, below those.
+- **`LibKa0s-Core-1.0`** — the small stateless seams every other module sits on: secret-safe
+  stringification, the window skin and its close button, and a prefixed chat printer.
+- **`LibKa0s-DebugLog-1.0`** — the on-screen debug console: the window, the copy window, the two
+  formatters, the buffer, and the seam that turns logging on and off.
+- **`LibKa0s-Perf-1.0`** — a repeatable A/B performance capture for one host addon.
+
+DebugLog and Perf both require Core and refuse to register without it.
+
+Everything from *Why it exists* down to *The public surface* documents `LibKa0s-Perf-1.0`. Core and
+DebugLog have their own sections, below those.
 
 ## Why it exists
 
@@ -22,11 +28,11 @@ shared-frame ownership held fixed throughout.
 ## Installing
 
 1. Copy `LibKa0s/` into `<Addon>/libs/LibKa0s/` — the whole folder, every time. The modules are
-   siblings that ship as one released copy, and `Perf.lua` returns without registering at all when
-   `Core.lua` is missing or older than the minor it needs.
+   siblings that ship as one released copy, and both `DebugLog.lua` and `Perf.lua` return without
+   registering at all when `Core.lua` is missing or older than the minor they need.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
-3. Declare `## SavedVariables: <Addon>PerfDB` in the TOC (the global name you'll pass as the
-   descriptor's `sv`).
+3. If you adopt Perf, declare `## SavedVariables: <Addon>PerfDB` in the TOC (the global name you'll
+   pass as the descriptor's `sv`). Core and DebugLog persist nothing.
 
 Do **not** list LibKa0s under `## Dependencies:` — it is vendored, not depended on, and every Ka0s
 addon must work with no other addon installed.
@@ -174,9 +180,17 @@ NS.Perf = lib:New({
     -- not erroring over.
     decorate = function(frame, api)
         if NS.DebugLog and NS.DebugLog.MakeCloseButton then
+            -- Resolved HERE rather than into a local at load time. `decorate` fires at frame-build
+            -- time, long after every file has loaded, which is the only reason this file may reach
+            -- for a member of a module that loads after it. Hoisting the lookup reintroduces the
+            -- ordering hazard.
             local close = NS.DebugLog.MakeCloseButton(frame, api.Hide)
-            close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6, -(api.TITLE_H - 18) / 2)
-            frame.closeButton = close
+            -- The factory answers nil where CreateFrame is unavailable — a close button is worth
+            -- degrading over, not erroring over.
+            if close then
+                close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6, -(api.TITLE_H - 18) / 2)
+                frame.closeButton = close
+            end
         end
     end,
 })
@@ -286,6 +300,101 @@ The returned printer's two members are plain functions, not methods — a host d
 | `Print(...)` | Space-joined, prefix-tagged, secret-safe. Mirrors `print()`'s shape, so a host's existing naked `print(...)` call sites keep working once `print` is bound to this. |
 | `Format(fmt, ...)` | `format()` over pre-stringified arguments, so a secret reaching a `%s` slot renders as the sentinel instead of raising on its way to the chat frame. |
 
+## `LibKa0s-DebugLog-1.0`
+
+The on-screen debug console: a movable window with a colour-coded log, a copy box, a plain-text
+buffer, and the one seam that turns logging on and off.
+
+It exists because the console is the most-duplicated thing in the collection — seven hand-transcribed
+copies of a window the standard already specifies down to the hex codes, drifting one digit at a
+time. What is genuinely per-addon is only the *content* of what gets logged, so everything else lives
+here and the host supplies a descriptor.
+
+Two decisions are worth stating up front, because both look like details and neither is:
+
+- **The enable flag is not stored here.** The host owns it, and the library reads and writes it
+  through the required `isEnabled`/`setEnabled` pair. A library keeping its own copy would leave two
+  truths about whether logging is on, and the host's is the one its slash command and its settings
+  panel read.
+- **Every frame is per-instance**, and every frame global is derived from the descriptor's `name`. A
+  lib-level singleton would give two addons one console — and, worse, one `UISpecialFrames`
+  registration, so Esc would close whichever window registered last.
+
+Like Perf, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and it returns
+before `NewLibrary` if Core is missing or below the minor it needs.
+
+| Name | Meaning |
+|---|---|
+| `lib.FormatPlain(ts, tag, msg)` | `"<ts> \| [<tag>] <msg>"` — what the buffer holds and the copy window mirrors. Pure and lib-level, so a host's tests call it directly. |
+| `lib.FormatColored(ts, tag, msg)` | The console view's line: timestamp muted steel-blue (`6f8faf`), `[tag]` muted tan/gold (`c9a66b`), separator and message default white. |
+| `lib.MAX_BUFFER` | The line cap (500). Fixed by the standard rather than by the host: the cap and the message frame's own `SetMaxLines` must move together or the visible log and the copied buffer diverge. |
+| `lib.MakeCloseButton` | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. |
+| `lib.STRINGS` | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
+| `lib:New(descriptor)` | Build a console for one host. See below. |
+
+### The console descriptor
+
+Everything a host supplies to `lib:New(descriptor)`.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `name` | string | yes | Seeds the frame globals `<name>DebugWindow`, `<name>DebugCopyWindow` and `<name>DebugCopyScroll`. Two hosts sharing a name would clobber each other's globals and each other's Esc handler. |
+| `title` | string | yes | The human title; the library appends its own `" — Debug"`. |
+| `font` | string | yes | Path to the monospace font the console renders in. Required rather than defaulted because a nil here raises inside `SetFont`, halfway through building a window that is then un-closable. |
+| `fontSize` | number | no | Defaults to `10`. |
+| `isEnabled` | function | yes | Reads the host's logging flag. The library never stores it. |
+| `setEnabled` | function | yes | Writes it. Always handed a real boolean. |
+| `print` | function(line) | no | Where the chat acknowledgement goes. Defaults to the chat frame, untagged — a host that wants its own tag passes its printer, which is what every Ka0s addon does. |
+| `safeToString` | function | no | Defaults to Core's. Every logged value goes through it, so a combat-protected value renders rather than raising downstream. |
+| `initSummary` | function | no | Returns one line naming version/schema/profile. The library owns *when* it is emitted (on enable, as the `[Init]` line); only the host can know what it says. |
+| `onVisibilityChanged` | function | no | Fired on both `OnShow` and `OnHide`, so a host can repaint a settings panel whose checkbox mirrors the console's visibility. |
+| `slash` | string | no | Composes the checkbox tooltip's `"<slash> debug"` reference. |
+| `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. |
+| `skin` | table | no | Overrides `Core.SKIN`. |
+
+### The public surface
+
+Everything `lib:New(descriptor)` returns on the instance.
+
+| Name | Meaning |
+|---|---|
+| `buffer` | The plain-text lines, a dense array, newest last and capped at `MAX_BUFFER`. Read directly by host tests across the collection — it is part of the contract, not an internal. |
+| `FormatPlain` / `FormatColored` / `MakeCloseButton` | The lib-level members, mirrored onto the instance so a host holds one object. |
+| `Text(key)` | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
+| `Add(tag, msg)` | Append one line. **Ungated on purpose**: the enable seam's own bracket lines and a host's perf output both have to land whatever the flag says. |
+| `Debug(tag, fmt, ...)` | The gated sink, and a plain function rather than a method — hosts bind it bare (`NS.Debug = D.Debug`) and call it from everywhere. Zero-allocation when off: it returns before building the argument table. |
+| `BufferSize()` | `#buffer`. |
+| `LastLine()` | The newest buffered line. |
+| `FindLine(substr)` | The newest line containing `substr`. Plain search, not a pattern — callers are looking for a tag or a message fragment, neither of which is written as a Lua pattern. |
+| `Clear()` | Empty the log frame and the buffer, then repaint the scrollbar and the status line. |
+| `UpdateScrollBar()` | Re-sync the slider with the message frame's scroll offset. The two run in opposite directions, so they are related by `maxOffset - value`. |
+| `UpdateStatus()` | Repaint the `N / MAX` line counter. |
+| `ShowCopy()` | Open the copy window over the console, filled with the buffer, focused and selected — Ctrl+C, then Esc. |
+| `Show()` / `Hide()` / `IsShown()` / `Toggle()` | Window visibility. `Hide` never builds a frame: a settings panel calls `IsShown` on every refresh, and a `Hide` that constructed a window would build one nobody asked for. |
+| `IsEnabled()` | The host's flag, read through the descriptor and coerced to a boolean. |
+| `RefreshHeader()` | Repaint the title-bar toggle — `Debug: ON` green, `Debug: OFF` red. |
+| `SetEnabled(on)` | The single seam for changing debug state: writes the host's flag, repaints the header, prints the colour-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
+| `ConsoleCheckbox()` | The data contract below. |
+| `_toggleClickForTest` / `_frameForTest` | Test seams. A headless mock's `Show`/`Hide` track visibility without firing `OnShow`/`OnHide`, and stub `GetScript`, so the click handler and the visibility callback are only reachable directly. |
+
+### The `ConsoleCheckbox()` data contract
+
+`ConsoleCheckbox()` returns a plain table, and that is the whole point:
+
+```lua
+{ label = "Debug console", tooltip = "…", get = function() … end, set = function(v) … end }
+```
+
+It is **data, not a widget** — a *data contract*, consumed by the Options module and rendered by it,
+with the host assembling the two. Neither library ever reaches for the other: DebugLog does not know
+an options library exists, and the options library never resolves `LibKa0s-DebugLog-1.0`. That is
+deliberate, and it is what keeps a real dependency cycle from forming between two majors that would
+otherwise each need the other at load time.
+
+The checkbox toggles the window's **visibility** only, never the logging flag. Those are separate
+controls, and a user who closes the console does not expect logging to stop — which is exactly what
+the tooltip says, composed from the descriptor's `slash`.
+
 ## Development
 
 Green gate before every commit, run from the repo root:
@@ -329,10 +438,11 @@ Two version numbers, and they are not the same thing. The repo carries a semver 
 to that file — that is what LibStub compares when it picks a winner between two vendored copies, so a
 released change that skips its bump reaches no host that already carries the old copy.
 
-`lib.MODULES` publishes the live minor of every file (`{ Core = 1, Perf = 2, PerfPanel = 2 }`), which is how you
-answer "which panel is attached to which probe?" from in-game once several addons each ship their own
-vendored copy. `tests/test_versioning.lua` enforces that `MODULES` and `CHANGELOG.md`'s version block
-agree, so a bump cannot land without its changelog entry, nor an entry without its bump.
+`lib.MODULES` publishes the live minor of every file — today
+`{ Core = 1, DebugLog = 1, Perf = 2, PerfPanel = 2 }` — which is how you answer "which panel is
+attached to which probe?" from in-game, once several addons each ship their own vendored copy.
+`tests/test_versioning.lua` enforces that `MODULES` and `CHANGELOG.md`'s version block agree, so a
+bump cannot land without its changelog entry, nor an entry without its bump.
 
 Full release order — bump, changelog, regenerate, tag, then **re-vendor every consumer** — is in
 [docs/releasing.md](docs/releasing.md). That last step is the one that gets forgotten: it already
@@ -350,6 +460,7 @@ answer.
 LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs/LibKa0s/
   LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block; Core first
   Core.lua           -- LibKa0s-Core-1.0, MINOR at the top of the file
+  DebugLog.lua       -- LibKa0s-DebugLog-1.0, MINOR at the top of the file; needs Core
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
 testkit/             -- the shared headless harness, vendored into each addon as tests/_kit/

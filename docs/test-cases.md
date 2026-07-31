@@ -24,6 +24,45 @@ badge and any count quoted in the docs must agree with it.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
+### test_debuglog.lua (36)
+
+- dbg: FormatPlain wraps the tag in brackets with single-space separators
+- dbg: FormatPlain tolerates a nil tag
+- dbg: FormatColored colours the timestamp and tag; pipe and content default
+- dbg: both formatters are reachable on an instance as well as on the library
+- dbg: the window title is the host's, with the library's suffix appended
+- dbg: a host can override the title suffix
+- dbg: Add appends the plain form to the buffer and is never gated on the flag
+- dbg: the cap is 500 and the message frame is held to the same number
+- dbg: the buffer is capped, dropping the oldest line
+- dbg: the buffer stays a dense array of plain strings
+- dbg: Clear wipes the buffer and works before the window was ever built
+- dbg: BufferSize, LastLine and FindLine answer without reaching into .buffer
+- dbg: the sink routes the first arg as the [tag] and every vararg through safeToString
+- dbg: the sink is a no-op, and does no work at all, when logging is off
+- dbg: the sink is dot-callable, because host call sites bind it bare
+- dbg: SetEnabled writes the flag through the host, not into the library
+- dbg: SetEnabled normalises a truthy value to a boolean
+- dbg: enabling acks in green, brackets the session, then adds the [Init] summary
+- dbg: disabling acks in red and the bracket line still lands after the flag flips
+- dbg: disabling adds no [Init] summary
+- dbg: a host with no initSummary gets the bracket line and nothing else
+- dbg: the header toggle click flips the flag through SetEnabled
+- dbg: Show builds and shows; Hide and IsShown never build
+- dbg: Toggle builds the window on its first call
+- dbg: showing and hiding the console tells the host
+- dbg: two instances own separate buffers and separate frames
+- dbg: the copy text is the whole buffer, in order, newline-joined
+- dbg: Add sends the COLOURED form to the console and the plain one to the buffer
+- dbg: the window degrades to nothing when CreateFrame is unavailable
+- dbg: ConsoleCheckbox get reflects window visibility, not the logging flag
+- dbg: ConsoleCheckbox set shows and hides without touching the logging flag
+- dbg: the ConsoleCheckbox tooltip names the host's own slash command
+- dbg: a host with no slash command gets a tooltip that does not mention one
+- dbg: New requires a name, a title, a font and an isEnabled/setEnabled pair
+- dbg: a host that overrides a string gets its own wording
+- dbg: DebugLog re-exports Core's close button so a host has one factory, not two
+
 ### test_perf_core.lua (49)
 
 - lib: registers under its major with a schema and a default ring
@@ -202,10 +241,11 @@ badge and any count quoted in the docs must agree with it.
 | Suite | Cases |
 |-------|------:|
 | test_core.lua | 15 |
+| test_debuglog.lua | 36 |
 | test_perf_core.lua | 49 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
-| **Total** | **170** |
+| **Total** | **206** |

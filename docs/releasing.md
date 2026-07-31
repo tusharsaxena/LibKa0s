@@ -15,12 +15,15 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 ## Order of operations
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
-2. **Bump the minor of every file you changed.** `MINOR` in `Core.lua`, `MINOR` in `Perf.lua`,
-   `PANEL_MINOR` in `PerfPanel.lua`. A file you did not touch does not move. Bumping the whole lib in
-   lockstep would discard the narrow-skew property that made one major per module worth having.
+2. **Bump the minor of every file you changed.** `MINOR` in `Core.lua`, `MINOR` in `DebugLog.lua`,
+   `MINOR` in `Perf.lua`, `PANEL_MINOR` in `PerfPanel.lua`. A file you did not touch does not move.
+   Bumping the whole lib in lockstep would discard the narrow-skew property that made one major per
+   module worth having.
 3. **A new module is also a new row in `tests/run.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
-   that table rather than naming files inline, so a module missing from it is a module nothing checks.
+   that table rather than naming files inline, so a module missing from it is a module nothing
+   checks. `LibKa0s-DebugLog-1.0` is the most recent row added that way; the table carries one row
+   per shipped major.
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
    say what changed. `tests/test_versioning.lua` fails if the block and any major's `lib.MODULES`
    disagree, so this is enforced rather than remembered.
@@ -58,11 +61,12 @@ Rules, and the reason each exists:
   minors, per-module re-vendoring is exactly how cross-major skew gets manufactured: an addon ends
   up carrying a new `Perf.lua` over an old `Core.lua`, or a `Core.lua` that never arrived at all.
   The only negotiation between majors is a floor — a dependent file names the minimum minor it needs
-  (`NEEDS_CORE` at the top of `Perf.lua`) and returns before `NewLibrary` if the dependency is missing
-  or older, so the module is **absent** rather than half-wired. That is the honest failure, not a
-  working one: the host's setup file reports the library as missing and falls back. Nothing negotiates
-  the other direction, and the paired-minor guard that protects a secondary file within a major does
-  not generalise across them. Whole-folder copying is the mitigation.
+  (`NEEDS_CORE`, at the top of both `DebugLog.lua` and `Perf.lua`) and returns before `NewLibrary`
+  if the dependency is missing or older, so the module is **absent** rather than half-wired. That is
+  the honest failure, not a working one: the host's setup file reports the library as missing and
+  falls back. Nothing negotiates the other direction, and the paired-minor guard that protects a
+  secondary file within a major does not generalise across them. Whole-folder copying is the
+  mitigation.
 - **Raising a dependency floor is a breaking change to the vendoring, not to the API.** If a change
   to `Perf.lua` needs something Core only gained this release, `NEEDS_CORE` moves with it — and every
   consumer whose `libs/` still holds the older `Core.lua` loses the whole module until it is
@@ -84,8 +88,8 @@ you also author is an ongoing **sync**, and the drift window is a single afterno
 
 ## Consumers
 
-- **AbsorbTracker** — `libs/LibKa0s/`, Core seams in `core/CoreSetup.lua`, Perf descriptor in
-  `core/PerfSetup.lua`.
+- **AbsorbTracker** — `libs/LibKa0s/`, Core seams in `core/CoreSetup.lua`, DebugLog descriptor in
+  `core/DebugLogSetup.lua`, Perf descriptor in `core/PerfSetup.lua`.
 
 Add each addon here as it adopts the lib, so "every consumer" in step 7 is a list rather than a
 memory. Planned: KickCD (deliberately second, as the most structurally complex), then LootHistory,
