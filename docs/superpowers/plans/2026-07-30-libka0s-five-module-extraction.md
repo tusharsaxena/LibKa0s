@@ -18,10 +18,12 @@ Read the spec first — this plan does not restate its reasoning, only its conse
 | M6 | `LibKa0s-Options-1.0` | **done** |
 | M7 | Documentation | **done** |
 | M8 | `/wow-addon:review` gate | **done** |
-| M9 | In-game smoke tests | **blocked — needs a live client** |
-| M10–M12 | Standard, plugin, adoption prompt | not started |
+| M9 | In-game smoke tests | **done — all passed** |
+| M10 | `WowAddonStandards` — consume-the-library rewrite (v2.15.0) | **done** |
+| M11 | the `wow-addon` plugin + the new-addon context pack | **done** |
+| M12 | `LibKa0s/docs/adoption-prompt.md` for all five modules | **done** |
 
-State at the pause after M8: **AbsorbTracker 449 passed / 0 failed, LibKa0s 342 passed / 0 failed,
+State at completion: **AbsorbTracker 449 passed / 0 failed, LibKa0s 342 passed / 0 failed,
 `luacheck .` 0/0 in both.** `diff -r` empty for `LibKa0s` → `libs/LibKa0s` and for `testkit` →
 `tests/_kit`. The `tests/perf.lua` parity figures are unchanged from the pre-extraction baseline —
 `paintPass` 12.0 api/iter and 312.0 bytes/iter, `probeOverheadOn` 312.3 bytes/iter — which is the
@@ -47,6 +49,10 @@ milestone per repo, library first:
 | M7 | `9d82849` per-module README order, releasing.md, kit re-vendor | `771affa` retire the four toolkit files from docs |
 | — | `d9f4c33` plan: record M7 | |
 | M8 | `995e19a` review fixes across all five majors, all 8 minors bumped | `ef71076` review fixes + re-vendor |
+| — | `39b1203` plan: record M8 | |
+| M10 | `WowAddonStandards` `810df67` standard v2.15.0 | |
+| M12 | `f938727` adoption prompt for all five modules | |
+| M11 | `WowAddonStandards` `8dbffb1` context pack + audit; `wow-addon` `9505a04` plugin agents | |
 
 ### The working method, established over M3–M5
 
@@ -1114,3 +1120,44 @@ second render pairs again.
 file, and the per-file discipline says a changed file bumps. That looks disproportionate and is not:
 re-vendoring is whole-folder regardless, so the cost of bumping eight is zero, while the cost of
 skipping one is a file whose next real change ships against a host that already has it.
+
+**M10a — the standard contradicted the verified practice, and the contradiction was normative.**
+`library-stack-§3` carried a standing MUST to "vendor only libs the addon actually `LibStub(\"X\")`
+— vendor what you use, nothing more. Prune dead weight." Against a multi-module umbrella that
+licenses exactly what anti-pattern #48 now forbids: an auditor sweeping for dead weight would delete
+the unwired module files, and four of the five majors refuse to register without Core. Resolved by
+separating the SHIP PAYLOAD (whole folder, always) from ADOPTION (per module, on the addon's own
+schedule) — both halves had a real basis, which is why it had survived unnoticed.
+
+**M10b — a rule was deleted with the code it sat beside, leaving its rationale orphaned.** The
+rewrite removed options-ui's `C_Timer.After(0, ...)` body-deferral MUST along with the hand-rolled
+snippet it accompanied. §9's long account of the misdiagnosed group-utility GameMenu taint survived
+— so the section kept the story and lost the instruction, which is the exact failure mode the
+"preserve the reasoning" rule exists to prevent, running in reverse. Restored.
+
+**M10c — the verifier corrected the ground truth, not just the output.** The recon file the writers
+worked from was generated before M8 and said Options performs no descriptor validation and defaults
+`print` to a no-op. M8 changed both. The verifier checked the standard's claims against SOURCE rather
+than against the recon, found the standard right and the recon stale, and said so. A verification
+pass that only compares output to its own inputs cannot catch this class at all.
+
+**M11a — the tooling would have false-flagged the reference addon.** `events-frames-taint` still
+handed the author the `IsConcatSafe`/`SafeToString` implementation to write and named AbsorbTracker's
+`core/Util.lua` as the reference — a file this extraction deleted. `AUDIT.md` says to walk every
+section, so an auditor would have grepped for a locally-defined stringifier, not found one, and filed
+a MUST deviation against the addon that defines compliance. Found by having the verifier EXECUTE the
+audit against AbsorbTracker rather than read the audit's instructions.
+
+**M11b — the new-addon context pack scaffolded an addon that errors at load.** It is dropped
+verbatim into every new addon. `OnInitialize` called `NS.Settings:Register()`, which nothing in the
+pack defines; the `OptionsSetup` snippet never published the three entry points the pack's own page
+files and entry file then call; `core/Util.lua` was in the starter tree and TOC with no snippet
+anywhere; `Namespace.lua` was listed twice. None of this is caught by any test in any repo, because
+a documentation template has no suite — the next new addon was the test.
+
+**M11c — a MUST that leaves no artifact is not auditable, and saying so is part of writing it.**
+`testing-§12` requires mutation-verifying any case that asserts a negative. Mutation leaves nothing
+behind, so an audit can neither confirm nor refute it and would have recorded a deviation against
+every compliant addon forever. The section now states that absence is recorded as *unverified* rather
+than as a deviation, and a SHOULD asks the case to name the mutation that reddens it — which is also
+the cheapest way for the next author to re-run the check instead of re-deriving it.
