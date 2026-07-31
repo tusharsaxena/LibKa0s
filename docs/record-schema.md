@@ -37,7 +37,7 @@ is not re-read or re-migrated by the addon after adopting the library.
   "addon": "AbsorbTracker",             // NEW in schema 2 — which host produced this record
   "source": "ingame",
   "version": "1.9.0",                    // host addon version
-  "interface": 120007,                    // TOC interface; 0 if unresolvable
+  "interface": 120007,                    // client interface (GetBuildInfo); 0 if unresolvable
   "timestamp": 1785110400,                // epoch seconds; 0 if the client has no time()
   "label": "2026-07-30 14:02 dummy-blooddk",
 
@@ -88,8 +88,12 @@ the encoder.
   the report simply prints no who/where/group lines. Every record from a real capture has it.
 - **`fps.deltaMsPerFrame`** is `0` unless *both* arms were sampled — with one arm empty, subtracting
   would report the whole frame time as the host's cost, which is worse than reporting nothing.
-- **`interface`** comes from the host's own TOC metadata (`C_AddOns.GetAddOnMetadata`, or the
-  pre-10.1 global), looked up by `descriptor.name`. `0` if neither accessor exists.
+- **`interface`** is the **client's** interface version — `GetBuildInfo()`'s fourth return. `0` on a
+  client without `GetBuildInfo`. It is deliberately not read from the host's TOC: Blizzard does not
+  serve `Interface` through `GetAddOnMetadata` (that API serves `Title`, `Notes`, `Author`,
+  `Version` and `X-*`), so the earlier lookup answered nil and every record stamped `0`. For a
+  current addon the two agree; when they disagree the client's is the one that explains the
+  capture.
 - **`timestamp`** is `0` if the client has no global `time()` — true of the headless test harness,
   never true in a live client.
 

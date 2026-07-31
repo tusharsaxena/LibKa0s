@@ -6,6 +6,7 @@ read_globals = {
   "LibStub", "CreateFrame", "UIParent", "UISpecialFrames", "DEFAULT_CHAT_FRAME",
   "time", "date", "debugprofilestop", "UnitAffectingCombat", "InCombatLockdown",
   "C_AddOns", "GetAddOnMetadata",
+  "GetBuildInfo",   -- the client interface version a perf record stamps
   -- The settings canvas (LibKa0s-Options-1.0). `Settings` is the public registration API;
   -- `SettingsPanel` is private and only ever reached inside a pcall, for expanding the left tree.
   "Settings", "SettingsPanel", "GameTooltip",

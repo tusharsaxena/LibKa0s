@@ -14,10 +14,30 @@ cannot drift. Release order is in
 
 Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 3**,
 **Options minor 2**, **OptionsWidgets minor 2**, **OptionsScroll minor 2**,
-**Perf minor 4**, **PerfPanel minor 3**.
+**Perf minor 5**, **PerfPanel minor 3**.
 
 Grouped by major, newest first. A file's entries live under the major that owns it, so "what changed
 in Perf" is one heading rather than a hunt.
+
+### `interface` was always 0 — `Perf.lua`
+
+A record's `interface` field is read from `GetBuildInfo()`'s fourth return now, not from
+`GetAddOnMetadata(name, "Interface")`.
+
+Blizzard does not serve `Interface` through the addon-metadata API — it serves `Title`, `Notes`,
+`Author`, `Version` and `X-*` — so the old lookup answered nil and **every record ever emitted
+stamped `"interface":0`**, making an archived capture unattributable to a game build. Confirmed
+against a live 12.0.7 client: `C_AddOns.GetAddOnMetadata("KickCD", "Interface")` returns nothing.
+
+This repo had a case pinning the field at `120007`, and it passed throughout — because
+`tests/wow_mock.lua` stubbed `GetAddOnMetadata` to return `"120007"` for **any field asked of it**.
+A stub that silently succeeds is worse than no stub (kit fidelity rule 1), and this is what that
+rule costs when it is broken: the one case written to catch this exact failure could only ever pass.
+The mock now answers only the fields Blizzard actually serves, and supplies `GetBuildInfo`.
+
+The semantics shift slightly and for the better: the field is the **client's** interface version
+rather than the host's TOC line. For a current addon they agree; when they disagree the client's is
+the one that explains the capture.
 
 ### The `L` trap — `DebugLog.lua`, `Slash.lua`, `Perf.lua`
 

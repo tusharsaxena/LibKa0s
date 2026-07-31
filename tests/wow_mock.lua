@@ -15,11 +15,26 @@ local base = dofile("tests/_kit/mock_base.lua")
 return function()
   local M = base()
 
-  -- Addon metadata, for the `interface` field a perf record stamps. Left out of the base on
-  -- purpose: it is the target of every addon's Compat shim, and those shims are tested by swapping
-  -- `_G.C_AddOns` to nil to reach the deprecated-global fallback. A base-level stub resolves ahead
-  -- of _G and makes that branch unreachable.
-  M.C_AddOns = { GetAddOnMetadata = function() return "120007" end }
+  -- Addon metadata. Left out of the base on purpose: it is the target of every addon's Compat shim,
+  -- and those shims are tested by swapping `_G.C_AddOns` to nil to reach the deprecated-global
+  -- fallback. A base-level stub resolves ahead of _G and makes that branch unreachable.
+  --
+  -- HONEST ABOUT WHICH FIELDS EXIST, and that is the point (fidelity rule 1: a stub that silently
+  -- succeeds is worse than no stub). This returned "120007" for ANY field, including "Interface" —
+  -- which the real client does NOT expose through this API. So `interface` was pinned by a case
+  -- that could only pass, and the field shipped reading 0 in a live capture while the suite stayed
+  -- green. It answers only the fields Blizzard actually serves.
+  local META = {
+    Title   = "Test Host",
+    Notes   = "A fixture.",
+    Author  = "tests",
+    Version = "1.2.3",
+  }
+  M.C_AddOns = { GetAddOnMetadata = function(_, field) return META[field] end }
+
+  -- The client's interface version, which is where `Interface` actually comes from: GetBuildInfo's
+  -- FOURTH return. version, build, date, tocversion.
+  M.GetBuildInfo = function() return "12.0.7", "60000", "Jul 31 2026", 120007 end
 
   -- This repo's suites assert that a capture's context records the character's LOCALISED class
   -- name rather than the token, so the fixture character is a Death Knight — the pair where the two
