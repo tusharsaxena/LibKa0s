@@ -503,6 +503,9 @@ end)
 
 test("lib: a panel-less instance answers STEPS, PanelStateOf and PanelIsActionable safely", function()
   local noPanelMocks = buildMocks()
+  -- Core first: the probe refuses to register without it, so a fresh env has to carry the same
+  -- load order the client does.
+  Loader.load("LibKa0s/Core.lua", nil, noPanelMocks)
   Loader.load("LibKa0s/Perf.lua", nil, noPanelMocks)
   local lib = noPanelMocks.LibStub("LibKa0s-Perf-1.0")
   local p = lib:New({

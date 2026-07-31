@@ -3,8 +3,13 @@
 ## What it is
 
 A Ka0s-owned shared library, vendored into Ka0s WoW addons the way Ace3 is — copied into each
-addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. The first
-module is `LibKa0s-Perf-1.0`, a repeatable A/B performance capture for one host addon.
+addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Two modules
+ship today: `LibKa0s-Core-1.0`, the small stateless seams every other module sits on — secret-safe
+stringification, the window skin, and a prefixed chat printer — and `LibKa0s-Perf-1.0`, a repeatable
+A/B performance capture for one host addon, which requires Core and refuses to register without it.
+
+Everything from *The descriptor* down to *The public surface* documents `LibKa0s-Perf-1.0`. Core has
+its own section, below those.
 
 ## Why it exists
 
@@ -16,7 +21,9 @@ shared-frame ownership held fixed throughout.
 
 ## Installing
 
-1. Copy `LibKa0s/` into `<Addon>/libs/LibKa0s/`.
+1. Copy `LibKa0s/` into `<Addon>/libs/LibKa0s/` — the whole folder, every time. The modules are
+   siblings that ship as one released copy, and `Perf.lua` returns without registering at all when
+   `Core.lua` is missing or older than the minor it needs.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
 3. Declare `## SavedVariables: <Addon>PerfDB` in the TOC (the global name you'll pass as the
    descriptor's `sv`).
@@ -46,7 +53,7 @@ written against minor 1 keeps working unmodified against any later minor.
 | `ring` | number | no | Depth of the SavedVariables capture ring. Defaults to `lib.DEFAULT_RING` (10). |
 | `buckets` | array of `{ key, within }` | no | Declares report order and nesting for `Note()` buckets. `within` names the parent bucket key for buckets that nest (e.g. `paintBar` runs inside `repaintPass`). A bracket calling `Note()` with an undeclared key still records, it just doesn't appear in the report. |
 | `version` | string | no | Host addon version, stamped into `BuildRecord`. Defaults to `"?"`. |
-| `decorate` | function(frame, api) | no | Panel chrome hook, called once at frame creation with the frame and `{ Show, Hide, Toggle, TITLE_H, PAD, ROW_W }`. Lets the host draw its own close button and divider; the lib knows nothing about a host's chrome. |
+| `decorate` | function(frame, api) | no | Panel chrome hook, called once at frame creation with the frame and `{ Show, Hide, Toggle, TITLE_H, PAD, ROW_W }`. Takes precedence over the lib's own chrome: a host that supplies it draws its own close button and divider, and a host that omits it gets `Core.MakeCloseButton` on the title bar rather than nothing. The two paths are exclusive — running both would stack two × on the same corner. |
 
 `slash`, `title` and `showLog` exist specifically because this library serves more than one host.
 The addon this was extracted from hardcoded `/at perf` into its usage text, `"AbsorbTracker"` into
@@ -235,6 +242,50 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `SCHEMA` | The record schema version this build of the lib emits. |
 | `on` | Plain boolean field — read directly by every hot-path bracket. |
 
+## `LibKa0s-Core-1.0`
+
+Two seams that have nothing to do with each other except that both are tiny, stateless and wanted by
+everything. The **secret-safe seam**: a value WoW protects in combat survives `tostring()` and the
+`..` operator and raises only inside `table.concat`, so a detector has to probe the operation that
+actually rejects it. The **window chrome seam**: a debug console and a perf panel that each draw
+their own lookalike backdrop drift apart one hex digit at a time, so the values are shared rather
+than copied. On top of both sits the prefixed chat printer, the one instance-shaped thing here.
+
+Core depends on LibStub and nothing else — no Ace3 — which is what keeps `LibKa0s-Perf-1.0`
+adoptable by addons that are not on the Ace substrate even now that Perf requires it.
+
+Everything on the cross-module path is a lib-level function, never a handed-around instance: a
+stateless function that exists at minor 1 still exists at minor 9, which makes "a Core from any
+vendored copy works with a caller from any other" true by construction.
+
+| Name | Meaning |
+|---|---|
+| `IsConcatSafe(v)` | Whether `v` survives the `table.concat` every emitted line ends in. Probes `table.concat` itself, not `..` — `..` silently propagates secretness and reports a secret as safe. |
+| `SafeToString(v)` | Concat-safe stringifier. Ordinary values → `tostring(v)`; an un-concatenable (secret) value → `lib.SECRET`. `nil` and booleans are answered up front, so they are never masked. |
+| `SECRET` | What an un-renderable value renders as (`"<secret>"`). Exported so a host's tests, its docs and this implementation cannot drift apart. |
+| `SKIN` | The one skin every Ka0s window wears — the backdrop fields plus `bg` and `border`, in one table because taking the backdrop without the colours is exactly the drift this prevents. |
+| `ApplySkin(frame)` | Wear the skin. A no-op on a frame with no `SetBackdrop`: undecorated is not broken. |
+| `MakeCloseButton(parent, onClick)` | The thin × a Ka0s window closes with, returned unanchored for the caller to place. Returns `nil` where `CreateFrame` is unavailable (headless harness, or a load path with no UI). |
+| `lib:New(descriptor)` | Build a prefixed chat printer for one host. See below. |
+
+### The printer descriptor
+
+Everything a host supplies to `lib:New(descriptor)`.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `prefix` | string or function | yes | The tag, **verbatim** — never synthesised from an abbreviation, because the collection's tags differ in case, colour and trailing space. A function is re-read on *every* call, which is what lets a host whose prefix constant lives in a later-loading file pass `function() return NS.PREFIX end` instead of capturing `nil` forever. A prefix that has not resolved yet emits the body alone: an untagged line beats one reading `nil something happened`. |
+| `sep` | string | no | Separates the prefix from the body. Defaults to `" "`; a tag that carries its own trailing space passes `""`. |
+| `sink` | function(line) | no | Where a finished line goes. Defaults to `DEFAULT_CHAT_FRAME:AddMessage`. Injectable because hosts capture chat at exactly this seam in their headless harnesses. |
+
+The returned printer's two members are plain functions, not methods — a host does
+`local print = NS.Print` at file scope and calls it bare, so neither may need a `self`:
+
+| Name | Meaning |
+|---|---|
+| `Print(...)` | Space-joined, prefix-tagged, secret-safe. Mirrors `print()`'s shape, so a host's existing naked `print(...)` call sites keep working once `print` is bound to this. |
+| `Format(fmt, ...)` | `format()` over pre-stringified arguments, so a secret reaching a `%s` slot renders as the sentinel instead of raising on its way to the chat frame. |
+
 ## Development
 
 Green gate before every commit, run from the repo root:
@@ -278,7 +329,7 @@ Two version numbers, and they are not the same thing. The repo carries a semver 
 to that file — that is what LibStub compares when it picks a winner between two vendored copies, so a
 released change that skips its bump reaches no host that already carries the old copy.
 
-`lib.MODULES` publishes the live minor of every file (`{ Perf = 1, PerfPanel = 1 }`), which is how you
+`lib.MODULES` publishes the live minor of every file (`{ Core = 1, Perf = 2, PerfPanel = 2 }`), which is how you
 answer "which panel is attached to which probe?" from in-game once several addons each ship their own
 vendored copy. `tests/test_versioning.lua` enforces that `MODULES` and `CHANGELOG.md`'s version block
 agree, so a bump cannot land without its changelog entry, nor an entry without its bump.
@@ -287,17 +338,27 @@ Full release order — bump, changelog, regenerate, tag, then **re-vendor every 
 [docs/releasing.md](docs/releasing.md). That last step is the one that gets forgotten: it already
 happened once, with both repos' suites green throughout.
 
+Re-vendoring is **whole-folder**, never file by file. `Perf.lua` resolves `LibKa0s-Core-1.0` before
+it calls `NewLibrary` and returns outright if Core is missing or below the minor it needs, so a
+consumer that copied a new `Perf.lua` over an old `Core.lua` gets no probe at all rather than a
+half-updated one — the host's setup stub then says "perf is not installed", which is the honest
+answer.
+
 ## Repo layout
 
 ```
 LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs/LibKa0s/
-  LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block
-  Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file
+  LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block; Core first
+  Core.lua           -- LibKa0s-Core-1.0, MINOR at the top of the file
+  Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
-tests/               -- headless Lua test harness (not shipped)
+testkit/             -- the shared headless harness, vendored into each addon as tests/_kit/
+                        (never shipped: it lives under tests/, which every .pkgmeta already excludes)
+tests/               -- this repo's own test harness, consuming testkit/ through tests/_kit/
 docs/                -- development docs (not shipped)
   releasing.md       -- the two version numbers, the release order, the re-vendor rule
   record-schema.md   -- the capture record, field by field
+  adoption-prompt.md -- the per-addon adoption prompt
   test-cases.md      -- generated case inventory
 LICENSE
 README.md

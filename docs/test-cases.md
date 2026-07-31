@@ -6,6 +6,24 @@ badge and any count quoted in the docs must agree with it.
 
 **Generated — do not hand-edit.** Regenerate with `lua tests/run.lua --list > docs/test-cases.md`.
 
+### test_core.lua (15)
+
+- core: IsConcatSafe is false for a table.concat-hostile value, true for a plain one
+- core: SafeToString renders a secret as lib.SECRET and passes nil/booleans through
+- core: Print joins with a space, prefixes verbatim, and routes through the injected sink
+- core: sep separates the prefix from the body and may be empty
+- core: a function prefix is re-read on every call
+- core: a prefix that has not resolved yet prints the body alone
+- core: Format applies the format string with pre-stringified args
+- core: the default sink is DEFAULT_CHAT_FRAME:AddMessage
+- core: :New refuses a descriptor with no prefix
+- core: ApplySkin no-ops on a frame without SetBackdrop
+- core: ApplySkin applies the skin table and both colours
+- core: MakeCloseButton returns a button wired to onClick
+- core: MakeCloseButton returns nil when CreateFrame is unavailable
+- core: Perf refuses to register when Core is missing or below NEEDS_CORE
+- core: Perf's own stringifier renders a secret as <secret>
+
 ### test_perf_core.lua (49)
 
 - lib: registers under its major with a schema and a default ring
@@ -183,10 +201,11 @@ badge and any count quoted in the docs must agree with it.
 
 | Suite | Cases |
 |-------|------:|
+| test_core.lua | 15 |
 | test_perf_core.lua | 49 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
-| **Total** | **155** |
+| **Total** | **170** |

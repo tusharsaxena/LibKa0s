@@ -14,7 +14,7 @@ local buildMocks = dofile("tests/wow_mock.lua")
 -- Loader.addonName stays nil: library chunks take no arguments, unlike an addon's
 -- `local addonName, NS = ...` header.
 local mocks = buildMocks()
-Loader.loadAll({ "LibKa0s/Perf.lua", "LibKa0s/PerfPanel.lua" }, nil, mocks)
+Loader.loadAll({ "LibKa0s/Core.lua", "LibKa0s/Perf.lua", "LibKa0s/PerfPanel.lua" }, nil, mocks)
 
 -- Every major this library ships and the files that make it up, in LibKa0s.xml order.
 --
@@ -25,6 +25,11 @@ Loader.loadAll({ "LibKa0s/Perf.lua", "LibKa0s/PerfPanel.lua" }, nil, mocks)
 -- `paired` names a secondary file carrying the __<file>Minor / __<file>ProbeMinor guard, so the
 -- pairing assertion generalises with the rest.
 local MAJORS = {
+  {
+    major = "LibKa0s-Core-1.0",
+    files = { "Core" },
+    primary = "Core",
+  },
   {
     major = "LibKa0s-Perf-1.0",
     files = { "Perf", "PerfPanel" },
@@ -38,12 +43,14 @@ local MAJORS = {
 _G.LK_TEST = Kit.expose{
   mocks = mocks,
   lib = mocks.LibStub("LibKa0s-Perf-1.0"),
+  core = mocks.LibStub("LibKa0s-Core-1.0"),
   majors = MAJORS,
 }
 
 Kit.run{
   dir = "tests/",
   suites = {
+    "test_core",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
     "test_versioning",
   },

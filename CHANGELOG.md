@@ -11,8 +11,25 @@ enforces that the block and `lib.MODULES` agree, so the two cannot drift. Releas
 
 ## Unreleased
 
-Versions in this release: **Perf minor 1**, **PerfPanel minor 1**.
+Versions in this release: **Core minor 1**, **Perf minor 2**, **PerfPanel minor 2**.
 
+- New module `LibStub("LibKa0s-Core-1.0")` — the two seams every other module sits on. The
+  secret-safe seam (`IsConcatSafe`, `SafeToString`, `SECRET`) carries AbsorbTracker's canonical
+  `table.concat` probe, the only detector that fails on what a real combat-protected value actually
+  fails on; the window chrome seam (`SKIN`, `ApplySkin`, `MakeCloseButton`) holds the backdrop and
+  the close × a host's windows share. `lib:New{ prefix, sep, sink }` returns the prefixed,
+  secret-safe chat printer, with `prefix` re-read on every call so a host whose tag constant loads
+  later can pass a function instead of capturing nil forever.
+- **Fixed:** a combat-protected value logged by a perf run rendered as its raw self, then raised
+  inside the host's `table.concat(buffer, "\n")` when the user pressed Copy — killing the Copy
+  button for the rest of the session. `Perf minor 2` deletes the private stringifier that caused it
+  (it branched on `type()`, and a secret *is* a string or a number) in favour of
+  `Core.SafeToString`. Perf now declares a minimum Core and refuses to register below it, so a
+  missing Core makes the probe absent — which a host's setup stub reports honestly — rather than
+  present and nil-erroring mid-run.
+- `PerfPanel minor 2` takes its backdrop from `Core.SKIN` instead of a private lookalike, and draws
+  Core's close button when the host supplies no `decorate`. `decorate` itself is unchanged and still
+  takes precedence; the contract is additive-only.
 - Initial extraction from AbsorbTracker (issue
   [#17](https://github.com/tusharsaxena/AbsorbTracker/issues/17)) — the probe, the record schema, the
   guided run, and the step panel, as `LibStub("LibKa0s-Perf-1.0")`.

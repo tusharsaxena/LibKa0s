@@ -55,11 +55,13 @@ file:line evidence in your report:
 
 ### Then do the work
 
-1. **Vendor the library.** Copy `../LibKa0s/LibKa0s/{LibKa0s.xml,Perf.lua,PerfPanel.lua}` into
-   `libs/LibKa0s/`. Verify `diff -r ../LibKa0s/LibKa0s libs/LibKa0s` is **empty**. Copy from the
-   library repo's own ship folder — **never** from a sibling addon's `libs/`, which may have drifted.
-   Do not edit anything under `libs/`: if the library needs a change, that is a finding to report, not
-   an edit to make here.
+1. **Vendor the library.** Copy the **whole** `../LibKa0s/LibKa0s/` folder into `libs/LibKa0s/`
+   (`cp -r ../LibKa0s/LibKa0s/. libs/LibKa0s/`) — never a file at a time: `Perf.lua` sits on
+   `LibKa0s-Core-1.0` and refuses to register at all against a `Core.lua` older than the minor it
+   names. Verify `diff -r ../LibKa0s/LibKa0s libs/LibKa0s` is **empty**. Copy from the library repo's
+   own ship folder — **never** from a sibling addon's `libs/`, which may have drifted. Do not edit
+   anything under `libs/`: if the library needs a change, that is a finding to report, not an edit to
+   make here.
 2. **TOC.** Add `libs\LibKa0s\LibKa0s.xml` to the `# Libraries` block **after** Ace3. Add
    `core\PerfSetup.lua` positioned **before** any file that will take `local Perf = NS.Perf` as a
    load-time upvalue. Add `<Addon>PerfDB` to `## SavedVariables:` as the second global.

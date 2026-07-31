@@ -138,6 +138,10 @@ end
 
 -- Load whole copies in the order the client would, each copy's two files together.
 local function loadCopies(env, ...)
+  -- Core is not one of the things these tests vary — it is loaded once per env, ahead of every
+  -- copy, because each copy's probe refuses to register without it. Skew between Core copies is a
+  -- separate question from skew between a probe and its panel, which is what this file is about.
+  Loader.load("LibKa0s/Core.lua", nil, env)
   for _, copy in ipairs({ ... }) do
     Loader.loadSource(copy.perf, copy.tag .. "/Perf.lua", nil, env)
     Loader.loadSource(copy.panel, copy.tag .. "/PerfPanel.lua", nil, env)

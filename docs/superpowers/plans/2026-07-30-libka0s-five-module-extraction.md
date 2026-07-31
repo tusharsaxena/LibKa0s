@@ -12,7 +12,7 @@ Read the spec first — this plan does not restate its reasoning, only its conse
 |---|---|---|
 | M1 | Prerequisites — strict LibStub mock, TOC-derived load list, N-major versioning | **done** |
 | M2 | `testkit/` extracted; both repos consume it | **done** |
-| M3 | `LibKa0s-Core-1.0` + Perf consumes it | not started |
+| M3 | `LibKa0s-Core-1.0` + Perf consumes it | **done** |
 | M4 | `LibKa0s-DebugLog-1.0` | not started |
 | M5 | `LibKa0s-Slash-1.0` | not started |
 | M6 | `LibKa0s-Options-1.0` | not started |
@@ -21,13 +21,13 @@ Read the spec first — this plan does not restate its reasoning, only its conse
 | M9 | In-game smoke tests | not started |
 | M10–M12 | Standard, plugin, adoption prompt | not started |
 
-State at the pause after M2: **AbsorbTracker 439 passed / 0 failed, LibKa0s 155 passed / 0 failed,
-`luacheck .` 0/0 in both.** `diff -r` empty for `testkit` → `tests/_kit` in both repos. The
-`tests/perf.lua` parity figures are unchanged from the pre-extraction baseline — `paintPass` 12.0
-api/iter and 312.0 bytes/iter, `probeOverheadOn` 312.3 bytes/iter — which is the artefact proving
-the harness move did not touch the measured paths.
+State at the pause after M3: **AbsorbTracker 440 passed / 0 failed, LibKa0s 170 passed / 0 failed,
+`luacheck .` 0/0 in both.** `diff -r` empty for `LibKa0s` → `libs/LibKa0s` and for `testkit` →
+`tests/_kit`. The `tests/perf.lua` parity figures are unchanged from the pre-extraction baseline —
+`paintPass` 12.0 api/iter and 312.0 bytes/iter, `probeOverheadOn` 312.3 bytes/iter — which is the
+artefact proving neither the harness move nor the Core extraction touched the measured paths.
 
-Next session starts at M3.
+Next session starts at M4.
 
 ---
 
@@ -515,6 +515,22 @@ anti-patterns for hand-rolling a console, editing `libs/`, and forking the toolk
 `NEW_ADDON.md` so a fresh audit does not flag a compliant lib-consuming addon and a new addon is
 born consuming LibKa0s. Bump the index version and date.
 
+**Promote these two working rules to normative text.** Both are carried in this plan's global
+constraints, both have already cost time when forgotten, and neither is written down anywhere a
+future agent or a fresh addon would find it:
+
+- **A vendored `libs/` folder is read-only.** A library defect is a finding to fix upstream and
+  re-vendor whole-folder — never a local patch, because the next re-vendor silently reverts it and
+  the revert looks like a regression with no cause. `library-stack.md` is the home; the existing
+  "editing `libs/`" anti-pattern above is the hook, but it needs the *whole-folder* half stated too,
+  since per-module re-vendoring is how cross-major minor skew gets manufactured.
+- **Per-file minor discipline, mechanically enforced.** Every file changed in a change bumps its own
+  `MINOR`, and `CHANGELOG.md` gains a line containing the literal substring `<FileBasename> minor
+  <N>`. The point is not the convention but that a test asserts it — `test_versioning.lua` is the
+  reference implementation, and it belongs in `testing.md` as a required suite for any addon that
+  publishes per-file versions, alongside the two cases the multi-major layout forced: no file may
+  register under a major it does not belong to, and file basenames must be unique across majors.
+
 ## M11 — the `wow-addon` plugin
 
 Update the standards-audit and review agents (they encode the standard's expectations and will
@@ -586,3 +602,48 @@ rather than merely large:
 `clear`/`play`/`pause` rather than three counters: the *order* is the only observable difference
 between an armed window and a recording one, and counters report identical totals for a correct run
 and one that played before it cleared.
+
+**M3a — Core's degradation stub keeps working fallbacks, and says "not installed" once.** §6.3 says
+the five stubs each answer "with an honest 'not installed' line rather than silence". That wording
+reads straight for Perf, DebugLog, Slash and Options, whose members are *features*. It does not
+read straight for Core, whose members are the *mechanism every other line is emitted through*: a
+printer that answered "LibKa0s is not installed" instead of printing would make every `/at` command
+in the addon say nothing else, and five settings files capture `local print = NS.Print` at load, so
+a no-op or a nil there takes the settings UI down with it.
+
+So `core/CoreSetup.lua`'s stub carries the pre-library implementations — the `table.concat` probe,
+the stringifier, the `[AT]`-prefixed printer, about fifteen lines — and emits the honest line ONCE,
+ahead of the first line the addon prints. The user is told; the addon keeps working. The duplicate
+algorithm this milestone exists to end is not reintroduced on the shipped path: it exists only in
+the branch taken when the library is absent, and `tests/test_coresetup.lua` loads the addon without
+the library to exercise it, rather than hand-stubbing.
+
+**M3b — three mechanical retargetings in existing LibKa0s suites.** D2 gives Perf a dependency, so
+every test that builds a fresh env and loads `Perf.lua` into it has to load `Core.lua` first, exactly
+as the client does. `tests/test_perf_panel.lua`'s panel-less case and `tests/test_perf_isolation.lua`'s
+`loadCopies()` gained one `Loader.load("LibKa0s/Core.lua", …)` each. No assertion changed and no
+expectation moved.
+
+**M3c — `tests/perf.lua`'s library list had already rotted, and now has a test.** §6.2 named
+`AT/tests/perf.lua` as the load list that is not under the green gate. It is worse than "rots
+silently": omitting `Core.lua` there raises nothing at all, because Perf then refuses to register,
+`NS.Perf` falls back to `PerfSetup.lua`'s degradation stub, and the runner goes on printing a
+`probeOverheadOn` figure measured on a stub with no probe in it — 312.0 bytes/iter instead of 312.3,
+a change small enough to read as noise. It was caught by comparing against the figure this plan
+records, which is the only reason it was caught at all.
+
+M1's TOC derivation does not cover this: the TOC reaches the library through
+`libs\LibKa0s\LibKa0s.xml`, which `Loader.tocFiles` deliberately skips, so the library half of both
+runners' lists is necessarily hand-maintained. `AT/tests/test_loadorder.lua` gains a case that parses
+the vendored XML and asserts both `tests/run.lua` and `tests/perf.lua` load every file it lists, in
+its order. Every later milestone adds a file to that XML, so this is the gate that makes M4–M6
+provable rather than merely green.
+
+**M3d — one AbsorbTracker suite the plan did not list.** M3's file list has the four Core-seam cases
+simply moving out of `AT/tests/test_util.lua`. Moving them out and stopping there would delete the
+addon's only coverage of the seam: the *algorithm* is LibKa0s's to test, but *that AbsorbTracker is
+wired to it* is AbsorbTracker's, and deleting `core/Util.lua` would otherwise leave nothing to fail
+if `CoreSetup.lua` published nothing at all. `AT/tests/test_coresetup.lua` covers the four things
+only this repo can break: that `NS.SafeToString`/`NS.IsConcatSafe` are the library's own function
+values and not a leftover copy, that a printed line carries the `[AT]` tag, that `NS.Print` and
+`NS.Util.print` are one object across the AceConsole reclaim, and the degraded build.
