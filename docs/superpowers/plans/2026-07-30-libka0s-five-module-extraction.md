@@ -17,11 +17,11 @@ Read the spec first — this plan does not restate its reasoning, only its conse
 | M5 | `LibKa0s-Slash-1.0` | **done** |
 | M6 | `LibKa0s-Options-1.0` | **done** |
 | M7 | Documentation | **done** |
-| M8 | `/wow-addon:review` gate | in progress |
-| M9 | In-game smoke tests | not started |
+| M8 | `/wow-addon:review` gate | **done** |
+| M9 | In-game smoke tests | **blocked — needs a live client** |
 | M10–M12 | Standard, plugin, adoption prompt | not started |
 
-State at the pause after M6: **AbsorbTracker 434 passed / 0 failed, LibKa0s 329 passed / 0 failed,
+State at the pause after M8: **AbsorbTracker 449 passed / 0 failed, LibKa0s 342 passed / 0 failed,
 `luacheck .` 0/0 in both.** `diff -r` empty for `LibKa0s` → `libs/LibKa0s` and for `testkit` →
 `tests/_kit`. The `tests/perf.lua` parity figures are unchanged from the pre-extraction baseline —
 `paintPass` 12.0 api/iter and 312.0 bytes/iter, `probeOverheadOn` 312.3 bytes/iter — which is the
@@ -45,6 +45,8 @@ milestone per repo, library first:
 | M6 | `cc29f8e` Options (3 files) + kit comment | `952b375` consume it, delete the four toolkit files |
 | — | | `2e53fdd` doc recount (not a milestone) |
 | M7 | `9d82849` per-module README order, releasing.md, kit re-vendor | `771affa` retire the four toolkit files from docs |
+| — | `d9f4c33` plan: record M7 | |
+| M8 | `995e19a` review fixes across all five majors, all 8 minors bumped | `ef71076` review fixes + re-vendor |
 
 ### The working method, established over M3–M5
 
@@ -1062,3 +1064,53 @@ stale, it is a record, and rewriting it would destroy the only evidence of what 
 table and its struck-through CCN rows, `file-index.md`'s note on the old TOC slot, `testing.md`'s
 history line. The grep the plan asks for before declaring M7 finished returns 82, and 82 is the
 right answer.
+
+**M8a — the review gate paid for itself twice, in the two places nothing else was looking.**
+Four High and seven Medium in LibKa0s, three High and six Medium in AbsorbTracker, no Critical. The
+two that would have reached users were both invisible to every existing check: Options' default
+`print` was a silent no-op alone among the five majors, so a host omitting it got a combat refusal
+that vanished with nothing to grep for; and `Slash.FormatValue` fed three branches to
+`string.format` unguarded, where a WoW secret raises exactly as it does in `table.concat`. The
+invariant that made the second one safe — a stored settings value is never a combat-protected one
+— was real, but written down nowhere and enforced nowhere.
+
+**M8b — one finding was rejected, and the rejection got a test.** The review wants
+`RestoreDefaults` to pass `ctx.unit` so it matches `RenderSchema`. Resetting every unit is the
+DELIBERATE behaviour: it is where `/at reset <page>` went under D1, and `test_helpers.lua` pins it
+across all three units. What was real is that the asymmetry was undocumented, so the next reader
+"fixes" it and silently narrows a host's page reset. It is now commented, and a new upstream case
+fails if anyone makes exactly the proposed change. A rejected finding that leaves no artefact gets
+re-found and re-accepted by the next reviewer.
+
+**M8c — F-008's mirror-refresher fix is deferred on instrument grounds, not merit.** Gating the
+re-render on `ctx.panel:IsShown()` is a real improvement, but the behaviour is carried over VERBATIM
+from the deleted `settings/Helpers.lua` and predates this branch; it is latency across three pages,
+not a correctness bug; and M9's entire purpose is to confirm the extraction changed nothing visible.
+Changing panel rebuild behaviour immediately before that pass would muddy the only instrument that
+can detect a regression it introduced. Same reasoning as M2a. It is now the top item for the change
+after M9.
+
+**M8d — the new kit-sync gate caught a real divergence within an hour of existing.** F-011 asked
+for `testkit/` ↔ `tests/_kit/` to be mechanical rather than remembered, because M7a had just shipped
+a README that was never re-vendored. The en-US comment sweep in this very milestone touched
+`testkit/mock_base.lua`; the suite went red naming that exact file before the re-vendor. A gate that
+fires on its author, in the change that adds it, is the strongest evidence it was needed.
+
+**M8e — two parallel agents collided on one test file, and the loss was silent.** Writing cases
+into `tests/test_helpers.lua`, one worker was whole-file-overwritten by another and its cases
+vanished with the suite still green — a smaller number passing reads exactly like a smaller number
+of cases. It was caught only because the worker re-counted. The fix was to give it a file it owned
+(`tests/test_optionssetup.lua`). When fanning work out, partition by FILE and treat a shared test
+file as a write conflict, not a merge.
+
+**M8f — an upstream fix invalidated a downstream assertion, correctly.** LibKa0s F-007 stopped
+`RenderRows` writing `nil` into the caller's hook tables; AbsorbTracker's `test_widgets.lua` carried
+an assertion pinning exactly that mutation, and it went red on re-vendor. This is the mirror check
+working as designed — the assertion was testing a library implementation detail rather than a
+behaviour, which is why it broke. Retargeted to what matters: the caller's table survives, and a
+second render pairs again.
+
+**M8g — all eight library minors moved, for a comment-only sweep.** The en-US fix touches every
+file, and the per-file discipline says a changed file bumps. That looks disproportionate and is not:
+re-vendoring is whole-folder regardless, so the cost of bumping eight is zero, while the cost of
+skipping one is a file whose next real change ships against a host that already has it.
