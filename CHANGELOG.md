@@ -12,12 +12,56 @@ cannot drift. Release order is in
 
 ## Unreleased
 
-Versions in this release: **Core minor 1**, **DebugLog minor 1**, **Slash minor 1**,
-**Options minor 1**, **OptionsWidgets minor 1**, **OptionsScroll minor 1**,
-**Perf minor 2**, **PerfPanel minor 2**.
+Versions in this release: **Core minor 2**, **DebugLog minor 2**, **Slash minor 2**,
+**Options minor 2**, **OptionsWidgets minor 2**, **OptionsScroll minor 2**,
+**Perf minor 3**, **PerfPanel minor 3**.
 
 Grouped by major, newest first. A file's entries live under the major that owns it, so "what changed
 in Perf" is one heading rather than a hunt.
+
+### Review fixes — all five majors
+
+Found by the `/wow-addon:review` gate on this branch and fixed before it merged. Every file's
+minor moves, because every file changed: the en-US sweep below is comment-only but touches all
+eight, and whole-folder re-vendoring is mandatory anyway.
+
+- **`Options.lua`** — `EnsureDefaultsButton` reached `O.AttachTooltip` without the guard its own
+  closing comment claimed, so a vendored copy missing `OptionsWidgets.lua` raised from the
+  library's shell on the first panel `OnShow` rather than degrading. Guarded, like the sibling
+  reach into `PatchAlwaysShowScrollbar` already was.
+- **`Options.lua`** — the default `print` was a silent no-op alone among the five majors, so a
+  host that omitted it got a combat refusal and a missing-AceGUI notice that vanished with nothing
+  to grep for. It now falls back to `DEFAULT_CHAT_FRAME`, matching Core, DebugLog and Slash. The
+  library still cannot supply the host's tag, so the descriptor's `print` remains the intended path.
+- **`Options.lua`** — `:New` now raises on a missing `mainPanelName`. It is the one field whose
+  entire purpose is lost silently: a nil yields an anonymous canvas that `/framestack` cannot
+  attribute, with nothing visible in game. The other fields' documented no-validation gap stands.
+- **`Options.lua`** — `CreateOptionsPanel` is idempotent. A second call registered a duplicate
+  Blizzard category and appended a second ctx per page, permanently doubling the `RefreshAllPanels`
+  fan-out.
+- **`OptionsWidgets.lua`** — `RenderRows` implemented both one-shot hooks by writing `nil` into
+  the tables the CALLER owns, so a host that hoisted its `afterGroup`/`pairWith` to a file-level
+  constant silently lost every inline button and paired widget on the second render — which a
+  per-unit page does on every unit switch. The bookkeeping is now the library's. One-shot semantics
+  per call are unchanged.
+- **`Slash.lua`** — `FormatValue` fed three of its branches to `string.format` unguarded, and a
+  WoW secret raises there exactly as it does in `table.concat`. The invariant that made this safe
+  — a stored settings value is never a combat-protected one — was real but written down nowhere
+  and enforced nowhere. Guarded at the input, so every ordinary rendered value is byte-identical.
+- **`DebugLog.lua`** — `lib.MakeCloseButton` snapshotted Core's function VALUE at file load.
+  LibStub upgrades a major in place, so a newer `Core.lua` over an unchanged `DebugLog.lua` left
+  the console drawing the old button while `MODULES.Core` truthfully reported the new minor. Now a
+  forwarder through the `core` table, the shape `PerfPanel.lua` already used.
+- **`DebugLog.lua`** — `D:Add` did not route its message through the secret-safe stringifier,
+  though the gated sink and `initSummary` both did. It is public, ungated by design, and the path a
+  host's perf output takes.
+- **All eight files, and `testkit/mock_base.lua`** — en-US spelling in comments, per the standard.
+  Comments only; no string literal moved.
+
+`tests/test_kitsync.lua` is new and closes the gap that let the previous commit ship a
+`testkit/README.md` that was never re-vendored: `testkit/` and `tests/_kit/` are now compared
+byte for byte, README included, with no line-ending normalisation, and the failure names the file.
+It caught a real divergence during this very change.
 
 ### `LibKa0s-Options-1.0`
 

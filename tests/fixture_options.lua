@@ -72,6 +72,15 @@ local function buildRows()
     -- checks skipRender, so a named group here would draw an empty heading over nothing.
     { path = "mirror", page = "bar", order = 50, type = "bool", skipRender = true,
       label = "Use same styling as Player", default = true },
+
+    -- units ──────────────────────────────────────────────────────────────────────
+    -- A FILTERED page: two rows that differ only by `unit`. Without a filter dimension the
+    -- difference between RenderSchema (one filter value) and RestoreDefaults (all of them) is
+    -- structurally unobservable, and the deliberate asymmetry between them cannot be pinned.
+    { path = "unitPlayerScale", page = "units", unit = "player", group = "Scale", order = 10,
+      type = "number", label = "Player scale", default = 1, min = 0.5, max = 2, step = 0.1 },
+    { path = "unitTargetScale", page = "units", unit = "target", group = "Scale", order = 20,
+      type = "number", label = "Target scale", default = 1, min = 0.5, max = 2, step = 0.1 },
   }
 end
 
@@ -108,10 +117,17 @@ function Fixture.new(overrides)
     --- Page filter, in declaration order within a group and groups in first-seen order — the same
     --- contract AbsorbTracker's NS.SchemaForPage has, reimplemented here rather than imported so
     --- the fixture does not quietly become a second copy of the addon.
-    rowsForPage = function(pageKey)
+    ---
+    --- The second argument is the host's own filter (a unit, in AbsorbTracker), and it is honoured
+    --- here on purpose: RenderSchema passes ctx.unit and RestoreDefaults deliberately does not, so
+    --- a fixture that ignored it would leave that difference unobservable either way. A row with no
+    --- `unit` is unfiltered and belongs to every filter value.
+    rowsForPage = function(pageKey, filter)
       local out = {}
       for _, row in ipairs(rows) do
-        if row.page == pageKey then out[#out + 1] = row end
+        if row.page == pageKey and (filter == nil or row.unit == nil or row.unit == filter) then
+          out[#out + 1] = row
+        end
       end
       return out
     end,

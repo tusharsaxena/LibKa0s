@@ -24,7 +24,7 @@ badge and any count quoted in the docs must agree with it.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
-### test_debuglog.lua (36)
+### test_debuglog.lua (39)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
 - dbg: FormatPlain tolerates a nil tag
@@ -62,8 +62,11 @@ badge and any count quoted in the docs must agree with it.
 - dbg: New requires a name, a title, a font and an isEnabled/setEnabled pair
 - dbg: a host that overrides a string gets its own wording
 - dbg: DebugLog re-exports Core's close button so a host has one factory, not two
+- dbg: a newer Core loading after DebugLog supplies the console's close button
+- dbg: an instance built after the upgrade draws the newer Core's button
+- dbg: Add renders a secret message as the sentinel
 
-### test_slash.lua (46)
+### test_slash.lua (48)
 
 - sl: an empty message prints the help index
 - sl: whitespace-only input is treated as empty
@@ -81,6 +84,8 @@ badge and any count quoted in the docs must agree with it.
 - sl: FormatKV is a gold key, ' = ', a white value, and no trailing colon
 - sl: FormatValue renders every schema type the library knows
 - sl: a number row with no fmt renders bare
+- sl: FormatValue renders a secret as the sentinel on every formatting branch
+- sl: a guarded FormatValue still survives the FormatKV string.format around it
 - sl: booleans accept the whole human vocabulary
 - sl: a junk boolean is rejected and the accepted words are listed
 - sl: a number is clamped to the row's range rather than rejected
@@ -112,7 +117,7 @@ badge and any count quoted in the docs must agree with it.
 - sl: with no annotator set, nothing is appended
 - sl: Slash refuses to register without Core
 
-### test_options.lua (34)
+### test_options.lua (39)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -127,9 +132,11 @@ badge and any count quoted in the docs must agree with it.
 - options: EnsureDefaultsButton builds it once, wires the parked handler, then no-ops
 - options: EnsureDefaultsButton is a safe no-op without AceGUI and on a nil panel
 - options: EnsureDefaultsButton leaves a panel that never wanted one alone
+- options: EnsureDefaultsButton survives a vendored copy whose widget makers never attached
 - options: RestoreDefaults resets every row on the named page and no other
 - options: RestoreDefaults runs the ctx refreshers, and survives one that throws
 - options: RestoreDefaults on a page with no rows is a harmless no-op
+- options: RestoreDefaults resets a page across EVERY filter value, unlike RenderSchema
 - options: RestoreAllDefaults resets every row, then fires the host's afterRestoreAll
 - options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the panels
 - options: RestoreAllDefaults honours the host's skipRestoreAll veto
@@ -141,6 +148,9 @@ badge and any count quoted in the docs must agree with it.
 - options: the main page's body is deferred to its first OnShow, and built once
 - options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay
 - options: OpenOptionsPanel opens the registered category out of combat
+- options: :New refuses a descriptor with no mainPanelName
+- options: a host that omits print still sees the combat refusal in the chat frame
+- options: CreateOptionsPanel is idempotent in both the category and the refreshers
 - options: OpenOptionsPanel is a silent no-op before CreateOptionsPanel has run
 - options: LSMValues returns a DEFERRED closure, not a snapshot
 - options: LSMValues yields an empty list rather than erroring without LibSharedMedia
@@ -149,7 +159,7 @@ badge and any count quoted in the docs must agree with it.
 - options: FixScroll disables the bar when the content fits, enables it when it does not
 - options: OnRelease restores AceGUI's own FixScroll and clears the marker
 
-### test_options_widgets.lua (43)
+### test_options_widgets.lua (44)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -188,6 +198,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: an afterGroup callback fires exactly once, after its group's last row
 - widgets: a pairWith partner attaches to the named row, is one-shot, and stays 50/50
 - widgets: a pairWith partner declines a row it would make three-wide
+- widgets: RenderRows leaves the caller's afterGroup / pairWith tables intact
 - widgets: RenderRows runs a layout pass at the end
 - widgets: Section emits a full-width Heading and tracks the group
 - widgets: ClearScroll releases the children AND resets ctx.refreshers
@@ -368,19 +379,25 @@ badge and any count quoted in the docs must agree with it.
 - versioning: the changelog accounts for the version every file is at
 - versioning: every paired secondary file records which primary it attached to
 
+### test_kitsync.lua (2)
+
+- kitsync: testkit/ and tests/_kit/ hold the same set of files
+- kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
+
 ## Totals
 
 | Suite | Cases |
 |-------|------:|
 | test_core.lua | 15 |
-| test_debuglog.lua | 36 |
-| test_slash.lua | 46 |
-| test_options.lua | 34 |
-| test_options_widgets.lua | 43 |
+| test_debuglog.lua | 39 |
+| test_slash.lua | 48 |
+| test_options.lua | 39 |
+| test_options_widgets.lua | 44 |
 | test_perf_core.lua | 49 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
-| **Total** | **329** |
+| test_kitsync.lua | 2 |
+| **Total** | **342** |

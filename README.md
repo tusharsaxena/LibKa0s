@@ -668,8 +668,9 @@ WoW-API mock, shared across the collection and vendored into each addon as `test
 vendoring discipline, what a consuming `tests/run.lua` looks like, and the mock-fidelity rules.
 
 This repo consumes its own kit through `tests/_kit/` rather than reaching into `testkit/` directly,
-so LibKa0s is a consumer on the same terms as every addon: `diff -r testkit tests/_kit` is the same
-gate here as it is downstream, and a kit change that would break a consumer breaks this repo first.
+so LibKa0s is a consumer on the same terms as every addon: a kit change that would break a consumer
+breaks this repo first. `tests/test_kitsync.lua` enforces the byte-identity rather than trusting a
+remembered `diff -r` — every file, README included, no line-ending normalisation.
 
 ### Versioning
 

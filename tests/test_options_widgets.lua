@@ -434,7 +434,8 @@ test("widgets: a pairWith partner attaches to the named row, is one-shot, and st
   }
   O.RenderSchema(ctx, "general", nil, partner)
   assertEqual(made, 1, "the partner was built once")
-  assertNil(partner.showTooltips, "and the entry was consumed so it cannot repeat")
+  assertTrue(partner.showTooltips ~= nil,
+    "the one-shot bookkeeping is the library's -- the caller's table is never written to")
 
   local row = Fixture.rowWithLabel(ctx.scroll, rec.byPath.showTooltips.label)
   assertTrue(row ~= nil, "the showTooltips row was found")
@@ -450,6 +451,35 @@ test("widgets: a pairWith partner declines a row it would make three-wide", func
   O.RenderSchema(ctx, "general", nil, { showOnlyInCombat = function() made = made + 1 end })
   assertEqual(made, 0)
   assertEqual(#Fixture.rowWithLabel(ctx.scroll, rec.byPath.showOnlyInCombat.label).children, 2)
+end)
+
+test("widgets: RenderRows leaves the caller's afterGroup / pairWith tables intact", function()
+  -- The one-shot bookkeeping is the LIBRARY's, not the host's. A host that hoists its afterGroup /
+  -- pairWith table to a file-level constant (the natural way to write it) and re-renders the page --
+  -- ClearScroll + RenderSchema, which a per-unit page does on every unit switch -- must get the same
+  -- panel the second time, not one silently missing every inline button and paired widget.
+  local O, rec, ctx = bench()
+  local afterFired, paired = 0, 0
+  local afterGroup = { Master = function() afterFired = afterFired + 1 end }
+  local pairWith = {
+    showTooltips = function(_ctxRef, rowGroup)
+      paired = paired + 1
+      rowGroup:AddChild(O.AceGUI:Create("CheckBox"))
+    end,
+  }
+
+  O.RenderSchema(ctx, "general", afterGroup, pairWith)
+  assertEqual(afterFired, 1, "first pass: the afterGroup callback fired once")
+  assertEqual(paired, 1, "first pass: the partner was built once")
+
+  O.ClearScroll(ctx)
+  O.RenderSchema(ctx, "general", afterGroup, pairWith)
+  assertEqual(afterFired, 2, "second pass fires the afterGroup callback again")
+  assertEqual(paired, 2, "second pass builds the paired widget again")
+  assertTrue(afterGroup.Master ~= nil, "the caller's afterGroup entry was never nil'd out")
+  assertTrue(pairWith.showTooltips ~= nil, "the caller's pairWith entry was never nil'd out")
+  assertEqual(#Fixture.rowWithLabel(ctx.scroll, rec.byPath.showTooltips.label).children, 2,
+    "and the second pass's pair is still 50/50")
 end)
 
 test("widgets: RenderRows runs a layout pass at the end", function()

@@ -155,6 +155,24 @@ test("options: EnsureDefaultsButton leaves a panel that never wanted one alone",
   assertNil(ctx.panel.defaultsBtn)
 end)
 
+test("options: EnsureDefaultsButton survives a vendored copy whose widget makers never attached",
+  function()
+  -- A partial vendor (OptionsWidgets.lua absent) leaves the instance without O.AttachTooltip. The
+  -- shell reaches for it at CALL time precisely so that state stays survivable, and the closing
+  -- comment on lib:New says so of BOTH cross-file reaches — so both must be guarded, or the first
+  -- panel OnShow raises from inside the library itself.
+  local savedWidgets = lib.__AttachWidgets
+  lib.__AttachWidgets = nil
+  local O = Fixture.new()
+  lib.__AttachWidgets = savedWidgets
+
+  assertNil(O.AttachTooltip, "the widget makers really are absent from this instance")
+  local ctx = O.CreatePanel("TestPanelK2", "Test K2", { defaultsButton = true })
+  local ok, err = pcall(O.EnsureDefaultsButton, ctx.panel)
+  assertTrue(ok, "the shell must not raise on a half-vendored copy: " .. tostring(err))
+  assertTrue(ctx.panel.defaultsBtn ~= nil, "and the button is still built, just without a tooltip")
+end)
+
 -- ── RestoreDefaults / RestoreAllDefaults / RefreshAllPanels ────────────────────────────────
 
 test("options: RestoreDefaults resets every row on the named page and no other", function()
@@ -180,6 +198,29 @@ end)
 test("options: RestoreDefaults on a page with no rows is a harmless no-op", function()
   local O = Fixture.new()
   assertTrue(pcall(O.RestoreDefaults, "nosuchpage"))
+end)
+
+test("options: RestoreDefaults resets a page across EVERY filter value, unlike RenderSchema",
+  function()
+  -- The asymmetry is DELIBERATE and pinned here so nobody "fixes" it: a page's Defaults button
+  -- resets the whole page, every filter value, while the panel in front of the user renders one at
+  -- a time. AbsorbTracker's tests/test_helpers.lua asserts the same thing across all three units,
+  -- and it is where /at reset <page> went when the CLI form was removed. Threading ctx.unit into
+  -- RestoreDefaults would silently narrow a host's reset.
+  local O, rec = Fixture.new()
+  rec.store.unitPlayerScale = 9
+  rec.store.unitTargetScale = 9
+  local ctx = O.CreatePanel("TestPanelU", "Units", { pageKey = "units" })
+  ctx.unit = "player"                      -- the filter the panel is currently rendering
+
+  O.RestoreDefaults("units", ctx)
+  assertEqual(rec.store.unitPlayerScale, 1, "the rendered filter's row was reset")
+  assertEqual(rec.store.unitTargetScale, 1,
+    "and so was every other filter value's — a Defaults button is page-scoped, not unit-scoped")
+
+  local shown = rec.d.rowsForPage("units", ctx.unit)
+  assertEqual(#shown, 1, "while the render path, which DOES pass the filter, sees one unit's rows")
+  assertEqual(shown[1].path, "unitPlayerScale")
 end)
 
 test("options: RestoreAllDefaults resets every row, then fires the host's afterRestoreAll",
@@ -317,6 +358,63 @@ test("options: OpenOptionsPanel opens the registered category out of combat", fu
   mocks.Settings.OpenToCategory = savedOpen
   if not ok then error(err) end
   assertEqual(openedWith, 1, "the ID the canvas registration handed back")
+end)
+
+test("options: :New refuses a descriptor with no mainPanelName", function()
+  -- The one descriptor field whose entire purpose is lost in silence: a nil yields
+  -- CreateFrame("Frame", nil), an anonymous canvas /framestack cannot attribute to the host, with
+  -- no error and nothing visible in game.
+  local _, rec = Fixture.new()
+  local d = {}
+  for k, v in pairs(rec.d) do d[k] = v end
+  d.mainPanelName = nil
+  local err = T.assertError(function() lib:New(d) end,
+    "an anonymous canvas fails silently, so it must fail loudly at :New instead")
+  assertTrue(err:find("mainPanelName", 1, true) ~= nil, "the error names the field: " .. err)
+end)
+
+test("options: a host that omits print still sees the combat refusal in the chat frame", function()
+  -- Core, DebugLog and Slash all fall back to DEFAULT_CHAT_FRAME:AddMessage. Options discarding
+  -- instead made a refused open indistinguishable from a dead keybind (options-ui-§2).
+  local _, rec = Fixture.new()
+  local d = {}
+  for k, v in pairs(rec.d) do d[k] = v end
+  d.print = nil
+  local O = lib:New(d)
+
+  local chat, got = mocks.DEFAULT_CHAT_FRAME, {}
+  rawset(chat, "AddMessage", function(_, line) got[#got + 1] = line end)
+  local savedCombat = mocks.InCombatLockdown
+  mocks.InCombatLockdown = function() return true end
+  local ok, err = pcall(O.OpenOptionsPanel)
+  mocks.InCombatLockdown = savedCombat
+  rawset(chat, "AddMessage", nil)
+  if not ok then error(err) end
+
+  assertTrue(table.concat(got, "\n"):find("combat", 1, true) ~= nil,
+    "the refusal must be visible, not discarded: " .. table.concat(got, "\n"))
+end)
+
+test("options: CreateOptionsPanel is idempotent in both the category and the refreshers",
+  function()
+  -- Public, cheap to call twice (a login plus a profile change), and nothing in the API says it
+  -- may not be. A second run would add a duplicate Blizzard category and permanently double the
+  -- RefreshAllPanels fan-out.
+  local O = Fixture.new()
+  local registered, ran = 0, 0
+  local savedReg = mocks.Settings.RegisterAddOnCategory
+  mocks.Settings.RegisterAddOnCategory = function() registered = registered + 1 end
+  O.RegisterOptionsPage("general", "General", function()
+    local ctx = O.CreatePanel("TestPanelIdem", "General", { pageKey = "general" })
+    ctx.refreshers[1] = function() ran = ran + 1 end
+  end)
+  O.CreateOptionsPanel()
+  O.CreateOptionsPanel()
+  mocks.Settings.RegisterAddOnCategory = savedReg
+
+  assertEqual(registered, 1, "a second call must not register a second Blizzard category")
+  O.RefreshAllPanels()
+  assertEqual(ran, 1, "and must not double the refresher fan-out")
 end)
 
 test("options: OpenOptionsPanel is a silent no-op before CreateOptionsPanel has run", function()

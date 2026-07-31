@@ -61,6 +61,13 @@ cp -r testkit/. <Addon>/tests/_kit/
 diff -r testkit <Addon>/tests/_kit          # must be empty
 ```
 
+In THIS repo the same check is mechanical rather than remembered: `tests/test_kitsync.lua`
+compares `testkit/` against `tests/_kit/` byte for byte — every file, README included, with no
+line-ending normalisation — and names the file that drifted. It exists because the commit before
+it shipped a `testkit/README.md` that was never re-vendored while three documents asserted the
+gate was passing; both copies worked and both suites stayed green. A consuming addon has no such
+gate yet, so downstream the `diff -r` above is still yours to run.
+
 Rules, and the reason each exists:
 
 - **Copy the WHOLE folder, always. Never one module.** With one major per module and independent

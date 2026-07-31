@@ -134,6 +134,37 @@ test("sl: a number row with no fmt renders bare", function()
   assertEqual(slash.FormatValue({ type = "number" }, 42), "42")
 end)
 
+-- A stand-in for a WoW combat "secret" value, the same shape the Core suite uses: `..` succeeds on
+-- it (a real secret propagates silently) while `table.concat` refuses it, which is what the seam
+-- probes. A settings value is *supposed* to be an ordinary stored scalar; these cases exist because
+-- nothing enforces that, and a host whose getter returns a live or derived value must not raise.
+local secretMock = setmetatable({}, {
+  __concat = function() return "secret-propagated" end,
+})
+
+test("sl: FormatValue renders a secret as the sentinel on every formatting branch", function()
+  local _, rec = F.new()
+  local row = function(path) return rec.byPath[path] end
+  assertEqual(slash.FormatValue(row("units.player.barWidth"), secretMock), T.core.SECRET,
+    "the row.fmt branch guards before string.format")
+  assertEqual(slash.FormatValue({ type = "number" }, secretMock), T.core.SECRET,
+    "the bare-number branch guards before tostring")
+  assertEqual(slash.FormatValue(row("units.player.barColor"),
+    { r = secretMock, g = 0.2, b = 0.3, a = 0.4 }), T.core.SECRET,
+    "the colour branch guards each component before the %.2f tuple")
+  assertEqual(slash.FormatValue(row("labelText"), secretMock), T.core.SECRET,
+    "the string branch guards")
+end)
+
+test("sl: a guarded FormatValue still survives the FormatKV string.format around it", function()
+  local ok, out = pcall(function()
+    return slash.FormatKV("units.player.barWidth",
+      slash.FormatValue({ type = "number" }, secretMock))
+  end)
+  T.assertTrue(ok, "rendering a secret must not raise: " .. tostring(out))
+  assertEqual(out, "|cFFFFFF00units.player.barWidth|r = |cFFFFFFFF" .. T.core.SECRET .. "|r")
+end)
+
 -- ── the parser ─────────────────────────────────────────────────────────────────────────────
 
 test("sl: booleans accept the whole human vocabulary", function()
