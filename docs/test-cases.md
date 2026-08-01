@@ -24,7 +24,7 @@ badge and any count quoted in the docs must agree with it.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
-### test_debuglog.lua (42)
+### test_debuglog.lua (52)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
 - dbg: FormatPlain tolerates a nil tag
@@ -68,6 +68,16 @@ badge and any count quoted in the docs must agree with it.
 - an L whose metatable synthesises every key does NOT mask the module's own strings
 - a REAL entry in an L that also has a fallback still overrides
 - a plain L table overrides exactly as before
+- dbg: a host can supply its own skin function, for both windows
+- dbg: the host's skin function runs AFTER the Hide and the Esc wiring
+- dbg: a host that supplies no skin function still gets the library's own
+- dbg: a host can supply its own close-button factory, for both windows
+- dbg: the host's close button actually closes the window
+- dbg: a close-button factory returning nil is survivable, as Core's own is
+- dbg: the title-bar offsets are derived from the close button's width
+- dbg: a wider host close button pushes Copy and Clear out of its way
+- dbg: a close button with no measurable width falls back to the library's own
+- dbg: with no close button at all the offsets are still the minor-3 defaults
 
 ### test_slash.lua (61)
 
@@ -429,7 +439,7 @@ badge and any count quoted in the docs must agree with it.
 | Suite | Cases |
 |-------|------:|
 | test_core.lua | 15 |
-| test_debuglog.lua | 42 |
+| test_debuglog.lua | 52 |
 | test_slash.lua | 61 |
 | test_options.lua | 48 |
 | test_options_widgets.lua | 56 |
@@ -440,4 +450,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 2 |
-| **Total** | **382** |
+| **Total** | **392** |

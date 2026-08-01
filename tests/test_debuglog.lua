@@ -547,3 +547,128 @@ test("a plain L table overrides exactly as before", function()
   assertEqual(d:Text("DEBUG_ON"), "ON!")
   assertEqual(d:Text("DEBUG_OFF"), debuglog.STRINGS.DEBUG_OFF)
 end)
+
+-- ── host window chrome ─────────────────────────────────────────────────────────────────────
+--
+-- Added at DebugLog minor 4, for the two hosts (BankLedger and LootHistory) whose windows wear a
+-- flat 1px double border with a synthesised inner border, a gold title tint and a grey divider, and
+-- close with a 24x24 class-coloured x shared across every window they draw. Core.SKIN is a 12px
+-- tooltip border and Core.MakeCloseButton is an 18x18 fixed-red x; taking either is a visual
+-- redesign of every window such a host owns rather than an extraction of a duplicated one.
+--
+-- The `skin` TABLE that already existed covers three of the six things such a host's skin does —
+-- the backdrop, its colour and its border colour. It cannot reach the inner-border child frame, the
+-- title tint or the divider tint, because those are calls rather than fields. Hence a function.
+--
+-- Both fields DEFAULT to exactly what minor 3 did, so no existing consumer changes.
+
+test("dbg: a host can supply its own skin function, for both windows", function()
+  local skinned = {}
+  local D = newLog{ applySkin = function(f) skinned[#skinned + 1] = f end }
+  D:Show()
+  assertEqual(#skinned, 1, "the console window is skinned by the host's function")
+  D:ShowCopy()
+  assertEqual(#skinned, 2, "and so is the copy window — one skin seam, not one per window")
+end)
+
+test("dbg: the host's skin function runs AFTER the Hide and the Esc wiring", function()
+  -- The ordering the library already keeps for its own applySkin, and it is load-bearing: a
+  -- frame-API surprise in a host's skin must not abort EnsureFrame and leave a visible window with
+  -- no Esc handler that EnsureFrame will never rebuild, because `frame` is already assigned.
+  local seenShown, seenEsc
+  local D = newLog{ applySkin = function(f)
+    seenShown = f:IsShown()
+    seenEsc = false
+    for _, name in ipairs(T.mocks.UISpecialFrames) do
+      if name == "TestHostDebugWindow" then seenEsc = true end
+    end
+  end }
+  D:Show()
+  T.assertFalse(seenShown, "the frame is already hidden when the host's skin runs")
+  T.assertTrue(seenEsc, "and already registered for Esc")
+end)
+
+test("dbg: a host that supplies no skin function still gets the library's own", function()
+  -- The default path, unchanged from minor 3: no error, and the window still builds.
+  local D = newLog()
+  D:Show()
+  T.assertTrue(D._frameForTest ~= nil)
+end)
+
+test("dbg: a host can supply its own close-button factory, for both windows", function()
+  local made = {}
+  local D = newLog{ makeCloseButton = function(parent, onClick)
+    local b = T.mocks.__stubFrame()
+    made[#made + 1] = { parent = parent, onClick = onClick }
+    return b
+  end }
+  D:Show()
+  assertEqual(#made, 1, "the console's x comes from the host's factory")
+  T.assertEqual(type(made[1].onClick), "function", "and is handed a working onClick")
+  D:ShowCopy()
+  assertEqual(#made, 2, "the copy window's x comes from the same factory")
+end)
+
+test("dbg: the host's close button actually closes the window", function()
+  local captured
+  local D = newLog{ makeCloseButton = function(_, onClick)
+    captured = onClick
+    return T.mocks.__stubFrame()
+  end }
+  D:Show()
+  T.assertTrue(D:IsShown())
+  captured()
+  T.assertFalse(D:IsShown(), "the onClick handed to a host factory must hide the console")
+end)
+
+test("dbg: a close-button factory returning nil is survivable, as Core's own is", function()
+  -- Core.MakeCloseButton answers nil where CreateFrame is unavailable, so a host factory is allowed
+  -- to as well — and the title bar must still build.
+  local D = newLog{ makeCloseButton = function() return nil end }
+  D:Show()
+  T.assertTrue(D._frameForTest ~= nil, "the window still builds without an x")
+end)
+
+test("dbg: the title-bar offsets are derived from the close button's width", function()
+  -- Copy | Clear | Close read right to left, each with a six-pixel gap. Minor 3 hard-coded -30 and
+  -- -78, which are correct ONLY for an 18-wide button: a host supplying a 24-wide one would have
+  -- Clear's right edge land exactly on that button's left edge and the gap would vanish.
+  --
+  -- Recorded on the frame for the same reason `titleText` is: an anchor cannot be read back through
+  -- the frame API, so this is the only way a host's test can see what it got.
+  local D = newLog()
+  D:Show()
+  local off = D._frameForTest.titleBarOffsets
+  T.assertTrue(off ~= nil, "the computed offsets are recorded on the frame")
+  assertEqual(off.close, -6)
+  assertEqual(off.clear, -30, "unchanged from minor 3 for the default 18-wide button")
+  assertEqual(off.copy, -78, "unchanged from minor 3 for the default 18-wide button")
+end)
+
+test("dbg: a wider host close button pushes Copy and Clear out of its way", function()
+  local D = newLog{ makeCloseButton = function()
+    local b = T.mocks.__stubFrame()
+    function b:GetWidth() return 24 end
+    return b
+  end }
+  D:Show()
+  local off = D._frameForTest.titleBarOffsets
+  assertEqual(off.close, -6)
+  assertEqual(off.clear, -36, "-6 - 24 - 6")
+  assertEqual(off.copy, -84, "-36 - 42 - 6")
+end)
+
+test("dbg: a close button with no measurable width falls back to the library's own", function()
+  -- A headless stub answers 0 from GetWidth, and a real frame can too before its first layout
+  -- pass. Neither may collapse the title bar onto itself.
+  local D = newLog{ makeCloseButton = function() return T.mocks.__stubFrame() end }
+  D:Show()
+  assertEqual(D._frameForTest.titleBarOffsets.clear, -30)
+end)
+
+test("dbg: with no close button at all the offsets are still the minor-3 defaults", function()
+  local D = newLog{ makeCloseButton = function() return nil end }
+  D:Show()
+  assertEqual(D._frameForTest.titleBarOffsets.clear, -30)
+  assertEqual(D._frameForTest.titleBarOffsets.copy, -78)
+end)

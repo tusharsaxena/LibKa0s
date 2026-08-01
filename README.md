@@ -131,6 +131,8 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `slash` | string | no | Composes the checkbox tooltip's `"<slash> debug"` reference. |
 | `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap) below. |
 | `skin` | table | no | Overrides `Core.SKIN`. |
+| `applySkin` | function | no | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. `skin` is a table and therefore reaches only the three backdrop calls; a host whose window chrome also has a synthesised inner-border child frame, a title tint or a divider tint needs calls, not fields. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
+| `makeCloseButton` | function | no | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows, for a host whose other windows close with a different one. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. |
 
 ### The public surface
 
@@ -155,6 +157,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshHeader()` | Repaint the title-bar toggle — `Debug: ON` green, `Debug: OFF` red. |
 | `SetEnabled(on)` | The single seam for changing debug state: writes the host's flag, repaints the header, prints the colour-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
 | `ConsoleCheckbox()` | The data contract below. |
+| `_frameForTest.titleBarOffsets` | The computed title-bar anchor offsets (`close`, `clear`, `copy`), recorded because an anchor cannot be read back through the frame API. A host supplying `makeCloseButton` asserts on these rather than on the layout it cannot see. |
 | `_toggleClickForTest` / `_frameForTest` | Test seams. A headless mock's `Show`/`Hide` track visibility without firing `OnShow`/`OnHide`, and stub `GetScript`, so the click handler and the visibility callback are only reachable directly. |
 
 ### The `ConsoleCheckbox()` data contract
@@ -733,8 +736,8 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.1.1**: `Core = { Core = 2 }`,
-`DebugLog = { DebugLog = 3 }`, `Slash = { Slash = 4 }`,
+different vendored copy of each. As of **v1.2.0**: `Core = { Core = 2 }`,
+`DebugLog = { DebugLog = 4 }`, `Slash = { Slash = 4 }`,
 `Options = { Options = 4, OptionsWidgets = 4, OptionsScroll = 2 }`,
 `Perf = { Perf = 5, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.

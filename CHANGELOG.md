@@ -10,6 +10,49 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.2.0 — 2026-08-01
+
+One gap, found by adoption rather than by review: a host whose windows do not look like Core's had
+no way to keep its console looking like the rest of its own UI.
+
+Versions in this release: **Core minor 2**, **DebugLog minor 4**, **Slash minor 4**,
+**Options minor 4**, **OptionsWidgets minor 4**, **OptionsScroll minor 2**,
+**Perf minor 5**, **PerfPanel minor 3**.
+
+### `LibKa0s-DebugLog-1.0` — the host can own its window chrome
+
+Two optional descriptor fields, `applySkin` and `makeCloseButton`, both defaulting to exactly what
+minor 3 did. No existing consumer changes.
+
+BankLedger and LootHistory draw every window with a flat 1px `WHITE8X8` double border, a synthesised
+inner-border child frame, a gold title tint and a grey divider, and close them with a 24x24
+class-coloured x. `Core.SKIN` is a 12px `UI-Tooltip-Border` and `Core.MakeCloseButton` is an 18x18
+fixed-red x. Adopting the console meant either redesigning every window such a host owns, or
+declining a module whose two formatters are already byte-identical to the host's own — a 357-line
+deletion turned down over chrome.
+
+The `skin` field that already existed cannot close the gap: it is a TABLE, so it reaches the three
+backdrop calls and nothing else. An inner-border frame, a title tint and a divider tint are calls,
+not fields. `applySkin` is therefore a function that owns the whole job, for the console and the copy
+window alike, and it is handed the fully-built frame — `frame.title` and `frame.divider` are already
+assigned, so a host's existing "tint whatever this window has" helper works unmodified. It runs at
+the same point the library's own did, after the Hide and the Esc wiring, so a surprise inside a
+host's skin still cannot strand a visible window nobody can close.
+
+### The title-bar offsets are derived rather than hard-coded
+
+Falls out of the above, and would have been a real defect without it. Copy | Clear | Close read right
+to left with a six-pixel gap each, anchored by absolute offset (not chained) because a close-button
+factory may answer nil. Minor 3 hard-coded `-30` and `-78`, which are correct only for an 18-wide
+button — a host supplying a 24-wide one would have had Clear's right edge land exactly on that
+button's left edge and the gap would have vanished.
+
+The offsets now come from the button's measured width, falling back to Core's 18 when `GetWidth`
+is not yet positive (a frame before its first layout pass, or a headless stub). For every existing
+consumer the arithmetic yields `-30` and `-78` unchanged. The computed values are recorded on
+`frame.titleBarOffsets`, for the same reason `frame.titleText` is recorded: an anchor cannot be read
+back through the frame API, so that is the only handle a host's own test has on it.
+
 ## v1.1.1 — 2026-08-01
 
 A payload release. **No code changed and no file minor moved** — every module is byte-for-byte what
