@@ -451,9 +451,16 @@ When it is a real, additive library change, do it in this order and do not skip 
    `../LibKa0s/docs/releasing.md`. It starts at AbsorbTracker and grows by one every time an addon
    completes this migration — so check it, do not assume it is still just the one.
 8. **Run each existing consumer's full suite** and confirm it is unchanged. This is the step that
-   proves your "additive" change was additive. AbsorbTracker is 449 passed / 0 failed at the time of
-   writing; if that number moves, your change was not additive and you need to know before it ships
-   rather than after.
+   proves your "additive" change was additive. At the time of writing: **AbsorbTracker 462**,
+   **KickCD 643**, **ConsumableMaster 554**, each 0 failed. If any of those moves *while you are
+   changing the library*, your change was not additive and you need to know before it ships rather
+   than after.
+
+   Read the CURRENT number from that addon's own `docs/test-cases.md` Totals table before you start,
+   and compare against your own before/after — do not trust the three above. They are a snapshot,
+   they go stale every time an addon adds a test of its own for reasons that have nothing to do with
+   you, and a stale figure here reads as a regression that is not one. (The 449 this line used to
+   carry went stale exactly that way.)
 9. **Commit the library change in `../LibKa0s` on its own**, then the re-vendor in each consumer as
    its own commit, so the sync is legible in history rather than buried in a feature diff.
 10. **Add this addon to the Consumers table** in `../LibKa0s/docs/releasing.md`, per module, naming

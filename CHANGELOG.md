@@ -10,6 +10,32 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.1.1 — 2026-08-01
+
+A payload release. **No code changed and no file minor moved** — every module is byte-for-byte what
+v1.1.0 shipped, so a host that re-vendors gains one file and changes no behaviour.
+
+Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 4**,
+**Options minor 4**, **OptionsWidgets minor 4**, **OptionsScroll minor 2**,
+**Perf minor 5**, **PerfPanel minor 3**.
+
+### `LICENSE` ships inside the library folder
+
+The vendored copy in every consumer held nine `.lua`/`.xml` files and nothing else — no licence, no
+copyright header on any file, and no adopter's README naming the library at all. Each one was
+publishing an addon zip containing MIT-licensed code with no indication it was there or what it was
+under.
+
+`LICENSE` is now part of the ship folder rather than repo furniture, so `cp -r LibKa0s/. <Addon>/libs/LibKa0s/`
+carries it with no per-addon step and the `diff -r` gate keeps its shape. That is the whole change.
+
+The reason it is its own version rather than a quiet amend: v1.1.0 is tagged and published, so the
+tag cannot move, and three consumers now carry a payload that is v1.1.0 **plus one file**. A number
+that names it is cheaper than a footnote explaining it.
+
+Per-file copyright headers were considered and deliberately declined — they would touch all eight
+files and bump all eight minors, which is a real release for a change that alters no behaviour.
+
 ## v1.1.0 — 2026-08-01
 
 Three gaps found by adoption rather than by review, all of them things a host had worked around

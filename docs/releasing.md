@@ -59,7 +59,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/README.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.1.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.1.1 (MIT).
 
 That line is part of the re-vendor, not a follow-up to it. It is the only artefact that answers
 "which LibKa0s does this addon carry?" without grepping eight minor constants out of the vendored
