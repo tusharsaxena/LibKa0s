@@ -147,7 +147,7 @@ badge and any count quoted in the docs must agree with it.
 - slash: a host with no format hook renders exactly as it always did
 - slash: the format hook takes precedence over the colour codec, and gets the raw stored value
 
-### test_options.lua (48)
+### test_options.lua (53)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -197,6 +197,11 @@ badge and any count quoted in the docs must agree with it.
 - options: the scrollbar patch is idempotent
 - options: FixScroll disables the bar when the content fits, enables it when it does not
 - options: OnRelease restores AceGUI's own FixScroll and clears the marker
+- options: CreatePanel stamps the three Blizzard canvas callbacks
+- options: OnCommit and OnRefresh are inert and safe to call
+- options: OnDefault forwards to a defaultsOnClick parked AFTER CreatePanel
+- options: OnDefault and the header Defaults button run the SAME action
+- options: a page with no defaults action still has a callable, inert OnDefault
 
 ### test_options_widgets.lua (62)
 
@@ -451,7 +456,7 @@ badge and any count quoted in the docs must agree with it.
 | test_core.lua | 15 |
 | test_debuglog.lua | 52 |
 | test_slash.lua | 65 |
-| test_options.lua | 48 |
+| test_options.lua | 53 |
 | test_options_widgets.lua | 62 |
 | test_perf_core.lua | 52 |
 | test_perf_run.lua | 33 |
@@ -460,4 +465,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 2 |
-| **Total** | **402** |
+| **Total** | **407** |

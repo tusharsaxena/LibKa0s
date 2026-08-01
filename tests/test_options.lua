@@ -645,3 +645,72 @@ test("options: OnRelease restores AceGUI's own FixScroll and clears the marker",
   assertEqual(scroll.FixScroll, stock, "AceGUI's own implementation is back")
   assertNil(scroll._ka0sAlwaysScrollbar, "and the marker is gone, so a re-acquire re-patches")
 end)
+
+-- ── the Blizzard canvas contract (Options minor 5) ─────────────────────────────────────────
+--
+-- Blizzard's Settings window calls three methods on a frame handed to
+-- RegisterCanvasLayout(Sub)category: OnCommit when the user applies, OnDefault from the window's own
+-- footer defaults control, and OnRefresh on re-show. The library declared none of them until minor
+-- 5, so every host on it shipped a canvas whose footer Defaults control did nothing — three of them
+-- did, without noticing, because the header Defaults button the library DOES build kept working and
+-- looked equivalent.
+--
+-- OnCommit and OnRefresh are inert by design rather than by omission: a host's writes land
+-- immediately through its own write seam (options-ui-§41), and SetRenderer already owns re-show, so
+-- a second refresh path would race the renderer it duplicates.
+
+test("options: CreatePanel stamps the three Blizzard canvas callbacks", function()
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelCanvas1", "Canvas 1", {})
+  -- rawget, because a real canvas Frame answers a missing key from its metatable. "Already there"
+  -- has to mean THIS function put it there.
+  assertEqual(type(rawget(ctx.panel, "OnCommit")), "function")
+  assertEqual(type(rawget(ctx.panel, "OnRefresh")), "function")
+  assertEqual(type(rawget(ctx.panel, "OnDefault")), "function")
+end)
+
+test("options: OnCommit and OnRefresh are inert and safe to call", function()
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelCanvas2", "Canvas 2", {})
+  -- Called through rawget. The mock's frame stub answers ANY PascalCase key with a no-op, so
+  -- `ctx.panel.OnCommit()` would run happily whether or not the library set anything — a case that
+  -- cannot fail, which is worse than no case.
+  rawget(ctx.panel, "OnCommit")()
+  rawget(ctx.panel, "OnRefresh")()
+end)
+
+test("options: OnDefault forwards to a defaultsOnClick parked AFTER CreatePanel", function()
+  -- The ordering is the whole reason this is a forwarder rather than an assignment. Every consumer
+  -- parks its click handler on the panel AFTER CreatePanel returns — the button does not exist yet,
+  -- so there is nowhere else to put it — and a `panel.OnDefault = panel.defaultsOnClick` inside
+  -- CreatePanel would capture nil forever while looking perfectly correct.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelCanvas3", "Canvas 3", { defaultsButton = true })
+  local clicked = 0
+  ctx.panel.defaultsOnClick = function() clicked = clicked + 1 end
+  ctx.panel.OnDefault()
+  assertEqual(clicked, 1, "the footer control must reach the page's real defaults action")
+end)
+
+test("options: OnDefault and the header Defaults button run the SAME action", function()
+  -- Not identity — OnDefault is a forwarder — but one implementation, which is what identity was
+  -- ever a proxy for. Two defaults controls that can drift is the thing this prevents.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelCanvas4", "Canvas 4", { defaultsButton = true })
+  local calls = {}
+  ctx.panel.defaultsOnClick = function() calls[#calls + 1] = "action" end
+  O.EnsureDefaultsButton(ctx.panel)
+  ctx.panel.OnDefault()
+  ctx.panel.defaultsBtn:__fire("OnClick")
+  assertEqual(#calls, 2, "both routes reach it")
+end)
+
+test("options: a page with no defaults action still has a callable, inert OnDefault", function()
+  -- The main/landing page. Blizzard's footer control is not per-page, so it can be clicked while a
+  -- page that manages nothing is open, and a nil OnDefault there is exactly the error surface this
+  -- change exists to close.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelCanvas5", "Canvas 5", { isMain = true })
+  assertNil(rawget(ctx.panel, "defaultsOnClick"))
+  rawget(ctx.panel, "OnDefault")()   -- must not raise, and must be the LIBRARY's, not the stub's
+end)

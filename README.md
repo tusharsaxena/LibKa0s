@@ -372,7 +372,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Meaning |
 |---|---|
-| `CreatePanel(name, title, opts)` | A canvas Frame with the unified header stamped on top, returning the `ctx` every render call threads through. `opts` = `{ pageKey, isMain, defaultsButton, defaultsTooltip }`. Registers the ctx so the refresh fan-out reaches it. |
+| `CreatePanel(name, title, opts)` | A canvas Frame with the unified header stamped on top, returning the `ctx` every render call threads through. `opts` = `{ pageKey, isMain, defaultsButton, defaultsTooltip }`. Registers the ctx so the refresh fan-out reaches it. Also stamps the **Blizzard canvas contract** — `OnCommit` and `OnRefresh` inert (writes land immediately through the host's write seam, and `SetRenderer` already owns re-show), and `OnDefault` **forwarding** to the panel's `defaultsOnClick` so the Settings window's footer control and the header Defaults button stay one implementation. A forwarder rather than an assignment because hosts park `defaultsOnClick` *after* this returns. |
 | `EnsureDefaultsButton(panel)` | Builds the header's Defaults button on the panel's **first OnShow**, never at build time. Idempotent, and a no-op on a panel that did not ask. |
 | `EnsureScroll(ctx)` | The lazy AceGUI ScrollFrame, patched for an always-visible scrollbar. |
 | `ClearScroll(ctx)` | Release the children, reset the section tracker, and **reassign** `ctx.refreshers`. |
@@ -740,7 +740,7 @@ Each major publishes its own `lib.MODULES`, naming the live minor of every file 
 there is no single combined table, because the majors are independent and a host may hold a
 different vendored copy of each. As of **v1.2.0**: `Core = { Core = 2 }`,
 `DebugLog = { DebugLog = 4 }`, `Slash = { Slash = 5 }`,
-`Options = { Options = 4, OptionsWidgets = 5, OptionsScroll = 2 }`,
+`Options = { Options = 5, OptionsWidgets = 5, OptionsScroll = 2 }`,
 `Perf = { Perf = 5, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is

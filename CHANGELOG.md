@@ -12,12 +12,14 @@ cannot drift. Release order is in
 
 ## v1.2.0 — 2026-08-01
 
-Three gaps, all found by adoption rather than by review. The first two are the same shape — a host
-could express what it needed everywhere except at one hook nobody had asked for. The third is
-different and worse: two majors in this library disagreed about what one schema row IS.
+Four gaps, all found by adoption rather than by review. Two are the same shape — a host could
+express what it needed everywhere except at one hook nobody had asked for. The third is different
+and worse: two majors in this library disagreed about what one schema row IS. The fourth is worse
+again: every host on the options module has been shipping a settings canvas half-wired to Blizzard,
+and the half that was missing is the one the user clicks.
 
 Versions in this release: **Core minor 2**, **DebugLog minor 4**, **Slash minor 5**,
-**Options minor 4**, **OptionsWidgets minor 5**, **OptionsScroll minor 2**,
+**Options minor 5**, **OptionsWidgets minor 5**, **OptionsScroll minor 2**,
 **Perf minor 5**, **PerfPanel minor 3**.
 
 ### `LibKa0s-DebugLog-1.0` — the host can own its window chrome
@@ -102,6 +104,40 @@ Additive for every existing consumer: no row in AbsorbTracker, KickCD or Consuma
 number carrying `values`, so not one widget changes. The library's own fixture had no such row
 either, which is structurally why the gap survived — every dropdown case in the suite was
 `type = "string"`. It has one now.
+
+### `LibKa0s-Options-1.0` — `CreatePanel` stamps the Blizzard canvas contract
+
+Blizzard's Settings window calls three methods on a frame handed to
+`RegisterCanvasLayout(Sub)category`: **`OnCommit`** when the user applies, **`OnDefault`** from the
+window's own **footer** defaults control, and **`OnRefresh`** on re-show. This library declared none
+of them.
+
+So every host on it shipped a canvas whose footer Defaults control did nothing — and all three
+consumers did exactly that, without noticing, because the header Defaults button this library *does*
+build kept working and looks equivalent to the user. Two controls that appear to do the same thing,
+one of them dead, is worse than never having offered the second.
+
+`CreatePanel` now stamps all three. `OnCommit` and `OnRefresh` are inert **by design** rather than by
+omission: a host's writes land immediately through its own single write seam (options-ui-§41), so
+there is no staged state to apply, and `SetRenderer` already owns re-show, so a second refresh path
+would race the renderer it duplicates.
+
+**`OnDefault` is a forwarder, not an assignment**, and the ordering is the whole reason. Every host
+parks its click handler on the panel *after* `CreatePanel` returns — the Defaults button does not
+exist yet, since `EnsureDefaultsButton` builds it on first OnShow — so
+`panel.OnDefault = panel.defaultsOnClick` inside `CreatePanel` would capture `nil` forever while
+looking perfectly correct. Resolving through the panel at call time also keeps the footer control and
+the header button ONE implementation, which is what matters, rather than two that can drift. A page
+with no defaults action gets a callable no-op — the point, since the footer control is not per-page
+and can be clicked while a landing page is open.
+
+Additive: no consumer set any of the three, so nothing is overwritten. It is not, however,
+invisible — **three shipped addons gain a working footer Defaults control** from the re-vendor. That
+is the fix, and it is a user-visible behaviour change rather than a silent repair.
+
+Bumping the shell's MINOR makes `OptionsWidgets.lua` and `OptionsScroll.lua` re-attach on load,
+because both guard on `__…ShellMinor == lib.MINOR`. That is the designed behaviour — a replaced
+shell must be re-bound — and neither file's own minor moves.
 
 ## v1.1.1 — 2026-08-01
 
