@@ -150,7 +150,7 @@ which hosts' descriptors a change to one module can reach.
 | `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `core/CoreSetup.lua` (all four) |
 | `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `core/DebugLogSetup.lua` (AbsorbTracker, KickCD, BankLedger); ConsumableMaster: `modules/DebugLog.lua` |
 | `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger); ConsumableMaster: `core/SlashCommands.lua` |
-| `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster | AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/Panel.lua` |
+| `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | BankLedger: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/Panel.lua` |
 | `LibKa0s-Perf-1.0` | AbsorbTracker, KickCD, ConsumableMaster | `core/PerfSetup.lua` (first two); ConsumableMaster: `modules/PerfSetup.lua` |
 
 AbsorbTracker vendors to `libs/LibKa0s/` and is consumer #1 for all five. Its `settings/UnitPanel.lua`
@@ -174,7 +174,7 @@ descriptor:
 
 Add each addon here as it adopts a module, so "every consumer" in step 7 is a list rather than a
 memory. Remaining, per `docs/adoption-prompt.md`: LootHistory, PanelMaster, prettychat
-and WhatGroup. BankLedger is part-way: Core, DebugLog and Slash adopted, Options/Perf still to come.
+and WhatGroup. BankLedger has Core, DebugLog, Slash and Options; it **declines Perf** (its capture engine never runs in combat, and the probe's windows are combat-gated, so every bucket would read 0.000 by construction — see its `docs/pending/LEDGER.md`, LIBKA0S-17).
 `WhoGotLoots` and `BuffTextNotifications` are out of scope until they are on the standard at all.
 
 ## Before the first public release
