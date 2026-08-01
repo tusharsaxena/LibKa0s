@@ -36,20 +36,44 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 5. **Regenerate the case list**: `lua tests/run.lua --list` into `docs/test-cases.md`, keeping CRLF
    (see that file's own banner for the exact command).
 6. **Green gate again**, then commit and tag the repo semver.
-7. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up.
+7. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
+   includes bumping the version named in each consumer's README provenance line, in the same commit
+   as the copy.
 
 ## Re-vendoring consumers
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else. `docs/`, `README.md`, `CHANGELOG.md`
-and `LICENSE` stay here.
+**The library** is the inner `LibKa0s/` folder and nothing else — the eight `.lua` files, the
+`.xml`, and `LICENSE`. The licence lives in the ship folder so that every `cp -r` carries the MIT
+notice into the consumer's zip with no per-addon step; `LibKa0s.xml` does not load it and nothing
+else needs to know it is there. `docs/`, `README.md` and `CHANGELOG.md` stay here — they describe
+the repo, not the payload.
 
 ```
 cp -r LibKa0s/. <Addon>/libs/LibKa0s/
-diff -r LibKa0s <Addon>/libs/LibKa0s        # must be empty
+diff -r --strip-trailing-cr LibKa0s <Addon>/libs/LibKa0s   # content — MUST be empty
+diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD be empty
 cd <Addon> && lua tests/run.lua && luacheck .
 ```
+
+Then add or update the provenance line in `<Addon>/README.md`, in the same commit as the copy:
+
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.1.0 (MIT).
+
+That line is part of the re-vendor, not a follow-up to it. It is the only artefact that answers
+"which LibKa0s does this addon carry?" without grepping eight minor constants out of the vendored
+source, and it is only true if it moves with the bytes.
+
+**Run both diffs, and read the difference between them.** The first compares content with CR
+ignored; if it reports anything, a copy has genuinely forked and re-vendoring is the fix. The second
+compares raw bytes. If the first is empty and the second is not, **nothing has forked** — the two
+checkouts merely disagree about line endings, which every repo here pins to CRLF via
+`.gitattributes` and which `git status` will never show you, because the blobs are LF on both sides
+either way. The fix is to renormalise whichever side drifted (`git add --renormalize .`, and if the
+working tree does not flip, delete the affected paths and `git checkout -- .` to pull them back
+through the filter). It is **never** an edit to `libs/`. Editing `libs/` to settle a line-ending
+disagreement creates a fork to fix a fork that was not there.
 
 **The test kit** is `testkit/`, and it goes to `<Addon>/tests/_kit/` — never to `libs/`, because
 `libs/` is the ship payload and the kit must never be zipped. Under `tests/` it is already covered
@@ -58,8 +82,12 @@ change.
 
 ```
 cp -r testkit/. <Addon>/tests/_kit/
-diff -r testkit <Addon>/tests/_kit          # must be empty
+diff -r --strip-trailing-cr testkit <Addon>/tests/_kit   # content — MUST be empty
+diff -r testkit <Addon>/tests/_kit                       # bytes  — SHOULD be empty
 ```
+
+The same reading applies: content-empty and bytes-nonempty is a line-ending divergence, fixed by
+renormalising the side that drifted, never by editing the vendored copy.
 
 In THIS repo the same check is mechanical rather than remembered: `tests/test_kitsync.lua`
 compares `testkit/` against `tests/_kit/` byte for byte — every file, README included, with no
@@ -95,8 +123,10 @@ Rules, and the reason each exists:
   consumer whose `libs/` still holds the older `Core.lua` loses the whole module until it is
   re-vendored — which is another way of saying the floor is only ever safe because step 7 is not
   optional.
-- **The vendored copy MUST be byte-identical to the ship folder.** `diff -r` empty, every time. A
-  hand-patched `libs/` copy is a fork nobody knows about.
+- **The vendored copy MUST be identical to the ship folder in content, and SHOULD be identical in
+  bytes.** Both diffs above, every time. A hand-patched `libs/` copy is a fork nobody knows about —
+  but a CR-only difference is not one, and treating it as one is how a `libs/` edit gets
+  rationalised.
 - **A library change MUST be followed by a re-vendor commit in every consumer that depends on it**,
   and that commit SHOULD be its own, so the sync is legible in history rather than buried in a feature
   diff.

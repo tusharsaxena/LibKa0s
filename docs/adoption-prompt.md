@@ -261,7 +261,7 @@ After that, order by blast radius and by what this addon actually has:
 | Addon | Order | Why |
 |---|---|---|
 | KickCD | Core → DebugLog → Slash → Options → Perf | Core alone and first, then re-run `/kcd debug spells`, `/kcd debug interrupt` and `/kcd list` in combat before proceeding. DebugLog is the clean −450. Options last of the four; do not start it until the kit's fireable AceGUI mock is in place, because the current suite cannot drive a single widget. |
-| ~~ConsumableMaster~~ | **done** — Core → DebugLog → Slash → Options → Perf | Adopted in full. Ran Slash *before* Options in the end, and the planned reason for the reverse (re-anchoring `/cm reset`'s confirm popup) never materialised — the popup is registered at file scope and reached through the global `StaticPopup_Show`, so the dispatcher swap never touched it. The schema-CLI half waited on the enum and colour fixes rather than on the panel. |
+| ~~ConsumableMaster~~ | **done** — Core → DebugLog → Slash → Options → Perf | Adopted in full. Ran Slash *before* Options in the end, and the planned reason for the reverse (re-anchoring `/cm reset`'s confirm popup) never materialised — the popup is registered at file scope and reached through the global `StaticPopup_Show`, so the dispatcher swap never touched it. The schema-CLI half waited on the enum and colour fixes rather than on the panel. Convergence #1 **is** taken: `/cm reset <path>` delegates to `Sl:CliReset` and a new `/cm resetall` inherits the confirm popup and the global wipe, matching AbsorbTracker and KickCD. It landed after the initial adoption rather than with it, which is why an earlier reading of this addon looked like a decline. Convergence #2 does not apply to it at all — no landing page; see the note under that convergence. |
 | prettychat | Core → DebugLog → Options (shell only) → Slash (partial) → Perf | Slash last and partial: only the dispatcher, help renderer and landing rows. Perf is low value here — a one-shot `_G` rewrite has no A/B story. |
 | WhatGroup | Core → DebugLog → Options → Slash → Perf | Options early because it is the biggest clean win, gated on the deferred-OnShow check. Slash after, because the reset story needs a decision, not a translation. |
 | PanelMaster | Core → DebugLog → Slash → Options → Perf | Slash before Options: the `COMMANDS` flip and the `"boolean"`→`"bool"` rename are prerequisites for the widget makers reading the same rows. |
@@ -296,6 +296,29 @@ to land once the other four are green.
    one), `settings/OptionsSetup.lua`, `core/PerfSetup.lua`. Each must **degrade, not error**, when
    its major is absent — build a stub carrying every member the addon actually calls, then grep the
    repo for that namespace key and make the stub answer all of it.
+
+   **The wording of that degradation is standardised. Follow it; do not invent a sixth phrasing.**
+   One shared cause clause, defined in `core/CoreSetup.lua` because that is the first of the seams
+   the TOC loads, set *outside* the `if not lib` branch because the later seams read it on both
+   paths:
+
+   ```lua
+   NS.LIBKA0S_MISSING = "The LibKa0s library is missing from this installation of <Addon Name> " ..
+       "(expected in libs/LibKa0s)"
+   ```
+
+   Every seam then appends its own consequence and its own terminal punctuation —
+   `NS.LIBKA0S_MISSING .. ", so the debug console window is unavailable."`,
+   `", so the settings panel is unavailable."`, `", so performance measurement is unavailable."` —
+   and the Core fallback printer announces once, on the first line the addon prints, with
+   `NS.LIBKA0S_MISSING .. "; running on reduced built-in fallbacks."`. A degraded install therefore
+   says the same thing about **why** at every site and a different thing about **what** at each one.
+
+   This is AbsorbTracker's PLAN-04 pattern (six sites), which ConsumableMaster follows (five) and
+   KickCD has converged onto. It is the standard because the alternative is a user with a broken
+   install seeing a different sentence depending on which of these addons they happen to have open,
+   which is exactly what a shared clause exists to prevent. Copy the constant and the append shape;
+   the only thing that varies is the addon's own name and the `so <what> is unavailable` tail.
 5. **Keep the host's existing keys alive.** Every one of these addons has dozens to a thousand call
    sites reading a printer, a `Debug` function or a helpers table by name. Republish through those
    names — `NS.Debug = D.Debug` (it is a plain bindable function, no `self`), a shim table
@@ -321,9 +344,11 @@ to land once the other four are green.
    which is where it belongs. This is a real removal for several addons: KickCD loses
    `/kcd reset general|icons|castbar|label` and must re-home `/kcd reset spells`'s database rebuild;
    prettychat loses `/pc reset <category>` including its prefix matching, and its `ResetCategory`
-   clears a second dimension no single `applyDefault` reproduces; ConsumableMaster's `/cm reset` is
-   a confirm-gated global wipe that becomes a one-row reset, so re-anchor the popup to `resetall` or
-   the destructive path loses its guard; WhatGroup's `/wg reset` is a confirmed global reset that
+   clears a second dimension no single `applyDefault` reproduces; ConsumableMaster's `/cm reset` was
+   a confirm-gated global wipe that becomes a one-row reset, and it is the worked example of the
+   right answer — the popup was re-anchored to `/cm resetall`, so the destructive path kept its
+   guard and the path-scoped verb still means what it means everywhere else; WhatGroup's
+   `/wg reset` is a confirmed global reset that
    also wipes the profile table to drop orphaned keys, and the code exists precisely so the button
    and the slash share one body — naive adoption forks them. Decide the story **before** writing the
    descriptor, and ship it with a CHANGELOG breaking-change entry and a deprecation message, not
@@ -335,11 +360,21 @@ to land once the other four are green.
    landing-page one with double spaces around the em dash, the dash explicitly white-wrapped and the
    description bare. Converging collapses the double spaces to single, drops the dash's colour span
    and adds one to the description. BankLedger, LootHistory and PanelMaster all change here; so do
-   KickCD, ConsumableMaster, prettychat and WhatGroup. **That is the accepted cost** — it eliminates
-   a silent drift between `settings/Panel.lua` and `settings/Slash.lua` that exists in every one of
-   these repos. Only the panel changes; the chat help is already correct nearly everywhere. Where a
+   KickCD, prettychat and WhatGroup. **That is the accepted cost** — it eliminates a silent drift
+   between `settings/Panel.lua` and `settings/Slash.lua` that exists in every one of these repos.
+   Only the panel changes; the chat help is already correct nearly everywhere. Where a
    header line's wording matters (an alias sentence, a reassurance about untouched data), preserve
    it through the descriptor's `L` table rather than reformatting the rows.
+
+   **"Not applicable" is not "declined", and the two need different write-ups.** An addon with no
+   landing page carrying command rows has nothing to converge — there is no divergent formatter to
+   collapse, so there is no decision to record and nothing for a future reader to review.
+   ConsumableMaster is the worked example: its `settings/` holds no `COMMANDS` reference,
+   `LandingRows` is never called, and it takes `HelpRows` for chat help, which is complete for what
+   it has. Do not build a landing page to satisfy a convergence. A **declined** convergence is
+   different in kind: the thing existed, you chose not to converge it, and that choice must be
+   written down — in the addon's ledger or CHANGELOG — or the next consistency sweep will read it as
+   an oversight and "fix" it.
 
 ### The working method that survived twelve milestones
 
@@ -436,17 +471,33 @@ are as useful as the ones you made — they are the record of where the contract
 Run in this addon's repo and paste the real output — do not summarise a run you did not do:
 
 ```
-lua tests/run.lua                            # all green
-luacheck .                                   # 0 warnings / 0 errors
-diff -r ../LibKa0s/LibKa0s libs/LibKa0s      # must be empty
-diff -r ../LibKa0s/testkit tests/_kit        # must be empty
+lua tests/run.lua                                              # all green
+luacheck .                                                     # 0 warnings / 0 errors
+diff -r --strip-trailing-cr ../LibKa0s/LibKa0s libs/LibKa0s    # content — MUST be empty
+diff -r ../LibKa0s/LibKa0s libs/LibKa0s                        # bytes  — SHOULD be empty
+diff -r --strip-trailing-cr ../LibKa0s/testkit tests/_kit      # content — MUST be empty
+diff -r ../LibKa0s/testkit tests/_kit                          # bytes  — SHOULD be empty
 ```
+
+**Run both of each pair, and read the difference between them.** A non-empty *content* diff means a
+copy has genuinely forked, and the fix is to re-vendor. But if the content diff is empty and only
+the *byte* diff reports files, **nothing has forked** — the two checkouts merely disagree about line
+endings. Every repo here pins `* text=auto eol=crlf` in `.gitattributes` while git stores the blobs
+as LF, so a working tree holding either ending round-trips to the same blob and `git status` stays
+clean on both sides; the state is invisible and self-perpetuating. The fix is to renormalise
+whichever side drifted — `git add --renormalize .`, and if the working tree does not flip, delete
+the affected paths and `git checkout -- .` to pull them back through the filter. It is **never** an
+edit to `libs/`. Re-vendoring will not converge a line-ending divergence either; it just moves the
+wrong endings downstream, and the step people reach for after a re-vendor that did not work is the
+one this whole discipline forbids.
 
 Then confirm, explicitly:
 
 - the TOC load order satisfies every constraint you established in recon, and you say which file
   pins which;
-- the degradation stub for each adopted major answers every member the addon calls;
+- the degradation stub for each adopted major answers every member the addon calls, and every one of
+  them explains the absence through the shared `NS.LIBKA0S_MISSING` cause clause rather than through
+  wording of its own;
 - every formatter that changed hands has a byte-level assertion, and you name the rendered strings
   that deliberately changed;
 - no descriptor was handed an addon-wide locale table, and each adopted module has a case proving
