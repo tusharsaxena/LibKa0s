@@ -259,6 +259,8 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `applyDefault` | function(row) | no | Restore one row to its default. |
 | `parse` | function(row, text) | no | Defaults to `lib.ParseValue`. |
 | `groupKey` | function(row) | no | Row → the heading it lists under. Defaults to `row.page or "settings"` — a row with no page still lists somewhere. |
+| `colorDecode` | function(stored) | no | → `r, g, b, a`. Same field name as the Options descriptor's, so a host passes one pair to both majors. Defaults to reading the named-key form, then the positional one. |
+| `colorEncode` | function(r,g,b,a) | no | → stored. Defaults to `{r=,g=,b=,a=}`. |
 | `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap) below. |
 
 Only `slash` and `commands` are required, and both raise rather than defaulting: a dispatcher with
@@ -314,9 +316,12 @@ the refresh fan-out.
 
 ### Two divergences absorbed rather than decided
 
-**Colour storage** is a descriptor codec. AbsorbTracker stores `{r=,g=,b=,a=}`; KickCD stores
-arrays. Baking either in would force the other to translate at every read site in the addon, so
-`colorDecode` / `colorEncode` are descriptor options and the named-key form is only the default.
+**Colour storage** is a descriptor codec, in **both** majors. AbsorbTracker stores
+`{r=,g=,b=,a=}`; KickCD and the Ka0s options colour widget store arrays. Baking either in would
+force the other to translate at every read site in the addon, so `colorDecode` / `colorEncode` are
+descriptor options — under the same names on the Options and Slash descriptors, so a host passes
+one pair to both — and the named-key form is only the default. `Slash.FormatValue` additionally
+reads the positional shape directly, so the common case needs no descriptor at all.
 
 **The fifth widget type** ships in `-1.0` rather than being added later. KickCD has a free-text
 edit box; AbsorbTracker has no equivalent. Adding a *type* later is additive, but retrofitting one
@@ -347,6 +352,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `buildMain` | function(ctx) | no | Draws the main page's body, on its first OnShow. |
 | `colorDecode` | function(stored) | no | → `r, g, b, a`. Defaults to the `{r=,g=,b=,a=}` shape. |
 | `colorEncode` | function(r,g,b,a) | no | → stored. Defaults to the same. |
+| `sliderCommit` | string | no | `"change"` makes every slider commit on the drag as well as on release, throttled through `scheduleTimer`. Default is release-only; a single row overrides either way with `commitOn`. |
 | `debug` | function(tag, fmt, …) | no | Developer log line. |
 
 Unlike Core, DebugLog and Slash, this module performs **no descriptor validation at all** — `d` is
@@ -379,7 +385,10 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `OpenOptionsPanel()` | Open the category. **Refuses** under combat and never defers-and-replays. |
 | `RestoreDefaults(pageKey, ctx)` | The per-page Defaults button. Refreshes only the ctx it was given. |
 | `RestoreAllDefaults()` | Every non-vetoed row, then `afterRestoreAll`, then a full refresh. |
-| `RefreshAllPanels()` | Re-run every registered panel's refreshers, each pcall'd, so one dead widget cannot take the UI with it. |
+| `SetRenderer(ctx, fn)` | Declare how a page draws itself. The library owns *when*: first show, and again after a refresh marked it dirty while hidden. Also builds the Defaults button and refuses to render under combat. |
+| `RefreshAllPanels()` | **Structural.** Re-run each page's renderer, so rows that appeared or disappeared are drawn. Hidden pages are flagged dirty and re-render on their next show. |
+| `RefreshScalars()` | **In place.** Refreshers only, no rebuild — what every widget maker's own `set()` calls, since writing a value does not change which rows exist. Each is pcall'd, so one dead widget cannot take the UI with it. |
+| `__pages()` | The pages that actually built. A raising builder is reported by key and costs only itself. |
 | `LSMValues(mediaType)` | A **deferred** closure pulling the live media hash at dropdown-render time. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. |
 | `PatchAlwaysShowScrollbar(scroll)` | The scrollbar override. Idempotent, and reversed on `OnRelease` — AceGUI pools ScrollFrames, so an unreleased patch escapes into whichever addon recycles the widget next. |
 | `ROW_VSPACER` / `SECTION_HEADING_H` / `BUTTON_PAIR_REL` | The cross-slice layout constants, so a host's own page code stays in lockstep with the engine's spacing. |
@@ -388,7 +397,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 ### Row fields the flow engine reads
 
-Beyond `path`, `type`, `label`, `desc` and `default`, which the makers read:
+Beyond `path`, `type`, `label`, `default` and the tooltip body — `tooltip`, which is what every
+Ka0s host's schema declares, or `desc`, this library's own name for it; both are read:
 
 | Field | Meaning |
 |---|---|
@@ -396,9 +406,11 @@ Beyond `path`, `type`, `label`, `desc` and `default`, which the makers read:
 | `solo` | Render alone in the left half of its own line, for visual pivots. |
 | `skipRender` | Keep the row in the schema — so resets and the CLI still see it — but let the host draw it bespoke. |
 | `min` / `max` / `step` | Slider range. Snapping is relative to `min`, not to zero. |
-| `values` / `sorting` | Dropdown list; `values` may be a function. `sorting` keeps a deliberate order instead of alphabetising. |
+| `values` / `sorting` | Dropdown list, in either shape: an **ordered array** of `{ value =, text = }` (position is the order, and `sorting` is ignored) or a **key map** `{ KEY = "Label" }` (`sorting` keeps a deliberate order instead of alphabetising). A degenerate key *set* `{ KEY = true }` labels each entry with its key. `values` may be a function, evaluated at render and parse time. |
 | `dialogControl` | An in-tree widget type (`LSM30_*`, `EditBox`). Unregistered types fall back to a plain Dropdown, so an optional media-widget library staying absent costs a swatch, not the option. |
-| `hasAlpha` / `disabledIf` | Colour picker: alpha channel, and the sibling path whose truth greys the swatch out. |
+| `hasAlpha` / `disabledIf` | Colour picker: alpha channel — **default true**, declare `false` to suppress it — and the sibling path whose truth greys the swatch out. |
+| `commitOn` | `"change"` makes this slider commit on the drag, throttled; `"release"` opts out of a descriptor-wide `sliderCommit`. Default is release-only. |
+| `isPercent` | Slider renders a 0–1 ratio as a percentage. |
 | `maxLetters` | Edit box only. |
 
 ## `LibKa0s-Perf-1.0`

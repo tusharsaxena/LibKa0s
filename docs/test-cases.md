@@ -69,7 +69,7 @@ badge and any count quoted in the docs must agree with it.
 - a REAL entry in an L that also has a fallback still overrides
 - a plain L table overrides exactly as before
 
-### test_slash.lua (51)
+### test_slash.lua (61)
 
 - sl: an empty message prints the help index
 - sl: whitespace-only input is treated as empty
@@ -88,12 +88,22 @@ badge and any count quoted in the docs must agree with it.
 - sl: FormatValue renders every schema type the library knows
 - sl: a number row with no fmt renders bare
 - sl: FormatValue renders a secret as the sentinel on every formatting branch
+- sl: FormatValue reads a POSITIONAL colour as well as a named-key one
+- sl: a positional colour with a secret component still renders the sentinel
+- sl: a host colour codec round-trips through set and its echo
+- sl: CliReset's echo uses the host colour codec too
 - sl: a guarded FormatValue still survives the FormatKV string.format around it
 - sl: booleans accept the whole human vocabulary
 - sl: a junk boolean is rejected and the accepted words are listed
 - sl: a number is clamped to the row's range rather than rejected
 - sl: a non-numeric value for a number row is rejected
 - sl: a string is validated against its enum, case-sensitively
+- sl: an enum declared as an ordered array is offered in declaration order
+- sl: an ordered array supplied as a function is evaluated at parse time
+- sl: a numeric dropdown rejects an out-of-list value rather than clamping it
+- sl: a number row with no values list still clamps to min/max
+- sl: a string row with no values list accepts free text
+- sl: a key SET labels its entries with its keys, not with 'true'
 - sl: an enum supplied as a function is evaluated at parse time
 - sl: a colour parses r g b with an optional alpha
 - sl: a colour given in 0-255 is rescaled, and all three channels together
@@ -123,7 +133,7 @@ badge and any count quoted in the docs must agree with it.
 - sl: a REAL entry in an L that also has a fallback still overrides
 - sl: a plain L table overrides exactly as before
 
-### test_options.lua (39)
+### test_options.lua (48)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -152,6 +162,15 @@ badge and any count quoted in the docs must agree with it.
 - options: CreateOptionsPanel says so and returns when AceGUI is missing
 - options: the main canvas is registered under the host's brand
 - options: the main page's body is deferred to its first OnShow, and built once
+- options: a raising page builder costs that page and no other
+- options: a page registered after the build is built immediately
+- options: SetRenderer draws on first show, and not again
+- options: a panel shown during combat closes the window and does not render
+- options: a raising renderer is reported, not propagated
+- options: RefreshScalars re-syncs a shown page and flags a hidden one dirty
+- options: a dirty hidden page re-renders on its next show
+- options: the two tiers differ — one re-renders, the other only re-syncs
+- options: a ctx that never went through SetRenderer keeps the old ungated behaviour
 - options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay
 - options: OpenOptionsPanel opens the registered category out of combat
 - options: :New refuses a descriptor with no mainPanelName
@@ -165,7 +184,7 @@ badge and any count quoted in the docs must agree with it.
 - options: FixScroll disables the bar when the content fits, enables it when it does not
 - options: OnRelease restores AceGUI's own FixScroll and clears the marker
 
-### test_options_widgets.lua (44)
+### test_options_widgets.lua (52)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -183,6 +202,14 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a dropdown falls back to a plain Dropdown when its dialogControl is unregistered
 - widgets: a dropdown uses its dialogControl widget when that IS registered
 - widgets: a dropdown writes the chosen value, and its refresher re-applies the LIST
+- widgets: a dropdown built from an ordered array keeps declaration order
+- widgets: a key set labels its entries with its keys, not with 'true'
+- widgets: the dropdown's options and the CLI's allowed values agree, in both shapes
+- widgets: a colour row opts OUT of alpha by declaring it, and cannot before
+- widgets: a tooltip body comes from `tooltip`, with `desc` still accepted
+- widgets: a slider does not commit on drag by default
+- widgets: sliderCommit = 'change' commits on drag, throttled, last value wins
+- widgets: commitOn on a row overrides the descriptor default, both ways
 - widgets: a string row asking for an EditBox gets one, not a dropdown
 - widgets: an edit box commits on OnEnterPressed and re-reads on refresh
 - widgets: a color row renders a ColorPicker seeded through the descriptor's codec
@@ -399,9 +426,9 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | test_core.lua | 15 |
 | test_debuglog.lua | 42 |
-| test_slash.lua | 51 |
-| test_options.lua | 39 |
-| test_options_widgets.lua | 44 |
+| test_slash.lua | 61 |
+| test_options.lua | 48 |
+| test_options_widgets.lua | 52 |
 | test_perf_core.lua | 52 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
@@ -409,4 +436,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 2 |
-| **Total** | **351** |
+| **Total** | **378** |
