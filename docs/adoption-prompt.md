@@ -96,11 +96,46 @@ way. It fails for every key at once and only in game.
 - The README's per-module descriptor tables used to say *"hosts on the Ka0s standard pass their
   `NS.L`"*. That advice was wrong and has been corrected — see **The `L` trap** in `LibKa0s/README.md`.
 
-Pin it with one cheap assertion per adopted module: a rendered label **MUST NOT** match
+#### Pinning it — four things, and three of them were learned the expensive way
+
+**1. One rendered assertion per adopted module.** A rendered label **MUST NOT** match
 `^[A-Z][A-Z0-9_]+$`. A resolved string is prose; an unresolved one is the key, and no English label
-is SCREAMING_SNAKE_CASE. Assert on the string the library actually rendered — a case that guards on
-`if label then` passes vacuously when the accessor does not exist, which is how the first attempt at
-this test proved nothing.
+is SCREAMING_SNAKE_CASE. Assert on the string the library actually rendered, reached through a real
+accessor — a case that guards on `if label then` passes vacuously when the accessor does not exist,
+which is how the first attempt at this test proved nothing.
+
+**2. Only three of the five majors can express the trap.** `DebugLog`, `Slash` and `Perf` take an
+`L`. **Core ships no `STRINGS` and Options reads no descriptor `L`**, so a rendered assertion there
+is a case that cannot fail — worse than no case, because it reads as coverage. Write a **tripwire on
+the library** for those two instead: assert `lib.STRINGS` is absent and the source names neither
+`STRINGS` nor a `d.L` read, so the day Core or Options grows a user-visible string it goes red and
+whoever bumps that minor writes the real assertion. AbsorbTracker, KickCD and ConsumableMaster all
+carry that substitute; copy one.
+
+**3. A source guard must match on what the expression EVALUATES TO, not on one spelling.** Every
+adopter also greps its seam files for a descriptor handed the locale table, because a descriptor
+field is not observable after `lib:New` returns. The obvious pattern is wrong:
+
+```lua
+L = NS.L                     -- the table itself                        OFFENDER
+L = NS.L or { ... }          -- NS.L is always truthy, so: the table    OFFENDER
+L = NS.L and { ... } or nil  -- evaluates to the plain table            fine
+```
+
+An end-of-line-anchored `L = NS.L` misses the `or` spelling completely. It also never looks at the
+third line — which is the *legitimate* form KickCD actually ships, one `and`→`or` typo away from
+being the live trap. Flag any `L =` whose value starts with the locale table unless the next token
+is `and`.
+
+**4. Give the matcher its own case, driving it against all three spellings.** A matcher nothing
+tests can be narrowed back to a single anchored form while still reporting green — which is exactly
+how it got there. Then **mutation-verify every assertion you wrote**: hand the descriptor your
+addon's locale table, run, confirm red *with the message you expect*, and restore from a `cp`
+backup — never `git checkout`, your work is uncommitted.
+
+Finally, add the in-game half to `docs/smoke-tests.md`: walk every settings page, the console and
+the perf panel, and confirm not one SCREAMING_SNAKE string is on screen. The source guard and the
+rendered assertions are both blind to whatever the client actually draws.
 
 ### Before you write anything: work out what this addon actually does
 
@@ -335,7 +370,41 @@ to land once the other four are green.
    in several of these addons that path has never been tested at all.
 9. **Docs.** Update `docs/ARCHITECTURE.md`, the file index / module map, and `docs/testing.md`.
    Regenerate `docs/test-cases.md` and move the README `[tests]` badge **count** in the same change
-   — the count only, never the version.
+   — the count only, never the version. The badge and the inventory drift the moment they are not
+   moved together, and every one of these repos has a rule saying so that has been broken at least
+   once.
+
+   Three specific things the last audit found missing in docs that were otherwise current:
+   - **The vendor gate, written down where a maintainer will look.** `docs/testing.md` documents the
+     green gates, and none of them can see a stale vendored library — the library's suite passes
+     against the library, and the addon's passes against a stale copy that still works. Put the four
+     diffs from **The gate** below into `docs/testing.md`, with what each answer means.
+   - **The shared cause clause, in the module map and ARCHITECTURE.** `core/CoreSetup.lua` publishing
+     `NS.LIBKA0S_MISSING` is a cross-file contract four other seams depend on, not an implementation
+     detail of one file.
+   - **`docs/smoke-tests.md`**, in that file's existing format — see step 10.
+10. **Smoke tests for what no headless suite can reach.** At minimum: the degraded install (rename
+    `libs/LibKa0s` aside, `/reload`, confirm zero Lua errors, a **complete** `list` output, the
+    notice said exactly **once**, and the cause clause matching the other adopters word for word);
+    the `L` trap (walk every page, the console and the perf panel, confirm no SCREAMING_SNAKE on
+    screen); any convergence whose destructive path carries a confirmation, on **both** entry points;
+    and a parity check for any layout that changed hands, framed as "nothing moved" — anything that
+    looks different is the finding. Rename the folder back before you finish.
+11. **Provenance.** `LICENSE` ships inside the payload as of v1.1.1, so a whole-folder copy carries
+    it — do not hand-copy it into `libs/`, which would make the vendored folder differ from the ship
+    folder and break the gate for real. Add one line to the addon's README naming what it bundles:
+
+    ```
+    Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.1.1 (MIT).
+    ```
+
+    Without it there is no way to answer "which LibKa0s does this addon ship?" short of grepping
+    minors out of vendored source — which is the question a re-vendor sweep needs answered fastest.
+12. **Record every decision in `docs/pending/LEDGER.md` as you go**, one entry per module, naming the
+    upstream minor that unblocked anything that needed one. ConsumableMaster's `LIBKA0S-01` … `-08`
+    entries — superseded rows preserved rather than deleted — are the model, and the reason its
+    adoption is auditable where the others' are only inspectable. Write the entry when you make the
+    call, not at the end: the ones that get lost are the decisions that felt obvious at the time.
 
 ### The two user-visible convergences — deliberate, do not "fix" them back
 
@@ -375,6 +444,19 @@ to land once the other four are green.
    different in kind: the thing existed, you chose not to converge it, and that choice must be
    written down — in the addon's ledger or CHANGELOG — or the next consistency sweep will read it as
    an oversight and "fix" it.
+
+**For BOTH convergences, put this addon in exactly one of three states and say which in your
+report: adopted, declined, or not applicable.** This is not bookkeeping. The 2026-08-01 adoption
+report found ConsumableMaster's `reset` divergence with **zero** occurrences of the word "reset"
+anywhere in its ledger — a deliberate, defensible choice that no artefact recorded, in a repo whose
+ledger is otherwise the best in the collection. The next sweep would have read it as an oversight
+and "fixed" a confirmation guard off a destructive path. An unrecorded decision is indistinguishable
+from a mistake, and the cost lands on whoever finds it, not on you.
+
+Where a convergence removes a destructive verb's confirmation, **re-anchor the popup before you
+ship** — `/cm resetall` is the worked example — and add a smoke-test step proving the guard survived
+on **both** entry points. A settings button and a slash verb that reach the same popup are two
+paths, and a suite that only clicks the button proves nothing about the verb.
 
 ### The working method that survived twelve milestones
 
@@ -508,8 +590,14 @@ Then confirm, explicitly:
 - every formatter that changed hands has a byte-level assertion, and you name the rendered strings
   that deliberately changed;
 - no descriptor was handed an addon-wide locale table, and each adopted module has a case proving
-  its user-visible strings resolve to prose rather than to their own keys;
-- the `[tests]` badge, `docs/test-cases.md` and the suite all agree.
+  its user-visible strings resolve to prose rather than to their own keys — or, for Core and Options
+  which cannot express the trap, the library tripwire that stands in for it;
+- every one of those assertions was mutation-verified, and you name the failure message each
+  produced;
+- both convergences are in a stated state — adopted, declined or not applicable — and every
+  *declined* one is written down where the next reader will find it;
+- the `[tests]` badge, `docs/test-cases.md` and the suite all agree;
+- the addon's README names the library version it bundles.
 
 Follow this repo's own `CLAUDE.md` on committing and version bumps — **do not** bump the addon
 version for this work, and do not push.
@@ -521,3 +609,43 @@ rendered-output changes a user will notice, and anything you left undone.
 Finally: several of these changes are only observable **in-game** — colour codecs, widget dispatch,
 alpha, panel layout, the suspended arm. Tell me exactly what to run to verify it live: the commands,
 in order, and what should appear if it is wired correctly.
+
+### You will be audited — read the audit first
+
+`../LibKa0s/docs/adoption-report.md` is a reusable report run across every adopter. It checks
+version fidelity, byte fidelity (both halves), module coverage, adoption **depth** as opposed to
+presence, convergence state, `L`-trap guard coverage counted as *guarded module-adoptions / total*,
+the green gate with warnings **attributed** to adoption or to pre-existing host hygiene, and
+provenance. Its output is a frozen dated bundle under `docs/adoption/<YYYY-MM-DD>/`.
+
+Read it before you start and build so you would pass it. Two of its scoring rules are worth knowing
+up front because they cut against the obvious instinct:
+
+- **Depth is not measured by how much code you deleted.** A host that correctly declines half the
+  library — the skin, a widget maker that does not fit — is a faithful adopter. A host that took
+  everything and pinned none of it is not.
+- **A surface with one consumer is a finding**, not a success. Its contract has been tested against
+  exactly one shape, and every adopter so far has surfaced an assumption that only held for the ones
+  before it.
+
+### Known library gaps — check these before you plan around them
+
+Open shortfalls, so you do not rediscover them mid-adoption or design a page around a surface that
+cannot reach where you need it:
+
+- **`RenderGrid` takes no `parent` and never calls `DoLayout()`.** It renders into
+  `EnsureScroll(ctx)`, which anchors flush to the whole of `ctx.body`. If your addon owns its own
+  scroll container — a list with a hand-anchored header above it — `RenderGrid` cannot draw into it,
+  and calling it there silently creates a second, overlapping full-body scroll frame. Every sibling
+  maker takes a `parent`; this one does not. It also ends without the `scroll:DoLayout()` that
+  `RenderRows` ends with, so a page rendered through `RenderGrid` **alone** must call it itself.
+  Tracked at <https://github.com/tusharsaxena/KickCD/issues/10>. If your list needs either, say so
+  and fix it upstream rather than working around it — that issue exists because a recon concluded
+  "not expressible", which was the correct and useful answer.
+- **`RenderGrid` offers two cell widths only** — `HALF` (0.5) or full-width via `wide = true` — and
+  emits `AddSpacer(ROW_VSPACER)` after every flushed row with no opt-out. A dense multi-column strip,
+  or a contiguous block of text lines with no gutter, is not expressible today without changing its
+  appearance.
+
+If you find another, add it here in the same shape: what the contract cannot express, the file:line
+where it binds, and the issue tracking it.
