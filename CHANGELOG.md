@@ -10,7 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## Unreleased
+## v1.0.0 — 2026-08-01
+
+The first tagged release. Five majors — Core, DebugLog, Slash, Options and Perf — vendored into
+AbsorbTracker, KickCD and ConsumableMaster. The file minors below are what LibStub actually
+compares; the tag is the courtesy number for humans.
 
 Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 4**,
 **Options minor 3**, **OptionsWidgets minor 3**, **OptionsScroll minor 2**,
