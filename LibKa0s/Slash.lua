@@ -18,7 +18,7 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Slash-1.0", 3
+local MAJOR, MINOR = "LibKa0s-Slash-1.0", 4
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -122,31 +122,96 @@ local function parseBool(args)
   return nil, lib.STRINGS.ERR_BOOL
 end
 
+-- Both enum shapes the collection actually declares, normalised to one ordered list of
+-- { value =, text = }.
+--
+--   ordered array   { { value = "SHORT", text = "Short" }, ... }   the Ka0s options schema
+--   key map         { SHORT = "Short", LONG = "Long" }             AceGUI's own SetList shape
+--   key set         { SHORT = true, LONG = true }                  the degenerate key map
+--
+-- The array is identified by its FIRST element being a table carrying `value`; nothing else in
+-- play can look like that, so the two are distinguishable without a declared discriminator.
+-- Array POSITION is the order — that is the entire point of the shape — so `sorting` is ignored
+-- there. A key map keeps the existing rule: `sorting` if the row declares one, else sorted keys.
+--
+-- Evaluated at call time, not at load: a host's media list is populated by another addon and is
+-- not knowable when the schema row is declared.
+--
+-- Duplicated verbatim in Slash.lua and OptionsWidgets.lua rather than hoisted into Core. The two
+-- readers MUST agree — a CLI that accepts a value the dropdown cannot display is worse than
+-- either being wrong alone — but hoisting would raise NEEDS_CORE in two majors, and
+-- docs/releasing.md is explicit that a floor raise is a breaking change to the VENDORING: every
+-- consumer carrying a stale Core.lua would lose both majors outright. The agreement is pinned by
+-- a cross-major parity case instead, which is the cheaper guarantee.
+local function enumList(row)
+  local v = type(row.values) == "function" and row.values() or row.values
+  if type(v) ~= "table" then return {} end
+
+  if type(v[1]) == "table" and v[1].value ~= nil then
+    local out = {}
+    for i, item in ipairs(v) do
+      out[i] = { value = item.value, text = item.text or tostring(item.value) }
+    end
+    return out
+  end
+
+  local keys = {}
+  if type(row.sorting) == "table" then
+    for i, k in ipairs(row.sorting) do keys[i] = k end
+  else
+    for k in pairs(v) do keys[#keys + 1] = k end
+    -- Mixed key types would raise on a bare `<`. Homogeneous string keys sort exactly as before.
+    table.sort(keys, function(a, b)
+      if type(a) == type(b) then return a < b end
+      return tostring(a) < tostring(b)
+    end)
+  end
+  local out = {}
+  for i, k in ipairs(keys) do
+    -- `true` is the SET shape, and rendering it as the label is how a key set becomes a dropdown
+    -- of entries all reading "true". The key is the only honest label such a row has.
+    local text = v[k]
+    out[i] = { value = k, text = type(text) == "string" and text or tostring(k) }
+  end
+  return out
+end
+
+local function allowedText(list)
+  local parts = {}
+  for i, item in ipairs(list) do parts[i] = tostring(item.value) end
+  return table.concat(parts, ", ")
+end
+
 local function parseNumber(args, row)
   local n = tonumber(args[1])
   if not n then return nil, lib.STRINGS.ERR_NUMBER end
+  -- A NUMERIC dropdown constrains rather than clamps. Clamping a value that is merely outside the
+  -- list lands BETWEEN two entries, and the renderer then has no label for what is stored — the
+  -- row reads as blank and the user cannot tell what they set.
+  local allowed = enumList(row)
+  if #allowed > 0 then
+    for _, item in ipairs(allowed) do
+      if tonumber(item.value) == n then return n end
+    end
+    return nil, lib.STRINGS.ERR_ALLOWED:format(allowedText(allowed))
+  end
   if row.min then n = math.max(row.min, n) end
   if row.max then n = math.min(row.max, n) end
   return n
 end
 
--- Evaluated at call time, not at load: a host's media list is populated by another addon and is
--- not knowable when the schema row is declared.
-local function allowedValues(row)
-  local v = type(row.values) == "function" and row.values() or row.values or {}
-  local keys = {}
-  for k in pairs(v) do keys[#keys + 1] = tostring(k) end
-  table.sort(keys)
-  return keys
-end
-
 local function parseString(args, row)
   local v = args[1]
   if not v then return nil, lib.STRINGS.ERR_STRING end
-  for _, a in ipairs(allowedValues(row)) do
-    if a == v then return v end
+  local allowed = enumList(row)
+  -- Only CONSTRAINED when the row declares a list. A free-text row (dialogControl = "EditBox")
+  -- carries no `values` at all, and the old code walked an empty list and therefore refused every
+  -- value — so that widget type shipped un-settable from the CLI.
+  if #allowed == 0 then return v end
+  for _, item in ipairs(allowed) do
+    if tostring(item.value) == v then return v end
   end
-  return nil, lib.STRINGS.ERR_ALLOWED:format(table.concat(allowedValues(row), ", "))
+  return nil, lib.STRINGS.ERR_ALLOWED:format(allowedText(allowed))
 end
 
 local function parseColor(args)

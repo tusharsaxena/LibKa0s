@@ -12,12 +12,47 @@ cannot drift. Release order is in
 
 ## Unreleased
 
-Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 3**,
-**Options minor 2**, **OptionsWidgets minor 2**, **OptionsScroll minor 2**,
+Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 4**,
+**Options minor 2**, **OptionsWidgets minor 3**, **OptionsScroll minor 2**,
 **Perf minor 5**, **PerfPanel minor 3**.
 
 Grouped by major, newest first. A file's entries live under the major that owns it, so "what changed
 in Perf" is one heading rather than a hunt.
+
+### Enum rows: the ordered-array shape is read now — `Slash.lua`, `OptionsWidgets.lua`
+
+Both enum readers accept the Ka0s options schema's own shape — an **ordered array** of
+`{ value =, text = }` — alongside AceGUI's key map. The array's position is its order, so a row
+declared `{ {value="RIGHT"}, {value="LEFT"} }` offers Right then Left in the dropdown and lists
+`RIGHT, LEFT` in the CLI's allowed values.
+
+It has never worked. `allowedValues` iterated `pairs(row.values)` and returned the sorted
+`tostring`'d KEYS, and the dropdown handed the raw table to `SetList` — so a standard-shaped row
+offered `1, 2` as its allowed values and mapped index to table. Every Ka0s addon declares enums
+this way, which is why the options row makers and the schema CLI were both declined during
+ConsumableMaster's adoption: one defect, two majors, ~250 lines that could not move.
+
+`enumList` is duplicated **verbatim** in both files rather than hoisted into `Core.lua`. Hoisting
+would raise `NEEDS_CORE` in two majors, which `docs/releasing.md` calls a breaking change to the
+vendoring — every consumer carrying a stale `Core.lua` would lose both majors outright. The two
+copies must agree or the CLI accepts a value the dropdown cannot display, so a cross-major parity
+case renders each fixture enum and asserts the CLI accepts every option the dropdown offers, in
+both shapes. That is the guarantee the duplication buys.
+
+Three shapes were actually in play, not two. `{ SHORT = true }` — a key *set* — is what both
+fixtures and several host rows declare, and its labels rendered as the literal string `"true"` in a
+real client. Nothing caught it because the AceGUI mock records the list without reading its text.
+A set now labels each entry with its key, which is the only honest label it has.
+
+Two behaviour changes fall out, both deliberate:
+
+- A `type = "number"` row **carrying a values list** now rejects an out-of-list value instead of
+  clamping it. Clamping lands between two entries, and the renderer then has no label for what is
+  stored — the row reads blank and the user cannot tell what they set. A number row *without* a
+  list clamps exactly as before.
+- A `type = "string"` row **without** a values list now accepts free text. The old reader walked an
+  empty allowed-list and therefore refused every value, so `dialogControl = "EditBox"` rows shipped
+  un-settable from the CLI.
 
 ### `interface` was always 0 — `Perf.lua`
 

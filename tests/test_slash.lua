@@ -204,6 +204,61 @@ test("sl: a string is validated against its enum, case-sensitively", function()
   T.assertTrue(err:find("none, short", 1, true) ~= nil, "the allowed values are listed, sorted: " .. err)
 end)
 
+test("sl: an enum declared as an ordered array is offered in declaration order", function()
+  -- The Ka0s options schema declares enums as an ordered array of { value =, text = }, because
+  -- the declared order IS the dropdown's display order. Declared here so that alphabetical and
+  -- declared order DISAGREE — with a list that happens to sort into its own order, the assertion
+  -- passes whether or not the implementation honours the position.
+  local row = { type = "string", values = {
+    { value = "short", text = "Short" },
+    { value = "none",  text = "None"  },
+  } }
+  assertEqual(slash.ParseValue(row, "short"), "short")
+  local v, err = slash.ParseValue(row, "Short")
+  T.assertNil(v, "the enum match is case-sensitive")
+  T.assertTrue(err:find("short, none", 1, true) ~= nil,
+    "the allowed values are listed in DECLARED order, not sorted: " .. err)
+end)
+
+test("sl: an ordered array supplied as a function is evaluated at parse time", function()
+  local row = { type = "string", values = function()
+    return { { value = "flat", text = "Flat" } }
+  end }
+  assertEqual(slash.ParseValue(row, "flat"), "flat")
+end)
+
+test("sl: a numeric dropdown rejects an out-of-list value rather than clamping it", function()
+  -- Clamping lands BETWEEN two entries, and the renderer then has no label for what is stored:
+  -- the row reads blank and the user cannot tell what they set. Constraining says so instead.
+  local row = { type = "number", min = 1, max = 4,
+    values = { { value = 1 }, { value = 2 }, { value = 4 } } }
+  assertEqual(slash.ParseValue(row, "4"), 4)
+  local v, err = slash.ParseValue(row, "3")
+  T.assertNil(v, "a value inside the range but off the list is refused")
+  T.assertTrue(err:find("1, 2, 4", 1, true) ~= nil, err)
+  T.assertNil((slash.ParseValue(row, "99")), "and one outside it is refused, not clamped to 4")
+end)
+
+test("sl: a number row with no values list still clamps to min/max", function()
+  local row = { type = "number", min = 50, max = 500 }
+  assertEqual(slash.ParseValue(row, "10"), 50)
+  assertEqual(slash.ParseValue(row, "9000"), 500)
+end)
+
+test("sl: a string row with no values list accepts free text", function()
+  -- The EditBox row. The old reader walked an empty allowed-list and therefore refused every
+  -- value, so that widget type shipped un-settable from the CLI.
+  assertEqual(slash.ParseValue({ type = "string" }, "anything"), "anything")
+end)
+
+test("sl: a key SET labels its entries with its keys, not with 'true'", function()
+  -- { SHORT = true } is a degenerate key map. Rendering the VALUE as the label is how such a row
+  -- becomes a list of entries all reading "true"; the key is the only honest label it has.
+  local row = { type = "string", values = { none = true, short = true } }
+  local _, err = slash.ParseValue(row, "nope")
+  T.assertTrue(err:find("none, short", 1, true) ~= nil, err)
+end)
+
 test("sl: an enum supplied as a function is evaluated at parse time", function()
   -- A host's media list is populated by another addon and is not knowable at load.
   local row = { type = "string", values = function() return { flat = true } end }

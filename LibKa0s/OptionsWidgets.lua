@@ -12,7 +12,7 @@
 local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib then return end
 
-local WIDGETS_MINOR = 2
+local WIDGETS_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__widgetsMinor and lib.__widgetsMinor >= WIDGETS_MINOR
@@ -40,6 +40,60 @@ local function applyWidth(widget, relativeWidth)
   else
     widget:SetFullWidth(true)
   end
+end
+
+-- Both enum shapes the collection actually declares, normalised to one ordered list of
+-- { value =, text = }.
+--
+--   ordered array   { { value = "SHORT", text = "Short" }, ... }   the Ka0s options schema
+--   key map         { SHORT = "Short", LONG = "Long" }             AceGUI's own SetList shape
+--   key set         { SHORT = true, LONG = true }                  the degenerate key map
+--
+-- The array is identified by its FIRST element being a table carrying `value`; nothing else in
+-- play can look like that, so the two are distinguishable without a declared discriminator.
+-- Array POSITION is the order — that is the entire point of the shape — so `sorting` is ignored
+-- there. A key map keeps the existing rule: `sorting` if the row declares one, else sorted keys.
+--
+-- Evaluated at call time, not at load: a host's media list is populated by another addon and is
+-- not knowable when the schema row is declared.
+--
+-- Duplicated verbatim in Slash.lua and OptionsWidgets.lua rather than hoisted into Core. The two
+-- readers MUST agree — a CLI that accepts a value the dropdown cannot display is worse than
+-- either being wrong alone — but hoisting would raise NEEDS_CORE in two majors, and
+-- docs/releasing.md is explicit that a floor raise is a breaking change to the VENDORING: every
+-- consumer carrying a stale Core.lua would lose both majors outright. The agreement is pinned by
+-- a cross-major parity case instead, which is the cheaper guarantee.
+local function enumList(row)
+  local v = type(row.values) == "function" and row.values() or row.values
+  if type(v) ~= "table" then return {} end
+
+  if type(v[1]) == "table" and v[1].value ~= nil then
+    local out = {}
+    for i, item in ipairs(v) do
+      out[i] = { value = item.value, text = item.text or tostring(item.value) }
+    end
+    return out
+  end
+
+  local keys = {}
+  if type(row.sorting) == "table" then
+    for i, k in ipairs(row.sorting) do keys[i] = k end
+  else
+    for k in pairs(v) do keys[#keys + 1] = k end
+    -- Mixed key types would raise on a bare `<`. Homogeneous string keys sort exactly as before.
+    table.sort(keys, function(a, b)
+      if type(a) == type(b) then return a < b end
+      return tostring(a) < tostring(b)
+    end)
+  end
+  local out = {}
+  for i, k in ipairs(keys) do
+    -- `true` is the SET shape, and rendering it as the label is how a key set becomes a dropdown
+    -- of entries all reading "true". The key is the only honest label such a row has.
+    local text = v[k]
+    out[i] = { value = k, text = type(text) == "string" and text or tostring(k) }
+  end
+  return out
 end
 
 local function snapToStep(value, mn, step)
@@ -246,21 +300,11 @@ function lib.__AttachWidgets(O, d)
     dd:SetLabel(row.label or row.path)
     applyWidth(dd, relativeWidth)
 
-    local function valuesHash()
-      if type(row.values) == "function" then return row.values() or {} end
-      return row.values or {}
-    end
-
     local function applyList()
-      local items = valuesHash()
-      local order = {}
-      if row.sorting then
-        -- An explicit order exists because some lists read in a deliberate sequence (None,
-        -- Outline, Thick); alphabetising them scrambles it.
-        for i, k in ipairs(row.sorting) do order[i] = k end
-      else
-        for k in pairs(items) do order[#order + 1] = k end
-        table.sort(order)
+      local items, order = {}, {}
+      for i, item in ipairs(enumList(row)) do
+        items[item.value] = item.text
+        order[i] = item.value
       end
       dd:SetList(items, order)
     end

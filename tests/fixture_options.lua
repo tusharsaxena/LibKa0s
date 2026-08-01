@@ -67,6 +67,12 @@ local function buildRows()
       label = "Anchor", default = "CENTER",
       values = { TOP = true, CENTER = true, BOTTOM = true },
       sorting = { "TOP", "CENTER", "BOTTOM" } },
+    -- The OTHER enum shape: the Ka0s options schema's ordered array of { value =, text = }, where
+    -- POSITION is the order and `sorting` is meaningless. Declared so that alphabetical and
+    -- declared order disagree, for the same reason `anchor` above declares its `sorting` that way.
+    { path = "growth", page = "bar", group = "Fill", order = 45, type = "string",
+      label = "Growth", default = "RIGHT",
+      values = { { value = "RIGHT", text = "Right" }, { value = "LEFT", text = "Left" } } },
     -- Kept in the schema so a reset still reaches it, but never drawn by the flow engine — the
     -- host renders it bespoke. Group-less on purpose: RenderRows emits a group's heading BEFORE it
     -- checks skipRender, so a named group here would draw an empty heading over nothing.

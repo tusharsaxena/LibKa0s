@@ -205,6 +205,41 @@ test("widgets: a dropdown writes the chosen value, and its refresher re-applies 
   assertTrue(dd.order ~= nil)
 end)
 
+test("widgets: a dropdown built from an ordered array keeps declaration order", function()
+  local dd, _, _, rec = render("growth")
+  assertEqual(dd.order[1], "RIGHT", "declared position wins, not alphabetical order")
+  assertEqual(dd.order[2], "LEFT")
+  assertEqual(dd.list.RIGHT, "Right", "and the entry's text is its label")
+  dd:__fire("OnValueChanged", "LEFT")
+  assertEqual(rec.store.growth, "LEFT", "the VALUE is stored, never the array index")
+end)
+
+test("widgets: a key set labels its entries with its keys, not with 'true'", function()
+  -- { Blizzard = true } is a degenerate key map. Rendering the value as the label is how such a
+  -- row becomes a dropdown of entries all reading "true".
+  local dd = render("barTexture")
+  assertEqual(dd.list.Blizzard, "Blizzard")
+end)
+
+test("widgets: the dropdown's options and the CLI's allowed values agree, in both shapes",
+  function()
+  -- The cross-major parity case. enumList is duplicated verbatim in Slash.lua and
+  -- OptionsWidgets.lua rather than hoisted into Core (hoisting would raise NEEDS_CORE in two
+  -- majors, which docs/releasing.md calls a breaking change to the vendoring). This is the
+  -- guarantee that buys instead: a CLI that accepts a value the dropdown cannot display, or a
+  -- dropdown offering one the CLI refuses, fails here.
+  local slash = T.slash
+  for _, path in ipairs({ "growth", "anchor" }) do
+    local dd, row = render(path)
+    for _, value in ipairs(dd.order) do
+      assertEqual(slash.ParseValue(row, tostring(value)), value,
+        path .. ": the CLI accepts every value the dropdown offers")
+    end
+    assertNil((slash.ParseValue(row, "NOT_A_REAL_VALUE")),
+      path .. ": and refuses one it does not")
+  end
+end)
+
 -- ── edit box (the fifth widget type) ───────────────────────────────────────────────────────
 
 test("widgets: a string row asking for an EditBox gets one, not a dropdown", function()
