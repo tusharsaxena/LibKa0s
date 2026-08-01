@@ -8,8 +8,9 @@ read_globals = {
   "C_AddOns", "GetAddOnMetadata",
   "GetBuildInfo",   -- the client interface version a perf record stamps
   -- The settings canvas (LibKa0s-Options-1.0). `Settings` is the public registration API;
-  -- `SettingsPanel` is private and only ever reached inside a pcall, for expanding the left tree.
-  "Settings", "SettingsPanel", "GameTooltip",
+  -- `SettingsPanel` is private and only ever reached inside a pcall, for expanding the left tree,
+  -- or guarded, for the combat refusal. `HideUIPanel` is that refusal's older fallback.
+  "Settings", "SettingsPanel", "HideUIPanel", "GameTooltip",
   -- Blizzard stopwatch, driven by the measurement windows. Called as Lua functions rather than
   -- via "/sw play": RunMacroText is protected and would fail in combat.
   "Stopwatch_Clear", "Stopwatch_Play", "Stopwatch_Pause", "StopwatchFrame",

@@ -119,13 +119,17 @@ function lib.__AttachWidgets(O, d)
 
   local function get(path) return d.get(path) end
 
-  -- Write a row's value through the host's single write seam, then refresh every widget on every
-  -- panel. The refresh is what makes paired controls just work: a "Use Class Color" toggle flips
-  -- and its matching swatch grays out on the same frame. AceGUI's SetValue does not fire
-  -- OnValueChanged, so this cannot recurse.
+  -- Write a row's value through the host's single write seam, then re-sync every widget on every
+  -- panel. That is what makes paired controls just work: a "Use Class Color" toggle flips and its
+  -- matching swatch grays out on the same frame. AceGUI's SetValue does not fire OnValueChanged,
+  -- so this cannot recurse.
+  --
+  -- SCALARS, not the structural tier. Writing a value does not change which rows exist, and a
+  -- rebuild on every checkbox click would tear down and recreate every widget on the page — which
+  -- is exactly what the two-tier split exists to avoid.
   local function set(row, value)
     d.set(row.path, value)
-    O.RefreshAllPanels()
+    O.RefreshScalars()
   end
 
   -- Color storage is the HOST's shape, not the library's. AbsorbTracker stores {r=,g=,b=,a=};

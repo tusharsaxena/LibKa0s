@@ -31,7 +31,8 @@ test("options: an instance carries the shell, the widget makers and the scroll p
   for _, name in ipairs({
     "CreatePanel", "EnsureDefaultsButton", "EnsureScroll", "ClearScroll", "Section", "AddSpacer",
     "AttachTooltip", "InlineButtonPair", "RestoreDefaults", "RestoreAllDefaults",
-    "RefreshAllPanels", "LSMValues", "RegisterOptionsPage", "CreateOptionsPanel",
+    "RefreshAllPanels", "RefreshScalars", "SetRenderer", "LSMValues",
+    "RegisterOptionsPage", "CreateOptionsPanel", "__pages",
     "OpenOptionsPanel", "RenderField", "RenderRows", "RenderSchema", "SessionCheckbox",
     "PatchAlwaysShowScrollbar", "__panels", "__panelFor",
   }) do
@@ -327,6 +328,139 @@ test("options: the main page's body is deferred to its first OnShow, and built o
   assertEqual(built, 1)
   mocks.__mainPanel:__fire("OnShow")
   assertEqual(built, 1, "a second show must not stack a second copy of the body")
+end)
+
+-- ── the page registry and the two refresh tiers ────────────────────────────────────────────
+
+test("options: a raising page builder costs that page and no other", function()
+  -- Unguarded, one throwing builder killed every page after it in the list, and the user saw a
+  -- half-registered options tree with nothing naming which page did it.
+  local O, rec = Fixture.new()
+  local built = {}
+  O.RegisterOptionsPage("first",  "First",  function() built[#built + 1] = "first" end)
+  O.RegisterOptionsPage("broken", "Broken", function() error("boom") end)
+  O.RegisterOptionsPage("third",  "Third",  function() built[#built + 1] = "third" end)
+  O.CreateOptionsPanel()
+
+  assertEqual(#built, 2, "the two healthy pages both built")
+  assertEqual(built[2], "third", "including the one AFTER the failure")
+  assertEqual(#O.__pages(), 2, "and only those two are recorded as built")
+  local text = table.concat(rec.chat, "\n")
+  assertTrue(text:find("broken", 1, true) ~= nil, "the report names the failing page: " .. text)
+end)
+
+test("options: a page registered after the build is built immediately", function()
+  -- Queued behind a drain that has already happened, it would silently never appear.
+  local O = Fixture.new()
+  O.CreateOptionsPanel()
+  local ran = 0
+  O.RegisterOptionsPage("late", "Late", function() ran = ran + 1 end)
+  assertEqual(ran, 1, "built on registration rather than queued")
+  assertEqual(#O.__pages(), 1)
+end)
+
+test("options: SetRenderer draws on first show, and not again", function()
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("LateP", "Late", { pageKey = "late" })
+  local drawn = 0
+  O.SetRenderer(ctx, function() drawn = drawn + 1 end)
+  assertEqual(drawn, 0, "nothing is drawn at registration")
+  ctx.panel:__fire("OnShow")
+  assertEqual(drawn, 1)
+  ctx.panel:__fire("OnShow")
+  assertEqual(drawn, 1, "a second show must not stack a second copy of the body")
+end)
+
+test("options: a panel shown during combat closes the window and does not render", function()
+  -- The Blizzard AddOns sidebar reaches a panel without going through OpenOptionsPanel, so this
+  -- is the path a user is most likely to take mid-fight and the one that had no guard at all.
+  local O, rec = Fixture.new()
+  local ctx = O.CreatePanel("CombatP", "Combat", { pageKey = "combat" })
+  local drawn = 0
+  O.SetRenderer(ctx, function() drawn = drawn + 1 end)
+
+  local before = mocks.__settingsClosed
+  mocks.InCombatLockdown = function() return true end
+  ctx.panel:__fire("OnShow")
+  mocks.InCombatLockdown = function() return false end
+
+  assertEqual(drawn, 0, "the body is not drawn under lockdown")
+  assertEqual(mocks.__settingsClosed, before + 1, "and the settings window is closed")
+  local text = table.concat(rec.chat, "\n")
+  assertTrue(text:lower():find("combat", 1, true) ~= nil, "the refusal says why: " .. text)
+end)
+
+test("options: a raising renderer is reported, not propagated", function()
+  -- Inside AceGUI's own dispatch, a raise would take the click handling of every widget on the
+  -- frame down with it.
+  local O, rec = Fixture.new()
+  local ctx = O.CreatePanel("BoomP", "Boom", { pageKey = "boom" })
+  O.SetRenderer(ctx, function() error("render exploded") end)
+  local ok = pcall(function() ctx.panel:__fire("OnShow") end)
+  assertTrue(ok, "the OnShow itself survives")
+  assertTrue(table.concat(rec.chat, "\n"):find("boom", 1, true) ~= nil, "and the page is named")
+end)
+
+test("options: RefreshScalars re-syncs a shown page and flags a hidden one dirty", function()
+  local O = Fixture.new()
+  local shown  = O.CreatePanel("ShownP",  "Shown",  { pageKey = "shown"  })
+  local hidden = O.CreatePanel("HiddenP", "Hidden", { pageKey = "hidden" })
+  local drew, synced = 0, 0
+  O.SetRenderer(shown,  function() drew = drew + 1 end)
+  O.SetRenderer(hidden, function() drew = drew + 1 end)
+  shown.refreshers[#shown.refreshers + 1] = function() synced = synced + 1 end
+  shown.panel:Show(); hidden.panel:Hide()
+  shown._rendered = true
+
+  O.RefreshScalars()
+  assertEqual(synced, 1, "the shown page's refreshers ran")
+  assertEqual(drew, 0, "and nothing was rebuilt")
+  assertTrue(hidden._dirty, "the hidden page is flagged rather than refreshed")
+end)
+
+test("options: a dirty hidden page re-renders on its next show", function()
+  -- The whole point of the flag: deferring the work is only correct if it actually happens later.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("DirtyP", "Dirty", { pageKey = "dirty" })
+  local drew = 0
+  O.SetRenderer(ctx, function() drew = drew + 1 end)
+  ctx.panel:Show(); ctx.panel:__fire("OnShow")
+  assertEqual(drew, 1)
+  ctx.panel:Hide()
+  O.RefreshAllPanels()
+  assertEqual(drew, 1, "hidden pages are not rebuilt in place")
+  ctx.panel:Show(); ctx.panel:__fire("OnShow")
+  assertEqual(drew, 2, "and the deferred rebuild lands on the next show")
+end)
+
+test("options: the two tiers differ — one re-renders, the other only re-syncs", function()
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TiersP", "Tiers", { pageKey = "tiers" })
+  local drew, synced = 0, 0
+  O.SetRenderer(ctx, function() drew = drew + 1 end)
+  ctx.refreshers[#ctx.refreshers + 1] = function() synced = synced + 1 end
+  ctx.panel:Show()
+  ctx._rendered = true
+
+  O.RefreshScalars()
+  assertEqual(drew, 0); assertEqual(synced, 1)
+  O.RefreshAllPanels()
+  assertEqual(drew, 1, "the structural tier re-runs the renderer")
+end)
+
+test("options: a ctx that never went through SetRenderer keeps the old ungated behaviour",
+  function()
+  -- The migration seam, and the most important case in this block: a host adopting the registry
+  -- one page at a time keeps working, and so does one that never adopts it at all.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("LegacyP", "Legacy", {})
+  local synced = 0
+  ctx.refreshers[#ctx.refreshers + 1] = function() synced = synced + 1 end
+  ctx.panel:Hide()                        -- hidden, and still refreshed
+  O.RefreshScalars()
+  assertEqual(synced, 1, "no renderer means no gate")
+  O.RefreshAllPanels()
+  assertEqual(synced, 2, "on both tiers")
 end)
 
 test("options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay", function()

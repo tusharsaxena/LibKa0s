@@ -13,11 +13,42 @@ cannot drift. Release order is in
 ## Unreleased
 
 Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 4**,
-**Options minor 2**, **OptionsWidgets minor 3**, **OptionsScroll minor 2**,
+**Options minor 3**, **OptionsWidgets minor 3**, **OptionsScroll minor 2**,
 **Perf minor 5**, **PerfPanel minor 3**.
 
 Grouped by major, newest first. A file's entries live under the major that owns it, so "what changed
 in Perf" is one heading rather than a hunt.
+
+### The page registry grew a renderer seam, a guard and a second tier — `Options.lua`
+
+Three regressions a host could not work around, all of which ConsumableMaster's adoption declined
+the whole registry over.
+
+**One raising page builder no longer costs every page after it.** `CreateOptionsPanel` ran the
+builders in a bare loop, so a single failure left a half-registered options tree with nothing
+naming which page did it. Each builder is pcall'd separately now and reports its key; `O.__pages()`
+is what actually built. A page registered *after* the build is built immediately rather than queued
+behind a drain that has already happened — queued, it silently never appeared.
+
+**A panel opened during combat refuses.** `O.SetRenderer(ctx, fn)` declares how a page draws
+itself, and the library owns *when*: first show, and again after a refresh marked it dirty while it
+was hidden. It also builds the Defaults button there (the AceGUI skinning reason, unchanged) and
+closes the Settings window with the canonical grey notice under lockdown. That last one matters
+because the Blizzard AddOns sidebar reaches a panel **without** going through `OpenOptionsPanel` —
+so the one guard that existed was bypassed on exactly the path a user is most likely to take
+mid-fight. A raising renderer is reported rather than propagated: inside AceGUI's own dispatch it
+would take the click handling of every widget on the frame with it.
+
+**Refreshing is two things, and they now have two names.** `RefreshAllPanels` is STRUCTURAL — it
+re-runs the page's renderer, so rows that appeared or disappeared are drawn. `RefreshScalars` is IN
+PLACE — refreshers only, no rebuild — and it is what every widget maker's own `set()` calls, since
+writing a value does not change which rows exist. A page that is not on screen is flagged dirty and
+re-renders on its next show instead of being rebuilt fifteen times per keystroke.
+
+`RefreshAllPanels` keeps its name and gains the renderer, which is the one thing here that changes
+meaning for an existing host. The migration is opt-in and costs nothing: a ctx that never went
+through `SetRenderer` has no renderer to re-run, so both tiers fall back to running its refreshers
+ungated, exactly as before. A host adopts the registry one page at a time, or never.
 
 ### Alpha, tooltips and live sliders — `OptionsWidgets.lua`
 
