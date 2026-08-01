@@ -10,7 +10,10 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## Unreleased
+## v1.1.0 — 2026-08-01
+
+Three gaps found by adoption rather than by review, all of them things a host had worked around
+in its own setup file first.
 
 Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 4**,
 **Options minor 4**, **OptionsWidgets minor 4**, **OptionsScroll minor 2**,
