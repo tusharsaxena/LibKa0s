@@ -147,8 +147,8 @@ which hosts' descriptors a change to one module can reach.
 
 | Module | Consumers | Where the wiring lives |
 |---|---|---|
-| `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster | `core/CoreSetup.lua` (all three) |
-| `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster | `core/DebugLogSetup.lua` (first two); ConsumableMaster: `modules/DebugLog.lua` |
+| `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `core/CoreSetup.lua` (all four) |
+| `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `core/DebugLogSetup.lua` (AbsorbTracker, KickCD, BankLedger); ConsumableMaster: `modules/DebugLog.lua` |
 | `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster | `settings/Slash.lua` (first two); ConsumableMaster: `core/SlashCommands.lua` |
 | `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster | AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/Panel.lua` |
 | `LibKa0s-Perf-1.0` | AbsorbTracker, KickCD, ConsumableMaster | `core/PerfSetup.lua` (first two); ConsumableMaster: `modules/PerfSetup.lua` |
@@ -173,8 +173,8 @@ descriptor:
   engine did before it adopted. `RenderGrid` guards its items the same way.
 
 Add each addon here as it adopts a module, so "every consumer" in step 7 is a list rather than a
-memory. Remaining, per `docs/adoption-prompt.md`: BankLedger, LootHistory, PanelMaster, prettychat
-and WhatGroup.
+memory. Remaining, per `docs/adoption-prompt.md`: LootHistory, PanelMaster, prettychat
+and WhatGroup. BankLedger is part-way: Core and DebugLog adopted, Slash/Options/Perf still to come.
 `WhoGotLoots` and `BuffTextNotifications` are out of scope until they are on the standard at all.
 
 ## Before the first public release
