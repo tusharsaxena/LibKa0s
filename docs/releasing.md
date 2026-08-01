@@ -138,9 +138,9 @@ descriptor:
   needs no descriptor at all. KickCD had closed the gap with `get`/`parse` closures and then removed
   them by migrating its stored colour shape; neither workaround is needed now. The asymmetry
   between the two modules is gone.
-- **`RenderRows` does not pcall each row.** KickCD's own flow engine did, so one corrupt saved value
-  or one throwing `values` function cost that row and nothing else; the library guards the known
-  corruption but lets a raising maker take the whole page. Not descriptor-expressible.
+- **`RenderRows` pcalls each row** as of OptionsWidgets minor 4, so one corrupt saved value or one
+  throwing `values` function costs that row and nothing else — which is what KickCD's own flow
+  engine did before it adopted. `RenderGrid` guards its items the same way.
 
 Add each addon here as it adopts a module, so "every consumer" in step 7 is a list rather than a
 memory. Remaining, per `docs/adoption-prompt.md`: BankLedger, LootHistory, PanelMaster, prettychat

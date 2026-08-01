@@ -10,6 +10,42 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## Unreleased
+
+Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 4**,
+**Options minor 4**, **OptionsWidgets minor 4**, **OptionsScroll minor 2**,
+**Perf minor 5**, **PerfPanel minor 3**.
+
+### A raising row costs that row — `OptionsWidgets.lua`
+
+`RenderRows` pcalls each row. Options minor 3 guarded each page BUILDER; this is the more common
+failure and the one a host cannot pre-empt — one corrupt saved value, or a `values` function that
+raises because the media library it queries is half-loaded. Unguarded, it propagated out of
+AceGUI's layout pass, every row after it never drew, and the user saw a panel that stopped
+mid-way with nothing naming the row. `docs/releasing.md` carried this as a known gap; it is closed.
+
+### `RenderGrid` — the caller-driven sibling of `RenderRows`
+
+`RenderRows` is schema-driven: it walks declared rows, emits a `Section` when `group` changes, and
+pairs them automatically. `RenderGrid(ctx, items)` is the other half — the caller decides what goes
+in each cell and in what order, and a cell may be a schema row or `{ make = fn }` for a bespoke
+widget. `wide = true` breaks an item onto its own full-width row.
+
+That distinction is what a host needs for a list whose LENGTH is not in the schema: one checkbox
+per macro, per unit, per spell. Every host had a hand-rolled copy of this loop, which is the
+duplication this library exists to end — ConsumableMaster's `Helpers.Grid` was the third. Items are
+guarded individually, like rows.
+
+### `LSMValues` never hands back an empty list — `Options.lua`
+
+An empty list made the row unusable rather than merely unpopulated: a dropdown with no options
+cannot be opened, and the CLI's allowed-values check refuses every value, including the one already
+stored. A media row whose library has not loaded yet now offers a single `None` placeholder, which
+is what the one host that had noticed was already doing in its own wrapper.
+
+`None` is a literal rather than a locale key, deliberately: it is also the STORED value, so a
+translated one would be written into the host's SavedVariables.
+
 ## v1.0.0 — 2026-08-01
 
 The first tagged release. Five majors — Core, DebugLog, Slash, Options and Perf — vendored into

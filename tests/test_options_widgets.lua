@@ -305,6 +305,70 @@ test("widgets: commitOn on a row overrides the descriptor default, both ways", f
   assertEqual(rec2.store.barHeight, before, "and a row opting out overrides the descriptor")
 end)
 
+test("widgets: a raising row costs that row and no other", function()
+  -- The page-level guard added in Options minor 3 catches a raising BUILDER. This is the more
+  -- common failure: one corrupt saved value, or a `values` function that raises because the media
+  -- library it queries is half-loaded. Unguarded it propagated out of AceGUI's layout pass and
+  -- every row after it never drew.
+  local O, rec, ctx = bench()
+  local rows = {
+    { path = "barWidth",  type = "number", label = "W", min = 1, max = 10, step = 1 },
+    { path = "boom",      type = "string", label = "B", values = function() error("bad media") end },
+    { path = "barHeight", type = "number", label = "H", min = 1, max = 10, step = 1 },
+  }
+  rec.chat = {}
+  O.RenderRows(ctx, rows)
+  local text = table.concat(rec.chat, "\n")
+  assertTrue(text:find("boom", 1, true) ~= nil, "the failing row is named: " .. text)
+  -- Two healthy rows still registered their refreshers; the broken one did not.
+  assertEqual(#ctx.refreshers, 2, "the rows on either side of it still drew")
+end)
+
+test("widgets: RenderGrid lays arbitrary items out two per row", function()
+  -- The caller-driven sibling of RenderRows, for a list whose LENGTH is not in the schema — one
+  -- checkbox per macro, per unit, per spell. Every host had a hand-rolled copy of this loop.
+  local O, rec, ctx = bench()
+  local made = {}
+  local function item(name)
+    return { make = function(_, parent, relW)
+      made[#made + 1] = { name = name, relW = relW }
+      local cb = O.AceGUI:Create("CheckBox")
+      parent:AddChild(cb)
+    end }
+  end
+  O.RenderGrid(ctx, { item("a"), item("b"), item("c") })
+  assertEqual(#made, 3, "every item rendered")
+  assertNear(made[1].relW, 0.5, 1e-6, "paired items get half width")
+  assertTrue(rec ~= nil)
+end)
+
+test("widgets: RenderGrid gives a wide item its own full-width row", function()
+  local O, _, ctx = bench()
+  -- Recorded as a STRING sentinel, not as the raw nil: `t[#t + 1] = nil` is a no-op in Lua, so a
+  -- naive recorder drops the very item under test and silently shifts every index after it.
+  local widths = {}
+  local function item(wide)
+    return { wide = wide, make = function(_, parent, relW)
+      widths[#widths + 1] = relW or "full"
+      parent:AddChild(O.AceGUI:Create("CheckBox"))
+    end }
+  end
+  O.RenderGrid(ctx, { item(false), item(true), item(false) })
+  assertNear(widths[1], 0.5, 1e-6)
+  assertEqual(widths[2], "full", "a wide item takes no relative width")
+  assertNear(widths[3], 0.5, 1e-6)
+end)
+
+test("widgets: RenderGrid guards each item the way RenderRows guards each row", function()
+  local O, rec, ctx = bench()
+  local drew = 0
+  local function ok() return { make = function() drew = drew + 1 end } end
+  rec.chat = {}
+  O.RenderGrid(ctx, { ok(), { make = function() error("item exploded") end }, ok() })
+  assertEqual(drew, 2, "the items on either side of the failure still drew")
+  assertTrue(table.concat(rec.chat, "\n"):find("exploded", 1, true) ~= nil)
+end)
+
 -- ── edit box (the fifth widget type) ───────────────────────────────────────────────────────
 
 test("widgets: a string row asking for an EditBox gets one, not a dropdown", function()

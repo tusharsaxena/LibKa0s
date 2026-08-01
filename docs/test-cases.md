@@ -178,13 +178,13 @@ badge and any count quoted in the docs must agree with it.
 - options: CreateOptionsPanel is idempotent in both the category and the refreshers
 - options: OpenOptionsPanel is a silent no-op before CreateOptionsPanel has run
 - options: LSMValues returns a DEFERRED closure, not a snapshot
-- options: LSMValues yields an empty list rather than erroring without LibSharedMedia
+- options: LSMValues offers a None placeholder rather than an empty list
 - options: EnsureScroll is lazy, created once, and patched
 - options: the scrollbar patch is idempotent
 - options: FixScroll disables the bar when the content fits, enables it when it does not
 - options: OnRelease restores AceGUI's own FixScroll and clears the marker
 
-### test_options_widgets.lua (52)
+### test_options_widgets.lua (56)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -210,6 +210,10 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a slider does not commit on drag by default
 - widgets: sliderCommit = 'change' commits on drag, throttled, last value wins
 - widgets: commitOn on a row overrides the descriptor default, both ways
+- widgets: a raising row costs that row and no other
+- widgets: RenderGrid lays arbitrary items out two per row
+- widgets: RenderGrid gives a wide item its own full-width row
+- widgets: RenderGrid guards each item the way RenderRows guards each row
 - widgets: a string row asking for an EditBox gets one, not a dropdown
 - widgets: an edit box commits on OnEnterPressed and re-reads on refresh
 - widgets: a color row renders a ColorPicker seeded through the descriptor's codec
@@ -428,7 +432,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog.lua | 42 |
 | test_slash.lua | 61 |
 | test_options.lua | 48 |
-| test_options_widgets.lua | 52 |
+| test_options_widgets.lua | 56 |
 | test_perf_core.lua | 52 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
@@ -436,4 +440,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 2 |
-| **Total** | **378** |
+| **Total** | **382** |

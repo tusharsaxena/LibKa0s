@@ -577,12 +577,18 @@ test("options: LSMValues returns a DEFERRED closure, not a snapshot", function()
   assertEqual(out.Smooth, "Smooth")
 end)
 
-test("options: LSMValues yields an empty list rather than erroring without LibSharedMedia",
-  function()
+test("options: LSMValues offers a None placeholder rather than an empty list", function()
+  -- Empty was the old answer and it made the row unusable, not merely unpopulated: a dropdown
+  -- with no options cannot be opened, and the CLI's allowed-values check refuses every value —
+  -- including the one already stored. A host whose media library has not loaded yet gets a row
+  -- it can still see and still set.
   local O = Fixture.new()
   local out = O.LSMValues("font")()
   assertEqual(type(out), "table")
-  assertEqual(next(out), nil)
+  assertEqual(out.None, "None", "the placeholder is offered")
+  local n = 0
+  for _ in pairs(out) do n = n + 1 end
+  assertEqual(n, 1, "and it is the only entry")
 end)
 
 -- ── the always-shown scrollbar patch (OptionsScroll.lua) ───────────────────────────────────
