@@ -79,7 +79,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: a close button with no measurable width falls back to the library's own
 - dbg: with no close button at all the offsets are still the minor-3 defaults
 
-### test_slash.lua (61)
+### test_slash.lua (65)
 
 - sl: an empty message prints the help index
 - sl: whitespace-only input is treated as empty
@@ -142,6 +142,10 @@ badge and any count quoted in the docs must agree with it.
 - sl: an L whose metatable synthesises every key does NOT mask the module's strings
 - sl: a REAL entry in an L that also has a fallback still overrides
 - sl: a plain L table overrides exactly as before
+- slash: a host can supply its own value formatter for a type the library does not know
+- slash: the format hook reaches the get, set and reset echoes too
+- slash: a host with no format hook renders exactly as it always did
+- slash: the format hook takes precedence over the colour codec, and gets the raw stored value
 
 ### test_options.lua (48)
 
@@ -440,7 +444,7 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | test_core.lua | 15 |
 | test_debuglog.lua | 52 |
-| test_slash.lua | 61 |
+| test_slash.lua | 65 |
 | test_options.lua | 48 |
 | test_options_widgets.lua | 56 |
 | test_perf_core.lua | 52 |
@@ -450,4 +454,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 2 |
-| **Total** | **392** |
+| **Total** | **396** |

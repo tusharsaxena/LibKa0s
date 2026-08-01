@@ -261,6 +261,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `allRows` | function | no | Every row, in declaration order — which is the order `list` prints. |
 | `applyDefault` | function(row) | no | Restore one row to its default. |
 | `parse` | function(row, text) | no | Defaults to `lib.ParseValue`. |
+| `format` | function(row, stored) | no | Renders a value for display, replacing `lib.FormatValue` outright, at every list/get/set/reset echo. The counterpart of `parse`: for a row type this library does not know — a set, a pattern needing its pipes doubled. Handed the value **as stored**, and taking precedence over `colorDecode`. |
 | `groupKey` | function(row) | no | Row → the heading it lists under. Defaults to `row.page or "settings"` — a row with no page still lists somewhere. |
 | `colorDecode` | function(stored) | no | → `r, g, b, a`. Same field name as the Options descriptor's, so a host passes one pair to both majors. Defaults to reading the named-key form, then the positional one. |
 | `colorEncode` | function(r,g,b,a) | no | → stored. Defaults to `{r=,g=,b=,a=}`. |
@@ -737,7 +738,7 @@ released change that skips its bump reaches no host that already carries the old
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
 different vendored copy of each. As of **v1.2.0**: `Core = { Core = 2 }`,
-`DebugLog = { DebugLog = 4 }`, `Slash = { Slash = 4 }`,
+`DebugLog = { DebugLog = 4 }`, `Slash = { Slash = 5 }`,
 `Options = { Options = 4, OptionsWidgets = 4, OptionsScroll = 2 }`,
 `Perf = { Perf = 5, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.

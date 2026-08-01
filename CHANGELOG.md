@@ -12,10 +12,10 @@ cannot drift. Release order is in
 
 ## v1.2.0 — 2026-08-01
 
-One gap, found by adoption rather than by review: a host whose windows do not look like Core's had
-no way to keep its console looking like the rest of its own UI.
+Two gaps, both found by adoption rather than by review, and both of the same shape: a host could
+express what it needed everywhere except at one hook that had never been asked for.
 
-Versions in this release: **Core minor 2**, **DebugLog minor 4**, **Slash minor 4**,
+Versions in this release: **Core minor 2**, **DebugLog minor 4**, **Slash minor 5**,
 **Options minor 4**, **OptionsWidgets minor 4**, **OptionsScroll minor 2**,
 **Perf minor 5**, **PerfPanel minor 3**.
 
@@ -52,6 +52,28 @@ is not yet positive (a frame before its first layout pass, or a headless stub). 
 consumer the arithmetic yields `-30` and `-78` unchanged. The computed values are recorded on
 `frame.titleBarOffsets`, for the same reason `frame.titleText` is recorded: an anchor cannot be read
 back through the frame API, so that is the only handle a host's own test has on it.
+
+### `LibKa0s-Slash-1.0` — a host can render a value type the library does not know
+
+One optional descriptor field, `format`, defaulting to `lib.FormatValue`. No existing consumer
+changes.
+
+It closes an asymmetry rather than adding a feature. `parse` has been a descriptor field since
+`-1.0`, so a host has always been able to teach this CLI to READ a value type the library does not
+know — and had no way to teach it to WRITE one back. `lib.FormatValue` handles colour, number, bool
+and empty string, then falls through to Core's `SafeToString`.
+
+That fallback is the problem. `SafeToString` probes `table.concat`, which refuses a table, so a row
+whose stored value is a SET renders as `<secret>` — the CLI telling a user that a plain settings
+value is combat-protected. BankLedger stores its muted-store list exactly that way
+(`type = "table"`, rendered `{BANK, GUILD_BANK}` or `(none)` by the code the library replaces), and
+prettychat needs `|` doubled to `||` so a stored chat pattern renders literally. Neither is
+expressible through `colorDecode`, which only fires on a colour row, or through `SetRowAnnotator`,
+which appends a suffix after the closing `|r`.
+
+The hook is handed the value **as stored** and takes precedence over `colorDecode`: a host
+supplying both is saying it owns rendering, and decoding first would hand the hook something other
+than what the host wrote.
 
 ## v1.1.1 — 2026-08-01
 

@@ -584,3 +584,98 @@ test("sl: a plain L table overrides exactly as before", function()
   assertEqual(Sl:Text("LIST_HEADER"), "Settings!")
   assertEqual(Sl:Text("NOT_FOUND"), slash.STRINGS.NOT_FOUND)
 end)
+
+-- ── the format hook ────────────────────────────────────────────────────────────────────────
+--
+-- Added at Slash minor 5, and it closes an asymmetry rather than adding a feature: `parse` has been
+-- a descriptor field since -1.0, so a host has always been able to teach the CLI to READ a value
+-- type this library does not know — but there was no way to teach it to WRITE one back.
+--
+-- Two hosts hit it. BankLedger stores a settings row as a SET of muted stores (`type = "table"`),
+-- which lib.FormatValue falls through to Core's SafeToString: a table is not concat-safe, so the
+-- user is told a plain settings value is "<secret>" — actively misleading rather than merely ugly.
+-- prettychat needs `|` doubled to `||` so a stored pattern renders literally.
+
+test("slash: a host can supply its own value formatter for a type the library does not know",
+  function()
+    local rows = { { path = "s.stores", type = "table", default = {} } }
+    local store = { ["s.stores"] = { BANK = true, GUILD = true } }
+    local Sl = slash:New({
+      slash = "/th", commands = {},
+      print = function() end,
+      allRows = function() return rows end,
+      findRow = function(p) for _, r in ipairs(rows) do if r.path == p then return r end end end,
+      get = function(p) return store[p] end,
+      format = function(_, v)
+        local keys = {}
+        for k, on in pairs(v) do if on then keys[#keys + 1] = k end end
+        table.sort(keys)
+        return "{" .. table.concat(keys, ", ") .. "}"
+      end,
+    })
+    local lines = Sl:BuildListLines()
+    assertEqual(lines[#lines], "    " .. slash.FormatKV("s.stores", "{BANK, GUILD}"),
+      "the host's formatter renders the list row")
+  end)
+
+test("slash: the format hook reaches the get, set and reset echoes too", function()
+  local rows = { { path = "s.x", type = "table", default = {} } }
+  local store = { ["s.x"] = { A = true } }
+  local out = {}
+  local Sl = slash:New({
+    slash = "/th", commands = {},
+    print = function(line) out[#out + 1] = line end,
+    allRows = function() return rows end,
+    findRow = function(p) for _, r in ipairs(rows) do if r.path == p then return r end end end,
+    get = function(p) return store[p] end,
+    set = function(p, v) store[p] = v end,
+    applyDefault = function(r) store[r.path] = {} end,
+    parse = function() return { B = true } end,
+    format = function(_, v)
+      local keys = {}
+      for k in pairs(v) do keys[#keys + 1] = k end
+      table.sort(keys)
+      return #keys == 0 and "(none)" or ("{" .. table.concat(keys, ", ") .. "}")
+    end,
+  })
+  Sl:CliGet("s.x")
+  assertEqual(out[#out], slash.FormatKV("s.x", "{A}"), "get")
+  Sl:CliSet("s.x whatever")
+  assertEqual(out[#out], slash.FormatKV("s.x", "{B}"), "set, re-read after storing")
+  Sl:CliReset("s.x")
+  assertEqual(out[#out], slash.FormatKV("s.x", "(none)"), "reset")
+end)
+
+test("slash: a host with no format hook renders exactly as it always did", function()
+  -- The existing-consumer path. Every branch of lib.FormatValue must still be the one that answers.
+  local rows = { { path = "s.n", type = "number", fmt = "%.2fx", default = 1 } }
+  local Sl = slash:New({
+    slash = "/th", commands = {},
+    print = function() end,
+    allRows = function() return rows end,
+    findRow = function() return rows[1] end,
+    get = function() return 1.5 end,
+  })
+  local lines = Sl:BuildListLines()
+  assertEqual(lines[#lines], "    " .. slash.FormatKV("s.n", "1.50x"))
+end)
+
+test("slash: the format hook takes precedence over the colour codec, and gets the raw stored value",
+  function()
+    -- A host that supplies both is telling us it owns rendering outright. Handing it the DECODED
+    -- colour instead of what it stored would make the two hooks disagree about their own input.
+    local rows = { { path = "s.c", type = "color", default = {} } }
+    local seen
+    local Sl = slash:New({
+      slash = "/th", commands = {},
+      print = function() end,
+      allRows = function() return rows end,
+      findRow = function() return rows[1] end,
+      get = function() return { 1, 0, 0, 1 } end,
+      colorDecode = function(t) return t[1], t[2], t[3], t[4] end,
+      format = function(_, v) seen = v; return "red" end,
+    })
+    local lines = Sl:BuildListLines()
+    assertEqual(lines[#lines], "    " .. slash.FormatKV("s.c", "red"))
+    assertEqual(seen[1], 1, "the hook is handed the value as STORED")
+  end)
