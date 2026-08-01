@@ -12,11 +12,12 @@ cannot drift. Release order is in
 
 ## v1.2.0 — 2026-08-01
 
-Two gaps, both found by adoption rather than by review, and both of the same shape: a host could
-express what it needed everywhere except at one hook that had never been asked for.
+Three gaps, all found by adoption rather than by review. The first two are the same shape — a host
+could express what it needed everywhere except at one hook nobody had asked for. The third is
+different and worse: two majors in this library disagreed about what one schema row IS.
 
 Versions in this release: **Core minor 2**, **DebugLog minor 4**, **Slash minor 5**,
-**Options minor 4**, **OptionsWidgets minor 4**, **OptionsScroll minor 2**,
+**Options minor 4**, **OptionsWidgets minor 5**, **OptionsScroll minor 2**,
 **Perf minor 5**, **PerfPanel minor 3**.
 
 ### `LibKa0s-DebugLog-1.0` — the host can own its window chrome
@@ -74,6 +75,33 @@ which appends a suffix after the closing `|r`.
 The hook is handed the value **as stored** and takes precedence over `colorDecode`: a host
 supplying both is saying it owns rendering, and decoding first would hand the hook something other
 than what the host wrote.
+
+### `LibKa0s-Options-1.0` — a numeric enum renders as a dropdown, not a slider
+
+`O.RenderField` sent every `type = "number"` row to `makeSlider` without ever consulting `values`.
+But `LibKa0s-Slash-1.0` has treated a number carrying a `values` list as a constrained **enum**
+since `-1.0` — `parseNumber` refuses a value outside the list rather than clamping, and its comment
+calls the shape *"a NUMERIC dropdown"* and warns that clamping *"lands BETWEEN two entries, and the
+renderer then has no label for what is stored"*.
+
+That renderer did not exist. So a host with such a row — BankLedger has two, a retention preset and
+a quality threshold — got a CLI that validated an enum and a panel that drew a 0-to-1 slider over
+it, because neither row declares `min`/`max`/`step`. Two majors, one row, two answers.
+
+`RenderField` now routes a number row with a non-empty enum list to `makeDropdown`. `makeDropdown`
+needed no change: it is type-agnostic and stores the numeric key unmodified.
+
+**Inferred from `values`, not opted into with a `dialogControl`.** Slash infers, and an opt-in here
+would leave the two majors still disagreeing for any row that declares `values` and nothing else —
+which is the whole defect. The `enumList` duplication comment already states the requirement: *"The
+two readers MUST agree — a CLI that accepts a value the dropdown cannot display is worse than either
+being wrong alone."* The inference is safe in the failure direction: a `values` function that
+answers empty falls through to `makeSlider`, which is exactly the old behaviour.
+
+Additive for every existing consumer: no row in AbsorbTracker, KickCD or ConsumableMaster is a
+number carrying `values`, so not one widget changes. The library's own fixture had no such row
+either, which is structurally why the gap survived — every dropdown case in the suite was
+`type = "string"`. It has one now.
 
 ## v1.1.1 — 2026-08-01
 

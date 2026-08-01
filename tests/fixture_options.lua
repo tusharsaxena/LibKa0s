@@ -83,6 +83,15 @@ local function buildRows()
     -- Kept in the schema so a reset still reaches it, but never drawn by the flow engine — the
     -- host renders it bespoke. Group-less on purpose: RenderRows emits a group's heading BEFORE it
     -- checks skipRender, so a named group here would draw an empty heading over nothing.
+    -- A NUMERIC ENUM: type = "number" carrying a `values` list. Slash.lua has always treated this
+    -- shape as a constrained dropdown (parseNumber refuses a value outside the list); until
+    -- OptionsWidgets minor 5 the renderer disagreed and drew it as a slider, so the two majors
+    -- read the same row as two different things. The fixture had no such row, which is
+    -- structurally why the gap survived — every dropdown case here is type = "string".
+    { path = "retentionDays", page = "bar", group = "Fill", order = 46, type = "number",
+      label = "Keep history for", default = 30,
+      values = { { value = 7, text = "7 days" }, { value = 30, text = "30 days" },
+                 { value = 0, text = "Always" } } },
     { path = "mirror", page = "bar", order = 50, type = "bool", skipRender = true,
       label = "Use same styling as Player", default = true },
 

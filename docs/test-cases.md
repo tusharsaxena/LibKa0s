@@ -198,7 +198,7 @@ badge and any count quoted in the docs must agree with it.
 - options: FixScroll disables the bar when the content fits, enables it when it does not
 - options: OnRelease restores AceGUI's own FixScroll and clears the marker
 
-### test_options_widgets.lua (56)
+### test_options_widgets.lua (62)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -256,6 +256,12 @@ badge and any count quoted in the docs must agree with it.
 - widgets: ClearScroll reassigns ctx.refreshers rather than wiping it in place
 - widgets: InlineButtonPair lays two inset buttons into one Flow row and pcalls the click
 - widgets: InlineButtonPair tolerates a missing second spec
+- widgets: a number row carrying a values list renders as a Dropdown, not a Slider
+- widgets: the numeric dropdown lists its entries with their own labels
+- widgets: the numeric dropdown seeds the STORED number, not a stringified copy
+- widgets: choosing an entry writes the number through the host's set
+- widgets: a number row with NO values list still renders as a Slider
+- widgets: a number row whose values function answers empty falls back to a Slider
 
 ### test_perf_core.lua (52)
 
@@ -446,7 +452,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog.lua | 52 |
 | test_slash.lua | 65 |
 | test_options.lua | 48 |
-| test_options_widgets.lua | 56 |
+| test_options_widgets.lua | 62 |
 | test_perf_core.lua | 52 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
@@ -454,4 +460,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 2 |
-| **Total** | **396** |
+| **Total** | **402** |

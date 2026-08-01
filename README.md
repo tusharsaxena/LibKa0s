@@ -411,6 +411,7 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 | `solo` | Render alone in the left half of its own line, for visual pivots. |
 | `skipRender` | Keep the row in the schema — so resets and the CLI still see it — but let the host draw it bespoke. |
 | `min` / `max` / `step` | Slider range. Snapping is relative to `min`, not to zero. |
+| `values` on a `number` row | Makes it a **dropdown** rather than a slider, matching what `LibKa0s-Slash-1.0`'s parser has always understood the shape to mean. Inferred, not opted into — a `values` list that resolves empty falls back to the slider. |
 | `values` / `sorting` | Dropdown list, in either shape: an **ordered array** of `{ value =, text = }` (position is the order, and `sorting` is ignored) or a **key map** `{ KEY = "Label" }` (`sorting` keeps a deliberate order instead of alphabetising). A degenerate key *set* `{ KEY = true }` labels each entry with its key. `values` may be a function, evaluated at render and parse time. |
 | `dialogControl` | An in-tree widget type (`LSM30_*`, `EditBox`). Unregistered types fall back to a plain Dropdown, so an optional media-widget library staying absent costs a swatch, not the option. |
 | `hasAlpha` / `disabledIf` | Colour picker: alpha channel — **default true**, declare `false` to suppress it — and the sibling path whose truth greys the swatch out. |
@@ -739,7 +740,7 @@ Each major publishes its own `lib.MODULES`, naming the live minor of every file 
 there is no single combined table, because the majors are independent and a host may hold a
 different vendored copy of each. As of **v1.2.0**: `Core = { Core = 2 }`,
 `DebugLog = { DebugLog = 4 }`, `Slash = { Slash = 5 }`,
-`Options = { Options = 4, OptionsWidgets = 4, OptionsScroll = 2 }`,
+`Options = { Options = 4, OptionsWidgets = 5, OptionsScroll = 2 }`,
 `Perf = { Perf = 5, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is

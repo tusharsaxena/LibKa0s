@@ -722,3 +722,64 @@ test("widgets: InlineButtonPair tolerates a missing second spec", function()
   assertTrue(pcall(O.InlineButtonPair, ctx, { text = "Only one" }, nil))
   assertEqual(#Fixture.flowRows(ctx.scroll)[1].children, 1)
 end)
+
+-- ── numeric enums render as dropdowns (WIDGETS_MINOR 5) ────────────────────────────────────
+--
+-- The two majors used to disagree about what one schema row IS. Slash.lua's parseNumber has always
+-- treated `type = "number"` carrying a `values` list as a constrained ENUM — it refuses a value
+-- outside the list rather than clamping, and its own comment calls the shape "a NUMERIC dropdown"
+-- and warns that clamping "lands BETWEEN two entries, and the renderer then has no label for what
+-- is stored". RenderField meanwhile sent every number row to makeSlider without ever consulting
+-- `values`, so the renderer that comment describes did not exist.
+--
+-- Inferred from `values` rather than opted into with a `dialogControl`, because Slash infers too
+-- and an opt-in would leave the two disagreeing for any row that declares `values` and nothing
+-- else. Safe in the failure direction: a row whose values list comes back empty falls through to
+-- makeSlider, which is exactly the old behaviour.
+
+test("widgets: a number row carrying a values list renders as a Dropdown, not a Slider", function()
+  local w = render("retentionDays")
+  assertEqual(w.type, "Dropdown", "a numeric enum must not render as a slider")
+end)
+
+test("widgets: the numeric dropdown lists its entries with their own labels", function()
+  local w = render("retentionDays")
+  assertEqual(w.list[7], "7 days")
+  assertEqual(w.list[30], "30 days")
+  assertEqual(w.list[0], "Always", "the zero entry is a real value, not an absent one")
+  assertEqual(#w.order, 3, "declaration order is preserved")
+  assertEqual(w.order[1], 7)
+end)
+
+test("widgets: the numeric dropdown seeds the STORED number, not a stringified copy", function()
+  local w, row, _, rec = render("retentionDays")
+  assertEqual(w.value, rec.store[row.path], "seeded from the store")
+  assertEqual(type(w.value), "number", "a numeric key must stay a number or SetValue cannot match")
+end)
+
+test("widgets: choosing an entry writes the number through the host's set", function()
+  local w, row, _, rec = render("retentionDays")
+  w:__fire("OnValueChanged", 7)
+  assertEqual(rec.store[row.path], 7)
+  assertEqual(type(rec.store[row.path]), "number", "the stored value is not stringified")
+end)
+
+test("widgets: a number row with NO values list still renders as a Slider", function()
+  -- The existing-consumer path, and the reason the inference is safe: every number row in every
+  -- shipped consumer is a range, and every one of them must be untouched by this.
+  local w = render("barWidth")
+  assertEqual(w.type, "Slider")
+end)
+
+test("widgets: a number row whose values function answers empty falls back to a Slider", function()
+  -- The degenerate case the EditBox maker's comment worries about, resolved the other way round:
+  -- there an empty list would silently become free text, which can write anything. Here it becomes
+  -- a slider, which is what the row did before this change.
+  local O, rec, ctx = bench()
+  local row = { path = "barWidth", type = "number", label = "W", min = 1, max = 10,
+                values = function() return {} end }
+  local parent = O.AceGUI:Create("SimpleGroup")
+  local w = O.RenderField(ctx, row, parent, nil)
+  assertEqual(w.type, "Slider")
+  assertTrue(rec ~= nil)
+end)
