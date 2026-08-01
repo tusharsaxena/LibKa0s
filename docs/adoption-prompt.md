@@ -3,18 +3,29 @@
 Copy everything below the line into a fresh Claude Code session **in the addon's own repo**. It is
 self-contained: it names what to read rather than restating rules that may have moved on.
 
-Adopted: **AbsorbTracker** (consumer #1), **KickCD**, **ConsumableMaster** — all five modules each.
+Adopted: **AbsorbTracker** (consumer #1), **KickCD**, **ConsumableMaster** — all five modules each —
+and **BankLedger**, which took Core, DebugLog, Slash and Options and **declines Perf** on structural
+grounds (its capture engine never runs in combat and the probe's windows are combat-gated, so every
+bucket would read 0.000 by construction; recorded at its `LIBKA0S-17`).
 
-Remaining targets: `BankLedger`, `LootHistory`, `PanelMaster`, `prettychat`, `WhatGroup`.
+Remaining targets: `LootHistory`, `PanelMaster`, `prettychat`, `WhatGroup`.
 `WhoGotLoots` and `BuffTextNotifications` are out of scope until they are on the standard at all.
 
-Each of the three adopters so far has surfaced a descriptor assumption that only held for the ones
-before it, which is the point of the ordering rather than a sign it went badly: KickCD found the
-colour-shape divergence, and ConsumableMaster found the ordered-array enum shape, the `hasAlpha`
-default, the missing slider-commit hook, `row.desc` vs `row.tooltip`, and the absence of any
-caller-driven grid. Expect the fourth to find something too, and prefer fixing it upstream over
-working around it in the setup file — the rule of thumb that has held is that one host's misfit is
-a setup-file concern and two is a library gap.
+Each adopter so far has surfaced a descriptor assumption that only held for the ones before it, which
+is the point of the ordering rather than a sign it went badly: KickCD found the colour-shape
+divergence; ConsumableMaster found the ordered-array enum shape, the `hasAlpha` default, the missing
+slider-commit hook, `row.desc` vs `row.tooltip`, and the absence of any caller-driven grid; and
+BankLedger found all four of v1.2.0's gaps at once — a console it could not skin, a value type Slash
+could not render, a numeric enum that drew as a slider, and a settings canvas half-wired to Blizzard.
+Expect the fifth to find something too, and prefer fixing it upstream over working around it in the
+setup file — the rule of thumb that has held is that one host's misfit is a setup-file concern and
+two is a library gap.
+
+**A caution that comes out of BankLedger specifically.** All four v1.2.0 surfaces were built for one
+host, and three of them are still called by that host and nobody else. Inside a frozen `-1.0` major
+there is no deprecation available, so an assumption baked in against a single shape can only ever be
+worked around. If you are the second host to touch one of the surfaces listed under "Provisional
+surfaces" below, treat a misfit as a library gap on first contact rather than second.
 
 ---
 
@@ -107,10 +118,28 @@ which is how the first attempt at this test proved nothing.
 **2. Only three of the five majors can express the trap.** `DebugLog`, `Slash` and `Perf` take an
 `L`. **Core ships no `STRINGS` and Options reads no descriptor `L`**, so a rendered assertion there
 is a case that cannot fail — worse than no case, because it reads as coverage. Write a **tripwire on
-the library** for those two instead: assert `lib.STRINGS` is absent and the source names neither
-`STRINGS` nor a `d.L` read, so the day Core or Options grows a user-visible string it goes red and
-whoever bumps that minor writes the real assertion. AbsorbTracker, KickCD and ConsumableMaster all
-carry that substitute; copy one.
+the library** for those two instead. The two tripwires are not the same shape, because the two
+modules are not in the same position:
+
+- **Core** — assert `lib.STRINGS` is absent *and* that `Core.lua`'s source names neither `STRINGS`
+  nor a `d.L` read. Both halves hold today. AbsorbTracker, KickCD, ConsumableMaster and BankLedger
+  all carry this one; copy any of them.
+- **Options** — `Options.lua` **does** ship a `STRINGS` table, so the `lib.STRINGS`-is-absent half
+  does not transfer and asserting it would fail on a module that is behaving correctly. The Options
+  tripwire is the source half alone: assert the module reads no descriptor `L`. It passes today and
+  goes red the day Options grows one, which is the whole point — the settings panel is where a raw
+  SCREAMING_SNAKE key is most visible.
+
+**This tripwire is required, not optional, for every adopted major that cannot express the trap.**
+The 2026-08-01 v2 adoption run found this paragraph claiming three consumers carried an Options
+substitute when none did; all four carry both tripwires now. Mutation-verify yours rather than
+trusting it: add a `d.L` read to a scratch copy of the module and confirm the case goes red. A
+tripwire that survives that mutation is not a tripwire.
+
+Where the module *does* render a real library string, a rendered assertion beats a tripwire and
+should be written as well as one — AbsorbTracker reads `lib.STRINGS.DEFAULTS_LABEL` back off the
+built Defaults button with an explicit non-vacuity coupling, which is stronger than any source check
+and is the pattern to follow when a real string exists to assert on.
 
 **3. A source guard must match on what the expression EVALUATES TO, not on one spelling.** Every
 adopter also greps its seam files for a descriptor handed the locale table, because a descriptor
@@ -265,25 +294,41 @@ Two DebugLog survivors need a new home: `NS.DebugBuild` (deferred-argument sink,
 equivalent) and `D:Diagnose()`. Note the AceConsole reclaim already exists and is load-bearing;
 five files capture `local print = NS.Print` at load.
 
-**BankLedger** and **LootHistory** — architectural twins; treat them as one job done twice. DebugLog
-is the standout: `modules/DebugLog.lua` (357 / 359 lines) deletes outright, both formatters are
-byte-identical to the library's, and the frame globals the descriptor generates from `name` match
-today's hardcoded names exactly. **Decline Core's skin and close button**: `lib.SKIN` is a 12px
-tooltip border against both addons' flat 1px `WHITE8X8` double border with a synthesized inner
-border and gold title tint, and `lib.MakeCloseButton` is 18×18 red-hover against their 24×24
-class-coloured one — adopting those is a visual redesign of every window, not an extraction. Take
-the printer and `SafeToString` only; the guard half is a semantic no-op in both. The Core ordering
-trap is sharp: five files per repo capture `local print = NS.Print` at load, and the AceConsole
-reclaim reads `NS.Util.print`, so a seam that publishes only `NS.Print` is silently undone by that
-reclaim and the whole change appears to work while doing nothing. Slash: `NS.COMMANDS` is keyed and
-must go positional (15 / 13 entries, plus five test files iterating `cmd.name`/`cmd.desc`), rows say
-`"boolean"`, and roughly a dozen exact-string assertions break on hex case and wording alone.
-Options carries the same schema-vocabulary mismatch plus two shapes the library has no maker for: a
-`type="number", widget="Dropdown"` numeric dropdown, and a `type="table", widget="MultiCheck"`
-inverted set picker — both stay host-drawn. LootHistory is the worse of the two for Options because
-it has **no `tests/test_panel.lua`**, so a panel regression is invisible to the green gate.
+**LootHistory** — BankLedger's architectural twin, and **BankLedger is the worked half**. This is the
+most valuable thing that adoption produced for the next one: nearly every judgement below has already
+been made once, in a repo you can read, against a codebase shaped like this one. Read
+`../BankLedger/core/CoreSetup.lua`, `core/DebugLogSetup.lua`, `settings/Slash.lua`,
+`settings/OptionsSetup.lua` and `settings/Panel.lua` before deciding anything here, and read its
+`docs/pending/LEDGER.md` for the declines — `LIBKA0S-01` through `LIBKA0S-25` are the record of which
+misfits went upstream and which stayed local.
 
-Both are also the clearest case for the landing-page convergence — see below.
+DebugLog is the standout: `modules/DebugLog.lua` (357 / 359 lines) deletes outright, both formatters
+are byte-identical to the library's, and the frame globals the descriptor generates from `name` match
+today's hardcoded names exactly. **The window chrome no longer forces a decline.** DebugLog minor 4
+added `applySkin` and `makeCloseButton`, both defaulting to what minor 3 did, precisely so these two
+addons could keep their flat 1px `WHITE8X8` double border with its synthesized inner border and gold
+title tint and their 24×24 class-coloured close button while still adopting the module. BankLedger
+passes both and is the only host that does — see "Provisional surfaces". Take the printer and
+`SafeToString` from Core; the guard half is a semantic no-op in both. The Core ordering trap is
+sharp: five files per repo capture `local print = NS.Print` at load, and the AceConsole reclaim reads
+`NS.Util.print`, so a seam that publishes only `NS.Print` is silently undone by that reclaim and the
+whole change appears to work while doing nothing. Slash: `NS.COMMANDS` is keyed and must go
+positional (15 / 13 entries, plus five test files iterating `cmd.name`/`cmd.desc`), rows say
+`"boolean"`, and roughly a dozen exact-string assertions break on hex case and wording alone — and
+where a value type the library cannot render is the blocker, Slash minor 5's `format` hook is the
+supported answer rather than a host-side workaround.
+
+Options carries the same schema-vocabulary mismatch. Of the two shapes this prompt used to say had no
+maker, **one is now the library's**: a `type="number"` row carrying a `values` list renders as a
+dropdown as of OptionsWidgets minor 5, so BankLedger's numeric dropdowns are no longer host-drawn and
+LootHistory's should not be either. The `type="table", widget="MultiCheck"` inverted set picker is
+still host-drawn and is a genuine gap. LootHistory remains the worse of the two for Options because
+it has **no `tests/test_panel.lua`**, so a panel regression is invisible to the green gate — write
+that file before you start Options, not after.
+
+It is also the clearest remaining case for the landing-page convergence — BankLedger took it at
+`settings/Panel.lua:356` and recorded the cost at `LIBKA0S-11`, so the answer to "what does this look
+like afterwards" is a screenshot away rather than a judgement call. See below.
 
 ### Suggested module order
 
@@ -296,11 +341,11 @@ After that, order by blast radius and by what this addon actually has:
 | Addon | Order | Why |
 |---|---|---|
 | KickCD | Core → DebugLog → Slash → Options → Perf | Core alone and first, then re-run `/kcd debug spells`, `/kcd debug interrupt` and `/kcd list` in combat before proceeding. DebugLog is the clean −450. Options last of the four; do not start it until the kit's fireable AceGUI mock is in place, because the current suite cannot drive a single widget. |
-| ~~ConsumableMaster~~ | **done** — Core → DebugLog → Slash → Options → Perf | Adopted in full. Ran Slash *before* Options in the end, and the planned reason for the reverse (re-anchoring `/cm reset`'s confirm popup) never materialised — the popup is registered at file scope and reached through the global `StaticPopup_Show`, so the dispatcher swap never touched it. The schema-CLI half waited on the enum and colour fixes rather than on the panel. Convergence #1 **is** taken: `/cm reset <path>` delegates to `Sl:CliReset` and a new `/cm resetall` inherits the confirm popup and the global wipe, matching AbsorbTracker and KickCD. It landed after the initial adoption rather than with it, which is why an earlier reading of this addon looked like a decline. Convergence #2 does not apply to it at all — no landing page; see the note under that convergence. |
+| ~~ConsumableMaster~~ | **done** — Core → DebugLog → Slash → Options → Perf | Adopted in full. Ran Slash *before* Options in the end, and the planned reason for the reverse (re-anchoring `/cm reset`'s confirm popup) never materialised — the popup is registered at file scope and reached through the global `StaticPopup_Show`, so the dispatcher swap never touched it. The schema-CLI half waited on the enum and colour fixes rather than on the panel. Convergence #1 **is** taken: `/cm reset <path>` delegates to `Sl:CliReset` and a new `/cm resetall` inherits the confirm popup and the global wipe, matching AbsorbTracker and KickCD. It landed after the initial adoption rather than with it, which is why an earlier reading of this addon looked like a decline. Convergence #2 **is** taken too, as of the 2026-08-01 v2 report — but it was recorded as *not applicable* first, and how that happened is the useful part: the About panel reaches its command rows through `KCM.SlashCommands.GetCommandSummary()`, so a grep of `settings/` for `COMMANDS` returned nothing and the page looked absent. It was there the whole time, drawing its own format string while the chat half already went through `lib.FormatRow`. Now converged behind a `GetLandingRows()` delegating to `Sl:LandingRows()`, recorded at `LIBKA0S-13` with the spacing change in its CHANGELOG. Follow the render path, not the name. |
 | prettychat | Core → DebugLog → Options (shell only) → Slash (partial) → Perf | Slash last and partial: only the dispatcher, help renderer and landing rows. Perf is low value here — a one-shot `_G` rewrite has no A/B story. |
 | WhatGroup | Core → DebugLog → Options → Slash → Perf | Options early because it is the biggest clean win, gated on the deferred-OnShow check. Slash after, because the reset story needs a decision, not a translation. |
 | PanelMaster | Core → DebugLog → Slash → Options → Perf | Slash before Options: the `COMMANDS` flip and the `"boolean"`→`"bool"` rename are prerequisites for the widget makers reading the same rows. |
-| BankLedger | Core (printer only) → DebugLog → Slash → Options → Perf | DebugLog immediately after Core: highest value, lowest risk, and it validates the seam. |
+| ~~BankLedger~~ | **done** — Core (printer only) → DebugLog → Slash → Options | Adopted in that order, DebugLog immediately after Core: highest value, lowest risk, and it validated the seam. **Perf is declined**, not pending — the capture engine never runs in combat and the probe's windows are combat-gated, so every bucket would read 0.000 by construction (`LIBKA0S-17`). The adoption drove all four of v1.2.0's library changes. |
 | LootHistory | Core (printer only) → DebugLog → Slash → Options → Perf | Same, but write panel tests **before** Options — there are none today. |
 
 Perf is last everywhere. Nothing it adds can regress, so it is the safest to defer and the easiest
@@ -395,11 +440,15 @@ to land once the other four are green.
     folder and break the gate for real. Add one line to the addon's README naming what it bundles:
 
     ```
-    Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.1.1 (MIT).
+    Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.2.0 (MIT).
     ```
 
-    Without it there is no way to answer "which LibKa0s does this addon ship?" short of grepping
-    minors out of vendored source — which is the question a re-vendor sweep needs answered fastest.
+    The version there is **whatever is being released**, not a literal to copy — read it out of
+    `../LibKa0s/CHANGELOG.md`'s top block and confirm `git -C ../LibKa0s tag` actually carries that
+    ref, because a provenance line naming an untagged release answers with a string nobody can check
+    out. Without the line at all there is no way to answer "which LibKa0s does this addon ship?"
+    short of grepping minors out of vendored source — which is the question a re-vendor sweep needs
+    answered fastest.
 12. **Record every decision in `docs/pending/LEDGER.md` as you go**, one entry per module, naming the
     upstream minor that unblocked anything that needed one. ConsumableMaster's `LIBKA0S-01` … `-08`
     entries — superseded rows preserved rather than deleted — are the model, and the reason its
@@ -437,13 +486,20 @@ to land once the other four are green.
 
    **"Not applicable" is not "declined", and the two need different write-ups.** An addon with no
    landing page carrying command rows has nothing to converge — there is no divergent formatter to
-   collapse, so there is no decision to record and nothing for a future reader to review.
-   ConsumableMaster is the worked example: its `settings/` holds no `COMMANDS` reference,
-   `LandingRows` is never called, and it takes `HelpRows` for chat help, which is complete for what
-   it has. Do not build a landing page to satisfy a convergence. A **declined** convergence is
-   different in kind: the thing existed, you chose not to converge it, and that choice must be
-   written down — in the addon's ledger or CHANGELOG — or the next consistency sweep will read it as
-   an oversight and "fix" it.
+   collapse, so there is no decision to record and nothing for a future reader to review. Do not
+   build a landing page to satisfy a convergence. A **declined** convergence is different in kind:
+   the thing existed, you chose not to converge it, and that choice must be written down — in the
+   addon's ledger or CHANGELOG — or the next consistency sweep will read it as an oversight and
+   "fix" it.
+
+   **Prove "not applicable" by following the render path, never by grepping for a name.** There is no
+   worked example of it here on purpose: all four consumers turned out to *have* a landing page. This
+   paragraph used to name ConsumableMaster as the example, on the strength of a grep of `settings/`
+   for `COMMANDS` that genuinely returns nothing — and it was wrong. Its landing page reaches its
+   command rows through `KCM.SlashCommands.GetCommandSummary()`, one helper-function indirection away
+   from any name a grep would match, and it was carrying its own formatter the whole time. Start from
+   the frame the config command opens, find its renderer, and read what that renderer draws. A name
+   that does not appear is evidence about the name, not about the page.
 
 **For BOTH convergences, put this addon in exactly one of three states and say which in your
 report: adopted, declined, or not applicable.** This is not bookkeeping. The 2026-08-01 adoption
@@ -533,10 +589,17 @@ When it is a real, additive library change, do it in this order and do not skip 
    `../LibKa0s/docs/releasing.md`. It starts at AbsorbTracker and grows by one every time an addon
    completes this migration — so check it, do not assume it is still just the one.
 8. **Run each existing consumer's full suite** and confirm it is unchanged. This is the step that
-   proves your "additive" change was additive. At the time of writing: **AbsorbTracker 462**,
-   **KickCD 643**, **ConsumableMaster 554**, each 0 failed. If any of those moves *while you are
-   changing the library*, your change was not additive and you need to know before it ships rather
-   than after.
+   proves your "additive" change was additive. At the time of writing: **AbsorbTracker 467**,
+   **KickCD 646**, **ConsumableMaster 559**, **BankLedger 685**, each 0 failed. If any of those moves
+   *while you are changing the library*, your change was not additive and you need to know before it
+   ships rather than after.
+
+   **Run all four, and know which one is load-bearing for what you touched.** A surface with a single
+   consumer is proved additive by that consumer's suite and by nothing else — the other three stay
+   green through a regression in it, because they never call it. Everything v1.2.0 added is in that
+   position today and BankLedger is the one host that exercises it, which is why the fourth total
+   above is not a formality. Check "Provisional surfaces" before deciding a three-suite run was
+   enough.
 
    Read the CURRENT number from that addon's own `docs/test-cases.md` Totals table before you start,
    and compare against your own before/after — do not trust the three above. They are a snapshot,
@@ -567,6 +630,19 @@ diff -r ../LibKa0s/LibKa0s libs/LibKa0s                        # bytes  — SHOU
 diff -r --strip-trailing-cr ../LibKa0s/testkit tests/_kit      # content — MUST be empty
 diff -r ../LibKa0s/testkit tests/_kit                          # bytes  — SHOULD be empty
 ```
+
+**The `luacheck` figure is scoped, not repo-wide**, and reading it as repo-wide is how a clean run
+gets mistaken for a clean adoption. Every `.luacheckrc` here excludes `libs/` — correctly; vendored
+code is not the host's to lint — and most exclude `tests/` as well. Before you quote 0/0, print what
+was actually checked and confirm **every seam file you wrote is inside that set**:
+
+```
+cat .luacheckrc | grep -A5 exclude_files
+luacheck . --formatter plain | tail -1        # and check the file count it reports
+```
+
+A warning inside a seam file is an adoption defect. A warning elsewhere is pre-existing host hygiene
+and is not yours. Neither statement means anything if the lint never opened the file.
 
 **Run both of each pair, and read the difference between them.** A non-empty *content* diff means a
 copy has genuinely forked, and the fix is to re-vendor. But if the content diff is empty and only
@@ -649,3 +725,35 @@ cannot reach where you need it:
 
 If you find another, add it here in the same shape: what the contract cannot express, the file:line
 where it binds, and the issue tracking it.
+
+### Provisional surfaces — one consumer each, and treated as unsettled
+
+A gap is a contract that cannot express what a host needs. These are the opposite failure: contracts
+that **can** express exactly one host's need, because exactly one host has ever used them. Every
+surface v1.2.0 added was driven by BankLedger, and three of the four are called by BankLedger and
+nobody else. `-1.0` is frozen additive-only, so there is no deprecation available inside it — an
+assumption baked in here can be worked around later but never renamed. If you are the second host to
+touch one of these, treat a misfit as a library gap on first contact.
+
+- **`applySkin` / `makeCloseButton` (DebugLog minor 4).** One implementation behind them. The
+  contract is that you are handed a **fully built** frame with `frame.title` and `frame.divider`
+  already assigned; that it tolerates a missing divider is an accident of BankLedger's helper, not a
+  promise. If your chrome helper needs anything else on the frame, say so rather than reaching for a
+  global.
+- **The Slash `format` hook (Slash minor 5).** Documented to take precedence over `colorDecode`, and
+  **that precedence has never executed** — BankLedger passes no colour codecs, so no host has ever
+  set both. Treat the ordering as *documented but unexercised*: the first host to pass both should
+  assert it rather than assume it, and if the assertion is awkward to write, that is the signal the
+  ordering wants revisiting while it still can be. The second motivating case — prettychat's `|`
+  doubling, i.e. `format` applied to rows the library *can* already render — has not been tried
+  either.
+- **The numeric-enum dropdown (OptionsWidgets minor 5).** The route is **inferred** from the presence
+  of a `values` list on a `type="number"` row, not opted into. Any existing number row that grows a
+  `values` key silently reclassifies from slider to dropdown, with no code change and no test
+  anywhere that would see it. KickCD's 31 number rows all carry min/max/step today; the first one to
+  gain a list flips. It has also never been rendered alongside `sliderCommit`, because the one host
+  with `sliderCommit` has no enum rows.
+
+The fourth v1.2.0 addition, `CreatePanel` stamping `OnCommit`/`OnRefresh`/`OnDefault`, is **not** in
+this list for the opposite reason: it is not opt-in, so all four consumers gained it at once. It is
+guarded in the library's own suite and in all four hosts.

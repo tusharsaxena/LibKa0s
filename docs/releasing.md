@@ -15,6 +15,11 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 ## Order of operations
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
+   That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
+   is eleven files, the eight in `LibKa0s/` plus three under `testkit/`, because `tests/` and `docs/`
+   are excluded. A consumer's is scoped too, and usually excludes `libs/` and `tests/`. 0/0 only
+   means something if the files carrying the seam are inside the checked set, so confirm that before
+   reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed.** All eight, by their exact constant names: `MINOR` in
    `Core.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in `Slash.lua`, `MINOR` in `Options.lua`,
    `WIDGETS_MINOR` in `OptionsWidgets.lua`, `SCROLL_MINOR` in `OptionsScroll.lua`, `MINOR` in
@@ -39,6 +44,19 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 7. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
    includes bumping the version named in each consumer's README provenance line, in the same commit
    as the copy.
+8. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
+   wiring is not:
+
+   ```
+   for a in AbsorbTracker BankLedger ConsumableMaster KickCD; do
+       grep -rnoE 'LibStub\("LibKa0s-[A-Za-z]+-1\.0", true\)' ../$a --include='*.lua' \
+         | grep -v '/libs/' | grep -v '/tests/'
+   done
+   ```
+
+   Every file that prints must appear in the table's third column. A second lookup site nobody
+   recorded is a file the checklist never points a reviewer at — which is exactly how
+   AbsorbTracker's `settings/Schema.lua` went unnamed until the 2026-08-01 v2 adoption run.
 
 ## Re-vendoring consumers
 
@@ -59,11 +77,15 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/README.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.1.1 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.2.0 (MIT).
+
+The version in that template is **the one being released**, not a literal to copy — at v1.3.0 the
+line reads v1.3.0, and this template moves with it rather than being corrected after the fact.
 
 That line is part of the re-vendor, not a follow-up to it. It is the only artefact that answers
 "which LibKa0s does this addon carry?" without grepping eight minor constants out of the vendored
-source, and it is only true if it moves with the bytes.
+source, and it is only true if it moves with the bytes — and only checkable if step 6's tag exists,
+which is why the tag is not the optional half of that step.
 
 **Run both diffs, and read the difference between them.** The first compares content with CR
 ignored; if it reports anything, a copy has genuinely forked and re-vendoring is the fix. The second
@@ -149,7 +171,7 @@ which hosts' descriptors a change to one module can reach.
 |---|---|---|
 | `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `core/CoreSetup.lua` (all four) |
 | `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `core/DebugLogSetup.lua` (AbsorbTracker, KickCD, BankLedger); ConsumableMaster: `modules/DebugLog.lua` |
-| `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger); ConsumableMaster: `core/SlashCommands.lua` |
+| `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger); ConsumableMaster: `core/SlashCommands.lua`. AbsorbTracker has a **second** lookup at `settings/Schema.lua`, stashed at file load so `NS.FormatSchemaValue` can call `lib.FormatValue(row, v)` — the seam every panel widget and every `/at set` renders through |
 | `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | BankLedger: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/Panel.lua` |
 | `LibKa0s-Perf-1.0` | AbsorbTracker, KickCD, ConsumableMaster | `core/PerfSetup.lua` (first two); ConsumableMaster: `modules/PerfSetup.lua` |
 
