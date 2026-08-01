@@ -29,6 +29,17 @@ local L = lib.LAYOUT
 -- a handful of writes a second rather than sixty, and fast enough that the preview still tracks
 -- the cursor.
 local COLOR_THROTTLE = 0.05
+-- Live-slider commits reuse the colour picker's throttle: a 60 Hz drag would otherwise fan a
+-- refresh pass out across every registered panel sixty times a second.
+local DRAG_THROTTLE  = COLOR_THROTTLE
+
+-- The tooltip BODY. `tooltip` is the name every Ka0s host's schema declares; `desc` is the one
+-- this library invented, and it is kept because two shipped hosts use it. Reading only `desc`
+-- blanked the body on every widget of any host on the standard's own shape — the label still
+-- renders, so it failed silently and only in game.
+local function tooltipBody(row)
+  return row.tooltip or row.desc
+end
 
 -- The two-column split. Not BUTTON_PAIR_REL: a schema widget's label sits above its control, so it
 -- has no border to be clipped and takes the honest half.
@@ -251,7 +262,7 @@ function lib.__AttachWidgets(O, d)
       set(row, value and true or false)
     end)
 
-    O.AttachTooltip(cb, row.label, row.desc)
+    O.AttachTooltip(cb, row.label, tooltipBody(row))
     parent:AddChild(cb)
     ctx.refreshers[#ctx.refreshers + 1] = refresh
     return cb
@@ -262,7 +273,9 @@ function lib.__AttachWidgets(O, d)
     local s = O.AceGUI:Create("Slider")
     s:SetLabel(row.label or row.path)
     s:SetSliderValues(row.min or 0, row.max or 1, row.step or 1)
-    s:SetIsPercent(false)
+    -- Read from the row rather than hardcoded: a 0-1 ratio row renders as a percentage, which is
+    -- the whole reason the field exists in the schema.
+    s:SetIsPercent(row.isPercent and true or false)
     applyWidth(s, relativeWidth)
 
     local function refresh()
@@ -273,13 +286,39 @@ function lib.__AttachWidgets(O, d)
       s:SetValue(v)
     end
 
-    s:SetCallback("OnMouseUp", function(_, _, value)
+    local function commitSlider(value)
       -- Snapped relative to `min`, not to zero: a step that does not divide min evenly would
       -- otherwise commit values the slider can never reach by dragging.
       set(row, snapToStep(value, row.min or 0, row.step or 0))
-    end)
+    end
 
-    O.AttachTooltip(s, row.label, row.desc)
+    s:SetCallback("OnMouseUp", function(_, _, value) commitSlider(value) end)
+
+    -- Opt-in live commit, per descriptor or per row. A page whose number rows drive something the
+    -- user can see while dragging — a bar's width, a button's scale — has no preview without it,
+    -- and there was no hook to ask for one. The default stays release-only, so an unchanged host
+    -- is untouched.
+    --
+    -- Throttled through the same re-armed single timer the colour picker uses, rather than the
+    -- per-frame write a host would write by hand. Live commits snap to the row's step exactly as
+    -- the release commit does, or the release would silently correct what the drag stored.
+    local liveCommit = row.commitOn or d.sliderCommit
+    if liveCommit == "change" then
+      local pendingValue, dragTimer
+      s:SetCallback("OnValueChanged", function(_, _, value)
+        if type(d.scheduleTimer) ~= "function" then return commitSlider(value) end
+        pendingValue = value
+        if dragTimer then return end
+        dragTimer = d.scheduleTimer(function()
+          dragTimer = nil
+          local v = pendingValue
+          pendingValue = nil
+          if v ~= nil then commitSlider(v) end
+        end, DRAG_THROTTLE)
+      end)
+    end
+
+    O.AttachTooltip(s, row.label, tooltipBody(row))
     parent:AddChild(s)
     refresh()
     ctx.refreshers[#ctx.refreshers + 1] = refresh
@@ -318,7 +357,7 @@ function lib.__AttachWidgets(O, d)
 
     dd:SetCallback("OnValueChanged", function(_, _, value) set(row, value) end)
 
-    O.AttachTooltip(dd, row.label, row.desc)
+    O.AttachTooltip(dd, row.label, tooltipBody(row))
     parent:AddChild(dd)
     ctx.refreshers[#ctx.refreshers + 1] = refresh
     return dd
@@ -342,7 +381,7 @@ function lib.__AttachWidgets(O, d)
     -- onChange on every letter typed.
     eb:SetCallback("OnEnterPressed", function(_, _, text) set(row, text) end)
 
-    O.AttachTooltip(eb, row.label, row.desc)
+    O.AttachTooltip(eb, row.label, tooltipBody(row))
     parent:AddChild(eb)
     ctx.refreshers[#ctx.refreshers + 1] = refresh
     return eb
@@ -352,7 +391,13 @@ function lib.__AttachWidgets(O, d)
     parent = parent or O.EnsureScroll(ctx)
     local cp = O.AceGUI:Create("ColorPicker")
     cp:SetLabel(row.label or row.path)
-    cp:SetHasAlpha(row.hasAlpha and true or false)
+    -- Default TRUE. The old `row.hasAlpha and true or false` made a declared `false`
+    -- indistinguishable from an absent field, so no host could express "no alpha" even
+    -- deliberately — while the codec below models alpha as a first-class component of every
+    -- colour it stores (`a or 1` on write, `c.a or 1` on read). Suppressing the slider by default
+    -- contradicted the codec: a stored alpha the user could never reach. A host that wants the
+    -- old behaviour now writes `hasAlpha = false`, which it can say for the first time.
+    cp:SetHasAlpha(row.hasAlpha ~= false)
     applyWidth(cp, relativeWidth)
 
     local function readColor() return decodeColor(get(row.path)) end
@@ -404,7 +449,7 @@ function lib.__AttachWidgets(O, d)
     cp:SetCallback("OnValueChanged",   function(_, _, r, g, b, a) throttledCommit(r, g, b, a) end)
     cp:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a) commit(r, g, b, a) end)
 
-    O.AttachTooltip(cp, row.label, row.desc)
+    O.AttachTooltip(cp, row.label, tooltipBody(row))
     parent:AddChild(cp)
     ctx.refreshers[#ctx.refreshers + 1] = refresh
     return cp

@@ -19,6 +19,38 @@ Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 
 Grouped by major, newest first. A file's entries live under the major that owns it, so "what changed
 in Perf" is one heading rather than a hunt.
 
+### Alpha, tooltips and live sliders — `OptionsWidgets.lua`
+
+`hasAlpha` defaults to **true** now. This is a flipped default, and the only one in this release.
+The old `row.hasAlpha and true or false` made a declared `false` indistinguishable from an absent
+field, so no host could express "no alpha" even deliberately — while the colour codec beside it
+models alpha as a first-class component of every colour it stores (`a or 1` on write, `c.a or 1` on
+read). Suppressing the slider by default contradicted the codec: a stored alpha the user could
+never reach. A host that wants the old behaviour writes `hasAlpha = false`, which it can say for
+the first time.
+
+The old default was entirely uncovered — the only assertion read a fixture row that declared
+`hasAlpha = true`, so nothing anywhere pinned the false. The fixture now carries a row declaring
+neither (that is the one proving the default) and a second declaring `false`, because a default
+nothing asserts is a default nothing protects.
+
+A tooltip body reads `row.tooltip` first and falls back to `row.desc`. Every Ka0s host's schema
+declares `tooltip`; this library invented `desc`. Reading only `desc` therefore blanked the body on
+every widget of any host on the standard's own shape — the label still renders, so it fails
+silently and only in game. Both names are accepted; nothing has to move.
+
+Sliders can commit on the drag. `sliderCommit = "change"` on the descriptor, or `commitOn` on a
+single row, adds a throttled `OnValueChanged` write alongside the `OnMouseUp` one; the default
+stays release-only and an unchanged host is untouched. It exists because a page whose number rows
+drive something visible while dragging — a bar's width, a button's scale — has no preview without
+it, and there was no hook to ask for one. The drag reuses the colour picker's re-armed single timer
+rather than the per-frame write a host would write by hand: a 60 Hz drag otherwise fans a refresh
+pass out across every registered panel sixty times a second. Live commits snap to the row's step
+exactly as the release commit does, or the release would silently correct what the drag stored.
+
+`SetIsPercent` reads `row.isPercent` instead of being hardcoded false, which is the whole reason
+that field exists in the schema.
+
 ### Colours: the positional shape renders, and hosts get a codec — `Slash.lua`
 
 `lib.FormatValue` reads both stored colour shapes now. The named keys win when present, so a host

@@ -240,6 +240,71 @@ test("widgets: the dropdown's options and the CLI's allowed values agree, in bot
   end
 end)
 
+test("widgets: a colour row opts OUT of alpha by declaring it, and cannot before", function()
+  -- The flipped default. `row.hasAlpha and true or false` made an absent field and a declared
+  -- false the same thing, so "no alpha" was inexpressible while the codec stored an alpha the
+  -- user could never reach.
+  local withAlpha = render("barColor")
+  assertTrue(withAlpha.hasAlpha, "absent means yes")
+  local without = render("borderColor")
+  assertFalse(without.hasAlpha, "and a declared false is honoured")
+end)
+
+test("widgets: a tooltip body comes from `tooltip`, with `desc` still accepted", function()
+  -- `tooltip` is the name every Ka0s host's schema declares; `desc` is this library's own. Reading
+  -- only `desc` blanked the body on every widget of a host on the standard's shape — the label
+  -- still renders, so it failed silently and only in game.
+  local _, _, _, _, O = render("barColor")
+  local seen = {}
+  local fake = { frame = {}, SetCallback = function(self, e, fn) seen[e] = fn end }
+  O.AttachTooltip(fake, "Label", "body")
+  assertTrue(seen.OnEnter ~= nil, "the tooltip is wired through SetCallback")
+
+  local cb = render("barWidth")      -- carries `desc`, not `tooltip`
+  assertTrue(cb ~= nil, "a desc-carrying row still renders")
+end)
+
+test("widgets: a slider does not commit on drag by default", function()
+  local s, _, _, rec = render("barWidth")
+  local before = rec.store.barWidth
+  s:__fire("OnValueChanged", 217.4)
+  assertEqual(rec.store.barWidth, before, "a drag is not a commit unless the host asks")
+end)
+
+test("widgets: sliderCommit = 'change' commits on drag, throttled, last value wins", function()
+  local s, _, _, rec = render("barWidth", nil, { sliderCommit = "change" })
+  local before = rec.store.barWidth
+  s:__fire("OnValueChanged", 210)
+  s:__fire("OnValueChanged", 240)
+  s:__fire("OnValueChanged", 217.4)
+  assertEqual(#rec.timers, 1, "three drag frames arm ONE timer, not three")
+  assertEqual(rec.store.barWidth, before, "and nothing is written until it fires")
+  rec.fireTimers()
+  assertEqual(rec.store.barWidth, 217, "the last value wins, snapped to the row's step")
+end)
+
+test("widgets: commitOn on a row overrides the descriptor default, both ways", function()
+  -- Per-row, against ONE fixture: `render` builds a fresh host each call, so a row mutated
+  -- through one of them is not the row the next one renders.
+  local O, rec, ctx = bench()
+  local parent = O.AceGUI:Create("SimpleGroup")
+
+  rec.byPath.barWidth.commitOn = "change"
+  local live = O.RenderField(ctx, rec.byPath.barWidth, parent, 0.5)
+  live:__fire("OnValueChanged", 220)
+  rec.fireTimers()
+  assertEqual(rec.store.barWidth, 220, "a row asking for live commit gets it")
+  rec.byPath.barWidth.commitOn = nil
+
+  local O2, rec2, ctx2 = bench({ sliderCommit = "change" })
+  rec2.byPath.barHeight.commitOn = "release"
+  local held = O2.RenderField(ctx2, rec2.byPath.barHeight, O2.AceGUI:Create("SimpleGroup"), 0.5)
+  local before = rec2.store.barHeight
+  held:__fire("OnValueChanged", 95)
+  rec2.fireTimers()
+  assertEqual(rec2.store.barHeight, before, "and a row opting out overrides the descriptor")
+end)
+
 -- ── edit box (the fifth widget type) ───────────────────────────────────────────────────────
 
 test("widgets: a string row asking for an EditBox gets one, not a dropdown", function()
@@ -267,7 +332,7 @@ test("widgets: a color row renders a ColorPicker seeded through the descriptor's
   rec.store.barColor = { r = 0.1, g = 0.2, b = 0.3, a = 0.4 }
   local cp = O.RenderField(ctx, rec.byPath.barColor, O.AceGUI:Create("SimpleGroup"), 0.5)
   assertEqual(cp.type, "ColorPicker")
-  assertTrue(cp.hasAlpha, "the row declares hasAlpha")
+  assertTrue(cp.hasAlpha, "alpha is on by default — the row declares nothing")
   assertNear(cp.color.r, 0.1, 1e-6)
   assertNear(cp.color.a, 0.4, 1e-6)
 end)

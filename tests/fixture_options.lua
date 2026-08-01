@@ -55,9 +55,16 @@ local function buildRows()
     { path = "barTexture", page = "bar", group = "Fill", order = 10, type = "string",
       label = "Bar Texture", default = "Blizzard", dialogControl = "LSM30_Statusbar",
       values = { Blizzard = true, Smooth = true, Aluminium = true }, solo = true },
+    -- Deliberately does NOT declare hasAlpha: it is the row that proves the default is true. A
+    -- default nothing asserts is a default nothing protects, which is how the old `false` survived.
     { path = "barColor", page = "bar", group = "Fill", order = 20, type = "color",
-      label = "Bar Color", default = { r = 1, g = 1, b = 1, a = 1 }, hasAlpha = true,
+      label = "Bar Color", default = { r = 1, g = 1, b = 1, a = 1 },
+      tooltip = "The bar's fill colour.",
       disabledIf = "useClassColor" },
+    -- And the other side of it: a row opting out, which the old reader could not express — an
+    -- absent field and a declared false were indistinguishable.
+    { path = "borderColor", page = "bar", group = "Fill", order = 25, type = "color",
+      label = "Border Color", default = { r = 0, g = 0, b = 0, a = 1 }, hasAlpha = false },
     { path = "useClassColor", page = "bar", group = "Fill", order = 30, type = "bool",
       label = "Use Class Color", default = false },
     -- An explicit order that is NOT the alphabetical one. That matters: an enum whose declared
