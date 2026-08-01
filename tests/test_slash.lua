@@ -156,6 +156,61 @@ test("sl: FormatValue renders a secret as the sentinel on every formatting branc
     "the string branch guards")
 end)
 
+test("sl: FormatValue reads a POSITIONAL colour as well as a named-key one", function()
+  -- The Ka0s options colour widget writes { r, g, b, a } positionally. Rendered through the
+  -- named-key reader alone, every such row read as {0.00, 0.00, 0.00, 1.00} — and shipped that
+  -- way, because nothing asserts a rendered colour's VALUE outside this file.
+  local _, rec = F.new()
+  local row = rec.byPath["units.player.barColor"]
+  assertEqual(slash.FormatValue(row, { 0.1, 0.2, 0.3, 0.4 }), "{0.10, 0.20, 0.30, 0.40}",
+    "byte-identical to the named-key rendering of the same colour")
+end)
+
+test("sl: a positional colour with a secret component still renders the sentinel", function()
+  -- The guard has to cover the new indexing path too, or a combat-protected component reaches
+  -- string.format by the back door.
+  local _, rec = F.new()
+  local row = rec.byPath["units.player.barColor"]
+  assertEqual(slash.FormatValue(row, { secretMock, 0.2, 0.3, 0.4 }), T.core.SECRET)
+end)
+
+test("sl: a host colour codec round-trips through set and its echo", function()
+  -- The end-to-end case, parameterised by shape: parse writes what the host stores, and the echo
+  -- reads it back through the same codec. A partial fix that changed only one of them renders a
+  -- colour the host never stored.
+  local POSITIONAL = {
+    colorDecode = function(c) c = type(c) == "table" and c or {}
+                              return c[1] or 0, c[2] or 0, c[3] or 0, c[4] or 1 end,
+    colorEncode = function(r, g, b, a) return { r, g, b, a or 1 } end,
+  }
+  local Sl, rec = F.new(POSITIONAL)
+  rec.chat = {}
+  Sl:CliSet("units.player.barColor 0.1 0.2 0.3 0.4")
+  local stored = rec.store["units.player.barColor"]
+  T.assertNear(stored[1], 0.1, 1e-6, "written in the host's positional shape")
+  T.assertNil(stored.r, "and not in the library's named-key one")
+  local text = table.concat(rec.chat, "\n")
+  T.assertTrue(text:find("{0.10, 0.20, 0.30, 0.40}", 1, true) ~= nil,
+    "the echo reads it back through the same codec: " .. text)
+end)
+
+test("sl: CliReset's echo uses the host colour codec too", function()
+  -- The second FormatValue site, and the one a partial fix misses.
+  local store = {}
+  local Sl, rec = F.new({
+    colorDecode = function(c) c = type(c) == "table" and c or {}
+                              return c[1] or 0, c[2] or 0, c[3] or 0, c[4] or 1 end,
+    colorEncode = function(r, g, b, a) return { r, g, b, a or 1 } end,
+    get = function(path) return store[path] end,
+    set = function(path, value) store[path] = value end,
+    applyDefault = function(row) store[row.path] = { 0.5, 0.6, 0.7, 0.8 } end,
+  })
+  rec.chat = {}
+  Sl:CliReset("units.player.barColor")
+  local text = table.concat(rec.chat, "\n")
+  T.assertTrue(text:find("{0.50, 0.60, 0.70, 0.80}", 1, true) ~= nil, text)
+end)
+
 test("sl: a guarded FormatValue still survives the FormatKV string.format around it", function()
   local ok, out = pcall(function()
     return slash.FormatKV("units.player.barWidth",

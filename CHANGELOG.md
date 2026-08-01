@@ -19,6 +19,22 @@ Versions in this release: **Core minor 2**, **DebugLog minor 3**, **Slash minor 
 Grouped by major, newest first. A file's entries live under the major that owns it, so "what changed
 in Perf" is one heading rather than a hunt.
 
+### Colours: the positional shape renders, and hosts get a codec — `Slash.lua`
+
+`lib.FormatValue` reads both stored colour shapes now. The named keys win when present, so a host
+storing `{ r =, g =, b =, a = }` renders exactly as before; a host storing `{ r, g, b, a }`
+POSITIONALLY used to render every colour as `{0.00, 0.00, 0.00, 1.00}`.
+
+That is the shape the Ka0s options colour widget itself writes — this library's own
+`OptionsWidgets.lua` documents the divergence and takes a codec for it, while `Slash.lua` had no
+hook at all: `kv()` called the lib-level formatter directly, so a host could not even override it.
+Two majors, one collection, opposite assumptions about the same stored value. It shipped green
+because nothing outside the Slash suite asserts a rendered colour's VALUE.
+
+`colorDecode` / `colorEncode` join the Slash descriptor under the same names the Options descriptor
+already uses, so a host passes one pair to both majors. `CliSet` encodes into the host's shape
+before writing, and both echo sites — `CliSet`'s and `CliReset`'s — read back through it.
+
 ### Enum rows: the ordered-array shape is read now — `Slash.lua`, `OptionsWidgets.lua`
 
 Both enum readers accept the Ka0s options schema's own shape — an **ordered array** of

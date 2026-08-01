@@ -88,8 +88,21 @@ function lib.FormatValue(row, v)
   row = row or {}
   if v == nil then return "nil" end
   if row.type == "color" and type(v) == "table" then
+    -- Both stored shapes, because the collection genuinely holds both: AbsorbTracker keeps
+    -- { r =, g =, b =, a = } and the Ka0s options colour widget writes { r, g, b, a }
+    -- POSITIONALLY. The named keys win when present, so a host that stores them is rendered
+    -- exactly as before; a positional table used to read as all-zero.
+    --
+    -- A host whose storage is neither shape passes colorDecode on the descriptor. This fallback
+    -- exists so the common case needs no descriptor at all — the CLI is often the first thing
+    -- wired up, and rendering every colour as {0.00, 0.00, 0.00, 1.00} is a poor first impression
+    -- of a library that had no hook to fix it.
+    --
     -- The table itself is never concat-safe; it is the four COMPONENTS that reach %.2f.
-    local r, g, b, a = v.r or 0, v.g or 0, v.b or 0, v.a or 1
+    local r = v.r or v[1] or 0
+    local g = v.g or v[2] or 0
+    local b = v.b or v[3] or 0
+    local a = v.a or v[4] or 1
     if not (core.IsConcatSafe(r) and core.IsConcatSafe(g)
             and core.IsConcatSafe(b) and core.IsConcatSafe(a)) then return core.SECRET end
     return ("{%.2f, %.2f, %.2f, %.2f}"):format(r, g, b, a)
@@ -260,6 +273,10 @@ end
 ---   applyDefault function  optional. Restore one row to its default.
 ---   parse        function  optional, defaults to lib.ParseValue.
 ---   groupKey     function  optional. Row -> the heading it lists under. Defaults to row.page.
+---   colorDecode  function  optional. stored -> r, g, b, a. Defaults to reading the named-key
+---                          form, then the positional one. Same field name as the Options
+---                          descriptor's, so a host passes one pair to both majors.
+---   colorEncode  function  optional. r, g, b, a -> stored. Defaults to { r =, g =, b =, a = }.
 ---   L            table     optional. Locale override, keyed to lib.STRINGS.
 function lib:New(d)
   d = type(d) == "table" and d or {}
@@ -313,8 +330,22 @@ function lib:New(d)
     return annotator(row) or ""
   end
 
+  -- Colour storage is the HOST's shape, not the library's — the same reasoning
+  -- OptionsWidgets.lua's codec carries, and deliberately the same two field names, so a host
+  -- passes one pair to both majors. lib.FormatValue already reads the two shapes the collection
+  -- actually uses; this is the escape hatch for anything else, and it is the reason kv() no
+  -- longer calls the lib-level formatter directly.
+  local function formatValue(row, value)
+    if row and row.type == "color" and type(d.colorDecode) == "function"
+        and type(value) == "table" then
+      local r, g, b, a = d.colorDecode(value)
+      return lib.FormatValue(row, { r = r, g = g, b = b, a = a })
+    end
+    return lib.FormatValue(row, value)
+  end
+
   local function kv(row, value)
-    return lib.FormatKV(row.path, lib.FormatValue(row, value)) .. annotate(row)
+    return lib.FormatKV(row.path, formatValue(row, value)) .. annotate(row)
   end
 
   -- ── help ─────────────────────────────────────────────────────────────────────────────────
@@ -412,6 +443,12 @@ function lib:New(d)
       return
     end
 
+    -- Written in the host's own colour shape. The lib-level parser answers the named-key form
+    -- because that is what it has always answered and hosts read it directly; a host that stores
+    -- another shape says so once, on the descriptor, rather than translating at every read site.
+    if row.type == "color" and type(d.colorEncode) == "function" and type(v) == "table" then
+      v = d.colorEncode(v.r, v.g, v.b, v.a)
+    end
     if type(d.set) == "function" then d.set(row.path, v) end
     -- Re-read rather than echo what was parsed: a clamped number is only visible to the user
     -- because the echo reports what was actually stored.
@@ -428,7 +465,7 @@ function lib:New(d)
     local row = rowFor(path)
     if not row then return emit(self:Text("NOT_FOUND"):format(path)) end
     if type(d.applyDefault) == "function" then d.applyDefault(row) end
-    emit(lib.FormatKV(row.path, lib.FormatValue(row, read(row.path))))
+    emit(lib.FormatKV(row.path, formatValue(row, read(row.path))))
   end
 
   function Sl:CliResetAll()
