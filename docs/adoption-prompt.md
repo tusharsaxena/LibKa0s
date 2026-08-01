@@ -3,11 +3,18 @@
 Copy everything below the line into a fresh Claude Code session **in the addon's own repo**. It is
 self-contained: it names what to read rather than restating rules that may have moved on.
 
-Target addons (all except Absorb Tracker, which is consumer #1): `BankLedger`, `ConsumableMaster`,
-`KickCD`, `LootHistory`, `PanelMaster`, `prettychat`, `WhatGroup`. Do **KickCD** first — it is the
-most structurally complex adopter in the collection, so it is the most likely to expose a descriptor
-assumption that only held for the first consumer. `WhoGotLoots` and `BuffTextNotifications` are out
-of scope until they are on the standard at all.
+Adopted: **AbsorbTracker** (consumer #1), **KickCD**, **ConsumableMaster** — all five modules each.
+
+Remaining targets: `BankLedger`, `LootHistory`, `PanelMaster`, `prettychat`, `WhatGroup`.
+`WhoGotLoots` and `BuffTextNotifications` are out of scope until they are on the standard at all.
+
+Each of the three adopters so far has surfaced a descriptor assumption that only held for the ones
+before it, which is the point of the ordering rather than a sign it went badly: KickCD found the
+colour-shape divergence, and ConsumableMaster found the ordered-array enum shape, the `hasAlpha`
+default, the missing slider-commit hook, `row.desc` vs `row.tooltip`, and the absence of any
+caller-driven grid. Expect the fourth to find something too, and prefer fixing it upstream over
+working around it in the setup file — the rule of thumb that has held is that one host's misfit is
+a setup-file concern and two is a library gap.
 
 ---
 
@@ -189,7 +196,9 @@ single item in either of its modules: `reset` takes a **page** with prefix match
 doubling has **no descriptor hook** — the realistic scope is adopting the dispatcher, help renderer
 and landing-row formatter while keeping `list/get/set/reset` host-owned. Options is shell-only:
 ~233 of 725 lines delete cleanly, but the per-string editor is a documented 40/60 three-row block
-against the library's fixed 50/50 grid, so the widget makers and flow engine go unused.
+against the library's fixed 50/50 grid, so the widget makers and flow engine go unused. (`RenderGrid`,
+added in OptionsWidgets minor 4, is caller-driven and takes a bespoke `make` per cell — worth
+re-checking that estimate against it before assuming the makers are unusable here.)
 
 **WhatGroup** — the best Options return in the collection: ~568 of 822 lines of `settings/Panel.lua`
 delete against identical layout constants and a byte-identical breadcrumb separator. **Gate it on
@@ -252,7 +261,7 @@ After that, order by blast radius and by what this addon actually has:
 | Addon | Order | Why |
 |---|---|---|
 | KickCD | Core → DebugLog → Slash → Options → Perf | Core alone and first, then re-run `/kcd debug spells`, `/kcd debug interrupt` and `/kcd list` in combat before proceeding. DebugLog is the clean −450. Options last of the four; do not start it until the kit's fireable AceGUI mock is in place, because the current suite cannot drive a single widget. |
-| ConsumableMaster | Core → DebugLog → Options → Slash → Perf | Slash after Options because `/cm reset` is a destructive verb whose confirm popup has to be re-anchored, and you want the panel's Defaults path settled first. Harness migration is its own milestone — do not bundle it. |
+| ~~ConsumableMaster~~ | **done** — Core → DebugLog → Slash → Options → Perf | Adopted in full. Ran Slash *before* Options in the end, and the planned reason for the reverse (re-anchoring `/cm reset`'s confirm popup) never materialised — the popup is registered at file scope and reached through the global `StaticPopup_Show`, so the dispatcher swap never touched it. The schema-CLI half waited on the enum and colour fixes rather than on the panel. |
 | prettychat | Core → DebugLog → Options (shell only) → Slash (partial) → Perf | Slash last and partial: only the dispatcher, help renderer and landing rows. Perf is low value here — a one-shot `_G` rewrite has no A/B story. |
 | WhatGroup | Core → DebugLog → Options → Slash → Perf | Options early because it is the biggest clean win, gated on the deferred-OnShow check. Slash after, because the reset story needs a decision, not a translation. |
 | PanelMaster | Core → DebugLog → Slash → Options → Perf | Slash before Options: the `COMMANDS` flip and the `"boolean"`→`"bool"` rename are prerequisites for the widget makers reading the same rows. |
