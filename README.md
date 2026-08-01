@@ -389,7 +389,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshAllPanels()` | **Structural.** Re-run each page's renderer, so rows that appeared or disappeared are drawn. Hidden pages are flagged dirty and re-render on their next show. |
 | `RefreshScalars()` | **In place.** Refreshers only, no rebuild — what every widget maker's own `set()` calls, since writing a value does not change which rows exist. Each is pcall'd, so one dead widget cannot take the UI with it. |
 | `__pages()` | The pages that actually built. A raising builder is reported by key and costs only itself. |
-| `RenderGrid(ctx, items)` | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. |
+| `RenderGrid(ctx, items)` | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
 | `LSMValues(mediaType)` | A **deferred** closure pulling the live media hash at dropdown-render time. Never empty: a media library that has not loaded yet yields a single `None` placeholder, because a dropdown with no options cannot be opened and the CLI would refuse even the stored value. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. |
 | `PatchAlwaysShowScrollbar(scroll)` | The scrollbar override. Idempotent, and reversed on `OnRelease` — AceGUI pools ScrollFrames, so an unreleased patch escapes into whichever addon recycles the widget next. |
 | `ROW_VSPACER` / `SECTION_HEADING_H` / `BUTTON_PAIR_REL` | The cross-slice layout constants, so a host's own page code stays in lockstep with the engine's spacing. |
@@ -733,9 +733,12 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. Today: `Core = { Core = 1 }`, `DebugLog = { DebugLog = 1 }`,
-`Slash = { Slash = 1 }`, `Options = { Options = 1, OptionsWidgets = 1, OptionsScroll = 1 }`,
-`Perf = { Perf = 2, PerfPanel = 2 }`. That per-major grouping is what answers "which panel is
+different vendored copy of each. As of **v1.1.1**: `Core = { Core = 2 }`,
+`DebugLog = { DebugLog = 3 }`, `Slash = { Slash = 4 }`,
+`Options = { Options = 4, OptionsWidgets = 4, OptionsScroll = 2 }`,
+`Perf = { Perf = 5, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
+each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
+That per-major grouping is what answers "which panel is
 attached to which probe?" from in-game, once several addons each ship their own vendored copy.
 `tests/test_versioning.lua` enforces that `MODULES` and `CHANGELOG.md`'s version block agree, so a
 bump cannot land without its changelog entry, nor an entry without its bump.
@@ -764,6 +767,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   OptionsScroll.lua  -- the always-shown scrollbar patch, same module, SCROLL_MINOR of its own
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
+  LICENSE            -- ships INSIDE the payload, so every vendored copy carries the MIT notice
 testkit/             -- the shared headless harness, vendored into each addon as tests/_kit/
                         (never shipped: it lives under tests/, which every .pkgmeta already excludes)
 tests/               -- this repo's own test harness, consuming testkit/ through tests/_kit/
@@ -771,9 +775,12 @@ docs/                -- development docs (not shipped)
   releasing.md       -- the two version numbers, the release order, the re-vendor rule
   record-schema.md   -- the capture record, field by field
   adoption-prompt.md -- the per-addon adoption prompt
+  adoption-report.md -- the reusable adoption-fidelity report, run per date into adoption/
+  adoption/          -- frozen dated adoption reports, one folder per run
   test-cases.md      -- generated case inventory
+  reviews/           -- frozen dated review bundles
   superpowers/       -- the extraction plans and design specs, kept as the record of why
-LICENSE
+LICENSE              -- also copied into LibKa0s/ above, so the payload carries it
 README.md
 CHANGELOG.md
 .luacheckrc
