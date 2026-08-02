@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **6** |
-| Shipped in | v1.3.1 |
+| Shipped in | v1.3.1, v1.4.0 |
 | Status | **Current** |
 | Supersedes | [version 5](./version-5-docs.md) |
 | Superseded by | — |

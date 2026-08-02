@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.2.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.4.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -93,10 +93,16 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/README.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.2.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.4.0 (MIT).
 
-The version in that template is **the one being released**, not a literal to copy — at v1.3.0 the
-line reads v1.3.0, and this template moves with it rather than being corrected after the fact.
+The version in that template is **the one being released**, not a literal to copy — at v1.4.0 the
+line reads v1.4.0, and this template moves with it rather than being corrected after the fact.
+
+That line is not decoration. prettychat's `tests/test_harness.lua` READS it, resolves the tag it
+names, and asserts both `libs/LibKa0s/` and `tests/_kit/` match the library repo **at that tag**,
+file by file. So a provenance line that is ahead of the tag, or a re-vendor taken from untagged
+`master`, fails there — which is exactly how the untagged kit revision was caught. Re-vendor from a
+tag, and move the line in the same commit.
 
 That line is part of the re-vendor, not a follow-up to it. It is the only artefact that answers
 "which LibKa0s does this addon carry?" without grepping eight minor constants out of the vendored

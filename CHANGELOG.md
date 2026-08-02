@@ -10,6 +10,86 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.4.0 — 2026-08-02
+
+**The shipped payload is byte-identical to v1.3.1.** No file in `LibKa0s/` changed, so no LibStub
+minor moved: **Core minor 3**, **DebugLog minor 6**, **Slash minor 5**, **Options minor 5**,
+**OptionsWidgets minor 5**, **OptionsScroll minor 2**, **Perf minor 5**, **PerfPanel minor 3** —
+every one of them exactly where v1.3.1 left it. A consumer that re-vendors gains no library change.
+
+What this release is for is the **test kit** and the **documentation**, and the kit is the part that
+is not cosmetic: `testkit/` now carries a revision, so a consumer can be re-vendored against a
+release rather than against whatever `master` happened to hold.
+
+### `testkit` — the kit carries a revision (`Kit.VERSION = 1`)
+
+The kit is still not a LibStub major: it registers nothing, no load order depends on it, and two
+copies never negotiate — the vendoring gate is byte-identity, not version comparison. What it could
+not do before is answer *which* kit a consumer holds, reachable only by diffing against this repo at
+the right commit. `Kit.VERSION` at the top of `framework.lua`, reaching suites as `KIT_VERSION`
+through `Kit.expose`, answers it and names the kit's API document.
+
+One number for all three files, because they vendor as one folder and are never adopted separately —
+the opposite of `LibKa0s/`, where a per-file minor exists precisely because a host may hold a
+different vendored copy of each major.
+
+Two gates come with it in `tests/test_kitsync.lua`: `Kit.VERSION` must be a positive integer that
+reaches the exposed table, and the API document for the live revision must exist. That is the bargain
+`tests/test_versioning.lua` already strikes for the library's minors — a bump cannot land without its
+document.
+
+**This is why the release exists at all.** prettychat pins its vendored kit to the LibKa0s tag its
+README provenance line names, and asserts it file by file. Kit revision 1 was on `master` and in no
+tag, so it could not be vendored into prettychat without that gate failing — correctly. Six other
+consumers took the kit anyway, because none of them has an equivalent check, which left their
+provenance lines naming a release their `tests/_kit/` no longer matched. Tagging this release is what
+makes all seven honest again.
+
+### `docs/api/` — the API reference is versioned by folder
+
+Every public contract now lives in `docs/api/<Major>/version-<minors>-docs.md`, one document per
+**shipped** version, frozen once that version stops being current. The version key is the file
+minors joined in load order — exactly what `lib.MODULES` reports — so the number read from the game
+names the file:
+
+```
+/dump LibStub("LibKa0s-Options-1.0").MODULES
+--> { Options = 5, OptionsWidgets = 5, OptionsScroll = 2 }
+--> docs/api/Options/version-5.5.2-docs.md
+```
+
+Thirteen documents, backfilled from source at each tag rather than from memory: Core 2–3, DebugLog
+3–6, Slash 4–5, Options 3.3.2/4.4.2/5.5.2, Perf 5.3, and testkit 1. Every table carries a `Since`
+column naming the minor a member arrived in. Minors below the v1.0.0 tuple are named in the index and
+left undocumented — they existed only en route to the first tag and no consumer ever vendored one.
+
+The reason it is folder-versioned rather than left to git: consumers re-vendor independently, so at
+any moment two of them may be on different minors of the same major, and both need an answer to
+"what does *my* copy do?".
+
+`README.md` collapses from 792 lines to a map that points at `docs/api/` rather than restating it,
+and `docs/releasing.md` gains **step 5** — write the new version's document, mark the old one
+superseded — which renumbered tag to 7 and re-vendor to 8.
+
+### Adoption
+
+prettychat is **consumer #7**, taking Core, DebugLog, Slash and Options and declining Perf on the
+clearest structural grounds in the collection (`LIBKA0S-12`). It is the first host to pass
+`sep = ""`, and the first to use Slash minor 5's `format` hook on a row type the library can already
+render. PanelMaster (#6) and LootHistory were recorded earlier in the same window. Only WhatGroup
+remains a target.
+
+prettychat also found a gap worth naming here: **a free-text `string` row cannot hold a value
+containing a space.** `lib.ParseValue` splits the remainder on whitespace and `parseString` returns
+the first token, so `/pc set <path> You receive loot: %s` stores `"You"` — silently, with only the
+echo showing it. A descriptor `parse` is the sanctioned workaround and prettychat supplies one, but
+this is the ordinary row the `dialogControl = "EditBox"` widget writes, not an exotic type.
+
+### Internals
+
+Ten Markdown files renormalised to the CRLF `.gitattributes` mandates, and four stale step
+references in `docs/releasing.md` repointed after the step-5 insertion.
+
 ## v1.3.1 — 2026-08-02
 
 Versions in this release: **DebugLog minor 6**. Every other file is unchanged.

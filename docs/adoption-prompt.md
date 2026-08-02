@@ -451,7 +451,7 @@ to land once the other four are green.
     folder and break the gate for real. Add one line to the addon's README naming what it bundles:
 
     ```
-    Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.2.0 (MIT).
+    Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.4.0 (MIT).
     ```
 
     The version there is **whatever is being released**, not a literal to copy — read it out of

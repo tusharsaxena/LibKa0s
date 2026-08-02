@@ -9,6 +9,7 @@
 | Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `README.md` |
 | Version | **1** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
+| First released in | v1.4.0 — the revision predates the tag, and prettychat's gate refused it until the tag existed |
 | Status | **Current** |
 | Supersedes | — (first numbered revision; the kit was unnumbered before it) |
 | Superseded by | — |
