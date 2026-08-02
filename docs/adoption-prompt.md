@@ -71,11 +71,16 @@ That changes the sequencing and it changes what "done" means:
    `curl -fsSL`, **not** WebFetch (its summarizer mangles verbatim content). The rewritten sections
    you need: `debug-logging`, `options-ui`, `slash-commands`, `testing`, `library-stack`,
    `performance`. Plus the anti-patterns index.
-2. **`LibKa0s/README.md`** — the per-module descriptor tables, field by field, for all five majors,
-   plus "What stays the host's", "Two divergences absorbed rather than decided", "`reset` takes a
-   path, not a page", and the `suspend`/`resume` host contract. **This is authoritative over
-   anything below.** Never invent a descriptor field; if a field you want is not in that README, the
-   library does not have it and that is a finding to report.
+2. **`LibKa0s/docs/api/`** — the API reference, and **the source of truth for every public
+   contract**: one document per shipped version of each major, carrying the descriptor table field by
+   field, the full instance surface, the row fields, and the prose that goes with them ("What stays
+   the host's", "Two divergences absorbed rather than decided", "`reset` takes a path, not a page",
+   the `suspend`/`resume` host contract). Start at `docs/api/README.md` and open the document for the
+   version this addon actually vendors — the minors in `lib.MODULES`, joined in load order, name the
+   file. **This is authoritative over anything below, including `LibKa0s/README.md`**, which is now a
+   map rather than a reference. Never invent a descriptor field; if a field you want is not in the
+   document for your version, that copy of the library does not have it and that is a finding to
+   report.
 3. **`LibKa0s/docs/releasing.md`** and **`LibKa0s/docs/record-schema.md`**.
 4. **The worked references, in sibling repo `../AbsorbTracker`** — `core/CoreSetup.lua`,
    `core/DebugLogSetup.lua`, `settings/Slash.lua`, `settings/OptionsSetup.lua`,
@@ -108,7 +113,8 @@ way. It fails for every key at once and only in game.
 - **Translating something?** Pass a **plain** table of only those keys. The values may come from your
   locale table; the table you pass must not be it.
 - The README's per-module descriptor tables used to say *"hosts on the Ka0s standard pass their
-  `NS.L`"*. That advice was wrong and has been corrected — see **The `L` trap** in `LibKa0s/README.md`.
+  `NS.L`"*. That advice was wrong and has been corrected — see **The `L` trap** in
+  `LibKa0s/README.md`, and the per-version restatement in each `LibKa0s/docs/api/` document.
 
 #### Pinning it — four things, and three of them were learned the expensive way
 
@@ -180,7 +186,8 @@ Establish, with file:line evidence in your report, before touching a line:
   `Set(path, section, value)`, or dispatches to a per-row `row.set`, you need a closure — and it has
   to resolve the extra argument from the row, at call time.
 - **The schema-row vocabulary.** The library's widget makers and parser read a fixed set of row
-  fields (README, "Row fields the flow engine reads"). List every field this addon's rows use and
+  fields (`LibKa0s/docs/api/Options/`, "Row fields the flow engine reads", in the document for the
+  version this addon vendors). List every field this addon's rows use and
   map each one. Watch for: `tooltip` where the library reads `desc`; a `widget` key held separately
   from `type`; `options` where the library reads `values`; `type = "boolean"` where the library
   dispatches on `"bool"`; dropdown `values` shaped as an ordered array of records where the library
@@ -585,8 +592,11 @@ When it is a real, additive library change, do it in this order and do not skip 
 4. **Update `../LibKa0s/CHANGELOG.md`.** The version block must contain the literal substring
    `<FileBasename> minor <N>` for every file, at its new number. `tests/test_versioning.lua` fails
    otherwise — this is enforced, not remembered.
-5. **Document the new field** in `../LibKa0s/README.md`'s descriptor table for that module. A field
-   that exists and is undocumented is a field the next adopter re-invents.
+5. **Document the new field** in the API document for that module's **new** version, under
+   `../LibKa0s/docs/api/<Major>/`, with a `Since` naming the minor that introduced it — and mark the
+   previous version's document `Superseded`. A field that exists and is undocumented is a field the
+   next adopter re-invents; a field documented only in the current version is one the next adopter
+   assumes their older copy has. See `../LibKa0s/docs/api/README.md` for the exact steps.
 6. **Green the library**: `lua tests/run.lua` and `luacheck .` (0/0) in `../LibKa0s`.
 7. **Re-vendor into EVERY consumer, not just this addon.** The consumer list is in
    `../LibKa0s/docs/releasing.md`. It starts at AbsorbTracker and grows by one every time an addon

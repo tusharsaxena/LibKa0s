@@ -38,13 +38,28 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
    say what changed. `tests/test_versioning.lua` fails if the block and any major's `lib.MODULES`
    disagree, so this is enforced rather than remembered.
-5. **Regenerate the case list**: `lua tests/run.lua --list` into `docs/test-cases.md`, keeping CRLF
+5. **Write the API document for every major whose minor moved.** `docs/api/` is the source of truth
+   for every public contract, versioned by folder because different consumers run different versions
+   at the same time. Copy the current document to a new file named for the new version key —
+   `docs/api/<Major>/version-<minors>-docs.md`, the minors joined in load order exactly as
+   `lib.MODULES` reports them — then:
+   - in the **new** document: `Status` → **Current**, fill in `Supersedes`, write the
+     *What changed at this version* section, and give every member, descriptor field or row field the
+     bump introduced a `Since` of the new minor;
+   - in the **old** document: `Status` → Superseded, fill in `Superseded by`, and add the closing
+     *Moving to …* section;
+   - add the row to the table in [`api/README.md`](api/README.md).
+
+   Never edit a superseded document to describe new behaviour — an adopter still on that copy has to
+   be able to read what their copy actually does. A minor bump is not released until its document
+   exists.
+6. **Regenerate the case list**: `lua tests/run.lua --list` into `docs/test-cases.md`, keeping CRLF
    (see that file's own banner for the exact command).
-6. **Green gate again**, then commit and tag the repo semver.
-7. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
+7. **Green gate again**, then commit and tag the repo semver.
+8. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
    includes bumping the version named in each consumer's README provenance line, in the same commit
    as the copy.
-8. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
+9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
    ```
