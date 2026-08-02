@@ -10,6 +10,35 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.5.0 — 2026-08-02
+
+**Core minor 3**, **DebugLog minor 7**, **Slash minor 5**, **Options minor 5**,
+**OptionsWidgets minor 5**, **OptionsScroll minor 2**, **Perf minor 5**, **PerfPanel minor 3**.
+Only `DebugLog.lua` moved.
+
+### `DebugLog` — the gated sink can no longer raise on a format it cannot fill
+
+`D.Debug(tag, fmt, ...)` routes every vararg through `safeToString` and then hands the results to
+`string.format`. That covers a `%s` slot, which is what the guard was written against — but a WoW
+combat "secret" is a **number**, and a host logging one through a **numeric** slot
+(`NS.Debug("Absorb", "total=%d", UnitGetTotalAbsorbs("player"))`) handed `"<secret>"` to `%d`, where
+`string.format` raises exactly as the unguarded secret would have.
+
+That put the raise back on precisely the path this sink exists to protect (debug-logging-§4): an
+unguarded secret reaching a log line inside a repeating ticker kills the ticker, and the feature
+stays dead until `/reload`. The pre-stringification made the common case safe and left the case the
+guard was *for* no safer than before.
+
+The format is now `pcall`'d, and on failure the line still **lands** — the format string verbatim,
+then the stringified arguments, space-joined — because a dropped line is the other way to lose the
+diagnostic. A satisfiable format renders byte-for-byte as it did at minor 6, so **no consumer's
+output changes**: the only behaviour that moved is a path that previously threw.
+
+Found by **WhatGroup**, the sixth adopter, whose hand-written console had guarded this since its
+WG-22 and whose suite went red on the first load of the library's sink. `tests/test_debuglog.lua`
+gains the case for the repair and a second one pinning that an ordinary format is *not* routed
+through the fallback.
+
 ## v1.4.0 — 2026-08-02
 
 **The shipped payload is byte-identical to v1.3.1.** No file in `LibKa0s/` changed, so no LibStub

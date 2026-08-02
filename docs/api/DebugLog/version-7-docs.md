@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 6
+# `LibKa0s-DebugLog-1.0` — version 7
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **6** |
-| Shipped in | v1.3.1, v1.4.0 |
-| Status | Superseded |
-| Supersedes | [version 5](./version-5-docs.md) |
-| Superseded by | [version 7](./version-7-docs.md) |
+| Files and minors | `DebugLog.lua` minor **7** |
+| Shipped in | v1.5.0 |
+| Status | **Current** |
+| Supersedes | [version 6](./version-6-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 6 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 7 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared. Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
@@ -45,12 +45,20 @@ and it returns before `NewLibrary` if Core is missing or below the minor it need
 
 ## What changed at this version
 
-**Documentation only — no behaviour change, and nothing to do at a call site.** The `makeCloseButton`
-descriptor field was re-documented as the wrong answer for the case two hosts had taken it for. Its
-minor-4 wording — *"for a host whose other windows close with a different one"* — read as an
-invitation, and both hosts that took it shipped consoles that matched their own addon and no other,
-while the three hosts that passed nothing wore Core's ×. The field now says so, notes that it has no
-consumer today, and narrows itself to a close control genuinely *different in kind*.
+**The gated sink can no longer raise on a format it cannot fill.** `Debug(tag, fmt, ...)`
+routes every vararg through `safeToString` and then hands the results to `string.format`.
+That covers a `%s` slot — but a WoW combat "secret" is a **number**, and a host logging one
+through a **numeric** slot (`Debug("Absorb", "total=%d", UnitGetTotalAbsorbs("player"))`)
+handed `"<secret>"` to `%d`, where `string.format` raises exactly as the unguarded secret
+would have. The guard made the common case safe and left the case it existed for no safer.
+
+The format is now `pcall`’d. On failure the line still **lands**: the format string
+verbatim, then the stringified arguments, space-joined — a dropped line is the other way to
+lose the diagnostic. **A satisfiable format renders byte-for-byte as it did at minor 6**, so
+no host’s console output changes; the only behaviour that moved is a path that threw.
+
+Nothing to do at a call site. Found by WhatGroup, whose hand-written console had guarded
+this and whose suite went red on the first load of this one.
 
 ## Lib-level surface
 
@@ -96,7 +104,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `FormatPlain` / `FormatColored` / `MakeCloseButton` | 1 | The lib-level members, mirrored onto the instance so a host holds one object. |
 | `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
 | `Add(tag, msg)` | 1 | Append one line. **Ungated on purpose**: the enable seam's own bracket lines and a host's perf output both have to land whatever the flag says. |
-| `Debug(tag, fmt, ...)` | 1 | The gated sink, and a plain function rather than a method — hosts bind it bare (`NS.Debug = D.Debug`) and call it from everywhere. Zero-allocation when off: it returns before building the argument table. |
+| `Debug(tag, fmt, ...)` | 1 (raise-proof format: **7**) | The gated sink, and a plain function rather than a method — hosts bind it bare (`NS.Debug = D.Debug`) and call it from everywhere. Zero-allocation when off: it returns before building the argument table. Every vararg goes through `safeToString`, and **as of minor 7 the `string.format` itself is `pcall`’d**: a format the stringified arguments cannot satisfy (a secret reaching a `%d` slot) lands as the format string followed by those arguments, space-joined, instead of raising inside the sink. |
 | `BufferSize()` | 1 | `#buffer`. |
 | `LastLine()` | 1 | The newest buffered line. |
 | `FindLine(substr)` | 1 | The newest line containing `substr`. Plain search, not a pattern — callers are looking for a tag or a message fragment, neither of which is written as a Lua pattern. |
@@ -143,15 +151,3 @@ contract, because it is the only form that is correct on every minor.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
-
-## Moving to version 7
-
-One behaviour change and nothing to do at a call site. `Debug(tag, fmt, ...)` at this
-version hands the stringified arguments straight to `string.format`, so a host logging a
-combat-protected value through a **numeric** slot (`"total=%d"`) passes `"<secret>"` to
-`%d` and `string.format` **raises** — inside the gated sink, which is the one place that
-was supposed to be safe from exactly that. Version 7 `pcall`s the format and lands the
-line anyway, format string first and the stringified arguments after it, space-joined.
-
-A format the arguments *can* satisfy renders identically at both versions, so nothing a
-host already sees in its console changes.

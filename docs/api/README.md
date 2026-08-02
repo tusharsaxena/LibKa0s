@@ -48,14 +48,15 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0, v1.3.1, v1.4.0 | **Current** |
+| [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.5.0 | **Current** |
 | [2](./Core/version-2-docs.md) | `Core.lua` 2 | v1.0.0 – v1.2.0 | Superseded |
 
 ### `LibKa0s-DebugLog-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [6](./DebugLog/version-6-docs.md) | `DebugLog.lua` 6 | v1.3.1, v1.4.0 | **Current** |
+| [7](./DebugLog/version-7-docs.md) | `DebugLog.lua` 7 | v1.5.0 | **Current** |
+| [6](./DebugLog/version-6-docs.md) | `DebugLog.lua` 6 | v1.3.1, v1.4.0 | Superseded |
 | [5](./DebugLog/version-5-docs.md) | `DebugLog.lua` 5 | v1.3.0 | Superseded |
 | [4](./DebugLog/version-4-docs.md) | `DebugLog.lua` 4 | v1.2.0 | Superseded |
 | [3](./DebugLog/version-3-docs.md) | `DebugLog.lua` 3 | v1.0.0, v1.1.0, v1.1.1 | Superseded |
@@ -64,14 +65,14 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [5](./Slash/version-5-docs.md) | `Slash.lua` 5 | v1.2.0, v1.3.0, v1.3.1, v1.4.0 | **Current** |
+| [5](./Slash/version-5-docs.md) | `Slash.lua` 5 | v1.2.0 – v1.5.0 | **Current** |
 | [4](./Slash/version-4-docs.md) | `Slash.lua` 4 | v1.0.0, v1.1.0, v1.1.1 | Superseded |
 
 ### `LibKa0s-Options-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [5.5.2](./Options/version-5.5.2-docs.md) | `Options.lua` 5 · `OptionsWidgets.lua` 5 · `OptionsScroll.lua` 2 | v1.2.0, v1.3.0, v1.3.1, v1.4.0 | **Current** |
+| [5.5.2](./Options/version-5.5.2-docs.md) | `Options.lua` 5 · `OptionsWidgets.lua` 5 · `OptionsScroll.lua` 2 | v1.2.0 – v1.5.0 | **Current** |
 | [4.4.2](./Options/version-4.4.2-docs.md) | `Options.lua` 4 · `OptionsWidgets.lua` 4 · `OptionsScroll.lua` 2 | v1.1.0, v1.1.1 | Superseded |
 | [3.3.2](./Options/version-3.3.2-docs.md) | `Options.lua` 3 · `OptionsWidgets.lua` 3 · `OptionsScroll.lua` 2 | v1.0.0 | Superseded |
 
@@ -79,7 +80,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [5.3](./Perf/version-5.3-docs.md) | `Perf.lua` 5 · `PerfPanel.lua` 3 | v1.0.0 – v1.4.0 (every release) | **Current** |
+| [5.3](./Perf/version-5.3-docs.md) | `Perf.lua` 5 · `PerfPanel.lua` 3 | v1.0.0 – v1.5.0 (every release) | **Current** |
 
 ### `testkit`
 

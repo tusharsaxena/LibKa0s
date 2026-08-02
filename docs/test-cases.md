@@ -30,7 +30,7 @@ badge and any count quoted in the docs must agree with it.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
-### test_debuglog.lua (54)
+### test_debuglog.lua (56)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
 - dbg: FormatPlain tolerates a nil tag
@@ -47,6 +47,8 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the sink routes the first arg as the [tag] and every vararg through safeToString
 - dbg: the sink is a no-op, and does no work at all, when logging is off
 - dbg: the sink is dot-callable, because host call sites bind it bare
+- dbg: the sink survives a format the stringified args cannot satisfy
+- dbg: an ordinary format is NOT routed through the fallback
 - dbg: SetEnabled writes the flag through the host, not into the library
 - dbg: SetEnabled normalises a truthy value to a boolean
 - dbg: enabling acks in green, brackets the session, then adds the [Init] summary
@@ -464,7 +466,7 @@ badge and any count quoted in the docs must agree with it.
 | Suite | Cases |
 |-------|------:|
 | test_core.lua | 21 |
-| test_debuglog.lua | 54 |
+| test_debuglog.lua | 56 |
 | test_slash.lua | 65 |
 | test_options.lua | 53 |
 | test_options_widgets.lua | 62 |
@@ -475,4 +477,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 4 |
-| **Total** | **417** |
+| **Total** | **419** |

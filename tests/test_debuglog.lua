@@ -187,6 +187,40 @@ test("dbg: the sink is dot-callable, because host call sites bind it bare", func
   T.assertTrue(D:LastLine():find("[Bare]", 1, true) ~= nil, "a bare reference still logs")
 end)
 
+test("dbg: the sink survives a format the stringified args cannot satisfy", function()
+  -- The whole reason the sink is the library's rather than a string.format at the call site is
+  -- that a combat-protected value must not raise on its way to the log (debug-logging-§4). Routing
+  -- every vararg through safeToString covers a `%s` slot — but a secret is a NUMBER, and a host
+  -- logging one through `%d` handed the pre-stringified sentinel to a numeric slot, which raises
+  -- inside string.format exactly as the unguarded value would have. That put the raise back on
+  -- precisely the path this sink exists to protect, and on a repeating ticker it takes the feature
+  -- down until /reload.
+  --
+  -- The line still has to LAND, and it has to carry the sentinel: dropping it silently would be
+  -- the other way to lose the diagnostic.
+  local D, rec = newLog()
+  rec.enabled = true
+  local ok = pcall(function() D.Debug("Absorb", "total=%d", secretMock) end)
+  T.assertTrue(ok, "the gated sink must not propagate a format error")
+  local line = D:LastLine()
+  T.assertTrue(line ~= nil, "and the line still lands")
+  T.assertTrue(line:find("[Absorb]", 1, true) ~= nil, "under its tag")
+  T.assertTrue(line:find("total=%d", 1, true) ~= nil,
+    "with the format string itself, since it could not be filled")
+  T.assertTrue(line:find("<secret>", 1, true) ~= nil, "and the un-renderable value as the sentinel")
+end)
+
+test("dbg: an ordinary format is NOT routed through the fallback", function()
+  -- Guards the fix from over-reaching: the fallback is a repair path, and a working format must
+  -- still render exactly as it always did rather than as a space-joined list.
+  -- red under: replace the pcall'd format with the fallback unconditionally.
+  local D, rec = newLog()
+  rec.enabled = true
+  D.Debug("Absorb", "value=%s at %s", "x", "y")
+  T.assertTrue(D:LastLine():find("value=x at y", 1, true) ~= nil,
+    "a satisfiable format is filled, not joined")
+end)
+
 -- ── the enable seam ────────────────────────────────────────────────────────────────────────
 
 test("dbg: SetEnabled writes the flag through the host, not into the library", function()
