@@ -148,8 +148,10 @@ someone eventually runs without the pipeline.
 
 `testkit/` holds the registry, the assertions, the source loader and the universal half of the
 WoW-API mock, shared across the collection and vendored into each addon as `tests/_kit/`. It is
-**not** a LibStub major and never ships. See [`testkit/README.md`](./testkit/README.md) for the
-vendoring discipline, what a consuming `tests/run.lua` looks like, and the mock-fidelity rules.
+**not** a LibStub major and never ships, but it does carry a plain revision integer — `Kit.VERSION`,
+exposed to suites as `KIT_VERSION` — so a consumer can name which copy it holds. Its full surface is
+in [`docs/api/testkit/`](docs/api/testkit/), indexed alongside the majors;
+[`testkit/README.md`](./testkit/README.md) covers what it is and the vendoring discipline.
 
 This repo consumes its own kit through `tests/_kit/` rather than reaching into `testkit/` directly,
 so LibKa0s is a consumer on the same terms as every addon: a kit change that would break a consumer
@@ -207,6 +209,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   LICENSE            -- ships INSIDE the payload, so every vendored copy carries the MIT notice
 testkit/             -- the shared headless harness, vendored into each addon as tests/_kit/
                         (never shipped: it lives under tests/, which every .pkgmeta already excludes)
+                        Kit.VERSION at the top of framework.lua names the revision
 tests/               -- this repo's own test harness, consuming testkit/ through tests/_kit/
 docs/                -- development docs (not shipped)
   api/               -- THE API REFERENCE, and the source of truth for every public contract
