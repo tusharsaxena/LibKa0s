@@ -18,8 +18,9 @@ modules ship today:
 
 DebugLog, Slash, Options and Perf each require Core and refuse to register without it.
 
-Each module has its own section below, in `LibKa0s.xml` load order — the decisions that
-shaped it, its `lib:New` descriptor, then its public surface.
+Each module's full contract — the decisions that shaped it, its `lib:New` descriptor, its public
+surface — lives in [`docs/api/`](docs/api/), one document per shipped version. This file maps the
+modules and points there; it does not restate them.
 
 ## Installing
 
