@@ -48,7 +48,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    wiring is not:
 
    ```
-   for a in AbsorbTracker BankLedger ConsumableMaster KickCD; do
+   for a in AbsorbTracker BankLedger ConsumableMaster KickCD LootHistory; do
        grep -rnoE 'LibStub\("LibKa0s-[A-Za-z]+-1\.0", true\)' ../$a --include='*.lua' \
          | grep -v '/libs/' | grep -v '/tests/'
    done
@@ -169,10 +169,10 @@ which hosts' descriptors a change to one module can reach.
 
 | Module | Consumers | Where the wiring lives |
 |---|---|---|
-| `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `core/CoreSetup.lua` (all four) |
-| `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `core/DebugLogSetup.lua` (AbsorbTracker, KickCD, BankLedger); ConsumableMaster: `modules/DebugLog.lua` |
-| `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger); ConsumableMaster: `core/SlashCommands.lua`. AbsorbTracker has a **second** lookup at `settings/Schema.lua`, stashed at file load so `NS.FormatSchemaValue` can call `lib.FormatValue(row, v)` — the seam every panel widget and every `/at set` renders through |
-| `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger | BankLedger: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/Panel.lua` |
+| `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory | `core/CoreSetup.lua` (all five) |
+| `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory | `core/DebugLogSetup.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory); ConsumableMaster: `modules/DebugLog.lua`. **LootHistory is the second host on minor 4's `applySkin`/`makeCloseButton`** — it asserts the derived title-bar offsets rather than assuming them |
+| `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory | `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory) — LootHistory is the **second host on minor 5's `format` hook**, for the same set-valued row shape BankLedger drove it for; ConsumableMaster: `core/SlashCommands.lua`. AbsorbTracker has a **second** lookup at `settings/Schema.lua`, stashed at file load so `NS.FormatSchemaValue` can call `lib.FormatValue(row, v)` — the seam every panel widget and every `/at set` renders through |
+| `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory | LootHistory: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. BankLedger: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/Panel.lua` |
 | `LibKa0s-Perf-1.0` | AbsorbTracker, KickCD, ConsumableMaster | `core/PerfSetup.lua` (first two); ConsumableMaster: `modules/PerfSetup.lua` |
 
 AbsorbTracker vendors to `libs/LibKa0s/` and is consumer #1 for all five. Its `settings/UnitPanel.lua`
@@ -195,8 +195,13 @@ descriptor:
   engine did before it adopted. `RenderGrid` guards its items the same way.
 
 Add each addon here as it adopts a module, so "every consumer" in step 7 is a list rather than a
-memory. Remaining, per `docs/adoption-prompt.md`: LootHistory, PanelMaster, prettychat
-and WhatGroup. BankLedger has Core, DebugLog, Slash and Options; it **declines Perf** (its capture engine never runs in combat, and the probe's windows are combat-gated, so every bucket would read 0.000 by construction — see its `docs/pending/LEDGER.md`, LIBKA0S-17).
+memory. Remaining, per `docs/adoption-prompt.md`: PanelMaster, prettychat and WhatGroup.
+LootHistory has Core, DebugLog, Slash and Options and **declines Perf** for two independent
+reasons — it owns no `OnUpdate`, no repeating ticker and no repaint loop, so there is no bucket to
+fill; and its `suspend` would have to stop recording the loot dropping inside window B, so an
+experiment would silently cost the user real history (its `docs/pending/LEDGER.md`, LIBKA0S-17). It
+drove no library change: every v1.2.0 surface it needed was already there and all of them fitted.
+BankLedger has Core, DebugLog, Slash and Options; it **declines Perf** (its capture engine never runs in combat, and the probe's windows are combat-gated, so every bucket would read 0.000 by construction — see its `docs/pending/LEDGER.md`, LIBKA0S-17).
 `WhoGotLoots` and `BuffTextNotifications` are out of scope until they are on the standard at all.
 
 ## Before the first public release

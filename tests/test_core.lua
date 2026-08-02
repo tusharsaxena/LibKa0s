@@ -142,15 +142,109 @@ test("core: ApplySkin applies the skin table and both colours", function()
   assertEqual(calls.backdrop, core.SKIN)
   assertEqual(table.concat(calls.bg, ","), table.concat(core.SKIN.bg, ","))
   assertEqual(table.concat(calls.border, ","), table.concat(core.SKIN.border, ","))
-  -- The values a debug console and a perf panel must agree on, byte for byte, or a host's two
-  -- windows stop reading as one addon.
-  assertEqual(core.SKIN.bgFile, "Interface\\Buttons\\WHITE8x8")
-  assertEqual(core.SKIN.edgeFile, "Interface\\Tooltips\\UI-Tooltip-Border")
-  assertEqual(core.SKIN.edgeSize, 12)
-  assertEqual(table.concat(core.SKIN.bg, ","), "0.06,0.06,0.07,0.95")
-  assertEqual(table.concat(core.SKIN.border, ","), "0,0,0,1")
+  -- The VALUES a debug console and a perf panel must agree on byte for byte are pinned by the next
+  -- case; this one pins that ApplySkin actually makes the three backdrop calls with them.
 end)
 
+
+-- ── the Ka0s window edge ───────────────────────────────────────────────────────────────────
+--
+-- One treatment, defined once, worn by every window this library draws and by every window a host
+-- draws beside them: a flat 1px BLACK outer border with a 1px light-grey highlight synthesised
+-- just inside it (the "double edge"), a gold title and a grey divider under the title bar.
+--
+-- It became the definition because two hosts had already converged on it independently and looked
+-- right, while the three on this library's 12px UI-Tooltip-Border did not read as the same suite of
+-- addons. See standalone-windows in the Ka0s WoW Addon Standard.
+
+local function recorderFrame()
+  local f = {
+    children = {}, points = {},
+    SetBackdrop = function(self, b) self.backdrop = b end,
+    SetBackdropColor = function(self, r, g, b, a) self.bg = { r, g, b, a } end,
+    SetBackdropBorderColor = function(self, r, g, b, a) self.border = { r, g, b, a } end,
+    SetPoint = function(self, ...) self.points[#self.points + 1] = { ... } end,
+  }
+  return f
+end
+
+test("core: SKIN is the flat 1px Ka0s edge, not the 12px tooltip border", function()
+  assertEqual(core.SKIN.bgFile, "Interface\\Buttons\\WHITE8x8")
+  assertEqual(core.SKIN.edgeFile, "Interface\\Buttons\\WHITE8x8",
+    "the edge is a flat white 1px texture, tinted black — not the tooltip border art")
+  assertEqual(core.SKIN.edgeSize, 1)
+  assertEqual(core.SKIN.insets.left, 1)
+  assertEqual(core.SKIN.insets.right, 1)
+  assertEqual(core.SKIN.insets.top, 1)
+  assertEqual(core.SKIN.insets.bottom, 1)
+  assertEqual(table.concat(core.SKIN.bg, ","), "0.06,0.06,0.08,0.92")
+  assertEqual(table.concat(core.SKIN.border, ","), "0,0,0,1")
+  -- The three that used to be unexpressible as fields, and were therefore per-host.
+  assertEqual(table.concat(core.SKIN.innerBorder, ","), "0.24,0.24,0.27,0.85")
+  assertEqual(table.concat(core.SKIN.divider, ","), "0.24,0.24,0.27,0.85")
+  assertEqual(table.concat(core.SKIN.title, ","), "1,0.82,0")
+end)
+
+test("core: ApplySkin synthesises the inner highlight, exactly once", function()
+  local created = 0
+  -- The loader env resolves WoW globals from the mock set BEFORE _G, so a swap on _G would be
+  -- shadowed and this case would report 0 created frames forever.
+  local realCreateFrame = T.mocks.CreateFrame
+  T.mocks.CreateFrame = function() created = created + 1; return recorderFrame() end
+
+  local frame = recorderFrame()
+  core.ApplySkin(frame)
+  core.ApplySkin(frame)
+  T.mocks.CreateFrame = realCreateFrame
+
+  assertEqual(created, 1, "the inner border is built once and re-tinted thereafter")
+  T.assertTrue(frame.innerBorder ~= nil, "and it is recorded on the frame")
+  assertEqual(table.concat(frame.innerBorder.border, ","), "0.24,0.24,0.27,0.85")
+  -- Inset by one pixel on both axes so it sits INSIDE the black edge rather than on it.
+  assertEqual(#frame.innerBorder.points, 2)
+end)
+
+
+test("core: ApplySkin survives a frame whose metatable answers every key", function()
+  -- NOT a hypothetical. A consumer's mock returns a function for ANY key, so `frame.innerBorder`
+  -- reads as a truthy FUNCTION rather than nil, a `if not frame.innerBorder` guard never fires,
+  -- and the tint then indexes a function and raises. Real WoW frames carry a metatable too, so the
+  -- library must decide on the TYPE it got rather than on truthiness.
+  local answersEverything = setmetatable({}, {
+    __index = function() return function() end end,
+  })
+  local ok, err = pcall(core.ApplySkin, answersEverything)
+  T.assertTrue(ok, "ApplySkin must not raise on such a frame: " .. tostring(err))
+  T.assertTrue(type(rawget(answersEverything, "innerBorder")) == "table",
+    "and it must have replaced the synthesised answer with a real inner-border frame")
+end)
+test("core: ApplySkin tints a title and a divider when the frame carries them", function()
+  local frame = recorderFrame()
+  local tinted, drawn
+  frame.title = { SetTextColor = function(_, r, g, b) tinted = { r, g, b } end }
+  frame.divider = { SetColorTexture = function(_, r, g, b, a) drawn = { r, g, b, a } end }
+  core.ApplySkin(frame)
+  assertEqual(table.concat(tinted, ","), "1,0.82,0", "the title is Blizzard gold")
+  assertEqual(table.concat(drawn, ","), "0.24,0.24,0.27,0.85", "the divider is the grey line")
+end)
+
+test("core: ApplySkin tolerates a frame with neither a title nor a divider", function()
+  -- The copy window has a title and no divider; a perf panel has a title and no divider either.
+  local frame = recorderFrame()
+  local ok = pcall(core.ApplySkin, frame)
+  T.assertTrue(ok, "ApplySkin must not require either")
+end)
+
+test("core: ApplySkin honours an explicit skin table", function()
+  -- The optional second argument, so DebugLog's descriptor `skin` override reaches ONE
+  -- implementation rather than a second copy of these calls.
+  local frame = recorderFrame()
+  core.ApplySkin(frame, { bgFile = "x", bg = { 1, 0, 0, 1 }, border = { 0, 1, 0, 1 } })
+  assertEqual(table.concat(frame.bg, ","), "1,0,0,1")
+  assertEqual(table.concat(frame.border, ","), "0,1,0,1")
+  -- A skin with no innerBorder/title/divider keys leaves those calls unmade rather than raising.
+  assertEqual(frame.innerBorder, nil)
+end)
 test("core: MakeCloseButton returns a button wired to onClick", function()
   local fired = 0
   local b = core.MakeCloseButton(T.mocks.UIParent, function() fired = fired + 1 end)

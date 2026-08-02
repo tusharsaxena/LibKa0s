@@ -10,6 +10,80 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.3.0 — 2026-08-02
+
+One change, and it is a **look** change rather than an API one: the Ka0s window edge is now defined
+in the library instead of in whichever host happened to draw it.
+
+Versions in this release: **Core minor 3**, **DebugLog minor 5**. Every other file is unchanged.
+
+### `LibKa0s-Core-1.0` — the window edge is the flat 1px Ka0s double border
+
+`lib.SKIN` changes VALUES, which no release before this one has done. Read the note below before
+taking it.
+
+Five consoles side by side did not read as one suite of addons. BankLedger and LootHistory draw
+every window with a flat 1px black edge, a 1px light-grey highlight synthesised just inside it, a
+gold title and a grey divider under the title bar — and passed `applySkin` at DebugLog minor 4
+specifically so their consoles would keep matching their own windows. AbsorbTracker, ConsumableMaster
+and KickCD passed nothing and got this library's 12px `UI-Tooltip-Border` with a black divider and an
+untinted title. The two groups looked like different addons, which is the one thing a shared skin
+exists to prevent.
+
+The definition moved to where the majority of the drawn surface already was:
+
+```lua
+lib.SKIN = {
+  bgFile      = "Interface\\Buttons\\WHITE8x8",
+  edgeFile    = "Interface\\Buttons\\WHITE8x8",   -- was UI-Tooltip-Border
+  edgeSize    = 1,                                -- was 12
+  insets      = { left = 1, right = 1, top = 1, bottom = 1 },   -- was 3
+  bg          = { 0.06, 0.06, 0.08, 0.92 },       -- was 0.06, 0.06, 0.07, 0.95
+  border      = { 0, 0, 0, 1 },                   -- unchanged
+  innerBorder = { 0.24, 0.24, 0.27, 0.85 },       -- new
+  divider     = { 0.24, 0.24, 0.27, 0.85 },       -- new
+  title       = { 1.0, 0.82, 0.0 },               -- new
+}
+```
+
+`lib.ApplySkin` grows to make the three calls a table could never describe — the inner-border child
+frame (built once, re-tinted thereafter), the title tint and the divider tint — each guarded on both
+the skin key and the frame member being present, so a copy window with no divider and a perf panel
+with no divider are both fine, and a caller handing it a plain WoW backdrop table still gets a plain
+backdrop rather than a raise.
+
+It also takes an **optional second argument**, `ApplySkin(frame, skin)`, defaulting to `lib.SKIN`.
+That is what lets DebugLog's descriptor `skin` override reach this one implementation instead of a
+second copy of the same calls.
+
+**This is not an additive change and it should not be read as one.** No field is removed or
+repurposed and no signature breaks — but every host that passes no `applySkin` sees its debug console
+and its perf panel change appearance on the next re-vendor. That is the intent, it is the standard's
+call to make rather than the library's, and `standalone-windows` in the Ka0s WoW Addon Standard now
+specifies these values normatively so the next addon inherits them without a decision. A host that
+genuinely wants something else still has `applySkin` and the `skin` table.
+
+### `LibKa0s-DebugLog-1.0` — one skin implementation, and a divider that is not hardcoded black
+
+`defaultApplySkin` is now a one-line delegate to `core.ApplySkin(f, skin)`, so the console and the
+copy window wear exactly what every other Ka0s window wears. The divider's creation-time colour comes
+from the skin rather than from a hardcoded `SetColorTexture(0, 0, 0, 1)` — that literal was invisible
+while the default border was also black, and became a visible mismatch the moment the border did not
+have to be.
+
+
+`ApplySkin` decides on the **type** of what a frame answered, never on its truthiness. A frame is a
+table with a metatable and this library cannot assume what that metatable does with a key it has
+never heard of — a consumer's test mock answers *every* key with a function, so `frame.innerBorder`
+read back truthy, the build-once guard never fired, and the tint then indexed a function and raised.
+That is the whole reason "run each existing consumer's suite" is a release step: it took fourteen of
+that addon's cases down and nothing in this repo would have noticed.
+
+`applySkin` and `makeCloseButton` are unchanged and still default to the library's own. What changed
+is why a host would pass them: no longer to rescue itself from a default that did not match its
+windows, but for chrome that differs in SHAPE rather than colour, or to keep a console tracking the
+host's own re-skin seam.
+
 ## v1.2.0 — 2026-08-01
 
 Four gaps, all found by adoption rather than by review. Two are the same shape — a host could

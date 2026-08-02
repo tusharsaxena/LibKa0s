@@ -6,7 +6,7 @@ badge and any count quoted in the docs must agree with it.
 
 **Generated — do not hand-edit.** Regenerate with `lua tests/run.lua --list > docs/test-cases.md`.
 
-### test_core.lua (15)
+### test_core.lua (21)
 
 - core: IsConcatSafe is false for a table.concat-hostile value, true for a plain one
 - core: SafeToString renders a secret as lib.SECRET and passes nil/booleans through
@@ -19,12 +19,18 @@ badge and any count quoted in the docs must agree with it.
 - core: :New refuses a descriptor with no prefix
 - core: ApplySkin no-ops on a frame without SetBackdrop
 - core: ApplySkin applies the skin table and both colours
+- core: SKIN is the flat 1px Ka0s edge, not the 12px tooltip border
+- core: ApplySkin synthesises the inner highlight, exactly once
+- core: ApplySkin survives a frame whose metatable answers every key
+- core: ApplySkin tints a title and a divider when the frame carries them
+- core: ApplySkin tolerates a frame with neither a title nor a divider
+- core: ApplySkin honours an explicit skin table
 - core: MakeCloseButton returns a button wired to onClick
 - core: MakeCloseButton returns nil when CreateFrame is unavailable
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
-### test_debuglog.lua (52)
+### test_debuglog.lua (53)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
 - dbg: FormatPlain tolerates a nil tag
@@ -68,6 +74,7 @@ badge and any count quoted in the docs must agree with it.
 - an L whose metatable synthesises every key does NOT mask the module's own strings
 - a REAL entry in an L that also has a fallback still overrides
 - a plain L table overrides exactly as before
+- dbg: the default chrome IS the Ka0s window edge, on both windows
 - dbg: a host can supply its own skin function, for both windows
 - dbg: the host's skin function runs AFTER the Hide and the Esc wiring
 - dbg: a host that supplies no skin function still gets the library's own
@@ -453,8 +460,8 @@ badge and any count quoted in the docs must agree with it.
 
 | Suite | Cases |
 |-------|------:|
-| test_core.lua | 15 |
-| test_debuglog.lua | 52 |
+| test_core.lua | 21 |
+| test_debuglog.lua | 53 |
 | test_slash.lua | 65 |
 | test_options.lua | 53 |
 | test_options_widgets.lua | 62 |
@@ -465,4 +472,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 2 |
-| **Total** | **407** |
+| **Total** | **414** |

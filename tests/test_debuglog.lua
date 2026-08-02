@@ -552,15 +552,28 @@ end)
 --
 -- Added at DebugLog minor 4, for the two hosts (BankLedger and LootHistory) whose windows wear a
 -- flat 1px double border with a synthesised inner border, a gold title tint and a grey divider, and
--- close with a 24x24 class-coloured x shared across every window they draw. Core.SKIN is a 12px
--- tooltip border and Core.MakeCloseButton is an 18x18 fixed-red x; taking either is a visual
--- redesign of every window such a host owns rather than an extraction of a duplicated one.
+-- close with a 24x24 class-coloured x shared across every window they draw. At the time Core.SKIN
+-- was a 12px tooltip border and could not express any of it, so taking the library default was a
+-- visual redesign of every window such a host owned.
 --
--- The `skin` TABLE that already existed covers three of the six things such a host's skin does —
--- the backdrop, its colour and its border colour. It cannot reach the inner-border child frame, the
--- title tint or the divider tint, because those are calls rather than fields. Hence a function.
---
--- Both fields DEFAULT to exactly what minor 3 did, so no existing consumer changes.
+-- As of Core minor 3 that treatment IS the library default (see test_core.lua's "the Ka0s window
+-- edge"), so the two hooks no longer exist to rescue a host from the default — they exist for
+-- chrome that differs in SHAPE rather than colour, and for a host that wants its console to track
+-- its own re-skin seam. Both still DEFAULT to what the library draws, so no consumer changes by
+-- passing nothing.
+
+test("dbg: the default chrome IS the Ka0s window edge, on both windows", function()
+  -- The host-facing half of Core minor 3. A host that passes no applySkin must get the flat
+  -- black edge, the grey inner highlight, the gold title and the grey divider — not the tooltip
+  -- border it got through v1.2.0. Asserted on the frame the library actually built.
+  local D = newLog{}
+  D:Show()
+  local frame = D._frameForTest
+  T.assertTrue(frame ~= nil, "the console frame must exist")
+  T.assertTrue(frame.divider ~= nil, "and carry the divider the skin tints")
+  T.assertTrue(frame.innerBorder ~= nil,
+    "the 1px inner highlight must be synthesised by the default skin, not only by a host hook")
+end)
 
 test("dbg: a host can supply its own skin function, for both windows", function()
   local skinned = {}

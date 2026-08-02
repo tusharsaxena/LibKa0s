@@ -57,8 +57,8 @@ vendored copy works with a caller from any other" true by construction.
 | `IsConcatSafe(v)` | Whether `v` survives the `table.concat` every emitted line ends in. Probes `table.concat` itself, not `..` — `..` silently propagates secretness and reports a secret as safe. |
 | `SafeToString(v)` | Concat-safe stringifier. Ordinary values → `tostring(v)`; an un-concatenable (secret) value → `lib.SECRET`. `nil` and booleans are answered up front, so they are never masked. |
 | `SECRET` | What an un-renderable value renders as (`"<secret>"`). Exported so a host's tests, its docs and this implementation cannot drift apart. |
-| `SKIN` | The one skin every Ka0s window wears — the backdrop fields plus `bg` and `border`, in one table because taking the backdrop without the colours is exactly the drift this prevents. |
-| `ApplySkin(frame)` | Wear the skin. A no-op on a frame with no `SetBackdrop`: undecorated is not broken. |
+| `SKIN` | The one skin every Ka0s window wears: a flat 1px black edge, a 1px light-grey highlight synthesised just inside it, a gold title and a grey divider. Backdrop fields and every colour (`bg`, `border`, `innerBorder`, `divider`, `title`) travel in one table, because taking the backdrop without the colours is exactly the drift this prevents. |
+| `ApplySkin(frame[, skin])` | Wear the skin. Makes the three calls a table cannot describe as well as the backdrop: the inner-border child frame (built once, re-tinted after), the title tint and the divider tint — each guarded on the skin key AND the frame member, so a window with no divider is fine. `skin` defaults to `lib.SKIN`; it exists so DebugLog's `skin` override reaches one implementation. A no-op on a frame with no `SetBackdrop`: undecorated is not broken. |
 | `MakeCloseButton(parent, onClick)` | The thin × a Ka0s window closes with, returned unanchored for the caller to place. Returns `nil` where `CreateFrame` is unavailable (headless harness, or a load path with no UI). |
 | `lib:New(descriptor)` | Build a prefixed chat printer for one host. See below. |
 
@@ -130,8 +130,8 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `onVisibilityChanged` | function | no | Fired on both `OnShow` and `OnHide`, so a host can repaint a settings panel whose checkbox mirrors the console's visibility. |
 | `slash` | string | no | Composes the checkbox tooltip's `"<slash> debug"` reference. |
 | `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap) below. |
-| `skin` | table | no | Overrides `Core.SKIN`. |
-| `applySkin` | function | no | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. `skin` is a table and therefore reaches only the three backdrop calls; a host whose window chrome also has a synthesised inner-border child frame, a title tint or a divider tint needs calls, not fields. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
+| `skin` | table | no | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
+| `applySkin` | function | no | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than colour, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
 | `makeCloseButton` | function | no | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows, for a host whose other windows close with a different one. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. |
 
 ### The public surface
@@ -738,8 +738,8 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.2.0**: `Core = { Core = 2 }`,
-`DebugLog = { DebugLog = 4 }`, `Slash = { Slash = 5 }`,
+different vendored copy of each. As of **v1.3.0**: `Core = { Core = 3 }`,
+`DebugLog = { DebugLog = 5 }`, `Slash = { Slash = 5 }`,
 `Options = { Options = 5, OptionsWidgets = 5, OptionsScroll = 2 }`,
 `Perf = { Perf = 5, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
