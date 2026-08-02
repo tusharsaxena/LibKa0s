@@ -89,7 +89,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: a close button with no measurable width falls back to the library's own
 - dbg: with no close button at all the offsets are still the minor-3 defaults
 
-### test_slash.lua (65)
+### test_slash.lua (66)
 
 - sl: an empty message prints the help index
 - sl: whitespace-only input is treated as empty
@@ -156,6 +156,7 @@ badge and any count quoted in the docs must agree with it.
 - slash: the format hook reaches the get, set and reset echoes too
 - slash: a host with no format hook renders exactly as it always did
 - slash: the format hook takes precedence over the colour codec, and gets the raw stored value
+- slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
 
 ### test_options.lua (53)
 
@@ -467,7 +468,7 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | test_core.lua | 21 |
 | test_debuglog.lua | 56 |
-| test_slash.lua | 65 |
+| test_slash.lua | 66 |
 | test_options.lua | 53 |
 | test_options_widgets.lua | 62 |
 | test_perf_core.lua | 52 |
@@ -477,4 +478,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 4 |
-| **Total** | **419** |
+| **Total** | **420** |

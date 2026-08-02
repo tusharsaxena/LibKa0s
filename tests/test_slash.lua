@@ -679,3 +679,44 @@ test("slash: the format hook takes precedence over the colour codec, and gets th
     assertEqual(lines[#lines], "    " .. slash.FormatKV("s.c", "red"))
     assertEqual(seen[1], 1, "the hook is handed the value as STORED")
   end)
+
+test("slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs",
+  function()
+    -- red under: hoisting the colorDecode branch of formatValue above the `d.format` one.
+    --
+    -- The case above pins the ordering at the list echo only. This pins it at the other three, and
+    -- on the write side at the same time, because the documented precedence is over `colorDecode`
+    -- ALONE: a host that owns rendering has said nothing about how its colour is STORED, so
+    -- `colorEncode` must still turn the parser's named-key tuple into the host's shape before the
+    -- echo re-reads it. Nothing ships this descriptor — the three `format` hosts and the three
+    -- codec hosts are disjoint sets and no ninth consumer is coming — so this suite is the only
+    -- place the ordering is executed at all.
+    local rows = { { path = "s.c", type = "color", default = {} } }
+    local store = { ["s.c"] = { 1, 0, 0, 1 } }
+    local out = {}
+    local Sl = slash:New({
+      slash = "/th", commands = {},
+      print = function(line) out[#out + 1] = line end,
+      allRows = function() return rows end,
+      findRow = function() return rows[1] end,
+      get = function(p) return store[p] end,
+      set = function(p, v) store[p] = v end,
+      applyDefault = function(r) store[r.path] = { 0, 1, 0, 1 } end,
+      colorDecode = function(c) return c[1], c[2], c[3], c[4] end,
+      colorEncode = function(r, g, b, a) return { r, g, b, a or 1 } end,
+      -- Hex, which lib.FormatValue has no branch for: whichever hook answered is legible from the
+      -- rendered bytes alone, rather than inferred from a flag the case set for itself.
+      format = function(_, v)
+        return ("#%02X%02X%02X"):format((v[1] or 0) * 255, (v[2] or 0) * 255, (v[3] or 0) * 255)
+      end,
+    })
+    Sl:CliGet("s.c")
+    assertEqual(out[#out], slash.FormatKV("s.c", "#FF0000"),
+      "get: the decoded {1.00, 0.00, 0.00, 1.00} tuple must not be what is printed")
+    Sl:CliSet("s.c 0 0 1")
+    T.assertNear(store["s.c"][3], 1, 1e-6, "colorEncode still wrote the host's positional shape")
+    T.assertNil(store["s.c"].b, "and not the parser's named-key one")
+    assertEqual(out[#out], slash.FormatKV("s.c", "#0000FF"), "set, re-read after storing")
+    Sl:CliReset("s.c")
+    assertEqual(out[#out], slash.FormatKV("s.c", "#00FF00"), "reset")
+  end)
