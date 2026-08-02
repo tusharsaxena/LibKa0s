@@ -132,7 +132,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `L` | table | no | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap) below. |
 | `skin` | table | no | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
 | `applySkin` | function | no | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than colour, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
-| `makeCloseButton` | function | no | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows, for a host whose other windows close with a different one. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. |
+| `makeCloseButton` | function | no | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. **Rarely the right field, and it has no consumer today** — these are the library's windows, so they wear the library's close glyph, and a host whose own main window closes with something else must not push that difference onto them (standalone-windows). Pass it only for a close control genuinely *different in kind*. |
 
 ### The public surface
 
@@ -738,8 +738,8 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.3.0**: `Core = { Core = 3 }`,
-`DebugLog = { DebugLog = 5 }`, `Slash = { Slash = 5 }`,
+different vendored copy of each. As of **v1.3.1**: `Core = { Core = 3 }`,
+`DebugLog = { DebugLog = 6 }`, `Slash = { Slash = 5 }`,
 `Options = { Options = 5, OptionsWidgets = 5, OptionsScroll = 2 }`,
 `Perf = { Perf = 5, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.

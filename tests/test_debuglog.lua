@@ -562,6 +562,31 @@ end)
 -- its own re-skin seam. Both still DEFAULT to what the library draws, so no consumer changes by
 -- passing nothing.
 
+
+test("dbg: with no makeCloseButton, BOTH windows close with Core's x", function()
+  -- The console and the copy window are the LIBRARY's windows, so they wear the library's close
+  -- glyph. A host whose own main window closes with a different one must not push that difference
+  -- onto them: two adopters did exactly that, and their diagnostic windows ended up with a 24x24
+  -- class-coloured x where the other three had Core's thin 18x18 one.
+  --
+  -- Spying on core.MakeCloseButton rather than on the returned button is what makes this specific:
+  -- lib.MakeCloseButton forwards through the core TABLE at CALL time, so a default that stopped
+  -- being Core's would stop reaching this counter.
+  local core = T.core
+  local realMake = core.MakeCloseButton
+  local made = 0
+  core.MakeCloseButton = function(parent, onClick)
+    made = made + 1
+    return realMake(parent, onClick)
+  end
+  local D = newLog{}
+  D:Show()
+  D:ShowCopy()
+  core.MakeCloseButton = realMake
+
+  assertEqual(made, 2, "one per window — the console and the copy window, both from Core")
+  D:Hide()
+end)
 test("dbg: the default chrome IS the Ka0s window edge, on both windows", function()
   -- The host-facing half of Core minor 3. A host that passes no applySkin must get the flat
   -- black edge, the grey inner highlight, the gold title and the grey divider — not the tooltip

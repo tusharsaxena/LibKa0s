@@ -10,6 +10,30 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.3.1 — 2026-08-02
+
+Versions in this release: **DebugLog minor 6**. Every other file is unchanged.
+
+### `LibKa0s-DebugLog-1.0` — `makeCloseButton` is documented as the wrong answer
+
+No behaviour change. The field's documentation was written from the point of view of the two hosts
+that asked for it and read as an invitation: *"for a host whose other windows close with a different
+one"*. Both of them took it, passed their main window's 24×24 class-coloured ×, and shipped debug
+consoles and copy windows that matched their own addon and no other — while the three hosts that
+passed nothing wore Core's thin 18×18 ×.
+
+That is the same root cause as v1.3.0's border split, one field along, and the same answer: the
+**edge** is shared across every Ka0s window (`Core.SKIN`), but the **close control on a
+library-drawn window is the library's**. The descriptor comment now says so, notes that the field
+has no consumer, and narrows it to a close control that is genuinely *different in kind* rather than
+merely the host's own. `standalone-windows` in the Ka0s WoW Addon Standard carries the normative
+half.
+
+A regression guard comes with it: a console built with no `makeCloseButton` must reach
+`Core.MakeCloseButton` exactly twice — once for the console, once for the copy window. It spies on
+the `core` table rather than on the returned button, because `lib.MakeCloseButton` forwards through
+that table at call time, so a default that stopped being Core's would stop reaching the counter.
+
 ## v1.3.0 — 2026-08-02
 
 One change, and it is a **look** change rather than an API one: the Ka0s window edge is now defined

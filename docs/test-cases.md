@@ -30,7 +30,7 @@ badge and any count quoted in the docs must agree with it.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
-### test_debuglog.lua (53)
+### test_debuglog.lua (54)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
 - dbg: FormatPlain tolerates a nil tag
@@ -74,6 +74,7 @@ badge and any count quoted in the docs must agree with it.
 - an L whose metatable synthesises every key does NOT mask the module's own strings
 - a REAL entry in an L that also has a fallback still overrides
 - a plain L table overrides exactly as before
+- dbg: with no makeCloseButton, BOTH windows close with Core's x
 - dbg: the default chrome IS the Ka0s window edge, on both windows
 - dbg: a host can supply its own skin function, for both windows
 - dbg: the host's skin function runs AFTER the Hide and the Esc wiring
@@ -461,7 +462,7 @@ badge and any count quoted in the docs must agree with it.
 | Suite | Cases |
 |-------|------:|
 | test_core.lua | 21 |
-| test_debuglog.lua | 53 |
+| test_debuglog.lua | 54 |
 | test_slash.lua | 65 |
 | test_options.lua | 53 |
 | test_options_widgets.lua | 62 |
@@ -472,4 +473,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 2 |
-| **Total** | **414** |
+| **Total** | **415** |
