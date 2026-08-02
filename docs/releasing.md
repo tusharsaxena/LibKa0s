@@ -100,7 +100,7 @@ line reads v1.3.0, and this template moves with it rather than being corrected a
 
 That line is part of the re-vendor, not a follow-up to it. It is the only artefact that answers
 "which LibKa0s does this addon carry?" without grepping eight minor constants out of the vendored
-source, and it is only true if it moves with the bytes — and only checkable if step 6's tag exists,
+source, and it is only true if it moves with the bytes — and only checkable if step 7's tag exists,
 which is why the tag is not the optional half of that step.
 
 **Run both diffs, and read the difference between them.** The first compares content with CR
@@ -166,7 +166,7 @@ Rules, and the reason each exists:
 - **Raising a dependency floor is a breaking change to the vendoring, not to the API.** If a change
   to `Perf.lua` needs something Core only gained this release, `NEEDS_CORE` moves with it — and every
   consumer whose `libs/` still holds the older `Core.lua` loses the whole module until it is
-  re-vendored — which is another way of saying the floor is only ever safe because step 7 is not
+  re-vendored — which is another way of saying the floor is only ever safe because step 8 is not
   optional.
 - **The vendored copy MUST be identical to the ship folder in content, and SHOULD be identical in
   bytes.** Both diffs above, every time. A hand-patched `libs/` copy is a fork nobody knows about —
@@ -186,7 +186,7 @@ you also author is an ongoing **sync**, and the drift window is a single afterno
 
 ## Consumers
 
-Tracked **per module**, because addons adopt modules independently. Step 7 re-vendors the whole
+Tracked **per module**, because addons adopt modules independently. Step 8 re-vendors the whole
 folder into every addon in this list whatever changed; the per-module column is the other question —
 which hosts' descriptors a change to one module can reach.
 
@@ -219,8 +219,8 @@ descriptor:
   throwing `values` function costs that row and nothing else — which is what KickCD's own flow
   engine did before it adopted. `RenderGrid` guards its items the same way.
 
-Add each addon here as it adopts a module, so "every consumer" in step 7 is a list rather than a
-memory. Remaining, per `docs/adoption-prompt.md`: PanelMaster, prettychat and WhatGroup.
+Add each addon here as it adopts a module, so "every consumer" in step 8 is a list rather than a
+memory. Remaining, per `docs/adoption-prompt.md`: WhatGroup.
 LootHistory has Core, DebugLog, Slash and Options and **declines Perf** for two independent
 reasons — it owns no `OnUpdate`, no repeating ticker and no repaint loop, so there is no bucket to
 fill; and its `suspend` would have to stop recording the loot dropping inside window B, so an
