@@ -92,7 +92,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 | `skin` | table | no | 1 | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
 | `applySkin` | function | no | **4** | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than colour, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
-| `makeCloseButton` | function | no | **4** | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. **Rarely the right field, and it has no consumer today** — these are the library's windows, so they wear the library's close glyph, and a host whose own main window closes with something else must not push that difference onto them (`standalone-windows`). Pass it only for a close control genuinely *different in kind*. |
+| `makeCloseButton` | function | no | **4** | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. **Rarely the right field, and it has no consumer today** — these are the library's windows, so they wear the library's close glyph, and a host whose own main window closes with something else must not push that difference onto them (`standalone-windows`). Pass it only for a close control genuinely *different in kind*. See [The empty `makeCloseButton`](#the-empty-makeclosebutton). |
 
 ## The instance surface
 
@@ -146,6 +146,42 @@ missing `L["STEP_START"]` answers `"STEP_START"` rather than `nil`, and the libr
 never gets a chance to resolve. From DebugLog minor 3 onward the resolver uses `rawget`, so a
 metatable-backed table no longer poisons the lookup — but passing a scoped table is still the
 contract, because it is the only form that is correct on every minor.
+
+## The empty `makeCloseButton`
+
+**No shipped consumer passes it, and that is a recorded decision rather than an oversight.** As of
+v1.5.0 the hook is exercised by nothing outside this library's own suite. It arrived at minor 4
+alongside `applySkin`, both defaulting to what minor 3 did, specifically so BankLedger and LootHistory
+could adopt the module without losing the 24×24 class-coloured × their consoles then wore. Both have
+since dropped it deliberately: Core minor 3 made the Ka0s edge the library's own default, at which
+point overriding the close button meant re-specifying what the library already drew. Each seam file
+carries an explicit note where the field used to be — `../BankLedger/core/DebugLogSetup.lua:111-116`
+and `../LootHistory/core/DebugLogSetup.lua:125-130` — and LootHistory records the drop as
+`LIBKA0S-18`/`-19`. `applySkin`, its twin, went the other way: two consumers, both still passing it,
+both for the reason it was added.
+
+The hook is **retained on purpose**, and not merely because `-1.0` forbids removing it. What it is
+for is a host whose console chrome is not Ka0s chrome at all — a close control different in *kind*,
+not in colour — and that host does not exist in this collection because every host in this collection
+is a Ka0s addon. A surface with no consumer inside a fleet that shares one visual standard is not
+evidence the surface is wrong; it is evidence the standard is doing its job, which is the same reason
+`applySkin` covers the whole chrome job for every case a Ka0s host has actually had.
+
+What follows for a reader is where the guarantee stops. The hook's behaviour is pinned by
+`tests/test_debuglog.lua:672`, `686`, `699`, `721`, `736` and `742` — the factory being called once
+per window, the `onClick` it is handed really hiding the console, a `nil` answer being survivable
+exactly as Core's own is, and the Copy/Clear offsets deriving from the returned button's width in
+both the wider-button and unmeasurable-width arms — with `:600` pinning the no-hook default on both
+windows. So what is fixed here is the library's side of the contract: what the factory is called
+with, what it may answer, and what the title bar does with either. What is *not* fixed by any host is
+the shape — nothing outside these cases has ever asked the library for a close button, so the field's
+ergonomics are pinned by the library's own assumptions about what such a host would want rather than
+by one. A first host arriving later should treat a misfit as a library gap on first contact, the same
+way `applySkin`'s second host did.
+
+Nothing needs doing about this. Pass nothing and both windows close with Core's ×; the zero is
+written down because an unrecorded decision is indistinguishable from a mistake, and a documented,
+tested, unused field otherwise reads as one to every reader who finds it.
 
 ## Compatibility
 

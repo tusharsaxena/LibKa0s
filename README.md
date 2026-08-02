@@ -47,7 +47,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | Major | What it is | Files | Current version |
 |---|---|---|---|
 | `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [3](docs/api/Core/version-3-docs.md) |
-| `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [6](docs/api/DebugLog/version-6-docs.md) |
+| `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [7](docs/api/DebugLog/version-7-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [5](docs/api/Slash/version-5-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [5.5.2](docs/api/Options/version-5.5.2-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [5.3](docs/api/Perf/version-5.3-docs.md) |
@@ -167,8 +167,8 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.4.0**: `Core = { Core = 3 }`,
-`DebugLog = { DebugLog = 6 }`, `Slash = { Slash = 5 }`,
+different vendored copy of each. As of **v1.5.0**: `Core = { Core = 3 }`,
+`DebugLog = { DebugLog = 7 }`, `Slash = { Slash = 5 }`,
 `Options = { Options = 5, OptionsWidgets = 5, OptionsScroll = 2 }`,
 `Perf = { Perf = 5, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.

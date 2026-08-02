@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.4.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.5.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -56,7 +56,12 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    exists.
 6. **Regenerate the case list**: `lua tests/run.lua --list` into `docs/test-cases.md`, keeping CRLF
    (see that file's own banner for the exact command).
-7. **Green gate again**, then commit and tag the repo semver.
+7. **Move the provenance template in this file to the version being released** — the templated line
+   under "Re-vendoring consumers" below, and the repo semver in the table at the top. It moves here,
+   before the tag, so the tagged commit already says what it bundles and step 8 is a copy rather than
+   a recollection. This is a numbered step because the alternative is remembering, and at v1.5.0 the
+   remembering did not happen: the template still read v1.4.0 while every consumer had been updated
+   correctly by hand. **Green gate again**, then commit and tag the repo semver.
 8. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
    includes bumping the version named in each consumer's README provenance line, in the same commit
    as the copy.
@@ -64,7 +69,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    wiring is not:
 
    ```
-   for a in AbsorbTracker BankLedger ConsumableMaster KickCD LootHistory PanelMaster prettychat; do
+   for a in AbsorbTracker BankLedger ConsumableMaster KickCD LootHistory PanelMaster prettychat WhatGroup; do
        grep -rnoE 'LibStub\("LibKa0s-[A-Za-z]+-1\.0", true\)' ../$a --include='*.lua' \
          | grep -v '/libs/' | grep -v '/tests/'
    done
@@ -93,10 +98,19 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/README.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.4.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.5.0 (MIT).
 
-The version in that template is **the one being released**, not a literal to copy — at v1.4.0 the
-line reads v1.4.0, and this template moves with it rather than being corrected after the fact.
+The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
+line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
+is step 7's job, and it is a step because at v1.5.0 it was a memory and the memory failed.
+
+What the template fixes is the **shape, not the wording**. A line that names the library and names
+the version satisfies it wherever it sits in a sentence: LootHistory and WhatGroup both phrase it
+mid-sentence (*"…it bundles [LibKa0s](…) v1.5.0"*) and both are correct. The gate greps `[Bb]undles`
+for precisely that reason — an earlier capital-anchored sweep returned nothing for LootHistory and
+reported it as carrying no provenance line at all, which it has always had. So both phrasings pass,
+and a consistency sweep that rewrites them to match the template above is spending effort to make
+two true lines look alike.
 
 That line is not decoration. prettychat's `tests/test_harness.lua` READS it, resolves the tag it
 names, and asserts both `libs/LibKa0s/` and `tests/_kit/` match the library repo **at that tag**,
@@ -199,7 +213,8 @@ which hosts' descriptors a change to one module can reach.
 | Module | Consumers | Where the wiring lives |
 |---|---|---|
 | `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, PanelMaster, prettychat, WhatGroup | `core/CoreSetup.lua` (all eight). prettychat is the **first host to pass `sep = ""`** — its `[PC]` tag bakes its own trailing space, so the default `" "` would double-space every line it prints. It also **declines the window-chrome half** for the same reason PanelMaster does: its only window is the debug console, which reaches Core's chrome from inside the DebugLog major. PanelMaster **declines the window-chrome half** (`SKIN`/`ApplySkin`/`MakeCloseButton`): its only standalone window is the debug console, which reaches Core's chrome from inside the DebugLog major |
-| `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, PanelMaster, prettychat, WhatGroup | `core/DebugLogSetup.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory, PanelMaster, prettychat, WhatGroup); ConsumableMaster: `modules/DebugLog.lua`. prettychat passes **none** of `skin` / `applySkin` / `makeCloseButton` and deleted a 424-line hand-written console to take the library's edge as-is — the first adoption where the Core-minor-3 default *was* the answer rather than something to override. **LootHistory is the second host on minor 4's `applySkin`/`makeCloseButton`** — it asserts the derived title-bar offsets rather than assuming them |
+| `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, PanelMaster, prettychat, WhatGroup | `core/DebugLogSetup.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory, PanelMaster, prettychat, WhatGroup); ConsumableMaster: `modules/DebugLog.lua`. prettychat passes **none** of `skin` / `applySkin` / `makeCloseButton` and deleted a 424-line hand-written console to take the library's edge as-is — the first adoption where the Core-minor-3 default *was* the answer rather than something to override. **LootHistory is the second host on minor 4's `applySkin` — and both it and BankLedger have since
+dropped `makeCloseButton`, which as of v1.5.0 has no consumer at all** — it asserts the derived title-bar offsets rather than assuming them |
 | `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, PanelMaster, prettychat, WhatGroup | prettychat: `settings/Slash.lua`, **plus a second lookup at `settings/Schema.lua`** — the same shape as AbsorbTracker's and found the same way, by the sweep above. `Schema.FormatValue` is the addon's ONE value renderer, and it has two consumers that are not both CLI surfaces: the descriptor's `format` hook and the `[Set]` debug trace at the write seam, so it lives beside the rows rather than in the slash file. prettychat is also the **second host on minor 5's `format` hook and the first to use it on a row type the library can already render** — the case this doc listed as untried: it doubles `\|` to `\|\|` so a Blizzard format string's colour escapes read as text instead of colouring the chat line, delegating to `lib.FormatValue` first so the empty-string `(none)` stays the library's. Its `parse` adapter exists for a **gap**, not an exotic type — see the note under the table. `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory, WhatGroup) — LootHistory is the **second host on minor 5's `format` hook**, for the same set-valued row shape BankLedger drove it for; ConsumableMaster: `core/SlashCommands.lua`. PanelMaster: `settings/Slash.lua`, and it is the **first host to pass a descriptor `L`** — a plain one-key table (`RESET_ALL`), so the override path is now exercised as well as the fallback; it also carries a `parse` adapter that up-cases enum input before delegating to `lib.ParseValue`. AbsorbTracker has a **second** lookup at `settings/Schema.lua`, stashed at file load so `NS.FormatSchemaValue` can call `lib.FormatValue(row, v)` — the seam every panel widget and every `/at set` renders through |
 | `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, PanelMaster, prettychat, WhatGroup | prettychat: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. It **declines `RestoreDefaults` / `RestoreAllDefaults`** — both are row-by-row over ~171 rows, which would run its `ApplyStrings` once per row and emit one `[Set]` line per row into a 500-line console buffer; its own batch resets stay, reached through `defaultsOnClick` so `CreatePanel`'s `OnDefault` forwarding still makes the footer control and the header button one body. Its per-string editor is a 40/60 three-row block that `RenderGrid` cannot express either (HALF or full width, no third ratio). LootHistory: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. BankLedger: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/Panel.lua`. PanelMaster: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, which **wraps `RenderField` and `EnsureScroll` on the instance** for its own open-dropdown registry — the first host to need either. WhatGroup: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, and it is the **second host to wrap instance members** — `SetRenderer` and `EnsureDefaultsButton`, so both the page body and the Defaults button build on the NEXT frame rather than synchronously inside `OnShow`. It is a taint fix that addon had already shipped: Blizzard's GameMenu / Logout flows can dispatch a settings canvas's `OnShow` inside a secure-execute chain. Wrapping on the instance is load-bearing for the same reason it was for PanelMaster — `SetRenderer`'s handler resolves `EnsureDefaultsButton` from the instance at call time |
 | `LibKa0s-Perf-1.0` | AbsorbTracker, KickCD, ConsumableMaster | `core/PerfSetup.lua` (first two); ConsumableMaster: `modules/PerfSetup.lua`. **Declined** by BankLedger (`LIBKA0S-17`), PanelMaster (`LIBKA0S-31`), prettychat (`LIBKA0S-12`) and WhatGroup (`LIBKA0S-15`), all on structural grounds — none has work that runs inside a combat-gated measurement window. WhatGroup declines on two independent reasons: no hot path at all (zero `OnUpdate`, zero tickers, zero repeating timers; the only code reachable in a combat-gated window is a roster handler that fires zero times on most pulls), **and** the suspend contract — it is a CAPTURE addon, so an inert arm means an LFG apply or an invite-accept inside the window is never recorded and the popup the player joined for silently does not appear. That second reason is LootHistory's, arrived at independently. prettychat is the strongest case of the three: a whole-repo sweep finds **zero** `RegisterEvent`, `OnUpdate`, `C_Timer` and tickers, so every bucket would read `0.000` by construction — and its `suspend` would have to restore Blizzard's own chat formats for the duration of the window, visibly flipping the player's chat mid-fight for a capture that can only report zero |

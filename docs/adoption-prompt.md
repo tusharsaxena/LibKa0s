@@ -32,7 +32,7 @@ two is a library gap.
 **A caution that comes out of BankLedger specifically.** All four v1.2.0 surfaces were built for one
 host, and three of them are still called by that host and nobody else. Inside a frozen `-1.0` major
 there is no deprecation available, so an assumption baked in against a single shape can only ever be
-worked around. If you are the second host to touch one of the surfaces listed under "Provisional
+worked around. If you are the second host to touch one of the surfaces listed under "Thinly-consumed
 surfaces" below, treat a misfit as a library gap on first contact rather than second.
 
 ---
@@ -323,7 +323,8 @@ today's hardcoded names exactly. **The window chrome no longer forces a decline.
 added `applySkin` and `makeCloseButton`, both defaulting to what minor 3 did, precisely so these two
 addons could keep their flat 1px `WHITE8X8` double border with its synthesized inner border and gold
 title tint and their 24×24 class-coloured close button while still adopting the module. BankLedger
-passes both and is the only host that does — see "Provisional surfaces". Take the printer and
+passed both, and so did LootHistory — but **both have since dropped `makeCloseButton`**, which today
+has no consumer at all; see "Thinly-consumed surfaces". Take the printer and
 `SafeToString` from Core; the guard half is a semantic no-op in both. The Core ordering trap is
 sharp: five files per repo capture `local print = NS.Print` at load, and the AceConsole reclaim reads
 `NS.Util.print`, so a seam that publishes only `NS.Print` is silently undone by that reclaim and the
@@ -455,7 +456,7 @@ to land once the other four are green.
     folder and break the gate for real. Add one line to the addon's README naming what it bundles:
 
     ```
-    Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.4.0 (MIT).
+    Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.5.0 (MIT).
     ```
 
     The version there is **whatever is being released**, not a literal to copy — read it out of
@@ -607,20 +608,35 @@ When it is a real, additive library change, do it in this order and do not skip 
    `../LibKa0s/docs/releasing.md`. It starts at AbsorbTracker and grows by one every time an addon
    completes this migration — so check it, do not assume it is still just the one.
 8. **Run each existing consumer's full suite** and confirm it is unchanged. This is the step that
-   proves your "additive" change was additive. At the time of writing: **AbsorbTracker 467**,
-   **KickCD 646**, **ConsumableMaster 559**, **BankLedger 685**, each 0 failed. If any of those moves
-   *while you are changing the library*, your change was not additive and you need to know before it
-   ships rather than after.
+   proves your "additive" change was additive. At the time of writing, each 0 failed:
+   **AbsorbTracker 469**, **BankLedger 687**, **ConsumableMaster 561**, **KickCD 648**,
+   **LootHistory 534**, **PanelMaster 609**, **prettychat 255**, **WhatGroup 415**. If any of those
+   moves *while you are changing the library*, your change was not additive and you need to know
+   before it ships rather than after.
 
-   **Run all four, and know which one is load-bearing for what you touched.** A surface with a single
-   consumer is proved additive by that consumer's suite and by nothing else — the other three stay
-   green through a regression in it, because they never call it. Everything v1.2.0 added is in that
-   position today and BankLedger is the one host that exercises it, which is why the fourth total
-   above is not a formality. Check "Provisional surfaces" before deciding a three-suite run was
-   enough.
+   Regenerate that roll call rather than copying it forward. The list itself is the thing that goes
+   stale — it named four suites for a long stretch during which the fleet grew to eight, which is a
+   half-fleet run dressed as a full one:
+
+   ```
+   for a in AbsorbTracker BankLedger ConsumableMaster KickCD LootHistory PanelMaster prettychat WhatGroup; do
+       printf '%-18s ' "$a"; (cd ../$a && lua tests/run.lua 2>&1 | tail -3 | tr -d '\n'); echo
+   done
+   ```
+
+   **Run all eight, and know which one is load-bearing for what you touched.** A surface with a single
+   consumer is proved additive by that consumer's suite and by nothing else — the other seven stay
+   green through a regression in it, because they never call it. `sliderCommit` and `pairWith` are in
+   that position today, held up by ConsumableMaster and prettychat respectively, which is why no
+   total above is a formality. The same arithmetic is what condemned the four-suite list this step
+   used to carry: `sep`, `pairWith` and the instance-member wrapping of `SetRenderer` /
+   `EnsureDefaultsButton` / `RenderField` / `EnsureScroll` are exercised **entirely** outside those
+   four suites; `applySkin` and the numeric-enum route have half their consumers there and the
+   `format` hook one of its three — so a regression in any of them ran green. Check
+   "Thinly-consumed surfaces" before deciding a partial run was enough.
 
    Read the CURRENT number from that addon's own `docs/test-cases.md` Totals table before you start,
-   and compare against your own before/after — do not trust the three above. They are a snapshot,
+   and compare against your own before/after — do not trust the eight above. They are a snapshot,
    they go stale every time an addon adds a test of its own for reasons that have nothing to do with
    you, and a stale figure here reads as a regression that is not one. (The 449 this line used to
    carry went stale exactly that way.)
@@ -752,37 +768,80 @@ cannot reach where you need it:
 If you find another, add it here in the same shape: what the contract cannot express, the file:line
 where it binds, and the issue tracking it.
 
-### Provisional surfaces — one consumer each, and treated as unsettled
+### Thinly-consumed surfaces — how many hosts stand behind each, and what is still unsettled
 
 A gap is a contract that cannot express what a host needs. These are the opposite failure: contracts
-that **can** express exactly one host's need, because exactly one host has ever used them. Every
-surface v1.2.0 added was driven by BankLedger, and three of the four are called by BankLedger and
-nobody else. `-1.0` is frozen additive-only, so there is no deprecation available inside it — an
-assumption baked in here can be worked around later but never renamed. If you are the second host to
-touch one of these, treat a misfit as a library gap on first contact.
+that **can** express what one or two hosts needed, because one or two hosts are all that have ever
+used them. Every surface v1.2.0 added was driven by BankLedger. `-1.0` is frozen additive-only, so
+there is no deprecation available inside it — an assumption baked in here can be worked around later
+but never renamed. Every entry below carries its consumer count as of v1.5.0, deliberately, so that
+the next drift shows up as a wrong number rather than as a heading nobody re-reads. If you are about
+to become the second host on a one-consumer surface — or the first on a zero-consumer one — treat a
+misfit as a library gap on first contact.
 
-- **`applySkin` / `makeCloseButton` (DebugLog minor 4).** One implementation behind them. The
-  contract is that you are handed a **fully built** frame with `frame.title` and `frame.divider`
-  already assigned; that it tolerates a missing divider is an accident of BankLedger's helper, not a
-  promise. If your chrome helper needs anything else on the frame, say so rather than reaching for a
-  global.
-- **The Slash `format` hook (Slash minor 5).** Documented to take precedence over `colorDecode`, and
-  **that precedence has never executed** — BankLedger passes no colour codecs, so no host has ever
-  set both. Treat the ordering as *documented but unexercised*: the first host to pass both should
-  assert it rather than assume it, and if the assertion is awkward to write, that is the signal the
-  ordering wants revisiting while it still can be. The second motivating case — prettychat's `|`
-  doubling, i.e. `format` applied to rows the library *can* already render — has not been tried
-  either. **prettychat has now tried it** — it doubles `\|` to `\|\|` on rows the library renders
-  perfectly well, delegating to `lib.FormatValue` first so only the string arm is post-processed and
-  the empty-string `(none)` case stays the library's. The documented precedence over `colorDecode` is
-  still unexercised: prettychat passes no colour codecs either, because it has no colour rows.
-- **The numeric-enum dropdown (OptionsWidgets minor 5).** The route is **inferred** from the presence
-  of a `values` list on a `type="number"` row, not opted into. Any existing number row that grows a
-  `values` key silently reclassifies from slider to dropdown, with no code change and no test
-  anywhere that would see it. KickCD's 31 number rows all carry min/max/step today; the first one to
-  gain a list flips. It has also never been rendered alongside `sliderCommit`, because the one host
-  with `sliderCommit` has no enum rows.
+- **`applySkin` (DebugLog minor 4) — two consumers: BankLedger, LootHistory.** The contract is that
+  you are handed a **fully built** frame with `frame.title` and `frame.divider` already assigned;
+  that it tolerates a missing divider is an accident of BankLedger's helper, not a promise. If your
+  chrome helper needs anything else on the frame, say so rather than reaching for a global. The
+  second-host instruction has already been **discharged** here: LootHistory *was* the second host,
+  and it asserted the derived title-bar offsets rather than assuming them — which is the shape that
+  turned this from one host's arrangement into a contract. A ninth host would be the third, not the
+  second.
+- **`makeCloseButton` (DebugLog minor 4) — zero consumers.** It shipped in the same minor as
+  `applySkin` and for the same hosts, and it is no longer the same story. Both hosts that once passed
+  it **dropped it deliberately** once Core minor 3 made the Ka0s edge the library's own default, at
+  which point overriding the close button meant re-specifying what the library already did. The
+  rationale is written into both seam files where the key used to be
+  (`../BankLedger/core/DebugLogSetup.lua:111-116`, `../LootHistory/core/DebugLogSetup.lua:125-130`)
+  and recorded at LootHistory's `LIBKA0S-18` / `-19`. The override path is still live code in a
+  frozen major and is exercised by the library's own suite, but its *shape* is now pinned by nothing
+  but the library's assumptions about what a host would want. If you are the host with non-Ka0s
+  chrome that wants it back, you are the first one, and a misfit is a library gap on contact.
+- **`skin` (DebugLog) — ZERO consumers**, the same state as `makeCloseButton` and reached the same
+  way. `DebugLog.lua:195` reads `type(d.skin) == "table" and d.skin or core.SKIN`, so a host that
+  passes nothing gets Core's table — and every host passes nothing. The 2026-08-02 audit recorded
+  this as one consumer on the strength of a grep that matched
+  `../BankLedger/modules/SessionWindow.lua:456`, which is a file-local
+  `local skin = (NS.Browser and NS.Browser.SKIN) or …` reading BankLedger's *own* skin table, not
+  the library's descriptor field. A grep for a bare key name finds locals; only reading the
+  descriptor tells you who passes one.
+- **`sliderCommit` (OptionsWidgets minor 4) — one consumer: ConsumableMaster**, at
+  `../ConsumableMaster/settings/Panel.lua:226`, with the rationale recorded beside it: the surface
+  exists at all so the Macro Bar page keeps its live drag.
+- **`pairWith` (OptionsWidgets) — one consumer: prettychat**, at
+  `../prettychat/settings/Panel.lua:77`, where the General page is drawn through `RenderRows` plus
+  this seam.
+- **The Slash `format` hook (Slash minor 5) — three consumers: BankLedger, LootHistory, prettychat.**
+  The second motivating case has been tried: prettychat doubles `\|` to `\|\|` on rows the library
+  renders perfectly well, delegating to `lib.FormatValue` first so only the string arm is
+  post-processed and the empty-string `(none)` case stays the library's. What is still unsettled is
+  the documented precedence over `colorDecode`, and this run establishes why it will stay that way.
+  The three hosts that pass `format` and the three that pass the colour codecs (AbsorbTracker,
+  ConsumableMaster, KickCD) are **disjoint sets** that partition six of the eight consumers; the
+  remaining two, PanelMaster and WhatGroup, pass neither. No host is anywhere near the boundary —
+  prettychat passes no codecs because it has **no colour rows at all**, and the three codec hosts
+  render nothing set-valued or escape-doubling that would want `format`. With no adoption targets
+  remaining there is no ninth consumer coming to supply the first host that passes both, so the
+  ordering will not be exercised by a host at all, and the library's own suite is the only place left
+  that can pin it. `tests/test_slash.lua` now does exactly that: a descriptor passing both, asserting
+  `format` wins. If a future host does pass both and the behaviour surprises it, that is a finding
+  about the ordering, not about the host.
+- **The numeric-enum dropdown (OptionsWidgets minor 5) — two consumers: BankLedger, LootHistory**
+  (`../BankLedger/settings/Schema.lua:76,83`, `../LootHistory/settings/Schema.lua:61,70`). The count
+  moved; the warning did not, and it is the reason this entry is here. The route is **inferred** from
+  the presence of a `values` list on a `type="number"` row (`LibKa0s/OptionsWidgets.lua:466`), not
+  opted into. Any existing number row that grows a `values` key silently reclassifies from slider to
+  dropdown, with no code change and no test anywhere that would see it. KickCD's 31 number rows all
+  carry min/max/step today; the first one to gain a list flips. It has also never been rendered
+  alongside `sliderCommit`: ConsumableMaster is the one `sliderCommit` host, has 22 number rows, and
+  **zero** carry a `values` list. And the inference itself remains untested by any host — both
+  consumers spell a `Dropdown` widget key on those rows *as well as* `values`, and the library reads
+  only `values`, so neither has ever exercised the route the way an unsuspecting number row would
+  reach it.
 
 The fourth v1.2.0 addition, `CreatePanel` stamping `OnCommit`/`OnRefresh`/`OnDefault`, is **not** in
-this list for the opposite reason: it is not opt-in, so all four consumers gained it at once. It is
-guarded in the library's own suite and in all four hosts.
+this list for the opposite reason: it is not opt-in, so every consumer gained it at once and all
+eight take Options. It is guarded in the library's own suite and in six of the eight hosts' suites;
+LootHistory and WhatGroup describe the `OnDefault` forwarder in their settings documents but name
+none of the three callbacks anywhere under `tests/`, which is worth knowing before you assume a
+change to that stamp would be caught fleet-wide.
