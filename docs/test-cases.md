@@ -452,8 +452,10 @@ badge and any count quoted in the docs must agree with it.
 - versioning: the changelog accounts for the version every file is at
 - versioning: every paired secondary file records which primary it attached to
 
-### test_kitsync.lua (2)
+### test_kitsync.lua (4)
 
+- kitsync: Kit.VERSION is a positive integer and reaches the exposed table
+- kitsync: the kit revision has an API document
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
 
@@ -472,5 +474,5 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
-| test_kitsync.lua | 2 |
-| **Total** | **415** |
+| test_kitsync.lua | 4 |
+| **Total** | **417** |

@@ -20,7 +20,8 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    are excluded. A consumer's is scoped too, and usually excludes `libs/` and `tests/`. 0/0 only
    means something if the files carrying the seam are inside the checked set, so confirm that before
    reading a clean run as a clean adoption.
-2. **Bump the minor of every file you changed.** All eight, by their exact constant names: `MINOR` in
+2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
+   `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All eight, by their exact constant names: `MINOR` in
    `Core.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in `Slash.lua`, `MINOR` in `Options.lua`,
    `WIDGETS_MINOR` in `OptionsWidgets.lua`, `SCROLL_MINOR` in `OptionsScroll.lua`, `MINOR` in
    `Perf.lua`, `PANEL_MINOR` in `PerfPanel.lua`. The secondary files carry their own name rather than
@@ -116,6 +117,13 @@ disagreement creates a fork to fix a fork that was not there.
 `libs/` is the ship payload and the kit must never be zipped. Under `tests/` it is already covered
 by the `- tests` entry every addon's `.pkgmeta` already carries, so adopting it needs no packaging
 change.
+
+The kit carries its own revision, `Kit.VERSION` at the top of `framework.lua`, exposed to suites as
+`KIT_VERSION`. It is **not** a LibStub minor and nothing negotiates on it — the gate below is still
+byte-identity — but it names which copy a consumer holds, and it names that copy's API document
+under [`api/testkit/`](api/testkit/). **Bump it on every released change to any file in `testkit/`,
+and write the document for the new number**; `tests/test_kitsync.lua` fails if the document for the
+live revision is missing, the same bargain `test_versioning.lua` strikes for the library's minors.
 
 ```
 cp -r testkit/. <Addon>/tests/_kit/

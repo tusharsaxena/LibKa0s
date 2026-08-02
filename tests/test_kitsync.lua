@@ -70,6 +70,29 @@ local function firstDiff(a, b)
   return nil
 end
 
+test("kitsync: Kit.VERSION is a positive integer and reaches the exposed table", function()
+  local v = T.KIT_VERSION
+  if type(v) ~= "number" or v < 1 or v % 1 ~= 0 then
+    fail("kit version: Kit.VERSION must be a positive integer, got " .. tostring(v)
+      .. " - it is set at the top of testkit/framework.lua and merged in by Kit.expose", 2)
+  end
+end)
+
+test("kitsync: the kit revision has an API document", function()
+  -- The same bargain test_versioning.lua strikes for the library's minors: a bump that lands
+  -- without its document leaves adopters with a version nothing describes. The kit is vendored to
+  -- six repos and its own README tells a reader to go to docs/api/ for the surface, so a missing
+  -- document is a dead pointer in six places at once.
+  local path = "docs/api/testkit/version-" .. tostring(T.KIT_VERSION) .. "-docs.md"
+  local f = io.open(path, "r")
+  if not f then
+    fail("kit version: Kit.VERSION is " .. tostring(T.KIT_VERSION) .. " but " .. path
+      .. " does not exist - a kit revision is not released until its API document is written "
+      .. "(see docs/api/README.md)", 2)
+  end
+  f:close()
+end)
+
 test("kitsync: testkit/ and tests/_kit/ hold the same set of files", function()
   local src = table.concat(listDir(SRC), ", ")
   local dst = table.concat(listDir(DST), ", ")

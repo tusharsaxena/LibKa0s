@@ -81,6 +81,24 @@ answers both "what does this version have?" and "when did I get it?".
 |---|---|---|---|
 | [5.3](./Perf/version-5.3-docs.md) | `Perf.lua` 5 · `PerfPanel.lua` 3 | v1.0.0 – v1.3.1 (every release) | **Current** |
 
+### `testkit`
+
+Not a LibStub major and never shipped — vendored to `<Addon>/tests/_kit/`, and versioned by a plain
+`Kit.VERSION` integer rather than by file minors, because the three files vendor as one folder and
+are never adopted separately. It is indexed here because the question it answers is the same one:
+*which copy is this consumer holding?*
+
+| Version | Files | Vendored to | Status |
+|---|---|---|---|
+| [1](./testkit/version-1-docs.md) | `framework.lua` · `loader.lua` · `mock_base.lua` · `README.md` | all six consumers | **Current** |
+
+The kit's compatibility rule is the one place this directory's model differs. The library negotiates
+skew — LibStub compares minors and the highest copy wins, so an older vendored copy is a *supported
+state* and its document describes a thing you may legitimately still be running. The kit does not
+negotiate: `tests/test_kitsync.lua` requires byte-identity, so a consumer that differs is **out of
+sync**, not on an older version. Its documents exist so a not-yet-re-vendored consumer can be
+reasoned about, never to make staying behind supported.
+
 ## Versions with no document
 
 Minors below the ones tabled above existed only on the way to `v1.0.0`, the first tag. **No consumer
@@ -119,7 +137,7 @@ adopter on an old copy reads what their copy actually does.
 |---|---|---|
 | [`../record-schema.md`](../record-schema.md) | The Perf capture record persisted to SavedVariables | **Clean break allowed** — schema 2 discarded schema 1 with no migration |
 | [`../releasing.md`](../releasing.md) | Version numbering, release order, the re-vendor rule, the Consumers table | — |
-| [`../../testkit/README.md`](../../testkit/README.md) | The shared headless test kit, vendored as `tests/_kit/` | Never ships; byte-identity enforced |
+| [`../../testkit/README.md`](../../testkit/README.md) | What the test kit *is* and how to vendor it — its surface is [above](#testkit) | Never ships; byte-identity enforced |
 
 The API is additive-only forever; the record schema is not. That is the difference between the two,
 and it is why they are separate documents rather than sections of one.
