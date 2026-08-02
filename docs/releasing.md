@@ -48,7 +48,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    wiring is not:
 
    ```
-   for a in AbsorbTracker BankLedger ConsumableMaster KickCD LootHistory; do
+   for a in AbsorbTracker BankLedger ConsumableMaster KickCD LootHistory PanelMaster; do
        grep -rnoE 'LibStub\("LibKa0s-[A-Za-z]+-1\.0", true\)' ../$a --include='*.lua' \
          | grep -v '/libs/' | grep -v '/tests/'
    done
@@ -169,11 +169,11 @@ which hosts' descriptors a change to one module can reach.
 
 | Module | Consumers | Where the wiring lives |
 |---|---|---|
-| `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory | `core/CoreSetup.lua` (all five) |
-| `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory | `core/DebugLogSetup.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory); ConsumableMaster: `modules/DebugLog.lua`. **LootHistory is the second host on minor 4's `applySkin`/`makeCloseButton`** — it asserts the derived title-bar offsets rather than assuming them |
-| `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory | `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory) — LootHistory is the **second host on minor 5's `format` hook**, for the same set-valued row shape BankLedger drove it for; ConsumableMaster: `core/SlashCommands.lua`. AbsorbTracker has a **second** lookup at `settings/Schema.lua`, stashed at file load so `NS.FormatSchemaValue` can call `lib.FormatValue(row, v)` — the seam every panel widget and every `/at set` renders through |
-| `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory | LootHistory: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. BankLedger: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/Panel.lua` |
-| `LibKa0s-Perf-1.0` | AbsorbTracker, KickCD, ConsumableMaster | `core/PerfSetup.lua` (first two); ConsumableMaster: `modules/PerfSetup.lua` |
+| `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, PanelMaster | `core/CoreSetup.lua` (all six). PanelMaster **declines the window-chrome half** (`SKIN`/`ApplySkin`/`MakeCloseButton`): its only standalone window is the debug console, which reaches Core's chrome from inside the DebugLog major |
+| `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, PanelMaster | `core/DebugLogSetup.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory, PanelMaster); ConsumableMaster: `modules/DebugLog.lua`. **LootHistory is the second host on minor 4's `applySkin`/`makeCloseButton`** — it asserts the derived title-bar offsets rather than assuming them |
+| `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, PanelMaster | `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory) — LootHistory is the **second host on minor 5's `format` hook**, for the same set-valued row shape BankLedger drove it for; ConsumableMaster: `core/SlashCommands.lua`. PanelMaster: `settings/Slash.lua`, and it is the **first host to pass a descriptor `L`** — a plain one-key table (`RESET_ALL`), so the override path is now exercised as well as the fallback; it also carries a `parse` adapter that up-cases enum input before delegating to `lib.ParseValue`. AbsorbTracker has a **second** lookup at `settings/Schema.lua`, stashed at file load so `NS.FormatSchemaValue` can call `lib.FormatValue(row, v)` — the seam every panel widget and every `/at set` renders through |
+| `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, PanelMaster | LootHistory: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. BankLedger: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/Panel.lua`. PanelMaster: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, which **wraps `RenderField` and `EnsureScroll` on the instance** for its own open-dropdown registry — the first host to need either |
+| `LibKa0s-Perf-1.0` | AbsorbTracker, KickCD, ConsumableMaster | `core/PerfSetup.lua` (first two); ConsumableMaster: `modules/PerfSetup.lua`. **Declined** by BankLedger (`LIBKA0S-17`) and PanelMaster (`LIBKA0S-31`), both on structural grounds — neither has work that runs inside a combat-gated measurement window |
 
 AbsorbTracker vendors to `libs/LibKa0s/` and is consumer #1 for all five. Its `settings/UnitPanel.lua`
 is the one non-obvious entry: it **decorates the library instance itself** — `NS.Helpers` *is* the
