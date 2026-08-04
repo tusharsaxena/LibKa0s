@@ -167,10 +167,10 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.5.0**: `Core = { Core = 3 }`,
-`DebugLog = { DebugLog = 7 }`, `Slash = { Slash = 5 }`,
-`Options = { Options = 5, OptionsWidgets = 5, OptionsScroll = 2 }`,
-`Perf = { Perf = 5, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
+different vendored copy of each. As of **v1.7.0**: `Core = { Core = 4 }`,
+`DebugLog = { DebugLog = 7 }`, `Slash = { Slash = 6 }`,
+`Options = { Options = 6, OptionsWidgets = 6, OptionsScroll = 3 }`,
+`Perf = { Perf = 6, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
 attached to which probe?" from in-game, once several addons each ship their own vendored copy.
