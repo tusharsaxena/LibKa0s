@@ -245,6 +245,56 @@ test("core: ApplySkin honours an explicit skin table", function()
   -- A skin with no innerBorder/title/divider keys leaves those calls unmade rather than raising.
   assertEqual(frame.innerBorder, nil)
 end)
+
+-- ── the stored-color reader ────────────────────────────────────────────────────────────────
+
+-- Four numbers joined, so a case reads as the color it asserts rather than as four arguments.
+local function rgba(...)
+  local r, g, b, a = core.RGBA(...)
+  return table.concat({ tostring(r), tostring(g), tostring(b), tostring(a) }, ",")
+end
+
+test("core: RGBA reads the keyed shape", function()
+  assertEqual(rgba({ r = 1, g = 0.5, b = 0.25, a = 0.75 }, 0, 0, 0, 1), "1,0.5,0.25,0.75")
+end)
+
+test("core: RGBA reads the positional shape", function()
+  -- What the Ka0s options color widget writes. The two shapes are both live in users'
+  -- SavedVariables across the collection, so one reader has to answer for both.
+  assertEqual(rgba({ 1, 0.5, 0.25, 0.75 }, 0, 0, 0, 1), "1,0.5,0.25,0.75")
+end)
+
+test("core: RGBA lets the keyed shape win every channel, never mixing the two", function()
+  -- The rule that makes the two shapes safe to hold at once. A per-channel `v.r or v[1]` fallback
+  -- would answer g = 0.5 here, silently assembling a color out of two different storage formats;
+  -- the presence of ANY named channel decides the shape for all four.
+  assertEqual(rgba({ r = 1, [2] = 0.5 }, 0, 0, 0, 1), "1,0,0,1")
+end)
+
+test("core: RGBA falls back per channel, so a three-element color keeps its default alpha", function()
+  assertEqual(rgba({ 0.2, 0.4, 0.6 }, 0, 0, 0, 1), "0.2,0.4,0.6,1")
+  assertEqual(rgba({ r = 0.2, g = 0.4, b = 0.6 }, 0, 0, 0, 0.3), "0.2,0.4,0.6,0.3")
+end)
+
+test("core: RGBA keeps a stored false rather than swallowing it", function()
+  -- Tested with `== nil`, not `or`. `or` would hand back the default here and quietly discard
+  -- whatever the host meant by storing false — the same class of bug as defaulting an empty string.
+  assertEqual(rgba({ r = false, g = 0, b = 0, a = 0 }, 1, 1, 1, 1), "false,0,0,0")
+end)
+
+test("core: RGBA returns the defaults unchanged for a non-table", function()
+  -- nil is the case that actually happens: a color the user has never set.
+  assertEqual(rgba(nil, 0.1, 0.2, 0.3, 0.4), "0.1,0.2,0.3,0.4")
+  assertEqual(rgba("#ffffff", 0.1, 0.2, 0.3, 0.4), "0.1,0.2,0.3,0.4")
+  assertEqual(rgba(7, 0.1, 0.2, 0.3, 0.4), "0.1,0.2,0.3,0.4")
+end)
+
+test("core: RGBA does not default the defaults", function()
+  -- Call sites disagree on what an absent channel means (0,0,0,1 for a chat echo, 1,1,1,1 for a
+  -- swatch, a per-widget tint elsewhere), so inventing a house default would recolor one of them.
+  assertEqual(rgba({}), "nil,nil,nil,nil")
+end)
+
 test("core: MakeCloseButton returns a button wired to onClick", function()
   local fired = 0
   local b = core.MakeCloseButton(T.mocks.UIParent, function() fired = fired + 1 end)

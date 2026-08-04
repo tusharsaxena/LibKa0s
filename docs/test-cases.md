@@ -6,7 +6,7 @@ badge and any count quoted in the docs must agree with it.
 
 **Generated — do not hand-edit.** Regenerate with `lua tests/run.lua --list > docs/test-cases.md`.
 
-### test_core.lua (21)
+### test_core.lua (28)
 
 - core: IsConcatSafe is false for a table.concat-hostile value, true for a plain one
 - core: SafeToString renders a secret as lib.SECRET and passes nil/booleans through
@@ -25,6 +25,13 @@ badge and any count quoted in the docs must agree with it.
 - core: ApplySkin tints a title and a divider when the frame carries them
 - core: ApplySkin tolerates a frame with neither a title nor a divider
 - core: ApplySkin honours an explicit skin table
+- core: RGBA reads the keyed shape
+- core: RGBA reads the positional shape
+- core: RGBA lets the keyed shape win every channel, never mixing the two
+- core: RGBA falls back per channel, so a three-element color keeps its default alpha
+- core: RGBA keeps a stored false rather than swallowing it
+- core: RGBA returns the defaults unchanged for a non-table
+- core: RGBA does not default the defaults
 - core: MakeCloseButton returns a button wired to onClick
 - core: MakeCloseButton returns nil when CreateFrame is unavailable
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
@@ -318,7 +325,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: BuildLandingPage tolerates a nil spec and an empty one
 - widgets: the landing page's text rows carry the same justify guard TextRow owns
 
-### test_perf_core.lua (52)
+### test_perf_core.lua (56)
 
 - lib: registers under its major with a schema and a default ring
 - lib: New requires a name, an sv global and a suspend/resume pair
@@ -331,6 +338,10 @@ badge and any count quoted in the docs must agree with it.
 - lib: Note accumulates calls, total and max
 - lib: Note tracks unrelated buckets independently
 - lib: Reset clears every bucket and both fps arms
+- lib: Open returns nil while the probe is off
+- lib: Close on a nil t0 is a silent no-op
+- lib: a real bracket records its elapsed ms to the named bucket
+- lib: Open/Close feed the same buckets P.Note does
 - lib: EncodeJSON emits object keys in sorted order
 - lib: EncodeJSON renders integral numbers without a decimal point
 - lib: EncodeJSON renders fractional numbers to four places
@@ -505,16 +516,16 @@ badge and any count quoted in the docs must agree with it.
 
 | Suite | Cases |
 |-------|------:|
-| test_core.lua | 21 |
+| test_core.lua | 28 |
 | test_debuglog.lua | 56 |
 | test_slash.lua | 79 |
 | test_options.lua | 63 |
 | test_options_widgets.lua | 78 |
-| test_perf_core.lua | 52 |
+| test_perf_core.lua | 56 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 4 |
-| **Total** | **459** |
+| **Total** | **470** |

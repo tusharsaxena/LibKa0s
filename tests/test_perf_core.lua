@@ -108,6 +108,54 @@ test("lib: Reset clears every bucket and both fps arms", function()
   assertEqual(p.__fpsArms().suspended.frames, 0, "suspended arm zeroed")
 end)
 
+-- ── the Open/Close bracket ──────────────────────────────────────────────────────────────────
+
+test("lib: Open returns nil while the probe is off", function()
+  -- The whole contract of an idle probe: one boolean test at the call site and nothing else. A
+  -- number here would mean every bracketed function was still paying for a reading nobody wants.
+  local p = Fixture.new()
+  T.assertFalse(p.on, "the gate starts off")
+  T.assertNil(p.Open(), "no reading is taken")
+end)
+
+test("lib: Close on a nil t0 is a silent no-op", function()
+  -- This is what lets a multi-exit function write one unconditional P.Close per exit instead of
+  -- wrapping each one in `if t0 then`. It must not raise, and it must not invent a bucket.
+  local p = Fixture.new()
+  p.Close(nil, "outer")
+  assertEqual(next(p.__buckets()), nil, "no bucket was created")
+end)
+
+test("lib: a real bracket records its elapsed ms to the named bucket", function()
+  local p = Fixture.new()
+  p.on = true
+  T.mocks.__profileMs = 100
+  local t0 = p.Open()
+  assertEqual(t0, 100, "Open reads the clock while the probe is on")
+  T.mocks.__profileMs = 112.5
+  p.Close(t0, "outer")
+  local b = p.__buckets().outer
+  assertEqual(b.calls, 1, "calls")
+  assertEqual(b.totalMs, 12.5, "the elapsed span, not the clock reading")
+  assertEqual(p.__buckets().inner, nil, "and only the bucket it was handed")
+end)
+
+test("lib: Open/Close feed the same buckets P.Note does", function()
+  -- The key set is untouched by the pair, which is what keeps a host's declared-bucket test honest
+  -- when it converts some call sites to brackets and leaves others on Note.
+  local p = Fixture.new()
+  p.Note("outer", 5)
+  p.on = true
+  T.mocks.__profileMs = 0
+  local t0 = p.Open()
+  T.mocks.__profileMs = 3
+  p.Close(t0, "outer")
+  local b = p.__buckets().outer
+  assertEqual(b.calls, 2, "one bucket, both spellings")
+  assertEqual(b.totalMs, 8, "totalMs")
+  assertEqual(b.maxMs, 5, "maxMs is still the peak")
+end)
+
 -- ── JSON encoding ───────────────────────────────────────────────────────────────────────────
 
 test("lib: EncodeJSON emits object keys in sorted order", function()
