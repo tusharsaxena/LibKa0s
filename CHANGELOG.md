@@ -10,6 +10,27 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.6.2 — 2026-08-04
+
+**No library file moved.** `testkit` revision **3 → 4**; `run-automated-tests.sh` only.
+
+### The manifest records all eight of `lizard`'s footer fields
+
+```
+Total nloc   Avg.NLOC  AvgCCN  Avg.token   Fun Cnt  Warning cnt   Fun Rt   nloc Rt
+      7532       6.5     1.7       45.9     1047            2      0.00    0.02
+```
+
+Revision 3 kept the totals and `AvgCCN` and dropped `Avg.NLOC`, `Avg.token`, `Fun Rt` and `nloc Rt`
+on the floor, which meant a run's analysis could only ever report totals.
+
+The averages are what make one run comparable to another **across a change in size**. A total that
+rose because the addon grew is a different fact from an average that rose because it got denser, and
+only the second is a complexity signal — so totals alone make a growing addon look like a degrading
+one, every release, until nobody reads the row. `suites.complexity` now carries `nloc`, `functions`,
+`avgNloc`, `avgCcn`, `maxCcn`, `avgToken`, `warnings`, `warnFunRatio`, `warnNlocRatio`, `bandFiles`
+and `overCapFiles`, and the console line reports them too.
+
 ## v1.6.1 — 2026-08-04
 
 **No library file moved.** `testkit` revision **2 → 3**; `run-automated-tests.sh` only.

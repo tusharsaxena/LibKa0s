@@ -10,9 +10,9 @@
 | Version | **3** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.6.1 |
-| Status | **Current** |
+| Status | **Superseded** by [version 4](version-4-docs.md) |
 | Supersedes | [version 2](version-2-docs.md) — two runner bug fixes; nothing in the Lua surface changed |
-| Superseded by | — |
+| Superseded by | [version 4](version-4-docs.md) — the manifest records all eight `lizard` footer fields |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `3` |
 
