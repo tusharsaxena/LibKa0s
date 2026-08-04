@@ -10,6 +10,32 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.6.3 — 2026-08-04
+
+**No library file moved.** `testkit` revision **4 → 5**; `run-automated-tests.sh` only. Three changes
+to `RESULTS.md`, all about what the trend table can be trusted to say.
+
+### The table carries size and averages, not just totals
+
+Run · Version · Lint w/e · **Files** · Tests · Perf · **NLOC** · **Funcs** · **Avg NLOC** ·
+**Avg CCN** · Max CCN · CCN warn · Verdict.
+
+An average without its total, or a total without its average, cannot be read across a change in
+size — which is the one thing a trend line exists to do.
+
+### A suite that was not selected renders as `—`, not as its zeroed counters
+
+`--suite lint` previously wrote `0/0` into the Tests column, indistinguishable from a full run that
+found no tests. The trend line would have carried that forever. `skip` (tool absent) and `—` (not
+asked for) are different facts about *why* a number is missing, and both differ from zero.
+
+### A changed column set no longer silently recreates the file
+
+The runner appends by matching the header. When it does not match — an older column set — it now
+warns and leaves the file alone, rather than starting a fresh table and dropping every previous row.
+That is the one failure a trend line cannot survive, and it would have happened on the first run
+after any future column change.
+
 ## v1.6.2 — 2026-08-04
 
 **No library file moved.** `testkit` revision **3 → 4**; `run-automated-tests.sh` only.

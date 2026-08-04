@@ -1,4 +1,4 @@
-# `testkit` — version 4
+# `testkit` — version 5
 
 > **This document is the source of truth for this version of the kit.** Anything else in this repo
 > that describes the kit's surface points here rather than restating it. It describes the contract
@@ -7,14 +7,14 @@
 | | |
 |---|---|
 | Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `run-automated-tests.sh`, `README.md` |
-| Version | **4** (`Kit.VERSION`, top of `framework.lua`) |
+| Version | **5** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.6.2 |
-| Status | **Superseded** by [version 5](version-5-docs.md) |
-| Supersedes | [version 3](version-3-docs.md) — the manifest records all eight `lizard` footer fields; nothing in the Lua surface changed |
-| Superseded by | [version 5](version-5-docs.md) — wider `RESULTS.md` table, honest subset rows, stale-header guard |
+| First released in | v1.6.3 |
+| Status | **Current** |
+| Supersedes | [version 4](version-4-docs.md) — wider `RESULTS.md` table, honest subset rows, stale-header guard |
+| Superseded by | — |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
-| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `4` |
+| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `5` |
 
 ## What this is, and what it is not
 
@@ -23,26 +23,23 @@ the source loader, the universal half of the WoW-API mock, and — new in this r
 consolidated automated-test runner. The Lua surface runs under plain `lua` from a repo root; the
 runner is a bash script invoked from the same place.
 
-**Nothing in the Lua surface changed between version 3 and version 4**, and no file was added or
-removed. The revision moved because `run-automated-tests.sh` changed, and the byte-identity gate
-compares content as well as the file set.
+**Nothing in the Lua surface changed between version 4 and version 5**, and no file was added or
+removed. Three changes to `RESULTS.md`, all about what the trend table can be trusted to say.
 
-**The manifest now records all eight fields of `lizard`'s footer**, not four:
+**The table carries size and averages, not just totals.** Columns are now Run, Version, Lint w/e,
+Files, Tests, Perf, NLOC, Funcs, Avg NLOC, Avg CCN, Max CCN, CCN warn, Verdict. An average without
+its total, or a total without its average, cannot be read across a change in size — which is exactly
+what a trend line is for.
 
-```
-Total nloc   Avg.NLOC  AvgCCN  Avg.token   Fun Cnt  Warning cnt   Fun Rt   nloc Rt
-      7532       6.5     1.7       45.9     1047            2      0.00    0.02
-```
+**A suite that was not selected renders as `—`, not as its zeroed counters.** A `--suite lint` run
+previously wrote `0/0` into the Tests column, indistinguishable from a full run that found no tests,
+and the trend line would have carried that lie forever. `skip` (tool absent) and `—` (not asked for)
+are different facts about why a number is missing, and both differ from zero.
 
-Revision 3 kept the totals and `AvgCCN` and dropped `Avg.NLOC`, `Avg.token`, `Fun Rt` and `nloc Rt`,
-which meant an analysis could only ever report totals. The averages are what make one run comparable
-to another **across a change in size**: a total that rose because the addon grew is a different fact
-from an average that rose because it got denser, and only the second is a complexity signal. Reporting
-totals alone makes a growing addon look like a degrading one, every release, until nobody reads the
-row.
-
-`suites.complexity` in `manifest.json` therefore carries `nloc`, `functions`, `avgNloc`, `avgCcn`,
-`maxCcn`, `avgToken`, `warnings`, `warnFunRatio`, `warnNlocRatio`, `bandFiles` and `overCapFiles`.
+**A changed column set no longer silently recreates the file.** The runner appends by matching the
+header; when it does not match, it now warns and leaves the file alone rather than starting a fresh
+table, because rewriting the header drops every previous row — the one thing a trend line must never
+do.
 
 ## `run-automated-tests.sh` — the consolidated automated-test runner
 
