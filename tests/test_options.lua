@@ -715,11 +715,13 @@ test("options: a page with no defaults action still has a callable, inert OnDefa
   rawget(ctx.panel, "OnDefault")()   -- must not raise, and must be the LIBRARY's, not the stub's
 end)
 
--- ── the landing-page layout constants and the `landing` descriptor field ────────────────────
+-- ── the landing-page layout constants, and what the shell does NOT do with them ─────────────
 --
--- Four constants and one descriptor field, promoted out of three hosts that each carried a private
--- Helpers.BuildMainContent over the same values. The body is O.BuildLandingPage (tested next door
--- in tests/test_options_widgets.lua); this is the shell's half.
+-- Four constants promoted out of three hosts that each carried a private Helpers.BuildMainContent
+-- over the same values. The body is O.BuildLandingPage (tested next door in
+-- tests/test_options_widgets.lua); the shell's half is that `d.buildMain` stayed the ONLY main-page
+-- seam. The promotion is a renderer a host may CALL — not a descriptor field the shell sniffs for
+-- and wires up on the host's behalf — so lib:New answers exactly what it answered at minor 5.
 
 test("options: the landing constants are published on lib.LAYOUT at the promoted values", function()
   -- The three hosts agreed on all four before the promotion. Changing one silently re-spaces every
@@ -738,12 +740,16 @@ test("options: LANDING_GAP_HEAD and SECTION_BOTTOM_SPACER are the same gap", fun
   assertEqual(lib.LAYOUT.LANDING_GAP_HEAD, lib.LAYOUT.SECTION_BOTTOM_SPACER)
 end)
 
-test("options: a descriptor with `landing` and no buildMain gets a landing page built for it",
+test("options: a host wires the landing body itself, through the buildMain it always had",
   function()
-  local O = Fixture.new{ landing = {
+  -- The supported route, and the only one. O.BuildLandingPage is an ordinary renderer, so a host
+  -- reaches it the same way it reaches any other main-page body.
+  local O
+  local spec = {
     notes = "A fixture.",
     sections = { { heading = "Slash Commands", rows = function() return { "/x help" } end } },
-  } }
+  }
+  O = Fixture.new{ buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end }
   O.CreateOptionsPanel()
   mocks.__mainPanel:__fire("OnShow")
 
@@ -755,35 +761,35 @@ test("options: a descriptor with `landing` and no buildMain gets a landing page 
   end
   local joined = table.concat(texts, "|")
   assertTrue(joined:find("Slash Commands|/x help", 1, true) ~= nil,
-    "the landing body drew through the shell's installed buildMain: " .. joined)
+    "the landing body drew through the host's own buildMain: " .. joined)
 end)
 
-test("options: a host's own buildMain wins over `landing`", function()
-  -- Additive-only means additive in BEHAVIOUR too: a descriptor that already had a buildMain must
-  -- render exactly what it always did, whatever else it now declares.
-  local built = 0
-  local O = Fixture.new{
-    buildMain = function() built = built + 1 end,
-    landing   = { notes = "never drawn" },
-  }
+test("options: the shell installs no main renderer of its own, whatever else the descriptor carries",
+  function()
+  -- The regression this pins: a shell that reads some OTHER descriptor field and installs a
+  -- renderer from it changes what lib:New DOES for a descriptor that never asked for one. A host's
+  -- unrecognised keys are the host's business, and an unrecognised key is not a request to draw.
+  local O = Fixture.new{ landing = {
+    notes    = "never drawn",
+    sections = { { heading = "Never Drawn", rows = function() return { "/x help" } end } },
+  } }
   O.CreateOptionsPanel()
+  local before = #O.AceGUI.__created
   mocks.__mainPanel:__fire("OnShow")
-  assertEqual(built, 1, "the host's callback ran")
-  for _, w in ipairs(O.AceGUI.__created) do
-    assertTrue(tostring(w.text) ~= "never drawn", "and the landing spec was never rendered")
-  end
+  assertEqual(#O.AceGUI.__created, before,
+    "nothing was rendered, and nothing raised — buildMain is the only main-page seam")
 end)
 
 test("options: the shell never writes buildMain onto the host's descriptor", function()
   -- The descriptor is the HOST's table. A library that fills fields in on it makes "what did I
   -- declare?" unanswerable from the host's own source, and two instances over one shared descriptor
   -- would each see the other's installation.
-  local _, rec = Fixture.new{ landing = { notes = "x" } }
+  local _, rec = Fixture.new()
   rec.instance.CreateOptionsPanel()
   assertNil(rec.d.buildMain)
 end)
 
-test("options: a descriptor with neither buildMain nor landing draws no main body", function()
+test("options: a descriptor with no buildMain draws no main body", function()
   local O = Fixture.new()
   O.CreateOptionsPanel()
   local before = #O.AceGUI.__created

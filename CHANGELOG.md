@@ -68,10 +68,13 @@ was already the seam it hangs off, so the copies were host-side only because the
   `LANDING_GAP_HEAD` (6) — the four constants the three hosts had already agreed on.
   `LANDING_GAP_HEAD` must stay equal to `SECTION_BOTTOM_SPACER`, which `O.Section` already emits,
   so the page does not draw a second gap under every heading. `tests/test_options.lua` pins that.
-- The descriptor gains one optional field, `landing`. When `buildMain` is **absent**, the shell
-  installs one over `O.BuildLandingPage`. A host wanting extra content below keeps its own
-  `buildMain` and calls `O.BuildLandingPage` as line one. Additive: a descriptor without `landing`
-  behaves exactly as it did at minor 5.
+- **The descriptor is unchanged.** A host reaches the landing page through the `buildMain(ctx)` it
+  already had — `buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end` — and a host wanting
+  extra content below calls `O.BuildLandingPage` as line one of its own body. The shell deliberately
+  does *not* sniff for a spec field and install a renderer on the host's behalf: that would change
+  what `lib:New` **does** rather than add to what it offers, and it would make "what draws my main
+  page?" unanswerable from the host's own source. `lib:New` answers exactly what it answered at
+  minor 5.
 
 ### `LibKa0s-Core-1.0` gains `lib.RGBA`
 
@@ -83,7 +86,8 @@ could render a color its own widget could not decode.
 `{ r =, g =, b =, a = }` or the positional `{ r, g, b, a }` shape. Whichever shape wins, wins for
 all four channels, so a `{ r = 1 }` cannot borrow its green from `c[2]`; each channel then falls
 back independently, so a three-element color still gets its alpha. Absence is tested with `== nil`
-rather than `or`, which is what makes a stored `0` survive. The defaults are per-channel
+rather than `or`, which is what makes a stored `false` survive — `0` was never at risk, since `0` is
+truthy in Lua and `(0 or 99)` is `0`. The defaults are per-channel
 parameters and are deliberately not defaulted — the call sites across the collection genuinely
 disagree, and inventing a house default would silently recolor one of them.
 
@@ -115,9 +119,9 @@ untouched.
 module-level dispatch tables, named file-locals and small builders — `applyBackdrop` /
 `ensureInnerBorder` / `applyInnerBorder` / `applyAccents`, `colorChannel`, `addFpsLines` /
 `addBucketLines` / `addNestingNote` / `stepState` / `armStates`, `startRow` / `startGroup` /
-`renderRowGuarded` / `shouldFirePair` / `shouldFireAfter`, `thumbOf` / `stepButtons` /
-`forceGutter`. Behavior is identical; the tables are built once at file load, so nothing on a hot
-path gained a per-call allocation.
+`drawRow` / `endGroup` / `takeOnce` / `renderRowGuarded`, `thumbOf` / `stepButtons` /
+`forceGutter`. Behavior is identical; the tables and the helpers are built once at file load, so
+nothing on a hot path gained a per-call allocation.
 
 ## v1.6.3 — 2026-08-04
 

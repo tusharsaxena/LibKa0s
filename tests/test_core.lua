@@ -228,6 +228,37 @@ test("core: ApplySkin tints a title and a divider when the frame carries them", 
   assertEqual(table.concat(drawn, ","), "0.24,0.24,0.27,0.85", "the divider is the grey line")
 end)
 
+test("core: ApplySkin lays the backdrop down before anything drawn on top of it", function()
+  -- The three stages are separate functions, so their ORDER is now a call site rather than the
+  -- reading order of one body — and nothing else asserts it. It is not cosmetic: SetBackdrop
+  -- REPLACES the frame's backdrop wholesale, so a stage that ran before it has its work discarded,
+  -- and the inner highlight is a child frame anchored inside the edge the backdrop defines. The
+  -- symptom in game is a window that loses its double edge and its gold title, which no headless
+  -- assertion on the final values would catch — every individual call still happened.
+  local order = {}
+  local frame = {
+    SetBackdrop            = function(self, b) order[#order + 1] = "backdrop"; self.backdrop = b end,
+    SetBackdropColor       = function() order[#order + 1] = "bg" end,
+    SetBackdropBorderColor = function() order[#order + 1] = "border" end,
+    points = {},
+    SetPoint = function(self, ...) self.points[#self.points + 1] = { ... } end,
+  }
+  frame.title   = { SetTextColor    = function() order[#order + 1] = "title" end }
+  frame.divider = { SetColorTexture = function() order[#order + 1] = "divider" end }
+
+  local realCreateFrame = T.mocks.CreateFrame
+  T.mocks.CreateFrame = function()
+    order[#order + 1] = "innerBorder"
+    return recorderFrame()
+  end
+  core.ApplySkin(frame)
+  T.mocks.CreateFrame = realCreateFrame
+
+  assertEqual(table.concat(order, " "),
+    "backdrop bg border innerBorder title divider",
+    "backdrop first, then the highlight inside it, then the accents on top")
+end)
+
 test("core: ApplySkin tolerates a frame with neither a title nor a divider", function()
   -- The copy window has a title and no divider; a perf panel has a title and no divider either.
   local frame = recorderFrame()

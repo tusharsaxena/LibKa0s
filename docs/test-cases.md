@@ -6,7 +6,7 @@ badge and any count quoted in the docs must agree with it.
 
 **Generated — do not hand-edit.** Regenerate with `lua tests/run.lua --list > docs/test-cases.md`.
 
-### test_core.lua (28)
+### test_core.lua (29)
 
 - core: IsConcatSafe is false for a table.concat-hostile value, true for a plain one
 - core: SafeToString renders a secret as lib.SECRET and passes nil/booleans through
@@ -23,6 +23,7 @@ badge and any count quoted in the docs must agree with it.
 - core: ApplySkin synthesises the inner highlight, exactly once
 - core: ApplySkin survives a frame whose metatable answers every key
 - core: ApplySkin tints a title and a divider when the frame carries them
+- core: ApplySkin lays the backdrop down before anything drawn on top of it
 - core: ApplySkin tolerates a frame with neither a title nor a divider
 - core: ApplySkin honours an explicit skin table
 - core: RGBA reads the keyed shape
@@ -96,7 +97,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: a close button with no measurable width falls back to the library's own
 - dbg: with no close button at all the offsets are still the minor-3 defaults
 
-### test_slash.lua (79)
+### test_slash.lua (80)
 
 - sl: an empty message prints the help index
 - sl: whitespace-only input is treated as empty
@@ -114,6 +115,7 @@ badge and any count quoted in the docs must agree with it.
 - sl: FormatKV is a gold key, ' = ', a white value, and no trailing colon
 - sl: FormatValue renders every schema type the library knows
 - sl: a number row with no fmt renders bare
+- sl: a row whose value does not fit its declared type falls through to the generic renderer
 - sl: FormatValue renders a secret as the sentinel on every formatting branch
 - sl: FormatValue reads a POSITIONAL colour as well as a named-key one
 - sl: a positional colour with a secret component still renders the sentinel
@@ -235,16 +237,16 @@ badge and any count quoted in the docs must agree with it.
 - options: a page with no defaults action still has a callable, inert OnDefault
 - options: the landing constants are published on lib.LAYOUT at the promoted values
 - options: LANDING_GAP_HEAD and SECTION_BOTTOM_SPACER are the same gap
-- options: a descriptor with `landing` and no buildMain gets a landing page built for it
-- options: a host's own buildMain wins over `landing`
+- options: a host wires the landing body itself, through the buildMain it always had
+- options: the shell installs no main renderer of its own, whatever else the descriptor carries
 - options: the shell never writes buildMain onto the host's descriptor
-- options: a descriptor with neither buildMain nor landing draws no main body
+- options: a descriptor with no buildMain draws no main body
 - options: a disabled bar parks the thumb, dims it, and disables both step buttons
 - options: an enabled bar tints the thumb white and enables both step buttons
 - options: a state change fires once, not once per FixScroll
 - options: a nameless scrollbar resolves no step buttons and still patches
 
-### test_options_widgets.lua (78)
+### test_options_widgets.lua (81)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -293,6 +295,8 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a `skipRender` row is left to the host and never drawn
 - widgets: RenderRows emits one Heading per group, in first-seen order
 - widgets: an afterGroup callback fires exactly once, after its group's last row
+- widgets: an afterGroup callback runs with its group's tail row already on the page
+- widgets: an afterGroup hook fires for a group's FIRST run only, when the group recurs
 - widgets: a pairWith partner attaches to the named row, is one-shot, and stays 50/50
 - widgets: a pairWith partner declines a row it would make three-wide
 - widgets: RenderRows leaves the caller's afterGroup / pairWith tables intact
@@ -314,6 +318,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: TextRow draws nothing and returns nil when there is no scroll to draw into
 - widgets: BuildLandingPage draws the logo block at its declared size, then a spacer
 - widgets: BuildLandingPage honours an explicit logoSize
+- widgets: a logo whose widget has no backing frame costs the logo, not the page
 - widgets: a spec with no logo draws no logo block
 - widgets: BuildLandingPage calls a notes FUNCTION at render time
 - widgets: an empty one-liner skips the notes Label AND its spacer
@@ -325,7 +330,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: BuildLandingPage tolerates a nil spec and an empty one
 - widgets: the landing page's text rows carry the same justify guard TextRow owns
 
-### test_perf_core.lua (56)
+### test_perf_core.lua (57)
 
 - lib: registers under its major with a schema and a default ring
 - lib: New requires a name, an sv global and a suspend/resume pair
@@ -365,6 +370,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: Save stamps the schema on the store
 - lib: Save trims the ring to ringMax, dropping the oldest
 - lib: a ring written under another schema is discarded, not converted
+- lib: FormatReport emits its sections in reading order
 - lib: FormatReport marks an unsampled arm rather than printing zeros
 - lib: FormatReport prints both arms and the delta when both ran
 - lib: FormatReport derives ms/s from the active seconds only
@@ -420,7 +426,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: cancelling a suspended run restores the host
 - lib: the stopwatch is driven per window
 
-### test_perf_panel.lua (40)
+### test_perf_panel.lua (42)
 
 - lib: before a run Start is the one offered step
 - lib: Start reads done while a run is in flight
@@ -432,6 +438,8 @@ badge and any count quoted in the docs must agree with it.
 - lib: finishing unlocks Report and Dump
 - lib: exactly one step is ready at any point in a run
 - lib: re-arming a completed experiment sends it back to busy
+- lib: re-arming Experiment B relocks Finish
+- lib: a step state is always one of the state words, never a value the run holds
 - lib: a window that caught no frames still counts as completed
 - lib: Reset clears completion, so a fresh run starts from step one
 - lib: the panel renders every step and tracks their states
@@ -516,16 +524,16 @@ badge and any count quoted in the docs must agree with it.
 
 | Suite | Cases |
 |-------|------:|
-| test_core.lua | 28 |
+| test_core.lua | 29 |
 | test_debuglog.lua | 56 |
-| test_slash.lua | 79 |
+| test_slash.lua | 80 |
 | test_options.lua | 63 |
-| test_options_widgets.lua | 78 |
-| test_perf_core.lua | 56 |
+| test_options_widgets.lua | 81 |
+| test_perf_core.lua | 57 |
 | test_perf_run.lua | 33 |
-| test_perf_panel.lua | 40 |
+| test_perf_panel.lua | 42 |
 | test_perf_command.lua | 17 |
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 4 |
-| **Total** | **470** |
+| **Total** | **478** |

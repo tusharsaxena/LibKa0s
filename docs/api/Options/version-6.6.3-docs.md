@@ -49,11 +49,21 @@ came from. Every primitive underneath it was already in this major (`EnsureScrol
 and `buildMain(ctx)` was already the seam the page hangs off. The copies were host-side only because
 the **body** was; the body is here now, so the constants followed it.
 
+`buildMain` stays the *only* main-page seam. `O.BuildLandingPage` is a renderer a host **calls** —
+
+    buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end
+
+— not a descriptor field the shell reads and wires up on the host's behalf. Installing a renderer
+the host never asked for would change what `lib:New` **does** for a descriptor rather than add to
+what it offers, and it would make "what draws my main page?" unanswerable from the host's own
+source. A host wanting extra content below the landing body calls `O.BuildLandingPage` as line one
+of its own `buildMain`.
+
 - **`OptionsWidgets.lua` minor 6** — two new instance members, `O.TextRow(ctx, text, opts)` and
   `O.BuildLandingPage(ctx, spec)`. See [The landing page](#the-landing-page).
 - **`Options.lua` minor 6** — `lib.LAYOUT` gains `LANDING_LOGO`, `LANDING_GAP_LOGO`,
-  `LANDING_GAP_DESC` and `LANDING_GAP_HEAD`, and the descriptor gains one optional field,
-  `landing`. When `buildMain` is **absent**, the shell installs one over `O.BuildLandingPage`.
+  `LANDING_GAP_DESC` and `LANDING_GAP_HEAD`. **The descriptor is unchanged**: a host reaches the
+  landing body through the `buildMain(ctx)` it already had.
 - **`OptionsScroll.lua` minor 3** — internal only. The always-shown scrollbar patch is now three
   named file-locals (the thumb, the step buttons, the gutter) instead of one run of guards, to bring
   it under the collection's complexity cap. Every call it makes and every widget it leaves behind
@@ -107,7 +117,6 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `validate` | function | no | O1 | Runs once, before the page builders. A host's schema-shape check. |
 | `onAceGUI` | function(AceGUI) | no | O1 | Handed the resolved AceGUI so the host can stash it (Ka0s standard §3.4) for its own page files. |
 | `buildMain` | function(ctx) | no | O1 | Draws the main page's body, on its first OnShow. |
-| `landing` | table | no | **O6** | A landing-page spec — `logo` / `logoSize` / `notes` / `sections`, see [The landing page](#the-landing-page). Used **only when `buildMain` is absent**: the shell then installs `buildMain = function(ctx) O.BuildLandingPage(ctx, d.landing) end`. A host that wants extra content below the landing body keeps its own `buildMain` and calls `O.BuildLandingPage` as line one. |
 | `colorDecode` | function(stored) | no | O1 | → `r, g, b, a`. Defaults to the `{r=,g=,b=,a=}` shape. |
 | `colorEncode` | function(r,g,b,a) | no | O1 | → stored. Defaults to the same. |
 | `sliderCommit` | string | no | O1 | `"change"` makes every slider commit on the drag as well as on release, throttled through `scheduleTimer`. Default is release-only; a single row overrides either way with `commitOn`. |

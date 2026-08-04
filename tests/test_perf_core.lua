@@ -350,6 +350,32 @@ end)
 
 -- ── report formatting ───────────────────────────────────────────────────────────────────────
 
+test("lib: FormatReport emits its sections in reading order", function()
+  -- The report is assembled by three separate section builders, so their order is a call site
+  -- rather than the reading order of one body — and every other case here searches the WHOLE
+  -- report for a substring, which passes however the sections are shuffled. The order is the
+  -- document's argument: the headline FPS delta the harness exists to produce, then the bucket
+  -- table that explains it, then the caveat about how to read that table. A nesting warning printed
+  -- above the buckets it warns about is advice with nothing yet to apply it to.
+  local p = Fixture.new()
+  local arms = p.__fpsArms()
+  arms.active.seconds, arms.active.frames = 10, 800
+  arms.suspended.seconds, arms.suspended.frames = 10, 1000
+  p.Note("outer", 4)
+  p.Note("inner", 1)
+  local lines = table.concat(p.FormatReport(p.BuildRecord("cap")), "\n")
+
+  local fps     = lines:find("active:", 1, true)
+  local delta   = lines:find("delta:", 1, true)
+  local buckets = lines:find("total ms", 1, true)     -- the bucket table's column header
+  local nesting = lines:find("do not sum", 1, true)
+
+  T.assertTrue(fps and delta and buckets and nesting, "all four landmarks are present")
+  T.assertTrue(fps < delta, "the arms come before the delta between them")
+  T.assertTrue(delta < buckets, "the FPS headline comes before the bucket table")
+  T.assertTrue(buckets < nesting, "and the nesting caveat comes after the table it qualifies")
+end)
+
 test("lib: FormatReport marks an unsampled arm rather than printing zeros", function()
   local p = Fixture.new()
   local lines = table.concat(p.FormatReport(p.BuildRecord()), "\n")

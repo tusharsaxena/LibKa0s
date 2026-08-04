@@ -169,20 +169,54 @@ local function startGroup(O, ctx, row, flushRow)
   ctx.lastGroup = row.group
 end
 
---- Does this row's pairWith partner fire now? Only when the path has one, it has not fired in this
---- render, and the row is currently the LONE widget on its line — attaching to a row that already
---- has two would make it three-wide and break the 50/50 split for the rest of the page.
-local function shouldFirePair(pairWith, firedPair, row, pendingCount)
-  return pairWith and row.path and pairWith[row.path] and not firedPair[row.path]
-     and pendingCount == 1
+--- Claim a host hook for `key`, or nil if there is none or it has already run this render.
+---
+--- The lookup and the marking are ONE step on purpose. RenderRows honours two hook tables — pairWith
+--- and afterGroup — and both are "fire at most once per render, and only if it actually fired";
+--- splitting the two halves is how a caller ends up marking a hook it never ran, or running one it
+--- already marked. `fired` is the LIBRARY's call-local ledger, never the host's table: see the note
+--- in O.RenderRows for why consuming the host's entries silently breaks a second render.
+local function takeOnce(hooks, fired, key)
+  if not (hooks and key) then return nil end
+  local hook = hooks[key]
+  if not hook or fired[key] then return nil end
+  fired[key] = true
+  return hook
 end
 
---- Does this group's afterGroup hook fire now? Only on the group's LAST row (the next row starts a
---- different group, or there is no next row), once per render.
-local function shouldFireAfter(afterGroup, firedAfter, row, nextRow)
-  return afterGroup and row.group
-     and (not nextRow or nextRow.group ~= row.group)
-     and afterGroup[row.group] and not firedAfter[row.group]
+--- Draw one schema row into the pending Flow line, then attach its pairWith partner if it has one.
+--- Returns the line and its widget count, because both advance and the caller decides on them.
+---
+--- The partner attaches only while the row is the LONE widget on its line: attaching to a line that
+--- already holds two would make it three-wide and break the 50/50 split for the rest of the page.
+--- A row whose render RAISED never counted, so it cannot pull a partner onto the line either.
+local function drawRow(O, ctx, row, pendingRow, pendingCount, pairWith, firedPair, printer)
+  if not pendingRow then pendingRow = startRow(O) end
+  if renderRowGuarded(printer, row.path, O.RenderField, ctx, row, pendingRow, HALF) then
+    pendingCount = pendingCount + 1
+  end
+  if pendingCount == 1 then
+    local pair = takeOnce(pairWith, firedPair, row.path)
+    if pair then
+      pair(ctx, pendingRow)
+      pendingCount = pendingCount + 1
+    end
+  end
+  return pendingRow, pendingCount
+end
+
+--- Close out a group on its LAST row — the next row opens a different group, or there is no next
+--- row — by running the host's afterGroup hook for it. The counterpart to startGroup, and the loop
+--- reads as the pair: open the group, draw the row, close the group.
+---
+--- The pending line is flushed FIRST. afterGroup draws buttons, and they belong on a fresh line
+--- rather than packed into the empty half of the group's tail row.
+local function endGroup(ctx, afterGroup, firedAfter, row, nextRow, flushRow)
+  if not (row.group and (not nextRow or nextRow.group ~= row.group)) then return end
+  local after = takeOnce(afterGroup, firedAfter, row.group)
+  if not after then return end
+  flushRow()
+  after(ctx)
 end
 
 -- ── the landing page ─────────────────────────────────────────────────────────────────────────
@@ -195,6 +229,14 @@ end
 --- The logo block. A full-width SimpleGroup with its layout suppressed, holding a texture anchored
 --- TOPLEFT at its native size, so the art renders pixel-exact and left-aligned regardless of how
 --- wide the panel is.
+---
+--- The `.frame` handle and the texture it hands back are both guarded, for the same reason every
+--- other widget touch in this file is: an AceGUI widget mock has no backing frame, and a
+--- CreateTexture that answers nil is the shape a stubbed one takes. It matters MORE here than
+--- elsewhere — BuildLandingPage runs under the renderer's pcall, so one raise on the logo prints
+--- RENDER_FAILED and costs the notes and every section too, i.e. the whole page for the sake of a
+--- picture. The group and its spacer are added either way, so a missing texture leaves a gap where
+--- the art goes rather than re-flowing everything under it.
 local function landingLogo(O, scroll, spec)
   if not spec.logo then return end
 
@@ -204,10 +246,13 @@ local function landingLogo(O, scroll, spec)
   group:SetFullWidth(true)
   group:SetHeight(size)
 
-  local tex = group.frame:CreateTexture(nil, "ARTWORK")
-  tex:SetTexture(spec.logo)
-  tex:SetSize(size, size)
-  tex:SetPoint("TOPLEFT", group.frame, "TOPLEFT", 0, 0)
+  local frame = group.frame
+  local tex   = frame and frame.CreateTexture and frame:CreateTexture(nil, "ARTWORK")
+  if tex then
+    tex:SetTexture(spec.logo)
+    tex:SetSize(size, size)
+    tex:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+  end
   scroll:AddChild(group)
 
   O.AddSpacer(scroll, L.LANDING_GAP_LOGO)
@@ -802,23 +847,13 @@ function lib.__AttachWidgets(O, d)
           flushRow()
         end
 
-        if not pendingRow then pendingRow = startRow(O) end
-        if renderRowGuarded(print, row.path, O.RenderField, ctx, row, pendingRow, HALF) then
-          pendingCount = pendingCount + 1
-        end
-        if shouldFirePair(pairWith, firedPair, row, pendingCount) then
-          pairWith[row.path](ctx, pendingRow)
-          firedPair[row.path] = true     -- one-shot, per RenderRows call
-          pendingCount = pendingCount + 1
-        end
+        pendingRow, pendingCount =
+          drawRow(O, ctx, row, pendingRow, pendingCount, pairWith, firedPair, print)
+
         if row.solo or pendingCount >= 2 then flushRow() end
       end
 
-      if shouldFireAfter(afterGroup, firedAfter, row, rows[i + 1]) then
-        flushRow()                 -- afterGroup buttons start on a fresh line
-        afterGroup[row.group](ctx)
-        firedAfter[row.group] = true -- one-shot, per RenderRows call
-      end
+      endGroup(ctx, afterGroup, firedAfter, row, rows[i + 1], flushRow)
     end
     flushRow()
     if scroll.DoLayout then scroll:DoLayout() end

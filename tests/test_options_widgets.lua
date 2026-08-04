@@ -584,6 +584,45 @@ test("widgets: an afterGroup callback fires exactly once, after its group's last
     "the callback landed between the two groups")
 end)
 
+test("widgets: an afterGroup callback runs with its group's tail row already on the page",
+  function()
+  -- The one thing the callback's POSITION means. afterGroup draws buttons, and they belong on a
+  -- fresh line under the group rather than packed into the empty right half of its last row — so
+  -- the pending line is flushed BEFORE the hook is called, not after. The neighbouring case counts
+  -- children at fire time, which still passes if the flush moves to after the call; this names the
+  -- widget that has to be down already. Master's third row, showTooltips, is the odd one left alone
+  -- on its line, so it is exactly the row a late flush would strand.
+  local O, rec, ctx = bench()
+  local sawTailRow
+  O.RenderSchema(ctx, "general", {
+    Master = function()
+      sawTailRow = Fixture.rowWithLabel(ctx.scroll, rec.byPath.showTooltips.label) ~= nil
+    end,
+  })
+  assertTrue(sawTailRow == true,
+    "the group's last row was flushed to the page before its afterGroup hook ran")
+end)
+
+test("widgets: an afterGroup hook fires for a group's FIRST run only, when the group recurs",
+  function()
+  -- What the library's one-shot ledger actually buys, and the only case that needs it: a schema
+  -- whose rows revisit a group name they already used. Every other guard is incidental — a hook
+  -- fires on a group's last row, and a contiguous group has exactly one of those, so a ledger-less
+  -- implementation passes every contiguous case in this file. Here "Fill" ends twice, and the host
+  -- must still get one set of buttons rather than two.
+  local O, rec, ctx = bench()
+  local fired = 0
+  local rows = {
+    { path = "barWidth",     type = "number", group = "Fill", label = "W", min = 1, max = 9, step = 1 },
+    { path = "barHeight",    type = "number", group = "Size", label = "H", min = 1, max = 9, step = 1 },
+    { path = "useClassColor", type = "bool",  group = "Fill", label = "C" },
+  }
+  rec.chat = {}
+  O.RenderRows(ctx, rows, { Fill = function() fired = fired + 1 end })
+  assertEqual(fired, 1, "the hook is one-shot per render, not once per run of the group")
+  assertEqual(table.concat(rec.chat, "\n"), "", "and no row failed on the way")
+end)
+
 test("widgets: a pairWith partner attaches to the named row, is one-shot, and stays 50/50",
   function()
   -- The production site is a session-only checkbox riding beside a schema bool. It only works when
@@ -871,6 +910,40 @@ test("widgets: BuildLandingPage honours an explicit logoSize", function()
   local O, _, ctx = bench()
   O.BuildLandingPage(ctx, { logo = "x.tga", logoSize = 128 })
   assertEqual(ctx.scroll.children[1].height, 128)
+end)
+
+test("widgets: a logo whose widget has no backing frame costs the logo, not the page", function()
+  -- The logo is the one block here that reaches THROUGH the AceGUI widget to a real frame handle
+  -- and calls WoW texture methods on it. Every other widget touch in this file is guarded, and this
+  -- one has more riding on it than any of them: BuildLandingPage runs under the renderer's pcall,
+  -- so a raise on the logo is caught, printed as RENDER_FAILED, and the notes and every section
+  -- never draw. A missing picture must not cost the page it decorates.
+  --
+  -- Driven by handing the factory a SimpleGroup with no `.frame` at all, which is the shape a
+  -- widget mock takes and the shape a widget released mid-layout takes in game.
+  local O, _, ctx = bench()
+  local realCtor = O.AceGUI.WidgetRegistry.SimpleGroup
+  O.AceGUI:RegisterWidgetType("SimpleGroup", function()
+    local w = T.mocks.__makeAceGUIWidget("SimpleGroup")
+    w.frame = nil
+    return w
+  end)
+
+  local ok, err = pcall(O.BuildLandingPage, ctx, {
+    logo     = "x.tga",
+    notes    = "the one-liner",
+    sections = { { heading = "Slash Commands", rows = function() return { "/x help" } end } },
+  })
+  O.AceGUI:RegisterWidgetType("SimpleGroup", realCtor)
+
+  assertTrue(ok, "the logo block must not raise on a frameless widget: " .. tostring(err))
+  local texts = {}
+  for _, child in ipairs(ctx.scroll.children) do
+    if child.type == "Label" or child.type == "Heading" then texts[#texts + 1] = tostring(child.text) end
+  end
+  local joined = table.concat(texts, "|")
+  assertTrue(joined:find("the one-liner", 1, true) ~= nil, "the notes still drew: " .. joined)
+  assertTrue(joined:find("/x help", 1, true) ~= nil, "and so did the sections: " .. joined)
 end)
 
 test("widgets: a spec with no logo draws no logo block", function()

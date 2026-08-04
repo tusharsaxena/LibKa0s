@@ -91,8 +91,10 @@ The rules, in order:
 3. Otherwise the positional shape.
 4. Each channel falls back **independently**, so a three-element color still gets its alpha.
 
-Absence is tested with `== nil`, not `or`. That is what makes a stored `0` survive: `or` would
-swallow it and hand back the default.
+Absence is tested with `== nil`, not `or`. That is what makes a stored `false` survive: `or` would
+swallow it and hand back the default. A stored `0` was never at risk: `0` is **truthy** in Lua, so
+`(0 or 99)` evaluates to `0` and the `or` chain this replaced already returned it. `false` and `nil`
+are the only two values `or` swallows.
 
 The four defaults are **per-channel parameters and are deliberately not defaulted here.** The call
 sites across the collection genuinely disagree — `0,0,0,1` for a chat echo, `1,1,1,1` for a swatch,

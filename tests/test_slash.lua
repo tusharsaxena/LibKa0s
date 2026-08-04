@@ -134,6 +134,27 @@ test("sl: a number row with no fmt renders bare", function()
   assertEqual(slash.FormatValue({ type = "number" }, 42), "42")
 end)
 
+test("sl: a row whose value does not fit its declared type falls through to the generic renderer",
+  function()
+  -- FormatValue dispatches on row.type through a table of formatters, and a formatter handed
+  -- something it cannot render returns nil to fall THROUGH — which is what the old if-chain did by
+  -- simply not matching. That distinction is invisible for a value of the expected shape, and these
+  -- cases are what hold it: a formatter answering its own sentinel, or its own tostring, instead of
+  -- declining would swallow the fall-through and nothing else here would notice.
+  --
+  -- Not hypothetical. A row's declared type is what the schema SAYS; the value is whatever the
+  -- host's `get` actually returns, and the two disagree while a setting is mid-migration between
+  -- shapes — the exact moment someone reads the value off the CLI to find out what is stored.
+  assertEqual(slash.FormatValue({ type = "color" }, "not-a-table"), "not-a-table",
+    "a color row holding a plain string renders the string")
+  assertEqual(slash.FormatValue({ type = "color" }, 7), "7",
+    "and one holding a number renders the number")
+  assertEqual(slash.FormatValue({ type = "string" }, "text"), "text",
+    "a non-empty string is the generic renderer's answer, not the string formatter's")
+  assertEqual(slash.FormatValue({ type = "sometype" }, "text"), "text",
+    "and a row type the library has never heard of reaches it too")
+end)
+
 -- A stand-in for a WoW combat "secret" value, the same shape the Core suite uses: `..` succeeds on
 -- it (a real secret propagates silently) while `table.concat` refuses it, which is what the seam
 -- probes. A settings value is *supposed* to be an ordinary stored scalar; these cases exist because

@@ -127,12 +127,12 @@ lib.STRINGS = {
 ---   validate()                 optional. Runs once, before the page builders.
 ---   onAceGUI(AceGUI)           optional. Handed the resolved AceGUI so the host can stash it
 ---                              (Ka0s standard §3.4) for its own page files.
----   buildMain(ctx)             optional. Draws the main page's body on its first OnShow.
----   landing        table       optional. A landing-page spec (logo / notes / sections — see
----                              O.BuildLandingPage). When `buildMain` is ABSENT, the shell installs
----                              one over this. A host that wants extra content below the landing
----                              body keeps its own buildMain and calls O.BuildLandingPage itself as
----                              line one.
+---   buildMain(ctx)             optional. Draws the main page's body on its first OnShow. A host
+---                              that wants the shared landing page writes
+---                              `buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end`
+---                              itself — the shell reads no other field and installs no renderer of
+---                              its own, so what draws the main page is answerable from the host's
+---                              own source.
 ---   colorDecode(stored)        optional. -> r, g, b, a. Defaults to the {r=,g=,b=,a=} shape.
 ---   colorEncode(r, g, b, a)    optional. -> stored. Defaults to the same.
 ---   debug(tag, fmt, ...)       optional. Developer log line.
@@ -557,16 +557,13 @@ function lib:New(d)
     -- it through SetRenderer rather than a private flag also gives the main page the combat guard
     -- and the dirty-re-render, which it had neither of.
     --
-    -- A descriptor carrying `landing` and no buildMain gets one built over O.BuildLandingPage. The
-    -- host's own callback always wins, and the closure is built here rather than written onto `d`:
-    -- the descriptor is the HOST's table, and a library that mutates it makes "what did I declare?"
-    -- unanswerable from the host's own source.
-    local buildMain = d.buildMain
-    if buildMain == nil and type(d.landing) == "table" then
-      buildMain = function(ctx) O.BuildLandingPage(ctx, d.landing) end
-    end
-    if type(buildMain) == "function" then
-      O.SetRenderer(mainCtx, buildMain)
+    -- d.buildMain is the ONLY main-page seam. O.BuildLandingPage is a renderer a host may call from
+    -- its own buildMain; the shell does not sniff the descriptor for a spec and wire one up on the
+    -- host's behalf. A shell that installs a renderer the host never asked for makes "what draws my
+    -- main page?" unanswerable from the host's own source, and it is a change to what lib:New DOES
+    -- rather than an addition to what it offers.
+    if type(d.buildMain) == "function" then
+      O.SetRenderer(mainCtx, d.buildMain)
     end
 
     mainCategory   = Settings.RegisterCanvasLayoutCategory(mainCtx.panel, d.parentTitle)

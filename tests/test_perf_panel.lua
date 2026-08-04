@@ -153,6 +153,57 @@ test("lib: re-arming a completed experiment sends it back to busy", function()
   p.Stop()
 end)
 
+test("lib: re-arming Experiment B relocks Finish", function()
+  -- Finish must not offer to close a run whose second arm is back in flight. Nothing else asserts
+  -- Finish's state during a re-arm, and TWO independent mechanisms hold it — re-arming clears
+  -- `completed[arm]`, and Finish's ready rule carries its own `not bBusy` term. Either alone is
+  -- enough, which is exactly why this is pinned on the OUTCOME rather than on one of them: removing
+  -- either mechanism breaks nothing until the day someone removes the other, and then Finish reads
+  -- ready mid-experiment. Finish is also the one step with no busy state of its own to fall into.
+  local p = Fixture.new()
+  p.Start("panel")
+  p.Measure("a"); tick(p, 0.5, true); tick(p, 0.5, false)
+  p.Measure("b"); tick(p, 0.5, true); tick(p, 0.5, false)
+  assertEqual(p.Progress().finish, "ready", "with B done, finish is the next step")
+
+  p.Measure("b")
+  assertEqual(p.Progress().measureB, "busy", "B is being redone")
+  assertEqual(p.Progress().finish, "locked", "so finish is withdrawn until it lands again")
+  finish(p)
+end)
+
+test("lib: a step state is always one of the state words, never a value the run holds", function()
+  -- The three arms are derived from run flags by TRUTHINESS, and those flags are not all booleans:
+  -- P.armed and P.recording hold arm NAMES ("active" / "suspended"). A derivation written as an
+  -- `and`/`or` chain hands back whichever operand it stopped on, so the wrong shape leaks a run
+  -- flag out as a state — and the panel colours by exact string, so a leaked "active" paints as
+  -- locked rather than erroring anywhere a test would see it.
+  local allowed = {
+    ready = true, locked = true, busy = true, done = true, used = true, cancel = true,
+  }
+  local p = Fixture.new()
+  local function assertAllWords(when)
+    for key, state in pairs(p.Progress()) do
+      assertTrue(allowed[state] == true,
+        ("%s: %s read %q, which is not a state word"):format(when, key, tostring(state)))
+    end
+  end
+
+  assertAllWords("before a run")
+  p.Start("panel")
+  assertAllWords("run started")
+  p.Measure("a")
+  assertAllWords("A armed")
+  tick(p, 0.5, true); tick(p, 0.5, false)
+  assertAllWords("A done")
+  p.Measure("b")
+  assertAllWords("B armed")
+  tick(p, 0.5, true); tick(p, 0.5, false)
+  assertAllWords("B done")
+  finish(p)
+  assertAllWords("run finished")
+end)
+
 test("lib: a window that caught no frames still counts as completed", function()
   -- Completion is tracked explicitly rather than inferred from frame counts: the step happened,
   -- whatever it caught.
