@@ -181,7 +181,11 @@ keeps working verbatim — it simply keeps its own landing-page body until it is
 | `O.TextRow(ctx, text, opts)` | A full-width left-justified Label, owning the `w.label` / `SetJustifyH` / `SetFontObject` guard pair once instead of per widget per host. |
 | `O.BuildLandingPage(ctx, spec)` | The whole landing body — logo, one-liner, then a heading and its rows per section — over `EnsureScroll` / `ClearScroll` / `AddSpacer` / `Section`, all of which are already here. |
 | `lib.LAYOUT.LANDING_LOGO` / `LANDING_GAP_LOGO` / `LANDING_GAP_DESC` / `LANDING_GAP_HEAD` | The block sizing three hosts had each declared verbatim. |
-| descriptor `landing` | A landing spec the shell renders when `buildMain` is absent. A descriptor without it behaves exactly as it does here. |
+
+**The descriptor is unchanged.** 6.6.3 adds no field to it: `buildMain(ctx)` is still the only
+main-page seam, and a host reaches the shared landing body by writing
+`buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end` itself. The shell reads no landing
+spec off the descriptor and installs no renderer of its own, at this version or at 6.6.3.
 
 `OptionsScroll.lua` moves 2 → 3 with **no** surface change: `PatchAlwaysShowScrollbar` is
 internally three named file-locals now and patches exactly the same widgets in the same order.

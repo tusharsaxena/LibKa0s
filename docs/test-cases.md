@@ -97,7 +97,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: a close button with no measurable width falls back to the library's own
 - dbg: with no close button at all the offsets are still the minor-3 defaults
 
-### test_slash.lua (80)
+### test_slash.lua (81)
 
 - sl: an empty message prints the help index
 - sl: whitespace-only input is treated as empty
@@ -114,6 +114,7 @@ badge and any count quoted in the docs must agree with it.
 - sl: no rendered line ends in a colon
 - sl: FormatKV is a gold key, ' = ', a white value, and no trailing colon
 - sl: FormatValue renders every schema type the library knows
+- sl: a color channel the stored table omits falls back per channel, alpha to 1 and RGB to 0
 - sl: a number row with no fmt renders bare
 - sl: a row whose value does not fit its declared type falls through to the generic renderer
 - sl: FormatValue renders a secret as the sentinel on every formatting branch
@@ -246,7 +247,7 @@ badge and any count quoted in the docs must agree with it.
 - options: a state change fires once, not once per FixScroll
 - options: a nameless scrollbar resolves no step buttons and still patches
 
-### test_options_widgets.lua (81)
+### test_options_widgets.lua (82)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -294,6 +295,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a `solo` row flushes the row in progress rather than joining it
 - widgets: a `skipRender` row is left to the host and never drawn
 - widgets: RenderRows emits one Heading per group, in first-seen order
+- widgets: a group's heading lands BELOW the previous group's tail row, not above it
 - widgets: an afterGroup callback fires exactly once, after its group's last row
 - widgets: an afterGroup callback runs with its group's tail row already on the page
 - widgets: an afterGroup hook fires for a group's FIRST run only, when the group recurs
@@ -526,9 +528,9 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | test_core.lua | 29 |
 | test_debuglog.lua | 56 |
-| test_slash.lua | 80 |
+| test_slash.lua | 81 |
 | test_options.lua | 63 |
-| test_options_widgets.lua | 81 |
+| test_options_widgets.lua | 82 |
 | test_perf_core.lua | 57 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 42 |
@@ -536,4 +538,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 4 |
-| **Total** | **478** |
+| **Total** | **480** |

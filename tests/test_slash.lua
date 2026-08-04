@@ -130,6 +130,25 @@ test("sl: FormatValue renders every schema type the library knows", function()
   assertEqual(slash.FormatValue(row("showOnlyInCombat"), nil), "nil")
 end)
 
+test("sl: a color channel the stored table omits falls back per channel, alpha to 1 and RGB to 0",
+  function()
+  -- The per-channel defaults used to be inline `or 0` / `or 1` literals in FormatValue and are a
+  -- data table now, one positional triple per channel. Nothing else pins the numbers, and in a
+  -- triple a wrong default is one digit among twelve rather than a visible edit to a named line —
+  -- so an alpha that regressed to 0 would ship, and every color on the CLI would read as fully
+  -- transparent while looking perfectly well-formed.
+  --
+  -- Alpha is the channel that matters: a three-element color is the shape the Ka0s options widget
+  -- writes, so "no fourth element" is the common case, not the corner one. RGB defaulting to 0 is
+  -- pinned alongside it because the two defaults sit in the same table and are edited together.
+  assertEqual(slash.FormatValue({ type = "color" }, { 0.1, 0.2, 0.3 }),
+    "{0.10, 0.20, 0.30, 1.00}", "a three-element positional color is opaque, not transparent")
+  assertEqual(slash.FormatValue({ type = "color" }, { r = 0.1, g = 0.2, b = 0.3 }),
+    "{0.10, 0.20, 0.30, 1.00}", "and so is a keyed one with no alpha")
+  assertEqual(slash.FormatValue({ type = "color" }, { a = 0.4 }),
+    "{0.00, 0.00, 0.00, 0.40}", "the RGB channels default to 0, each on its own")
+end)
+
 test("sl: a number row with no fmt renders bare", function()
   assertEqual(slash.FormatValue({ type = "number" }, 42), "42")
 end)

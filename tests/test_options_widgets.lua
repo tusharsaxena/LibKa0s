@@ -567,6 +567,35 @@ test("widgets: RenderRows emits one Heading per group, in first-seen order", fun
   assertEqual(table.concat(headings, ","), "Size,Fill")
 end)
 
+test("widgets: a group's heading lands BELOW the previous group's tail row, not above it",
+  function()
+  -- startGroup's half of the contract endGroup's tail-row case pins for afterGroup, and the only
+  -- thing the heading's POSITION means. A group's last row is usually still PENDING when the next
+  -- group opens — Master's third row, showTooltips, is the odd one left alone on its line — so the
+  -- pending line is flushed BEFORE O.Section runs. Flush after instead and the "Performance"
+  -- heading is added to the scroll first, so it renders above a widget that belongs above IT.
+  --
+  -- No afterGroup hook here on purpose: endGroup returns without flushing when the group has none,
+  -- which leaves the ordering entirely to startGroup. Counting children at heading time would still
+  -- pass a swapped pair; this names the widget that has to be down already.
+  local O, rec, ctx = bench()
+  O.RenderSchema(ctx, "general")
+
+  local tailRowAt, headingAt
+  for i, child in ipairs(ctx.scroll.children) do
+    if child.type == "Heading" and child.text == "Performance" then
+      headingAt = headingAt or i
+    end
+    for _, w in ipairs(child.children or {}) do
+      if w.labelText == rec.byPath.showTooltips.label then tailRowAt = tailRowAt or i end
+    end
+  end
+  assertTrue(tailRowAt ~= nil, "the Master group's tail row reached the page")
+  assertTrue(headingAt ~= nil, "and the next group's heading did too")
+  assertTrue(tailRowAt < headingAt,
+    "the tail row was flushed before the heading was emitted, not after")
+end)
+
 test("widgets: an afterGroup callback fires exactly once, after its group's last row", function()
   local O, _, ctx = bench()
   local firedAfter = {}
