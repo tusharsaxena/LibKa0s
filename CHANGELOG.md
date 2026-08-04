@@ -10,6 +10,25 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## Unreleased
+
+**testkit revision 7.** Two runner changes, neither urgent for a consumer.
+
+The runner now works in a repo with **no `.toc`**. It located the addon by globbing `./*.toc` and
+exited when it found none, so the repo that owns this kit could never run it — which is exactly why
+two runner bugs survived five revisions: the only repo whose suite runs the kit against itself was
+the one repo that could not exercise the kit's output path. A library has no `.toc` by definition,
+so identity falls back to the repo directory and version to the newest semver tag. LibKa0s now
+produces its own automated-test record like every consumer.
+
+The luacheck skip hint said `pipx install luacheck`. luacheck is a **Lua** package —
+`sudo luarocks install luacheck` — and the wrong hint had already been copied into two of the
+plugin's command specs. `pipx install lizard` is correct and unchanged.
+
+Every consuming addon has a `.toc`, so the first change is a no-op for all of them and the second
+only alters a message printed when luacheck is missing. **Re-vendor at the next release**, not for
+this.
+
 ## v1.7.0 — 2026-08-04
 
 Versions in this release: **Core minor 4**, **DebugLog minor 7**, **Slash minor 6**,

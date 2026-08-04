@@ -127,7 +127,7 @@ if wants lint; then
     if [ ! -f .luacheckrc ]; then
         ST[lint]="skip"; NOTE[lint]="no .luacheckrc — lint is not part of this addon's battery"
     elif [ -z "$LUACHECK_VERSION" ]; then
-        ST[lint]="skip"; NOTE[lint]="luacheck not on PATH — install: pipx install luacheck"
+        ST[lint]="skip"; NOTE[lint]="luacheck not on PATH — install: sudo luarocks install luacheck"
     else
         # $NOCOLOR is belt and braces with strip_ansi: where the flag exists nothing colours the
         # output in the first place, and where it does not, strip_ansi still cleans it.

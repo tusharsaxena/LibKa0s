@@ -1,4 +1,4 @@
-# `testkit` — version 6
+# `testkit` — version 7
 
 > **This document is the source of truth for this version of the kit.** Anything else in this repo
 > that describes the kit's surface points here rather than restating it. It describes the contract
@@ -7,53 +7,40 @@
 | | |
 |---|---|
 | Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `run-automated-tests.sh`, `README.md` |
-| Version | **6** (`Kit.VERSION`, top of `framework.lua`) |
+| Version | **7** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.7.0 |
-| Status | Superseded |
+| First released in | unreleased — on `master` after v1.7.0 |
+| Status | **Current** |
 | Supersedes | [version 5](version-5-docs.md) — `Max CCN` measured over every function, not over the warnings block |
-| Superseded by | [version 7](version-7-docs.md) — runs without a `.toc`; corrected luacheck hint |
+| Superseded by | — |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
-| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `6` |
+| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `7` |
 
 ## What changed at this version
 
-**Two fixes, both in the runner. No Lua surface changed, and no file was added or removed.**
+**Two changes, both in the runner. No Lua surface changed, and no file was added or removed.**
 
-**`Max CCN` is measured over every function, not over lizard's warnings block.** The field was read
-from the `!!!! Warnings` section, so it reported the highest CCN *among warned functions* rather than
-the highest CCN in the addon. Those two numbers are equal for as long as at least one warned function
-exists, which is why the bug survived five revisions — and they diverge exactly when the addon reaches
-**zero warnings**, at which point the field reads `0`.
+**It runs in a repo with no `.toc`.** The runner located the addon by globbing `./*.toc` and exited
+2 when it found none — so the repo that OWNS this kit could never execute it. That is not a
+curiosity: LibKa0s is the only repo whose suite runs the kit against itself, and two runner bugs
+(`Max CCN` read from the warnings block; `RESULTS.md` rows never appending in a CRLF repo) survived
+five revisions precisely because the one place the output path is exercised was the one place it
+could not run. A library has no `.toc` by definition — it is loaded by its host's — so identity now
+falls back to the repo directory name and version to the newest semver tag, which for a library is
+the only repo-wide number there is; its files carry per-file LibStub minors instead. A repo with
+neither a `.toc` nor a `.git` still exits 2, because then there is nothing to identify it by.
 
-That is the worst possible moment for it to be wrong. An addon that has just eliminated its last
-CCN > 15 function writes a `RESULTS.md` row whose trend column reads **`36 -> 0`**, which a reader
-takes as complexity having vanished rather than as the field having had no input; `manifest.json`
-records `"maxCcn": 0` beside a truthful `"functions": 2051`; and the ANALYSIS prose written from that
-manifest repeats it. The record reads as measured and is false, which `performance-§10` names as worse
-than an absent one.
+**The luacheck skip hint named the wrong package manager.** It read
+`install: pipx install luacheck`. luacheck is a **Lua** package: the correct command is
+`sudo luarocks install luacheck`, which is what the standard's own dependency guidance says
+(`lizard` is the Python one, and PEP 668 is why that one is `pipx`). A reader who runs the pipx form
+gets an error and concludes the tool is unavailable rather than that the hint is wrong — the exact
+failure anti-pattern #50 describes, shipped inside the tool that prints it. The hint was copied
+verbatim into two of the plugin's command specs before it was caught.
 
-The awk now scans every row carrying an `@` — lizard's main table is
-`NLOC CCN token PARAM length name@start-end@path`, so column 2 of such a row is that function's CCN,
-and the footer line has no `@` and is skipped by the same test.
-
-**`RESULTS.md` rows are appended in a CRLF repo.** The append matched the table header with awk's
-`$0 == hdr`, which is false for every line of a CRLF file — while the `grep -qF` guard immediately
-above it still succeeded, because a substring match does not care about a trailing CR. The two
-disagreeing is what made this silent: the guard said *header found*, the awk inserted nothing, and
-the branch that WARNS is only reached when grep fails. **Every run in every consumer repo dropped its
-row with no message.** Every Ka0s addon is CRLF-pinned by `.gitattributes`, so this was all of them,
-always — and it went unnoticed because LibKa0s is the only repo whose suite runs the kit against
-itself, and it has no `RESULTS.md`. The one place the code path is exercised is the one place it was
-never tested.
-
-The comparison now strips a trailing CR before matching and emits the new row with the **same**
-terminator the header carried, so a CRLF file stays uniformly CRLF rather than gaining one LF line.
-
-**Consumers must re-vendor and regenerate.** A bundle produced by revision 5 carries the wrong
-`maxCcn` whenever its `warnings` count is 0. The value is not recoverable from the manifest — but it
-is recoverable from the bundle's own `complexity.txt`, which is the raw lizard output and always had
-the right numbers in it.
+**Consumers need not re-vendor urgently.** Every consuming addon has a `.toc`, so the first change is
+a no-op for all of them, and the second only alters a message printed when luacheck is missing.
+Re-vendor at the next release rather than cutting one for this.
 
 ## What this is, and what it is not
 
@@ -194,10 +181,3 @@ a supported state.
 4. Re-vendor into `tests/_kit/` here **and** into every consumer's `tests/_kit/`, then run each
    repo's suite.
 5. Add the row to [`../README.md`](../README.md).
-
-## Moving to version 7
-
-Revision 7 makes the runner work in a repo with no `.toc` (a library, including LibKa0s itself) and
-corrects the luacheck skip hint from `pipx install luacheck` to `sudo luarocks install luacheck`.
-Both are no-ops for a consuming addon: every addon has a `.toc`, and the hint only prints when
-luacheck is absent. Re-vendor at the next release.
