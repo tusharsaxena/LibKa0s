@@ -220,6 +220,109 @@ test("sl: a guarded FormatValue still survives the FormatKV string.format around
   assertEqual(out, "|cFFFFFF00units.player.barWidth|r = |cFFFFFFFF" .. T.core.SECRET .. "|r")
 end)
 
+-- ── the command primitives ─────────────────────────────────────────────────────────────────
+
+test("sl: SplitVerb lowercases the verb and preserves the remainder's case", function()
+  -- The asymmetry is the contract: a verb is an identifier, the remainder is user data, and both
+  -- AceDB profile names and schema paths are case-sensitive.
+  local verb, rest = slash.SplitVerb("USE MyProfile")
+  assertEqual(verb, "use")
+  assertEqual(rest, "MyProfile")
+end)
+
+test("sl: SplitVerb keeps the remainder's internal spacing", function()
+  -- A color is several tokens, so collapsing runs of spaces would change what the parser sees.
+  local verb, rest = slash.SplitVerb("set  1  0.5  0 ")
+  assertEqual(verb, "set")
+  assertEqual(rest, "1  0.5  0 ")
+end)
+
+test("sl: SplitVerb answers two empty strings for empty and nil input", function()
+  local verb, rest = slash.SplitVerb("")
+  assertEqual(verb, "")
+  assertEqual(rest, "")
+  verb, rest = slash.SplitVerb(nil)
+  assertEqual(verb, "")
+  assertEqual(rest, "")
+end)
+
+test("sl: SplitVerb answers an empty remainder for a bare verb", function()
+  local verb, rest = slash.SplitVerb("List")
+  assertEqual(verb, "list")
+  assertEqual(rest, "")
+end)
+
+test("sl: FindCommand returns the whole triple for a matching name", function()
+  local handler = function() end
+  local list = { { "list", "List them", function() end }, { "use", "Use one", handler } }
+  local entry = slash.FindCommand(list, "use")
+  T.assertTrue(entry ~= nil, "the entry was found")
+  assertEqual(entry[2], "Use one")
+  assertEqual(entry[3], handler)
+end)
+
+test("sl: FindCommand compares verbatim and answers nil for a miss", function()
+  -- Callers lowercase through SplitVerb first; the lookup itself does not fold, so a table
+  -- declaring a mixed-case verb keeps it.
+  local list = { { "use", "Use one", function() end } }
+  T.assertNil(slash.FindCommand(list, "USE"))
+  T.assertNil(slash.FindCommand(list, "nope"))
+end)
+
+test("sl: FindCommand answers nil rather than raising on a missing list", function()
+  T.assertNil(slash.FindCommand(nil, "use"))
+  T.assertNil(slash.FindCommand("not a table", "use"))
+end)
+
+test("sl: CommandRows renders one row per entry through the shared formatter", function()
+  local list = { { "debug", "Toggle debug" }, { "spells", "Manage spells" } }
+  local rows = slash.CommandRows("/kcd", list)
+  assertEqual(#rows, 2)
+  assertEqual(rows[1], slash.FormatRow("/kcd debug", "Toggle debug"))
+  assertEqual(rows[2], slash.FormatRow("/kcd spells", "Manage spells"))
+end)
+
+test("sl: CommandRows defaults to no indent and applies the one it is given", function()
+  local list = { { "on", "Turn it on" } }
+  assertEqual(slash.CommandRows("/cm bar", list)[1]:sub(1, 1), "|", "no leading indent by default")
+  assertEqual(slash.CommandRows("/cm bar", list, "  ")[1],
+    "  " .. slash.CommandRows("/cm bar", list)[1], "the indent is the only difference")
+end)
+
+test("sl: CommandRows answers an empty list rather than raising on a missing table", function()
+  assertEqual(#slash.CommandRows("/th", nil), 0)
+  assertEqual(#slash.CommandRows("/th", "not a table", "  "), 0)
+end)
+
+test("sl: HelpRows and LandingRows render through CommandRows", function()
+  -- The sub level and the top level share one formatter by construction, which is the whole point
+  -- of the promotion: a second hand-rolled row format is how the two drifted apart before.
+  local Sl, rec = F.new()
+  assertEqual(table.concat(Sl:HelpRows(), "\n"),
+    table.concat(slash.CommandRows("/th", rec.commands, "  "), "\n"))
+  assertEqual(table.concat(Sl:LandingRows(), "\n"),
+    table.concat(slash.CommandRows("/th", rec.commands, ""), "\n"))
+end)
+
+test("sl: ParseBool accepts the same eight words the error string advertises", function()
+  for _, word in ipairs({ "true", "1", "on", "yes", "TRUE", "On" }) do
+    assertEqual(slash.ParseBool(word), true, word)
+  end
+  for _, word in ipairs({ "false", "0", "off", "no", "OFF" }) do
+    assertEqual(slash.ParseBool(word), false, word)
+  end
+end)
+
+test("sl: ParseBool answers nil, never false, for a non-boolean word", function()
+  -- nil means "not a boolean word", which is what lets a caller implement toggle-on-absent. A
+  -- false here would make `/xx bar` and `/xx bar off` indistinguishable.
+  T.assertNil(slash.ParseBool("maybe"))
+  T.assertNil(slash.ParseBool(""))
+  T.assertNil(slash.ParseBool(nil))
+  T.assertNil(slash.ParseBool(1))
+  T.assertNil(slash.ParseBool({}))
+end)
+
 -- ── the parser ─────────────────────────────────────────────────────────────────────────────
 
 test("sl: booleans accept the whole human vocabulary", function()
