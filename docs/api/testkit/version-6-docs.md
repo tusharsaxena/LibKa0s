@@ -1,4 +1,4 @@
-# `testkit` — version 5
+# `testkit` — version 6
 
 > **This document is the source of truth for this version of the kit.** Anything else in this repo
 > that describes the kit's surface points here rather than restating it. It describes the contract
@@ -7,14 +7,40 @@
 | | |
 |---|---|
 | Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `run-automated-tests.sh`, `README.md` |
-| Version | **5** (`Kit.VERSION`, top of `framework.lua`) |
+| Version | **6** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.6.3 |
-| Status | Superseded |
-| Supersedes | [version 4](version-4-docs.md) — wider `RESULTS.md` table, honest subset rows, stale-header guard |
-| Superseded by | [version 6](version-6-docs.md) — `Max CCN` measured over every function |
+| First released in | unreleased (branch `feat/fix-ccn`) |
+| Status | **Current** |
+| Supersedes | [version 5](version-5-docs.md) — `Max CCN` measured over every function, not over the warnings block |
+| Superseded by | — |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
-| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `5` |
+| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `6` |
+
+## What changed at this version
+
+**One fix, in the runner only. No Lua surface changed, and no file was added or removed.**
+
+**`Max CCN` is measured over every function, not over lizard's warnings block.** The field was read
+from the `!!!! Warnings` section, so it reported the highest CCN *among warned functions* rather than
+the highest CCN in the addon. Those two numbers are equal for as long as at least one warned function
+exists, which is why the bug survived five revisions — and they diverge exactly when the addon reaches
+**zero warnings**, at which point the field reads `0`.
+
+That is the worst possible moment for it to be wrong. An addon that has just eliminated its last
+CCN > 15 function writes a `RESULTS.md` row whose trend column reads **`36 -> 0`**, which a reader
+takes as complexity having vanished rather than as the field having had no input; `manifest.json`
+records `"maxCcn": 0` beside a truthful `"functions": 2051`; and the ANALYSIS prose written from that
+manifest repeats it. The record reads as measured and is false, which `performance-§10` names as worse
+than an absent one.
+
+The awk now scans every row carrying an `@` — lizard's main table is
+`NLOC CCN token PARAM length name@start-end@path`, so column 2 of such a row is that function's CCN,
+and the footer line has no `@` and is skipped by the same test.
+
+**Consumers must re-vendor and regenerate.** A bundle produced by revision 5 carries the wrong
+`maxCcn` whenever its `warnings` count is 0. The value is not recoverable from the manifest — but it
+is recoverable from the bundle's own `complexity.txt`, which is the raw lizard output and always had
+the right numbers in it.
 
 ## What this is, and what it is not
 
@@ -155,11 +181,3 @@ a supported state.
 4. Re-vendor into `tests/_kit/` here **and** into every consumer's `tests/_kit/`, then run each
    repo's suite.
 5. Add the row to [`../README.md`](../README.md).
-
-## Moving to version 6
-
-Revision 6 changes one thing: `Max CCN` in `manifest.json` and `RESULTS.md` is measured over **every**
-function rather than over lizard's `!!!! Warnings` block. On this revision the two agree for any addon
-with at least one warned function, and this revision reports `0` for an addon with none. Re-vendor the
-kit and regenerate any bundle whose `warnings` count is `0`; the correct figure is in that bundle's
-`complexity.txt`, which was never affected.

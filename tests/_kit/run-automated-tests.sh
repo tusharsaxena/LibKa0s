@@ -227,7 +227,14 @@ if wants complexity; then
         CCN_WARN=$(fld 6);      [ -z "$CCN_WARN" ]      && CCN_WARN=0
         CCN_FUN_RT=$(fld 7);    [ -z "$CCN_FUN_RT" ]    && CCN_FUN_RT=0
         CCN_NLOC_RT=$(fld 8);   [ -z "$CCN_NLOC_RT" ]   && CCN_NLOC_RT=0
-        CCN_MAX=$(printf '%s\n' "$raw" | awk '/!!!! Warnings/{f=1} f && /@/ {if ($2+0>m) m=$2+0} END{print m+0}')
+        # Max CCN is measured over EVERY function, not over the warnings section. Reading it from
+        # the warnings block looked correct for as long as there was always a warned function to
+        # read it from, and reported 0 the moment an addon reached zero warnings — which is exactly
+        # when the number matters most. A trend column reading "36 -> 0" says complexity vanished
+        # when it means the field had no input. The main table's rows are
+        # `NLOC CCN token PARAM length name@start-end@path`, so column 2 of every row carrying an
+        # `@` is that function's CCN; the footer has no `@` and the same test skips it.
+        CCN_MAX=$(printf '%s\n' "$raw" | awk '/@/ && $2+0>m {m=$2+0} END{print m+0}')
         # layout-§1: 1000–1500 is the on-notice band, >1500 is a bug. Counted here so the
         # manifest answers the layout question without a second pass over the tree.
         while IFS= read -r n; do
