@@ -10,6 +10,66 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.6.0 — 2026-08-04
+
+**Core minor 3**, **DebugLog minor 7**, **Slash minor 5**, **Options minor 5**,
+**OptionsWidgets minor 5**, **OptionsScroll minor 2**, **Perf minor 5**, **PerfPanel minor 3**.
+**No library file moved** — this release is entirely `testkit/`, whose revision goes **1 → 2**.
+
+### `testkit` — the consolidated automated-test runner
+
+`testkit/run-automated-tests.sh` is new, and it is the only executable in the kit. It runs the four
+out-of-game suites — `luacheck`, the headless `tests/run.lua` harness, the offline `tests/perf.lua`
+scenarios and `lizard` — and records every result as one frozen bundle under
+`docs/automated-tests/<YYYY-MM-DD-HHMMSS>/`, then rolls the run into `docs/automated-tests/RESULTS.md`.
+The normative rules for the artifact are the standard's (`automated-tests`); this is the tool that
+produces it.
+
+It lives in the kit rather than in each addon for the reason the rest of the kit does: it must be
+byte-identical in nine places, and the vendoring gate already enforces exactly that.
+
+Two properties are load-bearing and deliberate:
+
+- **`lint` and `tests` gate; `perf` and `complexity` do not.** The latter two are measured, recorded
+  and diffed, never used to fail the run. `performance-§9`/`§10` are explicit that a wall-clock or
+  complexity threshold which fails a run teaches everyone to reach for `--no-verify`, after which
+  the gate protects nothing and the habit remains. Folding them into a red/green battery would have
+  quietly reversed both rules.
+- **A missing tool is a skip, not a failure**, and the skip is recorded *with its reason*, so a
+  green run that measured nothing cannot be mistaken for a green run that measured everything.
+
+### The harness summary is parsed in both shapes it comes in
+
+The collection ships two summary lines — `N passed, N failed, N total` and the older
+`N passed, N failed`. Matching only the first recorded **0 passed, 0 failed, 0 total** for every
+addon using the second, while the run still reported **green** off the harness's zero exit code. A
+green run reporting zero tests is the precise failure this runner exists to make impossible, and it
+was caught on the first adoption sweep rather than by a test, which is worth recording.
+
+Both shapes now parse, and a zero-exit run whose count cannot be read is recorded as a **skip with
+that reason**, never a pass: reporting green off an unparsed summary is worse than reporting a
+failure, because it is believed.
+
+### `*.sh text eol=lf` is now required, here and in every consumer
+
+Everything in this collection is CRLF, pinned by `.gitattributes`. A `#!/usr/bin/env bash` line
+followed by CRLF makes the kernel look for an interpreter literally named `bash\r`, and every
+`case`/`in` becomes a syntax error — so a CRLF-pinned repo that ships a `.sh` must carve it out.
+Without that line the vendored runner is broken on **every** checkout rather than in one
+contributor's, and it fails identically for everyone, which is the kind of breakage that reads as
+"the script is wrong" rather than "the checkout is wrong".
+
+Re-vendoring also now ends with `chmod +x tests/_kit/run-automated-tests.sh`: `cp` does not reliably
+carry the executable bit across filesystems.
+
+### Kit revision 1 → 2
+
+Nothing in the Lua surface changed. No suite, mock seam or assertion behaves differently, and a
+consumer upgrading from revision 1 re-vendors the folder and gains one file. The revision moved
+because the kit's **file set** moved, which is what the byte-identity gate compares — a consumer
+still holding four files fails `test_vendor_sync.lua` on the set comparison before it ever reaches a
+content diff. Full surface: [`docs/api/testkit/version-2-docs.md`](docs/api/testkit/version-2-docs.md).
+
 ## v1.5.0 — 2026-08-02
 
 **Core minor 3**, **DebugLog minor 7**, **Slash minor 5**, **Options minor 5**,

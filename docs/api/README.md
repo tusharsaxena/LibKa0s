@@ -91,7 +91,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [1](./testkit/version-1-docs.md) | `framework.lua` · `loader.lua` · `mock_base.lua` · `README.md` | v1.4.0 | **Current** |
+| [1](./testkit/version-1-docs.md) | `framework.lua` · `loader.lua` · `mock_base.lua` · `README.md` | v1.4.0 | Superseded |
+| [2](./testkit/version-2-docs.md) | + `run-automated-tests.sh` | v1.6.0 | **Current** |
 
 The kit's compatibility rule is the one place this directory's model differs. The library negotiates
 skew — LibStub compares minors and the highest copy wins, so an older vendored copy is a *supported

@@ -1,4 +1,4 @@
-# `testkit` — version 1
+# `testkit` — version 2
 
 > **This document is the source of truth for this version of the kit.** Anything else in this repo
 > that describes the kit's surface points here rather than restating it. It describes the contract
@@ -6,21 +6,26 @@
 
 | | |
 |---|---|
-| Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `README.md` |
-| Version | **1** (`Kit.VERSION`, top of `framework.lua`) |
+| Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `run-automated-tests.sh`, `README.md` |
+| Version | **2** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.4.0 — the revision predates the tag, and prettychat's gate refused it until the tag existed |
-| Status | **Superseded** by [version 2](version-2-docs.md) |
-| Supersedes | — (first numbered revision; the kit was unnumbered before it) |
-| Superseded by | [version 2](version-2-docs.md) — adds `run-automated-tests.sh` |
+| First released in | v1.6.0 |
+| Status | **Current** |
+| Supersedes | [version 1](version-1-docs.md) — adds `run-automated-tests.sh`; nothing in the Lua surface changed |
+| Superseded by | — |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
-| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `1` |
+| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `2` |
 
 ## What this is, and what it is not
 
 The shared headless test harness for the Ka0s addon collection: the test registry and assertions,
-the source loader, and the universal half of the WoW-API mock. It runs under plain `lua` from a
-repo root — no client, no addon loaded.
+the source loader, the universal half of the WoW-API mock, and — new in this revision — the
+consolidated automated-test runner. The Lua surface runs under plain `lua` from a repo root; the
+runner is a bash script invoked from the same place.
+
+**Nothing in the Lua surface changed between version 1 and version 2.** A consumer upgrading from 1
+re-vendors the folder and gains one file; no suite, mock seam or assertion behaves differently. The
+revision moved because the kit's *file set* moved, which is what the byte-identity gate compares.
 
 It is **not a LibStub library**. It registers nothing, no load order depends on it, and it must
 never ship: it is vendored under `tests/`, which every addon's `.pkgmeta` already excludes via its
@@ -172,6 +177,58 @@ move the api/iter parity figure.
 `strsplit` and `strtrim` are deliberately **absent**. Neither consumer calls them, and a hand-rolled
 reimplementation of a WoW string function that nothing exercises is a subtly-wrong shared helper
 waiting to be adopted. The addon that first needs one adds it to its own extender.
+
+## `run-automated-tests.sh` — the consolidated automated-test runner
+
+New in version 2. Runs the four out-of-game suites and records every result as one frozen bundle
+under `docs/automated-tests/<YYYY-MM-DD-HHMMSS>/`, then rolls the run into
+`docs/automated-tests/RESULTS.md`. The normative rules for the artifact live in the standard's
+`automated-tests` section; this document covers the script's interface.
+
+```sh
+tests/_kit/run-automated-tests.sh [--suite lint|tests|perf|complexity]... \
+                                  [--label TEXT] [--release X.Y.Z] [--no-bundle]
+```
+
+| Flag | Effect |
+|---|---|
+| `--suite <name>` | Repeatable. Run only the named suites. Default: all four. |
+| `--label TEXT` | Free-text label recorded in the manifest and passed to `tests/perf.lua`. |
+| `--release X.Y.Z` | Marks the bundle a release record (`"release": "X.Y.Z"` in the manifest). Set by the release flow, not by hand. |
+| `--no-bundle` | Run and print; write nothing. Same exit code, so a hook can call it. |
+
+| Suite | Command | Gating |
+|---|---|---|
+| `lint` | `luacheck .` | **yes** |
+| `tests` | `lua tests/run.lua` | **yes** |
+| `perf` | `lua tests/perf.lua` | no — recorded only |
+| `complexity` | `lizard -l lua -x "./libs/*" -x "./tests/_kit/*" .` | no — recorded only |
+
+**`perf` and `complexity` never fail the run.** `performance-§9`/`§10` are explicit that a
+wall-clock or complexity threshold which fails a run teaches everyone to reach for `--no-verify`,
+after which the gate protects nothing and the habit remains. They are measured, recorded and
+diffed; a regression in them yields `amber`, which is a signal rather than a stop.
+
+**A missing tool is a skip, not a failure**, and the skip is recorded with its reason — so a green
+run that measured nothing cannot be mistaken for a green run that measured everything.
+
+Verdict: `red` if a gating suite failed; `amber` if a gating suite was skipped or `perf` failed its
+own deterministic assertions; `green` otherwise. Exit code is non-zero only on `red`.
+
+### It is LF, and must stay LF
+
+Every other file in this collection is CRLF, pinned by `.gitattributes`. A `#!/usr/bin/env bash`
+line followed by CRLF makes the kernel look for an interpreter literally named `bash\r`, and every
+`case`/`in` becomes a syntax error. A CRLF-pinned repo that ships a `.sh` **MUST** carve it out:
+
+```gitattributes
+*.sh   text eol=lf
+```
+
+That line is required in this repo **and in every consumer**, before the first re-vendor. Without
+it the vendored copy is broken on every checkout — not in one contributor's working tree, in all of
+them. `cp` also does not always carry the executable bit, so re-vendoring ends with
+`chmod +x <Addon>/tests/_kit/run-automated-tests.sh`.
 
 ## Vendoring
 
