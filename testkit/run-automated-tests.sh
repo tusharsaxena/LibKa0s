@@ -332,9 +332,18 @@ if [ "$WRITE_BUNDLE" -eq 1 ]; then
     HEADER='| Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |'
     RULE='|---|---|---|---|---|---|---|---|---|---|---|---|---|'
     if [ -f "$RESULTS" ] && grep -qF "$HEADER" "$RESULTS"; then
+        # The comparison strips a trailing CR before matching, and the new row is emitted with the
+        # SAME terminator the header carried. Every consumer repo is CRLF-pinned by .gitattributes,
+        # so `$0 == hdr` against a raw CRLF line is false for every line in the file — while the
+        # `grep -qF` above still succeeds, because a substring match does not care about the CR.
+        # The two disagreeing is what made this silent: the guard said "header found", the awk
+        # inserted nothing, and the else-branch that WARNS is only reached when grep fails. The row
+        # was dropped with no message, in every CRLF repo, on every run. It went unnoticed because
+        # LibKa0s is the only repo whose suite runs the kit against itself and it has no RESULTS.md,
+        # so the one place this is exercised is the one place it was never tested.
         awk -v row="$ROW" -v hdr="$HEADER" '
-            {print}
-            $0 == hdr {getline sep; print sep; print row}
+            { line = $0; cr = ""; if (sub(/\r$/, "", line)) cr = "\r"; print }
+            line == hdr { getline sep; print sep; print row cr }
         ' "$RESULTS" > "$RESULTS.tmp" && mv "$RESULTS.tmp" "$RESULTS"
     elif [ -f "$RESULTS" ]; then
         # The file exists but its header is not this one — an older column set. Recreating it here

@@ -16,6 +16,15 @@ Versions in this release: **Core minor 4**, **DebugLog minor 7**, **Slash minor 
 **Options minor 6**, **OptionsWidgets minor 6**, **OptionsScroll minor 3**, **Perf minor 6**,
 **PerfPanel minor 3**. `DebugLog.lua` and `PerfPanel.lua` are unchanged and do not move.
 
+**testkit revision 6** carries two runner fixes, both found by this pass and both silent until it.
+`Max CCN` was read from lizard's `!!!! Warnings` block, so it reported `0` for any addon that had
+reached zero warnings — the exact moment the number matters most. And `RESULTS.md` rows never
+appended in a CRLF repo: the guard matches the header as a substring while the awk that inserts the
+row compares it exactly, so the guard passed, nothing was written, and the branch that warns was
+never reached. Every consumer is CRLF-pinned, so every run in every addon dropped its row with no
+message. Neither was caught earlier because LibKa0s is the only repo whose suite runs the kit
+against itself, and it has no `RESULTS.md`. **Consumers must re-vendor and regenerate.**
+
 A complexity pass across the whole collection found the same shapes hand-written in three, four and
 six repos at once. Five of them earned promotion here — the test being *present in 2+ repos with the
 same semantics, no per-addon escape hatches, a stable abstraction rather than a coincidence of

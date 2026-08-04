@@ -18,7 +18,7 @@
 
 ## What changed at this version
 
-**One fix, in the runner only. No Lua surface changed, and no file was added or removed.**
+**Two fixes, both in the runner. No Lua surface changed, and no file was added or removed.**
 
 **`Max CCN` is measured over every function, not over lizard's warnings block.** The field was read
 from the `!!!! Warnings` section, so it reported the highest CCN *among warned functions* rather than
@@ -36,6 +36,19 @@ than an absent one.
 The awk now scans every row carrying an `@` — lizard's main table is
 `NLOC CCN token PARAM length name@start-end@path`, so column 2 of such a row is that function's CCN,
 and the footer line has no `@` and is skipped by the same test.
+
+**`RESULTS.md` rows are appended in a CRLF repo.** The append matched the table header with awk's
+`$0 == hdr`, which is false for every line of a CRLF file — while the `grep -qF` guard immediately
+above it still succeeded, because a substring match does not care about a trailing CR. The two
+disagreeing is what made this silent: the guard said *header found*, the awk inserted nothing, and
+the branch that WARNS is only reached when grep fails. **Every run in every consumer repo dropped its
+row with no message.** Every Ka0s addon is CRLF-pinned by `.gitattributes`, so this was all of them,
+always — and it went unnoticed because LibKa0s is the only repo whose suite runs the kit against
+itself, and it has no `RESULTS.md`. The one place the code path is exercised is the one place it was
+never tested.
+
+The comparison now strips a trailing CR before matching and emits the new row with the **same**
+terminator the header carried, so a CRLF file stays uniformly CRLF rather than gaining one LF line.
 
 **Consumers must re-vendor and regenerate.** A bundle produced by revision 5 carries the wrong
 `maxCcn` whenever its `warnings` count is 0. The value is not recoverable from the manifest — but it
