@@ -58,12 +58,23 @@ wants() { for s in "${SUITES[@]}"; do [ "$s" = "$1" ] && return 0; done; return 
 
 # ── locate the addon ────────────────────────────────────────────────────────────────────────────
 TOC="$(ls -1 ./*.toc 2>/dev/null | head -1 || true)"
-if [ -z "$TOC" ]; then
-    echo "no .toc at the repo root — run this from the addon root" >&2
-    exit 2
+if [ -n "$TOC" ]; then
+    ADDON="$(basename "$TOC" .toc)"
+    ADDON_VERSION="$(grep -i '^## Version:' "$TOC" 2>/dev/null | head -1 | sed 's/^## *[Vv]ersion: *//' | tr -d '\r' || true)"
+else
+    # An embeddable library has no .toc — it is loaded by its host's TOC, not its own, so the
+    # identity and version a .toc would carry have to come from somewhere else. Requiring one
+    # here locked the library that OWNS this kit out of running it, which is why two kit bugs
+    # survived five revisions: the kit's own repo could never execute its output path.
+    # Identity is the repo directory; version is the newest semver tag, which for a library is
+    # the only repo-wide number there is (its files carry per-file LibStub minors instead).
+    if [ ! -d .git ]; then
+        echo "no .toc here and no .git — run this from the addon or library repo root" >&2
+        exit 2
+    fi
+    ADDON="$(basename "$PWD")"
+    ADDON_VERSION="$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' | tr -d '\r' || true)"
 fi
-ADDON="$(basename "$TOC" .toc)"
-ADDON_VERSION="$(grep -i '^## Version:' "$TOC" 2>/dev/null | head -1 | sed 's/^## *[Vv]ersion: *//' | tr -d '\r' || true)"
 [ -z "$ADDON_VERSION" ] && ADDON_VERSION="unknown"
 
 # LOCAL time, not UTC: a record is read by the person who ran it, and a folder name that

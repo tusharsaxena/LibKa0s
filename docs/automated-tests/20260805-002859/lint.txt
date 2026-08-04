@@ -1,0 +1,13 @@
+Checking LibKa0s/Core.lua                         OK
+Checking LibKa0s/DebugLog.lua                     OK
+Checking LibKa0s/Options.lua                      OK
+Checking LibKa0s/OptionsScroll.lua                OK
+Checking LibKa0s/OptionsWidgets.lua               OK
+Checking LibKa0s/Perf.lua                         OK
+Checking LibKa0s/PerfPanel.lua                    OK
+Checking LibKa0s/Slash.lua                        OK
+Checking testkit/framework.lua                    OK
+Checking testkit/loader.lua                       OK
+Checking testkit/mock_base.lua                    OK
+
+Total: 0 warnings / 0 errors in 11 files
