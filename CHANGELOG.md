@@ -10,6 +10,119 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## Unreleased
+
+Versions in this release: **Core minor 4**, **DebugLog minor 7**, **Slash minor 6**,
+**Options minor 6**, **OptionsWidgets minor 6**, **OptionsScroll minor 3**, **Perf minor 6**,
+**PerfPanel minor 3**. `DebugLog.lua` and `PerfPanel.lua` are unchanged and do not move.
+
+A complexity pass across the whole collection found the same shapes hand-written in three, four and
+six repos at once. Five of them earned promotion here — the test being *present in 2+ repos with the
+same semantics, no per-addon escape hatches, a stable abstraction rather than a coincidence of
+today's code*. Everything else in this release is internal restructuring: no chat string, event
+registration, SavedVariables key or slash output changes, and every existing descriptor keeps
+working untouched.
+
+### `LibKa0s-Slash-1.0` gains the sub-command vocabulary — `SplitVerb`, `FindCommand`, `CommandRows`, `ParseBool`
+
+Two hosts had already copied byte-identical `lowerFirst` / `findCommand` file-locals out of this
+dispatcher, and both had then hand-rolled a *second* command-row format beside the library's own —
+which is exactly the drift the shared formatter exists to end, one level down. All four are
+lib-level and stateless, in the shape `FormatRow` / `FormatKV` already set:
+
+- `lib.SplitVerb(rest)` — verb lowercased, remainder's case and internal spacing preserved. The
+  asymmetry is the contract: a verb is an identifier, a remainder is user data, and AceDB profile
+  names and schema paths are both case-sensitive.
+- `lib.FindCommand(list, name)` — linear scan of the `{ name, description, handler }` array the
+  `commands` descriptor field has always taken, so a sub level reuses this major's vocabulary
+  rather than inventing one.
+- `lib.CommandRows(prefix, commands, indent)` — the instance-local `rows(indent)` generalized.
+  `Sl:HelpRows` and `Sl:LandingRows` are now one-liners over it, so every level renders through one
+  formatter by construction.
+- `lib.ParseBool(word)` — the eight-word set `lib.STRINGS.ERR_BOOL` already advertises, as a
+  module-level constant table. `nil` means *not a boolean word*, never *false*, which is what lets
+  a caller implement toggle-on-absent. Three copies existed, one of them already inside this file
+  and unreachable.
+
+The dispatcher itself is deliberately **not** promoted: its control flow is genuinely per-host
+(bare `/kcd debug` toggles a window, `/cm priority <cat>` resolves a category between the two
+levels), and owning it would cost four escape hatches to save six lines.
+
+### `LibKa0s-Options-1.0` gains `O.BuildLandingPage` and `O.TextRow`
+
+Three hosts each defined a function literally named `Helpers.BuildMainContent` rendering the same
+page, with the same four constants at the same values and the same guard pairs; the only real
+differences were the logo path and where the one-liner came from. Every primitive underneath it was
+already in this major — `EnsureScroll`, `ClearScroll`, `AddSpacer`, `Section` — and `buildMain(ctx)`
+was already the seam it hangs off, so the copies were host-side only because the *body* was.
+
+- `O.TextRow(ctx, text, opts)` — a full-width Label, left-justified, added to the scroll. It owns
+  the `if w.label and w.label.SetJustifyH` / `SetFontObject` guard pair **once**; that pair was
+  written out 28 times across six repos, and every copy is a place for one half to be forgotten,
+  which fails silently and only in game.
+- `O.BuildLandingPage(ctx, spec)` — logo, one-liner, then a heading and its rows per section.
+  `spec.notes` may be a function, called at render time, because a host reading its TOC Notes
+  cannot resolve it at declaration; `spec.sections[i].rows` is a function for the same reason, so a
+  re-render picks up a command added since registration.
+- `lib.LAYOUT` gains `LANDING_LOGO` (300), `LANDING_GAP_LOGO` (8), `LANDING_GAP_DESC` (12) and
+  `LANDING_GAP_HEAD` (6) — the four constants the three hosts had already agreed on.
+  `LANDING_GAP_HEAD` must stay equal to `SECTION_BOTTOM_SPACER`, which `O.Section` already emits,
+  so the page does not draw a second gap under every heading. `tests/test_options.lua` pins that.
+- **The descriptor is unchanged.** A host reaches the landing page through the `buildMain(ctx)` it
+  already had — `buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end` — and a host wanting
+  extra content below calls `O.BuildLandingPage` as line one of its own body. The shell deliberately
+  does *not* sniff for a spec field and install a renderer on the host's behalf: that would change
+  what `lib:New` **does** rather than add to what it offers, and it would make "what draws my main
+  page?" unanswerable from the host's own source. `lib:New` answers exactly what it answered at
+  minor 5.
+
+### `LibKa0s-Core-1.0` gains `lib.RGBA`
+
+Promoted mainly because **this library had two disagreeing copies**: `Slash.FormatValue` read both
+storage shapes, `OptionsWidgets.decodeColor` read only the keyed one — so the library's own CLI
+could render a color its own widget could not decode.
+
+`lib.RGBA(c, dr, dg, db, da)` returns four numbers, never a table, from either the keyed
+`{ r =, g =, b =, a = }` or the positional `{ r, g, b, a }` shape. Whichever shape wins, wins for
+all four channels, so a `{ r = 1 }` cannot borrow its green from `c[2]`; each channel then falls
+back independently, so a three-element color still gets its alpha. Absence is tested with `== nil`
+rather than `or`, which is what makes a stored `false` survive — `0` was never at risk, since `0` is
+truthy in Lua and `(0 or 99)` is `0`. The defaults are per-channel
+parameters and are deliberately not defaulted — the call sites across the collection genuinely
+disagree, and inventing a house default would silently recolor one of them.
+
+**The library's own two call sites do not adopt it yet.** `Slash.lua` and `Options.lua` declare
+`NEEDS_CORE = 1`, and `docs/releasing.md` treats raising that floor as a breaking change to the
+*vendoring* — every consumer still carrying a stale `Core.lua` would lose the whole major. This is
+the same reason `enumList` is duplicated verbatim between the two majors rather than hoisted. So
+`lib.RGBA` ships for hosts now, and the library folds its own copies in only alongside a floor
+raise made for other reasons.
+
+### `LibKa0s-Perf-1.0` gains `P.Open` / `P.Close`
+
+A measurement bracket for **multi-exit** functions, which is where the old ergonomics discouraged
+instrumenting exactly the code that most needed it: one adopter's four-exit poll function needed
+its own `if __t0 then P.Note(...) end` per exit, and its comment records that the instrumentation
+was originally omitted for that reason — an omission that then cost 73.9 ms of unattributed time in
+the first live capture.
+
+`P.Open()` returns `debugprofilestop()` or `nil` when the probe is off; `P.Close(t0, key)` treats a
+`nil` `t0` as a silent no-op, which collapses every exit to one unconditional statement. Not a
+closure-returning `Bracket`: a per-bracket closure would allocate on a path whose entire contract
+is costing nothing when disabled. `P.Note` is unchanged, so an existing host keeps working
+untouched.
+
+### Internal: every function in `LibKa0s/` is now under CCN 15
+
+`Core.ApplySkin`, `Slash.FormatValue`, `Perf`'s report builder, `OptionsWidgets`' row renderer and
+`OptionsScroll`'s gutter patch were each above the collection's complexity cap. They are now
+module-level dispatch tables, named file-locals and small builders — `applyBackdrop` /
+`ensureInnerBorder` / `applyInnerBorder` / `applyAccents`, `colorChannel`, `addFpsLines` /
+`addBucketLines` / `addNestingNote` / `stepState` / `armStates`, `startRow` / `startGroup` /
+`drawRow` / `endGroup` / `takeOnce` / `renderRowGuarded`, `thumbOf` / `stepButtons` /
+`forceGutter`. Behavior is identical; the tables and the helpers are built once at file load, so
+nothing on a hot path gained a per-call allocation.
+
 ## v1.6.3 — 2026-08-04
 
 **No library file moved.** `testkit` revision **4 → 5**; `run-automated-tests.sh` only. Three changes

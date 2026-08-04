@@ -1,26 +1,26 @@
-# `LibKa0s-Perf-1.0` — version 5.3
+# `LibKa0s-Perf-1.0` — version 6.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Perf surface points here rather than restating it. It describes the
-> contract *as it was at this version* — a later version is a different document, not an edit to
-> this one.
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **5** · `PerfPanel.lua` **3** |
+| Files and minors | `Perf.lua` **6** · `PerfPanel.lua` **3** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.0.0 – v1.6.3 — **every release up to and including v1.6.3** |
-| Status | Superseded |
-| Supersedes | `Perf` minors 1–4 and `PerfPanel` minors 1–2 (pre-release, never vendored) |
-| Superseded by | [version 6.3](./version-6.3-docs.md) |
+| Shipped in | unreleased |
+| Status | **Current** |
+| Supersedes | [version 5.3](./version-5.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 5, PerfPanel = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 6, PerfPanel = 3 }` |
 
-This major has not changed since the first tag, so there is exactly one shipped version of it and
-every adopter is on the same one. `Since` is therefore `1` for nearly everything; where a member
-arrived later the minor is named (`P4`, `P5`, `PP2`…).
+`Since` names the file and minor a member first appeared in — `P6` for `Perf.lua` minor 6, `PP2`
+for `PerfPanel.lua` minor 2. It is `1` for nearly everything: this major did not move at all between
+the first tag and minor 6, so every adopter before this version is on the same one.
 
 Adopters today: **AbsorbTracker** (`core/PerfSetup.lua`), **KickCD** (`core/PerfSetup.lua`),
 **ConsumableMaster** (`modules/PerfSetup.lua`).
@@ -33,6 +33,20 @@ it writes, and the clickable step panel that drives it.
 Two files, one major — `Perf.lua` (the probe and the run) and `PerfPanel.lua` (the step panel). One
 major for the same reason Options is one: a shell and a panel from different vendored copies is not
 a state LibStub can detect. **This is why the version key above is a pair.**
+
+## What changed at this version
+
+**Two new instance members, `P.Open()` and `P.Close(t0, key)`, and nothing else.** No descriptor
+field, no bucket key, no record-schema field and no printed line moved, so a host written against
+5.3 is correct here unmodified — including `P.Note`, which the pair is built on rather than
+replacing. `PerfPanel.lua` does not move.
+
+They exist for **multi-exit** functions; see
+[Bracketing a multi-exit function](#bracketing-a-multi-exit-function).
+
+Internally, `FormatReport` and `Progress` were restructured into named builders (the FPS lines, the
+bucket lines, the nesting note, and the two step-state resolvers) to bring the file under the
+collection's complexity cap. Every line they emit is byte-identical to 5.3's.
 
 ## Why it exists
 
@@ -251,6 +265,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | Name | Since | Meaning |
 |---|---|---|
 | `Note(key, ms)` | 1 | Record one bracketed measurement into bucket `key`. |
+| `Open()` | **P6** | → `debugprofilestop()`, or **`nil` when the probe is off**. Opens a measurement bracket. See [Bracketing a multi-exit function](#bracketing-a-multi-exit-function). |
+| `Close(t0, key)` | **P6** | Close a bracket opened by `Open()`, recording its elapsed ms under `key`. A `nil` `t0` is a **silent no-op**. |
 | `Reset()` | 1 | Zero every counter — buckets, completion/review flags, FPS arms. |
 | `Log(fmt, ...)` | 1 | Console-only line, colour-stripped. |
 | `Announce(fmt, ...)` | 1 | Chat-and-console line, for what the user must see mid-fight. |
@@ -282,6 +298,37 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `suspended` | 1 | Plain boolean field, the one the host contract above tells a show-decision to consult. Set by `Suspend()`/`Resume()`; `Stop()` leaves it alone. |
 | `__buckets()` / `__fpsArms()` / `__completed()` / `__reviewed()` / `__sampler()` / `__panel()` | 1 | Test seams over state that is otherwise private. A host suite asserting that a declared bucket was actually reached has no other handle on it. |
 
+## Bracketing a multi-exit function
+
+`P.Open()` / `P.Close(t0, key)`, new at `Perf.lua` minor 6. `P.Note` is unchanged, so an existing
+host keeps working untouched.
+
+```lua
+local t0 = P.Open()
+if not pollable(id) then P.Close(t0, "pollSpell") return nil end
+if cached[id] then P.Close(t0, "pollSpell") return cached[id] end
+...
+P.Close(t0, "pollSpell")
+return state
+```
+
+`Open()` returns `nil` when `P.on` is false, and `Close` treats a `nil` `t0` as a no-op — which is
+what collapses **every exit to one unconditional statement** instead of its own
+`if __t0 then P.Note(...) end`.
+
+**Why this is in the library rather than in each host.** One adopter's four-exit spell poll paid
+that branch per exit, and its own comment records that the instrumentation was originally *omitted*
+for exactly that reason — an omission that then cost 73.9 ms of unattributed time in the first live
+capture. A measurement seam whose ergonomics discourage instrumenting the multi-exit functions that
+most need measuring is a seam with a hole in it.
+
+**Deliberately not a closure-returning `Bracket(key)`.** A closure per bracket allocates on a path
+whose entire contract is costing nothing when the probe is off — which is also why `P.on` stays a
+plain boolean field on a plain table that every call site reads directly.
+
+The bucket **key set is untouched**, so a host suite pinning "the declared bucket list and the
+bracketed call sites agree exactly" keeps passing across the migration from `Note` to the pair.
+
 ## The `L` trap
 
 `L` must be a **plain table holding only the keys you actually translate** — never an addon-wide
@@ -303,18 +350,3 @@ records are discarded rather than converted. See [`docs/record-schema.md`](../..
 The two files move as one. A consumer holding `Perf.lua` from one vendored copy and `PerfPanel.lua`
 from another is not a supported state and LibStub cannot detect it — which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 6.3
-
-Nothing to change at a call site. Version 6.3 is **purely additive** — `Perf.lua` gains two instance
-members and `PerfPanel.lua` does not move:
-
-| New at 6.3 | What it gives you |
-|---|---|
-| `P.Open()` | `debugprofilestop()`, or `nil` when the probe is off. |
-| `P.Close(t0, key)` | `P.Note(key, elapsed)`, and a **silent no-op** on a `nil` `t0`. |
-
-Together they collapse a multi-exit function's instrumentation from one `if __t0 then P.Note(...)
-end` per exit to one unconditional `P.Close(t0, key)` per exit. `P.Note` is unchanged and the bucket
-key set is untouched, so a host holding this copy keeps working verbatim and a host suite pinning
-its declared buckets against its bracketed call sites survives the migration.

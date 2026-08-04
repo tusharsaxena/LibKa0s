@@ -1,19 +1,19 @@
-# `LibKa0s-Core-1.0` — version 3
+# `LibKa0s-Core-1.0` — version 4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Core surface points here rather than restating it. It describes the
-> contract *as it was at this version* — a later version is a different document, not an edit to
-> this one.
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
-| Files and minors | `Core.lua` minor **3** |
-| Shipped in | v1.3.0 – v1.6.3 |
-| Status | Superseded |
-| Supersedes | [version 2](./version-2-docs.md) |
-| Superseded by | [version 4](./version-4-docs.md) |
-| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 3 }` |
+| Files and minors | `Core.lua` minor **4** |
+| Shipped in | unreleased |
+| Status | **Current** |
+| Supersedes | [version 3](./version-3-docs.md) |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 4 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
 were never tagged, so they have no document of their own — a `Since` of 1 or 2 means "present for
@@ -46,6 +46,7 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `SECRET` | 1 | What an un-renderable value renders as (`"<secret>"`). Exported so a host's tests, its docs and this implementation cannot drift apart. |
 | `SKIN` | 1 | The one skin every Ka0s window wears. **Values changed at minor 3** and three keys were added — see [The skin table](#the-skin-table). Backdrop fields and every colour travel in one table, because taking the backdrop without the colours is exactly the drift this prevents. |
 | `ApplySkin(frame[, skin])` | 1 (2nd arg: 3) | Wear the skin. Makes the three calls a table cannot describe as well as the backdrop: the inner-border child frame (built once, re-tinted after), the title tint and the divider tint — each guarded on the skin key AND the frame member, so a window with no divider is fine. `skin` defaults to `lib.SKIN`; it exists so DebugLog's `skin` override reaches one implementation. A no-op on a frame with no `SetBackdrop`: undecorated is not broken. |
+| `RGBA(c, dr, dg, db, da)` | 4 | Read a stored color in **either** shape the collection persists — keyed `{ r =, g =, b =, a = }` or positional `{ r, g, b, a }` — and return four **numbers**, never a table. See [Reading a stored color](#reading-a-stored-color). |
 | `MakeCloseButton(parent, onClick)` | 1 | The thin × a Ka0s window closes with, returned unanchored for the caller to place. Returns `nil` where `CreateFrame` is unavailable (headless harness, or a load path with no UI). |
 | `MODULES` | 1 | `{ Core = <minor> }` — the live minor of every file in this major. The in-game answer to "which version am I actually running?", and the value that picks this document. |
 | `lib:New(descriptor)` | 1 | Build a prefixed chat printer for one host. See below. |
@@ -69,6 +70,60 @@ backdrop instead of reading this table is the drift the table exists to prevent.
 
 A host on Core 3 that passes its own `applySkin` to DebugLog is now overriding a default that
 already draws the full Ka0s edge — see the DebugLog docs for why that is usually the wrong answer.
+
+## Reading a stored color
+
+`lib.RGBA(c, dr, dg, db, da) -> r, g, b, a`, new at minor 4.
+
+The collection persists colors in **both** shapes, and neither can be retired without migrating
+users' SavedVariables — so a reader that handles both is permanent rather than transitional:
+
+| Shape | Written by |
+|---|---|
+| keyed `{ r =, g =, b =, a = }` | AbsorbTracker, KickCD, `LibKa0s-Slash-1.0`'s color parser |
+| positional `{ r, g, b, a }` | the Ka0s options color widget |
+
+The rules, in order:
+
+1. A non-table (`nil` included) yields the four defaults, unchanged.
+2. Any of `c.r` / `c.g` / `c.b` present means the **keyed** shape wins for all four channels — so a
+   `{ r = 1 }` cannot silently borrow its green from `c[2]`.
+3. Otherwise the positional shape.
+4. Each channel falls back **independently**, so a three-element color still gets its alpha.
+
+Absence is tested with `== nil`, not `or`. That is what makes a stored `false` survive: `or` would
+swallow it and hand back the default. A stored `0` was never at risk: `0` is **truthy** in Lua, so
+`(0 or 99)` evaluates to `0` and the `or` chain this replaced already returned it. `false` and `nil`
+are the only two values `or` swallows.
+
+The four defaults are **per-channel parameters and are deliberately not defaulted here.** The call
+sites across the collection genuinely disagree — `0,0,0,1` for a chat echo, `1,1,1,1` for a swatch,
+a per-widget tint elsewhere — and inventing a house default would silently recolor one of them.
+
+Nothing is allocated: four numbers in, four numbers out, which is what makes it safe on a repaint
+path.
+
+**Why it is in Core.** This library itself had two disagreeing readers: `LibKa0s-Slash-1.0`'s
+`FormatValue` read both shapes, `OptionsWidgets`' `decodeColor` read only the keyed one — so the
+library's own CLI could render a color its own widget could not decode. One decoder ends that.
+
+**Neither of those two call sites has adopted it yet, and that is deliberate.** `Slash.lua` and
+`Options.lua` declare `NEEDS_CORE = 1`, and [`../../releasing.md`](../../releasing.md) treats
+raising that floor as a breaking change to the *vendoring*: every consumer whose `libs/` still holds
+an older `Core.lua` would lose the whole major until it is re-vendored. It is the same reason
+`enumList` is duplicated verbatim between two majors rather than hoisted. So `lib.RGBA` ships for
+hosts now; the library folds its own copies in only alongside a floor raise made for other reasons.
+
+## What changed at this version
+
+**One addition, `lib.RGBA`, and nothing else.** No existing member, descriptor field or value moved,
+so a host written against minor 3 is byte-for-byte correct here — the skin table, `ApplySkin`,
+`MakeCloseButton` and the printer are all exactly what they were.
+
+`ApplySkin`'s body was restructured internally (the backdrop, the inner border and the two accent
+tints are now four named file-locals rather than one run of guards) to bring it under the
+collection's complexity cap. The order of the calls, every guard it makes and the frame it leaves
+behind are unchanged; nothing about it is observable from a call site.
 
 ## The printer descriptor
 
@@ -99,10 +154,3 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
-
-## Moving to version 4
-
-Nothing to change at a call site. Version 4 is **purely additive**: one new lib-level function,
-`lib.RGBA(c, dr, dg, db, da)`, which reads a stored color in either the keyed or the positional
-shape and returns four numbers. Every member described above is unchanged, `lib.SKIN`'s values do
-not move, and a host written against this document keeps working verbatim.

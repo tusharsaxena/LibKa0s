@@ -46,11 +46,11 @@ signature, because a second copy of a contract is a contract that drifts.
 
 | Major | What it is | Files | Current version |
 |---|---|---|---|
-| `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [3](docs/api/Core/version-3-docs.md) |
+| `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [4](docs/api/Core/version-4-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [7](docs/api/DebugLog/version-7-docs.md) |
-| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [5](docs/api/Slash/version-5-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [5.5.2](docs/api/Options/version-5.5.2-docs.md) |
-| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [5.3](docs/api/Perf/version-5.3-docs.md) |
+| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [6](docs/api/Slash/version-6-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [6.6.3](docs/api/Options/version-6.6.3-docs.md) |
+| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [6.3](docs/api/Perf/version-6.3-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
 returns before `NewLibrary` if Core is missing or below the minor it needs — so a consumer that
@@ -63,8 +63,8 @@ file in that major; those numbers, joined in load order, are the filename:
 
 ```lua
 /dump LibStub("LibKa0s-Options-1.0").MODULES
---> { Options = 5, OptionsWidgets = 5, OptionsScroll = 2 }
---> docs/api/Options/version-5.5.2-docs.md
+--> { Options = 6, OptionsWidgets = 6, OptionsScroll = 3 }
+--> docs/api/Options/version-6.6.3-docs.md
 ```
 
 [`docs/api/README.md`](docs/api/README.md) indexes every shipped version of every major, which
@@ -178,8 +178,8 @@ attached to which probe?" from in-game, once several addons each ship their own 
 bump cannot land without its changelog entry, nor an entry without its bump.
 
 Those same numbers name the API document for the copy in front of you —
-`{ Options = 5, OptionsWidgets = 5, OptionsScroll = 2 }` is
-[`docs/api/Options/version-5.5.2-docs.md`](docs/api/Options/version-5.5.2-docs.md). A minor bump is
+`{ Options = 6, OptionsWidgets = 6, OptionsScroll = 3 }` is
+[`docs/api/Options/version-6.6.3-docs.md`](docs/api/Options/version-6.6.3-docs.md). A minor bump is
 not released until its API document exists; see [`docs/api/README.md`](docs/api/README.md).
 
 Full release order — bump, changelog, regenerate, tag, then **re-vendor every consumer** — is in

@@ -714,3 +714,195 @@ test("options: a page with no defaults action still has a callable, inert OnDefa
   assertNil(rawget(ctx.panel, "defaultsOnClick"))
   rawget(ctx.panel, "OnDefault")()   -- must not raise, and must be the LIBRARY's, not the stub's
 end)
+
+-- ── the landing-page layout constants, and what the shell does NOT do with them ─────────────
+--
+-- Four constants promoted out of three hosts that each carried a private Helpers.BuildMainContent
+-- over the same values. The body is O.BuildLandingPage (tested next door in
+-- tests/test_options_widgets.lua); the shell's half is that `d.buildMain` stayed the ONLY main-page
+-- seam. The promotion is a renderer a host may CALL — not a descriptor field the shell sniffs for
+-- and wires up on the host's behalf — so lib:New answers exactly what it answered at minor 5.
+
+test("options: the landing constants are published on lib.LAYOUT at the promoted values", function()
+  -- The three hosts agreed on all four before the promotion. Changing one silently re-spaces every
+  -- landing page in the collection at once, which is exactly why they are pinned rather than left
+  -- to read as arbitrary.
+  assertEqual(lib.LAYOUT.LANDING_LOGO, 300)
+  assertEqual(lib.LAYOUT.LANDING_GAP_LOGO, 8)
+  assertEqual(lib.LAYOUT.LANDING_GAP_DESC, 12)
+  assertEqual(lib.LAYOUT.LANDING_GAP_HEAD, 6)
+end)
+
+test("options: LANDING_GAP_HEAD and SECTION_BOTTOM_SPACER are the same gap", function()
+  -- BuildLandingPage does not emit LANDING_GAP_HEAD itself: O.Section already puts
+  -- SECTION_BOTTOM_SPACER under every heading, and a second spacer would double the gap the hosts
+  -- render. That only holds while the two numbers agree, so the agreement is the assertion.
+  assertEqual(lib.LAYOUT.LANDING_GAP_HEAD, lib.LAYOUT.SECTION_BOTTOM_SPACER)
+end)
+
+test("options: a host wires the landing body itself, through the buildMain it always had",
+  function()
+  -- The supported route, and the only one. O.BuildLandingPage is an ordinary renderer, so a host
+  -- reaches it the same way it reaches any other main-page body.
+  local O
+  local spec = {
+    notes = "A fixture.",
+    sections = { { heading = "Slash Commands", rows = function() return { "/x help" } end } },
+  }
+  O = Fixture.new{ buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end }
+  O.CreateOptionsPanel()
+  mocks.__mainPanel:__fire("OnShow")
+
+  -- The main ctx stays private to the shell, so the page is read back through the widgets the
+  -- AceGUI factory handed out.
+  local texts = {}
+  for _, w in ipairs(O.AceGUI.__created) do
+    if w.type == "Heading" or w.type == "Label" then texts[#texts + 1] = tostring(w.text) end
+  end
+  local joined = table.concat(texts, "|")
+  assertTrue(joined:find("Slash Commands|/x help", 1, true) ~= nil,
+    "the landing body drew through the host's own buildMain: " .. joined)
+end)
+
+test("options: the shell installs no main renderer of its own, whatever else the descriptor carries",
+  function()
+  -- The regression this pins: a shell that reads some OTHER descriptor field and installs a
+  -- renderer from it changes what lib:New DOES for a descriptor that never asked for one. A host's
+  -- unrecognised keys are the host's business, and an unrecognised key is not a request to draw.
+  local O = Fixture.new{ landing = {
+    notes    = "never drawn",
+    sections = { { heading = "Never Drawn", rows = function() return { "/x help" } end } },
+  } }
+  O.CreateOptionsPanel()
+  local before = #O.AceGUI.__created
+  mocks.__mainPanel:__fire("OnShow")
+  assertEqual(#O.AceGUI.__created, before,
+    "nothing was rendered, and nothing raised — buildMain is the only main-page seam")
+end)
+
+test("options: the shell never writes buildMain onto the host's descriptor", function()
+  -- The descriptor is the HOST's table. A library that fills fields in on it makes "what did I
+  -- declare?" unanswerable from the host's own source, and two instances over one shared descriptor
+  -- would each see the other's installation.
+  local _, rec = Fixture.new()
+  rec.instance.CreateOptionsPanel()
+  assertNil(rec.d.buildMain)
+end)
+
+test("options: a descriptor with no buildMain draws no main body", function()
+  local O = Fixture.new()
+  O.CreateOptionsPanel()
+  local before = #O.AceGUI.__created
+  mocks.__mainPanel:__fire("OnShow")
+  assertEqual(#O.AceGUI.__created, before, "nothing was rendered, and nothing raised")
+end)
+
+-- ── the scrollbar patch's handle resolution ────────────────────────────────────────────────
+--
+-- The kit's scrollbar has no name and no thumb, so the enable/disable case above reaches only
+-- scrollbar:Enable / :Disable — the thumb tint and the two step buttons were never exercised, which
+-- is precisely the code the two mirrored branches duplicated.
+
+--- A widget shaped like AceGUI's ScrollFrame, with a NAMED scrollbar, a thumb and the two step
+--- buttons Blizzard parents to a named bar. Every call is appended to one ordered log, because
+--- which calls fired and in what ORDER is the contract; counters would report the same totals for a
+--- correct patch and one that tinted before it disabled.
+local function namedScrollFixture()
+  local log = {}
+  local function note(what) return function() log[#log + 1] = what end end
+
+  local thumb = { SetVertexColor = function(_, r, g, b, a)
+    log[#log + 1] = ("thumb:%s,%s,%s,%s"):format(r, g, b, a)
+  end }
+  local sb = mocks.__stubFrame()
+  sb.GetName          = function() return "LK_TestScrollBar" end
+  sb.GetThumbTexture  = function() return thumb end
+  sb.Enable           = note("bar:Enable")
+  sb.Disable          = note("bar:Disable")
+  sb.SetValue         = function(_, v) log[#log + 1] = "bar:SetValue" .. tostring(v) end
+
+  _G.LK_TestScrollBarScrollUpButton   = { Enable = note("up:Enable"),   Disable = note("up:Disable") }
+  _G.LK_TestScrollBarScrollDownButton = { Enable = note("down:Enable"), Disable = note("down:Disable") }
+
+  local scroll = {
+    scrollbar   = sb,
+    scrollframe = mocks.__stubFrame(),
+    content     = mocks.__stubFrame(),
+    localstatus = { offset = 0 },
+  }
+  scroll.content.original_width = 400
+  function scroll:FixScroll() end
+  function scroll:SetScroll(v) self.scrolledTo = v end
+
+  local function cleanup()
+    _G.LK_TestScrollBarScrollUpButton   = nil
+    _G.LK_TestScrollBarScrollDownButton = nil
+  end
+  return scroll, log, cleanup
+end
+
+test("options: a disabled bar parks the thumb, dims it, and disables both step buttons", function()
+  local O = Fixture.new()
+  local scroll, log, cleanup = namedScrollFixture()
+  O.PatchAlwaysShowScrollbar(scroll)
+
+  scroll.scrollframe.GetHeight = function() return 200 end
+  scroll.content.GetHeight     = function() return 50 end    -- fits, so nothing to scroll
+  local before = #log
+  scroll:FixScroll()
+  cleanup()
+
+  local fired = {}
+  for i = before + 1, #log do fired[#fired + 1] = log[i] end
+  -- SetValue first and unguarded, then the bar, then the tint, then the two buttons. The trailing
+  -- SetValue0 is FixScroll's own, after setEnabled has run.
+  assertEqual(table.concat(fired, " "),
+    "bar:SetValue0 bar:Disable thumb:0.5,0.5,0.5,0.6 up:Disable down:Disable bar:SetValue0")
+end)
+
+test("options: an enabled bar tints the thumb white and enables both step buttons", function()
+  local O = Fixture.new()
+  local scroll, log, cleanup = namedScrollFixture()
+  O.PatchAlwaysShowScrollbar(scroll)
+
+  scroll.scrollframe.GetHeight = function() return 200 end
+  scroll.content.GetHeight     = function() return 1000 end  -- overflows
+  local before = #log
+  scroll:FixScroll()
+  cleanup()
+
+  local fired = {}
+  for i = before + 1, #log do fired[#fired + 1] = log[i] end
+  assertEqual(fired[1], "bar:Enable", "the bar first")
+  assertEqual(fired[2], "thumb:1,1,1,1", "then the tint")
+  assertEqual(fired[3], "up:Enable")
+  assertEqual(fired[4], "down:Enable")
+end)
+
+test("options: a state change fires once, not once per FixScroll", function()
+  -- MoveScroll reads currentEnabled to swallow wheel input on a dead bar, so the short-circuit is
+  -- load-bearing as well as cheap.
+  local O = Fixture.new()
+  local scroll, log, cleanup = namedScrollFixture()
+  O.PatchAlwaysShowScrollbar(scroll)
+
+  scroll.scrollframe.GetHeight = function() return 200 end
+  scroll.content.GetHeight     = function() return 50 end
+  scroll:FixScroll()
+  local after = #log
+  scroll:FixScroll()
+  cleanup()
+  -- The second pass re-runs FixScroll's own SetValue(0) and nothing else: setEnabled saw no change.
+  assertEqual(#log - after, 1, "no second Disable, no second tint, no second button pass")
+end)
+
+test("options: a nameless scrollbar resolves no step buttons and still patches", function()
+  -- Headless, and in game before a bar has been named. Every handle below the scrollbar is
+  -- optional, and a patch that assumed otherwise would raise inside AceGUI's layout pass.
+  local O = Fixture.new()
+  local scroll = O.EnsureScroll(O.CreatePanel("TestPanelNameless", "Nameless", {}))
+  assertTrue(scroll._ka0sAlwaysScrollbar, "patched")
+  scroll.scrollframe.GetHeight = function() return 200 end
+  scroll.content.GetHeight     = function() return 1000 end
+  assertTrue(pcall(scroll.FixScroll, scroll), "and driving it raises on none of the nil handles")
+end)

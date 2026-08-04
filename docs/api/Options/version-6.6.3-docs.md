@@ -1,21 +1,21 @@
-# `LibKa0s-Options-1.0` — version 5.5.2
+# `LibKa0s-Options-1.0` — version 6.6.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
-> contract *as it was at this version* — a later version is a different document, not an edit to
-> this one.
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **5** · `OptionsWidgets.lua` **5** · `OptionsScroll.lua` **2** |
+| Files and minors | `Options.lua` **6** · `OptionsWidgets.lua` **6** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsScroll>`, in load order — the same three numbers `lib.MODULES` reports |
-| Shipped in | v1.2.0 – v1.6.3 |
-| Status | Superseded |
-| Supersedes | [version 4.4.2](./version-4.4.2-docs.md) |
-| Superseded by | [version 6.6.3](./version-6.6.3-docs.md) |
+| Shipped in | unreleased |
+| Status | **Current** |
+| Supersedes | [version 5.5.2](./version-5.5.2-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 5, OptionsWidgets = 5, OptionsScroll = 2 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 6, OptionsWidgets = 6, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O3`
 for `Options.lua` minor 3, `W4` for `OptionsWidgets.lua` minor 4, `S1` for `OptionsScroll.lua`
@@ -41,17 +41,37 @@ no panel — which is not the same thing as a dependency.
 
 ## What changed at this version
 
-Two additive changes, one per file:
+**The landing page comes upstream.** Three hosts each defined a function literally named
+`Helpers.BuildMainContent` that rendered the same page — the same four constants at the same values,
+the same logo block, the same guard pairs — differing only in the logo path and where the one-liner
+came from. Every primitive underneath it was already in this major (`EnsureScroll`, `ClearScroll`,
+`AddSpacer`, `Section`), the rows already came from `LibKa0s-Slash-1.0`'s one command-row formatter,
+and `buildMain(ctx)` was already the seam the page hangs off. The copies were host-side only because
+the **body** was; the body is here now, so the constants followed it.
 
-- **`Options.lua` minor 5** — `CreatePanel` now stamps the **Blizzard canvas contract** on every
-  panel it builds: `OnCommit` and `OnRefresh` inert, and `OnDefault` forwarding to the panel's
-  `defaultsOnClick`. The Settings window's own footer control and the header Defaults button become
-  one implementation instead of two that could disagree.
-- **`OptionsWidgets.lua` minor 5** — a `number` row that declares `values` renders as a **dropdown**
-  rather than a slider, matching what `LibKa0s-Slash-1.0`'s parser has always understood that shape
-  to mean.
+`buildMain` stays the *only* main-page seam. `O.BuildLandingPage` is a renderer a host **calls** —
 
-Nothing is removed and no existing call changes shape.
+    buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end
+
+— not a descriptor field the shell reads and wires up on the host's behalf. Installing a renderer
+the host never asked for would change what `lib:New` **does** for a descriptor rather than add to
+what it offers, and it would make "what draws my main page?" unanswerable from the host's own
+source. A host wanting extra content below the landing body calls `O.BuildLandingPage` as line one
+of its own `buildMain`.
+
+- **`OptionsWidgets.lua` minor 6** — two new instance members, `O.TextRow(ctx, text, opts)` and
+  `O.BuildLandingPage(ctx, spec)`. See [The landing page](#the-landing-page).
+- **`Options.lua` minor 6** — `lib.LAYOUT` gains `LANDING_LOGO`, `LANDING_GAP_LOGO`,
+  `LANDING_GAP_DESC` and `LANDING_GAP_HEAD`. **The descriptor is unchanged**: a host reaches the
+  landing body through the `buildMain(ctx)` it already had.
+- **`OptionsScroll.lua` minor 3** — internal only. The always-shown scrollbar patch is now three
+  named file-locals (the thumb, the step buttons, the gutter) instead of one run of guards, to bring
+  it under the collection's complexity cap. Every call it makes and every widget it leaves behind
+  are unchanged.
+
+Nothing is removed and no existing call changes shape. `OptionsWidgets`' flow engine was likewise
+restructured internally — the row starter, the group starter, the guarded render and the two
+pair/after predicates are named file-locals now — and lays out identically.
 
 ## What stays the host's
 
@@ -121,6 +141,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `ClearScroll(ctx)` | O1 | Release the children, reset the section tracker, and **reassign** `ctx.refreshers`. |
 | `Section(ctx, label)` | W1 | A full-width Heading, with the inter-section spacers. |
 | `AddSpacer(scroll, height)` | W1 | An invisible full-width row. |
+| `TextRow(ctx, text, opts)` | **W6** | A full-width Label, left-justified, added to `EnsureScroll(ctx)` and returned. `opts.fontObject` is a `_G` font-object **name**; `opts.justify` defaults to `"LEFT"`. Returns nil when AceGUI or the scroll is absent. Owns the `w.label` / `SetJustifyH` / `SetFontObject` guard pair **once**. |
+| `BuildLandingPage(ctx, spec)` | **W6** | The whole landing body: clear, logo, one-liner, then a heading and its rows per section. See [The landing page](#the-landing-page). |
 | `AttachTooltip(widget, label, tooltip)` | W1 | Works on AceGUI widgets and on plain frames. |
 | `InlineButtonPair(ctx, left, right)` | W1 | Two action buttons (not settings) in one Flow row, each inset to `BUTTON_PAIR_REL`. A throwing `onClick` is reported, never propagated into AceGUI's dispatch. |
 | `RenderField(ctx, row, parent, relWidth)` | W1 | Dispatch by `row.type` to one of the five makers. Returns nil for an unknown type rather than erroring — a misspelled type costs one row, not the page. |
@@ -139,9 +161,64 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
 | `LSMValues(mediaType)` | W1 (never-empty: **W4**) | A **deferred** closure pulling the live media hash at dropdown-render time. Never empty: a media library that has not loaded yet yields a single `None` placeholder, because a dropdown with no options cannot be opened and the CLI would refuse even the stored value. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. |
 | `PatchAlwaysShowScrollbar(scroll)` | S1 | The scrollbar override. Idempotent, and reversed on `OnRelease` — AceGUI pools ScrollFrames, so an unreleased patch escapes into whichever addon recycles the widget next. |
-| `ROW_VSPACER` / `SECTION_HEADING_H` / `BUTTON_PAIR_REL` | W1 | The cross-slice layout constants, so a host's own page code stays in lockstep with the engine's spacing. |
+| `ROW_VSPACER` / `SECTION_HEADING_H` / `BUTTON_PAIR_REL` | W1 | The cross-slice layout constants, mirrored onto the instance so a host's own page code stays in lockstep with the engine's spacing. The full table is `lib.LAYOUT`, read off the LibStub table. |
 | `AceGUI` | O1 | The resolved AceGUI-3.0, or nil. Filled in at `:New` and re-resolved at `CreateOptionsPanel`, which is the copy `onAceGUI` hands the host. |
 | `__panels()` / `__panelFor(pageKey)` | O1 | Test seams, following Perf's `__buckets()` idiom. The registry is private, so a host suite otherwise has no handle on a live ctx — and a real bug once shipped precisely because one page's ctx was unreachable. |
+
+## The landing page
+
+New at `OptionsWidgets.lua` minor 6 / `Options.lua` minor 6.
+
+### `O.TextRow(ctx, text, opts)` → widget or `nil`
+
+A full-width AceGUI `Label`, left-justified, added to `O.EnsureScroll(ctx)` and returned. A no-op
+returning `nil` when AceGUI or the scroll is absent, like every other maker here.
+
+| `opts` field | Type | Meaning |
+|---|---|---|
+| `fontObject` | string | A `_G` font-object **name** (`"GameFontHighlight"`), applied only when both `widget.label.SetFontObject` and `_G[name]` exist. A name rather than the object itself, so a host declaring a spec at file load does not have to have resolved a global yet. |
+| `justify` | string | Defaults to `"LEFT"`. |
+
+It earns its place independently of the landing page: it owns the
+`if w.label and w.label.SetJustifyH then` / `SetFontObject` pair **once**. That pair was written out
+per text widget per host — 28 times across six repos — and every copy is a place for one of the two
+halves to be forgotten, which fails silently and only in game.
+
+### `O.BuildLandingPage(ctx, spec)`
+
+Renders a whole landing body: `ClearScroll`, then the logo, the one-liner, and a heading plus its
+rows per section.
+
+| `spec` field | Type | Meaning |
+|---|---|---|
+| `logo` | string | Texture path. Omitted = no logo block and no gap under it. |
+| `logoSize` | number | Defaults to `lib.LAYOUT.LANDING_LOGO`. |
+| `notes` | string **or** function() → string | The one-liner. **A function is called at render time**, because a host reading its own TOC `Notes` cannot resolve it at declaration. Empty or nil skips both the notes block and its spacer. |
+| `sections` | array of `{ heading = string, rows = function() → array of string }` | `rows` is a **function**, not an array, for the same reason: a re-render then picks up a command registered since the spec was declared. Feed it `Sl:LandingRows`. |
+
+**The renderer owns the clear, not the registry.** A landing page re-renders on every re-show, and
+stacking a second copy of the logo under the first is what happens without it.
+
+Headings go through `O.Section`, rows through `O.TextRow`, gaps through `O.AddSpacer` — so the page
+is composed of this major's existing vocabulary and inherits every fix to it.
+
+### The four `lib.LAYOUT` constants
+
+Read off the LibStub table (`LibStub("LibKa0s-Options-1.0").LAYOUT`), not the instance.
+
+| Key | Value | Meaning |
+|---|---|---|
+| `LANDING_LOGO` | 300 | The logo block's height, and the default `spec.logoSize`. |
+| `LANDING_GAP_LOGO` | 8 | The gap under the logo. |
+| `LANDING_GAP_DESC` | 12 | The gap under the one-liner. |
+| `LANDING_GAP_HEAD` | 6 | The gap under a landing heading. |
+
+All four are promoted verbatim from three hosts that had each declared them and agreed on every
+value.
+
+`LANDING_GAP_HEAD` **must stay equal to `SECTION_BOTTOM_SPACER`**, which `O.Section` already emits
+under every heading — `BuildLandingPage` therefore does not draw a second one, and the day the two
+values diverge every landing heading loses its gap. `tests/test_options.lua` pins the equality.
 
 ## Row fields the flow engine reads
 
@@ -170,22 +247,3 @@ never removed or repurposed, so a host written against `1.1.1` keeps working unm
 The three files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 6.6.3
-
-Nothing to change at a call site. Version 6.6.3 is **purely additive**, and a host holding this copy
-keeps working verbatim — it simply keeps its own landing-page body until it is re-vendored.
-
-| New at 6.6.3 | What it gives you |
-|---|---|
-| `O.TextRow(ctx, text, opts)` | A full-width left-justified Label, owning the `w.label` / `SetJustifyH` / `SetFontObject` guard pair once instead of per widget per host. |
-| `O.BuildLandingPage(ctx, spec)` | The whole landing body — logo, one-liner, then a heading and its rows per section — over `EnsureScroll` / `ClearScroll` / `AddSpacer` / `Section`, all of which are already here. |
-| `lib.LAYOUT.LANDING_LOGO` / `LANDING_GAP_LOGO` / `LANDING_GAP_DESC` / `LANDING_GAP_HEAD` | The block sizing three hosts had each declared verbatim. |
-
-**The descriptor is unchanged.** 6.6.3 adds no field to it: `buildMain(ctx)` is still the only
-main-page seam, and a host reaches the shared landing body by writing
-`buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end` itself. The shell reads no landing
-spec off the descriptor and installs no renderer of its own, at this version or at 6.6.3.
-
-`OptionsScroll.lua` moves 2 → 3 with **no** surface change: `PatchAlwaysShowScrollbar` is
-internally three named file-locals now and patches exactly the same widgets in the same order.

@@ -108,6 +108,54 @@ test("lib: Reset clears every bucket and both fps arms", function()
   assertEqual(p.__fpsArms().suspended.frames, 0, "suspended arm zeroed")
 end)
 
+-- ── the Open/Close bracket ──────────────────────────────────────────────────────────────────
+
+test("lib: Open returns nil while the probe is off", function()
+  -- The whole contract of an idle probe: one boolean test at the call site and nothing else. A
+  -- number here would mean every bracketed function was still paying for a reading nobody wants.
+  local p = Fixture.new()
+  T.assertFalse(p.on, "the gate starts off")
+  T.assertNil(p.Open(), "no reading is taken")
+end)
+
+test("lib: Close on a nil t0 is a silent no-op", function()
+  -- This is what lets a multi-exit function write one unconditional P.Close per exit instead of
+  -- wrapping each one in `if t0 then`. It must not raise, and it must not invent a bucket.
+  local p = Fixture.new()
+  p.Close(nil, "outer")
+  assertEqual(next(p.__buckets()), nil, "no bucket was created")
+end)
+
+test("lib: a real bracket records its elapsed ms to the named bucket", function()
+  local p = Fixture.new()
+  p.on = true
+  T.mocks.__profileMs = 100
+  local t0 = p.Open()
+  assertEqual(t0, 100, "Open reads the clock while the probe is on")
+  T.mocks.__profileMs = 112.5
+  p.Close(t0, "outer")
+  local b = p.__buckets().outer
+  assertEqual(b.calls, 1, "calls")
+  assertEqual(b.totalMs, 12.5, "the elapsed span, not the clock reading")
+  assertEqual(p.__buckets().inner, nil, "and only the bucket it was handed")
+end)
+
+test("lib: Open/Close feed the same buckets P.Note does", function()
+  -- The key set is untouched by the pair, which is what keeps a host's declared-bucket test honest
+  -- when it converts some call sites to brackets and leaves others on Note.
+  local p = Fixture.new()
+  p.Note("outer", 5)
+  p.on = true
+  T.mocks.__profileMs = 0
+  local t0 = p.Open()
+  T.mocks.__profileMs = 3
+  p.Close(t0, "outer")
+  local b = p.__buckets().outer
+  assertEqual(b.calls, 2, "one bucket, both spellings")
+  assertEqual(b.totalMs, 8, "totalMs")
+  assertEqual(b.maxMs, 5, "maxMs is still the peak")
+end)
+
 -- ── JSON encoding ───────────────────────────────────────────────────────────────────────────
 
 test("lib: EncodeJSON emits object keys in sorted order", function()
@@ -301,6 +349,32 @@ test("lib: a ring written under another schema is discarded, not converted", fun
 end)
 
 -- ── report formatting ───────────────────────────────────────────────────────────────────────
+
+test("lib: FormatReport emits its sections in reading order", function()
+  -- The report is assembled by three separate section builders, so their order is a call site
+  -- rather than the reading order of one body — and every other case here searches the WHOLE
+  -- report for a substring, which passes however the sections are shuffled. The order is the
+  -- document's argument: the headline FPS delta the harness exists to produce, then the bucket
+  -- table that explains it, then the caveat about how to read that table. A nesting warning printed
+  -- above the buckets it warns about is advice with nothing yet to apply it to.
+  local p = Fixture.new()
+  local arms = p.__fpsArms()
+  arms.active.seconds, arms.active.frames = 10, 800
+  arms.suspended.seconds, arms.suspended.frames = 10, 1000
+  p.Note("outer", 4)
+  p.Note("inner", 1)
+  local lines = table.concat(p.FormatReport(p.BuildRecord("cap")), "\n")
+
+  local fps     = lines:find("active:", 1, true)
+  local delta   = lines:find("delta:", 1, true)
+  local buckets = lines:find("total ms", 1, true)     -- the bucket table's column header
+  local nesting = lines:find("do not sum", 1, true)
+
+  T.assertTrue(fps and delta and buckets and nesting, "all four landmarks are present")
+  T.assertTrue(fps < delta, "the arms come before the delta between them")
+  T.assertTrue(delta < buckets, "the FPS headline comes before the bucket table")
+  T.assertTrue(buckets < nesting, "and the nesting caveat comes after the table it qualifies")
+end)
 
 test("lib: FormatReport marks an unsampled arm rather than printing zeros", function()
   local p = Fixture.new()

@@ -758,7 +758,8 @@ cannot reach where you need it:
   appearance.
 
 - **A free-text `string` row cannot hold a value containing a space.** `lib.ParseValue` splits the
-  remainder on whitespace (`Slash.lua:246`) and `parseString` returns `args[1]` (`Slash.lua:217`), so
+  remainder on whitespace (`Slash.lua:335`, in `lib.ParseValue`) and `parseString` returns `args[1]`
+  (`Slash.lua:306`), so
   `/at set <path> Hello World` stores `"Hello"`. It stores it silently — nothing raises, and only the
   echo shows the truncation. slash-commands-§6 sanctions a descriptor `parse` for exotic row types and
   that is what prettychat supplies, so a host is not stuck; but this is not an exotic type, it is the
@@ -829,7 +830,8 @@ misfit as a library gap on first contact.
 - **The numeric-enum dropdown (OptionsWidgets minor 5) — two consumers: BankLedger, LootHistory**
   (`../BankLedger/settings/Schema.lua:76,83`, `../LootHistory/settings/Schema.lua:61,70`). The count
   moved; the warning did not, and it is the reason this entry is here. The route is **inferred** from
-  the presence of a `values` list on a `type="number"` row (`LibKa0s/OptionsWidgets.lua:466`), not
+  the presence of a `values` list on a `type="number"` row (`LibKa0s/OptionsWidgets.lua:698`, the
+  number arm of `O.RenderField`), not
   opted into. Any existing number row that grows a `values` key silently reclassifies from slider to
   dropdown, with no code change and no test anywhere that would see it. KickCD's 31 number rows all
   carry min/max/step today; the first one to gain a list flips. It has also never been rendered

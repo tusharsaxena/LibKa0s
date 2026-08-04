@@ -130,8 +130,48 @@ test("sl: FormatValue renders every schema type the library knows", function()
   assertEqual(slash.FormatValue(row("showOnlyInCombat"), nil), "nil")
 end)
 
+test("sl: a color channel the stored table omits falls back per channel, alpha to 1 and RGB to 0",
+  function()
+  -- The per-channel defaults used to be inline `or 0` / `or 1` literals in FormatValue and are a
+  -- data table now, one positional triple per channel. Nothing else pins the numbers, and in a
+  -- triple a wrong default is one digit among twelve rather than a visible edit to a named line —
+  -- so an alpha that regressed to 0 would ship, and every color on the CLI would read as fully
+  -- transparent while looking perfectly well-formed.
+  --
+  -- Alpha is the channel that matters: a three-element color is the shape the Ka0s options widget
+  -- writes, so "no fourth element" is the common case, not the corner one. RGB defaulting to 0 is
+  -- pinned alongside it because the two defaults sit in the same table and are edited together.
+  assertEqual(slash.FormatValue({ type = "color" }, { 0.1, 0.2, 0.3 }),
+    "{0.10, 0.20, 0.30, 1.00}", "a three-element positional color is opaque, not transparent")
+  assertEqual(slash.FormatValue({ type = "color" }, { r = 0.1, g = 0.2, b = 0.3 }),
+    "{0.10, 0.20, 0.30, 1.00}", "and so is a keyed one with no alpha")
+  assertEqual(slash.FormatValue({ type = "color" }, { a = 0.4 }),
+    "{0.00, 0.00, 0.00, 0.40}", "the RGB channels default to 0, each on its own")
+end)
+
 test("sl: a number row with no fmt renders bare", function()
   assertEqual(slash.FormatValue({ type = "number" }, 42), "42")
+end)
+
+test("sl: a row whose value does not fit its declared type falls through to the generic renderer",
+  function()
+  -- FormatValue dispatches on row.type through a table of formatters, and a formatter handed
+  -- something it cannot render returns nil to fall THROUGH — which is what the old if-chain did by
+  -- simply not matching. That distinction is invisible for a value of the expected shape, and these
+  -- cases are what hold it: a formatter answering its own sentinel, or its own tostring, instead of
+  -- declining would swallow the fall-through and nothing else here would notice.
+  --
+  -- Not hypothetical. A row's declared type is what the schema SAYS; the value is whatever the
+  -- host's `get` actually returns, and the two disagree while a setting is mid-migration between
+  -- shapes — the exact moment someone reads the value off the CLI to find out what is stored.
+  assertEqual(slash.FormatValue({ type = "color" }, "not-a-table"), "not-a-table",
+    "a color row holding a plain string renders the string")
+  assertEqual(slash.FormatValue({ type = "color" }, 7), "7",
+    "and one holding a number renders the number")
+  assertEqual(slash.FormatValue({ type = "string" }, "text"), "text",
+    "a non-empty string is the generic renderer's answer, not the string formatter's")
+  assertEqual(slash.FormatValue({ type = "sometype" }, "text"), "text",
+    "and a row type the library has never heard of reaches it too")
 end)
 
 -- A stand-in for a WoW combat "secret" value, the same shape the Core suite uses: `..` succeeds on
@@ -218,6 +258,109 @@ test("sl: a guarded FormatValue still survives the FormatKV string.format around
   end)
   T.assertTrue(ok, "rendering a secret must not raise: " .. tostring(out))
   assertEqual(out, "|cFFFFFF00units.player.barWidth|r = |cFFFFFFFF" .. T.core.SECRET .. "|r")
+end)
+
+-- ── the command primitives ─────────────────────────────────────────────────────────────────
+
+test("sl: SplitVerb lowercases the verb and preserves the remainder's case", function()
+  -- The asymmetry is the contract: a verb is an identifier, the remainder is user data, and both
+  -- AceDB profile names and schema paths are case-sensitive.
+  local verb, rest = slash.SplitVerb("USE MyProfile")
+  assertEqual(verb, "use")
+  assertEqual(rest, "MyProfile")
+end)
+
+test("sl: SplitVerb keeps the remainder's internal spacing", function()
+  -- A color is several tokens, so collapsing runs of spaces would change what the parser sees.
+  local verb, rest = slash.SplitVerb("set  1  0.5  0 ")
+  assertEqual(verb, "set")
+  assertEqual(rest, "1  0.5  0 ")
+end)
+
+test("sl: SplitVerb answers two empty strings for empty and nil input", function()
+  local verb, rest = slash.SplitVerb("")
+  assertEqual(verb, "")
+  assertEqual(rest, "")
+  verb, rest = slash.SplitVerb(nil)
+  assertEqual(verb, "")
+  assertEqual(rest, "")
+end)
+
+test("sl: SplitVerb answers an empty remainder for a bare verb", function()
+  local verb, rest = slash.SplitVerb("List")
+  assertEqual(verb, "list")
+  assertEqual(rest, "")
+end)
+
+test("sl: FindCommand returns the whole triple for a matching name", function()
+  local handler = function() end
+  local list = { { "list", "List them", function() end }, { "use", "Use one", handler } }
+  local entry = slash.FindCommand(list, "use")
+  T.assertTrue(entry ~= nil, "the entry was found")
+  assertEqual(entry[2], "Use one")
+  assertEqual(entry[3], handler)
+end)
+
+test("sl: FindCommand compares verbatim and answers nil for a miss", function()
+  -- Callers lowercase through SplitVerb first; the lookup itself does not fold, so a table
+  -- declaring a mixed-case verb keeps it.
+  local list = { { "use", "Use one", function() end } }
+  T.assertNil(slash.FindCommand(list, "USE"))
+  T.assertNil(slash.FindCommand(list, "nope"))
+end)
+
+test("sl: FindCommand answers nil rather than raising on a missing list", function()
+  T.assertNil(slash.FindCommand(nil, "use"))
+  T.assertNil(slash.FindCommand("not a table", "use"))
+end)
+
+test("sl: CommandRows renders one row per entry through the shared formatter", function()
+  local list = { { "debug", "Toggle debug" }, { "spells", "Manage spells" } }
+  local rows = slash.CommandRows("/kcd", list)
+  assertEqual(#rows, 2)
+  assertEqual(rows[1], slash.FormatRow("/kcd debug", "Toggle debug"))
+  assertEqual(rows[2], slash.FormatRow("/kcd spells", "Manage spells"))
+end)
+
+test("sl: CommandRows defaults to no indent and applies the one it is given", function()
+  local list = { { "on", "Turn it on" } }
+  assertEqual(slash.CommandRows("/cm bar", list)[1]:sub(1, 1), "|", "no leading indent by default")
+  assertEqual(slash.CommandRows("/cm bar", list, "  ")[1],
+    "  " .. slash.CommandRows("/cm bar", list)[1], "the indent is the only difference")
+end)
+
+test("sl: CommandRows answers an empty list rather than raising on a missing table", function()
+  assertEqual(#slash.CommandRows("/th", nil), 0)
+  assertEqual(#slash.CommandRows("/th", "not a table", "  "), 0)
+end)
+
+test("sl: HelpRows and LandingRows render through CommandRows", function()
+  -- The sub level and the top level share one formatter by construction, which is the whole point
+  -- of the promotion: a second hand-rolled row format is how the two drifted apart before.
+  local Sl, rec = F.new()
+  assertEqual(table.concat(Sl:HelpRows(), "\n"),
+    table.concat(slash.CommandRows("/th", rec.commands, "  "), "\n"))
+  assertEqual(table.concat(Sl:LandingRows(), "\n"),
+    table.concat(slash.CommandRows("/th", rec.commands, ""), "\n"))
+end)
+
+test("sl: ParseBool accepts the same eight words the error string advertises", function()
+  for _, word in ipairs({ "true", "1", "on", "yes", "TRUE", "On" }) do
+    assertEqual(slash.ParseBool(word), true, word)
+  end
+  for _, word in ipairs({ "false", "0", "off", "no", "OFF" }) do
+    assertEqual(slash.ParseBool(word), false, word)
+  end
+end)
+
+test("sl: ParseBool answers nil, never false, for a non-boolean word", function()
+  -- nil means "not a boolean word", which is what lets a caller implement toggle-on-absent. A
+  -- false here would make `/xx bar` and `/xx bar off` indistinguishable.
+  T.assertNil(slash.ParseBool("maybe"))
+  T.assertNil(slash.ParseBool(""))
+  T.assertNil(slash.ParseBool(nil))
+  T.assertNil(slash.ParseBool(1))
+  T.assertNil(slash.ParseBool({}))
 end)
 
 -- ── the parser ─────────────────────────────────────────────────────────────────────────────
