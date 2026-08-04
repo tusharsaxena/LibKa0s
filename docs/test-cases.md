@@ -89,7 +89,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: a close button with no measurable width falls back to the library's own
 - dbg: with no close button at all the offsets are still the minor-3 defaults
 
-### test_slash.lua (66)
+### test_slash.lua (79)
 
 - sl: an empty message prints the help index
 - sl: whitespace-only input is treated as empty
@@ -113,6 +113,19 @@ badge and any count quoted in the docs must agree with it.
 - sl: a host colour codec round-trips through set and its echo
 - sl: CliReset's echo uses the host colour codec too
 - sl: a guarded FormatValue still survives the FormatKV string.format around it
+- sl: SplitVerb lowercases the verb and preserves the remainder's case
+- sl: SplitVerb keeps the remainder's internal spacing
+- sl: SplitVerb answers two empty strings for empty and nil input
+- sl: SplitVerb answers an empty remainder for a bare verb
+- sl: FindCommand returns the whole triple for a matching name
+- sl: FindCommand compares verbatim and answers nil for a miss
+- sl: FindCommand answers nil rather than raising on a missing list
+- sl: CommandRows renders one row per entry through the shared formatter
+- sl: CommandRows defaults to no indent and applies the one it is given
+- sl: CommandRows answers an empty list rather than raising on a missing table
+- sl: HelpRows and LandingRows render through CommandRows
+- sl: ParseBool accepts the same eight words the error string advertises
+- sl: ParseBool answers nil, never false, for a non-boolean word
 - sl: booleans accept the whole human vocabulary
 - sl: a junk boolean is rejected and the accepted words are listed
 - sl: a number is clamped to the row's range rather than rejected
@@ -158,7 +171,7 @@ badge and any count quoted in the docs must agree with it.
 - slash: the format hook takes precedence over the colour codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
 
-### test_options.lua (53)
+### test_options.lua (63)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -213,8 +226,18 @@ badge and any count quoted in the docs must agree with it.
 - options: OnDefault forwards to a defaultsOnClick parked AFTER CreatePanel
 - options: OnDefault and the header Defaults button run the SAME action
 - options: a page with no defaults action still has a callable, inert OnDefault
+- options: the landing constants are published on lib.LAYOUT at the promoted values
+- options: LANDING_GAP_HEAD and SECTION_BOTTOM_SPACER are the same gap
+- options: a descriptor with `landing` and no buildMain gets a landing page built for it
+- options: a host's own buildMain wins over `landing`
+- options: the shell never writes buildMain onto the host's descriptor
+- options: a descriptor with neither buildMain nor landing draws no main body
+- options: a disabled bar parks the thumb, dims it, and disables both step buttons
+- options: an enabled bar tints the thumb white and enables both step buttons
+- options: a state change fires once, not once per FixScroll
+- options: a nameless scrollbar resolves no step buttons and still patches
 
-### test_options_widgets.lua (62)
+### test_options_widgets.lua (78)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -278,6 +301,22 @@ badge and any count quoted in the docs must agree with it.
 - widgets: choosing an entry writes the number through the host's set
 - widgets: a number row with NO values list still renders as a Slider
 - widgets: a number row whose values function answers empty falls back to a Slider
+- widgets: TextRow adds a full-width Label carrying the text
+- widgets: TextRow left-justifies by default and honours an explicit justify
+- widgets: TextRow applies a font object by NAME, and only when the global exists
+- widgets: TextRow draws nothing and returns nil when there is no scroll to draw into
+- widgets: BuildLandingPage draws the logo block at its declared size, then a spacer
+- widgets: BuildLandingPage honours an explicit logoSize
+- widgets: a spec with no logo draws no logo block
+- widgets: BuildLandingPage calls a notes FUNCTION at render time
+- widgets: an empty one-liner skips the notes Label AND its spacer
+- widgets: BuildLandingPage renders a heading and one row per section entry
+- widgets: a section's rows are re-evaluated on every render
+- widgets: a re-render clears the previous body instead of stacking a second copy
+- widgets: the second landing heading gets a top spacer and the first does not
+- widgets: the gap under a landing heading is emitted once, by Section
+- widgets: BuildLandingPage tolerates a nil spec and an empty one
+- widgets: the landing page's text rows carry the same justify guard TextRow owns
 
 ### test_perf_core.lua (52)
 
@@ -468,9 +507,9 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | test_core.lua | 21 |
 | test_debuglog.lua | 56 |
-| test_slash.lua | 66 |
-| test_options.lua | 53 |
-| test_options_widgets.lua | 62 |
+| test_slash.lua | 79 |
+| test_options.lua | 63 |
+| test_options_widgets.lua | 78 |
 | test_perf_core.lua | 52 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 40 |
@@ -478,4 +517,4 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 9 |
 | test_versioning.lua | 7 |
 | test_kitsync.lua | 4 |
-| **Total** | **420** |
+| **Total** | **459** |

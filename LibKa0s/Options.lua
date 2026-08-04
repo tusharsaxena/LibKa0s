@@ -58,6 +58,18 @@ lib.LAYOUT = {
   SECTION_BOTTOM_SPACER = 6,
   SECTION_HEADING_H     = 26,
 
+  -- The landing page's block sizing, promoted from three hosts that each declared these four
+  -- verbatim and agreed on every value. They lived host-side only because the BODY did; the body
+  -- is O.BuildLandingPage now, so the constants follow it.
+  --
+  -- LANDING_GAP_HEAD is the gap under a landing heading. O.Section already emits exactly that as
+  -- SECTION_BOTTOM_SPACER, so BuildLandingPage does not draw a second one — the two values must
+  -- stay equal, which tests/test_options.lua pins.
+  LANDING_LOGO          = 300,
+  LANDING_GAP_LOGO      = 8,
+  LANDING_GAP_DESC      = 12,
+  LANDING_GAP_HEAD      = 6,
+
   -- Relative width of each button in a cell-filling paired-button row (options-ui-§8). A flat
   -- 0.5/0.5 lets AceGUI's Flow layout push the right button's border into the ScrollFrame's clip
   -- rectangle, shaving it; the 0.492 inset clears the clip while staying visually a 50/50 split.
@@ -116,6 +128,11 @@ lib.STRINGS = {
 ---   onAceGUI(AceGUI)           optional. Handed the resolved AceGUI so the host can stash it
 ---                              (Ka0s standard §3.4) for its own page files.
 ---   buildMain(ctx)             optional. Draws the main page's body on its first OnShow.
+---   landing        table       optional. A landing-page spec (logo / notes / sections — see
+---                              O.BuildLandingPage). When `buildMain` is ABSENT, the shell installs
+---                              one over this. A host that wants extra content below the landing
+---                              body keeps its own buildMain and calls O.BuildLandingPage itself as
+---                              line one.
 ---   colorDecode(stored)        optional. -> r, g, b, a. Defaults to the {r=,g=,b=,a=} shape.
 ---   colorEncode(r, g, b, a)    optional. -> stored. Defaults to the same.
 ---   debug(tag, fmt, ...)       optional. Developer log line.
@@ -539,8 +556,17 @@ function lib:New(d)
     -- lays children out against the parent's CURRENT width, which is zero at enable time. Routing
     -- it through SetRenderer rather than a private flag also gives the main page the combat guard
     -- and the dirty-re-render, which it had neither of.
-    if type(d.buildMain) == "function" then
-      O.SetRenderer(mainCtx, d.buildMain)
+    --
+    -- A descriptor carrying `landing` and no buildMain gets one built over O.BuildLandingPage. The
+    -- host's own callback always wins, and the closure is built here rather than written onto `d`:
+    -- the descriptor is the HOST's table, and a library that mutates it makes "what did I declare?"
+    -- unanswerable from the host's own source.
+    local buildMain = d.buildMain
+    if buildMain == nil and type(d.landing) == "table" then
+      buildMain = function(ctx) O.BuildLandingPage(ctx, d.landing) end
+    end
+    if type(buildMain) == "function" then
+      O.SetRenderer(mainCtx, buildMain)
     end
 
     mainCategory   = Settings.RegisterCanvasLayoutCategory(mainCtx.panel, d.parentTitle)
