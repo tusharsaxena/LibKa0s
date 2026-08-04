@@ -10,6 +10,38 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.6.1 — 2026-08-04
+
+**No library file moved.** `testkit` revision **2 → 3**; `run-automated-tests.sh` only.
+
+Two fixes, both found by *using* revision 2 across the collection rather than by a test — which is
+the argument for adopting a new kit widely and quickly rather than in one repo.
+
+### Artifacts are written without ANSI escapes
+
+`luacheck` and the harness colour their output when they believe a terminal is attached, and the raw
+escapes were landing verbatim in `lint.txt` and `tests.txt`:
+
+```
+Checking core/Compat.lua    <0x1b>[0m<0x1b>[32m<0x1b>[1mOK<0x1b>[0m
+```
+
+Unreadable in an editor, and pure noise in a diff between two runs — which is most of what a stored
+artifact is *for*. The parsers had always stripped colour for their own use; the stored evidence now
+gets the same treatment (`strip_ansi` on every emitted artifact, plus `--no-color` where `luacheck`
+supports it, probed once rather than assumed).
+
+### Run directories are stamped in local time, `YYYYMMDD-HHMMSS`
+
+Was `YYYY-MM-DD-HHMMSS` in UTC. A record is read by the person who ran it, usually minutes later, and
+a folder name that disagrees with their clock costs a mental conversion on every glance. The manifest's
+`startedAt` now carries an explicit UTC **offset** (`2026-08-04T17:03:11+05:30`) rather than a `Z`, so
+the instant stays unambiguous once the record outlives the machine — local for reading, offset for
+arithmetic.
+
+"Local" is the *machine's* timezone: a host left on `Etc/UTC` stamps UTC and is behaving correctly.
+A developer expecting their own wall clock sets the system timezone, not the runner.
+
 ## v1.6.0 — 2026-08-04
 
 **Core minor 3**, **DebugLog minor 7**, **Slash minor 5**, **Options minor 5**,
@@ -21,7 +53,7 @@ cannot drift. Release order is in
 `testkit/run-automated-tests.sh` is new, and it is the only executable in the kit. It runs the four
 out-of-game suites — `luacheck`, the headless `tests/run.lua` harness, the offline `tests/perf.lua`
 scenarios and `lizard` — and records every result as one frozen bundle under
-`docs/automated-tests/<YYYY-MM-DD-HHMMSS>/`, then rolls the run into `docs/automated-tests/RESULTS.md`.
+`docs/automated-tests/<YYYYMMDD-HHMMSS>/`, then rolls the run into `docs/automated-tests/RESULTS.md`.
 The normative rules for the artifact are the standard's (`automated-tests`); this is the tool that
 produces it.
 

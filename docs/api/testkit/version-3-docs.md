@@ -1,4 +1,4 @@
-# `testkit` — version 2
+# `testkit` — version 3
 
 > **This document is the source of truth for this version of the kit.** Anything else in this repo
 > that describes the kit's surface points here rather than restating it. It describes the contract
@@ -7,14 +7,14 @@
 | | |
 |---|---|
 | Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `run-automated-tests.sh`, `README.md` |
-| Version | **2** (`Kit.VERSION`, top of `framework.lua`) |
+| Version | **3** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.6.0 |
-| Status | **Superseded** by [version 3](version-3-docs.md) |
-| Supersedes | [version 1](version-1-docs.md) — adds `run-automated-tests.sh`; nothing in the Lua surface changed |
-| Superseded by | [version 3](version-3-docs.md) — runner fixes: ANSI-clean artifacts, local-time `YYYYMMDD-HHMMSS` stamps |
+| First released in | v1.6.1 |
+| Status | **Current** |
+| Supersedes | [version 2](version-2-docs.md) — two runner bug fixes; nothing in the Lua surface changed |
+| Superseded by | — |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
-| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `2` |
+| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `3` |
 
 ## What this is, and what it is not
 
@@ -23,9 +23,23 @@ the source loader, the universal half of the WoW-API mock, and — new in this r
 consolidated automated-test runner. The Lua surface runs under plain `lua` from a repo root; the
 runner is a bash script invoked from the same place.
 
-**Nothing in the Lua surface changed between version 1 and version 2.** A consumer upgrading from 1
-re-vendors the folder and gains one file; no suite, mock seam or assertion behaves differently. The
-revision moved because the kit's *file set* moved, which is what the byte-identity gate compares.
+**Nothing in the Lua surface changed between version 2 and version 3**, and no file was added or
+removed. The revision moved because `run-automated-tests.sh` changed, and the byte-identity gate
+compares content as well as the file set — a consumer holding revision 2's script fails against a
+revision 3 tag.
+
+Two fixes, both found by using the thing rather than by a test:
+
+- **Artifacts are written without ANSI escapes.** `luacheck` and the harness colour their output
+  when they believe a terminal is attached, and the raw escapes (`\033[32m\033[1mOK`) were landing
+  verbatim in `lint.txt` and `tests.txt` — unreadable in an editor and pure noise in a diff between
+  two runs. The parsers had always stripped for their own use; the stored evidence now gets the same
+  treatment, plus `--no-color` where `luacheck` supports it.
+- **Run directories are stamped in local time as `YYYYMMDD-HHMMSS`**, not UTC as
+  `YYYY-MM-DD-HHMMSS`. A record is read by the person who ran it, usually minutes later; a folder
+  name that disagrees with their clock costs a mental conversion every glance. `startedAt` in the
+  manifest now carries an explicit UTC offset, so the instant stays unambiguous once the record
+  outlives the machine.
 
 It is **not a LibStub library**. It registers nothing, no load order depends on it, and it must
 never ship: it is vendored under `tests/`, which every addon's `.pkgmeta` already excludes via its
