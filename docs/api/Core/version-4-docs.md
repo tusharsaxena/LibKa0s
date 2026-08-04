@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **4** |
-| Shipped in | unreleased |
+| Shipped in | v1.7.0 |
 | Status | **Current** |
 | Supersedes | [version 3](./version-3-docs.md) |
 | Superseded by | — |

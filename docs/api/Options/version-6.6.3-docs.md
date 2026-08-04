@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **6** · `OptionsWidgets.lua` **6** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsScroll>`, in load order — the same three numbers `lib.MODULES` reports |
-| Shipped in | unreleased |
+| Shipped in | v1.7.0 |
 | Status | **Current** |
 | Supersedes | [version 5.5.2](./version-5.5.2-docs.md) |
 | Superseded by | — |

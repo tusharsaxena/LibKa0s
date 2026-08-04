@@ -9,7 +9,7 @@
 | Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **6** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | unreleased (branch `feat/fix-ccn`) |
+| First released in | v1.7.0 |
 | Status | **Current** |
 | Supersedes | [version 5](version-5-docs.md) — `Max CCN` measured over every function, not over the warnings block |
 | Superseded by | — |

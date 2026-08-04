@@ -48,7 +48,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [4](./Core/version-4-docs.md) | `Core.lua` 4 | unreleased | **Current** |
+| [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | **Current** |
 | [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.6.3 | Superseded |
 | [2](./Core/version-2-docs.md) | `Core.lua` 2 | v1.0.0 – v1.2.0 | Superseded |
 
@@ -66,7 +66,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [6](./Slash/version-6-docs.md) | `Slash.lua` 6 | unreleased | **Current** |
+| [6](./Slash/version-6-docs.md) | `Slash.lua` 6 | v1.7.0 | **Current** |
 | [5](./Slash/version-5-docs.md) | `Slash.lua` 5 | v1.2.0 – v1.6.3 | Superseded |
 | [4](./Slash/version-4-docs.md) | `Slash.lua` 4 | v1.0.0, v1.1.0, v1.1.1 | Superseded |
 
@@ -74,7 +74,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [6.6.3](./Options/version-6.6.3-docs.md) | `Options.lua` 6 · `OptionsWidgets.lua` 6 · `OptionsScroll.lua` 3 | unreleased | **Current** |
+| [6.6.3](./Options/version-6.6.3-docs.md) | `Options.lua` 6 · `OptionsWidgets.lua` 6 · `OptionsScroll.lua` 3 | v1.7.0 | **Current** |
 | [5.5.2](./Options/version-5.5.2-docs.md) | `Options.lua` 5 · `OptionsWidgets.lua` 5 · `OptionsScroll.lua` 2 | v1.2.0 – v1.6.3 | Superseded |
 | [4.4.2](./Options/version-4.4.2-docs.md) | `Options.lua` 4 · `OptionsWidgets.lua` 4 · `OptionsScroll.lua` 2 | v1.1.0, v1.1.1 | Superseded |
 | [3.3.2](./Options/version-3.3.2-docs.md) | `Options.lua` 3 · `OptionsWidgets.lua` 3 · `OptionsScroll.lua` 2 | v1.0.0 | Superseded |
@@ -83,7 +83,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [6.3](./Perf/version-6.3-docs.md) | `Perf.lua` 6 · `PerfPanel.lua` 3 | unreleased | **Current** |
+| [6.3](./Perf/version-6.3-docs.md) | `Perf.lua` 6 · `PerfPanel.lua` 3 | v1.7.0 | **Current** |
 | [5.3](./Perf/version-5.3-docs.md) | `Perf.lua` 5 · `PerfPanel.lua` 3 | v1.0.0 – v1.6.3 (every release to date) | Superseded |
 
 ### `testkit`
@@ -99,7 +99,8 @@ are never adopted separately. It is indexed here because the question it answers
 | [2](./testkit/version-2-docs.md) | + `run-automated-tests.sh` | v1.6.0 | Superseded |
 | [3](./testkit/version-3-docs.md) | same files; runner fixes | v1.6.1 | Superseded |
 | [4](./testkit/version-4-docs.md) | same files; full lizard footer in the manifest | v1.6.2 | Superseded |
-| [5](./testkit/version-5-docs.md) | same files; wider RESULTS.md table + subset/stale-header honesty | v1.6.3 | **Current** |
+| [5](./testkit/version-5-docs.md) | same files; wider RESULTS.md table + subset/stale-header honesty | v1.6.3 | Superseded |
+| [6](./testkit/version-6-docs.md) | same files; `Max CCN` measured over every function, not the warnings block | v1.7.0 | **Current** |
 
 The kit's compatibility rule is the one place this directory's model differs. The library negotiates
 skew — LibStub compares minors and the highest copy wins, so an older vendored copy is a *supported
