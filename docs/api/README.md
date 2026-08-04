@@ -48,7 +48,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.5.0 | **Current** |
+| [4](./Core/version-4-docs.md) | `Core.lua` 4 | unreleased | **Current** |
+| [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.6.3 | Superseded |
 | [2](./Core/version-2-docs.md) | `Core.lua` 2 | v1.0.0 – v1.2.0 | Superseded |
 
 ### `LibKa0s-DebugLog-1.0`
@@ -65,14 +66,16 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [5](./Slash/version-5-docs.md) | `Slash.lua` 5 | v1.2.0 – v1.5.0 | **Current** |
+| [6](./Slash/version-6-docs.md) | `Slash.lua` 6 | unreleased | **Current** |
+| [5](./Slash/version-5-docs.md) | `Slash.lua` 5 | v1.2.0 – v1.6.3 | Superseded |
 | [4](./Slash/version-4-docs.md) | `Slash.lua` 4 | v1.0.0, v1.1.0, v1.1.1 | Superseded |
 
 ### `LibKa0s-Options-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [5.5.2](./Options/version-5.5.2-docs.md) | `Options.lua` 5 · `OptionsWidgets.lua` 5 · `OptionsScroll.lua` 2 | v1.2.0 – v1.5.0 | **Current** |
+| [6.6.3](./Options/version-6.6.3-docs.md) | `Options.lua` 6 · `OptionsWidgets.lua` 6 · `OptionsScroll.lua` 3 | unreleased | **Current** |
+| [5.5.2](./Options/version-5.5.2-docs.md) | `Options.lua` 5 · `OptionsWidgets.lua` 5 · `OptionsScroll.lua` 2 | v1.2.0 – v1.6.3 | Superseded |
 | [4.4.2](./Options/version-4.4.2-docs.md) | `Options.lua` 4 · `OptionsWidgets.lua` 4 · `OptionsScroll.lua` 2 | v1.1.0, v1.1.1 | Superseded |
 | [3.3.2](./Options/version-3.3.2-docs.md) | `Options.lua` 3 · `OptionsWidgets.lua` 3 · `OptionsScroll.lua` 2 | v1.0.0 | Superseded |
 
@@ -80,7 +83,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [5.3](./Perf/version-5.3-docs.md) | `Perf.lua` 5 · `PerfPanel.lua` 3 | v1.0.0 – v1.5.0 (every release) | **Current** |
+| [6.3](./Perf/version-6.3-docs.md) | `Perf.lua` 6 · `PerfPanel.lua` 3 | unreleased | **Current** |
+| [5.3](./Perf/version-5.3-docs.md) | `Perf.lua` 5 · `PerfPanel.lua` 3 | v1.0.0 – v1.6.3 (every release to date) | Superseded |
 
 ### `testkit`
 

@@ -15,7 +15,7 @@
 -- Depends on LibStub and nothing else, deliberately — no Ace3, so the lib is adoptable by addons
 -- that are not on the Ace substrate.
 
-local MAJOR, MINOR = "LibKa0s-Core-1.0", 3
+local MAJOR, MINOR = "LibKa0s-Core-1.0", 4
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 

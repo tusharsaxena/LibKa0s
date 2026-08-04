@@ -1,20 +1,20 @@
-# `LibKa0s-Slash-1.0` — version 5
+# `LibKa0s-Slash-1.0` — version 6
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
-> contract *as it was at this version* — a later version is a different document, not an edit to
-> this one.
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **5** |
-| Shipped in | v1.2.0 – v1.6.3 |
-| Status | Superseded |
-| Supersedes | [version 4](./version-4-docs.md) |
-| Superseded by | [version 6](./version-6-docs.md) |
+| Files and minors | `Slash.lua` minor **6** |
+| Shipped in | unreleased |
+| Status | **Current** |
+| Supersedes | [version 5](./version-5-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 5 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 6 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -36,11 +36,26 @@ returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
 
-**One new optional descriptor field: `format`.** It renders a value for display, replacing
-`lib.FormatValue` outright at every list/get/set/reset echo — the counterpart of `parse`, for a row
-type this library does not know. BankLedger drove it for a set-valued row; LootHistory is the second
-host on it for the same row shape. Purely additive: a host that passes nothing renders exactly as
-minor 4 did.
+**Four new lib-level functions — `SplitVerb`, `FindCommand`, `CommandRows`, `ParseBool` — and
+nothing else.** No descriptor field, no instance member and no rendered byte moved, so a host
+written against minor 5 is correct here unmodified.
+
+They are the vocabulary a **sub-command level** needs, and they are here because two hosts had
+already copied byte-identical `lowerFirst` / `findCommand` file-locals out of this dispatcher and
+then hand-rolled a *second* command-row format beside this library's own — the same drift, one level
+down, that the shared formatter exists to end. See
+[The sub-command vocabulary](#the-sub-command-vocabulary).
+
+The **dispatcher** is deliberately not here. Its control flow is genuinely per-host — a bare
+`/kcd debug` toggles the console window before printing help, `/cm priority <cat> <verb>` resolves a
+category object between the two levels, and both append context lines after the rows — so owning it
+would cost four escape hatches to save six lines per host. Owning the *vocabulary* buys the
+anti-drift guarantee; owning the flow buys nothing.
+
+Internally, `Sl:HelpRows` and `Sl:LandingRows` are now one-liners over `lib.CommandRows`, and the
+private `parseBool` is a wrapper over `lib.ParseBool`. Both render exactly what they rendered at
+minor 5; `lib.FormatValue`'s colour arm was restructured into a named channel reader for the same
+complexity reason and produces the same string for every input.
 
 ## Why the commands table stays the host's
 
@@ -77,6 +92,10 @@ rendered row depends on which instance rendered it.
 | `lib.FormatKV(path, valueStr)` | 1 | One `key = value` pair, gold key and white value, no trailing colon. Used by the list rows and by the get/set echo, so a setting reads identically wherever it is printed. |
 | `lib.FormatValue(row, v)` | 1 | Render a stored value by the row's declared type — a colour as `{r, g, b, a}` to two places, a number through the row's `fmt`, an empty string as `STRINGS.NONE`, anything else through Core's `SafeToString`. At this minor the descriptor's `format` hook, when present, takes precedence over this entirely. |
 | `lib.ParseValue(row, text)` | 1 | The type-aware parser. Returns the value, or `nil` plus a reason. |
+| `lib.SplitVerb(rest)` | **6** | → `verb, remainder`. The verb **lowercased**, the remainder's case *and* internal spacing preserved. The asymmetry is the contract, not an oversight — see below. Both default to `""`. |
+| `lib.FindCommand(list, name)` | **6** | → the matched `{ name, description, handler }` entry, or `nil`. Linear scan, compared verbatim; callers lowercase through `lib.SplitVerb` first. |
+| `lib.CommandRows(prefix, commands, indent)` | **6** | → an array of rendered rows, one per entry: `indent .. lib.FormatRow(prefix .. " " .. entry[1], entry[2])`. `indent` defaults to `""`. |
+| `lib.ParseBool(word)` | **6** | → `true`, `false`, or **`nil` meaning "not a boolean word"** — never "false". Case-insensitive over the exact eight-word set `lib.STRINGS.ERR_BOOL` advertises. |
 | `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. |
 | `lib.MODULES` | 1 | `{ Slash = <minor> }` — the live minor of every file in this major. |
 | `lib:New(descriptor)` | 1 | Build a dispatcher for one host. |
@@ -93,6 +112,50 @@ channels that happen to exceed 1 would mangle the rest.
 Failure is signalled by a `nil` first return plus a message. No row type has a valid value that is
 itself `nil`, which is what makes that unambiguous; adding one would be a contract change rather
 than a new type.
+
+## The sub-command vocabulary
+
+New at minor 6. Four stateless functions in the shape `FormatRow` / `FormatKV` already set, for the
+hosts that run a second command level under a verb (`/kcd debug <verb>`, `/cm priority <cat>
+<verb>`).
+
+### `lib.SplitVerb(rest)` → `verb, remainder`
+
+`("^(%S*)%s*(.*)$")`, with the verb **lowercased** and the remainder returned untouched. The
+asymmetry is the whole point: a verb is an identifier, while the remainder is **user data** — AceDB
+profile names and schema paths are both case-sensitive, so folding them would resolve something the
+user did not name. The remainder also keeps its internal spacing, because a color is several tokens.
+This is the same rule `Sl:OnSlash` has always applied to the top level; minor 6 just makes it
+callable.
+
+### `lib.FindCommand(list, name)` → entry or `nil`
+
+A linear scan of an ordered `{ name, description, handler }` array — **the same row shape the
+`commands` descriptor field has always taken**, so a sub level reuses this major's existing
+vocabulary rather than inventing one. `entry[1]` is compared verbatim; lowercase through
+`lib.SplitVerb` first, exactly as the top level does.
+
+### `lib.CommandRows(prefix, commands, indent)` → array of strings
+
+One rendered row per entry, `indent .. lib.FormatRow(prefix .. " " .. entry[1], entry[2])`, with
+`indent` defaulting to `""` — the indent belongs to whoever renders, for the same reason it does in
+`lib.FormatRow`.
+
+This is what makes the anti-drift guarantee mechanical rather than remembered: `Sl:HelpRows` is
+`lib.CommandRows(slash, commands, "  ")` and `Sl:LandingRows` is `lib.CommandRows(slash, commands,
+"")`, so the top level, the settings-panel landing page and every sub level render through **one**
+formatter by construction. A host's own `("  |cffffff00%s|r — |cffffffff%s|r")` renders the same
+line today and stops doing so the moment this one changes.
+
+### `lib.ParseBool(word)` → `true`, `false`, or `nil`
+
+Case-insensitive over `true` / `1` / `on` / `yes` and `false` / `0` / `off` / `no` — the exact set
+`lib.STRINGS.ERR_BOOL` already names in its error text. The table is module-level, built once at
+file load, and holds booleans only, so a miss is unambiguously `nil` rather than a stored `false`.
+
+**`nil` means "not a boolean word", never "false".** That distinction is what lets a caller
+implement toggle-on-absent (`/xx debug` with no argument flips it, `/xx debug off` sets it) without
+re-reading the raw text to tell the two cases apart.
 
 ## The dispatcher descriptor
 
@@ -157,18 +220,3 @@ correct on every minor.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
-
-## Moving to version 6
-
-Nothing to change at a call site. Version 6 is **purely additive** — four new lib-level functions
-and no change to any descriptor field, instance member or rendered line:
-
-| New at 6 | What it gives you |
-|---|---|
-| `lib.SplitVerb(rest)` | The verb/remainder split this dispatcher already did internally, with the verb lowercased and the remainder's case and spacing preserved. |
-| `lib.FindCommand(list, name)` | Lookup over the same `{ name, description, handler }` array the `commands` field takes. |
-| `lib.CommandRows(prefix, commands, indent)` | The rows `HelpRows` and `LandingRows` return, for any prefix and any indent — so a sub level renders through the same formatter instead of a private copy of it. |
-| `lib.ParseBool(word)` | The eight-word boolean set this document's `ERR_BOOL` already advertises, with `nil` distinguishable from `false`. |
-
-A host holding this copy keeps working verbatim; it simply has to keep its own `findCommand`,
-`lowerFirst` and sub-help row format until it is re-vendored.

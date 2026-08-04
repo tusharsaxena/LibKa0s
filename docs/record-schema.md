@@ -78,7 +78,7 @@ the encoder.
   principle, for one SavedVariables ring to outlive a rename or hold captures across more than one
   consumer's lifetime.
 - **`buckets[*].within`** is present only for a bucket the descriptor declared with a `within`
-  parent (see the descriptor's `buckets` field in [`api/Perf/version-5.3-docs.md`](api/Perf/version-5.3-docs.md)). A bucket recorded via `Note()` that the
+  parent (see the descriptor's `buckets` field in [`api/Perf/version-6.3-docs.md`](api/Perf/version-6.3-docs.md)). A bucket recorded via `Note()` that the
   descriptor never declared still appears here, just without a `within` key — membership in
   `buckets` (the descriptor field) controls only *presentation order and nesting*, never whether a
   measurement is captured.

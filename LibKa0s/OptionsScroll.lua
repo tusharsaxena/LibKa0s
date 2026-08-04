@@ -15,7 +15,7 @@
 local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib then return end
 
-local SCROLL_MINOR = 2
+local SCROLL_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own. The scroll counter alone is not enough:
 -- two vendored copies can ship the same scroll minor over different Options.lua minors, and then
 -- the higher shell wins the LibStub race while the first-loaded copy's patch stays attached to it.
