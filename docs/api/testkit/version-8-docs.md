@@ -91,6 +91,41 @@ are disclosed by the run output and by the automated-test bundle.
 
 `T.skip` is merged into the exposed table by `Kit.expose`, alongside `test` and the assertions.
 
+---
+
+## `Loader.xmlFiles(xmlPath)` — the vendored-library list, derived
+
+```lua
+Loader.loadAll(Loader.xmlFiles("libs/LibKa0s/LibKa0s.xml"), NS, mocks)
+Loader.loadAll(Loader.tocFiles("AbsorbTracker.toc"), NS, mocks)
+```
+
+Returns the `.lua` files a `<Ui>` XML pulls in, **in XML order**, as forward-slash paths **prefixed
+with the XML's own directory** — `libs/LibKa0s/Core.lua`, not `Core.lua` — so the result feeds
+`Loader.loadAll` directly. The prefixing is the whole ergonomic difference between a helper a runner
+adopts and one it has to wrap.
+
+**Why.** `Loader.tocFiles`'s own comment names the gap it leaves: a vendored library is pulled in
+through its own XML, which a TOC scan cannot see, so every runner in the collection re-typed the same
+eight-entry list — nine repos, and AbsorbTracker twice (`tests/run.lua` and `tests/perf.lua`). One of
+those copies named **six** of the eight files, and nothing noticed: a short load list does not raise,
+it just leaves a module undefined for whichever cases never reach it.
+
+| Property | Behaviour |
+|---|---|
+| Order | XML order, preserved — `LibKa0s.xml` is load-order-sensitive |
+| Path shape | forward slashes, `\` converted, prefixed with the XML's directory |
+| Comments | a line opening with `<!--` is skipped, so a commented-out entry does not load |
+| Non-`.lua` `file=` attributes | ignored |
+| Missing XML | **raises** `cannot open <path> (tests run from the repo root)` |
+
+That last row is deliberate. Returning an empty list on a typo'd path loads nothing at all and reads
+exactly like a clean run.
+
+It is line-based and flat on purpose: `LibKa0s.xml` is a flat list of `<Script file="…"/>` with no
+nested `<Include>`s, and a real XML parser here would be a dependency bought to solve a problem
+nobody has.
+
 ## Compatibility
 
 The kit surface is **additive-only** on the same terms as the library: a function or seam may be
