@@ -49,12 +49,18 @@ transient tooling gap.** The record is therefore **silent about runtime cost**. 
 file, in any bundle beside it, or in the green verdict on any row above says the library is fast,
 cheap, or free; it says the question was never asked.
 
-That silence is louder here than it would be in a consumer addon. LibKa0s **is** the perf
-instrumentation for the collection — `LibKa0s/Perf.lua` and `LibKa0s/PerfPanel.lua` are what eight
-addons profile through — and `performance-§9`'s zero-overhead evidence, that bracketed
-instrumentation costs nothing when capture is off, does not exist for the library that supplies the
-brackets. The perf test suites pin that the instrumentation behaves correctly; none of them measures
-what it costs. Adding scenarios is the only thing that changes any of this.
+That silence is narrower than it looks, and one part of it has since been filled. LibKa0s **is** the
+perf instrumentation for the collection — `LibKa0s/Perf.lua` and `LibKa0s/PerfPanel.lua` are what
+eight addons profile through — so the zero-overhead evidence `performance-§2` demands, that a
+bracketed path costs nothing when capture is off, is owed **by this repo** and not by its hosts. It is
+now held as a test case rather than as a scenario: `tests/test_perf_isolation.lua:66` runs 10,000
+dormant `Open`/`Close` pairs with the gate off and pins heap growth under 1 KB with nothing recorded.
+That runs in the green gate, on every commit.
+
+What remains unmeasured is the cost of the instrumentation while it is **on** — the sampler, the
+record build, the panel — and no scenario file is planned, because `performance-§9`'s own bullet keeps
+scenarios per-addon. `docs/automated-tests/README.md` § *Why that skip is permanent* records that
+disposition, dated, with the condition that would reopen it.
 
 ## Complexity watch list
 

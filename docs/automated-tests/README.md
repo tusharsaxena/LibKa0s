@@ -52,8 +52,36 @@ never a pass, and **at the release gate it is NOT EVALUATED rather than passed**
 and re-run. A `—` is a suite that was not selected, which is a different fact again.
 
 This repo ships no `tests/perf.lua`, so its `perf` column is a standing `skip`: the records here say
-nothing about the library's runtime cost, and the release gate's `perf` arm has nothing to evaluate
-here. `RESULTS.md`'s `## Perf` section explains what that costs.
+nothing about the library's scenario-level runtime cost, and the release gate's `perf` arm has
+nothing to evaluate here. `RESULTS.md`'s `## Perf` section explains what that costs.
+
+### Why that skip is permanent, and what closes the gap instead
+
+**Recorded decision, 2026-08-05 — deferred, out of scope by the rule's own text.** A `skip` without
+its reason is indistinguishable from a tool nobody installed, so the reason lives beside the record
+rather than in a chat log.
+
+`performance-§9` specifies the offline scenario runner, and its own fifth bullet scopes it: the
+scenarios **SHOULD** stay per-addon, because "they are about that addon's own hot paths, so they stay
+in the addon rather than moving into the shared lib". A library shipping no `tests/perf.lua` is
+therefore contemplated by the section rather than a departure from it — which is why this is a
+recorded disposition and **not** a row in a deviations register: there is no rule here to deviate
+from. A scenario file written in this repo would have to invent a host's hot path to measure, and the
+number it produced would describe the invention.
+
+The residue that argument leaves is real, and narrower than "no perf suite". `performance-§2`'s
+"free when off" claim is made **by this library**, on behalf of every host that brackets a path with
+it, and nobody in the collection held the measured number for the dormant `Perf.Open`/`Perf.Close`
+path — each addon measures its own code, not the library's brackets. That gap is closed by a **test
+case**, where it belongs: `tests/test_perf_isolation.lua:66`, *"iso: a dormant Open/Close bracket
+allocates nothing and records nothing"*, runs 10,000 dormant `Open`/`Close` pairs with the gate off,
+between two full collects, and pins heap growth under 1 KB with the bucket table still empty. It runs
+inside the green gate on every commit, which a `tests/perf.lua` deliberately would not (`testing-§4`).
+
+**Re-check trigger:** the library growing a hot path of its own that no host can bracket from the
+outside — a sampler or a background reducer running on the library's own timer rather than on a host
+call. At that point the thing to measure is this repo's code, and the per-addon argument stops
+covering it.
 
 ## What is here
 
