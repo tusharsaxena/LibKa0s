@@ -1,5 +1,12 @@
 # LibKa0s
 
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.22.0
+— as a **library repo**, which is a scope of its own: `library-stack-§7`'s applicability list is what
+binds here, not the addon rule set, because there is no TOC, no player-facing README, no settings
+canvas and no install. [`CLAUDE.md`](CLAUDE.md) spells out which sections apply and which do not, and
+is the first file to read before changing anything. [`DEPENDENCIES.md`](DEPENDENCIES.md) is what to
+install first.
+
 ## What it is
 
 A Ka0s-owned shared library, vendored into Ka0s WoW addons the way Ace3 is — copied into each
@@ -230,6 +237,9 @@ docs/                -- development docs (not shipped)
   superpowers/       -- the extraction plans and design specs, kept as the record of why
 LICENSE              -- also copied into LibKa0s/ above, so the payload carries it
 README.md
-CHANGELOG.md
+CLAUDE.md            -- which standards sections bind a LIBRARY repo, and the compliance directive
+DEPENDENCIES.md      -- the toolchain: lua5.1 (setfenv), luacheck, lizard, and how to install them
+CHANGELOG.md         -- required at a library root, unlike an addon root: tests/test_versioning.lua
+                        asserts it accounts for the version every file is at
 .luacheckrc
 ```

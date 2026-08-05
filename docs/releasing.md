@@ -16,7 +16,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
    That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
-   is eleven files, the eight in `LibKa0s/` plus three under `testkit/`, because `tests/` and `docs/`
+   is twelve files, the eight in `LibKa0s/` plus four under `testkit/`, because `tests/` and `docs/`
    are excluded. A consumer's is scoped too, and usually excludes `libs/` and `tests/`. 0/0 only
    means something if the files carrying the seam are inside the checked set, so confirm that before
    reading a clean run as a clean adoption.
