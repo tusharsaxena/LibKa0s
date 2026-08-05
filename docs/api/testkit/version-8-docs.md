@@ -195,6 +195,39 @@ Kit.run{ dir = "tests/", suites = { … }, suiteInventory = false }   -- documen
 
 `suiteInventory = false` exists for a repo mid-migration. It is not a setting to leave switched off.
 
+---
+
+## `Kit.assertSurfaceParity(live, degraded, label, ignore)`
+
+```lua
+-- Members from: grep -n "^function Sl\.\|^Sl\.[A-Z]" libs/LibKa0s/Slash.lua
+T.test("the Slash stub carries the whole live surface", function()
+  T.assertSurfaceParity(liveSlash, degradedSlash, "Slash stub")
+end)
+```
+
+Walks `live`'s keys and reports two kinds of divergence:
+
+| Divergence | Why it matters |
+|---|---|
+| a key present in `live`, absent from `degraded` | the stub is missing a member the addon calls on the degraded path |
+| a key that is a **function** live and something else degraded | `Helpers.Refresh = UI and UI.Refresh` can leave `false` or a non-function in place; a check that only asks "is the key set?" waves it through and the call site raises anyway |
+
+**Every divergence is reported in one message.** A stub written from a stale surface is typically
+wrong in several places, and first-one-only turns that into one test run per missing member.
+
+`ignore` encodes "this member is live-only, on purpose" **as data**, either as a set
+(`{ HelpHeader = true }`) or as an array (`{ "HelpHeader" }`). Without it an intentional omission and
+a bug are indistinguishable, and the usual resolution for that is to delete the case.
+
+Exported through `Kit.expose` as `T.assertSurfaceParity`.
+
+**Honest limits, so nobody over-claims.** It cannot catch a stub with the right member set and a
+*wrong implementation* — a stub re-implementing the library's line format, or a hand-copied ack
+string, are `debug-logging-§7` violations and stay addon-side. And it needs both halves loadable in
+one process, which is what the degraded arm built from a partial file list gives you; never
+hand-stub the member under test, or the case asserts the test's own typing.
+
 ## Compatibility
 
 The kit surface is **additive-only** on the same terms as the library: a function or seam may be

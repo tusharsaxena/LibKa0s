@@ -107,6 +107,60 @@ function Kit.assertError(fn, msg)
   return tostring(err)
 end
 
+--- Assert that a degraded-path stub carries the whole surface of the live module.
+---
+--- `live` is the real thing; `degraded` is what the addon falls back to when the library is not
+--- there. Three of this collection's surviving High findings are one omitted stub member: a stub
+--- returns without assigning `FormatKV`, so the command raises on exactly the degraded path the
+--- stub exists to survive.
+---
+--- Two divergences are reported:
+---   * a key present in `live` and ABSENT from `degraded`;
+---   * a key that is a FUNCTION live and something else degraded — `false`, a table, a string.
+---     `Helpers.RefreshAllPanels = UI and UI.RefreshAllPanels` is the shape: when `UI` is nil the
+---     assignment yields nil and the key is simply absent (caught by the first rule); when `UI` is
+---     present but the member is not, or the guard yields `false`, the key IS there and the call
+---     site raises anyway. A check that only asks "is the key set?" waves that through.
+---
+--- EVERY divergence goes into ONE message, not the first. A stub written from a stale surface is
+--- typically wrong in several places, and one-at-a-time is one test run per missing member.
+---
+--- `ignore` encodes "this member is live-only, on purpose" as data — either as a set
+--- (`{ Foo = true }`) or as an array (`{ "Foo" }`). An intentional omission and a bug are otherwise
+--- indistinguishable, and the usual resolution for that is to delete the case.
+function Kit.assertSurfaceParity(live, degraded, label, ignore)
+  label = label or "surface"
+  if type(live) ~= "table" then fail(label .. ": the live surface is not a table", 1) end
+  if type(degraded) ~= "table" then fail(label .. ": the degraded surface is not a table", 1) end
+
+  local skip = {}
+  for k, v in pairs(ignore or {}) do
+    if v == true then skip[k] = true else skip[v] = true end
+  end
+
+  local keys = {}
+  for k in pairs(live) do
+    if not skip[k] then keys[#keys + 1] = k end
+  end
+  table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+
+  local problems = {}
+  for _, k in ipairs(keys) do
+    local lv, dv = live[k], degraded[k]
+    if dv == nil then
+      problems[#problems + 1] = ("%s is missing (live: %s)"):format(tostring(k), type(lv))
+    elseif type(lv) == "function" and type(dv) ~= "function" then
+      problems[#problems + 1] =
+        ("%s is a function live but %s degraded"):format(tostring(k), type(dv))
+    end
+  end
+
+  if #problems > 0 then
+    fail(("%s: the degraded stub diverges from the live surface in %d place(s) — %s")
+      :format(label, #problems, table.concat(problems, "; ")), 1)
+  end
+end
+
 --- Merge the registry and assertions into the host's `_G.<X>_TEST` table and return it, so a repo
 --- keeps its existing global name and key set and no suite file has to change.
 function Kit.expose(t)
@@ -122,6 +176,7 @@ function Kit.expose(t)
   t.assertNear  = Kit.assertNear
   t.assertError = Kit.assertError
   t.assertSuiteInventory = Kit.assertSuiteInventory
+  t.assertSurfaceParity  = Kit.assertSurfaceParity
   return t
 end
 
