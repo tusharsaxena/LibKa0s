@@ -9,7 +9,7 @@
 local Kit = {}
 
 --- The kit revision. A plain integer, bumped on every released change to ANY file in `testkit/`,
---- because the three files vendor as one folder and are never adopted separately.
+--- because the files vendor as one folder and are never adopted separately.
 ---
 --- This is NOT a LibStub minor and does NOT make the kit a library: nothing registers it, no load
 --- order depends on it, and two copies never negotiate — the vendoring gate is byte-identity, not

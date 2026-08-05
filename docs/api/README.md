@@ -89,7 +89,7 @@ answers both "what does this version have?" and "when did I get it?".
 ### `testkit`
 
 Not a LibStub major and never shipped — vendored to `<Addon>/tests/_kit/`, and versioned by a plain
-`Kit.VERSION` integer rather than by file minors, because the three files vendor as one folder and
+`Kit.VERSION` integer rather than by file minors, because the files vendor as one folder and
 are never adopted separately. It is indexed here because the question it answers is the same one:
 *which copy is this consumer holding?*
 

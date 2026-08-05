@@ -93,6 +93,84 @@ are disclosed by the run output and by the automated-test bundle.
 
 ---
 
+## `testkit/vendor_sync.lua` — one gate, not six copies
+
+**The first file added to the Lua payload since version 1.** The consumer-side vendored-payload gate
+was ~150 lines copy-pasted into six repos with a one-line delta (`local T = _G.AT_TEST` versus
+`_G.LH_TEST`). Every copy carried the same bare `return` that registered as PASS, and the same header
+claiming the skip "is said in the case name" when neither case name mentioned it. Six copies is six
+chances to fix one problem six different ways.
+
+```lua
+-- tests/test_vendor_sync.lua, in full
+local VendorSync = dofile("tests/_kit/vendor_sync.lua")
+VendorSync.register(_G.AT_TEST, {})
+```
+
+A **factory**, not auto-registration, so the consumer keeps ownership of its test global and its case
+names — the names are what `docs/test-cases.md` counts, and swapping a hand-copied gate for this one
+must not move a repo's numbers.
+
+| `opts` key | Default | What it is |
+|---|---|---|
+| `root` | `"."` | the consuming repo root, as the suite sees it |
+| `sibling` | `<root>/../LibKa0s` | the library checkout tags are read out of |
+| `probe` | `"HEAD:LibKa0s/Core.lua"` | the ref that answers "is the sibling there at all?" |
+| `readmePattern` | `"[Bb]undles %[LibKa0s%]%b() (v[%d%.]+)"` | how the provenance line is spelled |
+| `pairs` | `libs/LibKa0s` + `tests/_kit` | `{ case, tag, local_, label }` per compared payload |
+
+No repo in the collection needs a `readmePattern` override: the lowercase/mid-sentence leniency is
+already in the shipped pattern, because LootHistory writes the line that way.
+
+### What it compares, and the one normalization
+
+The gate compares a **working-tree file** against a **`git show` blob**, and those are not the same
+representation. The blob is LF. The working tree is CRLF in eight of the nine repos, because their
+`.gitattributes` pins `text=auto eol=crlf`. So it reads raw bytes in binary mode and applies
+**exactly one** normalization — **CR stripped from the working-tree side, nothing else** — which
+compares the file to the blob it round-trips to.
+
+The consequence, stated plainly so nobody has to infer it:
+
+| Difference | Result |
+|---|---|
+| a single content byte | **FAIL** |
+| the file set on either side | **FAIL** |
+| line endings only (CRLF vs LF) | **PASS**, deliberately |
+| sibling checkout absent | **SKIP**, with the reason, exit code unchanged |
+
+Line endings are decided per checkout by `.gitattributes` — the same commit legitimately materialises
+as CRLF in one repo and LF in another — so treating them as a content fork would redden every
+consumer for a fact about their checkout rather than about their bytes.
+
+The normalization-free equivalent is `git hash-object <working-tree file>` against the sibling's blob
+sha, which makes git do the round-trip instead. It draws the same line in the same place and is the
+better shape if this is ever rewritten rather than moved.
+
+**This is scoped to the blob-versus-worktree comparison.** The library-side pair — `testkit/` versus
+`tests/_kit/`, two working-tree directories in one checkout — normalizes nothing, because there both
+sides are subject to the same `.gitattributes` and a line-ending difference really is a defect.
+
+### Two properties of living inside the kit
+
+- **The gate is inside the payload it checks.** A consumer that locally patches `tests/_kit/` breaks
+  this file's own byte-identity assertion, which is the right outcome: the fix for a kit problem is
+  upstream and re-vendor, never a local edit.
+- **LibKa0s cannot run it.** There is no sibling to compare against from inside the library repo,
+  which is why `register` is called by the consumer and `tests/test_kitsync.lua` remains the
+  library-side equivalent.
+
+### Adopting it is one commit, not two
+
+The gate compares **file sets**. The first re-vendor lands `tests/_kit/vendor_sync.lua` while the
+consumer's OLD in-repo gate is still running, so the new file has to appear on both sides at the same
+time: **re-vendor and rewrite are one commit**, against a LibKa0s tag that already carries the file.
+Both payloads move together — the provenance line is the gate's input and it is compared against
+`libs/LibKa0s/` *and* `tests/_kit/`, so bumping the line while copying only one of them reddens the
+other.
+
+---
+
 ## `Loader.xmlFiles(xmlPath)` — the vendored-library list, derived
 
 ```lua
