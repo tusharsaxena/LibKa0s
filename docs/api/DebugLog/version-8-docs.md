@@ -1,20 +1,20 @@
-# `LibKa0s-DebugLog-1.0` — version 7
+# `LibKa0s-DebugLog-1.0` — version 8
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
-> contract *as it was at this version* — a later version is a different document, not an edit to
-> this one.
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **7** |
-| Shipped in | v1.5.0 – v1.7.0 |
-| Status | Superseded |
-| Supersedes | [version 6](./version-6-docs.md) |
-| Superseded by | [version 8](./version-8-docs.md) |
+| Files and minors | `DebugLog.lua` minor **8** |
+| Shipped in | v1.8.0 |
+| Status | **Current** |
+| Supersedes | [version 7](./version-7-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 7 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 8 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared. Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
@@ -45,21 +45,20 @@ and it returns before `NewLibrary` if Core is missing or below the minor it need
 
 ## What changed at this version
 
-**The gated sink can no longer raise on a format it cannot fill.** `Debug(tag, fmt, ...)`
-routes every vararg through `safeToString` and then hands the results to `string.format`.
-That covers a `%s` slot — but a WoW combat "secret" is a **number**, and a host logging one
-through a **numeric** slot (`Debug("Absorb", "total=%d", UnitGetTotalAbsorbs("player"))`)
-handed `"<secret>"` to `%d`, where `string.format` raises exactly as the unguarded secret
-would have. The guard made the common case safe and left the case it existed for no safer.
+**Comments only. The surface does not move.** Every member, descriptor field, row field, value and
+behaviour described below is exactly what version 7 shipped, so a host written against version
+7 is correct here unmodified and there is nothing to migrate.
 
-The format is now `pcall`’d. On failure the line still **lands**: the format string
-verbatim, then the stringified arguments, space-joined — a dropped line is the other way to
-lose the diagnostic. **A satisfiable format renders byte-for-byte as it did at minor 6**, so
-no host’s console output changes; the only behaviour that moved is a path that threw.
+`DebugLog.lua`'s comments and docstrings were rewritten to US English — `colour` → `color`,
+`behaviour` → `behavior`, `synthesised` → `synthesized`, `normalised` → `normalized`,
+`recognise` → `recognize`. `localization-§5` mandates US English and anti-pattern #46 names code
+comments explicitly. **No identifier, no key, no user-visible string and no Blizzard symbol moves**,
+and `tests/test_prose.lua` fails the run on a regression.
 
-Nothing to do at a call site. Found by WhatGroup, whose hand-written console had guarded
-this and whose suite went red on the first load of this one.
-
+The bump exists because the file's bytes changed and LibStub decides which vendored copy wins by
+comparing minors: a minor that does not move is a minor that does not ship, so a consumer already
+carrying version 7 would keep running it and never receive the corrected source. That is why a
+comment-only change still bumps — see [`docs/releasing.md`](../../releasing.md) step 2.
 ## Lib-level surface
 
 | Name | Since | Meaning |
@@ -187,11 +186,3 @@ tested, unused field otherwise reads as one to every reader who finds it.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
-
-## Moving to version 8
-
-**Nothing to change at a call site.** Version 8 is a comments-only bump: `DebugLog.lua`'s
-comments and docstrings moved to US English (`localization-§5`, anti-pattern #46) and nothing this
-document describes is different there — same members, same descriptor fields, same behaviour, same
-drawn output. Re-vendor with the rest of v1.8.0's whole-folder copy; there is no behaviour
-here you are missing.

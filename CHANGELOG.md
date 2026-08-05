@@ -10,7 +10,18 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## Unreleased
+## v1.8.0 — 2026-08-05
+
+Versions in this release: **Core minor 5**, **DebugLog minor 8**, **Slash minor 7**,
+**Options minor 7**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**, **Perf minor 7**,
+**PerfPanel minor 3**. `OptionsScroll.lua` and `PerfPanel.lua` are unchanged and do not move; every
+other shipped file does. Six of those eight move for the US-English comment sweep alone — a
+comment-only change still bumps, because LibStub picks the winning vendored copy by comparing
+minors and a file that does not move never reaches a host already carrying the old copy.
+
+**testkit revision 8**, and it is a substantial one: five additions and three fixes, described
+below. **Every consumer must re-vendor both payloads from this tag** — the library folder and the
+kit — and the kit's `run-automated-tests.sh` needs its exec bit set in the index on arrival.
 
 **US English across the shipped payload, and a gate that keeps it.** 36 British spellings —
 `colour`, `grey`, `behaviour`, `synthesised`, `normalised`, `recognise` — in the comments and
@@ -80,9 +91,42 @@ none: a reader who trusts it subtracts the wrong parent's time.
   the character, realm and zone standing, so a `perf report` after a cancel printed empty buckets
   wearing the discarded run's identity.
 
-**testkit revision 7.** Two runner changes, neither urgent for a consumer.
+**testkit revision 8.** Five additions, three fixes. Revision 7 was cut inside this same wave and
+never tagged, so its two runner changes are folded in here and no consumer ever saw a rev-7 copy.
 
-The runner now works in a repo with **no `.toc`**. It located the addon by globbing `./*.toc` and
+- **`Kit.skip(reason)` — a third case status.** A gate that cannot run its comparison used to
+  `return` early, which registers as a PASS: six repos' vendor-sync gates reported green on a
+  missing sibling checkout. `skip` is counted and printed separately, and the release gate reads a
+  `skip` as NOT EVALUATED rather than as a pass.
+- **`Loader.xmlFiles(path)` — the vendored-library load list, derived rather than re-typed.** A
+  runner that hand-lists the library's files loads a stale set the day a file is added.
+- **The suite inventory is pinned in both directions.** A `tests/test_*.lua` on disk but absent from
+  the runner's list — and the reverse — fails the run instead of silently never executing.
+- **`Kit.assertSurfaceParity(live, degraded, label, ignore)`.** A degraded stub is asserted as a
+  SET against the live surface, reporting every divergence in one message, and catching a key that
+  is a function live and something else degraded. Member-at-a-time assertions are how three repos
+  shipped a stub missing exactly one member.
+- **`vendor_sync.lua` — the consumer-side payload gate, once.** `VendorSync.register(T, opts)` is a
+  factory, so a consumer keeps its own test global and its own case names while the ~150 lines that
+  were copy-pasted into six repos live in one place.
+- **Suite durations are milliseconds that cannot be negative.** Every suite was timed with whole
+  seconds and reported ×1000, so a sub-second suite recorded `0` and a second boundary crossed the
+  wrong way recorded a NEGATIVE duration. A single millisecond clock is resolved once and named in
+  `manifest.json` as `host.timingSource`. Committed manifests keep their bad numbers — frozen
+  evidence is not rewritten.
+- **`run-automated-tests.sh` is 100755 in the index.** It was 100644 in all nine repos, invisible
+  because `core.fileMode=false` and DrvFs both hide it. `tests/test_kitsync.lua` now asserts the
+  mode from `git ls-files -s` — the index, never `ls -l`, and never the bytes, which do not carry
+  it.
+- **`RESULTS.md`'s lead-in names the checkpoint, and `gates` replaces a boolean that could not.**
+  "`perf` and `complexity` are recorded and never fail a run" is true of the run and the commit and
+  false of the tag, which `automated-tests-§3` gates on all four suites at `pass` plus zero
+  functions above CCN 15. The lead-in now says which checkpoint each clause is about, and
+  `manifest.json` emits `"gates": { "commit": …, "release": … }` beside the legacy `gating`
+  boolean, which stays for one revision. Both fields are decorative — `/wow-addon:bump-version`
+  reads `suites.<name>.status` and `suites.complexity.warnings` and neither of them.
+
+The runner also now works in a repo with **no `.toc`**. It located the addon by globbing `./*.toc` and
 exited when it found none, so the repo that owns this kit could never run it — which is exactly why
 two runner bugs survived five revisions: the only repo whose suite runs the kit against itself was
 the one repo that could not exercise the kit's output path. A library has no `.toc` by definition,
@@ -93,9 +137,9 @@ The luacheck skip hint said `pipx install luacheck`. luacheck is a **Lua** packa
 `sudo luarocks install luacheck` — and the wrong hint had already been copied into two of the
 plugin's command specs. `pipx install lizard` is correct and unchanged.
 
-Every consuming addon has a `.toc`, so the first change is a no-op for all of them and the second
-only alters a message printed when luacheck is missing. **Re-vendor at the next release**, not for
-this.
+Every consuming addon has a `.toc`, so that change alone is a no-op for all of them, and the
+luacheck hint only alters a message printed when the tool is missing. The other eight are not, and
+this is the release to re-vendor for.
 
 ## v1.7.0 — 2026-08-04
 

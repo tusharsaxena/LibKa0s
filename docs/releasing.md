@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.7.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.8.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -74,11 +74,12 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
    This is a step, not a nicety. Every other repo in the collection gets its release bundle from
    `/wow-addon:bump-version`; this repo has no such command and this order was the only place the
-   run could be written down, so until v1.8.0 it was written down nowhere. The cost is on disk: the
-   only bundle this repo has, `20260805-002859`, carries `"release": null` on a commit later than
-   `v1.7.0^{}`. It records a working tree nobody released rather than the bytes anyone got, and no
-   released version of this library has a test record naming it. `--release` is what ties a bundle
-   to a version; without the flag the field stays null however carefully the run is timed.
+   run could be written down, so until v1.8.0 it was written down nowhere. The cost is on disk:
+   the one bundle taken before this step existed, `20260805-002859`, carries `"release": null` on a
+   commit later than `v1.7.0^{}` — it records a working tree nobody released rather than the bytes
+   anyone got. **v1.8.0 is the first release of this library with a test record naming it.**
+   `--release` is what ties a bundle to a version; without the flag the field stays null however
+   carefully the run is timed.
 
    Read the four suites before tagging: **the release gate is all four at `pass` plus zero functions
    above CCN 15** (`automated-tests-§3`), and a `skip` is NOT EVALUATED rather than passed. `perf` is
@@ -123,7 +124,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/README.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.7.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.8.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That

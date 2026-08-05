@@ -48,7 +48,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | **Current** |
+| [5](./Core/version-5-docs.md) | `Core.lua` 5 | v1.8.0 | **Current** |
+| [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | Superseded |
 | [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.6.3 | Superseded |
 | [2](./Core/version-2-docs.md) | `Core.lua` 2 | v1.0.0 – v1.2.0 | Superseded |
 
@@ -56,7 +57,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7](./DebugLog/version-7-docs.md) | `DebugLog.lua` 7 | v1.5.0 | **Current** |
+| [8](./DebugLog/version-8-docs.md) | `DebugLog.lua` 8 | v1.8.0 | **Current** |
+| [7](./DebugLog/version-7-docs.md) | `DebugLog.lua` 7 | v1.5.0 – v1.7.0 | Superseded |
 | [6](./DebugLog/version-6-docs.md) | `DebugLog.lua` 6 | v1.3.1, v1.4.0 | Superseded |
 | [5](./DebugLog/version-5-docs.md) | `DebugLog.lua` 5 | v1.3.0 | Superseded |
 | [4](./DebugLog/version-4-docs.md) | `DebugLog.lua` 4 | v1.2.0 | Superseded |
@@ -66,7 +68,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [6](./Slash/version-6-docs.md) | `Slash.lua` 6 | v1.7.0 | **Current** |
+| [7](./Slash/version-7-docs.md) | `Slash.lua` 7 | v1.8.0 | **Current** |
+| [6](./Slash/version-6-docs.md) | `Slash.lua` 6 | v1.7.0 | Superseded |
 | [5](./Slash/version-5-docs.md) | `Slash.lua` 5 | v1.2.0 – v1.6.3 | Superseded |
 | [4](./Slash/version-4-docs.md) | `Slash.lua` 4 | v1.0.0, v1.1.0, v1.1.1 | Superseded |
 
@@ -74,7 +77,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7.6.3](./Options/version-7.6.3-docs.md) | `Options.lua` 7 · `OptionsWidgets.lua` 6 · `OptionsScroll.lua` 3 | v1.8.0 | **Current** |
+| [7.7.3](./Options/version-7.7.3-docs.md) | `Options.lua` 7 · `OptionsWidgets.lua` 7 · `OptionsScroll.lua` 3 | v1.8.0 | **Current** |
+| [7.6.3](./Options/version-7.6.3-docs.md) | `Options.lua` 7 · `OptionsWidgets.lua` 6 · `OptionsScroll.lua` 3 | unreleased | Superseded |
 | [6.6.3](./Options/version-6.6.3-docs.md) | `Options.lua` 6 · `OptionsWidgets.lua` 6 · `OptionsScroll.lua` 3 | v1.7.0 | Superseded |
 | [5.5.2](./Options/version-5.5.2-docs.md) | `Options.lua` 5 · `OptionsWidgets.lua` 5 · `OptionsScroll.lua` 2 | v1.2.0 – v1.6.3 | Superseded |
 | [4.4.2](./Options/version-4.4.2-docs.md) | `Options.lua` 4 · `OptionsWidgets.lua` 4 · `OptionsScroll.lua` 2 | v1.1.0, v1.1.1 | Superseded |
@@ -104,7 +108,7 @@ are never adopted separately. It is indexed here because the question it answers
 | [5](./testkit/version-5-docs.md) | same files; wider RESULTS.md table + subset/stale-header honesty | v1.6.3 | Superseded |
 | [6](./testkit/version-6-docs.md) | same files; `Max CCN` measured over every function, and `RESULTS.md` rows actually append in a CRLF repo | v1.7.0 | Superseded |
 | [7](./testkit/version-7-docs.md) | same files; runs in a repo with no `.toc`; corrected luacheck install hint | unreleased | Superseded |
-| [8](./testkit/version-8-docs.md) | + `vendor_sync.lua`; the skip status, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity` | unreleased | **Current** |
+| [8](./testkit/version-8-docs.md) | + `vendor_sync.lua`; the skip status, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity` | v1.8.0 | **Current** |
 
 The kit's compatibility rule is the one place this directory's model differs. The library negotiates
 skew — LibStub compares minors and the highest copy wins, so an older vendored copy is a *supported

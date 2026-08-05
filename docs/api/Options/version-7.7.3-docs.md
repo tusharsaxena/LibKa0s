@@ -1,21 +1,21 @@
-# `LibKa0s-Options-1.0` — version 7.6.3
+# `LibKa0s-Options-1.0` — version 7.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
-> contract *as it was at this version* — a later version is a different document, not an edit to
-> this one.
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **7** · `OptionsWidgets.lua` **6** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **7** · `OptionsWidgets.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsScroll>`, in load order — the same three numbers `lib.MODULES` reports |
-| Shipped in | — (never released; superseded inside the v1.8.0 wave) |
-| Status | Superseded |
-| Supersedes | [version 6.6.3](./version-6.6.3-docs.md) |
-| Superseded by | [version 7.7.3](./version-7.7.3-docs.md) |
+| Shipped in | v1.8.0 |
+| Status | **Current** |
+| Supersedes | [version 7.6.3](./version-7.6.3-docs.md) (never released) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 7, OptionsWidgets = 6, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 7, OptionsWidgets = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O7`
 for `Options.lua` minor 7, `W4` for `OptionsWidgets.lua` minor 4, `S1` for `OptionsScroll.lua`
@@ -42,8 +42,12 @@ no panel — which is not the same thing as a dependency.
 ## What changed at this version
 
 **`O.PADDING_X` is published on the instance, and the published/internal split is written down.**
-One new instance member; `OptionsWidgets.lua` and `OptionsScroll.lua` do not move, and no descriptor
-field, row field or drawn pixel changes.
+One new instance member. `OptionsScroll.lua` does not move; `OptionsWidgets.lua` moves for its
+comments alone (below). No descriptor field, row field or drawn pixel changes.
+
+7.6.3 is an intermediate that never left this repo — it carried the `O.PADDING_X` addition and was
+superseded inside the same release wave when `OptionsWidgets.lua` took the US-English comment sweep.
+So the delta below is stated against **6.6.3**, the last version any consumer could have vendored.
 
 `lib.LAYOUT` holds thirteen constants and version 6.6.3 published three of them — `ROW_VSPACER`,
 `SECTION_HEADING_H`, `BUTTON_PAIR_REL`. `PADDING_X`, the horizontal inset this library draws its own
@@ -54,6 +58,13 @@ copies of a library constant cannot be complied with for a constant the library 
 
 - **`Options.lua` minor 7** — `O.PADDING_X` on the instance, at the same value the library draws
   with. **Nothing moves**: a host deletes its copy and reads this instead.
+
+- **`OptionsWidgets.lua` minor 7** — comments and docstrings only. `colour` → `color`,
+  `behaviour` → `behavior` and the rest of the US-English sweep `localization-§5` mandates and
+  anti-pattern #46 names for code comments. No maker, no row field, no throttle constant and no
+  drawn pixel changes; `tests/test_prose.lua` fails the run on a regression. It bumps because the
+  file's bytes changed and LibStub picks the winning vendored copy by comparing minors — a minor
+  that does not move is a minor that does not ship (`docs/releasing.md` step 2).
 
 **One scalar, not six, and never the table.** `O.LAYOUT = L` is deliberately not offered: `lib.LAYOUT`
 is shared by every instance, so handing it out lets one host's mutation retune every other host's
@@ -250,15 +261,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The three files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 7.7.3
-
-**Nothing to change at a call site, and no consumer is here to move.** This version key existed only
-inside the v1.8.0 release wave: `Options.lua` had gone to minor 7 for `O.PADDING_X` and
-`OptionsWidgets.lua` had not yet taken the US-English comment sweep. It was never tagged, so no
-addon ever vendored it, and it is kept only because `docs/api/` indexes every key the source has
-held.
-
-7.7.3 is this document plus `OptionsWidgets.lua` minor 7 — comments and docstrings moved to US
-English (`localization-§5`, anti-pattern #46). Same makers, same flow engine, same row fields, same
-drawn output.

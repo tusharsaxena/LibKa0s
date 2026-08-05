@@ -1,19 +1,19 @@
-# `LibKa0s-Core-1.0` — version 4
+# `LibKa0s-Core-1.0` — version 5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Core surface points here rather than restating it. It describes the
-> contract *as it was at this version* — a later version is a different document, not an edit to
-> this one.
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
-| Files and minors | `Core.lua` minor **4** |
-| Shipped in | v1.7.0 |
-| Status | Superseded |
-| Supersedes | [version 3](./version-3-docs.md) |
-| Superseded by | [version 5](./version-5-docs.md) |
-| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 4 }` |
+| Files and minors | `Core.lua` minor **5** |
+| Shipped in | v1.8.0 |
+| Status | **Current** |
+| Supersedes | [version 4](./version-4-docs.md) |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 5 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
 were never tagged, so they have no document of their own — a `Since` of 1 or 2 means "present for
@@ -116,15 +116,21 @@ hosts now; the library folds its own copies in only alongside a floor raise made
 
 ## What changed at this version
 
-**One addition, `lib.RGBA`, and nothing else.** No existing member, descriptor field or value moved,
-so a host written against minor 3 is byte-for-byte correct here — the skin table, `ApplySkin`,
-`MakeCloseButton` and the printer are all exactly what they were.
+**Comments only. The surface does not move.** Every member, descriptor field, row field, value and
+behaviour described below is exactly what version 4 shipped, so a host written against version
+4 is correct here unmodified and there is nothing to migrate.
 
-`ApplySkin`'s body was restructured internally (the backdrop, the inner border and the two accent
-tints are now four named file-locals rather than one run of guards) to bring it under the
-collection's complexity cap. The order of the calls, every guard it makes and the frame it leaves
-behind are unchanged; nothing about it is observable from a call site.
+`Core.lua`'s comments and docstrings were rewritten to US English — `colour` → `color`,
+`behaviour` → `behavior`, `synthesised` → `synthesized`, `normalised` → `normalized`,
+`recognise` → `recognize`. `localization-§5` mandates US English and anti-pattern #46 names code
+comments explicitly. **No identifier, no key, no user-visible string and no Blizzard symbol moves**,
+and `tests/test_prose.lua` fails the run on a regression. `lib.SKIN`'s keys and values are
+untouched, so nothing redraws.
 
+The bump exists because the file's bytes changed and LibStub decides which vendored copy wins by
+comparing minors: a minor that does not move is a minor that does not ship, so a consumer already
+carrying version 4 would keep running it and never receive the corrected source. That is why a
+comment-only change still bumps — see [`docs/releasing.md`](../../releasing.md) step 2.
 ## The printer descriptor
 
 Everything a host supplies to `lib:New(descriptor)`.
@@ -154,11 +160,3 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
-
-## Moving to version 5
-
-**Nothing to change at a call site.** Version 5 is a comments-only bump: `Core.lua`'s
-comments and docstrings moved to US English (`localization-§5`, anti-pattern #46) and nothing this
-document describes is different there — same members, same descriptor fields, same behaviour, same
-drawn output. `lib.SKIN` does not move. Re-vendor with the rest of v1.8.0's whole-folder copy; there is no behaviour
-here you are missing.

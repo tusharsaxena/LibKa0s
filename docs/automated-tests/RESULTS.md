@@ -12,6 +12,7 @@ which is never the same as a pass.
 
 | Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260805-123655`](20260805-123655/) | 1.7.0 | 0/0 | 12 | 498/498 | skip | 8555 | 1237 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260805-002859`](20260805-002859/) | 1.7.0 | 0/0 | 11 | 480/480 | skip | 7975 | 1201 | 6.1 | 1.8 | 12 | 0 | **green** |
 
 ## Test suite
@@ -57,7 +58,7 @@ what it costs. Adding scenarios is the only thing that changes any of this.
 
 ## Complexity watch list
 
-Current state as of [`20260805-002859`](20260805-002859/) — not that run's diff.
+Current state as of [`20260805-123655`](20260805-123655/) — not that run's diff.
 Every function `lizard` warned on, and every file at or above `layout-§1`'s 1000-LOC
 on-notice threshold, each with a one-line disposition.
 
@@ -66,12 +67,19 @@ on-notice threshold, each with a one-line disposition.
 **None.**
 
 That is a result, not an empty section. Nothing in `LibKa0s/` or `testkit/` exceeds CCN 15. The
-highest CCN anywhere in scope is **12** — `Sl` (`LibKa0s/Slash.lua:527-550`) — with `groupContext`
-(`LibKa0s/Perf.lua:496-510`) at 11 behind it, so there is real headroom rather than a cluster
-sitting on the cap. No disposition is carried, because nothing is warned on.
+highest CCN anywhere in scope is **14** — `Kit.run` (`testkit/framework.lua:394-433`) — with
+`Kit.assertSuiteInventory` (`testkit/framework.lua:277-316`) at 13 and `Sl`
+(`LibKa0s/Slash.lua:527-550`) at 12 behind it. No disposition is carried, because nothing is warned
+on.
 
-There is no streak here yet: this is the first recorded run, so the zero is a first measurement and
-not a record of anything held. Read it as a baseline until a second row exists.
+The top of that list moved this release: 12 → 14, and both new entries are in the kit rather than in
+the shipped library. `Kit.run` gained the `skip` status arm and the suite-inventory call;
+`Kit.assertSuiteInventory` is a two-way set comparison with one branch per divergence class. Neither
+is tangle and neither is at the cap, but the headroom is one arm narrower than it was — so a third
+arm added to either is the thing to notice.
+
+Two rows now, so the zero on both is a held result rather than a first measurement. Two is still not
+a trend.
 
 When these numbers do start moving, remember `lizard` counts every `and`/`or` short-circuit as a
 decision. In Lua a run of `t.k = rec.k or D.k` defaulting lines scores high with no visible
@@ -83,8 +91,8 @@ fields* rather than *this function grew tangled* — and the two want different 
 
 | Band | File | LOC | Disposition |
 |---|---|---|---|
-| 1000–1500 (on notice) | `tests/test_options_widgets.lua` | 1114 | **Accepted.** A flat list of independent widget cases; length is case count, not tangle. Split by widget family if it crosses 1500. |
-| 1000–1500 (on notice) | `LibKa0s/Perf.lua` | 1052 | **Accepted — the one to watch.** The only shipped file in the band and the widest surface the consumers bind against. Avg CCN is low and its worst function is 11, so this is breadth, not knots; the sampler and the group/scenario bookkeeping are the peel seam if it grows. |
+| 1000–1500 (on notice) | `LibKa0s/Perf.lua` | 1163 | **Accepted — the one to watch.** Was 1052; it grew for the observed-containment record and the keyed `Open`/`Close` bracket. Still the only shipped file in the band and the widest surface the consumers bind against. Worst function is 11 and avg CCN is 3.4, so this is breadth, not knots; the sampler and the group/scenario bookkeeping are the peel seam if it crosses 1500. |
+| 1000–1500 (on notice) | `tests/test_options_widgets.lua` | 1114 | **Accepted, unchanged.** A flat list of independent widget cases; length is case count, not tangle. Split by widget family if it crosses 1500. |
 
-Nothing is over the 1500 cap. Neither entry is marked "newly crossed" — there is no previous run for
-either to have crossed since.
+Nothing is over the 1500 cap. Neither entry is marked "newly crossed" — both were already in the
+band at `20260805-002859`.

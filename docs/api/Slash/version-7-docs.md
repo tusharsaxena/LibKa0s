@@ -1,20 +1,20 @@
-# `LibKa0s-Slash-1.0` — version 6
+# `LibKa0s-Slash-1.0` — version 7
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
-> contract *as it was at this version* — a later version is a different document, not an edit to
-> this one.
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **6** |
-| Shipped in | v1.7.0 |
-| Status | Superseded |
-| Supersedes | [version 5](./version-5-docs.md) |
-| Superseded by | [version 7](./version-7-docs.md) |
+| Files and minors | `Slash.lua` minor **7** |
+| Shipped in | v1.8.0 |
+| Status | **Current** |
+| Supersedes | [version 6](./version-6-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 6 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 7 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -36,27 +36,20 @@ returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
 
-**Four new lib-level functions — `SplitVerb`, `FindCommand`, `CommandRows`, `ParseBool` — and
-nothing else.** No descriptor field, no instance member and no rendered byte moved, so a host
-written against minor 5 is correct here unmodified.
+**Comments only. The surface does not move.** Every member, descriptor field, row field, value and
+behaviour described below is exactly what version 6 shipped, so a host written against version
+6 is correct here unmodified and there is nothing to migrate.
 
-They are the vocabulary a **sub-command level** needs, and they are here because two hosts had
-already copied byte-identical `lowerFirst` / `findCommand` file-locals out of this dispatcher and
-then hand-rolled a *second* command-row format beside this library's own — the same drift, one level
-down, that the shared formatter exists to end. See
-[The sub-command vocabulary](#the-sub-command-vocabulary).
+`Slash.lua`'s comments and docstrings were rewritten to US English — `colour` → `color`,
+`behaviour` → `behavior`, `synthesised` → `synthesized`, `normalised` → `normalized`,
+`recognise` → `recognize`. `localization-§5` mandates US English and anti-pattern #46 names code
+comments explicitly. **No identifier, no key, no user-visible string and no Blizzard symbol moves**,
+and `tests/test_prose.lua` fails the run on a regression.
 
-The **dispatcher** is deliberately not here. Its control flow is genuinely per-host — a bare
-`/kcd debug` toggles the console window before printing help, `/cm priority <cat> <verb>` resolves a
-category object between the two levels, and both append context lines after the rows — so owning it
-would cost four escape hatches to save six lines per host. Owning the *vocabulary* buys the
-anti-drift guarantee; owning the flow buys nothing.
-
-Internally, `Sl:HelpRows` and `Sl:LandingRows` are now one-liners over `lib.CommandRows`, and the
-private `parseBool` is a wrapper over `lib.ParseBool`. Both render exactly what they rendered at
-minor 5; `lib.FormatValue`'s colour arm was restructured into a named channel reader for the same
-complexity reason and produces the same string for every input.
-
+The bump exists because the file's bytes changed and LibStub decides which vendored copy wins by
+comparing minors: a minor that does not move is a minor that does not ship, so a consumer already
+carrying version 6 would keep running it and never receive the corrected source. That is why a
+comment-only change still bumps — see [`docs/releasing.md`](../../releasing.md) step 2.
 ## Why the commands table stays the host's
 
 `commands` is required, and it is the host's own ordered `{ name, description, handler }` table,
@@ -220,11 +213,3 @@ correct on every minor.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
-
-## Moving to version 7
-
-**Nothing to change at a call site.** Version 7 is a comments-only bump: `Slash.lua`'s
-comments and docstrings moved to US English (`localization-§5`, anti-pattern #46) and nothing this
-document describes is different there — same members, same descriptor fields, same behaviour, same
-drawn output. Re-vendor with the rest of v1.8.0's whole-folder copy; there is no behaviour
-here you are missing.
