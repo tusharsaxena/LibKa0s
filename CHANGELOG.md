@@ -12,6 +12,26 @@ cannot drift. Release order is in
 
 ## Unreleased
 
+### `LibKa0s-Options-1.0` — `O.PADDING_X`, and the published/internal split written down (**Options minor 7**)
+
+`lib.LAYOUT` holds thirteen constants and the instance published three. `PADDING_X` — the horizontal
+inset the library draws its own header, divider and body to — was not among them, so a host aligning
+a bespoke widget with any of the three had no way to read it and restated it instead. One did:
+`Const.PANEL_PADDING_X = 16`. options-ui-§8's MUST NOT against host copies cannot be complied with
+for a number the library keeps to itself.
+
+- **`O.PADDING_X` is published on the instance**, as an individual scalar. Value unchanged, so **no
+  panel moves a pixel**; a host deletes its copy and reads this instead.
+- **Not `O.LAYOUT = L`, and not the other five.** Handing out the lib-level table lets one host's
+  mutation retune every other host's panels. And `HEADER_TOP`, `HEADER_HEIGHT`, `DEFAULTS_W`,
+  `SECTION_TOP_SPACER` and `SECTION_BOTTOM_SPACER` have **no demonstrated consumer anywhere in the
+  collection** — publishing on repetition rather than on a demonstrated need is anti-pattern #55
+  (`library-stack-§7`), and under the additive-only rule a wrong shared abstraction is surface the
+  library keeps forever. Each is published the day a host shows it needs it.
+- Every unpublished `lib.LAYOUT` key now carries an `-- INTERNAL: <KEY> — <why>` line, and
+  `tests/test_options.lua` fails on a key that is neither published nor annotated. That case is the
+  durable half: it makes "not yet" a decision on the record rather than a gap nobody notices.
+
 ### `LibKa0s-Perf-1.0` — a record that asserts only what it observed (**Perf minor 7**)
 
 `buckets = { { key = "paintBar", within = "repaintPass" } }` was a claim nothing checked. The

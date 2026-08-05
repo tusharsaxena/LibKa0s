@@ -1,24 +1,24 @@
-# `LibKa0s-Options-1.0` — version 6.6.3
+# `LibKa0s-Options-1.0` — version 7.6.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
-> contract *as it was at this version* — a later version is a different document, not an edit to
-> this one.
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **6** · `OptionsWidgets.lua` **6** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **7** · `OptionsWidgets.lua` **6** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsScroll>`, in load order — the same three numbers `lib.MODULES` reports |
-| Shipped in | v1.7.0 |
-| Status | Superseded |
-| Supersedes | [version 5.5.2](./version-5.5.2-docs.md) |
-| Superseded by | [version 7.6.3](./version-7.6.3-docs.md) |
+| Shipped in | v1.8.0 |
+| Status | **Current** |
+| Supersedes | [version 6.6.3](./version-6.6.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 6, OptionsWidgets = 6, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 7, OptionsWidgets = 6, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O3`
-for `Options.lua` minor 3, `W4` for `OptionsWidgets.lua` minor 4, `S1` for `OptionsScroll.lua`
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O7`
+for `Options.lua` minor 7, `W4` for `OptionsWidgets.lua` minor 4, `S1` for `OptionsScroll.lua`
 minor 1. Minors 1 and 2 of each file were never tagged, so `O1`/`W1`/`S1` means "present for as long
 as any consumer could have had this major".
 
@@ -41,37 +41,32 @@ no panel — which is not the same thing as a dependency.
 
 ## What changed at this version
 
-**The landing page comes upstream.** Three hosts each defined a function literally named
-`Helpers.BuildMainContent` that rendered the same page — the same four constants at the same values,
-the same logo block, the same guard pairs — differing only in the logo path and where the one-liner
-came from. Every primitive underneath it was already in this major (`EnsureScroll`, `ClearScroll`,
-`AddSpacer`, `Section`), the rows already came from `LibKa0s-Slash-1.0`'s one command-row formatter,
-and `buildMain(ctx)` was already the seam the page hangs off. The copies were host-side only because
-the **body** was; the body is here now, so the constants followed it.
+**`O.PADDING_X` is published on the instance, and the published/internal split is written down.**
+One new instance member; `OptionsWidgets.lua` and `OptionsScroll.lua` do not move, and no descriptor
+field, row field or drawn pixel changes.
 
-`buildMain` stays the *only* main-page seam. `O.BuildLandingPage` is a renderer a host **calls** —
+`lib.LAYOUT` holds thirteen constants and version 6.6.3 published three of them — `ROW_VSPACER`,
+`SECTION_HEADING_H`, `BUTTON_PAIR_REL`. `PADDING_X`, the horizontal inset this library draws its own
+header, divider and body to, was not among them. A host aligning a bespoke widget with any of the
+three therefore had no way to **read** the number, and one host restated it as
+`Const.PANEL_PADDING_X = 16` and positioned against that. `options-ui-§8`'s MUST NOT against host
+copies of a library constant cannot be complied with for a constant the library keeps to itself.
 
-    buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end
+- **`Options.lua` minor 7** — `O.PADDING_X` on the instance, at the same value the library draws
+  with. **Nothing moves**: a host deletes its copy and reads this instead.
 
-— not a descriptor field the shell reads and wires up on the host's behalf. Installing a renderer
-the host never asked for would change what `lib:New` **does** for a descriptor rather than add to
-what it offers, and it would make "what draws my main page?" unanswerable from the host's own
-source. A host wanting extra content below the landing body calls `O.BuildLandingPage` as line one
-of its own `buildMain`.
+**One scalar, not six, and never the table.** `O.LAYOUT = L` is deliberately not offered: `lib.LAYOUT`
+is shared by every instance, so handing it out lets one host's mutation retune every other host's
+panels — a worse failure than the copying this fixes. And `HEADER_TOP`, `HEADER_HEIGHT`,
+`DEFAULTS_W`, `SECTION_TOP_SPACER` and `SECTION_BOTTOM_SPACER` stay internal because **no host in
+the collection has demonstrated a need for any of them**. Publishing them on the grounds that they
+are repeated rather than that they are shared is anti-pattern **#55** (`library-stack-§7`): under
+the additive-only rule a wrong shared abstraction is surface this library keeps forever. Each is
+published the day a host shows it needs it.
 
-- **`OptionsWidgets.lua` minor 6** — two new instance members, `O.TextRow(ctx, text, opts)` and
-  `O.BuildLandingPage(ctx, spec)`. See [The landing page](#the-landing-page).
-- **`Options.lua` minor 6** — `lib.LAYOUT` gains `LANDING_LOGO`, `LANDING_GAP_LOGO`,
-  `LANDING_GAP_DESC` and `LANDING_GAP_HEAD`. **The descriptor is unchanged**: a host reaches the
-  landing body through the `buildMain(ctx)` it already had.
-- **`OptionsScroll.lua` minor 3** — internal only. The always-shown scrollbar patch is now three
-  named file-locals (the thumb, the step buttons, the gutter) instead of one run of guards, to bring
-  it under the collection's complexity cap. Every call it makes and every widget it leaves behind
-  are unchanged.
-
-Nothing is removed and no existing call changes shape. `OptionsWidgets`' flow engine was likewise
-restructured internally — the row starter, the group starter, the guarded render and the two
-pair/after predicates are named file-locals now — and lays out identically.
+Every unpublished `lib.LAYOUT` key now carries an `-- INTERNAL: <KEY> — <why>` line in the source,
+and `tests/test_options.lua` fails on a key that is neither published nor annotated — so the next
+constant added cannot recreate the gap quietly.
 
 ## What stays the host's
 
@@ -161,7 +156,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
 | `LSMValues(mediaType)` | W1 (never-empty: **W4**) | A **deferred** closure pulling the live media hash at dropdown-render time. Never empty: a media library that has not loaded yet yields a single `None` placeholder, because a dropdown with no options cannot be opened and the CLI would refuse even the stored value. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. |
 | `PatchAlwaysShowScrollbar(scroll)` | S1 | The scrollbar override. Idempotent, and reversed on `OnRelease` — AceGUI pools ScrollFrames, so an unreleased patch escapes into whichever addon recycles the widget next. |
-| `ROW_VSPACER` / `SECTION_HEADING_H` / `BUTTON_PAIR_REL` | W1 | The cross-slice layout constants, mirrored onto the instance so a host's own page code stays in lockstep with the engine's spacing. The full table is `lib.LAYOUT`, read off the LibStub table. |
+| `ROW_VSPACER` / `SECTION_HEADING_H` / `BUTTON_PAIR_REL` | W1 | The cross-slice layout constants, mirrored onto the instance so a host's own page code stays in lockstep with the engine's spacing. |
+| `PADDING_X` | **O7** | The horizontal inset the library draws its own header, divider and body to. Read it to align a bespoke widget with any of the three; **do not restate it** (options-ui-§8). |
 | `AceGUI` | O1 | The resolved AceGUI-3.0, or nil. Filled in at `:New` and re-resolved at `CreateOptionsPanel`, which is the copy `onAceGUI` hands the host. |
 | `__panels()` / `__panelFor(pageKey)` | O1 | Test seams, following Perf's `__buckets()` idiom. The registry is private, so a host suite otherwise has no handle on a live ctx — and a real bug once shipped precisely because one page's ctx was unreachable. |
 
@@ -242,21 +238,15 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here.
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. This
+version adds `O.PADDING_X` and nothing else, at the value 6.6.3 already drew with — so adopting it
+cannot move a panel.
+
+**`lib.LAYOUT` is not itself part of the instance surface, and will not become so.** The keys a host
+may read are the individual scalars listed above. The rest are internal, each annotated in the source
+with why, and each is published — as its own scalar — the day a host demonstrates it needs it.
+Publishing the table would hand every host a mutable handle on every other host's spacing.
 
 The three files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 7.6.3
-
-**Purely additive.** `Options.lua` goes to minor 7; `OptionsWidgets.lua` and `OptionsScroll.lua` do
-not move, and no call site has to change.
-
-| New at 7.6.3 | What it gives you |
-|---|---|
-| `O.PADDING_X` | The horizontal inset the library draws its own header, divider and body to. If your addon carries its own copy of that number to position a bespoke widget, delete the copy and read this — the value is identical, so nothing moves (options-ui-§8). |
-
-The other ten `lib.LAYOUT` keys stay internal at 7.6.3 and each says why in the source. If your
-addon genuinely needs one of them, that is the demonstrated need that gets it published — file it
-rather than copying the value.
