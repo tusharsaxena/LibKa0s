@@ -17,13 +17,50 @@ local Kit = {}
 --- cannot answer on its own: *which* kit is a given consumer holding? Before this, "AbsorbTracker's
 --- kit is stale" was only reachable by diffing against this repo at the right commit. Now the
 --- consumer can say so itself, and its API document has a name.
-Kit.VERSION = 7
+Kit.VERSION = 8
 
 local tests = {}
 local currentSuite  -- basename (no extension) of the suite file currently being dofile'd
 
-function Kit.test(name, fn)
-  tests[#tests + 1] = { name = name, fn = fn, suite = currentSuite }
+--- Register a case.
+---
+--- `skipReason`, when given, registers the case as a DECLARED skip: `fn` is never called, the run
+--- reports it as SKIP, and `--list` discloses the reason. That is the only kind of skip `--list` can
+--- see, because `--list` never executes a case body (see the header) — a skip decided inside a body
+--- is reported by the run, not by the inventory.
+function Kit.test(name, fn, skipReason)
+  tests[#tests + 1] = { name = name, fn = fn, suite = currentSuite, skip = skipReason }
+end
+
+-- ── skip ───────────────────────────────────────────────────────────────────────────────────
+--
+-- A third status, and the reason it exists: a case that CANNOT LOOK — no sibling checkout, no
+-- git, a fixture the platform cannot produce — used to be written as a bare `return`, which
+-- registers as PASS. Six repos in this collection did exactly that, so six green gates were
+-- reporting "checked and fine" for a check that never ran.
+--
+-- Implemented as a sentinel error so it works from inside a case body, at any depth, without
+-- restructuring the case into a predicate plus a body. Two properties are NON-NEGOTIABLE and are
+-- asserted by the consumers that depend on them:
+--
+--   * a skip is NEVER folded into `passed` — the README [tests] badge and docs/test-cases.md
+--     count passes, and a skip counted as one is the original lie in a new place;
+--   * a skip NEVER changes the exit code — the same script is the commit gate, and the release
+--     gate reads `suites.tests.failed` from the run manifest. A skip is "not evaluated", which the
+--     release flow judges for itself; it is not a failure to be re-litigated here.
+
+local SKIP = {}
+
+--- Abandon the current case with a reason, reported as SKIP rather than as PASS or FAIL.
+--- Never returns.
+function Kit.skip(reason)
+  error(setmetatable({ reason = tostring(reason or "no reason given") }, SKIP), 0)
+end
+
+--- The reason, if `err` is a skip sentinel; nil for any other error value.
+local function skipReasonOf(err)
+  if type(err) == "table" and getmetatable(err) == SKIP then return err.reason end
+  return nil
 end
 
 -- ── assertions ─────────────────────────────────────────────────────────────────────────────
@@ -77,6 +114,7 @@ function Kit.expose(t)
   t.KIT_VERSION = Kit.VERSION
   t.test        = Kit.test
   t.fail        = Kit.fail
+  t.skip        = Kit.skip
   t.assertEqual = Kit.assertEqual
   t.assertTrue  = Kit.assertTrue
   t.assertFalse = Kit.assertFalse
@@ -147,7 +185,11 @@ local function renderInventory(suites)
   for _, suite in ipairs(suites) do
     local names = {}
     for _, t in ipairs(tests) do
-      if t.suite == suite then names[#names + 1] = t.name end
+      if t.suite == suite then
+        -- A declared skip is disclosed in the inventory, so a reader of docs/test-cases.md sees
+        -- that the case exists AND that it is not currently being evaluated.
+        names[#names + 1] = t.skip and (t.name .. " (skipped: " .. t.skip .. ")") or t.name
+      end
     end
     if #names > 0 then
       out()
@@ -185,18 +227,29 @@ function Kit.run(opts)
     os.exit(0)
   end
 
-  local passed, failed = 0, 0
+  local passed, failed, skipped = 0, 0, 0
   for _, t in ipairs(tests) do
-    local ok, err = pcall(t.fn)
-    if ok then
-      passed = passed + 1
-      print("  PASS  " .. t.name)
+    if t.skip then
+      skipped = skipped + 1
+      print("  SKIP  " .. t.name .. " — " .. t.skip)
     else
-      failed = failed + 1
-      print("  FAIL  " .. t.name .. "\n          " .. tostring(err))
+      local ok, err = pcall(t.fn)
+      local reason = (not ok) and skipReasonOf(err) or nil
+      if reason then
+        skipped = skipped + 1
+        print("  SKIP  " .. t.name .. " — " .. reason)
+      elseif ok then
+        passed = passed + 1
+        print("  PASS  " .. t.name)
+      else
+        failed = failed + 1
+        print("  FAIL  " .. t.name .. "\n          " .. tostring(err))
+      end
     end
   end
-  print(string.format("\n%d passed, %d failed, %d total", passed, failed, passed + failed))
+  -- Skips are their own column and are NOT added to `passed`; the exit code is still `failed == 0`.
+  print(string.format("\n%d passed, %d failed, %d skipped, %d total",
+    passed, failed, skipped, passed + failed + skipped))
   os.exit(failed == 0 and 0 or 1)
 end
 
