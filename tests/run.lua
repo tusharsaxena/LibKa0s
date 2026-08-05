@@ -13,10 +13,15 @@ local buildMocks = dofile("tests/wow_mock.lua")
 
 -- Loader.addonName stays nil: library chunks take no arguments, unlike an addon's
 -- `local addonName, NS = ...` header.
+--
+-- The load list is DERIVED from LibKa0s.xml rather than re-typed here. The XML is what the game
+-- loads; a list typed beside it is a second copy that drifts, and a short copy does not raise —
+-- it just leaves a module undefined for whichever cases never reach it. Deriving makes the two
+-- impossible to disagree, and a file added to the XML with nothing on disk fails the run loudly.
+-- This is the shape `testing-§10` asks every consumer for, so the reference implementation runs it
+-- on itself first.
 local mocks = buildMocks()
-Loader.loadAll({ "LibKa0s/Core.lua", "LibKa0s/DebugLog.lua", "LibKa0s/Slash.lua",
-  "LibKa0s/Options.lua", "LibKa0s/OptionsWidgets.lua", "LibKa0s/OptionsScroll.lua",
-  "LibKa0s/Perf.lua", "LibKa0s/PerfPanel.lua" }, nil, mocks)
+Loader.loadAll(Loader.xmlFiles("LibKa0s/LibKa0s.xml"), nil, mocks)
 
 -- Every major this library ships and the files that make it up, in LibKa0s.xml order.
 --
