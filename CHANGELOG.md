@@ -10,11 +10,123 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## Unreleased
+## v1.8.0 — 2026-08-05
 
-**testkit revision 7.** Two runner changes, neither urgent for a consumer.
+Versions in this release: **Core minor 5**, **DebugLog minor 8**, **Slash minor 7**,
+**Options minor 7**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**, **Perf minor 7**,
+**PerfPanel minor 3**. `OptionsScroll.lua` and `PerfPanel.lua` are unchanged and do not move; every
+other shipped file does. Six of those eight move for the US-English comment sweep alone — a
+comment-only change still bumps, because LibStub picks the winning vendored copy by comparing
+minors and a file that does not move never reaches a host already carrying the old copy.
 
-The runner now works in a repo with **no `.toc`**. It located the addon by globbing `./*.toc` and
+**testkit revision 8**, and it is a substantial one: five additions and three fixes, described
+below. **Every consumer must re-vendor both payloads from this tag** — the library folder and the
+kit — and the kit's `run-automated-tests.sh` needs its exec bit set in the index on arrival.
+
+**US English across the shipped payload, and a gate that keeps it.** 36 British spellings —
+`colour`, `grey`, `behaviour`, `synthesised`, `normalised`, `recognise` — in the comments and
+docstrings of every shipped library file and of `testkit/`. `localization-§5` mandates US English and
+anti-pattern #46 names code comments explicitly, and **no consumer could fix this**: `libs/LibKa0s/`
+and `tests/_kit/` are re-vendored whole-folder, so a local patch is reverted by the next re-vendor
+(anti-pattern #48) — which is why one consumer's review carries 29 of these as a finding against
+*it*. Comments and docstrings only: no identifier, no `lib.SKIN` key, no user-visible string, and no
+Blizzard symbol (`SetColorTexture`, `SetBackdropBorderColor`) moves, and released entries in this
+file are history and stay. The same commit retires the two `Ka0s standard §3.4` references in
+`Options.lua` to `library-stack-§4` — that file is vendored byte-for-byte into eight addons, so
+sweeping it later would redden eight vendor-sync gates against a payload they cannot patch.
+`tests/test_prose.lua` fails the run on either regression, listing `file:line`; the sweep alone
+regresses on the next feature.
+
+### `LibKa0s-Options-1.0` — `O.PADDING_X`, and the published/internal split written down (**Options minor 7**)
+
+`lib.LAYOUT` holds thirteen constants and the instance published three. `PADDING_X` — the horizontal
+inset the library draws its own header, divider and body to — was not among them, so a host aligning
+a bespoke widget with any of the three had no way to read it and restated it instead. One did:
+`Const.PANEL_PADDING_X = 16`. options-ui-§8's MUST NOT against host copies cannot be complied with
+for a number the library keeps to itself.
+
+- **`O.PADDING_X` is published on the instance**, as an individual scalar. Value unchanged, so **no
+  panel moves a pixel**; a host deletes its copy and reads this instead.
+- **Not `O.LAYOUT = L`, and not the other five.** Handing out the lib-level table lets one host's
+  mutation retune every other host's panels. And `HEADER_TOP`, `HEADER_HEIGHT`, `DEFAULTS_W`,
+  `SECTION_TOP_SPACER` and `SECTION_BOTTOM_SPACER` have **no demonstrated consumer anywhere in the
+  collection** — publishing on repetition rather than on a demonstrated need is anti-pattern #55
+  (`library-stack-§7`), and under the additive-only rule a wrong shared abstraction is surface the
+  library keeps forever. Each is published the day a host shows it needs it.
+- Every unpublished `lib.LAYOUT` key now carries an `-- INTERNAL: <KEY> — <why>` line, and
+  `tests/test_options.lua` fails on a key that is neither published nor annotated. That case is the
+  durable half: it makes "not yet" a decision on the record rather than a gap nobody notices.
+
+### `LibKa0s-Perf-1.0` — a record that asserts only what it observed (**Perf minor 7**)
+
+`buckets = { { key = "paintBar", within = "repaintPass" } }` was a claim nothing checked. The
+descriptor's `within` was written into every record and printed as a containment sentence — *"buckets
+nest: repaintPass contains paintBar"* — with no part of the library ever having seen the two run
+inside one another. One consumer's descriptor declares two buckets inside a pass neither ever runs
+in, and every capture it has archived states that containment as fact. A wrong `within` is worse than
+none: a reader who trusts it subtracts the wrong parent's time.
+
+- **`Perf.Note(key, ms, parentKey)`** takes the bucket the work actually ran inside. The third
+  argument is optional and **every existing call site keeps working untouched** — containment is
+  supplied at the *recording* call rather than inferred from a bracket stack, because the inline
+  `local t0 = Perf.on and debugprofilestop()` … `Perf.Note(key, …)` form is what every wired host
+  actually uses. A host adopts the parent one call site at a time, or not at all.
+- The record carries **`observedWithin`** (and `observedMixed`, when one bucket is seen under two
+  different parents) beside the declared `within`. Both are optional and additive within schema 2:
+  an older record is unchanged, and a bucket nobody supplied a parent for simply lacks the key.
+- The report now distinguishes the three states it was collapsing into one — *observed inside X*,
+  *declares itself within X — not observed*, and *declares itself within X but was observed inside
+  Y*. The library no longer asserts containment it did not observe (performance-§3).
+- **`Perf.Open(key)` / `Perf.Close(key)`.** Shape B's slot now carries the bucket key, so it can be
+  matched to its Close and can name the parent of a bracket opened inside it; a bracket nested in
+  another therefore records its containment observed. The old `Open()` → `t0` / `Close(t0, key)`
+  spelling is **replaced, not deprecated** — a grep of the whole collection finds no call site.
+- **The docstring said the pair costs "one boolean test and nothing else, and allocates nothing on
+  either path". That was false**: it is two real Lua calls against the inline form's none. It now
+  says so, and says which shape to use where (performance-§2). `tests/test_perf_isolation.lua` holds
+  the measured zero-allocation case for the dormant path that the claim always needed.
+- `Perf.Note` and `Perf.Open` **name the caller** on a nil key instead of raising a bare
+  `table index is nil` from inside the library.
+- **`perf cancel` clears the context stamp.** It cleared the run, the counters and the label but left
+  the character, realm and zone standing, so a `perf report` after a cancel printed empty buckets
+  wearing the discarded run's identity.
+
+**testkit revision 8.** Five additions, three fixes. Revision 7 was cut inside this same wave and
+never tagged, so its two runner changes are folded in here and no consumer ever saw a rev-7 copy.
+
+- **`Kit.skip(reason)` — a third case status.** A gate that cannot run its comparison used to
+  `return` early, which registers as a PASS: six repos' vendor-sync gates reported green on a
+  missing sibling checkout. `skip` is counted and printed separately, and the release gate reads a
+  `skip` as NOT EVALUATED rather than as a pass.
+- **`Loader.xmlFiles(path)` — the vendored-library load list, derived rather than re-typed.** A
+  runner that hand-lists the library's files loads a stale set the day a file is added.
+- **The suite inventory is pinned in both directions.** A `tests/test_*.lua` on disk but absent from
+  the runner's list — and the reverse — fails the run instead of silently never executing.
+- **`Kit.assertSurfaceParity(live, degraded, label, ignore)`.** A degraded stub is asserted as a
+  SET against the live surface, reporting every divergence in one message, and catching a key that
+  is a function live and something else degraded. Member-at-a-time assertions are how three repos
+  shipped a stub missing exactly one member.
+- **`vendor_sync.lua` — the consumer-side payload gate, once.** `VendorSync.register(T, opts)` is a
+  factory, so a consumer keeps its own test global and its own case names while the ~150 lines that
+  were copy-pasted into six repos live in one place.
+- **Suite durations are milliseconds that cannot be negative.** Every suite was timed with whole
+  seconds and reported ×1000, so a sub-second suite recorded `0` and a second boundary crossed the
+  wrong way recorded a NEGATIVE duration. A single millisecond clock is resolved once and named in
+  `manifest.json` as `host.timingSource`. Committed manifests keep their bad numbers — frozen
+  evidence is not rewritten.
+- **`run-automated-tests.sh` is 100755 in the index.** It was 100644 in all nine repos, invisible
+  because `core.fileMode=false` and DrvFs both hide it. `tests/test_kitsync.lua` now asserts the
+  mode from `git ls-files -s` — the index, never `ls -l`, and never the bytes, which do not carry
+  it.
+- **`RESULTS.md`'s lead-in names the checkpoint, and `gates` replaces a boolean that could not.**
+  "`perf` and `complexity` are recorded and never fail a run" is true of the run and the commit and
+  false of the tag, which `automated-tests-§3` gates on all four suites at `pass` plus zero
+  functions above CCN 15. The lead-in now says which checkpoint each clause is about, and
+  `manifest.json` emits `"gates": { "commit": …, "release": … }` beside the legacy `gating`
+  boolean, which stays for one revision. Both fields are decorative — `/wow-addon:bump-version`
+  reads `suites.<name>.status` and `suites.complexity.warnings` and neither of them.
+
+The runner also now works in a repo with **no `.toc`**. It located the addon by globbing `./*.toc` and
 exited when it found none, so the repo that owns this kit could never run it — which is exactly why
 two runner bugs survived five revisions: the only repo whose suite runs the kit against itself was
 the one repo that could not exercise the kit's output path. A library has no `.toc` by definition,
@@ -25,9 +137,9 @@ The luacheck skip hint said `pipx install luacheck`. luacheck is a **Lua** packa
 `sudo luarocks install luacheck` — and the wrong hint had already been copied into two of the
 plugin's command specs. `pipx install lizard` is correct and unchanged.
 
-Every consuming addon has a `.toc`, so the first change is a no-op for all of them and the second
-only alters a message printed when luacheck is missing. **Re-vendor at the next release**, not for
-this.
+Every consuming addon has a `.toc`, so that change alone is a no-op for all of them, and the
+luacheck hint only alters a message printed when the tool is missing. The other eight are not, and
+this is the release to re-vendor for.
 
 ## v1.7.0 — 2026-08-04
 

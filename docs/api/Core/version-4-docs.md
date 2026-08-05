@@ -2,17 +2,17 @@
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Core surface points here rather than restating it. It describes the
-> contract *as it is at this version* — not as it is now, unless this version is also the current
-> one.
+> contract *as it was at this version* — a later version is a different document, not an edit to
+> this one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **4** |
 | Shipped in | v1.7.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 3](./version-3-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 5](./version-5-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 4 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
@@ -154,3 +154,11 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
+
+## Moving to version 5
+
+**Nothing to change at a call site.** Version 5 is a comments-only bump: `Core.lua`'s
+comments and docstrings moved to US English (`localization-§5`, anti-pattern #46) and nothing this
+document describes is different there — same members, same descriptor fields, same behaviour, same
+drawn output. `lib.SKIN` does not move. Re-vendor with the rest of v1.8.0's whole-folder copy; there is no behaviour
+here you are missing.

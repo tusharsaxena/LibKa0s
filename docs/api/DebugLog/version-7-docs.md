@@ -2,17 +2,17 @@
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
-> contract *as it is at this version* — not as it is now, unless this version is also the current
-> one.
+> contract *as it was at this version* — a later version is a different document, not an edit to
+> this one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **7** |
-| Shipped in | v1.5.0 |
-| Status | **Current** |
+| Shipped in | v1.5.0 – v1.7.0 |
+| Status | Superseded |
 | Supersedes | [version 6](./version-6-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 8](./version-8-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 7 }` |
 
@@ -187,3 +187,11 @@ tested, unused field otherwise reads as one to every reader who finds it.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
+
+## Moving to version 8
+
+**Nothing to change at a call site.** Version 8 is a comments-only bump: `DebugLog.lua`'s
+comments and docstrings moved to US English (`localization-§5`, anti-pattern #46) and nothing this
+document describes is different there — same members, same descriptor fields, same behaviour, same
+drawn output. Re-vendor with the rest of v1.8.0's whole-folder copy; there is no behaviour
+here you are missing.

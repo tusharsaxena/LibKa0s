@@ -60,6 +60,22 @@ local function listDir(dir)
   return names
 end
 
+--- The git INDEX mode of a tracked path ("100644", "100755", ...), or nil if git cannot answer.
+---
+--- `git ls-files -s` prints `<mode> <sha> <stage>\t<path>`. The mode is read from the INDEX and
+--- never from the filesystem, which is the whole point: this tree is DrvFs, every file reports
+--- `rwxrwxrwx` to `ls -l` and to Lua, and every repo in the collection sets `core.fileMode=false`
+--- so git ignores the on-disk bit as well. The index is the only place the executable bit for a
+--- vendored file actually lives, and therefore the only place a gate can look.
+local function indexMode(path)
+  local p = io.popen('git ls-files -s -- "' .. path .. '" 2>/dev/null')
+  if not p then return nil end
+  local line = p:read("*l")
+  p:close()
+  if not line then return nil end
+  return line:match("^(%d+)%s")
+end
+
 --- Index of the first differing byte between two strings, or nil when they are equal.
 local function firstDiff(a, b)
   local n = math.min(#a, #b)
@@ -91,6 +107,33 @@ test("kitsync: the kit revision has an API document", function()
       .. "(see docs/api/README.md)", 2)
   end
   f:close()
+end)
+
+test("kitsync: the runner is mode 100755 in the git index, in BOTH copies", function()
+  -- The runner shipped `100644` in all nine repos of the collection, source included. Nobody could
+  -- see it: `core.fileMode=false` everywhere means git never complains, and DrvFs reports
+  -- `rwxrwxrwx` for every file so `ls -l` says it is executable when the index says it is not. The
+  -- manual `chmod +x` the playbook asked for was missed by four of four adopters, which is evidence
+  -- about the step rather than about the adopters.
+  --
+  -- The exec bit does not travel with `cp` and it is not in the file's bytes, so the byte-identity
+  -- case below cannot see this and never will. It needs its own gate, on the index, in both copies:
+  -- `testkit/` is what every consumer vendors FROM, and `tests/_kit/` is this repo's own copy, which
+  -- is the one that would silently drop the bit on the next re-vendor.
+  for _, path in ipairs({ SRC .. "/run-automated-tests.sh", DST .. "/run-automated-tests.sh" }) do
+    local mode = indexMode(path)
+    if not mode then
+      fail("kit sync: `git ls-files -s -- " .. path .. "` returned nothing - either the path is "
+        .. "untracked or git is not available here; this gate cannot run, and must not be reported "
+        .. "as passing", 2)
+    end
+    if mode ~= "100755" then
+      fail("kit sync: " .. path .. " is mode " .. mode .. " in the git index, not 100755 - a "
+        .. "consumer that vendors it gets a file they cannot execute. Fix with `git update-index "
+        .. "--chmod=+x " .. path .. "`. NOTE: `ls -l` is not evidence here - this tree is DrvFs and "
+        .. "reports rwxrwxrwx for everything", 2)
+    end
+  end
 end)
 
 test("kitsync: testkit/ and tests/_kit/ hold the same set of files", function()

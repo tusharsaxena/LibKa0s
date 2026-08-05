@@ -285,7 +285,7 @@ test("options: registered page builders run in registration order, once, at Crea
 end)
 
 test("options: CreateOptionsPanel hands the host the AceGUI it resolved", function()
-  -- Ka0s standard §3.4: resolve once, then read the upvalue. The host stashes it for its own page
+  -- library-stack-§4: resolve once, then read the upvalue. The host stashes it for its own page
   -- files, so the library has to hand it over rather than keep it private.
   local got
   local O = Fixture.new{ onAceGUI = function(ag) got = ag end }
@@ -656,7 +656,7 @@ end)
 -- looked equivalent.
 --
 -- OnCommit and OnRefresh are inert by design rather than by omission: a host's writes land
--- immediately through its own write seam (options-ui-§41), and SetRenderer already owns re-show, so
+-- immediately through its own write seam (options-ui-§1), and SetRenderer already owns re-show, so
 -- a second refresh path would race the renderer it duplicates.
 
 test("options: CreatePanel stamps the three Blizzard canvas callbacks", function()
@@ -722,6 +722,53 @@ end)
 -- tests/test_options_widgets.lua); the shell's half is that `d.buildMain` stayed the ONLY main-page
 -- seam. The promotion is a renderer a host may CALL — not a descriptor field the shell sniffs for
 -- and wires up on the host's behalf — so lib:New answers exactly what it answered at minor 5.
+
+-- ── the published / internal split ──────────────────────────────────────────────────────────
+
+test("options: every lib.LAYOUT key is either published on the instance or annotated internal",
+function()
+  -- The durable half of publishing PADDING_X. A constant the library keeps to itself is one a host
+  -- can only re-type — KickCD carried `Const.PANEL_PADDING_X = 16` for exactly that reason, and
+  -- options-ui-§8's MUST NOT against host copies cannot be complied with against a number nobody
+  -- can read. The answer is NOT to publish the table wholesale: that is anti-pattern #55, and under
+  -- the additive-only rule a wrong shared abstraction is surface the library keeps forever. So each
+  -- key is published on a demonstrated need, and every other one has to SAY why it is not.
+  --
+  -- Read off the real source rather than a list restated here: a second list is a second thing to
+  -- forget, and the point of this case is to catch the key added without either decision made.
+  local f = assert(io.open("LibKa0s/Options.lua", "r"), "tests run from the repo root")
+  local src = f:read("*a")
+  f:close()
+
+  local O = Fixture.new()
+  local unaccounted = {}
+  for key in pairs(lib.LAYOUT) do
+    local published = O[key] ~= nil
+    -- The annotation must name the key AND carry a reason after it — a bare "INTERNAL: KEY" would
+    -- let the next constant be waved through with no thought recorded.
+    local reason = src:match("%-%-%s*INTERNAL:%s*" .. key .. "%s+[^\r\n]+")
+    if not published and not (reason and #reason > (#key + 30)) then
+      unaccounted[#unaccounted + 1] = key
+    end
+    if published and reason then
+      unaccounted[#unaccounted + 1] = key .. " (both published AND annotated internal)"
+    end
+  end
+  table.sort(unaccounted)
+  assertEqual(table.concat(unaccounted, ", "), "",
+    "each of these lib.LAYOUT keys must either be published on the instance or carry an " ..
+    "`-- INTERNAL: <KEY> — <why>` line in LibKa0s/Options.lua")
+end)
+
+test("options: the published layout scalars are the instance's own, never lib.LAYOUT itself",
+function()
+  -- Handing out the lib-level table lets one host's mutation retune every other host's panels,
+  -- which is a worse failure than the copying publishing fixes.
+  local O = Fixture.new()
+  assertNil(O.LAYOUT, "the table itself is not published")
+  assertEqual(O.PADDING_X, 16, "PADDING_X is readable, at the value the library draws with")
+  assertEqual(O.PADDING_X, lib.LAYOUT.PADDING_X, "and it is the same number, not a second one")
+end)
 
 test("options: the landing constants are published on lib.LAYOUT at the promoted values", function()
   -- The three hosts agreed on all four before the promotion. Changing one silently re-spaces every

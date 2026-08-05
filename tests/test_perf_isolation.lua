@@ -55,6 +55,38 @@ test("iso: an instance's sampler is detached without touching the other's", func
   b.Cancel()
 end)
 
+-- ── the dormant bracket ─────────────────────────────────────────────────────────────────────
+--
+-- performance-§2 requires the "instrumentation is free when off" claim to be a measured number
+-- rather than a comment, and this library held no such case for itself while its own docstring
+-- claimed the pair "allocates nothing on either path". The Shape B slot stack added at Perf.lua
+-- minor 7 is the thing that could break it: a stack push per Open would be an allocation on every
+-- bracketed call of every host, paid forever, for a capture nobody started.
+
+test("iso: a dormant Open/Close bracket allocates nothing and records nothing", function()
+  local p = Fixture.new()
+  assertFalse(p.on, "the gate starts off, which is the whole premise")
+
+  -- Settle first: the collector is stepped to a quiet baseline so the measurement below is the
+  -- brackets' own cost and not whatever the preceding case left floating.
+  collectgarbage("collect")
+  collectgarbage("collect")
+  local before = collectgarbage("count")
+  for _ = 1, 10000 do
+    p.Open("outer")
+    p.Close("outer")
+  end
+  local after = collectgarbage("count")
+
+  -- Kilobytes, and 10k iterations: one slot table per Open would be ~10,000 tables here, hundreds
+  -- of KB. A zero would be brittle against the loop's own bookkeeping, so the assertion is that
+  -- nothing MEASURABLE accrued.
+  assertTrue(after - before < 1,
+    ("10k dormant brackets grew the heap by %.1f KB — the dormant path must not allocate")
+      :format(after - before))
+  assertEqual(next(p.__buckets()), nil, "and recorded nothing")
+end)
+
 -- ── the panel frame ─────────────────────────────────────────────────────────────────────────
 
 test("iso: two instances create separate panel frames", function()

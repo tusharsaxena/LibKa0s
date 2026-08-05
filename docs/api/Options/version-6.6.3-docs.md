@@ -2,8 +2,8 @@
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
-> contract *as it is at this version* — not as it is now, unless this version is also the current
-> one.
+> contract *as it was at this version* — a later version is a different document, not an edit to
+> this one.
 
 | | |
 |---|---|
@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **6** · `OptionsWidgets.lua` **6** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsScroll>`, in load order — the same three numbers `lib.MODULES` reports |
 | Shipped in | v1.7.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 5.5.2](./version-5.5.2-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 7.6.3](./version-7.6.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 6, OptionsWidgets = 6, OptionsScroll = 3 }` |
 
@@ -115,7 +115,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `scheduleTimer` | function(fn, delay) | no | O1 | Backs the 50 ms colour-drag throttle. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. |
 | `getLSM` | function | no | O1 | Returns LibSharedMedia-3.0, for `LSMValues`. |
 | `validate` | function | no | O1 | Runs once, before the page builders. A host's schema-shape check. |
-| `onAceGUI` | function(AceGUI) | no | O1 | Handed the resolved AceGUI so the host can stash it (Ka0s standard §3.4) for its own page files. |
+| `onAceGUI` | function(AceGUI) | no | O1 | Handed the resolved AceGUI so the host can stash it (library-stack-§4) for its own page files. |
 | `buildMain` | function(ctx) | no | O1 | Draws the main page's body, on its first OnShow. |
 | `colorDecode` | function(stored) | no | O1 | → `r, g, b, a`. Defaults to the `{r=,g=,b=,a=}` shape. |
 | `colorEncode` | function(r,g,b,a) | no | O1 | → stored. Defaults to the same. |
@@ -247,3 +247,16 @@ never removed or repurposed, so a host written against `1.1.1` keeps working unm
 The three files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 7.6.3
+
+**Purely additive.** `Options.lua` goes to minor 7; `OptionsWidgets.lua` and `OptionsScroll.lua` do
+not move, and no call site has to change.
+
+| New at 7.6.3 | What it gives you |
+|---|---|
+| `O.PADDING_X` | The horizontal inset the library draws its own header, divider and body to. If your addon carries its own copy of that number to position a bespoke widget, delete the copy and read this — the value is identical, so nothing moves (options-ui-§8). |
+
+The other ten `lib.LAYOUT` keys stay internal at 7.6.3 and each says why in the source. If your
+addon genuinely needs one of them, that is the demonstrated need that gets it published — file it
+rather than copying the value.

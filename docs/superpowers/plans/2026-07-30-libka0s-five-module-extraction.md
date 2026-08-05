@@ -1002,7 +1002,7 @@ order is arbitrary in Lua, so a dropped `table.sort` could satisfy a monotonicit
 **M6d — one mechanical retargeting in an existing AbsorbTracker suite, and it is a real seam
 change.** `tests/test_helpers.lua`'s "EnsureDefaultsButton is a safe no-op without AceGUI" nil'd
 `NS.AceGUI`. Since the extraction `NS.Helpers` IS the LibKa0s-Options instance and stashes AceGUI on
-ITSELF (Ka0s standard §3.4 — one lookup, not one per builder); `NS.AceGUI` is the copy the library
+ITSELF (library-stack-§4 — one lookup, not one per builder); `NS.AceGUI` is the copy the library
 hands the host for its own page files, through the descriptor's `onAceGUI`. In game the two are
 always the same object, so the case now nils `NS.Helpers.AceGUI` — the same scenario read at the
 seam the code under test actually uses. No assertion changed.

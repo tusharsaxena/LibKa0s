@@ -1,5 +1,12 @@
 # LibKa0s
 
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.22.0
+— as a **library repo**, which is a scope of its own: `library-stack-§7`'s applicability list is what
+binds here, not the addon rule set, because there is no TOC, no player-facing README, no settings
+canvas and no install. [`CLAUDE.md`](CLAUDE.md) spells out which sections apply and which do not, and
+is the first file to read before changing anything. [`DEPENDENCIES.md`](DEPENDENCIES.md) is what to
+install first.
+
 ## What it is
 
 A Ka0s-owned shared library, vendored into Ka0s WoW addons the way Ace3 is — copied into each
@@ -46,11 +53,11 @@ signature, because a second copy of a contract is a contract that drifts.
 
 | Major | What it is | Files | Current version |
 |---|---|---|---|
-| `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [4](docs/api/Core/version-4-docs.md) |
-| `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [7](docs/api/DebugLog/version-7-docs.md) |
-| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [6](docs/api/Slash/version-6-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [6.6.3](docs/api/Options/version-6.6.3-docs.md) |
-| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [6.3](docs/api/Perf/version-6.3-docs.md) |
+| `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [5](docs/api/Core/version-5-docs.md) |
+| `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [8](docs/api/DebugLog/version-8-docs.md) |
+| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [7](docs/api/Slash/version-7-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [7.7.3](docs/api/Options/version-7.7.3-docs.md) |
+| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [7.3](docs/api/Perf/version-7.3-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
 returns before `NewLibrary` if Core is missing or below the minor it needs — so a consumer that
@@ -63,8 +70,8 @@ file in that major; those numbers, joined in load order, are the filename:
 
 ```lua
 /dump LibStub("LibKa0s-Options-1.0").MODULES
---> { Options = 6, OptionsWidgets = 6, OptionsScroll = 3 }
---> docs/api/Options/version-6.6.3-docs.md
+--> { Options = 7, OptionsWidgets = 7, OptionsScroll = 3 }
+--> docs/api/Options/version-7.7.3-docs.md
 ```
 
 [`docs/api/README.md`](docs/api/README.md) indexes every shipped version of every major, which
@@ -128,8 +135,10 @@ lua tests/run.lua
 luacheck .
 ```
 
-Both must be 0/0 before a release — `lua tests/run.lua` reports `N passed, 0 failed, N total`,
-`luacheck .` reports `0 warnings / 0 errors`.
+Both must be 0/0 before a release — `lua tests/run.lua` reports
+`N passed, 0 failed, S skipped, N total`, and `luacheck .` reports
+`0 warnings / 0 errors`. A skipped case is a case that did not run — never a pass — and the
+suite prints why beside it.
 
 `docs/test-cases.md` is the generated inventory of what the suite covers, and it is the
 authoritative case count. Regenerate it in the same change that adds or removes a test:
@@ -167,10 +176,10 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.7.0**: `Core = { Core = 4 }`,
-`DebugLog = { DebugLog = 7 }`, `Slash = { Slash = 6 }`,
-`Options = { Options = 6, OptionsWidgets = 6, OptionsScroll = 3 }`,
-`Perf = { Perf = 6, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
+different vendored copy of each. As of **v1.8.0**: `Core = { Core = 5 }`,
+`DebugLog = { DebugLog = 8 }`, `Slash = { Slash = 7 }`,
+`Options = { Options = 7, OptionsWidgets = 7, OptionsScroll = 3 }`,
+`Perf = { Perf = 7, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
 attached to which probe?" from in-game, once several addons each ship their own vendored copy.
@@ -178,8 +187,8 @@ attached to which probe?" from in-game, once several addons each ship their own 
 bump cannot land without its changelog entry, nor an entry without its bump.
 
 Those same numbers name the API document for the copy in front of you —
-`{ Options = 6, OptionsWidgets = 6, OptionsScroll = 3 }` is
-[`docs/api/Options/version-6.6.3-docs.md`](docs/api/Options/version-6.6.3-docs.md). A minor bump is
+`{ Options = 7, OptionsWidgets = 7, OptionsScroll = 3 }` is
+[`docs/api/Options/version-7.7.3-docs.md`](docs/api/Options/version-7.7.3-docs.md). A minor bump is
 not released until its API document exists; see [`docs/api/README.md`](docs/api/README.md).
 
 Full release order — bump, changelog, regenerate, tag, then **re-vendor every consumer** — is in
@@ -221,10 +230,18 @@ docs/                -- development docs (not shipped)
   adoption-report.md -- the reusable adoption-fidelity report, run per date into adoption/
   adoption/          -- frozen dated adoption reports, one folder per run
   test-cases.md      -- generated case inventory
+  automated-tests/   -- the out-of-game test record: README.md (the local how-to), RESULTS.md
+                        (one row per run, overwritten in place — its git history is the trend
+                        line) and one frozen <YYYYMMDD-HHMMSS>/ bundle per run, never edited
+                        after it is written and never pruned
+  audits/            -- frozen dated standards-audit bundles
   reviews/           -- frozen dated review bundles
   superpowers/       -- the extraction plans and design specs, kept as the record of why
 LICENSE              -- also copied into LibKa0s/ above, so the payload carries it
 README.md
-CHANGELOG.md
+CLAUDE.md            -- which standards sections bind a LIBRARY repo, and the compliance directive
+DEPENDENCIES.md      -- the toolchain: lua5.1 (setfenv), luacheck, lizard, and how to install them
+CHANGELOG.md         -- required at a library root, unlike an addon root: tests/test_versioning.lua
+                        asserts it accounts for the version every file is at
 .luacheckrc
 ```

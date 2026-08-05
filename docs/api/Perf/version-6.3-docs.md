@@ -2,8 +2,8 @@
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Perf surface points here rather than restating it. It describes the
-> contract *as it is at this version* — not as it is now, unless this version is also the current
-> one.
+> contract *as it was at this version* — a later version is a different document, not an edit to
+> this one.
 
 | | |
 |---|---|
@@ -11,9 +11,9 @@
 | Files and minors | `Perf.lua` **6** · `PerfPanel.lua` **3** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
 | Shipped in | v1.7.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 5.3](./version-5.3-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 7.3](./version-7.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 6, PerfPanel = 3 }` |
@@ -350,3 +350,20 @@ records are discarded rather than converted. See [`docs/record-schema.md`](../..
 The two files move as one. A consumer holding `Perf.lua` from one vendored copy and `PerfPanel.lua`
 from another is not a supported state and LibStub cannot detect it — which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 7.3
+
+**One breaking change and one addition.** `PerfPanel.lua` does not move.
+
+| Changed at 7.3 | What you do |
+|---|---|
+| `P.Open()` → `t0` / `P.Close(t0, key)` **became** `P.Open(key)` / `P.Close(key)` | Rewrite the call site. The reading is kept inside the library now, so the local `t0` goes away and the key moves from `Close` to `Open`. **Nothing in the collection held the old spelling** — this is why it was replaced rather than deprecated. |
+| `P.Note(key, ms)` **gains** an optional third argument, `parentKey` | Nothing, unless you want it. Pass the bucket the work actually ran inside and the record reports the containment **observed** instead of merely declared. |
+
+Everything else at 7.3 is the library telling the truth where this version did not: the report no
+longer states a descriptor's `within` as observed fact, `Cancel()` clears the context stamp it used
+to leave standing, `Note`/`Open` name the caller on a nil key, and the `Open`/`Close` docstring no
+longer claims the pair is free when capture is off — it is two Lua calls, and this version's
+docstring saying otherwise was a defect. No `lib.SCHEMA` bump: the new `observedWithin` and
+`observedMixed` bucket fields are optional and additive, so a ring written by this version is read
+unchanged.

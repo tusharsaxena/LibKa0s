@@ -2,17 +2,17 @@
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
-> contract *as it is at this version* — not as it is now, unless this version is also the current
-> one.
+> contract *as it was at this version* — a later version is a different document, not an edit to
+> this one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
 | Files and minors | `Slash.lua` minor **6** |
 | Shipped in | v1.7.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 5](./version-5-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 7](./version-7-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 6 }` |
 
@@ -220,3 +220,11 @@ correct on every minor.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
+
+## Moving to version 7
+
+**Nothing to change at a call site.** Version 7 is a comments-only bump: `Slash.lua`'s
+comments and docstrings moved to US English (`localization-§5`, anti-pattern #46) and nothing this
+document describes is different there — same members, same descriptor fields, same behaviour, same
+drawn output. Re-vendor with the rest of v1.8.0's whole-folder copy; there is no behaviour
+here you are missing.

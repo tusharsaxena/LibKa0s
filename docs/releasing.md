@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.7.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.8.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -16,7 +16,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
    That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
-   is eleven files, the eight in `LibKa0s/` plus three under `testkit/`, because `tests/` and `docs/`
+   is twelve files, the eight in `LibKa0s/` plus four under `testkit/`, because `tests/` and `docs/`
    are excluded. A consumer's is scoped too, and usually excludes `libs/` and `tests/`. 0/0 only
    means something if the files carrying the seam are inside the checked set, so confirm that before
    reading a clean run as a clean adoption.
@@ -53,7 +53,11 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
    Never edit a superseded document to describe new behaviour — an adopter still on that copy has to
    be able to read what their copy actually does. A minor bump is not released until its document
-   exists.
+   exists, and since v1.8.0 that is a gate rather than a rule:
+   `tests/test_versioning.lua` derives `docs/api/<Major>/version-<minors>-docs.md` from each major's
+   live `lib.MODULES` and fails naming every major whose document is missing — the same bargain
+   `tests/test_kitsync.lua` strikes for `Kit.VERSION`. Bump a minor and the suite is red until the
+   document is written, so step 7's green gate cannot be reached without it.
 6. **Regenerate the case list**: `lua tests/run.lua --list` into `docs/test-cases.md`, keeping CRLF
    (see that file's own banner for the exact command).
 7. **Move the provenance template in this file to the version being released** — the templated line
@@ -61,7 +65,29 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before the tag, so the tagged commit already says what it bundles and step 8 is a copy rather than
    a recollection. This is a numbered step because the alternative is remembering, and at v1.5.0 the
    remembering did not happen: the template still read v1.4.0 while every consumer had been updated
-   correctly by hand. **Green gate again**, then commit and tag the repo semver.
+   correctly by hand. **Green gate again**, then — before the tag — **run the full battery and freeze
+   the release bundle**:
+
+   ```sh
+   tests/_kit/run-automated-tests.sh --release <X.Y.Z>
+   ```
+
+   This is a step, not a nicety. Every other repo in the collection gets its release bundle from
+   `/wow-addon:bump-version`; this repo has no such command and this order was the only place the
+   run could be written down, so until v1.8.0 it was written down nowhere. The cost is on disk:
+   the one bundle taken before this step existed, `20260805-002859`, carries `"release": null` on a
+   commit later than `v1.7.0^{}` — it records a working tree nobody released rather than the bytes
+   anyone got. **v1.8.0 is the first release of this library with a test record naming it.**
+   `--release` is what ties a bundle to a version; without the flag the field stays null however
+   carefully the run is timed.
+
+   Read the four suites before tagging: **the release gate is all four at `pass` plus zero functions
+   above CCN 15** (`automated-tests-§3`), and a `skip` is NOT EVALUATED rather than passed. `perf` is
+   a standing `skip` here because this repo ships no `tests/perf.lua`; that is a known and recorded
+   hole in the gate, not a pass — see [`automated-tests/README.md`](automated-tests/README.md).
+
+   Then commit — the bundle and `RESULTS.md` row belong in the release commit, so the tagged tree
+   contains the evidence for itself — and tag the repo semver.
 8. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
    includes bumping the version named in each consumer's README provenance line, in the same commit
    as the copy.
@@ -98,7 +124,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/README.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.7.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.8.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -143,7 +169,10 @@ The kit carries its own revision, `Kit.VERSION` at the top of `framework.lua`, e
 byte-identity — but it names which copy a consumer holds, and it names that copy's API document
 under [`api/testkit/`](api/testkit/). **Bump it on every released change to any file in `testkit/`,
 and write the document for the new number**; `tests/test_kitsync.lua` fails if the document for the
-live revision is missing, the same bargain `test_versioning.lua` strikes for the library's minors.
+live revision is missing, the same bargain `tests/test_versioning.lua` strikes for the library's
+minors in step 5. That parity is real as of v1.8.0 and was not before it: this sentence claimed it
+while `test_versioning.lua` checked `CHANGELOG.md` and nothing else, so step 5 was a rule nothing
+enforced. The gate now exists — see step 5.
 
 ```
 cp -r testkit/. <Addon>/tests/_kit/

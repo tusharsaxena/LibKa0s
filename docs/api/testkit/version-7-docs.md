@@ -10,9 +10,9 @@
 | Version | **7** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | unreleased — on `master` after v1.7.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 5](version-5-docs.md) — `Max CCN` measured over every function, not over the warnings block |
-| Superseded by | — |
+| Superseded by | [version 8](version-8-docs.md) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `7` |
 
