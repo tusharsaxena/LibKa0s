@@ -7,14 +7,14 @@
 #
 #   lint        luacheck .                     GATING
 #   tests       lua tests/run.lua              GATING
-#   perf        lua tests/perf.lua             recorded, never gating
-#   complexity  lizard -l lua -x ... .         recorded, never gating
+#   perf        lua tests/perf.lua             recorded — gates the TAG, never the run or the commit
+#   complexity  lizard -l lua -x ... .         recorded — gates the TAG, never the run or the commit
 #
-# WHY perf AND complexity DO NOT GATE. `performance-§10` is explicit that a complexity threshold
-# which fails a run teaches everyone to reach for --no-verify, after which the gate protects nothing
-# and the habit remains; `performance-§9` says the same of wall-clock perf. Folding either into a
-# red/green battery would quietly reverse both rules. They are measured, recorded and diffed — never
-# used to fail the run. A regression in them yields `amber`, which is a signal, not a stop.
+# WHY perf AND complexity DO NOT GATE THE RUN OR THE COMMIT. `performance-§9`/`§10`: a threshold that
+# fails a run teaches everyone to reach for --no-verify, after which the gate protects nothing and the
+# habit remains. They are measured, recorded and diffed; a regression yields `amber`, not `red`. At
+# the TAG they DO gate — `automated-tests-§3` has the release command read this manifest and require
+# all four suites at `pass` plus zero functions above CCN 15, where a `skip` is NOT EVALUATED.
 #
 # A MISSING TOOL IS A SKIP, NOT A FAILURE. An absent luacheck/lizard/interpreter means the suite did
 # not run; it does not mean the addon is broken. Skips are recorded as skips so a green run that
@@ -353,11 +353,22 @@ if [ "$WRITE_BUNDLE" -eq 1 ]; then
         # says so, rather than presenting rounded seconds as if they were milliseconds.
         printf '  "host": { "lua": "%s", "luacheck": "%s", "lizard": "%s", "timingSource": "%s" },\n' \
             "$(sj "$LUA_VERSION")" "$(sj "$LUACHECK_VERSION")" "$(sj "$LIZARD_VERSION")" "$(sj "$TIMING_SOURCE")"
+        # `gating` is a BOOLEAN and there are two checkpoints, so it could only ever describe one of
+        # them. It described the run, which made `"gating": false` on perf and complexity read as
+        # "these two gate nothing" — the same half-truth the RESULTS.md lead-in used to carry, in
+        # machine-readable form. `gates` names both checkpoints instead.
+        #
+        # NEITHER FIELD IS READ BY ANYTHING. `/wow-addon:bump-version` evaluates the release gate
+        # from `suites.<name>.status` and `suites.complexity.warnings` — never from `gating` and
+        # never from `gates`. Both are descriptive, and `gates` is the honest description. The legacy
+        # boolean stays beside it for one revision so no reader breaks on the way past.
+        GATE_COMMIT='"gating": true, "gates": { "commit": true, "release": true }'
+        GATE_RECORD='"gating": false, "gates": { "commit": false, "release": true }'
         printf '  "suites": {\n'
-        suite_json lint       ", \"warnings\": $LINT_WARN, \"errors\": $LINT_ERR, \"files\": $LINT_FILES, \"gating\": true"; printf ',\n'
-        suite_json tests      ", \"passed\": $TESTS_PASS, \"failed\": $TESTS_FAIL, \"total\": $TESTS_TOTAL, \"gating\": true"; printf ',\n'
-        suite_json perf       ", \"scenarios\": $PERF_SCENARIOS, \"gating\": false"; printf ',\n'
-        suite_json complexity ", \"warnings\": $CCN_WARN, \"maxCcn\": $CCN_MAX, \"nloc\": $CCN_NLOC, \"functions\": $CCN_FUNCS, \"avgCcn\": $CCN_AVG, \"avgNloc\": $CCN_AVG_NLOC, \"avgToken\": $CCN_AVG_TOKEN, \"warnFunRatio\": $CCN_FUN_RT, \"warnNlocRatio\": $CCN_NLOC_RT, \"bandFiles\": $CCN_BAND, \"overCapFiles\": $CCN_OVER, \"gating\": false"; printf '\n'
+        suite_json lint       ", \"warnings\": $LINT_WARN, \"errors\": $LINT_ERR, \"files\": $LINT_FILES, $GATE_COMMIT"; printf ',\n'
+        suite_json tests      ", \"passed\": $TESTS_PASS, \"failed\": $TESTS_FAIL, \"total\": $TESTS_TOTAL, $GATE_COMMIT"; printf ',\n'
+        suite_json perf       ", \"scenarios\": $PERF_SCENARIOS, $GATE_RECORD"; printf ',\n'
+        suite_json complexity ", \"warnings\": $CCN_WARN, \"maxCcn\": $CCN_MAX, \"nloc\": $CCN_NLOC, \"functions\": $CCN_FUNCS, \"avgCcn\": $CCN_AVG, \"avgNloc\": $CCN_AVG_NLOC, \"avgToken\": $CCN_AVG_TOKEN, \"warnFunRatio\": $CCN_FUN_RT, \"warnNlocRatio\": $CCN_NLOC_RT, \"bandFiles\": $CCN_BAND, \"overCapFiles\": $CCN_OVER, $GATE_RECORD"; printf '\n'
         printf '  },\n'
         printf '  "verdict": "%s"\n' "$VERDICT"
         printf '}\n'
@@ -406,9 +417,20 @@ if [ "$WRITE_BUNDLE" -eq 1 ]; then
             printf '<!-- This file is OVERWRITTEN IN PLACE — the git history of this one path is the trend line. -->\n\n'
             printf 'One row per run. The frozen evidence for each is in the dated folder beside this file;\n'
             printf 'the analysis of a given run is its `ANALYSIS.md`.\n\n'
-            printf '**`lint` and `tests` gate. `perf` and `complexity` are recorded and never fail a run** —\n'
-            printf 'they are read and compared, not thresholded. A `skip` is a suite that did not run at all,\n'
-            printf 'which is never the same as a pass.\n\n'
+            # THE LEAD-IN NAMES THE CHECKPOINT, PER SUITE. The old text — "perf and complexity are
+            # recorded and never fail a run" — is true and, standing alone, misleading: it reads as
+            # "these two gate nothing", while automated-tests-§3's release gate says otherwise. It
+            # was the sentence nine repos quoted back, and none of them wrote it. There are two
+            # checkpoints and a suite's answer differs between them, so both are stated here.
+            printf '**`lint` and `tests` gate the run and gate the commit** (`testing-§4`).\n'
+            printf '**`perf` and `complexity` never fail a run and never block a commit** — they are recorded,\n'
+            printf 'read and compared, not thresholded (`performance-§9`, `performance-§10`).\n\n'
+            printf '**The tag is gated on all four suites at `pass`, plus zero functions above CCN 15**\n'
+            printf '(`automated-tests-§3`, *The release gate*), evaluated by `/wow-addon:bump-version` from the\n'
+            printf '`manifest.json` the release run writes — not by this script, whose exit code is unchanged.\n\n'
+            printf 'A `skip` is a suite that did not run at all. It is never a pass, and at the release gate it is\n'
+            printf '**NOT EVALUATED** rather than passed: install the tool and re-run. A `—` is a suite that was\n'
+            printf 'not selected, which is a different fact again.\n\n'
             printf '%s\n' "$HEADER"
             printf '%s\n' "$RULE"
             printf '%s\n' "$ROW"

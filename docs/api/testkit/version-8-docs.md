@@ -29,7 +29,7 @@ must be pinned, and a number that is recorded must be a measurement.
 | `Loader.xmlFiles(xmlPath)` | The vendored-library load list, derived from the XML rather than re-typed. |
 | `Kit.assertSuiteInventory(dir, suites)` | The suite list pinned in both directions; `loadSuites` no longer skips a declared-but-absent suite in silence. |
 | `Kit.assertSurfaceParity(live, degraded, label)` | A degraded-path stub's surface asserted as a set, not member by member. |
-| `run-automated-tests.sh` | Millisecond durations that cannot be negative, a recorded timing source, and the file itself `100755` in the index. |
+| `run-automated-tests.sh` | Millisecond durations that cannot be negative, a recorded timing source, the file itself `100755` in the index, a `RESULTS.md` lead-in that names the checkpoint, and `suites.<name>.gates`. |
 
 **Adoption is additive except for one item.** A consumer on version 7 keeps working after
 re-vendoring, with a single exception: `Kit.assertSuiteInventory` runs automatically when
@@ -354,6 +354,52 @@ gate reads `git ls-files -s`, and any equivalent check downstream must do the sa
 cannot see it, which is why it needs its own gate. A consumer re-vendoring this revision still runs
 `git update-index --chmod=+x tests/_kit/run-automated-tests.sh` **once**. The difference is that
 after this, forgetting is loud rather than surviving three audit cycles.
+
+### The emitted `RESULTS.md` lead-in names the checkpoint
+
+Through version 7 the runner wrote this above every repo's trend table:
+
+> **`lint` and `tests` gate. `perf` and `complexity` are recorded and never fail a run** —
+
+Every clause is true, and the paragraph is misleading, because it names no checkpoint. There are
+**two** — the commit and the tag — and perf and complexity answer differently at each. Read alone it
+says *"these two gate nothing"*, which `automated-tests-§3`'s release gate contradicts. Nine repos
+were written up for carrying that sentence and **none of them wrote it**: the runner did, on every
+run, which is also why hand-editing the nine copies would have been undone by the next run.
+
+The lead-in now states, per suite: `lint` and `tests` gate the run **and** the commit (`testing-§4`);
+`perf` and `complexity` never fail a run and never block a commit; the **tag** is gated on all four
+suites at `pass` plus **zero** functions above **CCN 15**, evaluated by `/wow-addon:bump-version`
+from the run's `manifest.json`, where a `skip` is **NOT EVALUATED** rather than a pass.
+
+It is written only when `RESULTS.md` does not yet exist. **A repo with an existing `RESULTS.md`
+keeps the old paragraph until someone replaces it by hand** — the runner will not rewrite a file
+whose rows are the trend line.
+
+### `suites.<name>.gates`, beside the legacy `gating`
+
+```jsonc
+"suites": {
+  "lint":       { "status": "pass", "durationMs": 245, …,
+                  "gating": true,  "gates": { "commit": true,  "release": true } },
+  "complexity": { "status": "pass", "durationMs": 270, …,
+                  "gating": false, "gates": { "commit": false, "release": true } }
+}
+```
+
+`gating` is a **boolean** and there are **two** checkpoints, so it could only ever describe one of
+them. It described the run, which made `"gating": false` on perf and complexity the same half-truth
+as the old lead-in, in machine-readable form. `gates` names both.
+
+**Neither field is read by anything, and that is the point of documenting them.**
+`/wow-addon:bump-version` evaluates the release gate from **`suites.<name>.status`** and
+**`suites.complexity.warnings`** — never from `gating`, and never from `gates`. Both fields are
+descriptive; `gates` is the honest description. **Do not build a gate on either**: a consumer that
+started reading `gates.release` would be taking its release policy from a string the runner hardcodes
+rather than from the measurements, which is how a decorative field becomes load-bearing by accident.
+
+The legacy `gating` boolean is retained for **one revision** so nothing reading it breaks on the way
+past. It is scheduled for removal at version 9.
 
 ## Compatibility
 

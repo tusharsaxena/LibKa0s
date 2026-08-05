@@ -3,6 +3,17 @@
 The shape `BuildRecord` emits and `Save` persists, for `LibKa0s-Perf-1.0`. `schema` is the version
 stamp — this document covers **schema 2**.
 
+> **Not the automated-test manifest.** This repo emits two records with a `schema` field and they
+> are unrelated. The one described here is the **in-game perf capture** written by `Perf.Save` into
+> the host's SavedVariables. The other is `docs/automated-tests/<stamp>/manifest.json`, written by
+> `testkit/run-automated-tests.sh` and documented in
+> [`api/testkit/version-8-docs.md`](api/testkit/version-8-docs.md).
+>
+> One thing about that other record is worth stating where a reader looking for "the schema" will
+> land: its `suites.<name>.gating` boolean and its `suites.<name>.gates` object are **descriptive
+> only**. `/wow-addon:bump-version` evaluates the release gate from `suites.<name>.status` and
+> `suites.complexity.warnings`, and reads neither field. Nothing should be built on them.
+
 ## Schema 2 vs. schema 1
 
 Schema 1 was AbsorbTracker's own, addon-local format, documented in
