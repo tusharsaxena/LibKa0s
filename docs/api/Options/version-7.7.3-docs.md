@@ -121,7 +121,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `scheduleTimer` | function(fn, delay) | no | O1 | Backs the 50 ms colour-drag throttle. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. |
 | `getLSM` | function | no | O1 | Returns LibSharedMedia-3.0, for `LSMValues`. |
 | `validate` | function | no | O1 | Runs once, before the page builders. A host's schema-shape check. |
-| `onAceGUI` | function(AceGUI) | no | O1 | Handed the resolved AceGUI so the host can stash it (Ka0s standard §3.4) for its own page files. |
+| `onAceGUI` | function(AceGUI) | no | O1 | Handed the resolved AceGUI so the host can stash it (library-stack-§4) for its own page files. |
 | `buildMain` | function(ctx) | no | O1 | Draws the main page's body, on its first OnShow. |
 | `colorDecode` | function(stored) | no | O1 | → `r, g, b, a`. Defaults to the `{r=,g=,b=,a=}` shape. |
 | `colorEncode` | function(r,g,b,a) | no | O1 | → stored. Defaults to the same. |

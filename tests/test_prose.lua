@@ -113,8 +113,11 @@ end)
 
 -- ── section references (§N.M is a retired notation) ─────────────────────────────────────────
 --
--- The standard is filename-scoped now — `library-stack-§4`, `options-ui-§8` — and a bare `§3.4`
--- names a numbering that no longer exists, so a reader cannot resolve it to anything.
+-- The standard is filename-scoped now — `library-stack-§4`, `options-ui-§8` — and a bare dotted
+-- global number names a numbering that no longer exists, so a reader cannot resolve it to anything.
+-- (This comment deliberately never writes a literal dotted number, the same device
+-- documentation-§6 uses on itself: the check below is a plain regex over the shipped payload, and
+-- spelling out the form it forbids would redden a file describing the rule.)
 --
 -- Scoped to the shipped payload for a reason: `LibKa0s/Options.lua` is vendored BYTE-FOR-BYTE into
 -- eight addons, so a §N.M left here (or reintroduced later) can only be corrected by a re-vendor

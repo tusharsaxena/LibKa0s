@@ -285,7 +285,7 @@ test("options: registered page builders run in registration order, once, at Crea
 end)
 
 test("options: CreateOptionsPanel hands the host the AceGUI it resolved", function()
-  -- Ka0s standard §3.4: resolve once, then read the upvalue. The host stashes it for its own page
+  -- library-stack-§4: resolve once, then read the upvalue. The host stashes it for its own page
   -- files, so the library has to hand it over rather than keep it private.
   local got
   local O = Fixture.new{ onAceGUI = function(ag) got = ag end }
@@ -656,7 +656,7 @@ end)
 -- looked equivalent.
 --
 -- OnCommit and OnRefresh are inert by design rather than by omission: a host's writes land
--- immediately through its own write seam (options-ui-§41), and SetRenderer already owns re-show, so
+-- immediately through its own write seam (options-ui-§1), and SetRenderer already owns re-show, so
 -- a second refresh path would race the renderer it duplicates.
 
 test("options: CreatePanel stamps the three Blizzard canvas callbacks", function()
