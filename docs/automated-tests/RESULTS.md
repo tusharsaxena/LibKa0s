@@ -17,12 +17,13 @@ which is never the same as a pass.
 
 ## Test suite
 
-480 cases, spread across the library's own surfaces and the kit it vendors: core and debug log,
+498 cases, spread across the library's own surfaces and the kit it vendors: core and debug log,
 the slash router, the options panel and its widgets and scroll frame, the perf core with its
-command, panel, run and isolation suites, versioning, and `test_kitsync.lua` — which is the one
-that asserts `testkit/` and `tests/_kit/` hold the same files and that every one of them is
-byte-identical, README included. The generated inventory `test-cases.md` in each bundle is the
-authority on what exists at any point.
+command, panel, run and isolation suites, versioning, `test_prose.lua` — US English and retired
+section notation across the shipped payload — and `test_kitsync.lua`, which is the one that asserts
+`testkit/` and `tests/_kit/` hold the same files and that every one of them is byte-identical,
+README included. The generated inventory `test-cases.md` in each bundle is the authority on what
+exists at any point.
 
 Two coverage facts are worth naming while the count has no history to speak for it. The suite
 exercises the library **headlessly through the mock**, so what it pins is contract and state
@@ -34,9 +35,9 @@ suites (`test_perf_core`, `test_perf_command`, `test_perf_panel`, `test_perf_run
 
 ## Lint
 
-Clean over 11 files: 0 warnings, 0 errors. Read that number with its scope attached, because the
+Clean over 12 files: 0 warnings, 0 errors. Read that number with its scope attached, because the
 scope is narrower than the repo. `.luacheckrc:4` sets `exclude_files = { "tests/", "docs/" }`, so
-`luacheck .` covers the 8 shipped library files under `LibKa0s/` plus the 3 Lua sources in
+`luacheck .` covers the 8 shipped library files under `LibKa0s/` plus the 4 Lua sources in
 `testkit/` — and **none of the test code**, which is the larger half of the tree by line count.
 The kit's Lua is linted once, at its master path in `testkit/`; the vendored `tests/_kit/` copy is
 excluded along with the rest of `tests/`, which costs nothing while `test_kitsync.lua` holds the two
