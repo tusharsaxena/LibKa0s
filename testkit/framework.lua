@@ -121,6 +121,7 @@ function Kit.expose(t)
   t.assertNil   = Kit.assertNil
   t.assertNear  = Kit.assertNear
   t.assertError = Kit.assertError
+  t.assertSuiteInventory = Kit.assertSuiteInventory
   return t
 end
 
@@ -132,19 +133,131 @@ local function fileExists(path)
   return false
 end
 
+--- A suites entry is either a plain basename or `{ name = "test_foo", pending = "why" }`.
+local function suiteEntry(entry)
+  if type(entry) == "table" then return entry.name, entry.pending end
+  return entry, nil
+end
+
+--- List the plain entries of a directory, sorted. Lua 5.1 has no directory API and nothing in this
+--- collection depends on LuaFileSystem, so the listing shells out: `ls -A` covers every shell the
+--- suites are actually run under (Linux, WSL, macOS, Git Bash), `dir /b` is the cmd.exe fallback.
+--- An empty result means "could not look" and every caller must treat it as a failure, never as an
+--- empty directory — a gate that goes quiet when it cannot look is worse than no gate.
+local function listDir(dir)
+  local names = {}
+  local function collect(cmd)
+    if not io.popen then return end
+    local p = io.popen(cmd)
+    if not p then return end
+    for line in p:lines() do
+      local name = line:gsub("[\r\n]+$", "")
+      if name ~= "" and name ~= "." and name ~= ".." then names[#names + 1] = name end
+    end
+    p:close()
+  end
+  collect(('ls -A "%s" 2>/dev/null'):format(dir))
+  if #names == 0 then collect(('dir /b "%s" 2>NUL'):format((dir:gsub("/", "\\")))) end
+  table.sort(names)
+  return names
+end
+
 --- Load every suite, stamping each registered case with the file it came from.
 ---
---- A SUITES entry naming a file that does not exist yet is skipped rather than fatal, so a suite
---- can be listed while it is being written without taking the whole run down with it.
+--- A declared suite whose file is NOT on disk is a hard error. It used to be skipped, and the
+--- comment here used to call that deliberate — "so a suite can be listed while it is being written
+--- without taking the whole run down with it". The convenience is real; the silence is not worth
+--- it. A renamed or deleted suite vanished from the run with no signal at all, and the run stayed
+--- green while covering less than it did yesterday.
+---
+--- The write-in-progress affordance survives, made explicit: `{ name = "test_foo", pending = "why" }`
+--- registers a declared skip instead of registering nothing. Declaring `pending` on a suite whose
+--- file DOES exist is also an error — that is the same silence wearing the affordance's clothes.
 local function loadSuites(dir, suites)
-  for _, suite in ipairs(suites) do
-    local path = dir .. suite .. ".lua"
-    if fileExists(path) then
-      currentSuite = suite
+  for i, entry in ipairs(suites) do
+    local name, pending = suiteEntry(entry)
+    local path = dir .. tostring(name) .. ".lua"
+    currentSuite = name
+    if pending then
+      if fileExists(path) then
+        error(("suite inventory: %s is declared `pending = %q` (position %d in the suites list) but "
+          .. "the file exists — drop the `pending` field so its cases actually run")
+          :format(path, tostring(pending), i), 0)
+      end
+      Kit.test(tostring(name) .. ".lua: suite not written yet", nil, tostring(pending))
+    elseif fileExists(path) then
       dofile(path)
+    else
+      error(("suite inventory: %s is declared in the suites list (position %d) but is not on disk "
+        .. "— delete the entry or write the file; to keep it listed while it is being written, "
+        .. "declare it as { name = %q, pending = \"why\" } so it registers as a skip rather than "
+        .. "as nothing"):format(path, i, tostring(name)), 0)
     end
   end
   currentSuite = nil
+end
+
+--- The `test_*.lua` basenames on disk under `dir`, and the raw listing they came from.
+local function suiteFilesOn(dir)
+  local listing = listDir(dir)
+  local names = {}
+  for _, f in ipairs(listing) do
+    local name = f:match("^(test_.+)%.lua$")
+    if name then names[#names + 1] = name end
+  end
+  return names, #listing
+end
+
+--- Both directions of the suite list, asserted.
+---
+--- `testing-§9` names the suite list as a list that MUST be pinned, and both of its silent failure
+--- modes were live in this collection: a declared suite whose file is gone was skipped, and a suite
+--- file nobody added to the list never ran at all. `loadSuites` closes the first; this closes the
+--- second, and re-closes the first for the repos that call this directly from a case.
+---
+--- The two messages are worded differently on purpose, because the two fixes are different: one is
+--- "delete the entry or write the file", the other is "add it to the runner". Every divergence in
+--- both directions is reported in one message — a list that has drifted has usually drifted more
+--- than once, and one-at-a-time is one test run per missing file.
+function Kit.assertSuiteInventory(dir, suites)
+  dir = dir or "tests/"
+  local declared, order, pending = {}, {}, {}
+  for i, entry in ipairs(suites or {}) do
+    local name, why = suiteEntry(entry)
+    declared[tostring(name)] = i
+    order[#order + 1] = tostring(name)
+    -- A `pending` entry is declared-and-deliberately-absent. Demanding it be on disk would make the
+    -- write-in-progress affordance unreachable, which is the whole point of keeping it. The other
+    -- direction still binds: if the file DOES appear, `loadSuites` raises rather than skipping it.
+    if why then pending[tostring(name)] = true end
+  end
+
+  local onDisk, listed = suiteFilesOn(dir)
+  if listed == 0 then
+    fail("suite inventory: could not list " .. dir .. " — no `ls -A` and no `dir /b`; this gate "
+      .. "cannot run, and must not be reported as passing", 2)
+  end
+  local present = {}
+  for _, name in ipairs(onDisk) do present[name] = true end
+
+  local problems = {}
+  for i, name in ipairs(order) do
+    if not present[name] and not pending[name] then
+      problems[#problems + 1] = ("%s%s.lua is declared in the suites list (position %d) but is not "
+        .. "on disk — delete the entry or write the file"):format(dir, name, i)
+    end
+  end
+  for _, name in ipairs(onDisk) do
+    if not declared[name] then
+      problems[#problems + 1] = ("%s%s.lua exists but is not declared in the suites list — add %q "
+        .. "to the runner; it is running zero cases today"):format(dir, name, name)
+    end
+  end
+
+  if #problems > 0 then
+    fail("suite inventory (" .. dir .. "):\n          - " .. table.concat(problems,
+      "\n          - "), 2)
+  end
 end
 
 -- ── `--list` ───────────────────────────────────────────────────────────────────────────────
@@ -182,7 +295,8 @@ local function renderInventory(suites)
 
   -- Declared-suite order, not first-seen and not sorted: the suite list is load-order-sensitive and
   -- the inventory should read the way the run reads.
-  for _, suite in ipairs(suites) do
+  for _, entry in ipairs(suites) do
+    local suite = suiteEntry(entry)
     local names = {}
     for _, t in ipairs(tests) do
       if t.suite == suite then
@@ -204,7 +318,8 @@ local function renderInventory(suites)
   out()
   out("| Suite | Cases |")
   out("|-------|------:|")
-  for _, suite in ipairs(suites) do
+  for _, entry in ipairs(suites) do
+    local suite = suiteEntry(entry)
     local n = countIn(suite)
     if n > 0 then out(string.format("| %s.lua | %d |", suite, n)) end
   end
@@ -214,11 +329,20 @@ end
 -- ── run ────────────────────────────────────────────────────────────────────────────────────
 
 --- Load the suites, then either render the inventory or run everything.
---- opts = { dir = "tests/", suites = { ... } }
+--- opts = { dir = "tests/", suites = { ... }, suiteInventory = true }
 --- Exits the process: 0 on success, 1 on any failure, so the green gate is a plain shell check.
+---
+--- `Kit.assertSuiteInventory` runs first whenever `opts.dir` is given EXPLICITLY — a runner that
+--- discovers its own suites and passes no `dir` sits outside the assertion's premise and is left
+--- alone. `suiteInventory = false` is the documented opt-out for a repo mid-migration; it is not a
+--- setting to leave switched off.
 function Kit.run(opts)
   local dir    = opts.dir or "tests/"
   local suites = opts.suites or {}
+
+  if opts.dir and opts.suiteInventory ~= false then
+    Kit.assertSuiteInventory(dir, suites)
+  end
 
   loadSuites(dir, suites)
 

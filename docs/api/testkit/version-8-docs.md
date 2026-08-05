@@ -126,6 +126,75 @@ It is line-based and flat on purpose: `LibKa0s.xml` is a flat list of `<Script f
 nested `<Include>`s, and a real XML parser here would be a dependency bought to solve a problem
 nobody has.
 
+---
+
+## The suite list, pinned in both directions
+
+**This is the one change in version 8 that is not additive.** It converts a silence into a failure,
+so a consumer must be in balance on the commit that adopts it.
+
+### `loadSuites` no longer skips a declared-but-absent suite
+
+Through version 7, a `suites` entry naming a file that was not on disk was skipped, and the comment
+in `framework.lua` called that deliberate — *"so a suite can be listed while it is being written
+without taking the whole run down with it."* The convenience is real. The silence is not worth it: a
+renamed or deleted suite left the run with no signal at all, and the run stayed green while covering
+less than it did the day before.
+
+It now raises, naming the path and its position in the list.
+
+### The write-in-progress affordance, made explicit
+
+```lua
+Kit.run{
+  dir = "tests/",
+  suites = {
+    "test_core",
+    { name = "test_migration", pending = "schema v4 lands next week" },
+  },
+}
+```
+
+A `pending` entry registers a **declared skip** instead of registering nothing: the run prints
+`SKIP  test_migration.lua: suite not written yet — schema v4 lands next week`, and `--list` writes it
+into `docs/test-cases.md` with its reason. The intent is now data, and it is disclosed.
+
+Declaring `pending` on a suite whose file *does* exist is an error — that is the original silence
+wearing the affordance's clothes.
+
+### `Kit.assertSuiteInventory(dir, suites)`
+
+Globs `<dir>test_*.lua` (via `ls -A`, falling back to `dir /b`; no LuaFileSystem dependency) and
+compares it against the declared list **in both directions**. Every divergence in both directions is
+reported in one message — a list that has drifted has usually drifted more than once.
+
+| Direction | Message says |
+|---|---|
+| declared, not on disk | `… is declared in the suites list (position N) but is not on disk — delete the entry or write the file` |
+| on disk, not declared | `… exists but is not declared in the suites list — add "…" to the runner; it is running zero cases today` |
+
+The two messages are worded differently on purpose: the two fixes are different, and a single
+"suite list mismatch" would make the reader work out which one they have.
+
+A `pending` entry is exempt from the first direction, because it is declared-and-deliberately-absent.
+If the listing itself comes back empty the assertion **fails** rather than passing — a gate that goes
+quiet when it cannot look is worse than no gate.
+
+It is exported through `Kit.expose` as `T.assertSuiteInventory`, so a repo that prefers to own the
+assertion as a named case (BankLedger and PanelMaster already do) can call it directly.
+
+### It runs automatically
+
+`Kit.run` calls it **before** loading the suites whenever `opts.dir` is given explicitly. A runner
+that auto-discovers its suites and passes no `dir` sits outside the assertion's premise and is left
+alone.
+
+```lua
+Kit.run{ dir = "tests/", suites = { … }, suiteInventory = false }   -- documented opt-out
+```
+
+`suiteInventory = false` exists for a repo mid-migration. It is not a setting to leave switched off.
+
 ## Compatibility
 
 The kit surface is **additive-only** on the same terms as the library: a function or seam may be
