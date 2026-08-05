@@ -12,6 +12,40 @@ cannot drift. Release order is in
 
 ## Unreleased
 
+### `LibKa0s-Perf-1.0` — a record that asserts only what it observed (**Perf minor 7**)
+
+`buckets = { { key = "paintBar", within = "repaintPass" } }` was a claim nothing checked. The
+descriptor's `within` was written into every record and printed as a containment sentence — *"buckets
+nest: repaintPass contains paintBar"* — with no part of the library ever having seen the two run
+inside one another. One consumer's descriptor declares two buckets inside a pass neither ever runs
+in, and every capture it has archived states that containment as fact. A wrong `within` is worse than
+none: a reader who trusts it subtracts the wrong parent's time.
+
+- **`Perf.Note(key, ms, parentKey)`** takes the bucket the work actually ran inside. The third
+  argument is optional and **every existing call site keeps working untouched** — containment is
+  supplied at the *recording* call rather than inferred from a bracket stack, because the inline
+  `local t0 = Perf.on and debugprofilestop()` … `Perf.Note(key, …)` form is what every wired host
+  actually uses. A host adopts the parent one call site at a time, or not at all.
+- The record carries **`observedWithin`** (and `observedMixed`, when one bucket is seen under two
+  different parents) beside the declared `within`. Both are optional and additive within schema 2:
+  an older record is unchanged, and a bucket nobody supplied a parent for simply lacks the key.
+- The report now distinguishes the three states it was collapsing into one — *observed inside X*,
+  *declares itself within X — not observed*, and *declares itself within X but was observed inside
+  Y*. The library no longer asserts containment it did not observe (performance-§3).
+- **`Perf.Open(key)` / `Perf.Close(key)`.** Shape B's slot now carries the bucket key, so it can be
+  matched to its Close and can name the parent of a bracket opened inside it; a bracket nested in
+  another therefore records its containment observed. The old `Open()` → `t0` / `Close(t0, key)`
+  spelling is **replaced, not deprecated** — a grep of the whole collection finds no call site.
+- **The docstring said the pair costs "one boolean test and nothing else, and allocates nothing on
+  either path". That was false**: it is two real Lua calls against the inline form's none. It now
+  says so, and says which shape to use where (performance-§2). `tests/test_perf_isolation.lua` holds
+  the measured zero-allocation case for the dormant path that the claim always needed.
+- `Perf.Note` and `Perf.Open` **name the caller** on a nil key instead of raising a bare
+  `table index is nil` from inside the library.
+- **`perf cancel` clears the context stamp.** It cleared the run, the counters and the label but left
+  the character, realm and zone standing, so a `perf report` after a cancel printed empty buckets
+  wearing the discarded run's identity.
+
 **testkit revision 7.** Two runner changes, neither urgent for a consumer.
 
 The runner now works in a repo with **no `.toc`**. It located the addon by globbing `./*.toc` and

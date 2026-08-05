@@ -66,7 +66,9 @@ is not re-read or re-migrated by the addon after adopting the library.
   // parent and its children as if they were disjoint.
   "buckets": {
     "repaintPass": { "calls": 118, "totalMs": 42.6, "maxMs": 1.8 },
-    "paintBar":    { "calls": 1869, "totalMs": 98.1, "maxMs": 0.92, "within": "repaintPass" }
+    // `within` is what the DESCRIPTOR declared; `observedWithin` is what the capture actually saw.
+    "paintBar":    { "calls": 1869, "totalMs": 98.1, "maxMs": 0.92,
+                     "within": "repaintPass", "observedWithin": "repaintPass" }
   },
 
   // Frame sampling, one arm per suspend state.
@@ -89,10 +91,19 @@ the encoder.
   principle, for one SavedVariables ring to outlive a rename or hold captures across more than one
   consumer's lifetime.
 - **`buckets[*].within`** is present only for a bucket the descriptor declared with a `within`
-  parent (see the descriptor's `buckets` field in [`api/Perf/version-6.3-docs.md`](api/Perf/version-6.3-docs.md)). A bucket recorded via `Note()` that the
+  parent (see the descriptor's `buckets` field in [`api/Perf/version-7.3-docs.md`](api/Perf/version-7.3-docs.md)). A bucket recorded via `Note()` that the
   descriptor never declared still appears here, just without a `within` key — membership in
   `buckets` (the descriptor field) controls only *presentation order and nesting*, never whether a
   measurement is captured.
+- **`buckets[*].observedWithin`** and **`buckets[*].observedMixed`** are **additive within schema 2**,
+  new at `Perf.lua` minor 7. `within` is a **claim** the descriptor makes; `observedWithin` is the
+  parent a call site actually **passed** — `Perf.Note(key, ms, parentKey)`, or the enclosing
+  `Perf.Open(key)` bracket. Nothing defaults it: a bucket no call site supplied a parent for has no
+  `observedWithin` key at all, and the report then says the parent is *declared, not observed* rather
+  than stating the containment as fact (performance-§3). `observedMixed` is `true` only where one
+  bucket was observed under two *different* parents, in which case `observedWithin` holds the first.
+  Records written before minor 7 carry neither key and are read unchanged — which is why this did not
+  cost a schema bump and did not discard anyone's ring.
 - **`context`** is the one **optional** top-level field, and it is absent entirely rather than
   empty when it is missing. It is snapshotted by `Start()`, so a record built before any run — which
   `report` and `dump` will happily do on a fresh instance — carries no `"context"` key at all, and

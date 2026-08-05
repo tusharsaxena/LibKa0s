@@ -1,26 +1,26 @@
-# `LibKa0s-Perf-1.0` — version 6.3
+# `LibKa0s-Perf-1.0` — version 7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Perf surface points here rather than restating it. It describes the
-> contract *as it was at this version* — a later version is a different document, not an edit to
-> this one.
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
 
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **6** · `PerfPanel.lua` **3** |
+| Files and minors | `Perf.lua` **7** · `PerfPanel.lua` **3** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.7.0 |
-| Status | Superseded |
-| Supersedes | [version 5.3](./version-5.3-docs.md) |
-| Superseded by | [version 7.3](./version-7.3-docs.md) |
+| Shipped in | v1.8.0 |
+| Status | **Current** |
+| Supersedes | [version 6.3](./version-6.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 6, PerfPanel = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 7, PerfPanel = 3 }` |
 
-`Since` names the file and minor a member first appeared in — `P6` for `Perf.lua` minor 6, `PP2`
+`Since` names the file and minor a member first appeared in — `P7` for `Perf.lua` minor 7, `PP2`
 for `PerfPanel.lua` minor 2. It is `1` for nearly everything: this major did not move at all between
-the first tag and minor 6, so every adopter before this version is on the same one.
+the first tag and minor 6, so every adopter before that version is on the same one.
 
 Adopters today: **AbsorbTracker** (`core/PerfSetup.lua`), **KickCD** (`core/PerfSetup.lua`),
 **ConsumableMaster** (`modules/PerfSetup.lua`).
@@ -36,17 +36,30 @@ a state LibStub can detect. **This is why the version key above is a pair.**
 
 ## What changed at this version
 
-**Two new instance members, `P.Open()` and `P.Close(t0, key)`, and nothing else.** No descriptor
-field, no bucket key, no record-schema field and no printed line moved, so a host written against
-5.3 is correct here unmodified — including `P.Note`, which the pair is built on rather than
-replacing. `PerfPanel.lua` does not move.
+**A record that asserts only what it observed, and a bracket pair that carries its key.**
+`PerfPanel.lua` does not move.
 
-They exist for **multi-exit** functions; see
-[Bracketing a multi-exit function](#bracketing-a-multi-exit-function).
+1. **`Note(key, ms, parentKey)` takes an optional third argument** — the bucket the work actually
+   ran inside. Every existing two-argument call site keeps working untouched.
+2. **The record carries `observedWithin` beside the declared `within`** (and `observedMixed` where
+   one bucket was seen under two different parents). Both are optional and **additive within schema
+   2**, so no ring is discarded and no reader of an older record sees a change.
+3. **The nesting note stopped stating a declaration as a fact.** It now distinguishes *observed
+   inside X*, *declares itself within X — not observed*, and *declares itself within X but was
+   observed inside Y*. See [Verifiable containment](#verifiable-containment).
+4. **`Open(key)` / `Close(key)` replace `Open()` → `t0` / `Close(t0, key)`.** This is the one
+   **breaking** change in this major's history; see [Compatibility](#compatibility) for why it was
+   taken rather than deprecated.
+5. **`Note` and `Open` name the caller on a nil key** instead of raising a bare `table index is nil`
+   from inside the library.
+6. **`Cancel()` clears the context stamp** it used to leave standing, so a `report` after a cancel
+   no longer prints empty buckets wearing the discarded run's character, realm and zone.
+7. **The `Open`/`Close` docstring stopped claiming the pair is free when capture is off.** It is two
+   real Lua calls; the inline form is none. `tests/test_perf_isolation.lua` now holds the measured
+   zero-allocation case for the dormant path.
 
-Internally, `FormatReport` and `Progress` were restructured into named builders (the FPS lines, the
-bucket lines, the nesting note, and the two step-state resolvers) to bring the file under the
-collection's complexity cap. Every line they emit is byte-identical to 5.3's.
+No descriptor field, no bucket key and no `lib.SCHEMA` bump. A host that never wrote `Open`/`Close`
+— which, at the time of writing, is every host in the collection — is correct here unmodified.
 
 ## Why it exists
 
@@ -94,7 +107,7 @@ written against minor 1 keeps working unmodified against any later minor.
 | `slash` | string | no | 1 | The command prefix shown in the panel's command column and in `Usage()`/`StatusLines()`. Defaults to `"/" .. name:lower()`. |
 | `title` | string | no | 1 | Panel title (before the `— Perf Run` suffix). Defaults to `name`. |
 | `ring` | number | no | 1 | Depth of the SavedVariables capture ring. Defaults to `lib.DEFAULT_RING` (10). |
-| `buckets` | array of `{ key, within }` | no | 1 | Declares report order and nesting for `Note()` buckets. `within` names the parent bucket key for buckets that nest (e.g. `paintBar` runs inside `repaintPass`). A bracket calling `Note()` with an undeclared key still records, it just doesn't appear in the report. |
+| `buckets` | array of `{ key, within }` | no | 1 | Declares report order and nesting for `Note()` buckets. `within` names the parent bucket key for buckets that nest (e.g. `paintBar` runs inside `repaintPass`). A bracket calling `Note()` with an undeclared key still records, it just doesn't appear in the report. **`within` is a claim, and from `Perf.lua` minor 7 the record says whether the capture confirmed it** — see [Verifiable containment](#verifiable-containment). |
 | `version` | string | no | 1 | Host addon version, stamped into `BuildRecord`. Defaults to `"?"`. |
 | `decorate` | function(frame, api) | no | 1 | Panel chrome hook, called once at frame creation with the frame and `{ Show, Hide, Toggle, TITLE_H, PAD, ROW_W }`. Takes precedence over the lib's own chrome: a host that supplies it draws its own close button and divider, and a host that omits it gets `Core.MakeCloseButton` on the title bar rather than nothing. The two paths are exclusive — running both would stack two × on the same corner. |
 
@@ -264,9 +277,9 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `Note(key, ms)` | 1 | Record one bracketed measurement into bucket `key`. |
-| `Open()` | **P6** | → `debugprofilestop()`, or **`nil` when the probe is off**. Opens a measurement bracket. See [Bracketing a multi-exit function](#bracketing-a-multi-exit-function). |
-| `Close(t0, key)` | **P6** | Close a bracket opened by `Open()`, recording its elapsed ms under `key`. A `nil` `t0` is a **silent no-op**. |
+| `Note(key, ms, parentKey)` | 1 · `parentKey` **P7** | Record one bracketed measurement into bucket `key`. `parentKey` is optional and names the bucket this work actually ran inside — the **observed** containment. Omitted, nothing is observed and the report says so. Raises, naming the caller, on a nil `key`. |
+| `Open(key)` | **P7** (`Open()` was P6) | Open a Shape B measurement bracket on `key`. No-op while the probe is off. See [Bracketing a multi-exit function](#bracketing-a-multi-exit-function). |
+| `Close(key)` | **P7** (`Close(t0, key)` was P6) | Close the bracket `Open(key)` opened, recording its elapsed ms under `key` and the enclosing bracket's key as the observed parent. A `Close` with no matching open slot is a **silent no-op**. |
 | `Reset()` | 1 | Zero every counter — buckets, completion/review flags, FPS arms. |
 | `Log(fmt, ...)` | 1 | Console-only line, colour-stripped. |
 | `Announce(fmt, ...)` | 1 | Chat-and-console line, for what the user must see mid-fight. |
@@ -298,23 +311,80 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `suspended` | 1 | Plain boolean field, the one the host contract above tells a show-decision to consult. Set by `Suspend()`/`Resume()`; `Stop()` leaves it alone. |
 | `__buckets()` / `__fpsArms()` / `__completed()` / `__reviewed()` / `__sampler()` / `__panel()` | 1 | Test seams over state that is otherwise private. A host suite asserting that a declared bucket was actually reached has no other handle on it. |
 
-## Bracketing a multi-exit function
+## Verifiable containment
 
-`P.Open()` / `P.Close(t0, key)`, new at `Perf.lua` minor 6. `P.Note` is unchanged, so an existing
-host keeps working untouched.
+`buckets = { { key = "paintBar", within = "repaintPass" } }` is a **claim about where the work
+runs**, written once and read months later beside the numbers it is supposed to explain. Through
+minor 6 nothing checked it: `within` was copied into every record and printed as a flat containment
+sentence, so a wrong declaration was indistinguishable from a right one. One adopter's descriptor
+declares two buckets inside a pass neither ever runs in, and every capture it has archived asserts
+that containment as fact. **A wrong `within` is worse than none** — a reader who trusts it subtracts
+the wrong parent's time.
+
+From minor 7 containment is **supplied at the recording call** and the record carries both values:
 
 ```lua
-local t0 = P.Open()
-if not pollable(id) then P.Close(t0, "pollSpell") return nil end
-if cached[id] then P.Close(t0, "pollSpell") return cached[id] end
+-- Shape A: pass the parent explicitly. The bucket really does run inside `appearance`.
+local t0 = Perf.on and debugprofilestop()
+NS.ApplyVisibility(bar)
+if t0 then Perf.Note("visibility", debugprofilestop() - t0, "appearance") end
+```
+
+| Record field | Meaning |
+|---|---|
+| `within` | what the **descriptor declared** |
+| `observedWithin` | the parent a **call site actually passed** — absent when none did |
+| `observedMixed` | `true` only where one bucket was observed under two *different* parents |
+
+and the report says which of the three states it is in:
+
+```
+(buckets nest: paintBar observed inside repaintPass,
+               appearance declares itself within repaintPass — not observed,
+               visibility declares itself within repaintPass but was observed inside appearance
+               — do not sum)
+```
+
+**Why the parent is taken at the recording call rather than inferred from a bracket stack.** The
+inline Shape A form — `local t0 = Perf.on and debugprofilestop()` … `Perf.Note(key, …)` — is what
+every wired host in the collection actually uses; a stack maintained by `Open`/`Close` would have
+observed nothing at all, because there were no `Open`/`Close` call sites to maintain it. Taking the
+parent here also keeps adoption **per call site**: a host passes it where it knows the answer, and
+gets an honest "declared, not observed" everywhere else.
+
+## Bracketing a multi-exit function
+
+`P.Open(key)` / `P.Close(key)` — Shape B in performance-§2. `P.Note` is unchanged, so a host on the
+inline Shape A form keeps working untouched.
+
+```lua
+P.Open("pollSpell")
+if not pollable(id) then P.Close("pollSpell") return nil end
+if cached[id] then P.Close("pollSpell") return cached[id] end
 ...
-P.Close(t0, "pollSpell")
+P.Close("pollSpell")
 return state
 ```
 
-`Open()` returns `nil` when `P.on` is false, and `Close` treats a `nil` `t0` as a no-op — which is
-what collapses **every exit to one unconditional statement** instead of its own
+Both calls are no-ops while `P.on` is false, and a `Close` with no matching open slot is a no-op
+too — which is what collapses **every exit to one unconditional statement** instead of its own
 `if __t0 then P.Note(...) end`.
+
+**State the cost honestly.** This pair is **not** free when capture is off: it is **two real Lua
+calls plus the boolean test inside each**, against the inline form's **none**. Minor 6's docstring
+claimed it cost "one boolean test and nothing else, and allocates nothing on either path", which was
+simply false. Shape A is therefore the default, and is **mandatory** on anything running per frame
+or per combat-log event; where a multi-exit region is also a hot path, restructure it to one exit
+rather than paying two calls a frame.
+
+**`Open` takes the key** (it did not, through minor 6). A slot with no identity cannot be matched to
+its `Close` and cannot name a parent for a bracket opened inside it — so a bracket nested in another
+now records its containment **observed**, which is precisely what minor 6's shape could not do.
+
+**An exit that forgot its `Close` is discarded, not credited.** The leaked slot is dropped when an
+enclosing bracket closes rather than being recorded at a stop time it never reached: crediting it
+with whatever ran afterwards would put a fabricated number in the report, and a fabricated number is
+worse than a missing one.
 
 **Why this is in the library rather than in each host.** One adopter's four-exit spell poll paid
 that branch per exit, and its own comment records that the instrumentation was originally *omitted*
@@ -341,7 +411,20 @@ form that is correct on every minor.
 ## Compatibility
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
-removed or repurposed, so a host written against minor 1 keeps working unmodified here.
+removed or repurposed, so a host written against minor 1 keeps working unmodified here — **with one
+exception, in this version, stated rather than buried.**
+
+**`Open` and `Close` changed signature at `Perf.lua` minor 7.** `Open()` → `t0` / `Close(t0, key)`
+became `Open(key)` / `Close(key)`. That is a repurposing, not an addition, and it is the only one in
+this major's history. It was taken rather than deprecated because a grep of the entire collection —
+all eight consumers — finds **zero** `Open` / `Close` call sites: every wired host uses the inline
+`Note` form. Carrying a second spelling forever to preserve compatibility with no caller would have
+been surface the library keeps for nothing (library-stack-§7, anti-patterns #55). A host that *did*
+hold the old spelling gets a Lua error at the call site rather than a silent miscount — `Close(t0,
+key)` now reads `t0` as the bucket key and finds no matching slot, so it records nothing.
+
+`Note` is untouched: the third argument is optional, and every two-argument call site keeps its
+exact old meaning.
 
 The **record schema is not**, and that is the deliberate difference. `lib.SCHEMA` is a data contract
 rather than an API contract: schema 2 took a clean break from schema 1 with no migration, and old
@@ -350,20 +433,3 @@ records are discarded rather than converted. See [`docs/record-schema.md`](../..
 The two files move as one. A consumer holding `Perf.lua` from one vendored copy and `PerfPanel.lua`
 from another is not a supported state and LibStub cannot detect it — which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 7.3
-
-**One breaking change and one addition.** `PerfPanel.lua` does not move.
-
-| Changed at 7.3 | What you do |
-|---|---|
-| `P.Open()` → `t0` / `P.Close(t0, key)` **became** `P.Open(key)` / `P.Close(key)` | Rewrite the call site. The reading is kept inside the library now, so the local `t0` goes away and the key moves from `Close` to `Open`. **Nothing in the collection held the old spelling** — this is why it was replaced rather than deprecated. |
-| `P.Note(key, ms)` **gains** an optional third argument, `parentKey` | Nothing, unless you want it. Pass the bucket the work actually ran inside and the record reports the containment **observed** instead of merely declared. |
-
-Everything else at 7.3 is the library telling the truth where this version did not: the report no
-longer states a descriptor's `within` as observed fact, `Cancel()` clears the context stamp it used
-to leave standing, `Note`/`Open` name the caller on a nil key, and the `Open`/`Close` docstring no
-longer claims the pair is free when capture is off — it is two Lua calls, and this version's
-docstring saying otherwise was a defect. No `lib.SCHEMA` bump: the new `observedWithin` and
-`observedMixed` bucket fields are optional and additive, so a ring written by this version is read
-unchanged.

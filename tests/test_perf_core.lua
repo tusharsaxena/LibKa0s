@@ -98,6 +98,38 @@ test("lib: Note tracks unrelated buckets independently", function()
   assertEqual(p.__buckets().inner.totalMs, 7, "inner")
 end)
 
+test("lib: Note takes the observed parent, and defaults to claiming nothing", function()
+  -- performance-§3. The third argument is what makes a declared `within` verifiable, and omitting
+  -- it must leave the record saying nothing was observed rather than echoing the declaration back
+  -- as though the capture had confirmed it.
+  local p = Fixture.new()
+  p.Note("inner", 1)
+  assertEqual(p.__buckets().inner.observedWithin, nil,
+    "no parent supplied, so nothing is observed — the descriptor's claim stays a claim")
+  p.Note("inner", 1, "outer")
+  assertEqual(p.__buckets().inner.observedWithin, "outer", "supplied, so observed")
+end)
+
+test("lib: two different observed parents for one bucket are flagged, not overwritten", function()
+  -- Keeping the last one would report whichever call site happened to run last as though it were
+  -- the only one — the same class of silent false claim the observed field exists to end.
+  local p = Fixture.new()
+  p.Note("inner", 1, "outer")
+  p.Note("inner", 1, "outer")
+  T.assertTrue(p.__buckets().inner.observedMixed == nil, "the same parent twice is not a conflict")
+  p.Note("inner", 1, "elsewhere")
+  T.assertTrue(p.__buckets().inner.observedMixed == true, "two parents is a fact about the call sites")
+  assertEqual(p.__buckets().inner.observedWithin, "outer", "and the first observation still stands")
+end)
+
+test("lib: Note with no key names the caller instead of raising a table-index error", function()
+  local p = Fixture.new()
+  local ok, err = pcall(p.Note, nil, 5)
+  T.assertFalse(ok, "a keyless Note must error")
+  T.assertTrue(tostring(err):find("Perf.Note requires a bucket key", 1, true) ~= nil,
+    "framed in the library's own words, got: " .. tostring(err))
+end)
+
 test("lib: Reset clears every bucket and both fps arms", function()
   local p = Fixture.new()
   p.Note("outer", 2)
@@ -110,30 +142,41 @@ end)
 
 -- ── the Open/Close bracket ──────────────────────────────────────────────────────────────────
 
-test("lib: Open returns nil while the probe is off", function()
-  -- The whole contract of an idle probe: one boolean test at the call site and nothing else. A
-  -- number here would mean every bracketed function was still paying for a reading nobody wants.
+test("lib: Open records nothing while the probe is off", function()
+  -- The whole contract of an idle probe. Open takes no reading, opens no slot, and the matching
+  -- Close then has nothing to find — so an idle bracket cannot invent a bucket.
   local p = Fixture.new()
   T.assertFalse(p.on, "the gate starts off")
-  T.assertNil(p.Open(), "no reading is taken")
+  p.Open("outer")
+  p.Close("outer")
+  assertEqual(next(p.__buckets()), nil, "no bucket was created")
 end)
 
-test("lib: Close on a nil t0 is a silent no-op", function()
-  -- This is what lets a multi-exit function write one unconditional P.Close per exit instead of
-  -- wrapping each one in `if t0 then`. It must not raise, and it must not invent a bucket.
+test("lib: Close with no matching open slot is a silent no-op", function()
+  -- This is what lets a multi-exit function write one unconditional P.Close per exit. It must not
+  -- raise, and it must not invent a bucket out of a bracket nobody opened.
   local p = Fixture.new()
-  p.Close(nil, "outer")
+  p.on = true
+  p.Close("outer")
   assertEqual(next(p.__buckets()), nil, "no bucket was created")
+end)
+
+test("lib: Open with no key names the caller instead of raising a table-index error", function()
+  local p = Fixture.new()
+  p.on = true
+  local ok, err = pcall(p.Open)
+  T.assertFalse(ok, "a keyless Open must error")
+  T.assertTrue(tostring(err):find("Perf.Open requires a bucket key", 1, true) ~= nil,
+    "framed in the library's own words, got: " .. tostring(err))
 end)
 
 test("lib: a real bracket records its elapsed ms to the named bucket", function()
   local p = Fixture.new()
   p.on = true
   T.mocks.__profileMs = 100
-  local t0 = p.Open()
-  assertEqual(t0, 100, "Open reads the clock while the probe is on")
+  p.Open("outer")
   T.mocks.__profileMs = 112.5
-  p.Close(t0, "outer")
+  p.Close("outer")
   local b = p.__buckets().outer
   assertEqual(b.calls, 1, "calls")
   assertEqual(b.totalMs, 12.5, "the elapsed span, not the clock reading")
@@ -147,13 +190,46 @@ test("lib: Open/Close feed the same buckets P.Note does", function()
   p.Note("outer", 5)
   p.on = true
   T.mocks.__profileMs = 0
-  local t0 = p.Open()
+  p.Open("outer")
   T.mocks.__profileMs = 3
-  p.Close(t0, "outer")
+  p.Close("outer")
   local b = p.__buckets().outer
   assertEqual(b.calls, 2, "one bucket, both spellings")
   assertEqual(b.totalMs, 8, "totalMs")
   assertEqual(b.maxMs, 5, "maxMs is still the peak")
+end)
+
+test("lib: a bracket opened inside another records the enclosing key as its observed parent",
+function()
+  -- The whole reason Open takes a key: a slot with no identity cannot name a parent for the
+  -- bracket opened inside it, so containment stayed unknowable from the pair.
+  local p = Fixture.new()
+  p.on = true
+  T.mocks.__profileMs = 0
+  p.Open("outer")
+  T.mocks.__profileMs = 1
+  p.Open("inner")
+  T.mocks.__profileMs = 3
+  p.Close("inner")
+  T.mocks.__profileMs = 10
+  p.Close("outer")
+  assertEqual(p.__buckets().inner.observedWithin, "outer", "inner ran inside outer, and was seen to")
+  assertEqual(p.__buckets().outer.observedWithin, nil, "the outermost bracket has no parent")
+end)
+
+test("lib: an exit that forgot its Close is discarded, not credited with a later bracket's time",
+function()
+  -- Crediting the leaked slot at whatever stop time it eventually reached would put a fabricated
+  -- number in the report, which is worse than the missing one.
+  local p = Fixture.new()
+  p.on = true
+  T.mocks.__profileMs = 0
+  p.Open("outer")
+  p.Open("inner")          -- and the exit forgot P.Close("inner")
+  T.mocks.__profileMs = 50
+  p.Close("outer")
+  assertEqual(p.__buckets().inner, nil, "the leaked bracket records nothing")
+  assertEqual(p.__buckets().outer.totalMs, 50, "and its parent is unaffected")
 end)
 
 -- ── JSON encoding ───────────────────────────────────────────────────────────────────────────
@@ -285,6 +361,19 @@ test("lib: the record's context names the character's class", function()
   assertEqual(r.context.class, "Death Knight", "UnitClass's localised name, not the token")
   assertEqual(r.context.character, "Testchar", "and the rest of the snapshot travels with it")
   p.Stop()
+end)
+
+test("lib: a cancelled run takes its context stamp with it", function()
+  -- Cancel cleared run, armed, recording and label and reset the counters, but left P.context
+  -- standing — so a `perf report` after a cancel printed empty buckets wearing the discarded run's
+  -- character, realm and zone: a record that reads like a capture of somewhere nobody measured.
+  local p = Fixture.new()
+  p.Start("doomed")
+  T.assertTrue(p.context ~= nil, "a started run stamps its context")
+  p.Cancel()
+  assertEqual(p.context, nil, "and cancelling discards it with everything else")
+  local r = p.BuildRecord()
+  assertEqual(r.context, nil, "so a report built after the cancel carries no stamp")
 end)
 
 test("lib: a record built before Start has no context at all", function()
@@ -425,7 +514,49 @@ test("lib: FormatReport indents a nested bucket under its parent", function()
   p.Note("inner", 1)
   local lines = table.concat(p.FormatReport(p.BuildRecord("cap")), "\n")
   T.assertTrue(lines:find("\n  inner", 1, true) ~= nil, "inner is indented two spaces")
-  T.assertTrue(lines:find("outer contains inner", 1, true) ~= nil, "the nesting is spelled out")
+  T.assertTrue(lines:find("inner declares itself within outer", 1, true) ~= nil,
+    "the nesting is spelled out")
+end)
+
+test("lib: a declared parent nobody supplied is reported as declared, NOT as observed", function()
+  -- The defect this replaced: AbsorbTracker's descriptor declared two buckets inside a repaintPass
+  -- neither ever ran in, and every capture — the archived ones included — printed the containment
+  -- as fact because nothing ever checked it.
+  local p = Fixture.new()
+  p.Note("outer", 4)
+  p.Note("inner", 1)
+  local lines = table.concat(p.FormatReport(p.BuildRecord("cap")), "\n")
+  T.assertTrue(lines:find("not observed", 1, true) ~= nil,
+    "an unconfirmed declaration must say so")
+  assertEqual(lines:find("inner observed inside", 1, true), nil,
+    "and must not be stated as observed containment")
+end)
+
+test("lib: a supplied parent is reported as observed", function()
+  local p = Fixture.new()
+  p.Note("outer", 4)
+  p.Note("inner", 1, "outer")
+  local lines = table.concat(p.FormatReport(p.BuildRecord("cap")), "\n")
+  T.assertTrue(lines:find("inner observed inside outer", 1, true) ~= nil, "confirmed by the capture")
+  assertEqual(lines:find("not observed", 1, true), nil, "so nothing is left unconfirmed")
+end)
+
+test("lib: a parent observed somewhere other than the declared one is reported as the defect it is",
+function()
+  local p = Fixture.new()
+  p.Note("outer", 4)
+  p.Note("inner", 1, "somewhereElse")
+  local lines = table.concat(p.FormatReport(p.BuildRecord("cap")), "\n")
+  T.assertTrue(lines:find("inner declares itself within outer but was observed inside somewhereElse",
+    1, true) ~= nil, "the descriptor and the call site disagree, and the report says which is which")
+end)
+
+test("lib: observed containment travels into the record beside the declared value", function()
+  local p = Fixture.new()
+  p.Note("inner", 1, "outer")
+  local r = p.BuildRecord("cap")
+  assertEqual(r.buckets.inner.within, "outer", "declared")
+  assertEqual(r.buckets.inner.observedWithin, "outer", "and observed")
 end)
 
 test("lib: a flat bucket set gets no nesting footer", function()
