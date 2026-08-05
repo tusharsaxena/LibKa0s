@@ -177,7 +177,7 @@ a real bug.
    event filter pass the entire suite.
 4. **Anything a test needs to drive must be fireable.** `__fire` on frames and on AceGUI widgets is
    what makes a lazy first-`OnShow` render and an `OnValueChanged` write path reachable at all.
-5. **Model the awkward real behaviour, not the convenient one.** AceDB's `copyDefaults` merges in
+5. **Model the awkward real behavior, not the convenient one.** AceDB's `copyDefaults` merges in
    place; AceConsole's `Embed` clobbers a same-named custom `Print`. Both are reproduced, because
    both have already caused a real bug.
 

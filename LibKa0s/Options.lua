@@ -156,7 +156,7 @@ lib.STRINGS = {
 ---   getLSM()                   optional. Returns LibSharedMedia-3.0, for LSMValues.
 ---   validate()                 optional. Runs once, before the page builders.
 ---   onAceGUI(AceGUI)           optional. Handed the resolved AceGUI so the host can stash it
----                              (Ka0s standard §3.4) for its own page files.
+---                              (library-stack-§4) for its own page files.
 ---   buildMain(ctx)             optional. Draws the main page's body on its first OnShow. A host
 ---                              that wants the shared landing page writes
 ---                              `buildMain = function(ctx) O.BuildLandingPage(ctx, spec) end`
@@ -200,7 +200,7 @@ function lib:New(d)
 
   -- Resolved once and re-read at CreateOptionsPanel time. Held on the instance rather than in an
   -- upvalue because the widget makers and the host's own page files both need it, and a second
-  -- LibStub call per builder is exactly what Ka0s standard §3.4 exists to stop.
+  -- LibStub call per builder is exactly what library-stack-§4 exists to stop.
   O.AceGUI = LibStub and LibStub("AceGUI-3.0", true) or nil
 
   -- Individual scalars, deliberately not `O.LAYOUT = L`: the lib-level table is shared by every
@@ -556,7 +556,7 @@ function lib:New(d)
   ---                 CreateOptionsPanel time, after the db is ready. nil means the page opted out
   ---                 (an optional dependency the host did not find).
   --- Build one page, reporting rather than propagating. The key is in the message because a
-  --- builder's own stack rarely names the page a user would recognise.
+  --- builder's own stack rarely names the page a user would recognize.
   local function buildPage(page)
     local ok, err = pcall(page.builder, mainCategory)
     if ok then

@@ -31,7 +31,7 @@
 -- fork in content still fails.
 --
 -- ^ that paragraph is carried in verbatim from AbsorbTracker/tests/test_vendor_sync.lua, and it is
--- the behaviour IN USE here. State the consequence plainly, because it is the one thing a reader
+-- the behavior IN USE here. State the consequence plainly, because it is the one thing a reader
 -- must not have to infer: a vendored copy differing from the blob ONLY in line endings PASSES, and
 -- a vendored copy differing by a single content byte FAILS. That is the intended split. Line
 -- endings are decided per checkout by `.gitattributes` — the same commit legitimately materialises

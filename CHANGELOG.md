@@ -12,6 +12,20 @@ cannot drift. Release order is in
 
 ## Unreleased
 
+**US English across the shipped payload, and a gate that keeps it.** 36 British spellings —
+`colour`, `grey`, `behaviour`, `synthesised`, `normalised`, `recognise` — in the comments and
+docstrings of every shipped library file and of `testkit/`. `localization-§5` mandates US English and
+anti-pattern #46 names code comments explicitly, and **no consumer could fix this**: `libs/LibKa0s/`
+and `tests/_kit/` are re-vendored whole-folder, so a local patch is reverted by the next re-vendor
+(anti-pattern #48) — which is why one consumer's review carries 29 of these as a finding against
+*it*. Comments and docstrings only: no identifier, no `lib.SKIN` key, no user-visible string, and no
+Blizzard symbol (`SetColorTexture`, `SetBackdropBorderColor`) moves, and released entries in this
+file are history and stay. The same commit retires the two `Ka0s standard §3.4` references in
+`Options.lua` to `library-stack-§4` — that file is vendored byte-for-byte into eight addons, so
+sweeping it later would redden eight vendor-sync gates against a payload they cannot patch.
+`tests/test_prose.lua` fails the run on either regression, listing `file:line`; the sweep alone
+regresses on the next feature.
+
 ### `LibKa0s-Options-1.0` — `O.PADDING_X`, and the published/internal split written down (**Options minor 7**)
 
 `lib.LAYOUT` holds thirteen constants and the instance published three. `PADDING_X` — the horizontal

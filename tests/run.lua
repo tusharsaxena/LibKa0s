@@ -76,6 +76,6 @@ Kit.run{
   suites = {
     "test_core", "test_debuglog", "test_slash", "test_options", "test_options_widgets",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
-    "test_versioning", "test_kitsync",
+    "test_versioning", "test_kitsync", "test_prose",
   },
 }

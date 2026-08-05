@@ -331,7 +331,7 @@ function lib:New(descriptor)
   local L        = d.L or {}
   -- rawget, NOT a plain index. Every Ka0s host's locale table carries a metatable fallback that
   -- answers an unknown key WITH THE KEY (the standard mandates it — anti-patterns #2), so a plain
-  -- index accepts that synthesised string for every key, these STRINGS become unreachable, and the
+  -- index accepts that synthesized string for every key, these STRINGS become unreachable, and the
   -- panel renders STEP_START / PANEL_TITLE_SUFFIX verbatim. That is not hypothetical: it shipped in
   -- KickCD's perf panel. rawget asks the only question that matters — did the host actually put a
   -- value here? PerfPanel.lua takes `tr` as a parameter, so fixing it here fixes the panel too.

@@ -148,7 +148,7 @@ PERF_SCENARIOS=0; PERF_FAILED=0
 CCN_WARN=0; CCN_NLOC=0; CCN_FUNCS=0; CCN_AVG=0; CCN_MAX=0; CCN_BAND=0; CCN_OVER=0
 CCN_AVG_NLOC=0; CCN_AVG_TOKEN=0; CCN_FUN_RT=0; CCN_NLOC_RT=0
 
-# Strip ANSI colour before writing. luacheck and the harness colour their output when they
+# Strip ANSI color before writing. luacheck and the harness color their output when they
 # think a terminal is attached, and the raw escapes ('\033[32m\033[1mOK') land verbatim in the
 # artifact — unreadable in an editor and noise in any diff between two runs. The parsers below
 # already strip for their own use; the stored evidence gets the same treatment.
@@ -163,7 +163,7 @@ if wants lint; then
     elif [ -z "$LUACHECK_VERSION" ]; then
         ST[lint]="skip"; NOTE[lint]="luacheck not on PATH — install: sudo luarocks install luacheck"
     else
-        # $NOCOLOR is belt and braces with strip_ansi: where the flag exists nothing colours the
+        # $NOCOLOR is belt and braces with strip_ansi: where the flag exists nothing colors the
         # output in the first place, and where it does not, strip_ansi still cleans it.
         raw="$(luacheck . $NOCOLOR 2>&1)"; rc=$?
         printf '%s\n' "$raw" | emit lint.txt
