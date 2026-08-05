@@ -83,7 +83,41 @@ fi
 STAMP="$(date +%Y%m%d-%H%M%S)"
 STARTED_AT="$(date +%Y-%m-%dT%H:%M:%S%:z)"
 OUT="docs/automated-tests/$STAMP"
-RUN_START=$(date +%s)
+
+# ── the clock ───────────────────────────────────────────────────────────────────────────────────
+# Every duration in this record is MILLISECONDS, and every one of them used to be measured with
+# `date +%s` — whole seconds — then multiplied by 1000 on the way out. Two things followed. A suite
+# that took 300ms recorded `0`, indistinguishable from a suite that did not run. And a second
+# boundary crossed the wrong way (NTP step, DST-adjacent clock skew) recorded a NEGATIVE duration:
+# `-1000` and `-2000` are committed in five repos' manifests today. A duration that can be negative
+# is a duration nobody can read as a measurement.
+#
+# The source is resolved ONCE, here, and recorded in the manifest, so a run whose host could only
+# offer second granularity is self-describing instead of looking like an implausibly fast run.
+#
+# All timestamps in a run come from `now_ms`, without exception. Mixing units across the two
+# operands of a subtraction is the failure this block replaced: epoch-milliseconds minus
+# epoch-seconds is ~1.7e12, it is POSITIVE, and it therefore survives every "is it negative" check
+# while being wrong by a factor of a thousand.
+if printf '%s' "$(date +%s%3N 2>/dev/null || true)" | grep -qE '^[0-9]{13,}$'; then
+    TIMING_SOURCE="date +%s%3N"
+    now_ms() { date +%s%3N; }
+elif [ -n "${EPOCHREALTIME:-}" ]; then
+    # bash >= 5.0. Dynamic — it must be read on every call, which is why this reads the variable
+    # inside the function rather than capturing it. `1785110400.123456` with the locale's decimal
+    # separator; strip it and keep the leading 13 digits.
+    TIMING_SOURCE="EPOCHREALTIME"
+    now_ms() { local e="${EPOCHREALTIME/[.,]/}"; printf '%s' "${e:0:13}"; }
+else
+    TIMING_SOURCE="date +%s (second granularity)"
+    now_ms() { printf '%s' "$(( $(date +%s) * 1000 ))"; }
+fi
+
+# Elapsed milliseconds between two `now_ms` readings, CLAMPED AT ZERO. A backwards clock yields a
+# negative here; recording it would put a number in the trend line that cannot mean anything.
+elapsed_ms() { local d=$(( $2 - $1 )); [ "$d" -lt 0 ] && d=0; printf '%s' "$d"; }
+
+RUN_START=$(now_ms)
 
 # ── interpreter + tool discovery ────────────────────────────────────────────────────────────────
 LUA=""
@@ -123,7 +157,7 @@ emit() { if [ "$WRITE_BUNDLE" -eq 1 ]; then strip_ansi > "$OUT/$1"; else cat > /
 
 # ── lint ────────────────────────────────────────────────────────────────────────────────────────
 if wants lint; then
-    t0=$(date +%s)
+    t0=$(now_ms)
     if [ ! -f .luacheckrc ]; then
         ST[lint]="skip"; NOTE[lint]="no .luacheckrc — lint is not part of this addon's battery"
     elif [ -z "$LUACHECK_VERSION" ]; then
@@ -140,12 +174,12 @@ if wants lint; then
         [ -z "$LINT_WARN" ] && LINT_WARN=0; [ -z "$LINT_ERR" ] && LINT_ERR=0; [ -z "$LINT_FILES" ] && LINT_FILES=0
         if [ "$rc" -eq 0 ]; then ST[lint]="pass"; else ST[lint]="fail"; fi
     fi
-    DUR[lint]=$(( $(date +%s) - t0 ))
+    DUR[lint]=$(elapsed_ms "$t0" "$(now_ms)")
 fi
 
 # ── tests ───────────────────────────────────────────────────────────────────────────────────────
 if wants tests; then
-    t0=$(date +%s)
+    t0=$(now_ms)
     if [ ! -f tests/run.lua ]; then
         ST[tests]="skip"; NOTE[tests]="no tests/run.lua"
     elif [ -z "$LUA" ]; then
@@ -179,12 +213,12 @@ if wants tests; then
                 || rm -f "$OUT/test-cases.md"
         fi
     fi
-    DUR[tests]=$(( $(date +%s) - t0 ))
+    DUR[tests]=$(elapsed_ms "$t0" "$(now_ms)")
 fi
 
 # ── perf (recorded, never gating) ───────────────────────────────────────────────────────────────
 if wants perf; then
-    t0=$(date +%s)
+    t0=$(now_ms)
     if [ ! -f tests/perf.lua ]; then
         ST[perf]="skip"; NOTE[perf]="no tests/perf.lua — this addon ships no offline scenarios"
     elif [ -z "$LUA" ]; then
@@ -208,12 +242,12 @@ if wants perf; then
         [ -z "$PERF_SCENARIOS" ] && PERF_SCENARIOS=0
         if [ "$rc" -eq 0 ]; then ST[perf]="pass"; else ST[perf]="fail"; PERF_FAILED=1; fi
     fi
-    DUR[perf]=$(( $(date +%s) - t0 ))
+    DUR[perf]=$(elapsed_ms "$t0" "$(now_ms)")
 fi
 
 # ── complexity (recorded, never gating) ─────────────────────────────────────────────────────────
 if wants complexity; then
-    t0=$(date +%s)
+    t0=$(now_ms)
     if [ -z "$LIZARD_VERSION" ]; then
         ST[complexity]="skip"; NOTE[complexity]="lizard not on PATH — install: pipx install lizard"
     else
@@ -253,7 +287,7 @@ if wants complexity; then
         done < <(find . -name '*.lua' -not -path './libs/*' -not -path './tests/_kit/*' -exec wc -l {} + 2>/dev/null | awk '$2!="total"{print $1}')
         ST[complexity]="pass"
     fi
-    DUR[complexity]=$(( $(date +%s) - t0 ))
+    DUR[complexity]=$(elapsed_ms "$t0" "$(now_ms)")
 fi
 
 # ── verdict ─────────────────────────────────────────────────────────────────────────────────────
@@ -269,7 +303,7 @@ if [ "$VERDICT" != "red" ]; then
     [ "${ST[perf]}" = "fail" ] && VERDICT="amber"
 fi
 
-RUN_DURATION=$(( $(date +%s) - RUN_START ))
+RUN_DURATION=$(elapsed_ms "$RUN_START" "$(now_ms)")
 
 # ── console summary ─────────────────────────────────────────────────────────────────────────────
 fmt() {
@@ -299,7 +333,7 @@ if [ "$WRITE_BUNDLE" -eq 1 ]; then
     suite_json() {
         local s="$1" extra="$2"
         printf '    "%s": { "status": "%s", "durationMs": %s%s%s }' \
-            "$s" "${ST[$s]}" "$(( ${DUR[$s]} * 1000 ))" \
+            "$s" "${ST[$s]}" "${DUR[$s]}" \
             "$( [ -n "${NOTE[$s]}" ] && printf ', "skipReason": "%s"' "$(sj "${NOTE[$s]}")" )" \
             "$extra"
     }
@@ -310,12 +344,15 @@ if [ "$WRITE_BUNDLE" -eq 1 ]; then
         printf '  "addonVersion": "%s",\n'   "$(sj "$ADDON_VERSION")"
         printf '  "run": "%s",\n'            "$STAMP"
         printf '  "startedAt": "%s",\n'      "$STARTED_AT"
-        printf '  "durationMs": %s,\n'       "$(( RUN_DURATION * 1000 ))"
+        printf '  "durationMs": %s,\n'       "$RUN_DURATION"
         printf '  "label": %s,\n'            "$( [ -n "$LABEL" ] && printf '"%s"' "$(sj "$LABEL")" || printf 'null' )"
         printf '  "release": %s,\n'          "$( [ -n "$RELEASE" ] && printf '"%s"' "$(sj "$RELEASE")" || printf 'null' )"
         printf '  "git": { "sha": "%s", "branch": "%s", "dirty": %s },\n' "$GIT_SHA" "$(sj "$GIT_BRANCH")" "$GIT_DIRTY"
-        printf '  "host": { "lua": "%s", "luacheck": "%s", "lizard": "%s" },\n' \
-            "$(sj "$LUA_VERSION")" "$(sj "$LUACHECK_VERSION")" "$(sj "$LIZARD_VERSION")"
+        # `timingSource` sits beside the tool versions because it is the same kind of fact: what this
+        # host was able to measure with. A bundle recorded on a host without millisecond granularity
+        # says so, rather than presenting rounded seconds as if they were milliseconds.
+        printf '  "host": { "lua": "%s", "luacheck": "%s", "lizard": "%s", "timingSource": "%s" },\n' \
+            "$(sj "$LUA_VERSION")" "$(sj "$LUACHECK_VERSION")" "$(sj "$LIZARD_VERSION")" "$(sj "$TIMING_SOURCE")"
         printf '  "suites": {\n'
         suite_json lint       ", \"warnings\": $LINT_WARN, \"errors\": $LINT_ERR, \"files\": $LINT_FILES, \"gating\": true"; printf ',\n'
         suite_json tests      ", \"passed\": $TESTS_PASS, \"failed\": $TESTS_FAIL, \"total\": $TESTS_TOTAL, \"gating\": true"; printf ',\n'

@@ -11,16 +11,16 @@
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | unreleased — on `master` after v1.7.0 |
 | Status | **Current** |
-| Supersedes | [version 7](version-7-docs.md) — adds the skip status, `vendor_sync.lua`, `Loader.xmlFiles`, the suite-inventory gate and `Kit.assertSurfaceParity` |
+| Supersedes | [version 7](version-7-docs.md) — adds the skip status, `vendor_sync.lua`, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity`, and fixes the runner's clock and its executable bit |
 | Superseded by | — |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `8` |
 
 ## What changed at this version
 
-**The largest revision since version 2, and the first to add a file to the Lua payload.** Five
-changes, all in service of one idea: a test that cannot look must say so, and a list that is
-hand-typed must be pinned.
+**The largest revision since version 2, and the first to add a file to the Lua payload.** Six
+changes, all in service of one idea: a test that cannot look must say so, a list that is hand-typed
+must be pinned, and a number that is recorded must be a measurement.
 
 | | |
 |---|---|
@@ -29,6 +29,7 @@ hand-typed must be pinned.
 | `Loader.xmlFiles(xmlPath)` | The vendored-library load list, derived from the XML rather than re-typed. |
 | `Kit.assertSuiteInventory(dir, suites)` | The suite list pinned in both directions; `loadSuites` no longer skips a declared-but-absent suite in silence. |
 | `Kit.assertSurfaceParity(live, degraded, label)` | A degraded-path stub's surface asserted as a set, not member by member. |
+| `run-automated-tests.sh` | Millisecond durations that cannot be negative, a recorded timing source, and the file itself `100755` in the index. |
 
 **Adoption is additive except for one item.** A consumer on version 7 keeps working after
 re-vendoring, with a single exception: `Kit.assertSuiteInventory` runs automatically when
@@ -305,6 +306,54 @@ Exported through `Kit.expose` as `T.assertSurfaceParity`.
 string, are `debug-logging-§7` violations and stay addon-side. And it needs both halves loadable in
 one process, which is what the degraded arm built from a partial file list gives you; never
 hand-stub the member under test, or the case asserts the test's own typing.
+
+## `run-automated-tests.sh` — the clock, and the executable bit
+
+### Durations are measured in milliseconds, and clamped
+
+Through version 7 every suite was timed with `t0=$(date +%s)` — **whole seconds** — and reported as
+`$(( DUR * 1000 ))`. Two consequences, both visible in committed bundles:
+
+- a suite that took 300ms recorded `0`, which reads exactly like a suite that did not run;
+- a second boundary crossed the wrong way recorded a **negative** duration. `-1000` and `-2000` are
+  committed in five repos' manifests. Those bundles are frozen evidence and are **not** rewritten.
+
+Version 8 resolves one millisecond clock at the top of the script and uses it for every timestamp:
+
+| Preference | Source | Granularity |
+|---|---|---|
+| 1 | `date +%s%3N` (GNU coreutils) | 1ms |
+| 2 | `$EPOCHREALTIME` (bash ≥ 5.0) | 1µs, truncated to 1ms |
+| 3 | `date +%s` × 1000 | 1s |
+
+Every emitted duration goes through `elapsed_ms`, which **clamps at zero**. A backwards clock now
+records `0` — an unhelpful number, but not an impossible one.
+
+**`host.timingSource` in `manifest.json` names which of the three was used**, beside the tool
+versions, because it is the same kind of fact. A run recorded on a host that could only offer
+second granularity says so, instead of presenting rounded seconds as though they were milliseconds.
+
+**The two operands of a subtraction must come from the same clock — this is the trap.** Converting
+the per-suite timers to milliseconds while leaving the run-level `RUN_START` in seconds produces
+epoch-milliseconds minus epoch-seconds: roughly **1.7 × 10¹²**, written into the run-level
+`durationMs` of every future manifest. It is **positive**, so it passes any "no negative duration"
+check. The check that catches it is *the run duration is within an order of magnitude of the sum of
+the suite durations*, and that is the check to run after touching this block.
+
+### The runner is `100755` in the index, and gated
+
+`testkit/run-automated-tests.sh` and `tests/_kit/run-automated-tests.sh` are both mode **`100755`**
+in the git index, and `tests/test_kitsync.lua` fails if either is not.
+
+All nine repos in the collection shipped it `100644`, source included, and nobody could see it:
+every repo sets `core.fileMode=false`, so git never complains, and this tree is DrvFs, so `ls -l`
+reports `rwxrwxrwx` for a file the index calls non-executable. **`ls -l` is not evidence here.** The
+gate reads `git ls-files -s`, and any equivalent check downstream must do the same.
+
+**The bit does not travel with `cp`, and it is not in the file's bytes** — the byte-identity case
+cannot see it, which is why it needs its own gate. A consumer re-vendoring this revision still runs
+`git update-index --chmod=+x tests/_kit/run-automated-tests.sh` **once**. The difference is that
+after this, forgetting is loud rather than surviving three audit cycles.
 
 ## Compatibility
 
