@@ -221,6 +221,11 @@ docs/                -- development docs (not shipped)
   adoption-report.md -- the reusable adoption-fidelity report, run per date into adoption/
   adoption/          -- frozen dated adoption reports, one folder per run
   test-cases.md      -- generated case inventory
+  automated-tests/   -- the out-of-game test record: README.md (the local how-to), RESULTS.md
+                        (one row per run, overwritten in place — its git history is the trend
+                        line) and one frozen <YYYYMMDD-HHMMSS>/ bundle per run, never edited
+                        after it is written and never pruned
+  audits/            -- frozen dated standards-audit bundles
   reviews/           -- frozen dated review bundles
   superpowers/       -- the extraction plans and design specs, kept as the record of why
 LICENSE              -- also copied into LibKa0s/ above, so the payload carries it

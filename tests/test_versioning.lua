@@ -144,3 +144,47 @@ test("versioning: every paired secondary file records which primary it attached 
     end
   end
 end)
+
+--- The `docs/api/` folder for a major: `LibKa0s-Options-1.0` keeps its documents under
+--- `docs/api/Options/`. Derived rather than declared, so a new major needs no second table.
+local function apiFolder(major)
+  return (tostring(major):gsub("^LibKa0s%-", ""):gsub("%-%d+%.%d+$", ""))
+end
+
+--- The version key of a major's current document: every file's minor, joined with `.` in load
+--- order — which is `m.files`, which is `LibKa0s.xml` order, which is what `docs/releasing.md`
+--- step 5 means by "the minors joined in load order exactly as `lib.MODULES` reports them".
+--- Iterating `m.files` rather than `pairs(lib.MODULES)` is deliberate: `pairs` has no order, and a
+--- gate whose expected path depends on hash iteration is a gate that fails on someone else's Lua.
+local function versionKey(m, lib)
+  local parts = {}
+  for _, file in ipairs(m.files) do parts[#parts + 1] = tostring(lib.MODULES[file]) end
+  return table.concat(parts, ".")
+end
+
+test("versioning: every major's live version has its API document on disk", function()
+  -- docs/releasing.md said `test_versioning.lua` struck the same bargain for the library's minors
+  -- that `test_kitsync.lua` strikes for the kit revision. It did not: this suite checked
+  -- CHANGELOG.md and nothing else, so step 5's "a minor bump is not released until its document
+  -- exists" was a rule nothing enforced, in the one repo that is the reference implementation for
+  -- these gates. The sentence is now true rather than deleted, because the risk it describes is
+  -- real — docs/api/ is the source of truth for every public contract, adopters run different
+  -- versions at once, and a bumped minor with no document leaves whoever adopted it reading the
+  -- previous version's promises.
+  --
+  -- Every miss is collected before failing, for the same reason the changelog case collects: a
+  -- release that moved four majors should be told about all four documents, not the first.
+  local missing = {}
+  for _, m in ipairs(majors) do
+    local lib = libFor(m.major)
+    if lib and type(lib.MODULES) == "table" then
+      local path = ("docs/api/%s/version-%s-docs.md"):format(apiFolder(m.major), versionKey(m, lib))
+      local f = io.open(path, "r")
+      if f then f:close() else missing[#missing + 1] = m.major .. " -> " .. path end
+    end
+  end
+  table.sort(missing)
+  assertEqual(table.concat(missing, ", "), "",
+    "a minor bump is not released until its API document exists (docs/releasing.md step 5); "
+    .. "copy the current document to the new version key and index it in docs/api/README.md")
+end)

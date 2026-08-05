@@ -13,14 +13,23 @@ end)
 local Fixture = dofile("tests/fixture.lua")
 
 test("lib: New requires a name, an sv global and a suspend/resume pair", function()
-  local ok = pcall(function() lib:New({ sv = "X", suspend = function() end, resume = function() end }) end)
-  T.assertFalse(ok, "missing name must error")
-  ok = pcall(function() lib:New({ name = "X", suspend = function() end, resume = function() end }) end)
-  T.assertFalse(ok, "missing sv must error")
-  ok = pcall(function() lib:New({ name = "X", sv = "XDB", resume = function() end }) end)
-  T.assertFalse(ok, "missing suspend must error")
-  ok = pcall(function() lib:New({ name = "X", sv = "XDB", suspend = function() end }) end)
-  T.assertFalse(ok, "missing resume must error \226\128\148 the way back is not optional")
+  -- Each arm asserts the library's own words, not merely that something raised. `New` goes on to
+  -- use every one of these fields, so a descriptor short of one raises again further down whether
+  -- or not the guard is there — the `name` arm most of all. A bare assertFalse therefore passes on
+  -- the strength of that later raise, and would keep passing if the guard were deleted, which is no
+  -- gate at all. The adjacent bucket-key case already asserts on the message; these now match it.
+  -- The `resume` arm is not a formality either: the way back is not optional.
+  local function missing(field, wanted, descriptor)
+    local ok, err = pcall(function() lib:New(descriptor) end)
+    T.assertFalse(ok, "missing " .. field .. " must error")
+    local want = ("LibKa0s-Perf: descriptor.%s must be a %s"):format(field, wanted)
+    T.assertTrue(tostring(err):find(want, 1, true) ~= nil,
+      "missing " .. field .. " must be refused as \"" .. want .. "\", got: " .. tostring(err))
+  end
+  missing("name",    "string",   { sv = "X", suspend = function() end, resume = function() end })
+  missing("sv",      "string",   { name = "X", suspend = function() end, resume = function() end })
+  missing("suspend", "function", { name = "X", sv = "XDB", resume = function() end })
+  missing("resume",  "function", { name = "X", sv = "XDB", suspend = function() end })
 end)
 
 test("lib: New rejects a bucket entry with no key, in the library's own words", function()
