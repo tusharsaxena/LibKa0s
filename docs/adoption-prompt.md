@@ -467,12 +467,13 @@ to land once the other four are green.
     answered fastest.
 12. **Record every decision as a GitHub issue on the host addon's repo as you go**, one issue per
     module, naming the upstream minor that unblocked anything that needed one. Title each one with
-    its status prefix — `[deferred]` for a decision still outstanding, `[will-not-do]` for a decline
-    (closed), `[done]` for an adoption that landed (closed) — the vocabulary `/wow-addon:issue-audit`
-    reads. The old `docs/pending/LEDGER.md` is retired. ConsumableMaster's `LIBKA0S-01` … `-08`
-    entries — superseded rows preserved rather than deleted — are the model, and the reason its
-    adoption is auditable where the others' are only inspectable. Write the entry when you make the
-    call, not at the end: the ones that get lost are the decisions that felt obvious at the time.
+    its status prefix — `[triaged]` for real work accepted but not being done now (open),
+    `[will-not-do]` for a decline (closed), `[done]` for an adoption that landed (closed) — the
+    vocabulary `/wow-addon:issue-audit` reads. The old `docs/pending/LEDGER.md` is retired.
+    ConsumableMaster's `LIBKA0S-01` … `-08` entries — superseded rows preserved rather than
+    deleted — are the model, and the reason its adoption is auditable where the others' are only
+    inspectable. Write the entry when you make the call, not at the end: the ones that get lost
+    are the decisions that felt obvious at the time.
 
 ### The two user-visible convergences — deliberate, do not "fix" them back
 
