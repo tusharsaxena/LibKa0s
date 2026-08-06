@@ -32,7 +32,7 @@ Three tools. Only the first has a version that matters.
 | `lizard` | any recent | 1.23.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). |
 
 The "verified with" column is the toolchain of the last recorded run,
-[`docs/automated-tests/20260805-123655/manifest.json`](docs/automated-tests/20260805-123655/manifest.json)
+[`docs/automated-tests/20260806-180959/manifest.json`](docs/automated-tests/20260806-180959/manifest.json)
 → `host` — evidence, not a pin. `luacheck` and `lizard` are pinned nowhere and pinning them would be
 false precision; `lua5.1` is not a preference. "5.2 will probably work" is **false**, and it costs an
 hour to disprove: 5.2 removed `setfenv`, and the loader is the first thing every suite touches.

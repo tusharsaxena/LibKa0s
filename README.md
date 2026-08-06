@@ -176,7 +176,7 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.8.0**: `Core = { Core = 5 }`,
+different vendored copy of each. As of **v1.8.1**: `Core = { Core = 5 }`,
 `DebugLog = { DebugLog = 8 }`, `Slash = { Slash = 7 }`,
 `Options = { Options = 7, OptionsWidgets = 7, OptionsScroll = 3 }`,
 `Perf = { Perf = 7, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
