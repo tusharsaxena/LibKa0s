@@ -9,7 +9,7 @@ grounds (its capture engine never runs in combat and the probe's windows are com
 bucket would read 0.000 by construction; recorded at its `LIBKA0S-17`), and **PanelMaster**, which
 took the same four and declines Perf for the same *kind* of reason arrived at independently
 (`LIBKA0S-31`) — and **LootHistory**, which also took those four and declines Perf for two
-independent reasons of its own (`LIBKA0S-17`) — and **prettychat**, which took those four and
+independent reasons of its own (`LIBKA0S-17`) — and **PrettyChat**, which took those four and
 declines Perf on the clearest structural grounds in the collection (`LIBKA0S-12`).
 
 Remaining targets: **none.** `WhatGroup` completed on 2026-08-02 — Core, DebugLog, Options and
@@ -263,7 +263,7 @@ same sentinel, `COMMANDS` is already positional, and the chat help row already m
 alias onto `Print`/`Format` must handle both arms or ~1,000 call sites regress. `/cm reset` is a
 confirm-gated global wipe; see the convergences.
 
-**prettychat** — riskiest for Core, though not for the reason you would guess. The guard itself is
+**PrettyChat** — riskiest for Core, though not for the reason you would guess. The guard itself is
 already the reference implementation, the AceConsole clobber is already reclaimed and cited by
 anti-pattern number, and nothing captures the printer at file load. The risk is **placement**:
 `settings/Schema.lua` calls `ns.Print` at *file load*, and the seam must also sit after
@@ -314,8 +314,8 @@ most valuable thing that adoption produced for the next one: nearly every judgem
 been made once, in a repo you can read, against a codebase shaped like this one. Read
 `../BankLedger/core/CoreSetup.lua`, `core/DebugLogSetup.lua`, `settings/Slash.lua`,
 `settings/OptionsSetup.lua` and `settings/Panel.lua` before deciding anything here, and read its
-`docs/pending/LEDGER.md` for the declines — `LIBKA0S-01` through `LIBKA0S-25` are the record of which
-misfits went upstream and which stayed local.
+GitHub issues for the declines — the closed `[will-not-do]` ones carrying `LIBKA0S-01` through
+`LIBKA0S-25` are the record of which misfits went upstream and which stayed local.
 
 DebugLog is the standout: `modules/DebugLog.lua` (357 / 359 lines) deletes outright, both formatters
 are byte-identical to the library's, and the frame globals the descriptor generates from `name` match
@@ -358,11 +358,11 @@ After that, order by blast radius and by what this addon actually has:
 |---|---|---|
 | KickCD | Core → DebugLog → Slash → Options → Perf | Core alone and first, then re-run `/kcd debug spells`, `/kcd debug interrupt` and `/kcd list` in combat before proceeding. DebugLog is the clean −450. Options last of the four; do not start it until the kit's fireable AceGUI mock is in place, because the current suite cannot drive a single widget. |
 | ~~ConsumableMaster~~ | **done** — Core → DebugLog → Slash → Options → Perf | Adopted in full. Ran Slash *before* Options in the end, and the planned reason for the reverse (re-anchoring `/cm reset`'s confirm popup) never materialised — the popup is registered at file scope and reached through the global `StaticPopup_Show`, so the dispatcher swap never touched it. The schema-CLI half waited on the enum and colour fixes rather than on the panel. Convergence #1 **is** taken: `/cm reset <path>` delegates to `Sl:CliReset` and a new `/cm resetall` inherits the confirm popup and the global wipe, matching AbsorbTracker and KickCD. It landed after the initial adoption rather than with it, which is why an earlier reading of this addon looked like a decline. Convergence #2 **is** taken too, as of the 2026-08-01 v2 report — but it was recorded as *not applicable* first, and how that happened is the useful part: the About panel reaches its command rows through `KCM.SlashCommands.GetCommandSummary()`, so a grep of `settings/` for `COMMANDS` returned nothing and the page looked absent. It was there the whole time, drawing its own format string while the chat half already went through `lib.FormatRow`. Now converged behind a `GetLandingRows()` delegating to `Sl:LandingRows()`, recorded at `LIBKA0S-13` with the spacing change in its CHANGELOG. Follow the render path, not the name. |
-| ~~prettychat~~ | **done** — kit → Core → DebugLog → Options → Slash; **Perf declined** | Adopted in that order, and **taking the kit first was again what made the rest possible** — its LibStub is the only one with a real `NewLibrary`, so every seam written before it would have measured its own stub. Two leads in the entry above were wrong and one was stale. The Core "one-file window" is **not** one file: nothing in the repo takes the printer as a load-time upvalue (`grep -n "local print"` finds nothing) and the only load-time `NS.Print` call is guarded, so the window runs from `core/PrettyChat.lua` all the way to `settings/Schema.lua`. The `ParseValue`-rejects-free-text lead is **stale** — minor 5's `parseString` returns the value when the row declares no `values`; what it *actually* cannot do is hold a **space**, which is a different and unfixed gap (see releasing.md). And `FormatValue`'s `\|` doubling **does** have a descriptor hook now: minor 5's `format`, used here for the first time on a row type the library can already render. So Slash was adopted far deeper than "dispatcher, help renderer and landing rows" — `CliGet`/`CliSet`/`CliReset`/`CliList` all went too, with `list` keeping only its two reserved sub-keywords and its category filter and DELEGATING its no-argument form. Options was **not** shell-only either: the General page is drawn entirely through `RenderRows` + the `pairWith` seam + `InlineButtonPair`, and the category pages take `RenderField` for their Enable row; only the documented 40/60 per-string block stays host-drawn, re-checked against `RenderGrid` first. Both convergences taken. `core/DebugLog.lua` −424, `settings/Panel.lua` 725 → 423, host source 2813 → 2571; 220 → 255 cases. |
+| ~~PrettyChat~~ | **done** — kit → Core → DebugLog → Options → Slash; **Perf declined** | Adopted in that order, and **taking the kit first was again what made the rest possible** — its LibStub is the only one with a real `NewLibrary`, so every seam written before it would have measured its own stub. Two leads in the entry above were wrong and one was stale. The Core "one-file window" is **not** one file: nothing in the repo takes the printer as a load-time upvalue (`grep -n "local print"` finds nothing) and the only load-time `NS.Print` call is guarded, so the window runs from `core/PrettyChat.lua` all the way to `settings/Schema.lua`. The `ParseValue`-rejects-free-text lead is **stale** — minor 5's `parseString` returns the value when the row declares no `values`; what it *actually* cannot do is hold a **space**, which is a different and unfixed gap (see releasing.md). And `FormatValue`'s `\|` doubling **does** have a descriptor hook now: minor 5's `format`, used here for the first time on a row type the library can already render. So Slash was adopted far deeper than "dispatcher, help renderer and landing rows" — `CliGet`/`CliSet`/`CliReset`/`CliList` all went too, with `list` keeping only its two reserved sub-keywords and its category filter and DELEGATING its no-argument form. Options was **not** shell-only either: the General page is drawn entirely through `RenderRows` + the `pairWith` seam + `InlineButtonPair`, and the category pages take `RenderField` for their Enable row; only the documented 40/60 per-string block stays host-drawn, re-checked against `RenderGrid` first. Both convergences taken. `core/DebugLog.lua` −424, `settings/Panel.lua` 725 → 423, host source 2813 → 2571; 220 → 255 cases. |
 | ~~WhatGroup~~ | **done** — kit → Core → DebugLog → Options → Slash; **Perf declined** | Adopted in that order, and taking the kit first was again what made the rest possible. The `settings/Panel.lua` estimate held: 822 → 251. **The deferred-OnShow gate resolved the other way**: `SetRenderer` calls the renderer AND `EnsureDefaultsButton` synchronously inside its own `OnShow`, so adoption as-is would have dropped a taint fix this repo had shipped and four cases had pinned. Host-shaped, so it became an adapter — both members wrapped **on the instance**, because the library resolves them from `O` at call time, which is PanelMaster's finding again in a second place. Every other lead in this row was right except the ordering rationale for Slash: the reset story did need a decision, and the decision was the worked one (`resetall` inherits the popup). **Three findings.** (1) A real library defect: `D.Debug` pre-stringified its varargs and then formatted, so a secret reaching a `%d` slot RAISED inside the gated sink — the one place debug-logging-§4 exists to keep safe. Not adapter-able (the sink is bound bare, a MUST), so it went upstream as **DebugLog minor 7**; all eight consumers re-vendored, every suite unchanged. (2) `Helpers.RestoreDefaults` collides by NAME with the library's per-page reset while meaning the global one. Copying the host's members onto the instance only where the instance was nil silently handed four callers the library's row-by-row form; the host's now overrides, deliberately. (3) `lib.ParseValue` is lib-level, so a parse error answers with `lib.STRINGS.<KEY>` literally and the descriptor's `L` never reaches it — worked around in the `parse` adapter, recorded as a gap. `core/DebugLog.lua` −405, `core/WhatGroup.lua` −304, host source 2673 → 1858; 361 → 415 cases. |
 | ~~PanelMaster~~ | **done** — kit → Core → DebugLog → Slash → Options; **Perf declined** | Adopted in that order, and the ordering advice held: the `COMMANDS` flip and the `"boolean"`→`"bool"` rename really were prerequisites for the widget makers. Two leads in the entry above were **wrong**, both in the same direction — the harness. `Kit.expose(_G.PM_TEST)` *is* a drop-in for the framework and the loader (assertion names and case signature already match exactly, and `Loader.tocFiles` deleted the runner's second copy of the load order), but `mock_base.lua` is **not**: it aliases `CreateTexture`/`CreateFontString` onto the frame itself, starts frames hidden, and models AceDB, UIParent and `UnitClass` differently. `tests/wow_mock.lua` became an **extender** over it — ten documented overrides — which is the shape to expect, not a swap. Taking the kit **first**, before any module, is what made the rest possible: `mock_base` is the only source of a `LibStub` with a real `NewLibrary`, without which every seam silently takes its degraded path while the suite stays green. The `P.__ui` coupling was a non-event: `settings/PanelEditor.lua` binds those ten members *lazily* inside its own rebuild, so it pins no TOC order and needed **zero** edits — six of the ten just became the library's. The one genuine friction is the open-dropdown registry: the library's makers know nothing about it, and the answer is to wrap `RenderField` **and** `EnsureScroll` **on the instance** (`RenderRows` resolves both from the instance table at call time, so a host-side helper beside them is bypassed by every page the flow engine draws — a test caught exactly that). Perf declined on structural grounds: every event it registers is `PLAYER_LOGIN`/`PLAYER_ENTERING_WORLD`/`PLAYER_REGEN_ENABLED`, none of which fires *during* combat, and every repaint needs the options panel open, which options-ui-§2 refuses. 564 → 605 cases; `modules/DebugLog.lua` −429, `settings/Panel.lua` 691 → 492. |
 | ~~BankLedger~~ | **done** — Core (printer only) → DebugLog → Slash → Options | Adopted in that order, DebugLog immediately after Core: highest value, lowest risk, and it validated the seam. **Perf is declined**, not pending — the capture engine never runs in combat and the probe's windows are combat-gated, so every bucket would read 0.000 by construction (`LIBKA0S-17`). The adoption drove all four of v1.2.0's library changes. |
-| ~~LootHistory~~ | **done** — Core → DebugLog → Slash → Options; **Perf declined** | Adopted in that order. `modules/DebugLog.lua` deleted outright; 19 ledger rows at `LIBKA0S-01` … `-19`; 532 cases green. It is the **second host on three provisional surfaces**, which is what this run was worth: DebugLog minor 4's `applySkin`/`makeCloseButton` (`LIBKA0S-05` — and it later DROPPED both, at `-18`/`-19`, once Core minor 3 made the Ka0s edge the library's), and Slash minor 5's `format` hook (`LIBKA0S-08`), taken for the same set-valued row shape BankLedger drove it for. Three surfaces were declined with reasons rather than worked around: Core's `SKIN` against `modules/Browser.lua`'s own skin (`-02`, later superseded), and two `settings/Panel.lua` builders the flow engine cannot express (`-14`, `-15`). Perf declined twice over (`-17`): **there is no hot path** — eleven events, no `OnUpdate`, no ticker, no repaint loop, and a whole-repo sweep finds three one-shot `C_Timer.After` calls — **and `suspend` would destroy user data**, since making a loot COLLECTOR inert across a combat-gated window means the loot in that window is never recorded. That second reason is the more valuable one: it is the first case in the collection where the suspend contract itself, not the absence of a hot path, is the blocker. **A correction to an earlier reading of this row:** it was recorded here as having no provenance line at all, and that was wrong. `README.md` carries one under **Bundled libraries** — phrased mid-sentence (*"it bundles [LibKa0s](…) v1.4.0 (MIT)"*) rather than as the standalone `Bundles [LibKa0s] vX.Y.Z (MIT).` sentence `docs/releasing.md` templates, which is why a grep anchored to a capital `Bundles` returned nothing. "Which LibKa0s does it ship?" was answerable the whole time. The lesson is the grep, not the addon: the vendor gate now ships with `[Bb]undles`, because a pattern that silently matches nothing is a gate that passes by not looking. |
+| ~~LootHistory~~ | **done** — Core → DebugLog → Slash → Options; **Perf declined** | Adopted in that order. `modules/DebugLog.lua` deleted outright; 19 recorded decisions at `LIBKA0S-01` … `-19`; 532 cases green. It is the **second host on three provisional surfaces**, which is what this run was worth: DebugLog minor 4's `applySkin`/`makeCloseButton` (`LIBKA0S-05` — and it later DROPPED both, at `-18`/`-19`, once Core minor 3 made the Ka0s edge the library's), and Slash minor 5's `format` hook (`LIBKA0S-08`), taken for the same set-valued row shape BankLedger drove it for. Three surfaces were declined with reasons rather than worked around: Core's `SKIN` against `modules/Browser.lua`'s own skin (`-02`, later superseded), and two `settings/Panel.lua` builders the flow engine cannot express (`-14`, `-15`). Perf declined twice over (`-17`): **there is no hot path** — eleven events, no `OnUpdate`, no ticker, no repaint loop, and a whole-repo sweep finds three one-shot `C_Timer.After` calls — **and `suspend` would destroy user data**, since making a loot COLLECTOR inert across a combat-gated window means the loot in that window is never recorded. That second reason is the more valuable one: it is the first case in the collection where the suspend contract itself, not the absence of a hot path, is the blocker. **A correction to an earlier reading of this row:** it was recorded here as having no provenance line at all, and that was wrong. `README.md` carries one under **Bundled libraries** — phrased mid-sentence (*"it bundles [LibKa0s](…) v1.4.0 (MIT)"*) rather than as the standalone `Bundles [LibKa0s] vX.Y.Z (MIT).` sentence `docs/releasing.md` templates, which is why a grep anchored to a capital `Bundles` returned nothing. "Which LibKa0s does it ship?" was answerable the whole time. The lesson is the grep, not the addon: the vendor gate now ships with `[Bb]undles`, because a pattern that silently matches nothing is a gate that passes by not looking. |
 
 Perf is last everywhere. Nothing it adds can regress, so it is the safest to defer and the easiest
 to land once the other four are green.
@@ -465,8 +465,11 @@ to land once the other four are green.
     out. Without the line at all there is no way to answer "which LibKa0s does this addon ship?"
     short of grepping minors out of vendored source — which is the question a re-vendor sweep needs
     answered fastest.
-12. **Record every decision in `docs/pending/LEDGER.md` as you go**, one entry per module, naming the
-    upstream minor that unblocked anything that needed one. ConsumableMaster's `LIBKA0S-01` … `-08`
+12. **Record every decision as a GitHub issue on the host addon's repo as you go**, one issue per
+    module, naming the upstream minor that unblocked anything that needed one. Title each one with
+    its status prefix — `[deferred]` for a decision still outstanding, `[will-not-do]` for a decline
+    (closed), `[done]` for an adoption that landed (closed) — the vocabulary `/wow-addon:issue-audit`
+    reads. The old `docs/pending/LEDGER.md` is retired. ConsumableMaster's `LIBKA0S-01` … `-08`
     entries — superseded rows preserved rather than deleted — are the model, and the reason its
     adoption is auditable where the others' are only inspectable. Write the entry when you make the
     call, not at the end: the ones that get lost are the decisions that felt obvious at the time.
@@ -477,7 +480,7 @@ to land once the other four are green.
    applies one row's default. Page-scoped reset lives on the settings panel's **Defaults** button,
    which is where it belongs. This is a real removal for several addons: KickCD loses
    `/kcd reset general|icons|castbar|label` and must re-home `/kcd reset spells`'s database rebuild;
-   prettychat loses `/pc reset <category>` including its prefix matching, and its `ResetCategory`
+   PrettyChat loses `/pc reset <category>` including its prefix matching, and its `ResetCategory`
    clears a second dimension no single `applyDefault` reproduces; ConsumableMaster's `/cm reset` was
    a confirm-gated global wipe that becomes a one-row reset, and it is the worked example of the
    right answer — the popup was re-anchored to `/cm resetall`, so the destructive path kept its
@@ -494,7 +497,7 @@ to land once the other four are green.
    landing-page one with double spaces around the em dash, the dash explicitly white-wrapped and the
    description bare. Converging collapses the double spaces to single, drops the dash's colour span
    and adds one to the description. BankLedger, LootHistory and PanelMaster all change here; so do
-   KickCD, prettychat and WhatGroup. **That is the accepted cost** — it eliminates a silent drift
+   KickCD, PrettyChat and WhatGroup. **That is the accepted cost** — it eliminates a silent drift
    between `settings/Panel.lua` and `settings/Slash.lua` that exists in every one of these repos.
    Only the panel changes; the chat help is already correct nearly everywhere. Where a
    header line's wording matters (an alias sentence, a reassurance about untouched data), preserve
@@ -504,9 +507,9 @@ to land once the other four are green.
    landing page carrying command rows has nothing to converge — there is no divergent formatter to
    collapse, so there is no decision to record and nothing for a future reader to review. Do not
    build a landing page to satisfy a convergence. A **declined** convergence is different in kind:
-   the thing existed, you chose not to converge it, and that choice must be written down — in the
-   addon's ledger or CHANGELOG — or the next consistency sweep will read it as an oversight and
-   "fix" it.
+   the thing existed, you chose not to converge it, and that choice must be written down — as a
+   GitHub issue on the addon's repo, or in its CHANGELOG — or the next consistency sweep will read
+   it as an oversight and "fix" it.
 
    **Prove "not applicable" by following the render path, never by grepping for a name.** There is no
    worked example of it here on purpose: all four consumers turned out to *have* a landing page. This
@@ -520,10 +523,10 @@ to land once the other four are green.
 **For BOTH convergences, put this addon in exactly one of three states and say which in your
 report: adopted, declined, or not applicable.** This is not bookkeeping. The 2026-08-01 adoption
 report found ConsumableMaster's `reset` divergence with **zero** occurrences of the word "reset"
-anywhere in its ledger — a deliberate, defensible choice that no artefact recorded, in a repo whose
-ledger is otherwise the best in the collection. The next sweep would have read it as an oversight
-and "fixed" a confirmation guard off a destructive path. An unrecorded decision is indistinguishable
-from a mistake, and the cost lands on whoever finds it, not on you.
+anywhere in its decision record — a deliberate, defensible choice that no artefact recorded, in a
+repo whose record is otherwise the best in the collection. The next sweep would have read it as an
+oversight and "fixed" a confirmation guard off a destructive path. An unrecorded decision is
+indistinguishable from a mistake, and the cost lands on whoever finds it, not on you.
 
 Where a convergence removes a destructive verb's confirmation, **re-anchor the popup before you
 ship** — `/cm resetall` is the worked example — and add a smoke-test step proving the guard survived
@@ -610,7 +613,7 @@ When it is a real, additive library change, do it in this order and do not skip 
 8. **Run each existing consumer's full suite** and confirm it is unchanged. This is the step that
    proves your "additive" change was additive. At the time of writing, each 0 failed:
    **AbsorbTracker 469**, **BankLedger 687**, **ConsumableMaster 561**, **KickCD 648**,
-   **LootHistory 534**, **PanelMaster 609**, **prettychat 255**, **WhatGroup 415**. If any of those
+   **LootHistory 534**, **PanelMaster 609**, **PrettyChat 255**, **WhatGroup 415**. If any of those
    moves *while you are changing the library*, your change was not additive and you need to know
    before it ships rather than after.
 
@@ -619,7 +622,7 @@ When it is a real, additive library change, do it in this order and do not skip 
    half-fleet run dressed as a full one:
 
    ```
-   for a in AbsorbTracker BankLedger ConsumableMaster KickCD LootHistory PanelMaster prettychat WhatGroup; do
+   for a in AbsorbTracker BankLedger ConsumableMaster KickCD LootHistory PanelMaster PrettyChat WhatGroup; do
        printf '%-18s ' "$a"; (cd ../$a && lua tests/run.lua 2>&1 | tail -3 | tr -d '\n'); echo
    done
    ```
@@ -627,7 +630,7 @@ When it is a real, additive library change, do it in this order and do not skip 
    **Run all eight, and know which one is load-bearing for what you touched.** A surface with a single
    consumer is proved additive by that consumer's suite and by nothing else — the other seven stay
    green through a regression in it, because they never call it. `sliderCommit` and `pairWith` are in
-   that position today, held up by ConsumableMaster and prettychat respectively, which is why no
+   that position today, held up by ConsumableMaster and PrettyChat respectively, which is why no
    total above is a formality. The same arithmetic is what condemned the four-suite list this step
    used to carry: `sep`, `pairWith` and the instance-member wrapping of `SetRenderer` /
    `EnsureDefaultsButton` / `RenderField` / `EnsureScroll` are exercised **entirely** outside those
@@ -762,8 +765,8 @@ cannot reach where you need it:
   (`Slash.lua:306`), so
   `/at set <path> Hello World` stores `"Hello"`. It stores it silently — nothing raises, and only the
   echo shows the truncation. slash-commands-§6 sanctions a descriptor `parse` for exotic row types and
-  that is what prettychat supplies, so a host is not stuck; but this is not an exotic type, it is the
-  ordinary free-text row the `dialogControl = "EditBox"` widget writes. Found by prettychat, where
+  that is what PrettyChat supplies, so a host is not stuck; but this is not an exotic type, it is the
+  ordinary free-text row the `dialogControl = "EditBox"` widget writes. Found by PrettyChat, where
   every stored value is a Blizzard format string and therefore contains spaces.
 
 If you find another, add it here in the same shape: what the contract cannot express, the file:line
@@ -809,18 +812,18 @@ misfit as a library gap on first contact.
 - **`sliderCommit` (OptionsWidgets minor 4) — one consumer: ConsumableMaster**, at
   `../ConsumableMaster/settings/Panel.lua:226`, with the rationale recorded beside it: the surface
   exists at all so the Macro Bar page keeps its live drag.
-- **`pairWith` (OptionsWidgets) — one consumer: prettychat**, at
-  `../prettychat/settings/Panel.lua:77`, where the General page is drawn through `RenderRows` plus
+- **`pairWith` (OptionsWidgets) — one consumer: PrettyChat**, at
+  `../PrettyChat/settings/Panel.lua:77`, where the General page is drawn through `RenderRows` plus
   this seam.
-- **The Slash `format` hook (Slash minor 5) — three consumers: BankLedger, LootHistory, prettychat.**
-  The second motivating case has been tried: prettychat doubles `\|` to `\|\|` on rows the library
+- **The Slash `format` hook (Slash minor 5) — three consumers: BankLedger, LootHistory, PrettyChat.**
+  The second motivating case has been tried: PrettyChat doubles `\|` to `\|\|` on rows the library
   renders perfectly well, delegating to `lib.FormatValue` first so only the string arm is
   post-processed and the empty-string `(none)` case stays the library's. What is still unsettled is
   the documented precedence over `colorDecode`, and this run establishes why it will stay that way.
   The three hosts that pass `format` and the three that pass the colour codecs (AbsorbTracker,
   ConsumableMaster, KickCD) are **disjoint sets** that partition six of the eight consumers; the
   remaining two, PanelMaster and WhatGroup, pass neither. No host is anywhere near the boundary —
-  prettychat passes no codecs because it has **no colour rows at all**, and the three codec hosts
+  PrettyChat passes no codecs because it has **no colour rows at all**, and the three codec hosts
   render nothing set-valued or escape-doubling that would want `format`. With no adoption targets
   remaining there is no ninth consumer coming to supply the first host that passes both, so the
   ordering will not be exercised by a host at all, and the library's own suite is the only place left

@@ -113,7 +113,8 @@ states it is in, and **distinguish the third from the second**:
   from a landing-page convergence).
 
 A declined convergence is only a finding if the decision is not written down. Check the host's
-`docs/pending/LEDGER.md` and its release notes before calling it undocumented. A *not applicable*
+GitHub issues (the closed `[will-not-do]` ones carry the declines) and its release notes before
+calling it undocumented. A *not applicable*
 that `docs/adoption-prompt.md` lists as changing is an error **in the prompt**, and correcting the
 prompt is part of the report's value.
 
