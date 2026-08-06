@@ -108,7 +108,8 @@ are never adopted separately. It is indexed here because the question it answers
 | [5](./testkit/version-5-docs.md) | same files; wider RESULTS.md table + subset/stale-header honesty | v1.6.3 | Superseded |
 | [6](./testkit/version-6-docs.md) | same files; `Max CCN` measured over every function, and `RESULTS.md` rows actually append in a CRLF repo | v1.7.0 | Superseded |
 | [7](./testkit/version-7-docs.md) | same files; runs in a repo with no `.toc`; corrected luacheck install hint | unreleased | Superseded |
-| [8](./testkit/version-8-docs.md) | + `vendor_sync.lua`; the skip status, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity` | v1.8.0 | **Current** |
+| [8](./testkit/version-8-docs.md) | + `vendor_sync.lua`; the skip status, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity` | v1.8.0 | Superseded |
+| [9](./testkit/version-9-docs.md) | same files; `vendor_sync.lua` reads the provenance line from `CLAUDE.md`, via the new `provenanceFile` opt | v1.8.1 | **Current** |
 
 The kit's compatibility rule is the one place this directory's model differs. The library negotiates
 skew — LibStub compares minors and the highest copy wins, so an older vendored copy is a *supported

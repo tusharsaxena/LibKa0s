@@ -9,10 +9,10 @@
 | Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `vendor_sync.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **8** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | unreleased — on `master` after v1.7.0 |
-| Status | **Current** |
+| First released in | v1.8.0 |
+| Status | Superseded |
 | Supersedes | [version 7](version-7-docs.md) — adds the skip status, `vendor_sync.lua`, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity`, and fixes the runner's clock and its executable bit |
-| Superseded by | — |
+| Superseded by | [version 9](version-9-docs.md) — `vendor_sync.lua` reads the provenance line from `CLAUDE.md` |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `8` |
 
@@ -438,3 +438,18 @@ downstream, and a kit change that would break a consumer breaks this repo first.
 4. Re-vendor into `tests/_kit/` here **and** into every consumer's `tests/_kit/`, then run each
    repo's suite.
 5. Add the row to [`../README.md`](../README.md).
+
+## Moving to version 9
+
+[Version 9](version-9-docs.md) changes one thing: `vendor_sync.lua` reads the provenance line out of
+the consumer's **`CLAUDE.md`**, not its `README.md`, and names the file through the new
+`provenanceFile` opt. `readmePattern` is still accepted under its new name `provenancePattern`, so no
+call site breaks — but there is **no fallback to `README.md`**. A repo that re-vendors without moving
+its line fails the case rather than passing on the old location.
+
+The change is visible outside `tests/_kit/`: the first case's name becomes *"libs/LibKa0s is the
+LibKa0s release CLAUDE.md says this addon bundles"*, so `docs/test-cases.md` must be regenerated in
+the same commit as the re-vendor.
+
+`suites.<name>.gating` was scheduled for removal at version 9 by the section above. It is still
+emitted there; the removal is deferred, not cancelled.

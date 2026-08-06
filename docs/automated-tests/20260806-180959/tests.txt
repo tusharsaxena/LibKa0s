@@ -1,0 +1,500 @@
+  PASS  core: IsConcatSafe is false for a table.concat-hostile value, true for a plain one
+  PASS  core: SafeToString renders a secret as lib.SECRET and passes nil/booleans through
+  PASS  core: Print joins with a space, prefixes verbatim, and routes through the injected sink
+  PASS  core: sep separates the prefix from the body and may be empty
+  PASS  core: a function prefix is re-read on every call
+  PASS  core: a prefix that has not resolved yet prints the body alone
+  PASS  core: Format applies the format string with pre-stringified args
+  PASS  core: the default sink is DEFAULT_CHAT_FRAME:AddMessage
+  PASS  core: :New refuses a descriptor with no prefix
+  PASS  core: ApplySkin no-ops on a frame without SetBackdrop
+  PASS  core: ApplySkin applies the skin table and both colours
+  PASS  core: SKIN is the flat 1px Ka0s edge, not the 12px tooltip border
+  PASS  core: ApplySkin synthesises the inner highlight, exactly once
+  PASS  core: ApplySkin survives a frame whose metatable answers every key
+  PASS  core: ApplySkin tints a title and a divider when the frame carries them
+  PASS  core: ApplySkin lays the backdrop down before anything drawn on top of it
+  PASS  core: ApplySkin tolerates a frame with neither a title nor a divider
+  PASS  core: ApplySkin honours an explicit skin table
+  PASS  core: RGBA reads the keyed shape
+  PASS  core: RGBA reads the positional shape
+  PASS  core: RGBA lets the keyed shape win every channel, never mixing the two
+  PASS  core: RGBA falls back per channel, so a three-element color keeps its default alpha
+  PASS  core: RGBA keeps a stored false rather than swallowing it
+  PASS  core: RGBA returns the defaults unchanged for a non-table
+  PASS  core: RGBA does not default the defaults
+  PASS  core: MakeCloseButton returns a button wired to onClick
+  PASS  core: MakeCloseButton returns nil when CreateFrame is unavailable
+  PASS  core: Perf refuses to register when Core is missing or below NEEDS_CORE
+  PASS  core: Perf's own stringifier renders a secret as <secret>
+  PASS  dbg: FormatPlain wraps the tag in brackets with single-space separators
+  PASS  dbg: FormatPlain tolerates a nil tag
+  PASS  dbg: FormatColored colours the timestamp and tag; pipe and content default
+  PASS  dbg: both formatters are reachable on an instance as well as on the library
+  PASS  dbg: the window title is the host's, with the library's suffix appended
+  PASS  dbg: a host can override the title suffix
+  PASS  dbg: Add appends the plain form to the buffer and is never gated on the flag
+  PASS  dbg: the cap is 500 and the message frame is held to the same number
+  PASS  dbg: the buffer is capped, dropping the oldest line
+  PASS  dbg: the buffer stays a dense array of plain strings
+  PASS  dbg: Clear wipes the buffer and works before the window was ever built
+  PASS  dbg: BufferSize, LastLine and FindLine answer without reaching into .buffer
+  PASS  dbg: the sink routes the first arg as the [tag] and every vararg through safeToString
+  PASS  dbg: the sink is a no-op, and does no work at all, when logging is off
+  PASS  dbg: the sink is dot-callable, because host call sites bind it bare
+  PASS  dbg: the sink survives a format the stringified args cannot satisfy
+  PASS  dbg: an ordinary format is NOT routed through the fallback
+  PASS  dbg: SetEnabled writes the flag through the host, not into the library
+  PASS  dbg: SetEnabled normalises a truthy value to a boolean
+  PASS  dbg: enabling acks in green, brackets the session, then adds the [Init] summary
+  PASS  dbg: disabling acks in red and the bracket line still lands after the flag flips
+  PASS  dbg: disabling adds no [Init] summary
+  PASS  dbg: a host with no initSummary gets the bracket line and nothing else
+  PASS  dbg: the header toggle click flips the flag through SetEnabled
+  PASS  dbg: Show builds and shows; Hide and IsShown never build
+  PASS  dbg: Toggle builds the window on its first call
+  PASS  dbg: showing and hiding the console tells the host
+  PASS  dbg: two instances own separate buffers and separate frames
+  PASS  dbg: the copy text is the whole buffer, in order, newline-joined
+  PASS  dbg: Add sends the COLOURED form to the console and the plain one to the buffer
+  PASS  dbg: the window degrades to nothing when CreateFrame is unavailable
+  PASS  dbg: ConsoleCheckbox get reflects window visibility, not the logging flag
+  PASS  dbg: ConsoleCheckbox set shows and hides without touching the logging flag
+  PASS  dbg: the ConsoleCheckbox tooltip names the host's own slash command
+  PASS  dbg: a host with no slash command gets a tooltip that does not mention one
+  PASS  dbg: New requires a name, a title, a font and an isEnabled/setEnabled pair
+  PASS  dbg: a host that overrides a string gets its own wording
+  PASS  dbg: DebugLog re-exports Core's close button so a host has one factory, not two
+  PASS  dbg: a newer Core loading after DebugLog supplies the console's close button
+  PASS  dbg: an instance built after the upgrade draws the newer Core's button
+  PASS  dbg: Add renders a secret message as the sentinel
+  PASS  an L whose metatable synthesises every key does NOT mask the module's own strings
+  PASS  a REAL entry in an L that also has a fallback still overrides
+  PASS  a plain L table overrides exactly as before
+  PASS  dbg: with no makeCloseButton, BOTH windows close with Core's x
+  PASS  dbg: the default chrome IS the Ka0s window edge, on both windows
+  PASS  dbg: a host can supply its own skin function, for both windows
+  PASS  dbg: the host's skin function runs AFTER the Hide and the Esc wiring
+  PASS  dbg: a host that supplies no skin function still gets the library's own
+  PASS  dbg: a host can supply its own close-button factory, for both windows
+  PASS  dbg: the host's close button actually closes the window
+  PASS  dbg: a close-button factory returning nil is survivable, as Core's own is
+  PASS  dbg: the title-bar offsets are derived from the close button's width
+  PASS  dbg: a wider host close button pushes Copy and Clear out of its way
+  PASS  dbg: a close button with no measurable width falls back to the library's own
+  PASS  dbg: with no close button at all the offsets are still the minor-3 defaults
+  PASS  sl: an empty message prints the help index
+  PASS  sl: whitespace-only input is treated as empty
+  PASS  sl: an unknown verb names it, then prints the help index
+  PASS  sl: the verb is lowercased but the argument keeps its case
+  PASS  sl: an alias is rewritten to its target verb
+  PASS  sl: a handler receives the rest of the line, not the verb
+  PASS  sl: New requires a slash prefix and a commands table
+  PASS  sl: a help row is gold command, single-spaced em dash, white description
+  PASS  sl: HelpRows indents for chat; LandingRows does not
+  PASS  sl: help rows name each verb with the host's own slash prefix
+  PASS  sl: the help header carries the version and the chat alias
+  PASS  sl: a host with no chat alias gets a header without the alias clause
+  PASS  sl: no rendered line ends in a colon
+  PASS  sl: FormatKV is a gold key, ' = ', a white value, and no trailing colon
+  PASS  sl: FormatValue renders every schema type the library knows
+  PASS  sl: a color channel the stored table omits falls back per channel, alpha to 1 and RGB to 0
+  PASS  sl: a number row with no fmt renders bare
+  PASS  sl: a row whose value does not fit its declared type falls through to the generic renderer
+  PASS  sl: FormatValue renders a secret as the sentinel on every formatting branch
+  PASS  sl: FormatValue reads a POSITIONAL colour as well as a named-key one
+  PASS  sl: a positional colour with a secret component still renders the sentinel
+  PASS  sl: a host colour codec round-trips through set and its echo
+  PASS  sl: CliReset's echo uses the host colour codec too
+  PASS  sl: a guarded FormatValue still survives the FormatKV string.format around it
+  PASS  sl: SplitVerb lowercases the verb and preserves the remainder's case
+  PASS  sl: SplitVerb keeps the remainder's internal spacing
+  PASS  sl: SplitVerb answers two empty strings for empty and nil input
+  PASS  sl: SplitVerb answers an empty remainder for a bare verb
+  PASS  sl: FindCommand returns the whole triple for a matching name
+  PASS  sl: FindCommand compares verbatim and answers nil for a miss
+  PASS  sl: FindCommand answers nil rather than raising on a missing list
+  PASS  sl: CommandRows renders one row per entry through the shared formatter
+  PASS  sl: CommandRows defaults to no indent and applies the one it is given
+  PASS  sl: CommandRows answers an empty list rather than raising on a missing table
+  PASS  sl: HelpRows and LandingRows render through CommandRows
+  PASS  sl: ParseBool accepts the same eight words the error string advertises
+  PASS  sl: ParseBool answers nil, never false, for a non-boolean word
+  PASS  sl: booleans accept the whole human vocabulary
+  PASS  sl: a junk boolean is rejected and the accepted words are listed
+  PASS  sl: a number is clamped to the row's range rather than rejected
+  PASS  sl: a non-numeric value for a number row is rejected
+  PASS  sl: a string is validated against its enum, case-sensitively
+  PASS  sl: an enum declared as an ordered array is offered in declaration order
+  PASS  sl: an ordered array supplied as a function is evaluated at parse time
+  PASS  sl: a numeric dropdown rejects an out-of-list value rather than clamping it
+  PASS  sl: a number row with no values list still clamps to min/max
+  PASS  sl: a string row with no values list accepts free text
+  PASS  sl: a key SET labels its entries with its keys, not with 'true'
+  PASS  sl: an enum supplied as a function is evaluated at parse time
+  PASS  sl: a colour parses r g b with an optional alpha
+  PASS  sl: a colour given in 0-255 is rescaled, and all three channels together
+  PASS  sl: a colour missing a channel is rejected with the expected form
+  PASS  sl: an unknown row type is rejected by name
+  PASS  sl: list groups rows under the host's own group keys, indented
+  PASS  sl: the list keeps its own colours — green header, azure group headings
+  PASS  sl: list says so when nothing is registered
+  PASS  sl: get echoes the canonical path and the stored value
+  PASS  sl: a stored false renders as false, not as nil
+  PASS  sl: get with no path prints usage; an unknown path says so
+  PASS  sl: set writes through the host and echoes what was STORED, not what was typed
+  PASS  sl: set with no path points at the list verb
+  PASS  sl: a rejected value is not written, and the reason is a second, indented line
+  PASS  sl: set accepts a value made of several tokens
+  PASS  sl: reset restores one setting to its default
+  PASS  sl: reset leaves every other setting alone
+  PASS  sl: reset with no path prints usage; an unknown path says so
+  PASS  sl: reset does not lowercase its argument
+  PASS  sl: resetall applies every row's default
+  PASS  sl: version prints one line and nothing else
+  PASS  sl: the annotator fires on list, get and set — and on nothing else
+  PASS  sl: the annotation follows the coloured pair rather than interrupting it
+  PASS  sl: with no annotator set, nothing is appended
+  PASS  sl: Slash refuses to register without Core
+  PASS  sl: an L whose metatable synthesises every key does NOT mask the module's strings
+  PASS  sl: a REAL entry in an L that also has a fallback still overrides
+  PASS  sl: a plain L table overrides exactly as before
+  PASS  slash: a host can supply its own value formatter for a type the library does not know
+  PASS  slash: the format hook reaches the get, set and reset echoes too
+  PASS  slash: a host with no format hook renders exactly as it always did
+  PASS  slash: the format hook takes precedence over the colour codec, and gets the raw stored value
+  PASS  slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
+  PASS  options: the major registers all three of its files
+  PASS  options: an instance carries the shell, the widget makers and the scroll patch
+  PASS  options: two instances own separate panel registries
+  PASS  options: CreatePanel returns a ctx wired to a panel, a body and an empty refresher list
+  PASS  options: CreatePanel names the panel with the plain title for the category tree
+  PASS  options: CreatePanel starts the panel hidden and registers it
+  PASS  options: the header title takes the parent breadcrumb, and isMain opts out
+  PASS  options: __panelFor finds a registered page by key
+  PASS  options: CreatePanel only DECLARES the Defaults button, never builds it
+  PASS  options: CreatePanel records no Defaults intent when the page did not ask
+  PASS  options: EnsureDefaultsButton builds it once, wires the parked handler, then no-ops
+  PASS  options: EnsureDefaultsButton is a safe no-op without AceGUI and on a nil panel
+  PASS  options: EnsureDefaultsButton leaves a panel that never wanted one alone
+  PASS  options: EnsureDefaultsButton survives a vendored copy whose widget makers never attached
+  PASS  options: RestoreDefaults resets every row on the named page and no other
+  PASS  options: RestoreDefaults runs the ctx refreshers, and survives one that throws
+  PASS  options: RestoreDefaults on a page with no rows is a harmless no-op
+  PASS  options: RestoreDefaults resets a page across EVERY filter value, unlike RenderSchema
+  PASS  options: RestoreAllDefaults resets every row, then fires the host's afterRestoreAll
+  PASS  options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the panels
+  PASS  options: RestoreAllDefaults honours the host's skipRestoreAll veto
+  PASS  options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower
+  PASS  options: registered page builders run in registration order, once, at CreateOptionsPanel
+  PASS  options: CreateOptionsPanel hands the host the AceGUI it resolved
+  PASS  options: CreateOptionsPanel says so and returns when AceGUI is missing
+  PASS  options: the main canvas is registered under the host's brand
+  PASS  options: the main page's body is deferred to its first OnShow, and built once
+  PASS  options: a raising page builder costs that page and no other
+  PASS  options: a page registered after the build is built immediately
+  PASS  options: SetRenderer draws on first show, and not again
+  PASS  options: a panel shown during combat closes the window and does not render
+  PASS  options: a raising renderer is reported, not propagated
+  PASS  options: RefreshScalars re-syncs a shown page and flags a hidden one dirty
+  PASS  options: a dirty hidden page re-renders on its next show
+  PASS  options: the two tiers differ — one re-renders, the other only re-syncs
+  PASS  options: a ctx that never went through SetRenderer keeps the old ungated behaviour
+  PASS  options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay
+  PASS  options: OpenOptionsPanel opens the registered category out of combat
+  PASS  options: :New refuses a descriptor with no mainPanelName
+  PASS  options: a host that omits print still sees the combat refusal in the chat frame
+  PASS  options: CreateOptionsPanel is idempotent in both the category and the refreshers
+  PASS  options: OpenOptionsPanel is a silent no-op before CreateOptionsPanel has run
+  PASS  options: LSMValues returns a DEFERRED closure, not a snapshot
+  PASS  options: LSMValues offers a None placeholder rather than an empty list
+  PASS  options: EnsureScroll is lazy, created once, and patched
+  PASS  options: the scrollbar patch is idempotent
+  PASS  options: FixScroll disables the bar when the content fits, enables it when it does not
+  PASS  options: OnRelease restores AceGUI's own FixScroll and clears the marker
+  PASS  options: CreatePanel stamps the three Blizzard canvas callbacks
+  PASS  options: OnCommit and OnRefresh are inert and safe to call
+  PASS  options: OnDefault forwards to a defaultsOnClick parked AFTER CreatePanel
+  PASS  options: OnDefault and the header Defaults button run the SAME action
+  PASS  options: a page with no defaults action still has a callable, inert OnDefault
+  PASS  options: every lib.LAYOUT key is either published on the instance or annotated internal
+  PASS  options: the published layout scalars are the instance's own, never lib.LAYOUT itself
+  PASS  options: the landing constants are published on lib.LAYOUT at the promoted values
+  PASS  options: LANDING_GAP_HEAD and SECTION_BOTTOM_SPACER are the same gap
+  PASS  options: a host wires the landing body itself, through the buildMain it always had
+  PASS  options: the shell installs no main renderer of its own, whatever else the descriptor carries
+  PASS  options: the shell never writes buildMain onto the host's descriptor
+  PASS  options: a descriptor with no buildMain draws no main body
+  PASS  options: a disabled bar parks the thumb, dims it, and disables both step buttons
+  PASS  options: an enabled bar tints the thumb white and enables both step buttons
+  PASS  options: a state change fires once, not once per FixScroll
+  PASS  options: a nameless scrollbar resolves no step buttons and still patches
+  PASS  widgets: the cross-slice layout constants are published on the instance
+  PASS  widgets: a bool row renders a CheckBox labelled and seeded from the schema
+  PASS  widgets: clicking a checkbox writes through the descriptor's set
+  PASS  widgets: a checkbox registers a refresher that re-reads after an external change
+  PASS  widgets: every widget gets tooltip callbacks wired from the schema desc
+  PASS  widgets: relativeWidth is applied when given, full width otherwise
+  PASS  widgets: SessionCheckbox reads and writes the caller's get/set, never the store
+  PASS  widgets: a number row renders a Slider carrying the schema's range and step
+  PASS  widgets: a slider falls back to the row default when the stored value is not a number
+  PASS  widgets: releasing a slider snaps the value to the row's step
+  PASS  widgets: slider snapping is relative to the row's min, not to zero
+  PASS  widgets: a string row with values renders a Dropdown, sorted alphabetically by default
+  PASS  widgets: a row with explicit `sorting` keeps that order instead of alphabetising
+  PASS  widgets: a dropdown falls back to a plain Dropdown when its dialogControl is unregistered
+  PASS  widgets: a dropdown uses its dialogControl widget when that IS registered
+  PASS  widgets: a dropdown writes the chosen value, and its refresher re-applies the LIST
+  PASS  widgets: a dropdown built from an ordered array keeps declaration order
+  PASS  widgets: a key set labels its entries with its keys, not with 'true'
+  PASS  widgets: the dropdown's options and the CLI's allowed values agree, in both shapes
+  PASS  widgets: a colour row opts OUT of alpha by declaring it, and cannot before
+  PASS  widgets: a tooltip body comes from `tooltip`, with `desc` still accepted
+  PASS  widgets: a slider does not commit on drag by default
+  PASS  widgets: sliderCommit = 'change' commits on drag, throttled, last value wins
+  PASS  widgets: commitOn on a row overrides the descriptor default, both ways
+  PASS  widgets: a raising row costs that row and no other
+  PASS  widgets: RenderGrid lays arbitrary items out two per row
+  PASS  widgets: RenderGrid gives a wide item its own full-width row
+  PASS  widgets: RenderGrid guards each item the way RenderRows guards each row
+  PASS  widgets: a string row asking for an EditBox gets one, not a dropdown
+  PASS  widgets: an edit box commits on OnEnterPressed and re-reads on refresh
+  PASS  widgets: a color row renders a ColorPicker seeded through the descriptor's codec
+  PASS  widgets: a color picker substitutes 1s for a missing or corrupt stored colour
+  PASS  widgets: the colour codec is the descriptor's, so an array-storing host is not translated
+  PASS  widgets: disabledIf greys the swatch out while its sibling toggle is on
+  PASS  widgets: OnValueConfirmed commits immediately — cancel must not wait on the throttle
+  PASS  widgets: OnValueChanged throttles a drag to ONE timer and commits the LAST value
+  PASS  widgets: a colour drag does NOT refresh every panel
+  PASS  widgets: every other maker's write DOES refresh every panel
+  PASS  widgets: RenderField dispatches each schema type to its widget
+  PASS  widgets: RenderField returns nil for an unrecognised type instead of erroring
+  PASS  widgets: RenderField adds the widget to the parent it was given
+  PASS  widgets: RenderSchema pairs widgets two-to-a-row inside full-width Flow groups
+  PASS  widgets: a `solo` row is rendered alone on its own line
+  PASS  widgets: a `solo` row flushes the row in progress rather than joining it
+  PASS  widgets: a `skipRender` row is left to the host and never drawn
+  PASS  widgets: RenderRows emits one Heading per group, in first-seen order
+  PASS  widgets: a group's heading lands BELOW the previous group's tail row, not above it
+  PASS  widgets: an afterGroup callback fires exactly once, after its group's last row
+  PASS  widgets: an afterGroup callback runs with its group's tail row already on the page
+  PASS  widgets: an afterGroup hook fires for a group's FIRST run only, when the group recurs
+  PASS  widgets: a pairWith partner attaches to the named row, is one-shot, and stays 50/50
+  PASS  widgets: a pairWith partner declines a row it would make three-wide
+  PASS  widgets: RenderRows leaves the caller's afterGroup / pairWith tables intact
+  PASS  widgets: RenderRows runs a layout pass at the end
+  PASS  widgets: Section emits a full-width Heading and tracks the group
+  PASS  widgets: ClearScroll releases the children AND resets ctx.refreshers
+  PASS  widgets: ClearScroll reassigns ctx.refreshers rather than wiping it in place
+  PASS  widgets: InlineButtonPair lays two inset buttons into one Flow row and pcalls the click
+  PASS  widgets: InlineButtonPair tolerates a missing second spec
+  PASS  widgets: a number row carrying a values list renders as a Dropdown, not a Slider
+  PASS  widgets: the numeric dropdown lists its entries with their own labels
+  PASS  widgets: the numeric dropdown seeds the STORED number, not a stringified copy
+  PASS  widgets: choosing an entry writes the number through the host's set
+  PASS  widgets: a number row with NO values list still renders as a Slider
+  PASS  widgets: a number row whose values function answers empty falls back to a Slider
+  PASS  widgets: TextRow adds a full-width Label carrying the text
+  PASS  widgets: TextRow left-justifies by default and honours an explicit justify
+  PASS  widgets: TextRow applies a font object by NAME, and only when the global exists
+  PASS  widgets: TextRow draws nothing and returns nil when there is no scroll to draw into
+  PASS  widgets: BuildLandingPage draws the logo block at its declared size, then a spacer
+  PASS  widgets: BuildLandingPage honours an explicit logoSize
+  PASS  widgets: a logo whose widget has no backing frame costs the logo, not the page
+  PASS  widgets: a spec with no logo draws no logo block
+  PASS  widgets: BuildLandingPage calls a notes FUNCTION at render time
+  PASS  widgets: an empty one-liner skips the notes Label AND its spacer
+  PASS  widgets: BuildLandingPage renders a heading and one row per section entry
+  PASS  widgets: a section's rows are re-evaluated on every render
+  PASS  widgets: a re-render clears the previous body instead of stacking a second copy
+  PASS  widgets: the second landing heading gets a top spacer and the first does not
+  PASS  widgets: the gap under a landing heading is emitted once, by Section
+  PASS  widgets: BuildLandingPage tolerates a nil spec and an empty one
+  PASS  widgets: the landing page's text rows carry the same justify guard TextRow owns
+  PASS  lib: registers under its major with a schema and a default ring
+  PASS  lib: New requires a name, an sv global and a suspend/resume pair
+  PASS  lib: New rejects a bucket entry with no key, in the library's own words
+  PASS  lib: a ring of zero is clamped to one, not left to empty itself
+  PASS  lib: a negative ring is clamped too
+  PASS  lib: two instances share no state
+  PASS  lib: bucket order and nesting come from the descriptor
+  PASS  lib: the capture gate starts off
+  PASS  lib: Note accumulates calls, total and max
+  PASS  lib: Note tracks unrelated buckets independently
+  PASS  lib: Note takes the observed parent, and defaults to claiming nothing
+  PASS  lib: two different observed parents for one bucket are flagged, not overwritten
+  PASS  lib: Note with no key names the caller instead of raising a table-index error
+  PASS  lib: Reset clears every bucket and both fps arms
+  PASS  lib: Open records nothing while the probe is off
+  PASS  lib: Close with no matching open slot is a silent no-op
+  PASS  lib: Open with no key names the caller instead of raising a table-index error
+  PASS  lib: a real bracket records its elapsed ms to the named bucket
+  PASS  lib: Open/Close feed the same buckets P.Note does
+  PASS  lib: a bracket opened inside another records the enclosing key as its observed parent
+  PASS  lib: an exit that forgot its Close is discarded, not credited with a later bracket's time
+  PASS  lib: EncodeJSON emits object keys in sorted order
+  PASS  lib: EncodeJSON renders integral numbers without a decimal point
+  PASS  lib: EncodeJSON renders fractional numbers to four places
+  PASS  lib: EncodeJSON escapes quotes, backslashes and control characters
+  PASS  lib: EncodeJSON emits arrays for sequence tables
+  PASS  lib: EncodeJSON emits an empty table as an object
+  PASS  lib: EncodeJSON coerces non-finite numbers rather than emitting invalid JSON
+  PASS  lib: EncodeJSON encodes a whole record, not just its buckets
+  PASS  lib: BuildRecord carries schema, source and label
+  PASS  lib: BuildRecord derives avgFps and msPerFrame from the arms
+  PASS  lib: BuildRecord reports zero delta when only one arm was sampled
+  PASS  lib: BuildRecord computes the delta when both arms were sampled
+  PASS  lib: BuildRecord snapshots buckets rather than aliasing them
+  PASS  lib: a record names the addon that produced it
+  PASS  lib: a nested bucket carries its parent into the record
+  PASS  lib: a record stamps the host's interface version and the capture time
+  PASS  lib: the record's context names the character's class
+  PASS  lib: a cancelled run takes its context stamp with it
+  PASS  lib: a record built before Start has no context at all
+  PASS  lib: a Note key the descriptor never declared still lands in the record
+  PASS  lib: Save creates the perf global and appends the run
+  PASS  lib: Save stamps the schema on the store
+  PASS  lib: Save trims the ring to ringMax, dropping the oldest
+  PASS  lib: a ring written under another schema is discarded, not converted
+  PASS  lib: FormatReport emits its sections in reading order
+  PASS  lib: FormatReport marks an unsampled arm rather than printing zeros
+  PASS  lib: FormatReport prints both arms and the delta when both ran
+  PASS  lib: FormatReport derives ms/s from the active seconds only
+  PASS  lib: FormatReport warns that buckets nest
+  PASS  lib: FormatReport omits buckets that never fired
+  PASS  lib: FormatReport indents a nested bucket under its parent
+  PASS  lib: a declared parent nobody supplied is reported as declared, NOT as observed
+  PASS  lib: a supplied parent is reported as observed
+  PASS  lib: a parent observed somewhere other than the declared one is reported as the defect it is
+  PASS  lib: observed containment travels into the record beside the declared value
+  PASS  lib: a flat bucket set gets no nesting footer
+  PASS  lib: Context captures character, spec, zone and group
+  PASS  lib: Context reports solo when ungrouped
+  PASS  lib: Context reports party size and instance type
+  PASS  lib: Context reports raid size
+  PASS  lib: ContextLines folds the sub-zone into the location
+  PASS  lib: ContextLines omits an empty sub-zone cleanly
+  PASS  lib: ContextLines tolerates a record with no context
+  PASS  lib: a host passing only the four required fields gets working defaults
+  PASS  perf: an L whose metatable synthesises every key does NOT mask the module's strings
+  PASS  perf: a step label is never its own SCREAMING_SNAKE_CASE key
+  PASS  perf: a REAL entry in an L that also has a fallback still overrides
+  PASS  lib: suspend returns false when already suspended
+  PASS  lib: resume returns false when not suspended
+  PASS  lib: the suspended state is session-only, never persisted
+  PASS  lib: starting an experiment logs it
+  PASS  lib: stopping an experiment logs both arm durations
+  PASS  lib: suspend and resume are logged
+  PASS  lib: a no-op suspend or resume logs nothing
+  PASS  lib: nothing is logged when no run is happening
+  PASS  lib: an armed window samples nothing until combat begins
+  PASS  lib: a window opens on combat and accumulates
+  PASS  lib: a window closes when combat ends and stops accumulating
+  PASS  lib: the walk between windows is never measured
+  PASS  lib: measure b suspends the addon and measure a resumes it
+  PASS  lib: window B still samples while the addon is suspended
+  PASS  lib: re-arming a window zeroes it rather than averaging in
+  PASS  lib: arming a window mid-combat closes the one already open
+  PASS  lib: Measure is rejected outside an experiment
+  PASS  lib: Measure rejects an unknown window token
+  PASS  lib: Measure accepts either case
+  PASS  lib: Stop closes an open window rather than discarding it
+  PASS  lib: Stop detaches the sampler so an idle client pays nothing
+  PASS  lib: the sampler ignores ticks once the experiment is over
+  PASS  lib: Stop deliberately leaves a suspended host suspended
+  PASS  lib: two completed windows produce a delta
+  PASS  lib: recording start and end are announced to chat AND the debug log
+  PASS  lib: the end announcement carries the duration and frame rate
+  PASS  lib: the console log is plain text, free of colour escapes
+  PASS  lib: experiments are named A and B, never active/suspended
+  PASS  lib: the run start is logged with its context
+  PASS  lib: arming logs which experiment and whether the addon is suspended
+  PASS  lib: measure b calls the host's suspend, measure a its resume
+  PASS  lib: cancelling a suspended run restores the host
+  PASS  lib: the stopwatch is driven per window
+  PASS  lib: before a run Start is the one offered step
+  PASS  lib: Start reads done while a run is in flight
+  PASS  lib: Start is offered again once a run has finished
+  PASS  lib: starting a run makes exactly Measure A ready
+  PASS  lib: an armed or recording experiment reads busy, not ready
+  PASS  lib: completing A unlocks B and nothing else
+  PASS  lib: completing B unlocks Finish
+  PASS  lib: finishing unlocks Report and Dump
+  PASS  lib: exactly one step is ready at any point in a run
+  PASS  lib: re-arming a completed experiment sends it back to busy
+  PASS  lib: re-arming Experiment B relocks Finish
+  PASS  lib: a step state is always one of the state words, never a value the run holds
+  PASS  lib: a window that caught no frames still counts as completed
+  PASS  lib: Reset clears completion, so a fresh run starts from step one
+  PASS  lib: the panel renders every step and tracks their states
+  PASS  lib: a locked panel button refuses to act when clicked
+  PASS  lib: the panel repaints itself on every state transition
+  PASS  lib: every step row carries a status dot, drawn not glyphed
+  PASS  lib: labels are plain text with no decoration baked in
+  PASS  lib: cancel is offered throughout a run and nowhere else
+  PASS  lib: cancel has its own state, so it never reads as the next step
+  PASS  lib: cancelling discards the run without saving it
+  PASS  lib: cancelling restores a suspended addon
+  PASS  lib: cancelling mid-recording does not announce the experiment as ended
+  PASS  lib: cancelling detaches the sampler
+  PASS  lib: cancel returns false when there is nothing to cancel
+  PASS  lib: a cancelled run leaves the next one clean
+  PASS  lib: every row shows its slash command
+  PASS  lib: cancel stays clickable while a run is mid-experiment
+  PASS  lib: cancel is not clickable once the run is finished
+  PASS  lib: hiding the panel never touches the run
+  PASS  lib: Toggle flips visibility both ways
+  PASS  lib: decorate is handed the frame and a way to close it
+  PASS  lib: a host that passes no decorate still gets a working panel
+  PASS  lib: report and dump stay clickable after use, but read as done
+  PASS  lib: marking a review action twice is a no-op
+  PASS  lib: MarkReviewed ignores keys that are not review actions
+  PASS  lib: a fresh run clears the review marks
+  PASS  lib: the panel titles itself like the debug console
+  PASS  lib: a locale table filled in after New still reaches the rows
+  PASS  lib: every step label names what it acts on
+  PASS  lib: a panel-less instance answers STEPS, PanelStateOf and PanelIsActionable safely
+  PASS  cmd: OnCommand always returns a line table, never nil
+  PASS  cmd: start begins a run and shows the panel
+  PASS  cmd: a label is appended to the timestamp, never replaces it
+  PASS  cmd: measure reports which window armed and whether the host is suspended
+  PASS  cmd: measure outside a run tells you to start one
+  PASS  cmd: measure rejects an unknown window token
+  PASS  cmd: finish resumes the host before it saves
+  PASS  cmd: finish prints no report
+  PASS  cmd: report writes the summary to the log sink and opens it
+  PASS  cmd: dump writes one line of JSON to the log sink
+  PASS  cmd: cancel refuses when there is nothing to cancel
+  PASS  cmd: show, hide and toggle drive the panel and nothing else
+  PASS  cmd: a bare command reports the phase and prints the usage
+  PASS  cmd: usage never hard-codes a slash prefix
+  PASS  cmd: clicking a ready panel row takes the same path as typing it
+  PASS  cmd: a panel click prints exactly what typing the command prints
+  PASS  cmd: clicking a locked panel row does nothing
+  PASS  iso: two instances create separate sampler frames
+  PASS  iso: driving one instance's sampler accumulates into that instance alone
+  PASS  iso: an instance's sampler is detached without touching the other's
+  PASS  iso: a dormant Open/Close bracket allocates nothing and records nothing
+  PASS  iso: two instances create separate panel frames
+  PASS  iso: each panel renders its own host's state and its own slash prefix
+  PASS  iso: clicking one host's panel drives that host only
+  PASS  iso: a newer probe loading second brings its own panel with it
+  PASS  iso: an older copy loading second replaces neither half
+  PASS  iso: a higher panel minor over the same probe still wins
+  PASS  versioning: every declared major is actually registered
+  PASS  versioning: every file in every major registers its live version
+  PASS  versioning: no file registers under a major it does not belong to
+  PASS  versioning: every registered version is a positive integer
+  PASS  versioning: file basenames are unique across every major
+  PASS  versioning: the changelog accounts for the version every file is at
+  PASS  versioning: every paired secondary file records which primary it attached to
+  PASS  versioning: every major's live version has its API document on disk
+  PASS  kitsync: Kit.VERSION is a positive integer and reaches the exposed table
+  PASS  kitsync: the kit revision has an API document
+  PASS  kitsync: the runner is mode 100755 in the git index, in BOTH copies
+  PASS  kitsync: testkit/ and tests/_kit/ hold the same set of files
+  PASS  kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
+  PASS  prose: no British spelling in the shipped library or the shipped kit
+  PASS  prose: no retired §N.M section reference in the shipped library or the shipped kit
+
+498 passed, 0 failed, 0 skipped, 498 total

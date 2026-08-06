@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.8.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.8.1`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -89,8 +89,8 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    Then commit — the bundle and `RESULTS.md` row belong in the release commit, so the tagged tree
    contains the evidence for itself — and tag the repo semver.
 8. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
-   includes bumping the version named in each consumer's README provenance line, in the same commit
-   as the copy.
+   includes bumping the version named in each consumer's `CLAUDE.md` provenance line, in the same
+   commit as the copy.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
@@ -122,24 +122,31 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 cd <Addon> && lua tests/run.lua && luacheck .
 ```
 
-Then add or update the provenance line in `<Addon>/README.md`, in the same commit as the copy:
+Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.8.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.8.1 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
 is step 7's job, and it is a step because at v1.5.0 it was a memory and the memory failed.
 
-What the template fixes is the **shape, not the wording**. A line that names the library and names
-the version satisfies it wherever it sits in a sentence: LootHistory and WhatGroup both phrase it
-mid-sentence (*"…it bundles [LibKa0s](…) v1.5.0"*) and both are correct. The gate greps `[Bb]undles`
-for precisely that reason — an earlier capital-anchored sweep returned nothing for LootHistory and
-reported it as carrying no provenance line at all, which it has always had. So both phrasings pass,
-and a consistency sweep that rewrites them to match the template above is spending effort to make
-two true lines look alike.
+**`CLAUDE.md`, not `README.md`, since kit revision 9 (v1.8.1).** The line answers "which LibKa0s does
+this build carry?", which is a maintainer's question on a page written for players — and `README.md`
+across this collection no longer carries a bundled-library inventory at all. `vendor_sync.lua` reads
+`CLAUDE.md` by default and takes a `provenanceFile` opt for a repo that keeps it elsewhere. There is
+**no fallback**: a repo whose line is still in `README.md` reads as carrying none and fails, rather
+than sitting half-migrated with two lines that can disagree.
 
-That line is not decoration. prettychat's `tests/test_harness.lua` READS it, resolves the tag it
-names, and asserts both `libs/LibKa0s/` and `tests/_kit/` match the library repo **at that tag**,
+What the template fixes is the **shape, not the wording**. A line that names the library and names
+the version satisfies it wherever it sits in a sentence: some repos phrase it mid-sentence
+(*"…it bundles [LibKa0s](…) v1.5.0"*) and that is equally correct. The gate greps `[Bb]undles`
+for precisely that reason — an earlier capital-anchored sweep returned nothing for a repo that wrote
+it mid-sentence and reported it as carrying no provenance line at all, which it has always had. So
+both phrasings pass, and a consistency sweep that rewrites them to match the template above is
+spending effort to make two true lines look alike.
+
+That line is not decoration. Every consumer's `tests/test_vendor_sync.lua` READS it, resolves the tag
+it names, and asserts both `libs/LibKa0s/` and `tests/_kit/` match the library repo **at that tag**,
 file by file. So a provenance line that is ahead of the tag, or a re-vendor taken from untagged
 `master`, fails there — which is exactly how the untagged kit revision was caught. Re-vendor from a
 tag, and move the line in the same commit.

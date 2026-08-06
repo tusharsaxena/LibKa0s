@@ -10,6 +10,40 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.8.1 — 2026-08-06
+
+Versions in this release: **Core minor 5**, **DebugLog minor 8**, **Slash minor 7**,
+**Options minor 7**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**, **Perf minor 7**,
+**PerfPanel minor 3**. **No shipped library file moves** — nothing under `LibKa0s/` changed, so no
+minor bumps and `libs/LibKa0s/` is byte-identical to v1.8.0 in every consumer. This release is the
+test kit alone.
+
+**testkit revision 9 — the LibKa0s provenance line moves to `CLAUDE.md`.**
+`testkit/vendor_sync.lua` reads *"Bundles [LibKa0s](…) vX.Y.Z (MIT)."* out of the consuming repo's
+`CLAUDE.md` instead of its `README.md`, and names the file through a new `provenanceFile` opt
+(default `"CLAUDE.md"`). `readmePattern` is renamed `provenancePattern` and the old name is still
+accepted, so no call site breaks.
+
+The line answers "which LibKa0s does this build carry?" — a maintainer's question, on a page written
+for players. Across the collection `README.md` is losing its bundled-library inventory entirely, so
+the gate's input was about to live in a file whose job is to stop mentioning it.
+
+**There is no fallback to `README.md`, deliberately.** A consumer that re-vendors without moving its
+line fails the case, naming `CLAUDE.md`. A fallback would let a repo sit half-migrated with two lines
+that can disagree, which is the drift this gate exists to catch.
+
+**Every consumer must re-vendor `tests/_kit/` from this tag, move its provenance line into
+`CLAUDE.md`, and regenerate `docs/test-cases.md` in the same commit** — the first case's name changed
+to *"libs/LibKa0s is the LibKa0s release CLAUDE.md says this addon bundles"*, which is the only part
+of this revision visible outside `tests/_kit/`. `libs/LibKa0s/` does not need recopying; the
+provenance line still names the tag both payloads are compared against, so it moves to v1.8.1.
+
+`suites.<name>.gating` in the run manifest was scheduled for removal at kit revision 9 and is
+**still emitted**. Dropping a manifest field in a release cut to move one string would put two
+unrelated adoption costs on one re-vendor. Nothing reads it; the removal is deferred.
+
+See [`docs/api/testkit/version-9-docs.md`](docs/api/testkit/version-9-docs.md).
+
 ## v1.8.0 — 2026-08-05
 
 Versions in this release: **Core minor 5**, **DebugLog minor 8**, **Slash minor 7**,
