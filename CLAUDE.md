@@ -1,6 +1,6 @@
 # CLAUDE.md — LibKa0s
 
-LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.22.0) —
+LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.28.0) —
 <https://github.com/tusharsaxena/WowAddonStandards>.
 
 **Read this first: LibKa0s is a library repo, not an addon.** It is in scope for the standard and it
@@ -15,8 +15,11 @@ What that leaves, concretely:
 - **Applies unchanged:** `testing-§1`, `testing-§9`, `testing-§10`, `testing-§11` (the headless
   suite, the derived-and-pinned load lists, the versioning suite and the kit-sync gate — `§10` names
   this repo as the reference implementation for that family of gates); `lint`; `automated-tests`;
-  `versioning-git`; `localization-§5` (US English in authored text — a British spelling here is
-  vendored into eight consumers and becomes eight findings); `documentation-§5`; `documentation-§7`.
+  `versioning-git`; `line-endings` (the library ships Lua into every consumer's client-bound
+  `libs/`, so it takes the CRLF pin — named explicitly upstream because a library repo has no `.toc`
+  and `line-endings-§2`'s discriminator would otherwise read it as non-client); `localization-§5`
+  (US English in authored text — a British spelling here is vendored into eight consumers and
+  becomes eight findings); `documentation-§5`; `documentation-§7`.
 - **Does not apply:** `documentation-§1`'s player-facing README structure and badge row;
   `documentation-§2`'s addon `CLAUDE.md` stub as written (this file is the substitute);
   `documentation-§3`'s `docs/` trio, its five verification-and-record docs **and its whole

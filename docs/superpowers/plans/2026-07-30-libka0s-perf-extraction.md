@@ -1922,7 +1922,7 @@ In `AT/settings/Slash.lua`, delete `ensureConsole` (lines 256–260, now `showLo
 
 ```lua
 -- The whole guided run lives in LibKa0s-Perf; this is only the dispatch. The lib deliberately
--- registers no slash command of its own (slash-commands-§: every verb goes through this table with
+-- registers no slash command of its own (slash-commands: every verb goes through this table with
 -- the cyan tag), so it hands back lines and we print them.
 function runPerf(rest)
     for _, line in ipairs(NS.Perf.OnCommand(rest or "")) do print(line) end

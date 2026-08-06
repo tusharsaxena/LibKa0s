@@ -751,7 +751,7 @@ build kept working and looks equivalent to the user. Two controls that appear to
 one of them dead, is worse than never having offered the second.
 
 `CreatePanel` now stamps all three. `OnCommit` and `OnRefresh` are inert **by design** rather than by
-omission: a host's writes land immediately through its own single write seam (options-ui-§41), so
+omission: a host's writes land immediately through its own single write seam (options-ui-§1), so
 there is no staged state to apply, and `SetRenderer` already owns re-show, so a second refresh path
 would race the renderer it duplicates.
 
