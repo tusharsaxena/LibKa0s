@@ -12,6 +12,7 @@ which is never the same as a pass.
 
 | Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260807-022509`](20260807-022509/) | 1.8.1 | 0/0 | 12 | 498/498 | skip | 8557 | 1237 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260806-180959`](20260806-180959/) | 1.8.0 | 0/0 | 12 | 498/498 | skip | 8557 | 1237 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260805-123655`](20260805-123655/) | 1.7.0 | 0/0 | 12 | 498/498 | skip | 8555 | 1237 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260805-002859`](20260805-002859/) | 1.7.0 | 0/0 | 11 | 480/480 | skip | 7975 | 1201 | 6.1 | 1.8 | 12 | 0 | **green** |
@@ -25,6 +26,12 @@ section notation across the shipped payload — and `test_kitsync.lua`, which is
 `testkit/` and `tests/_kit/` hold the same files and that every one of them is byte-identical,
 README included. The generated inventory `test-cases.md` in each bundle is the authority on what
 exists at any point.
+
+The count has now held at 498 across three consecutive runs — `20260805-123655`, `20260806-180959`
+and `20260807-022509` — and the three inventories carry the same case names, not merely the same
+total. That is a flat suite over a flat library rather than a coverage gap: nothing shipped in that
+window either. The reading changes the moment a run adds source without adding cases, which is the
+thing the table cannot show and this section exists to say.
 
 Two coverage facts are worth naming while the count has no history to speak for it. The suite
 exercises the library **headlessly through the mock**, so what it pins is contract and state
@@ -66,7 +73,7 @@ disposition, dated, with the condition that would reopen it.
 
 ## Complexity watch list
 
-Current state as of [`20260805-123655`](20260805-123655/) — not that run's diff.
+Current state as of [`20260807-022509`](20260807-022509/) — not that run's diff.
 Every function `lizard` warned on, and every file at or above `layout-§1`'s 1000-LOC
 on-notice threshold, each with a one-line disposition.
 
@@ -80,14 +87,15 @@ highest CCN anywhere in scope is **14** — `Kit.run` (`testkit/framework.lua:39
 (`LibKa0s/Slash.lua:527-550`) at 12 behind it. No disposition is carried, because nothing is warned
 on.
 
-The top of that list moved this release: 12 → 14, and both new entries are in the kit rather than in
-the shipped library. `Kit.run` gained the `skip` status arm and the suite-inventory call;
-`Kit.assertSuiteInventory` is a two-way set comparison with one branch per divergence class. Neither
-is tangle and neither is at the cap, but the headroom is one arm narrower than it was — so a third
-arm added to either is the thing to notice.
+That top three last moved at `20260805-123655`, when it went 12 → 14 and both new entries landed in
+the kit rather than in the shipped library: `Kit.run` gained the `skip` status arm and the
+suite-inventory call, and `Kit.assertSuiteInventory` is a two-way set comparison with one branch per
+divergence class. Neither is tangle and neither is near the cap, but the headroom is one arm
+narrower than it was — a third arm added to either is the thing to notice.
 
-Two rows now, so the zero on both is a held result rather than a first measurement. Two is still not
-a trend.
+Four rows now, three of them identical, so the zero is a held result rather than a first
+measurement. It is still not a trend: the library has not changed in that window, so what the rows
+show is a stable tree measured repeatedly, not a complexity figure that has been held down.
 
 When these numbers do start moving, remember `lizard` counts every `and`/`or` short-circuit as a
 decision. In Lua a run of `t.k = rec.k or D.k` defaulting lines scores high with no visible
@@ -103,4 +111,11 @@ fields* rather than *this function grew tangled* — and the two want different 
 | 1000–1500 (on notice) | `tests/test_options_widgets.lua` | 1114 | **Accepted, unchanged.** A flat list of independent widget cases; length is case count, not tangle. Split by widget family if it crosses 1500. |
 
 Nothing is over the 1500 cap. Neither entry is marked "newly crossed" — both were already in the
-band at `20260805-002859`.
+band at `20260805-002859`, and both held their LOC exactly at `20260807-022509`.
+
+**Both dispositions are two of their three releases old.** Each has been carried as *Accepted*
+through the v1.8.0 (`20260805-123655`) and v1.8.1 (`20260806-180959`) release runs; the runs in
+between are ordinary and do not count against the shelf life. At the **next release run** each is
+owed either a fix or a tracked deviation ID with an owner, after which the disposition reads
+*Already tracked as `<id>`* and the argument stops being re-had (`automated-tests-§4`,
+anti-pattern #53).
