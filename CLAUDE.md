@@ -19,7 +19,11 @@ What that leaves, concretely:
   vendored into eight consumers and becomes eight findings); `documentation-§5`; `documentation-§7`.
 - **Does not apply:** `documentation-§1`'s player-facing README structure and badge row;
   `documentation-§2`'s addon `CLAUDE.md` stub as written (this file is the substitute);
-  `documentation-§3`'s `docs/` trio and its five topic-detail docs; `toc-file`, `options-ui`,
+  `documentation-§3`'s `docs/` trio, its five verification-and-record docs **and its whole
+  topic-detail tier model** (Tier 1's `scope.md`, `module-map.md`, `schema.md`, `settings-panel.md`,
+  `data-flow.md`, `common-tasks.md`; Tier 2; the `## Documentation map` section of an
+  `ARCHITECTURE.md` that does not exist here) — a library has no settings canvas, no SavedVariables
+  and no in-game pipeline, so four of the six Tier 1 docs have no subject; `toc-file`, `options-ui`,
   `slash-commands`, `preview-mode`, `savedvariables`, `packaging`.
 - **Substitutes this repo must carry:** this `CLAUDE.md` with the section below, a root
   [`DEPENDENCIES.md`](DEPENDENCIES.md), and a README pointer to the standard. A root
@@ -66,19 +70,35 @@ created in the same breath as the first deviation, by whoever is already arguing
 bind this repo at all, so there is nothing to ratify. A row belongs here only when a section that
 *does* bind is knowingly not followed.
 
-## Read the docs
+## Documentation map
 
-- [`README.md`](README.md) — what each module is, how to install and re-vendor, the repo layout.
-- [`docs/api/`](docs/api/) — **the source of truth for every public contract**, one document per
-  shipped version, per major. A superseded document is never edited to describe new behavior.
-- [`docs/releasing.md`](docs/releasing.md) — the two version numbers (repo semver and the
-  load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule.
-- [`docs/record-schema.md`](docs/record-schema.md) — the in-game Perf capture record, field by field.
-- [`docs/automated-tests/README.md`](docs/automated-tests/README.md) — the four out-of-game suites,
-  what each gates at which checkpoint, and where the frozen bundles live.
-- [`docs/test-cases.md`](docs/test-cases.md) — the generated case inventory; regenerate it with
-  `lua tests/run.lua --list`, never by hand.
-- [`DEPENDENCIES.md`](DEPENDENCIES.md) — what to install before any of the above will run.
+`documentation-§3`'s tier model does not bind a library repo (see the applicability list above), so
+there is no `ARCHITECTURE.md` and no Tier 1 set. What the tier model is *for* does still apply here:
+a reader must be able to tell a doc that is missing from one that was never meant to exist, and no
+page under `docs/` should be reachable only by listing the directory. So this section is the register,
+in the place a library keeps its registers — this file.
+
+**Every `.md` under `docs/` appears below.** Frozen and generated directories are named once each and
+never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests/`,
+`docs/adoption/`, `docs/superpowers/`.
+
+| Doc | Covers |
+|---|---|
+| [`README.md`](README.md) | What each module is, how to install and re-vendor, the repo layout |
+| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `DebugLog`, `Options`, `Perf`, `Slash`, `testkit`). A superseded document is never edited to describe new behavior |
+| [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
+| [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-runs/README.md` points at rather than restating |
+| [`docs/adoption-prompt.md`](docs/adoption-prompt.md) | The brief handed to a consumer repo adopting a major: what to wire, what to delete, and what must not be hand-rolled |
+| [`docs/adoption-report.md`](docs/adoption-report.md) | The collection-wide adoption state — which consumer has taken which major, and what each declined |
+| [`docs/test-cases.md`](docs/test-cases.md) | The generated case inventory; regenerate with `lua tests/run.lua --list`, never by hand |
+| [`docs/automated-tests/README.md`](docs/automated-tests/README.md) | The four out-of-game suites, what each gates at which checkpoint, and where the frozen bundles live |
+| [`docs/automated-tests/RESULTS.md`](docs/automated-tests/RESULTS.md) | One row per run; generated, never hand-edited |
+| [`CHANGELOG.md`](CHANGELOG.md) | Required at a library root (`library-stack-§7`) — `testing-§10`'s versioning suite reads it |
+| [`DEPENDENCIES.md`](DEPENDENCIES.md) | What to install before any of the above will run |
+
+Adding a page under `docs/` means adding a row here in the same change. A page reachable only by `ls`
+is the failure this table exists to prevent — `docs/adoption-prompt.md`, `docs/adoption-report.md`
+and `docs/adoption/` were each in exactly that state before this section was written.
 
 ## The green gate
 
