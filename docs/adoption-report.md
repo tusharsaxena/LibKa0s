@@ -89,7 +89,11 @@ A wired major is not an adopted one. For each consumer and each major, establish
 library's public surfaces it actually calls and which equivalent it still owns:
 
 - Options: `RenderRows`, `RenderGrid`, the four makers, `LSMValues`, `SetRenderer`,
-  `RefreshAllPanels` / `RefreshScalars`, the page registry.
+  `RefreshAllPanels` / `RefreshScalars` / `RefreshPanel`, the page registry. The third is the
+  per-page refresh (Options minor 8) and is worth counting separately: a host that repaints off its
+  own message bus needs it, and one that hand-rolls the shown/hidden branch against `ctx._dirty`
+  instead has an unadopted surface that looks adopted — which is exactly how PanelMaster shipped a
+  Panels page that never re-rendered after a profile switch.
 - Slash: the dispatcher, `HelpRows`, `LandingRows`, and the schema CLI —
   `CliList` / `CliGet` / `CliSet` / `CliReset` **counted separately**, because hosts routinely take
   three of the four.

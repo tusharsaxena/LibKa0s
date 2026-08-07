@@ -176,9 +176,9 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.8.1**: `Core = { Core = 5 }`,
+different vendored copy of each. As of **v1.8.3**: `Core = { Core = 5 }`,
 `DebugLog = { DebugLog = 8 }`, `Slash = { Slash = 7 }`,
-`Options = { Options = 7, OptionsWidgets = 7, OptionsScroll = 3 }`,
+`Options = { Options = 8, OptionsWidgets = 7, OptionsScroll = 3 }`,
 `Perf = { Perf = 7, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
@@ -187,8 +187,8 @@ attached to which probe?" from in-game, once several addons each ship their own 
 bump cannot land without its changelog entry, nor an entry without its bump.
 
 Those same numbers name the API document for the copy in front of you —
-`{ Options = 7, OptionsWidgets = 7, OptionsScroll = 3 }` is
-[`docs/api/Options/version-7.7.3-docs.md`](docs/api/Options/version-7.7.3-docs.md). A minor bump is
+`{ Options = 8, OptionsWidgets = 7, OptionsScroll = 3 }` is
+[`docs/api/Options/version-8.7.3-docs.md`](docs/api/Options/version-8.7.3-docs.md). A minor bump is
 not released until its API document exists; see [`docs/api/README.md`](docs/api/README.md).
 
 Full release order — bump, changelog, regenerate, tag, then **re-vendor every consumer** — is in
