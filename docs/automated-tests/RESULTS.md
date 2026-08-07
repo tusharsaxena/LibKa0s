@@ -126,28 +126,33 @@ fields* rather than *this function grew tangled* — and the two want different 
 
 | Band | File | LOC | Disposition |
 |---|---|---|---|
-| 1000–1500 (on notice) | `LibKa0s/Perf.lua` | 1163 | **Accepted, expired — the one to watch, and the one now owed an ID.** Was 1052; it grew for the observed-containment record and the keyed `Open`/`Close` bracket. Still the only shipped file in the band and the widest surface the consumers bind against. Worst function in the file is `groupContext` at CCN 11 and the file's avg CCN is 3.4, so this is breadth, not knots; the sampler and the group/scenario bookkeeping are the peel seam if it crosses 1500. |
-| 1000–1500 (on notice) | `tests/test_options_widgets.lua` | 1114 | **Accepted, expired — unchanged in LOC, but owed an ID.** A flat list of independent widget cases; length is case count, not tangle. Split by widget family if it crosses 1500. |
+| 1000–1500 (on notice) | `LibKa0s/Perf.lua` | 1163 | **Already tracked as [`#7`](https://github.com/tusharsaxena/LibKa0s/issues/7)** (owner: @tusharsaxena). Not a violation — the file is under `layout-§1`'s 1500 cap; the issue records the decision and its trigger so it is not re-argued each run. Was 1052; it grew for the observed-containment record and the keyed `Open`/`Close` bracket. Still the only shipped file in the band and the widest surface the consumers bind against. Worst function in the file is `groupContext` at CCN 11 and the file's avg CCN is 3.4, so this is breadth, not knots; the sampler and the group/scenario bookkeeping are the peel seam if it crosses 1500. |
+| 1000–1500 (on notice) | `tests/test_options_widgets.lua` | 1114 | **Already tracked as [`#8`](https://github.com/tusharsaxena/LibKa0s/issues/8)** (owner: @tusharsaxena). A flat list of independent widget cases; length is case count, not tangle. Split by widget family if it crosses 1500. |
 
 Nothing is over the 1500 cap. Neither entry is marked "newly crossed" — both were already in the
 band at `20260805-002859`, and both held their LOC exactly at `20260807-114658`: 1163 and 1114, the
 same figures they carried at `20260807-022509`, `20260807-102629` and `20260807-105553`. No `.lua`
 file has moved in that window, shipped or test, so neither number could have.
 
-**Both dispositions are three of their three releases old, and the shelf life has expired.** Each has
-been carried as *Accepted* through the v1.8.0 (`20260805-123655`), v1.8.1 (`20260806-180959`) and
-v1.8.2 (`20260807-105553`) release runs; the ordinary runs in between, this one included, do not
-count against it and do not restart the clock either. `automated-tests-§4` (anti-pattern #53) says
-each is at this point owed either a fix or a **tracked deviation ID with an owner**, after which the
+**Both dispositions crossed the shelf life at v1.8.2, and both are now discharged.** Each had been
+carried as *Accepted* through the v1.8.0 (`20260805-123655`), v1.8.1 (`20260806-180959`) and v1.8.2
+(`20260807-105553`) release runs; the ordinary runs in between, this one included, do not count
+against the clock and do not restart it either. `automated-tests-§4` (anti-pattern #53) says each is
+at that point owed either a fix or a **tracked deviation ID with an owner**, after which the
 disposition reads *Already tracked as `<id>`* and the argument stops being re-had.
 
-**Neither has one, and v1.8.2 shipped without closing it — recorded here rather than allowed to pass
-quietly, and re-stated at `20260807-114658` rather than quietly re-affirmed.** It is not a
-release-gate failure: the gate is the four suites plus zero functions above CCN 15
-(`20260807-105553` reports max CCN **14** and zero `lizard` warnings, as does this run), and the
-shelf life is a separate obligation this file owes. It is also not something the v1.8.2 release could
-honestly have discharged — that release is a one-file fix to a shell script and touches neither band
-file, so a fix was out of scope and a deviation ID is a judgement about `LibKa0s/Perf.lua`'s future
-shape rather than a bookkeeping step. **Owed before v1.8.3: one issue per row on the repo's issue
-store, named here.** Until then each disposition above is *Accepted, expired* and should be read as a
-decision nobody has re-taken, not as one that keeps being re-affirmed.
+Neither was fixed, and both are deliberately not being fixed: `layout-§1` caps a file at 1500 and
+both are under it — 1163 and 1114 — so there is no violation to remedy, and the band is *on notice*
+rather than a limit. What was missing was the record of a decision somebody had actually taken.
+[`#7`](https://github.com/tusharsaxena/LibKa0s/issues/7) and
+[`#8`](https://github.com/tusharsaxena/LibKa0s/issues/8) are that record: each names the file, its
+LOC, why a split is declined today, the peel seam to execute if it is ever wanted, and the 1500-LOC
+hard trigger that turns the decision into a MUST. Both carry an owner.
+
+This was never a release-gate failure — the gate is the four suites plus zero functions above CCN 15,
+and `20260807-105553` reports max CCN **14** with zero `lizard` warnings, as does this run. The shelf
+life is a separate obligation this file owes, and v1.8.2 could not honestly have discharged it: that
+release is a one-file fix to a shell script touching neither band file, so a fix was out of scope and
+the deviation IDs are a judgement about each file's future shape rather than a bookkeeping step.
+Read the two rows above as decisions that have been taken and recorded, not as decisions being
+re-affirmed by default.
