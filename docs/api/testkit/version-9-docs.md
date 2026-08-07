@@ -10,9 +10,9 @@
 | Version | **9** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.8.1 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 8](version-8-docs.md) — moves `vendor_sync.lua`'s provenance line from `README.md` to `CLAUDE.md` and names the file through an opt |
-| Superseded by | — |
+| Superseded by | [version 10](version-10-docs.md) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `9` |
 
@@ -134,3 +134,23 @@ downstream, and a kit change that would break a consumer breaks this repo first.
 4. Re-vendor into `tests/_kit/` here **and** into every consumer's `tests/_kit/`, then run each
    repo's suite.
 5. Add the row to [`../README.md`](../README.md).
+
+## Moving to 10
+
+[Version 10](version-10-docs.md) changes one file, `run-automated-tests.sh`, and changes no Lua
+surface at all. Everything above about `vendor_sync.lua` — `provenanceFile`, `provenancePattern`, the
+retained `readmePattern` alias, and the case name this revision moved — is true of version 10
+unchanged.
+
+What version 10 adds is a line-ending pass at the end of a bundling run. Up to and including this
+revision the runner wrote every bundle file with a plain shell redirect, which bypasses git's
+clean/smudge filters, so in a repo pinned `* text=auto eol=crlf` — which is every client-bound repo
+in this collection, LibKa0s included — the bundle landed **LF on disk while `.gitattributes` said
+CRLF**. `git status` never mentioned it, before the commit or after, and `git add --renormalize`
+never fixed it, because the index was already correct. Version 10 reads the declared terminator per
+path with `git check-attr eol` and rewrites only what disagrees.
+
+**Adopting 10 is `cp -r testkit/. <Addon>/tests/_kit/` and the provenance line, nothing more.** No
+case name moves, so unlike the 8 → 9 hop, `docs/test-cases.md` does not need regenerating for the
+kit's sake. Bundles already on disk are not repaired by adopting — they need the one-time
+`rm <path> && git checkout -- <path>` from `.gitattributes`' own footer, per repo.

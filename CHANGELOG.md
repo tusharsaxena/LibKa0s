@@ -10,6 +10,57 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.8.2 — 2026-08-07
+
+Versions in this release: **Core minor 5**, **DebugLog minor 8**, **Slash minor 7**,
+**Options minor 7**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**, **Perf minor 7**,
+**PerfPanel minor 3**. **No shipped library file moves** — nothing under `LibKa0s/` changed, so no
+minor bumps and `libs/LibKa0s/` is byte-identical to v1.8.0 in every consumer. This release is the
+test kit alone.
+
+**testkit revision 10 — the runner writes the bundle to the line terminator `.gitattributes`
+declares.** `run-automated-tests.sh` now reads the declared terminator per path with
+`git check-attr eol` at the end of a bundling run, and rewrites only the files that disagree.
+
+Everything the runner writes goes down a plain shell redirect, and a redirect is a kernel write into
+the working tree — it never passes through git's clean/smudge filters. So in a repo pinned
+`* text=auto eol=crlf`, which is every client-bound repo in this collection and **this one**, the
+bundle landed **LF on disk while `.gitattributes` said CRLF**, on every run, for nine revisions.
+
+**Nothing reported it.** The blob is LF in the index either way — that is where LF belongs — so
+`git status` is silent before the commit and after it, and `git add --renormalize` does not fix it
+because it rewrites the index and the index was never wrong. Only a byte-level line-endings audit
+ever saw it, which is how it survived across nine repos.
+
+**One pass at the end rather than a fix at each write site**, for one reason that decides it:
+`perf.json` is not written by the runner at all — the addon's own `tests/perf.lua` creates it through
+`--out`. Fixing the writers means reaching into eight addons' perf harnesses and still missing
+whatever the next suite drops into the bundle. And the terminator is *read from git* rather than
+assumed CRLF, so a repo declaring `eol=lf` — or declaring nothing — is left byte-for-byte alone, as
+is a second pass over a file that is already correct. Dependencies are `git`, `awk`, `tr`, `cmp`,
+`mv` and `rm`; no `unix2dos`.
+
+One byte is not preserved: **a written file whose last line lacked a trailing newline gains one.**
+That is the only respect in which the pass is not "byte-identical apart from the terminators", and
+it is documented rather than left to be discovered.
+
+**`tests/test_eol.lua` is new here and asserts the invariant, not the implementation** — it asks git
+what each tracked file under `docs/automated-tests/` is declared to be and reads the bytes. It
+therefore also catches files the runner never writes, including the `ANALYSIS.md` the
+`/wow-addon:automated-tests` skill agent drops into the bundle directory after the runner exits,
+which this fix does **not** close.
+
+**Every consumer must re-vendor `tests/_kit/` from this tag and move its provenance line in the same
+commit.** No case name moves at this revision, so unlike v1.8.1 a consumer's `docs/test-cases.md`
+does not need regenerating for the kit's sake. Bundles already on disk are not repaired by adopting:
+they need the one-time `rm <path> && git checkout -- <path>` from `.gitattributes`' own footer.
+
+`suites.<name>.gating` in the run manifest is **still emitted**, for the third revision running.
+Nothing reads it; dropping a manifest field alongside a one-file bug fix would put two unrelated
+adoption costs on one re-vendor.
+
+See [`docs/api/testkit/version-10-docs.md`](docs/api/testkit/version-10-docs.md).
+
 ## v1.8.1 — 2026-08-06
 
 Versions in this release: **Core minor 5**, **DebugLog minor 8**, **Slash minor 7**,
