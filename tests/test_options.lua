@@ -31,7 +31,7 @@ test("options: an instance carries the shell, the widget makers and the scroll p
   for _, name in ipairs({
     "CreatePanel", "EnsureDefaultsButton", "EnsureScroll", "ClearScroll", "Section", "AddSpacer",
     "AttachTooltip", "InlineButtonPair", "RestoreDefaults", "RestoreAllDefaults",
-    "RefreshAllPanels", "RefreshScalars", "SetRenderer", "LSMValues",
+    "RefreshAllPanels", "RefreshScalars", "RefreshPanel", "SetRenderer", "LSMValues",
     "RegisterOptionsPage", "CreateOptionsPanel", "__pages",
     "OpenOptionsPanel", "RenderField", "RenderRows", "RenderSchema", "SessionCheckbox",
     "PatchAlwaysShowScrollbar", "__panels", "__panelFor",
@@ -446,6 +446,52 @@ test("options: the two tiers differ — one re-renders, the other only re-syncs"
   assertEqual(drew, 0); assertEqual(synced, 1)
   O.RefreshAllPanels()
   assertEqual(drew, 1, "the structural tier re-runs the renderer")
+end)
+
+test("options: RefreshPanel touches ONE page, on both tiers", function()
+  -- The reason it exists: a host whose page repaints off its own message bus wants this page, not a
+  -- sweep of every registered one.
+  local O = Fixture.new()
+  local mine  = O.CreatePanel("MineP",  "Mine",  { pageKey = "mine"  })
+  local other = O.CreatePanel("OtherP", "Other", { pageKey = "other" })
+  local drewMine, drewOther, syncedMine = 0, 0, 0
+  O.SetRenderer(mine,  function() drewMine  = drewMine  + 1 end)
+  O.SetRenderer(other, function() drewOther = drewOther + 1 end)
+  mine.refreshers[#mine.refreshers + 1] = function() syncedMine = syncedMine + 1 end
+  mine.panel:Show(); other.panel:Show()
+  mine._rendered, other._rendered = true, true
+
+  O.RefreshPanel(mine, false)
+  assertEqual(syncedMine, 1, "the scalar tier ran this page's refreshers")
+  assertEqual(drewMine, 0, "and did not rebuild it")
+  O.RefreshPanel(mine, true)
+  assertEqual(drewMine, 1, "the structural tier re-runs this page's renderer")
+  assertEqual(drewOther, 0, "and no other registered page was touched")
+end)
+
+test("options: RefreshPanel defers a hidden page to its next show", function()
+  -- The bug this API was published for: a host hand-rolling this branch guessed the flag name, so
+  -- its page marked something nothing read and never re-rendered. The caller must not have to know
+  -- whether the page is on screen.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("DeferP", "Defer", { pageKey = "defer" })
+  local drew = 0
+  O.SetRenderer(ctx, function() drew = drew + 1 end)
+  ctx.panel:Show(); ctx.panel:__fire("OnShow")
+  assertEqual(drew, 1)
+
+  ctx.panel:Hide()
+  O.RefreshPanel(ctx, true)
+  assertEqual(drew, 1, "a hidden page is not rebuilt in place")
+  assertTrue(ctx._dirty, "it is flagged with the LIBRARY's flag, which is the whole point")
+  ctx.panel:Show(); ctx.panel:__fire("OnShow")
+  assertEqual(drew, 2, "and the deferred rebuild lands on the next show")
+end)
+
+test("options: RefreshPanel ignores a non-ctx rather than raising", function()
+  local O = Fixture.new()
+  assertTrue(pcall(O.RefreshPanel, nil, true), "nil is a no-op")
+  assertTrue(pcall(O.RefreshPanel, "notactx", false), "so is a non-table")
 end)
 
 test("options: a ctx that never went through SetRenderer keeps the old ungated behaviour",

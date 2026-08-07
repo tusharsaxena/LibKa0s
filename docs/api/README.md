@@ -77,7 +77,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7.7.3](./Options/version-7.7.3-docs.md) | `Options.lua` 7 · `OptionsWidgets.lua` 7 · `OptionsScroll.lua` 3 | v1.8.0 | **Current** |
+| [8.7.3](./Options/version-8.7.3-docs.md) | `Options.lua` 8 · `OptionsWidgets.lua` 7 · `OptionsScroll.lua` 3 | v1.8.3 | **Current** |
+| [7.7.3](./Options/version-7.7.3-docs.md) | `Options.lua` 7 · `OptionsWidgets.lua` 7 · `OptionsScroll.lua` 3 | v1.8.0 – v1.8.2 | Superseded |
 | [7.6.3](./Options/version-7.6.3-docs.md) | `Options.lua` 7 · `OptionsWidgets.lua` 6 · `OptionsScroll.lua` 3 | unreleased | Superseded |
 | [6.6.3](./Options/version-6.6.3-docs.md) | `Options.lua` 6 · `OptionsWidgets.lua` 6 · `OptionsScroll.lua` 3 | v1.7.0 | Superseded |
 | [5.5.2](./Options/version-5.5.2-docs.md) | `Options.lua` 5 · `OptionsWidgets.lua` 5 · `OptionsScroll.lua` 2 | v1.2.0 – v1.6.3 | Superseded |

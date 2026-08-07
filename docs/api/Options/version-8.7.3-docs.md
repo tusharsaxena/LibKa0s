@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 7.7.3
+# `LibKa0s-Options-1.0` — version 8.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,17 +8,17 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **7** · `OptionsWidgets.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **8** · `OptionsWidgets.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsScroll>`, in load order — the same three numbers `lib.MODULES` reports |
-| Shipped in | v1.8.0 |
-| Status | Superseded |
-| Supersedes | [version 7.6.3](./version-7.6.3-docs.md) (never released) |
-| Superseded by | [version 8.7.3](./version-8.7.3-docs.md) |
+| Shipped in | v1.8.3 |
+| Status | **Current** |
+| Supersedes | [version 7.7.3](./version-7.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 7, OptionsWidgets = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 8, OptionsWidgets = 7, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O7`
-for `Options.lua` minor 7, `W4` for `OptionsWidgets.lua` minor 4, `S1` for `OptionsScroll.lua`
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O8`
+for `Options.lua` minor 8, `W4` for `OptionsWidgets.lua` minor 4, `S1` for `OptionsScroll.lua`
 minor 1. Minors 1 and 2 of each file were never tagged, so `O1`/`W1`/`S1` means "present for as long
 as any consumer could have had this major".
 
@@ -41,43 +41,32 @@ no panel — which is not the same thing as a dependency.
 
 ## What changed at this version
 
-**`O.PADDING_X` is published on the instance, and the published/internal split is written down.**
-One new instance member. `OptionsScroll.lua` does not move; `OptionsWidgets.lua` moves for its
-comments alone (below). No descriptor field, row field or drawn pixel changes.
+**`O.RefreshPanel(ctx, structural)` — the per-page half of the refresh trio.** One new instance
+member, additive. `OptionsWidgets.lua` and `OptionsScroll.lua` do not move. No descriptor field, row
+field or drawn pixel changes.
 
-7.6.3 is an intermediate that never left this repo — it carried the `O.PADDING_X` addition and was
-superseded inside the same release wave when `OptionsWidgets.lua` took the US-English comment sweep.
-So the delta below is stated against **6.6.3**, the last version any consumer could have vendored.
+`O.RefreshAllPanels()` and `O.RefreshScalars()` sweep **every** registered ctx, which is right for a
+write that could be showing on any page — that is why each widget maker's own `set()` calls one. It
+is wrong for a host whose page repaints off its **own** message bus: that host wants one page
+repainted and gets three, and the library never hears about the change at all.
 
-`lib.LAYOUT` holds thirteen constants and version 6.6.3 published three of them — `ROW_VSPACER`,
-`SECTION_HEADING_H`, `BUTTON_PAIR_REL`. `PADDING_X`, the horizontal inset this library draws its own
-header, divider and body to, was not among them. A host aligning a bespoke widget with any of the
-three therefore had no way to **read** the number, and one host restated it as
-`Const.PANEL_PADDING_X = 16` and positioned against that. `options-ui-§8`'s MUST NOT against host
-copies of a library constant cannot be complied with for a constant the library keeps to itself.
+What was left for such a host was the private field. `SetRenderer`'s `OnShow` gate reads
+`ctx._dirty`, and a host deferring a repaint on a hidden page had to write that flag itself, under a
+name nothing published. **PanelMaster guessed `ctx.dirty`** — one underscore out — so its Panels page
+marked a flag no code reads. The gate never opened, and the page kept the widget tree it had built
+for the previous profile: after a profile switch its panel dropdown still listed the old profile's
+panels, while the panels themselves had correctly left the screen. Both suites stayed green, because
+the host's own test asserted the same wrong flag name.
 
-- **`Options.lua` minor 7** — `O.PADDING_X` on the instance, at the same value the library draws
-  with. **Nothing moves**: a host deletes its copy and reads this instead.
+- **`Options.lua` minor 8** — `O.RefreshPanel(ctx, structural)` on the instance. It is
+  `RefreshAllPanels`/`RefreshScalars` scoped to one ctx and shares their implementation, so the
+  shown/hidden decision, the dirty flag and the two tiers stay the library's. A non-table `ctx` is a
+  no-op rather than a raise.
 
-- **`OptionsWidgets.lua` minor 7** — comments and docstrings only. `colour` → `color`,
-  `behaviour` → `behavior` and the rest of the US-English sweep `localization-§5` mandates and
-  anti-pattern #46 names for code comments. No maker, no row field, no throttle constant and no
-  drawn pixel changes; `tests/test_prose.lua` fails the run on a regression. It bumps because the
-  file's bytes changed and LibStub picks the winning vendored copy by comparing minors — a minor
-  that does not move is a minor that does not ship (`docs/releasing.md` step 2).
-
-**One scalar, not six, and never the table.** `O.LAYOUT = L` is deliberately not offered: `lib.LAYOUT`
-is shared by every instance, so handing it out lets one host's mutation retune every other host's
-panels — a worse failure than the copying this fixes. And `HEADER_TOP`, `HEADER_HEIGHT`,
-`DEFAULTS_W`, `SECTION_TOP_SPACER` and `SECTION_BOTTOM_SPACER` stay internal because **no host in
-the collection has demonstrated a need for any of them**. Publishing them on the grounds that they
-are repeated rather than that they are shared is anti-pattern **#55** (`library-stack-§7`): under
-the additive-only rule a wrong shared abstraction is surface this library keeps forever. Each is
-published the day a host shows it needs it.
-
-Every unpublished `lib.LAYOUT` key now carries an `-- INTERNAL: <KEY> — <why>` line in the source,
-and `tests/test_options.lua` fails on a key that is neither published nor annotated — so the next
-constant added cannot recreate the gap quietly.
+**Published on a demonstrated need, which is the bar this library sets** (`library-stack-§7`,
+anti-pattern #55). The need here is not repetition: a host bus is a shape the two sweeps genuinely
+do not serve, and the only workaround was reaching into a private field by guessing its name — which
+is exactly the failure that arrived.
 
 ## What stays the host's
 
@@ -163,6 +152,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `SetRenderer(ctx, fn)` | O1 | Declare how a page draws itself. The library owns *when*: first show, and again after a refresh marked it dirty while hidden. Also builds the Defaults button and refuses to render under combat. |
 | `RefreshAllPanels()` | O1 (two tiers: O3) | **Structural.** Re-run each page's renderer, so rows that appeared or disappeared are drawn. Hidden pages are flagged dirty and re-render on their next show. |
 | `RefreshScalars()` | O3 | **In place.** Refreshers only, no rebuild — what every widget maker's own `set()` calls, since writing a value does not change which rows exist. Each is pcall'd, so one dead widget cannot take the UI with it. |
+| `RefreshPanel(ctx, structural)` | O8 | **One page, either tier.** `structural` true re-runs that ctx's renderer; false runs its refreshers in place. A hidden page is flagged dirty and repaints on its next show, so the caller never has to ask whether it is on screen. For a host whose page repaints off its own message bus rather than off a widget's `set()`. |
 | `__pages()` | O1 | The pages that actually built. A raising builder is reported by key and costs only itself. |
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
 | `LSMValues(mediaType)` | W1 (never-empty: **W4**) | A **deferred** closure pulling the live media hash at dropdown-render time. Never empty: a media library that has not loaded yet yields a single `None` placeholder, because a dropdown with no options cannot be opened and the CLI would refuse even the stored value. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. |
@@ -261,19 +251,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The three files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 8.7.3
-
-**Purely additive.** `Options.lua` goes to minor 8; `OptionsWidgets.lua` and `OptionsScroll.lua` do
-not move, and no call site has to change.
-
-| New at 8.7.3 | What it gives you |
-|---|---|
-| `O.RefreshPanel(ctx, structural)` | Refresh ONE page rather than sweeping every registered one. `structural` true re-runs that ctx's renderer; false runs its refreshers in place. A hidden page is flagged dirty and repaints on its next `OnShow`. |
-
-**Take it if your page repaints off your own message bus.** `RefreshAllPanels` and `RefreshScalars`
-sweep every registered ctx, which is right for a widget maker's `set()` and wrong for a host-owned
-bus: it repaints three pages to service one. If your host worked around that by writing `ctx._dirty`
-itself — or by writing something *near* it — delete that line and call this instead. PanelMaster
-wrote `ctx.dirty`, one underscore out, and its Panels page silently never re-rendered after a profile
-switch for as long as that line existed.

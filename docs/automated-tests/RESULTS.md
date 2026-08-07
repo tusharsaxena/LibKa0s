@@ -12,6 +12,7 @@ which is never the same as a pass.
 
 | Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260807-151331`](20260807-151331/) | 1.8.2 | 0/0 | 12 | 502/502 | skip | 8676 | 1249 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260807-114658`](20260807-114658/) | 1.8.2 | 0/0 | 12 | 499/499 | skip | 8636 | 1242 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260807-105553`](20260807-105553/) | 1.8.1 | 0/0 | 12 | 499/499 | skip | 8636 | 1242 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260807-102629`](20260807-102629/) | 1.8.1 | 0/0 | 12 | 499/499 | skip | 8636 | 1242 | 6.3 | 1.9 | 14 | 0 | **green** |
@@ -128,11 +129,19 @@ fields* rather than *this function grew tangled* — and the two want different 
 |---|---|---|---|
 | 1000–1500 (on notice) | `LibKa0s/Perf.lua` | 1163 | **Already tracked as [`#7`](https://github.com/tusharsaxena/LibKa0s/issues/7)** (owner: @tusharsaxena). Not a violation — the file is under `layout-§1`'s 1500 cap; the issue records the decision and its trigger so it is not re-argued each run. Was 1052; it grew for the observed-containment record and the keyed `Open`/`Close` bracket. Still the only shipped file in the band and the widest surface the consumers bind against. Worst function in the file is `groupContext` at CCN 11 and the file's avg CCN is 3.4, so this is breadth, not knots; the sampler and the group/scenario bookkeeping are the peel seam if it crosses 1500. |
 | 1000–1500 (on notice) | `tests/test_options_widgets.lua` | 1114 | **Already tracked as [`#8`](https://github.com/tusharsaxena/LibKa0s/issues/8)** (owner: @tusharsaxena). A flat list of independent widget cases; length is case count, not tangle. Split by widget family if it crosses 1500. |
+| 1000–1500 (on notice) | `tests/test_options.lua` | 1001 | **NEWLY CROSSED at `20260807-151331` (v1.8.3), by one line — owed a tracked ID.** 968 → 1001, from the three cases covering `O.RefreshPanel`. Same shape as the row above: a flat list of independent cases, so length is case count, not tangle, and nothing in the file warns on CCN. Under the 1500 cap, so a split is declined today; the peel seam is the render/refresh block, large enough to stand alone as `tests/test_options_render.lua`. Its `automated-tests-§4` clock starts at v1.8.3. |
 
-Nothing is over the 1500 cap. Neither entry is marked "newly crossed" — both were already in the
-band at `20260805-002859`, and both held their LOC exactly at `20260807-114658`: 1163 and 1114, the
-same figures they carried at `20260807-022509`, `20260807-102629` and `20260807-105553`. No `.lua`
-file has moved in that window, shipped or test, so neither number could have.
+Nothing is over the 1500 cap. **The third entry is newly crossed at `20260807-151331`**, the v1.8.3
+release run and the first run since `20260805-002859` in which any `.lua` file moved at all: the new
+`O.RefreshPanel` member and its three cases took `tests/test_options.lua` from 968 to 1001. The first
+two entries are not newly crossed and did not move — both were already in the band at
+`20260805-002859` and both still read 1163 and 1114, the figures they have carried since
+`20260807-022509`.
+
+The new row is owed what the other two now have: an issue with an owner, after which its disposition
+reads *Already tracked as `<id>`*. Its shelf-life clock starts at v1.8.3, so it is not yet expired —
+it is recorded here on the run that created it so the clock has a start date, which is the failure
+mode the paragraphs below describe.
 
 **Both dispositions crossed the shelf life at v1.8.2, and both are now discharged.** Each had been
 carried as *Accepted* through the v1.8.0 (`20260805-123655`), v1.8.1 (`20260806-180959`) and v1.8.2

@@ -10,6 +10,37 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.8.3 — 2026-08-07
+
+Versions in this release: **Core minor 5**, **DebugLog minor 8**, **Slash minor 7**,
+**Options minor 8**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**, **Perf minor 7**,
+**PerfPanel minor 3**. One shipped file moves — `Options.lua` — so `libs/LibKa0s/` must be
+re-vendored by any consumer that wants the new member. Everything else is byte-identical to v1.8.2.
+
+**`O.RefreshPanel(ctx, structural)` — refresh ONE page, on either tier.** The per-page half of a trio
+that until now only offered sweeps. `structural` true re-runs that ctx's renderer; false runs its
+refreshers in place. A hidden page is flagged dirty and repaints on its next `OnShow`, so the caller
+never has to ask whether it is on screen. Full contract in
+[docs/api/Options/version-8.7.3-docs.md](docs/api/Options/version-8.7.3-docs.md).
+
+**Published because a host reached into `ctx._dirty` and got the name wrong.** `RefreshAllPanels` and
+`RefreshScalars` sweep every registered ctx, which is right for a widget maker's `set()` — the write
+could be showing anywhere — and wrong for a host whose page repaints off its **own** message bus: it
+wants one page repainted and gets all of them, and the library never hears about the change at all.
+The workaround left to such a host was the private field `SetRenderer`'s `OnShow` gate reads.
+PanelMaster wrote `ctx.dirty`, one underscore out, so its Panels page marked a flag nothing reads.
+The gate never opened and the page kept the widget tree it built for the previous profile: after a
+profile switch its panel dropdown still listed the old profile's panels while the panels themselves
+had correctly left the screen. Both suites stayed green, because the host's own test asserted the
+same wrong flag name — which is the argument for publishing rather than documenting. This is
+`library-stack-§7`'s publish-on-demonstrated-need bar met, not repetition (anti-pattern #55): a host
+bus is a shape the two sweeps genuinely do not serve.
+
+Additive-only, as the API contract requires. `RefreshAllPanels` and `RefreshScalars` are unchanged
+and still sweep; nothing a consumer already calls behaves differently, and a consumer that does not
+re-vendor is unaffected. `OptionsWidgets.lua` and `OptionsScroll.lua` do not move, and no descriptor
+field, row field or drawn pixel changes.
+
 ## v1.8.2 — 2026-08-07
 
 Versions in this release: **Core minor 5**, **DebugLog minor 8**, **Slash minor 7**,
