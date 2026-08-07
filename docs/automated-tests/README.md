@@ -90,6 +90,6 @@ covering it.
 - **`<YYYYMMDD-HHMMSS>/`** — one frozen bundle per run: `manifest.json`, one file per suite, and
   `ANALYSIS.md` (the write-up). Bundles are **never edited** once written and **never pruned**.
 
-There is no `perf-runs/` beside this directory. In-game captures are taken in a live client against
+There is no `perf-analysis/` beside this directory. In-game captures are taken in a live client against
 a **host addon**, and a library cannot be loaded on its own — so the in-game perf evidence for this
 code lives in the consumers' repos, recorded against the addon that loaded it.

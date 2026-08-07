@@ -17,7 +17,7 @@ stamp — this document covers **schema 2**.
 ## Schema 2 vs. schema 1
 
 Schema 1 was AbsorbTracker's own, addon-local format, documented in
-`AbsorbTracker/docs/perf-runs/README.md`. Extracting the probe into a shared library that any host
+`AbsorbTracker/docs/perf-analysis/README.md`. Extracting the probe into a shared library that any host
 can adopt added two fields schema 1 didn't need:
 
 - **`addon`**, top level — schema 1 had exactly one possible host, so the record didn't need to say
@@ -37,7 +37,7 @@ snapshots read by hand, not user data, and a half-converted record (old shape, n
 than an absent one — it would fail silently wherever a reader trusts the stamp.
 
 This means a schema-1 ring predating the extraction is never read by `LibKa0s-Perf-1.0`. The
-schema-1 capture already committed to AbsorbTracker's `docs/perf-runs/` stays there as history; it
+schema-1 capture already committed to AbsorbTracker's `docs/perf-analysis/` stays there as history; it
 is not re-read or re-migrated by the addon after adopting the library.
 
 ## Fields
@@ -134,3 +134,19 @@ a host with both a settings DB and a perf ring finds both tables in the same fil
 The ring is a top-level global, deliberately outside any AceDB profile tree `Save` might otherwise
 have used — see the rationale on `Save` in `LibKa0s/Perf.lua`. It is never copied by "copy profile",
 wiped by "reset profile", or swapped out by a profile switch.
+
+## Committing a capture
+
+A capture is committed to the **host addon's** repo as a frozen dated bundle,
+`docs/perf-analysis/<YYYYMMDD-HHMMSS>/`, holding exactly three artifacts:
+
+- **`report.md`** — the human-readable report the client printed, plus the run's lifecycle log lines.
+- **`dump.json`** — the schema-2 record described above, committed **verbatim**: one line, byte for
+  byte as emitted.
+- **`ANALYSIS.md`** — the write-up.
+
+The directory stamp is **local time taken from the record's own `timestamp` field** — when the
+capture happened, not when it was written up. Each store carries a standing
+`docs/perf-analysis/README.md` which points at *this* document for the field-by-field contract
+rather than restating it. This repo is a library and keeps no store of its own: every capture lives
+in the consumer repo whose client produced it.
