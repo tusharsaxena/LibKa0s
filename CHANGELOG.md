@@ -20,7 +20,18 @@ test kit alone.
 
 **testkit revision 10 — the runner writes the bundle to the line terminator `.gitattributes`
 declares.** `run-automated-tests.sh` now reads the declared terminator per path with
-`git check-attr eol` at the end of a bundling run, and rewrites only the files that disagree.
+`git check-attr text eol` at the end of a bundling run, and rewrites only the files that disagree.
+
+**It asks for `text` as well as `eol`, and skips any path whose `text` is `unset`.** That is the
+binary guard, and it is the primary one. `binary` is a macro for `-text` and says nothing whatever
+about `eol`, so a path marked `*.png binary` in a repo pinned `* text=auto eol=crlf` still answers
+`eol: crlf` — inherited from the pin — for a file git itself will never convert, and a pass acting on
+that answer alone rewrites the asset. A NUL-byte heuristic is kept beside it as a second line of
+defence but cannot be the first: a binary format that happens to be NUL-free walks straight through
+it, and `line-endings-§4` names the live one — `realesrgan-x4plus-anime.param`, whose ncnn format is
+plain ASCII, sitting beside its own weights. `text: unset` is a declaration; a NUL scan is a guess.
+This is the same correction `line-endings-§7` made to the audit's working-tree check and
+`wow-addon/scripts/normalize-eol.sh` made to the `Write`/`Edit` hook; the three now agree.
 
 Everything the runner writes goes down a plain shell redirect, and a redirect is a kernel write into
 the working tree — it never passes through git's clean/smudge filters. So in a repo pinned

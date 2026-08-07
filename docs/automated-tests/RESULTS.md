@@ -12,6 +12,7 @@ which is never the same as a pass.
 
 | Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260807-105553`](20260807-105553/) | 1.8.1 | 0/0 | 12 | 499/499 | skip | 8636 | 1242 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260807-102629`](20260807-102629/) | 1.8.1 | 0/0 | 12 | 499/499 | skip | 8636 | 1242 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260807-022509`](20260807-022509/) | 1.8.1 | 0/0 | 12 | 498/498 | skip | 8557 | 1237 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260806-180959`](20260806-180959/) | 1.8.0 | 0/0 | 12 | 498/498 | skip | 8557 | 1237 | 6.3 | 1.9 | 14 | 0 | **green** |
@@ -20,7 +21,7 @@ which is never the same as a pass.
 
 ## Test suite
 
-498 cases, spread across the library's own surfaces and the kit it vendors: core and debug log,
+499 cases, spread across the library's own surfaces and the kit it vendors: core and debug log,
 the slash router, the options panel and its widgets and scroll frame, the perf core with its
 command, panel, run and isolation suites, versioning, `test_prose.lua` — US English and retired
 section notation across the shipped payload — and `test_kitsync.lua`, which is the one that asserts
@@ -28,11 +29,14 @@ section notation across the shipped payload — and `test_kitsync.lua`, which is
 README included. The generated inventory `test-cases.md` in each bundle is the authority on what
 exists at any point.
 
-The count has now held at 498 across three consecutive runs — `20260805-123655`, `20260806-180959`
-and `20260807-022509` — and the three inventories carry the same case names, not merely the same
-total. That is a flat suite over a flat library rather than a coverage gap: nothing shipped in that
-window either. The reading changes the moment a run adds source without adding cases, which is the
-thing the table cannot show and this section exists to say.
+The count moved at `20260807-102629`, 498 → 499, for the first time in four runs: `tests/test_eol.lua`
+is the added case, and it is the one that asks git what each tracked file under
+`docs/automated-tests/` is *declared* to be and then reads the bytes. It held at 499 across
+`20260807-105553`, the v1.8.2 release run, with the same inventory. Before that the count had held at
+498 across `20260805-123655`, `20260806-180959` and `20260807-022509`, the three inventories carrying
+the same case names rather than merely the same total — a flat suite over a flat library, since
+nothing shipped in that window either. The reading changes the moment a run adds source without
+adding cases, which is the thing the table cannot show and this section exists to say.
 
 Two coverage facts are worth naming while the count has no history to speak for it. The suite
 exercises the library **headlessly through the mock**, so what it pins is contract and state
@@ -74,7 +78,7 @@ disposition, dated, with the condition that would reopen it.
 
 ## Complexity watch list
 
-Current state as of [`20260807-022509`](20260807-022509/) — not that run's diff.
+Current state as of [`20260807-105553`](20260807-105553/), the v1.8.2 release run — not that run's diff.
 Every function `lizard` warned on, and every file at or above `layout-§1`'s 1000-LOC
 on-notice threshold, each with a one-line disposition.
 
@@ -94,9 +98,9 @@ suite-inventory call, and `Kit.assertSuiteInventory` is a two-way set comparison
 divergence class. Neither is tangle and neither is near the cap, but the headroom is one arm
 narrower than it was — a third arm added to either is the thing to notice.
 
-Four rows now, three of them identical, so the zero is a held result rather than a first
-measurement. It is still not a trend: the library has not changed in that window, so what the rows
-show is a stable tree measured repeatedly, not a complexity figure that has been held down.
+Six rows now, five of them identical, so the zero is a held result rather than a first measurement.
+It is still not a trend: the library has not changed in that window, so what the rows show is a
+stable tree measured repeatedly, not a complexity figure that has been held down.
 
 When these numbers do start moving, remember `lizard` counts every `and`/`or` short-circuit as a
 decision. In Lua a run of `t.k = rec.k or D.k` defaulting lines scores high with no visible
@@ -108,15 +112,27 @@ fields* rather than *this function grew tangled* — and the two want different 
 
 | Band | File | LOC | Disposition |
 |---|---|---|---|
-| 1000–1500 (on notice) | `LibKa0s/Perf.lua` | 1163 | **Accepted — the one to watch.** Was 1052; it grew for the observed-containment record and the keyed `Open`/`Close` bracket. Still the only shipped file in the band and the widest surface the consumers bind against. Worst function is 11 and avg CCN is 3.4, so this is breadth, not knots; the sampler and the group/scenario bookkeeping are the peel seam if it crosses 1500. |
-| 1000–1500 (on notice) | `tests/test_options_widgets.lua` | 1114 | **Accepted, unchanged.** A flat list of independent widget cases; length is case count, not tangle. Split by widget family if it crosses 1500. |
+| 1000–1500 (on notice) | `LibKa0s/Perf.lua` | 1163 | **Accepted, expired — the one to watch, and the one now owed an ID.** Was 1052; it grew for the observed-containment record and the keyed `Open`/`Close` bracket. Still the only shipped file in the band and the widest surface the consumers bind against. Worst function is 11 and avg CCN is 3.4, so this is breadth, not knots; the sampler and the group/scenario bookkeeping are the peel seam if it crosses 1500. |
+| 1000–1500 (on notice) | `tests/test_options_widgets.lua` | 1114 | **Accepted, expired — unchanged in LOC, but owed an ID.** A flat list of independent widget cases; length is case count, not tangle. Split by widget family if it crosses 1500. |
 
 Nothing is over the 1500 cap. Neither entry is marked "newly crossed" — both were already in the
-band at `20260805-002859`, and both held their LOC exactly at `20260807-022509`.
+band at `20260805-002859`, and both held their LOC exactly at `20260807-105553`: 1163 and 1114, the
+same figures they carried at `20260807-022509`. v1.8.2 moves no `.lua` file at all, shipped or test,
+so neither number could have moved.
 
-**Both dispositions are two of their three releases old.** Each has been carried as *Accepted*
-through the v1.8.0 (`20260805-123655`) and v1.8.1 (`20260806-180959`) release runs; the runs in
-between are ordinary and do not count against the shelf life. At the **next release run** each is
-owed either a fix or a tracked deviation ID with an owner, after which the disposition reads
-*Already tracked as `<id>`* and the argument stops being re-had (`automated-tests-§4`,
-anti-pattern #53).
+**Both dispositions are now three of their three releases old, and the shelf life has expired.**
+Each has been carried as *Accepted* through the v1.8.0 (`20260805-123655`), v1.8.1
+(`20260806-180959`) and now v1.8.2 (`20260807-105553`) release runs; the runs in between are ordinary
+and do not count against it. `automated-tests-§4` (anti-pattern #53) says each is at this point owed
+either a fix or a **tracked deviation ID with an owner**, after which the disposition reads *Already
+tracked as `<id>`* and the argument stops being re-had.
+
+**Neither has one, and v1.8.2 ships without closing it — recorded here rather than allowed to pass
+quietly.** It is not a release-gate failure: the gate is the four suites plus zero functions above
+CCN 15 (`20260807-105553` reports max CCN **14** and zero `lizard` warnings), and the shelf life is a
+separate obligation this file owes. It is also not something this release could honestly discharge —
+v1.8.2 is a one-file fix to a shell script and touches neither band file, so a fix is out of scope
+and a deviation ID is a judgement about `LibKa0s/Perf.lua`'s future shape rather than a bookkeeping
+step. **Owed before v1.8.3: one issue per row on the repo's issue store, named here.** Until then
+each disposition below is *Accepted, expired* and should be read as a decision nobody has re-taken,
+not as one that keeps being re-affirmed.

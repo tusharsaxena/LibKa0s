@@ -23,7 +23,8 @@ before it exits, to whatever `.gitattributes` declares for each path.
 
 | | | Since |
 |---|---|---|
-| Bundle line endings | Every file in `docs/automated-tests/<STAMP>/`, plus `RESULTS.md`, is left carrying the terminator `git check-attr eol` reports for it. | **10** |
+| Bundle line endings | Every file in `docs/automated-tests/<STAMP>/`, plus `RESULTS.md`, is left carrying the terminator `git check-attr text eol` reports for it. | **10** |
+| Binary paths | A path whose `text` attribute is `unset` — which is what `binary` expands to — is skipped before a byte of it is read. | **10** |
 | `unspecified` repos | A repo that declares no `eol` for a path is left byte-for-byte alone. | **10** |
 | Second pass | A file already carrying the declared terminator is not rewritten — no byte and no mtime moves. | **10** |
 | Trailing newline | A written file whose last line lacked one **gains** one. See *The one byte this is not honest about*. | **10** |
@@ -50,6 +51,32 @@ audit ever saw it, which is why it survived as long as it did.
 eight addons' perf harnesses — and would still miss whatever the next suite decides to drop into the
 bundle directory. A pass over the finished directory covers every file however it got there.
 
+### Why it asks for `text` and not just `eol`
+
+The pass asks `git check-attr text eol` and **skips any path whose `text` is `unset`**. That is the
+primary binary test, and it is not interchangeable with the NUL heuristic below it.
+
+`binary` is a macro for `-text -diff`, and it says **nothing at all about `eol`**. So a path marked
+`*.png binary` in a repo pinned `* text=auto eol=crlf` still answers `eol: crlf` — inherited from the
+pin line — for a file git itself will never convert:
+
+```
+$ git check-attr text eol -- asset.png lint.txt
+asset.png: text: unset
+asset.png: eol: crlf
+lint.txt: text: auto
+lint.txt: eol: crlf
+```
+
+Acting on the `eol` answer alone rewrites the asset. The NUL heuristic catches the common binary and
+is kept as a second line of defence, but it cannot be the first: a binary format that happens to be
+NUL-free walks straight through it. `line-endings-§4` names the live example —
+`realesrgan-x4plus-anime.param`, whose ncnn format is plain ASCII — and that is a model definition
+sitting beside its own weights. `text: unset` is a declaration; a NUL scan is a guess.
+
+This is the same correction `line-endings-§7` made to the audit's working-tree check and
+`wow-addon/scripts/normalize-eol.sh` made to the `Write`/`Edit` hook. All three now read `text` first.
+
 ### Why it reads git rather than assuming CRLF
 
 `git check-attr` is the only thing that knows what a given repo pins. It answers correctly for a path
@@ -73,8 +100,8 @@ files: `test-cases.md` (from `lua tests/run.lua --list`) and `perf.json` (from `
 either ever omits its final newline. Both are text records where a supplied final newline is an
 improvement — but it is a real byte change.
 
-A file containing a NUL byte is skipped entirely. Nothing in a bundle is binary today; the guard is
-there so that the day something is, this cannot corrupt it.
+A file containing a NUL byte is skipped as well, on top of the `text: unset` test above. Nothing in
+a bundle is binary today; both guards are there so that the day something is, this cannot corrupt it.
 
 ### What it does NOT cover
 
