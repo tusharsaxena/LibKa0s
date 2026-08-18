@@ -117,7 +117,8 @@ states it is in, and **distinguish the third from the second**:
   from a landing-page convergence).
 
 A declined convergence is only a finding if the decision is not written down. Check the host's
-GitHub issues (the closed `[will-not-do]` ones carry the declines) and its release notes before
+GitHub issues (the closed `state:will-not-do` ones carry the declines —
+`gh issue list --state closed --label "state:will-not-do"`) and its release notes before
 calling it undocumented. A *not applicable*
 that `docs/adoption-prompt.md` lists as changing is an error **in the prompt**, and correcting the
 prompt is part of the report's value.

@@ -56,7 +56,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [5](docs/api/Core/version-5-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [8](docs/api/DebugLog/version-8-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [7](docs/api/Slash/version-7-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [7.7.3](docs/api/Options/version-7.7.3-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [8.7.3](docs/api/Options/version-8.7.3-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [7.3](docs/api/Perf/version-7.3-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each

@@ -314,7 +314,7 @@ most valuable thing that adoption produced for the next one: nearly every judgem
 been made once, in a repo you can read, against a codebase shaped like this one. Read
 `../BankLedger/core/CoreSetup.lua`, `core/DebugLogSetup.lua`, `settings/Slash.lua`,
 `settings/OptionsSetup.lua` and `settings/Panel.lua` before deciding anything here, and read its
-GitHub issues for the declines — the closed `[will-not-do]` ones carrying `LIBKA0S-01` through
+GitHub issues for the declines — the closed `state:will-not-do` ones carrying `LIBKA0S-01` through
 `LIBKA0S-25` are the record of which misfits went upstream and which stayed local.
 
 DebugLog is the standout: `modules/DebugLog.lua` (357 / 359 lines) deletes outright, both formatters
@@ -466,10 +466,12 @@ to land once the other four are green.
     short of grepping minors out of vendored source — which is the question a re-vendor sweep needs
     answered fastest.
 12. **Record every decision as a GitHub issue on the host addon's repo as you go**, one issue per
-    module, naming the upstream minor that unblocked anything that needed one. Title each one with
-    its status prefix — `[triaged]` for real work accepted but not being done now (open),
-    `[will-not-do]` for a decline (closed), `[done]` for an adoption that landed (closed) — the
-    vocabulary `/wow-addon:issue-audit` reads. The old `docs/pending/LEDGER.md` is retired.
+    module, naming the upstream minor that unblocked anything that needed one. Carry each one's
+    status as a **label** — `state:triaged` for real work accepted but not being done now (open),
+    `state:will-not-do` for a decline (closed), `state:done` for an adoption that landed (closed) —
+    plus a `severity:` label (`critical`/`high`/`medium`/`low`), the vocabulary
+    `/wow-addon:issue-audit` reads. Leave the **title** plain: the `[status]` title prefix that
+    briefly held this is retired, as is `docs/pending/LEDGER.md` before it.
     ConsumableMaster's `LIBKA0S-01` … `-08` entries — superseded rows preserved rather than
     deleted — are the model, and the reason its adoption is auditable where the others' are only
     inspectable. Write the entry when you make the call, not at the end: the ones that get lost
