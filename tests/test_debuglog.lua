@@ -730,13 +730,43 @@ test("dbg: with addonName the title bar draws icons, and they are narrower than 
   assertEqual(f.titleBarOffsets.copy, -54, "-30 - 18 - 6, where a 42-wide word gave -78")
 end)
 
-test("dbg: an icon control keeps the label the word was carrying, as a tooltip", function()
-  -- Dropping a word for a mark costs the one thing the word was doing. A clipboard and a bin are
-  -- not universally legible, so the label moves rather than disappearing.
+test("dbg: an icon control carries NO tooltip", function()
+  -- Minor 9 gave them one, anchored under the control -- which put it on top of the first line of
+  -- the log, the thing the window exists to show, every time the pointer crossed the title bar.
+  -- red under: the ANCHOR_BOTTOM GameTooltip minor 9 shipped.
   local D = newLog{ addonName = "TestHost" }
   D:Show()
-  assertEqual(D._frameForTest.copyButton.tooltipText, D:Text("COPY"))
-  assertEqual(D._frameForTest.clearButton.tooltipText, D:Text("CLEAR"))
+  assertEqual(D._frameForTest.copyButton.tooltipText, nil)
+  assertEqual(D._frameForTest.clearButton.tooltipText, nil)
+end)
+
+test("dbg: the close button is told the addon name too, not just copy and clear", function()
+  -- Minor 9's actual bug, and the shape of it is worth keeping: `lib.MakeCloseButton` is a
+  -- FORWARDER onto Core's, and it took two arguments while Core's had grown a third. So the two
+  -- controls built here drew the art and the one built through the forwarder silently did not --
+  -- Core saw no addon name and did what it does without one, which is not a failure anything can
+  -- report.
+  -- red under: `function lib.MakeCloseButton(parent, onClick)`.
+  local seen = {}
+  local D = newLog{
+    addonName = "TestHost",
+    makeCloseButton = function(_, _, name) seen[#seen + 1] = name; return nil end,
+  }
+  D:Show()
+  D:ShowCopy()
+  assertEqual(table.concat(seen, ","), "TestHost,TestHost",
+    "both windows must hand the close factory the addon name")
+end)
+
+test("dbg: the library's own close forwarder passes the name through to Core", function()
+  -- The forwarder exists so a Core upgraded underneath an unchanged DebugLog is still the one that
+  -- draws; it has to carry every argument Core takes, or the upgrade arrives half-applied.
+  local real = T.core.MakeCloseButton
+  local seen
+  T.core.MakeCloseButton = function(_, _, name) seen = name; return nil end
+  debuglog.MakeCloseButton(T.mocks.__stubFrame(), function() end, "TestHost")
+  T.core.MakeCloseButton = real
+  assertEqual(seen, "TestHost")
 end)
 
 test("dbg: no addonName is the minor-8 title bar, word for word", function()

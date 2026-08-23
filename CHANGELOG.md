@@ -10,6 +10,31 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.10.1 — 2026-08-23
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **DebugLog minor 10**,
+**Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**,
+**Perf minor 7**, **PerfPanel minor 3**, **kit revision 11**. One shipped file moves —
+`DebugLog.lua` — correcting two things v1.10.0 got wrong in the window it was about.
+
+**The console's close button never got the addon name.** `lib.MakeCloseButton` is a forwarder onto
+Core's, and it took two arguments where Core's had grown a third at Core minor 6. So v1.10.0 shipped
+a title bar whose copy and clear drew the collection's art beside a close that was still a
+multiplication sign — visibly inconsistent with itself, and with the host window two inches away.
+
+A dropped argument is not a failure any layer can report: Core saw no addon name and drew exactly
+what it draws without one, which is a perfectly good button. The only symptom was the look, which is
+why it took a screenshot to find. Two cases pin it now — that the console hands its close factory the
+name for both of its windows, and that the forwarder passes it through to Core.
+
+**The icon tooltip is removed, not repositioned.** It anchored under the control, which put it on top
+of the first line of the log — the thing the window exists to show — every time the pointer crossed
+the title bar. Anchoring it elsewhere trades one overlap for another on a window that is 700px of
+text, and the two marks sit beside a close button that has never needed one. A host that wants the
+words back omits `addonName`; there is no third setting.
+
+Full contract in [docs/api/DebugLog/version-10-docs.md](docs/api/DebugLog/version-10-docs.md).
+
 ## v1.10.0 — 2026-08-23
 
 Versions in this release: **Core minor 6**, **Media minor 3**, **DebugLog minor 9**,

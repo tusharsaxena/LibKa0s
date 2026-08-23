@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 9
+# `LibKa0s-DebugLog-1.0` — version 10
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **9** |
-| Shipped in | v1.10.0 |
-| Status | Superseded |
-| Supersedes | [version 8](./version-8-docs.md) |
-| Superseded by | [version 10](./version-10-docs.md) — the close button gets the name too, and the tooltip is gone |
+| Files and minors | `DebugLog.lua` minor **10** |
+| Shipped in | v1.10.1 |
+| Status | **Current** |
+| Supersedes | [version 9](./version-9-docs.md) — whose close button never got the addon name |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 9 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 10 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared. Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
@@ -45,13 +45,46 @@ and it returns before `NewLibrary` if Core is missing or below the minor it need
 
 ## What changed at this version
 
+Two corrections to what version 9 shipped. The `addonName` field itself is unchanged and is
+described in full below.
+
+| | | Since |
+|---|---|---|
+| The close button gets the name | `lib.MakeCloseButton` forwards onto `Core.MakeCloseButton`, and it took **two** arguments where Core's had grown a third at Core minor 6. Version 9 therefore drew copy and clear as icons beside a close button that was still a multiplication sign. | **10** |
+| No tooltip | The icon controls carry none. Version 9 gave them one anchored under the control. | **10** |
+
+### The dropped argument, and why nothing caught it
+
+A forwarder that loses an argument is not a failure any layer can report: Core saw no addon name and
+did exactly what it does without one, which is a perfectly good button. The console's copy and clear
+are built directly and drew the art; only the close, which goes through the forwarder, did not — so
+the window came out visibly inconsistent with itself, and that inconsistency was the only symptom.
+
+The forwarder exists so that a Core upgraded underneath an unchanged `DebugLog.lua` is still the one
+that draws (see [The empty `makeCloseButton`](#the-empty-makeclosebutton)). That means it has to
+carry **every** argument Core takes, or the upgrade arrives half-applied. Two cases pin it now: one
+that the console hands its close factory the name for both windows, and one that the forwarder
+passes it through to Core.
+
+### Why the tooltip went rather than moved
+
+Version 9 anchored it `ANCHOR_BOTTOM`, which put it on top of the first line of the log — the thing
+the window exists to show — every time the pointer crossed the title bar. Anchoring it elsewhere
+trades one overlap for another on a window that is 700px of text, and the two marks sit beside a
+close button that has never needed one.
+
+The `label` argument is still passed and still used: it is what the **text-button fallback** draws
+when there is no art.
+
+### The original `addonName` field, from version 9
+
 **One optional descriptor field, `addonName`.** Additive: a host that does not pass it gets the
 version-8 windows down to the pixel, and every existing field behaves exactly as it did.
 
 | | | Since |
 |---|---|---|
 | `addonName` | The host's own addon FOLDER name, from its first vararg. Given it, both windows draw the collection's own art — `close`, `copy` and `clear` out of `LibKa0s-Media-1.0` — instead of a multiplication sign and two words. | **9** |
-| Icon title-bar controls | Copy and Clear become 18×18 icon buttons with 12px of art, matching the close control, so the three are one size and one pitch. Each carries a **tooltip** with the label it replaced. | **9** |
+| Icon title-bar controls | Copy and Clear become 18×18 icon buttons with 12px of art, matching the close control, so the three are one size and one pitch. **No tooltip** — see above; version 9 had one. | **9** |
 | `frame.clearButton` / `frame.copyButton` | The two controls, recorded on the frame the way `titleBarOffsets` and `titleText` already are — the only handle a host's test has on which of the two shapes it got. | **9** |
 
 ### Why a name and not a boolean
@@ -78,11 +111,11 @@ derived offsets tighten:
 `frame.titleBarOffsets` still reports whichever it built, and a host close button wider than 18
 still pushes both out of its way.
 
-### Why the tooltip is not optional
+### What the marks do not say
 
-Dropping a word for a mark buys room and costs the one thing the word was doing: saying what the
-button is. A clipboard and a bin are not universally legible, so the label moves into a tooltip
-rather than disappearing.
+Dropping a word for a mark costs the one thing the word was doing, and version 10 accepts that cost
+rather than paying it with a tooltip over the log. A host that wants the words back omits
+`addonName`; there is no third setting.
 ## Lib-level surface
 
 | Name | Since | Meaning |
@@ -211,13 +244,3 @@ tested, unused field otherwise reads as one to every reader who finds it.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
-
-## Moving to version 10
-
-**Take it.** This version has a defect that only shows in the client: `lib.MakeCloseButton` forwards
-onto Core's and took two arguments where Core's had grown a third, so a host that passes `addonName`
-gets copy and clear as icons and a close button that silently stays a multiplication sign. Nothing
-reports it — Core simply sees no name and draws what it draws without one.
-
-Version 10 also **removes the tooltip** this version put on the icon controls. It anchored under the
-control, on top of the first line of the log.
