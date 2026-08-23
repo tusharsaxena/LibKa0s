@@ -10,6 +10,52 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.9.0 — 2026-08-23
+
+Versions in this release: **Core minor 5**, **Media minor 1**, **DebugLog minor 8**,
+**Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**,
+**Perf minor 7**, **PerfPanel minor 3**, **kit revision 11**. One shipped file is new —
+`Media.lua` — and with it the first non-code payload this library has ever carried. Every other
+shipped file is byte-identical to v1.8.3.
+
+**`LibKa0s-Media-1.0` — the art and the type this collection draws with.** `LibKa0s/media/` ships 49
+white icon TGAs (Open Iconic, MIT) and JetBrains Mono (SIL OFL), and the module is the three
+functions that reach them: `Icon(addonName, name)`, `Font(addonName, name)` and
+`RegisterLSM(addonName)`, plus `ICONS` and `FONTS` as the catalog of what is there. Full contract in
+[docs/api/Media/version-1-docs.md](docs/api/Media/version-1-docs.md).
+
+**Published because the copying had already started.** Mythic Meters built the 49 icons from Open
+Iconic and shipped them under its own `media/`, beside its own copy of JetBrains Mono, built by a
+tool living in that one repo. The second addon to want a gear icon would have copied both — and then
+there are two sets of bytes, two licenses to track, two provenance stories, and a collection whose
+addons stop looking like one author's work the first time one copy is regenerated and the other is
+not. The tool came with the art: `tools/artwork/icon_cleaner.py` is the provenance record, naming the
+upstream repo, the license, which glyph each name draws and every transformation applied, because it
+is the program that produces them.
+
+**Every call takes the host's own addon name, and that is not an oversight.** A texture path is
+absolute from `Interface\AddOns\` and this library is vendored, so there is no one path to it and a
+copy cannot know which one it was copied into. Guessing would be worse than asking: a wrong texture
+path draws nothing and raises nothing. An unknown icon name answers `nil` for the same reason —
+`nil` is a value a caller can branch on, an invisible control is not.
+
+**Kit revision 11, and it is required to vendor this release.** `vendor_sync.lua` listed one
+directory level and normalized line endings on everything it compared. Both were right for a flat
+payload of Lua and wrong the moment `media/` existed: the first listed `media` as a name and then
+tried to read a directory as a file, and the second would corrupt the comparison of any binary whose
+bytes contain the pair `0D 0A`. It now recurses, and compares a known binary type byte for byte. None
+of the 49 TGAs contains that pair today — the gate would have passed, and the next icon added could
+have broken it for a reason nobody would have looked for there. See
+[docs/api/testkit/version-11-docs.md](docs/api/testkit/version-11-docs.md).
+
+**`tests/test_prose.lua` skipped directories by opening them**, which is true on Windows and false on
+Linux, where the failure lands on the first read as `Is a directory`. `LibKa0s/media/` is the first
+subdirectory this library has shipped and the first to find that out. It now probes with a read.
+
+Additive-only. No existing member changed, and a consumer that does not adopt the new major sees no
+behaviour difference at all — but a consumer re-vendoring to this tag **must take kit revision 11 in
+the same commit**, or its own vendored-payload gate fails on `media/`.
+
 ## v1.8.3 — 2026-08-07
 
 Versions in this release: **Core minor 5**, **DebugLog minor 8**, **Slash minor 7**,

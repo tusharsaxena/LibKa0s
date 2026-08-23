@@ -45,8 +45,17 @@ local function listDir(dir)
   return names
 end
 
---- Every `<dir>/<file>` under the shipped directories, as a sorted array of paths. Directories are
---- skipped by the only test Lua 5.1 offers: a directory cannot be opened for reading.
+--- Every `<dir>/<file>` under the shipped directories, as a sorted array of paths.
+---
+--- DIRECTORIES ARE SKIPPED BY READING, NOT BY OPENING. This used to skip them on the strength of
+--- `io.open` refusing a directory, which is true on Windows and false on Linux: there `io.open`
+--- hands back a handle and the failure lands on the first read, as `Is a directory` — thrown from
+--- inside the scan, where it read as a broken gate rather than as a directory. `LibKa0s/media/` is
+--- the first subdirectory this library has ever shipped and the first to find that out.
+---
+--- The listing does not recurse, so nothing under `media/` is scanned: it holds art, type and their
+--- upstream licences, none of it this collection's prose. A `.lua` added under there would go
+--- unscanned — put shipped code in the payload root, where the two gates below can see it.
 local function shippedFiles()
   local paths = {}
   for _, dir in ipairs(SHIPPED) do
@@ -54,8 +63,13 @@ local function shippedFiles()
       local path = dir .. "/" .. name
       local f = io.open(path, "r")
       if f then
+        -- The probe has to READ A BYTE and get one. A directory opens, and on Linux its first
+        -- read answers nil rather than raising -- the raise comes later, from `lines()`, inside the
+        -- scan. An empty file is skipped by the same test, which costs nothing: a file with no
+        -- bytes has no prose.
+        local ok, first = pcall(function() return f:read(1) end)
         f:close()
-        paths[#paths + 1] = path
+        if ok and first ~= nil then paths[#paths + 1] = path end
       end
     end
   end

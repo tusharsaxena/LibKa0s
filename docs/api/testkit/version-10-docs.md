@@ -10,9 +10,9 @@
 | Version | **10** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.8.2 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 9](version-9-docs.md) — the runner now writes the bundle to the terminator `.gitattributes` declares |
-| Superseded by | — |
+| Superseded by | [version 11](version-11-docs.md) — the vendored-payload gate recurses into subdirectories and leaves binaries alone |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `10` |
 

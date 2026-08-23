@@ -46,7 +46,7 @@ addon must work with no other addon installed.
 
 ## The modules
 
-Five LibStub majors, adopted independently. **The full contract for each — the descriptor, every
+Six LibStub majors, adopted independently. **The full contract for each — the descriptor, every
 public member, every row field — lives in [`docs/api/`](docs/api/), one document per shipped
 version.** This section is the map; that directory is the reference. Nothing here restates a
 signature, because a second copy of a contract is a contract that drifts.
@@ -54,6 +54,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | Major | What it is | Files | Current version |
 |---|---|---|---|
 | `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [5](docs/api/Core/version-5-docs.md) |
+| `LibKa0s-Media-1.0` | The art and type this collection draws with: 49 white icon TGAs (Open Iconic, MIT) and JetBrains Mono (SIL OFL), shipped inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [1](docs/api/Media/version-1-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [8](docs/api/DebugLog/version-8-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [7](docs/api/Slash/version-7-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [8.7.3](docs/api/Options/version-8.7.3-docs.md) |
@@ -208,6 +209,9 @@ Core is missing or below the minor it needs, so a consumer that copied a new `Pe
 LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs/LibKa0s/
   LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block; Core first
   Core.lua           -- LibKa0s-Core-1.0, MINOR at the top of the file
+  Media.lua          -- LibKa0s-Media-1.0, MINOR at the top of the file; needs Core
+  media/             -- THE ONLY NON-CODE PAYLOAD: icons/ (49 white TGAs, Open Iconic MIT) and
+                        fonts/ (JetBrains Mono, SIL OFL), each with its license beside it
   DebugLog.lua       -- LibKa0s-DebugLog-1.0, MINOR at the top of the file; needs Core
   Slash.lua          -- LibKa0s-Slash-1.0, MINOR at the top of the file; needs Core
   Options.lua        -- LibKa0s-Options-1.0, MINOR at the top of the file; needs Core
@@ -216,6 +220,10 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
   LICENSE            -- ships INSIDE the payload, so every vendored copy carries the MIT notice
+tools/artwork/       -- icon_cleaner.py: rebuilds LibKa0s/media/icons/ from Open Iconic, and IS the
+                        provenance record for that art (upstream repo, license, glyph per name,
+                        every transformation). Not shipped, not a build step -- the TGAs are
+                        committed and the tool is how they are regenerated
 testkit/             -- the shared headless harness, vendored into each addon as tests/_kit/
                         (never shipped: it lives under tests/, which every .pkgmeta already excludes)
                         Kit.VERSION at the top of framework.lua names the revision

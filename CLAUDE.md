@@ -88,7 +88,7 @@ never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests
 | Doc | Covers |
 |---|---|
 | [`README.md`](README.md) | What each module is, how to install and re-vendor, the repo layout |
-| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `DebugLog`, `Options`, `Perf`, `Slash`, `testkit`). A superseded document is never edited to describe new behavior |
+| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Media`, `DebugLog`, `Options`, `Perf`, `Slash`, `testkit`). A superseded document is never edited to describe new behavior |
 | [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
 | [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-analysis/README.md` points at rather than restating |
 | [`docs/adoption-prompt.md`](docs/adoption-prompt.md) | The brief handed to a consumer repo adopting a major: what to wire, what to delete, and what must not be hand-rolled |

@@ -81,11 +81,35 @@ sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.1 100
 
 ## Release / assets
 
-**Nothing beyond the development set.** There is no packaging step, no CurseForge upload and no
-generated image or binary asset in this repo: `packaging` does not bind a library repo
-(`library-stack-§7`), and releasing is git plus the commands in
-[`docs/releasing.md`](docs/releasing.md). You do not need to install anything extra to cut a release,
-and you certainly do not need a graphics stack to fix a typo.
+**Nothing extra to cut a release.** There is no packaging step and no CurseForge upload: `packaging`
+does not bind a library repo (`library-stack-§7`), and releasing is git plus the commands in
+[`docs/releasing.md`](docs/releasing.md).
+
+**Regenerating the shipped art is the one thing that needs more**, and only when the art itself
+changes. `tools/artwork/icon_cleaner.py` rebuilds `LibKa0s/media/icons/` from Open Iconic — it is the
+provenance record for that art, not a build step, and the TGAs it produces are committed. You need it
+to add or replace an icon; you do not need it to fix a typo, run the suite, or cut a release that
+does not touch the art.
+
+| Tool | Why | Install |
+|---|---|---|
+| Python 3 | The tool is a Python script (`tools/artwork/icon_cleaner.py`) | `sudo apt install python3` |
+| Pillow | Reads the source PNGs and writes the RLE TGAs (`from PIL import Image`) | `pipx install pillow` — or `sudo apt install python3-pil` |
+| NumPy | The recolour, solidify and normalize stages are array work (`import numpy as np`) | `pipx install numpy` — or `sudo apt install python3-numpy` |
+| GitHub CLI | Fetches the upstream PNGs through `gh api`, which the script uses in place of raw.githubusercontent.com because that host times out from here often enough to be useless in a script | `sudo apt install gh && gh auth login` |
+
+**Ubuntu 24.04 trap:** `pip install pillow` fails on PEP 668's `EXTERNALLY-MANAGED` marker. Use
+`pipx`, or the distro packages above.
+
+Verify:
+
+```sh
+python3 -c "import PIL, numpy; print(PIL.__version__, numpy.__version__)"
+gh --version
+python3 tools/artwork/icon_cleaner.py --build     # rebuilds from the cache; no network
+```
+
+A clean rebuild must leave `git status` clean — the committed TGAs are what the tool produces.
 
 ## What this repo is verified with
 

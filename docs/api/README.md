@@ -28,6 +28,7 @@ the file you need:
 | Major | Key shape | In-game check |
 |---|---|---|
 | `LibKa0s-Core-1.0` | `<Core>` | `LibStub("LibKa0s-Core-1.0").MODULES` |
+| `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsWidgets>.<OptionsScroll>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
@@ -52,6 +53,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | Superseded |
 | [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.6.3 | Superseded |
 | [2](./Core/version-2-docs.md) | `Core.lua` 2 | v1.0.0 – v1.2.0 | Superseded |
+
+### `LibKa0s-Media-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Media/version-1-docs.md) | `Media.lua` 1 | v1.9.0 | **Current** |
 
 ### `LibKa0s-DebugLog-1.0`
 
@@ -111,7 +118,8 @@ are never adopted separately. It is indexed here because the question it answers
 | [7](./testkit/version-7-docs.md) | same files; runs in a repo with no `.toc`; corrected luacheck install hint | unreleased | Superseded |
 | [8](./testkit/version-8-docs.md) | + `vendor_sync.lua`; the skip status, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity` | v1.8.0 | Superseded |
 | [9](./testkit/version-9-docs.md) | same files; `vendor_sync.lua` reads the provenance line from `CLAUDE.md`, via the new `provenanceFile` opt | v1.8.1 | Superseded |
-| [10](./testkit/version-10-docs.md) | same files; `run-automated-tests.sh` writes the bundle to the terminator `.gitattributes` declares, read per path with `git check-attr eol` | v1.8.2 | **Current** |
+| [11](./testkit/version-11-docs.md) | same files; the vendored-payload gate recurses into subdirectories and compares a binary byte for byte | v1.9.0 | **Current** |
+| [10](./testkit/version-10-docs.md) | same files; `run-automated-tests.sh` writes the bundle to the terminator `.gitattributes` declares, read per path with `git check-attr eol` | v1.8.2 | Superseded |
 
 The kit's compatibility rule is the one place this directory's model differs. The library negotiates
 skew — LibStub compares minors and the highest copy wins, so an older vendored copy is a *supported
