@@ -10,6 +10,21 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.11.0 — 2026-08-24
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 1**,
+**DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
+**OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 11**.
+
+**New major: `LibKa0s-Widgets-1.0`.** The collection's flat dropdown, lifted out of
+BankLedger's `modules/Browser.lua` because MultiMeters was about to grow a second copy of it.
+One `Widgets.Dropdown(parent, width, opts)`, one process-wide popup menu behind every instance
+of it, and a pooled row list. It takes no dependency on `LibKa0s-Media-1.0` — a vendored copy
+cannot know which addon folder it sits in, so the chevron, the multi-select tick and the row
+glyph's face all arrive as parameters, each with the Blizzard rung it falls to.
+
+No other shipped file moves. Every other minor above is unchanged from v1.10.2.
+
 ## v1.10.2 — 2026-08-23
 
 Versions in this release: **Core minor 6**, **Media minor 3**, **DebugLog minor 10**,

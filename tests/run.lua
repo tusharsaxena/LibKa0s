@@ -43,6 +43,11 @@ local MAJORS = {
     primary = "Media",
   },
   {
+    major = "LibKa0s-Widgets-1.0",
+    files = { "Widgets" },
+    primary = "Widgets",
+  },
+  {
     major = "LibKa0s-DebugLog-1.0",
     files = { "DebugLog" },
     primary = "DebugLog",
@@ -75,6 +80,7 @@ _G.LK_TEST = Kit.expose{
   mocks = mocks,
   lib = mocks.LibStub("LibKa0s-Perf-1.0"),
   media = mocks.LibStub("LibKa0s-Media-1.0"),
+  widgets = mocks.LibStub("LibKa0s-Widgets-1.0"),
   core = mocks.LibStub("LibKa0s-Core-1.0"),
   debuglog = mocks.LibStub("LibKa0s-DebugLog-1.0"),
   slash = mocks.LibStub("LibKa0s-Slash-1.0"),

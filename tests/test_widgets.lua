@@ -42,7 +42,7 @@ local mocks       = T.mocks
 -- The library is reached through the mock's LibStub rather than a bare global: the loader gives the
 -- LIBRARY chunks an environment where WoW globals resolve to the mock set, but a suite file is
 -- plainly dofile'd, so `LibStub` is not a global here.
-local W = mocks.LibStub("LibKa0s-Widgets-1.0")
+local W = T.widgets
 
 -- A frame stub that models the geometry this widget does arithmetic on, and gives a texture its own
 -- identity. Lifted from BankLedger/tests/wow_mock.lua, which grew it for this widget.

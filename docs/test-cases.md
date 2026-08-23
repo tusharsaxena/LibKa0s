@@ -61,6 +61,27 @@ badge and any count quoted in the docs must agree with it.
 - media: RegisterLSM registers every font and every texture, by catalog name
 - media: no LibSharedMedia is 0 registrations, not an error
 
+### test_widgets.lua (18)
+
+- Widgets.Dropdown draws the host's chevron when it is given one
+- Widgets.Dropdown falls to Blizzard's arrow with no host art
+- Widgets.Dropdown builds its tick markup from the host's check art
+- Two dropdowns can carry different art without either winning
+- Browser menu: Populate shows one row per option and sizes the menu to them
+- Browser menu: a freak label is capped at 320px
+- Browser menu: the menu is never narrower than 90px, nor than its own dropdown
+- Browser menu: rows are POOLED — a shorter dropdown hides the spares, never rebuilds
+- Browser menu: multi-select ticks 'all' exactly when nothing is selected
+- Browser menu: single-select marks the active value and never draws a tick
+- Browser menu: selected rows go gold, the rest keep the value's own color
+- Browser menu: a glyphed row shows its glyph and indents its text past it
+- Browser menu: clicking a multi-select row toggles it and leaves the menu open
+- Browser menu: clicking a single-select row sets the value and closes the menu
+- A glyphed row is painted in the host's face on every pass
+- A host that names no face gets no glyph column
+- A second dropdown repaints the pooled rows in ITS face, not the first one's
+- A second dropdown ticks the pooled rows with ITS art, not the first one's
+
 ### test_debuglog.lua (62)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
@@ -588,6 +609,7 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | test_core.lua | 34 |
 | test_media.lua | 15 |
+| test_widgets.lua | 18 |
 | test_debuglog.lua | 62 |
 | test_slash.lua | 81 |
 | test_options.lua | 68 |
@@ -601,4 +623,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **531** |
+| **Total** | **549** |
