@@ -42,7 +42,12 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, os.pardir, os.pardir))
 CACHE = os.path.join(HERE, ".cache")
-OUT = os.path.join(ROOT, "media", "textures", "icons")
+# THE PAYLOAD, not a repo-level media folder. These TGAs ship inside LibKa0s/ and are vendored
+# into every consumer with the rest of the library; a path that wrote anywhere else would produce
+# art nothing loads. This moved with the tool from Mythic Meters, where the destination was that
+# addon's own media/textures/icons/ -- and the first run here quietly rebuilt 68 files into a
+# repo-root media/ nobody would ever have shipped.
+OUT = os.path.join(ROOT, "LibKa0s", "media", "icons")
 
 # ---------------------------------------------------------------------------
 # The source
@@ -149,6 +154,109 @@ GLYPHS = {
     "spreadsheet": "spreadsheet",
     "timer":       "timer",
     "clock":       "clock",
+
+
+    # ── arrows: the up/down family, every weight the set offers ─────────────
+    "arrow-up":          "arrow-top",
+    "arrow-down":        "arrow-bottom",
+    "arrow-thick-up":    "arrow-thick-top",
+    "arrow-thick-down":  "arrow-thick-bottom",
+    "arrow-circle-up":   "arrow-circle-top",
+    "arrow-circle-down": "arrow-circle-bottom",
+    "collapse-up":       "collapse-up",
+    "collapse-down":     "collapse-down",
+    "expand-up":         "expand-up",
+    "expand-down":       "expand-down",
+    "align-top":         "vertical-align-top",
+    "align-bottom":      "vertical-align-bottom",
+
+    # ── arrows: the marks that draw TWO of them ─────────────────────────────
+    # Read as a relationship rather than a direction -- ordering, swapping,
+    # moving between two places -- which is a different question from "which way".
+    "sort-asc":  "sort-ascending",
+    "sort-desc": "sort-descending",
+    "transfer":  "transfer",
+    "elevator":  "elevator",
+
+    # ── talking ─────────────────────────────────────────────────────────────
+    # Two marks, and they are not interchangeable: `chat` is two overlapping
+    # bubbles (a conversation, a channel), `speech-bubble` is one (a line said,
+    # a tooltip, a note).
+    "chat":          "chat",
+    "speech-bubble": "comment-square",
+
+
+    # ── arrows: left and right, matching the up/down family above ───────────
+    "arrow-left":         "arrow-left",
+    "arrow-right":        "arrow-right",
+    "arrow-thick-left":   "arrow-thick-left",
+    "arrow-thick-right":  "arrow-thick-right",
+    "arrow-circle-left":  "arrow-circle-left",
+    "arrow-circle-right": "arrow-circle-right",
+    "caret-left":         "caret-left",
+    "caret-right":        "caret-right",
+    "expand-left":        "expand-left",
+    "expand-right":       "expand-right",
+
+    # ── text alignment ──────────────────────────────────────────────────────
+    # TWO FAMILIES, AND THEY ARE NOT THE SAME MARK. `align-*` draws ragged
+    # lines that show the alignment; `justify-*` draws blocked lines. Both are
+    # upstream, both were asked for, and neither substitutes for the other in a
+    # toolbar that offers both.
+    "align-left":    "align-left",
+    "align-center":  "align-center",
+    "align-right":   "align-right",
+    "justify-left":   "justify-left",
+    "justify-center": "justify-center",
+    "justify-right":  "justify-right",
+
+    # ── layout, continued ───────────────────────────────────────────────────
+    # `grid` above is the three-up. These two carry their upstream names so the
+    # density is in the name rather than in a table somebody has to go and read.
+    "grid-two-up":   "grid-two-up",
+    "grid-four-up":  "grid-four-up",
+    "resize-height": "resize-height",
+    "resize-width":  "resize-width",
+
+    # ── status and state, continued ─────────────────────────────────────────
+    "circle-check": "circle-check",
+    "task":         "task",
+    "thumb-up":     "thumb-up",
+    "thumb-down":   "thumb-down",
+    "heart":        "heart",
+    "bookmark":     "bookmark",
+
+    # ── place and navigation ────────────────────────────────────────────────
+    # `location` is the paper plane (send, go there), `map-marker` the dropped
+    # pin (a place on a map). `pin` above is the pushpin (keep this here).
+    "home":          "home",
+    "location":      "location",
+    "map-marker":    "map-marker",
+    "external-link": "external-link",
+    "link-intact":   "link-intact",
+
+    # ── tools and devices ───────────────────────────────────────────────────
+    "wrench":   "wrench",
+    "terminal": "terminal",
+    "monitor":  "monitor",
+    "video":    "video",
+    "aperture": "aperture",
+    "zoom-in":  "zoom-in",
+    "zoom-out": "zoom-out",
+
+    # ── sound ───────────────────────────────────────────────────────────────
+    "volume-high": "volume-high",
+    "volume-low":  "volume-low",
+    "volume-off":  "volume-off",
+
+    # ── documents and labels ────────────────────────────────────────────────
+    "document": "document",
+    "tag":      "tag",
+    "tags":     "tags",
+
+    # ── session ─────────────────────────────────────────────────────────────
+    "account-login":  "account-login",
+    "account-logout": "account-logout",
 
     # ── entities ─────────────────────────────────────────────────────────────
     "person": "person",

@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.9.1`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.9.2`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -116,7 +116,7 @@ that every `cp -r` carries the MIT notice into the consumer's zip with no per-ad
 `CHANGELOG.md` and `tools/` stay here — they describe or produce the payload, they are not part of
 it.
 
-**`media/` is the first payload that is not code**, and it changes two things about copying. The
+**`media/` is the first payload that is not code** — `icons/`, `textures/` and `fonts/` —, and it changes two things about copying. The
 `cp -r` is unchanged — it already recurses — but the consumer-side gate was not: until **kit revision
 11** `vendor_sync.lua` listed one directory level and normalized line endings on everything, so it
 read `media` as a file and would have mangled the comparison of any binary containing the byte pair
@@ -133,7 +133,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.9.1 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.9.2 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That

@@ -1,4 +1,4 @@
-# `LibKa0s-Media-1.0` — version 2
+# `LibKa0s-Media-1.0` — version 3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Media surface points here rather than restating it. It describes the
@@ -8,29 +8,58 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Media-1.0` |
-| Files and minors | `Media.lua` minor **2** |
-| Shipped in | v1.9.1 |
-| Status | Superseded |
-| Supersedes | [version 1](./version-1-docs.md) — which answered a path carrying `.tga` |
-| Superseded by | [version 3](./version-3-docs.md) — 113 icons, and the statusbar textures |
-| Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 2 }` |
+| Files and minors | `Media.lua` minor **3** |
+| Shipped in | v1.9.2 |
+| Status | **Current** |
+| Supersedes | [version 2](./version-2-docs.md) — 49 icons, no textures |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 3 }` |
 
 ## What changed at this version
 
-One line of behaviour: **`Icon` answers an extensionless path.** Version 1 answered
-`...\media\icons\settings.tga`, reasoning that one spelling beats two. The first consumer to adopt
-the module records the opposite from a live client — Mythic Meters' header art has failed silently
-twice, and its surviving note says a path carrying `.tga` is one of the two spellings that draws
-**nothing**. The client appends the extension itself.
+**Additive.** Nothing that existed at version 2 behaves differently, and the only signature to move
+gained a second return value rather than changing its first.
 
-It is corrected rather than argued because of how this fails: a texture that does not load draws
-nothing and raises nothing, so a wrong spelling is invisible in every test, every log and every
-green suite — it shows up as a control that is simply not on screen. The file on disk is unchanged
-and still `<name>.tga`; `tests/test_media.lua` asserts both the path and the file it resolves to, so
-the two cannot drift.
+| | | Since |
+|---|---|---|
+| 64 more icons | `ICONS` goes from 49 names to 113: the left/right arrow family, both text-alignment families, two more grid densities, chat and speech-bubble, and the tools, places, sound and session marks. Every version-2 name still resolves. | **3** |
+| `TEXTURES` | Seven **statusbar** textures, keyed by the LSM display name a player picks and a profile stores. | **3** |
+| `Texture(addonName, name[, vendorPath])` | The vendored path for one of them, extensionless, or `nil`. | **3** |
+| `RegisterLSM` returns `fonts, bars` | It registers the textures as `statusbar` alongside the face. A caller reading one return still reads the font count. | **3** |
 
-Nothing else moved: `Font`, `RegisterLSM`, `ICONS`, `FONTS` and `VENDOR_PATH` are as they were, and
-the art and the font are byte-identical to v1.9.0.
+### The textures, and why they are generated rather than drawn
+
+`tools/artwork/bar_textures.py` synthesizes all seven from named constants — it is the provenance
+record the way `icon_cleaner.py` is for the icons, and it is also the licensing answer: nothing was
+traced, sampled or copied from anything.
+
+| LSM display name | File | What it is |
+|---|---|---|
+| `Ka0s Gradient` | `gradient.tga` | An opaque vertical gradient, **pure white at the top**, easing to 58% at the bottom |
+| `Ka0s Underline 1` / `2` / `4` | `underline-1/2/4.tga` | Transparent but for a solid band at the **bottom** edge — 2px, 4px, 8px |
+| `Ka0s Overline 1` / `2` / `4` | `overline-1/2/4.tga` | The same three, mirrored to the **top** edge |
+
+**Every one is 256×32**, whatever the band inside it does. That is the point of the family: a bar
+frame sized for one is sized for all seven, so switching between them gives a player a different
+line rather than a different-shaped widget, and an addon can offer the set as one dropdown.
+
+The gradient peaks at **white** where a typical bar texture peaks at light grey. A texture is tinted
+by *multiplying*, so grey art mutes a saturated statusbar color; white delivers the caller's color
+undiluted, and the shading lives in the falloff. The falloff is eased rather than linear (exponent
+1.7), which keeps the top third — the part a player reads the color from — bright.
+
+Transparent pixels are `(0,0,0,0)`, never white-at-zero-alpha: the client resamples these whenever a
+bar is not exactly 256 wide, and white under the alpha bleeds a halo out of the band's edge.
+
+**The number is a multiple, not a pixel count.** `4` is four times the base band, and the base band
+is 2px of 32. A name carrying a pixel count would be wrong the moment the canvas changed.
+
+### The key is the label
+
+`TEXTURES` is keyed the way `FONTS` is — by the **display name**, not the filename — because that
+key is what a dropdown shows *and* what a profile stores. A texture registered under `underline-2`
+would give a player a saved setting that reads as a path in every UI that shows it. A test asserts
+the pairing in both directions: every key reads as a Ka0s label, every file reads as a path.
 
 ## What this major is
 
@@ -75,8 +104,10 @@ Read straight off the LibStub table. Every function is stateless.
 | Name | Since | Meaning |
 |---|---|---|
 | `Icon(addonName, name[, vendorPath])` | 1 (extensionless since **2**) | The texture path for one icon, **without an extension** — the client appends it — or `nil` when `name` is not in `ICONS` or `addonName` is missing or empty. The file behind it is `<name>.tga`. |
+| `Texture(addonName, name[, vendorPath])` | **3** | The path of one shipped statusbar texture, extensionless, or `nil` when `name` is not a key of `TEXTURES` or `addonName` is missing or empty. |
+| `TEXTURES` | **3** | Map of LSM display name → `{ file }`. The catalog of the seven bar textures. |
 | `Font(addonName, name[, vendorPath])` | 1 | The font path for one registered face, or `nil` when `name` is not a key of `FONTS` or `addonName` is missing or empty. |
-| `RegisterLSM(addonName[, vendorPath])` | 1 | Register every shipped font with LibSharedMedia under its catalog name. Returns how many were registered; **0 when LSM is absent, which is not an error**. |
+| `RegisterLSM(addonName[, vendorPath])` | 1 (second return: **3**) | Register every shipped font **and every shipped statusbar texture** with LibSharedMedia under its catalog name. Returns `fonts, bars`; **`0, 0` when LSM is absent, which is not an error**. |
 | `ICONS` | 1 | Array of every icon name, which is each file's own basename. The catalog — enumerate it rather than hard-coding a list. |
 | `FONTS` | 1 | Map of LSM name → `{ file, license }`, both basenames under `media/fonts/`. |
 | `VENDOR_PATH` | 1 | `"libs\\LibKa0s"` — where the collection vendors this library, and the default third argument above. |
@@ -199,13 +230,3 @@ The consumer-side gate compares the vendored payload against the tag byte for by
 and normalized line endings on everything, which is right for Lua and wrong for a TGA. **Kit revision
 11 or newer is required** to vendor a payload with `media/` in it — see
 [`../testkit/version-11-docs.md`](../testkit/version-11-docs.md).
-
-## Moving to version 3
-
-Additive, and nothing at this version behaves differently. Version 3 adds:
-
-- **64 more icons** — `ICONS` goes from 49 names to 113. Every name here still resolves.
-- **`TEXTURES`, `Texture(addonName, name)`** — seven generated statusbar textures.
-- **`RegisterLSM` returns two numbers**, `fonts, bars`, and registers the textures as well as the
-  face. A caller that read the single return still reads the font count, so the change is
-  source-compatible; a caller that wants the texture count needs version 3.

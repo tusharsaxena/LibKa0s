@@ -10,6 +10,51 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.9.2 — 2026-08-23
+
+Versions in this release: **Core minor 5**, **Media minor 3**, **DebugLog minor 8**,
+**Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**,
+**Perf minor 7**, **PerfPanel minor 3**, **kit revision 11**. One shipped file moves —
+`Media.lua` — plus the payload it carries: the icon set nearly triples and seven statusbar textures
+join it.
+
+**64 more icons — `ICONS` goes from 49 to 113.** The left/right arrow family to match the up/down
+one, both text-alignment families (`align-*` draws ragged lines, `justify-*` blocked ones — they are
+different marks and a toolbar offering both needs both), two more grid densities, `chat` and
+`speech-bubble` as separate marks, and the tools, places, sound and session groups. Same source, same
+pipeline, same white-so-it-tints rule; `tools/artwork/icon_cleaner.py` is still the record of which
+upstream glyph each name draws.
+
+**Seven statusbar textures, and they are generated rather than drawn.**
+`tools/artwork/bar_textures.py` synthesizes all of them from named constants, which makes it both the
+provenance record and the licensing answer — nothing was traced, sampled or copied.
+
+| LSM display name | File | What it is |
+|---|---|---|
+| `Ka0s Gradient` | `gradient.tga` | An opaque vertical gradient, pure white at the top, easing to 58% |
+| `Ka0s Underline 1` / `2` / `4` | `underline-1/2/4.tga` | Transparent but for a band at the bottom edge — 2px, 4px, 8px |
+| `Ka0s Overline 1` / `2` / `4` | `overline-1/2/4.tga` | The same three, mirrored to the top |
+
+Every one is 256×32 whatever the band inside it does, so a bar frame sized for one is sized for all
+seven — switching gives a player a different line, never a different-shaped widget. The gradient
+peaks at **white** where a typical bar texture peaks at light grey: a texture is tinted by
+multiplying, so grey art mutes a saturated bar color and white delivers it undiluted.
+
+**`Texture(addonName, name)` and `TEXTURES`** reach them, and **`RegisterLSM` now returns
+`fonts, bars`** and registers the textures as `statusbar` alongside the face. A caller reading the
+single return still reads the font count.
+
+`TEXTURES` is keyed by the **display name**, not the filename, for the reason `FONTS` is: that key is
+what a dropdown shows and what a profile stores. A texture registered as `underline-2` would leave a
+player with a saved setting that reads as a path in every UI that shows it.
+
+Additive throughout. No existing member changed, every version-2 icon name still resolves, and a
+consumer that adopts nothing new sees no difference — but re-vendoring is what carries the art, so a
+consumer wanting any of it re-vendors `libs/LibKa0s/` and bumps its provenance line. Kit revision 11
+is unchanged from v1.9.0 and is still the minimum for any payload with `media/` in it.
+
+Full contract in [docs/api/Media/version-3-docs.md](docs/api/Media/version-3-docs.md).
+
 ## v1.9.1 — 2026-08-23
 
 Versions in this release: **Core minor 5**, **Media minor 2**, **DebugLog minor 8**,

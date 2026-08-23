@@ -59,6 +59,50 @@ test("media: the icon license ships beside the art", function()
     "LICENSE-open-iconic.txt is missing from " .. ICON_DIR)
 end)
 
+test("media: every name in TEXTURES has a file, and every file has a name", function()
+  -- Same both-directions check the icons get, and it matters more here: a texture name is a LSM key
+  -- a PROFILE STORES, so a catalog entry with no file behind it is a saved setting that resolves to
+  -- nothing on the next login.
+  local files = listing("LibKa0s/media/textures")
+  assertTrue(files ~= nil, "could not list LibKa0s/media/textures")
+
+  local named = {}
+  for name, entry in pairs(media.TEXTURES) do
+    named[entry.file] = true
+    assertTrue(files[entry.file] == true,
+      "TEXTURES['" .. name .. "'] names " .. entry.file .. ", which is not on disk")
+  end
+  for file in pairs(files) do
+    if file:match("%.tga$") then
+      assertTrue(named[file] == true, "media/textures/" .. file .. " ships but nothing names it")
+    end
+  end
+end)
+
+test("media: Texture builds the vendored path, WITHOUT the extension", function()
+  -- One rule for every path this module answers; see Icon.
+  assertEqual(media.Texture("MythicMeters", "Ka0s Underline 2"),
+    "Interface\\AddOns\\MythicMeters\\libs\\LibKa0s\\media\\textures\\underline-2")
+  assertEqual(media.Texture("MythicMeters", "Ka0s Gradient"),
+    "Interface\\AddOns\\MythicMeters\\libs\\LibKa0s\\media\\textures\\gradient")
+  assertEqual(media.Texture("MythicMeters", "Ka0s Sideline 3"), nil)
+  assertEqual(media.Texture(nil, "Ka0s Gradient"), nil)
+end)
+
+test("media: the texture keys are the labels a player reads", function()
+  -- The dropdown shows the key. A key that reads like a filename -- `underline-2` -- is a setting
+  -- nobody can pick on purpose, so the pairing between label and file is asserted rather than
+  -- assumed: every key is prefixed, spaced and title-cased, and every file is not.
+  local n = 0
+  for name, entry in pairs(media.TEXTURES) do
+    n = n + 1
+    assertTrue(name:find("^Ka0s ") ~= nil, "'" .. name .. "' does not read as a Ka0s label")
+    assertTrue(entry.file:find("%u") == nil and entry.file:find(" ") == nil,
+      "'" .. entry.file .. "' does not read as a path")
+  end
+  assertEqual(n, 7, "the family is one gradient plus three underlines and three overlines")
+end)
+
 test("media: every font in FONTS ships with its license", function()
   local files = listing(FONT_DIR)
   assertTrue(files ~= nil, "could not list " .. FONT_DIR)
@@ -133,31 +177,42 @@ end)
 
 -- ── LibSharedMedia ─────────────────────────────────────────────────────────────────────────
 
-test("media: RegisterLSM registers every font under its catalog name", function()
-  local registered = {}
+test("media: RegisterLSM registers every font and every texture, by catalog name", function()
+  local byKind = { font = {}, statusbar = {} }
   T.mocks.__libs["LibSharedMedia-3.0"] = {
-    MediaType = { FONT = "font" },
+    MediaType = { FONT = "font", STATUSBAR = "statusbar" },
     Register = function(_, kind, key, path)
-      registered[#registered + 1] = { kind = kind, key = key, path = path }
+      byKind[kind] = byKind[kind] or {}
+      byKind[kind][key] = path
       return true
     end,
   }
 
-  local n = media.RegisterLSM("MythicMeters")
+  local fonts, bars = media.RegisterLSM("MythicMeters")
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
 
-  local expected = 0
-  for _ in pairs(media.FONTS) do expected = expected + 1 end
-  assertEqual(n, expected)
-  assertEqual(#registered, expected)
-  assertEqual(registered[1].kind, "font")
-  assertTrue(media.FONTS[registered[1].key] ~= nil,
-    "registered under '" .. tostring(registered[1].key) .. "', which is not a catalog name")
-  assertEqual(registered[1].path, media.Font("MythicMeters", registered[1].key))
+  local wantFonts, wantBars = 0, 0
+  for name in pairs(media.FONTS) do
+    wantFonts = wantFonts + 1
+    assertEqual(byKind.font[name], media.Font("MythicMeters", name),
+      "the face registered under '" .. name .. "' is not the one the catalog names")
+  end
+  -- THE KEY IS THE LABEL, and this is the assertion that keeps it that way: a profile stores the
+  -- key, so registering a texture under its filename would store a setting that reads as a path in
+  -- every dropdown that shows it.
+  for name in pairs(media.TEXTURES) do
+    wantBars = wantBars + 1
+    assertEqual(byKind.statusbar[name], media.Texture("MythicMeters", name),
+      "the texture registered under '" .. name .. "' is not the one the catalog names")
+  end
+  assertEqual(fonts, wantFonts)
+  assertEqual(bars, wantBars)
 end)
 
 test("media: no LibSharedMedia is 0 registrations, not an error", function()
   -- An addon that does not carry LSM still wants its icons, so this degrades rather than raising.
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
-  assertEqual(media.RegisterLSM("MythicMeters"), 0)
+  local fonts, bars = media.RegisterLSM("MythicMeters")
+  assertEqual(fonts, 0)
+  assertEqual(bars, 0)
 end)
