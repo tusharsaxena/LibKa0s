@@ -10,6 +10,37 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.10.2 — 2026-08-23
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **DebugLog minor 10**,
+**Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**,
+**Perf minor 7**, **PerfPanel minor 4**, **kit revision 11**. One shipped file moves —
+`PerfPanel.lua` — closing the last place in this library where a close button was built without
+being told who was asking.
+
+**The perf panel's close button never got the addon name either.** v1.10.1 fixed the console's
+forwarder and left the panel's own no-`decorate` path calling `Core.MakeCloseButton(frame, Hide)` —
+two arguments onto the three-argument function Core grew at minor 6. So a host that draws no chrome
+of its own got a perf panel closing with a multiplication sign beside a debug console closing with
+the collection's mark: the same defect as last release, one window over.
+
+This is the second time the same dropped argument has shipped, which says something about the shape
+rather than about the week. A close button is built at a handful of call sites, the third argument
+cannot be inferred, and omitting it produces a perfectly good button — so no layer errors, no suite
+goes red, and the only witness is someone looking at two windows side by side. **The standard now
+carries it as a MUST**: an addon builds every close control through one wrapper that supplies its
+folder name, and a bare two-argument call is a defect on sight (`standalone-windows`,
+`debug-logging-§12`, anti-pattern #65).
+
+**`addonName` joins the Perf descriptor**, optional and falling back to `name`. `name` is also the
+frame-global prefix, so a host whose window names differ from its folder now has somewhere to say
+so — but every host in the collection already passes its folder name as `name`, which means **the
+fix reaches an unmodified consumer on the re-vendor alone.** Three cases pin it: that the fallback
+path reaches Core with the name, that `addonName` wins over `name`, and that a host supplying
+`decorate` still gets no close button from the library.
+
+Full contract in [docs/api/Perf/version-7.4-docs.md](docs/api/Perf/version-7.4-docs.md).
+
 ## v1.10.1 — 2026-08-23
 
 Versions in this release: **Core minor 6**, **Media minor 3**, **DebugLog minor 10**,

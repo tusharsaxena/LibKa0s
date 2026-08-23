@@ -12,6 +12,7 @@ which is never the same as a pass.
 
 | Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260823-235820`](20260823-235820/) | 1.10.1 | 0/0 | 13 | 531/531 | skip | 9168 | 1320 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260823-195133`](20260823-195133/) | 1.10.0 | 0/0 | 13 | 528/528 | skip | 9126 | 1313 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260823-191126`](20260823-191126/) | 1.9.2 | 0/0 | 13 | 526/526 | skip | 9118 | 1309 | 6.3 | 1.9 | 14 | 0 | **green** |
 | [`20260823-183503`](20260823-183503/) | 1.9.1 | 0/0 | 13 | 517/517 | skip | 8952 | 1274 | 6.4 | 1.9 | 14 | 0 | **green** |
@@ -98,7 +99,7 @@ disposition, dated, with the condition that would reopen it.
 
 ## Complexity watch list
 
-Current state as of [`20260807-114658`](20260807-114658/) — not that run's diff. Every function
+Current state as of [`20260823-235820`](20260823-235820/) — not that run's diff. Every function
 `lizard` warned on, and every file at or above `layout-§1`'s 1000-LOC on-notice threshold, each with
 a one-line disposition.
 
@@ -118,9 +119,10 @@ suite-inventory call, and `Kit.assertSuiteInventory` is a two-way set comparison
 divergence class. Neither is tangle and neither is near the cap, but the headroom is one arm narrower
 than it was — a third arm added to either is the thing to notice.
 
-Seven rows now, six of them identical, so the zero is a held result rather than a first measurement.
-It is still not a trend: the library has not changed in that window, so what the rows show is a
-stable tree measured repeatedly, not a complexity figure that has been held down.
+Twelve rows now, every one of them zero, so the result is held rather than first-measured.
+It is now closer to a trend than it was: the library HAS changed across those rows — Media, Options,
+Core, DebugLog and Perf all moved — and NLOC has gone 8557 to 9168 with the ceiling unmoved at 14.
+That is a growing tree holding its shape rather than a static one measured repeatedly.
 
 When these numbers do start moving, remember `lizard` counts every `and`/`or` short-circuit as a
 decision. In Lua a run of `t.k = rec.k or D.k` defaulting lines scores high with no visible

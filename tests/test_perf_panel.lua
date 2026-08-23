@@ -462,6 +462,68 @@ test("lib: a host that passes no decorate still gets a working panel", function(
   assertTrue(p.IsPanelShown(), "degrades to a plain frame, not an error")
 end)
 
+test("lib: the fallback close button is told which addon is asking", function()
+  -- Panel minor 4. `MakeCloseButton` draws the catalog's `close` icon only when it is given the
+  -- addon FOLDER name to build a texture path from, and called with two arguments it falls back to
+  -- the multiplication sign — silently, because a path that is never built draws nothing and raises
+  -- nothing. Minor 3 dropped the argument here, so a host with no `decorate` got a perf panel
+  -- wearing × beside a debug console wearing the mark, and every suite stayed green.
+  --
+  -- Spied on the core TABLE rather than on the returned button, for the same reason the console's
+  -- equivalent case is: the argument is what is being asserted, and the button looks identical
+  -- either way to anything a test can ask.
+  local core = T.core
+  local real = core.MakeCloseButton
+  local seen
+  core.MakeCloseButton = function(parent, onClick, addonName)
+    seen = addonName
+    return real(parent, onClick, addonName)
+  end
+  local p = Fixture.new()
+  p.ShowPanel()
+  core.MakeCloseButton = real
+
+  assertEqual(seen, "TestHost", "the descriptor's own name reaches Core as the third argument")
+  p.HidePanel()
+end)
+
+test("lib: an addonName in the descriptor wins over the name", function()
+  -- `name` is also the frame-global prefix, so a host whose window names differ from its folder has
+  -- somewhere to say so. Every host in the collection passes the folder name as `name` and never
+  -- needs this, which is exactly why the fallback is the documented path and this is the escape.
+  local core = T.core
+  local real = core.MakeCloseButton
+  local seen
+  core.MakeCloseButton = function(parent, onClick, addonName)
+    seen = addonName
+    return real(parent, onClick, addonName)
+  end
+  local p = Fixture.new({ addonName = "OtherFolder" })
+  p.ShowPanel()
+  core.MakeCloseButton = real
+
+  assertEqual(seen, "OtherFolder", "addonName overrides name")
+  p.HidePanel()
+end)
+
+test("lib: a host that decorates gets no close button from the library", function()
+  -- The two paths are exclusive. Running both would stack the host's control and ours on the same
+  -- corner, which is a visual bug nothing raises on.
+  local core = T.core
+  local real = core.MakeCloseButton
+  local made = 0
+  core.MakeCloseButton = function(parent, onClick, addonName)
+    made = made + 1
+    return real(parent, onClick, addonName)
+  end
+  local p = Fixture.new({ decorate = function() end })
+  p.ShowPanel()
+  core.MakeCloseButton = real
+
+  assertEqual(made, 0, "the host's decorate hook owns the corner")
+  p.HidePanel()
+end)
+
 test("lib: report and dump stay clickable after use, but read as done", function()
   -- Re-reading a summary or re-dumping the JSON costs nothing and is regularly wanted twice, so
   -- these are marked rather than disabled.

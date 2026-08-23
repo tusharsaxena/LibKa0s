@@ -1,4 +1,4 @@
-# `LibKa0s-Perf-1.0` — version 7.3
+# `LibKa0s-Perf-1.0` — version 7.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Perf surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **7** · `PerfPanel.lua` **3** |
+| Files and minors | `Perf.lua` **7** · `PerfPanel.lua` **4** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.8.0 |
-| Status | Superseded |
-| Supersedes | [version 6.3](./version-6.3-docs.md) |
-| Superseded by | [version 7.4](./version-7.4-docs.md) |
+| Shipped in | v1.10.2 |
+| Status | **Current** |
+| Supersedes | [version 7.3](./version-7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 7, PerfPanel = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 7, PerfPanel = 4 }` |
 
-`Since` names the file and minor a member first appeared in — `P7` for `Perf.lua` minor 7, `PP2`
-for `PerfPanel.lua` minor 2. It is `1` for nearly everything: this major did not move at all between
+`Since` names the file and minor a member first appeared in — `P7` for `Perf.lua` minor 7, `PP4`
+for `PerfPanel.lua` minor 4. It is `1` for nearly everything: this major did not move at all between
 the first tag and minor 6, so every adopter before that version is on the same one.
 
 Adopters today: **AbsorbTracker** (`core/PerfSetup.lua`), **KickCD** (`core/PerfSetup.lua`),
@@ -36,30 +36,29 @@ a state LibStub can detect. **This is why the version key above is a pair.**
 
 ## What changed at this version
 
-**A record that asserts only what it observed, and a bracket pair that carries its key.**
-`PerfPanel.lua` does not move.
+**The panel's own close button is told which addon is asking.** `Perf.lua` does not move.
 
-1. **`Note(key, ms, parentKey)` takes an optional third argument** — the bucket the work actually
-   ran inside. Every existing two-argument call site keeps working untouched.
-2. **The record carries `observedWithin` beside the declared `within`** (and `observedMixed` where
-   one bucket was seen under two different parents). Both are optional and **additive within schema
-   2**, so no ring is discarded and no reader of an older record sees a change.
-3. **The nesting note stopped stating a declaration as a fact.** It now distinguishes *observed
-   inside X*, *declares itself within X — not observed*, and *declares itself within X but was
-   observed inside Y*. See [Verifiable containment](#verifiable-containment).
-4. **`Open(key)` / `Close(key)` replace `Open()` → `t0` / `Close(t0, key)`.** This is the one
-   **breaking** change in this major's history; see [Compatibility](#compatibility) for why it was
-   taken rather than deprecated.
-5. **`Note` and `Open` name the caller on a nil key** instead of raising a bare `table index is nil`
-   from inside the library.
-6. **`Cancel()` clears the context stamp** it used to leave standing, so a `report` after a cancel
-   no longer prints empty buckets wearing the discarded run's character, realm and zone.
-7. **The `Open`/`Close` docstring stopped claiming the pair is free when capture is off.** It is two
-   real Lua calls; the inline form is none. `tests/test_perf_isolation.lua` now holds the measured
-   zero-allocation case for the dormant path.
+1. **`Core.MakeCloseButton` is called with three arguments** from the panel's no-`decorate` path.
+   Core grew a third parameter — the addon's own **folder** name — at Core minor 6, and the catalog's
+   `close` icon is drawn only when it is given one; called with two, Core draws the multiplication
+   sign it has always drawn. `PerfPanel.lua` minor 3 shipped the two-argument call, so a host that
+   passed no `decorate` got a perf panel wearing × beside a debug console wearing the mark.
 
-No descriptor field, no bucket key and no `lib.SCHEMA` bump. A host that never wrote `Open`/`Close`
-— which, at the time of writing, is every host in the collection — is correct here unmodified.
+   A dropped argument is not a failure any layer can report. Core saw no addon name and drew exactly
+   what it draws without one, which is a perfectly good button; a texture path that is never built
+   draws nothing and raises nothing. The only symptom was the look — the same class of defect, in
+   the same week, as the console's own forwarder at DebugLog minor 10.
+
+2. **`addonName` joins the descriptor**, optional, falling back to `name`. `name` is also the
+   frame-global prefix (`<name>PerfPanel`, `<name>PerfSampler`), so a host whose window names differ
+   from its folder now has somewhere to say which is which. Every host in the collection passes its
+   folder name as `name` and needs nothing: **the fix reaches an unmodified host on the re-vendor
+   alone.**
+
+3. **A host that passes `decorate` is unaffected**, and still owns the corner outright — the library
+   builds no close button on that path. What it must not do is repeat minor 3's mistake at its own
+   call site: an addon **MUST** build the control through the single wrapper that carries its folder
+   name rather than calling the factory with two arguments (standalone-windows, debug-logging-§12).
 
 ## Why it exists
 
@@ -96,6 +95,7 @@ written against minor 1 keeps working unmodified against any later minor.
 | Field | Type | Required | Since | Meaning |
 |---|---|---|---|---|
 | `name` | string | yes | 1 | Host identifier. Seeds the default `slash`, the sampler and panel frame names, and `BuildRecord`'s `addon` field. |
+| `addonName` | string | no | PP4 | The host's own addon **folder** name, from its first vararg — what `Core.MakeCloseButton` builds the `close` icon's texture path from on the no-`decorate` path. Defaults to `name`, which is what every host in the collection already passes, so this is an escape hatch rather than a step. The library is vendored and cannot infer a folder, which is why it has to be told. |
 | `sv` | string | yes | 1 | The global SavedVariables table name the capture ring is persisted to. Must be declared in the host's TOC. |
 | `suspend` | function | yes | 1 | Makes the host inert without a `/reload`. See [the host contract](#the-host-contract-for-suspendresume). |
 | `resume` | function | yes | 1 | Restores everything `suspend` took away. See [the host contract](#the-host-contract-for-suspendresume). |
@@ -109,7 +109,7 @@ written against minor 1 keeps working unmodified against any later minor.
 | `ring` | number | no | 1 | Depth of the SavedVariables capture ring. Defaults to `lib.DEFAULT_RING` (10). |
 | `buckets` | array of `{ key, within }` | no | 1 | Declares report order and nesting for `Note()` buckets. `within` names the parent bucket key for buckets that nest (e.g. `paintBar` runs inside `repaintPass`). A bracket calling `Note()` with an undeclared key still records, it just doesn't appear in the report. **`within` is a claim, and from `Perf.lua` minor 7 the record says whether the capture confirmed it** — see [Verifiable containment](#verifiable-containment). |
 | `version` | string | no | 1 | Host addon version, stamped into `BuildRecord`. Defaults to `"?"`. |
-| `decorate` | function(frame, api) | no | 1 | Panel chrome hook, called once at frame creation with the frame and `{ Show, Hide, Toggle, TITLE_H, PAD, ROW_W }`. Takes precedence over the lib's own chrome: a host that supplies it draws its own close button and divider, and a host that omits it gets `Core.MakeCloseButton` on the title bar rather than nothing. The two paths are exclusive — running both would stack two × on the same corner. |
+| `decorate` | function(frame, api) | no | 1 | Panel chrome hook, called once at frame creation with the frame and `{ Show, Hide, Toggle, TITLE_H, PAD, ROW_W }`. Takes precedence over the lib's own chrome: a host that supplies it draws its own close button and divider, and a host that omits it gets `Core.MakeCloseButton` on the title bar rather than nothing — drawn with `addonName or name`, so it wears the collection's mark rather than the fallback glyph (`PerfPanel.lua` minor 4). The two paths are exclusive — running both would stack two close controls on the same corner. |
 
 `slash`, `title` and `showLog` exist specifically because this library serves more than one host.
 The addon this was extracted from hardcoded `/at perf` into its usage text, `"AbsorbTracker"` into
@@ -225,16 +225,19 @@ NS.Perf = lib:New({
         end
     end,
 
-    -- Built by the debug console's own close-button factory rather than a lookalike, so the two
-    -- windows cannot drift apart. Guarded only because a close button is worth degrading over,
-    -- not erroring over.
+    -- OPTIONAL FROM PerfPanel MINOR 4, and most hosts should now omit it: the library's own path
+    -- draws the same mark from the same factory. It is kept here because it is the shape a host
+    -- with real chrome of its own needs.
+    --
+    -- Built by the addon's OWN close-button factory rather than a lookalike, so the perf panel and
+    -- the debug console cannot drift apart. NS.MakeCloseButton is the host's one-line wrapper over
+    -- Core's, and it is the single place that says which addon folder the mark's texture path is
+    -- built from. CALLING THE FACTORY DIRECTLY WITH TWO ARGUMENTS IS THE BUG THIS MINOR FIXED --
+    -- the dropped third argument is the addon name, and a texture path that is never built draws
+    -- nothing and raises nothing, so the panel quietly wears × while every suite stays green.
     decorate = function(frame, api)
-        if NS.DebugLog and NS.DebugLog.MakeCloseButton then
-            -- Resolved HERE rather than into a local at load time. `decorate` fires at frame-build
-            -- time, long after every file has loaded, which is the only reason this file may reach
-            -- for a member of a module that loads after it. Hoisting the lookup reintroduces the
-            -- ordering hazard.
-            local close = NS.DebugLog.MakeCloseButton(frame, api.Hide)
+        if NS.MakeCloseButton then
+            local close = NS.MakeCloseButton(frame, api.Hide)
             -- The factory answers nil where CreateFrame is unavailable — a close button is worth
             -- degrading over, not erroring over.
             if close then
@@ -430,19 +433,9 @@ The **record schema is not**, and that is the deliberate difference. `lib.SCHEMA
 rather than an API contract: schema 2 took a clean break from schema 1 with no migration, and old
 records are discarded rather than converted. See [`docs/record-schema.md`](../../record-schema.md).
 
+`PerfPanel.lua` minor 4 is additive in both directions: `addonName` is a new optional field, and a
+host that passes nothing gets a better-looking button from the same call it always made.
+
 The two files move as one. A consumer holding `Perf.lua` from one vendored copy and `PerfPanel.lua`
 from another is not a supported state and LibStub cannot detect it — which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 7.4
-
-**One fix, and it reaches you on the re-vendor alone.** `Perf.lua` does not move.
-
-| Changed at 7.4 | What you do |
-|---|---|
-| The panel's no-`decorate` close button is built with `Core.MakeCloseButton(frame, Hide, addonName or name)` | Nothing. At this version the third argument was dropped, so the button fell back to the multiplication sign while the debug console beside it wore the collection's `close` mark; at 7.4 an unmodified host gets the mark, because every host already passes its folder name as `name`. |
-| `addonName` joins the descriptor, optional, defaulting to `name` | Nothing, unless your window-name prefix and your addon **folder** name differ — then pass the folder name here. |
-
-If you pass `decorate`, this version and 7.4 behave identically: the library builds no close button
-on that path and yours is untouched. Check it anyway — the same dropped-argument bug lives at any
-call site that reaches `MakeCloseButton` with two arguments, and it is invisible to every test.

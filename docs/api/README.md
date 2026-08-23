@@ -101,7 +101,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7.3](./Perf/version-7.3-docs.md) | `Perf.lua` 7 · `PerfPanel.lua` 3 | v1.8.0 | **Current** |
+| [7.4](./Perf/version-7.4-docs.md) | `Perf.lua` 7 · `PerfPanel.lua` 4 | v1.10.2 | **Current** |
+| [7.3](./Perf/version-7.3-docs.md) | `Perf.lua` 7 · `PerfPanel.lua` 3 | v1.8.0 – v1.10.1 | Superseded |
 | [6.3](./Perf/version-6.3-docs.md) | `Perf.lua` 6 · `PerfPanel.lua` 3 | v1.7.0 | Superseded |
 | [5.3](./Perf/version-5.3-docs.md) | `Perf.lua` 5 · `PerfPanel.lua` 3 | v1.0.0 – v1.6.3 (every release to date) | Superseded |
 
