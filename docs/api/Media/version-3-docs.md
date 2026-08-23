@@ -64,8 +64,9 @@ the pairing in both directions: every key reads as a Ka0s label, every file read
 ## What this major is
 
 The first payload in this library that is not code. `LibKa0s/media/` ships the **art and the type
-this collection draws with** — 49 white icon TGAs and one monospace face — and this module is the
-three functions that reach them, plus the catalog of what is there.
+this collection draws with** — 113 white icon TGAs, seven generated statusbar textures and one
+monospace face — and this module is the four functions that reach them, plus the catalogs of what is
+there.
 
 It exists because the alternative was already happening. Mythic Meters built 49 icons from Open
 Iconic and shipped them under its own `media/`, alongside its own copy of JetBrains Mono, built by a
@@ -142,16 +143,38 @@ art becomes any color a caller asks for and black art stays black whatever it is
 mark here is flat white with its entire shape in the alpha channel. Art added later must be too, or
 one icon silently stops obeying a host's color setting.
 
+**All 113 names, grouped as `lib.ICONS` groups them** — the source is the catalog, and this table
+follows its order so the two can be read side by side. Enumerate `ICONS` rather than copying this
+table into a host: a name added upstream reaches an addon that enumerates and never reaches one that
+hard-codes.
+
 | Group | Names |
 |---|---|
-| Window chrome | `close` · `minimise` · `expand` · `lock` · `unlock` · `settings` · `segment` · `reset` |
-| Actions | `add` · `cancel` · `clear` · `confirm` · `copy` · `edit` · `export` · `import` · `redo` · `search` · `undo` |
-| Status | `ban` · `bug` · `help` · `info` · `warning` |
-| State | `eye` · `pin` · `star` |
-| Layout | `fullscreen-enter` · `fullscreen-exit` · `grid` · `layers` · `list` · `move` · `resize` |
-| Navigation | `chevron-down` · `chevron-left` · `chevron-right` · `chevron-up` · `sort-down` · `sort-up` |
-| Data | `chart` · `clock` · `graph` · `spreadsheet` · `timer` |
-| Entities | `people` · `person` · `shield` · `target` |
+| Window header strip | `close` · `minimise` · `expand` · `lock` · `unlock` · `settings` · `segment` · `reset` · `export` · `sort-up` · `sort-down` |
+| Core actions | `copy` · `clear` · `add` · `edit` · `confirm` · `cancel` · `search` · `undo` · `redo` · `import` |
+| Status and feedback | `info` · `warning` · `help` · `ban` · `bug` |
+| State | `pin` · `eye` · `star` |
+| Layout | `move` · `resize` · `fullscreen-enter` · `fullscreen-exit` · `grid` · `list` · `layers` |
+| Navigation | `chevron-left` · `chevron-right` · `chevron-up` · `chevron-down` |
+| Data | `chart` · `graph` · `spreadsheet` · `timer` · `clock` |
+| Arrows — up/down, every weight | `arrow-up` · `arrow-down` · `arrow-thick-up` · `arrow-thick-down` · `arrow-circle-up` · `arrow-circle-down` · `collapse-up` · `collapse-down` · `expand-up` · `expand-down` · `align-top` · `align-bottom` |
+| Arrows — marks drawing TWO | `sort-asc` · `sort-desc` · `transfer` · `elevator` |
+| Talking | `chat` · `speech-bubble` |
+| Arrows — left/right | `arrow-left` · `arrow-right` · `arrow-thick-left` · `arrow-thick-right` · `arrow-circle-left` · `arrow-circle-right` · `caret-left` · `caret-right` · `expand-left` · `expand-right` |
+| Text alignment | `align-left` · `align-center` · `align-right` · `justify-left` · `justify-center` · `justify-right` |
+| Layout, continued | `grid-two-up` · `grid-four-up` · `resize-height` · `resize-width` |
+| Status and state, continued | `circle-check` · `task` · `thumb-up` · `thumb-down` · `heart` · `bookmark` |
+| Place and navigation | `home` · `location` · `map-marker` · `external-link` · `link-intact` |
+| Tools and devices | `wrench` · `terminal` · `monitor` · `video` · `aperture` · `zoom-in` · `zoom-out` |
+| Sound | `volume-high` · `volume-low` · `volume-off` |
+| Documents and labels | `document` · `tag` · `tags` |
+| Session | `account-login` · `account-logout` |
+| Entities | `person` · `people` · `target` · `shield` |
+
+**`sort-up`/`sort-down` and `sort-asc`/`sort-desc` are not the same mark.** The first pair is one
+arrow each and is what a column header wants; the second draws **two** arrows and reads as *the
+control that changes sort direction*, not as *the direction it is sorted*. A column header taking
+`sort-asc` gets a busier mark than the row of headers beside it.
 
 **Two marks are deliberately absent**, because Open Iconic has no glyph for either and a hand-drawn
 substitute would be the one icon in the set that looks foreign:
