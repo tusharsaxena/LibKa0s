@@ -1,4 +1,4 @@
-# `LibKa0s-Media-1.0` — version 1
+# `LibKa0s-Media-1.0` — version 2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Media surface points here rather than restating it. It describes the
@@ -8,12 +8,29 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Media-1.0` |
-| Files and minors | `Media.lua` minor **1** |
-| Shipped in | v1.9.0 |
-| Status | Superseded |
-| Supersedes | — (first version) |
-| Superseded by | [version 2](./version-2-docs.md) — `Icon` answers an extensionless path |
-| Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 1 }` |
+| Files and minors | `Media.lua` minor **2** |
+| Shipped in | v1.9.1 |
+| Status | **Current** |
+| Supersedes | [version 1](./version-1-docs.md) — which answered a path carrying `.tga` |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 2 }` |
+
+## What changed at this version
+
+One line of behaviour: **`Icon` answers an extensionless path.** Version 1 answered
+`...\media\icons\settings.tga`, reasoning that one spelling beats two. The first consumer to adopt
+the module records the opposite from a live client — Mythic Meters' header art has failed silently
+twice, and its surviving note says a path carrying `.tga` is one of the two spellings that draws
+**nothing**. The client appends the extension itself.
+
+It is corrected rather than argued because of how this fails: a texture that does not load draws
+nothing and raises nothing, so a wrong spelling is invisible in every test, every log and every
+green suite — it shows up as a control that is simply not on screen. The file on disk is unchanged
+and still `<name>.tga`; `tests/test_media.lua` asserts both the path and the file it resolves to, so
+the two cannot drift.
+
+Nothing else moved: `Font`, `RegisterLSM`, `ICONS`, `FONTS` and `VENDOR_PATH` are as they were, and
+the art and the font are byte-identical to v1.9.0.
 
 ## What this major is
 
@@ -48,7 +65,7 @@ local addonName, NS = ...
 local M = LibStub("LibKa0s-Media-1.0", true)
 
 M.Icon(addonName, "settings")
---> "Interface\\AddOns\\MythicMeters\\libs\\LibKa0s\\media\\icons\\settings.tga"
+--> "Interface\\AddOns\\MythicMeters\\libs\\LibKa0s\\media\\icons\\settings"
 ```
 
 ## Lib-level surface
@@ -57,7 +74,7 @@ Read straight off the LibStub table. Every function is stateless.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `Icon(addonName, name[, vendorPath])` | 1 | The texture path for one icon, **`.tga` included**, or `nil` when `name` is not in `ICONS` or `addonName` is missing or empty. |
+| `Icon(addonName, name[, vendorPath])` | 1 (extensionless since **2**) | The texture path for one icon, **without an extension** — the client appends it — or `nil` when `name` is not in `ICONS` or `addonName` is missing or empty. The file behind it is `<name>.tga`. |
 | `Font(addonName, name[, vendorPath])` | 1 | The font path for one registered face, or `nil` when `name` is not a key of `FONTS` or `addonName` is missing or empty. |
 | `RegisterLSM(addonName[, vendorPath])` | 1 | Register every shipped font with LibSharedMedia under its catalog name. Returns how many were registered; **0 when LSM is absent, which is not an error**. |
 | `ICONS` | 1 | Array of every icon name, which is each file's own basename. The catalog — enumerate it rather than hard-coding a list. |
@@ -182,14 +199,3 @@ The consumer-side gate compares the vendored payload against the tag byte for by
 and normalized line endings on everything, which is right for Lua and wrong for a TGA. **Kit revision
 11 or newer is required** to vendor a payload with `media/` in it — see
 [`../testkit/version-11-docs.md`](../testkit/version-11-docs.md).
-
-## Moving to version 2
-
-`Icon` answers the path **without** the `.tga` extension. Nothing else changed, and nothing else in
-this document is wrong at version 2.
-
-If you are on this version and your icons draw, you need nothing — this version was shipped in
-v1.9.0 and superseded before any consumer released against it. If your icons do **not** draw, that is
-the reason version 2 exists: the client appends the extension itself, and a path carrying `.tga` is
-recorded by the first consumer as one of the two spellings that draws nothing at all — silently,
-because a texture that fails to load raises nothing.

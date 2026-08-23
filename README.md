@@ -54,7 +54,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | Major | What it is | Files | Current version |
 |---|---|---|---|
 | `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [5](docs/api/Core/version-5-docs.md) |
-| `LibKa0s-Media-1.0` | The art and type this collection draws with: 49 white icon TGAs (Open Iconic, MIT) and JetBrains Mono (SIL OFL), shipped inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [1](docs/api/Media/version-1-docs.md) |
+| `LibKa0s-Media-1.0` | The art and type this collection draws with: 49 white icon TGAs (Open Iconic, MIT) and JetBrains Mono (SIL OFL), shipped inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [2](docs/api/Media/version-2-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [8](docs/api/DebugLog/version-8-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [7](docs/api/Slash/version-7-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [8.7.3](docs/api/Options/version-8.7.3-docs.md) |

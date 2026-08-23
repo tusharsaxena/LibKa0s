@@ -10,6 +10,27 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.9.1 — 2026-08-23
+
+Versions in this release: **Core minor 5**, **Media minor 2**, **DebugLog minor 8**,
+**Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**,
+**Perf minor 7**, **PerfPanel minor 3**, **kit revision 11**. One shipped file moves —
+`Media.lua` — and the art, the font and every other file are byte-identical to v1.9.0.
+
+**`Media.Icon` answers an extensionless path.** v1.9.0 answered `...\media\icons\settings.tga`,
+reasoning that one spelling beats two. The first consumer to adopt the module records the opposite
+from a live client: Mythic Meters' header art has failed silently twice, and its surviving note says
+a path carrying `.tga` is one of the two spellings that draws **nothing**. The client appends the
+extension itself.
+
+Corrected within hours of v1.9.0 rather than argued, because of how this fails — a texture that does
+not load draws nothing and raises nothing, so a wrong spelling is invisible in every test, every log
+and every green suite, and shows up only as a control that is not on screen. No consumer had released
+against v1.9.0. The file on disk is unchanged and still `<name>.tga`; `tests/test_media.lua` now
+asserts the path and the file it resolves to, so the two cannot drift.
+
+Full contract in [docs/api/Media/version-2-docs.md](docs/api/Media/version-2-docs.md).
+
 ## v1.9.0 — 2026-08-23
 
 Versions in this release: **Core minor 5**, **Media minor 1**, **DebugLog minor 8**,

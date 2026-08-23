@@ -85,9 +85,23 @@ end)
 
 -- ── the paths ──────────────────────────────────────────────────────────────────────────────
 
-test("media: Icon builds the vendored path, extension included", function()
+test("media: Icon builds the vendored path, WITHOUT the extension", function()
+  -- The client appends it, and the consumer that adopted this first records a live-client failure
+  -- from the spelling that carries it. A texture that does not load draws nothing and raises
+  -- nothing, so this is not a preference.
+  -- red under: minor 1, which answered "...\\settings.tga".
   assertEqual(media.Icon("MythicMeters", "settings"),
-    "Interface\\AddOns\\MythicMeters\\libs\\LibKa0s\\media\\icons\\settings.tga")
+    "Interface\\AddOns\\MythicMeters\\libs\\LibKa0s\\media\\icons\\settings")
+end)
+
+test("media: the file behind an icon path is still <name>.tga on disk", function()
+  -- The extensionless path and the file it resolves to are two different strings, and the gap
+  -- between them is exactly where a rename would hide.
+  local path = media.Icon("MythicMeters", "settings")
+  local rel = path:gsub("\\", "/"):gsub("^Interface/AddOns/MythicMeters/libs/LibKa0s/", "")
+  local fh = io.open("LibKa0s/" .. rel .. ".tga", "rb")
+  assertTrue(fh ~= nil, "no file at LibKa0s/" .. rel .. ".tga")
+  if fh then fh:close() end
 end)
 
 test("media: Font builds the vendored path from the catalog's own filename", function()
@@ -113,7 +127,7 @@ end)
 
 test("media: a consumer that vendors elsewhere passes its own path", function()
   assertEqual(media.Icon("Elsewhere", "close", "Libs\\Ka0s"),
-    "Interface\\AddOns\\Elsewhere\\Libs\\Ka0s\\media\\icons\\close.tga")
+    "Interface\\AddOns\\Elsewhere\\Libs\\Ka0s\\media\\icons\\close")
   assertEqual(media.VENDOR_PATH, "libs\\LibKa0s", "the default is the collection's convention")
 end)
 

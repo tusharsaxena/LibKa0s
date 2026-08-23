@@ -58,7 +58,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Media/version-1-docs.md) | `Media.lua` 1 | v1.9.0 | **Current** |
+| [2](./Media/version-2-docs.md) | `Media.lua` 2 | v1.9.1 | **Current** |
+| [1](./Media/version-1-docs.md) | `Media.lua` 1 | v1.9.0 | Superseded |
 
 ### `LibKa0s-DebugLog-1.0`
 

@@ -53,7 +53,7 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Media-1.0", 1
+local MAJOR, MINOR = "LibKa0s-Media-1.0", 2
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -133,9 +133,13 @@ end
 
 --- The texture path for one icon, or nil when the name is not in `ICONS`.
 ---
---- The `.tga` extension IS included, unlike the extensionless spelling a `SetTexture` will also
---- accept: this string is handed to callers that compare and log it, and two spellings of one path
---- is a difference nobody can see in game and everybody trips over in a diff.
+--- EXTENSIONLESS, and that changed at minor 2. Minor 1 answered `...\\settings.tga` on the
+--- reasoning that one spelling beats two. The consumer that adopted it first records the opposite
+--- from a live client: Mythic Meters' header art has failed silently twice, and its surviving note
+--- says a path carrying `.tga` is one of the two spellings that draws NOTHING. A texture that does
+--- not load draws nothing and raises nothing, so "it probably works either way" is not a thing
+--- anyone discovers is wrong. The client appends the extension itself. The file on disk is still
+--- `<name>.tga`, and `tests/test_media.lua` checks for it under that name.
 ---
 --- @param addonName string  the consumer's own addon folder name (its first vararg)
 --- @param name string       an entry of `lib.ICONS`
@@ -145,7 +149,7 @@ function lib.Icon(addonName, name, vendorPath)
   if not KNOWN_ICON[name] then return nil end
   local base = root(addonName, vendorPath)
   if not base then return nil end
-  return base .. ICON_DIR .. "\\" .. name .. ".tga"
+  return base .. ICON_DIR .. "\\" .. name
 end
 
 --- The font path for one registered face, or nil when the name is not in `FONTS`.
