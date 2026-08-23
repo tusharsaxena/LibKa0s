@@ -1,4 +1,4 @@
-# `LibKa0s-Core-1.0` — version 5
+# `LibKa0s-Core-1.0` — version 6
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Core surface points here rather than restating it. It describes the
@@ -8,16 +8,45 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
-| Files and minors | `Core.lua` minor **5** |
-| Shipped in | v1.8.0 |
-| Status | Superseded |
-| Supersedes | [version 4](./version-4-docs.md) |
-| Superseded by | [version 6](./version-6-docs.md) — `MakeCloseButton` can draw the collection's own art |
-| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 5 }` |
+| Files and minors | `Core.lua` minor **6** |
+| Shipped in | v1.10.0 |
+| Status | **Current** |
+| Supersedes | [version 5](./version-5-docs.md) |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 6 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
 were never tagged, so they have no document of their own — a `Since` of 1 or 2 means "present for
 as long as any consumer could have had this major".
+
+## What changed at this version
+
+`MakeCloseButton` takes an optional third argument, and nothing else moved.
+
+| | | Since |
+|---|---|---|
+| `addonName` | The caller's own addon FOLDER name, from its first vararg. Given it, the button draws `LibKa0s-Media-1.0`'s `close` icon as an 18px control with 12px of art. Omitted, it draws the multiplication sign exactly as every earlier version did. | **6** |
+| `b.icon` / `b.glyph` | Which of the two was drawn, recorded on the returned button. | **6** |
+
+### Which close control you get
+
+**The argument is a name and not a boolean** because a texture path is absolute from
+`Interface\AddOns\` and this library is **vendored**: there is no one path to it, there are as many
+as there are consumers, and a copy cannot know which folder it was copied into. Core cannot ask
+Media for a path without being told that, and it must not guess — a wrong texture path draws nothing
+and raises nothing.
+
+**The × is not a legacy spelling to migrate away from.** It is what a caller that has not been
+updated gets, what a host without the Media module gets, and what an install missing the art gets.
+All three are the same branch, which is why there is no separate degraded path to keep working.
+
+Either way the control is **18×18** — every window in the collection lays its title bar out around
+that number, and `LibKa0s-DebugLog-1.0` derives two more offsets from it. The art is inset to 12px
+inside that slot, because a glyph that reaches its own edges reads far heavier than the title beside
+it. Both spellings are gray at rest (`0.7, 0.7, 0.72`) and red under the pointer (`1, 0.3, 0.3`).
+
+The Media lookup happens at **call** time, not at load: Core is the first file in `LibKa0s.xml` and
+Media the second, so a load-time lookup would answer nil for the life of the session.
 
 ## What this major is
 
@@ -47,7 +76,7 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `SKIN` | 1 | The one skin every Ka0s window wears. **Values changed at minor 3** and three keys were added — see [The skin table](#the-skin-table). Backdrop fields and every colour travel in one table, because taking the backdrop without the colours is exactly the drift this prevents. |
 | `ApplySkin(frame[, skin])` | 1 (2nd arg: 3) | Wear the skin. Makes the three calls a table cannot describe as well as the backdrop: the inner-border child frame (built once, re-tinted after), the title tint and the divider tint — each guarded on the skin key AND the frame member, so a window with no divider is fine. `skin` defaults to `lib.SKIN`; it exists so DebugLog's `skin` override reaches one implementation. A no-op on a frame with no `SetBackdrop`: undecorated is not broken. |
 | `RGBA(c, dr, dg, db, da)` | 4 | Read a stored color in **either** shape the collection persists — keyed `{ r =, g =, b =, a = }` or positional `{ r, g, b, a }` — and return four **numbers**, never a table. See [Reading a stored color](#reading-a-stored-color). |
-| `MakeCloseButton(parent, onClick)` | 1 | The thin × a Ka0s window closes with, returned unanchored for the caller to place. Returns `nil` where `CreateFrame` is unavailable (headless harness, or a load path with no UI). |
+| `MakeCloseButton(parent, onClick[, addonName])` | 1 (3rd arg: **6**) | The close control a Ka0s window closes with, returned unanchored for the caller to place. Returns `nil` where `CreateFrame` is unavailable (headless harness, or a load path with no UI). With `addonName` it draws the collection's own `close` icon; without, the multiplication sign. See [Which close control you get](#which-close-control-you-get). |
 | `MODULES` | 1 | `{ Core = <minor> }` — the live minor of every file in this major. The in-game answer to "which version am I actually running?", and the value that picks this document. |
 | `lib:New(descriptor)` | 1 | Build a prefixed chat printer for one host. See below. |
 
@@ -160,10 +189,3 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
-
-## Moving to version 6
-
-One member gained an optional third argument. `MakeCloseButton(parent, onClick, addonName)` draws
-this collection's own `close` icon when it is told which addon folder is asking, and the
-multiplication sign when it is not — so every call written against this version behaves exactly as
-it does here.

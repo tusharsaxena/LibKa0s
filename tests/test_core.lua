@@ -38,6 +38,102 @@ test("core: SafeToString renders a secret as lib.SECRET and passes nil/booleans 
   assertEqual(core.SECRET, "<secret>")
 end)
 
+-- ── the close button ───────────────────────────────────────────────────────────────────────
+--
+-- THE STUB FRAME CANNOT ANSWER GEOMETRY OR TEXTURE STATE -- `GetWidth` is 0 forever and every other
+-- capitalized method no-ops -- so these cases spy on the CALLS instead of reading state back. That
+-- is the kit's documented way round it, and it is the right shape here anyway: what matters is that
+-- the button was handed the path Media answers with, not that a headless texture object remembers.
+
+--- Run `fn` with CreateFrame handing back a BUTTON that records what is drawn on it.
+---
+--- The spy has to sit on CreateFrame rather than on the parent: the button is a new frame and the
+--- texture is created on THAT, so a recorder installed on the parent never sees a call. Restored
+--- afterwards, because the mocks table is shared by every case in this file.
+local function recording(fn)
+  local rec = {}
+  local real = T.mocks.CreateFrame
+  T.mocks.CreateFrame = function(...)
+    local b = real(...)
+    b.CreateTexture = function()
+      local tex = T.mocks.__stubFrame()
+      tex.SetTexture = function(_, path) rec.path = path end
+      tex.SetVertexColor = function(_, r, g, bb) rec.color = { r, g, bb } end
+      tex.SetSize = function(_, w, h) rec.art = { w, h } end
+      return tex
+    end
+    b.CreateFontString = function()
+      local fs = T.mocks.__stubFrame()
+      fs.SetText = function(_, t) rec.text = t end
+      fs.SetTextColor = function(_, r, g, bb) rec.color = { r, g, bb } end
+      return fs
+    end
+    b.SetSize = function(_, w, h) rec.slot = { w, h } end
+    return b
+  end
+  local ok, err = pcall(fn, rec)
+  T.mocks.CreateFrame = real
+  if not ok then error(err, 0) end
+  return rec
+end
+
+test("core: MakeCloseButton draws the collection's own art when told who is asking", function()
+  -- Minor 6. The name is required because a texture path is absolute from Interface\AddOns\ and
+  -- this library is vendored -- there is no one path to it, and a copy cannot know which addon
+  -- folder it was copied into.
+  -- red under: the multiplication sign whatever the caller passes.
+  recording(function(rec)
+    local b = core.MakeCloseButton(T.mocks.__stubFrame(), function() end, "TestHost")
+    T.assertTrue(b ~= nil, "no button was built")
+    assertEqual(rec.path, "Interface\\AddOns\\TestHost\\libs\\LibKa0s\\media\\icons\\close")
+    assertEqual(rec.text, nil, "a glyph was drawn as well as the icon")
+    T.assertTrue(b.icon ~= nil and b.glyph == nil, "the button records which of the two it drew")
+  end)
+end)
+
+test("core: no addon name is the multiplication sign, exactly as before", function()
+  -- Not a legacy spelling to be migrated away from: it is what an un-updated caller gets, what a
+  -- host without the Media module gets, and what an install missing the art gets. One code path,
+  -- exercised by all three.
+  recording(function(rec)
+    local b = core.MakeCloseButton(T.mocks.__stubFrame(), function() end)
+    assertEqual(rec.text, "\195\151")
+    assertEqual(rec.path, nil, "an icon was drawn for a caller that never said who it was")
+    T.assertTrue(b.glyph ~= nil and b.icon == nil)
+  end)
+end)
+
+test("core: an addon name the art cannot answer for falls back to the glyph", function()
+  -- Media answers nil for an empty name, and nil here is the same branch a missing library takes.
+  recording(function(rec)
+    core.MakeCloseButton(T.mocks.__stubFrame(), function() end, "")
+    assertEqual(rec.text, "\195\151")
+  end)
+end)
+
+test("core: the art is inset inside the click target, not filling it", function()
+  -- The slot stays 18 -- every window in the collection lays its title bar out around that number,
+  -- and DebugLog derives two more offsets from it -- while the glyph is drawn smaller, because art
+  -- that reaches its own edges reads far heavier than the title beside it.
+  recording(function(rec)
+    core.MakeCloseButton(T.mocks.__stubFrame(), function() end, "TestHost")
+    assertEqual(rec.slot[1], 18, "the click target moved")
+    T.assertTrue(rec.art ~= nil, "the art was never sized")
+    T.assertTrue(rec.art[1] < rec.slot[1] and rec.art[1] > 8,
+      "the art is " .. tostring(rec.art[1]) .. " in an " .. tostring(rec.slot[1]) .. "px slot")
+  end)
+end)
+
+test("core: the icon reddens under the pointer and goes back", function()
+  recording(function(rec)
+    local b = core.MakeCloseButton(T.mocks.__stubFrame(), function() end, "TestHost")
+    b:GetScript("OnEnter")(b)
+    assertEqual(table.concat(rec.color, ","), "1,0.3,0.3")
+    b:GetScript("OnLeave")(b)
+    assertEqual(table.concat(rec.color, ","), "0.7,0.7,0.72")
+  end)
+end)
+
 -- ── the prefixed chat printer ──────────────────────────────────────────────────────────────
 
 test("core: Print joins with a space, prefixes verbatim, and routes through the injected sink", function()

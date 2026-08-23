@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 8
+# `LibKa0s-DebugLog-1.0` — version 9
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **8** |
-| Shipped in | v1.8.0 |
-| Status | Superseded |
-| Supersedes | [version 7](./version-7-docs.md) |
-| Superseded by | [version 9](./version-9-docs.md) — the title bar can draw icons |
+| Files and minors | `DebugLog.lua` minor **9** |
+| Shipped in | v1.10.0 |
+| Status | **Current** |
+| Supersedes | [version 8](./version-8-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 8 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 9 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared. Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
@@ -45,20 +45,44 @@ and it returns before `NewLibrary` if Core is missing or below the minor it need
 
 ## What changed at this version
 
-**Comments only. The surface does not move.** Every member, descriptor field, row field, value and
-behaviour described below is exactly what version 7 shipped, so a host written against version
-7 is correct here unmodified and there is nothing to migrate.
+**One optional descriptor field, `addonName`.** Additive: a host that does not pass it gets the
+version-8 windows down to the pixel, and every existing field behaves exactly as it did.
 
-`DebugLog.lua`'s comments and docstrings were rewritten to US English — `colour` → `color`,
-`behaviour` → `behavior`, `synthesised` → `synthesized`, `normalised` → `normalized`,
-`recognise` → `recognize`. `localization-§5` mandates US English and anti-pattern #46 names code
-comments explicitly. **No identifier, no key, no user-visible string and no Blizzard symbol moves**,
-and `tests/test_prose.lua` fails the run on a regression.
+| | | Since |
+|---|---|---|
+| `addonName` | The host's own addon FOLDER name, from its first vararg. Given it, both windows draw the collection's own art — `close`, `copy` and `clear` out of `LibKa0s-Media-1.0` — instead of a multiplication sign and two words. | **9** |
+| Icon title-bar controls | Copy and Clear become 18×18 icon buttons with 12px of art, matching the close control, so the three are one size and one pitch. Each carries a **tooltip** with the label it replaced. | **9** |
+| `frame.clearButton` / `frame.copyButton` | The two controls, recorded on the frame the way `titleBarOffsets` and `titleText` already are — the only handle a host's test has on which of the two shapes it got. | **9** |
 
-The bump exists because the file's bytes changed and LibStub decides which vendored copy wins by
-comparing minors: a minor that does not move is a minor that does not ship, so a consumer already
-carrying version 7 would keep running it and never receive the corrected source. That is why a
-comment-only change still bumps — see [`docs/releasing.md`](../../releasing.md) step 2.
+### Why a name and not a boolean
+
+A texture path is absolute from `Interface\AddOns\` and this library is **vendored**: there is no
+one path to it, and a copy cannot know which addon folder it was copied into. The host has that
+string as its first vararg and nothing else does.
+
+**Do not pass `d.name` blindly.** That field seeds the frame globals and only *happens* to equal the
+folder name in most hosts; they are different questions and a host where they differ would get a
+path into nowhere — which draws nothing and raises nothing.
+
+### The offsets move when the icons do
+
+Copy and Clear were 42 and 40 wide as words and are 18 each as icons, so with `addonName` the
+derived offsets tighten:
+
+| | Words (no `addonName`) | Icons |
+|---|---|---|
+| `close` | `-6` | `-6` |
+| `clear` | `-30` | `-30` |
+| `copy` | `-78` | `-54` |
+
+`frame.titleBarOffsets` still reports whichever it built, and a host close button wider than 18
+still pushes both out of its way.
+
+### Why the tooltip is not optional
+
+Dropping a word for a mark buys room and costs the one thing the word was doing: saying what the
+button is. A clipboard and a bin are not universally legible, so the label moves into a tooltip
+rather than disappearing.
 ## Lib-level surface
 
 | Name | Since | Meaning |
@@ -91,6 +115,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 | `skin` | table | no | 1 | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
 | `applySkin` | function | no | **4** | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than colour, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
+| `addonName` | string | no | **9** | The host's own addon folder name. Given it, both windows draw this collection's art; omitted, they draw the version-8 glyph and words. See [What changed at this version](#what-changed-at-this-version). |
 | `makeCloseButton` | function | no | **4** | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. **Rarely the right field, and it has no consumer today** — these are the library's windows, so they wear the library's close glyph, and a host whose own main window closes with something else must not push that difference onto them (`standalone-windows`). Pass it only for a close control genuinely *different in kind*. See [The empty `makeCloseButton`](#the-empty-makeclosebutton). |
 
 ## The instance surface
@@ -186,9 +211,3 @@ tested, unused field otherwise reads as one to every reader who finds it.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
-
-## Moving to version 9
-
-One optional descriptor field, `addonName`. Given it, both windows draw the collection's own art —
-close, copy and clear — and the Copy/Clear offsets tighten from `-78` to `-54` because a mark is
-narrower than a word. Omit it and everything looks and measures exactly as it does at this version.

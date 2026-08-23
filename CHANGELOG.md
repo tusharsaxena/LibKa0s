@@ -10,6 +10,41 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.10.0 — 2026-08-23
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **DebugLog minor 9**,
+**Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**, **OptionsScroll minor 3**,
+**Perf minor 7**, **PerfPanel minor 3**, **kit revision 11**. Two shipped files move — `Core.lua`
+and `DebugLog.lua` — and the art they now draw was already in the payload as of v1.9.2.
+
+**The library's own windows can wear the collection's art.** v1.9.2 shipped 113 icons and nothing in
+this library drew one: the debug console still closed with a multiplication sign and cleared with the
+word "Clear", beside a host window whose own header had been drawing the icon set for a release. Two
+changes close that gap.
+
+**`Core.MakeCloseButton(parent, onClick, addonName)`** draws `LibKa0s-Media-1.0`'s `close` icon when
+it is told which addon folder is asking. 18×18 as it has always been, with 12px of art inset inside
+it, gray at rest and red under the pointer — the same two colors the glyph used. Full contract in
+[docs/api/Core/version-6-docs.md](docs/api/Core/version-6-docs.md).
+
+**The console descriptor takes `addonName`** and, given it, draws close, copy and clear as icons on
+both its windows. The three title-bar controls become one size and one pitch — they were 18, 42 and
+40 wide and only lined up by arithmetic — so the derived Copy offset tightens from `-78` to `-54`.
+Each icon carries a **tooltip** with the label it replaced: dropping a word for a mark buys room and
+costs the one thing the word was doing, and a clipboard and a bin are not universally legible. Full
+contract in [docs/api/DebugLog/version-9-docs.md](docs/api/DebugLog/version-9-docs.md).
+
+**It is a name and not a boolean, in both.** A texture path is absolute from `Interface\AddOns\`
+and this library is vendored: there is no one path to it, and a copy cannot know which folder it was
+copied into. The host has that string as its first vararg and nothing else does. `DebugLog`'s
+documentation says plainly not to pass `d.name` for it — that field seeds frame globals and only
+happens to equal the folder name in most hosts.
+
+**Additive, and the old spelling is not deprecated.** A caller that passes nothing gets the
+version-8 windows down to the pixel. That path is also what a host without the Media module gets and
+what an install missing the art gets — three cases, one branch, so there is no degraded path that
+only runs where nobody tests.
+
 ## v1.9.2 — 2026-08-23
 
 Versions in this release: **Core minor 5**, **Media minor 3**, **DebugLog minor 8**,

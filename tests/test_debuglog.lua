@@ -717,6 +717,48 @@ test("dbg: the title-bar offsets are derived from the close button's width", fun
   assertEqual(off.copy, -78, "unchanged from minor 3 for the default 18-wide button")
 end)
 
+test("dbg: with addonName the title bar draws icons, and they are narrower than the words", function()
+  -- Minor 9. The three controls become one size and one pitch; at minor 8 they were 18, 42 and 40
+  -- wide and only lined up by arithmetic.
+  -- red under: text buttons whatever the descriptor says.
+  local D = newLog{ addonName = "TestHost" }
+  D:Show()
+  local f = D._frameForTest
+  T.assertTrue(f.copyButton.icon ~= nil, "Copy did not draw an icon")
+  T.assertTrue(f.clearButton.icon ~= nil, "Clear did not draw an icon")
+  assertEqual(f.titleBarOffsets.clear, -30, "the close button is still 18 wide")
+  assertEqual(f.titleBarOffsets.copy, -54, "-30 - 18 - 6, where a 42-wide word gave -78")
+end)
+
+test("dbg: an icon control keeps the label the word was carrying, as a tooltip", function()
+  -- Dropping a word for a mark costs the one thing the word was doing. A clipboard and a bin are
+  -- not universally legible, so the label moves rather than disappearing.
+  local D = newLog{ addonName = "TestHost" }
+  D:Show()
+  assertEqual(D._frameForTest.copyButton.tooltipText, D:Text("COPY"))
+  assertEqual(D._frameForTest.clearButton.tooltipText, D:Text("CLEAR"))
+end)
+
+test("dbg: no addonName is the minor-8 title bar, word for word", function()
+  -- The text path is not a legacy spelling to migrate away from: it is what a host that has not
+  -- been updated gets, what a host without the Media module gets, and what an install missing the
+  -- art gets. Three cases, one code path.
+  local D = newLog()
+  D:Show()
+  local f = D._frameForTest
+  assertEqual(f.copyButton.icon, nil, "an icon was drawn for a host that never asked")
+  assertEqual(f.titleBarOffsets.copy, -78, "the word-width offsets")
+end)
+
+test("dbg: an addonName the art does not answer for falls back to words", function()
+  -- Media answers nil for an icon it does not ship, and nil here means "draw the word" -- the same
+  -- branch a missing library takes.
+  local D = newLog{ addonName = "" }
+  D:Show()
+  assertEqual(D._frameForTest.copyButton.icon, nil)
+  assertEqual(D._frameForTest.titleBarOffsets.copy, -78)
+end)
+
 test("dbg: a wider host close button pushes Copy and Clear out of its way", function()
   local D = newLog{ makeCloseButton = function()
     local b = T.mocks.__stubFrame()

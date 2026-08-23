@@ -49,7 +49,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [5](./Core/version-5-docs.md) | `Core.lua` 5 | v1.8.0 | **Current** |
+| [6](./Core/version-6-docs.md) | `Core.lua` 6 | v1.10.0 | **Current** |
+| [5](./Core/version-5-docs.md) | `Core.lua` 5 | v1.8.0 – v1.9.2 | Superseded |
 | [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | Superseded |
 | [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.6.3 | Superseded |
 | [2](./Core/version-2-docs.md) | `Core.lua` 2 | v1.0.0 – v1.2.0 | Superseded |
@@ -66,7 +67,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [8](./DebugLog/version-8-docs.md) | `DebugLog.lua` 8 | v1.8.0 | **Current** |
+| [9](./DebugLog/version-9-docs.md) | `DebugLog.lua` 9 | v1.10.0 | **Current** |
+| [8](./DebugLog/version-8-docs.md) | `DebugLog.lua` 8 | v1.8.0 – v1.9.2 | Superseded |
 | [7](./DebugLog/version-7-docs.md) | `DebugLog.lua` 7 | v1.5.0 – v1.7.0 | Superseded |
 | [6](./DebugLog/version-6-docs.md) | `DebugLog.lua` 6 | v1.3.1, v1.4.0 | Superseded |
 | [5](./DebugLog/version-5-docs.md) | `DebugLog.lua` 5 | v1.3.0 | Superseded |
