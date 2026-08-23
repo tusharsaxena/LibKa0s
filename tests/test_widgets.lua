@@ -102,6 +102,11 @@ local CHECK_FALLBACK   = "Interface\\Buttons\\UI-CheckBox-Check"
 local HOST_CHEVRON     = "Interface\\AddOns\\Host\\media\\icons\\chevron-down"
 local HOST_CHECK       = "Interface\\AddOns\\Host\\media\\icons\\confirm"
 local HOST_FONT        = "Interface\\AddOns\\Host\\media\\fonts\\JetBrainsMono-Regular.ttf"
+-- A SECOND host, with its own face and no art of its own. The point of the library is that these
+-- two can be open in one process, so the cases at the foot of this file drive both through the one
+-- shared row pool.
+local OTHER_FONT       = "Interface\\AddOns\\Other\\media\\fonts\\CascadiaMono-Regular.ttf"
+local CHECK_FALLBACK_MARKUP = "|T" .. CHECK_FALLBACK .. ":0|t "
 
 -- ── The injection seam (new at the move) ──────────────────────────────────────
 
@@ -172,9 +177,11 @@ end
 -- the library has no art of its own to name here.
 local CHECK = "|T" .. HOST_CHECK .. ":0|t "
 
--- A recording stand-in for a row's FontString. The mock resolves every FontString to its own frame,
--- which conflates a row's label, its glyph and the button itself; these keep the three apart so the
--- paint rules are observable at all.
+-- A recording stand-in for a row's FontString. CreateFontString still falls through the factory's
+-- catch-all above and answers with the frame itself, which conflates a row's label, its glyph and
+-- the button itself; these keep the three apart so the paint rules are observable at all. (Only
+-- CreateTexture was given its own identity up there, because only the arrow's size was doing
+-- arithmetic damage.)
 local function fakeFS()
   local r = { points = {} }
   function r:SetText(t) self.text = t end
@@ -211,9 +218,23 @@ local function populate(dd, opts, n)
   return MENU.buttons
 end
 
--- The mock resolves CreateTexture to the frame itself, so the dropdown's 12x12 arrow overwrites the
--- button's own size on the way out of MakeDropdown. Re-assert the width after building, or every
--- dropdown reports 12px wide and the "never narrower than its own button" rule is unobservable.
+--- Populate the pool AGAIN, from a different dropdown, WITHOUT re-seeding the rows.
+---
+--- This is the shape the whole per-paint argument rests on and the one `populate` cannot express:
+--- the rows are the SAME objects the previous dropdown just painted, so anything paintMenuRow fails
+--- to write is visibly the previous host's. Two dropdowns through one pool is the process the
+--- library created by existing — before the lift the pool was private to one addon.
+local function repopulate(dd, opts)
+  dd:SetOptions(opts)
+  MENU:Populate(dd)
+  return MENU.buttons
+end
+
+-- BankLedger's mock resolved CreateTexture to the frame itself, so the dropdown's 12x12 arrow
+-- overwrote the button's own size on the way out of MakeDropdown, and the width had to be
+-- re-asserted after building or every dropdown reported 12px wide. The factory at the head of this
+-- file gives a texture its own identity instead, so the SetWidth below is now belt-and-braces
+-- rather than load-bearing. It stays because the moved block moves whole.
 local function menuDropdown(multi, width)
   local dd = W.Dropdown(mocks.UIParent, width or 110, { check = HOST_CHECK, glyphFont = HOST_FONT })
   dd:SetWidth(width or 110)
@@ -345,6 +366,42 @@ test("A host that names no face gets no glyph column", function()
   dd:SetMulti(true)
   local rows = populate(dd, MENU_OPTS)
   assertEqual(rows[3].glyph.shown, false)
+end)
+
+-- ── Two hosts, one row pool ───────────────────────────────────────────────────
+--
+-- The pair below is what makes the per-paint rule an ASSERTION rather than a comment. Each case
+-- paints the same pooled rows from one dropdown and then from a second carrying different art, and
+-- asserts the SECOND one won. A single-dropdown case cannot tell the two implementations apart:
+-- with only one dropdown in the process, "set once at creation from the first dd" and "set on every
+-- paint from this dd" produce identical rows.
+
+test("A second dropdown repaints the pooled rows in ITS face, not the first one's", function()
+  local first = W.Dropdown(mocks.UIParent, 110, { glyphFont = HOST_FONT })
+  first:SetMulti(true)
+  local rows = populate(first, MENU_OPTS)
+  assertEqual(rows[3].glyph.font[1], HOST_FONT, "the first host's face reaches the pool")
+
+  local second = W.Dropdown(mocks.UIParent, 110, { glyphFont = OTHER_FONT })
+  second:SetMulti(true)
+  rows = repopulate(second, MENU_OPTS)
+  assertEqual(rows[3].glyph.font[1], OTHER_FONT,
+    "and the second host's face replaces it — a face set at row creation would still read as the "
+    .. "first host's, which is the regression the move exists to prevent")
+end)
+
+test("A second dropdown ticks the pooled rows with ITS art, not the first one's", function()
+  local first = menuDropdown(true)   -- carries HOST_CHECK
+  local rows = populate(first, MENU_OPTS)
+  assertEqual(rows[1].fs.text, CHECK .. "All", "the first host's tick reaches the pool")
+
+  -- No check art at all: the second host is one with no LibKa0s-Media, on the Blizzard rung.
+  local second = W.Dropdown(mocks.UIParent, 110, { glyphFont = HOST_FONT })
+  second:SetMulti(true)
+  rows = repopulate(second, MENU_OPTS)
+  assertEqual(rows[1].fs.text, CHECK_FALLBACK_MARKUP .. "All",
+    "and the second host's tick replaces it — red under a file-local markup, and red under any "
+    .. "read that took the tick from the pool rather than from the dropdown being painted")
 end)
 
 mocks.CreateFrame, mocks.UIParent = realCreateFrame, realUIParent
