@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 1
+# `LibKa0s-Widgets-1.0` — version 2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,26 +8,38 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **1** |
-| Shipped in | v1.11.0 |
-| Status | Superseded |
-| Supersedes | — (first version) |
-| Superseded by | [version 2](./version-2-docs.md) — adds `lib.CloseMenu()` |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 1 }` |
+| Files and minors | `Widgets.lua` minor **2** |
+| Shipped in | v1.11.1 |
+| Status | **Current** |
+| Supersedes | [version 1](./version-1-docs.md) — which shipped no way to close the shared menu from outside a click |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 2 }` |
 
 ## What changed at this version
 
-First release. Lifted from BankLedger's `modules/Browser.lua`; see that repo's history before
-v1.11.0 for the widget's prior life.
+**`lib.CloseMenu()` is new.** It closes the shared popup menu if it is open, and is a safe no-op
+when no dropdown has ever opened it or when it is already hidden. It takes no parameters, and there
+is no companion "is it open" query — no adopting host needs one.
+
+The gap was found by the first adopter, re-vendoring version 1 into BankLedger. Before v1.11.0,
+BankLedger's dropdown was a file-local to `modules/Browser.lua`, and its host frame closed the menu
+on `OnHide` directly — code the lift removed along with everything else file-local. The library's
+popup is a process-wide singleton parented to `UIParent` at `FULLSCREEN_DIALOG` (see *Behavior a
+host must know* below), so a host frame's own `Hide()` no longer reaches it. Closing the host window
+by any route that is not a click on the dropdown itself — Escape, a slash command — left the menu
+orphaned: still shown, still at `FULLSCREEN_DIALOG`, floating over the game with nothing left to
+hide it. The click-catcher only ever helped when the player actually clicked.
+
+Nothing else moved. `Dropdown` and every instance method described below are unchanged from version
+1.
 
 ## What this major is
 
 The collection's flat-skin dropdown button, and the one popup menu every instance of it drops.
 BankLedger had one, local to `modules/Browser.lua`, and MultiMeters was about to grow a second copy
 of the same widget — two skins to keep in step, and the collection stops reading as one author's
-work the first time one copy is restyled and the other is not. `Widgets.Dropdown` is the whole
-surface: one constructor, a handful of instance methods, and a shared popup menu behind every button
-built by it.
+work the first time one copy is restyled and the other is not. `Widgets.Dropdown` builds the
+dropdown; `Widgets.CloseMenu` closes the shared popup behind every dropdown any host has built.
 
 Depends on LibStub and `LibKa0s-Core-1.0` (minor 1 or newer), and on no addon framework.
 
@@ -46,6 +58,7 @@ library's.
 | Name | Since | Meaning |
 |---|---|---|
 | `Dropdown(parent, width, opts)` | 1 | Builds one flat-skin dropdown button parented to `parent`, `width` px wide and 20px tall, that opens the shared popup menu on click. Returns the dropdown frame. |
+| `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
 | `MODULES` | 1 | `{ Widgets = <minor> }` — the live minor, and the value that picks this document. |
 
 ### `Dropdown(parent, width, opts)`
@@ -56,7 +69,16 @@ library's.
 |---|---|---|---|
 | `chevron` | 1 | Resolved texture path for the collapsed button's ▼ affordance. | `Interface\Buttons\Arrow-Down-Up` (Blizzard's own arrow) |
 | `check` | 1 | Resolved texture path for the tick a multi-select row draws in front of a selected value. Built once per dropdown into inline `\|T…:0\|t ` markup and stored on `dd.__check`. | `Interface\Buttons\UI-CheckBox-Check` |
-| `glyphFont` | 1 | Resolved font path for the optional leading glyph a row may carry (`opt.glyph`). **A precondition for any option carrying `glyph`** — see *Behaviour a host must know* below. | No glyph column is drawn at all: the glyph `FontString` is hidden on every row regardless of whether that row's option has a `glyph`. |
+| `glyphFont` | 1 | Resolved font path for the optional leading glyph a row may carry (`opt.glyph`). **A precondition for any option carrying `glyph`** — see *Behavior a host must know* below. | No glyph column is drawn at all: the glyph `FontString` is hidden on every row regardless of whether that row's option has a `glyph`. |
+
+### `CloseMenu()`
+
+Takes no arguments and returns nothing. **A host cannot do this itself**: the popup is a
+process-wide singleton, built lazily by the first dropdown any addon in the process opens and
+parented to `UIParent`, not to any one host's frame — it outlives every window that ever opened it,
+and no host holds a reference to it. Call it from every place a host closes its own window by a
+route that is not a click on the dropdown — an `OnHide` handler, an Escape binding, a slash command
+that hides the frame — so the shared menu never outlives the window it dropped from.
 
 ## Instance methods
 
@@ -95,19 +117,26 @@ building the dropdown:
 ## `__`-prefixed instance fields are INTERNAL
 
 `dd.__check` and `dd.__glyphFont` are implementation state, not contract. This library's own test
-suite reads them, because a suite pinning behaviour needs some seam to pin it through — but that is
+suite reads them, because a suite pinning behavior needs some seam to pin it through — but that is
 the suite exercising its own library from the inside, not a precedent for a host. **A host may not
 read or write a `__`-prefixed field on a dropdown.** This major has no deprecation mechanism: once
 published, a field that a host has come to depend on cannot be removed or reshaped without breaking
 someone silently. Keeping the internal/contract line explicit here is what keeps the surface above
 this line — and only that surface — permanent.
 
-## Behaviour a host must know
+## Behavior a host must know
 
 - **The popup menu is a process-wide singleton.** One shared frame, built lazily on the first click
   of any dropdown in the process, drops for every dropdown built by every addon that has adopted this
   major. Exactly one dropdown is open at a time across the whole client — opening a second closes the
-  first, the way a native game menu does.
+  first, the way a native game menu does. It outlives any one host's window, which is exactly why a
+  host cannot reach it through its own frame and must call `CloseMenu()` instead — see below.
+- **A host must call `CloseMenu()` from every non-click close path it has.** Because the popup does
+  not belong to any one host's frame, hiding a host's window — by `OnHide`, by Escape, by a slash
+  command — does not hide the menu. Without the call, closing the host window by any route other
+  than a click on the dropdown leaves the menu orphaned: still shown at `FULLSCREEN_DIALOG`, floating
+  over the game with nothing left to hide it. The click-catcher built alongside the menu only ever
+  helps when the player clicks outside it; it does nothing for a window closed any other way.
 - **Rows are pooled across dropdowns, and every field is repainted on every pass.** The popup's row
   buttons are reused rather than rebuilt, and they are shared by every dropdown that has ever opened
   in this process, not just the one currently open. Every visible field of a row — its text, its
@@ -124,12 +153,15 @@ this line — and only that surface — permanent.
 
 ## Known and intentional absences
 
-Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 1 is a
+Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 2 is a
 decision, not an oversight, and every one of these is reachable later without a major bump:
 
 - **No setters to restyle a dropdown after it is built.** `chevron`, `check` and `glyphFont` are
   read once, at construction, from `opts`; there is no `dd:SetChevron(...)` or equivalent to change
   them on a live instance.
+- **No "is the menu open" query.** `CloseMenu()` is a command, not a toggle, and neither shipped
+  consumer needs to ask the question before issuing it — a query added on spec ahead of a caller is
+  a surface nobody has tested.
 - **No search box.**
 - **No keyboard navigation.**
 - **No scrolling for a long option list** — every row in `_options` gets a row in the menu, and the
@@ -138,7 +170,7 @@ decision, not an oversight, and every one of these is reachable later without a 
 - **No per-row disable.**
 
 None of these is wanted by either shipped consumer, and a widget that grows features nobody asked for
-is a widget whose degraded behaviour nobody has tested.
+is a widget whose degraded behavior nobody has tested.
 
 ## Degraded
 
@@ -147,17 +179,5 @@ With `LibKa0s-Widgets-1.0` absent — no vendored copy, or a copy whose `NEEDS_C
 for any other major. There is no partial module here to leave half-wired: this is a single-file
 major, so the host either gets the whole surface or none of it. The host must have a plan for `nil`
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
-dead control that opens no menu.
-
-## Moving to version 2
-
-Additive, and nothing at this version behaves differently: `Dropdown` and every instance method
-above are unchanged. Version 2 adds one lib-level function, `CloseMenu()`, which closes the shared
-popup menu if it is open and is a safe no-op otherwise.
-
-If you are on this version, the shared popup can be left orphaned — still shown, at
-`FULLSCREEN_DIALOG`, floating over the game — by any close of a host window that is not a click on
-the dropdown itself: Escape, a slash command, any other non-click hide. The section above this one
-does not mention the failure because this version has no way to prevent it; version 2 exists because
-a real adopter hit it. A host still on this version has no `CloseMenu()` to call and needs a
-re-vendor to get one.
+dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
+non-click close path must itself become a no-op alongside the rest of the degraded surface.

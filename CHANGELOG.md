@@ -10,6 +10,28 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.11.1 — 2026-08-24
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 2**,
+**DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
+**OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 11**.
+
+**`lib.CloseMenu()` closes `LibKa0s-Widgets-1.0`'s shared popup from outside a click.** The gap was
+found by the first adopter, re-vendoring v1.11.0 into BankLedger: the widget's popup is a
+process-wide singleton parented to `UIParent` at `FULLSCREEN_DIALOG`, built lazily by the first
+dropdown any addon opens — not to any one host's frame, unlike the file-local menu the lift took it
+from. Before this minor, closing a host window by any route that was not a click on the dropdown
+itself — Escape, a slash command — left the menu orphaned: still shown, still at
+`FULLSCREEN_DIALOG`, floating over the game with nothing left to hide it. The click-catcher built
+alongside the menu only ever helped when the player actually clicked.
+
+`CloseMenu()` takes no parameters, hides the shared menu if it is open, and is a safe no-op if no
+dropdown has ever opened it or if it is already hidden — hiding the menu is sufficient on its own,
+because the menu's own `OnHide` script already hides the click-catcher. No other file moves;
+`Widgets.lua`'s `Dropdown` constructor and every instance method are unchanged from v1.11.0.
+
+Full contract in [docs/api/Widgets/version-2-docs.md](docs/api/Widgets/version-2-docs.md).
+
 ## v1.11.0 — 2026-08-24
 
 Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 1**,

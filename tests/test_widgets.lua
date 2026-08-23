@@ -404,4 +404,64 @@ test("A second dropdown ticks the pooled rows with ITS art, not the first one's"
     .. "read that took the tick from the pool rather than from the dropdown being painted")
 end)
 
+-- ── lib.CloseMenu (new at minor 2) ────────────────────────────────────────────
+--
+-- A host cannot close the shared popup itself: the menu is a process-wide singleton parented to
+-- UIParent (see EnsureMenu above), built lazily by the FIRST dropdown any addon in the process
+-- opens, and no host frame holds a reference to it. Before this function existed, a host that
+-- closed its own window by any route that was not a click on the dropdown — Escape, a slash
+-- command — left the menu ORPHANED at FULLSCREEN_DIALOG: still shown, floating over the game, with
+-- nothing left to hide it. The click-catcher only ever helped when the player actually clicked.
+
+test("Widgets.CloseMenu hides an open menu", function()
+  local dd = W.Dropdown(mocks.UIParent, 110)
+  dd:SetOptions({ { value = "x", label = "X" } })
+  dd:__fire("OnClick")
+  assertTrue(MENU:IsShown(), "opening the dropdown showed the shared menu")
+  W.CloseMenu()
+  assertEqual(MENU:IsShown(), false)
+end)
+
+test("Widgets.CloseMenu is a no-op when the menu is already hidden", function()
+  local dd = W.Dropdown(mocks.UIParent, 110)
+  dd:SetOptions({ { value = "x", label = "X" } })
+  dd:__fire("OnClick")
+  W.CloseMenu()
+  assertEqual(MENU:IsShown(), false, "closed by the first call")
+  -- A second call on an already-hidden menu must not error, and must leave it hidden.
+  local ok = pcall(W.CloseMenu)
+  assertTrue(ok, "closing an already-hidden menu must not raise")
+  assertEqual(MENU:IsShown(), false)
+end)
+
+test("Widgets.CloseMenu is a no-op when no dropdown has ever opened the menu", function()
+  -- A fresh library instance, in its own mock set, so its file-local `menu` is genuinely still nil
+  -- — the shared W above already had its menu built by the file-scope capture at the top of this
+  -- file, so it cannot exercise this path. See tests/test_core.lua's Perf-degradation cases for
+  -- the same fresh-mocks-plus-fresh-load shape.
+  local Loader     = dofile("tests/_kit/loader.lua")
+  local buildMocks = dofile("tests/wow_mock.lua")
+  local fresh = buildMocks()
+  Loader.load("LibKa0s/Core.lua", nil, fresh)
+  Loader.load("LibKa0s/Widgets.lua", nil, fresh)
+  local freshWidgets = fresh.LibStub("LibKa0s-Widgets-1.0")
+  local ok = pcall(freshWidgets.CloseMenu)
+  assertTrue(ok, "closing before anything has ever opened must not raise")
+end)
+
+test("Widgets.CloseMenu hides the click-catcher too", function()
+  local dd = W.Dropdown(mocks.UIParent, 110)
+  dd:SetOptions({ { value = "x", label = "X" } })
+  dd:__fire("OnClick")
+  assertTrue(MENU.catcher:IsShown(), "opening the dropdown showed the catcher")
+  W.CloseMenu()
+  -- The mock's Hide() does not auto-invoke OnHide the way the real client does — the same gap
+  -- test_debuglog.lua's "showing and hiding the console tells the host" case works around by
+  -- firing the script explicitly. Firing it here exercises the wiring CloseMenu relies on rather
+  -- than duplicating it: EnsureMenu's menu:SetScript("OnHide", ...) is what hides menu.catcher,
+  -- which is why CloseMenu itself never touches the catcher directly.
+  MENU:__fire("OnHide")
+  assertEqual(MENU.catcher:IsShown(), false)
+end)
+
 mocks.CreateFrame, mocks.UIParent = realCreateFrame, realUIParent

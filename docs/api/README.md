@@ -68,7 +68,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Widgets/version-1-docs.md) | `Widgets.lua` 1 | v1.11.0 | **Current** |
+| [2](./Widgets/version-2-docs.md) | `Widgets.lua` 2 | v1.11.1 | **Current** |
+| [1](./Widgets/version-1-docs.md) | `Widgets.lua` 1 | v1.11.0 | Superseded |
 
 ### `LibKa0s-DebugLog-1.0`
 
