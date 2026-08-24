@@ -10,6 +10,77 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.11.2 — 2026-08-24
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 3**,
+**DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
+**OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 11**.
+
+**`LibKa0s-Widgets-1.0`'s menu raised on the first click, in every host.** A row's optional glyph
+`FontString` was created with no font — `CreateFontString(nil, "OVERLAY")`, no template — and
+`paintMenuRow` then set its text unconditionally, on every row of every paint. The client answers
+`FontString:SetText(): Font not set` to that, so the first click on any dropdown this major built
+errored, wherever the host happened to build its window.
+
+It was not confined to a host that names no `glyphFont`. The face is set only on a row that *has* a
+glyph, so a host doing everything right still painted its glyphless rows through a `FontString`
+that had never been given a font; a host with no face at all hit it on every row.
+
+The fix is one argument — the glyph is built from the `GameFontHighlightSmall` template, so it
+always has a font — and the per-paint `SetFont` that v1.11.0 introduced is untouched, so each host
+still imposes its own monospace face. No contract moves: `Dropdown`, `CloseMenu` and every instance
+method are unchanged from v1.11.1, and the documented behavior of `opts.glyphFont` is the sentence
+it has been since v1.11.0 — *dropping* the glyph column is what it always promised and what this
+release is the first to actually do. Adopters need a re-vendor and no code change.
+
+**The test kit's mock now raises `Font not set` too.** 553 cases went green over this, because the
+widget suite's FontString stand-in stored any string it was handed. MultiMeters' own mock models
+this exact error, with a comment recording the load the live client took down when it hit it — the
+consumer had been burned by the class of bug and modelled it; the library it now vendors had not.
+`tests/test_widgets.lua`'s frame factory now gives a `FontString` its own identity, records the
+template it was built from, and raises on `SetText` when it has neither font nor template. Two new
+cases build REAL rows rather than recording stand-ins, because it is the row's *creation* that was
+wrong and every existing case seeded rows that bypassed it.
+
+Full contract in [docs/api/Widgets/version-3-docs.md](docs/api/Widgets/version-3-docs.md).
+
+## v1.11.1 — 2026-08-24
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 2**,
+**DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
+**OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 11**.
+
+**`lib.CloseMenu()` closes `LibKa0s-Widgets-1.0`'s shared popup from outside a click.** The gap was
+found by the first adopter, re-vendoring v1.11.0 into BankLedger: the widget's popup is a
+process-wide singleton parented to `UIParent` at `FULLSCREEN_DIALOG`, built lazily by the first
+dropdown any addon opens — not to any one host's frame, unlike the file-local menu the lift took it
+from. Before this minor, closing a host window by any route that was not a click on the dropdown
+itself — Escape, a slash command — left the menu orphaned: still shown, still at
+`FULLSCREEN_DIALOG`, floating over the game with nothing left to hide it. The click-catcher built
+alongside the menu only ever helped when the player actually clicked.
+
+`CloseMenu()` takes no parameters, hides the shared menu if it is open, and is a safe no-op if no
+dropdown has ever opened it or if it is already hidden — hiding the menu is sufficient on its own,
+because the menu's own `OnHide` script already hides the click-catcher. No other file moves;
+`Widgets.lua`'s `Dropdown` constructor and every instance method are unchanged from v1.11.0.
+
+Full contract in [docs/api/Widgets/version-2-docs.md](docs/api/Widgets/version-2-docs.md).
+
+## v1.11.0 — 2026-08-24
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 1**,
+**DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
+**OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 11**.
+
+**New major: `LibKa0s-Widgets-1.0`.** The collection's flat dropdown, lifted out of
+BankLedger's `modules/Browser.lua` because MultiMeters was about to grow a second copy of it.
+One `Widgets.Dropdown(parent, width, opts)`, one process-wide popup menu behind every instance
+of it, and a pooled row list. It takes no dependency on `LibKa0s-Media-1.0` — a vendored copy
+cannot know which addon folder it sits in, so the chevron, the multi-select tick and the row
+glyph's face all arrive as parameters, each with the Blizzard rung it falls to.
+
+No other shipped file moves. Every other minor above is unchanged from v1.10.2.
+
 ## v1.10.2 — 2026-08-23
 
 Versions in this release: **Core minor 6**, **Media minor 3**, **DebugLog minor 10**,

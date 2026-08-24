@@ -61,7 +61,7 @@ badge and any count quoted in the docs must agree with it.
 - media: RegisterLSM registers every font and every texture, by catalog name
 - media: no LibSharedMedia is 0 registrations, not an error
 
-### test_widgets.lua (24)
+### test_widgets.lua (18)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
 - Widgets.Dropdown falls to Blizzard's arrow with no host art
@@ -79,14 +79,8 @@ badge and any count quoted in the docs must agree with it.
 - Browser menu: clicking a single-select row sets the value and closes the menu
 - A glyphed row is painted in the host's face on every pass
 - A host that names no face gets no glyph column
-- A row built with no face at all paints without raising
-- A glyphless row paints without raising even when the host DID name a face
 - A second dropdown repaints the pooled rows in ITS face, not the first one's
 - A second dropdown ticks the pooled rows with ITS art, not the first one's
-- Widgets.CloseMenu hides an open menu
-- Widgets.CloseMenu is a no-op when the menu is already hidden
-- Widgets.CloseMenu is a no-op when no dropdown has ever opened the menu
-- Widgets.CloseMenu hides the click-catcher too
 
 ### test_debuglog.lua (62)
 
@@ -615,7 +609,7 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | test_core.lua | 34 |
 | test_media.lua | 15 |
-| test_widgets.lua | 24 |
+| test_widgets.lua | 18 |
 | test_debuglog.lua | 62 |
 | test_slash.lua | 81 |
 | test_options.lua | 68 |
@@ -629,4 +623,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **555** |
+| **Total** | **549** |

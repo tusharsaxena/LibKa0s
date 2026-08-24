@@ -29,6 +29,7 @@ the file you need:
 |---|---|---|
 | `LibKa0s-Core-1.0` | `<Core>` | `LibStub("LibKa0s-Core-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
+| `LibKa0s-Widgets-1.0` | `<Widgets>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsWidgets>.<OptionsScroll>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
@@ -62,6 +63,14 @@ answers both "what does this version have?" and "when did I get it?".
 | [3](./Media/version-3-docs.md) | `Media.lua` 3 | v1.9.2 | **Current** |
 | [2](./Media/version-2-docs.md) | `Media.lua` 2 | v1.9.1 | Superseded |
 | [1](./Media/version-1-docs.md) | `Media.lua` 1 | v1.9.0 | Superseded |
+
+### `LibKa0s-Widgets-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [3](./Widgets/version-3-docs.md) | `Widgets.lua` 3 | v1.11.2 | **Current** |
+| [2](./Widgets/version-2-docs.md) | `Widgets.lua` 2 | v1.11.1 | Superseded |
+| [1](./Widgets/version-1-docs.md) | `Widgets.lua` 1 | v1.11.0 | Superseded |
 
 ### `LibKa0s-DebugLog-1.0`
 
