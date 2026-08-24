@@ -16,15 +16,17 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
    That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
-   is twelve files, the eight in `LibKa0s/` plus four under `testkit/`, because `tests/` and `docs/`
-   are excluded. A consumer's is scoped too, and usually excludes `libs/` and `tests/`. 0/0 only
-   means something if the files carrying the seam are inside the checked set, so confirm that before
-   reading a clean run as a clean adoption.
+   is seventeen files, the thirteen in `LibKa0s/` plus four under `testkit/`, because `tests/` and
+   `docs/` are excluded. A consumer's is scoped too, and usually excludes `libs/` and `tests/`. 0/0
+   only means something if the files carrying the seam are inside the checked set, so confirm that
+   before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
-   `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All nine, by their exact constant names: `MINOR` in
-   `Core.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in `Slash.lua`, `MINOR` in `Options.lua`,
-   `WIDGETS_MINOR` in `OptionsWidgets.lua`, `SCROLL_MINOR` in `OptionsScroll.lua`, `MINOR` in
-   `Perf.lua`, `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`. The secondary files carry
+   `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
+   thirteen, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Media.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
+   `Slash.lua`, `MINOR` in `Options.lua`, `WIDGETS_MINOR` in `OptionsWidgets.lua`, `SCROLL_MINOR`
+   in `OptionsScroll.lua`, `MINOR` in `Perf.lua`, `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in
+   `Widgets.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
    file you did not touch does not move. Bumping the whole lib in lockstep would discard the
    narrow-skew property that made one major per module worth having.
@@ -35,7 +37,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    the first with a `files` list of three and a `paired` array of two
    (`{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
    `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`). The table carries one row per shipped
-   major — seven today.
+   major — ten today.
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
    say what changed. `tests/test_versioning.lua` fails if the block and any major's `lib.MODULES`
    disagree, so this is enforced rather than remembered.
