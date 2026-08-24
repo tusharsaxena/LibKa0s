@@ -12,7 +12,7 @@ cannot drift. Release order is in
 
 ## v1.14.0 — 2026-08-25
 
-Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 5**,
+Versions in this release: **Core minor 6**, **Env minor 1**, **Media minor 3**, **Widgets minor 5**,
 **DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
 **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 12**.
 

@@ -28,6 +28,7 @@ the file you need:
 | Major | Key shape | In-game check |
 |---|---|---|
 | `LibKa0s-Core-1.0` | `<Core>` | `LibStub("LibKa0s-Core-1.0").MODULES` |
+| `LibKa0s-Env-1.0` | `<Env>` | `LibStub("LibKa0s-Env-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
@@ -55,6 +56,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | Superseded |
 | [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.6.3 | Superseded |
 | [2](./Core/version-2-docs.md) | `Core.lua` 2 | v1.0.0 – v1.2.0 | Superseded |
+
+### `LibKa0s-Env-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Env/version-1-docs.md) | `Env.lua` 1 | v1.14.0 | **Current** |
 
 ### `LibKa0s-Media-1.0`
 

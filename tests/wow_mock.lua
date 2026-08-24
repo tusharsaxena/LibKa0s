@@ -32,6 +32,10 @@ return function()
   }
   M.C_AddOns = { GetAddOnMetadata = function(_, field) return META[field] end }
 
+  -- The map reader LibKa0s-Env-1.0 sits on. Repo-local rather than in testkit/mock_base.lua: the
+  -- kit carries APIs every addon touches, and two addons read a map id.
+  M.C_Map = { GetBestMapForUnit = function(unit) return unit == "player" and 2112 or nil end }
+
   -- The client's interface version, which is where `Interface` actually comes from: GetBuildInfo's
   -- FOURTH return. version, build, date, tocversion.
   M.GetBuildInfo = function() return "12.0.7", "60000", "Jul 31 2026", 120007 end
@@ -42,6 +46,7 @@ return function()
   -- a swapped return would go unnoticed.
   M.__context.class      = "Death Knight"
   M.__context.classToken = "DEATHKNIGHT"
+
 
   return M
 end
