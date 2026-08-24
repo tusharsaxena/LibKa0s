@@ -10,6 +10,69 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.14.0 — 2026-08-25
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 5**,
+**DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
+**OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 12**.
+
+No shipped library file changed. This release is the **test kit** only, and it is about how long the
+green gate takes to answer.
+
+**The loader was re-reading the entire source tree hundreds of times per run.** A suite that wants an
+isolated instance re-loads every vendored library file and every file the TOC names, which is the
+right shape — isolation comes from re-*running* the chunks under a fresh mock, not from unpicking
+what the last instance did. But `loadfile` also re-opens, re-reads and re-*parses* an unchanged file
+on every one of those instances. Measured on Ka0s Multi Meters: **1,246 cases drove 60,112 `loadfile`
+calls**, 28.5s of the run's 31.4s of CPU, and 2m10s of wall clock — because that checkout is on a
+WSL2 `/mnt` mount where each read crosses a 9p boundary.
+
+`Loader.load` now compiles each path once per process and re-calls the cached chunk. Isolation is
+untouched, because the cache holds a **function, not a result**: every instance still calls it and
+still builds its own tables, closures and upvalues. The property that makes this sound is a Lua 5.1
+one — `setfenv` sets the environment a chunk sees when it *next runs*, and a closure created during
+that run inherits its parent's environment *at creation time*, so two instances never share a global
+namespace. `tests/test_loader.lua` pins that by construction rather than by comment. That suite went
+from **2m10s to 11.9s**, with no test changed.
+
+**What was left was subprocess latency, so the runner can now use more processes.** With the reads
+gone, the same suite spent 2.4s of CPU inside an 11.9s wall clock; the other 9.5s was 147 `io.popen`
+calls — directory listings and `git` invocations that cost tens of milliseconds to spawn and nothing
+to compute. `--jobs N` / `-j N` / `--jobs auto` re-invokes the same runner as N children with
+`--shard I/N` and adds their counts up. There is no worker script and no second code path, the same
+way `--list` has none.
+
+Three properties are load-bearing and tested. Shards take **contiguous** slices and are relayed in
+order, so a parallel transcript is byte-identical to a serial one — a gate whose output reshuffles is
+a gate nobody diffs. A shard that dies without printing its count line **fails the run**, because its
+cases are missing from the totals and a gate that goes quiet when it cannot look is worse than no
+gate. And `--shard` forces `jobs = 1`, so a runner carrying `jobs = "auto"` cannot fork a process
+tree. Where there is no POSIX shell to background from, the run falls back to serial with a note
+rather than failing.
+
+**And the vendored-payload gate was spawning one `git` per file.** With the reads cached and the
+fan-out working, that one case was the longest thing left in a consumer's suite: `gitShow` ran
+`git show <tag>:<path>` once per file, and a payload is not a few files — 49 icons and a font meant
+about 66 process spawns and 7.5 seconds. It capped the fan-out too, because a shard is only as fast
+as its slowest case: across 12 shards, eleven finished under 1.3s and the one carrying this took
+7.86s.
+
+`vendor_sync` now reads every blob with one `git cat-file --batch`. The request list goes through a
+temp file, because Lua 5.1's `io.popen` is unidirectional and cannot write to a child's stdin. Each
+reply is sliced by the **length** git states, never by pattern, so a blob carrying newlines, NUL
+bytes or CRLF round-trips unharmed — which is what keeps this safe for the TGAs and the TTF as well
+as the Lua. Verified by breaking it: a corrupted vendored icon still fails the gate, by name. One
+behavior difference, and it is a fix — an empty blob used to read as "the tag does not carry this",
+and now compares equal to an empty local file.
+
+End to end on Ka0s Multi Meters — 1,246 cases, WSL2 `/mnt` checkout, 16 cores — **2m10.8s to 3.7s**:
+11.6s after the chunk cache, 8.2s after the batched reads, 3.7s at `-j 12`.
+
+Parallelism is **opt-in per repo** (`Kit.run`'s default is `jobs = 1`), because splitting the suites
+also splits the process-wide state they share. A suite that quietly depended on an earlier suite
+having run first passes serially and fails sharded — always a bug, and `--jobs` is what makes it
+visible. The chunk cache has no such caveat and is on for everyone.
+
 ## v1.13.0 — 2026-08-24
 
 Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 5**,
