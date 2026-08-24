@@ -7,6 +7,7 @@ read_globals = {
   "time", "date", "debugprofilestop", "UnitAffectingCombat", "InCombatLockdown",
   "C_AddOns", "GetAddOnMetadata",
   "C_Map",   -- the player's map id, read by LibKa0s-Env-1.0
+  "C_Item", "C_Timer", "ITEM_QUALITY_COLORS",   -- read by LibKa0s-Item-1.0
   "GetBuildInfo",   -- the client interface version a perf record stamps
   -- The settings canvas (LibKa0s-Options-1.0). `Settings` is the public registration API;
   -- `SettingsPanel` is private and only ever reached inside a pcall, for expanding the left tree,

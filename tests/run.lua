@@ -48,6 +48,11 @@ local MAJORS = {
     primary = "Pool",
   },
   {
+    major = "LibKa0s-Item-1.0",
+    files = { "Item" },
+    primary = "Item",
+  },
+  {
     major = "LibKa0s-Media-1.0",
     files = { "Media" },
     primary = "Media",
@@ -94,6 +99,7 @@ _G.LK_TEST = Kit.expose{
   core = mocks.LibStub("LibKa0s-Core-1.0"),
   env = mocks.LibStub("LibKa0s-Env-1.0"),
   pool = mocks.LibStub("LibKa0s-Pool-1.0"),
+  item = mocks.LibStub("LibKa0s-Item-1.0"),
   debuglog = mocks.LibStub("LibKa0s-DebugLog-1.0"),
   slash = mocks.LibStub("LibKa0s-Slash-1.0"),
   options = mocks.LibStub("LibKa0s-Options-1.0"),
@@ -103,7 +109,7 @@ _G.LK_TEST = Kit.expose{
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_env", "test_pool", "test_media", "test_widgets", "test_debuglog", "test_slash",
+    "test_core", "test_env", "test_pool", "test_item", "test_media", "test_widgets", "test_debuglog", "test_slash",
     "test_options", "test_options_widgets",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
     "test_loader", "test_parallel",

@@ -30,6 +30,7 @@ the file you need:
 | `LibKa0s-Core-1.0` | `<Core>` | `LibStub("LibKa0s-Core-1.0").MODULES` |
 | `LibKa0s-Env-1.0` | `<Env>` | `LibStub("LibKa0s-Env-1.0").MODULES` |
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
+| `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
@@ -69,6 +70,12 @@ answers both "what does this version have?" and "when did I get it?".
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
 | [1](./Pool/version-1-docs.md) | `Pool.lua` 1 | v1.14.0 | **Current** |
+
+### `LibKa0s-Item-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Item/version-1-docs.md) | `Item.lua` 1 | v1.14.0 | **Current** |
 
 ### `LibKa0s-Media-1.0`
 

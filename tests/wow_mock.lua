@@ -36,6 +36,29 @@ return function()
   -- kit carries APIs every addon touches, and two addons read a map id.
   M.C_Map = { GetBestMapForUnit = function(unit) return unit == "player" and 2112 or nil end }
 
+  -- Item APIs, repo-local for the same reason C_Map is: two addons read them, not every addon.
+  M.__loadRequests = {}
+  M.C_Item = {
+    RequestLoadItemDataByID = function(id) M.__loadRequests[id] = true end,
+  }
+
+  -- The colour table QualityFromLink builds its reverse map out of. Real hex values — the parse is
+  -- the thing under test and a made-up palette would test the parser against itself.
+  M.ITEM_QUALITY_COLORS = {
+    [0] = { hex = "|cff9d9d9d" }, [1] = { hex = "|cffffffff" }, [2] = { hex = "|cff1eff00" },
+    [3] = { hex = "|cff0070dd" }, [4] = { hex = "|cffa335ee" }, [5] = { hex = "|cffff8000" },
+    [6] = { hex = "|cffe6cc80" }, [7] = { hex = "|cff00ccff" }, [8] = { hex = "|cff00ccff" },
+  }
+  M.ITEM_QUALITY0_DESC = "Poor"
+  M.ITEM_QUALITY1_DESC = "Common"
+  M.ITEM_QUALITY2_DESC = "Uncommon"
+  M.ITEM_QUALITY3_DESC = "Rare"
+  M.ITEM_QUALITY4_DESC = "Epic"
+  M.ITEM_QUALITY5_DESC = "Legendary"
+  M.ITEM_QUALITY6_DESC = "Artifact"
+  M.ITEM_QUALITY7_DESC = "Heirloom"
+  M.ITEM_QUALITY8_DESC = "WoW Token"
+
   -- The client's interface version, which is where `Interface` actually comes from: GetBuildInfo's
   -- FOURTH return. version, build, date, tocversion.
   M.GetBuildInfo = function() return "12.0.7", "60000", "Jul 31 2026", 120007 end
