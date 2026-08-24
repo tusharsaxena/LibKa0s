@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 5
+# `LibKa0s-Widgets-1.0` — version 6
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,56 +8,28 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **5** |
-| Shipped in | v1.13.0 |
-| Status | Superseded |
-| Supersedes | [version 4](./version-4-docs.md) — whose click-catcher swallowed a right-click instead of closing the menu |
-| Superseded by | [version 6](./version-6-docs.md) — which adds `Widgets.CopyWindow` |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 5 }` |
+| Files and minors | `Widgets.lua` minor **6** |
+| Shipped in | v1.14.0 |
+| Status | **Current** |
+| Supersedes | [version 5](./version-5-docs.md) — which had no copy window, so every host that needed one hand-rolled it |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 6 }` |
 
 ## What changed at this version
 
-**An outside click closes the menu without being eaten.** Through version 4 the menu was dismissed
-by a full-screen `Button` at `FULLSCREEN` strata, shown alongside it, whose `OnClick` hid the menu.
-That frame *intercepted* the click, and intercepting was the defect — twice over:
+**`Widgets.CopyWindow` arrives — the export frame the collection had four copies of.** There is no
+file I/O in WoW, so every "copy this out" surface ends in the same thing: a frame holding a
+multi-line `EditBox` with its text selected, and an instruction to press Ctrl+C. Four had been
+written by hand before this member — BankLedger's, LootHistory's, MultiMeters' and the debug log's
+— and two of them were the same fifty-two lines with the addon name substituted out.
 
-- A `Button` with no `RegisterForClicks` takes `LeftButtonUp` and nothing else. **A right-click
-  anywhere while a menu was open was swallowed**: it landed on the catcher, found no handler for
-  that button, and went nowhere. The menu stayed open and whatever was under the cursor never heard
-  the click. It survived from version 1 because neither shipped consumer had a right-click surface
-  on the same window as a dropdown. LootHistory was the first, and there a right-click on a history
-  row did nothing at all until the player left-clicked to dismiss the menu first.
-- Even the left-click it did handle was consumed. Dismissing the menu cost a click that did nothing
-  else.
+**It is here rather than in a major of its own for the reason the dropdown is.** Widgets already
+owns "a frame this collection kept re-drawing", and every addon that needs a copy window already
+vendors this file. A new major would have bought another vendor sweep for nothing.
 
-**The catcher is gone.** The menu now registers `GLOBAL_MOUSE_DOWN` while it is shown and closes
-itself when the press was neither on the menu nor on the dropdown it dropped from. That event fires
-for a press anywhere in the UI, on any button, whether or not something else consumed it — so the
-menu reacts to a click it never touched, and the click goes on to reach whatever is under the
-cursor. **One press now both dismisses the menu and does the thing the player pressed on.**
-
-**This is a visible behavior change, and it is the reason to read this section.** Under version 4 a
-click outside an open menu was absorbed. Under version 5 it is not: it dismisses the menu *and*
-lands. A player closing a menu by clicking on the 3D world, an action bar or another addon's frame
-will now also click that thing. This is what a host asked for and what the issue behind this version
-described, but a host whose window sits under its own dropdowns should smoke-test it.
-
-**The registration is scoped to the open menu**, taken when the menu is shown and dropped by its
-`OnHide` — not held for the life of the process. A handler running on every mouse press in the game
-for the rest of the session, in every host that ever vendored this file, is a cost no host agreed
-to.
-
-**Two presses are deliberately not "outside".** A press on the menu itself, because otherwise the
-menu would close under the player's own row click, on the press, before the release the row needs.
-And a press on the dropdown that dropped it, because that button's `OnClick` is the toggle — close
-on the press and the release finds the menu hidden and re-opens it, making the menu impossible to
-close by the button that opened it. Only the *owner* is exempt: a press on a different dropdown
-closes this menu, and that dropdown's own `OnClick` then opens its own, which is how exactly one
-menu stays open across the process.
-
-**No contract moves.** `Dropdown`, `CloseMenu`, every instance method, every documented `opts` field
-and every option-row field are unchanged from version 4. A host needs a re-vendor and no code
-change.
+**Nothing else moves.** `Dropdown`, `CloseMenu`, every instance method, every `opts` field and every
+option-row field are unchanged from version 5. A host needs a re-vendor and no code change; adoption
+of `CopyWindow` is a separate decision each host makes on its own schedule.
 
 ## What this major is
 
@@ -65,7 +37,9 @@ The collection's flat-skin dropdown button, and the one popup menu every instanc
 BankLedger had one, local to `modules/Browser.lua`, and MultiMeters was about to grow a second copy
 of the same widget — two skins to keep in step, and the collection stops reading as one author's
 work the first time one copy is restyled and the other is not. `Widgets.Dropdown` builds the
-dropdown; `Widgets.CloseMenu` closes the shared popup behind every dropdown any host has built.
+dropdown; `Widgets.CloseMenu` closes the shared popup behind every dropdown any host has built. Since
+version 6 it also owns `Widgets.CopyWindow`, the collection's one selectable-text export frame — see
+*The copy window* below.
 
 Depends on LibStub and `LibKa0s-Core-1.0` (minor 1 or newer), and on no addon framework.
 
@@ -84,6 +58,7 @@ library's.
 | Name | Since | Meaning |
 |---|---|---|
 | `Dropdown(parent, width, opts)` | 1 | Builds one flat-skin dropdown button parented to `parent`, `width` px wide and 20px tall, that opens the shared popup menu on click. Returns the dropdown frame. |
+| `CopyWindow(descriptor)` | **6** | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
 | `MODULES` | 1 | `{ Widgets = <minor> }` — the live minor, and the value that picks this document. |
 
@@ -202,6 +177,59 @@ this line — and only that surface — permanent.
   no printer to warn a host through. A host that wants glyphed rows must supply the face; a host that
   never sets `glyph` on any option needs never know the field exists.
 
+## The copy window
+
+`Widgets.CopyWindow(descriptor)` answers a **handle**, not a frame. Nothing is created until the
+first `Show`, because a host builds this at file load and most sessions never open it.
+
+It answers `nil` in two cases: with no `CreateFrame` (a host with no UI loaded at all), and with a
+descriptor that is not a table or carries no string `addonName`. The name is required rather than
+optional because the close control comes from `Core.MakeCloseButton`, which resolves the collection's
+own art out of the *consuming addon's* folder — a vendored copy cannot know which folder it sits in.
+That is the same bargain `LibKa0s-Media-1.0` already strikes.
+
+### The descriptor
+
+Every field but `addonName` is optional, and the descriptor a host passes is never mutated — the
+defaults are filled into a copy.
+
+| Field | Meaning | Default |
+|---|---|---|
+| `addonName` | **Required.** The consuming addon's name, used to resolve the close control's art. | — |
+| `name` | The frame's **global** name. It is what goes into `UISpecialFrames`, so it must be unique across the client. | `"<addonName>CopyWindow"` |
+| `width` / `height` | Frame size in px. | `640` / `420` |
+| `title` | The title-bar text. | `"Export"` |
+| `font` | A resolved **font path** for the `EditBox`. Not a LibSharedMedia name — `SetFont` does not take one — and a CSV is columns of digits that line up only in a fixed-width face. | Unset: the `EditBox` keeps the client's default face |
+| `fontSize` | Point size, applied only when `font` is given. | `10` |
+| `editWidth` | Fallback `EditBox` width, used when the scroll frame cannot report one. | `width - 50` |
+| `applySkin` | `function(frame)`. Runs **instead of** `Core.ApplySkin` for hosts that skin their own way. | Unset: `Core.ApplySkin` is used when Core offers it |
+| `backdrop` | `{ r, g, b, a }` applied after the skin. Denser than the shared skin on purpose: this frame is a wall of small text, and the world bleeding through costs legibility. | `{ 0.06, 0.06, 0.08, 0.95 }` |
+| `anchorTo` | `function() → frame\|nil`. Consulted on **every** `Show`, never once at build, so the popup follows a window the user has since dragged. A frame that is not shown, or a `nil`, anchors to `UIParent` instead. | Unset: always centered on `UIParent` |
+
+### The handle
+
+| Method | Meaning |
+|---|---|
+| `win:Show(text)` | Re-anchors, sizes the box, sets `text` (or `""`), sends the cursor to the top, shows the frame, focuses and selects. Builds the frame on first call. Returns the frame. |
+| `win:Hide()` | Hides the frame if one has been built. A no-op before the first `Show`. |
+| `win:GetText()` | The `EditBox`'s current text, or `nil` before the frame exists. |
+| `win:GetFrame()` | The frame, **building it if this is the first call**. The escape hatch for a host that needs to reposition or re-parent it. |
+
+### Behavior a host must know
+
+- **The order inside `Show` is load-bearing**: width, then text, then cursor, then show, then focus,
+  then highlight. Highlighting before the frame is shown selects nothing, and focusing before the
+  text is set leaves the cursor wherever the last export left it. All four hand-rolled copies had
+  found this out separately.
+- **The frame is built once and reused.** Frames are never destroyed in WoW, so a modal rebuilt per
+  open leaks one frame per open for the life of the session.
+- **Esc closes it, via `UISpecialFrames`.** The frame's `name` is appended to that list at build,
+  guarded on the list actually being a table, so `name` must be globally unique.
+- **It sits at `FULLSCREEN` strata**, above the `DIALOG`-strata modal that usually opens it, so the
+  modal stays visible underneath and "copy this, then pick a different set" is one trip.
+- **Nothing is written back.** The `EditBox` is not read-only in the client's sense — a player can
+  type into it — but the handle never consults what they typed, and the next `Show` overwrites it.
+
 ## Known and intentional absences
 
 Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 5 is a
@@ -220,6 +248,10 @@ decision, not an oversight, and every one of these is reachable later without a 
 - **No scrolling for a long option list** — every row in `_options` gets a row in the menu, and the
   menu grows to fit them.
 - **No sub-menus.**
+- **No "save to file" on the copy window**, because the client has no file I/O — Ctrl+C is the
+  whole mechanism.
+- **No `win:Destroy()`.** Frames are not destroyable in WoW; a handle whose frame is built stays
+  built for the session.
 
 None of these is wanted by either shipped consumer, and a widget that grows features nobody asked for
 is a widget whose degraded behavior nobody has tested.
@@ -232,4 +264,7 @@ for any other major. There is no partial module here to leave half-wired: this i
 major, so the host either gets the whole surface or none of it. The host must have a plan for `nil`
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
-non-click close path must itself become a no-op alongside the rest of the degraded surface.
+non-click close path must itself become a no-op alongside the rest of the degraded surface. The same
+holds for `CopyWindow`: with the major absent there is nothing to call, and with the major present in
+a host that has no UI at all the call answers `nil` rather than raising — a host must be ready for a
+`nil` handle and simply not offer the export.

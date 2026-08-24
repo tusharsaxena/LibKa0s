@@ -818,3 +818,107 @@ test("An event that is not GLOBAL_MOUSE_DOWN is ignored", function()
 end)
 
 mocks.CreateFrame, mocks.UIParent = realCreateFrame, realUIParent
+
+-- ── the copy window ──────────────────────────────────────────────────────────────────────
+--
+-- There is no file I/O in WoW, so every "copy this out" surface in the collection ends in a frame
+-- holding a selectable multi-line EditBox. There were FOUR before this member: BankLedger's,
+-- LootHistory's, MultiMeters' and the debug log's — and BankLedger's and LootHistory's were the
+-- same 52 lines with the addon name substituted.
+--
+-- The cases below pin the two things a fifth author would have had to rediscover: the descriptor's
+-- defaults, and the ORDER inside Show, which is load-bearing (highlighting before the frame is
+-- shown selects nothing).
+--
+-- The plan's block named the library `widgets` and aliased `test`; in this file the library is `W`
+-- and `test` is the geometry-installing wrapper defined at the head, so both are used directly.
+
+test("widgets: CopyWindow answers nil with no client", function()
+  -- Headless, CreateFrame is a mock, so this asserts the guard exists rather than the absence.
+  -- The real degraded path is a host loaded with no UI at all.
+  local saved = mocks.CreateFrame
+  mocks.CreateFrame = nil
+  assertEqual(W.CopyWindow({ addonName = "TestHost" }), nil)
+  mocks.CreateFrame = saved
+end)
+
+test("widgets: CopyWindow requires an addon name", function()
+  assertEqual(W.CopyWindow({}), nil)
+  assertEqual(W.CopyWindow(nil), nil)
+end)
+
+test("widgets: CopyWindow fills in the collection's defaults", function()
+  local win = W.CopyWindow({ addonName = "TestHost" })
+  assertTrue(win ~= nil, "a handle came back")
+  local d = win.__descriptor
+  assertEqual(d.name, "TestHostCopyWindow")
+  assertEqual(d.width, 640)
+  assertEqual(d.height, 420)
+  assertEqual(d.fontSize, 10)
+  assertEqual(d.title, "Export")
+end)
+
+test("widgets: CopyWindow honours an overridden descriptor", function()
+  local win = W.CopyWindow({
+    addonName = "TestHost", name = "MyCopyBox", width = 500, height = 300,
+    title = "Export \226\128\148 Ctrl+C, then Esc", fontSize = 12,
+  })
+  local d = win.__descriptor
+  assertEqual(d.name, "MyCopyBox")
+  assertEqual(d.width, 500)
+  assertEqual(d.fontSize, 12)
+end)
+
+test("widgets: the frame is built once and reused", function()
+  local win = W.CopyWindow({ addonName = "TestHost" })
+  win:Show("first")
+  local f = win:GetFrame()
+  win:Hide()
+  win:Show("second")
+  assertTrue(win:GetFrame() == f, "a second Show must not build a second frame — frames are never "
+    .. "destroyed in WoW, so a rebuild per open leaks one per open")
+end)
+
+test("widgets: Show puts the text in the box and leaves it shown", function()
+  local win = W.CopyWindow({ addonName = "TestHost" })
+  win:Show("a,b,c\r\n1,2,3\r\n")
+  assertEqual(win:GetText(), "a,b,c\r\n1,2,3\r\n")
+  assertTrue(win:GetFrame().__shown, "the frame is up")
+end)
+
+test("widgets: Show sets the text BEFORE it highlights", function()
+  -- The order is the reason this is worth sharing. Highlighting before the frame is shown selects
+  -- nothing, and focusing before the text is set leaves the cursor wherever the last export left
+  -- it. Recorded by spying on the EditBox rather than by reading the source.
+  local win = W.CopyWindow({ addonName = "TestHost" })
+  win:Show("seed")
+  local edit, order = win:GetFrame().edit, {}
+  local realSetText, realHighlight = edit.SetText, edit.HighlightText
+  edit.SetText = function(s, t) order[#order + 1] = "SetText"; return realSetText(s, t) end
+  edit.HighlightText = function(s) order[#order + 1] = "HighlightText"; return realHighlight(s) end
+  win:Show("payload")
+  edit.SetText, edit.HighlightText = realSetText, realHighlight
+  assertEqual(table.concat(order, ","), "SetText,HighlightText")
+end)
+
+test("widgets: the frame registers for Esc under its global name", function()
+  local before = #mocks.UISpecialFrames
+  local win = W.CopyWindow({ addonName = "TestHost", name = "EscapeMe" })
+  win:Show("x")
+  local found = false
+  for i = before + 1, #mocks.UISpecialFrames do
+    if mocks.UISpecialFrames[i] == "EscapeMe" then found = true end
+  end
+  assertTrue(found, "the global name is in UISpecialFrames, or Esc does not close it")
+end)
+
+test("widgets: anchorTo is consulted on EVERY show", function()
+  -- Not once at build: the popup has to follow a window the user moved between exports.
+  local asked = 0
+  local win = W.CopyWindow({
+    addonName = "TestHost",
+    anchorTo = function() asked = asked + 1; return nil end,
+  })
+  win:Show("one"); win:Hide(); win:Show("two")
+  assertEqual(asked, 2)
+end)
