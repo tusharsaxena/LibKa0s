@@ -10,6 +10,54 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.12.0 — 2026-08-24
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 4**,
+**DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
+**OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 11**.
+
+**`LibKa0s-Widgets-1.0` can now express a row that selects something other than its own value.** A
+*preset* row is one whose `value` is not among the values it picks — "Character: Current" selects
+the current player's key, and its own value is the string `"current"`, which is nobody's key.
+Through minor 3 the widget had no way to say that in either direction. `rowSelected` could only ask
+whether the row's own value was in `_selected`, so a preset row was the one row in a menu that could
+never light up even when it was exactly what the dropdown was showing; and `ToggleSelected` could
+only toggle the row's own value in, so clicking it filtered on the literal string.
+
+Two additions, both optional and both inert for a host that sets neither. `opt.isActive(dd)` is a
+per-option predicate, asked *instead of* the selection set and final in both directions.
+`dd.presets` is a plain field on the dropdown, `{ [value] = function(dd) end }`, whose handler runs
+in place of the toggle and owns `dd._selected` outright.
+
+**The collapsed multi-select label now counts a selection whose option row is gone, and this one is
+a behavior change.** `UpdateMultiLabel` walked `_options` and asked which were selected, so a value
+in `_selected` with no row in the *current* option list was invisible to it — and the option lists
+are data-driven, so a character with no rows in the current dataset is not in the list and the
+button read "Character: All" while the filter was on. It now labels every value in `_selected`,
+from its option row when there is one and from the raw value when there is not. A host whose option
+list always contains everything selectable sees no difference; a host whose selection can outlive
+its option list will see a summary where it previously saw the "All" label. That is the intent, but
+it is visible, and [version 3's *Moving to version 4*
+section](docs/api/Widgets/version-3-docs.md) says so where an adopter on that copy will read it.
+
+**Nothing is removed and nothing is reshaped.** `Dropdown`, `CloseMenu`, every instance method's
+signature and every documented `opts` field are unchanged from minor 3. Adopters need a re-vendor
+and, unless they want the new seams, no code change.
+
+**It came upstream rather than being worked around, which is the whole point of the clause that
+sent it here.** LootHistory carried its own copy of this widget — the third in the collection, and
+the one the major was meant to delete — and that copy had both seams because its Character filter
+needed them. Adopting the library there would otherwise have meant either losing the behavior or
+keeping the copy. All three releases of this major so far have come from an adopter hitting a gap in
+the same step of the same adoption prompt.
+
+**Thirteen new cases**, nine of them red before the change: a preset row lighting up under its own
+predicate and staying dark under someone else's, `isActive` overriding membership in both
+directions and on a single-select dropdown, a preset click replacing rather than toggling, a preset
+overriding the `"all"` sentinel, the four collapsed-label rules including the two that move, and one
+that drives a preset row through a **real** row build rather than a seeded stand-in. The collapsed
+label had no case at all before this release.
+
 ## v1.11.2 — 2026-08-24
 
 Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 3**,

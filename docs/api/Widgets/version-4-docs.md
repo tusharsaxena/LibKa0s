@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 3
+# `LibKa0s-Widgets-1.0` — version 4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,32 +8,49 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **3** |
-| Shipped in | v1.11.2 |
-| Status | Superseded |
-| Supersedes | [version 2](./version-2-docs.md) — whose menu raised `FontString:SetText(): Font not set` on the first click, in every host |
-| Superseded by | [version 4](./version-4-docs.md) — which lets a row select something other than its own value |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 3 }` |
+| Files and minors | `Widgets.lua` minor **4** |
+| Shipped in | v1.12.0 |
+| Status | **Current** |
+| Supersedes | [version 3](./version-3-docs.md) — whose menu could not light up, or act on, a row that selects something other than its own value |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 4 }` |
 
 ## What changed at this version
 
-**The menu no longer raises on the first click.** Versions 1 and 2 built a row's glyph `FontString`
-with no font — `CreateFontString(nil, "OVERLAY")`, no template — and then set its text on every
-paint. The client answers `FontString:SetText(): Font not set` to that, so the first click on any
-dropdown built by any host errored, and the error landed at whatever point the host built its
-window. The fix is one argument: the glyph is built from the `GameFontHighlightSmall` template, so
-it always has a font, while the per-paint `SetFont` still lets each host impose its own monospace
-face.
+**A row may now select something other than its own value.** A *preset* row is one whose `value` is
+not among the values it picks — "Character: Current" selects the current player's key, and its own
+value is the string `"current"`, which is nobody's key. Version 3 had no way to express that in
+either direction: `rowSelected` could only ask whether the row's own value was in `_selected`, so a
+preset row was the one row in a menu that could never light up even when it was exactly what the
+dropdown was showing; and `ToggleSelected` could only toggle the row's own value in, so clicking it
+filtered on the literal string.
 
-**It reached every host, not only a host with no `glyphFont`.** The face is set only on a row that
-*has* a glyph, so even a host that supplies a face — the case version 1 was designed around —
-painted its glyphless rows through a `FontString` that had never been given one. A host with no
-`glyphFont` at all hit it on every row.
+Two additions, both optional and both inert for a host that sets neither:
 
-**No contract moves.** `Dropdown`, `CloseMenu` and every instance method are unchanged from version
-2, and the documented behavior of `opts.glyphFont` is unchanged — *dropping* the glyph column with
-no face named is what version 1 promised and what this version is the first to actually do. A host
-on version 2 needs no code change, only a re-vendor.
+- **`opt.isActive(dd)`** — a per-option predicate. When an option carries one it is asked *instead*
+  of the selection set, and its answer is final in both directions.
+- **`dd.presets`** — a plain field on the dropdown, `{ [value] = function(dd) end }`. A value with a
+  handler has that handler run in place of the toggle, and the handler owns `dd._selected`.
+
+**The collapsed label now counts a selection whose option row is gone.** `UpdateMultiLabel` walked
+`_options` and asked which were selected, so a selected value with no row in the *current* option
+list was invisible to it. Option lists are usually data-driven — a character with no rows in the
+current dataset is not in the list — and the button then read "Character: All" while the filter was
+still on. It now labels every value in `_selected`, from its option row when there is one and from
+the raw value when there is not. **This is a behavior change for an existing host**, not only a new
+seam: a host whose selection can outlive its option list will see a summary where it previously saw
+the "All" label. A host whose option list always contains everything selectable sees no difference.
+An active preset's own label is taken ahead of all of this.
+
+**Nothing is removed and nothing is reshaped.** `Dropdown`, `CloseMenu`, every instance method's
+signature and every documented `opts` field are unchanged from version 3. A host on version 3 that
+sets no `isActive` and no `presets` needs no code change, only a re-vendor — subject to the label
+paragraph above.
+
+**Why it came upstream rather than being worked around.** LootHistory carried its own copy of this
+widget, with both seams, and its Character filter needed them; the adoption would otherwise have
+had to either lose the behavior or keep the copy. Both prior releases of this major came from an
+adopter hitting a gap in exactly the same step.
 
 ## What this major is
 
@@ -82,19 +99,34 @@ and no host holds a reference to it. Call it from every place a host closes its 
 route that is not a click on the dropdown — an `OnHide` handler, an Escape binding, a slash command
 that hides the frame — so the shared menu never outlives the window it dropped from.
 
+## Option rows
+
+Every row handed to `dd:SetOptions` is a table. `value` and `label` are expected; the rest are
+optional and each is inert when absent.
+
+| Field | Since | Meaning |
+|---|---|---|
+| `value` | 1 | What this row selects. For an ordinary row it is also what lands in `_selected` (multi) or `_value` (single). The sentinel `"all"` is special-cased by `ToggleSelected` and `UpdateMultiLabel`. |
+| `label` | 1 | The row's text, and the collapsed button's text when this row is the single selection. Inline `\|T…\|t` texture markup is allowed and is measured — a class icon folded into a label is the supported way to put art on a row. |
+| `color` | 1 | `{ r, g, b }`. The row's text color when the row is not selected; a selected row is gold regardless. |
+| `glyph` | 1 | A single character drawn in a leading column, in `opts.glyphFont`. **Requires `opts.glyphFont`** — see *Behavior a host must know*. |
+| `isActive` | **4** | `function(dd) → boolean`. When present it decides this row's highlight **instead of** the selection set, and its label becomes the collapsed button's label while it reports true. A row that selects something other than its own value has no other way to report itself active. Called on every paint and on every label refresh, so it must be cheap and must not mutate the dropdown. |
+
 ## Instance methods
 
-Every method below is a member of the frame `Dropdown` returns. `Since` is 1 for all of them.
+Every method below is a member of the frame `Dropdown` returns, and every one of them has
+existed since minor 1. Behavior added to a method at a later minor is marked in that method's own
+row rather than by a `Since` column.
 
 | Method | Parameters | Meaning |
 |---|---|---|
-| `dd:SetOptions(opts)` | `opts` — array of `{ value, label, glyph?, color? }` rows | Sets the row list the popup menu populates from. If the dropdown is in multi-select mode, also refreshes the collapsed button's summary label. |
+| `dd:SetOptions(opts)` | `opts` — array of `{ value, label, glyph?, color?, isActive? }` rows | Sets the row list the popup menu populates from. If the dropdown is in multi-select mode, also refreshes the collapsed button's summary label. |
 | `dd:SetValue(v, label)` | `v` — the value to store; `label` — text to show on the collapsed button | Single-select only. Stores `v` on `dd._value` and sets the collapsed button's text to `label` (or blank if `label` is nil). Does not consult `_options`. |
 | `dd:SelectValue(v)` | `v` — a value expected to appear in the current `_options` | Single-select only. Looks `v` up in `_options` and calls `SetValue` with the matching row's own label; if no row matches, calls `SetValue(v, tostring(v))`. |
 | `dd:SetMulti(on)` | `on` — truthy/falsy | Switches the dropdown between single-select (falsy) and multi-select (truthy). Stored as the boolean `dd.multi`. |
 | `dd:SetSelected(set)` | `set` — a table of `value = true` pairs, or any non-table (treated as empty) | Multi-select only. Replaces `dd._selected` with a fresh copy of the truthy keys in `set`, then refreshes the collapsed label. |
-| `dd:ToggleSelected(value)` | `value` — one option's value, or the sentinel `"all"` | Multi-select only. `"all"` clears the whole selection (the empty set *is* "All"); any other value toggles its membership in `dd._selected`. Refreshes the collapsed label. |
-| `dd:UpdateMultiLabel()` | — | Multi-select only. Recomputes the collapsed button's summary text from `_options` and `_selected`: the `"all"` row's own label when nothing is picked, the one picked row's label when exactly one is picked, or `"<Prefix>: N selected"` (the prefix is the `"all"` row's label, up to its first `:`) otherwise. Called automatically by the methods above; a host that mutates `_selected` directly must call it explicitly. |
+| `dd:ToggleSelected(value)` | `value` — one option's value, or the sentinel `"all"` | Multi-select only. A value with a handler in `dd.presets` has that handler run instead (**since 4**, and asked before the sentinel); otherwise `"all"` clears the whole selection (the empty set *is* "All") and any other value toggles its membership in `dd._selected`. Refreshes the collapsed label. |
+| `dd:UpdateMultiLabel()` | — | Multi-select only. Recomputes the collapsed button's summary text. **Since 4**: the label of the first option whose `isActive` reports true, if any; otherwise the `"all"` row's own label when nothing is picked, the one picked value's label when exactly one is picked, or `"<Prefix>: N selected"` (the prefix is the `"all"` row's label, up to its first `:`) otherwise — counting **every value in `_selected`**, labeled from its option row when there is one and from the raw value when there is not. Called automatically by the methods above; a host that mutates `_selected` directly must call it explicitly. |
 
 ## `dd.onSelect` / `dd.onMultiSelect`
 
@@ -106,7 +138,7 @@ building the dropdown:
 | `dd.onSelect` | 1 | Single-select only, after a row click sets the value and the menu closes. | `function(value)` |
 | `dd.onMultiSelect` | 1 | Multi-select only, after a row click toggles membership; the menu stays open. | `function(selectedSet)` — the live `dd._selected` table, `value = true` for every chosen row |
 
-## Fields a host may read
+## Fields a host may read, and one it may write
 
 | Field | Since | Meaning |
 |---|---|---|
@@ -115,6 +147,7 @@ building the dropdown:
 | `dd._value` | 1 | Single-select only. The currently stored value, or nil before one is set. |
 | `dd._selected` | 1 | Multi-select only. The live selection set, `value = true` for each chosen row. Empty means "All". |
 | `dd.multi` | 1 | Boolean, set by `SetMulti`. Whether this dropdown is in multi-select mode. |
+| `dd.presets` | **4** | Writable by the host: `{ [value] = function(dd) end }`. A value with a handler has that handler run by `ToggleSelected` in place of the toggle; the handler owns `dd._selected` and is responsible for writing it. Unset by default. It is a field rather than an `opts` entry because the closure it carries usually needs the dropdown the host is still in the middle of building. |
 
 ## `__`-prefixed instance fields are INTERNAL
 
@@ -145,6 +178,12 @@ this line — and only that surface — permanent.
   color, its glyph, the glyph's own font — is written on every `Populate`, including the fields that
   are blank for this row's option, precisely so that nothing leaks from whichever dropdown last
   painted that pooled row button.
+- **A preset row's own value never enters the selection.** `dd.presets[value]` runs *instead of*
+  the toggle, so unless the handler puts it there, the row's value is not in `_selected` afterwards
+  — which is why such a row needs `isActive` to light up and why its label, not the selection
+  count, is what the collapsed button shows. The two seams are independent and each is useful
+  alone: a row may report itself active without being a preset (a synthetic "everything matching
+  the search" row), and a preset may run without lighting up.
 - **The glyph column is absent unless `opts.glyphFont` is given.** Without a face to draw it in, an
   option's `glyph` is silently dropped: the glyph `FontString` stays hidden — it keeps the font
   template it was built with, so nothing raises — and the row's label
@@ -156,9 +195,11 @@ this line — and only that surface — permanent.
 
 ## Known and intentional absences
 
-Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 3 is a
+Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 4 is a
 decision, not an oversight, and every one of these is reachable later without a major bump:
 
+- **No per-row disable**, still — an `isActive` predicate reports a state, it does not gate a
+  click. A row that must not be clickable is not expressible at this version.
 - **No setters to restyle a dropdown after it is built.** `chevron`, `check` and `glyphFont` are
   read once, at construction, from `opts`; there is no `dd:SetChevron(...)` or equivalent to change
   them on a live instance.
@@ -170,7 +211,6 @@ decision, not an oversight, and every one of these is reachable later without a 
 - **No scrolling for a long option list** — every row in `_options` gets a row in the menu, and the
   menu grows to fit them.
 - **No sub-menus.**
-- **No per-row disable.**
 
 None of these is wanted by either shipped consumer, and a widget that grows features nobody asked for
 is a widget whose degraded behavior nobody has tested.
@@ -184,20 +224,3 @@ major, so the host either gets the whole surface or none of it. The host must ha
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
 non-click close path must itself become a no-op alongside the rest of the degraded surface.
-
-## Moving to version 4
-
-**Take it, and read one paragraph before you do.** Nothing is removed and nothing is reshaped:
-`Dropdown`, `CloseMenu`, every instance method's signature and every documented `opts` field are the
-same at version 4. Two optional seams are added — `opt.isActive`, a per-option predicate that
-decides a row's highlight instead of the selection set, and `dd.presets`, a per-value handler that
-replaces the selection instead of toggling into it — and a host that sets neither sees neither.
-
-The paragraph: **the collapsed multi-select label changed**. This version computes it by walking
-`_options` and asking which are selected, so a value in `_selected` with no row in the *current*
-option list is invisible to it and the button falls back to the "All" label while the filter is
-still on. Version 4 labels every value in `_selected` instead, from its option row when there is one
-and from the raw value when there is not. If this addon's option list always contains everything
-selectable, nothing changes. If it is data-driven and a selected value can drop out of it, the
-button will now say what is selected rather than "All" — which is the intent, but it is a visible
-change and worth a smoke-test line.

@@ -46,7 +46,7 @@ addon must work with no other addon installed.
 
 ## The modules
 
-Six LibStub majors, adopted independently. **The full contract for each — the descriptor, every
+Seven LibStub majors, adopted independently. **The full contract for each — the descriptor, every
 public member, every row field — lives in [`docs/api/`](docs/api/), one document per shipped
 version.** This section is the map; that directory is the reference. Nothing here restates a
 signature, because a second copy of a contract is a contract that drifts.
@@ -55,6 +55,7 @@ signature, because a second copy of a contract is a contract that drifts.
 |---|---|---|---|
 | `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [6](docs/api/Core/version-6-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [3](docs/api/Media/version-3-docs.md) |
+| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button, and the one popup menu every instance of it drops — shared process-wide, across addons. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [4](docs/api/Widgets/version-4-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [10](docs/api/DebugLog/version-10-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [7](docs/api/Slash/version-7-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [8.7.3](docs/api/Options/version-8.7.3-docs.md) |

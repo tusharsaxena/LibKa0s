@@ -547,4 +547,162 @@ test("Widgets.CloseMenu hides the click-catcher too", function()
   assertEqual(MENU.catcher:IsShown(), false)
 end)
 
+-- ── Preset rows and the collapsed label (new at minor 4) ──────────────────────
+--
+-- A PRESET is a row whose value is not one of the values it selects. "Character: Current" picks
+-- the current player's key; the row's own value is the string "current", which is nobody's key.
+-- Through minor 3 the widget had no way to express that: `rowSelected` could only ask whether the
+-- row's own value was in the set, so a preset row was the one row in the menu that could never
+-- light up even when it was exactly what the dropdown was showing, and `ToggleSelected` could only
+-- toggle the row's own value into the set, so clicking it filtered on the literal string.
+--
+-- LootHistory's copy of this widget had both seams and its Character filter needed them; they came
+-- upstream at the adoption rather than being worked around in the host, which is the bargain the
+-- adoption prompt's closing section strikes.
+
+local PRESET_OPTS = {
+  { value = "all", label = "Character: All" },
+  -- The preset. `isActive` is true exactly when the selection is {Ayla} and nothing else.
+  { value = "current", label = "Character: Current",
+    isActive = function(dd)
+      local sel = dd._selected or {}
+      if not sel.Ayla then return false end
+      for k in pairs(sel) do if k ~= "Ayla" then return false end end
+      return true
+    end },
+  { value = "Ayla", label = "Ayla" },
+  { value = "Borin", label = "Borin" },
+}
+
+--- A multi-select dropdown carrying the preset options above and the preset handler that goes with
+--- them: clicking "current" REPLACES the selection with the current player rather than toggling
+--- the literal string "current" into it.
+local function presetDropdown()
+  local dd = menuDropdown(true, 146)
+  dd.presets = { current = function(d) d._selected = { Ayla = true } end }
+  return dd
+end
+
+test("A preset row lights up when its own predicate says so", function()
+  local dd = presetDropdown()
+  dd:SetSelected({ Ayla = true })
+  local rows = populate(dd, PRESET_OPTS)
+  -- Row 2 is the preset. Its value, "current", is in no selection and never will be — through
+  -- minor 3 this row was permanently gray.
+  assertEqual(rows[2].fs.color[1], 1, "the preset row is gold")
+  assertEqual(rows[2].fs.color[2], 0.82)
+end)
+
+test("A preset row stays dark when its predicate says the selection is something else", function()
+  local dd = presetDropdown()
+  dd:SetSelected({ Borin = true })
+  local rows = populate(dd, PRESET_OPTS)
+  assertFalse(rows[2].fs.color[1] == 1 and rows[2].fs.color[2] == 0.82,
+    "the selection is not exactly the current player, so the preset is not active")
+  assertEqual(rows[4].fs.color[1], 1, "Borin's own row is the gold one")
+end)
+
+test("isActive is asked INSTEAD of the selection set, not alongside it", function()
+  -- A row that carries a predicate is describing a state the set does not express, so its answer
+  -- is final in both directions: this one is selected and says no.
+  local dd = menuDropdown(true, 110)
+  dd:SetSelected({ BANK = true })
+  local rows = populate(dd, {
+    { value = "all", label = "All" },
+    { value = "BANK", label = "Bank", isActive = function() return false end },
+  })
+  assertFalse(rows[2].fs.color[1] == 1 and rows[2].fs.color[2] == 0.82,
+    "the predicate overrides membership of _selected")
+end)
+
+test("A preset predicate works on a single-select dropdown too", function()
+  local dd = menuDropdown(false, 110)
+  dd:SetValue("x", "X")
+  local rows = populate(dd, {
+    { value = "x", label = "X" },
+    { value = "synthetic", label = "Synthetic", isActive = function() return true end },
+  })
+  assertEqual(rows[2].fs.color[1], 1, "the predicate is consulted before the _value comparison")
+end)
+
+test("Clicking a preset row REPLACES the selection instead of toggling into it", function()
+  local dd = presetDropdown()
+  dd:SetSelected({ Borin = true })
+  local rows = populate(dd, PRESET_OPTS)
+  rows[2].scripts.OnClick()
+  assertTrue(dd._selected.Ayla, "the handler wrote the current player's key")
+  assertEqual(dd._selected.Borin, nil, "and replaced what was there rather than adding to it")
+  assertEqual(dd._selected.current, nil, "the row's own value never enters the set")
+end)
+
+test("A dropdown with no presets toggles exactly as it did at minor 3", function()
+  local dd = menuDropdown(true, 110)
+  local rows = populate(dd, MENU_OPTS)
+  rows[2].scripts.OnClick()
+  assertTrue(dd._selected.BANK, "an ordinary value still toggles in")
+  rows[1].scripts.OnClick()
+  assertEqual(next(dd._selected), nil, "and the 'all' sentinel still clears the set")
+end)
+
+test("A preset may override the 'all' sentinel itself", function()
+  -- presets is asked before the sentinel, so a host that wants "All" to mean something of its own
+  -- can say so. Nothing in the collection does this today; the case pins the ordering.
+  local dd = menuDropdown(true, 110)
+  dd.presets = { all = function(d) d._selected = { BANK = true } end }
+  local rows = populate(dd, MENU_OPTS)
+  rows[1].scripts.OnClick()
+  assertTrue(dd._selected.BANK, "the host's handler ran instead of the clear")
+end)
+
+-- ── The collapsed label ───────────────────────────────────────────────────────
+
+test("The collapsed label takes an active preset's own label", function()
+  local dd = presetDropdown()
+  dd:SetOptions(PRESET_OPTS)
+  dd:SetSelected({ Ayla = true })
+  -- Not "Ayla", which is what the one-selection rule below would give: the preset NAMES the whole
+  -- selection, so its label is the one the button wears.
+  assertEqual(dd.text:GetText(), "Character: Current")
+end)
+
+test("A selected value with no option row still counts in the summary", function()
+  -- The option lists are data-driven: a character with no rows in the current dataset is not in
+  -- the list, and through minor 3 the button then read "Character: All" while the filter was on.
+  local dd = menuDropdown(true, 146)
+  dd:SetOptions({ { value = "all", label = "Character: All" }, { value = "Borin", label = "Borin" } })
+  dd:SetSelected({ Borin = true, Ayla = true })
+  assertEqual(dd.text:GetText(), "Character: 2 selected")
+end)
+
+test("A single selection with no option row reads as its raw value", function()
+  local dd = menuDropdown(true, 146)
+  dd:SetOptions({ { value = "all", label = "Character: All" } })
+  dd:SetSelected({ Ayla = true })
+  assertEqual(dd.text:GetText(), "Ayla")
+end)
+
+test("An empty selection still reads as the 'all' sentinel's own label", function()
+  local dd = menuDropdown(true, 146)
+  dd:SetOptions(PRESET_OPTS)
+  dd:SetSelected({})
+  assertEqual(dd.text:GetText(), "Character: All")
+end)
+
+test("One selection that IS in the option list reads as that row's label", function()
+  local dd = menuDropdown(true, 146)
+  dd:SetOptions(PRESET_OPTS)
+  dd:SetSelected({ Borin = true })
+  assertEqual(dd.text:GetText(), "Borin")
+end)
+
+test("A preset row survives a REAL row build", function()
+  -- Not a seeded stand-in: makeMenuRow runs, and the predicate is asked on a row this widget built
+  -- itself. The seeded cases above cannot catch a row whose construction raises.
+  local dd = presetDropdown()
+  dd:SetSelected({ Ayla = true })
+  local rows = populateBuilt(dd, PRESET_OPTS)
+  assertEqual(#rows, 4, "one real row per option")
+  assertEqual(rows[2].fs:GetText(), "|T" .. HOST_CHECK .. ":0|t Character: Current",
+    "the active preset draws the tick, built rows and all")
+end)
 mocks.CreateFrame, mocks.UIParent = realCreateFrame, realUIParent
