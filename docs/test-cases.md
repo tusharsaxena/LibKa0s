@@ -43,6 +43,47 @@ badge and any count quoted in the docs must agree with it.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
+### test_env.lua (10)
+
+- env: GetAddOnMetadata reads the TOC through C_AddOns
+- env: GetAddOnMetadata falls back to the deprecated bare global
+- env: GetAddOnMetadata answers nil when neither reader exists
+- env: Version answers the TOC version
+- env: Version prefers the TOC over the fallback
+- env: Version returns the fallback when the TOC cannot be read
+- env: GetPlayerMapID asks C_Map for the player's map
+- env: GetPlayerMapID answers nil without C_Map
+- env: GetZone answers zone and subzone
+- env: GetZone answers empty strings, never nil, when the readers are absent
+
+### test_pool.lua (9)
+
+- pool: New hands back an empty pool
+- pool: New hands back a DISTINCT pool each call
+- pool: Acquire builds when the free list is empty, and shows what it hands back
+- pool: a released object is REUSED rather than rebuilt
+- pool: ReleaseAll hides every active object and returns it to free
+- pool: ReleaseAll on an empty pool is a no-op
+- pool: the `before` hook runs on each object, before it is hidden
+- pool: a nested release through the hook empties both levels
+- pool: acquire-release-acquire preserves object identity
+
+### test_item.lua (13)
+
+- item: ItemIDFromLink pulls the id out of a full link
+- item: ItemIDFromLink accepts a bare itemString
+- item: ItemIDFromLink answers nil for anything that is not a link
+- item: QualityFromLink reads the quality out of the colour prefix
+- item: QualityFromLink answers nil for an uncoloured or absent link
+- item: QualityFromLink answers nil for a colour no quality uses
+- item: QualityLabel prefers the client's localized label
+- item: QualityLabel falls back to the static English map
+- item: QualityLabel defaults to Poor when given nothing
+- item: QualityLabel stringifies a quality it does not know
+- item: LoadItem asks the client to cache the id
+- item: LoadItem fires the callback once the item is loaded
+- item: LoadItem is inert without an id or without the API
+
 ### test_media.lua (15)
 
 - media: every name in ICONS has a file, and every file has a name
@@ -61,7 +102,7 @@ badge and any count quoted in the docs must agree with it.
 - media: RegisterLSM registers every font and every texture, by catalog name
 - media: no LibSharedMedia is 0 registrations, not an error
 
-### test_widgets.lua (46)
+### test_widgets.lua (55)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
 - Widgets.Dropdown falls to Blizzard's arrow with no host art
@@ -109,6 +150,15 @@ badge and any count quoted in the docs must agree with it.
 - A press on the dropdown that dropped it does not close it
 - A press on a DIFFERENT dropdown still closes the menu
 - An event that is not GLOBAL_MOUSE_DOWN is ignored
+- widgets: CopyWindow answers nil with no client
+- widgets: CopyWindow requires an addon name
+- widgets: CopyWindow fills in the collection's defaults
+- widgets: CopyWindow honours an overridden descriptor
+- widgets: the frame is built once and reused
+- widgets: Show puts the text in the box and leaves it shown
+- widgets: Show sets the text BEFORE it highlights
+- widgets: the frame registers for Esc under its global name
+- widgets: anchorTo is consulted on EVERY show
 
 ### test_debuglog.lua (62)
 
@@ -119,7 +169,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the window title is the host's, with the library's suffix appended
 - dbg: a host can override the title suffix
 - dbg: Add appends the plain form to the buffer and is never gated on the flag
-- dbg: the cap is 500 and the message frame is held to the same number
+- dbg: the cap is 1500 and the message frame is held to the same number
 - dbg: the buffer is capped, dropping the oldest line
 - dbg: the buffer stays a dense array of plain strings
 - dbg: Clear wipes the buffer and works before the window was ever built
@@ -652,8 +702,11 @@ badge and any count quoted in the docs must agree with it.
 | Suite | Cases |
 |-------|------:|
 | test_core.lua | 34 |
+| test_env.lua | 10 |
+| test_pool.lua | 9 |
+| test_item.lua | 13 |
 | test_media.lua | 15 |
-| test_widgets.lua | 46 |
+| test_widgets.lua | 55 |
 | test_debuglog.lua | 62 |
 | test_slash.lua | 81 |
 | test_options.lua | 68 |
@@ -669,4 +722,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **587** |
+| **Total** | **628** |

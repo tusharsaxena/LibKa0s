@@ -100,7 +100,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [10](./DebugLog/version-10-docs.md) | `DebugLog.lua` 10 | v1.10.1 | **Current** |
+| [11](./DebugLog/version-11-docs.md) | `DebugLog.lua` 11 | v1.14.0 | **Current** |
+| [10](./DebugLog/version-10-docs.md) | `DebugLog.lua` 10 | v1.10.1 – v1.13.0 | Superseded |
 | [9](./DebugLog/version-9-docs.md) | `DebugLog.lua` 9 | v1.10.0 | Superseded |
 | [8](./DebugLog/version-8-docs.md) | `DebugLog.lua` 8 | v1.8.0 – v1.9.2 | Superseded |
 | [7](./DebugLog/version-7-docs.md) | `DebugLog.lua` 7 | v1.5.0 – v1.7.0 | Superseded |

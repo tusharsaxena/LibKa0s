@@ -17,8 +17,61 @@ Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 1**, *
 **OptionsWidgets minor 7**, **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**,
 **kit revision 12**.
 
-No shipped library file changed. This release is the **test kit** only, and it is about how long the
-green gate takes to answer.
+**Three new majors, one new widget, and one number.** Every one of them came out of the same
+measurement: a sweep of all nine consumer addons for code that had been written more than once, kept
+only where the copies agreed on behavior, and dropped where they disagreed on purpose. The test-kit
+work that this release was originally cut for is at the end.
+
+**`LibKa0s-Env-1.0` — the client facts every addon reads, read one way.** Four functions over three
+Blizzard surfaces: the TOC manifest, the addon's own version string, the player's map id and the
+player's zone labels. `GetAddOnMetadata` alone had been written **eleven times across nine addons** —
+six in a `core/Compat.lua` in four different spellings, five more inlined at a call site where no
+audit of the shim files would ever have found them — and not one of the eleven behaved differently
+from any other. The metadata calls take the host's own addon name for the reason
+`LibKa0s-Media-1.0`'s do: the library is vendored, so a copy cannot know which folder it sits in.
+This is deliberately *not* the wider `Compat` extraction, which was measured against the same
+evidence and rejected — a container reader is BankLedger's and a mail decoder is LootHistory's,
+where this is nobody's.
+
+**`LibKa0s-Pool-1.0` — the free/active widget pool, with the release half right.** Four functions,
+no state of its own, and a pool that is a plain `{ free = {}, active = {} }` table with no metatable,
+so a host without the library can still write the nine-line local copy. Four copies of this pool
+shipped across two addons and **three of them recycled correctly**: the fourth hid its active objects
+and never returned them to the free list, so `Acquire` fell through to `factory()` on every call. That
+defect is invisible from outside — the charts draw, the suite stays green — and the only symptom is a
+client that gets heavier the longer a window is open, because frames are never destroyed in WoW.
+
+**`LibKa0s-Item-1.0` — item identity as four primitives, and no resolver.** `ItemIDFromLink`,
+`QualityFromLink`, `QualityLabel` and `LoadItem`. There is deliberately **no merged "resolve an item"
+function**, and the absence is the design: the two addons that resolve items disagree in writing about
+what an *uncached* item means. LootHistory guesses from the link's brackets and color, because a
+browsable capture log would rather show an approximate row than lose the drop; BankLedger refuses and
+records the skip, because "cannot be judged" is not "passes". Both are right for their addon, and a
+shared resolver would have had to overturn one of them silently. Two of the four were byte-identical
+in both addons; the other two were each written by only one — which is the better argument for a
+library than duplication is, since each addon was missing a primitive the other already had.
+
+**`Widgets.CopyWindow` — the export frame the collection had four copies of.** There is no file I/O
+in WoW, so every "copy this out" surface ends in the same thing: a frame holding a multi-line
+`EditBox` with its text selected and an instruction to press Ctrl+C. BankLedger's and LootHistory's
+were the same fifty-two lines with the addon name substituted; MultiMeters' called itself the third
+copy and was the fourth. It answers a **handle, not a frame** — nothing is built until the first
+`Show`, because a host declares this at file load and most sessions never open it. It lives in
+Widgets rather than in a major of its own because Widgets already owns "a frame this collection kept
+re-drawing" and every addon that needs a copy window already vendors that file; a new major would
+have bought another vendor sweep for nothing. Nothing else in Widgets moves: adopters need a
+re-vendor and no code change, and adopting the window itself is a separate decision per host.
+
+**The debug console holds 1500 lines, not 500.** `lib.MAX_BUFFER` is the only thing that moved in
+`DebugLog.lua`. The cap is not a display preference — the perf capture workflow pastes out of *this*
+buffer, with `perf report` printing its summary into the console and `perf dump` writing a whole JSON
+record as a single line — and at 500 a long run overflowed and lost its head silently, because a
+buffer that has dropped its oldest lines is indistinguishable from one that was started later. There
+is **one number, not two**: the copy window shows `table.concat(buffer)` and caps nothing of its own,
+so the buffer cap *is* the copy cap. Two consumer suites pinned the literal `500` rather than reading
+the member and go red until they re-vendor, which is the intended way to find them.
+
+**The rest of this release is the test kit**, and it is about how long the green gate takes to answer.
 
 **The loader was re-reading the entire source tree hundreds of times per run.** A suite that wants an
 isolated instance re-loads every vendored library file and every file the TOC names, which is the

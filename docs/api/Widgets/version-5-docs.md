@@ -233,3 +233,15 @@ major, so the host either gets the whole surface or none of it. The host must ha
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
 non-click close path must itself become a no-op alongside the rest of the degraded surface.
+
+## Moving to version 6
+
+**Take it, and nothing you have written needs to change.** `Dropdown`, `CloseMenu`, every instance
+method, every `opts` field and every option-row field are identical at version 6. A host needs a
+re-vendor and no code change.
+
+What version 6 adds is `Widgets.CopyWindow`, the collection's one selectable-text export frame —
+there is no file I/O in WoW, so every "copy this out" surface ends in a multi-line `EditBox` with its
+text selected and an instruction to press Ctrl+C, and four had been hand-written before it. Adopting
+it is a separate decision, made per host and on its own schedule: a host that keeps its own copy
+window keeps working exactly as it does here.

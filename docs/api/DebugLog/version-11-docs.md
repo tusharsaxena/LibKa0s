@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 10
+# `LibKa0s-DebugLog-1.0` — version 11
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **10** |
-| Shipped in | v1.10.1 |
-| Status | Superseded |
-| Supersedes | [version 9](./version-9-docs.md) — whose close button never got the addon name |
-| Superseded by | [version 11](./version-11-docs.md) — which raises the line cap to 1500 |
+| Files and minors | `DebugLog.lua` minor **11** |
+| Shipped in | v1.14.0 |
+| Status | **Current** |
+| Supersedes | [version 10](./version-10-docs.md) — whose console kept 500 lines, which a perf capture overflowed |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 10 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 11 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared. Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
@@ -45,38 +45,55 @@ and it returns before `NewLibrary` if Core is missing or below the minor it need
 
 ## What changed at this version
 
-Two corrections to what version 9 shipped. The `addonName` field itself is unchanged and is
-described in full below.
+**The console holds 1500 lines, not 500.** `lib.MAX_BUFFER` is the only thing that moved: no member
+was added, none was removed, and no behavior anywhere else in this major differs from version 10. A
+host needs a re-vendor and no code change.
 
 | | | Since |
 |---|---|---|
-| The close button gets the name | `lib.MakeCloseButton` forwards onto `Core.MakeCloseButton`, and it took **two** arguments where Core's had grown a third at Core minor 6. Version 9 therefore drew copy and clear as icons beside a close button that was still a multiplication sign. | **10** |
-| No tooltip | The icon controls carry none. Version 9 gave them one anchored under the control. | **10** |
+| The line cap is **1500** | `lib.MAX_BUFFER` was `500` from minor 1 through minor 10. The member itself is unchanged and is still `Since` **1** — its *value* moved, which is why it is not listed as new. | value at **11** |
 
-### The dropped argument, and why nothing caught it
+### Why 1500, and why there is only one number
 
-A forwarder that loses an argument is not a failure any layer can report: Core saw no addon name and
-did exactly what it does without one, which is a perfectly good button. The console's copy and clear
-are built directly and drew the art; only the close, which goes through the forwarder, did not — so
-the window came out visibly inconsistent with itself, and that inconsistency was the only symptom.
+The cap is not a display preference. **The perf capture workflow pastes out of this buffer**:
+`perf report` prints its summary into the console and `perf dump` writes the whole JSON record as a
+single line, so a capture is read by opening the copy window and pressing Ctrl+C. At 500 a long run
+overflowed the buffer and lost its head — silently, because a buffer that has dropped its oldest
+lines looks exactly like one that was started later.
 
-The forwarder exists so that a Core upgraded underneath an unchanged `DebugLog.lua` is still the one
-that draws (see [The empty `makeCloseButton`](#the-empty-makeclosebutton)). That means it has to
-carry **every** argument Core takes, or the upgrade arrives half-applied. Two cases pin it now: one
-that the console hands its close factory the name for both windows, and one that the forwarder
-passes it through to Core.
+**The copy window is a view of the buffer, not a second store.** `CopyText()` is
+`table.concat(buffer, "\n")` and the window caps nothing of its own, so the buffer cap *is* the copy
+cap. That is why raising this number raises both, and why there is no second number to keep in step
+with it.
 
-### Why the tooltip went rather than moved
+What has to move with it is the message frame's own `SetMaxLines`, exactly as it always has: the cap
+and `SetMaxLines` are one decision written in two places, and letting them drift makes the visible
+log and the copied buffer disagree about what happened.
 
-Version 9 anchored it `ANCHOR_BOTTOM`, which put it on top of the first line of the log — the thing
-the window exists to show — every time the pointer crossed the title bar. Anchoring it elsewhere
-trades one overlap for another on a window that is 700px of text, and the two marks sit beside a
-close button that has never needed one.
+**A host that pinned the literal will go red.** Two consumer suites asserted `MAX_BUFFER == 500`
+rather than reading the member. That is the intended way to find them: the number is fixed by the
+standard rather than by the host, so a suite that disagrees with the library is a suite that has not
+been re-vendored yet.
 
-The `label` argument is still passed and still used: it is what the **text-button fallback** draws
-when there is no art.
+### What version 10 corrected, and why the forwarder carries every argument
 
-### The original `addonName` field, from version 9
+Version 10 fixed two things version 9 shipped, and both still hold here.
+
+`lib.MakeCloseButton` forwards onto `Core.MakeCloseButton`, and at version 9 it took **two**
+arguments where Core's had grown a third — so a host that passed `addonName` got copy and clear as
+icons beside a close button that was still a multiplication sign. A forwarder that loses an argument
+is not a failure any layer can report: Core saw no addon name and did exactly what it does without
+one, which is a perfectly good button. The forwarder exists so that a Core upgraded underneath an
+unchanged `DebugLog.lua` is still the one that draws (see
+[The empty `makeCloseButton`](#the-empty-makeclosebutton)), which means it has to carry **every**
+argument Core takes or the upgrade arrives half-applied.
+
+The icon controls also carry **no tooltip**. Version 9's anchored `ANCHOR_BOTTOM`, which put it on
+top of the first line of the log — the thing the window exists to show — every time the pointer
+crossed the title bar. The `label` argument is still passed and still used: it is what the
+**text-button fallback** draws when there is no art.
+
+### The `addonName` field and the icon controls, from versions 9 and 10
 
 **One optional descriptor field, `addonName`.** Additive: a host that does not pass it gets the
 version-8 windows down to the pixel, and every existing field behaves exactly as it did.
@@ -116,13 +133,14 @@ still pushes both out of its way.
 Dropping a word for a mark costs the one thing the word was doing, and version 10 accepts that cost
 rather than paying it with a tooltip over the log. A host that wants the words back omits
 `addonName`; there is no third setting.
+
 ## Lib-level surface
 
 | Name | Since | Meaning |
 |---|---|---|
 | `lib.FormatPlain(ts, tag, msg)` | 1 | `"<ts> \| [<tag>] <msg>"` — what the buffer holds and the copy window mirrors. Pure and lib-level, so a host's tests call it directly. |
 | `lib.FormatColored(ts, tag, msg)` | 1 | The console view's line: timestamp muted steel-blue (`6f8faf`), `[tag]` muted tan/gold (`c9a66b`), separator and message default white. |
-| `lib.MAX_BUFFER` | 1 | The line cap (500). Fixed by the standard rather than by the host: the cap and the message frame's own `SetMaxLines` must move together or the visible log and the copied buffer diverge. |
+| `lib.MAX_BUFFER` | 1 | The line cap (**1500** as of minor 11; 500 through minor 10). Fixed by the standard rather than by the host: the cap and the message frame's own `SetMaxLines` must move together or the visible log and the copied buffer diverge. 1500 because the perf capture workflow pastes out of this buffer — `perf dump` writes a whole JSON record as one line — and the copy window is a *view* of the buffer rather than a second store, so this one number caps both. |
 | `lib.MakeCloseButton` | 1 | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. Forwards through the `core` table at call time, not captured at load. |
 | `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
 | `lib.MODULES` | 1 | `{ DebugLog = <minor> }` — the live minor of every file in this major. |
@@ -148,7 +166,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 | `skin` | table | no | 1 | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
 | `applySkin` | function | no | **4** | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than colour, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
-| `addonName` | string | no | **9** | The host's own addon folder name. Given it, both windows draw this collection's art; omitted, they draw the version-8 glyph and words. See [What changed at this version](#what-changed-at-this-version). |
+| `addonName` | string | no | **9** | The host's own addon folder name. Given it, both windows draw this collection's art; omitted, they draw the version-8 glyph and words. See [The `addonName` field and the icon controls](#the-addonname-field-and-the-icon-controls-from-versions-9-and-10). |
 | `makeCloseButton` | function | no | **4** | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. **Rarely the right field, and it has no consumer today** — these are the library's windows, so they wear the library's close glyph, and a host whose own main window closes with something else must not push that difference onto them (`standalone-windows`). Pass it only for a close control genuinely *different in kind*. See [The empty `makeCloseButton`](#the-empty-makeclosebutton). |
 
 ## The instance surface
@@ -244,19 +262,3 @@ tested, unused field otherwise reads as one to every reader who finds it.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
-
-## Moving to version 11
-
-**Take it.** One number moves and nothing else does: `lib.MAX_BUFFER` goes from 500 to 1500. No
-member is added, none is removed, and every descriptor field, instance method and drawn control
-behaves exactly as it does here.
-
-The reason to take it is the perf capture workflow, which pastes out of this buffer — `perf report`
-prints its summary into the console and `perf dump` writes a whole JSON record as a single line. At
-500 a long run overflowed the buffer and lost its head with nothing saying so, because a buffer that
-has dropped its oldest lines is indistinguishable from one that was started later.
-
-The one thing to check after re-vendoring: **a test that pins the literal 500 will go red**. Two
-consumer suites asserted `MAX_BUFFER == 500` rather than reading the member. Read the member, or
-update the expectation to 1500 — the cap is fixed by the standard rather than by the host, so a
-suite disagreeing with the library is a suite that has not been re-vendored yet.
