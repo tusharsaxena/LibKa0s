@@ -89,11 +89,11 @@ test("dbg: Add appends the plain form to the buffer and is never gated on the fl
   T.assertTrue(D.buffer[1]:find("|cff", 1, true) == nil, "and carries no colour codes")
 end)
 
-test("dbg: the cap is 500 and the message frame is held to the same number", function()
+test("dbg: the cap is 1500 and the message frame is held to the same number", function()
   -- Pinned as a literal because every other case reads the constant back out of the library and
   -- would pass at any value. The two must move together or the visible log and the copied buffer
   -- disagree about how much history there is.
-  assertEqual(debuglog.MAX_BUFFER, 500)
+  assertEqual(debuglog.MAX_BUFFER, 1500)
   -- SetMaxLines is called during the window build, so the recorder has to be in place before the
   -- frame exists: wrap the factory rather than the frame.
   local seen = {}
