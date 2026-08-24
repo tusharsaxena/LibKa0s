@@ -7,6 +7,31 @@ self-contained and names what to read rather than restating rules that may have 
 **2m 10.8s to 7.26s** on 1,246 unchanged cases — and, following the rule below, deliberately did
 **not** switch on `--jobs`.
 
+**Where every Ka0s addon stood on 2026-08-25, before adopting** — measured, all green, and all of
+them I/O-bound rather than busy:
+
+| Addon | Wall | CPU | Cases |
+|---|---|---|---|
+| Ka0s Multi Meters | 2m 10.8s → **7.26s** (adopted) | 25% | 1,246 |
+| ConsumableMaster | 77.9s | 16% | 693 |
+| KickCD | 50.7s | 23% | 774 |
+| PanelMaster | 11.0s | 16% | 729 |
+| BankLedger | 10.7s | 18% | 775 |
+| LootHistory | 9.8s | 16% | 621 |
+| AbsorbTracker | 9.4s | 18% | 506 |
+| PrettyChat | 8.9s | 17% | 270 |
+| WhatGroup | 7.5s | 19% | 477 |
+
+**The two fixes pay in different repos, and you cannot tell which by reading the suites.** The
+chunk cache only helps where cases rebuild an isolated addon instance; the batched blob reads help
+everywhere, because every repo runs the vendored-payload gate and every one was spawning ~66 `git`
+processes for it. Multi Meters rebuilt 425 times and the cache was almost the whole 18x;
+ConsumableMaster looks like it rebuilds **twice** and in fact drives **27,392** `loadfile` calls, so
+the cache is most of its 77.9s too.
+
+That mismatch is the point: **grepping for the idiom lied, counting the calls did not.** Step 1
+counts the calls.
+
 **What each repo's jump includes** (the vendored-payload gate compares *both* payloads against the
 tag your `CLAUDE.md` names, so the library moves with the kit — you cannot take kit 12 alone):
 
@@ -37,8 +62,39 @@ wrong. On Multi Meters the instinct was "too many tests"; the tests were not the
 ```
 
 Record the case count, the wall clock and the **CPU percentage**. A figure well under 100% means the
-process is *waiting*, not working, and no amount of faster code fixes waiting. Keep this — it is the
-"before" in your report and there is no second chance to take it.
+process is *waiting*, not working, and no amount of faster code fixes waiting.
+
+Then count what it is waiting on. Do not infer this from reading the suites — on ConsumableMaster
+that reading was wrong by four orders of magnitude. Write this shim and run it:
+
+```lua
+-- /tmp/profile-gate.lua — run from the repo root: lua /tmp/profile-gate.lua
+local realloadfile, N = loadfile, 0
+_G.loadfile = function(...) N = N + 1 return realloadfile(...) end
+local realpopen, P = io.popen, 0
+io.popen = function(...) P = P + 1 return realpopen(...) end
+local realexit = os.exit
+os.exit = function(code)
+  io.stderr:write(("\n[profile] loadfile=%d  popen=%d  cpu=%.2fs\n"):format(N, P, os.clock()))
+  realexit(code)
+end
+arg[0] = "tests/run.lua"
+dofile("tests/run.lua")
+```
+
+Read the two numbers against what the kit fixes:
+
+- **`loadfile` in the thousands** — cases are rebuilding isolated instances, and the chunk cache is
+  your win. Multi Meters: 60,112. ConsumableMaster: 27,392.
+- **`popen` around 150** — the vendored-payload gate spawning one `git` per file, plus directory
+  walks. Every repo has this, and it is worth roughly 7 seconds.
+
+WhatGroup is the clean case of the second with none of the first: `loadfile=24  popen=147
+cpu=0.31s`, inside a **7.5s** wall clock. Three tenths of a second of work; the rest was waiting on
+processes. A repo that looks like that gains nothing from the cache and everything from the batch,
+and its report should say so rather than crediting the wrong half.
+
+Keep all of it. It is the "before" in your report, and there is no second chance to take it.
 
 ### Step 2 — Re-vendor from the tag
 
