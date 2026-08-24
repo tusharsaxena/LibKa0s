@@ -10,6 +10,40 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.11.2 — 2026-08-24
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 3**,
+**DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
+**OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 11**.
+
+**`LibKa0s-Widgets-1.0`'s menu raised on the first click, in every host.** A row's optional glyph
+`FontString` was created with no font — `CreateFontString(nil, "OVERLAY")`, no template — and
+`paintMenuRow` then set its text unconditionally, on every row of every paint. The client answers
+`FontString:SetText(): Font not set` to that, so the first click on any dropdown this major built
+errored, wherever the host happened to build its window.
+
+It was not confined to a host that names no `glyphFont`. The face is set only on a row that *has* a
+glyph, so a host doing everything right still painted its glyphless rows through a `FontString`
+that had never been given a font; a host with no face at all hit it on every row.
+
+The fix is one argument — the glyph is built from the `GameFontHighlightSmall` template, so it
+always has a font — and the per-paint `SetFont` that v1.11.0 introduced is untouched, so each host
+still imposes its own monospace face. No contract moves: `Dropdown`, `CloseMenu` and every instance
+method are unchanged from v1.11.1, and the documented behavior of `opts.glyphFont` is the sentence
+it has been since v1.11.0 — *dropping* the glyph column is what it always promised and what this
+release is the first to actually do. Adopters need a re-vendor and no code change.
+
+**The test kit's mock now raises `Font not set` too.** 553 cases went green over this, because the
+widget suite's FontString stand-in stored any string it was handed. MultiMeters' own mock models
+this exact error, with a comment recording the load the live client took down when it hit it — the
+consumer had been burned by the class of bug and modelled it; the library it now vendors had not.
+`tests/test_widgets.lua`'s frame factory now gives a `FontString` its own identity, records the
+template it was built from, and raises on `SetText` when it has neither font nor template. Two new
+cases build REAL rows rather than recording stand-ins, because it is the row's *creation* that was
+wrong and every existing case seeded rows that bypassed it.
+
+Full contract in [docs/api/Widgets/version-3-docs.md](docs/api/Widgets/version-3-docs.md).
+
 ## v1.11.1 — 2026-08-24
 
 Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 2**,

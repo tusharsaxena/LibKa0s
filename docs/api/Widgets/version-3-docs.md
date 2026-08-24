@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 2
+# `LibKa0s-Widgets-1.0` — version 3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,30 +8,32 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **2** |
-| Shipped in | v1.11.1 |
-| Status | Superseded |
-| Supersedes | [version 1](./version-1-docs.md) — which shipped no way to close the shared menu from outside a click |
-| Superseded by | [version 3](./version-3-docs.md) — which fixes a `FontString:SetText(): Font not set` raised on the first click |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 2 }` |
+| Files and minors | `Widgets.lua` minor **3** |
+| Shipped in | v1.11.2 |
+| Status | **Current** |
+| Supersedes | [version 2](./version-2-docs.md) — whose menu raised `FontString:SetText(): Font not set` on the first click, in every host |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 3 }` |
 
 ## What changed at this version
 
-**`lib.CloseMenu()` is new.** It closes the shared popup menu if it is open, and is a safe no-op
-when no dropdown has ever opened it or when it is already hidden. It takes no parameters, and there
-is no companion "is it open" query — no adopting host needs one.
+**The menu no longer raises on the first click.** Versions 1 and 2 built a row's glyph `FontString`
+with no font — `CreateFontString(nil, "OVERLAY")`, no template — and then set its text on every
+paint. The client answers `FontString:SetText(): Font not set` to that, so the first click on any
+dropdown built by any host errored, and the error landed at whatever point the host built its
+window. The fix is one argument: the glyph is built from the `GameFontHighlightSmall` template, so
+it always has a font, while the per-paint `SetFont` still lets each host impose its own monospace
+face.
 
-The gap was found by the first adopter, re-vendoring version 1 into BankLedger. Before v1.11.0,
-BankLedger's dropdown was a file-local to `modules/Browser.lua`, and its host frame closed the menu
-on `OnHide` directly — code the lift removed along with everything else file-local. The library's
-popup is a process-wide singleton parented to `UIParent` at `FULLSCREEN_DIALOG` (see *Behavior a
-host must know* below), so a host frame's own `Hide()` no longer reaches it. Closing the host window
-by any route that is not a click on the dropdown itself — Escape, a slash command — left the menu
-orphaned: still shown, still at `FULLSCREEN_DIALOG`, floating over the game with nothing left to
-hide it. The click-catcher only ever helped when the player actually clicked.
+**It reached every host, not only a host with no `glyphFont`.** The face is set only on a row that
+*has* a glyph, so even a host that supplies a face — the case version 1 was designed around —
+painted its glyphless rows through a `FontString` that had never been given one. A host with no
+`glyphFont` at all hit it on every row.
 
-Nothing else moved. `Dropdown` and every instance method described below are unchanged from version
-1.
+**No contract moves.** `Dropdown`, `CloseMenu` and every instance method are unchanged from version
+2, and the documented behavior of `opts.glyphFont` is unchanged — *dropping* the glyph column with
+no face named is what version 1 promised and what this version is the first to actually do. A host
+on version 2 needs no code change, only a re-vendor.
 
 ## What this major is
 
@@ -144,7 +146,8 @@ this line — and only that surface — permanent.
   are blank for this row's option, precisely so that nothing leaks from whichever dropdown last
   painted that pooled row button.
 - **The glyph column is absent unless `opts.glyphFont` is given.** Without a face to draw it in, an
-  option's `glyph` is silently dropped: the glyph `FontString` stays hidden, and the row's label
+  option's `glyph` is silently dropped: the glyph `FontString` stays hidden — it keeps the font
+  template it was built with, so nothing raises — and the row's label
   starts at the plain margin rather than indented past a glyph slot. `opts.glyphFont` is therefore a
   **precondition** for any option that will carry `glyph`, not an optional decoration — raising at
   draw time inside a UI widget would be worse than drawing one column less, and this library carries
@@ -153,7 +156,7 @@ this line — and only that surface — permanent.
 
 ## Known and intentional absences
 
-Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 2 is a
+Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 3 is a
 decision, not an oversight, and every one of these is reachable later without a major bump:
 
 - **No setters to restyle a dropdown after it is built.** `chevron`, `check` and `glyphFont` are
@@ -181,16 +184,3 @@ major, so the host either gets the whole surface or none of it. The host must ha
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
 non-click close path must itself become a no-op alongside the rest of the degraded surface.
-
-## Moving to version 3
-
-**Take it.** This version raises `FontString:SetText(): Font not set` on the first click of any
-dropdown, in every host: a row's glyph `FontString` is built with no font and then has its text set
-on every paint. It is not conditional on the host — a host that supplies `opts.glyphFont` still
-paints its *glyphless* rows through that `FontString`, and a host that supplies none hits it on
-every row. The error lands wherever the host built the window, which in one adopter took the whole
-addon down before a window existed.
-
-Nothing else differs. No surface is added, removed or reshaped at version 3, and the documented
-behavior of `opts.glyphFont` is the same sentence it has been since version 1 — version 3 is the
-first version in which it is true. A host on this version needs a re-vendor and no code change.

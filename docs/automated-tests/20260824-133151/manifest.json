@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "addon": "LibKa0s",
+  "addonVersion": "1.11.1",
+  "run": "20260824-133151",
+  "startedAt": "2026-08-24T13:31:51+05:30",
+  "durationMs": 5278,
+  "label": null,
+  "release": "1.11.2",
+  "git": { "sha": "40861da49859d82fae5aa50cafc1a726287439b2", "branch": "feat/widgets-dropdown", "dirty": true },
+  "host": { "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio", "luacheck": "Luacheck: 1.2.0", "lizard": "1.23.0", "timingSource": "date +%s%3N" },
+  "suites": {
+    "lint": { "status": "pass", "durationMs": 946, "warnings": 0, "errors": 0, "files": 14, "gating": true, "gates": { "commit": true, "release": true } },
+    "tests": { "status": "pass", "durationMs": 2336, "passed": 555, "failed": 0, "total": 555, "gating": true, "gates": { "commit": true, "release": true } },
+    "perf": { "status": "skip", "durationMs": 1, "skipReason": "no tests/perf.lua — this addon ships no offline scenarios", "scenarios": 0, "gating": false, "gates": { "commit": false, "release": true } },
+    "complexity": { "status": "pass", "durationMs": 1280, "warnings": 0, "maxCcn": 14, "nloc": 9717, "functions": 1410, "avgCcn": 1.9, "avgNloc": 6.3, "avgToken": 48.6, "warnFunRatio": 0.00, "warnNlocRatio": 0.00, "bandFiles": 3, "overCapFiles": 0, "gating": false, "gates": { "commit": false, "release": true } }
+  },
+  "verdict": "green"
+}

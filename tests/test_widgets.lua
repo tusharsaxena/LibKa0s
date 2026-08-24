@@ -62,12 +62,38 @@ local function geomFrame()
   function f:__fire(k, ...) local fn = self.__scripts[k]; if fn then return fn(self, ...) end end
   function f:SetTexture(p) self.__texture = p; return self end
   function f:SetFont(p, s, fl) self.__font = { p, s, fl }; return self end
-  function f:SetText(t) self.__text = t; return self end
+  -- A FONTSTRING WITH NO FONT RAISES ON SetText, exactly as the client does — and a FontString
+  -- built FROM A TEMPLATE has one, which is why the check keys on `__font or __template` rather
+  -- than on `__font` alone. A bare CreateFontString() is the case that has to be caught.
+  --
+  -- This fidelity was missing for a release and it cost a load in a consuming addon: the glyph
+  -- FontString was created bare and given its text on the next line, and the client answered
+  -- `FontString:SetText(): Font not set` at BuildFrame — taking the addon down before a window
+  -- existed. Every case in this file passed, because this stub happily stored the string.
+  function f:SetText(t)
+    if self.__objectType == "FontString" and not (self.__font or self.__template) then
+      error("FontString:SetText(): Font not set", 2)
+    end
+    self.__text = t
+    return self
+  end
   function f:GetText() return self.__text end
+  -- A PROPORTIONAL-ISH width, 6px per character, so the width arithmetic has real numbers to run
+  -- on; it is the same rule the measuring stub further down uses.
+  function f:GetStringWidth() return #(self.__text or "") * 6 end
   -- A TEXTURE IS ITS OWN WIDGET. The catch-all would answer CreateTexture with the frame itself,
   -- and this widget sizes a button and then sizes the art inside it — so the button would measure
   -- 12px and every width rule below would be measuring the arrow.
   function f:CreateTexture() return geomFrame() end
+  -- AND SO IS A FONTSTRING, for the SetText rule above to mean anything: answered with the frame
+  -- itself, a row's label, its glyph and the button would be one object carrying one `__font`, and
+  -- a glyph that never had a face of its own would look like one that did.
+  function f:CreateFontString(_, _, template)
+    local fs = geomFrame()
+    fs.__objectType = "FontString"
+    fs.__template = template
+    return fs
+  end
   setmetatable(f, { __index = function(_, k)
     if type(k) == "string" and k:match("^%u") then return function() return f end end
     return nil
@@ -177,14 +203,23 @@ end
 -- the library has no art of its own to name here.
 local CHECK = "|T" .. HOST_CHECK .. ":0|t "
 
+-- The font template makeMenuRow builds a row's label AND its glyph from. Spelled out here rather
+-- than imported, so a change to it in Widgets.lua has to be made deliberately in both places.
+local ROW_TEMPLATE = "GameFontHighlightSmall"
+
 -- A recording stand-in for a row's FontString. CreateFontString still falls through the factory's
 -- catch-all above and answers with the frame itself, which conflates a row's label, its glyph and
 -- the button itself; these keep the three apart so the paint rules are observable at all. (Only
 -- CreateTexture was given its own identity up there, because only the arrow's size was doing
 -- arithmetic damage.)
-local function fakeFS()
-  local r = { points = {} }
-  function r:SetText(t) self.text = t end
+--- @param template string|nil  the font template the real row builds this FontString from, if any;
+---   a bare one raises on SetText, as the client does and as the factory above now does.
+local function fakeFS(template)
+  local r = { points = {}, template = template }
+  function r:SetText(t)
+    if not (self.font or self.template) then error("FontString:SetText(): Font not set", 2) end
+    self.text = t
+  end
   function r:SetTextColor(a, b, c) self.color = { a, b, c } end
   function r:SetShown(v) self.shown = v and true or false end
   function r:ClearAllPoints() self.points = {} end
@@ -197,7 +232,10 @@ end
 
 -- A recording stand-in for a pooled row button.
 local function fakeRow()
-  local b = { fs = fakeFS(), glyph = fakeFS(), points = {}, scripts = {} }
+  -- Both FontStrings carry a template, because makeMenuRow builds both from one. The seeded rows
+  -- mirror the real ones rather than improve on them: the case that pins the template itself is
+  -- "A pooled row survives a paint with no face at all", which builds REAL rows.
+  local b = { fs = fakeFS(ROW_TEMPLATE), glyph = fakeFS(ROW_TEMPLATE), points = {}, scripts = {} }
   function b:SetWidth(w) self.width = w end
   function b:ClearAllPoints() self.points = {} end
   function b:SetPoint(p, x, y) self.points[#self.points + 1] = { p, x, y } end
@@ -214,6 +252,19 @@ local function populate(dd, opts, n)
   dd:SetOptions(opts)
   MENU.buttons = {}
   for i = 1, (n or #opts) do MENU.buttons[i] = fakeRow() end
+  MENU:Populate(dd)
+  return MENU.buttons
+end
+
+--- Populate the pool with the widget's OWN rows — no recording stand-ins seeded at all.
+---
+--- Everything above drives `fakeRow`s, which is what makes the paint rules observable; the price is
+--- that makeMenuRow itself never runs, so how a row is BUILT is untested by every case that uses
+--- them. This is the path that builds one, and the one that catches a FontString created without a
+--- font.
+local function populateBuilt(dd, opts)
+  dd:SetOptions(opts)
+  MENU.buttons = {}
   MENU:Populate(dd)
   return MENU.buttons
 end
@@ -366,6 +417,38 @@ test("A host that names no face gets no glyph column", function()
   dd:SetMulti(true)
   local rows = populate(dd, MENU_OPTS)
   assertEqual(rows[3].glyph.shown, false)
+end)
+
+-- ── The glyph FontString always has a font ────────────────────────────────────
+--
+-- paintMenuRow sets the glyph's FACE only when the dropdown named one AND the row carries a glyph,
+-- but it calls SetText on that FontString on EVERY row of EVERY paint. So a glyph FontString built
+-- bare has no font at the moment its text is first set, and the client answers
+-- `FontString:SetText(): Font not set` — on the first click, in every host, including one that
+-- passes a face (its glyphless rows take the same route). makeMenuRow builds it from a template
+-- for that reason; the two cases below are what makes that a rule rather than a line of code.
+--
+-- They build REAL rows, not stand-ins: it is the CREATION that is under test.
+
+test("A row built with no face at all paints without raising", function()
+  local dd = W.Dropdown(mocks.UIParent, 110, { check = HOST_CHECK })   -- no glyphFont
+  dd:SetMulti(true)
+  local rows = populateBuilt(dd, MENU_OPTS)
+  -- The text is still WRITTEN — that unconditional SetText is the whole hazard — and the row is
+  -- simply not shown. Reaching this line at all is the assertion: under a bare FontString the
+  -- SetText inside Populate raises and the case never gets here.
+  assertEqual(rows[3].glyph.__text, "\226\150\178", "the glyph's text is written on every paint")
+  assertEqual(rows[3].glyph:IsShown(), false, "and the column is dropped, as it is documented to be")
+end)
+
+test("A glyphless row paints without raising even when the host DID name a face", function()
+  -- The half of the bug that reaches a host doing everything right: the face is set only on a row
+  -- that has a glyph, so rows 1 and 2 here reach SetText having never been given one.
+  local dd = W.Dropdown(mocks.UIParent, 110, { check = HOST_CHECK, glyphFont = HOST_FONT })
+  dd:SetMulti(true)
+  local rows = populateBuilt(dd, MENU_OPTS)
+  assertEqual(rows[1].glyph.__text, "")
+  assertEqual(rows[3].glyph.__font[1], HOST_FONT, "and a glyphed row still takes the host's face")
 end)
 
 -- ── Two hosts, one row pool ───────────────────────────────────────────────────
