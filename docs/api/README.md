@@ -63,19 +63,19 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Env/version-1-docs.md) | `Env.lua` 1 | v1.14.0 | **Current** |
+| [1](./Env/version-1-docs.md) | `Env.lua` 1 | v1.15.0 | **Current** |
 
 ### `LibKa0s-Pool-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Pool/version-1-docs.md) | `Pool.lua` 1 | v1.14.0 | **Current** |
+| [1](./Pool/version-1-docs.md) | `Pool.lua` 1 | v1.15.0 | **Current** |
 
 ### `LibKa0s-Item-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Item/version-1-docs.md) | `Item.lua` 1 | v1.14.0 | **Current** |
+| [1](./Item/version-1-docs.md) | `Item.lua` 1 | v1.15.0 | **Current** |
 
 ### `LibKa0s-Media-1.0`
 
@@ -89,7 +89,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [6](./Widgets/version-6-docs.md) | `Widgets.lua` 6 | v1.14.0 | **Current** |
+| [6](./Widgets/version-6-docs.md) | `Widgets.lua` 6 | v1.15.0 | **Current** |
 | [5](./Widgets/version-5-docs.md) | `Widgets.lua` 5 | v1.13.0 | Superseded |
 | [4](./Widgets/version-4-docs.md) | `Widgets.lua` 4 | v1.12.0 | Superseded |
 | [3](./Widgets/version-3-docs.md) | `Widgets.lua` 3 | v1.11.2 | Superseded |
@@ -100,7 +100,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [11](./DebugLog/version-11-docs.md) | `DebugLog.lua` 11 | v1.14.0 | **Current** |
+| [11](./DebugLog/version-11-docs.md) | `DebugLog.lua` 11 | v1.15.0 | **Current** |
 | [10](./DebugLog/version-10-docs.md) | `DebugLog.lua` 10 | v1.10.1 – v1.13.0 | Superseded |
 | [9](./DebugLog/version-9-docs.md) | `DebugLog.lua` 9 | v1.10.0 | Superseded |
 | [8](./DebugLog/version-8-docs.md) | `DebugLog.lua` 8 | v1.8.0 – v1.9.2 | Superseded |

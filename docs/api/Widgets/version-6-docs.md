@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **6** |
-| Shipped in | v1.14.0 |
+| Shipped in | v1.15.0 |
 | Status | **Current** |
 | Supersedes | [version 5](./version-5-docs.md) — which had no copy window, so every host that needed one hand-rolled it |
 | Superseded by | — |

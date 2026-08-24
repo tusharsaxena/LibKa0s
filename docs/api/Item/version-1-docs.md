@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Item-1.0` |
 | Files and minors | `Item.lua` minor **1** |
-| Shipped in | v1.14.0 |
+| Shipped in | v1.15.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |

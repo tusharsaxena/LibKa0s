@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **11** |
-| Shipped in | v1.14.0 |
+| Shipped in | v1.15.0 |
 | Status | **Current** |
 | Supersedes | [version 10](./version-10-docs.md) — whose console kept 500 lines, which a perf capture overflowed |
 | Superseded by | — |

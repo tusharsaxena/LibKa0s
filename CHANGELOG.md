@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.14.0 — 2026-08-25
+## v1.15.0 — 2026-08-25
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 1**, **Item minor 1**,
 **Media minor 3**, **Widgets minor 6**, **DebugLog minor 11**, **Slash minor 7**, **Options minor 8**,
@@ -20,7 +20,7 @@ Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 1**, *
 **Three new majors, one new widget, and one number.** Every one of them came out of the same
 measurement: a sweep of all nine consumer addons for code that had been written more than once, kept
 only where the copies agreed on behavior, and dropped where they disagreed on purpose. The test-kit
-work that this release was originally cut for is at the end.
+work this content was stacked on top of is not in it: that shipped on its own, as v1.14.0 below.
 
 **`LibKa0s-Env-1.0` — the client facts every addon reads, read one way.** Four functions over three
 Blizzard surfaces: the TOC manifest, the addon's own version string, the player's map id and the
@@ -71,7 +71,14 @@ is **one number, not two**: the copy window shows `table.concat(buffer)` and cap
 so the buffer cap *is* the copy cap. Two consumer suites pinned the literal `500` rather than reading
 the member and go red until they re-vendor, which is the intended way to find them.
 
-**The rest of this release is the test kit**, and it is about how long the green gate takes to answer.
+## v1.14.0 — 2026-08-25
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 5**,
+**DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
+**OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 12**.
+
+No shipped library file changed. This release is the **test kit** only, and it is about how long the
+green gate takes to answer.
 
 **The loader was re-reading the entire source tree hundreds of times per run.** A suite that wants an
 isolated instance re-loads every vendored library file and every file the TOC names, which is the
