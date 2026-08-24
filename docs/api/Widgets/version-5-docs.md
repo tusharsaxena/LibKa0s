@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 4
+# `LibKa0s-Widgets-1.0` — version 5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,49 +8,56 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **4** |
-| Shipped in | v1.12.0 |
-| Status | Superseded |
-| Supersedes | [version 3](./version-3-docs.md) — whose menu could not light up, or act on, a row that selects something other than its own value |
-| Superseded by | [version 5](./version-5-docs.md) — whose menu closes on an outside click instead of swallowing it |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 4 }` |
+| Files and minors | `Widgets.lua` minor **5** |
+| Shipped in | v1.13.0 |
+| Status | **Current** |
+| Supersedes | [version 4](./version-4-docs.md) — whose click-catcher swallowed a right-click instead of closing the menu |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 5 }` |
 
 ## What changed at this version
 
-**A row may now select something other than its own value.** A *preset* row is one whose `value` is
-not among the values it picks — "Character: Current" selects the current player's key, and its own
-value is the string `"current"`, which is nobody's key. Version 3 had no way to express that in
-either direction: `rowSelected` could only ask whether the row's own value was in `_selected`, so a
-preset row was the one row in a menu that could never light up even when it was exactly what the
-dropdown was showing; and `ToggleSelected` could only toggle the row's own value in, so clicking it
-filtered on the literal string.
+**An outside click closes the menu without being eaten.** Through version 4 the menu was dismissed
+by a full-screen `Button` at `FULLSCREEN` strata, shown alongside it, whose `OnClick` hid the menu.
+That frame *intercepted* the click, and intercepting was the defect — twice over:
 
-Two additions, both optional and both inert for a host that sets neither:
+- A `Button` with no `RegisterForClicks` takes `LeftButtonUp` and nothing else. **A right-click
+  anywhere while a menu was open was swallowed**: it landed on the catcher, found no handler for
+  that button, and went nowhere. The menu stayed open and whatever was under the cursor never heard
+  the click. It survived from version 1 because neither shipped consumer had a right-click surface
+  on the same window as a dropdown. LootHistory was the first, and there a right-click on a history
+  row did nothing at all until the player left-clicked to dismiss the menu first.
+- Even the left-click it did handle was consumed. Dismissing the menu cost a click that did nothing
+  else.
 
-- **`opt.isActive(dd)`** — a per-option predicate. When an option carries one it is asked *instead*
-  of the selection set, and its answer is final in both directions.
-- **`dd.presets`** — a plain field on the dropdown, `{ [value] = function(dd) end }`. A value with a
-  handler has that handler run in place of the toggle, and the handler owns `dd._selected`.
+**The catcher is gone.** The menu now registers `GLOBAL_MOUSE_DOWN` while it is shown and closes
+itself when the press was neither on the menu nor on the dropdown it dropped from. That event fires
+for a press anywhere in the UI, on any button, whether or not something else consumed it — so the
+menu reacts to a click it never touched, and the click goes on to reach whatever is under the
+cursor. **One press now both dismisses the menu and does the thing the player pressed on.**
 
-**The collapsed label now counts a selection whose option row is gone.** `UpdateMultiLabel` walked
-`_options` and asked which were selected, so a selected value with no row in the *current* option
-list was invisible to it. Option lists are usually data-driven — a character with no rows in the
-current dataset is not in the list — and the button then read "Character: All" while the filter was
-still on. It now labels every value in `_selected`, from its option row when there is one and from
-the raw value when there is not. **This is a behavior change for an existing host**, not only a new
-seam: a host whose selection can outlive its option list will see a summary where it previously saw
-the "All" label. A host whose option list always contains everything selectable sees no difference.
-An active preset's own label is taken ahead of all of this.
+**This is a visible behavior change, and it is the reason to read this section.** Under version 4 a
+click outside an open menu was absorbed. Under version 5 it is not: it dismisses the menu *and*
+lands. A player closing a menu by clicking on the 3D world, an action bar or another addon's frame
+will now also click that thing. This is what a host asked for and what the issue behind this version
+described, but a host whose window sits under its own dropdowns should smoke-test it.
 
-**Nothing is removed and nothing is reshaped.** `Dropdown`, `CloseMenu`, every instance method's
-signature and every documented `opts` field are unchanged from version 3. A host on version 3 that
-sets no `isActive` and no `presets` needs no code change, only a re-vendor — subject to the label
-paragraph above.
+**The registration is scoped to the open menu**, taken when the menu is shown and dropped by its
+`OnHide` — not held for the life of the process. A handler running on every mouse press in the game
+for the rest of the session, in every host that ever vendored this file, is a cost no host agreed
+to.
 
-**Why it came upstream rather than being worked around.** LootHistory carried its own copy of this
-widget, with both seams, and its Character filter needed them; the adoption would otherwise have
-had to either lose the behavior or keep the copy. Both prior releases of this major came from an
-adopter hitting a gap in exactly the same step.
+**Two presses are deliberately not "outside".** A press on the menu itself, because otherwise the
+menu would close under the player's own row click, on the press, before the release the row needs.
+And a press on the dropdown that dropped it, because that button's `OnClick` is the toggle — close
+on the press and the release finds the menu hidden and re-opens it, making the menu impossible to
+close by the button that opened it. Only the *owner* is exempt: a press on a different dropdown
+closes this menu, and that dropdown's own `OnClick` then opens its own, which is how exactly one
+menu stays open across the process.
+
+**No contract moves.** `Dropdown`, `CloseMenu`, every instance method, every documented `opts` field
+and every option-row field are unchanged from version 4. A host needs a re-vendor and no code
+change.
 
 ## What this major is
 
@@ -170,8 +177,10 @@ this line — and only that surface — permanent.
   not belong to any one host's frame, hiding a host's window — by `OnHide`, by Escape, by a slash
   command — does not hide the menu. Without the call, closing the host window by any route other
   than a click on the dropdown leaves the menu orphaned: still shown at `FULLSCREEN_DIALOG`, floating
-  over the game with nothing left to hide it. The click-catcher built alongside the menu only ever
-  helps when the player clicks outside it; it does nothing for a window closed any other way.
+  over the game with nothing left to hide it. **Since version 5 the menu closes itself on a mouse
+  press anywhere outside it, and that narrows the window without closing it** — a host window hidden
+  by Escape or by a slash command is hidden with no click at all, so there is nothing for the menu
+  to hear. The call is still required from every non-click close path.
 - **Rows are pooled across dropdowns, and every field is repainted on every pass.** The popup's row
   buttons are reused rather than rebuilt, and they are shared by every dropdown that has ever opened
   in this process, not just the one currently open. Every visible field of a row — its text, its
@@ -195,7 +204,7 @@ this line — and only that surface — permanent.
 
 ## Known and intentional absences
 
-Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 4 is a
+Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 5 is a
 decision, not an oversight, and every one of these is reachable later without a major bump:
 
 - **No per-row disable**, still — an `isActive` predicate reports a state, it does not gate a
@@ -224,19 +233,3 @@ major, so the host either gets the whole surface or none of it. The host must ha
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
 non-click close path must itself become a no-op alongside the rest of the degraded surface.
-
-## Moving to version 5
-
-**Take it.** No contract moves: `Dropdown`, `CloseMenu`, every instance method, every `opts` field
-and every option-row field are the same at version 5.
-
-What changes is what an outside click does. This version dismisses the menu with a full-screen
-`Button` that *intercepts* the click — and because that Button never calls `RegisterForClicks`, it
-takes `LeftButtonUp` only, so **a right-click anywhere while a menu is open is swallowed**: the menu
-stays open and whatever is under the cursor never hears it. Version 5 drops the catcher and listens
-for `GLOBAL_MOUSE_DOWN` instead, so the menu closes on any button and the click still reaches what
-is beneath it.
-
-The one thing to smoke-test after re-vendoring: under this version a click outside an open menu was
-*absorbed*, and under version 5 it lands. If this addon has anything clickable under its own
-dropdowns, a player dismissing a menu will now also click that thing.

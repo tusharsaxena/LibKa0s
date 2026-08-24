@@ -68,7 +68,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [4](./Widgets/version-4-docs.md) | `Widgets.lua` 4 | v1.12.0 | **Current** |
+| [5](./Widgets/version-5-docs.md) | `Widgets.lua` 5 | v1.13.0 | **Current** |
+| [4](./Widgets/version-4-docs.md) | `Widgets.lua` 4 | v1.12.0 | Superseded |
 | [3](./Widgets/version-3-docs.md) | `Widgets.lua` 3 | v1.11.2 | Superseded |
 | [2](./Widgets/version-2-docs.md) | `Widgets.lua` 2 | v1.11.1 | Superseded |
 | [1](./Widgets/version-1-docs.md) | `Widgets.lua` 1 | v1.11.0 | Superseded |

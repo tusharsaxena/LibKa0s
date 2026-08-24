@@ -10,6 +10,49 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.13.0 — 2026-08-24
+
+Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 5**,
+**DebugLog minor 10**, **Slash minor 7**, **Options minor 8**, **OptionsWidgets minor 7**,
+**OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**, **kit revision 11**.
+
+**`LibKa0s-Widgets-1.0`'s menu was eating the click that closed it, and swallowing a right-click
+entirely.** The menu was dismissed by a full-screen `Button` at `FULLSCREEN` strata, shown alongside
+it, whose `OnClick` hid the menu. That frame *intercepted* the click, and intercepting was the
+defect twice over. A `Button` with no `RegisterForClicks` takes `LeftButtonUp` and nothing else, so
+a right-click anywhere while a menu was open landed on the catcher, found no handler and went
+nowhere — the menu stayed open and whatever was under the cursor never heard it. And even the
+left-click it did handle was consumed: dismissing the menu cost a click that did nothing else.
+
+It survived from minor 1 because neither shipped consumer had a right-click surface on the same
+window as a dropdown. LootHistory adopted the major at v1.12.0 and became the first, and there a
+right-click on a history row did nothing at all until the player left-clicked to dismiss the menu
+first. It was recorded in that addon's smoke tests as expected in-client behavior and reported here
+rather than worked around locally.
+
+**The catcher is gone.** The menu registers `GLOBAL_MOUSE_DOWN` while it is shown and closes itself
+when the press was neither on the menu nor on the dropdown it dropped from. That event fires for a
+press anywhere in the UI, on any button, whether or not something else consumed it — so the menu
+reacts to a click it never touched, and the click goes on to reach whatever is under the cursor. One
+press now both dismisses the menu and does the thing the player pressed on. The registration is
+taken when the menu is shown and dropped by its `OnHide`, not held for the life of the process: a
+handler running on every mouse press in the game for the rest of the session, in every host that
+ever vendored this file, is a cost no host agreed to.
+
+**This one is visible, and adopters should smoke-test it.** Under minor 4 a click outside an open
+menu was absorbed; under minor 5 it dismisses the menu *and* lands. A player closing a menu by
+clicking the 3D world, an action bar or another addon's frame will now also click that thing. No
+contract moves — `Dropdown`, `CloseMenu`, every instance method, every `opts` field and every
+option-row field are unchanged, so adopters need a re-vendor and no code change.
+
+**Ten new cases, six of them red before the change**, covering the right-click that was swallowed,
+the left-click that was eaten, a button nobody enumerates, the two presses that are deliberately not
+"outside" (on the menu, and on the owning dropdown, each with the failure it prevents), a press on a
+*different* dropdown still closing it, and the registration being dropped on hide. The mock gained
+real `RegisterEvent` / `UnregisterEvent` / `IsMouseOver` for them: against the catch-all frame stub
+every registration silently answered the frame itself, and neither "is it listening?" nor "what does
+it do when the event arrives?" was askable at all.
+
 ## v1.12.0 — 2026-08-24
 
 Versions in this release: **Core minor 6**, **Media minor 3**, **Widgets minor 4**,

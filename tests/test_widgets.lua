@@ -47,7 +47,7 @@ local W = T.widgets
 -- A frame stub that models the geometry this widget does arithmetic on, and gives a texture its own
 -- identity. Lifted from BankLedger/tests/wow_mock.lua, which grew it for this widget.
 local function geomFrame()
-  local f = { __shown = true, __w = 0, __h = 0, __scripts = {}, __points = {} }
+  local f = { __shown = true, __w = 0, __h = 0, __scripts = {}, __points = {}, __events = {} }
   function f:SetSize(w, h) self.__w, self.__h = w, h; return self end
   function f:SetWidth(w) self.__w = w; return self end
   function f:SetHeight(h) self.__h = h; return self end
@@ -60,6 +60,17 @@ local function geomFrame()
   function f:SetScript(k, fn) self.__scripts[k] = fn; return self end
   function f:GetScript(k) return self.__scripts[k] end
   function f:__fire(k, ...) local fn = self.__scripts[k]; if fn then return fn(self, ...) end end
+  -- EVENTS ARE REAL, not swallowed by the catch-all below. New at minor 5: the menu closes on
+  -- GLOBAL_MOUSE_DOWN rather than by intercepting the click, so "is it listening?" and "what does
+  -- it do when the event arrives?" are the two questions the whole change turns on. Against the
+  -- catch-all every RegisterEvent would silently answer the frame itself and both would be
+  -- unaskable.
+  function f:RegisterEvent(e) self.__events[e] = true; return self end
+  function f:UnregisterEvent(e) self.__events[e] = nil; return self end
+  function f:IsEventRegistered(e) return self.__events[e] or false end
+  -- The cursor. The client answers this from where the mouse actually is; a suite has to say so.
+  -- Defaults to FALSE, which is the honest default: most clicks in these cases are outside.
+  function f:IsMouseOver() return self.__mouseOver or false end
   function f:SetTexture(p) self.__texture = p; return self end
   function f:SetFont(p, s, fl) self.__font = { p, s, fl }; return self end
   -- A FONTSTRING WITH NO FONT RAISES ON SetText, exactly as the client does — and a FontString
@@ -532,19 +543,22 @@ test("Widgets.CloseMenu is a no-op when no dropdown has ever opened the menu", f
   assertTrue(ok, "closing before anything has ever opened must not raise")
 end)
 
-test("Widgets.CloseMenu hides the click-catcher too", function()
+test("Widgets.CloseMenu leaves the unregistering to the menu's own OnHide", function()
   local dd = W.Dropdown(mocks.UIParent, 110)
   dd:SetOptions({ { value = "x", label = "X" } })
   dd:__fire("OnClick")
-  assertTrue(MENU.catcher:IsShown(), "opening the dropdown showed the catcher")
+  assertTrue(MENU:IsEventRegistered("GLOBAL_MOUSE_DOWN"), "opening the dropdown started the listen")
   W.CloseMenu()
   -- The mock's Hide() does not auto-invoke OnHide the way the real client does — the same gap
   -- test_debuglog.lua's "showing and hiding the console tells the host" case works around by
   -- firing the script explicitly. Firing it here exercises the wiring CloseMenu relies on rather
-  -- than duplicating it: EnsureMenu's menu:SetScript("OnHide", ...) is what hides menu.catcher,
-  -- which is why CloseMenu itself never touches the catcher directly.
+  -- than duplicating it: EnsureMenu's menu:SetScript("OnHide", ...) is what drops the event
+  -- registration, which is why CloseMenu itself never unregisters anything. Until minor 4 the same
+  -- sentence was true of menu.catcher, which this replaces.
+  assertTrue(MENU:IsEventRegistered("GLOBAL_MOUSE_DOWN"),
+    "CloseMenu hides; it does not reach past OnHide to unregister")
   MENU:__fire("OnHide")
-  assertEqual(MENU.catcher:IsShown(), false)
+  assertFalse(MENU:IsEventRegistered("GLOBAL_MOUSE_DOWN"))
 end)
 
 -- ── Preset rows and the collapsed label (new at minor 4) ──────────────────────
@@ -705,4 +719,102 @@ test("A preset row survives a REAL row build", function()
   assertEqual(rows[2].fs:GetText(), "|T" .. HOST_CHECK .. ":0|t Character: Current",
     "the active preset draws the tick, built rows and all")
 end)
+
+-- ── Closing on a click ANYWHERE, without eating it (new at minor 5) ───────────
+--
+-- Through minor 4 the menu was dismissed by a full-screen `Button` at FULLSCREEN strata, shown
+-- alongside it. Two consequences, and both were defects:
+--
+-- 1. A Button with no `RegisterForClicks` takes `LeftButtonUp` ONLY. A right-click anywhere while
+--    a menu was open landed on the catcher, found no handler, and was SWALLOWED — the menu stayed
+--    open and whatever was underneath never heard the click. LootHistory is the first host with a
+--    right-click surface on the same window as a dropdown, which is why it survived from minor 1.
+-- 2. Even the left-click it did handle was eaten. Dismissing a menu cost a click that did nothing
+--    else.
+--
+-- The catcher is gone. The menu listens for GLOBAL_MOUSE_DOWN while it is shown and closes itself
+-- when the press was neither on the menu nor on the dropdown it dropped from. Nothing intercepts
+-- anything, so the click reaches whatever is under the cursor — which is the behavior the issue
+-- asked for and the visible change of this version.
+
+--- A shown menu, dropped from a fresh dropdown, with the cursor recorded as somewhere else.
+local function openMenu()
+  local dd = W.Dropdown(mocks.UIParent, 110)
+  dd:SetOptions({ { value = "x", label = "X" }, { value = "y", label = "Y" } })
+  dd:__fire("OnClick")
+  MENU.__mouseOver = false
+  dd.__mouseOver = false
+  return dd
+end
+
+test("The menu builds no click-catcher at all", function()
+  openMenu()
+  assertEqual(MENU.catcher, nil,
+    "nothing is parked over the screen to intercept a click")
+end)
+
+test("An open menu listens for a mouse press anywhere", function()
+  openMenu()
+  assertTrue(MENU:IsEventRegistered("GLOBAL_MOUSE_DOWN"),
+    "the menu hears the click instead of catching it")
+end)
+
+test("A RIGHT-click outside closes the menu", function()
+  -- The defect this version exists for. Through minor 4 this click was swallowed and the menu
+  -- stayed open.
+  openMenu()
+  MENU:__fire("OnEvent", "GLOBAL_MOUSE_DOWN", "RightButton")
+  assertEqual(MENU:IsShown(), false)
+end)
+
+test("A LEFT-click outside closes the menu", function()
+  openMenu()
+  MENU:__fire("OnEvent", "GLOBAL_MOUSE_DOWN", "LeftButton")
+  assertEqual(MENU:IsShown(), false)
+end)
+
+test("Any other mouse button closes it too", function()
+  -- No button is enumerated anywhere in the widget, so a mouse with more of them behaves the same.
+  openMenu()
+  MENU:__fire("OnEvent", "GLOBAL_MOUSE_DOWN", "Button4")
+  assertEqual(MENU:IsShown(), false)
+end)
+
+test("A press ON the menu does not close it", function()
+  -- Otherwise the menu would close under the player's own row click, before the row was released.
+  openMenu()
+  MENU.__mouseOver = true
+  MENU:__fire("OnEvent", "GLOBAL_MOUSE_DOWN", "LeftButton")
+  assertTrue(MENU:IsShown(), "clicking a row must not dismiss the menu out from under it")
+end)
+
+test("A press on the dropdown that dropped it does not close it", function()
+  -- The dropdown's own OnClick is the toggle. If the press closed the menu first, the release
+  -- would find it hidden and re-open it, and the menu would be impossible to close by its button.
+  local dd = openMenu()
+  dd.__mouseOver = true
+  MENU:__fire("OnEvent", "GLOBAL_MOUSE_DOWN", "LeftButton")
+  assertTrue(MENU:IsShown(), "the press is left for the button's own toggle to handle")
+  dd:__fire("OnClick")
+  assertEqual(MENU:IsShown(), false, "and the toggle still closes it")
+end)
+
+test("A press on a DIFFERENT dropdown still closes the menu", function()
+  -- Only the owner is exempt. A second dropdown's press closes the first menu; that dropdown's own
+  -- OnClick then opens its own, which is how exactly one menu stays open process-wide.
+  local first = openMenu()
+  local other = W.Dropdown(mocks.UIParent, 110)
+  other:SetOptions({ { value = "z", label = "Z" } })
+  other.__mouseOver = true
+  assertTrue(first ~= other)
+  MENU:__fire("OnEvent", "GLOBAL_MOUSE_DOWN", "LeftButton")
+  assertEqual(MENU:IsShown(), false)
+end)
+
+test("An event that is not GLOBAL_MOUSE_DOWN is ignored", function()
+  openMenu()
+  MENU:__fire("OnEvent", "PLAYER_REGEN_DISABLED")
+  assertTrue(MENU:IsShown(), "the menu closes on a mouse press, not on whatever else arrives")
+end)
+
 mocks.CreateFrame, mocks.UIParent = realCreateFrame, realUIParent
