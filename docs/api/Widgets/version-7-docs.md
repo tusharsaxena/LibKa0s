@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 6
+# `LibKa0s-Widgets-1.0` — version 7
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,28 +8,43 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **6** |
-| Shipped in | v1.15.0 |
-| Status | Superseded |
-| Supersedes | [version 5](./version-5-docs.md) — which had no copy window, so every host that needed one hand-rolled it |
-| Superseded by | [version 7](./version-7-docs.md) — which adds the optional `scrollName` and `makeCloseButton` fields to the `CopyWindow` descriptor |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 6 }` |
+| Files and minors | `Widgets.lua` minor **7** |
+| Shipped in | v1.16.0 |
+| Status | **Current** |
+| Supersedes | [version 6](./version-6-docs.md) — whose copy window always built an anonymous scroll frame and always drew Core's close control |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 7 }` |
 
 ## What changed at this version
 
-**`Widgets.CopyWindow` arrives — the export frame the collection had four copies of.** There is no
-file I/O in WoW, so every "copy this out" surface ends in the same thing: a frame holding a
-multi-line `EditBox` with its text selected, and an instruction to press Ctrl+C. Four had been
-written by hand before this member — BankLedger's, LootHistory's, MultiMeters' and the debug log's
-— and two of them were the same fifty-two lines with the addon name substituted out.
+**Two optional `CopyWindow` descriptor fields, both absent by default.** `scrollName` and
+`makeCloseButton` are the whole of this version. Neither is defaulted to anything a caller can
+observe: a descriptor written before minor 7 builds exactly the frame it built at version 6, down to
+the anonymous scroll frame and the Core-drawn close control. `Dropdown`, `CloseMenu`, every instance
+method, every `opts` field, every option-row field and every other `CopyWindow` field are unchanged.
+A host needs a re-vendor and no code change.
 
-**It is here rather than in a major of its own for the reason the dropdown is.** Widgets already
-owns "a frame this collection kept re-drawing", and every addon that needs a copy window already
-vendors this file. A new major would have bought another vendor sweep for nothing.
+**`scrollName` exists because `UIPanelScrollFrameTemplate` names its children after its parent.**
+The template derives its scrollbar children's names from the scroll frame's own name, so an
+anonymous scroll frame leaves them unnamed — which costs nothing until somebody tries to skin one or
+find one by name, and then it is invisible rather than broken. The three adopters at version 6 —
+BankLedger, LootHistory and MultiMeters — never named the scroll frame; `LibKa0s-DebugLog-1.0`'s own
+hand-rolled copy window always had. That difference is what surfaced when DebugLog minor 12 converged
+onto this member. Naming it stays the host's call rather than this file's: a name is a global, and a
+caller that never asked for one should not silently acquire one on a re-vendor.
 
-**Nothing else moves.** `Dropdown`, `CloseMenu`, every instance method, every `opts` field and every
-option-row field are unchanged from version 5. A host needs a re-vendor and no code change; adoption
-of `CopyWindow` is a separate decision each host makes on its own schedule.
+**`makeCloseButton` exists because DebugLog had already published it.** `LibKa0s-DebugLog-1.0` has
+carried a `makeCloseButton` descriptor field since **its** minor 4, documented as applying to *both*
+of its windows. When its minor 12 converged its copy window onto `CopyWindow`, a hardcoded
+`Core.MakeCloseButton` here would have quietly narrowed a contract a host had already been told it
+could rely on. So the field is forwarded rather than dropped, and it falls back to
+`Core.MakeCloseButton` — which is what all four callers want and what three of them already got.
+Nothing in the collection passes it today; it is here so that the DebugLog contract does not become
+a lie.
+
+**`CopyWindow` has a fourth caller.** `LibKa0s-DebugLog-1.0` minor 12 was the fifth hand-rolled copy
+of this frame in the collection, and it is the last one outside Widgets. Nothing in the collection
+draws a copy window of its own any more.
 
 ## What this major is
 
@@ -184,27 +199,31 @@ first `Show`, because a host builds this at file load and most sessions never op
 
 It answers `nil` in two cases: with no `CreateFrame` (a host with no UI loaded at all), and with a
 descriptor that is not a table or carries no string `addonName`. The name is required rather than
-optional because the close control comes from `Core.MakeCloseButton`, which resolves the collection's
-own art out of the *consuming addon's* folder — a vendored copy cannot know which folder it sits in.
-That is the same bargain `LibKa0s-Media-1.0` already strikes.
+optional because the close control — `Core.MakeCloseButton` by default, or whatever `makeCloseButton`
+names since version 7 — resolves the collection's own art out of the *consuming addon's* folder, and
+a vendored copy cannot know which folder it sits in. That is the same bargain
+`LibKa0s-Media-1.0` already strikes, and it is why `addonName` is handed to the close-control
+builder as its third argument rather than assumed by it.
 
 ### The descriptor
 
 Every field but `addonName` is optional, and the descriptor a host passes is never mutated — the
 defaults are filled into a copy.
 
-| Field | Meaning | Default |
-|---|---|---|
-| `addonName` | **Required.** The consuming addon's name, used to resolve the close control's art. | — |
-| `name` | The frame's **global** name. It is what goes into `UISpecialFrames`, so it must be unique across the client. | `"<addonName>CopyWindow"` |
-| `width` / `height` | Frame size in px. | `640` / `420` |
-| `title` | The title-bar text. | `"Export"` |
-| `font` | A resolved **font path** for the `EditBox`. Not a LibSharedMedia name — `SetFont` does not take one — and a CSV is columns of digits that line up only in a fixed-width face. | Unset: the `EditBox` keeps the client's default face |
-| `fontSize` | Point size, applied only when `font` is given. | `10` |
-| `editWidth` | Fallback `EditBox` width, used when the scroll frame cannot report one. | `width - 50` |
-| `applySkin` | `function(frame)`. Runs **instead of** `Core.ApplySkin` for hosts that skin their own way. | Unset: `Core.ApplySkin` is used when Core offers it |
-| `backdrop` | `{ r, g, b, a }` applied after the skin. Denser than the shared skin on purpose: this frame is a wall of small text, and the world bleeding through costs legibility. | `{ 0.06, 0.06, 0.08, 0.95 }` |
-| `anchorTo` | `function() → frame\|nil`. Consulted on **every** `Show`, never once at build, so the popup follows a window the user has since dragged. A frame that is not shown, or a `nil`, anchors to `UIParent` instead. | Unset: always centered on `UIParent` |
+| Field | Since | Meaning | Default |
+|---|---|---|---|
+| `addonName` | 6 | **Required.** The consuming addon's name, used to resolve the close control's art. | — |
+| `name` | 6 | The frame's **global** name. It is what goes into `UISpecialFrames`, so it must be unique across the client. | `"<addonName>CopyWindow"` |
+| `width` / `height` | 6 | Frame size in px. | `640` / `420` |
+| `title` | 6 | The title-bar text. | `"Export"` |
+| `font` | 6 | A resolved **font path** for the `EditBox`. Not a LibSharedMedia name — `SetFont` does not take one — and a CSV is columns of digits that line up only in a fixed-width face. | Unset: the `EditBox` keeps the client's default face |
+| `fontSize` | 6 | Point size, applied only when `font` is given. | `10` |
+| `editWidth` | 6 | Fallback `EditBox` width, used when the scroll frame cannot report one. | `width - 50` |
+| `applySkin` | 6 | `function(frame)`. Runs **instead of** `Core.ApplySkin` for hosts that skin their own way. | Unset: `Core.ApplySkin` is used when Core offers it |
+| `backdrop` | 6 | `{ r, g, b, a }` applied after the skin. Denser than the shared skin on purpose: this frame is a wall of small text, and the world bleeding through costs legibility. | `{ 0.06, 0.06, 0.08, 0.95 }` |
+| `anchorTo` | 6 | `function() → frame\|nil`. Consulted on **every** `Show`, never once at build, so the popup follows a window the user has since dragged. A frame that is not shown, or a `nil`, anchors to `UIParent` instead. | Unset: always centered on `UIParent` |
+| `scrollName` | **7** | A **global** name for the window's `ScrollFrame`. `UIPanelScrollFrameTemplate` derives its scrollbar children's names from their parent's, so naming the scroll frame is what makes those children findable and skinnable; leaving it anonymous leaves them unnamed. Must be unique across the client, like `name`. | Unset: the scroll frame is anonymous, exactly as at version 6 |
+| `makeCloseButton` | **7** | `function(parent, onClick, addonName) → button\|nil`. Builds the title bar's close control. What it returns is anchored to the bar's right edge; a `nil` return draws no control. Present because `LibKa0s-DebugLog-1.0` has published this field on its own descriptor since its minor 4, for both of its windows. | `Core.MakeCloseButton`, when Core offers it |
 
 ### The handle
 
@@ -229,10 +248,18 @@ defaults are filled into a copy.
   modal stays visible underneath and "copy this, then pick a different set" is one trip.
 - **Nothing is written back.** The `EditBox` is not read-only in the client's sense — a player can
   type into it — but the handle never consults what they typed, and the next `Show` overwrites it.
+- **The scroll frame is anonymous unless `scrollName` says otherwise.** Its scrollbar, and that
+  scrollbar's up and down buttons, take their names from it, so with no `scrollName` none of them
+  has a name for a skin or a `_G` lookup to reach. A host that never asks for one loses nothing it
+  had — which is why the field defaults to absent rather than to a name derived from `name`.
+- **The close control is resolved when the frame is built, not at file load.** `makeCloseButton`, or
+  `Core.MakeCloseButton` when the host names none, is looked up on the first `Show`, because
+  `MakeCloseButton` itself resolves Media at call time and one rule about when the payload is
+  resolvable is easier to keep than two.
 
 ## Known and intentional absences
 
-Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 5 is a
+Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 7 is a
 decision, not an oversight, and every one of these is reachable later without a major bump:
 
 - **No per-row disable**, still — an `isActive` predicate reports a state, it does not gate a
@@ -272,40 +299,17 @@ a host that has no UI at all the call answers `nil` rather than raising — a ho
 ## Cross-consumer smoke check — recorded, NOT run
 
 BankLedger, LootHistory and MultiMeters each replaced a hand-rolled export copy window with
-`CopyWindow` at Widgets minor 6. They were three copies of one design, so the adoption is only
-correct if the three windows still look identical to each other. Each host recorded its own
-single-addon check in its `docs/smoke-tests.md`; the comparison across all three has no single
-host to live in, so it is recorded here:
+`CopyWindow` at Widgets minor 6, and `LibKa0s-DebugLog-1.0` minor 12 joined them at minor 7. They
+were copies of one design, so the adoption is only correct if the windows still look identical to
+each other. Each host recorded its own single-addon check in its `docs/smoke-tests.md`; the
+comparison across all four has no single host to live in, so it is recorded here:
 
 - Open the CSV export copy window in all three addons in **one** client session and compare size,
   strata, backdrop alpha, monospace face and title placement. Any one of them differing from the
   other two means the descriptor is wrong, not that one host is nicer.
+- Open the debug log's copy window in the same session and compare it against those three. It is
+  the one caller that names its scroll frame, so it is also the one place a `scrollName` collision
+  would show — a second window failing to open, or opening on top of the first, is the symptom.
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 7
-
-**Take it, and nothing you have written needs to change.** Version 7 adds two optional fields to the
-`CopyWindow` descriptor and changes nothing else — `Dropdown`, `CloseMenu`, every instance method,
-every `opts` field, every option-row field and every `CopyWindow` field documented here behave
-identically. Both new fields default to absent, so a descriptor written against this version builds
-exactly the frame described above: an anonymous scroll frame, and a close control drawn by
-`Core.MakeCloseButton`. A host needs a re-vendor and no code change.
-
-What the two fields buy, for a host that wants them:
-
-- `scrollName` gives the window's `ScrollFrame` a global name.
-  `UIPanelScrollFrameTemplate` names its scrollbar children after their parent, so at this version —
-  where the scroll frame is always anonymous — those children have no names at all. That is
-  invisible until somebody tries to skin one or look one up, which is what happened when
-  `LibKa0s-DebugLog-1.0` minor 12 brought its own copy window, which had always named it, onto this
-  member.
-- `makeCloseButton` lets a host build the title bar's close control itself, as
-  `function(parent, onClick, addonName)`. At this version the control is always
-  `Core.MakeCloseButton`. `LibKa0s-DebugLog-1.0` had published a `makeCloseButton` field of its own
-  since its minor 4 for both of its windows, so forwarding it here is what keeps that promise true
-  once its copy window became this one.
-
-Version 7 also brings `CopyWindow` its fourth caller, `LibKa0s-DebugLog-1.0` minor 12 — the last
-hand-rolled copy of this frame left in the collection.

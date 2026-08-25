@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **11** |
 | Shipped in | v1.15.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 10](./version-10-docs.md) — whose console kept 500 lines, which a perf capture overflowed |
-| Superseded by | — |
+| Superseded by | [version 12](./version-12-docs.md) — which draws its copy window with `LibKa0s-Widgets-1.0`'s `CopyWindow` |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 11 }` |
 
@@ -262,3 +262,39 @@ tested, unused field otherwise reads as one to every reader who finds it.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
+## Moving to version 12
+
+**Take it, and re-vendor the whole `LibKa0s/` folder.** No member is added, none is removed and none
+is repurposed: every descriptor field, every instance method and both windows behave as they do here,
+with one behavior gained and one new load-time floor.
+
+**What moves.** The copy window is no longer drawn by `DebugLog.lua`. It is
+`LibKa0s-Widgets-1.0`'s `CopyWindow`, which the collection's other three export frames already use —
+this was the fifth copy of the same fifty-two lines and the last one outside Widgets. What kept it
+here was that it was wired to this file's own `escClose`, `applySkin` and `dragBar` locals, and that
+it names its scroll frame; Widgets minor 7's `scrollName` field closed the last of those gaps.
+
+**The floor is the thing to check first.** Version 12 adds `NEEDS_WIDGETS = 7` and returns before
+`NewLibrary` when `LibKa0s-Widgets-1.0` is absent or older — the module is **absent**, not degraded,
+exactly as it already is for a missing Core. That is deliberate: a console whose Copy button silently
+does nothing is worse than no console, because the host's own degradation stub never fires and nobody
+is told why. Both files ship in one payload and whole-folder vendoring is mandatory, so this floor is
+unobservable on a correct re-vendor and diagnostic on a piecemeal one.
+
+**What you gain.** The copy window re-anchors to the console on **every** show. The window here
+anchors once, at build, so on the second and every later open it appears wherever it was last
+dragged, however far the console has since moved. From version 12 the popup lands over the window
+that spawned it.
+
+**What is preserved, and worth confirming in a host suite that pins any of it**: the global frame
+name `<name>DebugCopyWindow`, the scroll frame name `<name>DebugCopyScroll`, the 560×360 size, the
+`applySkin` seam covering both windows, the `makeCloseButton` descriptor field covering both windows
+(it is forwarded to `CopyWindow`, which gained the matching field at Widgets minor 7 for exactly this
+reason), and `D:CopyText()`.
+
+**The one thing a host may have to add.** `CopyWindow` refuses a descriptor with no `addonName` — it
+cannot resolve the collection's close art without one — and this library has always treated
+`addonName` as optional. Version 12 therefore falls back to `name` for the copy window's descriptor,
+the same fallback `PerfPanel`'s descriptor already uses, so a host that never set `addonName` keeps
+its copy window instead of losing it silently. Setting a real `addonName` is still the better answer,
+and still the only way to get the collection's own art on either window.

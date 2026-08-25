@@ -377,6 +377,11 @@ test("dbg: the window degrades to nothing when CreateFrame is unavailable", func
   local m = buildMocks()
   m.CreateFrame = nil
   Loader.load("LibKa0s/Core.lua", nil, m)
+  -- Widgets too, since minor 12: DebugLog draws its copy window with Widgets.CopyWindow and
+  -- declares a NEEDS_WIDGETS floor, so a Core-only environment leaves this module ABSENT rather
+  -- than degraded. That is the floor working — the case under test here is the one where the
+  -- payload is whole and the CLIENT is missing, which is what `m.CreateFrame = nil` models.
+  Loader.load("LibKa0s/Widgets.lua", nil, m)
   Loader.load("LibKa0s/DebugLog.lua", nil, m)
   local isolated = m.LibStub("LibKa0s-DebugLog-1.0")
   local D = isolated:New{
@@ -507,6 +512,10 @@ end
 local function loadSkewed()
   local env = buildMocks()
   Loader.loadSource(coreCopy("OLD", 1), "OLD/Core.lua", nil, env)
+  -- Loaded against the OLD Core, before the skew is introduced, because DebugLog's NEEDS_WIDGETS
+  -- floor is read at ITS load and Widgets needs a Core of its own to attach to. The skew under
+  -- test is Core's, not Widgets'.
+  Loader.load("LibKa0s/Widgets.lua", nil, env)
   Loader.load("LibKa0s/DebugLog.lua", nil, env)
   Loader.loadSource(coreCopy("NEW", 2), "NEW/Core.lua", nil, env)
   return env.LibStub("LibKa0s-Core-1.0"), env.LibStub("LibKa0s-DebugLog-1.0")
@@ -815,4 +824,69 @@ test("dbg: with no close button at all the offsets are still the minor-3 default
   D:Show()
   assertEqual(D._frameForTest.titleBarOffsets.clear, -30)
   assertEqual(D._frameForTest.titleBarOffsets.copy, -78)
+end)
+
+-- ── the copy window is LibKa0s-Widgets-1.0's, as of minor 12 ─────────────────────────────────
+--
+-- It was the fifth copy of the same fifty-two lines and the last one outside Widgets. What made it
+-- last was that it is wired to this file's own escClose / applySkin / dragBar locals; what made it
+-- convertible was Widgets minor 7's `scrollName`, which was the one thing this window did that the
+-- shared member could not.
+
+test("dbg: the copy window is built by Widgets.CopyWindow, not by this file", function()
+  local D = newLog({ name = "CopyHost" })
+  D:ShowCopy()
+  local win = D._copyWindowForTest
+  T.assertTrue(win ~= nil, "a copy window handle was built")
+  T.assertTrue(type(win.Show) == "function" and type(win.GetFrame) == "function",
+    "and it is the shared member's HANDLE rather than a sixth hand-rolled frame")
+end)
+
+test("dbg: the converged copy window keeps its named scroll frame", function()
+  -- The regression the convergence had to avoid. UIPanelScrollFrameTemplate derives its scrollbar
+  -- children's names from the parent's, so losing the name leaves them unnamed — invisible until
+  -- somebody skins them, which is why this window had it and the three adopters did not.
+  local D = newLog({ name = "CopyHost" })
+  D:ShowCopy()
+  assertEqual(D._copyFrameForTest.scroll.__name, "CopyHostDebugCopyScroll")
+end)
+
+test("dbg: the converged copy window keeps its global frame name", function()
+  local D = newLog({ name = "CopyHost" })
+  D:ShowCopy()
+  assertEqual(D._copyFrameForTest.__name, "CopyHostDebugCopyWindow")
+end)
+
+test("dbg: the copy window still shows the whole buffer, in order", function()
+  -- The only assertion that matters to a user, and the thing the convergence could silently have
+  -- broken: an EditBox is write-only through the frame API, so the text is only observable by
+  -- spying the setter — the pattern mock_base.lua leaves the setters undefined for.
+  local D = newLog({ name = "CopyHost" })
+  D:Add("A", "first line"); D:Add("B", "second line")
+  D:ShowCopy()
+
+  local got
+  rawset(D._copyFrameForTest.edit, "SetText", function(_, t) got = t end)
+  D:ShowCopy()
+  rawset(D._copyFrameForTest.edit, "SetText", nil)
+
+  T.assertTrue(got ~= nil, "the copy window was handed text")
+  assertEqual(got, D:CopyText(), "and it is exactly the buffer this addon would render")
+  T.assertTrue(got:find("first line", 1, true) < got:find("second line", 1, true), "in order")
+end)
+
+test("dbg: the copy window re-anchors to the console instead of a fixed centre", function()
+  -- Behaviour the convergence GAINED. The hand-rolled window anchored once at build, so it opened
+  -- wherever it was last dragged however far the console had since moved. The shared member
+  -- re-anchors on every show, which is what the three existing adopters already do.
+  local D = newLog({ name = "CopyHost" })
+  D:Show()
+  D:ShowCopy()
+
+  local seen
+  rawset(D._copyFrameForTest, "SetPoint", function(_, _, rel) seen = rel end)
+  D:ShowCopy()
+  rawset(D._copyFrameForTest, "SetPoint", nil)
+
+  assertEqual(seen, D._frameForTest, "the copy window landed on the console window")
 end)

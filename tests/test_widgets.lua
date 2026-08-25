@@ -112,7 +112,16 @@ local function geomFrame()
   return f
 end
 
-local geomCreateFrame = function() return geomFrame() end
+-- Forwards CreateFrame's arguments onto the frame the same way testkit/mock_base.lua does, so a
+-- case can ask what a frame was NAMED. Widgets is where that matters most: the copy window's
+-- scroll frame carries a global name (minor 7) precisely because UIPanelScrollFrameTemplate
+-- derives its scrollbar children's names from it.
+local geomCreateFrame = function(frameType, name, parent, template)
+  local f = geomFrame()
+  f.__frameType, f.__name, f.__parent = frameType, name, parent
+  if template ~= nil then f.__template = template end
+  return f
+end
 local geomUIParent    = geomFrame()
 
 local realCreateFrame, realUIParent = mocks.CreateFrame, mocks.UIParent
@@ -921,4 +930,22 @@ test("widgets: anchorTo is consulted on EVERY show", function()
   })
   win:Show("one"); win:Hide(); win:Show("two")
   assertEqual(asked, 2)
+end)
+
+test("widgets: CopyWindow names the scroll frame when asked (minor 7)", function()
+  -- UIPanelScrollFrameTemplate derives its scrollbar children's names from the parent's, so an
+  -- anonymous scroll frame leaves them unnamed. The three adopters shipped without this and the
+  -- debug log's hand-rolled copy window was the one that got it right — which is what surfaced it
+  -- when that window was converged onto this member.
+  local win = W.CopyWindow({ addonName = "TestHost", scrollName = "TestHostExportScroll" })
+  local f = win:GetFrame()
+  assertEqual(f.scroll.__name, "TestHostExportScroll")
+end)
+
+test("widgets: CopyWindow leaves the scroll frame anonymous when not asked", function()
+  -- The field is additive and OPTIONAL: every caller written before minor 7 keeps the frame it
+  -- already had, rather than silently acquiring a global.
+  local win = W.CopyWindow({ addonName = "TestHost" })
+  local f = win:GetFrame()
+  assertEqual(f.scroll.__name, nil)
 end)

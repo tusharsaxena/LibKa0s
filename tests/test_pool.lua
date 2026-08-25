@@ -123,3 +123,153 @@ test("pool: acquire-release-acquire preserves object identity", function()
   local again = pool.Acquire(p, factory)
   assertEqual(again.__id, first.__id, "the same object came back")
 end)
+
+-- ── KEYED POOLS (minor 2) ────────────────────────────────────────────────────────────────────
+--
+-- A keyed pool exists because two consumers independently needed an O(1) index INTO the active
+-- set and could not express it: KickCD keys its icon-grid buttons by spellID so a cooldown-state
+-- message reaches one widget without a scan. Before minor 2 they had to hand-roll the pool, and a
+-- host that ported to `ReleaseAll` anyway got the module's own headline bug back — the array loop
+-- walks nothing over a keyed table, so nothing is ever recycled and nothing goes red.
+
+test("pool: NewKeyed hands back an empty keyed pool", function()
+  local p = pool.NewKeyed()
+  local free, active = pool.CountsKeyed(p)
+  assertEqual(free, 0)
+  assertEqual(active, 0)
+end)
+
+test("pool: AcquireKeyed files the object under its key, and shows it", function()
+  local p = pool.NewKeyed()
+  local factory, made = counting()
+  local o = pool.AcquireKeyed(p, 47, factory)
+  assertEqual(made(), 1)
+  assertTrue(o.__shown, "an acquired object is shown")
+  assertEqual(p.active[47], o, "and is reachable by its key — the whole point of the variant")
+end)
+
+test("pool: AcquireKeyed reuses a released object rather than rebuilding", function()
+  local p = pool.NewKeyed()
+  local factory, made = counting()
+  pool.AcquireKeyed(p, "a", factory)
+  pool.AcquireKeyed(p, "b", factory)
+  assertEqual(made(), 2)
+
+  pool.ReleaseAllKeyed(p)
+  pool.AcquireKeyed(p, "c", factory)
+  pool.AcquireKeyed(p, "d", factory)
+  assertEqual(made(), 2, "the second pass must build NOTHING")
+end)
+
+test("pool: ReleaseAllKeyed hides every active object and returns it to free", function()
+  -- The case the whole variant exists for. `ReleaseAll`'s `for i = 1, #active` walks zero
+  -- iterations here, which is a silent leak; this must actually recycle.
+  local p = pool.NewKeyed()
+  local factory = counting()
+  local a = pool.AcquireKeyed(p, 101, factory)
+  pool.AcquireKeyed(p, 202, factory)
+
+  pool.ReleaseAllKeyed(p)
+  local free, active = pool.CountsKeyed(p)
+  assertEqual(active, 0, "the active map is emptied")
+  assertEqual(free, 2, "and BOTH objects are back on the free list")
+  assertFalse(a.__shown, "released objects are hidden")
+  assertEqual(next(p.active), nil, "no key survives the release")
+end)
+
+test("pool: ReleaseAllKeyed hands the key to the before hook", function()
+  local p = pool.NewKeyed()
+  local factory = counting()
+  pool.AcquireKeyed(p, "x", factory)
+  pool.AcquireKeyed(p, "y", factory)
+
+  local seen, shownAtHookTime = {}, 0
+  pool.ReleaseAllKeyed(p, function(o, key)
+    seen[key] = true
+    if o.__shown then shownAtHookTime = shownAtHookTime + 1 end
+  end)
+  assertTrue(seen.x and seen.y, "the hook saw every key")
+  assertEqual(shownAtHookTime, 2, "and saw each object BEFORE it was hidden")
+end)
+
+test("pool: ReleaseAllKeyed on an empty pool is a no-op", function()
+  local p = pool.NewKeyed()
+  pool.ReleaseAllKeyed(p)
+  local free, active = pool.CountsKeyed(p)
+  assertEqual(free, 0); assertEqual(active, 0)
+end)
+
+test("pool: AcquireKeyed twice on one key replaces nothing and leaks nothing", function()
+  -- A host re-acquiring a live key would otherwise orphan the first object: it would leave the
+  -- active map holding only the second, and the first would never reach the free list again.
+  local p = pool.NewKeyed()
+  local factory, made = counting()
+  local first = pool.AcquireKeyed(p, 5, factory)
+  local again = pool.AcquireKeyed(p, 5, factory)
+  assertEqual(again, first, "the live object under that key comes back")
+  assertEqual(made(), 1, "and nothing new was built")
+
+  pool.ReleaseAllKeyed(p)
+  assertEqual(select(1, pool.CountsKeyed(p)), 1, "exactly one object reached the free list")
+end)
+
+test("pool: keyed acquire-release-acquire preserves object identity", function()
+  local p = pool.NewKeyed()
+  local factory = counting()
+  local first = pool.AcquireKeyed(p, "k", factory)
+  pool.ReleaseAllKeyed(p)
+  local again = pool.AcquireKeyed(p, "other", factory)
+  assertEqual(again.__id, first.__id, "the same object came back, under a different key")
+end)
+
+test("pool: ReleaseAll RAISES on a keyed pool rather than silently recycling nothing", function()
+  -- The trap this variant was filed for. Before minor 2 this combination was reachable through
+  -- the documented API and produced a leak with no symptom: every object hidden, none freed,
+  -- every suite still green. It must be loud instead.
+  local p = pool.NewKeyed()
+  pool.AcquireKeyed(p, 172345, counting())
+
+  local ok, err = pcall(pool.ReleaseAll, p)
+  assertFalse(ok, "ReleaseAll must refuse a keyed pool")
+  assertTrue(tostring(err):find("keyed", 1, true) ~= nil,
+    "and must say why, naming the keyed pool: " .. tostring(err))
+end)
+
+test("pool: ReleaseAll still accepts an ordinary array pool untouched", function()
+  -- The guard must not cost the common path anything.
+  local p = pool.New()
+  local factory = counting()
+  pool.Acquire(p, factory); pool.Acquire(p, factory)
+  local ok = pcall(pool.ReleaseAll, p)
+  assertTrue(ok, "an array pool releases as it always did")
+  assertEqual(select(1, pool.Counts(p)), 2)
+end)
+
+test("pool: CountsKeyed counts a keyed active map that Counts cannot see", function()
+  -- `Counts` answers #active, which is 0 for a keyed map however full it is. That is exactly the
+  -- reading that made the leak unobservable, so the variant ships its own counter.
+  local p = pool.NewKeyed()
+  pool.AcquireKeyed(p, "a", counting())
+  pool.AcquireKeyed(p, "b", counting())
+  assertEqual(select(2, pool.CountsKeyed(p)), 2, "CountsKeyed sees both")
+  assertEqual(select(2, pool.Counts(p)), 0, "and Counts, by construction, sees neither")
+end)
+
+test("pool: the ReleaseAll guard cannot catch keys that are themselves 1..n", function()
+  -- Recorded as a LIMIT, not a wish. A keyed pool whose keys happen to be a dense integer
+  -- sequence is indistinguishable from an array pool — `#active` answers 2 for both — so the
+  -- array loop consumes it and the guard never fires. It recycles correctly here by accident,
+  -- and the accident stops the moment a key is missing from the sequence.
+  --
+  -- This is why the guard is a safety net and NOT the contract: the contract is that a keyed pool
+  -- is released by ReleaseAllKeyed. Real keyed hosts key by domain identity — spellIDs, frame
+  -- names — which never form 1..n, so the net catches the case that actually occurs.
+  local p = pool.NewKeyed()
+  local factory = counting()
+  pool.AcquireKeyed(p, 1, factory)
+  pool.AcquireKeyed(p, 2, factory)
+
+  local ok = pcall(pool.ReleaseAll, p)
+  assertTrue(ok, "1..n keys pass the guard, because nothing can tell them from an array")
+  assertEqual(select(1, pool.Counts(p)), 2, "and they happen to recycle correctly")
+end)

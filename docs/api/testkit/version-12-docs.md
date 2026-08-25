@@ -10,9 +10,9 @@
 | Version | **12** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.14.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 11](version-11-docs.md) — the loader caches compiled chunks, and the runner can fan its suites out across processes |
-| Superseded by | — |
+| Superseded by | [version 13](version-13-docs.md) — `CreateFrame` records the arguments it was called with on the frame it returns |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `12` |
 
@@ -187,3 +187,22 @@ downstream, and a kit change that would break a consumer breaks this repo first.
 4. Re-vendor into `tests/_kit/` here **and** into every consumer's `tests/_kit/`, then run each
    repo's suite.
 5. Add the row to [`../README.md`](../README.md).
+
+## Moving to revision 13
+
+**Take it.** One function moves and nothing else does: `mock_base.lua`'s `CreateFrame` records its
+four arguments on the frame it hands back — `__frameType`, `__name`, `__parent`, `__template` — where
+it previously discarded them. No case name changes, no return value changes, and `GetName()` still
+answers `nil`, so nothing a suite already asserts can shift meaning. A suite that never reads those
+fields sees an identical run.
+
+The reason to take it is fidelity rule 3: anything a test needs to observe must be recorded, not
+no-opped. A frame's global name is load-bearing in real code —
+`UIPanelScrollFrameTemplate` derives its scrollbar children's names from its parent's, and
+`UISpecialFrames` is a list of global names — and at this revision a suite simply cannot ask whether
+a frame got the name it needs. `LibKa0s-Widgets-1.0`'s copy window shipped an anonymous scroll frame
+for five versions on the strength of that blind spot, and it took a merge, not a gate, to find it.
+
+The one thing to check after re-vendoring: **a local `CreateFrame` shim is now redundant.** A suite
+that had already wrapped or replaced the mock's `CreateFrame` to record the same arguments records
+them twice. Delete the local copy rather than leaving two answers to the same question.

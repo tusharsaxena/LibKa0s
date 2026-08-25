@@ -10,6 +10,69 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.16.0 — 2026-08-25
+
+Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 2**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 7**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 8**,
+**OptionsWidgets minor 7**, **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**,
+**kit revision 13**.
+
+**Three files, and all three moved because a consumer could not do something.** Nothing here was
+found by reading the library; every change is a gap a real addon hit and reported.
+
+**`LibKa0s-Pool-1.0` minor 2 — the keyed pool, and a guard against the leak it used to invite.**
+Four new members: `NewKeyed`, `AcquireKeyed`, `ReleaseAllKeyed` and `CountsKeyed`. The pool shape
+is unchanged — same free list, same factory contract — and only `active` reads as a map rather than
+an array.
+
+It exists because **two consumers keyed their active set by domain identity and therefore could not
+adopt the module at all.** KickCD keys icon-grid buttons by spellID so a cooldown-state message
+reaches one widget without scanning; MultiMeters carries a third `pool.all` array iterated on every
+settings change. Both hand-rolled the pool this module exists to end.
+
+The worse half is what happened to a host that ported anyway. `ReleaseAll` walks
+`for i = 1, #active`, which over a keyed table iterates **nothing** — so every object is hidden,
+none is returned to the free list, `Acquire` falls through to `factory()` forever, and no suite
+anywhere goes red. That is precisely the leak the module was written to describe, handed back
+through the documented API with no diagnostic. `ReleaseAll` now raises on a keyed pool instead.
+The guard has one hole and it is not closable: a keyed pool whose keys are themselves `1..n` cannot
+be told from an array pool. Real keyed hosts key by spellID or frame name, which never form `1..n`,
+so the hole is not where the mistake happens — but it is documented rather than left to be
+rediscovered.
+
+**`LibKa0s-Widgets-1.0` minor 7 — two optional `CopyWindow` fields, both absent by default.**
+`scrollName` gives the copy window's ScrollFrame a global name. `UIPanelScrollFrameTemplate`
+derives its scrollbar children's names from its parent's, so an anonymous scroll frame leaves them
+unnamed — invisible until somebody tries to skin or find one. The three adopters never named it and
+`LibKa0s-DebugLog-1.0`'s own copy window always had; that difference is what the convergence below
+surfaced. `makeCloseButton` accepts a host's close-control factory, defaulting to Core's.
+
+**`LibKa0s-DebugLog-1.0` minor 12 — the fifth copy window becomes the fourth caller.** This file
+had drawn its own copy frame since minor 3, and it was the last hand-rolled one in the collection.
+What kept it here was that it was wired to `escClose` / `applySkin` / `dragBar`, all locals of this
+file; what let it go was `scrollName`. `applySkin` is passed straight through, so a host that
+re-skins its console still re-skins both windows, and `makeCloseButton` is forwarded — which is why
+Widgets grew the matching field rather than hardcoding Core's x, since this library has published
+that descriptor field as covering **both** windows since its own minor 4.
+
+Two things a host will notice. `addonName` now falls back to `name`, because `CopyWindow` refuses a
+descriptor without one and this library has always treated `addonName` as optional — an unset host
+would have lost its copy window on this upgrade rather than gained a shared one. And the window now
+**re-anchors to the console on every show** instead of sitting at a fixed center: the popup lands
+over the window that spawned it, which is what CopyWindow's three other callers already do.
+
+`NEEDS_WIDGETS = 7` is a hard floor. With Widgets absent or older this module is **absent** rather
+than half-wired, because a console whose Copy button silently does nothing is worse than no
+console — the host's degradation stub never fires and nobody is told why.
+
+**Kit revision 13 — `CreateFrame` records its arguments.** It returned a bare stub and dropped the
+name, so "did this frame get the name it needs?" was a question no suite could ask. It is the kit's
+own fidelity rule 3, and the cost of the gap is on disk: Widgets' copy window shipped an anonymous
+scroll frame for five versions with nothing able to see it. Recorded on the frame rather than
+answered through `GetName()`, which still returns nil — `LibKa0s-Options-1.0`'s scrollbar patch
+concatenates that, so handing it a real string would change a code path rather than observe one.
+Purely additive: a suite that never reads `__name` sees nothing different.
+
 ## v1.15.0 — 2026-08-25
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 1**, **Item minor 1**,

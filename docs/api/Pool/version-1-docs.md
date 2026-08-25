@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Pool-1.0` |
 | Files and minors | `Pool.lua` minor **1** |
 | Shipped in | v1.15.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2](./version-2-docs.md) — the keyed pool, and a `ReleaseAll` that refuses one |
 | Confirm in-game | `LibStub("LibKa0s-Pool-1.0").MODULES` → `{ Pool = 1 }` |
 
 ## What this major is
@@ -140,3 +140,25 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 
 `Pool.lua` is a new entry in `LibKa0s.xml`, so a consumer whose test harness derives its load list
 from that XML picks it up with no edit; a consumer that re-types the list adds one row.
+
+## Moving to version 2
+
+**Take it, and nothing you have written needs to change.** `New`, `Acquire`, `ReleaseAll` and
+`Counts` behave at version 2 exactly as they do here for a pool built by `New()`. A host needs a
+re-vendor and no code change.
+
+What version 2 adds is a **second pool shape**, for a host that needs to find one live object by name
+on a hot path: `NewKeyed()` builds `{ free = {…}, active = { [key] = … } }` — the same free list, the
+same factory contract, with `active` read as a map rather than an array — and it comes with
+`AcquireKeyed(pool, key, factory)`, `ReleaseAllKeyed(pool[, before])` and `CountsKeyed(pool)`. Two
+consumers had keyed their active set by domain identity before the variant existed and could not
+adopt this version at all; KickCD's icon grid keys buttons by spellID so a cooldown-state message
+reaches one widget without a scan.
+
+The one thing that is not purely additive is a **new failure**: at version 2, `ReleaseAll` raises
+`"LibKa0s-Pool: ReleaseAll was handed a keyed pool — use ReleaseAllKeyed"` when anything is left in
+`active` after its array walk. A pool built by `New()` and used as this document describes can never
+reach that state, so no correct version-1 host trips it. It is there for the host that hand-rolls a
+keyed pool and then ports it to `ReleaseAll`, which recreates the exact defect this major was written
+to end: the array loop walks nothing over a keyed table, so nothing is recycled, `Acquire` falls
+through to `factory()` forever, and no suite goes red.
