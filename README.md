@@ -10,11 +10,21 @@ install first.
 ## What it is
 
 A Ka0s-owned shared library, vendored into Ka0s WoW addons the way Ace3 is — copied into each
-addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Five
+addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Ten
 modules ship today:
 
 - **`LibKa0s-Core-1.0`** — the small stateless seams every other module sits on: secret-safe
   stringification, the window skin and its close button, and a prefixed chat printer.
+- **`LibKa0s-Env-1.0`** — the handful of client facts every addon reads, read one way: the TOC
+  manifest, the player's map id and the player's zone labels.
+- **`LibKa0s-Pool-1.0`** — the free/active widget pool this collection kept rewriting, keyed and
+  unkeyed, with the acquire order preserved across a release.
+- **`LibKa0s-Item-1.0`** — item identity as four primitives and no policy: read a link, name a
+  quality, ask the client to cache an id.
+- **`LibKa0s-Media-1.0`** — the art and type the collection draws with, inside the payload, plus the
+  paths that reach them and the LibSharedMedia registration.
+- **`LibKa0s-Widgets-1.0`** — the flat-skin dropdown button and the one popup menu every instance of
+  it drops, shared process-wide.
 - **`LibKa0s-DebugLog-1.0`** — the on-screen debug console: the window, the copy window, the two
   formatters, the buffer, and the seam that turns logging on and off.
 - **`LibKa0s-Slash-1.0`** — the slash dispatcher, the help renderer, the schema CLI
@@ -23,7 +33,7 @@ modules ship today:
   translation, and the two-column flow engine that lays a page out. Three files, one major.
 - **`LibKa0s-Perf-1.0`** — a repeatable A/B performance capture for one host addon.
 
-DebugLog, Slash, Options and Perf each require Core and refuse to register without it.
+Every module but Core requires Core, and refuses to register without it.
 
 Each module's full contract — the decisions that shaped it, its `lib:New` descriptor, its public
 surface — lives in [`docs/api/`](docs/api/), one document per shipped version. This file maps the
@@ -32,9 +42,8 @@ modules and points there; it does not restate them.
 ## Installing
 
 1. Copy `LibKa0s/` into `<Addon>/libs/LibKa0s/` — the whole folder, every time. The modules are
-   siblings that ship as one released copy, and `DebugLog.lua`, `Slash.lua`, `Options.lua` and
-   `Perf.lua` each return without registering at all when `Core.lua` is missing or older than the
-   minor they need. When `Options.lua` bails that way, `OptionsWidgets.lua` and `OptionsScroll.lua`
+   siblings that ship as one released copy, and every file but `Core.lua` returns without
+   registering at all when `Core.lua` is missing or older than the minor it needs. When `Options.lua` bails that way, `OptionsWidgets.lua` and `OptionsScroll.lua`
    bail too on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole three-file
    module is absent rather than half-attached.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
@@ -46,7 +55,7 @@ addon must work with no other addon installed.
 
 ## The modules
 
-Seven LibStub majors, adopted independently. **The full contract for each — the descriptor, every
+Ten LibStub majors, adopted independently. **The full contract for each — the descriptor, every
 public member, every row field — lives in [`docs/api/`](docs/api/), one document per shipped
 version.** This section is the map; that directory is the reference. Nothing here restates a
 signature, because a second copy of a contract is a contract that drifts.
@@ -54,12 +63,15 @@ signature, because a second copy of a contract is a contract that drifts.
 | Major | What it is | Files | Current version |
 |---|---|---|---|
 | `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [6](docs/api/Core/version-6-docs.md) |
+| `LibKa0s-Env-1.0` | The handful of client facts every Ka0s addon reads, read one way: the TOC manifest, the player's map id and the player's zone labels. No state, no frames, no events. | `Env.lua` | [1](docs/api/Env/version-1-docs.md) |
+| `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass; the keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
+| `LibKa0s-Item-1.0` | Item identity as four primitives and no policy — read an item link, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree in writing. | `Item.lua` | [1](docs/api/Item/version-1-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [3](docs/api/Media/version-3-docs.md) |
-| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button, and the one popup menu every instance of it drops — shared process-wide, across addons. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [5](docs/api/Widgets/version-5-docs.md) |
-| `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [10](docs/api/DebugLog/version-10-docs.md) |
+| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button, and the one popup menu every instance of it drops — shared process-wide, across addons. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [7](docs/api/Widgets/version-7-docs.md) |
+| `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [7](docs/api/Slash/version-7-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [8.7.3](docs/api/Options/version-8.7.3-docs.md) |
-| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [7.3](docs/api/Perf/version-7.3-docs.md) |
+| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [7.4](docs/api/Perf/version-7.4-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
 returns before `NewLibrary` if Core is missing or below the minor it needs — so a consumer that
@@ -178,10 +190,11 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.8.3**: `Core = { Core = 5 }`,
-`DebugLog = { DebugLog = 8 }`, `Slash = { Slash = 7 }`,
+different vendored copy of each. As of **v1.17.0**: `Core = { Core = 6 }`,
+`Env = { Env = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`, `Media = { Media = 3 }`,
+`Widgets = { Widgets = 7 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 7 }`,
 `Options = { Options = 8, OptionsWidgets = 7, OptionsScroll = 3 }`,
-`Perf = { Perf = 7, PerfPanel = 3 }`. Those numbers move every release — read them from the top of
+`Perf = { Perf = 7, PerfPanel = 4 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
 attached to which probe?" from in-game, once several addons each ship their own vendored copy.
@@ -210,10 +223,14 @@ Core is missing or below the minor it needs, so a consumer that copied a new `Pe
 LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs/LibKa0s/
   LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block; Core first
   Core.lua           -- LibKa0s-Core-1.0, MINOR at the top of the file
+  Env.lua            -- LibKa0s-Env-1.0, MINOR at the top of the file; needs Core
+  Pool.lua           -- LibKa0s-Pool-1.0, MINOR at the top of the file; needs Core
+  Item.lua           -- LibKa0s-Item-1.0, MINOR at the top of the file; needs Core
   Media.lua          -- LibKa0s-Media-1.0, MINOR at the top of the file; needs Core
   media/             -- THE ONLY NON-CODE PAYLOAD: icons/ (113 white TGAs, Open Iconic MIT),
                         textures/ (7 generated statusbar bars) and fonts/ (JetBrains Mono, SIL
                         OFL); the two third-party sets carry their license beside them
+  Widgets.lua        -- LibKa0s-Widgets-1.0, MINOR at the top of the file; needs Core
   DebugLog.lua       -- LibKa0s-DebugLog-1.0, MINOR at the top of the file; needs Core
   Slash.lua          -- LibKa0s-Slash-1.0, MINOR at the top of the file; needs Core
   Options.lua        -- LibKa0s-Options-1.0, MINOR at the top of the file; needs Core
@@ -238,6 +255,7 @@ docs/                -- development docs (not shipped)
   releasing.md       -- the two version numbers, the release order, the re-vendor rule
   record-schema.md   -- the capture record, field by field
   adoption-prompt.md -- the per-addon adoption prompt
+  fast-gate-adoption-prompt.md -- the drop-in brief for adopting the fast test gate in a consumer
   adoption-report.md -- the reusable adoption-fidelity report, run per date into adoption/
   adoption/          -- frozen dated adoption reports, one folder per run
   test-cases.md      -- generated case inventory

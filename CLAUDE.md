@@ -88,10 +88,11 @@ never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests
 | Doc | Covers |
 |---|---|
 | [`README.md`](README.md) | What each module is, how to install and re-vendor, the repo layout |
-| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Media`, `DebugLog`, `Options`, `Perf`, `Slash`, `testkit`). A superseded document is never edited to describe new behavior |
+| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Pool`, `Item`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Options`, `Perf`, and `testkit`). A superseded document is never edited to describe new behavior |
 | [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
 | [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-analysis/README.md` points at rather than restating |
 | [`docs/adoption-prompt.md`](docs/adoption-prompt.md) | The brief handed to a consumer repo adopting a major: what to wire, what to delete, and what must not be hand-rolled |
+| [`docs/fast-gate-adoption-prompt.md`](docs/fast-gate-adoption-prompt.md) | The drop-in brief for adopting the fast test gate in a consumer repo — what to copy, and the measured before/after it replaced |
 | [`docs/adoption-report.md`](docs/adoption-report.md) | The collection-wide adoption state — which consumer has taken which major, and what each declined |
 | [`docs/test-cases.md`](docs/test-cases.md) | The generated case inventory; regenerate with `lua tests/run.lua --list`, never by hand |
 | [`docs/automated-tests/README.md`](docs/automated-tests/README.md) | The four out-of-game suites, what each gates at which checkpoint, and where the frozen bundles live |
@@ -112,6 +113,6 @@ lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for w
 luacheck .          # 0 warnings / 0 errors
 ```
 
-That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — twelve files
-today, the eight in `LibKa0s/` plus four under `testkit/`. 0/0 only means something if the files
+That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — seventeen
+files today, the thirteen in `LibKa0s/` plus four under `testkit/`. 0/0 only means something if the files
 carrying the change are inside the checked set.
