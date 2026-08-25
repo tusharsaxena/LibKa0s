@@ -268,3 +268,18 @@ non-click close path must itself become a no-op alongside the rest of the degrad
 holds for `CopyWindow`: with the major absent there is nothing to call, and with the major present in
 a host that has no UI at all the call answers `nil` rather than raising — a host must be ready for a
 `nil` handle and simply not offer the export.
+
+## Cross-consumer smoke check — recorded, NOT run
+
+BankLedger, LootHistory and MultiMeters each replaced a hand-rolled export copy window with
+`CopyWindow` at Widgets minor 6. They were three copies of one design, so the adoption is only
+correct if the three windows still look identical to each other. Each host recorded its own
+single-addon check in its `docs/smoke-tests.md`; the comparison across all three has no single
+host to live in, so it is recorded here:
+
+- Open the CSV export copy window in all three addons in **one** client session and compare size,
+  strata, backdrop alpha, monospace face and title placement. Any one of them differing from the
+  other two means the descriptor is wrong, not that one host is nicer.
+
+This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
+visual fidelity as unverified.

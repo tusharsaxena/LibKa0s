@@ -548,6 +548,10 @@ function lib:New(d)
 
   -- ── the copy window ──────────────────────────────────────────────────────────────────────
 
+  -- NOT LibKa0s-Widgets-1.0's CopyWindow, yet. This one predates it, it is the smallest of the four
+  -- copies the collection had, and it is wired to escClose / applySkin / dragBar, which are locals
+  -- of this file. Converting it is a DebugLog minor with its own API document — worth doing once the
+  -- three host-side adoptions have proven the descriptor in a live client, and not before.
   local function EnsureCopyFrame()
     if copyFrame then return copyFrame end
     if type(CreateFrame) ~= "function" then return nil end
