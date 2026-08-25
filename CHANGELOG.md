@@ -10,6 +10,50 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.17.0 — 2026-08-25
+
+Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 7**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 8**,
+**OptionsWidgets minor 7**, **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**,
+**kit revision 13**.
+
+**`LibKa0s-Pool-1.0` minor 3 — `ReleaseAll` parks the active set backward, so a position gets its
+own object back.** `Acquire` pops the free list from the END (`table.remove(pool.free)`) and
+`ReleaseAll` parked it walking FORWARD, `for i = 1, #active`. Put those together and every release
+reverses the whole object-to-position mapping: position 1's object is parked first, ends up at the
+bottom of the free list, and is handed out last on the next pass. That pass parks it back the other
+way, so a consumer that assigns position by acquire order alternates between two mappings with
+period **2**, on every render, for as long as it keeps drawing.
+
+Nothing about it is observable from the pool. `Counts` answers `n, 0` either way, identity is
+preserved either way, no object leaks, and no suite anywhere goes red — the objects are all correct,
+they are simply in the wrong places. Only the screen knew.
+
+**MultiMeters is where it surfaced, and it took a bisect to name.** It pools one bar per ranked
+player and takes the rank from acquire order, so every bar was handed a different player's figure
+four times a second. A damage figure is not free to re-apply: it resolves through a visible
+transient, so each bar painted full and then snapped back to its real width, continuously, the whole
+fight. Preview mode looked perfect — placeholder figures are plain and apply with no resolve step.
+The hand-rolled pool the addon replaced walked its active list backward, which is why the churn
+arrived with the adoption commit (`059f0a5`) rather than with any change to the bars.
+
+`ReleaseAll` now walks `for i = #active, 1, -1`. Parking position n first leaves position 1 on top of
+the free list, so the next `Acquire` hands position 1 back the object it already had. The other fix
+— taking from the FRONT of the free list — works too and puts an O(n) table shift on a per-frame
+path; the cost belongs in the release, which runs once per render, not in the acquire, which runs
+once per widget.
+
+**The order is now part of the contract, which is the reason this is a minor bump and not a silent
+correction.** Version 2's document said nothing about ordering, so a host could not have known
+either way, and the guarantee — *after `ReleaseAll`, a subsequent run of `Acquire` hands the objects
+back in their original order, and an ordered consumer may rely on it* — is written down at
+[docs/api/Pool/version-3-docs.md](docs/api/Pool/version-3-docs.md). `ReleaseAllKeyed` is untouched
+and could not have this bug: a keyed host finds its object by key, so its document now says plainly
+that `pairs` order carries no meaning there and is deliberately left undefined.
+
+No other shipped file moves. `New`, `Acquire`, `Counts` and all four keyed members are unchanged from
+v1.16.0, and adopters need a re-vendor and no code change.
+
 ## v1.16.0 — 2026-08-25
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 2**, **Item minor 1**,

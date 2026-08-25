@@ -124,6 +124,38 @@ test("pool: acquire-release-acquire preserves object identity", function()
   assertEqual(again.__id, first.__id, "the same object came back")
 end)
 
+test("pool: acquire order survives a release — rank n comes back to rank n", function()
+  -- The ORDERING contract, and it is a contract because a consumer cannot see it break.
+  -- MultiMeters pools one bar widget per ranked player and assigns the rank by acquire order.
+  -- `Acquire` pops the free list from the END, so the direction `ReleaseAll` parks in decides
+  -- everything: park rank 1 first and rank 1 lands at the bottom of the free list, so the next
+  -- render hands it to rank n and the whole mapping reverses — then reverses back, forever, with
+  -- period 2. Nothing counts wrong and nothing goes red; every widget is simply handed a different
+  -- player's figure four times a second, and a value that is not free to change shows the churn
+  -- on screen for the length of the fight.
+  local p = pool.New()
+  local factory = counting()
+
+  local first = {}
+  for i = 1, 5 do first[i] = pool.Acquire(p, factory) end
+  pool.ReleaseAll(p)
+
+  local second = {}
+  for i = 1, 5 do second[i] = pool.Acquire(p, factory) end
+  for i = 1, 5 do
+    assertEqual(second[i].__id, first[i].__id,
+      "rank " .. i .. " must be handed the same widget it had last render")
+  end
+
+  -- And it must HOLD, not merely alternate: a period-2 swap passes a single round trip that
+  -- happens to land the right way up, so pin a third pass too.
+  pool.ReleaseAll(p)
+  for i = 1, 5 do
+    assertEqual(pool.Acquire(p, factory).__id, first[i].__id,
+      "and again on the next render — the mapping must be stable, not alternating")
+  end
+end)
+
 -- ── KEYED POOLS (minor 2) ────────────────────────────────────────────────────────────────────
 --
 -- A keyed pool exists because two consumers independently needed an O(1) index INTO the active
@@ -272,4 +304,28 @@ test("pool: the ReleaseAll guard cannot catch keys that are themselves 1..n", fu
   local ok = pcall(pool.ReleaseAll, p)
   assertTrue(ok, "1..n keys pass the guard, because nothing can tell them from an array")
   assertEqual(select(1, pool.Counts(p)), 2, "and they happen to recycle correctly")
+end)
+
+test("pool: a keyed release is unaffected by ordering — the key is the mapping", function()
+  -- The ordering contract above is about position, and a keyed pool has none: `AcquireKeyed`
+  -- files by key, so whichever object comes off the free list is correct by construction. Pinned
+  -- so a later change to the array path's parking direction cannot be read as a promise here.
+  local p = pool.NewKeyed()
+  local factory, made = counting()
+  local keys = { 4711, "tank", 88, "healer" }
+  for _, k in ipairs(keys) do pool.AcquireKeyed(p, k, factory) end
+  assertEqual(made(), #keys)
+
+  pool.ReleaseAllKeyed(p)
+  assertEqual(select(1, pool.CountsKeyed(p)), #keys, "every object reached the free list")
+
+  local seen = {}
+  for _, k in ipairs(keys) do
+    local o = pool.AcquireKeyed(p, k, factory)
+    assertEqual(p.active[k], o, "the object is reachable under the key it was asked for")
+    assertFalse(seen[o.__id] or false, "and no object was filed under two keys at once")
+    seen[o.__id] = true
+  end
+  assertEqual(made(), #keys, "the second pass rebuilt nothing")
+  assertEqual(select(2, pool.CountsKeyed(p)), #keys)
 end)

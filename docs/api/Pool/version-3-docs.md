@@ -1,4 +1,4 @@
-# `LibKa0s-Pool-1.0` — version 2
+# `LibKa0s-Pool-1.0` — version 3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Pool surface points here rather than restating it. It describes the
@@ -8,42 +8,50 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Pool-1.0` |
-| Files and minors | `Pool.lua` minor **2** |
-| Shipped in | v1.16.0 |
-| Status | Superseded |
-| Supersedes | [version 1](./version-1-docs.md) — which had one pool shape, so a host that keyed its active set could not adopt the module at all |
-| Superseded by | [version 3](./version-3-docs.md) — which parks the active set backward, so a released position is handed its own object back |
-| Confirm in-game | `LibStub("LibKa0s-Pool-1.0").MODULES` → `{ Pool = 2 }` |
+| Files and minors | `Pool.lua` minor **3** |
+| Shipped in | v1.17.0 |
+| Status | **Current** |
+| Supersedes | [version 2](./version-2-docs.md) — whose `ReleaseAll` parked the active set forward, so an ordered consumer's object-to-position mapping alternated on every render |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Pool-1.0").MODULES` → `{ Pool = 3 }` |
 
 ## What changed at this version
 
-**The keyed pool arrives, and `ReleaseAll` learned to refuse one.** Version 1 shipped a single shape
-— `active` as an array — and two consumers had already keyed their active set by domain identity to
-get an O(1) index *into* it on a hot path. Neither could adopt the module. KickCD keys its icon-grid
-buttons by spellID (`../KickCD/modules/IconGrid.lua:256`) so that the `SPELL_STATE` fan-out at
-`:811` reaches one widget per unit without scanning; MultiMeters keys nothing but carries a third
-`pool.all` array alongside `free` and `active` (`../MultiMeters/modules/Window.lua:1201`), which
-this major still does not express.
+**`ReleaseAll` parks the active set backward, and the order it leaves behind is now a documented
+guarantee.** Through version 2 it walked `for i = 1, #active`, while `Acquire` pops the free list
+from the END. Those two together reverse the object-to-position mapping on every release: position
+1's object is parked first, ends up at the bottom of the free list and is handed out last on the
+next pass — which parks it back the other way. A consumer that assigns position by acquire order
+therefore alternated between two mappings with period **2**, every render, indefinitely.
 
 | | | Since |
 |---|---|---|
-| `NewKeyed()` | A fresh, empty **keyed** pool. Same table, `active` read as a map. | **2** |
-| `AcquireKeyed(pool, key, factory)` | An object filed under `key`, shown. A key already live returns what is there and builds nothing. | **2** |
-| `ReleaseAllKeyed(pool[, before])` | Hides every active object, returns it to the free list and clears every key. `before(object, key)`. | **2** |
-| `CountsKeyed(pool)` | `#free`, and the map walked with `pairs` — the count `Counts` cannot give. | **2** |
-| `ReleaseAll` **raises** on a keyed pool | `"LibKa0s-Pool: ReleaseAll was handed a keyed pool — use ReleaseAllKeyed"`, at level 2. | **2** |
+| `ReleaseAll` parks backward | `for i = #active, 1, -1`, so position n is parked first and position 1 is left on top of the free list. | **3** |
+| **Order survives a release** | After `ReleaseAll`, a fresh run of `Acquire` calls hands the objects back **in their original order** — position 1 gets the object position 1 had. An ordered consumer may rely on it. | **3** |
+| `ReleaseAllKeyed` order stays undefined | Stated rather than changed: the key is the mapping there, and `pairs` order carries no meaning. | **3** |
 
-**Nothing a version-1 host wrote behaves differently.** `New`, `Acquire`, `ReleaseAll` and `Counts`
-over an array pool are unchanged — the guard is a `next(active)` check *after* the array walk has
-already emptied the table, so a correct array pool reaches it with nothing left and never sees it. A
-host needs a re-vendor and no code change.
+**Nothing else moves, and no host has to change a line.** `New`, `Acquire`, `Counts`, the `before`
+hook, the keyed half and the keyed-pool guard are all exactly as version 2 describes them. A host
+that draws an unordered set sees no difference at all. Adopters need a re-vendor and no code change.
 
-**Why the guard, rather than letting the mistake through.** Before minor 2, a host that had keyed its
-own pool and then ported it to `ReleaseAll` got this module's own headline bug back, exactly:
-`for i = 1, #active` walks nothing over a keyed table, so no object is ever returned to the free
-list, `Acquire` falls through to `factory()` forever, and no suite anywhere goes red. That is the
-defect the major was written to end, reintroduced by adopting the major. A loud error at the call
-site costs one fix; a silent leak costs a session of growing memory with no cause in the history.
+**Why this is a bump rather than a quiet correction.** Version 2's document said nothing about
+ordering in either direction, so a host reading it could not have known which way the objects came
+back — which is precisely how the defect below reached the client and stayed there. Publishing the
+guarantee is the substance of this version; the loop direction is just how it is kept.
+
+**The defect this ends.** MultiMeters pools one bar per ranked player and takes the rank from acquire
+order, so every bar was handed a different player's figure four times a second. A damage figure is
+not free to re-apply: it resolves through a visible transient, so each bar painted full and then
+snapped back to its real width, continuously, for the whole fight. Preview mode looked perfect —
+placeholder figures are plain and apply with no resolve step. Nothing in the pool could show it:
+`Counts` answers `n, 0` either way, identity is preserved either way, nothing leaks, and no suite
+went red. The objects were all correct and merely in the wrong places, so only the screen knew. The
+hand-rolled pool that addon replaced walked its active list backward, which is why adopting this
+major is what introduced the churn.
+
+**Why not fix it from the other end.** Taking from the FRONT of the free list would work equally
+well and would put an O(n) `table.remove(pool.free, 1)` shift on a per-frame path. The cost belongs
+in the release, which runs once per render, not in the acquire, which runs once per widget.
 
 ## What this major is
 
@@ -99,11 +107,11 @@ only state there is.
 |---|---|---|
 | `New()` | 1 | A fresh, empty pool — `{ free = {}, active = {} }`. A distinct table on every call. |
 | `Acquire(pool, factory)` | 1 | An object off the free list, or `factory()` when the free list is empty. The object is appended to `active`, **shown**, and returned. |
-| `ReleaseAll(pool[, before])` | 1 | Hides every active object and **returns it to the free list**. `before(object)` runs on each object while it is still shown. **Raises** if anything is left in `active` after the walk — see below. |
+| `ReleaseAll(pool[, before])` | 1 | Hides every active object and **returns it to the free list**, parking it so the next run of `Acquire` calls hands the objects back in the same order (since **3**). `before(object)` runs on each object while it is still shown. **Raises** if anything is left in `active` after the walk — see below. |
 | `Counts(pool)` | 1 | Two numbers: how many objects are parked and how many are out — `#free, #active`. |
 | `NewKeyed()` | 2 | A fresh, empty **keyed** pool. The same `{ free = {}, active = {} }` table; `active` is read as a map. |
 | `AcquireKeyed(pool, key, factory)` | 2 | An object off the free list, or `factory()`, filed under `key`, **shown**, and returned. A `key` that is already live returns the object sitting there and builds nothing. |
-| `ReleaseAllKeyed(pool[, before])` | 2 | Hides every active object, returns it to the free list and clears every key. `before(object, key)` runs on each object while it is still shown. |
+| `ReleaseAllKeyed(pool[, before])` | 2 | Hides every active object, returns it to the free list and clears every key. `before(object, key)` runs on each object while it is still shown. Order carries no meaning here and is left undefined. |
 | `CountsKeyed(pool)` | 2 | Two numbers for a keyed pool: `#free`, and the active map walked with `pairs`. |
 | `MAJOR` · `MINOR` | 1 | `"LibKa0s-Pool-1.0"` and the live minor. |
 | `MODULES` | 1 | `{ Pool = <minor> }` — the live minor, and the value that picks this document. |
@@ -142,6 +150,31 @@ hand-rolled copies did.
 passes the object alone. A keyed host's per-object teardown usually needs the key (unregistering a
 ticker filed under the same id, say), and recovering it by scanning the map would defeat the index
 the variant exists for.
+
+### Order is preserved across a release — since minor 3
+
+**After `ReleaseAll`, the next run of `Acquire` calls hands the objects back in their original
+order.** Acquire the pool's objects as positions 1..n, release them all, acquire n again: position 1
+is handed the object it had last time, position 2 the object it had, and so on. **An ordered
+consumer may rely on that** — a host that pools one widget per ranked row and takes the rank from
+acquire order is doing the supported thing, not getting lucky.
+
+It is a guarantee about a *whole* release-then-reacquire cycle, not about arithmetic on the free
+list. `ReleaseAll` parks the active set backward (`for i = #active, 1, -1`) so position n goes in
+first and position 1 is left on top, and `Acquire` pops from the end. Both halves are internal; the
+promise is the round trip.
+
+Two things it does not say. A pool released and then acquired a *different* number of times gets
+the same prefix and no promise past it — acquire fewer and the tail stays parked; acquire more and
+the extra objects come off the free list in whatever order earlier cycles left them, or are built by
+`factory()`. And it says nothing about a host that mixes its own `table.insert` into `pool.free`,
+which was never supported.
+
+Why a widget pool cares at all: the object handed to a position is the object that position's state
+was last applied to. When the mapping shuffles, every widget is re-pointed at a different record on
+every render, and a value that is not free to re-apply — one that animates, resolves or fades on
+being set — turns that into a permanent visual churn that nothing but the screen can see. Version 2
+had exactly that, and the whole of it is under *What changed at this version* above.
 
 ### Identity is preserved across a release
 
@@ -269,28 +302,3 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 `Pool.lua` has been in `LibKa0s.xml` since version 1, so this version is a re-vendor and no edit: a
 consumer already carrying the file picks the new minor up from the copy, and LibStub prefers it over
 whatever else is loaded.
-
-## Moving to version 3
-
-**Take it, and nothing you have written needs to change.** `New`, `Acquire`, `ReleaseAll`, `Counts`,
-the `before` hook, all four keyed members and the keyed-pool guard behave at version 3 exactly as
-they do here. A host needs a re-vendor and no code change.
-
-What version 3 changes is the **order objects come back in**, and it publishes that order as a
-guarantee this document does not make in either direction. At this version `ReleaseAll` parks the
-active set walking forward (`for i = 1, #active`) while `Acquire` pops the free list from the end, so
-a release reverses the object-to-position mapping: position 1's object is parked first, sits at the
-bottom of the free list and is handed out last on the next pass — which parks it back the other way.
-**A consumer that assigns position by acquire order therefore alternates between two mappings with
-period 2, on every render, for as long as it draws.** Version 3 parks backward instead, so position 1
-is left on top and the next `Acquire` hands it the object it already had; from that version an
-ordered consumer may rely on it.
-
-Nothing in this version's pool can show you that. `Counts` answers `n, 0` either way, identity is
-preserved either way, nothing leaks, and a suite asserting on recycling stays green — the objects are
-all correct and simply in the wrong places. MultiMeters is the host it reached: one bar per ranked
-player, rank taken from acquire order, re-rendered several times a second, and a damage figure that
-resolves through a visible transient rather than applying flat, so every bar painted full and snapped
-back for the whole fight. **If you pool an ordered list and take the position from acquire order,
-this version is the one to leave.** `ReleaseAllKeyed` is unaffected and always was — a keyed host
-finds its object by key — and version 3 says so explicitly rather than leaving it inferred.

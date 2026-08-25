@@ -69,7 +69,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2](./Pool/version-2-docs.md) | `Pool.lua` 2 | v1.16.0 | **Current** |
+| [3](./Pool/version-3-docs.md) | `Pool.lua` 3 | v1.17.0 | **Current** |
+| [2](./Pool/version-2-docs.md) | `Pool.lua` 2 | v1.16.0 | Superseded |
 | [1](./Pool/version-1-docs.md) | `Pool.lua` 1 | v1.15.0 | Superseded |
 
 ### `LibKa0s-Item-1.0`
