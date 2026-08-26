@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 9.7.3
+# `LibKa0s-Options-1.0` — version 9.8.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,14 +8,14 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **9** · `OptionsWidgets.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **9** · `OptionsWidgets.lua` **8** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsScroll>`, in load order — the same three numbers `lib.MODULES` reports |
-| Shipped in | v1.18.0 |
-| Status | Superseded |
-| Supersedes | [version 8.7.3](./version-8.7.3-docs.md) |
-| Superseded by | [version 9.8.3](./version-9.8.3-docs.md) |
+| Shipped in | v1.18.1 |
+| Status | **Current** |
+| Supersedes | [version 9.7.3](./version-9.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 9, OptionsWidgets = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 9, OptionsWidgets = 8, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O8`
 for `Options.lua` minor 8, `W4` for `OptionsWidgets.lua` minor 4, `S1` for `OptionsScroll.lua`
@@ -24,7 +24,20 @@ as any consumer could have had this major".
 
 ## What changed at this version
 
-**`Options.lua` minor 9 — `resetProfile`, so a global reset can be a profile reset without every consumer restating the policy.**
+**`OptionsWidgets.lua` minor 8 — the landing-page logo stops leaving a copy of itself in AceGUI's frame pool.**
+
+A host with a `logo` in its landing spec could grow a **second logo** partway down its own settings page. Intermittently, and with nothing in the spec, the art or the host to explain it — because the cause was neither: it was pool order.
+
+`landingLogo` draws the art by reaching through the AceGUI SimpleGroup it creates to the real frame behind it and calling `frame:CreateTexture()`. **A texture is not a widget.** AceGUI pools widget frames — `Release` hides a frame and hands the same one back at the next `Create` — and it releases *widgets*, so nothing ever released or hid the texture. It rode the frame into the pool and drew again the next time that frame was handed out, for whatever the page needed a SimpleGroup for next. `BuildLandingPage` already calls `ClearScroll` first, and that could not help: there was no widget there to clear.
+
+Minor 8 fixes both halves of that.
+
+- The texture is **kept on the frame and reused** (`frame.__ka0sLandingLogo`), so a frame that comes back for another logo cannot stack a second one under the first. It is re-anchored with `ClearAllPoints` first, so the points do not accumulate either.
+- It is **hidden when the widget is released**, through an `OnRelease` callback set fresh on every acquisition, so a frame that comes back for anything else does not show it. AceGUI fires `"OnRelease"` *before* it clears a widget's callbacks, which is what makes `SetCallback` a safe place to hang this.
+
+**Nothing to adopt.** No signature, field or spec key moves; a host re-vendors and the duplicate stops appearing. The only visible change is the absence of a logo nobody asked for.
+
+**Previously, in `Options.lua` minor 9 — `resetProfile`, so a global reset can be a profile reset without every consumer restating the policy.**
 
 The Ka0s WoW Addon Standard's `options-ui-§12` settles what a global reset is: *Reset all settings* and the Profiles page's *Reset Profile* are the **same act** — `db:ResetProfile()` on the active profile — and a row-by-row sweep is the defect it replaces. Two failure modes make that a rule rather than a preference. Where a consumer's paths are window-relative, a sweep that walks the schema **once** resets whichever window is selected and silently leaves the others, while a position hook beside it re-centers all of them: one action, two blast radii. And a sweep cannot reach a stored **array** at all — a column list, a spell list, a category list — because an array is addressable as a whole and its members deliberately are not, so those survive a reset that took everything around them.
 
@@ -258,8 +271,8 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
 never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. This
-version adds `O.PADDING_X` and nothing else, at the value 6.6.3 already drew with — so adopting it
-cannot move a panel.
+version adds **nothing** to the surface: `OptionsWidgets.lua` minor 8 is a defect fix behind
+`BuildLandingPage`, with no signature, field or spec key moved.
 
 **`lib.LAYOUT` is not itself part of the instance surface, and will not become so.** The keys a host
 may read are the individual scalars listed above. The rest are internal, each annotated in the source
@@ -269,7 +282,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The three files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 9.8.3
-
-`OptionsWidgets.lua` minor 8 is a defect fix and nothing else: the landing-page logo no longer leaves its texture behind in AceGUI's frame pool, where it would draw a second time on whatever page reused that frame. No signature, descriptor field or spec key moves, so there is nothing to adopt — re-vendor and the duplicate logo stops appearing. See [version 9.8.3](./version-9.8.3-docs.md).

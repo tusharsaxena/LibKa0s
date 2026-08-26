@@ -10,6 +10,37 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.18.1 — 2026-08-26
+
+Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 7**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 9**,
+**OptionsWidgets minor 8**, **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**,
+**kit revision 13**.
+
+**`LibKa0s-Options-1.0`, `OptionsWidgets.lua` minor 8 — the landing-page logo stops leaving a copy of
+itself in AceGUI's frame pool.**
+
+A host with a `logo` in its landing spec could grow a **second logo** partway down its own settings
+page. Intermittently, with nothing in the spec, the art or the host to explain it — because the cause
+was none of those: it was pool order.
+
+`landingLogo` draws the art by reaching through the AceGUI SimpleGroup it creates to the real frame
+behind it and calling `frame:CreateTexture()`. **A texture is not a widget.** AceGUI pools widget
+frames — `Release` hides one and hands the same one back at the next `Create` — and what it releases
+is widgets, so nothing released or hid the texture. It rode the frame into the pool and drew again
+the next time that frame was handed out, for whatever the page wanted a SimpleGroup for next.
+`BuildLandingPage` already calls `ClearScroll` first and it could not help: there was no widget there
+to clear.
+
+Both halves are fixed, and both are needed. The texture is kept on the frame and **reused**, so a
+frame that comes back for another logo cannot stack a second one under the first; and it is
+**hidden on release**, so a frame that comes back for anything else does not show it. AceGUI fires
+`"OnRelease"` before it clears a widget's callbacks, which is what makes `SetCallback` a safe place
+to hang that.
+
+There is nothing to adopt: no signature, descriptor field or spec key moves. Re-vendor and the
+duplicate stops appearing. Reported from MultiMeters, whose landing page is the one it was seen on.
+
 ## v1.18.0 — 2026-08-26
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

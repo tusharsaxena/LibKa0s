@@ -975,6 +975,74 @@ test("widgets: a logo whose widget has no backing frame costs the logo, not the 
   assertTrue(joined:find("/x help", 1, true) ~= nil, "and so did the sections: " .. joined)
 end)
 
+--- A texture stub that records what was done to it. The kit's base frame answers CreateTexture with
+--- the FRAME ITSELF (a known divergence, documented in mock_base.lua), which makes "how many
+--- textures were created" and "is the texture shown" both unanswerable — and those two questions
+--- are the whole of the case below.
+local function textureStub()
+  local t = { shown = true, points = 0 }
+  function t:SetTexture(v) self.texture = v end
+  function t:SetSize(w, h) self.w, self.h = w, h end
+  function t:ClearAllPoints() self.points = 0 end
+  function t:SetPoint() self.points = self.points + 1 end
+  function t:Show() self.shown = true end
+  function t:Hide() self.shown = false end
+  return t
+end
+
+test("widgets: a POOLED frame gains ONE logo texture, and hides it when released", function()
+  -- THE BUG: AceGUI pools widget FRAMES. A texture created on one is not a widget, so nothing
+  -- releases it and nothing hides it — it rides the frame into the pool and draws again the next
+  -- time that frame is handed out, for whatever purpose. A host with a landing logo therefore grew
+  -- a SECOND logo partway down its own page, intermittently, depending only on pool order.
+  -- BuildLandingPage's ClearScroll cannot help: there is no widget there to clear.
+  -- red under: an unconditional frame:CreateTexture(), which is what shipped through minor 7.
+  local O, _, ctx = bench()
+
+  local pooled  = T.mocks.__makeAceGUIWidget("SimpleGroup")
+  local made    = 0
+  local tex
+  function pooled.frame:CreateTexture()
+    made = made + 1
+    tex = textureStub()
+    return tex
+  end
+
+  -- The logo group is the first SimpleGroup BuildLandingPage creates; the spacer under it is the
+  -- second, and must NOT be the same frame or the case proves nothing about pooling.
+  local realCtor = O.AceGUI.WidgetRegistry.SimpleGroup
+  local handOver = false
+  O.AceGUI:RegisterWidgetType("SimpleGroup", function()
+    if handOver then
+      handOver = false
+      return pooled
+    end
+    return T.mocks.__makeAceGUIWidget("SimpleGroup")
+  end)
+
+  handOver = true
+  O.BuildLandingPage(ctx, { logo = "x.tga" })
+  assertEqual(made, 1)
+  assertEqual(tex.texture, "x.tga")
+  assertTrue(tex.shown)
+
+  -- AceGUI releasing the group back to its pool. It fires "OnRelease" BEFORE it clears a widget's
+  -- callbacks, which is what makes SetCallback a safe place to hang this.
+  pooled:__fire("OnRelease")
+  assertFalse(tex.shown,
+    "a texture left visible on a pooled frame IS the second logo, on whatever page reuses it")
+
+  -- The same frame, handed back for another logo: it must reuse its own texture rather than stack
+  -- a second one under the first.
+  handOver = true
+  O.BuildLandingPage(ctx, { logo = "x.tga" })
+  O.AceGUI:RegisterWidgetType("SimpleGroup", realCtor)
+
+  assertEqual(made, 1, "a re-rendered landing page must not create a second texture")
+  assertTrue(tex.shown, "and the one it reuses has to be visible again")
+  assertEqual(tex.points, 1, "anchored once — ClearAllPoints first, or the points accumulate")
+end)
+
 test("widgets: a spec with no logo draws no logo block", function()
   local O, _, ctx = bench()
   O.BuildLandingPage(ctx, { notes = "just the one-liner" })
