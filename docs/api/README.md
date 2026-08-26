@@ -91,7 +91,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7](./Widgets/version-7-docs.md) | `Widgets.lua` 7 | v1.16.0 | **Current** |
+| [8](./Widgets/version-8-docs.md) | `Widgets.lua` 8 | v1.19.0 | **Current** |
+| [7](./Widgets/version-7-docs.md) | `Widgets.lua` 7 | v1.16.0 | Superseded |
 | [6](./Widgets/version-6-docs.md) | `Widgets.lua` 6 | v1.15.0 | Superseded |
 | [5](./Widgets/version-5-docs.md) | `Widgets.lua` 5 | v1.13.0 | Superseded |
 | [4](./Widgets/version-4-docs.md) | `Widgets.lua` 4 | v1.12.0 | Superseded |

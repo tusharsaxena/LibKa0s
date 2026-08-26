@@ -70,6 +70,37 @@ return function()
   M.__context.class      = "Death Knight"
   M.__context.classToken = "DEATHKNIGHT"
 
+  -- ── the pointer ───────────────────────────────────────────────────────────────────────────
+  --
+  -- LibKa0s-Widgets-1.0's ReorderList reads both on every OnUpdate frame of a drag, and a drag
+  -- nothing offline can drive is a drag that ships untested -- which is exactly how two earlier
+  -- implementations of it shipped doing nothing at all.
+  --
+  -- ADDED TO THE SHARED MOCK rather than to one suite's own factory, unlike the geometry stub in
+  -- tests/test_widgets.lua. These are new GLOBALS, not changes to how an existing one behaves, so
+  -- no suite written against the base can observe the difference; widening frame geometry would
+  -- have been a change to all sixteen.
+  --
+  -- GetCursorPosition answers SCALED coordinates, as the client's does: callers divide by
+  -- UIParent:GetEffectiveScale().
+  M.__cursorX, M.__cursorY = 0, 0
+  M.GetCursorPosition = function() return M.__cursorX, M.__cursorY end
+  function M.setCursor(x, y) M.__cursorX, M.__cursorY = x or 0, y or 0 end
+
+  -- The kit's base frame stub answers the frame ITSELF for any method it does not implement, so
+  -- an unpatched UIParent:GetEffectiveScale() hands back a table. Every caller here divides by it,
+  -- and the library guards on the answer being a number -- so without this the drag refuses to
+  -- start and the guard, rather than the drag, is what the suite would be testing.
+  M.UIParent.GetEffectiveScale = function() return 1 end
+
+  M.__mouseDown = {}
+  M.IsMouseButtonDown = function(button)
+    return M.__mouseDown[button or "LeftButton"] and true or false
+  end
+  function M.setMouseDown(button, down)
+    M.__mouseDown[button or "LeftButton"] = down and true or false
+  end
+
 
   return M
 end

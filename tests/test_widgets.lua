@@ -89,6 +89,33 @@ local function geomFrame()
     return self
   end
   function f:GetText() return self.__text end
+  -- A NUMBER, because ReorderList divides the cursor by it. The catch-all below would answer the
+  -- frame itself, the library guards on the answer being a number, and the guard rather than the
+  -- drag is what every case would then be testing.
+  function f:GetEffectiveScale() return 1 end
+  -- ALPHA IS REAL. ReorderList fades the row you picked up, and against the catch-all GetAlpha
+  -- would answer the frame itself -- so `< 1` would raise rather than assert.
+  function f:SetAlpha(a) self.__alpha = a; return self end
+  function f:GetAlpha() return self.__alpha or 1 end
+  -- POINTS ARE REAL, so a case can ask what the insertion line was anchored TO. The line's whole
+  -- contract is that it is anchored to the target row rather than positioned by arithmetic, and
+  -- against the catch-all that claim is unfalsifiable.
+  function f:ClearAllPoints() self.__points = {}; return self end
+  function f:SetPoint(point, rel, relPoint, x, y)
+    if type(rel) == "number" or rel == nil then
+      self.__points[#self.__points + 1] = { point = point, relativeTo = nil, x = rel, y = relPoint }
+    else
+      self.__points[#self.__points + 1] =
+        { point = point, relativeTo = rel, relativePoint = relPoint, x = x, y = y }
+    end
+    return self
+  end
+  function f:GetPoint(i)
+    local pt = self.__points[i or 1]
+    if not pt then return nil end
+    return pt.point, pt.relativeTo, pt.relativePoint, pt.x, pt.y
+  end
+  function f:GetNumPoints() return #self.__points end
   -- A PROPORTIONAL-ISH width, 6px per character, so the width arithmetic has real numbers to run
   -- on; it is the same rule the measuring stub further down uses.
   function f:GetStringWidth() return #(self.__text or "") * 6 end
@@ -948,4 +975,235 @@ test("widgets: CopyWindow leaves the scroll frame anonymous when not asked", fun
   local win = W.CopyWindow({ addonName = "TestHost" })
   local f = win:GetFrame()
   assertEqual(f.scroll.__name, nil)
+end)
+
+-- ── ReorderList (minor 8) ─────────────────────────────────────────────────────────────────────
+--
+-- IT OWNS A GESTURE, NOT A LIST, so these cases hand it bare frames and ask only about the drag.
+-- There is no row content to assert on and deliberately so: the two adopting lists draw completely
+-- different rows, and a widget that had opinions about them could serve neither.
+--
+-- THE DRAG IS DRIVEN THROUGH ITS REAL SCRIPTS -- press, move, release -- with mocks.setCursor and
+-- mocks.setMouseDown standing in for the pointer. Asserting by calling the internals would pass
+-- just as happily with the handle wired to nothing, which is precisely how two earlier
+-- implementations of this shipped doing nothing at all.
+
+--- A list of `n` bare rows, plus a log of what it asked its host for.
+local function reorderList(n, opts)
+  local log = { moved = {}, said = {} }
+  opts = opts or {}
+  opts.stride = opts.stride or 30
+  opts.onMove = function(from, to) log.moved[#log.moved + 1] = { from, to } end
+  opts.debug  = function(fmt, ...) log.said[#log.said + 1] = fmt:format(...) end
+
+  local list = W.ReorderList(opts)
+  local rows = {}
+  for i = 1, n do
+    local frame = geomFrame()
+    frame:SetSize(200, 30)
+    rows[i] = { frame = frame, handle = list:AddRow(frame, { ghostText = "row " .. i }) }
+  end
+  list:Finish(geomFrame())
+  return list, rows, log
+end
+
+--- Grab row `from` by its handle, move `rows` rows DOWN, and release. Screen y falls downward.
+local function drag(list, rows, from, n)
+  local row = rows[from]
+  mocks.setMouseDown("LeftButton", true)
+  mocks.setCursor(0, 1000)
+  row.handle:__fire("OnMouseDown")
+
+  mocks.setCursor(0, 1000 - n * list.stride)
+  row.frame:__fire("OnUpdate", 0.1)
+
+  mocks.setMouseDown("LeftButton", false)
+  row.frame:__fire("OnUpdate", 0.1)
+end
+
+test("widgets: ReorderList reports where a drag landed", function()
+  local list, rows, log = reorderList(5)
+  drag(list, rows, 1, 2)
+  assertEqual(#log.moved, 1)
+  assertEqual(log.moved[1][1], 1)
+  assertEqual(log.moved[1][2], 3, "two rows down from index 1 is index 3")
+end)
+
+test("widgets: ReorderList says nothing for a drag that lands where it started", function()
+  -- Reporting one would have the host rewrite its list and repaint for no change at all.
+  local list, rows, log = reorderList(5)
+  drag(list, rows, 2, 0)
+  assertEqual(#log.moved, 0)
+end)
+
+test("widgets: ReorderList clamps a flat list to its own ends", function()
+  local list, rows, log = reorderList(5)
+  drag(list, rows, 4, 9)
+  assertEqual(log.moved[1][2], 5, "a flat list clamps at the last row and nowhere else")
+end)
+
+test("widgets: ReorderList keeps a drag inside its group when a boundary is set", function()
+  -- MultiMeters' Columns page is the one list with two groups: a shown column may not be dragged
+  -- among the hidden ones, because the tick is what moves a row between them and a drag that
+  -- crossed would have to silently turn a column off.
+  local list, rows, log = reorderList(5, { boundary = 3 })
+  drag(list, rows, 1, 4)
+  assertEqual(log.moved[1][2], 3, "clamped to the last row of the first group")
+
+  local list2, rows2, log2 = reorderList(5, { boundary = 3 })
+  drag(list2, rows2, 5, -4)
+  assertEqual(log2.moved[1][2], 4, "clamped to the first row of the second group")
+end)
+
+test("widgets: a boundary of 0 or the row count is one flat list", function()
+  -- Both are degenerate ways of saying "there is no divide", and a clamp that treated either as a
+  -- real group would pin every row where it stood.
+  for _, b in ipairs({ 0, 5 }) do
+    local list, rows, log = reorderList(5, { boundary = b })
+    drag(list, rows, 1, 4)
+    assertEqual(log.moved[1][2], 5, "boundary " .. b .. " must not divide anything")
+  end
+end)
+
+test("widgets: a poll that never reports the button held cannot kill the drag", function()
+  -- If IsMouseButtonDown is unavailable, protected, or simply not true yet on the first frame, a
+  -- poll that ended on `not held` would finish the drag with zero rows travelled -- no error, no
+  -- message, and indistinguishable from a press that was never received. It has to see the button
+  -- HELD before it may act on it being released.
+  local list, rows, log = reorderList(5)
+  local row = rows[1]
+
+  mocks.setMouseDown("LeftButton", false)
+  mocks.setCursor(0, 1000)
+  row.handle:__fire("OnMouseDown")
+
+  mocks.setCursor(0, 1000 - 2 * list.stride)
+  row.frame:__fire("OnUpdate", 0.1)
+  assertEqual(#log.moved, 0, "the poll ended a drag it never saw begin")
+
+  row.handle:__fire("OnMouseUp")
+  assertEqual(#log.moved, 1, "OnMouseUp did not complete the drag")
+  assertEqual(log.moved[1][2], 3, "the distance travelled was thrown away")
+end)
+
+test("widgets: every start path begins one drag and every end path completes it once", function()
+  -- Which of these a client actually sends turned out not to be worth betting on. Both helpers are
+  -- idempotent, so whichever order they arrive in, one grab begins once and completes once.
+  local list, rows, log = reorderList(5)
+  local row = rows[1]
+
+  mocks.setMouseDown("LeftButton", true)
+  mocks.setCursor(0, 1000)
+  row.handle:__fire("OnDragStart")          -- the threshold path, first
+  row.handle:__fire("OnMouseDown")          -- and the immediate one, second
+  mocks.setCursor(0, 1000 - 2 * list.stride)
+  row.frame:__fire("OnUpdate", 0.1)
+
+  row.handle:__fire("OnDragStop")
+  row.handle:__fire("OnMouseUp")
+  mocks.setMouseDown("LeftButton", false)
+  row.frame:__fire("OnUpdate", 0.1)
+
+  assertEqual(#log.moved, 1, "one grab must produce exactly one reorder")
+  assertEqual(log.moved[1][2], 3, "a second start must not reset the origin mid-drag")
+end)
+
+test("widgets: ReorderList carries a copy of the row under the cursor", function()
+  -- The feedback the gesture actually needed. Without it nothing moves with the pointer, so a
+  -- working drag and a broken one look the same from where the player is sitting.
+  local list, rows = reorderList(5)
+  local row = rows[2]
+
+  mocks.setMouseDown("LeftButton", true)
+  mocks.setCursor(0, 1000)
+  row.handle:__fire("OnMouseDown")
+
+  local ghost = W.__DragGhost
+  assertTrue(ghost ~= nil, "no ghost was built")
+  assertTrue(ghost:IsShown(), "the ghost must appear as soon as the row is grabbed")
+  assertEqual(ghost.text:GetText(), "row 2", "the ghost must read as the row it came from")
+  assertFalse(ghost.__mouseEnabled,
+    "a ghost that takes the mouse eats the release that ends the drag")
+
+  local firstY = select(5, ghost:GetPoint(1))
+  mocks.setCursor(0, 1000 - 2 * list.stride)
+  row.frame:__fire("OnUpdate", 0.1)
+  assertFalse(select(5, ghost:GetPoint(1)) == firstY, "the ghost did not follow the cursor")
+  assertTrue(row.frame:GetAlpha() < 1, "the row it came from must fade behind it")
+
+  mocks.setMouseDown("LeftButton", false)
+  row.frame:__fire("OnUpdate", 0.1)
+  assertFalse(ghost:IsShown(), "the ghost must be put away when the drag ends")
+end)
+
+test("widgets: the insertion line is ANCHORED to the target row", function()
+  -- The index comes from the cursor, but where that index sits on screen is a question only the
+  -- frames can answer -- and anchoring asks it without reading a single coordinate back.
+  local list, rows = reorderList(5)
+  local row = rows[1]
+
+  mocks.setMouseDown("LeftButton", true)
+  mocks.setCursor(0, 1000)
+  row.handle:__fire("OnMouseDown")
+  mocks.setCursor(0, 1000 - 2 * list.stride)
+  row.frame:__fire("OnUpdate", 0.1)
+
+  assertTrue(list.line:IsShown(), "the line must be visible during a drag")
+  local _, relativeTo = list.line:GetPoint(1)
+  assertEqual(relativeTo, rows[3].frame, "the line is not against the drop target")
+
+  mocks.setMouseDown("LeftButton", false)
+  row.frame:__fire("OnUpdate", 0.1)
+  assertFalse(list.line:IsShown(), "the line must go away when the drag ends")
+end)
+
+test("widgets: a clamped drag still shows the line, stopped at the divide", function()
+  -- A clamped drop writes nothing, so the line stopping is the only feedback there is. Without it
+  -- a working clamp is indistinguishable from a broken drag -- which is how it was first reported.
+  local list, rows, log = reorderList(5, { boundary = 3 })
+  local row = rows[3]
+
+  mocks.setMouseDown("LeftButton", true)
+  mocks.setCursor(0, 1000)
+  row.handle:__fire("OnMouseDown")
+  mocks.setCursor(0, 1000 - 3 * list.stride)
+  row.frame:__fire("OnUpdate", 0.1)
+
+  assertTrue(list.line:IsShown(), "a clamped drag must still say where it would land")
+  local _, relativeTo = list.line:GetPoint(1)
+  assertEqual(relativeTo, rows[3].frame, "clamped to its own index, so the line sits on itself")
+
+  mocks.setMouseDown("LeftButton", false)
+  row.frame:__fire("OnUpdate", 0.1)
+  assertEqual(#log.moved, 0, "a clamped drag must not report a move")
+end)
+
+test("widgets: Cancel stops a drag in flight and puts the chrome away", function()
+  -- A host must call this when it repaints. A ghost left floating over a list that has already
+  -- changed is worse than no feedback: it names a row that may not be there any more.
+  local list, rows, log = reorderList(5)
+  local row = rows[1]
+
+  mocks.setMouseDown("LeftButton", true)
+  mocks.setCursor(0, 1000)
+  row.handle:__fire("OnMouseDown")
+  mocks.setCursor(0, 1000 - 2 * list.stride)
+  row.frame:__fire("OnUpdate", 0.1)
+
+  list:Cancel()
+  assertFalse(W.__DragGhost:IsShown(), "the ghost outlived the list it was describing")
+  assertFalse(list.line:IsShown())
+  assertEqual(row.frame:GetAlpha(), 1, "the picked-up row must come back to full opacity")
+
+  mocks.setMouseDown("LeftButton", false)
+  row.frame:__fire("OnUpdate", 0.1)
+  assertEqual(#log.moved, 0, "a cancelled drag must not land after the fact")
+end)
+
+test("widgets: only the handle starts a drag", function()
+  -- Rows in these lists carry other controls -- a remove button, a score button, a toggle glyph --
+  -- and a row draggable anywhere would swallow presses aimed at those. They sit pixels apart.
+  local _, rows = reorderList(3)
+  assertTrue(rows[1].handle:GetScript("OnMouseDown") ~= nil, "the handle must start the drag")
+  assertEqual(rows[1].frame:GetScript("OnMouseDown"), nil, "the row itself must not")
 end)
