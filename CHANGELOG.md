@@ -10,6 +10,49 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.18.0 — 2026-08-26
+
+Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 7**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 9**,
+**OptionsWidgets minor 7**, **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**,
+**kit revision 13**.
+
+**`LibKa0s-Options-1.0` minor 9 — `resetProfile`, so a global reset can be a profile reset without
+every consumer restating the policy.**
+
+The Ka0s WoW Addon Standard's `options-ui-§12` settles what a global reset is: *Reset all settings*
+and the Profiles page's *Reset Profile* are the **same act** — `db:ResetProfile()` on the active
+profile — and a row-by-row sweep is the defect it replaces. Two failure modes make that a rule rather
+than a preference. Where a consumer's paths are window-relative, a sweep that walks the schema
+**once** resets whichever window is selected and silently leaves the others, while a position hook
+beside it re-centers all of them: one action, two blast radii, and nothing in the UI to say which you
+get. And a sweep cannot reach a stored **array** at all — a column list, a spell list, a category
+list — because an array is addressable as a whole and its members deliberately are not, so those
+survive a reset that took everything around them.
+
+Before this minor every consumer expressed that for itself: the same two-clause `skipRestoreAll`, and
+the same `afterRestoreAll = function() NS.db:ResetProfile() end`, written out once per addon. Nine
+copies of one policy is what this library exists to prevent, and the policy is not one a consumer is
+allowed to vary — the standard makes it a MUST.
+
+`RestoreAllDefaults` branches on whether the descriptor supplies `resetProfile`. Supplied, the row
+walk narrows to the `sessionOnly` rows — the only settings a profile reset cannot reach, because
+their storage is their own `set()` — then `resetProfile()` runs, then `afterRestoreAll`, then the
+refresh. The narrowing is applied **before** `skipRestoreAll` is consulted, so a host that supplies
+both does not have to make its veto agree with a rule the library is already applying. Not supplied,
+the behavior is byte-for-byte what it was: every unvetoed row, then the hook, then the refresh. A
+host that owns its own reset keeps owning it and nothing here reaches it.
+
+The library still knows nothing about the db. It calls `resetProfile` and stops; AceDB emptying the
+profile, the defaults merging back, `OnProfileReset` reaching the host's profile-changed handler, the
+migrations and the re-seed are all the consumer's business. This major has never had an opinion about
+SavedVariables and does not acquire one here.
+
+Two docstrings are corrected with it. `skipRestoreAll` described itself as the profiles-page veto,
+which is now implied for any host on `resetProfile` (an AceDBOptions row is not `sessionOnly`), and
+`afterRestoreAll` offered *a dragged frame's saved position* as its example — the exact seam
+`options-ui-§12` retires, because a position lives in the profile and comes back with it.
+
 ## v1.17.0 — 2026-08-25
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

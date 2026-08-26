@@ -236,6 +236,71 @@ test("options: RestoreAllDefaults resets every row, then fires the host's afterR
     "the host hook is what clears state no schema row owns — a dragged frame position")
 end)
 
+-- ── the profile-reset form (Options minor 9) ───────────────────────────────────────────────
+
+test("options: with resetProfile supplied, only the sessionOnly rows are walked", function()
+  -- The house standard makes a global reset a PROFILE reset (options-ui-§12). Every other row's
+  -- value lives in the profile and is about to be discarded whole, so writing its default first
+  -- refreshes the panel once per row for nothing — and cannot reach a stored ARRAY at all, which is
+  -- the failure that made this a rule rather than a preference.
+  -- red under: RestoreAllDefaults ignoring resetProfile and walking every row.
+  local calls = 0
+  local O, rec = Fixture.new{ resetProfile = function() calls = calls + 1 end }
+  local store = rec.store
+  store.barWidth  = 333
+  store.__session = "dirty"
+
+  O.RestoreAllDefaults()
+
+  assertEqual(calls, 1, "resetProfile must be called exactly once")
+  assertEqual(store.barWidth, 333,
+    "a profile-backed row must NOT be written -- the profile reset covers it")
+  assertEqual(store.__session, false,
+    "a sessionOnly row must still be swept -- a profile reset cannot reach it")
+end)
+
+test("options: resetProfile runs BEFORE afterRestoreAll, which runs before the refresh", function()
+  -- afterRestoreAll is for state in neither the schema nor the profile, so it must see the profile
+  -- already reset. And the refresh is last, or it paints pre-hook values.
+  -- red under: calling resetProfile after the hook, or after the refresh.
+  local order = {}
+  local O = Fixture.new{
+    resetProfile    = function() order[#order + 1] = "profile" end,
+    afterRestoreAll = function() order[#order + 1] = "hook" end,
+  }
+  local ctx = O.CreatePanel("TestPanelRP", "Test RP", {})
+  ctx.refreshers[1] = function() order[#order + 1] = "refresh" end
+  O.RestoreAllDefaults()
+  assertEqual(table.concat(order, ","), "profile,hook,refresh")
+end)
+
+test("options: the narrowing is applied BEFORE skipRestoreAll is consulted", function()
+  -- So a host that supplies both does not have to make its veto agree with a rule the library is
+  -- already applying. A veto that returns false for every row must not widen the walk back out.
+  -- red under: consulting skipRestoreAll first and treating "not vetoed" as "walk it".
+  local O, rec = Fixture.new{
+    resetProfile   = function() end,
+    skipRestoreAll = function() return false end,
+  }
+  local store = rec.store
+  store.barWidth = 333
+  O.RestoreAllDefaults()
+  assertEqual(store.barWidth, 333, "a permissive veto re-widened the narrowed walk")
+end)
+
+test("options: with NO resetProfile the reset is exactly what it always was", function()
+  -- A host that owns its own reset keeps owning it, and minor 9 must not reach it. This is the
+  -- compatibility half of the branch, and it is the half a consumer still on the old descriptor
+  -- depends on.
+  -- red under: narrowing the walk unconditionally.
+  local O, rec = Fixture.new()
+  rec.store.barWidth = 333
+  rec.store.locked   = true
+  O.RestoreAllDefaults()
+  assertEqual(rec.store.barWidth, 200, "every row is still walked without resetProfile")
+  assertEqual(rec.store.locked, false)
+end)
+
 test("options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the panels", function()
   -- The hook exists to mutate state (AbsorbTracker clears every saved bar position through it), so
   -- a refresh that ran first would paint the panel from the pre-hook values.

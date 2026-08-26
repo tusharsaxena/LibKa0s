@@ -330,7 +330,7 @@ badge and any count quoted in the docs must agree with it.
 - slash: the format hook takes precedence over the colour codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
 
-### test_options.lua (68)
+### test_options.lua (72)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -351,6 +351,10 @@ badge and any count quoted in the docs must agree with it.
 - options: RestoreDefaults on a page with no rows is a harmless no-op
 - options: RestoreDefaults resets a page across EVERY filter value, unlike RenderSchema
 - options: RestoreAllDefaults resets every row, then fires the host's afterRestoreAll
+- options: with resetProfile supplied, only the sessionOnly rows are walked
+- options: resetProfile runs BEFORE afterRestoreAll, which runs before the refresh
+- options: the narrowing is applied BEFORE skipRestoreAll is consulted
+- options: with NO resetProfile the reset is exactly what it always was
 - options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the panels
 - options: RestoreAllDefaults honours the host's skipRestoreAll veto
 - options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower
@@ -730,7 +734,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets.lua | 57 |
 | test_debuglog.lua | 67 |
 | test_slash.lua | 81 |
-| test_options.lua | 68 |
+| test_options.lua | 72 |
 | test_options_widgets.lua | 82 |
 | test_perf_core.lua | 68 |
 | test_perf_run.lua | 33 |
@@ -743,4 +747,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **649** |
+| **Total** | **653** |

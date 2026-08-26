@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 8.7.3
+# `LibKa0s-Options-1.0` — version 9.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,19 +8,36 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **8** · `OptionsWidgets.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **9** · `OptionsWidgets.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsScroll>`, in load order — the same three numbers `lib.MODULES` reports |
-| Shipped in | v1.8.3 |
-| Status | Superseded |
-| Supersedes | [version 7.7.3](./version-7.7.3-docs.md) |
-| Superseded by | [version 9.7.3](./version-9.7.3-docs.md) |
+| Shipped in | v1.18.0 |
+| Status | **Current** |
+| Supersedes | [version 8.7.3](./version-8.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 8, OptionsWidgets = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 9, OptionsWidgets = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O8`
 for `Options.lua` minor 8, `W4` for `OptionsWidgets.lua` minor 4, `S1` for `OptionsScroll.lua`
 minor 1. Minors 1 and 2 of each file were never tagged, so `O1`/`W1`/`S1` means "present for as long
 as any consumer could have had this major".
+
+## What changed at this version
+
+**`Options.lua` minor 9 — `resetProfile`, so a global reset can be a profile reset without every consumer restating the policy.**
+
+The Ka0s WoW Addon Standard's `options-ui-§12` settles what a global reset is: *Reset all settings* and the Profiles page's *Reset Profile* are the **same act** — `db:ResetProfile()` on the active profile — and a row-by-row sweep is the defect it replaces. Two failure modes make that a rule rather than a preference. Where a consumer's paths are window-relative, a sweep that walks the schema **once** resets whichever window is selected and silently leaves the others, while a position hook beside it re-centers all of them: one action, two blast radii. And a sweep cannot reach a stored **array** at all — a column list, a spell list, a category list — because an array is addressable as a whole and its members deliberately are not, so those survive a reset that took everything around them.
+
+Before this minor every consumer expressed that for itself: the same two-clause `skipRestoreAll`, and the same `afterRestoreAll = function() NS.db:ResetProfile() end`, written out once per addon. Nine copies of one policy is what this library exists to prevent.
+
+`RestoreAllDefaults` now branches on whether the descriptor supplies `resetProfile`:
+
+- **Supplied** — the row walk narrows to `sessionOnly` rows (the only settings a profile reset cannot reach, because their storage is their own `set()`), then `resetProfile()` runs, then `afterRestoreAll`, then the refresh. The narrowing happens **before** `skipRestoreAll` is consulted, so a host that supplies both does not have to make its veto agree with a rule the library is already applying.
+- **Not supplied** — byte-for-byte the old behavior: every unvetoed row, then the hook, then the refresh. A host that owns its own reset keeps owning it, and nothing about this minor reaches it.
+
+**Adoption is a two-line diff in the consumer.** Replace the hand-written `afterRestoreAll` with `resetProfile = function() NS.db:ResetProfile() end`, and drop the `not row.sessionOnly` clause from `skipRestoreAll` — the library applies it now. Keep the profiles-page clause or don't; it is implied either way and harmless to state.
+
+**What the library still does not know.** It calls `resetProfile` and nothing else. AceDB emptying the profile, the defaults merging back, `OnProfileReset` reaching the host's profile-changed handler, the migrations, the re-seed and the host's own config-changed message are all the consumer's business — this major has never had an opinion about the db and does not acquire one here.
 
 ## What this major is
 
@@ -105,8 +122,9 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `applyDefault` | function(row) | yes | O1 | Reset one row. Same reasoning. |
 | `rowsForPage` | function(pageKey, filter) | yes | O1 | The rows of one page, in render order. `filter` is `ctx.unit`, passed through untouched — the library never interprets it. |
 | `allRows` | function | yes | O1 | Every row, for `RestoreAllDefaults`. |
-| `skipRestoreAll` | function(row) | no | O1 | Return true to exclude a row from a global reset. AbsorbTracker vetoes its profiles page, where a reset would delete user data. |
-| `afterRestoreAll` | function | no | O1 | Runs after the rows are reset and **before** the panels refresh, for state no schema row owns — a dragged frame's saved position. The order is load-bearing: a refresh first would paint the pre-hook values. |
+| `resetProfile` | function | no | O9 | Supply it and a global reset becomes a **profile reset**: the `sessionOnly` rows are swept row by row, then this is called, then every panel refreshes. Pass `function() NS.db:ResetProfile() end`. With it supplied the library narrows the row walk itself — see `RestoreAllDefaults` below. |
+| `skipRestoreAll` | function(row) | no | O1 | Return true to exclude a row from a global reset. With `resetProfile` supplied the profiles-page veto this was invented for is **implied** (an AceDBOptions row is not `sessionOnly`, so it is already outside the narrowed walk); the field is still honored, and is the whole policy for a host that supplies no `resetProfile`. |
+| `afterRestoreAll` | function | no | O1 | Runs after the rows are reset **and after `resetProfile`**, and **before** the panels refresh, for state in neither the schema nor the profile. The order is load-bearing: a refresh first would paint the pre-hook values. A dragged frame's saved position is **not** an example any more — a position lives in the profile and comes back with it. |
 | `scheduleTimer` | function(fn, delay) | no | O1 | Backs the 50 ms colour-drag throttle. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. |
 | `getLSM` | function | no | O1 | Returns LibSharedMedia-3.0, for `LSMValues`. |
 | `validate` | function | no | O1 | Runs once, before the page builders. A host's schema-shape check. |
@@ -148,7 +166,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `CreateOptionsPanel()` | O1 | Resolve AceGUI, hand it to the host, validate, register the main canvas, run every builder. |
 | `OpenOptionsPanel()` | O1 (combat refusal: O3) | Open the category. **Refuses** under combat and never defers-and-replays. |
 | `RestoreDefaults(pageKey, ctx)` | O1 | The per-page Defaults button. Refreshes only the ctx it was given. |
-| `RestoreAllDefaults()` | O1 | Every non-vetoed row, then `afterRestoreAll`, then a full refresh. |
+| `RestoreAllDefaults()` | O1 | Without `resetProfile`: every non-vetoed row, then `afterRestoreAll`, then a full refresh — unchanged. **With `resetProfile` (O9):** only the `sessionOnly` rows, then `resetProfile()`, then `afterRestoreAll`, then a full refresh. |
 | `SetRenderer(ctx, fn)` | O1 | Declare how a page draws itself. The library owns *when*: first show, and again after a refresh marked it dirty while hidden. Also builds the Defaults button and refuses to render under combat. |
 | `RefreshAllPanels()` | O1 (two tiers: O3) | **Structural.** Re-run each page's renderer, so rows that appeared or disappeared are drawn. Hidden pages are flagged dirty and re-render on their next show. |
 | `RefreshScalars()` | O3 | **In place.** Refreshers only, no rebuild — what every widget maker's own `set()` calls, since writing a value does not change which rows exist. Each is pcall'd, so one dead widget cannot take the UI with it. |
@@ -251,9 +269,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The three files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 9.7.3
-
-`Options.lua` minor 9 adds one optional descriptor field, `resetProfile`, and changes `RestoreAllDefaults` **only for a host that supplies it**. On this copy the reset is what it always was: every row `skipRestoreAll` does not veto, then `afterRestoreAll`, then a full refresh. Nothing you have written against this document behaves differently after adopting 9 until you add the field.
-
-To adopt: pass `resetProfile = function() NS.db:ResetProfile() end` and drop the `not row.sessionOnly` clause from your `skipRestoreAll` if you added one — minor 9 applies that narrowing itself. See [version 9.7.3](./version-9.7.3-docs.md).

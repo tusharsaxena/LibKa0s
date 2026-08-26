@@ -92,6 +92,11 @@ local function buildRows()
       label = "Keep history for", default = 30,
       values = { { value = 7, text = "7 days" }, { value = 30, text = "30 days" },
                  { value = 0, text = "Always" } } },
+    -- A SESSION-ONLY row, which is the one kind a profile reset cannot reach: its storage is its
+    -- own set(), not the db. Options minor 9's `resetProfile` narrows the reset walk to exactly
+    -- these, so without one in the fixture that narrowing has nothing to prove it kept.
+    { path = "__session", page = "bar", group = "Fill", order = 47, type = "bool",
+      label = "Session only", default = false, sessionOnly = true },
     { path = "mirror", page = "bar", order = 50, type = "bool", skipRender = true,
       label = "Use same styling as Player", default = true },
 
