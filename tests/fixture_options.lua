@@ -17,7 +17,7 @@
 local T = _G.LK_TEST
 local Fixture = {}
 
-Fixture.PAGES = { "general", "bar" }
+Fixture.PAGES = { "general", "bar", "tabbed" }
 
 local function buildRows()
   return {
@@ -108,6 +108,22 @@ local function buildRows()
       type = "number", label = "Player scale", default = 1, min = 0.5, max = 2, step = 0.1 },
     { path = "unitTargetScale", page = "units", unit = "target", group = "Scale", order = 20,
       type = "number", label = "Target scale", default = 1, min = 0.5, max = 2, step = 0.1 },
+
+    -- tabbed ─────────────────────────────────────────────────────────────────────────────────
+    -- FOUR groups, because the tabbed renderer's interesting cases are all about the group
+    -- BOUNDARY: which rows a tab shows, which it hides, and that a group returning later would
+    -- be a second tab with the same name. Two groups could not tell a partition apart from a
+    -- filter that happens to keep the first two rows.
+    { path = "tabAlpha",   page = "tabbed", group = "Alpha", order = 10, type = "bool",
+      label = "Alpha one", default = false },
+    { path = "tabAlphaTwo", page = "tabbed", group = "Alpha", order = 20, type = "bool",
+      label = "Alpha two", default = true },
+    { path = "tabBeta",    page = "tabbed", group = "Beta",  order = 10, type = "bool",
+      label = "Beta one", default = false },
+    { path = "tabGamma",   page = "tabbed", group = "Gamma", order = 10, type = "number",
+      label = "Gamma one", default = 5, min = 0, max = 10, step = 1 },
+    { path = "tabDelta",   page = "tabbed", group = "Delta", order = 10, type = "string",
+      label = "Delta one", default = "", dialogControl = "EditBox" },
   }
 end
 

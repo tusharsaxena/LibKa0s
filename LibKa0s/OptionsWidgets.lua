@@ -996,6 +996,11 @@ function lib.__AttachWidgets(O, d)
   --               and only when that path is currently the lone
   --               widget on its row — attaching to a row that already has two would make it
   --               three-wide and break the 50/50 split for the rest of the page.
+  --   opts        { noHeadings = true } suppresses the automatic Section heading, for a page
+  --               whose sections are drawn as tabs instead (options-ui-§13). Omitted by every
+  --               untabbed caller, which is why it is a fifth argument rather than a field on
+  --               the ctx: a page's tabbedness is a property of THIS render, and a ctx flag
+  --               would leak it into the next one.
 
   --- Render an EXPLICIT list of rows. Taking a list rather than a page key is what lets a host
   --- render a filtered subset (a mirrored unit's partition) through the same engine.
@@ -1053,7 +1058,7 @@ function lib.__AttachWidgets(O, d)
     flushRow()
   end
 
-  function O.RenderRows(ctx, rows, afterGroup, pairWith)
+  function O.RenderRows(ctx, rows, afterGroup, pairWith, opts)
     local scroll = O.EnsureScroll(ctx)
     if not scroll then return end
     local pendingRow, pendingCount = nil, 0
@@ -1073,7 +1078,17 @@ function lib.__AttachWidgets(O, d)
     end
 
     for i, row in ipairs(rows) do
-      startGroup(O, ctx, row, flushRow)
+      -- A tabbed page's heading is its tab (options-ui-§7, as amended), so the Section is
+      -- suppressed -- but the TRACKER still advances, or a later group would be treated as a
+      -- continuation of this one and the flush between them would not happen.
+      if opts and opts.noHeadings then
+        if row.group and row.group ~= ctx.lastGroup then
+          flushRow()
+          ctx.lastGroup = row.group
+        end
+      else
+        startGroup(O, ctx, row, flushRow)
+      end
 
       if not row.skipRender then
         if row.solo and pendingCount > 0 then
@@ -1096,5 +1111,65 @@ function lib.__AttachWidgets(O, d)
   --- how a per-unit page renders only the selected unit's rows.
   function O.RenderSchema(ctx, pageKey, afterGroup, pairWith)
     O.RenderRows(ctx, d.rowsForPage(pageKey, ctx.unit) or {}, afterGroup, pairWith)
+  end
+
+  --- Render one page as a tab strip over its sections (options-ui-§13).
+  ---
+  --- The partition is by `group`, IN DECLARATION ORDER, and one tab is exactly one group. There
+  --- is no second field naming a tab, for the reason options-ui-§1 gives against a second
+  --- widget selector: a tab list declared apart from the rows is a list that goes stale the
+  --- first time a section is renamed, and nothing would say so.
+  ---
+  --- Returns the group names, in tab order. A page with fewer than two groups draws no strip --
+  --- a single tab is chrome for its own sake, and its band would push the page down for
+  --- nothing -- and a host with no AceGUI gets today's flat scroll rather than an empty canvas.
+  function O.RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)
+    local rows = d.rowsForPage(pageKey, ctx.unit) or {}
+
+    local groups, seen = {}, {}
+    for _, row in ipairs(rows) do
+      if row.group and not seen[row.group] then
+        seen[row.group] = true
+        groups[#groups + 1] = row.group
+      end
+    end
+
+    if not O.AceGUI then return {} end
+    if #groups < 2 then
+      O.RenderSchema(ctx, pageKey, afterGroup, pairWith)
+      return groups
+    end
+
+    -- A tab pointing at a group this page no longer has renders an empty page under a strip,
+    -- so a stale pointer heals to the first rather than being trusted. Cheap enough to check on
+    -- every render, and the alternative is a page that is blank until the user clicks something.
+    if not (ctx.activeTab and seen[ctx.activeTab]) then
+      ctx.activeTab = groups[1]
+    end
+
+    local tabs = {}
+    for i, name in ipairs(groups) do tabs[i] = { key = name, label = name } end
+
+    O.TabStrip(ctx, {
+      tabs  = tabs,
+      value = ctx.activeTab,
+      onSelect = function(key)
+        if key == ctx.activeTab then return end
+        ctx.activeTab = key
+        -- The same structural path a change of subject takes, which is what earns the combat
+        -- refusal for free (options-ui-§13): the host's renderer owns the guard, and a second
+        -- one here would be a second policy to keep in step.
+        O.ClearScroll(ctx)
+        O.RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)
+      end,
+    })
+
+    local active = {}
+    for _, row in ipairs(rows) do
+      if row.group == ctx.activeTab then active[#active + 1] = row end
+    end
+    O.RenderRows(ctx, active, afterGroup, pairWith, { noHeadings = true })
+
+    return groups
   end
 end

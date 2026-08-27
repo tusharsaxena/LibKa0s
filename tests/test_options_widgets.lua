@@ -1369,3 +1369,118 @@ test("widgets: repeated strip renders do not grow the page-wide chrome ledger", 
     "the page-wide ledger grew across strip re-renders")
   assertEqual(#ctx.__tabKids, 2, "the strip still tracks its own buttons")
 end)
+
+
+-- ── the tabbed page ────────────────────────────────────────────────────────────────────────
+
+--- Every label and heading currently sitting in a ctx's scroll, in order.
+---
+--- Built on Fixture.flatten rather than on a second hand-rolled walk: the fixture already owns
+--- "every widget below this one, depth first", and a private copy here would be the thing that
+--- disagrees with it the next time the flow engine nests a row one level deeper.
+local function scrollLabels(ctx)
+  local out = {}
+  if not ctx.scroll then return out end
+  for _, w in ipairs(Fixture.flatten(ctx.scroll)) do
+    if w.type == "Heading" then
+      out[#out + 1] = "HEADING:" .. tostring(w.text)
+    elseif w.labelText then
+      out[#out + 1] = w.labelText
+    end
+  end
+  return out
+end
+
+test("widgets: a tabbed page draws ONLY the active group's rows", function()
+  -- The partition is the whole feature. A renderer that drew the strip and then every row would
+  -- look right on the first tab and be a 35-control scroll under a strip on every other.
+  -- red under: rendering d.rowsForPage whole, or filtering on order rather than on group.
+  local O, _, ctx = bench()
+  local groups = O.RenderTabbedSchema(ctx, "tabbed")
+
+  assertEqual(table.concat(groups, "|"), "Alpha|Beta|Gamma|Delta",
+    "the tabs are the groups, in DECLARATION order")
+
+  local labels = table.concat(scrollLabels(ctx), "|")
+  assertTrue(labels:find("Alpha one", 1, true) ~= nil)
+  assertTrue(labels:find("Alpha two", 1, true) ~= nil)
+  assertNil(labels:find("Beta one", 1, true), "a group that is not the active tab is not drawn")
+  assertNil(labels:find("Gamma one", 1, true))
+end)
+
+test("widgets: a tabbed page draws no section heading -- the tab IS the heading", function()
+  -- red under: passing the rows through the four-argument RenderRows.
+  local O, _, ctx = bench()
+  O.RenderTabbedSchema(ctx, "tabbed")
+  for _, label in ipairs(scrollLabels(ctx)) do
+    assertNil(label:find("^HEADING:"), "a tabbed page drew a heading: " .. label)
+  end
+end)
+
+test("widgets: an UNtabbed page still draws its headings", function()
+  -- The amendment to RenderRows is opt-in through a fifth argument, so every existing caller
+  -- must behave exactly as it did. This is the case that pins that.
+  -- red under: defaulting noHeadings to true, or dropping O.Section from the untabbed path.
+  local O, _, ctx = bench()
+  O.RenderSchema(ctx, "general")
+  local sawHeading = false
+  for _, label in ipairs(scrollLabels(ctx)) do
+    if label:find("^HEADING:") then sawHeading = true end
+  end
+  assertTrue(sawHeading, "an untabbed page lost its section headings")
+end)
+
+test("widgets: clicking a tab clears the scroll and renders the new group", function()
+  -- red under: rendering the new group without clearing, which appends it under the old one.
+  local O, _, ctx = bench()
+  O.RenderTabbedSchema(ctx, "tabbed")
+  local buttons = ctx.__tabKids
+  buttons[3]:__fire("OnClick")
+
+  assertEqual(ctx.activeTab, "Gamma")
+  local labels = table.concat(scrollLabels(ctx), "|")
+  assertTrue(labels:find("Gamma one", 1, true) ~= nil)
+  assertNil(labels:find("Alpha one", 1, true), "the previous tab's rows were left behind")
+end)
+
+test("widgets: the active tab survives a re-render, and heals when its group disappears",
+function()
+  -- A window switch re-renders the page and must land on the same tab (options-ui-§14).
+  -- But a ctx.activeTab naming a group the page no longer has -- a filtered subset, a renamed
+  -- section -- would render an empty page under a strip, so it falls back to the first.
+  -- red under: seeding activeTab unconditionally, or trusting it without checking membership.
+  local O, _, ctx = bench()
+  O.RenderTabbedSchema(ctx, "tabbed")
+  ctx.__tabKids[2]:__fire("OnClick")
+  assertEqual(ctx.activeTab, "Beta")
+
+  O.RenderTabbedSchema(ctx, "tabbed")
+  assertEqual(ctx.activeTab, "Beta", "a re-render kept the tab")
+
+  ctx.activeTab = "NoSuchGroup"
+  O.RenderTabbedSchema(ctx, "tabbed")
+  assertEqual(ctx.activeTab, "Alpha", "a stale tab healed to the first group")
+end)
+
+test("widgets: a one-group page draws no strip at all", function()
+  -- A strip over a single tab is chrome for its own sake, and it would reserve a band that
+  -- pushes the page down for nothing.
+  -- red under: drawing the strip before counting the groups.
+  local O, _, ctx = bench()
+  local groups = O.RenderTabbedSchema(ctx, "bar")
+  assertTrue(#groups >= 1)
+  if #groups == 1 then
+    assertEqual(ctx.chromeHeight, 0, "a single-group page reserved a band")
+  end
+end)
+
+test("widgets: with no AceGUI a tabbed page falls back to the flat scroll", function()
+  -- The degraded path shows the SETTINGS, not an empty canvas: a host that lost the strip has
+  -- lost a convenience, not its options.
+  -- red under: returning early before RenderSchema.
+  withoutAceGUI(function()
+    local O, _, ctx = bench()
+    local groups = O.RenderTabbedSchema(ctx, "tabbed")
+    assertEqual(#groups, 0, "no AceGUI, no tabs to report")
+  end)
+end)
