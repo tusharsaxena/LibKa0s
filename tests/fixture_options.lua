@@ -17,7 +17,7 @@
 local T = _G.LK_TEST
 local Fixture = {}
 
-Fixture.PAGES = { "general", "bar", "tabbed" }
+Fixture.PAGES = { "general", "bar", "tabbed", "solo" }
 
 local function buildRows()
   return {
@@ -124,6 +124,15 @@ local function buildRows()
       label = "Gamma one", default = 5, min = 0, max = 10, step = 1 },
     { path = "tabDelta",   page = "tabbed", group = "Delta", order = 10, type = "string",
       label = "Delta one", default = "", dialogControl = "EditBox" },
+
+    -- solo ───────────────────────────────────────────────────────────────────────────────────
+    -- ONE group, which no other fixture page has. Without it the "a one-group page draws no
+    -- strip" case has nothing to point at, and an earlier draft aimed it at a two-group page
+    -- behind an `if #groups == 1` guard that therefore never opened.
+    { path = "soloOne", page = "solo", group = "Only", order = 10, type = "bool",
+      label = "Solo one", default = false },
+    { path = "soloTwo", page = "solo", group = "Only", order = 20, type = "bool",
+      label = "Solo two", default = true },
   }
 end
 

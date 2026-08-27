@@ -1465,13 +1465,16 @@ end)
 test("widgets: a one-group page draws no strip at all", function()
   -- A strip over a single tab is chrome for its own sake, and it would reserve a band that
   -- pushes the page down for nothing.
+  --
+  -- Pointed at the "solo" fixture page, which exists for exactly this and holds ONE group. An
+  -- earlier draft aimed this at "bar" and wrapped the assertion in `if #groups == 1` -- "bar"
+  -- has two groups, so the guard never opened and the case could not fail.
   -- red under: drawing the strip before counting the groups.
   local O, _, ctx = bench()
-  local groups = O.RenderTabbedSchema(ctx, "bar")
-  assertTrue(#groups >= 1)
-  if #groups == 1 then
-    assertEqual(ctx.chromeHeight, 0, "a single-group page reserved a band")
-  end
+  local groups = O.RenderTabbedSchema(ctx, "solo")
+  assertEqual(#groups, 1, "the solo fixture page must hold exactly one group")
+  assertEqual(ctx.chromeHeight, 0, "a single-group page reserved a band")
+  assertEqual(#(ctx.__tabKids or {}), 0, "a single-group page built tab buttons")
 end)
 
 test("widgets: with no AceGUI a tabbed page falls back to the flat scroll", function()

@@ -1121,8 +1121,12 @@ function lib.__AttachWidgets(O, d)
   --- first time a section is renamed, and nothing would say so.
   ---
   --- Returns the group names, in tab order. A page with fewer than two groups draws no strip --
-  --- a single tab is chrome for its own sake, and its band would push the page down for
-  --- nothing -- and a host with no AceGUI gets today's flat scroll rather than an empty canvas.
+  --- a single tab is chrome for its own sake, and its band would push the page down for nothing.
+  ---
+  --- With no AceGUI there is nothing to draw AT ALL: EnsureScroll answers nil and every maker in
+  --- this file refuses, so this reports an empty tab list and draws nothing -- which is what
+  --- RenderSchema would also have done, reached or not. The fallback that matters is the
+  --- single-group one above it, not this.
   function O.RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)
     local rows = d.rowsForPage(pageKey, ctx.unit) or {}
 
