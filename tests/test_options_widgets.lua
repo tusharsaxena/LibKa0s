@@ -1351,3 +1351,21 @@ test("widgets: PageBanner refuses politely with no AceGUI and with no spec", fun
   local O2, _, ctx2 = bench()
   assertNil(O2.PageBanner(ctx2, nil))
 end)
+
+test("widgets: repeated strip renders do not grow the page-wide chrome ledger", function()
+  -- A tab click redraws the strip and NOT the banner, so anything the strip files in the
+  -- page-wide ledger is never cleared -- it accumulates for the life of the panel, holding
+  -- buttons already hidden and unparented. On a page with no banner nothing clears it at all.
+  -- red under: TabStrip appending its buttons to __chromeKids as well as __tabKids.
+  local O, _, ctx = bench()
+  local spec = {
+    tabs = { { key = "a", label = "A" }, { key = "b", label = "B" } },
+    value = "a", onSelect = function() end,
+  }
+  O.TabStrip(ctx, spec)
+  local after1 = #(ctx.__chromeKids or {})
+  for _ = 1, 5 do O.TabStrip(ctx, spec) end
+  assertEqual(#(ctx.__chromeKids or {}), after1,
+    "the page-wide ledger grew across strip re-renders")
+  assertEqual(#ctx.__tabKids, 2, "the strip still tracks its own buttons")
+end)

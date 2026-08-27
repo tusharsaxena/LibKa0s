@@ -441,17 +441,25 @@ function lib.__AttachWidgets(O, d)
     return rows
   end
 
-  --- Release whatever the page last parked in its chrome band.
-  ---
-  --- The band is redrawn whole on every render, so the previous set has to go: buttons left
-  --- parented to the chrome stack under the new ones, and the OLD set is on top -- so the strip
-  --- looks right and every click lands on a handler wired to the previous subject.
-  local function releaseChrome(ctx)
-    for _, f in ipairs(ctx.__chromeKids or {}) do
+  --- Hide, unparent and forget every widget in one of a page's chrome ledgers.
+  local function releaseLedger(ctx, key)
+    for _, f in ipairs(ctx[key] or {}) do
       f:Hide()
       f:SetParent(nil)
     end
-    ctx.__chromeKids = {}
+    ctx[key] = {}
+  end
+
+  --- Release everything a page parked in its chrome band -- the banner AND the strip.
+  ---
+  --- Two ledgers, one release, because the two have different LIFETIMES: a tab click redraws the
+  --- strip alone and drains __tabKids itself, while only a full page render redraws the banner.
+  --- Draining both here is what keeps the page-wide teardown total without making the strip's
+  --- ledger a second copy of it -- when TabStrip appended to both, __chromeKids grew by one entry
+  --- per tab click, forever, holding buttons already hidden and unparented.
+  local function releaseChrome(ctx)
+    releaseLedger(ctx, "__chromeKids")
+    releaseLedger(ctx, "__tabKids")
   end
   O.__releaseChrome = releaseChrome
 
@@ -552,14 +560,7 @@ function lib.__AttachWidgets(O, d)
 
     -- Only the strip's own buttons, never the banner: the banner is drawn first and a blanket
     -- release here would take it with them.
-    for _, f in ipairs(ctx.__tabKids or {}) do
-      f:Hide()
-      f:SetParent(nil)
-    end
-    ctx.__tabKids = {}
-    -- The page-wide ledger, guarded rather than reset: a strip drawn with no banner before it
-    -- is the strip's first writer, and releaseChrome is no longer guaranteed to have run.
-    ctx.__chromeKids = ctx.__chromeKids or {}
+    releaseLedger(ctx, "__tabKids")
 
     local buttons, widths = {}, {}
     for i, tab in ipairs(spec.tabs) do
@@ -567,7 +568,6 @@ function lib.__AttachWidgets(O, d)
       buttons[i] = b
       widths[i]  = w
       ctx.__tabKids[#ctx.__tabKids + 1] = b
-      ctx.__chromeKids[#ctx.__chromeKids + 1] = b
     end
 
     placeTabs(ctx, buttons, widths)
@@ -613,11 +613,15 @@ function lib.__AttachWidgets(O, d)
       dd.frame:SetHeight(L.BANNER_H)
       dd.frame:Show()
       ctx.__chromeKids[#ctx.__chromeKids + 1] = dd.frame
+
+      -- Reserved only here, with the frame that justifies it: a widget with no backing frame
+      -- parented nothing and occupies no band, so it must not claim one either. This repo's own
+      -- harness is exactly the case that produces a frameless AceGUI widget.
+      ctx.__bannerHeight = L.BANNER_H
+      O.SetChromeHeight(ctx, L.BANNER_H)
     end
     O.AttachTooltip(dd, spec.label, spec.tooltip)
 
-    ctx.__bannerHeight = L.BANNER_H
-    O.SetChromeHeight(ctx, L.BANNER_H)
     return dd
   end
 
