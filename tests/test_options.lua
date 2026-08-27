@@ -1064,3 +1064,65 @@ test("options: a nameless scrollbar resolves no step buttons and still patches",
   scroll.content.GetHeight     = function() return 1000 end
   assertTrue(pcall(scroll.FixScroll, scroll), "and driving it raises on none of the nil handles")
 end)
+
+-- ── the chrome slot ────────────────────────────────────────────────────────────────────────
+
+test("options: a fresh panel reserves no chrome, so its scroll sits where it always did",
+function()
+  -- The whole additive bargain rests on this number. Eight consumers re-vendor this file
+  -- without adopting anything new, and a non-zero default would move every one of their
+  -- panels' first row by however many pixels the band happened to reserve.
+  -- red under: defaulting chromeHeight to anything but 0, or folding the band into CHROME_GAP.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("ChromeFresh", "Chrome Fresh", {})
+  assertEqual(ctx.chromeHeight, 0)
+  assertTrue(ctx.chrome ~= nil, "the slot frame exists even when nothing is in it")
+  assertEqual(O.__scrollTopInset(ctx), O.CHROME_GAP)
+end)
+
+test("options: reserving chrome pushes the scroll down by exactly that many pixels", function()
+  -- red under: adding a second gap under the band, or reserving the band twice.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("ChromeReserve", "Chrome Reserve", {})
+  O.SetChromeHeight(ctx, 40)
+  assertEqual(ctx.chromeHeight, 40)
+  assertEqual(O.__scrollTopInset(ctx), O.CHROME_GAP + 40)
+end)
+
+test("options: reserving chrome AFTER the scroll exists re-anchors the live scroll", function()
+  -- A page draws its banner and its strip, then renders rows -- but a strip that WRAPS only
+  -- learns its own height after it has laid out, which is after EnsureScroll may already have
+  -- run for a previous render. A ctx that stored the number without moving the frame would put
+  -- the second row of tabs underneath the first row of widgets.
+  -- red under: storing chromeHeight without re-anchoring, or re-anchoring only the TOPLEFT.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("ChromeLate", "Chrome Late", {})
+  local scroll = O.EnsureScroll(ctx)
+
+  local points = {}
+  rawset(scroll.frame, "SetPoint", function(_, ...) points[#points + 1] = { ... } end)
+  rawset(scroll.frame, "ClearAllPoints", function() points[#points + 1] = { "CLEARED" } end)
+
+  O.SetChromeHeight(ctx, 52)
+
+  assertEqual(points[1][1], "CLEARED", "the old anchors go before the new ones land")
+  assertEqual(points[2][1], "TOPLEFT")
+  assertEqual(points[2][5], -(O.CHROME_GAP + 52), "the top inset carries the reserved band")
+  assertEqual(points[3][1], "BOTTOMRIGHT", "the bottom anchor is restored, not dropped")
+
+  rawset(scroll.frame, "SetPoint", nil)
+  rawset(scroll.frame, "ClearAllPoints", nil)
+end)
+
+test("options: ClearScroll leaves the reserved band alone", function()
+  -- ClearScroll releases the page's ROWS. The banner and the strip are chrome, they are not in
+  -- the scroll, and a reset here would drop the band on every re-render -- so the first tab
+  -- click on any tabbed page would slide the whole page up under its own strip.
+  -- red under: adding ctx.chromeHeight = 0 to ClearScroll alongside ctx.lastGroup = nil.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("ChromeClear", "Chrome Clear", {})
+  O.EnsureScroll(ctx)
+  O.SetChromeHeight(ctx, 24)
+  O.ClearScroll(ctx)
+  assertEqual(ctx.chromeHeight, 24)
+end)

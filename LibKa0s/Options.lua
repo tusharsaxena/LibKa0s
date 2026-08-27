@@ -104,6 +104,29 @@ lib.LAYOUT = {
   -- 0.5/0.5 lets AceGUI's Flow layout push the right button's border into the ScrollFrame's clip
   -- rectangle, shaving it; the 0.492 inset clears the clip while staying visually a 50/50 split.
   BUTTON_PAIR_REL       = 0.492,
+
+  -- The gap between the bottom of the pinned chrome band (options-ui-§13/§14) and the top of
+  -- the scroll. Equal to the literal 8 EnsureScroll used before the band existed, so a page
+  -- that reserves nothing anchors its scroll exactly where it always did. PUBLISHED as
+  -- O.CHROME_GAP: a host drawing bespoke chrome of its own has to know where its band ends.
+  CHROME_GAP    = 8,
+  -- Height of one row of tabs. PUBLISHED as O.TAB_H: a host that measures its own strip -- to
+  -- reserve the band before drawing into it -- has no other way to read the number.
+  TAB_H         = 24,
+  -- Height of the page banner. PUBLISHED as O.BANNER_H, same reason as TAB_H.
+  BANNER_H      = 30,
+  -- INTERNAL: TAB_PAD_X — horizontal padding inside one tab, consumed by O.TabStrip when it
+  -- sizes a button around its measured label; no host draws a tab itself.
+  TAB_PAD_X     = 12,
+  -- INTERNAL: TAB_GAP — horizontal gap between two tabs on one row, consumed by O.TabStrip and
+  -- by O.__layoutTabs; a host that needed it would be laying out its own strip.
+  TAB_GAP       = 4,
+  -- INTERNAL: TAB_MIN_W — floor width of one tab, and the width every tab takes when the label
+  -- cannot be measured (a headless harness, a font not yet loaded); never read by a host.
+  TAB_MIN_W     = 60,
+  -- INTERNAL: TAB_ROW_GAP — vertical gap between two wrapped rows of tabs, consumed by
+  -- O.TabStrip alone; a host reads the finished band height off O.TAB_H instead.
+  TAB_ROW_GAP   = 2,
 }
 
 local L = lib.LAYOUT
@@ -223,6 +246,9 @@ function lib:New(d)
   O.ROW_VSPACER       = L.ROW_VSPACER
   O.SECTION_HEADING_H = L.SECTION_HEADING_H
   O.BUTTON_PAIR_REL   = L.BUTTON_PAIR_REL
+  O.CHROME_GAP        = L.CHROME_GAP
+  O.TAB_H             = L.TAB_H
+  O.BANNER_H          = L.BANNER_H
 
   -- ── panel factory ────────────────────────────────────────────────────────────────────────
 
@@ -305,6 +331,16 @@ function lib:New(d)
     body:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", 0, 0)
     panel.body = body
 
+    -- The chrome slot (options-ui-§13, §14): pinned page furniture between the header and the
+    -- scroll. A frame rather than a bare number because a banner and a strip need something to
+    -- parent to that a page-wide release can empty; the NUMBER is what moves the scroll, and it
+    -- starts at zero so a page that reserves nothing is byte-identical to one built before the
+    -- slot existed.
+    local chrome = CreateFrame("Frame", nil, body)
+    chrome:SetPoint("TOPLEFT",  body, "TOPLEFT",  L.PADDING_X, 0)
+    chrome:SetPoint("TOPRIGHT", body, "TOPRIGHT", -L.PADDING_X, 0)
+    panel.chrome = chrome
+
     local ctx = {
       panel      = panel,
       body       = body,
@@ -312,6 +348,8 @@ function lib:New(d)
       refreshers = {},
       lastGroup  = nil,
       pageKey    = opts.pageKey,
+      chrome       = chrome,
+      chromeHeight = 0,
     }
     renderedPanels[#renderedPanels + 1] = ctx
     return ctx
@@ -365,6 +403,38 @@ function lib:New(d)
     end
   end
 
+  --- Where the scroll's top edge sits: the fixed gap plus whatever the page reserved.
+  ---
+  --- A named seam rather than the sum written out at both call sites, because the two sites are
+  --- EnsureScroll (first render) and SetChromeHeight (every render after a strip wrapped), and
+  --- a page whose two answers disagreed would move its own first row on the second render.
+  function O.__scrollTopInset(ctx)
+    return L.CHROME_GAP + ((ctx and ctx.chromeHeight) or 0)
+  end
+
+  --- Reserve `height` pixels of pinned furniture above the scroll, and move a live scroll to
+  --- match. Idempotent: reserving the same height twice reserves it once.
+  function O.SetChromeHeight(ctx, height)
+    if not ctx then return end
+    ctx.chromeHeight = tonumber(height) or 0
+    if ctx.chrome and ctx.chrome.SetHeight then
+      -- Zero is not a height a frame can hold, and a slot with nothing in it has nothing to
+      -- show anyway, so the frame is hidden rather than sized to nothing.
+      if ctx.chromeHeight > 0 then
+        ctx.chrome:SetHeight(ctx.chromeHeight)
+        ctx.chrome:Show()
+      else
+        ctx.chrome:Hide()
+      end
+    end
+    if ctx.scroll and ctx.scroll.frame then
+      ctx.scroll.frame:ClearAllPoints()
+      ctx.scroll.frame:SetPoint("TOPLEFT", ctx.body, "TOPLEFT",
+        L.PADDING_X - 4, -O.__scrollTopInset(ctx))
+      ctx.scroll.frame:SetPoint("BOTTOMRIGHT", ctx.body, "BOTTOMRIGHT", -(L.PADDING_X + 12), 8)
+    end
+  end
+
   --- Lazy AceGUI ScrollFrame parented to ctx.body, patched for an always-visible scrollbar.
   function O.EnsureScroll(ctx)
     if ctx.scroll then return ctx.scroll end
@@ -377,7 +447,8 @@ function lib:New(d)
     scroll.frame:ClearAllPoints()
     -- The right-edge inset of PADDING_X+12 leaves room for the scrollbar (which AceGUI nudges 20px
     -- right of the scrollframe when visible) without it sitting flush against the panel border.
-    scroll.frame:SetPoint("TOPLEFT",     ctx.body, "TOPLEFT",      L.PADDING_X - 4, -8)
+    scroll.frame:SetPoint("TOPLEFT",     ctx.body, "TOPLEFT",      L.PADDING_X - 4,
+                          -O.__scrollTopInset(ctx))
     scroll.frame:SetPoint("BOTTOMRIGHT", ctx.body, "BOTTOMRIGHT", -(L.PADDING_X + 12), 8)
     scroll.frame:Show()
 
