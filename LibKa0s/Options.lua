@@ -342,12 +342,12 @@ function lib:New(d)
     panel.chrome = chrome
 
     local ctx = {
-      panel      = panel,
-      body       = body,
-      scroll     = nil,          -- lazy AceGUI ScrollFrame
-      refreshers = {},
-      lastGroup  = nil,
-      pageKey    = opts.pageKey,
+      panel        = panel,
+      body         = body,
+      scroll       = nil,          -- lazy AceGUI ScrollFrame
+      refreshers   = {},
+      lastGroup    = nil,
+      pageKey      = opts.pageKey,
       chrome       = chrome,
       chromeHeight = 0,
     }
@@ -412,6 +412,19 @@ function lib:New(d)
     return L.CHROME_GAP + ((ctx and ctx.chromeHeight) or 0)
   end
 
+  --- Anchor a page's scroll under whatever chrome the page reserved.
+  ---
+  --- BOTH anchors in one place, not just the top one. EnsureScroll and SetChromeHeight each need
+  --- the full pair -- the second re-anchors a live scroll -- and a bottom inset restated at two
+  --- sites is the same drift __scrollTopInset exists to prevent, one edge over.
+  local function anchorScroll(ctx)
+    local f = ctx.scroll and ctx.scroll.frame
+    if not f then return end
+    f:ClearAllPoints()
+    f:SetPoint("TOPLEFT",     ctx.body, "TOPLEFT",      L.PADDING_X - 4, -O.__scrollTopInset(ctx))
+    f:SetPoint("BOTTOMRIGHT", ctx.body, "BOTTOMRIGHT", -(L.PADDING_X + 12), 8)
+  end
+
   --- Reserve `height` pixels of pinned furniture above the scroll, and move a live scroll to
   --- match. Idempotent: reserving the same height twice reserves it once.
   function O.SetChromeHeight(ctx, height)
@@ -427,12 +440,7 @@ function lib:New(d)
         ctx.chrome:Hide()
       end
     end
-    if ctx.scroll and ctx.scroll.frame then
-      ctx.scroll.frame:ClearAllPoints()
-      ctx.scroll.frame:SetPoint("TOPLEFT", ctx.body, "TOPLEFT",
-        L.PADDING_X - 4, -O.__scrollTopInset(ctx))
-      ctx.scroll.frame:SetPoint("BOTTOMRIGHT", ctx.body, "BOTTOMRIGHT", -(L.PADDING_X + 12), 8)
-    end
+    anchorScroll(ctx)
   end
 
   --- Lazy AceGUI ScrollFrame parented to ctx.body, patched for an always-visible scrollbar.
@@ -444,12 +452,10 @@ function lib:New(d)
     local scroll = AceGUI:Create("ScrollFrame")
     scroll:SetLayout("List")
     scroll.frame:SetParent(ctx.body)
-    scroll.frame:ClearAllPoints()
+    ctx.scroll = scroll
     -- The right-edge inset of PADDING_X+12 leaves room for the scrollbar (which AceGUI nudges 20px
     -- right of the scrollframe when visible) without it sitting flush against the panel border.
-    scroll.frame:SetPoint("TOPLEFT",     ctx.body, "TOPLEFT",      L.PADDING_X - 4,
-                          -O.__scrollTopInset(ctx))
-    scroll.frame:SetPoint("BOTTOMRIGHT", ctx.body, "BOTTOMRIGHT", -(L.PADDING_X + 12), 8)
+    anchorScroll(ctx)
     scroll.frame:Show()
 
     -- AceGUI normally has a parent AceGUI container set a ScrollFrame's size during DoLayout; this
@@ -464,7 +470,6 @@ function lib:New(d)
 
     if O.PatchAlwaysShowScrollbar then O.PatchAlwaysShowScrollbar(scroll) end
 
-    ctx.scroll = scroll
     return scroll
   end
 
