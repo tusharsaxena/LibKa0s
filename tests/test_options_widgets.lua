@@ -1231,6 +1231,43 @@ test("widgets: an empty tab list lays out as no rows at all", function()
   assertEqual(#O.__layoutTabs({}, 200, 4), 0)
 end)
 
+test("widgets: __tabPlacement puts the first row below the banner, and wraps below that",
+function()
+  -- The bug this seam exists to prevent: row 1 landing at ctx.chrome's TOPLEFT -- the same
+  -- anchor the banner's dropdown uses -- because the offset was computed from the row index
+  -- alone, with no `top` term for the band already spoken for above the strip.
+  -- red under: `y = -((r - 1) * (tabH + rowGap))`, which answers 0 for row 1 regardless of top.
+  local O = Fixture.new()
+  local placement, rowCount = O.__tabPlacement({ 60, 60, 60 }, 150, 4, 44, 24, 2)
+  assertEqual(rowCount, 2, "60+4+60 fits in 150; the third tab wraps, same as __layoutTabs")
+  assertEqual(#placement, 3, "every tab placed")
+  assertEqual(placement[1].y, -44, "row 1 sits at the bottom of the reserved band, not at 0")
+  assertEqual(placement[2].y, -44, "row 1's second tab shares row 1's y")
+  assertEqual(placement[3].y, -(44 + 24 + 2), "row 2 sits a full tab + row gap below row 1")
+end)
+
+test("widgets: __tabPlacement accumulates x across a row", function()
+  -- red under: resetting x to 0 for every tab instead of advancing past the previous one.
+  local O = Fixture.new()
+  local placement = O.__tabPlacement({ 60, 80 }, 1000, 4, 0, 24, 2)
+  assertEqual(placement[1].x, 0, "the first tab in a row starts at the row's left edge")
+  assertEqual(placement[2].x, 64, "the second tab starts after the first tab's width plus the gap")
+end)
+
+test("widgets: __tabPlacement places every index exactly once", function()
+  -- Mirrors the guarantee __layoutTabs already carries: losing an index here would lose a tab
+  -- from the strip with nothing said about it.
+  -- red under: dropping an over-wide tab, or emitting an index twice across two rows.
+  local O = Fixture.new()
+  local placement = O.__tabPlacement({ 60, 500, 60, 60, 60 }, 130, 4, 0, 24, 2)
+  local seen = {}
+  for _, p in ipairs(placement) do
+    assertEqual(seen[p.index], nil, "index " .. p.index .. " placed only once")
+    seen[p.index] = true
+  end
+  for i = 1, 5 do assertTrue(seen[i], "index " .. i .. " was placed") end
+end)
+
 test("widgets: TabStrip draws one button per tab, marks the active one, and reserves the band",
 function()
   -- red under: reserving TAB_H before knowing the row count, or forgetting to reserve at all.
@@ -1339,6 +1376,25 @@ test("widgets: banner then strip reserve ONE band between them, not two", functi
   O.TabStrip(ctx, { tabs = { { key = "a", label = "A" } }, value = "a",
                     onSelect = function() end })
   assertEqual(ctx.chromeHeight, O.BANNER_H + O.TAB_H)
+end)
+
+test("widgets: banner then strip leave no overlap in the reserved band", function()
+  -- The regression itself: a strip drawn at ctx.chrome's TOPLEFT is drawn on top of the
+  -- banner's dropdown, which anchors there too. Position is unobservable through the widget --
+  -- the harness no-ops SetPoint -- so this recomputes __tabPlacement from the SAME
+  -- ctx.__bannerHeight PageBanner just recorded, the only number placeTabs' `top` argument is
+  -- built from.
+  -- red under: placeTabs ignoring ctx.__bannerHeight when it builds `top`.
+  local O, _, ctx = bench()
+  O.PageBanner(ctx, { label = "W", list = { [1] = "One" }, order = { 1 }, value = 1,
+                      onSelect = function() end })
+  O.TabStrip(ctx, { tabs = { { key = "a", label = "A" } }, value = "a",
+                    onSelect = function() end })
+  assertTrue(ctx.__bannerHeight > 0, "PageBanner recorded a band")
+
+  local placement = O.__tabPlacement({ 60 }, 200, 0, ctx.__bannerHeight, O.TAB_H, 0)
+  assertEqual(placement[1].y, -ctx.__bannerHeight,
+    "the strip's first row starts exactly at the bottom of the banner's band, never above it")
 end)
 
 test("widgets: PageBanner refuses politely with no AceGUI and with no spec", function()
