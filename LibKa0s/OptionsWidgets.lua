@@ -414,6 +414,138 @@ function lib.__AttachWidgets(O, d)
     return h
   end
 
+  --- Pack tab widths into rows that fit `available`. Pure arithmetic and no widgets, so the
+  --- wrap rule -- the thing that decides whether a page's strip is one row or two -- is
+  --- checkable without a measured font.
+  ---
+  --- A tab wider than the whole strip is placed alone rather than dropped: the split only fires
+  --- when the row already holds something, so every index in `widths` comes back in exactly one
+  --- row. Losing one would lose a whole section of a page with nothing said about it.
+  ---
+  --- @param widths number[]    each tab's pixel width, in tab order
+  --- @param available number   usable width of the strip
+  --- @param gap number         horizontal gap between two tabs sharing a row
+  --- @return number[][]        rows of 1-based indices into `widths`, in order
+  function O.__layoutTabs(widths, available, gap)
+    local rows, row, used = {}, {}, 0
+    for i = 1, #widths do
+      local need = (#row > 0) and (gap + widths[i]) or widths[i]
+      if #row > 0 and used + need > available then
+        rows[#rows + 1] = row
+        row, used, need = {}, 0, widths[i]
+      end
+      row[#row + 1] = i
+      used = used + need
+    end
+    if #row > 0 then rows[#rows + 1] = row end
+    return rows
+  end
+
+  --- Release whatever the page last parked in its chrome band.
+  ---
+  --- The band is redrawn whole on every render, so the previous set has to go: buttons left
+  --- parented to the chrome stack under the new ones, and the OLD set is on top -- so the strip
+  --- looks right and every click lands on a handler wired to the previous subject.
+  local function releaseChrome(ctx)
+    for _, f in ipairs(ctx.__chromeKids or {}) do
+      f:Hide()
+      f:SetParent(nil)
+    end
+    ctx.__chromeKids = {}
+  end
+  O.__releaseChrome = releaseChrome
+
+  --- Measure a label, in pixels, or fall back to the floor width.
+  ---
+  --- Guarded twice over. A FontString may not be there at all (an inert widget in a headless
+  --- harness), and a mock's catch-all metatable answers a capitalized call with the frame
+  --- itself -- so a `GetStringWidth` that "worked" could still hand back a table, and the
+  --- arithmetic below would raise inside a layout pass. Type-check the answer, not the method.
+  local function labelWidth(fs)
+    if not (fs and fs.GetStringWidth) then return L.TAB_MIN_W end
+    local w = fs:GetStringWidth()
+    if type(w) ~= "number" or w <= 0 then return L.TAB_MIN_W end
+    return math.max(L.TAB_MIN_W, w + (L.TAB_PAD_X * 2))
+  end
+
+  --- A pinned tab strip in the page's chrome band (options-ui-§13). One tab per section.
+  ---
+  --- The ACTIVE tab is the DISABLED one, which is how Blizzard's own tab groups mark selection
+  --- and is why it needs no second piece of art to say so: a disabled button does not highlight
+  --- on hover and does not fire, so clicking the tab you are already on cannot re-render the
+  --- page you are already looking at.
+  ---
+  --- `spec` = { tabs = { { key, label, tooltip } }, value, onSelect }. Returns the buttons in
+  --- tab order, or nil having drawn nothing.
+  function O.TabStrip(ctx, spec)
+    if not (ctx and ctx.chrome and spec and type(spec.tabs) == "table" and #spec.tabs > 0) then
+      return nil
+    end
+    if not O.AceGUI then return nil end
+
+    releaseChrome(ctx)
+
+    local buttons, widths = {}, {}
+    for i, tab in ipairs(spec.tabs) do
+      local b = CreateFrame("Button", nil, ctx.chrome)
+      b:SetHeight(L.TAB_H)
+      b:SetNormalFontObject(_G.GameFontNormalSmall)
+      b:SetHighlightFontObject(_G.GameFontHighlightSmall)
+      b:SetDisabledFontObject(_G.GameFontHighlightSmall)
+      b:SetText(tab.label or "")
+
+      -- A flat backing rather than a Blizzard tab atlas. The art is deliberately minimal here;
+      -- what the strip owes the page is a readable active/inactive distinction, and the atlas
+      -- question is one for a live client rather than for this file.
+      local bg = b.CreateTexture and b:CreateTexture(nil, "BACKGROUND")
+      if bg and bg.SetColorTexture then
+        bg:SetAllPoints(b)
+        bg:SetColorTexture(0, 0, 0, (tab.key == spec.value) and 0.55 or 0.25)
+      end
+
+      b:SetEnabled(tab.key ~= spec.value)
+      b:SetScript("OnClick", function()
+        -- Belt AND braces. A disabled Button does not fire OnClick in the client, so this guard
+        -- is redundant there -- but the invariant is worth stating where it can be read, and it
+        -- keeps the handler correct if anything ever re-enables the button without redrawing
+        -- the strip. It is also the only thing a harness can assert against, since a mock's
+        -- SetEnabled cannot suppress a directly-fired script.
+        if tab.key == spec.value then return end
+        if spec.onSelect then pcall(spec.onSelect, tab.key) end
+      end)
+      if tab.tooltip then O.AttachTooltip(b, tab.label, tab.tooltip) end
+
+      buttons[i] = b
+      widths[i]  = labelWidth(b.GetFontString and b:GetFontString())
+      ctx.__chromeKids[#ctx.__chromeKids + 1] = b
+    end
+
+    -- The strip's own width, not the panel's: a body inset by PADDING_X on both edges.
+    local available = ctx.chrome.GetWidth and ctx.chrome:GetWidth()
+    if type(available) ~= "number" or available <= 0 then available = L.TAB_MIN_W end
+
+    local rows = O.__layoutTabs(widths, available, L.TAB_GAP)
+    for r, indices in ipairs(rows) do
+      local x = 0
+      local y = -((r - 1) * (L.TAB_H + L.TAB_ROW_GAP))
+      for _, i in ipairs(indices) do
+        buttons[i]:SetWidth(widths[i])
+        buttons[i]:ClearAllPoints()
+        buttons[i]:SetPoint("TOPLEFT", ctx.chrome, "TOPLEFT", x, y)
+        buttons[i]:Show()
+        x = x + widths[i] + L.TAB_GAP
+      end
+    end
+
+    -- Reserved AFTER the wrap is known, never before: a strip that reserved one row and then
+    -- laid out two would put its second row on top of the page's first widget.
+    local rowCount = math.max(#rows, 1)
+    O.SetChromeHeight(ctx,
+      (ctx.__bannerHeight or 0) + (rowCount * L.TAB_H) + ((rowCount - 1) * L.TAB_ROW_GAP))
+
+    return buttons
+  end
+
   --- A full-width line of text: one AceGUI Label added to the page's scroll, left-justified.
   ---
   --- `opts` is optional: `opts.fontObject` is a _G font-object NAME ("GameFontHighlight"), applied

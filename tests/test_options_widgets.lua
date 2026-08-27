@@ -20,6 +20,20 @@ local function bench(overrides)
   return O, rec, ctx
 end
 
+--- Run `fn` with AceGUI absent, restoring it afterwards.
+---
+--- The instance resolves AceGUI ONCE, at New() time (`LibKa0s/Options.lua:217`), so the library
+--- has to be built INSIDE this: flipping the mock after Fixture.new leaves the instance holding
+--- the handle it already resolved, and the degraded path never runs. Save-and-restore rather
+--- than assign-and-hope, copied from `tests/test_options.lua`'s own missing-AceGUI case.
+local function withoutAceGUI(fn)
+  local saved = T.mocks.__libs["AceGUI-3.0"]
+  T.mocks.__libs["AceGUI-3.0"] = nil
+  local ok, err = pcall(fn)
+  T.mocks.__libs["AceGUI-3.0"] = saved
+  if not ok then error(err) end
+end
+
 --- Render one schema path into a throwaway container; hand back the widget, its row and the ctx.
 local function render(path, relativeWidth, overrides)
   local O, rec, ctx = bench(overrides)
@@ -1179,4 +1193,114 @@ test("widgets: the landing page's text rows carry the same justify guard TextRow
     assertEqual(#made, 2, "the one-liner and the one command row")
     for _, w in ipairs(made) do assertEqual(w.label.justify, "LEFT") end
   end)
+end)
+
+-- ── the tab strip ──────────────────────────────────────────────────────────────────────────
+
+test("widgets: tab packing fills a row and wraps to the next", function()
+  -- Pure arithmetic, deliberately: the wrap rule is the part that decides whether a page's
+  -- strip is one row or two, and a rule that can only be checked against a measured font is a
+  -- rule nothing checks.
+  -- red under: counting the gap before the first tab of a row, or comparing with >=.
+  local O = Fixture.new()
+  local rows = O.__layoutTabs({ 60, 60, 60 }, 150, 4)
+  assertEqual(#rows, 2, "60+4+60 = 124 fits in 150; a third would need 188, so it wraps")
+  assertEqual(#rows[1], 2)
+  assertEqual(rows[1][1], 1)
+  assertEqual(rows[1][2], 2)
+  assertEqual(#rows[2], 1)
+  assertEqual(rows[2][1], 3)
+end)
+
+test("widgets: a tab wider than the strip gets its own row rather than vanishing", function()
+  -- The split only happens when the row already holds something, so an over-wide tab is
+  -- always placed. A rule that dropped it would lose a whole section with no error.
+  -- red under: splitting unconditionally, which loops forever or drops the tab.
+  local O = Fixture.new()
+  local rows = O.__layoutTabs({ 500 }, 200, 4)
+  assertEqual(#rows, 1)
+  assertEqual(rows[1][1], 1)
+
+  local mixed = O.__layoutTabs({ 60, 500, 60 }, 200, 4)
+  assertEqual(#mixed, 3, "the over-wide tab neither joins a row nor absorbs the next")
+end)
+
+test("widgets: an empty tab list lays out as no rows at all", function()
+  -- red under: seeding the loop with an empty first row and returning it.
+  local O = Fixture.new()
+  assertEqual(#O.__layoutTabs({}, 200, 4), 0)
+end)
+
+test("widgets: TabStrip draws one button per tab, marks the active one, and reserves the band",
+function()
+  -- red under: reserving TAB_H before knowing the row count, or forgetting to reserve at all.
+  local O, rec, ctx = bench()
+  local picked = {}
+  local buttons = O.TabStrip(ctx, {
+    tabs = {
+      { key = "one",   label = "One" },
+      { key = "two",   label = "Two" },
+      { key = "three", label = "Three" },
+    },
+    value = "two",
+    onSelect = function(key) picked[#picked + 1] = key end,
+  })
+
+  assertEqual(#buttons, 3)
+  assertEqual(buttons[1].__template, nil, "tabs are raw Buttons, not a Blizzard template")
+  assertFalse(buttons[2]:IsEnabled(), "the active tab is the disabled one, as Blizzard marks a tab")
+  assertTrue(buttons[1]:IsEnabled())
+  assertTrue(ctx.chromeHeight >= O.TAB_H, "the strip reserved its own band")
+
+  buttons[3]:__fire("OnClick")
+  assertEqual(#picked, 1)
+  assertEqual(picked[1], "three")
+  assertEqual(rec, rec, "no store write: a tab is not a setting")
+end)
+
+test("widgets: clicking the ACTIVE tab does not re-fire onSelect", function()
+  -- A re-render on every click of the tab you are already on is a page that flickers for
+  -- nothing, and on a host whose renderer refuses in combat it is a refusal message for
+  -- nothing.
+  -- red under: wiring OnClick before checking the active key.
+  local O, _, ctx = bench()
+  local fired = 0
+  local buttons = O.TabStrip(ctx, {
+    tabs = { { key = "a", label = "A" }, { key = "b", label = "B" } },
+    value = "a",
+    onSelect = function() fired = fired + 1 end,
+  })
+  buttons[1]:__fire("OnClick")
+  assertEqual(fired, 0)
+  buttons[2]:__fire("OnClick")
+  assertEqual(fired, 1)
+end)
+
+test("widgets: a second TabStrip call replaces the first rather than stacking on it", function()
+  -- A strip is redrawn whenever the page's subject changes. Leaving the old buttons parented to
+  -- the chrome would stack two strips, with only the newer one wired up -- and the older one on
+  -- top, swallowing the clicks.
+  -- red under: creating buttons without releasing the previous set.
+  local O, _, ctx = bench()
+  O.TabStrip(ctx, { tabs = { { key = "a", label = "A" } }, value = "a", onSelect = function() end })
+  local second = O.TabStrip(ctx, {
+    tabs = { { key = "a", label = "A" }, { key = "b", label = "B" } },
+    value = "b", onSelect = function() end,
+  })
+  assertEqual(#second, 2)
+  assertEqual(#ctx.__chromeKids, 2, "the first strip's button was released, not orphaned")
+end)
+
+test("widgets: TabStrip refuses politely with no AceGUI and with no tabs", function()
+  -- Every maker in this file answers nil having drawn nothing rather than raising, because the
+  -- degraded path is a real one: a consumer vendored without AceGUI must show a plain page.
+  -- red under: indexing spec.tabs before checking it.
+  withoutAceGUI(function()
+    local O, _, ctx = bench()
+    assertNil(O.TabStrip(ctx, { tabs = { { key = "a", label = "A" } } }))
+  end)
+
+  local O2, _, ctx2 = bench()
+  assertNil(O2.TabStrip(ctx2, { tabs = {} }))
+  assertNil(O2.TabStrip(ctx2, nil))
 end)
