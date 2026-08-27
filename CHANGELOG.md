@@ -10,6 +10,78 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.19.0 — 2026-08-27
+
+Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 8**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 9**,
+**OptionsWidgets minor 8**, **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**,
+**kit revision 13**.
+
+**`LibKa0s-Widgets-1.0` minor 8 — `ReorderList`, drag-to-reorder for any list, owning the gesture
+and none of the rows.**
+
+Two addons wanted the same thing at once. MultiMeters' Columns page had just been rebuilt around
+drag-to-reorder, and ConsumableMaster's priority list wanted to retire its up-arrow / down-arrow
+pair for the same gesture. That is the second consumer the collection waits for before a widget
+earns its way in here — MultiMeters had recorded the deviation and the trigger in its own register
+rather than promoting a one-consumer API on spec.
+
+**It owns a gesture, not a list, and that boundary came out of what the two lists actually look
+like.** MultiMeters' rows are a state glyph and a statistic name. ConsumableMaster's are a live item
+tooltip, a crafting-quality glyph, a pick star, a score button and a remove button. Neither would
+accept a widget that owned its row content, and a `render(row, item)` callback wide enough for both
+is not an abstraction — it is a hole shaped like two addons.
+
+So `ReorderList` owns the handle, the copy that follows the cursor, the insertion line, the index
+arithmetic and the clamp. A host builds its rows however it already does — AceGUI containers, raw
+frames, anything — registers each one with `AddRow`, and gets `onMove(from, to)` back. What the host
+still decides: where the handle sits, how big it is, what art it wears, how tall a row is, and
+whether the list has one group or two. What it does **not** decide is what a drag *looks* like,
+because that is the part every list in the collection should share.
+
+**The gesture is redundant on purpose, and that is the expensive lesson this carries.** It begins on
+either `OnMouseDown` or `OnDragStart` and ends on any of `OnMouseUp`, `OnDragStop` or a poll of
+`IsMouseButtonDown`; both helpers are idempotent. Two earlier implementations each picked one pair,
+passed their own suites, and shipped a drag that did nothing at all in a Settings canvas. Which
+scripts a client delivers there turned out not to be worth betting on.
+
+**The poll may not act alone.** It has to see the button *held* before it may act on it being
+released. An `IsMouseButtonDown` that is unavailable, protected, or simply not true yet on the first
+frame would otherwise end the drag with zero rows travelled — no error, no message, and
+indistinguishable from a press that was never received. That was the actual bug, and it took a
+player's debug log to find it.
+
+`Dropdown`, `CloseMenu`, `CopyWindow` and every one of their fields are unchanged. A host that does
+not call the new member needs a re-vendor and no code change.
+
+**The library owns its handles rather than caching them on the host's frames.** Both consumers hand
+over containers their UI framework pools, and AceGUI's pool is process-wide — a released container
+goes to whatever asks next. A handle cached on one and left shown turned up on an unrelated part of
+the page: a *Drag to action bar* row, an ID entry box, a dropdown. A frame's identity is not the
+host's to lend. Handles now come from a free list and `Cancel()` gives them back — hidden, unanchored
+and reparented away — which also means **a host must Cancel before it renders anything**, not merely
+before it rebuilds the list.
+
+**`AddRow` takes `draggable = false`**, registering a row with no handle. It still counts for indices
+and still anchors the insertion line: a place a drag can land, not one it can start from.
+
+**Nothing about a drag closes over anything.** Both
+consumers hand over a frame their UI framework pools, so `AddRow` re-points a cached handle rather
+than building a new one; the handle reads its row at fire time; and `beginDrag`/`finishDrag` reach
+the controller through `row.list`. All three are needed, and the third is the one that bites: a
+handler closing over the controller that built it keeps calling that controller after the next
+render `Cancel()`s it, which is a drag that works exactly once and then freezes.
+
+**The handle takes a hover color and an optional tooltip**, so it says it is a control before you
+press it. `handleColor`, `handleHoverColor`, `handleInset` and `handleTooltip` are all optional; the
+hover default is the collection's gold, so a host that says nothing matches every other list.
+
+**The shared mock grows a pointer.** `tests/wow_mock.lua` gains `GetCursorPosition`,
+`IsMouseButtonDown` and their two setters, and `UIParent` gains a numeric `GetEffectiveScale`. New
+globals rather than changes to existing ones, so no suite written against the base can observe the
+difference — a drag nothing offline can drive is a drag that ships untested, which is exactly how
+those two earlier implementations shipped.
+
 ## v1.18.1 — 2026-08-26
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

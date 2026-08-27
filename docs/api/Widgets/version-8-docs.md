@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 7
+# `LibKa0s-Widgets-1.0` — version 8
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,43 +8,37 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **7** |
-| Shipped in | v1.16.0 |
-| Status | Superseded |
-| Supersedes | [version 6](./version-6-docs.md) — whose copy window always built an anonymous scroll frame and always drew Core's close control |
-| Superseded by | [version 8](./version-8-docs.md) — which adds `ReorderList` |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 7 }` |
+| Files and minors | `Widgets.lua` minor **8** |
+| Shipped in | v1.19.0 |
+| Status | **Current** |
+| Supersedes | [version 7](./version-7-docs.md) — which had no reorderable-list surface at all |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 8 }` |
 
 ## What changed at this version
 
-**Two optional `CopyWindow` descriptor fields, both absent by default.** `scrollName` and
-`makeCloseButton` are the whole of this version. Neither is defaulted to anything a caller can
-observe: a descriptor written before minor 7 builds exactly the frame it built at version 6, down to
-the anonymous scroll frame and the Core-drawn close control. `Dropdown`, `CloseMenu`, every instance
-method, every `opts` field, every option-row field and every other `CopyWindow` field are unchanged.
-A host needs a re-vendor and no code change.
+**One new lib-level member, `ReorderList(opts)`, and nothing else moves.** `Dropdown`, `CloseMenu`,
+`CopyWindow`, every instance method and every `opts` field are byte-for-byte unchanged. A host that
+does not call the new member needs a re-vendor and no code change.
 
-**`scrollName` exists because `UIPanelScrollFrameTemplate` names its children after its parent.**
-The template derives its scrollbar children's names from the scroll frame's own name, so an
-anonymous scroll frame leaves them unnamed — which costs nothing until somebody tries to skin one or
-find one by name, and then it is invisible rather than broken. The three adopters at version 6 —
-BankLedger, LootHistory and MultiMeters — never named the scroll frame; `LibKa0s-DebugLog-1.0`'s own
-hand-rolled copy window always had. That difference is what surfaced when DebugLog minor 12 converged
-onto this member. Naming it stays the host's call rather than this file's: a name is a global, and a
-caller that never asked for one should not silently acquire one on a re-vendor.
+**It owns a gesture, not a list.** `ReorderList` gives a host drag-to-reorder: the handle, the copy
+that follows the cursor, the insertion line, the index arithmetic and the clamp. It owns **no row
+content whatsoever**. The host builds its rows however it already does — AceGUI containers, raw
+frames, anything — registers each one, and gets an `onMove(from, to)` callback.
 
-**`makeCloseButton` exists because DebugLog had already published it.** `LibKa0s-DebugLog-1.0` has
-carried a `makeCloseButton` descriptor field since **its** minor 4, documented as applying to *both*
-of its windows. When its minor 12 converged its copy window onto `CopyWindow`, a hardcoded
-`Core.MakeCloseButton` here would have quietly narrowed a contract a host had already been told it
-could rely on. So the field is forwarded rather than dropped, and it falls back to
-`Core.MakeCloseButton` — which is what all four callers want and what three of them already got.
-Nothing in the collection passes it today; it is here so that the DebugLog contract does not become
-a lie.
+That boundary is where it is because of what the two adopting lists actually look like. MultiMeters'
+Columns page draws a state glyph and a statistic name. ConsumableMaster's priority list draws a live
+item tooltip, a crafting-quality glyph, a pick star, a score button and a remove button. Neither
+would accept a widget that owned its row, and a `render(row, item)` callback wide enough for both is
+not an abstraction — it is a hole shaped like two addons. What the two lists genuinely share is the
+gesture, which is also the only part that was hard: it took four rounds to get right against a live
+client, and the row content took none.
 
-**`CopyWindow` has a fourth caller.** `LibKa0s-DebugLog-1.0` minor 12 was the fifth hand-rolled copy
-of this frame in the collection, and it is the last one outside Widgets. Nothing in the collection
-draws a copy window of its own any more.
+**What a host still decides:** where the handle sits, how big it is, what art it wears, how tall a
+row is, and whether the list has one group or two. What it does **not** decide is what a drag looks
+like — the ghost's alpha, the gold insertion line, the fade on the row you picked up. That is the
+part every list in the collection should share, and a host that could restyle it would defeat the
+reason this is a library at all.
 
 ## What this major is
 
@@ -75,6 +69,7 @@ library's.
 | `Dropdown(parent, width, opts)` | 1 | Builds one flat-skin dropdown button parented to `parent`, `width` px wide and 20px tall, that opens the shared popup menu on click. Returns the dropdown frame. |
 | `CopyWindow(descriptor)` | **6** | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
+| `ReorderList(opts)` | **8** | Builds a drag-to-reorder controller for one render of a list. Returns the controller. See *The reorderable list*. |
 | `MODULES` | 1 | `{ Widgets = <minor> }` — the live minor, and the value that picks this document. |
 
 ### `Dropdown(parent, width, opts)`
@@ -283,6 +278,96 @@ decision, not an oversight, and every one of these is reachable later without a 
 None of these is wanted by either shipped consumer, and a widget that grows features nobody asked for
 is a widget whose degraded behavior nobody has tested.
 
+## The reorderable list
+
+`ReorderList(opts)` returns a **controller for one render**. It holds the rows of the pass that
+built it, so a repaint builds a new one — and `Cancel()` on the old one is what stops a drag
+outliving the list it was describing.
+
+### `opts`
+
+Every field is optional except the ones a working list needs.
+
+| Field | Meaning | Fallback |
+|---|---|---|
+| `stride` | Row top to next row top, in pixels. The drop target is **arithmetic on this**, never a hit test, so nothing depends on the rows having been laid out yet, on the scroll position, or on a layout pass having finished — all three of which are true at different moments during a drag. | `30` |
+| `onMove` | `function(from, to)`. Called **once** when a drag lands somewhere new. Never called for a drag that lands where it started, because that would have the host rewrite its list and repaint for no change. | no callback; the drag is inert |
+| `boundary` | How many rows are in the **first** group. `nil` or `0` means one flat list. With a boundary, a row may not be dragged out of its own group — the drop clamps at the divide. | `nil`, one flat list |
+| `handleIcon` | Resolved texture path for the handle art. A vendored copy cannot know which addon folder it sits in, so art arrives as a parameter — the same reason `chevron` and `check` do. | `Interface\Buttons\UI-SortArrow` |
+| `handleSize` | The handle's hit width. Its height is the row's. | `24` |
+| `handleInset` | Pixels from the parent's left edge. | `0` |
+| `handleColor` | `{ r, g, b }` for the handle at rest. | a neutral gray, `{ 0.7, 0.7, 0.7 }` |
+| `handleHoverColor` | `{ r, g, b }` under the pointer. A host whose list has its own palette says so; one that says nothing matches every other list in the collection. | gold, `{ 1, 0.82, 0 }` |
+| `handleTooltip` | One line shown on hover, e.g. "Drag to reorder". | no tooltip at all |
+| `iconSize` | The art drawn inside the handle. | `16` |
+| `lineColor` | `{ r, g, b, a }` for the insertion line. | gold, `{ 1, 0.82, 0, 0.9 }` |
+| `debug` | `function(fmt, ...)`, called on grab and on drop. | no logging |
+
+### Controller methods
+
+| Method | Meaning |
+|---|---|
+| `AddRow(frame, spec)` | Registers one row, **in display order** — the index is the call order. Creates the handle as a child of `spec.parent or frame`, anchored `LEFT`, and returns it so the host may re-anchor it. |
+| `Finish(container)` | Names the frame the insertion line lives on — normally the scroll's content frame, or whatever the rows share as a parent. Call once, after the rows. |
+| `Cancel()` | Stops any drag in flight, puts the chrome away, and **gives every handle back**. Idempotent. **A host must call this before it renders anything** — see below. |
+
+`spec` on `AddRow`, all optional: `ghostText`, `ghostIcon`, `ghostIconColor`, `ghostTextColor`,
+`height`, `parent`, and `draggable`.
+
+**`draggable = false` registers the row with no handle.** It still counts for indices and still
+anchors the insertion line — it is a place a drag can *land*, not one a drag can start from. Use it
+for rows that have an order nothing can act on.
+
+### Behavior a host must know
+
+**The library owns its handles, and `Cancel()` must run before the host renders anything.** Handles come from a free list here and are parented to the host's frame only while live; `Cancel()` hides, unanchors and reparents them away in one step.
+
+They are **not** cached on the host's frames, and that distinction cost a release. Both consumers hand over containers their UI framework pools — and AceGUI's pool is process-wide, so a released container goes to whatever asks next. A handle left parented and shown turned up on an unrelated part of the page: on a *Drag to action bar* row, on an ID entry box, on a dropdown. A frame's identity is not the host's to lend, so a cache keyed on it is a cache keyed on nothing.
+
+The same reasoning fixes the timing: a `Cancel()` that runs after the page has begun rebuilding runs after some other widget may already hold the frame. **Cancel at the very top of the render, before the first `AceGUI:Create`.**
+
+**Nothing about a drag closes over anything.** Both shipped consumers hand over a frame
+their UI framework *pools*, so `AddRow` caches the handle on it and re-points it rather than building
+a new one. It also reads `handle.__row` at fire time, and `beginDrag`/`finishDrag` reach the
+controller through `row.list` rather than closing over it. **All three are needed.** A handle built
+fresh each render piles up on a recycled frame; one that closes over its row drives the wrong row;
+one that closes over its *controller* drives a controller that was `Cancel()`led on the last render
+— and that last one is a drag that works exactly once and then freezes, while still passing a test
+written against the first two.
+
+**The handle is the library's, deliberately.** It is what a player has to recognize as "drag me",
+and a collection whose lists each invented their own affordance would defeat the point of sharing
+this. The host still decides where it sits and how big it is; it does not decide what it is.
+
+**Only the handle starts a drag.** Rows in these lists carry other controls — a remove button, a
+score button, a toggle glyph — and a row that was draggable anywhere would swallow presses aimed at
+those. They sit a few pixels apart.
+
+**Every input path can start the drag and every path can end it.** `OnMouseDown` and `OnDragStart`
+both begin it; `OnMouseUp`, `OnDragStop` and a poll of `IsMouseButtonDown` all end it. Both helpers
+are idempotent, so whichever order a client delivers them in, one grab begins once and completes
+once. This redundancy is not belt-and-braces for its own sake: which of these a client actually
+sends inside a Settings canvas turned out not to be something worth betting on, and two earlier
+implementations that each picked one pair shipped a drag that did nothing at all.
+
+**The poll may not act alone**, and it has to see the button *held* before it may act on it being
+released. If `IsMouseButtonDown` is unavailable, protected, or simply not true yet on the first
+frame, a poll that ended on `not held` would finish the drag with zero rows travelled — no error, no
+message, and indistinguishable from a press that was never received.
+
+**The ghost is a process-wide singleton on `UIParent`.** It must escape whatever scroll frame the
+list sits in to follow the cursor past the ends of the list, which a child of that scroll cannot do.
+Its mouse is disabled, and that is load-bearing rather than tidy: a frame sitting under the pointer
+that accepts the mouse eats the very button-release that ends the drag it is drawing.
+
+**The insertion line is a frame carrying a texture**, not a bare texture, and it is cached on the
+container. A texture belongs to its own frame's draw layers, so one created on the container draws
+*under* every row — a parent's `OVERLAY` still loses to a child frame.
+
+**A clamped drag still shows the line**, stopped at the divide. A drop that clamps writes nothing,
+so the line stopping is the only feedback there is; without it a working clamp is indistinguishable
+from a broken drag.
+
 ## Degraded
 
 With `LibKa0s-Widgets-1.0` absent — no vendored copy, or a copy whose `NEEDS_CORE` floor the host's
@@ -297,6 +382,20 @@ a host that has no UI at all the call answers `nil` rather than raising — a ho
 `nil` handle and simply not offer the export.
 
 ## Cross-consumer smoke check — recorded, NOT run
+
+**`ReorderList`, at minor 8.** MultiMeters' Columns page and ConsumableMaster's priority list adopt
+it together, and the adoption is only correct if a drag feels the same in both. The comparison has
+no single host to live in, so it is recorded here:
+
+- Drag a row in **both** addons in one client session. The handle art, the carried copy's alpha and
+  offset from the cursor, the gold insertion line and the fade on the picked-up row must be
+  identical. Any one differing means a host is overriding something it should not.
+- MultiMeters' list has a boundary and ConsumableMaster's does not. Drag a shown column down past
+  the divide in MultiMeters: the line must stop at it. Drag the last row of ConsumableMaster's list
+  down: it must simply stay put, with no divide to stop at.
+
+This has **not** been run — it needs a live client.
+
 
 BankLedger, LootHistory and MultiMeters each replaced a hand-rolled export copy window with
 `CopyWindow` at Widgets minor 6, and `LibKa0s-DebugLog-1.0` minor 12 joined them at minor 7. They

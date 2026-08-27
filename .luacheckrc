@@ -13,6 +13,10 @@ read_globals = {
   -- `SettingsPanel` is private and only ever reached inside a pcall, for expanding the left tree,
   -- or guarded, for the combat refusal. `HideUIPanel` is that refusal's older fallback.
   "Settings", "SettingsPanel", "HideUIPanel", "GameTooltip",
+  -- The pointer, for LibKa0s-Widgets-1.0's ReorderList drag. GetCursorPosition answers SCALED
+  -- coordinates, so callers divide by UIParent:GetEffectiveScale(); IsMouseButtonDown is polled
+  -- to end a drag whose release was never delivered back to the handle.
+  "GetCursorPosition", "IsMouseButtonDown",
   -- Blizzard stopwatch, driven by the measurement windows. Called as Lua functions rather than
   -- via "/sw play": RunMacroText is protected and would fail in combat.
   "Stopwatch_Clear", "Stopwatch_Play", "Stopwatch_Pause", "StopwatchFrame",
