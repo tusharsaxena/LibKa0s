@@ -550,18 +550,75 @@ function lib.__AttachWidgets(O, d)
     end
     if not O.AceGUI then return nil end
 
-    releaseChrome(ctx)
+    -- Only the strip's own buttons, never the banner: the banner is drawn first and a blanket
+    -- release here would take it with them.
+    for _, f in ipairs(ctx.__tabKids or {}) do
+      f:Hide()
+      f:SetParent(nil)
+    end
+    ctx.__tabKids = {}
+    -- The page-wide ledger, guarded rather than reset: a strip drawn with no banner before it
+    -- is the strip's first writer, and releaseChrome is no longer guaranteed to have run.
+    ctx.__chromeKids = ctx.__chromeKids or {}
 
     local buttons, widths = {}, {}
     for i, tab in ipairs(spec.tabs) do
       local b, w = makeTab(ctx, tab, tab.key == spec.value, spec.onSelect)
       buttons[i] = b
       widths[i]  = w
+      ctx.__tabKids[#ctx.__tabKids + 1] = b
       ctx.__chromeKids[#ctx.__chromeKids + 1] = b
     end
 
     placeTabs(ctx, buttons, widths)
     return buttons
+  end
+
+  --- The page banner (options-ui-§14): which instance this page is editing, and the picker for
+  --- it, pinned above the strip and the scroll.
+  ---
+  --- It carries the PICKER rather than a label, and it is the ONLY picker: a page that already
+  --- had one deletes it. Two controls over one piece of session state is a synchronisation
+  --- problem the design invented and would then own forever -- here there is one value, read at
+  --- render time, and the structural refresh the write already triggers repaints every panel.
+  ---
+  --- Draw it BEFORE the strip. It records its own share of the band in `ctx.__bannerHeight`,
+  --- which TabStrip adds to the rows it reserves for itself; called the other way round, the
+  --- strip's reservation would not know about it.
+  ---
+  --- `spec` = { label, list, order, value, onSelect, tooltip }. Returns the dropdown, or nil
+  --- having drawn nothing.
+  function O.PageBanner(ctx, spec)
+    if not (ctx and ctx.chrome and spec) then return nil end
+    local AceGUI = O.AceGUI
+    if not AceGUI then return nil end
+
+    releaseChrome(ctx)
+
+    local dd = AceGUI:Create("Dropdown")
+    dd:SetLabel(spec.label or "")
+    dd:SetList(spec.list or {}, spec.order)
+    dd:SetValue(spec.value)
+    dd:SetCallback("OnValueChanged", function(_, _, key)
+      -- pcall'd for the reason every host callback in this file is: a selection handler reaches
+      -- into live addon state, and a raise inside AceGUI's own dispatch takes the click handling
+      -- of every widget on the frame with it.
+      if spec.onSelect then pcall(spec.onSelect, key) end
+    end)
+    if dd.frame then
+      dd.frame:SetParent(ctx.chrome)
+      dd.frame:ClearAllPoints()
+      dd.frame:SetPoint("TOPLEFT",  ctx.chrome, "TOPLEFT",  0, 0)
+      dd.frame:SetPoint("TOPRIGHT", ctx.chrome, "TOPRIGHT", 0, 0)
+      dd.frame:SetHeight(L.BANNER_H)
+      dd.frame:Show()
+      ctx.__chromeKids[#ctx.__chromeKids + 1] = dd.frame
+    end
+    O.AttachTooltip(dd, spec.label, spec.tooltip)
+
+    ctx.__bannerHeight = L.BANNER_H
+    O.SetChromeHeight(ctx, L.BANNER_H)
+    return dd
   end
 
   --- A full-width line of text: one AceGUI Label added to the page's scroll, left-justified.

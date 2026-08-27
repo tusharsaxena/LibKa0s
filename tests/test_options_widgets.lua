@@ -1288,7 +1288,7 @@ test("widgets: a second TabStrip call replaces the first rather than stacking on
     value = "b", onSelect = function() end,
   })
   assertEqual(#second, 2)
-  assertEqual(#ctx.__chromeKids, 2, "the first strip's button was released, not orphaned")
+  assertEqual(#ctx.__tabKids, 2, "the first strip's button was released, not orphaned")
 end)
 
 test("widgets: TabStrip refuses politely with no AceGUI and with no tabs", function()
@@ -1303,4 +1303,51 @@ test("widgets: TabStrip refuses politely with no AceGUI and with no tabs", funct
   local O2, _, ctx2 = bench()
   assertNil(O2.TabStrip(ctx2, { tabs = {} }))
   assertNil(O2.TabStrip(ctx2, nil))
+end)
+
+-- ── the page banner ────────────────────────────────────────────────────────────────────────────────
+
+test("widgets: PageBanner draws a seeded picker and reserves the banner band", function()
+  -- red under: reserving nothing, or seeding the dropdown from the list's first key.
+  local O, _, ctx = bench()
+  local chosen = {}
+  local dd = O.PageBanner(ctx, {
+    label = "Window",
+    list  = { [1] = "Multi Meters #1", [2] = "Multi Meters #2" },
+    order = { 1, 2 },
+    value = 2,
+    onSelect = function(key) chosen[#chosen + 1] = key end,
+  })
+
+  assertEqual(dd.type, "Dropdown")
+  assertEqual(dd.value, 2, "seeded from the caller's pointer, not from the list")
+  assertEqual(ctx.__bannerHeight, O.BANNER_H)
+  assertTrue(ctx.chromeHeight >= O.BANNER_H)
+
+  dd:__fire("OnValueChanged", 1)
+  assertEqual(#chosen, 1)
+  assertEqual(chosen[1], 1)
+end)
+
+test("widgets: banner then strip reserve ONE band between them, not two", function()
+  -- The two are drawn in that order by every page that has both, and the band has to hold both.
+  -- A strip that reserved only its own rows would slide up under the banner.
+  -- red under: SetChromeHeight overwriting rather than accumulating the banner's share.
+  local O, _, ctx = bench()
+  O.PageBanner(ctx, { label = "W", list = { [1] = "One" }, order = { 1 }, value = 1,
+                      onSelect = function() end })
+  O.TabStrip(ctx, { tabs = { { key = "a", label = "A" } }, value = "a",
+                    onSelect = function() end })
+  assertEqual(ctx.chromeHeight, O.BANNER_H + O.TAB_H)
+end)
+
+test("widgets: PageBanner refuses politely with no AceGUI and with no spec", function()
+  -- red under: reading spec.list before checking spec.
+  withoutAceGUI(function()
+    local O, _, ctx = bench()
+    assertNil(O.PageBanner(ctx, { label = "W", list = {}, order = {}, value = 1 }))
+  end)
+
+  local O2, _, ctx2 = bench()
+  assertNil(O2.PageBanner(ctx2, nil))
 end)
