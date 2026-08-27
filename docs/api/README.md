@@ -165,7 +165,8 @@ are never adopted separately. It is indexed here because the question it answers
 | [7](./testkit/version-7-docs.md) | same files; runs in a repo with no `.toc`; corrected luacheck install hint | unreleased | Superseded |
 | [8](./testkit/version-8-docs.md) | + `vendor_sync.lua`; the skip status, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity` | v1.8.0 | Superseded |
 | [9](./testkit/version-9-docs.md) | same files; `vendor_sync.lua` reads the provenance line from `CLAUDE.md`, via the new `provenanceFile` opt | v1.8.1 | Superseded |
-| [13](./testkit/version-13-docs.md) | same files; `CreateFrame` records its arguments on the frame it returns, so a suite can ask what a frame was NAMED | v1.16.0 | **Current** |
+| [14](./testkit/version-14-docs.md) | same files; `stubFrame` tracks a real enabled state, so `SetEnabled`/`IsEnabled`/`Enable`/`Disable` answer for real | unreleased | **Current** |
+| [13](./testkit/version-13-docs.md) | same files; `CreateFrame` records its arguments on the frame it returns, so a suite can ask what a frame was NAMED | v1.16.0 | Superseded |
 | [12](./testkit/version-12-docs.md) | same files; the loader caches compiled chunks, `vendor_sync` batches its blob reads, and the runner can fan its suites out across processes with `--jobs` | v1.14.0 | Superseded |
 | [11](./testkit/version-11-docs.md) | same files; the vendored-payload gate recurses into subdirectories and compares a binary byte for byte | v1.9.0 | Superseded |
 | [10](./testkit/version-10-docs.md) | same files; `run-automated-tests.sh` writes the bundle to the terminator `.gitattributes` declares, read per path with `git check-attr eol` | v1.8.2 | Superseded |
