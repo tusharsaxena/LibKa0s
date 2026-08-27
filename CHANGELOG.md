@@ -54,6 +54,17 @@ player's debug log to find it.
 `Dropdown`, `CloseMenu`, `CopyWindow` and every one of their fields are unchanged. A host that does
 not call the new member needs a re-vendor and no code change.
 
+**The handle is cached on its parent, and nothing about a drag closes over anything.** Both
+consumers hand over a frame their UI framework pools, so `AddRow` re-points a cached handle rather
+than building a new one; the handle reads its row at fire time; and `beginDrag`/`finishDrag` reach
+the controller through `row.list`. All three are needed, and the third is the one that bites: a
+handler closing over the controller that built it keeps calling that controller after the next
+render `Cancel()`s it, which is a drag that works exactly once and then freezes.
+
+**The handle takes a hover color and an optional tooltip**, so it says it is a control before you
+press it. `handleColor`, `handleHoverColor`, `handleInset` and `handleTooltip` are all optional; the
+hover default is the collection's gold, so a host that says nothing matches every other list.
+
 **The shared mock grows a pointer.** `tests/wow_mock.lua` gains `GetCursorPosition`,
 `IsMouseButtonDown` and their two setters, and `UIParent` gains a numeric `GetEffectiveScale`. New
 globals rather than changes to existing ones, so no suite written against the base can observe the

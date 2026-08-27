@@ -295,6 +295,10 @@ Every field is optional except the ones a working list needs.
 | `boundary` | How many rows are in the **first** group. `nil` or `0` means one flat list. With a boundary, a row may not be dragged out of its own group — the drop clamps at the divide. | `nil`, one flat list |
 | `handleIcon` | Resolved texture path for the handle art. A vendored copy cannot know which addon folder it sits in, so art arrives as a parameter — the same reason `chevron` and `check` do. | `Interface\Buttons\UI-SortArrow` |
 | `handleSize` | The handle's hit width. Its height is the row's. | `24` |
+| `handleInset` | Pixels from the parent's left edge. | `0` |
+| `handleColor` | `{ r, g, b }` for the handle at rest. | a neutral gray, `{ 0.7, 0.7, 0.7 }` |
+| `handleHoverColor` | `{ r, g, b }` under the pointer. A host whose list has its own palette says so; one that says nothing matches every other list in the collection. | gold, `{ 1, 0.82, 0 }` |
+| `handleTooltip` | One line shown on hover, e.g. "Drag to reorder". | no tooltip at all |
 | `iconSize` | The art drawn inside the handle. | `16` |
 | `lineColor` | `{ r, g, b, a }` for the insertion line. | gold, `{ 1, 0.82, 0, 0.9 }` |
 | `debug` | `function(fmt, ...)`, called on grab and on drop. | no logging |
@@ -311,6 +315,15 @@ Every field is optional except the ones a working list needs.
 `height`, `parent`.
 
 ### Behavior a host must know
+
+**One handle per parent, for the life of that parent.** Both shipped consumers hand over a frame
+their UI framework *pools*, so `AddRow` caches the handle on it and re-points it rather than building
+a new one. It also reads `handle.__row` at fire time, and `beginDrag`/`finishDrag` reach the
+controller through `row.list` rather than closing over it. **All three are needed.** A handle built
+fresh each render piles up on a recycled frame; one that closes over its row drives the wrong row;
+one that closes over its *controller* drives a controller that was `Cancel()`led on the last render
+— and that last one is a drag that works exactly once and then freezes, while still passing a test
+written against the first two.
 
 **The handle is the library's, deliberately.** It is what a player has to recognize as "drag me",
 and a collection whose lists each invented their own affordance would defeat the point of sharing

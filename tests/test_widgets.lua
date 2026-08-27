@@ -72,6 +72,8 @@ local function geomFrame()
   -- Defaults to FALSE, which is the honest default: most clicks in these cases are outside.
   function f:IsMouseOver() return self.__mouseOver or false end
   function f:SetTexture(p) self.__texture = p; return self end
+  -- The handle's tint, which is what the hover cases read.
+  function f:SetVertexColor(r, g, b, a) self.__vertexColor = { r, g, b, a or 1 }; return self end
   function f:SetFont(p, s, fl) self.__font = { p, s, fl }; return self end
   -- A FONTSTRING WITH NO FONT RAISES ON SetText, exactly as the client does — and a FontString
   -- built FROM A TEMPLATE has one, which is why the check keys on `__font or __template` rather
@@ -1198,6 +1200,91 @@ test("widgets: Cancel stops a drag in flight and puts the chrome away", function
   mocks.setMouseDown("LeftButton", false)
   row.frame:__fire("OnUpdate", 0.1)
   assertEqual(#log.moved, 0, "a cancelled drag must not land after the fact")
+end)
+
+test("widgets: a recycled parent gets its handle back, not a second one", function()
+  -- THE FREEZE. Both consumers hand over a frame their UI framework POOLS, so a handle built fresh
+  -- each render piled up on it -- and every copy but the newest was still wired, still
+  -- mouse-enabled, and still pointing at the controller from the render that made it. That
+  -- controller is Cancel()led on the next render, so `begin` refused and the drag stopped working
+  -- after the first successful one.
+  -- red under: AddRow calling CreateFrame instead of reusing parent.__ka0sDragHandle.
+  local parent = geomFrame()
+
+  local first = W.ReorderList({ stride = 30 })
+  local h1 = first:AddRow(parent, {})
+  first:Cancel()
+
+  local second = W.ReorderList({ stride = 30 })
+  local h2 = second:AddRow(parent, {})
+
+  assertEqual(h2, h1, "a second render built a NEW handle over the first")
+  assertEqual(parent.__ka0sDragHandle, h1, "the handle must be cached on the parent")
+end)
+
+test("widgets: a reused handle drives the LIVE controller, not the one it was built for", function()
+  -- The other half, and the half that actually freezes: a handle whose scripts close over the row
+  -- they were wired with keeps pointing at a dead controller no matter how many renders pass.
+  -- Reading `handle.__row` at FIRE time is what makes a stale handle impossible.
+  -- red under: SetScript closing over `row`.
+  local parent = geomFrame()
+  parent:SetSize(200, 30)
+
+  local first = W.ReorderList({ stride = 30 })
+  first:AddRow(parent, {})
+  first:AddRow(geomFrame(), {})
+  first:Cancel()
+
+  -- A second controller over the same pooled parent, with a live onMove.
+  local moved = {}
+  local second = W.ReorderList({
+    stride = 30,
+    onMove = function(from, to) moved[#moved + 1] = { from, to } end,
+  })
+  local handle = second:AddRow(parent, {})
+  local other  = geomFrame(); other:SetSize(200, 30)
+  second:AddRow(other, {})
+  second:Finish(geomFrame())
+
+  mocks.setMouseDown("LeftButton", true)
+  mocks.setCursor(0, 1000)
+  handle:__fire("OnMouseDown")
+  mocks.setCursor(0, 1000 - 30)
+  parent:__fire("OnUpdate", 0.1)
+  mocks.setMouseDown("LeftButton", false)
+  parent:__fire("OnUpdate", 0.1)
+
+  assertEqual(#moved, 1, "the handle drove a dead controller, so nothing moved -- this is the freeze")
+  assertEqual(moved[1][2], 2)
+end)
+
+test("widgets: the handle takes the hover colour and drops it again", function()
+  -- The handle has to say it is a control before you press it. The tint is the host's to choose;
+  -- the default is the collection's gold, so a host that says nothing matches every other list.
+  local parent = geomFrame()
+  local list = W.ReorderList({ stride = 30, handleTooltip = "Drag to move" })
+  local handle = list:AddRow(parent, {})
+
+  handle:__fire("OnEnter")
+  local r, g, b = handle.art.__vertexColor[1], handle.art.__vertexColor[2], handle.art.__vertexColor[3]
+  assertEqual(r, 1); assertEqual(g, 0.82); assertEqual(b, 0)
+
+  handle:__fire("OnLeave")
+  assertEqual(handle.art.__vertexColor[1], 0.7, "the handle must go back to its rest colour")
+end)
+
+test("widgets: a host may override both handle colours", function()
+  local parent = geomFrame()
+  local list = W.ReorderList({
+    stride           = 30,
+    handleColor      = { 0.2, 0.3, 0.4 },
+    handleHoverColor = { 0.9, 0.1, 0.1 },
+  })
+  local handle = list:AddRow(parent, {})
+  assertEqual(handle.art.__vertexColor[1], 0.2, "the rest colour was not the host's")
+
+  handle:__fire("OnEnter")
+  assertEqual(handle.art.__vertexColor[1], 0.9, "the hover colour was not the host's")
 end)
 
 test("widgets: only the handle starts a drag", function()
