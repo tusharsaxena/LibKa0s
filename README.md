@@ -23,7 +23,7 @@ modules ship today:
   quality, ask the client to cache an id.
 - **`LibKa0s-Media-1.0`** — the art and type the collection draws with, inside the payload, plus the
   paths that reach them and the LibSharedMedia registration.
-- **`LibKa0s-Widgets-1.0`** — the flat-skin dropdown button and the one popup menu every instance of
+- **`LibKa0s-Widgets-1.0`** — the flat-skin dropdown button, the reorderable-list drag, and the one popup menu every instance of
   it drops, shared process-wide.
 - **`LibKa0s-DebugLog-1.0`** — the on-screen debug console: the window, the copy window, the two
   formatters, the buffer, and the seam that turns logging on and off.
@@ -67,7 +67,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass; the keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
 | `LibKa0s-Item-1.0` | Item identity as four primitives and no policy — read an item link, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree in writing. | `Item.lua` | [1](docs/api/Item/version-1-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [3](docs/api/Media/version-3-docs.md) |
-| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button, and the one popup menu every instance of it drops — shared process-wide, across addons. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [7](docs/api/Widgets/version-7-docs.md) |
+| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line and the clamp, and no row content at all. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [8](docs/api/Widgets/version-8-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [7](docs/api/Slash/version-7-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers and the two-column flow engine. | `Options.lua`, `OptionsWidgets.lua`, `OptionsScroll.lua` | [8.7.3](docs/api/Options/version-8.7.3-docs.md) |
@@ -190,10 +190,10 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.17.0**: `Core = { Core = 6 }`,
+different vendored copy of each. As of **v1.19.0**: `Core = { Core = 6 }`,
 `Env = { Env = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`, `Media = { Media = 3 }`,
-`Widgets = { Widgets = 7 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 7 }`,
-`Options = { Options = 8, OptionsWidgets = 7, OptionsScroll = 3 }`,
+`Widgets = { Widgets = 8 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 7 }`,
+`Options = { Options = 9, OptionsWidgets = 8, OptionsScroll = 3 }`,
 `Perf = { Perf = 7, PerfPanel = 4 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
