@@ -1477,10 +1477,11 @@ test("widgets: a one-group page draws no strip at all", function()
   assertEqual(#(ctx.__tabKids or {}), 0, "a single-group page built tab buttons")
 end)
 
-test("widgets: with no AceGUI a tabbed page falls back to the flat scroll", function()
-  -- The degraded path shows the SETTINGS, not an empty canvas: a host that lost the strip has
-  -- lost a convenience, not its options.
-  -- red under: returning early before RenderSchema.
+test("widgets: with no AceGUI a tabbed page reports no tabs and draws nothing", function()
+  -- With no AceGUI there is nothing to draw AT ALL: EnsureScroll answers nil and every maker
+  -- in the file refuses, so this reports an empty tab list -- exactly what RenderSchema would
+  -- also have drawn, reached or not.
+  -- red under: returning the computed group list instead of an empty one when AceGUI is absent.
   withoutAceGUI(function()
     local O, _, ctx = bench()
     local groups = O.RenderTabbedSchema(ctx, "tabbed")

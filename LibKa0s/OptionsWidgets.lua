@@ -162,10 +162,15 @@ end
 --- Emit a section heading when `row` opens a group the page has not drawn yet, and advance the
 --- tracker. The previous group's tail row is flushed FIRST, or the heading lands above a widget
 --- that belongs above IT.
-local function startGroup(O, ctx, row, flushRow)
+---
+--- `noHeadings` skips the O.Section call for a page whose sections are drawn as tabs instead
+--- (options-ui-§13) -- but the flush and the tracker advance happen either way, or a later
+--- group would be treated as a continuation of this one and the boundary flush between them
+--- would never happen.
+local function startGroup(O, ctx, row, flushRow, noHeadings)
   if not (row.group and row.group ~= ctx.lastGroup) then return end
   flushRow()
-  O.Section(ctx, row.group)
+  if not noHeadings then O.Section(ctx, row.group) end
   ctx.lastGroup = row.group
 end
 
@@ -1078,17 +1083,7 @@ function lib.__AttachWidgets(O, d)
     end
 
     for i, row in ipairs(rows) do
-      -- A tabbed page's heading is its tab (options-ui-§7, as amended), so the Section is
-      -- suppressed -- but the TRACKER still advances, or a later group would be treated as a
-      -- continuation of this one and the flush between them would not happen.
-      if opts and opts.noHeadings then
-        if row.group and row.group ~= ctx.lastGroup then
-          flushRow()
-          ctx.lastGroup = row.group
-        end
-      else
-        startGroup(O, ctx, row, flushRow)
-      end
+      startGroup(O, ctx, row, flushRow, opts and opts.noHeadings)
 
       if not row.skipRender then
         if row.solo and pendingCount > 0 then
@@ -1160,9 +1155,11 @@ function lib.__AttachWidgets(O, d)
       onSelect = function(key)
         if key == ctx.activeTab then return end
         ctx.activeTab = key
-        -- The same structural path a change of subject takes, which is what earns the combat
-        -- refusal for free (options-ui-§13): the host's renderer owns the guard, and a second
-        -- one here would be a second policy to keep in step.
+        -- The same re-render path a change of subject takes (ClearScroll then a fresh
+        -- render), but that path carries no combat refusal to inherit -- options-ui-§2's
+        -- guard lives in the panel's OnShow and covers the category switch Blizzard protects.
+        -- Redrawing widgets inside an already-open panel was never a protected action, so a
+        -- tab click needs no guard here and none is added (options-ui-§13).
         O.ClearScroll(ctx)
         O.RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)
       end,
