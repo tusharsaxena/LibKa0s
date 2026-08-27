@@ -41,9 +41,11 @@ of a page silently.
 deletes it. Two controls over one piece of session state is a synchronisation problem the design
 invented and would then own forever.
 
-The tab switch re-enters `RenderTabbedSchema` through `ClearScroll`, which is the same structural
-path a change of subject takes — so the host renderer's combat refusal covers it and there is no
-second guard to keep in step.
+The tab switch re-enters `RenderTabbedSchema` through `ClearScroll`, the same structural path a
+change of subject takes — but that path carries no combat refusal to inherit. `options-ui-§2`'s
+guard lives in the host renderer's `OnShow` and covers the category switch Blizzard protects;
+redrawing widgets inside an already-open panel was never a protected action, so a tab click needs
+no guard here, and none is added (options-ui-§13).
 
 ## v1.19.0 — 2026-08-27
 

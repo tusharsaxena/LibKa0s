@@ -29,7 +29,7 @@ chrome slot that costs an unadopting consumer nothing** (options-ui-§13, §14).
 
 MultiMeters' settings had reached 137 rows over nine pages, and the shape had run out: one section
 held a single control, another held fifteen, and six pages edited whichever window a picker two
-pages up had selected without saying so. Both problems needed the same missing thing —  somewhere
+pages up had selected without saying so. Both problems needed the same missing thing — somewhere
 to put page furniture that does not scroll away — and there was nowhere: `EnsureScroll` anchored the
 ScrollFrame straight to the body's top edge.
 
@@ -92,10 +92,11 @@ tab pointing at a group the page no longer has) heals to the first group rather 
 so a schema edit cannot leave a host looking at a blank page under a strip.
 
 The tab switch re-enters `RenderTabbedSchema` through `ClearScroll`, the same structural path a
-change of subject already takes — so the host renderer's combat refusal (`options-ui-§2`, wired in
-`O.SetRenderer`) already covers it, and there is no second guard to keep in step: a tab click
-redraws widgets inside an already-open panel, which is not the protected action Blizzard's category
-switch is.
+change of subject already takes — but that path carries no combat refusal to inherit. The host
+renderer's guard (`options-ui-§2`, wired in `O.SetRenderer`'s `OnShow`) covers *opening or
+switching* a settings category, which Blizzard protects; redrawing widgets inside an already-open
+panel is not a protected action, so a tab click needs no guard here and none is added
+(options-ui-§13). A host that adds one anyway is writing the guard this section forbids.
 
 **`O.RenderRows(ctx, rows, afterGroup, pairWith, opts)` — new fifth argument `opts.noHeadings`
 (W9).** `{ noHeadings = true }` suppresses the automatic `O.Section` heading a group change would
@@ -288,7 +289,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `SessionCheckbox(ctx, parent, relWidth, spec)` | W1 | A checkbox wired to caller-supplied `get`/`set` instead of a settings path, for runtime-only toggles that must never persist. |
 | `RenderRows(ctx, rows, afterGroup, pairWith, opts)` | W1 (`opts.noHeadings`: **W9**) | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. `opts = { noHeadings = true }` suppresses the automatic `Section` heading, for a page whose sections are drawn as tabs instead (options-ui-§13); the row-boundary flush and `ctx.lastGroup` advance still happen. Omitted by every untabbed caller. |
 | `RenderSchema(ctx, pageKey, afterGroup, pairWith)` | W1 | The per-page wrapper. |
-| `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)` | **W9** | Render one page as a tab strip over its own sections. The partition is by `row.group`, in declaration order — one tab is exactly one group, and there is no second field naming a tab (options-ui-§13). Fewer than two groups draws no strip and falls back to `RenderSchema` byte-for-byte. A stale `ctx.activeTab` heals to the first group. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, so `SetRenderer`'s combat refusal already covers it and no second guard is added. Returns the group names, in tab order. |
+| `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)` | **W9** | Render one page as a tab strip over its own sections. The partition is by `row.group`, in declaration order — one tab is exactly one group, and there is no second field naming a tab (options-ui-§13). Fewer than two groups draws no strip and falls back to `RenderSchema` byte-for-byte. A stale `ctx.activeTab` heals to the first group. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order. |
 | `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs` and reserves the band with `SetChromeHeight` — **after** the wrap is known. Returns the buttons in tab order, or nil having drawn nothing. |
 | `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip }`. Draws one AceGUI `Dropdown` into `ctx.chrome`, records `ctx.__bannerHeight`, and calls `SetChromeHeight(ctx, L.BANNER_H)`. **Draw it before `TabStrip`** — see [What changed at this version](#what-changed-at-this-version). Returns the dropdown, or nil having drawn nothing. |
 | `SetChromeHeight(ctx, height)` | **O10** | Reserve `height` pixels of pinned chrome above the scroll, and re-anchor a live scroll to match. Idempotent. `height <= 0` hides `ctx.chrome`. Call only after the wrap of whatever is being reserved is known. |

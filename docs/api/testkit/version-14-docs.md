@@ -9,7 +9,7 @@
 | Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `vendor_sync.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **14** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | unreleased |
+| First released in | v1.20.0 |
 | Status | **Current** |
 | Supersedes | [version 13](version-13-docs.md) — `CreateFrame` records its arguments on the frame it returns |
 | Superseded by | — |
