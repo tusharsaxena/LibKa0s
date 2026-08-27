@@ -10,6 +10,41 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.20.0 — 2026-08-27
+
+Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 8**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 10**,
+**OptionsWidgets minor 9**, **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**,
+**kit revision 14**.
+
+**`LibKa0s-Options-1.0` minors 10/9 — tabbed pages and a page banner, on a chrome slot that
+costs an unadopting consumer nothing.**
+
+MultiMeters' settings had reached 137 rows over nine pages, and the shape had run out: one
+section held a single control, another held fifteen, and six pages edited whichever window a
+picker two pages up had selected without saying so. Both fixes needed the same missing thing —
+somewhere to put furniture that does not scroll away — and there was nowhere: `EnsureScroll`
+anchored the `ScrollFrame` straight to the body's top edge.
+
+**The chrome slot is a frame and a number, and the number starts at zero.** That is the whole
+additive bargain. Eight consumers re-vendor this file without calling anything new, and their
+scroll anchors where it always did, because `CHROME_GAP` is the literal `8` the old code used.
+
+**One tab is exactly one group** (options-ui-§13). No second field names a tab, for the reason
+§1 gives against a second widget selector: a tab list declared apart from the rows goes stale the
+first time a section is renamed, and nothing says so. The wrap rule is a pure function over
+widths (`O.__layoutTabs`) rather than something only a measured font can exercise, and a tab
+wider than the strip is placed alone rather than dropped — losing one would lose a whole section
+of a page silently.
+
+**The banner carries the picker, and it is the only one** (options-ui-§14). A page that had one
+deletes it. Two controls over one piece of session state is a synchronisation problem the design
+invented and would then own forever.
+
+The tab switch re-enters `RenderTabbedSchema` through `ClearScroll`, which is the same structural
+path a change of subject takes — so the host renderer's combat refusal covers it and there is no
+second guard to keep in step.
+
 ## v1.19.0 — 2026-08-27
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
