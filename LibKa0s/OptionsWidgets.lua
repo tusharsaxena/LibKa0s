@@ -468,58 +468,56 @@ function lib.__AttachWidgets(O, d)
     return math.max(L.TAB_MIN_W, w + (L.TAB_PAD_X * 2))
   end
 
-  --- A pinned tab strip in the page's chrome band (options-ui-§13). One tab per section.
+  --- One tab button: art, state, handler, and its measured width.
+  ---
+  --- Lifted out of TabStrip's loop because the loop is the only interesting thing left in that
+  --- function -- packing widths into rows -- and a button's construction is six unrelated
+  --- decisions that were making one function read as two.
   ---
   --- The ACTIVE tab is the DISABLED one, which is how Blizzard's own tab groups mark selection
   --- and is why it needs no second piece of art to say so: a disabled button does not highlight
   --- on hover and does not fire, so clicking the tab you are already on cannot re-render the
   --- page you are already looking at.
   ---
-  --- `spec` = { tabs = { { key, label, tooltip } }, value, onSelect }. Returns the buttons in
-  --- tab order, or nil having drawn nothing.
-  function O.TabStrip(ctx, spec)
-    if not (ctx and ctx.chrome and spec and type(spec.tabs) == "table" and #spec.tabs > 0) then
-      return nil
-    end
-    if not O.AceGUI then return nil end
+  --- @return table  the button frame
+  --- @return number its measured width, in pixels
+  local function makeTab(ctx, tab, active, onSelect)
+    local b = CreateFrame("Button", nil, ctx.chrome)
+    b:SetHeight(L.TAB_H)
+    b:SetNormalFontObject(_G.GameFontNormalSmall)
+    b:SetHighlightFontObject(_G.GameFontHighlightSmall)
+    b:SetDisabledFontObject(_G.GameFontHighlightSmall)
+    b:SetText(tab.label or "")
 
-    releaseChrome(ctx)
-
-    local buttons, widths = {}, {}
-    for i, tab in ipairs(spec.tabs) do
-      local b = CreateFrame("Button", nil, ctx.chrome)
-      b:SetHeight(L.TAB_H)
-      b:SetNormalFontObject(_G.GameFontNormalSmall)
-      b:SetHighlightFontObject(_G.GameFontHighlightSmall)
-      b:SetDisabledFontObject(_G.GameFontHighlightSmall)
-      b:SetText(tab.label or "")
-
-      -- A flat backing rather than a Blizzard tab atlas. The art is deliberately minimal here;
-      -- what the strip owes the page is a readable active/inactive distinction, and the atlas
-      -- question is one for a live client rather than for this file.
-      local bg = b.CreateTexture and b:CreateTexture(nil, "BACKGROUND")
-      if bg and bg.SetColorTexture then
-        bg:SetAllPoints(b)
-        bg:SetColorTexture(0, 0, 0, (tab.key == spec.value) and 0.55 or 0.25)
-      end
-
-      b:SetEnabled(tab.key ~= spec.value)
-      b:SetScript("OnClick", function()
-        -- Belt AND braces. A disabled Button does not fire OnClick in the client, so this guard
-        -- is redundant there -- but the invariant is worth stating where it can be read, and it
-        -- keeps the handler correct if anything ever re-enables the button without redrawing
-        -- the strip. It is also the only thing a harness can assert against, since a mock's
-        -- SetEnabled cannot suppress a directly-fired script.
-        if tab.key == spec.value then return end
-        if spec.onSelect then pcall(spec.onSelect, tab.key) end
-      end)
-      if tab.tooltip then O.AttachTooltip(b, tab.label, tab.tooltip) end
-
-      buttons[i] = b
-      widths[i]  = labelWidth(b.GetFontString and b:GetFontString())
-      ctx.__chromeKids[#ctx.__chromeKids + 1] = b
+    -- A flat backing rather than a Blizzard tab atlas. The art is deliberately minimal here;
+    -- what the strip owes the page is a readable active/inactive distinction, and the atlas
+    -- question is one for a live client rather than for this file.
+    local bg = b.CreateTexture and b:CreateTexture(nil, "BACKGROUND")
+    if bg and bg.SetColorTexture then
+      bg:SetAllPoints(b)
+      bg:SetColorTexture(0, 0, 0, active and 0.55 or 0.25)
     end
 
+    b:SetEnabled(not active)
+    b:SetScript("OnClick", function()
+      -- Belt AND braces. A disabled Button does not fire OnClick in the client, so this guard
+      -- is redundant there -- but the invariant is worth stating where it can be read, and it
+      -- keeps the handler correct if anything ever re-enables the button without redrawing
+      -- the strip. It is also the only thing a harness can assert against, since a mock's
+      -- SetEnabled cannot suppress a directly-fired script.
+      if active then return end
+      if onSelect then pcall(onSelect, tab.key) end
+    end)
+    if tab.tooltip then O.AttachTooltip(b, tab.label, tab.tooltip) end
+
+    return b, labelWidth(b.GetFontString and b:GetFontString())
+  end
+
+  --- Pack `buttons` into their wrapped rows and reserve the band those rows need.
+  ---
+  --- The band is reserved AFTER the wrap is known, never before: a strip that reserved one row
+  --- and then laid out two would put its second row on top of the page's first widget.
+  local function placeTabs(ctx, buttons, widths)
     -- The strip's own width, not the panel's: a body inset by PADDING_X on both edges.
     local available = ctx.chrome.GetWidth and ctx.chrome:GetWidth()
     if type(available) ~= "number" or available <= 0 then available = L.TAB_MIN_W end
@@ -537,12 +535,32 @@ function lib.__AttachWidgets(O, d)
       end
     end
 
-    -- Reserved AFTER the wrap is known, never before: a strip that reserved one row and then
-    -- laid out two would put its second row on top of the page's first widget.
     local rowCount = math.max(#rows, 1)
     O.SetChromeHeight(ctx,
       (ctx.__bannerHeight or 0) + (rowCount * L.TAB_H) + ((rowCount - 1) * L.TAB_ROW_GAP))
+  end
 
+  --- A pinned tab strip in the page's chrome band (options-ui-§13). One tab per section.
+  ---
+  --- `spec` = { tabs = { { key, label, tooltip } }, value, onSelect }. Returns the buttons in
+  --- tab order, or nil having drawn nothing.
+  function O.TabStrip(ctx, spec)
+    if not (ctx and ctx.chrome and spec and type(spec.tabs) == "table" and #spec.tabs > 0) then
+      return nil
+    end
+    if not O.AceGUI then return nil end
+
+    releaseChrome(ctx)
+
+    local buttons, widths = {}, {}
+    for i, tab in ipairs(spec.tabs) do
+      local b, w = makeTab(ctx, tab, tab.key == spec.value, spec.onSelect)
+      buttons[i] = b
+      widths[i]  = w
+      ctx.__chromeKids[#ctx.__chromeKids + 1] = b
+    end
+
+    placeTabs(ctx, buttons, widths)
     return buttons
   end
 
