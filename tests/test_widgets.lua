@@ -95,6 +95,10 @@ local function geomFrame()
   -- frame itself, the library guards on the answer being a number, and the guard rather than the
   -- drag is what every case would then be testing.
   function f:GetEffectiveScale() return 1 end
+  -- PARENTAGE IS REAL, because releasing a handle is defined as taking it OFF the host's frame and
+  -- the catch-all would answer the frame itself for both of these.
+  function f:SetParent(p) self.__parent = p; return self end
+  function f:GetParent() return self.__parent end
   -- ALPHA IS REAL. ReorderList fades the row you picked up, and against the catch-all GetAlpha
   -- would answer the frame itself -- so `< 1` would raise rather than assert.
   function f:SetAlpha(a) self.__alpha = a; return self end
@@ -1202,13 +1206,30 @@ test("widgets: Cancel stops a drag in flight and puts the chrome away", function
   assertEqual(#log.moved, 0, "a cancelled drag must not land after the fact")
 end)
 
-test("widgets: a recycled parent gets its handle back, not a second one", function()
-  -- THE FREEZE. Both consumers hand over a frame their UI framework POOLS, so a handle built fresh
-  -- each render piled up on it -- and every copy but the newest was still wired, still
-  -- mouse-enabled, and still pointing at the controller from the render that made it. That
-  -- controller is Cancel()led on the next render, so `begin` refused and the drag stopped working
-  -- after the first successful one.
-  -- red under: AddRow calling CreateFrame instead of reusing parent.__ka0sDragHandle.
+test("widgets: Cancel takes every handle OFF the host's frame", function()
+  -- THE ORPHAN BUG. Both consumers hand over frames their UI framework POOLS, and AceGUI's pool is
+  -- process-wide: a released container goes to whatever asks next, which was an unrelated part of
+  -- the page. A handle still parented and still shown therefore turned up on "Drag to action bar",
+  -- on an ID entry row, on a dropdown -- frames the list has nothing to do with.
+  --
+  -- So the library owns its handles and gives them back on Cancel: hidden, unanchored, and
+  -- reparented off the host's frame in one step.
+  -- red under: caching the handle on the host frame, or Cancel leaving it parented.
+  local parent = geomFrame()
+  local list = W.ReorderList({ stride = 30 })
+  local handle = list:AddRow(parent, {})
+
+  assertEqual(handle:GetParent(), parent, "the handle must be parented to the row while live")
+  assertTrue(handle:IsShown())
+
+  list:Cancel()
+  assertFalse(handle:IsShown(), "a released handle must not be visible")
+  assertFalse(handle:GetParent() == parent,
+    "a released handle is still on the host's frame, which the host is about to hand back to a pool")
+end)
+
+test("widgets: a released handle is reused rather than a second one built", function()
+  -- The other half: releasing has to return it to a free list, or every render leaks a frame.
   local parent = geomFrame()
 
   local first = W.ReorderList({ stride = 30 })
@@ -1217,9 +1238,42 @@ test("widgets: a recycled parent gets its handle back, not a second one", functi
 
   local second = W.ReorderList({ stride = 30 })
   local h2 = second:AddRow(parent, {})
+  assertEqual(h2, h1, "the released handle was not taken back off the free list")
+  assertEqual(h2:GetParent(), parent, "and it must be re-parented to the row it now serves")
+end)
 
-  assertEqual(h2, h1, "a second render built a NEW handle over the first")
-  assertEqual(parent.__ka0sDragHandle, h1, "the handle must be cached on the parent")
+test("widgets: a row may be registered with no handle at all", function()
+  -- `draggable = false`. The row still counts for indices and still anchors the insertion line --
+  -- it is a place a drag can LAND, just not one a drag can start from. MultiMeters' hidden columns
+  -- are that case: they have an order among themselves that nothing can act on, and offering a
+  -- handle for it was offering a gesture with no meaning.
+  local rows = {}
+  for i = 1, 4 do rows[i] = geomFrame(); rows[i]:SetSize(200, 30) end
+
+  local moved = {}
+  local list = W.ReorderList({
+    stride   = 30,
+    boundary = 2,
+    onMove   = function(from, to) moved[#moved + 1] = { from, to } end,
+  })
+  local h1 = list:AddRow(rows[1], {})
+  list:AddRow(rows[2], {})
+  assertEqual(list:AddRow(rows[3], { draggable = false }), nil, "a non-draggable row gets no handle")
+  assertEqual(list:AddRow(rows[4], { draggable = false }), nil)
+  list:Finish(geomFrame())
+
+  assertEqual(#list.rows, 4, "every row still counts, or the indices and the line go wrong")
+  assertEqual(#list.handles, 2, "only the draggable rows may hold a handle")
+
+  -- And the draggable ones still behave, clamped to their own group.
+  mocks.setMouseDown("LeftButton", true)
+  mocks.setCursor(0, 1000)
+  h1:__fire("OnMouseDown")
+  mocks.setCursor(0, 1000 - 3 * 30)
+  rows[1]:__fire("OnUpdate", 0.1)
+  mocks.setMouseDown("LeftButton", false)
+  rows[1]:__fire("OnUpdate", 0.1)
+  assertEqual(moved[1][2], 2, "a draggable row still clamps to the last of its own group")
 end)
 
 test("widgets: a reused handle drives the LIVE controller, not the one it was built for", function()

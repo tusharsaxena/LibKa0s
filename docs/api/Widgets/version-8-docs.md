@@ -309,14 +309,24 @@ Every field is optional except the ones a working list needs.
 |---|---|
 | `AddRow(frame, spec)` | Registers one row, **in display order** — the index is the call order. Creates the handle as a child of `spec.parent or frame`, anchored `LEFT`, and returns it so the host may re-anchor it. |
 | `Finish(container)` | Names the frame the insertion line lives on — normally the scroll's content frame, or whatever the rows share as a parent. Call once, after the rows. |
-| `Cancel()` | Stops any drag in flight and puts the chrome away. Idempotent. **A host must call this when it repaints**, or a ghost outlives the list it names. |
+| `Cancel()` | Stops any drag in flight, puts the chrome away, and **gives every handle back**. Idempotent. **A host must call this before it renders anything** — see below. |
 
 `spec` on `AddRow`, all optional: `ghostText`, `ghostIcon`, `ghostIconColor`, `ghostTextColor`,
-`height`, `parent`.
+`height`, `parent`, and `draggable`.
+
+**`draggable = false` registers the row with no handle.** It still counts for indices and still
+anchors the insertion line — it is a place a drag can *land*, not one a drag can start from. Use it
+for rows that have an order nothing can act on.
 
 ### Behavior a host must know
 
-**One handle per parent, for the life of that parent.** Both shipped consumers hand over a frame
+**The library owns its handles, and `Cancel()` must run before the host renders anything.** Handles come from a free list here and are parented to the host's frame only while live; `Cancel()` hides, unanchors and reparents them away in one step.
+
+They are **not** cached on the host's frames, and that distinction cost a release. Both consumers hand over containers their UI framework pools — and AceGUI's pool is process-wide, so a released container goes to whatever asks next. A handle left parented and shown turned up on an unrelated part of the page: on a *Drag to action bar* row, on an ID entry box, on a dropdown. A frame's identity is not the host's to lend, so a cache keyed on it is a cache keyed on nothing.
+
+The same reasoning fixes the timing: a `Cancel()` that runs after the page has begun rebuilding runs after some other widget may already hold the frame. **Cancel at the very top of the render, before the first `AceGUI:Create`.**
+
+**Nothing about a drag closes over anything.** Both shipped consumers hand over a frame
 their UI framework *pools*, so `AddRow` caches the handle on it and re-points it rather than building
 a new one. It also reads `handle.__row` at fire time, and `beginDrag`/`finishDrag` reach the
 controller through `row.list` rather than closing over it. **All three are needed.** A handle built

@@ -54,7 +54,18 @@ player's debug log to find it.
 `Dropdown`, `CloseMenu`, `CopyWindow` and every one of their fields are unchanged. A host that does
 not call the new member needs a re-vendor and no code change.
 
-**The handle is cached on its parent, and nothing about a drag closes over anything.** Both
+**The library owns its handles rather than caching them on the host's frames.** Both consumers hand
+over containers their UI framework pools, and AceGUI's pool is process-wide — a released container
+goes to whatever asks next. A handle cached on one and left shown turned up on an unrelated part of
+the page: a *Drag to action bar* row, an ID entry box, a dropdown. A frame's identity is not the
+host's to lend. Handles now come from a free list and `Cancel()` gives them back — hidden, unanchored
+and reparented away — which also means **a host must Cancel before it renders anything**, not merely
+before it rebuilds the list.
+
+**`AddRow` takes `draggable = false`**, registering a row with no handle. It still counts for indices
+and still anchors the insertion line: a place a drag can land, not one it can start from.
+
+**Nothing about a drag closes over anything.** Both
 consumers hand over a frame their UI framework pools, so `AddRow` re-points a cached handle rather
 than building a new one; the handle reads its row at fire time; and `beginDrag`/`finishDrag` reach
 the controller through `row.list`. All three are needed, and the third is the one that bites: a
