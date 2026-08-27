@@ -10,6 +10,11 @@ local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse, assertNil, assertNear =
   T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil, T.assertNear
 local Fixture = dofile("tests/fixture_options.lua")
+-- The INTERNAL LAYOUT keys (CHROME_DIVIDER_*, TAB_BASELINE_H, TAB_ROW_GAP) have no O.* seam of
+-- their own -- by design, per the published/internal split at the top of Options.lua -- so a
+-- test that needs their raw numbers reads them off the lib table directly, same as
+-- tests/test_options.lua does.
+local lib = T.options
 
 --- A host, a throwaway panel and a parent container, so a maker can be driven in isolation.
 local panelSeq = 0
@@ -1268,6 +1273,34 @@ test("widgets: __tabPlacement places every index exactly once", function()
   for i = 1, 5 do assertTrue(seen[i], "index " .. i .. " was placed") end
 end)
 
+test("widgets: __bannerBand widens a real height by the gap/rule/gap, and a zero one not at all",
+function()
+  -- Pure arithmetic, deliberately: the widening is what feeds __tabPlacement's `top` (via
+  -- ctx.__bannerHeight), so it has to be checkable without a live dropdown frame.
+  -- red under: adding the gap/rule/gap unconditionally, which would push a tabs-only page's
+  -- first row down for a banner that was never drawn.
+  local O = Fixture.new()
+  local L = lib.LAYOUT
+  assertEqual(O.__bannerBand(44), 44 + L.CHROME_DIVIDER_GAP_TOP + L.CHROME_DIVIDER_H
+    + L.CHROME_DIVIDER_GAP_BOTTOM)
+  assertEqual(O.__bannerBand(0), 0, "no banner drawn, nothing to separate it from")
+  assertEqual(O.__bannerBand(nil), 0)
+end)
+
+test("widgets: __tabBand places the baseline under the last row and reserves past it", function()
+  -- red under: reserving the rows without the baseline, so the page's first widget lands under
+  -- the strip's own separator line.
+  local O = Fixture.new()
+  local L = lib.LAYOUT
+  local baselineY, reserved = O.__tabBand(44, 2, 24, 2, L.TAB_BASELINE_H)
+  assertEqual(baselineY, 44 + (2 * 24) + (1 * 2), "the baseline sits under both wrapped rows")
+  assertEqual(reserved, baselineY + L.TAB_BASELINE_H, "the reservation includes the baseline")
+
+  local singleY, singleReserved = O.__tabBand(0, 0, 24, 2, L.TAB_BASELINE_H)
+  assertEqual(singleY, 24, "a wrapless call is still treated as one row, same as __tabPlacement")
+  assertEqual(singleReserved, 24 + L.TAB_BASELINE_H)
+end)
+
 test("widgets: TabStrip draws one button per tab, marks the active one, and reserves the band",
 function()
   -- red under: reserving TAB_H before knowing the row count, or forgetting to reserve at all.
@@ -1287,7 +1320,11 @@ function()
   assertEqual(buttons[1].__template, nil, "tabs are raw Buttons, not a Blizzard template")
   assertFalse(buttons[2]:IsEnabled(), "the active tab is the disabled one, as Blizzard marks a tab")
   assertTrue(buttons[1]:IsEnabled())
-  assertTrue(ctx.chromeHeight >= O.TAB_H, "the strip reserved its own band")
+  -- The band includes the strip's own baseline (options-ui-§13), not just the row(s) of tabs --
+  -- floored rather than pinned exact, because the harness's zero-width chrome wraps these three
+  -- tabs onto more than one row (exercised precisely by O.__tabBand's own tests above).
+  assertTrue(ctx.chromeHeight >= O.TAB_H + lib.LAYOUT.TAB_BASELINE_H,
+    "the strip reserved its own row(s) plus the baseline under it")
 
   buttons[3]:__fire("OnClick")
   assertEqual(#picked, 1)
@@ -1325,7 +1362,9 @@ test("widgets: a second TabStrip call replaces the first rather than stacking on
     value = "b", onSelect = function() end,
   })
   assertEqual(#second, 2)
-  assertEqual(#ctx.__tabKids, 2, "the first strip's button was released, not orphaned")
+  -- The 2 buttons plus the strip's own baseline texture (options-ui-§13), which travels in the
+  -- same ledger so a re-render cannot leave the old one floating over the new strip.
+  assertEqual(#ctx.__tabKids, 3, "the first strip's furniture was released, not orphaned")
 end)
 
 test("widgets: TabStrip refuses politely with no AceGUI and with no tabs", function()
@@ -1358,7 +1397,10 @@ test("widgets: PageBanner draws a seeded picker and reserves the banner band", f
 
   assertEqual(dd.type, "Dropdown")
   assertEqual(dd.value, 2, "seeded from the caller's pointer, not from the list")
-  assertEqual(ctx.__bannerHeight, O.BANNER_H)
+  -- The recorded band is the WIDENED one -- the raw dropdown height plus the gap/rule/gap that
+  -- separate the banner from whatever is drawn under it (options-ui-§14) -- not the raw height
+  -- itself.
+  assertEqual(ctx.__bannerHeight, O.__bannerBand(O.BANNER_H))
   assertTrue(ctx.chromeHeight >= O.BANNER_H)
 
   dd:__fire("OnValueChanged", 1)
@@ -1367,15 +1409,22 @@ test("widgets: PageBanner draws a seeded picker and reserves the banner band", f
 end)
 
 test("widgets: banner then strip reserve ONE band between them, not two", function()
-  -- The two are drawn in that order by every page that has both, and the band has to hold both.
+  -- The two are drawn in that order by every page that has both, and the band has to hold both --
+  -- the banner's own row, the gap/rule/gap under it, the tab row, and the strip's own baseline.
   -- A strip that reserved only its own rows would slide up under the banner.
-  -- red under: SetChromeHeight overwriting rather than accumulating the banner's share.
+  -- red under: SetChromeHeight overwriting rather than accumulating the banner's share, or the
+  -- gap/rule/gap/baseline block going missing from the total.
   local O, _, ctx = bench()
   O.PageBanner(ctx, { label = "W", list = { [1] = "One" }, order = { 1 }, value = 1,
                       onSelect = function() end })
   O.TabStrip(ctx, { tabs = { { key = "a", label = "A" } }, value = "a",
                     onSelect = function() end })
-  assertEqual(ctx.chromeHeight, O.BANNER_H + O.TAB_H)
+  local bannerBand = O.__bannerBand(O.BANNER_H)
+  local _, reserved = O.__tabBand(bannerBand, 1, O.TAB_H, lib.LAYOUT.TAB_ROW_GAP,
+    lib.LAYOUT.TAB_BASELINE_H)
+  assertEqual(ctx.chromeHeight, reserved)
+  assertTrue(ctx.chromeHeight > O.BANNER_H + O.TAB_H,
+    "the gap, the rule and the baseline all widened the band beyond the bare banner + tab row")
 end)
 
 test("widgets: banner then strip leave no overlap in the reserved band", function()
@@ -1423,7 +1472,9 @@ test("widgets: repeated strip renders do not grow the page-wide chrome ledger", 
   for _ = 1, 5 do O.TabStrip(ctx, spec) end
   assertEqual(#(ctx.__chromeKids or {}), after1,
     "the page-wide ledger grew across strip re-renders")
-  assertEqual(#ctx.__tabKids, 2, "the strip still tracks its own buttons")
+  -- 2 buttons plus the strip's own baseline (options-ui-§13), and no more: the ledger is reset
+  -- every render rather than appended to.
+  assertEqual(#ctx.__tabKids, 3, "the strip still tracks its own furniture, not a growing pile")
 end)
 
 
