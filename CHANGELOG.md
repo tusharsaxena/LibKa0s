@@ -10,6 +10,73 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.22.0 — 2026-08-31
+
+Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 8**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 12**,
+**OptionsWidgets minor 11**, **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**,
+**kit revision 14**.
+
+**`LibKa0s-Options-1.0` minors 12/11 — the tab strip stops imitating client chrome and starts
+using it, and a first-render wrap bug goes with it.**
+
+v1.21.0 drew tabs from `Interface/OptionsFrame/`, the client's *old* tab textures. They were the
+right idea and the wrong art: those files have sloped transparent shoulders, so a 4px gap between
+two tabs read as twelve, and the 1px rule under the strip read as a line the tabs happened to be
+sitting near rather than as the edge of anything.
+
+**The reference implementation is now OPie's `Libs/TenSettings.lua`**, and this release copies it
+rather than approximating it — the `Options_Tab_*` / `Options_Tab_Active_*` atlases, three slices
+a tab with the end caps at natural size, the dark gradient backing, the two glows, the label
+anchored to the tab's bottom, `GetStringWidth() + 40`, and a 37px tab. One deliberate departure:
+OPie chains its tabs leftward from the frame's right edge and this strip packs them left to right,
+because a strip that wraps has to grow downward from a fixed origin and the left edge is the one
+the content column already uses.
+
+**The tab/content separator is now a real panel edge.** `TabStrip` draws the client's
+`Options_InnerFrame` behind the page — two halves meeting at the midpoint, the left one mirrored
+by a reversed u range so both corners stay crisp — anchored to the chrome's bottom and running to
+the content's own bottom inset. The selected tab is 37px tall against art that is shorter, and the
+difference is a **foot** that lands on that panel edge and merges into it. That merge is the thing
+a hairline could not do: three attempts at a 1px rule all read as disconnected, because a line is
+not an edge of anything.
+
+`TAB_BASELINE_H` is therefore gone and `__tabBand` no longer reserves it. A panel drawn *below*
+the band must not also be reserved *inside* it, or the page opens a one-pixel gap under its own
+tabs. `CONTENT_BOTTOM` replaces the literal `8` that `anchorScroll` used, so the scroll and the
+art behind it cannot end in different places.
+
+**Untabbed pages are untouched.** The panel is drawn by `TabStrip` and by nothing else, so the
+eight consumers that have never called it render exactly as they did at v1.21.0.
+
+**The first page a player opened stacked its tabs vertically.** `ctx.chrome` has zero width until
+the settings canvas lays itself out, and the first render happens before that: `placeTabs` read
+`0`, fell back to `TAB_MIN_W`, and every tab wrapped onto its own row. It healed the moment you
+clicked any tab, because the second render measured a real width — which is exactly why it
+survived a suite that only ever rendered twice.
+
+A width cannot be computed from config here; it is the canvas's, and the canvas is Blizzard's. So
+the strip re-places itself when the width arrives, through an `OnSizeChanged` script installed once
+per panel. Two things keep that from looping: the handler ignores everything but a *change* in
+width, and `placeTabs` records the width it used — so the height change `SetChromeHeight` causes,
+which fires the same script, is a no-op. The handler reads the current layout out of `ctx` rather
+than closing over one strip's buttons, which would pin a released set of buttons alive and
+re-place them after they were hidden.
+
+`O.EnsureDefaultsButton` has carried a note about `ctx.body` having zero width at enable time since
+minor 7. This is the same client behavior reaching a second piece of chrome, and the note there is
+why it was recognized rather than debugged.
+
+**`TAB_H` moves 24 → 37 and `TAB_PAD_X` 18 → 20.** `TAB_H` is published, so a host that reserves
+room beside a strip reserves 13px more; nothing else in the surface moves, and no member is added
+or removed. `TAB_PAD_X` has now been too small twice — at 12 the label sat on the end cap outright,
+at 18 it cleared the cap but left the tabs cramped against every other tab strip in the client.
+
+**`drawTabArt` and `makeTab` were split four ways and two.** Both measured CCN 17 against a release
+gate of 15, for the dullest possible reason: every texture path in this file carries the same two
+guards, and a function wearing all of them adds a branch per texture. The split is by what the
+textures *are* — slices, backing, glow, label — not by line count.
+
 ## v1.21.0 — 2026-08-31
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

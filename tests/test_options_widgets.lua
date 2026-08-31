@@ -1287,24 +1287,132 @@ function()
   assertEqual(O.__bannerBand(nil), 0)
 end)
 
-test("widgets: __tabBand places the baseline under the last row and reserves past it", function()
-  -- red under: reserving the rows without the baseline, so the page's first widget lands under
-  -- the strip's own separator line.
+test("widgets: __tabBand reserves every wrapped row and the gaps between them, and no more",
+function()
+  -- The band is where the content panel's top edge lands, so an over-reservation opens a gap
+  -- between the tabs and the page and an under-reservation buries the first row of settings.
+  -- red under: reserving one row's worth regardless of the wrap, or keeping the extra pixel the
+  -- retired hairline used to need -- the panel is drawn BELOW the band, never inside it.
   local O = Fixture.new()
-  local L = lib.LAYOUT
-  local baselineY, reserved = O.__tabBand(44, 2, 24, 2, L.TAB_BASELINE_H)
-  assertEqual(baselineY, 44 + (2 * 24) + (1 * 2), "the baseline sits under both wrapped rows")
-  assertEqual(reserved, baselineY + L.TAB_BASELINE_H, "the reservation includes the baseline")
-
-  local singleY, singleReserved = O.__tabBand(0, 0, 24, 2, L.TAB_BASELINE_H)
-  assertEqual(singleY, 24, "a wrapless call is still treated as one row, same as __tabPlacement")
-  assertEqual(singleReserved, 24 + L.TAB_BASELINE_H)
+  assertEqual(O.__tabBand(44, 2, 24, 2), 44 + (2 * 24) + (1 * 2), "both rows and the gap between")
+  assertEqual(O.__tabBand(0, 0, 24, 2), 24,
+    "a wrapless call is still treated as one row, same as __tabPlacement")
+  assertEqual(O.__tabBand(0, 1, 37, 2), 37, "one row reserves exactly one row")
 end)
 
---- Is this one of the two client tab-art files the strip is allowed to draw from?
-local function f_isTabArt(file)
-  return type(file) == "string" and file:find("UI%-OptionsFrame%-") ~= nil
+--- Drive TabStrip with every frame's CreateTexture instrumented, and hand back one record per
+--- frame: the atlases it asked for, in order.
+---
+--- The kit's base frame answers CreateTexture with the FRAME ITSELF, so "which atlas" is
+--- unanswerable off a plain bench -- and it is the whole of the two cases below. Wrapping the
+--- MOCKS' CreateFrame is the only seam: makeTab and drawContentPanel build raw frames and nothing
+--- is handed in to intercept. It has to be `T.mocks` rather than `_G`, because a loaded chunk
+--- reads its globals through the loader's env, whose __index resolves against the mocks table
+--- first -- so a _G assignment here would never be seen.
+local function tabAtlases(O, ctx, spec)
+  local realCreateFrame = T.mocks.CreateFrame
+  local buttons, frames = {}, {}
+  T.mocks.CreateFrame = function(kind, ...)
+    local f = realCreateFrame(kind, ...)
+    local rec = { kind = kind, atlases = {} }
+    if kind == "Button" then buttons[#buttons + 1] = rec else frames[#frames + 1] = rec end
+    function f:CreateTexture()
+      local t = {}
+      function t:SetAtlas(name) rec.atlases[#rec.atlases + 1] = name end
+      function t:SetPoint() end
+      function t:SetTexCoord() end
+      function t:SetColorTexture() end
+      function t:SetGradient() end
+      return t
+    end
+    return f
+  end
+  local ok, err = pcall(O.TabStrip, ctx, spec)
+  T.mocks.CreateFrame = realCreateFrame
+  if not ok then error(err) end
+  return buttons, frames
 end
+
+local function threeTabs(active)
+  return {
+    tabs = { { key = "a", label = "A" }, { key = "b", label = "B" } },
+    value = active,
+    onSelect = function() end,
+  }
+end
+
+test("widgets: a tab is cut from the client's own tab atlases, active art on the selected one",
+function()
+  -- The strip is meant to read as client chrome, not as a row of drawn rectangles: three atlas
+  -- slices per tab off the same state family, and the SELECTED tab off the Active family. Two
+  -- earlier attempts got this wrong in a way no assertion caught -- flat color fills, then the
+  -- retired Interface/OptionsFrame textures -- so the atlas names are pinned here directly.
+  -- red under: one texture instead of three, mixed families on one tab, or the selected tab
+  -- drawn from the same art as the rest and distinguished by color alone.
+  local O, _, ctx = bench()
+  local buttons = tabAtlases(O, ctx, threeTabs("b"))
+
+  assertEqual(#buttons, 2, "one button per tab")
+  for i, rec in ipairs(buttons) do
+    assertEqual(#rec.atlases, 3, "tab " .. i .. " is three slices: two caps and a middle")
+    local family = rec.atlases[1]:match("^Options_Tab_A?c?t?i?v?e?_?") or ""
+    for _, a in ipairs(rec.atlases) do
+      assertTrue(a:sub(1, #family) == family, "every slice off one family, got " .. a)
+    end
+  end
+
+  assertTrue(buttons[1].atlases[1]:find("Active", 1, true) == nil,
+    "the unselected tab is inactive art: " .. buttons[1].atlases[1])
+  assertTrue(buttons[2].atlases[1]:find("Active", 1, true) ~= nil,
+    "the selected tab is active art: " .. buttons[2].atlases[1])
+end)
+
+test("widgets: a tabbed page gets the client's content panel, drawn as two mirrored halves",
+function()
+  -- The panel's TOP EDGE is the tab/content separator (options-ui-§13). There is no hairline any
+  -- more: the selected tab's foot lands on this and merges into it, which is what makes the strip
+  -- read as attached to the page. Two halves, because the atlas has one good corner and the left
+  -- one is a mirrored copy of it.
+  -- red under: drawing the panel once and stretching a corner across the width, or -- the real
+  -- regression risk -- drawing it on an UNTABBED page, where eight of the nine consumers live.
+  local O, _, ctx = bench()
+  local _, frames = tabAtlases(O, ctx, threeTabs("a"))
+
+  local halves = 0
+  for _, rec in ipairs(frames) do
+    for _, a in ipairs(rec.atlases) do
+      if a == "Options_InnerFrame" then halves = halves + 1 end
+    end
+  end
+  assertEqual(halves, 2, "the content panel is two mirrored halves of one atlas")
+end)
+
+test("widgets: a strip laid out before the canvas has a width re-wraps when the width arrives",
+function()
+  -- THE BUG: ctx.chrome has zero width until the settings canvas lays itself out, and the FIRST
+  -- page a player opens renders before that. placeTabs read 0, fell back to TAB_MIN_W, and every
+  -- tab wrapped onto its own row -- a vertical stack that healed the moment you clicked any tab,
+  -- because the second render measured a real width. Reported from a client against the General
+  -- page; O.EnsureDefaultsButton already carries a note about ctx.body having zero width at
+  -- enable time, which is the same client behavior reaching a second piece of chrome.
+  -- red under: placing once and never again, which is what shipped.
+  local O, _, ctx = bench()
+  local tabs = {}
+  for i = 1, 4 do tabs[i] = { key = "k" .. i, label = "Tab " .. i } end
+  O.TabStrip(ctx, { tabs = tabs, value = "k1", onSelect = function() end })
+
+  -- The harness's chrome answers 0 from GetWidth, so this is the broken first render exactly.
+  local stacked = ctx.chromeHeight
+  assertTrue(stacked >= 4 * O.TAB_H, "four tabs stacked onto four rows: " .. tostring(stacked))
+
+  ctx.chrome:__fire("OnSizeChanged", 900)
+  assertEqual(ctx.chromeHeight, O.TAB_H, "a real width collapsed them onto one row")
+
+  -- Idempotent, and specifically immune to the height change SetChromeHeight itself causes --
+  -- which fires this very script. Re-firing at the same width must not re-place anything.
+  ctx.chrome:__fire("OnSizeChanged", 900)
+  assertEqual(ctx.chromeHeight, O.TAB_H, "the same width again is a no-op, not a second pass")
+end)
 
 test("widgets: TabStrip draws one button per tab, marks the active one, and reserves the band",
 function()
@@ -1328,82 +1436,13 @@ function()
   -- The band includes the strip's own baseline (options-ui-§13), not just the row(s) of tabs --
   -- floored rather than pinned exact, because the harness's zero-width chrome wraps these three
   -- tabs onto more than one row (exercised precisely by O.__tabBand's own tests above).
-  assertTrue(ctx.chromeHeight >= O.TAB_H + lib.LAYOUT.TAB_BASELINE_H,
-    "the strip reserved its own row(s) plus the baseline under it")
+  assertTrue(ctx.chromeHeight >= O.TAB_H,
+    "the strip reserved its own row(s)")
 
   buttons[3]:__fire("OnClick")
   assertEqual(#picked, 1)
   assertEqual(picked[1], "three")
   assertEqual(rec, rec, "no store write: a tab is not a setting")
-end)
-
---- Drive TabStrip with every tab button's CreateTexture instrumented, and hand back one record
---- per button: the texture files it asked for, and the y offsets it anchored them at.
----
---- The kit's base frame answers CreateTexture with the FRAME ITSELF, so "which file" and "how
---- far down" are both unanswerable off a plain bench -- and they are the whole of the case below.
---- Wrapping the MOCKS' CreateFrame is the only seam: makeTab builds a raw Button and nothing is
---- handed in to intercept. It has to be `T.mocks` rather than `_G`, because a loaded chunk reads
---- its globals through the loader's env, whose __index resolves against the mocks table first --
---- so a _G assignment here would never be seen.
-local function tabArt(O, ctx, spec)
-  local realCreateFrame = T.mocks.CreateFrame
-  local records = {}
-  T.mocks.CreateFrame = function(kind, ...)
-    local f = realCreateFrame(kind, ...)
-    if kind ~= "Button" then return f end
-    local rec = { files = {}, drops = {} }
-    records[#records + 1] = rec
-    function f:CreateTexture()
-      local t = {}
-      function t:SetTexture(v) rec.files[#rec.files + 1] = v end
-      function t:SetTexCoord() end
-      function t:SetSize() end
-      function t:SetHeight() end
-      function t:SetPoint(_, _, _, _, y)
-        if y then rec.drops[#rec.drops + 1] = y end
-      end
-      return t
-    end
-    return f
-  end
-  local ok, err = pcall(O.TabStrip, ctx, spec)
-  T.mocks.CreateFrame = realCreateFrame
-  if not ok then error(err) end
-  return records
-end
-
-test("widgets: a tab is cut from the client's own tab art, and the selected one hangs lower",
-function()
-  -- The strip is meant to read as client chrome, not as a row of bordered rectangles: it draws
-  -- the same two OptionsFrame files the client's own tab template does, three slices per button,
-  -- and it drops the SELECTED tab's art so its foot covers the baseline and the tab joins the
-  -- page under it. Both halves are the look; neither is decoration on top of it.
-  -- red under: tinted colour rectangles, one texture instead of three, or a selected tab that is
-  -- merely a different colour sitting on the baseline like the rest.
-  local O, _, ctx = bench()
-  local recs = tabArt(O, ctx, {
-    tabs = { { key = "a", label = "A" }, { key = "b", label = "B" } },
-    value = "b",
-    onSelect = function() end,
-  })
-
-  assertEqual(#recs, 2, "one button per tab")
-  for i, rec in ipairs(recs) do
-    assertEqual(#rec.files, 3, "tab " .. i .. " is three slices: two caps and a stretched middle")
-    for _, f in ipairs(rec.files) do
-      assertEqual(f, rec.files[1], "all three slices come from the SAME file as each other")
-    end
-    assertTrue(f_isTabArt(rec.files[1]), "and that file is the client's: " .. tostring(rec.files[1]))
-  end
-
-  assertTrue(recs[1].files[1]:find("InActiveTab", 1, true) ~= nil, "the unselected tab is inactive art")
-  assertTrue(recs[2].files[1]:find("-ActiveTab", 1, true) ~= nil, "the selected tab is active art")
-
-  -- Only the caps are anchored with a y offset; the middle hangs off them. An unselected tab
-  -- sits flush on the row, a selected one hangs below it.
-  assertEqual(recs[1].drops[1], 0, "an unselected tab sits on the baseline")
-  assertTrue(recs[2].drops[1] < 0, "the selected tab's art hangs below the row")
 end)
 
 test("widgets: clicking the ACTIVE tab does not re-fire onSelect", function()
@@ -1494,11 +1533,10 @@ test("widgets: banner then strip reserve ONE band between them, not two", functi
   O.TabStrip(ctx, { tabs = { { key = "a", label = "A" } }, value = "a",
                     onSelect = function() end })
   local bannerBand = O.__bannerBand(O.BANNER_H)
-  local _, reserved = O.__tabBand(bannerBand, 1, O.TAB_H, lib.LAYOUT.TAB_ROW_GAP,
-    lib.LAYOUT.TAB_BASELINE_H)
+  local reserved = O.__tabBand(bannerBand, 1, O.TAB_H, lib.LAYOUT.TAB_ROW_GAP)
   assertEqual(ctx.chromeHeight, reserved)
   assertTrue(ctx.chromeHeight > O.BANNER_H + O.TAB_H,
-    "the gap, the rule and the baseline all widened the band beyond the bare banner + tab row")
+    "the gap and the rule widened the band beyond the bare banner + tab row")
 end)
 
 test("widgets: banner then strip leave no overlap in the reserved band", function()
