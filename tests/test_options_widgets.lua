@@ -1301,6 +1301,11 @@ test("widgets: __tabBand places the baseline under the last row and reserves pas
   assertEqual(singleReserved, 24 + L.TAB_BASELINE_H)
 end)
 
+--- Is this one of the two client tab-art files the strip is allowed to draw from?
+local function f_isTabArt(file)
+  return type(file) == "string" and file:find("UI%-OptionsFrame%-") ~= nil
+end
+
 test("widgets: TabStrip draws one button per tab, marks the active one, and reserves the band",
 function()
   -- red under: reserving TAB_H before knowing the row count, or forgetting to reserve at all.
@@ -1330,6 +1335,75 @@ function()
   assertEqual(#picked, 1)
   assertEqual(picked[1], "three")
   assertEqual(rec, rec, "no store write: a tab is not a setting")
+end)
+
+--- Drive TabStrip with every tab button's CreateTexture instrumented, and hand back one record
+--- per button: the texture files it asked for, and the y offsets it anchored them at.
+---
+--- The kit's base frame answers CreateTexture with the FRAME ITSELF, so "which file" and "how
+--- far down" are both unanswerable off a plain bench -- and they are the whole of the case below.
+--- Wrapping the MOCKS' CreateFrame is the only seam: makeTab builds a raw Button and nothing is
+--- handed in to intercept. It has to be `T.mocks` rather than `_G`, because a loaded chunk reads
+--- its globals through the loader's env, whose __index resolves against the mocks table first --
+--- so a _G assignment here would never be seen.
+local function tabArt(O, ctx, spec)
+  local realCreateFrame = T.mocks.CreateFrame
+  local records = {}
+  T.mocks.CreateFrame = function(kind, ...)
+    local f = realCreateFrame(kind, ...)
+    if kind ~= "Button" then return f end
+    local rec = { files = {}, drops = {} }
+    records[#records + 1] = rec
+    function f:CreateTexture()
+      local t = {}
+      function t:SetTexture(v) rec.files[#rec.files + 1] = v end
+      function t:SetTexCoord() end
+      function t:SetSize() end
+      function t:SetHeight() end
+      function t:SetPoint(_, _, _, _, y)
+        if y then rec.drops[#rec.drops + 1] = y end
+      end
+      return t
+    end
+    return f
+  end
+  local ok, err = pcall(O.TabStrip, ctx, spec)
+  T.mocks.CreateFrame = realCreateFrame
+  if not ok then error(err) end
+  return records
+end
+
+test("widgets: a tab is cut from the client's own tab art, and the selected one hangs lower",
+function()
+  -- The strip is meant to read as client chrome, not as a row of bordered rectangles: it draws
+  -- the same two OptionsFrame files the client's own tab template does, three slices per button,
+  -- and it drops the SELECTED tab's art so its foot covers the baseline and the tab joins the
+  -- page under it. Both halves are the look; neither is decoration on top of it.
+  -- red under: tinted colour rectangles, one texture instead of three, or a selected tab that is
+  -- merely a different colour sitting on the baseline like the rest.
+  local O, _, ctx = bench()
+  local recs = tabArt(O, ctx, {
+    tabs = { { key = "a", label = "A" }, { key = "b", label = "B" } },
+    value = "b",
+    onSelect = function() end,
+  })
+
+  assertEqual(#recs, 2, "one button per tab")
+  for i, rec in ipairs(recs) do
+    assertEqual(#rec.files, 3, "tab " .. i .. " is three slices: two caps and a stretched middle")
+    for _, f in ipairs(rec.files) do
+      assertEqual(f, rec.files[1], "all three slices come from the SAME file as each other")
+    end
+    assertTrue(f_isTabArt(rec.files[1]), "and that file is the client's: " .. tostring(rec.files[1]))
+  end
+
+  assertTrue(recs[1].files[1]:find("InActiveTab", 1, true) ~= nil, "the unselected tab is inactive art")
+  assertTrue(recs[2].files[1]:find("-ActiveTab", 1, true) ~= nil, "the selected tab is active art")
+
+  -- Only the caps are anchored with a y offset; the middle hangs off them. An unselected tab
+  -- sits flush on the row, a selected one hangs below it.
+  assertEqual(recs[1].drops[1], 0, "an unselected tab sits on the baseline")
+  assertTrue(recs[2].drops[1] < 0, "the selected tab's art hangs below the row")
 end)
 
 test("widgets: clicking the ACTIVE tab does not re-fire onSelect", function()

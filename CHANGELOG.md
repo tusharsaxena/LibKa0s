@@ -10,6 +10,70 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.21.0 — 2026-08-31
+
+Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 8**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 11**,
+**OptionsWidgets minor 10**, **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**,
+**kit revision 14**.
+
+**`LibKa0s-Options-1.0` minors 11/10 — the tabbed page chrome, seen in a client and fixed there.**
+
+v1.20.0 shipped tabbed pages and a page banner. Everything here comes from looking at that feature
+running in the client, which found one bug that no headless suite could have found and three ways
+the chrome did not look like the UI it was sitting in. Nothing in this release is a new public
+member: a consumer re-vendors and gets the same API, drawn better.
+
+**The strip was drawn on top of the banner, and every tab was unclickable.** `placeTabs` derived
+row 1's y offset from the row index alone, which put it at `ctx.chrome`'s `TOPLEFT` — the anchor
+`PageBanner`'s dropdown already occupies. The band was *reserved* correctly the whole time; only
+the placement ignored the reservation, which is exactly the shape of bug a band-reserving test
+passes over. The arithmetic is now `O.__tabPlacement`, a pure rows-to-pixels mapping over numbers,
+the same seam `__layoutTabs` already gave the wrap decision, and `placeTabs` does nothing but apply
+it with `ctx.__bannerHeight` folded in as the `top` term the inline math never had.
+
+`PageBanner` also stopped forcing its dropdown to `BANNER_H`. It measures the frame and floors at
+that number instead, because a Dropdown carrying a label renders taller than a bare control and the
+forced height was clipping it. `BANNER_H` moves 30 → 44 to match, and now describes a floor rather
+than a fixed height.
+
+**The chrome band spans the content column, not the panel.** `CreatePanel`'s chrome anchor and
+`anchorScroll` both read `L.CONTENT_LEFT` / `L.CONTENT_RIGHT` from one seam, so a banner can no
+longer run wider than the scroll under it — which it visibly did, and which no test could see
+because a headless chrome has no width.
+
+**A gap, a hairline and a second gap separate the banner from the strip** (options-ui-§14), drawn
+by `PageBanner` and folded into `ctx.__bannerHeight` by the new pure `O.__bannerBand`, so `TabStrip`
+never re-derives that arithmetic.
+
+**Tabs are cut from the client's own tab art.** The three-slice `UI-OptionsFrame-InActiveTab` /
+`-ActiveTab` pair the client's own tab template uses — two 20px end caps and a stretched middle —
+with the client's `UI-Character-Tab-Highlight` glow on hover. The selected tab hangs 3px lower, so
+its foot covers the strip's baseline and the tab joins the page below it; that merge, not a color
+change, is what makes a row of buttons read as tabs. The strip's baseline is drawn in the neutral
+gray the client borders a panel with rather than in gold, because it is the top edge of the content
+area and not a separator between two pieces of chrome.
+
+This is the one place in `OptionsWidgets.lua` that prefers a Blizzard texture to a drawn one, and
+the reason is that here the look **is** the requirement. A tab is a piece of client chrome a player
+already recognizes, so an approximation reads as a near-miss in a way a drawn slider or a drawn
+section rule never does. The first attempt — flat fills and four 1px gold edges per button, shipped
+through the branch — was legible, correct, and unmistakably not part of the UI around it.
+`TAB_PAD_X` moves 12 → 18 so a label clears the 20px end caps; at 12 the text sat on the rounded
+shoulder, which was half of why a tab read as a bordered rectangle.
+
+**Every piece of new furniture travels in the ledger that matches its lifetime.** The banner's
+divider is in `ctx.__chromeKids`, redrawn only by a full page render; the strip's baseline is in
+`ctx.__tabKids`, redrawn by every tab click. Put the baseline in the wrong one and a click that
+shrinks the strip from two rows to one leaves the old line floating over the page's first setting.
+Each tab's three art slices are children of the button itself, so `releaseLedger` takes them with it
+and they need no ledger entry at all.
+
+New `LAYOUT` keys — `CONTENT_LEFT`, `CONTENT_RIGHT`, `CHROME_DIVIDER_GAP_TOP`, `CHROME_DIVIDER_H`,
+`CHROME_DIVIDER_GAP_BOTTOM`, `TAB_BASELINE_H` — are all internal-annotated. No host reads one, and
+the published scalars (`CHROME_GAP`, `TAB_H`, `BANNER_H`) are unchanged apart from `BANNER_H`'s new
+value and its new meaning as a floor.
+
 ## v1.20.0 — 2026-08-27
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
