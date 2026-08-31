@@ -128,7 +128,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12.11.3](./Options/version-12.11.3-docs.md) | `Options.lua` 12 · `OptionsWidgets.lua` 11 · `OptionsScroll.lua` 3 | v1.22.0 | **Current** |
+| [13.12.3](./Options/version-13.12.3-docs.md) | `Options.lua` 13 · `OptionsWidgets.lua` 12 · `OptionsScroll.lua` 3 | v1.23.0 | **Current** |
+| [12.11.3](./Options/version-12.11.3-docs.md) | `Options.lua` 12 · `OptionsWidgets.lua` 11 · `OptionsScroll.lua` 3 | v1.22.0 | Superseded |
 | [11.10.3](./Options/version-11.10.3-docs.md) | `Options.lua` 11 · `OptionsWidgets.lua` 10 · `OptionsScroll.lua` 3 | v1.21.0 | Superseded |
 | [10.9.3](./Options/version-10.9.3-docs.md) | `Options.lua` 10 · `OptionsWidgets.lua` 9 · `OptionsScroll.lua` 3 | v1.20.0 | Superseded |
 | [9.8.3](./Options/version-9.8.3-docs.md) | `Options.lua` 9 · `OptionsWidgets.lua` 8 · `OptionsScroll.lua` 3 | v1.18.1 – v1.19.0 | Superseded |

@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 12.11.3
+# `LibKa0s-Options-1.0` — version 13.12.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,63 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **12** · `OptionsWidgets.lua` **11** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **13** · `OptionsWidgets.lua` **12** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsScroll>`, in load order — the same three numbers `lib.MODULES` reports |
-| Shipped in | v1.22.0 |
-| Status | Superseded |
-| Supersedes | [version 11.10.3](./version-11.10.3-docs.md) |
-| Superseded by | [version 13.12.3](./version-13.12.3-docs.md) |
+| Shipped in | v1.23.0 |
+| Status | **Current** |
+| Supersedes | [version 12.11.3](./version-12.11.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 12, OptionsWidgets = 11, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 13, OptionsWidgets = 12, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O12`
-for `Options.lua` minor 12, `W11` for `OptionsWidgets.lua` minor 11, `S1` for `OptionsScroll.lua`
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O13`
+for `Options.lua` minor 13, `W12` for `OptionsWidgets.lua` minor 12, `S1` for `OptionsScroll.lua`
 minor 1. Minors 1 and 2 of each file were never tagged, so `O1`/`W1`/`S1` means "present for as long
 as any consumer could have had this major".
 
 ## What changed at this version
+
+**`Options.lua` minor 13 / `OptionsWidgets.lua` minor 12 — the content box stops touching its own
+contents, and wrapped rows of tabs sit flush** (options-ui-§13).
+
+Two things a client showed that 12.11.3's arithmetic could not. Neither adds a member; both are
+geometry the headless suite had no way to be wrong about, because a headless chrome has no width
+and a headless atlas has no height.
+
+**A box has to be outside everything it contains.** 12.11.3 anchored the `Options_InnerFrame`
+panel on the content column's own edges — the same `CONTENT_LEFT` / `CONTENT_RIGHT` the page's
+widgets use. So the left-hand row labels butted against the left border, and AceGUI's always-shown
+scrollbar, which sits *outboard* of `CONTENT_RIGHT` by design, was painted on top of the right one.
+
+The panel now carries its own three internal insets — `PANEL_LEFT`, `PANEL_RIGHT`, `PANEL_BOTTOM`,
+each smaller than the content column's — and is anchored horizontally to `ctx.body` rather than to
+`ctx.chrome`. The tab strip stays on the content column, which leaves the leftmost tab a few pixels
+inside the box's left edge: OPie's arrangement, and the reason its tabs read as sitting *on* the
+panel rather than as being its top row.
+
+**A wrapped strip packs by the ART's height, not the button's** (W12). A tab button is `TAB_H`
+(37px) carrying an atlas that is shorter, and the difference is the foot that overlaps the panel —
+so the empty strip along each button's top stood between two rows as a visible gap. The atlas's
+height is only knowable from the client, so `drawTabSlices` measures it (`GetHeight` after
+`SetAtlas(name, true)`) and the strip packs rows by that number.
+
+Two consequences worth stating:
+
+- The next row's button overlaps the previous row's art by exactly the empty amount, so each
+  button takes a `SetHitRectInsets` removing its own empty top from the mouse. Without it, row 2
+  would swallow clicks aimed at the bottom of row 1.
+- `__tabBand`'s shape becomes **(n − 1) pitches plus one whole tab**. Every row but the last
+  contributes only its pitch, because the next row overlaps it; the last must fit whole, since its
+  bottom is the edge the content panel starts at.
+
+**`TAB_ROW_GAP` is retired**, and `__tabPlacement` / `__tabBand` take a `rowPitch` where they took
+a `tabH` and a `rowGap`. A measured pitch is not a height plus a gap, and keeping a gap constant
+beside it would be two numbers for one decision. Both fall back to `TAB_H` where nothing can be
+measured, which is exactly the pre-measurement behavior with no gap.
+
+**Untabbed pages remain untouched.** The panel is drawn by `TabStrip` and nothing else.
+
+## Previously, at 12.11.3
 
 **`Options.lua` minor 12 / `OptionsWidgets.lua` minor 11 — the tab strip stops imitating client
 chrome and starts using it, and a first-render wrap bug goes with it** (options-ui-§13).
@@ -85,78 +127,11 @@ was recognized rather than debugged.
 on the end cap outright, at 18 it cleared the cap but left the tabs cramped against every other tab
 strip in the client. 20 a side is OPie's `+ 40`.
 
-**Ten internal `lib.LAYOUT` keys stay unpublished**, each annotated in `Options.lua` with why:
-`TAB_PAD_X`, `TAB_GAP`, `TAB_MIN_W`, `TAB_ROW_GAP`, `CONTENT_LEFT`, `CONTENT_RIGHT`,
-`CHROME_DIVIDER_GAP_TOP`, `CHROME_DIVIDER_H`, `CHROME_DIVIDER_GAP_BOTTOM`, and at 12.11.3
-`CONTENT_BOTTOM`, which replaced `TAB_BASELINE_H`.
-
-## Previously, at 11.10.3
-
-**`Options.lua` minor 11 / `OptionsWidgets.lua` minor 10 — the tabbed page chrome, seen in a client
-and fixed there** (options-ui-§13, §14).
-
-10.9.3 introduced the chrome slot, the tab strip and the page banner. Everything at this version
-comes from looking at that feature running in the client: one bug no headless suite could have
-found, and three ways the chrome did not look like the UI around it. **Nothing here is a new public
-member.** A consumer re-vendors and gets the same surface, drawn correctly — the only published
-number that moves is `BANNER_H`, and it moves from a fixed height to a floor.
-
-**The strip was drawn on top of the banner, and every tab was unclickable** (W10). `placeTabs`
-derived row 1's y offset from the row index alone, which put it at `ctx.chrome`'s `TOPLEFT` — the
-anchor `PageBanner`'s dropdown already occupies. The band was *reserved* correctly the whole time;
-only the placement ignored the reservation, which is why a suite that asserted the reservation
-passed straight over it.
-
-The arithmetic is now `O.__tabPlacement`, pure rows-to-pixels over numbers — the same kind of seam
-`__layoutTabs` already gave the wrap decision — and `placeTabs` does nothing but apply it, with
-`ctx.__bannerHeight` folded in as the `top` term the inline math never had.
-
-**`BANNER_H` is a floor, not a height, and it moves 30 → 44** (O11). `PageBanner` no longer forces
-its dropdown to `BANNER_H`; it measures the frame and floors at that number. An AceGUI `Dropdown`
-carrying a label renders taller than a bare control, and the forced height was clipping it.
-
-**The chrome band spans the content column, not the panel** (O11). `CreatePanel`'s chrome anchor and
-`anchorScroll` both read `L.CONTENT_LEFT` / `L.CONTENT_RIGHT` from one seam, so a banner can no
-longer run wider than the scroll beneath it. No test could see this: a headless chrome has no width.
-
-**A gap, a hairline rule and a second gap separate the banner from the strip** (W10,
-options-ui-§14). Drawn by `PageBanner`, and folded into `ctx.__bannerHeight` by the new pure
-`O.__bannerBand`, so `TabStrip`'s placement never re-derives that arithmetic. The strip's own band —
-its rows plus its 1px baseline — is reserved through the matching pure `O.__tabBand`.
-
-**Tabs are cut from the client's own tab art** (W10). The three-slice
-`Interface\OptionsFrame\UI-OptionsFrame-InActiveTab` / `-ActiveTab` pair the client's own tab
-template uses — two 20px end caps and a middle stretched between them — with the client's
-`UI-Character-Tab-Highlight` glow on hover. The **selected** tab's art hangs 3px lower, so its foot
-covers the strip's baseline and the tab joins the page below it. That merge, not a color change, is
-what makes a row of buttons read as tabs; the selected tab is still the *disabled* one, which is how
-Blizzard marks selection and why clicking the tab you are on cannot re-render the page you are
-already looking at.
-
-This is the one place in `OptionsWidgets.lua` that prefers a Blizzard texture to a drawn one, and
-the reason is that here the look **is** the requirement: a tab is a piece of client chrome a player
-already recognizes, so an approximation reads as a near-miss in a way a drawn slider or a drawn
-section rule never does. The first attempt — flat fills and four 1px gold edges per button — was
-legible, correct, and unmistakably not part of the UI around it.
-
-The strip's baseline is drawn in the neutral gray the client borders a panel with rather than in
-gold, because it is the top edge of the content area and not a separator between two pieces of
-chrome. The banner/strip hairline keeps its dim gold, for the opposite reason: a separator between
-two pieces of chrome should disappear rather than read.
-
-**`TAB_PAD_X` moves 12 → 18** (O11, internal). A label has to clear the 20px end caps; at 12 it sat
-on the rounded shoulder, which was half of why a tab read as a bordered rectangle.
-
-**Every piece of new furniture travels in the ledger that matches its lifetime.** The banner's
-divider is in `ctx.__chromeKids`, redrawn only by a full page render; the strip's baseline is in
-`ctx.__tabKids`, redrawn by every tab click. Put the baseline in the wrong one and a click that
-shrinks the strip from two rows to one leaves the old line floating over the page's first setting.
-Each tab's three art slices are children of the button itself, so `releaseLedger` takes them with it
-and they need no ledger entry at all.
-
-**Six new internal `lib.LAYOUT` keys**, none published, each annotated in `Options.lua` with why:
-`CONTENT_LEFT`, `CONTENT_RIGHT`, `CHROME_DIVIDER_GAP_TOP`, `CHROME_DIVIDER_H`,
-`CHROME_DIVIDER_GAP_BOTTOM`, `TAB_BASELINE_H`.
+**Twelve internal `lib.LAYOUT` keys stay unpublished**, each annotated in `Options.lua` with why:
+`TAB_PAD_X`, `TAB_GAP`, `TAB_MIN_W`, `CONTENT_LEFT`, `CONTENT_RIGHT`, `CONTENT_BOTTOM`,
+`CHROME_DIVIDER_GAP_TOP`, `CHROME_DIVIDER_H`, `CHROME_DIVIDER_GAP_BOTTOM`, and at 13.12.3
+`PANEL_LEFT`, `PANEL_RIGHT`, `PANEL_BOTTOM`. `TAB_ROW_GAP` was retired here; `TAB_BASELINE_H` at
+12.11.3.
 
 ## What this major is
 
@@ -285,8 +260,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `SetChromeHeight(ctx, height)` | **O10** | Reserve `height` pixels of pinned chrome above the scroll, and re-anchor a live scroll to match. Idempotent. `height <= 0` hides `ctx.chrome`. Call only after the wrap of whatever is being reserved is known. |
 | `__scrollTopInset(ctx)` | **O10** | `L.CHROME_GAP + (ctx.chromeHeight or 0)` — the seam `EnsureScroll` and `SetChromeHeight` both read for the scroll's top anchor, so the two cannot disagree. |
 | `__layoutTabs(widths, available, gap)` | **W9** | Pure arithmetic: pack tab pixel widths into rows that fit `available`. A tab wider than `available` is placed alone rather than dropped. Returns rows of 1-based indices into `widths`. Test seam for the wrap rule, callable with no widgets. |
-| `__tabPlacement(widths, available, gap, top, tabH, rowGap)` | **W10** | Pure arithmetic: the wrap from `__layoutTabs` turned into `{ index, width, x, y }` per tab, plus the row count. `top` is the banner's finished band, which is why row 1 no longer lands on the banner. Callable with no widgets. |
-| `__tabBand(top, rowCount, tabH, rowGap)` | **W10** (signature: **W11**) | Pure arithmetic: how many pixels the strip reserves in total, banner included — which is also where the content panel's top edge lands. Took a fifth `baselineH` and returned two numbers through 11.10.3. |
+| `__tabPlacement(widths, available, gap, top, rowPitch)` | **W10** (signature: **W12**) | Pure arithmetic: the wrap from `__layoutTabs` turned into `{ index, width, x, y }` per tab, plus the row count. `top` is the banner's finished band, which is why row 1 no longer lands on the banner. `rowPitch` is the tab ART's measured height, not the button's. Callable with no widgets. |
+| `__tabBand(top, rowCount, tabH, rowPitch)` | **W10** (signature: **W12**) | Pure arithmetic: how many pixels the strip reserves in total, banner included — which is also where the content panel's top edge lands. **(n − 1) pitches plus one whole tab**, because every row but the last is overlapped by the one under it. Took a `rowGap` through 12.11.3 and a `baselineH` through 11.10.3. |
 | `__bannerBand(rawHeight, gapTop, ruleH, gapBottom)` | **W10** | Pure arithmetic: the banner's own height widened by the gap, hairline and gap that separate it from the strip (options-ui-§14). What `ctx.__bannerHeight` holds. |
 | `__releaseChrome(ctx)` | **W9** | Test seam. Hides, unparents and forgets every widget in both chrome ledgers (`ctx.__chromeKids`, `ctx.__tabKids`). |
 | `RegisterOptionsPage(key, name, builder)` | O1 | Queue a page. Builders run once, in order, at `CreateOptionsPanel`. |
@@ -390,14 +365,12 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
 never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. This
-version adds **no member at all** either. It replaces the tab art with the client's own atlases,
-replaces the strip's 1px rule with the content panel whose edge it was pretending to be, and fixes
-the first-render wrap.
+version adds **no member at all** either, and moves no published value: it is entirely the
+geometry of the content box and of a wrapped tab strip.
 
-Two things move that a careful host could notice. `TAB_H` goes `24` → `37`, so a host that reads it
-to reserve room beside a strip reserves 13px more and is still correct. And `__tabBand` — an
-internal test seam, not part of the surface — loses its fifth argument and its second return along
-with `TAB_BASELINE_H`; no host calls it, and this note exists because the *library's own tests* did.
+Two internal test seams change shape. `__tabPlacement` and `__tabBand` take a `rowPitch` where they
+took a `tabH` and a `rowGap`, and `TAB_ROW_GAP` is retired with it. No host calls either; this note
+exists because the *library's own tests* do.
 
 A consumer that calls none of the chrome surface still renders byte-identically to 9.8.3, for the
 reason it always did: `ctx.chromeHeight` starts at `0`, so `EnsureScroll`'s anchor computes to the
@@ -412,16 +385,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The three files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to 13.12.3
-
-`Options.lua` minor 13 and `OptionsWidgets.lua` minor 12 add **no member** and move no published
-value. They fix two pieces of this version's geometry that only a client could show. The
-`Options_InnerFrame` panel was anchored on the content column's own edges, so the scrollbar was
-painted on its right border and the row labels butted against its left one; it now carries its own
-`PANEL_LEFT` / `PANEL_RIGHT` / `PANEL_BOTTOM` insets, all smaller than the content column's. And a
-wrapped strip packed its rows by the tab BUTTON's height rather than the tab ART's, leaving each
-button's empty top standing between two rows as a gap; the atlas is now measured and the rows sit
-flush. `TAB_ROW_GAP` is retired, and `__tabPlacement` / `__tabBand` take a `rowPitch` in place of a
-`tabH` plus a `rowGap`. A copy on this version keeps behaving exactly as documented here.
-See [version 13.12.3](./version-13.12.3-docs.md).

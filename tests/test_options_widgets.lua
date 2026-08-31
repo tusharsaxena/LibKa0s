@@ -10,7 +10,7 @@ local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse, assertNil, assertNear =
   T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil, T.assertNear
 local Fixture = dofile("tests/fixture_options.lua")
--- The INTERNAL LAYOUT keys (CHROME_DIVIDER_*, TAB_BASELINE_H, TAB_ROW_GAP) have no O.* seam of
+-- The INTERNAL LAYOUT keys (CHROME_DIVIDER_*, PANEL_*, CONTENT_*) have no O.* seam of
 -- their own -- by design, per the published/internal split at the top of Options.lua -- so a
 -- test that needs their raw numbers reads them off the lib table directly, same as
 -- tests/test_options.lua does.
@@ -1241,20 +1241,23 @@ function()
   -- The bug this seam exists to prevent: row 1 landing at ctx.chrome's TOPLEFT -- the same
   -- anchor the banner's dropdown uses -- because the offset was computed from the row index
   -- alone, with no `top` term for the band already spoken for above the strip.
-  -- red under: `y = -((r - 1) * (tabH + rowGap))`, which answers 0 for row 1 regardless of top.
+  -- red under: `y = -((r - 1) * rowPitch)`, which answers 0 for row 1 regardless of top.
   local O = Fixture.new()
-  local placement, rowCount = O.__tabPlacement({ 60, 60, 60 }, 150, 4, 44, 24, 2)
+  local placement, rowCount = O.__tabPlacement({ 60, 60, 60 }, 150, 4, 44, 28)
   assertEqual(rowCount, 2, "60+4+60 fits in 150; the third tab wraps, same as __layoutTabs")
   assertEqual(#placement, 3, "every tab placed")
   assertEqual(placement[1].y, -44, "row 1 sits at the bottom of the reserved band, not at 0")
   assertEqual(placement[2].y, -44, "row 1's second tab shares row 1's y")
-  assertEqual(placement[3].y, -(44 + 24 + 2), "row 2 sits a full tab + row gap below row 1")
+  -- ONE PITCH, not a tab height plus a gap. The pitch is the tab ART's height, which is shorter
+  -- than the button; packing by the button left the empty strip along each button's top standing
+  -- between the two rows as a visible gap.
+  assertEqual(placement[3].y, -(44 + 28), "row 2 sits exactly one pitch below row 1, flush to it")
 end)
 
 test("widgets: __tabPlacement accumulates x across a row", function()
   -- red under: resetting x to 0 for every tab instead of advancing past the previous one.
   local O = Fixture.new()
-  local placement = O.__tabPlacement({ 60, 80 }, 1000, 4, 0, 24, 2)
+  local placement = O.__tabPlacement({ 60, 80 }, 1000, 4, 0, 24)
   assertEqual(placement[1].x, 0, "the first tab in a row starts at the row's left edge")
   assertEqual(placement[2].x, 64, "the second tab starts after the first tab's width plus the gap")
 end)
@@ -1264,7 +1267,7 @@ test("widgets: __tabPlacement places every index exactly once", function()
   -- from the strip with nothing said about it.
   -- red under: dropping an over-wide tab, or emitting an index twice across two rows.
   local O = Fixture.new()
-  local placement = O.__tabPlacement({ 60, 500, 60, 60, 60 }, 130, 4, 0, 24, 2)
+  local placement = O.__tabPlacement({ 60, 500, 60, 60, 60 }, 130, 4, 0, 24)
   local seen = {}
   for _, p in ipairs(placement) do
     assertEqual(seen[p.index], nil, "index " .. p.index .. " placed only once")
@@ -1287,17 +1290,21 @@ function()
   assertEqual(O.__bannerBand(nil), 0)
 end)
 
-test("widgets: __tabBand reserves every wrapped row and the gaps between them, and no more",
-function()
+test("widgets: __tabBand reserves the wrapped rows at their pitch, plus one full tab", function()
   -- The band is where the content panel's top edge lands, so an over-reservation opens a gap
   -- between the tabs and the page and an under-reservation buries the first row of settings.
-  -- red under: reserving one row's worth regardless of the wrap, or keeping the extra pixel the
-  -- retired hairline used to need -- the panel is drawn BELOW the band, never inside it.
+  --
+  -- The shape is (n-1) PITCHES plus one full TAB, not n tabs: every row but the last contributes
+  -- only its pitch, because the next row's button overlaps its empty top. The LAST row is the one
+  -- that has to fit whole, since its bottom is the edge the panel starts at.
+  -- red under: n * pitch (the panel eats into the last row of tabs) or n * tabH (a gap opens
+  -- under a wrapped strip, which is what the old height-plus-gap form did).
   local O = Fixture.new()
-  assertEqual(O.__tabBand(44, 2, 24, 2), 44 + (2 * 24) + (1 * 2), "both rows and the gap between")
-  assertEqual(O.__tabBand(0, 0, 24, 2), 24,
+  assertEqual(O.__tabBand(44, 2, 37, 28), 44 + 28 + 37, "one pitch for row 1, a whole tab for row 2")
+  assertEqual(O.__tabBand(0, 0, 37, 28), 37,
     "a wrapless call is still treated as one row, same as __tabPlacement")
-  assertEqual(O.__tabBand(0, 1, 37, 2), 37, "one row reserves exactly one row")
+  assertEqual(O.__tabBand(0, 1, 37, 28), 37, "one row reserves exactly one tab, no pitch at all")
+  assertEqual(O.__tabBand(0, 3, 24, 24), 72, "pitch == tabH degenerates to n rows")
 end)
 
 --- Drive TabStrip with every frame's CreateTexture instrumented, and hand back one record per
@@ -1309,16 +1316,22 @@ end)
 --- is handed in to intercept. It has to be `T.mocks` rather than `_G`, because a loaded chunk
 --- reads its globals through the loader's env, whose __index resolves against the mocks table
 --- first -- so a _G assignment here would never be seen.
-local function tabAtlases(O, ctx, spec)
+local function tabAtlases(O, ctx, spec, artHeight)
   local realCreateFrame = T.mocks.CreateFrame
   local buttons, frames = {}, {}
   T.mocks.CreateFrame = function(kind, ...)
     local f = realCreateFrame(kind, ...)
-    local rec = { kind = kind, atlases = {} }
+    local rec = { kind = kind, atlases = {}, points = {} }
     if kind == "Button" then buttons[#buttons + 1] = rec else frames[#frames + 1] = rec end
+    -- The frame's OWN anchors, which the kit's base stub no-ops. The content panel's whole
+    -- correctness is where its four corners land, so they have to be observable.
+    function f:SetPoint(point, rel, relPoint, x, y)
+      rec.points[point] = { rel = rel, relPoint = relPoint, x = x, y = y }
+    end
     function f:CreateTexture()
       local t = {}
       function t:SetAtlas(name) rec.atlases[#rec.atlases + 1] = name end
+      function t:GetHeight() return artHeight end
       function t:SetPoint() end
       function t:SetTexCoord() end
       function t:SetColorTexture() end
@@ -1385,6 +1398,50 @@ function()
     end
   end
   assertEqual(halves, 2, "the content panel is two mirrored halves of one atlas")
+end)
+
+test("widgets: the content box is drawn WIDER than the content column it encloses", function()
+  -- THE BUG at 12.11.3: the box was anchored on the content column's own edges, so AceGUI's
+  -- always-shown scrollbar -- which sits OUTBOARD of CONTENT_RIGHT -- was painted on top of the
+  -- right border, and the left-hand row labels butted against the left one. A box has to be
+  -- outside everything it contains.
+  -- red under: anchoring the panel flush to ctx.chrome, which is the content column exactly.
+  local O, _, ctx = bench()
+  local _, frames = tabAtlases(O, ctx, threeTabs("a"))
+
+  local panel
+  for _, rec in ipairs(frames) do
+    for _, a in ipairs(rec.atlases) do
+      if a == "Options_InnerFrame" then panel = rec end
+    end
+  end
+  assertTrue(panel ~= nil, "the content panel frame was found")
+
+  local L = lib.LAYOUT
+  -- Negative x pushes the top-left corner LEFT of the chrome, positive pushes the top-right
+  -- corner RIGHT of it. Both must be non-zero, or the box is on the content column.
+  assertEqual(panel.points.TOPLEFT.x, -(L.CONTENT_LEFT - L.PANEL_LEFT))
+  assertEqual(panel.points.TOPRIGHT.x, L.CONTENT_RIGHT - L.PANEL_RIGHT)
+  assertTrue(panel.points.TOPLEFT.x < 0, "the box starts left of the first widget")
+  assertTrue(panel.points.TOPRIGHT.x > 0, "and ends right of the scrollbar")
+  assertTrue(L.PANEL_BOTTOM < L.CONTENT_BOTTOM, "and below the last widget")
+end)
+
+test("widgets: wrapped rows are packed by the ART's height, so they sit flush", function()
+  -- The tab BUTTON is taller than the atlas it carries -- the extra height is the foot that
+  -- overlaps the content panel -- so packing rows by the button height leaves that empty strip
+  -- standing between two rows as a visible gap. Reported from a client on a six-tab page.
+  -- red under: a pitch of TAB_H, or of TAB_H plus any gap at all.
+  local O, _, ctx = bench()
+  local tabs = {}
+  for i = 1, 4 do tabs[i] = { key = "k" .. i, label = "Tab " .. i } end
+  -- The harness's chrome answers 0 from GetWidth, so all four tabs wrap onto their own rows.
+  tabAtlases(O, ctx, { tabs = tabs, value = "k1", onSelect = function() end }, 28)
+
+  -- Three rows contribute a pitch each; the LAST contributes a whole tab, because its bottom is
+  -- the edge the content panel starts at.
+  assertEqual(ctx.chromeHeight, (3 * 28) + O.TAB_H)
+  assertTrue(ctx.chromeHeight < 4 * O.TAB_H, "flush rows are shorter than four stacked buttons")
 end)
 
 test("widgets: a strip laid out before the canvas has a width re-wraps when the width arrives",
@@ -1533,7 +1590,7 @@ test("widgets: banner then strip reserve ONE band between them, not two", functi
   O.TabStrip(ctx, { tabs = { { key = "a", label = "A" } }, value = "a",
                     onSelect = function() end })
   local bannerBand = O.__bannerBand(O.BANNER_H)
-  local reserved = O.__tabBand(bannerBand, 1, O.TAB_H, lib.LAYOUT.TAB_ROW_GAP)
+  local reserved = O.__tabBand(bannerBand, 1, O.TAB_H, O.TAB_H)
   assertEqual(ctx.chromeHeight, reserved)
   assertTrue(ctx.chromeHeight > O.BANNER_H + O.TAB_H,
     "the gap and the rule widened the band beyond the bare banner + tab row")
@@ -1553,7 +1610,7 @@ test("widgets: banner then strip leave no overlap in the reserved band", functio
                     onSelect = function() end })
   assertTrue(ctx.__bannerHeight > 0, "PageBanner recorded a band")
 
-  local placement = O.__tabPlacement({ 60 }, 200, 0, ctx.__bannerHeight, O.TAB_H, 0)
+  local placement = O.__tabPlacement({ 60 }, 200, 0, ctx.__bannerHeight, O.TAB_H)
   assertEqual(placement[1].y, -ctx.__bannerHeight,
     "the strip's first row starts exactly at the bottom of the banner's band, never above it")
 end)

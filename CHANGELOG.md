@@ -10,6 +10,51 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.23.0 — 2026-08-31
+
+Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 8**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 13**,
+**OptionsWidgets minor 12**, **OptionsScroll minor 3**, **Perf minor 7**, **PerfPanel minor 4**,
+**kit revision 14**.
+
+**`LibKa0s-Options-1.0` minors 13/12 — the content box stops touching its own contents, and
+wrapped rows of tabs sit flush.**
+
+Two things a client showed that v1.22.0's arithmetic could not. Neither is a new member; both are
+geometry the headless suite had no way to be wrong about, because a headless chrome has no width
+and a headless atlas has no height.
+
+**A box has to be outside everything it contains.** v1.22.0 anchored the `Options_InnerFrame`
+panel on the content column's own edges — the same `CONTENT_LEFT` / `CONTENT_RIGHT` the widgets
+use. So the left-hand row labels butted against the left border, and AceGUI's always-shown
+scrollbar, which sits *outboard* of `CONTENT_RIGHT` by design, was painted on top of the right one.
+
+The panel now has its own three insets — `PANEL_LEFT`, `PANEL_RIGHT`, `PANEL_BOTTOM`, all smaller
+than the content column's — and is anchored horizontally to `ctx.body` rather than to `ctx.chrome`.
+The tab strip stays on the content column, which leaves the leftmost tab a few pixels inside the
+box's left edge: OPie's arrangement, and the reason its tabs read as sitting *on* the panel rather
+than as being its top row.
+
+**A wrapped strip packs by the ART's height, not the button's.** A tab button is 37px carrying an
+atlas that is shorter, and the difference is the foot that overlaps the panel — so the empty strip
+along each button's top was standing between two rows as a visible gap. The atlas's height is only
+knowable from the client, so `drawTabSlices` now measures it (`GetHeight` after `SetAtlas(name,
+true)`) and the strip packs rows by that number.
+
+Two consequences worth stating. The next row's button overlaps the previous row's art by exactly
+the empty amount, so each button takes a `SetHitRectInsets` that removes its own empty top from the
+mouse — without it, row 2 would swallow clicks aimed at row 1. And `__tabBand`'s shape changes to
+**(n − 1) pitches plus one whole tab**: every row but the last contributes only its pitch, because
+the next row overlaps it, while the last must fit whole since its bottom is the edge the panel
+starts at.
+
+`TAB_ROW_GAP` is retired. A measured pitch is not a height plus a gap, and keeping a gap constant
+beside it would be two numbers for one decision. `__tabPlacement` and `__tabBand` both take a
+`rowPitch` where they took a `tabH` and a `rowGap`; both fall back to `TAB_H` where nothing can be
+measured, which is exactly the pre-measurement behavior with no gap.
+
+**Untabbed pages remain untouched.** The panel is still drawn by `TabStrip` and nothing else.
+
 ## v1.22.0 — 2026-08-31
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
