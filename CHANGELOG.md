@@ -10,6 +10,179 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.24.0 — 2026-09-02
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 14**,
+**OptionsWidgets minor 13**, **OptionsCompose minor 1**, **OptionsScroll minor 3**, **Perf minor 7**,
+**PerfPanel minor 4**, **kit revision 14**.
+
+**One release, re-vendored into all nine addons at once.** The settings revamp touches four majors
+and adds a fifth file, and shipping it in pieces would have given nine parallel implementers four
+different libraries to reason about during the one week they are all editing.
+
+### `LibKa0s-Options-1.0` minors 14/13 and the new `OptionsCompose.lua` at 1
+
+**The tab strip's geometry no longer depends on which tab is selected.** This is the reported R4c
+defect and it is arithmetic, not art. The selected tab is cut from `Options_Tab_Active_*` and every
+other tab from `Options_Tab_*`, and the client does not draw the two families at the same height.
+`TabStrip` seeded the wrap pitch from the FIRST tab it built — `ctx.__tabArtH = ctx.__tabArtH or
+artH` — so on a page whose strip **wraps**, selecting tab 1 packed the rows by the active art and
+selecting any other packed them by the inactive art. That pitch feeds both `__tabPlacement`'s row
+offsets and `__tabBand`'s reserved height, and `SetChromeHeight` re-anchors the scroll and the
+content panel off the band — which is exactly the reported "a gap opens between the wrapped rows,
+and the content container shifts and resizes". It is invisible on an unwrapped strip, because the
+pitch is multiplied by (rowCount − 1) = 0. Reported from a client against ConsumableMaster's Macros
+page and again on its Macro Bar page.
+
+The pitch is now measured **once**, from the **inactive** cap atlas, on a throwaway texture — never
+read back off a tab that was just drawn in whichever state it happened to be in — and cached on
+success only, so a call made before the client can answer does not pin the fallback for the session.
+`ctx.__tabArtH` and `rowPitch(ctx)` are gone; `drawTabSlices` measures nothing and `drawTabArt`
+returns nothing. Each button's `SetHitRectInsets` now takes the **same** number the rows are packed
+by, so the invariant its own comment states holds for the selected tab too instead of for all but
+one button per strip. `setTabLabel` no longer applies the selected font: a tab's width is measured
+off its FontString, and a measurement taken under a selection-dependent font is a wrap index that
+moves with the selection. The two fonts are the same size today; pinning the order is what keeps
+that true rather than lucky. `O.__tabArtHeight` and `O.__resetTabArtHeight` are published as suite
+seams, because the invariant a test has to pin is unassertable without the one number both the band
+and every row offset are built from.
+
+*The direction of the residual is worth measuring in a live client once.* Packing by the inactive
+height leaves the selected tab's art standing a pixel or two proud into the row above, which is the
+direction `TAB_BG_TOP` and `TAB_LABEL_Y` already lift it deliberately. If the active art turns out
+to be the *shorter* of the two, the residual disappears entirely and nothing else changes.
+
+**Every page draws a strip, including a page with one section.** `RenderTabbedSchema`'s `#groups <
+2` fallback to `RenderSchema` is deleted. "A single tab is chrome for its own sake" is a true
+sentence about one page and the wrong rule for a panel: a player moving between pages meets a strip
+on most of them and bare rows on the rest, and the page that lost its strip is the one that looks
+broken — and the tab is also the only thing naming the group once `noHeadings` has suppressed the
+heading, so the fallback took the section's name off the page as well. The one exemption is a page
+the host does not render through this engine at all, which today is the AceConfig-drawn Profiles
+page; it needs no mechanism, because it never reaches the function. No opt-out flag is offered — a
+flag is a thing an addon can set for the wrong reason, and there would be no way to see it in a
+test. A page with **no** groups is a different decision: it is reported by name and then rendered
+untabbed, because a blank page under an empty strip is a worse failure than a strip-less one.
+
+**Visible change for a one-group page:** it gains a strip and its content moves down by the band. In
+the collection that is LootHistory's AH Price page and nothing else routed through this function.
+Every page with two or more groups is byte-identical.
+
+**Three new row fields.** `subgroup` draws a heading INSIDE a tab and is *not* suppressed by
+`noHeadings` — a tab that mixes bar rows, background rows and border rows has to say where one stops
+and the next starts, and there is no tab left to name them with. It uses `O.Section`, the same
+AceGUI Heading every other header uses; two heading looks on one canvas is the drift the shared
+library exists to end. `wide` renders a row alone at FULL width, which `solo` does not do — `solo`
+renders alone in the LEFT HALF — and it takes `RenderGrid`'s existing name rather than redefining
+`solo`, which would silently widen every solo row in nine shipped addons. `startsLine` flushes the
+pending line *before* a row, so a declared pair — a color swatch and its class-color companion — can
+never be split across two lines by an odd number of widgets above it. That parity was a thing every
+author was counting by hand.
+
+**Two new members, both seams the revamp needs.** `O.PageHeader(ctx, spec)` pins a host-drawn block
+in the band the page banner occupies, for controls that apply to every tab: drawn under one tab they
+read as belonging to it, and they vanish the moment the player clicks another. It generalises the
+BAND rather than the banner, because `O.PageBanner` draws exactly one Dropdown and is documented as
+the page's only picker; the two release the same ledger and write the same `ctx.__bannerHeight`, so
+a page gets at most one chrome block and the second call replaces the first. `O.SubTabStrip(ctx,
+parent, spec)` draws a SECONDARY strip inside the scroll as ordinary page content, with its own
+ledger and its own state key — the primary strip is pinned and does not scroll, while a secondary
+division belongs to the content it divides. It packs by the same selection-invariant pitch.
+
+**An empty dropdown now reports itself.** A `type = "string"` row with neither `values` nor
+`dialogControl` is a free-text field that forgot to say so: the dispatch sends it to the dropdown
+maker and the player gets a control that opens on nothing. The opt-in stays — inference would
+silently turn a row whose values function answers empty into a free-text field, which is the
+deferred-media case the opt-in exists for — so the warning is keyed on `values` being **nil**, and
+an LSM-backed closure that is momentarily empty stays quiet. KickCD's `Label text` is the one
+shipped instance in the collection.
+
+**`OptionsCompose.lua` is new, and it is a schema generator rather than a renderer.**
+`O.ColorPair`, `O.FontGroup`, `O.BorderGroup`, `O.BarGroup` and `O.MasterControls` each expand one
+declaration into the canonical block of ordinary schema rows. Every composer is a **pure function**:
+it creates no widget, touches no AceGUI, reads no state and never writes to the spec it was handed.
+That is the whole design — what comes out is indistinguishable from hand-written rows, so
+`rowsForPage`, `applyDefault`, `RestoreDefaults`, the CLI and the reset sweep all keep working with
+nothing added to them, and the composers are testable with no mock at all. Nine hand-written copies
+of the same six font rows is exactly the drift this library was extracted to end, and the day the
+block grows a row it grows in one addon.
+
+`O.FONT_FLAGS`, `O.FONT_FLAGS_SORT`, `O.VISIBILITY_VALUES`, `O.VISIBILITY_SORT`, `O.MASTER_GROUP`
+and `O.CLASS_COLOR_NOTE` are published on the instance, not on the lib table, for the reason the
+layout block gives: a lib-level table is shared by every instance, so handing it out lets one host's
+mutation retune every other host's dropdowns.
+
+`Options.lua` gains the `lib.__AttachCompose` call, guarded like the other two so a copy vendored
+without the file degrades to no composers rather than erroring at `:New`, and `O.ClearScroll` now
+resets `ctx.lastSubgroup` alongside `ctx.lastGroup`.
+
+### `LibKa0s-Core-1.0` minor 7 — one class-color resolver for the collection
+
+`lib.ClassColor(unit)` and `lib.ResolveColor(stored, on, unit)`. Three implementations existed and
+two of them disagreed about the source: AbsorbTracker read `C_ClassColor.GetClassColor`, PanelMaster
+and MultiMeters read `RAID_CLASS_COLORS`. `RAID_CLASS_COLORS` wins, and not by coin toss — it is the
+table every other UI on the player's screen is already reading, so it is what the unit frames next
+to ours are showing.
+
+**`nil` is an answer.** An NPC, an unresolvable unit, a class the client has not named — none of them
+is a color, and substituting one invents a hue nobody chose, appearing only in the cases nobody
+tests. The player's own answer is memoized on **success only**, so a class that has not resolved yet
+resolves on the next read; **no other unit is ever cached**, because a target's class changes every
+time the player retargets and a per-unit cache would need invalidating on two events to save one
+table index.
+
+This ratifies three rules that were already unanimous across the three implementations it replaces
+and written down in none of them: **the configured alpha survives the mode** (no class-color source
+carries an alpha), **an unresolvable class falls through to the stored swatch** rather than to a
+default, and **the swatch is read under both modes**, which is why a color row must never be
+`disabledIf` its companion. The stored value goes through `lib.RGBA`, so both persisted shapes work
+here exactly as they do everywhere else.
+
+*Not moved into the library:* AbsorbTracker's darkened background palette. That is a different set
+of hues, not the class color times a constant, and the two must not be substituted for each other.
+
+### `LibKa0s-Widgets-1.0` minor 9 — `ReorderList` grows the row box
+
+**A deliberate reversal, recorded as one.** Minor 8 said the widget owns "the handle, the copy that
+follows the cursor, the insertion line, the index arithmetic, the clamp, and nothing else". It now
+also owns the **row box** — the faint fill and the hairline border that make a stack of rows read as
+blocks you can pick up. "A draggable row looks like this" is a property of the *collection*, and a
+property of the collection cannot live in two consumers' private code. It did: MultiMeters drew a 6%
+white fill and no border, ConsumableMaster drew nothing at all, and that is the drift.
+
+`lib.ROW_BOX` publishes the values so an audit can read them and a consumer never restates them:
+`FILL` `{1,1,1,0.06}` (MultiMeters' shipped fill, now everyone's), `EDGE` `{1,1,1,0.12}` at 1px on
+all four sides — the border nobody had — with `FILL_DIM` / `EDGE_DIM` at half for a row that is
+present but inert, and `HANDLE_W` **30**, the gutter the handle owns at the row's far left. New
+`opts.rowBox` (default **true**) and `opts.rowBoxInset`; new `spec.dimmed` on `AddRow`; the handle's
+default width moves 24 → 30.
+
+**A frame carrying five textures, not five textures on the host's frame.** Both consumers hand over
+frames their UI framework pools, and a texture is not a widget: nothing releases it and nothing hides
+it, so one created on a pooled frame rides that frame back into the pool and reappears the next time
+it is handed out for something else. That failure is already written down one widget over, in the
+landing-page logo. Boxes are pooled and reclaimed on `Cancel` on exactly the same terms as the
+handles, through one shared `reclaim` — a `Cancel` that reclaimed only half of them would be a fix
+that looked complete.
+
+**The row's CONTENTS are still entirely the consumer's** and nothing about `AddRow`'s content
+contract changes. What moved is the box under them. The handle art still arrives as a resolved path,
+for the reason stated at the top of that file: `Media.Icon` takes the consuming addon's name and a
+vendored copy cannot know which folder it sits in. No new icon is added and `LibKa0s-Media-1.0` does
+not move — a nine-repo re-vendor for art the catalogue already has would be a cost for nothing.
+
+**Re-vendoring this changes the look of MultiMeters' Columns page immediately.** That repo MUST
+delete its own `block.bg` fill in the same commit as the re-vendor, or the two fills stack.
+ConsumableMaster has nothing to delete. `rowBox = false` exists for a consumer that must keep its
+own, and no consumer in the collection uses it.
+
+### Degraded installs
+
+With the Widgets major absent there is now no handle **and** no box. That is an accepted cosmetic
+degradation, stated here so nobody re-solves it host-side: a host-drawn box is the drift this change
+exists to remove.
+
 ## v1.23.0 — 2026-08-31
 
 Versions in this release: **Core minor 6**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

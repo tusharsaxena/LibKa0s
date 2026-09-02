@@ -113,6 +113,6 @@ lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for w
 luacheck .          # 0 warnings / 0 errors
 ```
 
-That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — seventeen
-files today, the thirteen in `LibKa0s/` plus four under `testkit/`. 0/0 only means something if the files
+That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — eighteen
+files today, the fourteen in `LibKa0s/` plus four under `testkit/`. 0/0 only means something if the files
 carrying the change are inside the checked set.

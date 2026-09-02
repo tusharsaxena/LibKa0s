@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.23.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.24.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -16,28 +16,30 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
    That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
-   is seventeen files, the thirteen in `LibKa0s/` plus four under `testkit/`, because `tests/` and
+   is eighteen files, the fourteen in `LibKa0s/` plus four under `testkit/`, because `tests/` and
    `docs/` are excluded. A consumer's is scoped too, and usually excludes `libs/` and `tests/`. 0/0
    only means something if the files carrying the seam are inside the checked set, so confirm that
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   thirteen, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   fourteen, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Media.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `MINOR` in `Options.lua`, `WIDGETS_MINOR` in `OptionsWidgets.lua`, `SCROLL_MINOR`
-   in `OptionsScroll.lua`, `MINOR` in `Perf.lua`, `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in
-   `Widgets.lua`. The secondary files carry
+   in `OptionsScroll.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
+   `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
    file you did not touch does not move. Bumping the whole lib in lockstep would discard the
    narrow-skew property that made one major per module worth having.
 3. **A new module is also a new row in `tests/run.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
    that table rather than naming files inline, so a module missing from it is a module nothing
-   checks. `LibKa0s-Options-1.0` is the most recent row added that way, and the one to copy: it is
-   the first with a `files` list of three and a `paired` array of two
-   (`{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
-   `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`). The table carries one row per shipped
-   major — ten today.
+   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of four and a
+   `paired` array of three (`{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
+   `{ OptionsCompose, __composeMinor, __composeShellMinor }`,
+   `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`). **A file added to an existing major moves
+   that major's version key**, because the key is every file's minor in load order — the Options key
+   ran three numbers through 13.12.3 and runs four from 14.13.1.3. The table carries one row per
+   shipped major — ten today.
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
    say what changed. `tests/test_versioning.lua` fails if the block and any major's `lib.MODULES`
    disagree, so this is enforced rather than remembered.
@@ -111,7 +113,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the thirteen `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the fourteen `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -135,7 +137,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.23.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.24.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That

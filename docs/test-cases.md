@@ -6,7 +6,7 @@ badge and any count quoted in the docs must agree with it.
 
 **Generated — do not hand-edit.** Regenerate with `lua tests/run.lua --list > docs/test-cases.md`.
 
-### test_core.lua (34)
+### test_core.lua (42)
 
 - core: IsConcatSafe is false for a table.concat-hostile value, true for a plain one
 - core: SafeToString renders a secret as lib.SECRET and passes nil/booleans through
@@ -40,6 +40,14 @@ badge and any count quoted in the docs must agree with it.
 - core: RGBA does not default the defaults
 - core: MakeCloseButton returns a button wired to onClick
 - core: MakeCloseButton returns nil when CreateFrame is unavailable
+- core: the player's class color is the client's, and nil for a class it cannot name
+- core: the player's class color is memoized on SUCCESS only
+- core: no unit but the player is ever cached
+- core: an unresolvable unit answers nil rather than the player's color
+- core: ResolveColor keeps the stored alpha under class color
+- core: ResolveColor falls through to the stored rgb when the class does not resolve
+- core: ResolveColor with the companion off never reaches the class palette
+- core: ResolveColor answers four numbers for a swatch that was never stored
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
@@ -116,7 +124,7 @@ badge and any count quoted in the docs must agree with it.
 - media: RegisterLSM registers every font and every texture, by catalog name
 - media: no LibSharedMedia is 0 registrations, not an error
 
-### test_widgets.lua (75)
+### test_widgets.lua (81)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
 - Widgets.Dropdown falls to Blizzard's arrow with no host art
@@ -193,6 +201,12 @@ badge and any count quoted in the docs must agree with it.
 - widgets: the handle takes the hover colour and drops it again
 - widgets: a host may override both handle colours
 - widgets: only the handle starts a drag
+- widgets: every registered row gets a fill and four edges
+- widgets: a dimmed row gets the muted variant, and a pooled box does not carry it over
+- widgets: Cancel takes every box OFF the host's frame and back to the pool
+- widgets: rowBox = false draws no box at all
+- widgets: the handle owns the collection's 30px gutter unless the host says otherwise
+- widgets: a box frame that cannot make textures is skipped rather than raising
 
 ### test_debuglog.lua (67)
 
@@ -348,7 +362,7 @@ badge and any count quoted in the docs must agree with it.
 - slash: the format hook takes precedence over the colour codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
 
-### test_options.lua (76)
+### test_options.lua (77)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -426,8 +440,9 @@ badge and any count quoted in the docs must agree with it.
 - options: reserving chrome pushes the scroll down by exactly that many pixels
 - options: reserving chrome AFTER the scroll exists re-anchors the live scroll
 - options: ClearScroll leaves the reserved band alone
+- options: ClearScroll resets BOTH heading trackers
 
-### test_options_widgets.lua (112)
+### test_options_widgets.lua (135)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -539,8 +554,52 @@ badge and any count quoted in the docs must agree with it.
 - widgets: an UNtabbed page still draws its headings
 - widgets: clicking a tab clears the scroll and renders the new group
 - widgets: the active tab survives a re-render, and heals when its group disappears
-- widgets: a one-group page draws no strip at all
+- widgets: a one-group page draws a ONE-TAB strip
+- widgets: a page whose rows carry no group renders untabbed AND says so
 - widgets: with no AceGUI a tabbed page reports no tabs and draws nothing
+- widgets: a wrapped strip's geometry is IDENTICAL for every value of the selection
+- widgets: every tab's hit rect is inset by the same number the rows are packed by
+- widgets: the pitch is measured once, off the INACTIVE family, and cached on success only
+- widgets: a subgroup draws a heading INSIDE a tab, where the group's own is suppressed
+- widgets: a subgroup repeated under a SECOND group draws again
+- widgets: the pending line is flushed before a subsection heading
+- widgets: an UNTABBED page draws its group heading AND its subgroup headings
+- widgets: a `wide` row renders at FULL width, alone, with the lines around it flushed
+- widgets: `startsLine` flushes a half-full line so a declared pair cannot be split
+- widgets: `startsLine` on a line that is already empty costs nothing
+- widgets: InlineButtonPair with no right-hand button draws one, at the pair's width
+- widgets: a string row with no values and no dialogControl prints once and still renders
+- widgets: a values-backed row that is momentarily empty does NOT warn
+- widgets: PageHeader reserves the band, and the strip lands beneath it
+- widgets: a page draws at most ONE chrome block -- the second replaces the first
+- widgets: PageHeader without a divider draws the block and no rule
+- widgets: a raising PageHeader builder costs the block, not the page
+- widgets: PageHeader refuses politely with no spec and with no height
+- widgets: SubTabStrip draws inside the host's frame and reports the height it took
+- widgets: a second SubTabStrip call releases the first rather than stacking on it
+- widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
+- widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
+
+### test_options_compose.lua (18)
+
+- compose: the instance carries every composer and every published constant
+- compose: FontGroup emits the six canonical leaves in the canonical order
+- compose: BorderGroup emits the four mandated leaves, and the toggle only when asked
+- compose: BarGroup emits texture, opacity, color, companion -- in that layout
+- compose: ColorPair emits exactly two rows, and names the companion after the swatch
+- compose: every color row is immediately followed by its companion, and starts a line
+- compose: no composed row anywhere carries disabledIf
+- compose: the class-color SOURCE is stamped on both halves of every pair
+- compose: prefix composes the path, and page/group/subgroup reach every row
+- compose: order starts where the caller said and steps by ten
+- compose: keys, labels and defaults override without changing what the block IS
+- compose: omit removes a row and leaves the survivors in the same relative order
+- compose: extra rows are appended AFTER the mandated block, never interleaved
+- compose: a composer never writes to the spec it was handed
+- compose: MasterControls emits the six canonical rows and defaults its own group
+- compose: the debug console's path is verbatim and outside the block's prefix
+- compose: frameless drops EXACTLY the four frame-only controls and nothing else
+- compose: the tail draws the two resets as the tab's closing button pair
 
 ### test_perf_core.lua (68)
 
@@ -778,16 +837,17 @@ badge and any count quoted in the docs must agree with it.
 
 | Suite | Cases |
 |-------|------:|
-| test_core.lua | 34 |
+| test_core.lua | 42 |
 | test_env.lua | 10 |
 | test_pool.lua | 23 |
 | test_item.lua | 13 |
 | test_media.lua | 15 |
-| test_widgets.lua | 75 |
+| test_widgets.lua | 81 |
 | test_debuglog.lua | 67 |
 | test_slash.lua | 81 |
-| test_options.lua | 76 |
-| test_options_widgets.lua | 112 |
+| test_options.lua | 77 |
+| test_options_widgets.lua | 135 |
+| test_options_compose.lua | 18 |
 | test_perf_core.lua | 68 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 45 |
@@ -799,4 +859,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **705** |
+| **Total** | **761** |

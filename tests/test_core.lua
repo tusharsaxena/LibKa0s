@@ -441,6 +441,121 @@ test("core: MakeCloseButton returns nil when CreateFrame is unavailable", functi
     "a close button is worth degrading over, not erroring over")
 end)
 
+-- ── the class color and its swatch ─────────────────────────────────────────────────────────
+--
+-- Every case here resets the memo first. The player's color is deliberately cached for the life of
+-- a session (a class cannot change inside one), so a case that inherited another case's cache
+-- would pass against a stale number rather than against the client.
+
+local function freshClassColor()
+  core.__ResetClassColor()
+  T.mocks.__unitClass = {}
+end
+
+test("core: the player's class color is the client's, and nil for a class it cannot name",
+function()
+  -- red under: returning a house gray for an unknown class, which is the tenth hue nobody chose.
+  freshClassColor()
+  local r, g, b = core.ClassColor()
+  assertEqual(r, 0.77, "the fixture character is a Death Knight")
+  assertEqual(g, 0.12)
+  assertEqual(b, 0.23)
+
+  freshClassColor()
+  T.mocks.setUnitClass("player", "Broken", "BROKEN")
+  T.assertNil(core.ClassColor(), "a palette entry with no channels is not a color")
+
+  freshClassColor()
+  T.mocks.setUnitClass("player", "Nobody", "NOSUCHCLASS")
+  T.assertNil(core.ClassColor(), "a token the palette does not carry answers nil")
+end)
+
+test("core: the player's class color is memoized on SUCCESS only", function()
+  -- A class the client has not answered for yet must resolve on the NEXT read. Caching the miss
+  -- would pin nil for the session, which is the shape AbsorbTracker's own resolver records.
+  -- red under: assigning the cache before the hasChannels check, or caching the nil answer.
+  freshClassColor()
+  T.mocks.setUnitClass("player", "Nobody", "NOSUCHCLASS")
+  T.assertNil(core.ClassColor())
+
+  T.mocks.setUnitClass("player", "Mage", "MAGE")
+  local r = core.ClassColor()
+  assertEqual(r, 0.25, "the miss was not cached, so the real answer arrives on the next read")
+
+  -- And the hit IS cached: a class that changed under us keeps answering what it first resolved to.
+  T.mocks.setUnitClass("player", "Warlock", "WARLOCK")
+  assertEqual(core.ClassColor(), 0.25, "the player's own class is looked up once per session")
+end)
+
+test("core: no unit but the player is ever cached", function()
+  -- A target's class changes every time the player retargets, so a per-unit cache would need
+  -- invalidating on two events to save one table index.
+  -- red under: memoizing by unit token, which answers the previous target's color forever.
+  freshClassColor()
+  T.mocks.setUnitClass("target", "Mage", "MAGE")
+  assertEqual(core.ClassColor("target"), 0.25)
+
+  T.mocks.setUnitClass("target", "Warlock", "WARLOCK")
+  assertEqual(core.ClassColor("target"), 0.53, "the second target answered its own class")
+end)
+
+test("core: an unresolvable unit answers nil rather than the player's color", function()
+  -- An NPC boss is the common case for KickCD's cast bar, and it must fall through to the stored
+  -- swatch rather than borrowing whoever is looking at it.
+  -- red under: defaulting the token to the player's when UnitClass answers nothing.
+  freshClassColor()
+  T.mocks.setUnitClass("boss1", "Boss", nil)
+  T.assertNil(core.ClassColor("boss1"))
+end)
+
+test("core: ResolveColor keeps the stored alpha under class color", function()
+  -- No class-color source carries an alpha, so the swatch's always applies -- which is also why a
+  -- color row is never `disabledIf` its companion (options-ui-§17, anti-patterns #74).
+  -- red under: returning 1 for alpha, or returning the class entry's own (absent) `a`.
+  freshClassColor()
+  local r, g, b, a = core.ResolveColor({ r = 0.1, g = 0.2, b = 0.3, a = 0.4 }, true)
+  assertEqual(r, 0.77)
+  assertEqual(g, 0.12)
+  assertEqual(b, 0.23)
+  assertEqual(a, 0.4, "the configured opacity survived the mode")
+end)
+
+test("core: ResolveColor falls through to the stored rgb when the class does not resolve",
+function()
+  -- red under: substituting white, gray, or anything at all for a class that has no color.
+  freshClassColor()
+  T.mocks.setUnitClass("boss1", "Boss", nil)
+  local r, g, b, a = core.ResolveColor({ r = 0.1, g = 0.2, b = 0.3, a = 0.4 }, true, "boss1")
+  assertEqual(r, 0.1)
+  assertEqual(g, 0.2)
+  assertEqual(b, 0.3)
+  assertEqual(a, 0.4)
+end)
+
+test("core: ResolveColor with the companion off never reaches the class palette", function()
+  -- The mode is the only thing that decides, and an off companion must read exactly what a bare
+  -- lib.RGBA would.
+  -- red under: resolving the class first and preferring it whenever one exists.
+  freshClassColor()
+  local r, g, b, a = core.ResolveColor({ 0.5, 0.6, 0.7, 0.8 }, false)
+  assertEqual(r, 0.5, "and the positional shape reads exactly as it does through RGBA")
+  assertEqual(g, 0.6)
+  assertEqual(b, 0.7)
+  assertEqual(a, 0.8)
+end)
+
+test("core: ResolveColor answers four numbers for a swatch that was never stored", function()
+  -- A row whose SavedVariable has not been written yet hands nil in, and a resolver that answered
+  -- nil would blow up the SetVertexColor call it feeds.
+  -- red under: indexing `stored` before type-checking it.
+  freshClassColor()
+  local r, g, b, a = core.ResolveColor(nil, false)
+  assertEqual(r, 1)
+  assertEqual(g, 1)
+  assertEqual(b, 1)
+  assertEqual(a, 1)
+end)
+
 -- ── Perf's regression ──────────────────────────────────────────────────────────────────────
 
 test("core: Perf refuses to register when Core is missing or below NEEDS_CORE", function()

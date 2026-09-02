@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 8
+# `LibKa0s-Widgets-1.0` — version 9
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,23 +8,63 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **8** |
-| Shipped in | v1.19.0 |
-| Status | Superseded |
-| Supersedes | [version 7](./version-7-docs.md) — which had no reorderable-list surface at all |
-| Superseded by | [version 9](./version-9-docs.md) — `ReorderList` draws the row's bounded box |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 8 }` |
+| Files and minors | `Widgets.lua` minor **9** |
+| Shipped in | v1.24.0 |
+| Status | **Current** |
+| Supersedes | [version 8](./version-8-docs.md) |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 9 }` |
 
 ## What changed at this version
 
-**One new lib-level member, `ReorderList(opts)`, and nothing else moves.** `Dropdown`, `CloseMenu`,
-`CopyWindow`, every instance method and every `opts` field are byte-for-byte unchanged. A host that
-does not call the new member needs a re-vendor and no code change.
+**`ReorderList` grows the row's bounded box, and one lib-level table publishes its values.**
+`Dropdown`, `CloseMenu`, `CopyWindow` and every instance method are byte-for-byte unchanged, and so
+is the whole of the drag gesture. What is new is `lib.ROW_BOX`, `opts.rowBox`, `opts.rowBoxInset` and
+`spec.dimmed` on `AddRow` — and one **default that moves**: `handleSize` is now `30` rather than
+`24`.
 
-**It owns a gesture, not a list.** `ReorderList` gives a host drag-to-reorder: the handle, the copy
-that follows the cursor, the insertion line, the index arithmetic and the clamp. It owns **no row
-content whatsoever**. The host builds its rows however it already does — AceGUI containers, raw
-frames, anything — registers each one, and gets an `onMove(from, to)` callback.
+### The row box, and why it is the widget's
+
+**A deliberate reversal, recorded as one.** Version 8 said this widget owns "the handle, the copy
+that follows the cursor, the insertion line, the index arithmetic, the clamp, and nothing else". It
+now also owns the **row box** — a faint fill and a 1px border on every registered row — because "a
+draggable row looks like this" is a property of the **collection** (`options-ui-§18`), and a property
+of the collection cannot live in two consumers' private code. It did: MultiMeters drew a 6% white
+fill and no border, ConsumableMaster drew nothing at all, and that is the drift.
+
+**The row's contents are still entirely the consumer's.** Nothing about `AddRow`'s content contract
+changes; what moved is the box *under* them.
+
+| Field | Value | Meaning |
+|---|---|---|
+| `lib.ROW_BOX.FILL` | `{ 1, 1, 1, 0.06 }` | the box's background — MultiMeters' shipped fill, now everyone's |
+| `lib.ROW_BOX.FILL_DIM` | `{ 1, 1, 1, 0.03 }` | the same for a row drawn dimmed |
+| `lib.ROW_BOX.EDGE` | `{ 1, 1, 1, 0.12 }` | the 1px border, all four sides — the part nobody had |
+| `lib.ROW_BOX.EDGE_DIM` | `{ 1, 1, 1, 0.06 }` | dimmed |
+| `lib.ROW_BOX.EDGE_SIZE` | `1` | edge thickness |
+| `lib.ROW_BOX.HANDLE_W` | `30` | the gutter the handle owns at the row's far left; row contents start beyond it |
+
+They are white and low-alpha rather than a chosen hue, so a box reads the same over whatever the
+host's page is painted with. Read them off the table; a host that copies the numbers into its own
+constants file is the drift publishing them prevents.
+
+**A frame carrying five textures, not five textures on the host's frame.** Both consumers hand over
+frames their UI framework pools, and a texture is not a widget: nothing releases it and nothing hides
+it, so one created on a pooled frame rides that frame back into the pool and reappears the next time
+it is handed out for something else entirely. Boxes are therefore pooled and reclaimed on `Cancel()`
+on exactly the same terms as the handles — a `Cancel` that reclaimed only half of them would be a fix
+that looked complete. The box sits one frame level **below** the row, because a child frame is one
+level above its parent by default and a box left there is a box painted over the row's own label.
+
+**Adopting this is a deletion as well as a re-vendor.** MultiMeters must delete its own `block.bg`
+fill in the same commit as the re-vendor, or the two fills stack. ConsumableMaster has nothing to
+delete. `rowBox = false` exists for a consumer that must keep its own, and no consumer in the
+collection uses it.
+
+**It owns a gesture, not a list.** `ReorderList` gives a host drag-to-reorder: the handle, the box,
+the copy that follows the cursor, the insertion line, the index arithmetic and the clamp. It owns
+**no row content whatsoever**. The host builds its rows however it already does — AceGUI containers,
+raw frames, anything — registers each one, and gets an `onMove(from, to)` callback.
 
 That boundary is where it is because of what the two adopting lists actually look like. MultiMeters'
 Columns page draws a state glyph and a statistic name. ConsumableMaster's priority list draws a live
@@ -294,12 +334,14 @@ Every field is optional except the ones a working list needs.
 | `onMove` | `function(from, to)`. Called **once** when a drag lands somewhere new. Never called for a drag that lands where it started, because that would have the host rewrite its list and repaint for no change. | no callback; the drag is inert |
 | `boundary` | How many rows are in the **first** group. `nil` or `0` means one flat list. With a boundary, a row may not be dragged out of its own group — the drop clamps at the divide. | `nil`, one flat list |
 | `handleIcon` | Resolved texture path for the handle art. A vendored copy cannot know which addon folder it sits in, so art arrives as a parameter — the same reason `chevron` and `check` do. | `Interface\Buttons\UI-SortArrow` |
-| `handleSize` | The handle's hit width. Its height is the row's. | `24` |
+| `handleSize` | The handle's hit width. Its height is the row's. **The default moved at minor 9** — 30 is the gutter every list in the collection gives its handle, and MultiMeters was already passing it by hand. | `lib.ROW_BOX.HANDLE_W`, **30** |
 | `handleInset` | Pixels from the parent's left edge. | `0` |
 | `handleColor` | `{ r, g, b }` for the handle at rest. | a neutral gray, `{ 0.7, 0.7, 0.7 }` |
 | `handleHoverColor` | `{ r, g, b }` under the pointer. A host whose list has its own palette says so; one that says nothing matches every other list in the collection. | gold, `{ 1, 0.82, 0 }` |
 | `handleTooltip` | One line shown on hover, e.g. "Drag to reorder". | no tooltip at all |
 | `iconSize` | The art drawn inside the handle. | `16` |
+| `rowBox` | **New at 9.** `false` suppresses the bounded box behind every row. Defaults **ON**: the box is half of what makes a list read as blocks you can pick up, and a host that draws its own has to say so — and should instead delete its own, or the two fills stack. | `true` |
+| `rowBoxInset` | **New at 9.** Pixels the box is inset from the row frame's edges. | `0` |
 | `lineColor` | `{ r, g, b, a }` for the insertion line. | gold, `{ 1, 0.82, 0, 0.9 }` |
 | `debug` | `function(fmt, ...)`, called on grab and on drop. | no logging |
 
@@ -309,18 +351,24 @@ Every field is optional except the ones a working list needs.
 |---|---|
 | `AddRow(frame, spec)` | Registers one row, **in display order** — the index is the call order. Creates the handle as a child of `spec.parent or frame`, anchored `LEFT`, and returns it so the host may re-anchor it. |
 | `Finish(container)` | Names the frame the insertion line lives on — normally the scroll's content frame, or whatever the rows share as a parent. Call once, after the rows. |
-| `Cancel()` | Stops any drag in flight, puts the chrome away, and **gives every handle back**. Idempotent. **A host must call this before it renders anything** — see below. |
+| `Cancel()` | Stops any drag in flight, puts the chrome away, and **gives every handle and every row box back**. Idempotent. **A host must call this before it renders anything** — see below. |
 
 `spec` on `AddRow`, all optional: `ghostText`, `ghostIcon`, `ghostIconColor`, `ghostTextColor`,
-`height`, `parent`, and `draggable`.
+`height`, `parent`, `draggable`, and **`dimmed`** (new at 9).
 
 **`draggable = false` registers the row with no handle.** It still counts for indices and still
 anchors the insertion line — it is a place a drag can *land*, not one a drag can start from. Use it
 for rows that have an order nothing can act on.
 
+**`dimmed = true` paints that row's box in the muted variant**, for a row that is present but inert —
+MultiMeters' hidden columns, LootHistory's sources it is not collecting. The box is drawn for **every**
+registered row, draggable or not, and before the handle: a row you cannot pick up is still one of the
+blocks the list is made of, and a stack where only some rows have an edge reads as a rendering fault
+rather than as a rule.
+
 ### Behavior a host must know
 
-**The library owns its handles, and `Cancel()` must run before the host renders anything.** Handles come from a free list here and are parented to the host's frame only while live; `Cancel()` hides, unanchors and reparents them away in one step.
+**The library owns its handles and its row boxes, and `Cancel()` must run before the host renders anything.** Both come from free lists here and are parented to the host's frame only while live; `Cancel()` hides, unanchors and reparents them away in one step, through one shared reclaim so neither can be forgotten without the other.
 
 They are **not** cached on the host's frames, and that distinction cost a release. Both consumers hand over containers their UI framework pools — and AceGUI's pool is process-wide, so a released container goes to whatever asks next. A handle left parented and shown turned up on an unrelated part of the page: on a *Drag to action bar* row, on an ID entry box, on a dropdown. A frame's identity is not the host's to lend, so a cache keyed on it is a cache keyed on nothing.
 
@@ -370,6 +418,10 @@ from a broken drag.
 
 ## Degraded
 
+**With the major absent there is no handle and, from minor 9, no box either.** That is an accepted
+cosmetic degradation, stated here so nobody re-solves it host-side: a host-drawn box is the drift the
+change exists to remove.
+
 With `LibKa0s-Widgets-1.0` absent — no vendored copy, or a copy whose `NEEDS_CORE` floor the host's
 `LibKa0s-Core-1.0` does not meet — `LibStub("LibKa0s-Widgets-1.0", true)` answers `nil`, exactly as
 for any other major. There is no partial module here to leave half-wired: this is a single-file
@@ -412,15 +464,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 9
-
-`ReorderList` draws the row's **bounded box** — a `{1,1,1,0.06}` fill and a 1px `{1,1,1,0.12}`
-border on every registered row — and publishes its values as `lib.ROW_BOX`. `opts.rowBox` (default
-**true**) and `opts.rowBoxInset` are new, `spec.dimmed` on `AddRow` is new, and `handleSize`'s
-default moves from **24** to **30**, which is the gutter every list in the collection gives its
-handle.
-
-Every other member and every other `opts` field is unchanged, so a host written against this version
-is correct at version 9 unmodified — but it will **look** different the moment it re-vendors, and a
-host that draws a row fill of its own must delete it in the same commit or the two will stack.

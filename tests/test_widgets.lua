@@ -129,6 +129,14 @@ local function geomFrame()
   -- and this widget sizes a button and then sizes the art inside it — so the button would measure
   -- 12px and every width rule below would be measuring the arrow.
   function f:CreateTexture() return geomFrame() end
+  -- THE ROW BOX'S PAINT, recorded rather than swallowed. A box is a fill plus four 1px edges, and
+  -- against the catch-all every SetColorTexture would answer the frame itself -- so "did this row
+  -- get the dimmed variant?" would be unaskable and every box case below would pass against
+  -- nothing at all.
+  function f:SetColorTexture(r, g, b, a)
+    self.__colorTexture = { r, g, b, a }
+    return self
+  end
   -- AND SO IS A FONTSTRING, for the SetText rule above to mean anything: answered with the frame
   -- itself, a row's label, its glyph and the button would be one object carrying one `__font`, and
   -- a glyph that never had a face of its own would look like one that did.
@@ -1347,4 +1355,139 @@ test("widgets: only the handle starts a drag", function()
   local _, rows = reorderList(3)
   assertTrue(rows[1].handle:GetScript("OnMouseDown") ~= nil, "the handle must start the drag")
   assertEqual(rows[1].frame:GetScript("OnMouseDown"), nil, "the row itself must not")
+end)
+
+-- ── the row box (minor 9, options-ui-§18) ─────────────────────────────────────────────────────
+--
+-- The box is the half of "a stack of rows reads as blocks you can pick up" that used to live in the
+-- consumers: MultiMeters drew a 6% white fill and no border, ConsumableMaster drew nothing. It is
+-- the widget's now, on the same pooling terms as the handle.
+
+test("widgets: every registered row gets a fill and four edges", function()
+  -- red under: drawing the fill alone, which is what MultiMeters already had and what R1h asked
+  -- for a border on top of; or drawing the box only for draggable rows, which reads as a
+  -- rendering fault rather than as a rule.
+  local rows = {}
+  for i = 1, 2 do rows[i] = geomFrame(); rows[i]:SetSize(200, 30) end
+
+  local list = W.ReorderList({ stride = 30 })
+  list:AddRow(rows[1], {})
+  list:AddRow(rows[2], { draggable = false })
+
+  assertEqual(#list.boxes, 2, "a row that cannot be dragged is still one of the list's blocks")
+  for i, box in ipairs(list.boxes) do
+    assertEqual(box:GetParent(), rows[i], "the box is parented to the row it sits behind")
+    assertTrue(box:IsShown())
+    assertEqual(#box.edges, 4, "four edges, one a side")
+    assertEqual(box.fill.__colorTexture[4], W.ROW_BOX.FILL[4], "the published fill, not a local one")
+    for _, edge in ipairs(box.edges) do
+      assertEqual(edge.__colorTexture[4], W.ROW_BOX.EDGE[4], "the published edge alpha")
+    end
+  end
+end)
+
+test("widgets: a dimmed row gets the muted variant, and a pooled box does not carry it over",
+function()
+  -- `dimmed` is for a row that is present but inert -- a hidden column, a source not being
+  -- collected. The second half is the one that actually bites: a box comes off the free list
+  -- still painted for whoever it last served.
+  -- red under: painting the box once at build time instead of once per render.
+  local dim = geomFrame(); dim:SetSize(200, 30)
+  local first = W.ReorderList({ stride = 30 })
+  first:AddRow(dim, { draggable = false, dimmed = true })
+  local box = first.boxes[1]
+  assertEqual(box.fill.__colorTexture[4], W.ROW_BOX.FILL_DIM[4])
+  assertEqual(box.edges[1].__colorTexture[4], W.ROW_BOX.EDGE_DIM[4])
+  first:Cancel()
+
+  local bright = geomFrame(); bright:SetSize(200, 30)
+  local second = W.ReorderList({ stride = 30 })
+  second:AddRow(bright, { draggable = false })
+  assertEqual(second.boxes[1], box, "the released box was not taken back off the free list")
+  assertEqual(box.fill.__colorTexture[4], W.ROW_BOX.FILL[4],
+    "a reused box kept the previous row's dimming")
+  second:Cancel()
+end)
+
+test("widgets: Cancel takes every box OFF the host's frame and back to the pool", function()
+  -- The same orphan bug the handles have, one frame over: both consumers hand over frames their UI
+  -- framework pools, so a box left parented and shown turns up behind something else entirely.
+  -- red under: reclaiming the handles and forgetting the boxes -- a fix that looks complete.
+  local parent = geomFrame(); parent:SetSize(200, 30)
+  local list = W.ReorderList({ stride = 30 })
+  list:AddRow(parent, {})
+  local box = list.boxes[1]
+
+  list:Cancel()
+  assertFalse(box:IsShown(), "a released box must not be visible")
+  assertFalse(box:GetParent() == parent,
+    "a released box is still on the host's frame, which the host is about to hand back to a pool")
+  assertEqual(#list.boxes, 0, "the ledger was drained")
+
+  local reused = W.ReorderList({ stride = 30 })
+  reused:AddRow(parent, {})
+  assertEqual(reused.boxes[1], box, "a released box must be reused rather than a second one built")
+  reused:Cancel()
+end)
+
+test("widgets: rowBox = false draws no box at all", function()
+  -- The opt-out exists for a consumer that must keep its own, and no consumer in the collection
+  -- uses it. It is here so that "the default is ON" is a decision with a visible other side.
+  -- red under: reading `opts.rowBox` truthily, which makes an omitted field mean OFF.
+  local parent = geomFrame(); parent:SetSize(200, 30)
+  local list = W.ReorderList({ stride = 30, rowBox = false })
+  list:AddRow(parent, {})
+  assertEqual(#list.boxes, 0)
+
+  local onByDefault = W.ReorderList({ stride = 30 })
+  onByDefault:AddRow(geomFrame(), {})
+  assertEqual(#onByDefault.boxes, 1, "an omitted rowBox means ON")
+  onByDefault:Cancel()
+end)
+
+test("widgets: the handle owns the collection's 30px gutter unless the host says otherwise",
+function()
+  -- Row contents start beyond it (options-ui-§8), so the number is published rather than left as a
+  -- literal for each consumer to guess at -- MultiMeters was already passing 30 by hand.
+  -- red under: leaving the default at 24, which puts every list's contents 6px apart from the
+  -- next list's.
+  assertEqual(W.ROW_BOX.HANDLE_W, 30)
+  local parent = geomFrame(); parent:SetSize(200, 30)
+  local list = W.ReorderList({ stride = 30 })
+  assertEqual(list:AddRow(parent, {}):GetWidth(), 30)
+
+  local narrow = W.ReorderList({ stride = 30, handleSize = 18 })
+  assertEqual(narrow:AddRow(geomFrame(), {}):GetWidth(), 18, "a host may still name its own")
+  narrow:Cancel()
+  list:Cancel()
+end)
+
+test("widgets: a box frame that cannot make textures is skipped rather than raising", function()
+  -- The degraded path is real: a headless mock's CreateTexture can answer nil or an inert table,
+  -- and every texture path in this file guards on the ANSWER rather than on the method.
+  -- red under: calling SetAllPoints on the answer before checking it.
+  --
+  -- Deliberately NOT cancelled, and the free list is DRAINED FIRST. A pooled box was built with
+  -- real textures, so a case about a frame that cannot make them has to be handed a new one -- and
+  -- a textureless box returned to the shared list would be handed to the next case, which would
+  -- then be asserting against a box that was never built.
+  local drain = W.ReorderList({ stride = 30 })
+  for _ = 1, 64 do drain:AddRow(geomFrame(), { draggable = false }) end
+
+  local saved = mocks.CreateFrame
+  mocks.CreateFrame = function(...)
+    local f = saved(...)
+    function f:CreateTexture() return nil end
+    return f
+  end
+  local ok, err = pcall(function()
+    local list = W.ReorderList({ stride = 30 })
+    -- draggable = false: the HANDLE's art is unguarded by design and predates this, so a case
+    -- about the box must not be answering for it.
+    list:AddRow(geomFrame(), { draggable = false })
+    assertEqual(#list.boxes, 1, "the box is still ledgered, so Cancel still reclaims it")
+    T.assertNil(list.boxes[1].fill, "and it holds no half-built texture to keep positioning")
+  end)
+  mocks.CreateFrame = saved
+  assertTrue(ok, "a textureless frame raised: " .. tostring(err))
 end)

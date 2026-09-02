@@ -123,6 +123,32 @@ calling it undocumented. A *not applicable*
 that `docs/adoption-prompt.md` lists as changing is an error **in the prompt**, and correcting the
 prompt is part of the report's value.
 
+### 5b. The v1.24.0 settings-revamp surfaces
+
+Every surface the settings revamp added — the five schema composers, `ClassColor` / `ResolveColor`,
+`ReorderList`'s row box, `PageHeader`, `SubTabStrip`, and the `subgroup` / `wide` / `startsLine` row
+fields — shipped with **zero consumers**. Report each consumer's state against them the same way
+section 5 reports a convergence, and be strict about the third state:
+
+- **adopted** — calls the surface;
+- **declined** — has the thing the surface is for (a hand-written font block, a private class-color
+  helper, a host-drawn reorder row background) and kept it. That is a finding unless the decision is
+  written down;
+- **not applicable** — has no color rows at all, no reorder list at all, no positionable frame at
+  all. Four consumers are genuinely in that state for the color surfaces; do not report them as
+  declines.
+
+Three checks need no judgement and are worth running fleet-wide:
+
+```
+grep -rn 'LSM30_Font\|LSM30_Border\|LSM30_Statusbar' ../<Addon>/settings --include='*.lua'
+grep -rn 'RAID_CLASS_COLORS\|C_ClassColor' ../<Addon> --include='*.lua' | grep -v '/libs/'
+grep -rn 'disabledIf' ../<Addon>/settings ../<Addon>/defaults --include='*.lua'
+```
+
+The first should return only composer call sites; the second only a background palette, if anything;
+the third should never land on a row whose `type` is `"color"` (`anti-patterns #74`).
+
 ### 6. The `L` trap — both halves
 
 Two separate checks, and passing the first does not imply the second.
