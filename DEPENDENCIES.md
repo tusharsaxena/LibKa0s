@@ -29,10 +29,10 @@ Three tools. Only the first has a version that matters.
 |---|---|---|---|
 | `lua5.1` | **5.1 exactly — a hard requirement** | Lua 5.1.5 | The headless harness sets each chunk's environment with **`setfenv`** (`testkit/loader.lua:31` and `:50`), which exists only in Lua 5.1. |
 | `luacheck` | any recent | 1.2.0 | The `lint` suite — `luacheck .`, the gating half of the green gate. |
-| `lizard` | any recent | 1.23.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). |
+| `lizard` | any recent | 1.24.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). |
 
 The "verified with" column is the toolchain of the last recorded run,
-[`docs/automated-tests/20260806-180959/manifest.json`](docs/automated-tests/20260806-180959/manifest.json)
+[`docs/automated-tests/20260903-161751/manifest.json`](docs/automated-tests/20260903-161751/manifest.json)
 → `host` — evidence, not a pin. `luacheck` and `lizard` are pinned nowhere and pinning them would be
 false precision; `lua5.1` is not a preference. "5.2 will probably work" is **false**, and it costs an
 hour to disprove: 5.2 removed `setfenv`, and the loader is the first thing every suite touches.
@@ -68,7 +68,7 @@ pipx ensurepath        # then reopen the shell, or `source ~/.bashrc`
 ```sh
 lua5.1 -v            # Lua 5.1.5
 luacheck --version    # 1.2.0
-lizard --version      # 1.23.0
+lizard --version      # 1.24.0
 git --version
 ```
 
@@ -117,13 +117,13 @@ From the repo root, with the development set installed:
 
 ```sh
 lua5.1 tests/run.lua                                # the headless suite — 0 failed
-luacheck .                                          # 0 warnings / 0 errors, in 12 files
+luacheck .                                          # 0 warnings / 0 errors, in 18 files
 lizard -l lua -x "./libs/*" -x "./tests/_kit/*" .   # recorded; 0 functions above CCN 15
 tests/_kit/run-automated-tests.sh                   # all of the above, frozen into a bundle
 ```
 
 The first two are the **green gate**: no commit without both clean. The `luacheck` count is scoped by
-`.luacheckrc`'s `exclude_files` — the eight files in `LibKa0s/` plus the four in `testkit/`; `tests/`
+`.luacheckrc`'s `exclude_files` — the fourteen files in `LibKa0s/` plus the four in `testkit/`; `tests/`
 and `docs/` are excluded, so 0/0 only means something if what you changed is inside that set.
 
 There is **no `tests/perf.lua`** here, so the runner's `perf` suite is a standing `skip`. A skip is

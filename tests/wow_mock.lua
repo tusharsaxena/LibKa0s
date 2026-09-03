@@ -70,6 +70,35 @@ return function()
   M.__context.class      = "Death Knight"
   M.__context.classToken = "DEATHKNIGHT"
 
+  -- ── the class palette ─────────────────────────────────────────────────────────────────────
+  --
+  -- What LibKa0s-Core-1.0's ClassColor reads, and repo-local for the reason C_Map is: this is the
+  -- library's own surface rather than an API every addon in the collection touches.
+  --
+  -- UNIT-AWARE, unlike the base's UnitClass, which ignores its argument and answers the fixture
+  -- character for anything. That is honest enough for a capture context, where the only unit is the
+  -- player -- but the whole of ClassColor's contract is WHOSE class it answers with, and against a
+  -- unit-blind stub "the target's class" and "the player's class" are the same assertion. It falls
+  -- back to the fixture character for any unit a suite has not named, so every case written against
+  -- the base still sees exactly what it saw.
+  M.__unitClass = {}
+  function M.setUnitClass(unit, name, token) M.__unitClass[unit] = { name, token } end
+  M.UnitClass = function(unit)
+    local u = M.__unitClass[unit]
+    if u then return u[1], u[2] end
+    return M.__context.class, M.__context.classToken
+  end
+
+  -- Blizzard's real values for the classes the cases use, plus a token carrying a MALFORMED entry:
+  -- a table with no channels in it is the shape a client that half-knows a class answers with, and
+  -- "answer nil rather than a partial color" is a rule that needs a case to sit on.
+  M.RAID_CLASS_COLORS = {
+    DEATHKNIGHT = { r = 0.77, g = 0.12, b = 0.23 },
+    MAGE        = { r = 0.25, g = 0.78, b = 0.92 },
+    WARLOCK     = { r = 0.53, g = 0.53, b = 0.93 },
+    BROKEN      = { hex = "|cffffffff" },
+  }
+
   -- ── the pointer ───────────────────────────────────────────────────────────────────────────
   --
   -- LibKa0s-Widgets-1.0's ReorderList reads both on every OnUpdate frame of a drag, and a drag

@@ -35,7 +35,7 @@ the file you need:
 | `LibKa0s-Widgets-1.0` | `<Widgets>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
-| `LibKa0s-Options-1.0` | `<Options>.<OptionsWidgets>.<OptionsScroll>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
+| `LibKa0s-Options-1.0` | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
 | `LibKa0s-Perf-1.0` | `<Perf>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
 
 A multi-file major gets a composite key because its files carry **independent** minors that really do
@@ -43,6 +43,11 @@ diverge — the Options major has passed through `O3/W2`, `O3/W3`, `O4/W4` and `
 file's minor would have collapsed two genuinely different states into one filename. The files are not
 independently adoptable: whole-folder vendoring is what keeps a shell from one copy and a flow engine
 from another out of the wild, and LibStub cannot detect that mismatch if it happens.
+
+**A key gains a component when its major gains a file.** The Options key ran three numbers through
+`13.12.3` and runs four from `14.13.1.3`, where `OptionsCompose.lua` joined the major. The order is
+load order — `LibKa0s.xml`'s — which is what `tests/test_versioning.lua` derives the expected
+filename from, so the two cannot disagree.
 
 ## Every shipped version
 
@@ -53,7 +58,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [6](./Core/version-6-docs.md) | `Core.lua` 6 | v1.10.0 | **Current** |
+| [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 | **Current** |
+| [6](./Core/version-6-docs.md) | `Core.lua` 6 | v1.10.0 – v1.23.0 | Superseded |
 | [5](./Core/version-5-docs.md) | `Core.lua` 5 | v1.8.0 – v1.9.2 | Superseded |
 | [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | Superseded |
 | [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.6.3 | Superseded |
@@ -91,7 +97,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [8](./Widgets/version-8-docs.md) | `Widgets.lua` 8 | v1.19.0 | **Current** |
+| [9](./Widgets/version-9-docs.md) | `Widgets.lua` 9 | v1.24.0 | **Current** |
+| [8](./Widgets/version-8-docs.md) | `Widgets.lua` 8 | v1.19.0 – v1.23.0 | Superseded |
 | [7](./Widgets/version-7-docs.md) | `Widgets.lua` 7 | v1.16.0 | Superseded |
 | [6](./Widgets/version-6-docs.md) | `Widgets.lua` 6 | v1.15.0 | Superseded |
 | [5](./Widgets/version-5-docs.md) | `Widgets.lua` 5 | v1.13.0 | Superseded |
@@ -128,7 +135,9 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [13.12.3](./Options/version-13.12.3-docs.md) | `Options.lua` 13 · `OptionsWidgets.lua` 12 · `OptionsScroll.lua` 3 | v1.23.0 | **Current** |
+| [14.13.2.3](./Options/version-14.13.2.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 2 · `OptionsScroll.lua` 3 | v1.25.0 | **Current** |
+| [14.13.1.3](./Options/version-14.13.1.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 1 · `OptionsScroll.lua` 3 | v1.24.0 | Superseded |
+| [13.12.3](./Options/version-13.12.3-docs.md) | `Options.lua` 13 · `OptionsWidgets.lua` 12 · `OptionsScroll.lua` 3 | v1.23.0 | Superseded |
 | [12.11.3](./Options/version-12.11.3-docs.md) | `Options.lua` 12 · `OptionsWidgets.lua` 11 · `OptionsScroll.lua` 3 | v1.22.0 | Superseded |
 | [11.10.3](./Options/version-11.10.3-docs.md) | `Options.lua` 11 · `OptionsWidgets.lua` 10 · `OptionsScroll.lua` 3 | v1.21.0 | Superseded |
 | [10.9.3](./Options/version-10.9.3-docs.md) | `Options.lua` 10 · `OptionsWidgets.lua` 9 · `OptionsScroll.lua` 3 | v1.20.0 | Superseded |

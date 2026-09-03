@@ -1307,16 +1307,31 @@ test("widgets: __tabBand reserves the wrapped rows at their pitch, plus one full
   assertEqual(O.__tabBand(0, 3, 24, 24), 72, "pitch == tabH degenerates to n rows")
 end)
 
---- Drive TabStrip with every frame's CreateTexture instrumented, and hand back one record per
---- frame: the atlases it asked for, in order.
+--- Run `fn` with every frame's CreateTexture, SetPoint and SetHitRectInsets instrumented, and hand
+--- back one record per frame: the atlases it asked for, in order, plus its own anchors.
 ---
 --- The kit's base frame answers CreateTexture with the FRAME ITSELF, so "which atlas" is
---- unanswerable off a plain bench -- and it is the whole of the two cases below. Wrapping the
---- MOCKS' CreateFrame is the only seam: makeTab and drawContentPanel build raw frames and nothing
---- is handed in to intercept. It has to be `T.mocks` rather than `_G`, because a loaded chunk
---- reads its globals through the loader's env, whose __index resolves against the mocks table
---- first -- so a _G assignment here would never be seen.
-local function tabAtlases(O, ctx, spec, artHeight)
+--- unanswerable off a plain bench -- and it is the whole of several cases below. Wrapping the
+--- MOCKS' CreateFrame is the only seam: makeTab, drawContentPanel and the pitch probe build raw
+--- frames and nothing is handed in to intercept. It has to be `T.mocks` rather than `_G`, because
+--- a loaded chunk reads its globals through the loader's env, whose __index resolves against the
+--- mocks table first -- so a _G assignment here would never be seen.
+---
+--- THE TWO ATLAS FAMILIES ANSWER DIFFERENT HEIGHTS, and that is the point. The client does not draw
+--- `Options_Tab_Active_*` at the same height as `Options_Tab_*`, and a harness that answered one
+--- number for every atlas could not fail the selection-invariance case below -- which is precisely
+--- how that defect shipped green (anti-patterns #70). `activeHeight` defaults to `artHeight + 5`,
+--- so a caller that names only one still gets two.
+---
+--- The measurement is RESET on the way in and on the way out. It is memoized for the life of a
+--- session on purpose, so a cached 28 from this harness would follow every later case that never
+--- asked to be measured at all.
+local INACTIVE_ART, ACTIVE_ART = 28, 33
+
+local function instrument(O, artHeight, activeHeight, fn)
+  activeHeight = activeHeight or (artHeight and artHeight + 5)
+  O.__resetTabArtHeight()
+
   local realCreateFrame = T.mocks.CreateFrame
   local buttons, frames = {}, {}
   T.mocks.CreateFrame = function(kind, ...)
@@ -1324,14 +1339,20 @@ local function tabAtlases(O, ctx, spec, artHeight)
     local rec = { kind = kind, atlases = {}, points = {} }
     if kind == "Button" then buttons[#buttons + 1] = rec else frames[#frames + 1] = rec end
     -- The frame's OWN anchors, which the kit's base stub no-ops. The content panel's whole
-    -- correctness is where its four corners land, so they have to be observable.
+    -- correctness is where its four corners land, so they have to be observable -- and so is every
+    -- tab's y offset, which is what the selection-invariance case reads.
     function f:SetPoint(point, rel, relPoint, x, y)
       rec.points[point] = { rel = rel, relPoint = relPoint, x = x, y = y }
     end
+    function f:SetHitRectInsets(l, r, t, b) rec.hit = { l, r, t, b } end
     function f:CreateTexture()
-      local t = {}
-      function t:SetAtlas(name) rec.atlases[#rec.atlases + 1] = name end
-      function t:GetHeight() return artHeight end
+      local t, atlas = {}, nil
+      function t:SetAtlas(name) atlas = name; rec.atlases[#rec.atlases + 1] = name end
+      function t:GetHeight()
+        if not artHeight then return nil end
+        if atlas and atlas:find("Active", 1, true) then return activeHeight end
+        return artHeight
+      end
       function t:SetPoint() end
       function t:SetTexCoord() end
       function t:SetColorTexture() end
@@ -1340,10 +1361,17 @@ local function tabAtlases(O, ctx, spec, artHeight)
     end
     return f
   end
-  local ok, err = pcall(O.TabStrip, ctx, spec)
+  local ok, err = pcall(fn)
+  local pitch = O.__tabArtHeight()
   T.mocks.CreateFrame = realCreateFrame
+  O.__resetTabArtHeight()
   if not ok then error(err) end
-  return buttons, frames
+  return buttons, frames, pitch
+end
+
+--- The primary strip, instrumented.
+local function tabAtlases(O, ctx, spec, artHeight, activeHeight)
+  return instrument(O, artHeight, activeHeight, function() O.TabStrip(ctx, spec) end)
 end
 
 local function threeTabs(active)
@@ -1738,19 +1766,58 @@ function()
   assertEqual(ctx.activeTab, "Alpha", "a stale tab healed to the first group")
 end)
 
-test("widgets: a one-group page draws no strip at all", function()
-  -- A strip over a single tab is chrome for its own sake, and it would reserve a band that
-  -- pushes the page down for nothing.
+test("widgets: a one-group page draws a ONE-TAB strip", function()
+  -- The reversal at minor 13 (options-ui-§13). "A strip over a single tab is chrome for its own
+  -- sake" is a true sentence about one page and the wrong rule for a panel: a player moving
+  -- between pages meets a strip on most of them, and the page that lost its strip is the one that
+  -- looks broken. The tab is also the only thing naming the group once `noHeadings` has suppressed
+  -- the heading, so the fallback took the section's name off the page as well.
   --
-  -- Pointed at the "solo" fixture page, which exists for exactly this and holds ONE group. An
-  -- earlier draft aimed this at "bar" and wrapped the assertion in `if #groups == 1` -- "bar"
-  -- has two groups, so the guard never opened and the case could not fail.
-  -- red under: drawing the strip before counting the groups.
+  -- Pointed at the "solo" fixture page, which exists for exactly this and holds ONE group.
+  -- red under: restoring the `#groups < 2` fallback to O.RenderSchema.
   local O, _, ctx = bench()
   local groups = O.RenderTabbedSchema(ctx, "solo")
   assertEqual(#groups, 1, "the solo fixture page must hold exactly one group")
-  assertEqual(ctx.chromeHeight, 0, "a single-group page reserved a band")
-  assertEqual(#(ctx.__tabKids or {}), 0, "a single-group page built tab buttons")
+  assertEqual(ctx.chromeHeight, O.TAB_H, "a one-tab strip reserves exactly one row of tabs")
+  -- One button plus the content panel, which travels in the same ledger.
+  assertEqual(#(ctx.__tabKids or {}), 2, "the one-group page drew no strip")
+  assertFalse(ctx.__tabKids[1]:IsEnabled(), "the tab that cannot be clicked IS the section label")
+
+  -- And the group's own heading stays suppressed: the tab carries the name, exactly as it does on
+  -- a page with four.
+  for _, label in ipairs(scrollLabels(ctx)) do
+    assertNil(label:find("^HEADING:"), "a one-tab page drew a heading as well as its tab: " .. label)
+  end
+end)
+
+test("widgets: a page whose rows carry no group renders untabbed AND says so", function()
+  -- Every row on every page carries a `group` (options-ui-§13). A page whose rows do not cannot
+  -- draw a strip, and that is an authoring defect (anti-patterns #69) rather than a shape to
+  -- absorb -- but it still renders, because a blank page under an empty strip is a worse failure
+  -- than a strip-less one.
+  -- red under: falling through to the strip with an empty tab list, or swallowing the report.
+  local O, rec, ctx = bench({
+    rowsForPage = function()
+      return {
+        { path = "orphanOne", type = "bool", label = "Orphan one", default = false },
+        { path = "orphanTwo", type = "bool", label = "Orphan two", default = false },
+      }
+    end,
+  })
+
+  local groups = O.RenderTabbedSchema(ctx, "orphans")
+  assertEqual(#groups, 0)
+  assertEqual(#(ctx.__tabKids or {}), 0, "there is nothing to name a tab with, so no strip")
+
+  local labels = table.concat(scrollLabels(ctx), "|")
+  assertTrue(labels:find("Orphan one", 1, true) ~= nil, "the rows still rendered")
+  assertTrue(labels:find("Orphan two", 1, true) ~= nil)
+
+  local said = 0
+  for _, line in ipairs(rec.chat) do
+    if line:find("orphans", 1, true) and line:find("no grouped rows", 1, true) then said = said + 1 end
+  end
+  assertEqual(said, 1, "the page key was reported exactly once")
 end)
 
 test("widgets: with no AceGUI a tabbed page reports no tabs and draws nothing", function()
@@ -1763,4 +1830,458 @@ test("widgets: with no AceGUI a tabbed page reports no tabs and draws nothing", 
     local groups = O.RenderTabbedSchema(ctx, "tabbed")
     assertEqual(#groups, 0, "no AceGUI, no tabs to report")
   end)
+end)
+
+-- ── the strip's geometry is invariant under the selection (R4c) ────────────────────────────
+
+test("widgets: a wrapped strip's geometry is IDENTICAL for every value of the selection",
+function()
+  -- THE BUG. The selected tab is cut from `Options_Tab_Active_*` and the rest from
+  -- `Options_Tab_*`, and the client does not draw the two families at the same height. TabStrip
+  -- recorded the pitch from the FIRST tab it built, whichever that happened to be -- so on a page
+  -- whose strip WRAPS, selecting tab 1 packed the rows by the active art and selecting any other
+  -- packed them by the inactive art. The band feeds SetChromeHeight, which re-anchors the scroll
+  -- AND the content panel, so the whole page below the strip moved and resized when the player
+  -- clicked one particular tab. Reported from a client against ConsumableMaster's Macros page
+  -- (three wrapped rows, the gap on one tab alone) and again on its Macro Bar page.
+  --
+  -- It is invisible on an UNWRAPPED strip, because the pitch is multiplied by (rowCount - 1) = 0.
+  -- This case therefore forces a wrap: the harness's chrome answers 0 from GetWidth, so every tab
+  -- takes TAB_MIN_W and lands on its own row.
+  --
+  -- red under: restore `ctx.__tabArtH = ctx.__tabArtH or artH` and seed the pitch from whichever
+  -- tab was drawn first.
+  local tabs = {}
+  for i = 1, 8 do tabs[i] = { key = "k" .. i, label = "Tab " .. i } end
+
+  local function geometry(active)
+    local O, _, ctx = bench()
+    local buttons = tabAtlases(O, ctx,
+      { tabs = tabs, value = active, onSelect = function() end }, INACTIVE_ART, ACTIVE_ART)
+    local ys = {}
+    for i, rec in ipairs(buttons) do ys[i] = rec.points.TOPLEFT.y end
+    return ctx.chromeHeight, table.concat(ys, ",")
+  end
+
+  local firstBand, firstYs  = geometry("k1")
+  local secondBand, secondYs = geometry("k2")
+
+  assertEqual(firstBand, secondBand, "the reserved band moved with the selection")
+  assertEqual(firstYs, secondYs, "a tab's row offset moved with the selection")
+
+  -- And it is the INACTIVE art the rows are packed by, not the active one and not a mix: 8 rows
+  -- means 7 pitches plus one whole tab.
+  local O = Fixture.new()
+  assertEqual(firstBand, O.__tabBand(0, 8, O.TAB_H, INACTIVE_ART),
+    "the pitch was not the unselected tab art's own height")
+end)
+
+test("widgets: every tab's hit rect is inset by the same number the rows are packed by",
+function()
+  -- The empty strip along a button's top is not part of the tab and must not be clickable: row 2's
+  -- button overlaps row 1's art by exactly the pitch, so without the inset it swallows clicks meant
+  -- for row 1. Taken off each tab's OWN art the number was the inactive height on every unselected
+  -- tab and the active height on the selected one -- so the invariant the code's own comment states
+  -- held for all but one button per strip.
+  -- red under: `if artH and ...` off drawTabSlices' return, which is where it was read from.
+  local O, _, ctx = bench()
+  local tabs = {}
+  for i = 1, 3 do tabs[i] = { key = "k" .. i, label = "Tab " .. i } end
+  local buttons = tabAtlases(O, ctx,
+    { tabs = tabs, value = "k2", onSelect = function() end }, INACTIVE_ART, ACTIVE_ART)
+
+  for i, rec in ipairs(buttons) do
+    assertTrue(rec.hit ~= nil, "tab " .. i .. " never set a hit rect")
+    assertEqual(rec.hit[3], O.TAB_H - INACTIVE_ART,
+      "tab " .. i .. " was inset by its own art rather than by the strip's pitch")
+  end
+end)
+
+test("widgets: the pitch is measured once, off the INACTIVE family, and cached on success only",
+function()
+  -- Cached on success only is what lets a client that has not resolved the atlas yet answer for
+  -- real on the next read, instead of pinning the fallback for the session.
+  -- red under: caching the fallback, or measuring off TAB_ATLAS[true].
+  local O = Fixture.new()
+  O.__resetTabArtHeight()
+  assertEqual(O.__tabArtHeight(), O.TAB_H,
+    "nothing measurable falls back to the button height, which is the pre-measurement behavior")
+  assertEqual(O.__tabArtHeight(), O.TAB_H, "and the miss was not cached as the answer")
+
+  local _, _, pitch = instrument(O, INACTIVE_ART, ACTIVE_ART, function()
+    O.__tabArtHeight()
+  end)
+  assertEqual(pitch, INACTIVE_ART, "measured off the active family, or not measured at all")
+end)
+
+-- ── subsection headings (options-ui-§7) ────────────────────────────────────────────────────
+
+--- Only the headings a render emitted, in order.
+local function headings(ctx)
+  local out = {}
+  for _, label in ipairs(scrollLabels(ctx)) do
+    local text = label:match("^HEADING:(.*)$")
+    if text then out[#out + 1] = text end
+  end
+  return out
+end
+
+test("widgets: a subgroup draws a heading INSIDE a tab, where the group's own is suppressed",
+function()
+  -- A tab that mixes control types is three subjects under one label, and a player scanning it has
+  -- no way to tell where one ends. `noHeadings` suppresses the GROUP heading only.
+  -- red under: routing startSubgroup through the same noHeadings flag startGroup takes.
+  local O, _, ctx = bench()
+  O.RenderRows(ctx, {
+    { path = "s1", group = "Appearance", subgroup = "Bar",    type = "bool", label = "Bar one" },
+    { path = "s2", group = "Appearance", subgroup = "Bar",    type = "bool", label = "Bar two" },
+    { path = "s3", group = "Appearance", subgroup = "Border", type = "bool", label = "Border one" },
+  }, nil, nil, { noHeadings = true })
+
+  assertEqual(table.concat(headings(ctx), "|"), "Bar|Border",
+    "one heading per subgroup, once each, and never the tab's own name")
+end)
+
+test("widgets: a subgroup repeated under a SECOND group draws again", function()
+  -- "Border" under Bars and "Border" under Tooltip is the shape the collection is about to be full
+  -- of, and a tracker that survived the group boundary would swallow the second one.
+  -- red under: dropping `ctx.lastSubgroup = nil` from startGroup.
+  local O, _, ctx = bench()
+  O.RenderRows(ctx, {
+    { path = "b1", group = "Bars",    subgroup = "Border", type = "bool", label = "One" },
+    { path = "b2", group = "Tooltip", subgroup = "Border", type = "bool", label = "Two" },
+  }, nil, nil, { noHeadings = true })
+
+  assertEqual(table.concat(headings(ctx), "|"), "Border|Border")
+end)
+
+test("widgets: the pending line is flushed before a subsection heading", function()
+  -- A heading emitted without flushing lands packed into the empty half of the line above it, which
+  -- is a heading beside a checkbox.
+  -- red under: calling O.Section before flushRow in startSubgroup.
+  local O, _, ctx = bench()
+  O.RenderRows(ctx, {
+    { path = "o1", group = "G", type = "bool", label = "Odd one" },
+    { path = "o2", group = "G", subgroup = "Bar", type = "bool", label = "Bar one" },
+  }, nil, nil, { noHeadings = true })
+
+  local odd = Fixture.rowWithLabel(ctx.scroll, "Odd one")
+  local bar = Fixture.rowWithLabel(ctx.scroll, "Bar one")
+  assertTrue(odd ~= nil and bar ~= nil, "both rows rendered")
+  assertFalse(odd == bar, "the heading was packed beside the row above it")
+end)
+
+test("widgets: an UNTABBED page draws its group heading AND its subgroup headings", function()
+  -- The two levels are independent: `noHeadings` is about the group alone, so a page that draws
+  -- both must show both, in that order.
+  -- red under: making subgroup an alternative to group rather than a level inside it.
+  local O, _, ctx = bench()
+  O.RenderRows(ctx, {
+    { path = "u1", group = "Appearance", subgroup = "Bar", type = "bool", label = "Bar one" },
+  })
+  assertEqual(table.concat(headings(ctx), "|"), "Appearance|Bar")
+end)
+
+-- ── `wide` and `startsLine` ────────────────────────────────────────────────────────────────
+
+test("widgets: a `wide` row renders at FULL width, alone, with the lines around it flushed",
+function()
+  -- `solo` already renders a row alone -- in the LEFT HALF. `wide` is the other thing, and it is
+  -- named to match RenderGrid's field of the same meaning rather than redefining `solo`, which
+  -- would silently widen every solo row in nine shipped addons.
+  -- red under: reusing `solo`, which leaves the row at HALF and the right half empty.
+  local O, _, ctx = bench()
+  O.RenderRows(ctx, {
+    { path = "w1", group = "G", type = "bool", label = "Before" },
+    { path = "w2", group = "G", type = "bool", label = "Spanning", wide = true },
+    { path = "w3", group = "G", type = "bool", label = "After" },
+  })
+
+  local before   = Fixture.rowWithLabel(ctx.scroll, "Before")
+  local spanning = Fixture.rowWithLabel(ctx.scroll, "Spanning")
+  local after    = Fixture.rowWithLabel(ctx.scroll, "After")
+  assertFalse(before == spanning, "the wide row joined the line above it")
+  assertFalse(spanning == after, "the row below joined the wide row's line")
+  assertEqual(#spanning.children, 1, "a wide row shares its line with nothing")
+
+  local widget = spanning.children[1]
+  assertTrue(widget.fullWidth, "the wide row was not given the full width")
+  assertNil(widget.relativeWidth, "and it must not also carry a half-width")
+end)
+
+test("widgets: `startsLine` flushes a half-full line so a declared pair cannot be split",
+function()
+  -- The parity hazard this closes: a color swatch and its class-color companion (options-ui-§17)
+  -- declared after an ODD number of rows land as the right half of one line and the left half of
+  -- the next, which is a layout the schema cannot see and which breaks again the day a row is
+  -- inserted above them.
+  -- red under: omitting startsLine from opensLine, which leaves the pair split.
+  local O, _, ctx = bench()
+  O.RenderRows(ctx, {
+    { path = "n1", group = "G", type = "bool", label = "Odd one" },
+    { path = "n2", group = "G", type = "color", label = "Bar color", startsLine = true },
+    { path = "n3", group = "G", type = "bool",  label = "Use class color" },
+  })
+
+  local odd       = Fixture.rowWithLabel(ctx.scroll, "Odd one")
+  local swatch    = Fixture.rowWithLabel(ctx.scroll, "Bar color")
+  local companion = Fixture.rowWithLabel(ctx.scroll, "Use class color")
+  assertFalse(odd == swatch, "the swatch was left on the odd row's line")
+  assertEqual(swatch, companion, "the pair was split across two lines")
+  assertEqual(#swatch.children, 2, "and the line holds exactly the pair")
+end)
+
+test("widgets: `startsLine` on a line that is already empty costs nothing", function()
+  -- The flush is conditional on there being something pending, or every startsLine row would emit
+  -- an empty Flow row and a spacer above itself.
+  -- red under: flushing unconditionally.
+  local O, _, ctx = bench()
+  O.RenderRows(ctx, {
+    { path = "e1", group = "G", type = "color", label = "Bar color", startsLine = true },
+    { path = "e2", group = "G", type = "bool",  label = "Use class color" },
+  })
+  assertEqual(#Fixture.flowRows(ctx.scroll), 1, "an empty line was flushed ahead of the pair")
+end)
+
+test("widgets: InlineButtonPair with no right-hand button draws one, at the pair's width",
+function()
+  -- A frameless addon's Master controls tab has a "Reset all settings" button and no "Reset
+  -- position" to sit beside it (options-ui-§15), and that is the only shape that needs this.
+  -- red under: indexing rightSpec before checking it.
+  local O, _, ctx = bench()
+  local row = O.InlineButtonPair(ctx, { text = "Reset all settings", onClick = function() end })
+  assertEqual(#row.children, 1)
+  assertEqual(row.children[1].text, "Reset all settings")
+  assertEqual(row.children[1].relativeWidth, O.BUTTON_PAIR_REL,
+    "a lone button still takes the pair's width, so it lines up with every other page's")
+end)
+
+-- ── the empty dropdown reports itself ──────────────────────────────────────────────────────
+
+test("widgets: a string row with no values and no dialogControl prints once and still renders",
+function()
+  -- KickCD's `Label text` is the shipped instance: declared `type = "string"` with neither field,
+  -- it reached the dropdown maker and opened on nothing. The opt-in stays -- inference would
+  -- silently turn a row whose values function answers empty into a free-text field -- so this line
+  -- is what makes forgetting it visible the first time the page is opened.
+  -- red under: warning on any empty list, which fires on every LSM row before registration.
+  local O, rec, ctx = bench()
+  local parent = O.AceGUI:Create("SimpleGroup")
+  local dd = O.RenderField(ctx,
+    { path = "units.target.label.text", type = "string", label = "Label text" }, parent, 0.5)
+
+  assertEqual(dd.type, "Dropdown", "it still renders -- one broken row must not cost the page")
+  local said = 0
+  for _, line in ipairs(rec.chat) do
+    if line:find("units.target.label.text", 1, true) then said = said + 1 end
+  end
+  assertEqual(said, 1, "the row's path was reported exactly once")
+end)
+
+test("widgets: a values-backed row that is momentarily empty does NOT warn", function()
+  -- The deferred-closure case the opt-in exists for: an LSM-backed row's `values` answers an empty
+  -- table until the media library has registered anything, and warning about it would fire on
+  -- every media dropdown in the collection on the first render.
+  -- red under: keying the warning on the resolved list alone.
+  local O, rec, ctx = bench()
+  local parent = O.AceGUI:Create("SimpleGroup")
+  O.RenderField(ctx, {
+    path = "bar.texture", type = "string", label = "Bar texture",
+    dialogControl = "LSM30_Statusbar", values = function() return {} end,
+  }, parent, 0.5)
+
+  for _, line in ipairs(rec.chat) do
+    assertNil(line:find("bar.texture", 1, true), "a deferred media list was reported: " .. line)
+  end
+end)
+
+-- ── the chrome block above the strip (options-ui-§14) ──────────────────────────────────────
+
+test("widgets: PageHeader reserves the band, and the strip lands beneath it", function()
+  -- Controls that apply to every tab sit ABOVE the strip: drawn under one tab they read as
+  -- belonging to it, and they vanish the moment the player clicks another. O.PageBanner draws
+  -- exactly one Dropdown, so what is generalised here is the BAND, not the banner.
+  -- red under: reserving the raw height rather than O.__bannerBand's widened one, which lands the
+  -- first tab on top of the block's own bottom edge.
+  local O, _, ctx = bench()
+  local built = {}
+  local frame = O.PageHeader(ctx, {
+    height = 60,
+    build  = function(_, f) built[#built + 1] = f end,
+  })
+
+  assertTrue(frame ~= nil, "the block drew nothing")
+  assertEqual(built[1], frame, "the host was handed the frame it is to draw into")
+  assertEqual(ctx.__bannerHeight, O.__bannerBand(60))
+  assertEqual(ctx.chromeHeight, O.__bannerBand(60))
+
+  O.TabStrip(ctx, { tabs = { { key = "a", label = "A" } }, value = "a", onSelect = function() end })
+  local placement = O.__tabPlacement({ 60 }, 200, 0, ctx.__bannerHeight, O.TAB_H)
+  assertEqual(placement[1].y, -O.__bannerBand(60),
+    "the strip's first row must start at the bottom of the block's band, never above it")
+end)
+
+test("widgets: a page draws at most ONE chrome block -- the second replaces the first", function()
+  -- Two blocks are two bands, and the second pushes the page down for nothing. A page that needs a
+  -- picker AND other page-wide controls puts the picker inside the block.
+  -- red under: PageHeader appending to __chromeKids without releasing it first.
+  local O, _, ctx = bench()
+  local first = O.PageHeader(ctx, { height = 60, build = function() end })
+  local afterHeader = #ctx.__chromeKids
+  assertEqual(afterHeader, 2, "one block plus its hairline rule, and nothing else")
+
+  -- Its own re-render first: a page redraws its header on every subject change, and a block left
+  -- parented to the chrome would stack with the older one on top.
+  O.PageHeader(ctx, { height = 60, build = function() end })
+  assertEqual(#ctx.__chromeKids, afterHeader, "a second header stacked on the first")
+  assertFalse(first:IsShown(), "the first block was left on the chrome")
+
+  O.PageBanner(ctx, { label = "W", list = { [1] = "One" }, order = { 1 }, value = 1,
+                      onSelect = function() end })
+  assertEqual(#ctx.__chromeKids, afterHeader, "the two kinds of block stacked instead of replacing")
+end)
+
+test("widgets: PageHeader without a divider draws the block and no rule", function()
+  -- red under: reading `spec.divider` truthily, which makes an omitted field mean OFF.
+  local O, _, ctx = bench()
+  O.PageHeader(ctx, { height = 60, divider = false, build = function() end })
+  assertEqual(#ctx.__chromeKids, 1, "the rule was drawn anyway")
+end)
+
+test("widgets: a raising PageHeader builder costs the block, not the page", function()
+  -- The builder reaches into live addon state, and a raise inside the render pass would take the
+  -- strip and everything under it with it.
+  -- red under: calling spec.build bare.
+  local O, rec, ctx = bench()
+  local frame = O.PageHeader(ctx, { height = 60, build = function() error("host blew up") end })
+  assertTrue(frame ~= nil, "the block itself must survive its builder")
+  local said = 0
+  for _, line in ipairs(rec.chat) do
+    if line:find("page header failed", 1, true) then said = said + 1 end
+  end
+  assertEqual(said, 1)
+end)
+
+test("widgets: PageHeader refuses politely with no spec and with no height", function()
+  -- red under: reserving a zero band, which hides the chrome frame and moves the scroll for
+  -- nothing.
+  local O, _, ctx = bench()
+  assertNil(O.PageHeader(ctx, nil))
+  assertNil(O.PageHeader(ctx, { build = function() end }))
+  assertNil(O.PageHeader(ctx, { height = 0, build = function() end }))
+  assertNil(O.PageHeader(nil, { height = 60 }))
+  assertEqual(ctx.chromeHeight, 0, "a refusal must reserve nothing")
+end)
+
+-- ── the secondary strip (options-ui-§13) ───────────────────────────────────────────────────
+
+test("widgets: SubTabStrip draws inside the host's frame and reports the height it took",
+function()
+  -- The primary strip is pinned in the chrome band; a secondary one belongs to the content it
+  -- divides and scrolls with it. Pinning a second band would double the chrome and push the page
+  -- down twice.
+  -- red under: parenting to ctx.chrome, or calling SetChromeHeight, either of which moves the page.
+  local O, _, ctx = bench()
+  local parent = T.mocks.CreateFrame("Frame", nil, T.mocks.UIParent)
+  local tabs = {}
+  for i = 1, 5 do tabs[i] = { key = "s" .. i, label = "String " .. i } end
+
+  local picked = {}
+  local buttons, height = O.SubTabStrip(ctx, parent, {
+    tabs = tabs, value = "s2", onSelect = function(key) picked[#picked + 1] = key end,
+  })
+
+  assertEqual(#buttons, 5)
+  assertEqual(ctx.chromeHeight, 0, "a secondary strip must not reserve a pinned band")
+  assertEqual(#ctx.__subTabKids, 5, "its own ledger, so drawing the strip leaves the primary's alone")
+  assertEqual(#(ctx.__tabKids or {}), 0, "and it must never leak into the primary strip's ledger")
+  -- The harness's parent answers 0 from GetWidth, so all five wrap onto their own rows: four
+  -- pitches plus one whole tab.
+  assertEqual(height, O.__tabBand(0, 5, O.TAB_H, O.TAB_H))
+
+  assertFalse(buttons[2]:IsEnabled(), "the active sub tab is the disabled one, same as the primary")
+  buttons[4]:__fire("OnClick")
+  assertEqual(#picked, 1)
+  assertEqual(picked[1], "s4")
+end)
+
+test("widgets: a second SubTabStrip call releases the first rather than stacking on it", function()
+  -- A secondary strip is redrawn whenever its category is. Buttons left parented to the host's
+  -- frame would stack, with the older set on top swallowing the clicks -- the same failure the
+  -- primary strip's ledger exists to prevent.
+  -- red under: appending to __subTabKids without releasing it.
+  local O, _, ctx = bench()
+  local parent = T.mocks.CreateFrame("Frame", nil, T.mocks.UIParent)
+  local spec = {
+    tabs = { { key = "a", label = "A" }, { key = "b", label = "B" } },
+    value = "a", onSelect = function() end,
+  }
+  local first = O.SubTabStrip(ctx, parent, spec)
+  for _ = 1, 4 do O.SubTabStrip(ctx, parent, spec) end
+  assertEqual(#ctx.__subTabKids, 2, "the ledger grew across re-renders")
+  assertFalse(first[1]:IsShown(), "the first strip's buttons were left on the host's frame")
+end)
+
+test("widgets: ClearScroll drains the sub-tab ledger before AceGUI pools the parent", function()
+  -- SubTabStrip drains its own ledger ON ENTRY, which covers redrawing a strip. It cannot cover the
+  -- case where the page moves to a tab that draws NO secondary strip: SubTabStrip never runs, so
+  -- nothing drains, and ClearScroll's ReleaseChildren hands the buttons' parent back to AceGUI's
+  -- pool with them still shown on it. The next page to take that pooled frame inherits them.
+  -- red under: dropping the `O.__releaseSubTabs(ctx)` call at the top of O.ClearScroll.
+  local O, _, ctx = bench()
+  local parent = T.mocks.CreateFrame("Frame", nil, T.mocks.UIParent)
+  local buttons = O.SubTabStrip(ctx, parent, {
+    tabs = { { key = "a", label = "A" }, { key = "b", label = "B" } },
+    value = "a", onSelect = function() end,
+  })
+  assertEqual(#ctx.__subTabKids, 2)
+
+  -- The page re-renders onto a tab with no secondary strip: ClearScroll, and no SubTabStrip call.
+  O.ClearScroll(ctx)
+
+  assertEqual(#ctx.__subTabKids, 0, "the ledger survived the render that released its parent")
+  assertFalse(buttons[1]:IsShown(), "a sub tab button outlived the render that drew it")
+  assertFalse(buttons[2]:IsShown(), "a sub tab button outlived the render that drew it")
+end)
+
+test("widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab", function()
+  -- The same rule as the primary strip, over the new function: it packs by the same measured pitch
+  -- and must not read anything back off a tab that was drawn in whichever state it happened to be.
+  -- red under: measuring the pitch inside SubTabStrip off its own first button.
+  local tabs = {}
+  for i = 1, 6 do tabs[i] = { key = "s" .. i, label = "String " .. i } end
+
+  local function geometry(active)
+    local O, _, ctx = bench()
+    local parent = T.mocks.CreateFrame("Frame", nil, T.mocks.UIParent)
+    local height
+    local buttons = instrument(O, INACTIVE_ART, ACTIVE_ART, function()
+      _, height = O.SubTabStrip(ctx, parent, {
+        tabs = tabs, value = active, onSelect = function() end,
+      })
+    end)
+    local ys = {}
+    for i, rec in ipairs(buttons) do ys[i] = rec.points.TOPLEFT.y end
+    return height, table.concat(ys, ",")
+  end
+
+  local firstHeight, firstYs   = geometry("s1")
+  local secondHeight, secondYs = geometry("s3")
+  assertEqual(firstHeight, secondHeight, "the reported height moved with the selection")
+  assertEqual(firstYs, secondYs, "a sub tab's row offset moved with the selection")
+end)
+
+test("widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs", function()
+  -- red under: indexing spec.tabs before checking it.
+  withoutAceGUI(function()
+    local O, _, ctx = bench()
+    local parent = T.mocks.CreateFrame("Frame", nil, T.mocks.UIParent)
+    assertNil(O.SubTabStrip(ctx, parent, { tabs = { { key = "a", label = "A" } } }))
+  end)
+
+  local O2, _, ctx2 = bench()
+  local parent2 = T.mocks.CreateFrame("Frame", nil, T.mocks.UIParent)
+  assertNil(O2.SubTabStrip(ctx2, parent2, { tabs = {} }))
+  assertNil(O2.SubTabStrip(ctx2, parent2, nil))
+  assertNil(O2.SubTabStrip(ctx2, nil, { tabs = { { key = "a", label = "A" } } }))
 end)

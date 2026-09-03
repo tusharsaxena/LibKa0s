@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 13.12.3
+# `LibKa0s-Options-1.0` — version 14.13.2.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,176 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **13** · `OptionsWidgets.lua` **12** · `OptionsScroll.lua` **3** |
-| Version key | `<Options>.<OptionsWidgets>.<OptionsScroll>`, in load order — the same three numbers `lib.MODULES` reports |
-| Shipped in | v1.23.0 |
-| Status | Superseded |
-| Supersedes | [version 12.11.3](./version-12.11.3-docs.md) |
-| Superseded by | [version 14.13.1.3](./version-14.13.1.3-docs.md) — the mandatory strip, the composers, and a selection-invariant wrap |
+| Files and minors | `Options.lua` **14** · `OptionsWidgets.lua` **13** · `OptionsCompose.lua` **2** · `OptionsScroll.lua` **3** |
+| Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
+| Shipped in | v1.25.0 |
+| Status | **Current** |
+| Supersedes | [version 14.13.1.3](./version-14.13.1.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 13, OptionsWidgets = 12, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 14, OptionsWidgets = 13, OptionsCompose = 2, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O13`
-for `Options.lua` minor 13, `W12` for `OptionsWidgets.lua` minor 12, `S1` for `OptionsScroll.lua`
-minor 1. Minors 1 and 2 of each file were never tagged, so `O1`/`W1`/`S1` means "present for as long
-as any consumer could have had this major".
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O14`
+for `Options.lua` minor 14, `W13` for `OptionsWidgets.lua` minor 13, `C2` for `OptionsCompose.lua`
+minor 2, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
+`O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**`OptionsCompose.lua` minor 2 — `MasterControls` takes a `leadButton`.** One file moved; everything
+else in this major is unchanged from 14.13.1.3.
+
+`§15` fixes the wording of the two reset buttons, and the composer is the only thing that writes it.
+An addon with a verb of its own to put beside them — PrettyChat's *Test*, which prints a sample of
+every active format string — therefore had nowhere to put it: drawing the pair itself means keeping a
+second copy of *"Reset all settings"* and its tooltip in the addon, which is the drift this composer
+exists to end. So the verb is handed **in**:
+
+```lua
+local rows, tail = O.MasterControls{
+  page = "General", addonName = "PrettyChat", frameless = true,
+  leadButton = { text = "Test", tooltip = "…", onClick = runTest },
+  onResetAll = function() … end,
+}
+```
+
+**Where it lands is not a preference.** A **frameless** addon's pair has exactly one empty cell — the
+right half `§15` leaves when there is no *Reset position* — so the verb leads and the reset still
+closes the tab: `[Test] [Reset all settings]`. A **framed** addon's pair is already full, and `§15`
+forbids splitting or reordering the canonical two, so there the verb takes its **own row above** the
+pair rather than displacing a reset. Nothing draws three buttons on one line.
+
+It is **one** button, not a list. The tab closes with the resets; a row of host verbs before them is a
+different design, and `§15` does not describe one.
+
+A host written against 14.13.1.3 is correct here unmodified — the field is additive and its absence
+is the old behaviour exactly.
+
+### Previously, at 14.13.1.3
+
+**`Options.lua` minor 14 / `OptionsWidgets.lua` minor 13 / `OptionsCompose.lua` minor 1 — the tab
+strip becomes mandatory and selection-invariant, and the canonical control blocks become composers**
+(options-ui-§13, §15, §16, §17).
+
+The largest single move this major has made. Four things, and one of them is a shipped defect.
+
+### The strip's geometry no longer depends on which tab is selected
+
+The selected tab is cut from `Options_Tab_Active_*` and every other tab from `Options_Tab_*`, and the
+client does not draw the two families at the same height. `TabStrip` seeded the wrap pitch from the
+**first** tab it built — `ctx.__tabArtH = ctx.__tabArtH or artH` — so on a page whose strip **wraps**,
+selecting tab 1 packed the rows by the active art and selecting any other packed them by the
+inactive art. That pitch feeds both `__tabPlacement`'s row offsets and `__tabBand`'s reserved band,
+and `SetChromeHeight` re-anchors the scroll **and** the content panel off the band. So clicking one
+particular tab opened a gap between the wrapped rows and moved and resized the whole page under
+them, and clicking any other healed it — which is what made it read as a rendering glitch rather
+than as arithmetic. It is invisible on an unwrapped strip, because the pitch is multiplied by
+(rowCount − 1) = 0.
+
+The pitch is now measured **once**, from the **inactive** cap atlas, on a throwaway texture — never
+read back off a tab that was just drawn in whichever state it happened to be in — and cached on
+**success only**, so a call made before the client can answer does not pin the fallback for the
+session. `ctx.__tabArtH` and the internal `rowPitch(ctx)` are gone; `drawTabSlices` measures nothing.
+
+Two consequences. Every button's `SetHitRectInsets` now takes the **same** number the rows are
+packed by, so the invariant it exists for holds for the selected tab too rather than for all but one
+button per strip. And `setTabLabel` no longer applies the selected font: a tab's width is measured
+off its FontString, and a measurement taken under a selection-dependent font is a wrap index that
+moves with the selection. The two fonts are the same size today, so no wrap index moves; pinning the
+order is what keeps that true rather than lucky.
+
+`O.__tabArtHeight()` and `O.__resetTabArtHeight()` are published as test seams, because the invariant
+a suite has to pin — *the band and every row offset are identical for every value of the selection* —
+is unassertable without the one number both are built from. **A harness that answers one height for
+every atlas cannot fail that case**, which is exactly how the defect shipped green.
+
+*The direction of the residual is worth measuring in a live client once.* Packing by the inactive
+height leaves the selected tab's art standing a pixel or two proud into the row above, which is the
+direction `TAB_BG_TOP` and `TAB_LABEL_Y` already lift it deliberately. If the active art turns out to
+be the shorter of the two, the residual disappears entirely and nothing else changes.
+
+### Every page draws a strip, including a page with one section
+
+`RenderTabbedSchema`'s `#groups < 2` fallback to `RenderSchema` is **deleted**. "A single tab is
+chrome for its own sake" is a true sentence about one page and the wrong rule for a panel: a player
+moving between pages meets a strip on most of them and bare rows on the rest, and the page that lost
+its strip is the one that looks broken. The tab is also the only thing naming the group once
+`noHeadings` has suppressed the heading, so the fallback took the section's name off the page as
+well.
+
+The one exemption is **a page the host does not render through this engine at all** — today the
+AceConfig-drawn Profiles page, which never reaches this function. The exemption is a property of the
+call graph rather than of a page's name, because a name-match stops being true the first time a page
+is renamed and says nothing when it does. **No opt-out flag is offered**: a flag is a thing an addon
+can set for the wrong reason, and there would be no way to see it in a test.
+
+A page with **no** groups is a different decision. There is nothing to name a tab with, so it is
+reported by page key through the descriptor's `print` and then rendered untabbed — a blank page under
+an empty strip is a worse failure than a strip-less one. The missing `group` is the defect to fix.
+
+**Visible change** for any page that today has exactly one group: it gains a strip and its content
+moves down by the band. Every page with two or more groups is byte-identical.
+
+### Three new row fields, and two new members
+
+`subgroup` draws a heading **inside** a tab and is *not* suppressed by `noHeadings` — a tab mixing
+bar rows, background rows and border rows has to say where one stops and the next starts, and there
+is no tab left to name them with (options-ui-§7). It draws through `O.Section`, the same AceGUI
+Heading every other header uses; two heading looks on one canvas is the drift the shared library
+exists to end. One tab is still exactly one `group`, so the tab list stays derivable from `group`
+alone.
+
+`wide` renders a row alone at **full** width. `solo` does not do this — it renders alone in the
+**left half** — and `wide` takes `RenderGrid`'s existing name rather than redefining `solo`, which
+would silently widen every solo row in nine shipped addons.
+
+`startsLine` flushes the pending line **before** a row, so a declared pair — a color swatch and its
+class-color companion — can never be split across two lines by an odd number of widgets above it.
+That parity was a property of how many rows happened to precede the pair, which every author was
+counting by hand.
+
+`O.PageHeader(ctx, spec)` pins a host-drawn block in the band the page banner occupies, for controls
+that apply to **every** tab: drawn under one tab they read as belonging to it, and they vanish the
+moment the player clicks another (options-ui-§14). It generalises the **band**, not the banner —
+`O.PageBanner` draws exactly one Dropdown and is documented as the page's only picker. The two
+release the same ledger and write the same `ctx.__bannerHeight`, so a page gets **at most one**
+chrome block and the second call replaces the first; a page needing both a picker and other
+page-wide controls puts the picker inside the block.
+
+`O.SubTabStrip(ctx, parent, spec)` draws a **secondary** strip inside the scroll as ordinary page
+content. The primary strip is pinned and does not scroll; a secondary division belongs to the content
+it divides, and pinning a second band would double the chrome and push the page down twice. It has
+its own ledger (`ctx.__subTabKids`), packs by the same selection-invariant pitch, and its selection is
+the **host's** state — `spec.value` and `spec.onSelect` are the whole contract.
+
+### An empty dropdown reports itself
+
+A `type = "string"` row with neither `values` nor `dialogControl` is a free-text field that forgot to
+say so: the dispatch sends it to `makeDropdown` and the player gets a control that opens on nothing.
+The opt-in stays — inference would silently turn a row whose `values` function answers empty into a
+free-text field, which is the deferred-media case the opt-in exists for — so the warning is keyed on
+`row.values` being **nil**, and an LSM-backed closure that is momentarily empty stays quiet.
+
+### `OptionsCompose.lua` — the schema composers
+
+**A schema generator, not a renderer.** `O.ColorPair`, `O.FontGroup`, `O.BorderGroup`, `O.BarGroup`
+and `O.MasterControls` each expand one declaration into the canonical block of **ordinary schema
+rows** (options-ui-§15, §16, §17). Every composer is a pure function: it creates no widget, touches
+no AceGUI, reads no state and never writes to the spec it was handed. That is the whole design —
+what comes out is indistinguishable from hand-written rows, so `rowsForPage`, `applyDefault`,
+`RestoreDefaults`, the CLI and the reset sweep all keep working with nothing added to them, and the
+composers are testable with no mock at all. A composer that *rendered* would have needed a `ctx`, and
+every one of those seams would have needed a second implementation.
+
+Nine hand-written copies of the same six font rows is exactly the drift this library was extracted to
+end, and the day the block grows a row it grows in one addon. See
+[The schema composers](#the-schema-composers).
+
+`Options.lua` gains the `lib.__AttachCompose` call, guarded like the other two so a copy vendored
+without the file degrades to no composers rather than erroring at `:New`, and `O.ClearScroll` now
+resets `ctx.lastSubgroup` alongside `ctx.lastGroup`.
+
+## Previously, at 13.12.3
 
 **`Options.lua` minor 13 / `OptionsWidgets.lua` minor 12 — the content box stops touching its own
 contents, and wrapped rows of tabs sit flush** (options-ui-§13).
@@ -64,7 +219,7 @@ measured, which is exactly the pre-measurement behavior with no gap.
 
 **Untabbed pages remain untouched.** The panel is drawn by `TabStrip` and nothing else.
 
-## Previously, at 12.11.3
+### Previously, at 12.11.3
 
 **`Options.lua` minor 12 / `OptionsWidgets.lua` minor 11 — the tab strip stops imitating client
 chrome and starts using it, and a first-render wrap bug goes with it** (options-ui-§13).
@@ -243,20 +398,22 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `CreatePanel(name, title, opts)` | O1 (canvas contract: **O5**; chrome slot: **O10**) | A canvas Frame with the unified header stamped on top, returning the `ctx` every render call threads through. `opts` = `{ pageKey, isMain, defaultsButton, defaultsTooltip }`. Registers the ctx so the refresh fan-out reaches it. Also stamps the **Blizzard canvas contract** — `OnCommit` and `OnRefresh` inert (writes land immediately through the host's write seam, and `SetRenderer` already owns re-show), and `OnDefault` **forwarding** to the panel's `defaultsOnClick` so the Settings window's footer control and the header Defaults button stay one implementation. A forwarder rather than an assignment because hosts park `defaultsOnClick` *after* this returns. The returned `ctx` now also carries `chrome` (a pinned `Frame` between the header and the scroll) and `chromeHeight` (starting at `0`) — see [What changed at this version](#what-changed-at-this-version). |
 | `EnsureDefaultsButton(panel)` | O1 | Builds the header's Defaults button on the panel's **first OnShow**, never at build time. Idempotent, and a no-op on a panel that did not ask. |
 | `EnsureScroll(ctx)` | O1 | The lazy AceGUI ScrollFrame, patched for an always-visible scrollbar. |
-| `ClearScroll(ctx)` | O1 | Release the children, reset the section tracker, and **reassign** `ctx.refreshers`. |
+| `ClearScroll(ctx)` | O1 (`lastSubgroup`: **O14**) | Release the children, reset **both** heading trackers (`ctx.lastGroup` and `ctx.lastSubgroup`), and **reassign** `ctx.refreshers`. |
 | `Section(ctx, label)` | W1 | A full-width Heading, with the inter-section spacers. |
 | `AddSpacer(scroll, height)` | W1 | An invisible full-width row. |
 | `TextRow(ctx, text, opts)` | **W6** | A full-width Label, left-justified, added to `EnsureScroll(ctx)` and returned. `opts.fontObject` is a `_G` font-object **name**; `opts.justify` defaults to `"LEFT"`. Returns nil when AceGUI or the scroll is absent. Owns the `w.label` / `SetJustifyH` / `SetFontObject` guard pair **once**. |
 | `BuildLandingPage(ctx, spec)` | **W6** | The whole landing body: clear, logo, one-liner, then a heading and its rows per section. See [The landing page](#the-landing-page). |
 | `AttachTooltip(widget, label, tooltip)` | W1 | Works on AceGUI widgets and on plain frames. |
-| `InlineButtonPair(ctx, left, right)` | W1 | Two action buttons (not settings) in one Flow row, each inset to `BUTTON_PAIR_REL`. A throwing `onClick` is reported, never propagated into AceGUI's dispatch. |
+| `InlineButtonPair(ctx, left, right)` | W1 | Two action buttons (not settings) in one Flow row, each inset to `BUTTON_PAIR_REL`. A **nil** `right` draws the left button alone, at the pair's width, so it still lines up with every other page's — which is the shape a frameless addon's Master controls tab needs. A throwing `onClick` is reported, never propagated into AceGUI's dispatch. |
 | `RenderField(ctx, row, parent, relWidth)` | W1 | Dispatch by `row.type` to one of the five makers. Returns nil for an unknown type rather than erroring — a misspelled type costs one row, not the page. |
 | `SessionCheckbox(ctx, parent, relWidth, spec)` | W1 | A checkbox wired to caller-supplied `get`/`set` instead of a settings path, for runtime-only toggles that must never persist. |
 | `RenderRows(ctx, rows, afterGroup, pairWith, opts)` | W1 (`opts.noHeadings`: **W9**) | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. `opts = { noHeadings = true }` suppresses the automatic `Section` heading, for a page whose sections are drawn as tabs instead (options-ui-§13); the row-boundary flush and `ctx.lastGroup` advance still happen. Omitted by every untabbed caller. |
 | `RenderSchema(ctx, pageKey, afterGroup, pairWith)` | W1 | The per-page wrapper. |
-| `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)` | **W9** | Render one page as a tab strip over its own sections. The partition is by `row.group`, in declaration order — one tab is exactly one group, and there is no second field naming a tab (options-ui-§13). Fewer than two groups draws no strip and falls back to `RenderSchema` byte-for-byte. A stale `ctx.activeTab` heals to the first group. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order. |
-| `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). Returns the buttons in tab order, or nil having drawn nothing. |
-| `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip }`. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). **Draw it before `TabStrip`** — see [What changed at this version](#what-changed-at-this-version). Returns the dropdown, or nil having drawn nothing. |
+| `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)` | **W9** | Render one page as a tab strip over its own sections. The partition is by `row.group`, in declaration order — one tab is exactly one group, and there is no second field naming a tab (options-ui-§13). **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first group. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order. |
+| `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). **Its geometry is invariant under the selection from W13** — see [What changed at this version](#what-changed-at-this-version). Returns the buttons in tab order, or nil having drawn nothing. |
+| `SubTabStrip(ctx, parent, spec)` | **W13** | A **secondary** strip drawn inside the scroll as ordinary page content, parented to a frame the host supplies (options-ui-§13). Same `spec` shape as `TabStrip`, same selection-invariant pitch, its own ledger (`ctx.__subTabKids`) released on entry, and **no** content panel and **no** `SetChromeHeight` — the page already has both. Returns the buttons in tab order **and** the total height the strip occupies, so the host can size the frame it handed in, or nil having drawn nothing. The selection is the host's state: `spec.value` and `spec.onSelect` are the whole contract, and the convention for the collection is `ctx.activeSubTab` as a table keyed by the primary tab's key, session-only and never persisted. |
+| `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip }`. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing. |
+| `PageHeader(ctx, spec)` | **W13** | A host-drawn block pinned in the same band, for controls that apply to **every** tab (options-ui-§14). `spec = { height, build = function(ctx, frame) end, divider = <default true> }`. Anchors a `Frame` across `ctx.chrome`, ledgers it, draws the hairline unless told not to, records the widened band in `ctx.__bannerHeight` via `__bannerBand`, reserves it with `SetChromeHeight`, then calls `build` inside a `pcall` — a raising builder is reported and costs the block, not the page. **A page draws at most one chrome block**: this and `PageBanner` both release `__chromeKids` and both write `ctx.__bannerHeight`, so the second call replaces the first. **Draw it before `TabStrip`.** Returns the frame, or nil having drawn nothing. |
 | `SetChromeHeight(ctx, height)` | **O10** | Reserve `height` pixels of pinned chrome above the scroll, and re-anchor a live scroll to match. Idempotent. `height <= 0` hides `ctx.chrome`. Call only after the wrap of whatever is being reserved is known. |
 | `__scrollTopInset(ctx)` | **O10** | `L.CHROME_GAP + (ctx.chromeHeight or 0)` — the seam `EnsureScroll` and `SetChromeHeight` both read for the scroll's top anchor, so the two cannot disagree. |
 | `__layoutTabs(widths, available, gap)` | **W9** | Pure arithmetic: pack tab pixel widths into rows that fit `available`. A tab wider than `available` is placed alone rather than dropped. Returns rows of 1-based indices into `widths`. Test seam for the wrap rule, callable with no widgets. |
@@ -264,6 +421,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `__tabBand(top, rowCount, tabH, rowPitch)` | **W10** (signature: **W12**) | Pure arithmetic: how many pixels the strip reserves in total, banner included — which is also where the content panel's top edge lands. **(n − 1) pitches plus one whole tab**, because every row but the last is overlapped by the one under it. Took a `rowGap` through 12.11.3 and a `baselineH` through 11.10.3. |
 | `__bannerBand(rawHeight, gapTop, ruleH, gapBottom)` | **W10** | Pure arithmetic: the banner's own height widened by the gap, hairline and gap that separate it from the strip (options-ui-§14). What `ctx.__bannerHeight` holds. |
 | `__releaseChrome(ctx)` | **W9** | Test seam. Hides, unparents and forgets every widget in both chrome ledgers (`ctx.__chromeKids`, `ctx.__tabKids`). |
+| `__tabArtHeight()` | **W13** | The measured row pitch — the **unselected** tab art's own height, or `TAB_H` where nothing can be measured. Memoized on success only. Published because the invariant a suite has to pin is unassertable without the one number the band and every row offset are both built from. |
+| `__resetTabArtHeight()` | **W13** | Forget that measurement. A harness seam; an atlas does not change size mid-session. |
 | `RegisterOptionsPage(key, name, builder)` | O1 | Queue a page. Builders run once, in order, at `CreateOptionsPanel`. |
 | `CreateOptionsPanel()` | O1 | Resolve AceGUI, hand it to the host, validate, register the main canvas, run every builder. |
 | `OpenOptionsPanel()` | O1 (combat refusal: O3) | Open the category. **Refuses** under combat and never defers-and-replays. |
@@ -275,6 +434,15 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshPanel(ctx, structural)` | O8 | **One page, either tier.** `structural` true re-runs that ctx's renderer; false runs its refreshers in place. A hidden page is flagged dirty and repaints on its next show, so the caller never has to ask whether it is on screen. For a host whose page repaints off its own message bus rather than off a widget's `set()`. |
 | `__pages()` | O1 | The pages that actually built. A raising builder is reported by key and costs only itself. |
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
+| `ColorPair(spec)` | **C1** | A color swatch and its *use class color* companion, as exactly two adjacent rows. See [The schema composers](#the-schema-composers). |
+| `FontGroup(spec)` | **C1** | The canonical six font rows, in the canonical order. |
+| `BorderGroup(spec)` | **C1** | The canonical four border rows, optionally preceded by a *Show border* toggle. |
+| `BarGroup(spec)` | **C1** | The canonical four bar rows, for a surface with a **fill texture**. |
+| `MasterControls(spec)` | **C1** | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2**. |
+| `FONT_FLAGS` / `FONT_FLAGS_SORT` | **C1** | The font-flag key map and its declared order. |
+| `VISIBILITY_VALUES` / `VISIBILITY_SORT` | **C1** | The four general-visibility values and their declared order. General visibility is a dropdown, not a boolean: a boolean can only ever answer two of the four. |
+| `MASTER_GROUP` | **C1** | The literal `"Master controls"` — the group name, the tab label and the `afterGroup` key are one string, because the group name **is** the hook key. |
+| `CLASS_COLOR_NOTE` | **C1** | The sentence every composed swatch's tooltip carries, in place of the `disabledIf` it must never have. |
 | `LSMValues(mediaType)` | W1 (never-empty: **W4**) | A **deferred** closure pulling the live media hash at dropdown-render time. Never empty: a media library that has not loaded yet yields a single `None` placeholder, because a dropdown with no options cannot be opened and the CLI would refuse even the stored value. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. |
 | `PatchAlwaysShowScrollbar(scroll)` | S1 | The scrollbar override. Idempotent, and reversed on `OnRelease` — AceGUI pools ScrollFrames, so an unreleased patch escapes into whichever addon recycles the widget next. |
 | `ROW_VSPACER` / `SECTION_HEADING_H` / `BUTTON_PAIR_REL` | W1 | The cross-slice layout constants, mirrored onto the instance so a host's own page code stays in lockstep with the engine's spacing. |
@@ -351,67 +519,157 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 |---|---|---|
 | `group` | W1 | Section heading. A new value emits a `Section` and flushes the row in progress. |
 | `solo` | W1 | Render alone in the left half of its own line, for visual pivots. |
+| `subgroup` | **W13** | A heading drawn **inside** a group, through `O.Section` (options-ui-§7). Emitted whenever the value changes within a group, and cleared at every group boundary so the same name under two groups draws twice. **Not** suppressed by `opts.noHeadings`, which covers the group heading only: a tab that mixes control types has to name each block, and the tab label is already spent on the section. |
+| `wide` | **W13** | Render alone at **full** width, spanning both columns. Not what `solo` does — `solo` renders alone in the left half — and it shares `RenderGrid`'s field name and meaning rather than redefining `solo`. |
+| `startsLine` | **W13** | Flush the pending line **before** this row, so a declared two-row pair lands as `[left][right]` and can never be split by an odd number of preceding widgets. |
 | `skipRender` | W1 | Keep the row in the schema — so resets and the CLI still see it — but let the host draw it bespoke. |
 | `min` / `max` / `step` | W1 | Slider range. Snapping is relative to `min`, not to zero. |
 | `values` on a `number` row | **W5** | Makes it a **dropdown** rather than a slider, matching what `LibKa0s-Slash-1.0`'s parser has always understood the shape to mean. Inferred, not opted into — a `values` list that resolves empty falls back to the slider. |
 | `values` / `sorting` | W1 (ordered-array shape: W3) | Dropdown list, in either shape: an **ordered array** of `{ value =, text = }` (position is the order, and `sorting` is ignored) or a **key map** `{ KEY = "Label" }` (`sorting` keeps a deliberate order instead of alphabetising). A degenerate key *set* `{ KEY = true }` labels each entry with its key. `values` may be a function, evaluated at render and parse time. |
 | `dialogControl` | W1 | An in-tree widget type (`LSM30_*`, `EditBox`). Unregistered types fall back to a plain Dropdown, so an optional media-widget library staying absent costs a swatch, not the option. |
-| `hasAlpha` / `disabledIf` | W1 | Colour picker: alpha channel — **default true**, declare `false` to suppress it — and the sibling path whose truth greys the swatch out. |
+| `hasAlpha` / `disabledIf` | W1 | Color picker: alpha channel — **default true**, declare `false` to suppress it — and the sibling path whose truth grays the swatch out. **`disabledIf` must not be used for a class-color companion** (options-ui-§17, anti-patterns #74): the swatch is still read, for its alpha, so graying it says something untrue. No composed row carries it. |
+| `classColorSource` / `classColorUnit` | **C1** | `"player"` or `"unit"`, plus the token where it is `"unit"`. Stamped on **both** rows of every composed color pair. The library reads neither — they are the declaration an audit reads, because a path prefix cannot be trusted to say whose class a control means (options-ui-§17). |
 | `commitOn` | W1 | `"change"` makes this slider commit on the drag, throttled; `"release"` opts out of a descriptor-wide `sliderCommit`. Default is release-only. |
 | `isPercent` | W1 | Slider renders a 0–1 ratio as a percentage. |
 | `maxLetters` | W1 | Edit box only. |
 
+## The schema composers
+
+New at `OptionsCompose.lua` minor 1. Five functions, each expanding one declaration into the
+canonical block of **ordinary schema rows** — options-ui-§15 for the Master controls tab, §16 for the
+font / border / bar groups, §17 for the class-color companion.
+
+**They are pure functions.** No widget, no AceGUI, no state, and nothing the caller handed in is ever
+written to — a host may hoist its spec, and its `extra` rows, to a file constant and re-render
+freely. What comes out is indistinguishable from hand-written rows, which is what lets every existing
+seam keep working unchanged.
+
+### The common spec
+
+Every composer takes these, and each is optional except `page` and `group` in practice:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `prefix` | string | Path prefix, e.g. `"units.target."` or `""`. Each canonical row's path is `prefix .. leaf`. |
+| `page` | any | Copied onto every row. |
+| `group` | string | The tab name, copied onto every row. `MasterControls` defaults it to `"Master controls"`. |
+| `subgroup` | string | The intra-tab heading, copied onto every row. |
+| `order` | number | Order of the first row; each subsequent row `+10`. Ten, so a host can splice a row of its own between two canonical ones without renumbering either. Defaults to `0`. |
+| `keys` | table | `{ <canonicalLeaf> = "myLeaf" }` — path-leaf overrides. **The composer must not change what is stored**, and this is the override that protects a live SavedVariables. |
+| `labels` | table | `{ <canonicalLeaf> = "My label" }` — host-localised label overrides. |
+| `defaults` | table | `{ <canonicalLeaf> = <value> }` — default overrides. |
+| `omit` | table | `{ <canonicalLeaf> = true }` — leave the row out. The survivors stay contiguous, so an omission leaves no hole in the order. |
+| `classColor` | table | `{ source = "player" \| "unit", unit = <token>, default = <boolean> }`. Stamped on both rows of every color pair. |
+| `extra` | array | Rows appended **after** the canonical block, order continuing, copied rather than stamped in place. An extra declares its own `path` in full. |
+
+### `O.ColorPair(spec)` → rows
+
+The primitive the three group composers are built out of, and what a host calls for a standalone
+swatch. Additionally takes `key` (the swatch leaf, default `"color"`), `companionKey` (default
+`"useClassColor" .. Key`), `label` (default `"Color"`) and `hasAlpha` (default true).
+
+Returns **exactly two** rows: the swatch, carrying `startsLine = true`, and the `Use class color`
+checkbox immediately after it — which is what puts the companion in the right-hand column and what
+makes that placement impossible to break by inserting a row above the pair.
+
+**Neither row ever carries `disabledIf`,** and that is a recorded reversal of two addons' shipped
+behavior: the swatch's **alpha** is live under class color, so a grayed swatch is a lie. The swatch's
+tooltip carries `O.CLASS_COLOR_NOTE` instead — *"Not read while Use class color is on, except for its
+opacity, which always applies."*
+
+### `O.FontGroup(spec)` → rows
+
+Six leaves, in this order, landing as three lines:
+
+| | |
+|---|---|
+| `font` (`LSM30_Font`) | `fontSize` |
+| `fontColor` | `useClassColorFont` |
+| `fontFlags` | `fontShadow` |
+
+An even row count plus `startsLine` on rows 1 and 3 is what makes that layout parity-proof rather
+than a property of how many rows happen to precede the block.
+
+### `O.BorderGroup(spec)` → rows
+
+`borderStyle` (`LSM30_Border`), `borderSize` (*Border thickness (px)*), `borderColor`,
+`useClassColorBorder`. `spec.show = true` prepends `borderShow` (*Show border*), which is the only
+thing that may lead the block. A border offset or anything else the addon legitimately has goes in
+`spec.extra`, **after** the mandated rows, never interleaved.
+
+### `O.BarGroup(spec)` → rows
+
+`barTexture` (`LSM30_Statusbar`), `barAlpha` (*Bar opacity*, a percentage), `barColor`,
+`useClassColorBar`.
+
+**A group over a background is not a bar group.** A container with a backdrop and no fill texture
+takes `O.ColorPair` and nothing else; inventing a texture picker for a surface that has no texture is
+a control wired to nothing.
+
+### `O.MasterControls(spec)` → rows, afterGroup
+
+The canonical General-page tab (options-ui-§15). Additionally takes `addonName` (for the *Enable*
+label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onResetPosition`,
+`onResetAll` and — since **C2** — `leadButton`.
+
+| | |
+|---|---|
+| `enabled` — *Enable `<AddonName>`* | `visibility` — *General visibility* |
+| `scale` — *Master scale* | `alpha` — *Master alpha* |
+| `locked` — *Lock frame* | `debugConsole` — *Debug console* |
+| *Reset position* (button) | *Reset all settings* (button) |
+
+- **The set is canonical, not a menu.** An addon includes every row that applies to it and must not
+  reorder, rename or split them.
+- **`frameless = true` omits exactly the frame-only rows** — `scale`, `alpha`, `locked`, and the
+  *Reset position* button — and nothing else. General visibility stays: `Never` is a meaningful
+  master off-switch distinct from *Enable*. A frameless addon must not invent a movable frame to fill
+  the tab out.
+- **`visibility` is a dropdown**, over `O.VISIBILITY_VALUES` / `O.VISIBILITY_SORT`. An addon shipping
+  a *show only in combat* boolean migrates it (`true` → `"inCombat"`, `false` → `"always"`), because
+  a boolean can only ever answer two of the four.
+- **`debugConsole` is `sessionOnly`**, and its path is taken **verbatim** rather than prefixed:
+  session state lives outside the block's own prefix.
+- **`leadButton` = `{ text, tooltip, onClick }`** (**C2**) is ONE act of the host's own, closing the
+  tab beside the resets. On a **frameless** addon it takes the pair's empty right half, so the row
+  reads `[<verb>] [Reset all settings]`; on a **framed** addon, whose pair is already full and may
+  not be split or reordered, it takes its own row **above** the pair. It exists so an addon never has
+  to restate the reset's canonical wording in order to sit a button next to it.
+- **The two resets are the tab's closing button pair**, not schema rows — they are acts rather than
+  settings, so they would not belong in the CLI or in the reset sweep. The second return value is the
+  `afterGroup` hook for the group; wire it as
+  `H.RenderTabbedSchema(ctx, page, { ["Master controls"] = tail }, pairWith)`. The **group name is
+  the hook key**, so renaming the group detaches the hook.
+
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. This
-version adds **no member at all** either, and moves no published value: it is entirely the
-geometry of the content box and of a wrapped tab strip.
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. Six
+members and three row fields are added at this version and nothing is taken away.
 
-Two internal test seams change shape. `__tabPlacement` and `__tabBand` take a `rowPitch` where they
-took a `tabH` and a `rowGap`, and `TAB_ROW_GAP` is retired with it. No host calls either; this note
-exists because the *library's own tests* do.
+**One behavior change is visible without a code change**, and it is deliberate: a page rendered
+through `RenderTabbedSchema` whose rows declare exactly **one** group now draws a one-tab strip and
+its content moves down by the band. A page with two or more groups is byte-identical, and a page that
+never called `RenderTabbedSchema` is untouched.
+
+**`ctx.__tabArtH` is gone.** It was a `__`-prefixed internal read by nothing outside
+`OptionsWidgets.lua` — grepped across `tests/` and all nine consumers — and it is named here only
+because a host that reached for it anyway would find nothing.
 
 A consumer that calls none of the chrome surface still renders byte-identically to 9.8.3, for the
 reason it always did: `ctx.chromeHeight` starts at `0`, so `EnsureScroll`'s anchor computes to the
 same `CHROME_GAP` (`8`). A consumer that draws a banner but no strip gets no content panel, because
 `TabStrip` is the only thing that draws one.
 
+**A vendored folder holding `Options.lua` 14 but no `OptionsCompose.lua`** degrades to no composers
+rather than erroring at `:New` — the attach call is guarded exactly as the other two are. The
+re-vendor is whole-folder, so that state should never ship.
+
 **`lib.LAYOUT` is not itself part of the instance surface, and will not become so.** The keys a host
 may read are the individual scalars listed above. The rest are internal, each annotated in the source
 with why, and each is published — as its own scalar — the day a host demonstrates it needs it.
 Publishing the table would hand every host a mutable handle on every other host's spacing.
 
-The three files move as one. A consumer holding `Options.lua` from one vendored copy and
+The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 14.13.1.3
-
-Six members and three row fields are added, one behavior changes without a code change, and one
-`__`-prefixed internal disappears.
-
-**The behavior change:** a page rendered through `RenderTabbedSchema` whose rows declare exactly one
-group now draws a **one-tab strip** and its content moves down by the band. The `#groups < 2`
-fallback to `RenderSchema` is gone, because a Ka0s page *is* a strip (options-ui-§13) and the tab is
-the only thing naming the group once `noHeadings` has suppressed the heading. A page with two or more
-groups is byte-identical, and a page whose rows carry no `group` at all is reported by name and
-rendered untabbed.
-
-**The wrapped-strip defect this version carries** is that the row pitch was seeded from whichever tab
-was drawn first, and the selected tab is cut from a taller atlas family — so on a wrapped strip the
-band and every row offset moved when the player selected the first tab. It is fixed at 14.13.1.3 by
-measuring the pitch once, off the unselected art. `ctx.__tabArtH` and the internal `rowPitch(ctx)`
-disappear with it; neither was ever read outside `OptionsWidgets.lua`.
-
-**New members:** `O.PageHeader` (a host-drawn block in the banner's band, for controls that apply to
-every tab), `O.SubTabStrip` (a secondary strip inside the scroll), and the five composers in the new
-`OptionsCompose.lua` — `ColorPair`, `FontGroup`, `BorderGroup`, `BarGroup`, `MasterControls` — each a
-pure function returning ordinary schema rows.
-
-**New row fields:** `subgroup` (a heading inside a tab, not suppressed by `noHeadings`), `wide` (full
-width, alone — which `solo` does not do), and `startsLine` (flush before this row, so a declared pair
-cannot be split across two lines).
-
-A host written against this version is correct at 14.13.1.3 unmodified, apart from the one-group
-page's new strip.

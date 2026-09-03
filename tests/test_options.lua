@@ -23,6 +23,7 @@ local lib = T.options
 test("options: the major registers all three of its files", function()
   assertEqual(lib.MODULES.Options, lib.MINOR, "Options.lua is the primary")
   assertTrue(type(lib.MODULES.OptionsWidgets) == "number", "OptionsWidgets.lua attached")
+  assertTrue(type(lib.MODULES.OptionsCompose) == "number", "OptionsCompose.lua attached")
   assertTrue(type(lib.MODULES.OptionsScroll) == "number", "OptionsScroll.lua attached")
 end)
 
@@ -34,6 +35,8 @@ test("options: an instance carries the shell, the widget makers and the scroll p
     "RefreshAllPanels", "RefreshScalars", "RefreshPanel", "SetRenderer", "LSMValues",
     "RegisterOptionsPage", "CreateOptionsPanel", "__pages",
     "OpenOptionsPanel", "RenderField", "RenderRows", "RenderSchema", "SessionCheckbox",
+    "RenderTabbedSchema", "TabStrip", "SubTabStrip", "PageBanner", "PageHeader",
+    "ColorPair", "FontGroup", "BorderGroup", "BarGroup", "MasterControls",
     "PatchAlwaysShowScrollbar", "__panels", "__panelFor",
   }) do
     assertTrue(type(O[name]) == "function", name .. " is on the instance")
@@ -1125,4 +1128,19 @@ test("options: ClearScroll leaves the reserved band alone", function()
   O.SetChromeHeight(ctx, 24)
   O.ClearScroll(ctx)
   assertEqual(ctx.chromeHeight, 24)
+end)
+
+test("options: ClearScroll resets BOTH heading trackers", function()
+  -- They are one family (options-ui-§7). startGroup clears the subgroup whenever the group changes,
+  -- which covers every page whose rows carry a `group` -- but a page that uses `subgroup` alone has
+  -- no group boundary to ride on, and its first subsection heading would be swallowed on every
+  -- render after the first.
+  -- red under: resetting ctx.lastGroup and leaving ctx.lastSubgroup set.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("HeadingClear", "Heading Clear", {})
+  O.EnsureScroll(ctx)
+  ctx.lastGroup, ctx.lastSubgroup = "Appearance", "Border"
+  O.ClearScroll(ctx)
+  assertNil(ctx.lastGroup)
+  assertNil(ctx.lastSubgroup)
 end)

@@ -775,6 +775,42 @@ cannot reach where you need it:
 If you find another, add it here in the same shape: what the contract cannot express, the file:line
 where it binds, and the issue tracking it.
 
+### New at v1.24.0 — the settings-revamp surfaces, and nobody has adopted them yet
+
+Five majors moved together for the Ka0s settings revamp, and everything below has **zero consumers**
+as of the release. That means every one of them is a first-contact surface: if it does not fit, that
+is a library gap on contact rather than a thing to work around in a setup file.
+
+- **The schema composers** (`OptionsCompose.lua`, new at minor 1). `H.ColorPair`, `H.FontGroup`,
+  `H.BorderGroup`, `H.BarGroup` and `H.MasterControls` each expand one declaration into the canonical
+  block of ordinary schema rows (`options-ui-§15`, `§16`, `§17`). They are **pure functions** — no
+  widget, no AceGUI, no state, and nothing you hand in is written to — so what comes out splices into
+  your existing schema and every seam you already have keeps working. **Pass `keys` and `defaults` to
+  preserve your stored paths and stored values**: the composer must not change what is stored, and a
+  silently renamed path orphans a player's setting.
+- **The class-color resolver** (`Core` minor 7). `LibKa0s.ClassColor(unit)` and
+  `LibKa0s.ResolveColor(stored, on, unit)`. **Delete your private copy** — three existed and two of
+  them read a different API — unless it is a *darkened background palette*, which is a different set
+  of hues rather than the class color times a constant, and stays. `nil` is an answer: an NPC or an
+  unresolvable unit falls through to the stored swatch, never to a substitute hue. Which unit you
+  pass is the unit the surface **describes**, never the unit whose settings table you read the value
+  out of.
+- **The reorder row box** (`Widgets` minor 9). `ReorderList` now draws each row's bounded box, with
+  the values published as `W.ROW_BOX`, and `handleSize`'s default moves 24 → 30. **This changes how
+  your list looks the moment you re-vendor**, so a host that draws a fill of its own must delete it
+  in the same commit or the two will stack.
+- **The mandatory tab strip** (`OptionsWidgets` minor 13). `RenderTabbedSchema` no longer falls back
+  to `RenderSchema` for a one-group page — it draws a one-tab strip. Every one of your schema rows
+  must carry a `group`, or the page is reported by name and rendered untabbed.
+- **Three new row fields**: `subgroup` (a heading inside a tab), `wide` (full width, alone — which
+  `solo` does **not** do), `startsLine` (flush before this row, so a declared pair cannot be split).
+- **Two new chrome members**: `H.PageHeader` (a host-drawn block in the banner's band, for controls
+  that apply to every tab) and `H.SubTabStrip` (a secondary strip inside the scroll).
+
+The full contracts are in [`api/Options/version-14.13.1.3-docs.md`](api/Options/version-14.13.1.3-docs.md),
+[`api/Core/version-7-docs.md`](api/Core/version-7-docs.md) and
+[`api/Widgets/version-9-docs.md`](api/Widgets/version-9-docs.md). Read those rather than this summary.
+
 ### Thinly-consumed surfaces — how many hosts stand behind each, and what is still unsettled
 
 A gap is a contract that cannot express what a host needs. These are the opposite failure: contracts

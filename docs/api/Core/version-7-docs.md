@@ -1,4 +1,4 @@
-# `LibKa0s-Core-1.0` — version 6
+# `LibKa0s-Core-1.0` — version 7
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Core surface points here rather than restating it. It describes the
@@ -8,12 +8,12 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
-| Files and minors | `Core.lua` minor **6** |
-| Shipped in | v1.10.0 |
-| Status | Superseded |
-| Supersedes | [version 5](./version-5-docs.md) |
-| Superseded by | [version 7](./version-7-docs.md) — the collection's one class-color resolver |
-| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 6 }` |
+| Files and minors | `Core.lua` minor **7** |
+| Shipped in | v1.24.0 |
+| Status | **Current** |
+| Supersedes | [version 6](./version-6-docs.md) |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 7 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
 were never tagged, so they have no document of their own — a `Since` of 1 or 2 means "present for
@@ -21,12 +21,69 @@ as long as any consumer could have had this major".
 
 ## What changed at this version
 
-`MakeCloseButton` takes an optional third argument, and nothing else moved.
+**Two new lib-level members, and nothing else moves.** Every other member, value and behavior is
+byte-for-byte what version 6 shipped, so a host that does not call the new pair needs a re-vendor
+and no code change.
 
 | | | Since |
 |---|---|---|
-| `addonName` | The caller's own addon FOLDER name, from its first vararg. Given it, the button draws `LibKa0s-Media-1.0`'s `close` icon as an 18px control with 12px of art. Omitted, it draws the multiplication sign exactly as every earlier version did. | **6** |
-| `b.icon` / `b.glyph` | Which of the two was drawn, recorded on the returned button. | **6** |
+| `ClassColor(unit)` | The class color of a unit, as three numbers, or **`nil`**. `unit` defaults to the player. | **7** |
+| `ResolveColor(stored, on, unit)` | Resolve a stored swatch through its *use class color* companion. Four numbers out, always. | **7** |
+
+### The one class-color resolver
+
+Every addon in the collection is growing a *use class color* companion beside every color swatch it
+draws (`options-ui-§17`), and each was about to answer the same three questions its own way. Three
+implementations already existed and **two of them disagreed about the source**: AbsorbTracker read
+`C_ClassColor.GetClassColor`; PanelMaster and MultiMeters read `RAID_CLASS_COLORS`.
+
+`RAID_CLASS_COLORS` wins, and not by coin toss — it is the table every other UI on the player's
+screen is already reading, so it is what the unit frames next to ours are showing.
+
+**`nil` is an answer.** An NPC, an out-of-range unit, a token the client rejects, a class the palette
+half-knows (an entry with a hex string and no channels) — none of them is a color, and substituting
+one invents a hue nobody chose that appears only in the cases nobody tests. Every caller falls
+through to the stored swatch instead.
+
+**What is cached, and what is not.** The *player's* own answer is memoized, because a class cannot
+change inside a session — and **on success only**, so a class the client has not answered for yet
+resolves on the next read rather than being pinned `nil`. **No other unit is ever cached.** A
+target's class changes every time the player retargets, and a per-unit cache would need invalidating
+on `PLAYER_TARGET_CHANGED` and `PLAYER_FOCUS_CHANGED` to save one table index. `lib.__ResetClassColor()`
+forgets the memo; it is a suite seam and a session cannot want it.
+
+`UnitClass` is called inside a `pcall`, because the token is the **caller's**: a unit string the
+client rejects raises rather than answering nil, and one bad token must cost this color rather than
+the frame being repainted.
+
+### `ResolveColor(stored, on, unit)` — three rules, ratified
+
+All three were already unanimous across the three implementations this replaces, and written down in
+none of them:
+
+1. **The configured alpha survives the mode.** No class-color source carries an alpha, so the
+   swatch's is always the one used.
+2. **An unresolvable class falls through to the stored swatch**, never to a default color.
+3. **The swatch is read under both modes**, which is why a color row must never be `disabledIf` its
+   companion (`anti-patterns #74`). Setting the color before turning the mode on is the normal order
+   of operations, and a disabled control makes it a two-visit job. The panel says it in the swatch's
+   tooltip instead.
+
+`stored` goes through `lib.RGBA`, so both persisted shapes — keyed and positional — work here exactly
+as they do everywhere else; a host with a codec of its own may decode first, but does not have to.
+The defaults are `1, 1, 1, 1`.
+
+**Which unit is passed is the host's call**, and it is the class-color rule's whole content: the unit
+the surface **describes**, never the unit whose settings table the value was read from. A per-unit
+cast bar or label passes its tracked unit; a player-owned display that merely lives under a
+`units.<unit>.` path — an interrupt icon, a ready glow, a mirrored bar — passes `nil`. Because a path
+prefix cannot be trusted to say which it is, the schema composers stamp `classColorSource` on both
+rows of every pair, and that declaration is what an audit reads.
+
+**Not moved into the library:** AbsorbTracker's darkened per-class *background* palette. That is a
+different set of hues, not the class color times a constant, and the two must not be substituted for
+each other. A background swatch resolves through the addon's own palette where it has one, and
+through `ResolveColor` where it does not.
 
 ### Which close control you get
 
@@ -76,6 +133,9 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `SKIN` | 1 | The one skin every Ka0s window wears. **Values changed at minor 3** and three keys were added — see [The skin table](#the-skin-table). Backdrop fields and every colour travel in one table, because taking the backdrop without the colours is exactly the drift this prevents. |
 | `ApplySkin(frame[, skin])` | 1 (2nd arg: 3) | Wear the skin. Makes the three calls a table cannot describe as well as the backdrop: the inner-border child frame (built once, re-tinted after), the title tint and the divider tint — each guarded on the skin key AND the frame member, so a window with no divider is fine. `skin` defaults to `lib.SKIN`; it exists so DebugLog's `skin` override reaches one implementation. A no-op on a frame with no `SetBackdrop`: undecorated is not broken. |
 | `RGBA(c, dr, dg, db, da)` | 4 | Read a stored color in **either** shape the collection persists — keyed `{ r =, g =, b =, a = }` or positional `{ r, g, b, a }` — and return four **numbers**, never a table. See [Reading a stored color](#reading-a-stored-color). |
+| `ClassColor([unit])` | **7** | `r, g, b` for the unit's class, out of `RAID_CLASS_COLORS`, or **`nil`** where there is no class color to give. `unit` defaults to `"player"`, whose answer is memoized on success; no other unit is cached. See [The one class-color resolver](#the-one-class-color-resolver). |
+| `ResolveColor(stored, on[, unit])` | **7** | `r, g, b, a` for a stored swatch read through its *use class color* companion. The stored alpha always applies; an unresolvable class falls through to the stored rgb. See [`ResolveColor(stored, on, unit)` — three rules, ratified](#resolvecolorstored-on-unit--three-rules-ratified). |
+| `__ResetClassColor()` | **7** | Forget the memoized player color. A suite seam — `__`-prefixed, and a live session cannot need it. |
 | `MakeCloseButton(parent, onClick[, addonName])` | 1 (3rd arg: **6**) | The close control a Ka0s window closes with, returned unanchored for the caller to place. Returns `nil` where `CreateFrame` is unavailable (headless harness, or a load path with no UI). With `addonName` it draws the collection's own `close` icon; without, the multiplication sign. See [Which close control you get](#which-close-control-you-get). |
 | `MODULES` | 1 | `{ Core = <minor> }` — the live minor of every file in this major. The in-game answer to "which version am I actually running?", and the value that picks this document. |
 | `lib:New(descriptor)` | 1 | Build a prefixed chat printer for one host. See below. |
@@ -189,11 +249,3 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
-
-## Moving to version 7
-
-Two lib-level members are added and nothing here moves: `ClassColor(unit)` answers a unit's class
-color or `nil`, and `ResolveColor(stored, on, unit)` reads a stored swatch through its *use class
-color* companion. A host written against this version is correct at version 7 unmodified — what it
-gains is one resolver instead of a private copy, and the three rules that copy was almost certainly
-already following written down where they can be cited.
