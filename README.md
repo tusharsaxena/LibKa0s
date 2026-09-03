@@ -30,7 +30,8 @@ modules ship today:
 - **`LibKa0s-Slash-1.0`** — the slash dispatcher, the help renderer, the schema CLI
   (`list`/`get`/`set`/`reset`/`resetall`/`version`) and the type-aware value parser.
 - **`LibKa0s-Options-1.0`** — the Blizzard settings-canvas shell, the schema-row to AceGUI widget
-  translation, and the two-column flow engine that lays a page out. Three files, one major.
+  translation, the two-column flow engine that lays a page out, and the schema composers that expand
+  one declaration into a canonical block. Four files, one major.
 - **`LibKa0s-Perf-1.0`** — a repeatable A/B performance capture for one host addon.
 
 Every module but Core requires Core, and refuses to register without it.
@@ -43,9 +44,9 @@ modules and points there; it does not restate them.
 
 1. Copy `LibKa0s/` into `<Addon>/libs/LibKa0s/` — the whole folder, every time. The modules are
    siblings that ship as one released copy, and every file but `Core.lua` returns without
-   registering at all when `Core.lua` is missing or older than the minor it needs. When `Options.lua` bails that way, `OptionsWidgets.lua` and `OptionsScroll.lua`
-   bail too on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole three-file
-   module is absent rather than half-attached.
+   registering at all when `Core.lua` is missing or older than the minor it needs. When `Options.lua` bails that way, `OptionsWidgets.lua`, `OptionsCompose.lua` and
+   `OptionsScroll.lua` bail too on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the
+   whole four-file module is absent rather than half-attached.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
 3. If you adopt Perf, declare `## SavedVariables: <Addon>PerfDB` in the TOC (the global name you'll
    pass as the descriptor's `sv`). Core and DebugLog persist nothing.
@@ -70,7 +71,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [9](docs/api/Widgets/version-9-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [7](docs/api/Slash/version-7-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block. | `Options.lua`, `OptionsWidgets.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [14.13.1.3](docs/api/Options/version-14.13.1.3-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block. | `Options.lua`, `OptionsWidgets.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [14.13.2.3](docs/api/Options/version-14.13.2.3-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [7.4](docs/api/Perf/version-7.4-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
@@ -190,10 +191,10 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.19.0**: `Core = { Core = 6 }`,
+different vendored copy of each. As of **v1.25.0**: `Core = { Core = 7 }`,
 `Env = { Env = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`, `Media = { Media = 3 }`,
-`Widgets = { Widgets = 8 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 7 }`,
-`Options = { Options = 9, OptionsWidgets = 8, OptionsScroll = 3 }`,
+`Widgets = { Widgets = 9 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 7 }`,
+`Options = { Options = 14, OptionsWidgets = 13, OptionsCompose = 2, OptionsScroll = 3 }`,
 `Perf = { Perf = 7, PerfPanel = 4 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
@@ -235,6 +236,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Slash.lua          -- LibKa0s-Slash-1.0, MINOR at the top of the file; needs Core
   Options.lua        -- LibKa0s-Options-1.0, MINOR at the top of the file; needs Core
   OptionsWidgets.lua -- the makers + the flow engine, same module, WIDGETS_MINOR of its own
+  OptionsCompose.lua -- the schema composers, same module, COMPOSE_MINOR of its own
   OptionsScroll.lua  -- the always-shown scrollbar patch, same module, SCROLL_MINOR of its own
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
