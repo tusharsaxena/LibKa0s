@@ -306,6 +306,62 @@ test("compose: frameless drops EXACTLY the four frame-only controls and nothing 
   assertEqual(row.children[1].text, "Reset all settings")
 end)
 
+-- A HOST VERB IN THE PAIR (`leadButton`). §15 fixes the reset buttons' wording, so an addon that
+-- wants its own act beside them cannot draw the pair itself without keeping a second copy of
+-- "Reset all settings" -- which is the drift this composer exists to end. The seam hands the verb
+-- IN instead, and the composer stays the only writer of the reset's text.
+--
+-- FRAMELESS ONLY takes it into the pair, because the frameless pair's right half is the one empty
+-- cell §15 leaves. A framed addon's pair is already full and §15 forbids splitting or reordering
+-- it, so there the verb takes its own row above.
+--
+-- red under: putting the lead button on the right (the reset must close the tab), or letting it
+-- displace a reset on a framed addon.
+test("compose: a frameless addon's lead button shares the pair with Reset all settings", function()
+  local fired = {}
+  local _, tail = O.MasterControls{
+    page = "general", addonName = "PrettyChat", frameless = true,
+    leadButton = {
+      text    = "Test",
+      tooltip = "Print a sample of every active format string.",
+      onClick = function() fired[#fired + 1] = "test" end,
+    },
+    onResetAll = function() fired[#fired + 1] = "all" end,
+  }
+
+  local ctx = O.CreatePanel("ComposeLead", "Compose lead", {})
+  tail(ctx)
+  local rows = Fixture.flowRows(ctx.scroll)
+  assertEqual(#rows[1].children, 2, "the verb and the reset share ONE row")
+  assertEqual(rows[1].children[1].text, "Test", "the host's verb leads")
+  assertEqual(rows[1].children[2].text, "Reset all settings", "and the reset still closes the tab")
+
+  rows[1].children[1]:__fire("OnClick")
+  rows[1].children[2]:__fire("OnClick")
+  assertEqual(table.concat(fired, "|"), "test|all", "the handlers were wired the wrong way up")
+end)
+
+test("compose: a FRAMED addon's lead button takes its own row above the full pair", function()
+  -- The pair is [Reset position][Reset all settings] and §15 forbids splitting or reordering it,
+  -- so there is no cell to give away. The verb goes above rather than displacing a reset.
+  -- red under: dropping either reset to make room, or drawing three buttons on one line.
+  local _, tail = O.MasterControls{
+    page = "general", addonName = "KickCD",
+    leadButton      = { text = "Test", onClick = function() end },
+    onResetPosition = function() end,
+    onResetAll      = function() end,
+  }
+
+  local ctx = O.CreatePanel("ComposeLeadFramed", "Compose lead framed", {})
+  tail(ctx)
+  local rows = Fixture.flowRows(ctx.scroll)
+  assertEqual(#rows[1].children, 1, "the verb is alone on the first row")
+  assertEqual(rows[1].children[1].text, "Test")
+  assertEqual(#rows[2].children, 2, "and the canonical pair is intact below it")
+  assertEqual(rows[2].children[1].text, "Reset position")
+  assertEqual(rows[2].children[2].text, "Reset all settings")
+end)
+
 test("compose: the tail draws the two resets as the tab's closing button pair", function()
   -- They are acts rather than settings, so they are a button pair and not schema rows -- and
   -- "Reset all settings" is options-ui-§12's global reset verbatim, in every addon.

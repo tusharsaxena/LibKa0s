@@ -10,6 +10,37 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.25.0 — 2026-09-03
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 14**,
+**OptionsWidgets minor 13**, **OptionsCompose minor 2**, **OptionsScroll minor 3**, **Perf minor 7**,
+**PerfPanel minor 4**, **kit revision 14**.
+
+One file moved. Everything else is byte-identical to v1.24.0.
+
+### `OptionsCompose.lua` minor 2 — `MasterControls` takes a `leadButton`
+
+**`§15` fixes the wording of the two reset buttons, and this composer is the only thing that writes
+it.** An addon with a verb of its own to put beside them therefore had nowhere to put it: PrettyChat's
+*Test* — which prints a sample of every active format string — sat on its own row above *Reset all
+settings*, and moving it alongside would have meant the addon drawing the pair itself, keeping a
+second copy of *"Reset all settings"* and its tooltip in its own source. That is precisely the drift
+this composer was extracted to end, so the answer is a seam rather than a copy: the verb is handed
+**in** as `leadButton = { text, tooltip, onClick }`.
+
+**Where it lands is arithmetic, not taste.** A **frameless** addon's pair has exactly one empty cell —
+the right half `§15` leaves when there is no *Reset position* — so the verb leads and the reset still
+closes the tab: `[Test] [Reset all settings]`. A **framed** addon's pair is already full, and `§15`
+forbids splitting or reordering the canonical two, so there the verb takes its own row **above** the
+pair rather than displacing a reset. Nothing draws three buttons on one line.
+
+It is **one** button and not a list, because the tab closes with the resets; a row of host verbs
+before them is a different design and `§15` does not describe one.
+
+Additive: a host written against 14.13.1.3 is correct here unmodified, and the field's absence is the
+old behaviour exactly.
+
 ## v1.24.0 — 2026-09-02
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

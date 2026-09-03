@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 14.13.1.3
+# `LibKa0s-Options-1.0` — version 14.13.2.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,52 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **14** · `OptionsWidgets.lua` **13** · `OptionsCompose.lua` **1** · `OptionsScroll.lua` **3** |
-| Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. **The key gained a component at this version**, because the major gained a file. |
-| Shipped in | v1.24.0 |
-| Status | Superseded |
-| Supersedes | [version 13.12.3](./version-13.12.3-docs.md) |
-| Superseded by | [version 14.13.2.3](./version-14.13.2.3-docs.md) — `MasterControls` takes a `leadButton` |
+| Files and minors | `Options.lua` **14** · `OptionsWidgets.lua` **13** · `OptionsCompose.lua` **2** · `OptionsScroll.lua` **3** |
+| Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
+| Shipped in | v1.25.0 |
+| Status | **Current** |
+| Supersedes | [version 14.13.1.3](./version-14.13.1.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 14, OptionsWidgets = 13, OptionsCompose = 1, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 14, OptionsWidgets = 13, OptionsCompose = 2, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O14`
-for `Options.lua` minor 14, `W13` for `OptionsWidgets.lua` minor 13, `C1` for `OptionsCompose.lua`
-minor 1, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
+for `Options.lua` minor 14, `W13` for `OptionsWidgets.lua` minor 13, `C2` for `OptionsCompose.lua`
+minor 2, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**`OptionsCompose.lua` minor 2 — `MasterControls` takes a `leadButton`.** One file moved; everything
+else in this major is unchanged from 14.13.1.3.
+
+`§15` fixes the wording of the two reset buttons, and the composer is the only thing that writes it.
+An addon with a verb of its own to put beside them — PrettyChat's *Test*, which prints a sample of
+every active format string — therefore had nowhere to put it: drawing the pair itself means keeping a
+second copy of *"Reset all settings"* and its tooltip in the addon, which is the drift this composer
+exists to end. So the verb is handed **in**:
+
+```lua
+local rows, tail = O.MasterControls{
+  page = "General", addonName = "PrettyChat", frameless = true,
+  leadButton = { text = "Test", tooltip = "…", onClick = runTest },
+  onResetAll = function() … end,
+}
+```
+
+**Where it lands is not a preference.** A **frameless** addon's pair has exactly one empty cell — the
+right half `§15` leaves when there is no *Reset position* — so the verb leads and the reset still
+closes the tab: `[Test] [Reset all settings]`. A **framed** addon's pair is already full, and `§15`
+forbids splitting or reordering the canonical two, so there the verb takes its **own row above** the
+pair rather than displacing a reset. Nothing draws three buttons on one line.
+
+It is **one** button, not a list. The tab closes with the resets; a row of host verbs before them is a
+different design, and `§15` does not describe one.
+
+A host written against 14.13.1.3 is correct here unmodified — the field is additive and its absence
+is the old behaviour exactly.
+
+### Previously, at 14.13.1.3
 
 **`Options.lua` minor 14 / `OptionsWidgets.lua` minor 13 / `OptionsCompose.lua` minor 1 — the tab
 strip becomes mandatory and selection-invariant, and the canonical control blocks become composers**
@@ -407,7 +438,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `FontGroup(spec)` | **C1** | The canonical six font rows, in the canonical order. |
 | `BorderGroup(spec)` | **C1** | The canonical four border rows, optionally preceded by a *Show border* toggle. |
 | `BarGroup(spec)` | **C1** | The canonical four bar rows, for a surface with a **fill texture**. |
-| `MasterControls(spec)` | **C1** | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. |
+| `MasterControls(spec)` | **C1** | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2**. |
 | `FONT_FLAGS` / `FONT_FLAGS_SORT` | **C1** | The font-flag key map and its declared order. |
 | `VISIBILITY_VALUES` / `VISIBILITY_SORT` | **C1** | The four general-visibility values and their declared order. General visibility is a dropdown, not a boolean: a boolean can only ever answer two of the four. |
 | `MASTER_GROUP` | **C1** | The literal `"Master controls"` — the group name, the tab label and the `afterGroup` key are one string, because the group name **is** the hook key. |
@@ -578,8 +609,8 @@ a control wired to nothing.
 ### `O.MasterControls(spec)` → rows, afterGroup
 
 The canonical General-page tab (options-ui-§15). Additionally takes `addonName` (for the *Enable*
-label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onResetPosition` and
-`onResetAll`.
+label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onResetPosition`,
+`onResetAll` and — since **C2** — `leadButton`.
 
 | | |
 |---|---|
@@ -599,6 +630,11 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
   a boolean can only ever answer two of the four.
 - **`debugConsole` is `sessionOnly`**, and its path is taken **verbatim** rather than prefixed:
   session state lives outside the block's own prefix.
+- **`leadButton` = `{ text, tooltip, onClick }`** (**C2**) is ONE act of the host's own, closing the
+  tab beside the resets. On a **frameless** addon it takes the pair's empty right half, so the row
+  reads `[<verb>] [Reset all settings]`; on a **framed** addon, whose pair is already full and may
+  not be split or reordered, it takes its own row **above** the pair. It exists so an addon never has
+  to restate the reset's canonical wording in order to sit a button next to it.
 - **The two resets are the tab's closing button pair**, not schema rows — they are acts rather than
   settings, so they would not belong in the CLI or in the reset sweep. The second return value is the
   `afterGroup` hook for the group; wire it as
@@ -637,14 +673,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 14.13.2.3
-
-One field, on one composer. `O.MasterControls` takes `leadButton = { text, tooltip, onClick }`, ONE
-act of the host's own drawn beside the resets — the pair's empty right half on a frameless addon
-(`[<verb>] [Reset all settings]`), its own row above the full pair on a framed one. It exists because
-`§15` fixes the resets' wording and the composer is the only thing that writes it, so an addon that
-wanted a button beside them had to keep a second copy of *"Reset all settings"* in its own source.
-
-Nothing else in the major moved. A host written against this version is correct at 14.13.2.3
-unmodified: the field is additive, and its absence is exactly the behaviour described here.

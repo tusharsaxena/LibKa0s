@@ -135,7 +135,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [14.13.1.3](./Options/version-14.13.1.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 1 · `OptionsScroll.lua` 3 | v1.24.0 | **Current** |
+| [14.13.2.3](./Options/version-14.13.2.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 2 · `OptionsScroll.lua` 3 | v1.25.0 | **Current** |
+| [14.13.1.3](./Options/version-14.13.1.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 1 · `OptionsScroll.lua` 3 | v1.24.0 | Superseded |
 | [13.12.3](./Options/version-13.12.3-docs.md) | `Options.lua` 13 · `OptionsWidgets.lua` 12 · `OptionsScroll.lua` 3 | v1.23.0 | Superseded |
 | [12.11.3](./Options/version-12.11.3-docs.md) | `Options.lua` 12 · `OptionsWidgets.lua` 11 · `OptionsScroll.lua` 3 | v1.22.0 | Superseded |
 | [11.10.3](./Options/version-11.10.3-docs.md) | `Options.lua` 11 · `OptionsWidgets.lua` 10 · `OptionsScroll.lua` 3 | v1.21.0 | Superseded |
