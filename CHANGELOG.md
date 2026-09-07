@@ -108,6 +108,20 @@ the tag (`automated-tests-§6`), so the `.toc` still carries the outgoing versio
 incoming one's evidence. The Version cell now reads `1.24.0 → 1.25.0` when the manifest carries a
 release — which is what this repo's own row for `20260903-161751` should have said and did not.
 
+**And a release run is now refused on a dirty tree.** `--release` does not label a run, it makes that
+run the evidence for a version — `automated-tests-§3`'s release gate and `/wow-addon:bump-version`
+read the manifest it writes and nothing else. A tree with uncommitted changes is not a commit, so the
+`git.sha` recorded beside the claim names bytes that were never measured. Of this library's
+twenty-nine release bundles, twenty-eight record `"dirty": true`; `20260903-161751` stamps
+`"release": "1.25.0"` at sha `895cdf4` on a tree that cannot be checked out, and from a trend line it
+is indistinguishable from a reproducible run. The runner now exits 2 before any suite runs, names the
+paths that made the tree dirty, and offers no override flag — an escape hatch on this gate would be
+reached for on the one release where the gate matters. Nothing else changes: a run without
+`--release` is unaffected, so the commit gate and every pre-commit hook keep their behavior and their
+exit code. `docs/releasing.md` step 7 carries the order this requires — commit the release, run the
+battery on the clean tree, then a second commit for the bundle and its `RESULTS.md` row, and the tag
+on that.
+
 **`RESULTS.md` is regenerated whole, rows preserved.** The runner had two write paths: an `awk` that
 inserted one row under the header, and a create-the-file branch carrying the header, the lead-in and
 everything else — reached only when the file was absent or its column set had changed, which in a

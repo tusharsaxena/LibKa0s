@@ -28,6 +28,10 @@
 #   tests/_kit/run-automated-tests.sh --no-bundle               print only, write nothing
 #   tests/_kit/run-automated-tests.sh --release 1.4.2           mark the bundle a release record
 #
+# --release IS REFUSED ON A DIRTY TREE, exit 2, before any suite runs. A release record does not
+# label a run, it IS the evidence for a version, and a working tree carrying uncommitted changes is
+# not a commit anyone can check out afterwards. Commit first, then run, then commit the record.
+#
 # Exit code: 0 unless the verdict is `red` (a gating suite failed). --no-bundle keeps the same code,
 # so a pre-commit hook can call it without writing anything.
 #
@@ -48,7 +52,7 @@ while [ $# -gt 0 ]; do
         --label)      LABEL="$2"; shift 2 ;;
         --release)    RELEASE="$2"; shift 2 ;;
         --no-bundle)  WRITE_BUNDLE=0; shift ;;
-        -h|--help)    sed -n '2,40p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help)    sed -n '2,39p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "unknown argument: $1" >&2; exit 2 ;;
     esac
 done
@@ -135,6 +139,28 @@ GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo "")"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
 GIT_DIRTY=false
 [ -n "$(git status --porcelain 2>/dev/null)" ] && GIT_DIRTY=true
+
+# A RELEASE RECORD IS REFUSED ON A DIRTY TREE. `--release X.Y.Z` does not label the run, it makes it
+# the evidence for that version: `automated-tests-§3`'s release gate and `/wow-addon:bump-version`
+# read this manifest and nothing else when they decide whether the tag may be cut. A tree with
+# uncommitted changes is not a commit, so the `git.sha` recorded beside the claim names bytes that
+# are not the bytes that were measured, and nobody reading the record later can reconstruct what ran.
+#
+# That is history, not theory. Of this library's own twenty-nine release bundles, twenty-eight record
+# `"dirty": true`; `20260903-161751` stamps `"release": "1.25.0"` at sha `895cdf4` on a tree that
+# cannot be checked out. Every one of them reads, to a trend line, exactly like a reproducible run.
+#
+# The refusal is here — before the suites, before the bundle directory is made — so it costs seconds
+# rather than a full battery. There is deliberately no override flag: an escape hatch on this gate
+# would be reached for on the one release where the gate matters. The fix is one commit.
+if [ -n "$RELEASE" ] && [ "$GIT_DIRTY" = true ]; then
+    {
+        echo "refusing --release $RELEASE: the working tree is dirty."
+        echo "  A release record names the commit its suites measured. Commit these, then re-run:"
+        git status --porcelain 2>/dev/null | sed 's/^/    /'
+    } >&2
+    exit 2
+fi
 
 [ "$WRITE_BUNDLE" -eq 1 ] && mkdir -p "$OUT"
 

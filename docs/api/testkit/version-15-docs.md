@@ -31,7 +31,7 @@ four-argument form, which is unchanged down to its message text.
 each of the nine — because a suite arrives that the repo did not have. Say so in the same commit
 that re-vendors: `docs/test-cases.md` and the README `[tests]` badge move with it.
 
-What moves in the record, in five places.
+What moves in the record, in six places.
 
 | | Was | Is at 15 |
 |---|---|---|
@@ -40,6 +40,7 @@ What moves in the record, in five places.
 | The **Version** cell on a release run | `$ADDON_VERSION` — the version being *replaced* | `version → release` when the manifest carries a `release` |
 | The lead-in | Written only when `RESULTS.md` was absent or its header mismatched, so no existing repository could ever receive a correction to it | Regenerated on every run |
 | The complexity watch list and the four standing sections | Never written by the runner at all | Generated from this run's own `lizard` output and its manifest |
+| `--release` on a dirty tree | Recorded as a footnote: `"release": "X.Y.Z"` beside `"dirty": true` | **Refused**, exit 2, before any suite runs |
 
 ### Why: a skipped case was reading as a case that did not exist
 
@@ -69,6 +70,36 @@ the outgoing version while the run is the incoming one's evidence. Rendering `$A
 attributed each release's numbers to its predecessor: this repo's own `RESULTS.md` carries a row
 reading `Version 1.24.0` whose manifest says `"release": "1.25.0"`. The cell now reads
 `1.24.0 → 1.25.0`, which is both facts and no guess.
+
+### Why: a release record could be taken from a tree nobody can check out
+
+`--release` is not a label. It is the flag that turns a run into **the** evidence for a version:
+`automated-tests-§3`'s release gate and `/wow-addon:bump-version` read the manifest it writes and
+nothing else when they decide whether a tag may be cut. A working tree carrying uncommitted changes
+is not a commit, so the `git.sha` sitting beside that claim names bytes that were never the bytes
+measured — and the record stays plausible forever, because `dirty` is a field nothing has ever read.
+
+The scale of it is the argument. Of the twenty-nine release bundles in the library that owns this
+kit, **twenty-eight** record `"dirty": true`; `20260903-161751` stamps `"release": "1.25.0"` at sha
+`895cdf4` on a tree that cannot be reconstructed. Every one of those rows reads, from a trend line,
+exactly like a reproducible run.
+
+The check is three lines and it sits **before** the suites — before the bundle directory is even
+made — so refusing costs seconds rather than a full battery. It exits 2 and prints the paths that
+made the tree dirty, because "dirty" without the list is a message that sends the operator to
+`git status` anyway. There is deliberately **no override flag**: an escape hatch on this gate is the
+one that gets reached for on the release where the gate matters.
+
+**A run without `--release` is untouched** — same code path, same exit code, same silence about the
+tree. The commit gate (`testing-§4`) is lint plus the harness and stays that way, and a pre-commit
+hook calling this runner on a working tree is doing exactly what it should. The refusal binds one
+flag, used at one moment, by one caller.
+
+For a consumer this changes when the release run happens, not what it measures: run it from the
+committed tree, then commit the bundle and its `RESULTS.md` row. `/wow-addon:bump-version` already
+runs the battery **before any file is edited**, so the nine addons are compliant on adoption without
+a step changing. The library releases itself by hand, and `docs/releasing.md` step 7 now carries the
+order.
 
 ### Why: the corrected lead-in could not reach a single repository
 
