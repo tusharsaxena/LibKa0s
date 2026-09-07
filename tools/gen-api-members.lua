@@ -108,7 +108,7 @@ function M.writeAll()
       -- CRLF, written here rather than left to the shell. The repo is pinned `* text=auto
       -- eol=crlf`; a plain redirect writes LF into the working tree, git's filters never see it
       -- (the blob is LF either way), and nothing but a byte-level audit ever notices. That is the
-      -- defect tests/test_eol.lua exists for, and this writer is not going to reintroduce it.
+      -- defect testkit/test_eol.lua exists for, and this writer is not going to reintroduce it.
       local f = assert(io.open(path, "wb"))
       f:write((M.manifest(m, lib):gsub("\n", "\r\n")))
       f:close()

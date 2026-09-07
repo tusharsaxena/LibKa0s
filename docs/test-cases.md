@@ -864,7 +864,7 @@ badge and any count quoted in the docs must agree with it.
 
 ### test_eol.lua (1)
 
-- eol: every tracked bundle file carries the terminator .gitattributes declares for it
+- eol: every tracked file carries the terminator .gitattributes declares for it
 
 ## Totals
 

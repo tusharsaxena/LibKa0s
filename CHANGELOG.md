@@ -83,12 +83,14 @@ once per click in the log of whoever pressed it.
 unconditionally, any host not passing `onResetAll` starts printing this the moment it takes the new
 copy. That is the point, and the answer is to supply the handler rather than to silence the line.
 
-### `testkit` revision 15 — the runner records what it measured, the mock can be asked how tall something is, and a stub can be checked by name
+### `testkit` revision 15 — the runner records what it measured, the mock can be asked how tall something is, a stub can be checked by name, and the kit ships a gate of its own
 
-Three files move. `run-automated-tests.sh` rewrites the record, `mock_base.lua` grows a geometry
-surface that answers nothing until a test asks it to, and `framework.lua` grows a second calling form
-for `Kit.assertSurfaceParity`; `loader.lua` and `vendor_sync.lua` are untouched. **No consumer's case
-count moves on adoption**, and that was measured rather than assumed. Full surface:
+Three files move and one is new. `run-automated-tests.sh` rewrites the record, `mock_base.lua` grows
+a geometry surface that answers nothing until a test asks it to, `framework.lua` grows a second
+calling form for `Kit.assertSurfaceParity` and learns to load a suite that ships in the kit, and
+`test_eol.lua` is the first suite the kit itself carries; `loader.lua` and `vendor_sync.lua` are
+untouched. **Every consumer's case count moves by exactly one on adoption** — the new suite, and
+nothing else. Full surface:
 [`docs/api/testkit/version-15-docs.md`](docs/api/testkit/version-15-docs.md).
 
 **The skipped count stops vanishing.** `framework.lua` has printed `N passed, N failed, N skipped,
@@ -194,9 +196,33 @@ question for every consumer that has not re-vendored yet. LibKa0s carries the re
 `tests/test_surface_parity.lua` itself rather than asking nine repositories to write a case this repo
 does not run.
 
-**Consumers should expect the record to move on the first run after re-vendoring**, and not the
-counts: a middle figure in the Tests column, the replaced lead-in, and a watch list with every
-disposition blank because there was no generated table to carry them forward from. Ruling on those
+**The line-ending gate reads the whole tracked set, and every consumer inherits it.** `test_eol.lua`
+has been this repo's own suite since revision 10, written beside the fix to the bundle writer, and it
+asked git about `docs/automated-tests/` and nothing else — 176 of 508 tracked paths here. That scope
+is the entire finding: `line-endings-§7` MUSTs the pin be checked mechanically, ten of ten
+repositories fail it, and the one repository that owned a gate ran it green over the directory that
+was already clean. Two of the files it could not see are `LibKa0s/DebugLog.lua` and `LibKa0s/Pool.lua`
+— the SHIPPED payload — which is why `diff -r LibKa0s <Addon>/libs/LibKa0s`, a SHOULD-be-empty check
+in [`docs/releasing.md`](docs/releasing.md), reported thousands of phantom lines in nine repositories
+on every re-vendor. A shell redirect is not the only way to write a file past git's clean filters —
+sed, an editor across a WSL mount, any generator that opens a path for writing — so the set to hold
+to the pin is the set git tracks.
+
+**It moved into the kit rather than being re-typed nine times**, which needed two small things from
+`framework.lua`. A suites entry may now carry its own `dir` —
+`{ name = "test_eol", dir = "tests/_kit/" }` — and `loadSuites` calls each suite chunk with the kit as
+`...` instead of `dofile`ing it, because a kit-shipped suite cannot read an exposed table whose global
+name belongs to the consumer. `Kit.assertSuiteInventory` now scans `tests/_kit/` for suites as well as
+`tests/`, so a kit suite that lands in a re-vendor and is never wired is a **red** naming the entry to
+add rather than a green run over a gate that never executed. One shell-out answers `text` and `eol`
+for the whole repository, because asking per path cost about nine seconds a run in ten repositories,
+which is the price at which somebody adds a flag to switch a gate off.
+
+**Consumers should expect the record to move on the first run after re-vendoring**, and the count to
+move by one: a middle figure in the Tests column, the replaced lead-in, and a watch list with every
+disposition blank because there was no generated table to carry them forward from. Expect the EOL
+gate itself to be red until the working tree is repaired — `rm <path> && git checkout -- <path>`, per
+path it names — because being red there is the whole reason it was widened. Ruling on those
 blanks is a one-time cost. Any hand-written prose below the table is replaced, so a disposition worth
 keeping is copied into the generated cell in the same commit or it is gone.
 

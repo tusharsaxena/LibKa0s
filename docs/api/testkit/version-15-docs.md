@@ -6,7 +6,7 @@
 
 | | |
 |---|---|
-| Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `vendor_sync.lua`, `run-automated-tests.sh`, `README.md` |
+| Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `vendor_sync.lua`, `test_eol.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **15** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.27.0 |
@@ -18,13 +18,18 @@
 
 ## What changed at this version
 
-Three files. `run-automated-tests.sh` rewrites the **record**, `mock_base.lua` grows a geometry
-surface that **answers nothing until a test asks it to**, and `framework.lua` grows a second calling
-form for `Kit.assertSurfaceParity` that names the live surface instead of building it.
-`loader.lua` and `vendor_sync.lua` are untouched. Every assertion, every loader behaviour and every
-existing mock answer is exactly what version 14 shipped — including `GetHeight`, which still returns
-0 for every frame nobody armed, and including `assertSurfaceParity`'s original four-argument form,
-which is unchanged down to its message text.
+Three files change and one is new. `run-automated-tests.sh` rewrites the **record**, `mock_base.lua`
+grows a geometry surface that **answers nothing until a test asks it to**, `framework.lua` grows a
+second calling form for `Kit.assertSurfaceParity` that names the live surface instead of building it
+and learns to load a suite that ships in the kit, and **`test_eol.lua` is the first suite the kit
+itself carries**. `loader.lua` and `vendor_sync.lua` are untouched. Every assertion, every loader
+behaviour and every existing mock answer is exactly what version 14 shipped — including `GetHeight`,
+which still returns 0 for every frame nobody armed, and including `assertSurfaceParity`'s original
+four-argument form, which is unchanged down to its message text.
+
+**This is the one revision so far whose adoption moves a consumer's case count**, by exactly one, in
+each of the nine — because a suite arrives that the repo did not have. Say so in the same commit
+that re-vendors: `docs/test-cases.md` and the README `[tests]` badge move with it.
 
 What moves in the record, in five places.
 
@@ -210,6 +215,59 @@ The member list each major publishes as data lives beside its API document, at
 `tools/gen-api-members.lua`, and regenerated and compared on every run of the library's own suite. It
 is the list this assertion enforces, which is what a stub author should be reading.
 
+### Why: a line-ending gate scoped to one directory found nothing outside it
+
+`test_eol.lua` has been LibKa0s' own suite since revision 10, written alongside the fix to the
+bundle writer, and it asked git about `docs/automated-tests/` and nothing else. That scope was the
+whole defect: `line-endings-§7` MUSTs the pin be checked **mechanically**, and ten of ten
+repositories failed it while the one repository that owned a gate ran it green — over 176 of its 508
+tracked paths. Two of the files it could not see, `LibKa0s/DebugLog.lua` and `LibKa0s/Pool.lua`, are
+in the **shipped** payload, which is why `diff -r LibKa0s <Addon>/libs/LibKa0s` — a SHOULD-be-empty
+check in `docs/releasing.md` — reported thousands of phantom lines in nine repositories on every
+re-vendor.
+
+At this revision it reads the whole `git ls-files` set and it lives **in the kit**, so the gate is
+inherited rather than re-typed nine times. A shell redirect is not the only way to write a file past
+git's clean filters — sed, an editor across a WSL mount, any generator that opens a path for writing
+— so the set to hold to the pin is the set git tracks.
+
+**One shell-out, not one per path.** `git ls-files -z | git check-attr text eol --stdin -z` answers
+both attributes for the whole repository in a single pass. Asked per path, `check-attr` measured
+about 17ms, which is some nine seconds added to every run in ten repositories — the cost at which a
+gate acquires a flag to switch it off.
+
+**It reads bytes only where git converts them.** A path whose `eol` is `unspecified` has nothing to
+be held to. A path whose `text` is `unset` is skipped for the same reason: `binary` unsets `text` and
+says nothing about `eol`, so a marked asset still answers `eol: crlf` from a global pin, and holding
+a `.tga` to a terminator count would be a red about an image. That is the rule the runner already
+applies when it writes a bundle, and the two must not disagree. The NUL-byte guard stays behind it,
+for a binary nobody remembered to mark. Everything it declines to do, it declines loudly: no
+`io.popen`, no git, no answer from `check-attr` and it **fails** rather than passing.
+
+#### The suite-list entry, and why the inventory scans the kit
+
+A suites entry may now carry its own directory:
+
+```lua
+Kit.run{
+  dir = "tests/",
+  suites = { "test_schema", ..., { name = "test_eol", dir = "tests/_kit/" } },
+}
+```
+
+`Kit.assertSuiteInventory` scans `tests/_kit/` for `test_*.lua` alongside `dir`, and a kit suite that
+is on disk and undeclared is a **failure** naming the entry to add. That closes the way this kind of
+file actually goes wrong: it arrives with a re-vendor rather than with a commit somebody wrote, so
+without the scan the copy lands, nobody wires it, and the run stays green over a gate that never
+executed. The scan is guarded on `tests/_kit/framework.lua` existing, so a repo that vendors the kit
+somewhere else is never asked about it.
+
+`loadSuites` now `loadfile`s a suite and calls the chunk with the kit as `...` rather than
+`dofile`ing it. A kit-shipped suite cannot read the exposed table the way a repo's own suites do —
+that table's global name is the consumer's (`LK_TEST`, `AT_TEST`, `KICKCD_TEST`, …) and the kit is
+never told what it is — so `local Kit = ...` is how it reaches `test` and `fail`. Every existing
+suite ignores the argument and is unaffected.
+
 ### What revision 16 will do, and why it is not this one
 
 `GetHeight` and `GetWidth` read `(self.__geomLive and self.__geomH) or 0`. Revision 16 deletes the
@@ -269,14 +327,20 @@ tooling gap on this host (install it and re-run).
 the two tables, then the reading note that `lizard` scores every `and`/`or` short-circuit as a
 decision.
 
-## For consumers: the counts do not move, the record does
+## For consumers: the count moves by exactly one, and the record moves
 
 The Lua surface **grows** at this revision — `SetAtlas`, `__setGeom`, `__atlasSizes`,
 `publicMembers`, `setSurfaceSource` and `assertSurfaceParity`'s second form — and still nothing
-answers differently, so **no suite gains or loses a case** on adoption. That was measured rather than assumed: the new `mock_base.lua` was
-dropped into all nine consumers' `tests/_kit/` and every one of them ran to the same total it ran
-before — 547, 831, 749, 841, 699, 1496, 763, 300 and 528. What changes is the file the next run
-writes.
+answers differently, so none of that gains or loses a case. That was measured rather than assumed:
+the new `mock_base.lua` was dropped into all nine consumers' `tests/_kit/` and every one of them ran
+to the same total it ran before — 547, 831, 749, 841, 699, 1496, 763, 300 and 528.
+
+**`test_eol.lua` is the one case that does move the total**, `+1` in each of the nine, none of which
+has an EOL gate of its own today. Expect that repo's number to read one higher the moment the entry
+is wired, and move `docs/test-cases.md` and the README `[tests]` badge in the same commit. Expect it
+to be **red** on the first run in most of them: this gate is the reason the stragglers are known
+about at all, and the repair it names — `rm <path> && git checkout -- <path>`, per path — is the
+working-tree sweep, not a change to the kit.
 
 Expect, on the first run after re-vendoring:
 
@@ -301,8 +365,13 @@ diff -r testkit <Addon>/tests/_kit             # must be empty
 cd <Addon> && lua tests/run.lua && luacheck .
 ```
 
-There is nothing to switch on and nothing to configure. The suite should be green immediately and at
-the same count; if it is not, the failure is not this kit revision.
+One line is configuration rather than copying: `{ name = "test_eol", dir = "tests/_kit/" }` in the
+runner's suite list. The inventory assertion fails until it is there and names the entry, so this
+cannot be forgotten quietly — and it is the only thing to switch on. Everything else in the kit is
+live the moment the bytes land.
+
+Expect `+1` on the total, expect the EOL gate to be red until the working tree is repaired, and
+expect nothing else to move; if something else does, the failure is not this kit revision.
 
 ## Vendoring
 

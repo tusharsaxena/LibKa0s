@@ -96,7 +96,7 @@ test("parity: a major the surface source cannot resolve fails rather than passes
 end)
 
 test("parity: with no surface source registered the gate fails rather than passes", function()
-  -- The bargain tests/test_kitsync.lua, tests/test_prose.lua and tests/test_eol.lua all strike: a
+  -- The bargain tests/test_kitsync.lua, tests/test_prose.lua and testkit/test_eol.lua all strike: a
   -- gate that goes quiet when it cannot look reports success, which is worse than not existing.
   -- A consumer whose harness does not hand the kit a LibStub must be told so, once, loudly.
   local restore = T.setSurfaceSource(nil)

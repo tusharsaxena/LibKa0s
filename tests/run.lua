@@ -58,6 +58,9 @@ Kit.run{
     "test_loader", "test_parallel",
     "test_mock_base",
     "test_surface_parity",
-    "test_versioning", "test_kitsync", "test_prose", "test_eol",
+    "test_versioning", "test_kitsync", "test_prose",
+    -- Shipped in the kit, so every consumer inherits the gate instead of re-typing it; the
+    -- inventory assertion goes red in any repo that vendors it and leaves it undeclared.
+    { name = "test_eol", dir = "tests/_kit/" },
   },
 }

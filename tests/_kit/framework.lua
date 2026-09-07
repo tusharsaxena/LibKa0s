@@ -323,10 +323,18 @@ local function fileExists(path)
   return false
 end
 
---- A suites entry is either a plain basename or `{ name = "test_foo", pending = "why" }`.
+--- A suites entry is either a plain basename or a table:
+---
+---   `{ name = "test_foo", pending = "why" }`   — declared, deliberately not on disk yet
+---   `{ name = "test_eol", dir = "tests/_kit/" }` — a suite that arrives with the vendored kit
+---
+--- `dir` overrides the runner's own suite directory for that entry alone. It exists because the kit
+--- now ships suites of its own: a gate every consumer needs and no consumer should be asked to
+--- re-type is vendored with `framework.lua`, and it lives where the rest of the kit lives rather
+--- than being copied into each repo's `tests/`.
 local function suiteEntry(entry)
-  if type(entry) == "table" then return entry.name, entry.pending end
-  return entry, nil
+  if type(entry) == "table" then return entry.name, entry.pending, entry.dir end
+  return entry, nil, nil
 end
 
 --- List the plain entries of a directory, sorted. Lua 5.1 has no directory API and nothing in this
@@ -365,8 +373,8 @@ end
 --- file DOES exist is also an error — that is the same silence wearing the affordance's clothes.
 local function loadSuites(dir, suites)
   for i, entry in ipairs(suites) do
-    local name, pending = suiteEntry(entry)
-    local path = dir .. tostring(name) .. ".lua"
+    local name, pending, entryDir = suiteEntry(entry)
+    local path = (entryDir or dir) .. tostring(name) .. ".lua"
     currentSuite = name
     if pending then
       if fileExists(path) then
@@ -376,7 +384,14 @@ local function loadSuites(dir, suites)
       end
       Kit.test(tostring(name) .. ".lua: suite not written yet", nil, tostring(pending))
     elseif fileExists(path) then
-      dofile(path)
+      -- `loadfile` and call, rather than `dofile`, so the chunk receives the kit as `...`. A suite
+      -- that ships IN the kit cannot read the exposed table the way a repo's own suites do: that
+      -- table's global name is the consumer's (`LK_TEST`, `AT_TEST`, `KICKCD_TEST`, …) and the kit
+      -- is never told what it is. A suite that ignores the argument — every existing one — is
+      -- unaffected, and a syntax error still raises with the same message `dofile` gave.
+      local chunk, err = loadfile(path)
+      if not chunk then error(err, 0) end
+      chunk(Kit)
     else
       error(("suite inventory: %s is declared in the suites list (position %d) but is not on disk "
         .. "— delete the entry or write the file; to keep it listed while it is being written, "
@@ -409,17 +424,25 @@ end
 --- "delete the entry or write the file", the other is "add it to the runner". Every divergence in
 --- both directions is reported in one message — a list that has drifted has usually drifted more
 --- than once, and one-at-a-time is one test run per missing file.
+---
+--- THE VENDORED KIT IS SCANNED TOO, and it is the same second direction. A suite that ships in the
+--- kit arrives in a consumer with a re-vendor rather than with a commit someone wrote, so the way it
+--- fails is the way it always fails: the copy lands, nobody adds it to the suite list, and the run
+--- is green over a gate that never executed. `tests/_kit/` is scanned whenever `framework.lua` is
+--- found there — the collection's one vendoring destination, and the guard means a repo that
+--- vendors somewhere else is simply not asked about it.
 function Kit.assertSuiteInventory(dir, suites)
   dir = dir or "tests/"
-  local declared, order, pending = {}, {}, {}
+  local declared, order, pending, dirs = {}, {}, {}, {}
   for i, entry in ipairs(suites or {}) do
-    local name, why = suiteEntry(entry)
+    local name, why, entryDir = suiteEntry(entry)
     declared[tostring(name)] = i
     order[#order + 1] = tostring(name)
     -- A `pending` entry is declared-and-deliberately-absent. Demanding it be on disk would make the
     -- write-in-progress affordance unreachable, which is the whole point of keeping it. The other
     -- direction still binds: if the file DOES appear, `loadSuites` raises rather than skipping it.
     if why then pending[tostring(name)] = true end
+    if entryDir then dirs[tostring(name)] = entryDir end
   end
 
   local onDisk, listed = suiteFilesOn(dir)
@@ -432,15 +455,36 @@ function Kit.assertSuiteInventory(dir, suites)
 
   local problems = {}
   for i, name in ipairs(order) do
-    if not present[name] and not pending[name] then
+    -- An entry carrying its own `dir` is not expected in the runner's suite directory and is asked
+    -- about where it actually lives.
+    local at = dirs[name]
+    local found
+    if at then found = fileExists(at .. name .. ".lua") else found = present[name] end
+    if not found and not pending[name] then
       problems[#problems + 1] = ("%s%s.lua is declared in the suites list (position %d) but is not "
-        .. "on disk — delete the entry or write the file"):format(dir, name, i)
+        .. "on disk — delete the entry or write the file"):format(at or dir, name, i)
     end
   end
   for _, name in ipairs(onDisk) do
     if not declared[name] then
       problems[#problems + 1] = ("%s%s.lua exists but is not declared in the suites list — add %q "
         .. "to the runner; it is running zero cases today"):format(dir, name, name)
+    end
+  end
+
+  local kitDir = dir .. "_kit/"
+  if fileExists(kitDir .. "framework.lua") then
+    local kitOnDisk, kitListed = suiteFilesOn(kitDir)
+    if kitListed == 0 then
+      fail("suite inventory: could not list " .. kitDir .. " — no `ls -A` and no `dir /b`; this "
+        .. "gate cannot run, and must not be reported as passing", 2)
+    end
+    for _, name in ipairs(kitOnDisk) do
+      if not declared[name] then
+        problems[#problems + 1] = ("%s%s.lua arrived with the vendored kit but is not declared in "
+          .. "the suites list — add { name = %q, dir = %q } to the runner; it is running zero "
+          .. "cases today"):format(kitDir, name, name, kitDir)
+      end
     end
   end
 
@@ -788,6 +832,9 @@ end
 --- Load the suites, then either render the inventory or run everything.
 --- opts = { dir = "tests/", suites = { ... }, suiteInventory = true, jobs = 1 }
 --- Exits the process: 0 on success, 1 on any failure, so the green gate is a plain shell check.
+---
+--- A suites entry is a basename, `{ name = ..., pending = "why" }`, or `{ name = ..., dir = ... }`
+--- for a suite that ships in the vendored kit rather than in `opts.dir` — see `suiteEntry`.
 ---
 --- `Kit.assertSuiteInventory` runs first whenever `opts.dir` is given EXPLICITLY -- a runner that
 --- discovers its own suites and passes no `dir` sits outside the assertion's premise and is left

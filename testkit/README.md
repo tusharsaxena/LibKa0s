@@ -1,8 +1,8 @@
 # LibKa0s testkit
 
 The shared headless test harness for the Ka0s addon collection: the test registry and assertions,
-the source loader, the universal half of the WoW-API mock, and the consolidated automated-test
-runner.
+the source loader, the universal half of the WoW-API mock, the consolidated automated-test runner,
+and one suite of its own.
 
 **The full surface — every function, every mock seam, every fidelity rule — is documented in the
 LibKa0s repo under `docs/api/testkit/`, one document per kit revision:**
@@ -82,6 +82,37 @@ When the sibling checkout is absent the cases report **SKIP** with the reason, n
 comparison contract, including the one line-ending normalization and why it exists, is stated in the
 file's own header. Read that header before changing anything about how the bytes are compared.
 
+## `test_eol.lua`
+
+The kit's own suite, and the only one it ships. It holds every file `git ls-files` reports to the
+terminator `.gitattributes` declares for it, reading the bytes rather than trusting git's own
+classification, and it is here rather than in each repo's `tests/` for the reason the rest of the
+kit is here: nine repositories need exactly the same gate and none of them should be asked to
+re-type it. `line-endings-§7` MUSTs the check be mechanical and supplies a command; a command is
+something someone runs, a suite is something the run runs.
+
+Wire it in the consuming runner's suite list, which is the one line adoption costs:
+
+```lua
+Kit.run{ dir = "tests/", suites = { "test_schema", ..., { name = "test_eol", dir = "tests/_kit/" } } }
+```
+
+`Kit.assertSuiteInventory` scans `tests/_kit/` for suites as well as `tests/`, so a re-vendor that
+lands this file in a repo that has not declared it goes **red** naming the entry to add. That is
+deliberate: a gate that arrives silently and runs nothing is the failure this kit already refuses
+everywhere else.
+
+It reads the bytes for every path git calls text and skips every path whose `text` is `unset` —
+`binary` unsets `text` and says nothing about `eol`, so a marked asset still answers `eol: crlf`
+from a global pin and holding a .tga to a terminator count would be a red about an image. That is
+the same rule the runner applies when it writes a bundle, and the two must not disagree. Everything
+else it declines to check, it declines loudly: no `io.popen`, no git, no answer from `check-attr`
+and it fails rather than passing.
+
+The repair when it goes red is `rm <path> && git checkout -- <path>`, per path it names.
+**`git add --renormalize .` fixes nothing here** — it rewrites the index, and the index was never
+wrong; that is precisely why nothing else in a repository ever reports this.
+
 ## It is not a library
 
 `testkit/` is **not** a LibStub major and **must never ship**.
@@ -148,8 +179,15 @@ NS.CreateOptionsPanel()
 
 _G.AT_TEST = Kit.expose{ NS = NS, mocks = mocks }
 
-Kit.run{ dir = "tests/", suites = { "test_schema", ... } }
+Kit.run{
+  dir = "tests/",
+  suites = { "test_schema", ..., { name = "test_eol", dir = "tests/_kit/" } },
+}
 ```
+
+A suites entry is a basename under `dir`, or a table: `{ name = ..., pending = "why" }` for a suite
+being written (it registers as a declared skip instead of as nothing), and `{ name = ..., dir = ... }`
+for a suite that ships in the kit rather than in `tests/`.
 
 ### Running it faster
 
