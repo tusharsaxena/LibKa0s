@@ -818,6 +818,15 @@ badge and any count quoted in the docs must agree with it.
 - parallel: the split is balanced to within one suite
 - parallel: more shards than suites yields empty shards, not overlapping ones
 
+### test_mock_base.lua (6)
+
+- mock: a frame that was never armed answers zero, dressed or not
+- mock: __setGeom is the opt-in, and the only thing that arms a frame
+- mock: an armed frame takes its height from the published atlas table
+- mock: SetAtlas records the name whether or not a size was asked for
+- mock: an atlas the table does not publish leaves geometry alone
+- mock: the selected and unselected tab atlases are published at different heights
+
 ### test_versioning.lua (8)
 
 - versioning: every declared major is actually registered
@@ -868,8 +877,9 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 10 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
+| test_mock_base.lua | 6 |
 | test_versioning.lua | 8 |
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **774** |
+| **Total** | **780** |

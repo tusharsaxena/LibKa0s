@@ -18,13 +18,13 @@
 
 ## What changed at this version
 
-One file, `run-automated-tests.sh`. No Lua surface moves at all: `framework.lua` changes for
-`Kit.VERSION` itself and for nothing else, and `loader.lua`, `mock_base.lua` and `vendor_sync.lua`
-are untouched. Every assertion, every mock and every loader behaviour is exactly what version 14
-shipped.
+Two files. `run-automated-tests.sh` rewrites the **record**, and `mock_base.lua` grows a geometry
+surface that **answers nothing until a test asks it to**. `framework.lua` changes for `Kit.VERSION`
+itself and for nothing else; `loader.lua` and `vendor_sync.lua` are untouched. Every assertion, every
+loader behaviour and every existing mock answer is exactly what version 14 shipped — including
+`GetHeight`, which still returns 0 for every frame nobody armed.
 
-What moves is the **record** — `docs/automated-tests/RESULTS.md` and the run manifest — in five
-places.
+What moves in the record, in five places.
 
 | | Was | Is at 15 |
 |---|---|---|
@@ -97,6 +97,56 @@ opened with **"499 cases"** against a suite running 764.
 The standard settled it at v2.39.0 (`automated-tests-§4`, *the one boundary*) and this is the code
 half. Everything below the table is now the runner's, generated from the run that measured it.
 
+### Why: four repositories filed a case none of them could write
+
+`mock_base.lua` answered `GetHeight()` with 0 for every frame and defined no `SetAtlas` at all.
+`OptionsWidgets.lua` measures the tab strip's row pitch off the **unselected** tab art — it asks a
+probe texture to take an atlas at the art's own size and reads the height back — so under that stub
+the measurement always came back 0, always took the `L.TAB_H` fallback, and every `options-ui-§13`
+geometry-invariance assertion passed **vacuously**. AbsorbTracker, MultiMeters, PanelMaster and
+PrettyChat each filed the missing case; not one of them could write it, because the fidelity it needs
+lives in the kit and nowhere else.
+
+Three members answer it, and all three are additive:
+
+| Member | What it does |
+|---|---|
+| `f:SetAtlas(name, useAtlasSize)` | Records `f.__atlas` always, and — when `useAtlasSize` is given, the same argument that makes a real texture take the art's dimensions — records the size the kit publishes for that atlas |
+| `f:__setGeom(w, h)` | **The opt-in.** Records a size *and* arms the frame, so `GetHeight`/`GetWidth` answer. Called with no arguments it arms and lets production dress the frame |
+| `mock.__atlasSizes` | The published fixture `SetAtlas` reads, reachable from a consumer's finished mock |
+
+**The arming is the whole design, and it was arrived at the hard way.** The obvious shape — have
+`SetAtlas` write geometry and `GetHeight` answer it — was written first, and three of this repo's own
+widget cases went red immediately: `tabArtHeight()` began measuring 28 where it had always fallen
+back to 37, and the strip re-wrapped underneath cases that had never mentioned geometry. Production
+calls `SetAtlas` on a probe texture no test holds a handle to, so a `SetAtlas` that armed geometry on
+its own is the kit-16 flip arriving by accident, a revision early, in ten repositories at once. The
+opt-in therefore belongs to the **test**, never to the code under test.
+
+**The atlas figures are a fixture, not a measurement.** Nothing in `__atlasSizes` was read off a
+client. They are stand-ins chosen so that art the client draws at different heights answers at
+different heights here — the two tab families are 28 and 33, the pair this repo's own tab suite has
+used as its stand-in since the strip was written. That difference is the load-bearing property: a
+fixture answering one number for every atlas could not fail a selection-invariance assertion, which
+is how anti-pattern #70 shipped green the first time. A case must read the figure it expects **out of
+the table** rather than restating it, or it goes red for the wrong reason the day a real measurement
+corrects the fixture. A consumer that needs an atlas the collection has not needed yet adds the entry
+in its own `tests/wow_mock.lua`.
+
+### What revision 16 will do, and why it is not this one
+
+`GetHeight` and `GetWidth` read `(self.__geomLive and self.__geomH) or 0`. Revision 16 deletes the
+`self.__geomLive and` from those two lines and every frame answers what was recorded on it. That is a
+real change to a mock roughly **308 test files across ten repositories** lean on: every assertion
+that passes today *because* geometry answers zero flips with it. Shipping both halves together is the
+version of this that reddens nine suites on one afternoon, so the surface lands here and the default
+moves once each consumer has adopted the opt-in where it needs geometry.
+
+Until then the interval is covered by an operator rather than by a case, and that is named rather
+than left as a gap: revision 15's own `TabStrip` rewrite is proved headless only by a `CreateFrame`
+count, and the case that would pin band geometry under selection is exactly the one this revision
+cannot express.
+
 ## The one boundary
 
 **Exactly one cell in `RESULTS.md` is authored: the watch list's `Disposition`.**
@@ -144,8 +194,11 @@ decision.
 
 ## For consumers: the counts do not move, the record does
 
-Nothing in the Lua surface changes, so **no suite gains or loses a case** on adoption. What changes
-is the file the next run writes.
+The Lua surface **grows** at this revision and still nothing answers differently, so **no suite gains
+or loses a case** on adoption. That was measured rather than assumed: the new `mock_base.lua` was
+dropped into all nine consumers' `tests/_kit/` and every one of them ran to the same total it ran
+before — 547, 831, 749, 841, 699, 1496, 763, 300 and 528. What changes is the file the next run
+writes.
 
 Expect, on the first run after re-vendoring:
 

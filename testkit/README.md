@@ -206,6 +206,34 @@ end
 Use `M.__stubFrame()` to build extra frame-shaped objects and `M.__libs` to register additional
 library fakes (AceDBOptions, LibSharedMedia) without reaching through LibStub's closure.
 
+## Asking a frame how tall it is
+
+`GetHeight()` and `GetWidth()` answer **0 for every frame nobody armed**, which is what roughly 308
+test files across the collection are written against. Arm the one frame a case cares about with
+`f:__setGeom(w, h)`, and it answers:
+
+```lua
+local tex = M.__stubFrame():__setGeom()      -- arm it, size to follow
+tex:SetAtlas("Options_Tab_Middle", true)     -- production dresses it
+tex:GetHeight()                              -- M.__atlasSizes["Options_Tab_Middle"][2]
+```
+
+`SetAtlas` records `f.__atlas` whether or not a size was asked for, so a case that only wants to know
+which art a widget dressed itself in needs no arming at all. `useAtlasSize` — the same argument that
+makes a real texture take the art's dimensions — records the size `M.__atlasSizes` publishes for that
+atlas; an atlas the table does not publish leaves the geometry as it found it, because the client
+draws nothing for an unknown atlas rather than collapsing the texture to zero.
+
+**The arming belongs to the test and never to the code under test.** Production calls `SetAtlas`
+itself — `OptionsWidgets.lua` measures its tab pitch on a probe texture no test holds a handle to —
+so a `SetAtlas` that armed geometry on its own would switch that measurement on in every suite in the
+collection at once. That was tried; three of LibKa0s's own widget cases went red inside a minute.
+
+`M.__atlasSizes` is a **fixture, not a measurement**. Nothing in it was read off a client. The two
+tab families answer different heights on purpose — a table answering one number for every atlas could
+not fail a selection-invariance assertion — so read the figure a case expects out of the table rather
+than restating it, and add an atlas your addon needs in your own `tests/wow_mock.lua`.
+
 ## Fidelity rules
 
 These are why this is one file rather than eight. Each exists because a friendlier mock already hid

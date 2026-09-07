@@ -114,6 +114,7 @@ Kit.run{
     "test_options", "test_options_widgets", "test_options_compose",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
     "test_loader", "test_parallel",
+    "test_mock_base",
     "test_versioning", "test_kitsync", "test_prose", "test_eol",
   },
 }

@@ -83,11 +83,12 @@ once per click in the log of whoever pressed it.
 unconditionally, any host not passing `onResetAll` starts printing this the moment it takes the new
 copy. That is the point, and the answer is to supply the handler rather than to silence the line.
 
-### `testkit` revision 15 — the runner records what it measured, and writes the record it was always asked for
+### `testkit` revision 15 — the runner records what it measured, and the mock can be asked how tall something is
 
-One file moves, `run-automated-tests.sh`, and no Lua surface moves at all. `framework.lua` changes
-for `Kit.VERSION` and nothing else; `loader.lua`, `mock_base.lua` and `vendor_sync.lua` are
-untouched. **No consumer's case count moves on adoption.** Full surface:
+Two files move. `run-automated-tests.sh` rewrites the record, and `mock_base.lua` grows a geometry
+surface that answers nothing until a test asks it to. `framework.lua` changes for `Kit.VERSION` and
+nothing else; `loader.lua` and `vendor_sync.lua` are untouched. **No consumer's case count moves on
+adoption**, and that was measured rather than assumed. Full surface:
 [`docs/api/testkit/version-15-docs.md`](docs/api/testkit/version-15-docs.md).
 
 **The skipped count stops vanishing.** `framework.lua` has printed `N passed, N failed, N skipped,
@@ -130,6 +131,32 @@ not a line range, which would blank every disposition in a file the moment anyth
 line — with the measured CCN breaking a tie between two warned functions of the same name in one
 file. A tie the CCN cannot break leaves the cell blank rather than attaching one entry's ruling to
 another.
+
+**`mock_base.lua` can now be asked how tall something is.** It answered `GetHeight()` with 0 for
+every frame and defined no `SetAtlas` at all, so `OptionsWidgets.lua`'s tab pitch — measured off the
+unselected tab art through a probe texture — always came back 0, always took its `L.TAB_H` fallback,
+and every `options-ui-§13` geometry-invariance assertion passed without measuring anything.
+AbsorbTracker, MultiMeters, PanelMaster and PrettyChat each filed the missing case and none of them
+could write it, because the fidelity it needs lives here. `SetAtlas(name, useAtlasSize)` now records
+the atlas name always and the published size when asked, `f:__setGeom(w, h)` is the opt-in that arms
+a frame, and `mock.__atlasSizes` is the fixture both read.
+
+**The opt-in belongs to the test and never to the code under test**, and that was learned rather than
+designed. The obvious shape — `SetAtlas` writes geometry, `GetHeight` answers it — was written first
+and three of this repo's own widget cases went red inside a minute: `tabArtHeight()` began measuring
+28 where it had always fallen back to 37, and the strip re-wrapped underneath cases that never
+mentioned geometry. Production calls `SetAtlas` on a probe texture no test holds a handle to, so a
+`SetAtlas` that arms geometry by itself is next revision's flip arriving by accident, in ten
+repositories at once. `GetHeight` therefore reads `(self.__geomLive and self.__geomH) or 0`, and a
+frame nobody armed answers exactly what it answered at revision 14.
+
+**Revision 16 deletes the `self.__geomLive and` from those two lines**, and that is the entire flip.
+It is a separate revision because roughly 308 test files across ten repositories lean on geometry
+answering zero and every assertion that passes *because* of it moves with the default. The surface
+lands now; the default moves once each consumer has adopted the opt-in where it needs geometry. Until
+then the four filed cases stay deferred and the interval is covered by an operator cycling the tab
+strips in the client, which is a weaker check than they asked for and is said here rather than left
+unstated.
 
 **Consumers should expect the record to move on the first run after re-vendoring**, and not the
 counts: a middle figure in the Tests column, the replaced lead-in, and a watch list with every
