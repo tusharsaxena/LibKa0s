@@ -10,15 +10,17 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.26.0 — unreleased
+## v1.26.0 — 2026-09-07
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
 **Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 14**,
 **OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 7**,
 **PerfPanel minor 4**, **kit revision 14**.
 
-The heading carries no date because the tag has not been cut. The release that cuts it dates this
-block and freezes its bundle; until then, this is what is staged for v1.26.0.
+Two files moved: `OptionsCompose.lua` and `OptionsWidgets.lua`. Everything else is byte-identical to
+v1.25.0. Both are silent shipped faults rather than new surface — one emptied every composed media
+dropdown in every consumer, the other leaked a set of frames per tab click — so this release adds
+nothing to adopt and asks for nothing but the re-vendor.
 
 ### `OptionsCompose.lua` minor 3 — the composed media dropdowns actually have options in them
 
