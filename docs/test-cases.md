@@ -442,7 +442,7 @@ badge and any count quoted in the docs must agree with it.
 - options: ClearScroll leaves the reserved band alone
 - options: ClearScroll resets BOTH heading trackers
 
-### test_options_widgets.lua (136)
+### test_options_widgets.lua (137)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -543,6 +543,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: TabStrip draws one button per tab, marks the active one, and reserves the band
 - widgets: clicking the ACTIVE tab does not re-fire onSelect
 - widgets: a second TabStrip call replaces the first rather than stacking on it
+- widgets: re-selecting the same tabs builds no second set of frames
 - widgets: TabStrip refuses politely with no AceGUI and with no tabs
 - widgets: PageBanner draws a seeded picker and reserves the banner band
 - widgets: banner then strip reserve ONE band between them, not two
@@ -853,7 +854,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog.lua | 67 |
 | test_slash.lua | 81 |
 | test_options.lua | 77 |
-| test_options_widgets.lua | 136 |
+| test_options_widgets.lua | 137 |
 | test_options_compose.lua | 24 |
 | test_perf_core.lua | 68 |
 | test_perf_run.lua | 33 |
@@ -866,4 +867,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **768** |
+| **Total** | **769** |

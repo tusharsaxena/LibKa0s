@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
 **Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 14**,
-**OptionsWidgets minor 13**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 7**,
+**OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 7**,
 **PerfPanel minor 4**, **kit revision 14**.
 
 The heading carries no date because the tag has not been cut. The release that cuts it dates this
@@ -38,6 +38,46 @@ impossible to ship again.
 
 The fix is three lines — the row carries `O.LSMValues("font")` itself — and it adds, removes and
 renames nothing.
+
+### `OptionsWidgets.lua` minor 14 — the tab strip stops leaking a set of frames per click
+
+**An options panel left open leaked one full set of tab buttons plus one content panel every time
+the player clicked a tab, for the life of the session.** `TabStrip` releases the strip and redraws it
+on every click; the redraw called `CreateFrame` per tab and once more for the panel, while the
+release only hid and unparented. WoW destroys no frame, so nothing was ever reclaimed.
+
+Nothing about it was visible. The panel drew correctly every time, every case in the suite stayed
+green, and the only symptom was a client that got heavier the longer settings stayed open — the same
+shape, and the same silence, as the hand-rolled pool leak that got `LibKa0s-Pool-1.0` extracted in
+the first place. This library published that pool at minor 3 and was the one repository in the
+collection not using it; four consumers already do.
+
+Each `ctx` now carries a `__tabPool` and a `__panelPool`, and `TabStrip` acquires from both.
+`makeTab` splits in two: `newTabButton` builds only what a selection cannot change — the button, its
+six textures and its font string — and `dressTab` re-applies everything that is per-tab, **`OnClick`
+included**, because the handler closes over that dress's selection and tab key. The tooltip moved to
+a `SetScript` pair set once at construction and re-aimed per dress: `O.AttachTooltip` takes the
+`HookScript` arm for a raw button, and `HookScript` accumulates, so a re-dressed button would have
+grown a pair of handlers per click — the same unbounded growth, moved from frames to scripts.
+
+`SubTabStrip` is deliberately left unpooled. Its buttons hang off a frame AceGUI takes back, so they
+must be unparented on release, and an unparented button off a free list is a button drawn onto
+nothing.
+
+`ctx.__tabKids` keeps its meaning — this render's furniture in draw order — and is now purely a
+ledger; the pools do the release.
+
+**One new floor, satisfied by construction.** `OptionsWidgets.lua` requires `LibKa0s-Pool-1.0` minor
+≥ 1 and is absent rather than degraded without it, the way `DebugLog.lua` is without `Widgets`.
+Degrading would mean falling back to allocating per click in silence, which is the defect this minor
+ends. `Pool.lua` ships in the same payload and loads first in `LibKa0s.xml`, so whole-folder
+re-vendoring — which is mandatory anyway — satisfies it.
+
+**Adoption is the re-vendor and nothing else.** No member, signature or return value moves. The
+strip renders the same pixels; what changes is how long its frames live. Because the headless proof
+is a `CreateFrame` count and the harness cannot see geometry, the in-client check belongs to the
+adoption wave: open every multi-tab panel, cycle its tabs, and confirm labels, selection state and
+band height are unchanged.
 
 **One contract tightened, and it is silent, so read this before re-vendoring.** `lib.__AttachCompose`
 lets a host supply its own `O.LSMValues`, and that member **must return a function**. Until now the

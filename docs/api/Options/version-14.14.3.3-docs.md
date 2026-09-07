@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 14.13.3.3
+# `LibKa0s-Options-1.0` — version 14.14.3.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,27 +8,90 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **14** · `OptionsWidgets.lua` **13** · `OptionsCompose.lua` **3** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **14** · `OptionsWidgets.lua` **14** · `OptionsCompose.lua` **3** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
 | Shipped in | v1.26.0 |
-| Status | Superseded |
-| Supersedes | [version 14.13.2.3](./version-14.13.2.3-docs.md) |
-| Superseded by | [version 14.14.3.3](./version-14.14.3.3-docs.md) — the tab strip recycles its frames instead of leaking one set per click |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 14, OptionsWidgets = 13, OptionsCompose = 3, OptionsScroll = 3 }` |
+| Status | **Current** |
+| Supersedes | [version 14.13.3.3](./version-14.13.3.3-docs.md) |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **New at this version:** `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`) — see [What changed](#what-changed-at-this-version). |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 14, OptionsWidgets = 14, OptionsCompose = 3, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O14`
-for `Options.lua` minor 14, `W13` for `OptionsWidgets.lua` minor 13, `C3` for `OptionsCompose.lua`
+for `Options.lua` minor 14, `W14` for `OptionsWidgets.lua` minor 14, `C3` for `OptionsCompose.lua`
 minor 3, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
 
+**`OptionsWidgets.lua` minor 14 — the tab strip borrows its frames from `LibKa0s-Pool-1.0` instead
+of building them on every click.** One file moved; everything else in this major is unchanged from
+14.13.3.3. **No member is added, removed or renamed, and no signature moves** — this is a change of
+lifetime, not of behaviour, and a host adopting it changes nothing.
+
+`TabStrip` releases the strip and redraws it on **every** click of it. Through 14.13.3.3 that redraw
+called `CreateFrame` once per tab plus once for the content panel, while the release only `Hide()`d
+and `SetParent(nil)`d. WoW never destroys a frame, so an options panel left open leaked one full set
+of tab buttons plus one content panel per click, for the life of the session. Nothing reported it and
+nothing looked wrong: the panel drew correctly every time, and the only symptom was a client that got
+heavier the longer settings stayed open — the same shape as the pool leak `LibKa0s-Pool-1.0`'s own
+header describes, in the one repository that publishes that pool and had not used it.
+
+At this version each `ctx` carries two pools of its own and the strip acquires from them:
+
+```lua
+ctx.__tabPool    -- the tab buttons,   Pool.New()
+ctx.__panelPool  -- the content panel, Pool.New()
+```
+
+`makeTab` splits in two. `newTabButton(parent)` is the pool's factory and builds only what a
+selection cannot change — the `Button`, its six textures and its `FontString`. `dressTab(b, tab,
+active, onSelect)` applies everything that *is* per-tab: the label and its measured width, the atlas
+family, the backing height, which glow is lit, the enabled state, the tooltip strings, and
+**`OnClick`, re-set on every dress**, because the handler closes over that dress's `active` and
+`tab.key` and a button carrying the previous dress's closure would select the wrong tab.
+
+The tooltip moved off `O.AttachTooltip` for this widget alone, and for one reason: a raw `Button` has
+no AceGUI `SetCallback`, so it takes that function's `HookScript` arm — and `HookScript` accumulates.
+A pooled button re-dressed per click would grow a pair of handlers per click, which is the same
+unbounded growth in scripts that this minor removes in frames. The strip now sets one `SetScript`
+pair at construction that reads the current tab's strings off the button, so a tab re-dressed as one
+that has **no** tooltip actually loses the one it had. `O.AttachTooltip` itself is unchanged and every
+other widget in the file still uses it.
+
+**`SubTabStrip` is deliberately not pooled**, and the asymmetry is the parent. A secondary strip hangs
+off a frame the *host* added as an AceGUI child, and `ClearScroll`'s `ReleaseChildren` gives that
+frame back to AceGUI's own pool — so its buttons must be unparented on release, and an unparented
+button coming back off a free list is a button drawn onto nothing. It calls `newTabButton` +
+`dressTab` in sequence, which is exactly what `makeTab` did, and keeps its own `ctx.__subTabKids`
+ledger released the way it always was.
+
+### `ctx.__tabKids` is still the ledger, and no longer the release
+
+`__tabKids` continues to hold this render's furniture in draw order — every tab button, then the
+content panel — and `__releaseChrome` still empties it. What changed is that emptying it no longer
+*is* the release: the pools hand the frames back, hidden and still parented to `ctx.chrome`, and the
+ledger is rebuilt from scratch by the next render. A suite reading `#ctx.__tabKids` or
+`ctx.__tabKids[n]` reads exactly what it read at 14.13.3.3.
+
+### `OptionsWidgets.lua` now has a hard floor on `LibKa0s-Pool-1.0`
+
+The file refuses to attach — no `lib.MODULES.OptionsWidgets`, no widget makers — when
+`LibKa0s-Pool-1.0` is absent or below minor 1, the same way `DebugLog.lua` refuses without
+`LibKa0s-Widgets-1.0`. Degrading instead would mean falling back to allocating per click, in silence,
+which is the defect this minor exists to end.
+
+**In a well-formed payload the floor is unreachable.** `Pool.lua` and `Options.lua` both gate on
+`LibKa0s-Core-1.0`, and `Pool.lua` loads first in `LibKa0s.xml`, so a tree with no pool has no Options
+major for this file to attach to either. Whole-folder re-vendoring is mandatory (`docs/releasing.md`),
+so a host that trips this has a broken copy rather than an unlucky one.
+
+### Previously, at 14.13.3.3
+
 **`OptionsCompose.lua` minor 3 — the three media rows hand the flow engine the deferred reader
-itself, not a closure wrapped around it.** One file moved; everything else in this major is unchanged
-from 14.13.2.3. This is a **fix to shipped, player-facing behaviour**: every dropdown `FontGroup`,
-`BorderGroup` and `BarGroup` composed was empty in the client, in every consumer, from 14.13.1.3
-onward.
+itself, not a closure wrapped around it.** This was a **fix to shipped, player-facing behaviour**:
+every dropdown `FontGroup`, `BorderGroup` and `BarGroup` composed was empty in the client, in every
+consumer, from 14.13.1.3 onward.
 
 `O.LSMValues(mediaType)` already returns the deferred closure the engine wants. The three group
 composers wrapped it a second time:
@@ -45,12 +108,10 @@ That gate is correct and stays: it is what keeps a legitimately-empty deferred m
 the addons that register fonts are still loading. What it cannot do is tell an empty list from a
 wrapper, which is why this shipped green.
 
-Three lines. No member is added, removed or renamed, and no host signature moves.
-
-### The one contract that tightened, for a host that supplies its own `LSMValues`
+#### The one contract that tightened, for a host that supplies its own `LSMValues`
 
 `lib.__AttachCompose(O)` lets a host hand in its own `O.LSMValues`, and **that member must return a
-function**. It always had to; until this version the composer read it inside a closure, at
+function**. It always had to; until 14.13.3.3 the composer read it inside a closure, at
 dropdown-render time, so a host whose `LSMValues` returned a *table* worked by accident — late
 evaluation covered for it.
 
@@ -59,9 +120,9 @@ straight into `values`. A table-returning host therefore lands a literal table f
 no error, no warning, and precisely the failure the deferral exists to prevent — the addons that
 register media have not run when a schema-row literal is evaluated.
 
-**This is the one thing to check before adopting 14.13.3.3.** A host that never touches
-`O.LSMValues` is unaffected; so is one that overrides a composed row's `values` afterwards. A host
-that assigns `C.LSMValues = function(t) return lsmValues(t)() end` must pass the reader itself
+**This is the one thing to check before adopting 14.13.3.3 or anything after it.** A host that never
+touches `O.LSMValues` is unaffected; so is one that overrides a composed row's `values` afterwards. A
+host that assigns `C.LSMValues = function(t) return lsmValues(t)() end` must pass the reader itself
 instead — `C.LSMValues = lsmValues` — in the same change as the re-vendor.
 
 ### Previously, at 14.13.2.3
@@ -452,8 +513,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RenderRows(ctx, rows, afterGroup, pairWith, opts)` | W1 (`opts.noHeadings`: **W9**) | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. `opts = { noHeadings = true }` suppresses the automatic `Section` heading, for a page whose sections are drawn as tabs instead (options-ui-§13); the row-boundary flush and `ctx.lastGroup` advance still happen. Omitted by every untabbed caller. |
 | `RenderSchema(ctx, pageKey, afterGroup, pairWith)` | W1 | The per-page wrapper. |
 | `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)` | **W9** | Render one page as a tab strip over its own sections. The partition is by `row.group`, in declaration order — one tab is exactly one group, and there is no second field naming a tab (options-ui-§13). **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first group. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order. |
-| `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). **Its geometry is invariant under the selection from W13** — see [What changed at this version](#what-changed-at-this-version). Returns the buttons in tab order, or nil having drawn nothing. |
-| `SubTabStrip(ctx, parent, spec)` | **W13** | A **secondary** strip drawn inside the scroll as ordinary page content, parented to a frame the host supplies (options-ui-§13). Same `spec` shape as `TabStrip`, same selection-invariant pitch, its own ledger (`ctx.__subTabKids`) released on entry, and **no** content panel and **no** `SetChromeHeight` — the page already has both. Returns the buttons in tab order **and** the total height the strip occupies, so the host can size the frame it handed in, or nil having drawn nothing. The selection is the host's state: `spec.value` and `spec.onSelect` are the whole contract, and the convention for the collection is `ctx.activeSubTab` as a table keyed by the primary tab's key, session-only and never persisted. |
+| `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). **Its geometry is invariant under the selection from W13.** **From W14 the buttons and the content panel are acquired from `LibKa0s-Pool-1.0` pools held on the `ctx` rather than created per click** — see [What changed at this version](#what-changed-at-this-version). Returns the buttons in tab order, or nil having drawn nothing. |
+| `SubTabStrip(ctx, parent, spec)` | **W13** | A **secondary** strip drawn inside the scroll as ordinary page content, parented to a frame the host supplies (options-ui-§13). Same `spec` shape as `TabStrip`, same selection-invariant pitch, its own ledger (`ctx.__subTabKids`) released on entry, and **no** content panel and **no** `SetChromeHeight` — the page already has both. **Not pooled at W14**, unlike the primary strip: its parent is a frame AceGUI takes back, so its buttons are unparented on release and cannot be recycled. Returns the buttons in tab order **and** the total height the strip occupies, so the host can size the frame it handed in, or nil having drawn nothing. The selection is the host's state: `spec.value` and `spec.onSelect` are the whole contract, and the convention for the collection is `ctx.activeSubTab` as a table keyed by the primary tab's key, session-only and never persisted. |
 | `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip }`. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing. |
 | `PageHeader(ctx, spec)` | **W13** | A host-drawn block pinned in the same band, for controls that apply to **every** tab (options-ui-§14). `spec = { height, build = function(ctx, frame) end, divider = <default true> }`. Anchors a `Frame` across `ctx.chrome`, ledgers it, draws the hairline unless told not to, records the widened band in `ctx.__bannerHeight` via `__bannerBand`, reserves it with `SetChromeHeight`, then calls `build` inside a `pcall` — a raising builder is reported and costs the block, not the page. **A page draws at most one chrome block**: this and `PageBanner` both release `__chromeKids` and both write `ctx.__bannerHeight`, so the second call replaces the first. **Draw it before `TabStrip`.** Returns the frame, or nil having drawn nothing. |
 | `SetChromeHeight(ctx, height)` | **O10** | Reserve `height` pixels of pinned chrome above the scroll, and re-anchor a live scroll to match. Idempotent. `height <= 0` hides `ctx.chrome`. Call only after the wrap of whatever is being reserved is known. |
@@ -462,7 +523,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `__tabPlacement(widths, available, gap, top, rowPitch)` | **W10** (signature: **W12**) | Pure arithmetic: the wrap from `__layoutTabs` turned into `{ index, width, x, y }` per tab, plus the row count. `top` is the banner's finished band, which is why row 1 no longer lands on the banner. `rowPitch` is the tab ART's measured height, not the button's. Callable with no widgets. |
 | `__tabBand(top, rowCount, tabH, rowPitch)` | **W10** (signature: **W12**) | Pure arithmetic: how many pixels the strip reserves in total, banner included — which is also where the content panel's top edge lands. **(n − 1) pitches plus one whole tab**, because every row but the last is overlapped by the one under it. Took a `rowGap` through 12.11.3 and a `baselineH` through 11.10.3. |
 | `__bannerBand(rawHeight, gapTop, ruleH, gapBottom)` | **W10** | Pure arithmetic: the banner's own height widened by the gap, hairline and gap that separate it from the strip (options-ui-§14). What `ctx.__bannerHeight` holds. |
-| `__releaseChrome(ctx)` | **W9** | Test seam. Hides, unparents and forgets every widget in both chrome ledgers (`ctx.__chromeKids`, `ctx.__tabKids`). |
+| `__releaseChrome(ctx)` | **W9** | Test seam. Releases everything the page parked in its chrome band. The banner's ledger (`ctx.__chromeKids`) is hidden, unparented and forgotten; **from W14 the strip's furniture is returned to `ctx.__tabPool` / `ctx.__panelPool` instead** — hidden, still parented to `ctx.chrome`, and ready to be dressed again — and `ctx.__tabKids` is emptied as the ledger it now purely is. |
 | `__tabArtHeight()` | **W13** | The measured row pitch — the **unselected** tab art's own height, or `TAB_H` where nothing can be measured. Memoized on success only. Published because the invariant a suite has to pin is unassertable without the one number the band and every row offset are both built from. |
 | `__resetTabArtHeight()` | **W13** | Forget that measurement. A harness seam; an atlas does not change size mid-session. |
 | `RegisterOptionsPage(key, name, builder)` | O1 | Queue a page. Builders run once, in order, at `CreateOptionsPanel`. |
@@ -705,15 +766,23 @@ The API is **additive-only**: a member, descriptor field or row field may be add
 never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. Nothing
 is added or taken away at this version.
 
-**What moves at 14.13.3.3 is behaviour, and it moves in the direction of working.** The three
+**What moves at 14.14.3.3 is a lifetime, and nothing else.** The tab strip's buttons and the page's
+content panel are recycled rather than rebuilt on every click, so an options panel stops leaking one
+set per click. Every published member, signature and return value is identical to 14.13.3.3, the
+strip renders the same pixels, and **the adoption step is the re-vendor and nothing more**. The one
+thing to know is the new hard floor: `OptionsWidgets.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1, which
+ships in the same payload and loads before it, so whole-folder re-vendoring satisfies it by
+construction.
+
+**What moved at 14.13.3.3 is behaviour, and it moved in the direction of working.** The three
 composed media dropdowns populate. A consumer that worked around the empty lists — by overriding a
 composed row's `values`, or by patching `fixMediaValues`-style over the block — keeps working, and
 its workaround is now dead code it can delete on its own schedule.
 
-**The single incompatibility is a host-supplied `O.LSMValues` that returns a table.** It must return
-a function; see [The schema composers](#the-schema-composers). This is the only adoption step
-14.13.3.3 asks of anybody, it cannot be detected at runtime, and it fails silently, so check it
-before you re-vendor rather than after.
+**The single incompatibility on this path is a host-supplied `O.LSMValues` that returns a table.** It
+must return a function; see [The schema composers](#the-schema-composers). This was the only adoption
+step 14.13.3.3 asked of anybody, it cannot be detected at runtime, and it fails silently, so a host
+coming from 14.13.2.3 or earlier checks it before re-vendoring rather than after.
 
 **One behavior change is visible without a code change**, and it is deliberate: a page rendered
 through `RenderTabbedSchema` whose rows declare exactly **one** group now draws a one-tab strip and
@@ -741,24 +810,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 14.14.3.3
-
-One file moves, `OptionsWidgets.lua` 13 → 14, and **no member, signature or return value changes**.
-`TabStrip` acquires its tab buttons and the page's content panel from two `LibKa0s-Pool-1.0` pools
-held on the `ctx` instead of calling `CreateFrame` on every click, and `makeTab` splits into
-`newTabButton` (the pool's factory) and `dressTab` (everything per-tab, `OnClick` included, re-set on
-every dress).
-
-At this version the strip released by hiding and unparenting while it rebuilt from scratch, so an
-options panel left open leaked one set of tab buttons plus one content panel **per tab click**, for
-the life of the session — invisible from outside, because the panel drew correctly every time.
-
-`ctx.__tabKids` keeps its meaning: this render's furniture, in draw order, emptied by
-`__releaseChrome`. It is now purely a ledger; the pools do the release.
-
-**One new floor.** `OptionsWidgets.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 and is absent rather
-than degraded without it. `Pool.lua` ships in the same payload and loads before it in `LibKa0s.xml`,
-so whole-folder re-vendoring satisfies this by construction.
-
-**Adoption is the re-vendor and nothing else.**

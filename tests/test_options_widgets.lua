@@ -1565,6 +1565,48 @@ test("widgets: a second TabStrip call replaces the first rather than stacking on
   assertEqual(#ctx.__tabKids, 3, "the first strip's furniture was released, not orphaned")
 end)
 
+test("widgets: re-selecting the same tabs builds no second set of frames", function()
+  -- The strip is torn down and redrawn on EVERY tab click, and WoW never destroys a frame. A
+  -- strip that CREATES its buttons and its content panel each time therefore leaks one full set
+  -- per click for as long as the player leaves the panel open, and the release that was supposed
+  -- to cover it only hid and unparented -- which is an allocator wearing a pool's name, the exact
+  -- shape LibKa0s-Pool-1.0 was extracted to end. Nothing about it is visible from outside: the
+  -- panel draws correctly, every case below this one stays green, and the only symptom is a
+  -- client that gets heavier the longer settings is open.
+  --
+  -- Counted through the MOCKS' CreateFrame for the same reason `instrument` above wraps it there:
+  -- a loaded chunk reads its globals through the loader's env, which resolves against the mocks
+  -- table first, so a _G assignment would never be seen.
+  -- red under: minor 13, where TabStrip calls makeTab and drawContentPanel per render.
+  local O, _, ctx = bench()
+  local tabs = {
+    { key = "one",   label = "One" },
+    { key = "two",   label = "Two" },
+    { key = "three", label = "Three", tooltip = "The third one" },
+  }
+  local function select(key)
+    O.TabStrip(ctx, { tabs = tabs, value = key, onSelect = function() end })
+  end
+
+  -- The first pass is deliberately UNCOUNTED. The claim is not that a strip never allocates --
+  -- it has to, once -- but that the second click over the same three tabs allocates nothing.
+  for _, key in ipairs({ "one", "two", "three" }) do select(key) end
+
+  local created, realCreateFrame = 0, T.mocks.CreateFrame
+  T.mocks.CreateFrame = function(...)
+    created = created + 1
+    return realCreateFrame(...)
+  end
+  local ok, err = pcall(function()
+    for _, key in ipairs({ "one", "two", "three" }) do select(key) end
+  end)
+  T.mocks.CreateFrame = realCreateFrame
+  if not ok then error(err) end
+
+  assertEqual(created, 0, "a second pass over the same tabs built frames instead of reusing them")
+  assertEqual(#ctx.__tabKids, 4, "three tabs and one content panel, not a growing pile")
+end)
+
 test("widgets: TabStrip refuses politely with no AceGUI and with no tabs", function()
   -- Every maker in this file answers nil having drawn nothing rather than raising, because the
   -- degraded path is a real one: a consumer vendored without AceGUI must show a plain page.
