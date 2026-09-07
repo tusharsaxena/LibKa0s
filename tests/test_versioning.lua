@@ -188,3 +188,40 @@ test("versioning: every major's live version has its API document on disk", func
     "a minor bump is not released until its API document exists (docs/releasing.md step 5); "
     .. "copy the current document to the new version key and index it in docs/api/README.md")
 end)
+
+test("versioning: every major's published member manifest matches its live surface", function()
+  -- docs/api/ is the source of truth for every public contract, and until now it said so only in
+  -- prose. Nine addons hand-write a degradation stub of a LibKa0s surface, and the only way a stub
+  -- author could answer "what am I obliged to carry?" was to read the library's source — which is
+  -- how AbsorbTracker's stub came to omit SetRenderer with every suite in that repo green.
+  -- `docs/api/<Major>/members-<versionKey>.json` is that answer as data, generated from the live
+  -- surface rather than transcribed from it, and this case is what keeps it true.
+  --
+  -- It regenerates and compares, exactly as the standing check on docs/test-cases.md does. That
+  -- means a bug in the renderer is invisible here — both sides come from one function — and the
+  -- thing it actually catches is the one that has happened: a member added or removed and the
+  -- published list left behind. Byte comparison, CR-normalised on both sides, because the file is
+  -- pinned CRLF by .gitattributes and the renderer emits LF.
+  local render = dofile("tools/gen-api-members.lua")
+  local problems = {}
+  for _, m in ipairs(majors) do
+    local lib = libFor(m.major)
+    if lib and type(lib.MODULES) == "table" then
+      local path = ("docs/api/%s/members-%s.json"):format(apiFolder(m.major), versionKey(m, lib))
+      local f = io.open(path, "rb")
+      if not f then
+        problems[#problems + 1] = m.major .. " -> " .. path .. " is not on disk"
+      else
+        local onDisk = f:read("*a"):gsub("\r\n", "\n")
+        f:close()
+        if onDisk ~= render.manifest(m, lib) then
+          problems[#problems + 1] = m.major .. " -> " .. path .. " no longer matches the live surface"
+        end
+      end
+    end
+  end
+  table.sort(problems)
+  assertEqual(table.concat(problems, ", "), "",
+    "regenerate with `lua tools/gen-api-members.lua` and commit the result; a published member "
+    .. "list that has fallen behind the surface is what a stub author copies")
+end)

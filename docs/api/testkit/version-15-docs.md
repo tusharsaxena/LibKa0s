@@ -18,11 +18,13 @@
 
 ## What changed at this version
 
-Two files. `run-automated-tests.sh` rewrites the **record**, and `mock_base.lua` grows a geometry
-surface that **answers nothing until a test asks it to**. `framework.lua` changes for `Kit.VERSION`
-itself and for nothing else; `loader.lua` and `vendor_sync.lua` are untouched. Every assertion, every
-loader behaviour and every existing mock answer is exactly what version 14 shipped — including
-`GetHeight`, which still returns 0 for every frame nobody armed.
+Three files. `run-automated-tests.sh` rewrites the **record**, `mock_base.lua` grows a geometry
+surface that **answers nothing until a test asks it to**, and `framework.lua` grows a second calling
+form for `Kit.assertSurfaceParity` that names the live surface instead of building it.
+`loader.lua` and `vendor_sync.lua` are untouched. Every assertion, every loader behaviour and every
+existing mock answer is exactly what version 14 shipped — including `GetHeight`, which still returns
+0 for every frame nobody armed, and including `assertSurfaceParity`'s original four-argument form,
+which is unchanged down to its message text.
 
 What moves in the record, in five places.
 
@@ -133,6 +135,81 @@ the table** rather than restating it, or it goes red for the wrong reason the da
 corrects the fixture. A consumer that needs an atlas the collection has not needed yet adds the entry
 in its own `tests/wow_mock.lua`.
 
+### Why: nine hand-written stubs and no way to check them
+
+Nine addons carry a `settings/OptionsSetup.lua` degradation arm that mirrors the
+`LibKa0s-Options-1.0` surface — MultiMeters 384 lines, AbsorbTracker 369, KickCD 351, PrettyChat 265,
+WhatGroup 258, BankLedger 230, PanelMaster 217, LootHistory 199, ConsumableMaster 185. A stub is a
+second implementation of somebody else's surface, so it drifts the moment the library grows a member
+the host starts calling, and it drifts **silently**: the live path stays green and the degraded path
+raises in exactly the install the stub exists for. AbsorbTracker's stub omits `SetRenderer` outright
+today, with every suite in that repository green.
+
+`Kit.assertSurfaceParity` has existed since revision 8 and only three of the nine call it, because
+its four-argument form asks the caller to produce the live half first — a grep, a derivation, a
+comment explaining the derivation. Revision 15 adds a second form that takes the **name**:
+
+```lua
+T.assertSurfaceParity(stubbedHelpers, "LibKa0s-Options-1.0")
+```
+
+| | Form one, unchanged | Form two, new at 15 |
+|---|---|---|
+| Call | `assertSurfaceParity(live, degraded, label, ignore)` | `assertSurfaceParity(stub, majorName, ignore)` |
+| Selected by | anything but a string in the second position | a **string** in the second position |
+| The live half | supplied by the caller | resolved from the registered surface source |
+| Compared | every key of `live` | `Kit.publicMembers(live)` only |
+| Reporting | all divergences in one message | all divergences in one message |
+
+**What "public" means, and why the form needs its own answer.** `Kit.publicMembers(t)` returns every
+string key that is neither LibStub bookkeeping — `MAJOR`, `MINOR`, `MODULES` — nor `__`-prefixed,
+sorted, as `{ name, kind }` records. Those exclusions are the difference between a gate that gets
+adopted and one that does not. No degradation stub in this collection carries `MINOR`, and rightly
+so: `MAJOR` and `MINOR` are how the *library* answers "which copy am I", and a stub that answered
+them would be claiming to be the library it stands in for. The `__` keys are a major's internals,
+reached by a sibling file inside the same major and by nothing else. Reported raw, the Options major
+alone hands a stub author **ten** divergences that are all correct omissions, and a gate whose first
+run is ten false positives is a gate that acquires an `ignore` list the size of its own output.
+
+**Where the name resolves.** The kit has no LibStub, no mock and no addon namespace, and `_G.LibStub`
+is not it either — `loader.lua` hands each chunk a mocked environment rather than writing into `_G`,
+so a kit that reached for the global would resolve nothing headlessly and report every stub as fine.
+The harness registers the source once, in either shape it naturally has:
+
+```lua
+Kit.setSurfaceSource(mocks.LibStub)                         -- a callable: src(name, true)
+Kit.setSurfaceSource{ ["LibKa0s-Options-1.0"] = NS.Helpers } -- a table: name -> live surface
+```
+
+The callable shape answers the **library table** for a major. The table shape is for the far commoner
+case in this collection, where the stub mirrors an **instance** — every `OptionsSetup.lua` arm stubs
+`NS.Helpers`, which is what `lib:New(descriptor)` returned, and the kit could never have built that
+for itself because it needs the host's descriptor. `Kit.setSurfaceSource` returns the source that was
+registered before it, so a case that swaps one in can put the old one back.
+
+`Kit.expose` wires the callable shape **automatically** when the exposed table carries `mocks` or
+`mock` with a `LibStub` on it, and only when nothing is registered yet — so a repo whose stubs mirror
+library tables registers nothing, and a repo that registered its own keeps it.
+
+**It fails rather than passes when it cannot look.** An unresolvable name, a source that raises, a
+name that answers something other than a table, no source at all: every one of those is a failure
+naming the fix, never a quiet pass. Same bargain `assertSuiteInventory` strikes when it cannot list a
+directory.
+
+**What a consumer writes.** Three lines, and the reference implementation is
+the library repo's `tests/test_surface_parity.lua`:
+
+```lua
+test("parity: the Options stub carries the whole live surface", function()
+  T.assertSurfaceParity(degradedNS.Helpers, "LibKa0s-Options-1.0", { RenderGrid = true })
+end)
+```
+
+The member list each major publishes as data lives beside its API document, at
+`docs/api/<Major>/members-<versionKey>.json` in the library repo — generated from the live surface by
+`tools/gen-api-members.lua`, and regenerated and compared on every run of the library's own suite. It
+is the list this assertion enforces, which is what a stub author should be reading.
+
 ### What revision 16 will do, and why it is not this one
 
 `GetHeight` and `GetWidth` read `(self.__geomLive and self.__geomH) or 0`. Revision 16 deletes the
@@ -194,8 +271,9 @@ decision.
 
 ## For consumers: the counts do not move, the record does
 
-The Lua surface **grows** at this revision and still nothing answers differently, so **no suite gains
-or loses a case** on adoption. That was measured rather than assumed: the new `mock_base.lua` was
+The Lua surface **grows** at this revision — `SetAtlas`, `__setGeom`, `__atlasSizes`,
+`publicMembers`, `setSurfaceSource` and `assertSurfaceParity`'s second form — and still nothing
+answers differently, so **no suite gains or loses a case** on adoption. That was measured rather than assumed: the new `mock_base.lua` was
 dropped into all nine consumers' `tests/_kit/` and every one of them ran to the same total it ran
 before — 547, 831, 749, 841, 699, 1496, 763, 300 and 528. What changes is the file the next run
 writes.

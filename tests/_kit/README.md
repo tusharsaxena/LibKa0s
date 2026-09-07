@@ -234,6 +234,42 @@ tab families answer different heights on purpose — a table answering one numbe
 not fail a selection-invariance assertion — so read the figure a case expects out of the table rather
 than restating it, and add an atlas your addon needs in your own `tests/wow_mock.lua`.
 
+## Asserting a degradation stub against the real surface
+
+A degradation stub is a second implementation of somebody else's surface, so it drifts the moment
+that surface grows a member the host starts calling — and it drifts silently, because the live path
+stays green and only the degraded path raises, in exactly the install the stub exists for.
+`Kit.assertSurfaceParity` reports **every** divergence in one message, in either of two forms:
+
+```lua
+T.assertSurfaceParity(live, degraded, "Slash stub", { HelpHeader = true })  -- two tables
+T.assertSurfaceParity(degraded, "LibKa0s-Slash-1.0", { HelpHeader = true }) -- by name
+```
+
+The by-name form is selected by a **string** in the second position. It compares only the surface's
+**public** members — `Kit.publicMembers`: every string key that is neither LibStub bookkeeping
+(`MAJOR`, `MINOR`, `MODULES`) nor `__`-prefixed — because a stub owes none of those, and reported raw
+they are half a dozen correct omissions read out as failures on the case's first run.
+
+The kit cannot resolve a name on its own. It has no LibStub, no mock and no addon namespace, and the
+loader hands each chunk a mocked environment rather than writing into `_G`, so a kit reaching for
+`_G.LibStub` would resolve nothing and report every stub as fine. The harness registers the source,
+once:
+
+```lua
+Kit.setSurfaceSource(mocks.LibStub)                          -- callable: src(name, true)
+Kit.setSurfaceSource{ ["LibKa0s-Options-1.0"] = NS.Helpers } -- table: name -> live surface
+```
+
+`Kit.expose` wires the callable shape for you when the exposed table carries `mocks` or `mock` with a
+`LibStub` on it, and only when nothing is registered yet. Use the table shape when the stub mirrors
+an **instance** rather than a library table — every `settings/OptionsSetup.lua` arm in this
+collection stubs `NS.Helpers`, which is what `lib:New(descriptor)` returned and what the kit could
+never build for itself.
+
+An unresolvable name, a source that raises, a name answering something other than a table, or no
+source at all is a **failure** naming the fix — never a quiet pass.
+
 ## Fidelity rules
 
 These are why this is one file rather than eight. Each exists because a friendlier mock already hid

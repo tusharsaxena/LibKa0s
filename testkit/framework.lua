@@ -107,7 +107,112 @@ function Kit.assertError(fn, msg)
   return tostring(err)
 end
 
+-- ── the surface source ─────────────────────────────────────────────────────────────────────
+--
+-- `Kit.assertSurfaceParity(stub, "LibKa0s-Options-1.0")` names a live surface instead of building
+-- one, which is what turns a parity case into three lines a repo will actually write. The kit
+-- cannot resolve that name on its own: it has no LibStub, no mock and no addon namespace, and
+-- `_G.LibStub` is not it either — the loader hands each chunk a mocked environment rather than
+-- writing into `_G` (`loader.lua`), so a kit that reached for the global would resolve nothing
+-- headlessly and say the stub was fine.
+--
+-- So the harness supplies the source, once, and it takes either shape a harness naturally has:
+--
+--   * a CALLABLE — `Kit.setSurfaceSource(mocks.LibStub)`. Called as `src(name, true)`, which is
+--     LibStub's own silent-lookup signature. This answers the LIBRARY TABLE for a major.
+--   * a TABLE — `Kit.setSurfaceSource{ ["LibKa0s-Options-1.0"] = NS.Helpers }`. A map of name to
+--     live surface, for the far commoner case where the stub mirrors an INSTANCE rather than the
+--     library table. Every `settings/OptionsSetup.lua` degradation arm in this collection stubs
+--     `NS.Helpers`, which is what `lib:New(descriptor)` returned — a surface the kit could never
+--     have built for itself, because it needs the host's descriptor.
+--
+-- `Kit.expose` wires the callable shape automatically when the exposed table carries a mock with a
+-- LibStub on it, so a repo whose stubs mirror library tables registers nothing. Anything else is
+-- one explicit line in the runner, and the assertion FAILS rather than passes when the name does
+-- not resolve — see the bargain in `assertSuiteInventory`.
+
+local surfaceSource
+
+--- Register where `Kit.assertSurfaceParity(stub, name)` looks a live surface up, and return the
+--- source that was registered before — so a case that swaps it can put the old one back.
+---
+--- `src` is a callable, a table, or nil to unregister.
+function Kit.setSurfaceSource(src)
+  local previous = surfaceSource
+  surfaceSource = src
+  return previous
+end
+
+--- Is `v` reachable as a function call — a plain function, or a table with a `__call`?
+local function callable(v)
+  if type(v) == "function" then return true end
+  local mt = type(v) == "table" and getmetatable(v)
+  return (mt and mt.__call) ~= nil
+end
+
+--- The live surface registered under `name`, or nil plus why not.
+local function resolveSurface(name)
+  if surfaceSource == nil then
+    return nil, ("no surface source is registered, so %q cannot be resolved and this gate cannot "
+      .. "run — call Kit.setSurfaceSource(mocks.LibStub) or "
+      .. "Kit.setSurfaceSource{ [%q] = <the live surface> } in the runner"):format(name, name)
+  end
+  local live
+  if callable(surfaceSource) then
+    local ok, got = pcall(surfaceSource, name, true)
+    if not ok then
+      return nil, ("the surface source raised on %q: %s"):format(name, tostring(got))
+    end
+    live = got
+  else
+    live = surfaceSource[name]
+  end
+  if type(live) ~= "table" then
+    return nil, ("the surface source answers %s for %q, not a table — either the name is wrong or "
+      .. "the live surface never loaded"):format(type(live), name)
+  end
+  return live
+end
+
+-- ── the public surface of a live module ────────────────────────────────────────────────────
+
+--- LibStub bookkeeping. Present on every registered major, carried by no degradation stub in this
+--- collection, and rightly so: `MAJOR` and `MINOR` are how the LIBRARY answers "which copy am I",
+--- and a stub that answered them would be claiming to be the library it is standing in for.
+local BOOKKEEPING = { MAJOR = true, MINOR = true, MODULES = true }
+
+--- The public members of a live surface, sorted, as `{ { name = ..., kind = <type> }, ... }`.
+---
+--- Two exclusions, and they are the difference between a gate that gets adopted and one that does
+--- not. `BOOKKEEPING` above, and every `__`-prefixed key: those are the module's own internals —
+--- `__AttachWidgets`, `__widgetsMinor`, `__panelProbeMinor` — reached by a sibling file inside the
+--- same major and by nothing else. Reported raw, the Options major alone would hand a stub author
+--- ten divergences that are all correct omissions, and a gate whose first run is ten false
+--- positives is a gate that gets an `ignore` list the size of its own output.
+function Kit.publicMembers(t)
+  local members = {}
+  if type(t) ~= "table" then return members end
+  for k, v in pairs(t) do
+    if type(k) == "string" and not BOOKKEEPING[k] and k:sub(1, 2) ~= "__" then
+      members[#members + 1] = { name = k, kind = type(v) }
+    end
+  end
+  table.sort(members, function(a, b) return a.name < b.name end)
+  return members
+end
+
 --- Assert that a degraded-path stub carries the whole surface of the live module.
+---
+--- Two calling forms:
+---
+---   assertSurfaceParity(live, degraded, label, ignore)   -- two tables, compared key for key
+---   assertSurfaceParity(stub, majorName, ignore)         -- the live half is looked up by name
+---
+--- The second is selected by a STRING in the second position, and is the one a degradation case
+--- should use: it names the surface instead of rebuilding it, and it compares only the PUBLIC
+--- members (`Kit.publicMembers`), which is what a stub is actually obliged to carry. The first form
+--- compares every key of `live` and is unchanged — a repo comparing two namespaces it built itself
+--- decides for itself what belongs in them.
 ---
 --- `live` is the real thing; `degraded` is what the addon falls back to when the library is not
 --- there. Three of this collection's surviving High findings are one omitted stub member: a stub
@@ -129,6 +234,18 @@ end
 --- (`{ Foo = true }`) or as an array (`{ "Foo" }`). An intentional omission and a bug are otherwise
 --- indistinguishable, and the usual resolution for that is to delete the case.
 function Kit.assertSurfaceParity(live, degraded, label, ignore)
+  -- Form two: `(stub, majorName, ignore)`. A string in the second position is unambiguous — the
+  -- first form's second argument is the degraded table, and its third is the label.
+  local byName = type(degraded) == "string"
+  local publicOnly
+  if byName then
+    local name = degraded
+    local resolved, why = resolveSurface(name)
+    if not resolved then fail(name .. ": " .. why, 1) end
+    degraded, ignore, label, live = live, label, name, resolved
+    publicOnly = true
+  end
+
   label = label or "surface"
   if type(live) ~= "table" then fail(label .. ": the live surface is not a table", 1) end
   if type(degraded) ~= "table" then fail(label .. ": the degraded surface is not a table", 1) end
@@ -139,8 +256,14 @@ function Kit.assertSurfaceParity(live, degraded, label, ignore)
   end
 
   local keys = {}
-  for k in pairs(live) do
-    if not skip[k] then keys[#keys + 1] = k end
+  if publicOnly then
+    for _, member in ipairs(Kit.publicMembers(live)) do
+      if not skip[member.name] then keys[#keys + 1] = member.name end
+    end
+  else
+    for k in pairs(live) do
+      if not skip[k] then keys[#keys + 1] = k end
+    end
   end
   table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
 
@@ -177,6 +300,18 @@ function Kit.expose(t)
   t.assertError = Kit.assertError
   t.assertSuiteInventory = Kit.assertSuiteInventory
   t.assertSurfaceParity  = Kit.assertSurfaceParity
+  t.publicMembers        = Kit.publicMembers
+  t.setSurfaceSource     = Kit.setSurfaceSource
+
+  -- The by-name form needs somewhere to look, and every harness in this collection that stubs a
+  -- LIBRARY TABLE already has it: the mock it just built. Wired here rather than demanded of the
+  -- runner so that adoption is the case alone, and only when nothing is registered yet — a repo
+  -- that called setSurfaceSource itself (because its stubs mirror instances) keeps its own.
+  if surfaceSource == nil then
+    local mock = t.mocks or t.mock
+    local ls = t.LibStub or (type(mock) == "table" and mock.LibStub) or nil
+    if ls then Kit.setSurfaceSource(ls) end
+  end
   return t
 end
 

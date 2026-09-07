@@ -17,6 +17,31 @@ its version stops being current.
 
 ```
 docs/api/<Major>/version-<version-key>-docs.md
+docs/api/<Major>/members-<version-key>.json
+```
+
+## The member manifest beside each document
+
+The document is prose: accurate, versioned, and not something a test can compare anything against.
+`members-<version-key>.json` is the same major's **public surface as data** — every member the
+version publishes, with its type — generated from the live module by `tools/gen-api-members.lua`,
+never hand-edited, and regenerated and compared on every run by
+`tests/test_versioning.lua`.
+
+It exists because nine addons in this collection hand-write a degradation stub of a LibKa0s surface,
+and until now the only way a stub author could answer "what am I obliged to carry?" was to read the
+library's source at whatever moment they read it. That is how AbsorbTracker's Options stub came to
+omit `SetRenderer` with every suite in that repository green. The kit's
+`Kit.assertSurfaceParity(stub, majorName)` enforces exactly this list, and
+`Kit.publicMembers` is the one rule both it and the generator apply: no `MAJOR`, no `MINOR`, no
+`MODULES`, no `__`-prefixed internals — a stub owes none of those.
+
+It is keyed by version for the same reason the document is. A single `members.json` describing only
+HEAD answers the wrong question for every consumer that has not re-vendored yet, which is the whole
+failure this directory's shape was built to prevent.
+
+```sh
+lua tools/gen-api-members.lua      # from the repo root; rewrites every manifest
 ```
 
 ## Reading the version key

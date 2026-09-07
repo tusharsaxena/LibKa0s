@@ -241,6 +241,9 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
   LICENSE            -- ships INSIDE the payload, so every vendored copy carries the MIT notice
+tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json from the LIVE
+                        surface, loaded through the same mock the suites use. Generated, never
+                        hand-edited; tests/test_versioning.lua regenerates and compares on every run
 tools/artwork/       -- icon_cleaner.py rebuilds media/icons/ from Open Iconic; bar_textures.py
                         synthesizes media/textures/ from named constants. Both ARE the provenance
                         record for their art -- upstream repo and license for the first, every value
@@ -253,7 +256,9 @@ tests/               -- this repo's own test harness, consuming testkit/ through
 docs/                -- development docs (not shipped)
   api/               -- THE API REFERENCE, and the source of truth for every public contract
                         <Major>/version-<minors>-docs.md, one per shipped version, never edited
-                        after that version stops being current; api/README.md indexes them all
+                        after that version stops being current; api/README.md indexes them all.
+                        Beside each, <Major>/members-<minors>.json -- the same version's public
+                        surface as DATA, which is what a degradation stub is checked against
   releasing.md       -- the two version numbers, the release order, the re-vendor rule
   record-schema.md   -- the capture record, field by field
   adoption-prompt.md -- the per-addon adoption prompt

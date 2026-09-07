@@ -83,12 +83,12 @@ once per click in the log of whoever pressed it.
 unconditionally, any host not passing `onResetAll` starts printing this the moment it takes the new
 copy. That is the point, and the answer is to supply the handler rather than to silence the line.
 
-### `testkit` revision 15 — the runner records what it measured, and the mock can be asked how tall something is
+### `testkit` revision 15 — the runner records what it measured, the mock can be asked how tall something is, and a stub can be checked by name
 
-Two files move. `run-automated-tests.sh` rewrites the record, and `mock_base.lua` grows a geometry
-surface that answers nothing until a test asks it to. `framework.lua` changes for `Kit.VERSION` and
-nothing else; `loader.lua` and `vendor_sync.lua` are untouched. **No consumer's case count moves on
-adoption**, and that was measured rather than assumed. Full surface:
+Three files move. `run-automated-tests.sh` rewrites the record, `mock_base.lua` grows a geometry
+surface that answers nothing until a test asks it to, and `framework.lua` grows a second calling form
+for `Kit.assertSurfaceParity`; `loader.lua` and `vendor_sync.lua` are untouched. **No consumer's case
+count moves on adoption**, and that was measured rather than assumed. Full surface:
 [`docs/api/testkit/version-15-docs.md`](docs/api/testkit/version-15-docs.md).
 
 **The skipped count stops vanishing.** `framework.lua` has printed `N passed, N failed, N skipped,
@@ -157,6 +157,42 @@ lands now; the default moves once each consumer has adopted the opt-in where it 
 then the four filed cases stay deferred and the interval is covered by an operator cycling the tab
 strips in the client, which is a weaker check than they asked for and is said here rather than left
 unstated.
+
+**A degradation stub can now be checked by name.** Nine addons hand-write a `settings/OptionsSetup.lua`
+arm mirroring the `LibKa0s-Options-1.0` surface — 185 to 384 lines each — and only three of them own a
+parity case at all, which is how AbsorbTracker's stub omits `SetRenderer` outright with every suite in
+that repository green. `Kit.assertSurfaceParity` has been here since revision 8 and went unadopted
+because its four-argument form asks the caller to produce the live half first: a grep, a derivation,
+and a comment explaining the derivation. It now also takes
+`assertSurfaceParity(stub, "LibKa0s-Options-1.0", ignore)` — a string in the second position selects
+the form — and resolves the live half itself. The original form is unchanged down to its message text.
+
+**What it compares is the PUBLIC surface**, `Kit.publicMembers`: every string key that is neither
+LibStub bookkeeping (`MAJOR`, `MINOR`, `MODULES`) nor `__`-prefixed. No stub in this collection
+carries those and none should — `MAJOR` and `MINOR` are how the library answers "which copy am I",
+and the `__` keys are a major's internals reached by a sibling file inside the same major. Reported
+raw, the Options major alone hands a stub author ten divergences that are all correct omissions, and
+a gate whose first run is ten false positives acquires an `ignore` list the size of its own output.
+
+**The harness says where a name resolves**, because the kit cannot know: it has no LibStub, no mock
+and no addon namespace, and `loader.lua` hands each chunk a mocked environment rather than writing
+into `_G` — a kit reaching for `_G.LibStub` would resolve nothing headlessly and pass every stub.
+`Kit.setSurfaceSource` takes a callable (`mocks.LibStub`, answering the library table) or a table
+(`{ ["LibKa0s-Options-1.0"] = NS.Helpers }`, for the far commoner case where the stub mirrors the
+INSTANCE `lib:New(descriptor)` returned, which the kit could never build for itself). `Kit.expose`
+wires the callable shape when the exposed table already carries a mock with a LibStub on it, and only
+when nothing is registered yet. An unresolvable name is a **failure** naming the fix, never a quiet
+pass — the bargain `assertSuiteInventory` already strikes.
+
+**And each major now publishes its member list as data**, at
+`docs/api/<Major>/members-<versionKey>.json`, generated from the live surface by
+`tools/gen-api-members.lua` and regenerated-and-compared on every run by `tests/test_versioning.lua`.
+`docs/api/` was the source of truth for every public contract and it was prose in every document:
+accurate, versioned, and not something a stub could be compared against. It is keyed by version like
+everything else in that directory, because a single file describing only HEAD answers the wrong
+question for every consumer that has not re-vendored yet. LibKa0s carries the reference
+`tests/test_surface_parity.lua` itself rather than asking nine repositories to write a case this repo
+does not run.
 
 **Consumers should expect the record to move on the first run after re-vendoring**, and not the
 counts: a middle figure in the Tests column, the replaced lead-in, and a watch list with every

@@ -1,0 +1,14 @@
+{
+  "major": "LibKa0s-Env-1.0",
+  "versionKey": "1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Env", "minor": 1 }
+  ],
+  "members": [
+    { "name": "GetAddOnMetadata", "kind": "function" },
+    { "name": "GetPlayerMapID", "kind": "function" },
+    { "name": "GetZone", "kind": "function" },
+    { "name": "Version", "kind": "function" }
+  ]
+}

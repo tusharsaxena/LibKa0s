@@ -827,7 +827,17 @@ badge and any count quoted in the docs must agree with it.
 - mock: an atlas the table does not publish leaves geometry alone
 - mock: the selected and unselected tab atlases are published at different heights
 
-### test_versioning.lua (8)
+### test_surface_parity.lua (7)
+
+- parity: a stub carrying every public member of a live major passes
+- parity: a stub missing one member fails and names it
+- parity: every divergence lands in one message
+- parity: a member that is a function live and something else degraded is reported
+- parity: a member left out on purpose is named as data, not omitted in silence
+- parity: a major the surface source cannot resolve fails rather than passes
+- parity: with no surface source registered the gate fails rather than passes
+
+### test_versioning.lua (9)
 
 - versioning: every declared major is actually registered
 - versioning: every file in every major registers its live version
@@ -837,6 +847,7 @@ badge and any count quoted in the docs must agree with it.
 - versioning: the changelog accounts for the version every file is at
 - versioning: every paired secondary file records which primary it attached to
 - versioning: every major's live version has its API document on disk
+- versioning: every major's published member manifest matches its live surface
 
 ### test_kitsync.lua (5)
 
@@ -878,8 +889,9 @@ badge and any count quoted in the docs must agree with it.
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_mock_base.lua | 6 |
-| test_versioning.lua | 8 |
+| test_surface_parity.lua | 7 |
+| test_versioning.lua | 9 |
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **780** |
+| **Total** | **788** |

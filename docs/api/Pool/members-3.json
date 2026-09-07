@@ -1,0 +1,18 @@
+{
+  "major": "LibKa0s-Pool-1.0",
+  "versionKey": "3",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Pool", "minor": 3 }
+  ],
+  "members": [
+    { "name": "Acquire", "kind": "function" },
+    { "name": "AcquireKeyed", "kind": "function" },
+    { "name": "Counts", "kind": "function" },
+    { "name": "CountsKeyed", "kind": "function" },
+    { "name": "New", "kind": "function" },
+    { "name": "NewKeyed", "kind": "function" },
+    { "name": "ReleaseAll", "kind": "function" },
+    { "name": "ReleaseAllKeyed", "kind": "function" }
+  ]
+}

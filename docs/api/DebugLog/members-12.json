@@ -1,0 +1,16 @@
+{
+  "major": "LibKa0s-DebugLog-1.0",
+  "versionKey": "12",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "DebugLog", "minor": 12 }
+  ],
+  "members": [
+    { "name": "FormatColored", "kind": "function" },
+    { "name": "FormatPlain", "kind": "function" },
+    { "name": "MAX_BUFFER", "kind": "number" },
+    { "name": "MakeCloseButton", "kind": "function" },
+    { "name": "New", "kind": "function" },
+    { "name": "STRINGS", "kind": "table" }
+  ]
+}

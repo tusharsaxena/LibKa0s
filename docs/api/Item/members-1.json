@@ -1,0 +1,14 @@
+{
+  "major": "LibKa0s-Item-1.0",
+  "versionKey": "1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Item", "minor": 1 }
+  ],
+  "members": [
+    { "name": "ItemIDFromLink", "kind": "function" },
+    { "name": "LoadItem", "kind": "function" },
+    { "name": "QualityFromLink", "kind": "function" },
+    { "name": "QualityLabel", "kind": "function" }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "major": "LibKa0s-Slash-1.0",
+  "versionKey": "7",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Slash", "minor": 7 }
+  ],
+  "members": [
+    { "name": "CommandRows", "kind": "function" },
+    { "name": "FindCommand", "kind": "function" },
+    { "name": "FormatKV", "kind": "function" },
+    { "name": "FormatRow", "kind": "function" },
+    { "name": "FormatValue", "kind": "function" },
+    { "name": "New", "kind": "function" },
+    { "name": "ParseBool", "kind": "function" },
+    { "name": "ParseValue", "kind": "function" },
+    { "name": "STRINGS", "kind": "table" },
+    { "name": "SplitVerb", "kind": "function" }
+  ]
+}

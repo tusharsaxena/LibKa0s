@@ -62,6 +62,18 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    live `lib.MODULES` and fails naming every major whose document is missing — the same bargain
    `tests/test_kitsync.lua` strikes for `Kit.VERSION`. Bump a minor and the suite is red until the
    document is written, so step 7's green gate cannot be reached without it.
+
+   **Then regenerate the member manifests**, in the same commit as the document:
+
+   ```sh
+   lua tools/gen-api-members.lua
+   ```
+
+   That writes `docs/api/<Major>/members-<version-key>.json` for every major — the public surface as
+   data, which is what the nine addons' degradation stubs are checked against by
+   `Kit.assertSurfaceParity(stub, majorName)`. It is a generated file and never hand-edited, and
+   `tests/test_versioning.lua` regenerates and compares it on every run, so a bumped minor whose
+   manifest has not been written is red for the same reason a bumped minor with no document is.
 6. **Regenerate the case list**: `lua tests/run.lua --list` into `docs/test-cases.md`, keeping CRLF
    (see that file's own banner for the exact command).
 7. **Move the provenance template in this file to the version being released** — the templated line
