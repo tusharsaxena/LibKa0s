@@ -378,6 +378,19 @@ function lib:New(d)
     if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage(line) end
   end
 
+  -- THE instance sink, published so the other halves of this major stop building their own.
+  -- OptionsWidgets.lua ran `local print = d.print or function() end`: no type guard, so a
+  -- descriptor carrying a `print` that is not a function raised at the report instead of at the
+  -- defect, and no chat-frame fallback, so a host that supplies no printer had NO_GROUPS,
+  -- EMPTY_DROPDOWN, DEAD_BUTTON and BUTTON_FAILED discarded — the four lines whose entire job is
+  -- to name an authoring defect out loud. Two sinks built from one descriptor is one sink too
+  -- many, and this is the one.
+  --
+  -- `__`-prefixed because it is internal rather than surface: a degradation stub does not mirror
+  -- it (`Kit.assertSurfaceParity` skips this prefix), and a host that wants to print has its own
+  -- printer already — this is the library talking to itself across a file boundary.
+  O.__print = print
+
   -- Every ctx CreatePanel hands out. Per INSTANCE, never per library: a lib-level registry would
   -- have one addon's Defaults button run another addon's refreshers.
   local renderedPanels = {}

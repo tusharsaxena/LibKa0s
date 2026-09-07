@@ -49,6 +49,13 @@ _G.LK_TEST = Kit.expose{
   majors = MAJORS,
 }
 
+-- The load list above is DERIVED and says so; this one is HAND-TYPED, and the difference is worth
+-- a line because the file otherwise reads as though the two lists were held to the same standard.
+-- What holds this one honest is `Kit.assertSuiteInventory` (`testkit/framework.lua`), which runs
+-- before anything else here because `dir` is given explicitly: a suite file on disk and missing
+-- from this list fails the run, and a name here with no file behind it fails it too. That is the
+-- gate, not the typing — the failure mode a hand-typed list has is that a new suite is written,
+-- never declared, and the run stays green over a file that never executed.
 Kit.run{
   dir = "tests/",
   suites = {

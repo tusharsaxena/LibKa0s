@@ -753,7 +753,14 @@ end
 --- Attach the widget makers and the flow engine to one instance. Called at the end of lib:New, so
 --- every host gets its own closures over its own descriptor.
 function lib.__AttachWidgets(O, d)
-  local print = d.print or function() end
+  -- The SHELL's sink (`O.__print`), not a second one built from the same descriptor. What stood
+  -- here was `d.print or function() end`, which discarded every diagnostic in this file for any
+  -- host that passed no printer — that is, for every host relying on the library's own
+  -- chat-frame fallback, which is the fallback that exists precisely so these lines stay visible.
+  -- The `or` arms survive for composition order alone: this is called from the end of lib:New, so
+  -- `O.__print` is always there, and a caller that attached the maker set to some other table
+  -- should fall silent rather than raise.
+  local print = O.__print or d.print or function() end
 
   local function get(path) return d.get(path) end
 

@@ -596,6 +596,26 @@ test("lib: Context reports solo when ungrouped", function()
   assertEqual(p.Context().group, "solo")
 end)
 
+test("lib: Context takes the namespaced spec reader before the bare global", function()
+  -- Env.lua models the shape for C_AddOns: the namespaced rung wherever it exists, the deprecated
+  -- global where it does not. The spec reader moved the same way and this file carried only the
+  -- global, so on a client that has finished retiring it every saved record would name the spec
+  -- "?" -- and a record is read weeks later, by which point nobody can go back and look.
+  -- red under: calling the bare GetSpecialization at all while the namespace answers.
+  local savedNS   = T.mocks.C_SpecializationInfo
+  local savedInfo = T.mocks.GetSpecializationInfo
+  T.mocks.C_SpecializationInfo = { GetSpecialization = function() return 3 end }
+  T.mocks.GetSpecializationInfo = function(index)
+    return 250, index == 3 and "Frost" or "Blood"
+  end
+  local p = Fixture.new()
+  local spec = p.Context().spec
+  T.mocks.C_SpecializationInfo  = savedNS
+  T.mocks.GetSpecializationInfo = savedInfo
+
+  assertEqual(spec, "Frost", "the namespaced rung is the one that answered")
+end)
+
 test("lib: Context reports party size and instance type", function()
   local p = Fixture.new()
   local saved = T.mocks.__context

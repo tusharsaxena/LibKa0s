@@ -446,7 +446,7 @@ badge and any count quoted in the docs must agree with it.
 - options: ClearScroll leaves the reserved band alone
 - options: ClearScroll resets BOTH heading trackers
 
-### test_options_widgets.lua (138)
+### test_options_widgets.lua (139)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -562,6 +562,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: the active tab survives a re-render, and heals when its group disappears
 - widgets: a one-group page draws a ONE-TAB strip
 - widgets: a page whose rows carry no group renders untabbed AND says so
+- widgets: a host that omits print still sees NO_GROUPS in the chat frame
 - widgets: with no AceGUI a tabbed page reports no tabs and draws nothing
 - widgets: a wrapped strip's geometry is IDENTICAL for every value of the selection
 - widgets: every tab's hit rect is inset by the same number the rows are packed by
@@ -614,7 +615,7 @@ badge and any count quoted in the docs must agree with it.
 - compose: a FRAMED addon's lead button takes its own row above the full pair
 - compose: the tail draws the two resets as the tab's closing button pair
 
-### test_perf_core.lua (68)
+### test_perf_core.lua (69)
 
 - lib: registers under its major with a schema and a default ring
 - lib: New requires a name, an sv global and a suspend/resume pair
@@ -675,6 +676,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: a flat bucket set gets no nesting footer
 - lib: Context captures character, spec, zone and group
 - lib: Context reports solo when ungrouped
+- lib: Context takes the namespaced spec reader before the bare global
 - lib: Context reports party size and instance type
 - lib: Context reports raid size
 - lib: ContextLines folds the sub-zone into the location
@@ -789,12 +791,13 @@ badge and any count quoted in the docs must agree with it.
 - cmd: a panel click prints exactly what typing the command prints
 - cmd: clicking a locked panel row does nothing
 
-### test_perf_isolation.lua (10)
+### test_perf_isolation.lua (11)
 
 - iso: two instances create separate sampler frames
 - iso: driving one instance's sampler accumulates into that instance alone
 - iso: an instance's sampler is detached without touching the other's
 - iso: a dormant Open/Close bracket allocates nothing and records nothing
+- iso: an active Open/Close bracket reuses its slots instead of allocating one per open
 - iso: two instances create separate panel frames
 - iso: each panel renders its own host's state and its own slash prefix
 - iso: clicking one host's panel drives that host only
@@ -879,13 +882,13 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog.lua | 67 |
 | test_slash.lua | 81 |
 | test_options.lua | 81 |
-| test_options_widgets.lua | 138 |
+| test_options_widgets.lua | 139 |
 | test_options_compose.lua | 24 |
-| test_perf_core.lua | 68 |
+| test_perf_core.lua | 69 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 45 |
 | test_perf_command.lua | 17 |
-| test_perf_isolation.lua | 10 |
+| test_perf_isolation.lua | 11 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_mock_base.lua | 6 |
@@ -894,4 +897,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **788** |
+| **Total** | **791** |

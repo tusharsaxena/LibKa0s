@@ -1903,6 +1903,34 @@ test("widgets: a page whose rows carry no group renders untabbed AND says so", f
   assertEqual(said, 1, "the page key was reported exactly once")
 end)
 
+test("widgets: a host that omits print still sees NO_GROUPS in the chat frame", function()
+  -- The shell builds ONE sink at :New -- the descriptor's `print` when it is a function, and
+  -- DEFAULT_CHAT_FRAME:AddMessage when it is not (`LibKa0s/Options.lua`) -- and this file used to
+  -- build a second one, `d.print or function() end`, with neither the type guard nor the fallback.
+  -- A host that passes no printer therefore had every widget-side diagnostic dropped on the floor:
+  -- NO_GROUPS, EMPTY_DROPDOWN, DEAD_BUTTON and BUTTON_FAILED, which are the four lines that exist
+  -- to name an authoring defect out loud. C01 shipped in exactly that silence.
+  -- red under: __AttachWidgets building its own sink instead of reading the shell's O.__print.
+  local _, rec = Fixture.new()
+  local d = {}
+  for k, v in pairs(rec.d) do d[k] = v end
+  d.print = nil
+  d.rowsForPage = function()
+    return { { path = "orphanOne", type = "bool", label = "Orphan one", default = false } }
+  end
+  local O = lib:New(d)
+  local ctx = O.CreatePanel("NoPrinterPanel", "No printer", {})
+
+  local chat, got = T.mocks.DEFAULT_CHAT_FRAME, {}
+  rawset(chat, "AddMessage", function(_, line) got[#got + 1] = line end)
+  local ok, err = pcall(O.RenderTabbedSchema, ctx, "orphans")
+  rawset(chat, "AddMessage", nil)
+  if not ok then error(err) end
+
+  assertTrue(table.concat(got, "\n"):find("no grouped rows", 1, true) ~= nil,
+    "the report must reach the shell's sink, not a discard: " .. table.concat(got, "\n"))
+end)
+
 test("widgets: with no AceGUI a tabbed page reports no tabs and draws nothing", function()
   -- With no AceGUI there is nothing to draw AT ALL: EnsureScroll answers nil and every maker
   -- in the file refuses, so this reports an empty tab list -- exactly what RenderSchema would

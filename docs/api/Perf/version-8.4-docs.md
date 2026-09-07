@@ -1,4 +1,4 @@
-# `LibKa0s-Perf-1.0` — version 7.4
+# `LibKa0s-Perf-1.0` — version 8.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Perf surface points here rather than restating it. It describes the
@@ -8,17 +8,17 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **7** · `PerfPanel.lua` **4** |
+| Files and minors | `Perf.lua` **8** · `PerfPanel.lua` **4** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.10.2 |
-| Status | Superseded |
-| Supersedes | [version 7.3](./version-7.3-docs.md) |
-| Superseded by | [version 8.4](./version-8.4-docs.md) |
+| Shipped in | v1.27.0 |
+| Status | **Current** |
+| Supersedes | [version 7.4](./version-7.4-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 7, PerfPanel = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 8, PerfPanel = 4 }` |
 
-`Since` names the file and minor a member first appeared in — `P7` for `Perf.lua` minor 7, `PP4`
+`Since` names the file and minor a member first appeared in — `P8` for `Perf.lua` minor 8, `PP4`
 for `PerfPanel.lua` minor 4. It is `1` for nearly everything: this major did not move at all between
 the first tag and minor 6, so every adopter before that version is on the same one.
 
@@ -36,29 +36,39 @@ a state LibStub can detect. **This is why the version key above is a pair.**
 
 ## What changed at this version
 
-**The panel's own close button is told which addon is asking.** `Perf.lua` does not move.
+**Nothing on the surface moves.** No member is added, removed or re-signatured, and every call site
+in every adopter keeps working untouched on the re-vendor alone. Two internals change, and both are
+the same kind of defect: a claim the file made about itself that was not true.
 
-1. **`Core.MakeCloseButton` is called with three arguments** from the panel's no-`decorate` path.
-   Core grew a third parameter — the addon's own **folder** name — at Core minor 6, and the catalog's
-   `close` icon is drawn only when it is given one; called with two, Core draws the multiplication
-   sign it has always drawn. `PerfPanel.lua` minor 3 shipped the two-argument call, so a host that
-   passed no `decorate` got a perf panel wearing × beside a debug console wearing the mark.
+1. **`P.Open`/`P.Close` reuse their slots instead of allocating one per bracket.** The open-slot
+   store is a **high-water free list** now: one table per nesting depth, built the first time any
+   capture in the session goes that deep, reused by every bracket afterwards. What stood there
+   allocated a fresh `{ key = key, t0 = ... }` on every `Open` while the probe was on, which is one
+   table per bracketed call for the length of a window — garbage the collector then has to walk
+   during the very capture that exists to hold everything else still and read somebody else's frame
+   cost. Measured over 10,000 active pairs at depth one: **0.0 KB, against 1406.2 KB** before.
 
-   A dropped argument is not a failure any layer can report. Core saw no addon name and drew exactly
-   what it draws without one, which is a perfectly good button; a texture path that is never built
-   draws nothing and raises nothing. The only symptom was the look — the same class of defect, in
-   the same week, as the console's own forwarder at DebugLog minor 10.
+   The behavior is identical in every other respect. A leaked bracket — an exit that forgot its
+   `Close` — is still **discarded** rather than credited; it is simply left above the open depth,
+   where nothing reads it and the next `Open` at that depth overwrites both its fields. `P.Reset`
+   zeroes the depth and deliberately **keeps** the list, because emptying it would make the first
+   brackets of every run allocate again, which is the one cost this shape exists to pay once.
 
-2. **`addonName` joins the descriptor**, optional, falling back to `name`. `name` is also the
-   frame-global prefix (`<name>PerfPanel`, `<name>PerfSampler`), so a host whose window names differ
-   from its folder now has somewhere to say which is which. Every host in the collection passes its
-   folder name as `name` and needs nothing: **the fix reaches an unmodified host on the re-vendor
-   alone.**
+2. **`P.Context` takes `C_SpecializationInfo.GetSpecialization` before the bare global.** `Env.lua`
+   has modeled this two-rung shape for `C_AddOns` since it was written: the namespaced reader
+   wherever it exists, the deprecated global where it does not. The spec reader moved the same way
+   and this file had only the global, which is exactly why it was easy to miss — the global still
+   answers on today's client. The day it stops, every saved record names the spec `"?"`, and a
+   record is read weeks later, when there is nothing left to go and look at.
 
-3. **A host that passes `decorate` is unaffected**, and still owns the corner outright — the library
-   builds no close button on that path. What it must not do is repeat minor 3's mistake at its own
-   call site: an addon **MUST** build the control through the single wrapper that carries its folder
-   name rather than calling the factory with two arguments (standalone-windows, debug-logging-§12).
+   `GetSpecializationInfo` keeps its own guard on the global rather than being paired with a
+   namespaced rung here. The reader that is known to have moved is the **index** one, and a shim
+   claiming more than it has checked is the thing this change is fixing.
+
+**And the docstring on `P.Open` now states the active arm's cost.** It was honest about the arm
+nobody pays for — two real Lua calls plus a boolean test when the probe is off — and said nothing
+at all about the arm a capture actually runs. That half is written down now, with the measured
+figure, in the same place.
 
 ## Why it exists
 
@@ -281,14 +291,14 @@ Everything `lib:New(descriptor)` returns on the instance.
 | Name | Since | Meaning |
 |---|---|---|
 | `Note(key, ms, parentKey)` | 1 · `parentKey` **P7** | Record one bracketed measurement into bucket `key`. `parentKey` is optional and names the bucket this work actually ran inside — the **observed** containment. Omitted, nothing is observed and the report says so. Raises, naming the caller, on a nil `key`. |
-| `Open(key)` | **P7** (`Open()` was P6) | Open a Shape B measurement bracket on `key`. No-op while the probe is off. See [Bracketing a multi-exit function](#bracketing-a-multi-exit-function). |
+| `Open(key)` | **P7** (`Open()` was P6) | Open a Shape B measurement bracket on `key`. No-op while the probe is off. Allocates nothing in the steady state as of **P8** — slots come from a high-water free list. See [Bracketing a multi-exit function](#bracketing-a-multi-exit-function). |
 | `Close(key)` | **P7** (`Close(t0, key)` was P6) | Close the bracket `Open(key)` opened, recording its elapsed ms under `key` and the enclosing bracket's key as the observed parent. A `Close` with no matching open slot is a **silent no-op**. |
 | `Reset()` | 1 | Zero every counter — buckets, completion/review flags, FPS arms. |
 | `Log(fmt, ...)` | 1 | Console-only line, colour-stripped. |
 | `Announce(fmt, ...)` | 1 | Chat-and-console line, for what the user must see mid-fight. |
 | `MarkReviewed(key)` | 1 | Mark a review action (`report`/`dump`) used, without disabling it. |
 | `Progress()` | 1 | The run as a table of step states (`ready`/`busy`/`done`/`locked`/`used`/`cancel`), for a panel to render. |
-| `Context()` | 1 | Who / where / what, snapshotted once at `Start()`. |
+| `Context()` | 1 | Who / where / what, snapshotted once at `Start()`. Reads the spec through `C_SpecializationInfo.GetSpecialization` first, the deprecated global second, as of **P8**. |
 | `ContextLines(ctx)` | 1 | `Context()` rendered as display lines, shared by the chat ack and the report. |
 | `BuildRecord(label)` | 1 | Assemble the current capture into the record schema (`docs/record-schema.md`). |
 | `Save(record)` | 1 | Append a record to the host's SavedVariables ring, trimming past `ring`. |
@@ -379,6 +389,14 @@ claimed it cost "one boolean test and nothing else, and allocates nothing on eit
 simply false. Shape A is therefore the default, and is **mandatory** on anything running per frame
 or per combat-log event; where a multi-exit region is also a hot path, restructure it to one exit
 rather than paying two calls a frame.
+
+**And state the active arm's cost too.** With `P.on` **true** the pair is two calls, one table index
+into the free list, two field writes, a linear scan back through the open slots to find the match,
+and a `P.Note`. It **allocates nothing** in the steady state as of **P8**: slots are reused from a
+high-water free list and `P.Note` allocates one bucket per *key*, not per call. Measured over 10,000
+active pairs at depth one: **0.0 KB**, against **1406.2 KB** for the per-`Open` table this replaced.
+The scan is O(open depth), which is two in every descriptor this collection ships; a host nesting
+brackets dozens deep on a per-frame path is outside what Shape B is for and wants Shape A.
 
 **`Open` takes the key** (it did not, through minor 6). A slot with no identity cannot be matched to
 its `Close` and cannot name a parent for a bracket opened inside it — so a bracket nested in another

@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
 **Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
-**OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 7**,
+**OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 8**,
 **PerfPanel minor 4**, **kit revision 15**.
 
 The heading carries no date because the tag has not been cut. The release that cuts it dates this
@@ -257,6 +257,46 @@ see expire is how this gate got here in the first place.
 
 **Consumers get this on the re-vendor and have nothing to adopt.** The only visible difference is the
 wording of the two `perf` lines and the three unlabeled captures.
+
+### `Perf.lua` minor 8 — the capture arm stops allocating, and the spec reader gets its namespaced rung
+
+**Nothing on the surface moves.** No member is added, removed or re-signatured; every adopter gets
+this on the re-vendor and has nothing to adopt. What moves is two internals, and both are the same
+kind of defect: something the file claimed about itself that was not true.
+
+**`P.Open` allocated a table per bracket while the probe was on.** `{ key = key, t0 = ... }`, once
+per `Open`, for the length of a window — so one table per bracketed call, on paths that are
+bracketed precisely because they run often. The collector then walks that garbage during the very
+capture whose entire job is to hold everything else still and read somebody else's frame cost, which
+is the probe perturbing the thing it is measuring. The open slots come from a **high-water free
+list** now: one table per nesting depth, built the first time a session nests that deep and reused
+by every bracket after it. Depth is two in every descriptor this collection ships, so the list stops
+growing almost immediately and the steady state allocates nothing on either arm.
+
+Behavior is otherwise identical. A bracket whose exit forgot its `Close` is still **discarded**
+rather than credited with time it never ran for — the slot is simply left above the open depth,
+where nothing reads it and the next `Open` at that depth overwrites it in place. `P.Reset` zeroes
+the depth and deliberately keeps the list, since emptying it would make the first brackets of every
+run allocate again, which is the one cost this shape exists to pay once.
+
+**The suite only measured the arm that was already free.** `tests/test_perf_isolation.lua` held a
+dormant-bracket case asserting that 10,000 `Open`/`Close` pairs with the probe **off** grow the heap
+by under 1 KB, and nothing at all for the arm a capture actually runs — which is the arm that was
+allocating. The active sibling is there now, at the same ceiling: **0.0 KB over three runs, against
+1406.2 KB before the free list.** `performance-§2` asks for the "instrumentation is free when off"
+claim to be a measured number rather than a comment; this is the other half of that bargain, and the
+docstring on `P.Open` states the active arm's cost in the same place it already stated the dormant
+one's.
+
+**`P.Context` read the spec through the bare `GetSpecialization`.** `Env.lua` has modeled the
+two-rung shape for `C_AddOns` since it was written — the namespaced reader wherever it exists, the
+deprecated global where it does not — and this file had only the global. That is exactly why it was
+easy to miss: the global still answers on today's client, so nothing is visibly wrong. The day it
+stops answering, every saved record names the spec `"?"`, and a record is read weeks later, when
+there is nothing left to go and look at. `C_SpecializationInfo.GetSpecialization` is taken first now.
+`GetSpecializationInfo` keeps its own guard on the global rather than being paired with a namespaced
+rung, because the reader known to have moved is the **index** one and a shim that claims more than
+it has checked is the defect being fixed.
 
 ## v1.26.0 — 2026-09-07
 
