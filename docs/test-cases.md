@@ -362,7 +362,7 @@ badge and any count quoted in the docs must agree with it.
 - slash: the format hook takes precedence over the colour codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
 
-### test_options.lua (77)
+### test_options.lua (81)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -415,6 +415,10 @@ badge and any count quoted in the docs must agree with it.
 - options: OpenOptionsPanel is a silent no-op before CreateOptionsPanel has run
 - options: LSMValues returns a DEFERRED closure, not a snapshot
 - options: LSMValues offers a None placeholder rather than an empty list
+- options: __PatchLSM30Border is published on the library, not on an instance
+- options: __PatchLSM30Border registers once and the second call is a no-op
+- options: the patched constructor hides the preview tile and re-anchors the bar
+- options: __PatchLSM30Border stays armed while the widget is absent
 - options: EnsureScroll is lazy, created once, and patched
 - options: the scrollbar patch is idempotent
 - options: FixScroll disables the bar when the content fits, enables it when it does not
@@ -853,7 +857,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets.lua | 81 |
 | test_debuglog.lua | 67 |
 | test_slash.lua | 81 |
-| test_options.lua | 77 |
+| test_options.lua | 81 |
 | test_options_widgets.lua | 137 |
 | test_options_compose.lua | 24 |
 | test_perf_core.lua | 68 |
@@ -867,4 +871,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **769** |
+| **Total** | **773** |

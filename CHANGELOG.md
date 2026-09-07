@@ -10,6 +10,55 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.27.0 — unreleased
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
+**OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 7**,
+**PerfPanel minor 4**, **kit revision 14**.
+
+The heading carries no date because the tag has not been cut. The release that cuts it dates this
+block and freezes its bundle; until then, this is what is staged for v1.27.0.
+
+### `Options.lua` minor 15 — the `LSM30_Border` fixup becomes the library's, once per session
+
+**`lib.__PatchLSM30Border()`**, on the library table rather than on an instance, idempotent behind
+`lib.__lsmBorderPatched`. It wraps whatever constructor AceGUI currently holds for `LSM30_Border` and
+registers the wrapper one version higher, hiding the 42x42 preview tile upstream
+AceGUI-3.0-SharedMediaWidgets pins to the widget's TOPLEFT and putting the label and the dropdown
+bar's left cap back on the frame's own edge. Returns true if this call registered, false if there was
+nothing to do.
+
+**Why it is here rather than in an addon.** `AceGUI.WidgetRegistry` is one table shared by every
+addon in the client, Ka0s or not, and the highest version registered for a name wins for the rest of
+the session. Five addons in this collection each ship a private `core/LSMPatch.lua` doing exactly
+this — AbsorbTracker, ConsumableMaster, KickCD, MultiMeters and PanelMaster, five distinct files with
+one intent. Every one of those wrappers closes over whatever the registry held when its
+`PLAYER_LOGIN` fired, so with all five loaded the last addon to log in wraps the fourth, which wraps
+the third, and the outermost wrapper belongs to whichever addon the client happened to load last. The
+result is a function of load order, which is precisely why no addon's suite could ever see it: each
+one loads a single copy, registers once and passes. `library-stack-§9` and anti-pattern #76 now say
+so; this is the surface they point at.
+
+**The sentinel is the point, not a detail.** LibStub hands every vendored copy in the session the
+same `lib`, so five copies calling this produce exactly one registration — the count is independent
+of how many Ka0s addons are installed and in what order. And it is set only after a registration
+actually happens: AGSMW is a separate addon, so a call that arrives before it has loaded finds
+nothing to wrap and must leave the surface armed for the next one.
+
+**Adoption is not the re-vendor alone, and the order matters.** Nothing in this library calls the new
+member, so a host that ignores it is byte-identical to 14.14.3.3. The five addons carrying a private
+copy re-vendor and add the call **with every local copy still in place**, confirm in the client with
+all five loaded that no Border dropdown depends on load order, and only then delete the copies, one
+repository per commit, testing again after the first — AbsorbTracker last, because its copy is a
+callable `NS.ApplyLSMBorderPatch()` rather than a `PLAYER_LOGIN` frame. Deleting them together would
+leave no bisect point if the sentinel is wrong.
+
+**Registering a new widget type an addon defines for itself is untouched**, and so is the
+per-instance answer: hide the child and re-anchor the region at the addon's own creation site, and
+leave the registry alone. What this replaces is reaching the same end by editing the table every
+other addon in the client reads.
+
 ## v1.26.0 — 2026-09-07
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 14.14.3.3
+# `LibKa0s-Options-1.0` — version 15.14.3.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,97 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **14** · `OptionsWidgets.lua` **14** · `OptionsCompose.lua` **3** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **15** · `OptionsWidgets.lua` **14** · `OptionsCompose.lua` **3** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.26.0 |
-| Status | Superseded |
-| Supersedes | [version 14.13.3.3](./version-14.13.3.3-docs.md) |
-| Superseded by | [version 15.14.3.3](./version-15.14.3.3-docs.md) — the `LSM30_Border` fixup becomes the library's, once per session |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **New at this version:** `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`) — see [What changed](#what-changed-at-this-version). |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 14, OptionsWidgets = 14, OptionsCompose = 3, OptionsScroll = 3 }` |
+| Shipped in | v1.27.0 |
+| Status | **Current** |
+| Supersedes | [version 14.14.3.3](./version-14.14.3.3-docs.md) |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 15, OptionsWidgets = 14, OptionsCompose = 3, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O14`
-for `Options.lua` minor 14, `W14` for `OptionsWidgets.lua` minor 14, `C3` for `OptionsCompose.lua`
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O15`
+for `Options.lua` minor 15, `W14` for `OptionsWidgets.lua` minor 14, `C3` for `OptionsCompose.lua`
 minor 3, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**`Options.lua` minor 15 — the library registers the `LSM30_Border` fixup, because AceGUI's widget
+registry belongs to the process and not to any one addon.** One file moved; everything else in this
+major is unchanged from 14.14.3.3. **One member is added and nothing is removed, renamed or
+resignatured** — but unlike the last two versions this one is not adopted by re-vendoring alone: the
+five addons that carry a private copy of this patch have a call site to add and a file to delete.
+
+`AceGUI:RegisterWidgetType(name, ctor, version)` writes into `AceGUI.WidgetRegistry`, which is **one
+table shared by every addon loaded in the client**, Ka0s or not, and the highest version registered
+for a name wins for the rest of the session. Five addons in this collection each shipped a private
+`core/LSMPatch.lua` doing exactly that to `LSM30_Border` — AbsorbTracker, ConsumableMaster, KickCD,
+MultiMeters and PanelMaster, five distinct files with one intent — to collapse the 42x42
+`displayButton` preview tile that upstream AceGUI-3.0-SharedMediaWidgets pins to the widget's
+TOPLEFT, and which leaves the closed dropdown sitting 42px right of every slider and checkbox stacked
+with it on a canvas-layout settings page.
+
+Read one at a time each of those is defensible. Read together they are a different object: every
+wrapper closes over whatever the registry held when its `PLAYER_LOGIN` fired, so with all five loaded
+the last addon to log in wraps the fourth, which wraps the third — the same work done five times,
+five constructors deep, with the outermost one belonging to **whichever addon the client happened to
+load last**. And the registration is the *session's*: the next Border dropdown anything opens is
+drawn by a Ka0s wrapper it never asked for. No addon's own suite could see any of it, because each
+one loads a single copy, registers once and passes.
+
+`library-stack-§9` now states the rule — a re-registration of a widget type the addon did not itself
+define is `LibKa0s`'s, published as a member of the owning major, and never done from an addon's
+`core/`, `modules/` or `settings/` — and anti-pattern #76 names the tell. This version is the surface
+that rule points at. It belongs to the Options major on the evidence: `OptionsCompose.lua` is what
+writes `dialogControl = "LSM30_Border"` in the first place, and the panel descriptor already takes
+`getLSM()`.
+
+### `lib.__PatchLSM30Border()` — library-level, and idempotent behind a sentinel
+
+It is on **`lib`**, not on the instance, and that placement is the contract rather than a convenience.
+A per-instance member would be called once per host, so five hosts in one client would be five
+registrations deep again — a smaller version of the defect is still the defect — and a sentinel on
+`O` could not stop it either, because every host has its own `O`.
+
+`lib.__lsmBorderPatched` is that sentinel, and it lives on the library table because LibStub hands
+**every vendored copy in the session the same `lib`**. N copies calling this therefore produce
+exactly one registration, and the count is independent of how many Ka0s addons are installed and in
+what order they load. That is the property `library-stack-§9` asks for by name.
+
+The sentinel records that a registration **happened**, not that the function was called. AGSMW is a
+separate addon, so a host calling this before that library has run finds nothing to wrap, registers
+nothing and leaves the surface armed for the next call. Setting the flag on either early return would
+disarm the patch for the whole session, silently, in exactly the load order it exists to survive.
+
+The per-instance work inside the wrapper is unchanged from what the five private copies did: hide
+`frame.displayButton`, re-anchor `frame.label` to the frame's own two top corners, and put
+`frame.DLeft` — the left cap of the dropdown bar, which upstream moves to the tile's BOTTOMRIGHT —
+back on `GetBaseFrame`'s own numbers. `LSM30_Font` and `LSM30_Statusbar` take `AGSMW:GetBaseFrame`,
+which has no `displayButton`, so this is Border-specific, and the popup's per-row hover preview is
+untouched.
+
+### Adopting it
+
+**The re-vendor alone changes nothing.** Nothing in this library calls the new member; a host that
+never calls it is byte-identical in behavior to 14.14.3.3.
+
+For the five addons carrying a private copy the sequence matters, because the failure mode is a
+function of load order and no headless suite can see it. Re-vendor and add the call from the live arm
+of `settings/OptionsSetup.lua`, **leaving every local `core/LSMPatch.lua` in place**; confirm in the
+client with all five loaded together that each addon's Border dropdown draws the same styled control
+whatever the load order; and only then delete the five copies, **one repository per commit**, testing
+again after the first. Deleting them together leaves no bisect point if the sentinel is wrong.
+AbsorbTracker's copy goes last: it is the one real divergence, exposing a callable
+`NS.ApplyLSMBorderPatch()` invoked from its own core file rather than installing a `PLAYER_LOGIN`
+frame.
+
+**Registering a NEW widget type an addon defines for itself is untouched by any of this.** A name
+nothing else in the process claims collides with nobody, and `library-stack-§5`'s extend-don't-fork
+sanction applies to it unchanged. And where the wanted change is genuinely per-instance, an addon may
+still make it at its own creation site on the widget it just acquired, and leave the registry alone.
+
+### Previously, at 14.14.3.3
 
 **`OptionsWidgets.lua` minor 14 — the tab strip borrows its frames from `LibKa0s-Pool-1.0` instead
 of building them on every click.** One file moved; everything else in this major is unchanged from
@@ -66,7 +142,7 @@ button coming back off a free list is a button drawn onto nothing. It calls `new
 `dressTab` in sequence, which is exactly what `makeTab` did, and keeps its own `ctx.__subTabKids`
 ledger released the way it always was.
 
-### `ctx.__tabKids` is still the ledger, and no longer the release
+#### `ctx.__tabKids` is still the ledger, and no longer the release
 
 `__tabKids` continues to hold this render's furniture in draw order — every tab button, then the
 content panel — and `__releaseChrome` still empties it. What changed is that emptying it no longer
@@ -74,7 +150,7 @@ content panel — and `__releaseChrome` still empties it. What changed is that e
 ledger is rebuilt from scratch by the next render. A suite reading `#ctx.__tabKids` or
 `ctx.__tabKids[n]` reads exactly what it read at 14.13.3.3.
 
-### `OptionsWidgets.lua` now has a hard floor on `LibKa0s-Pool-1.0`
+#### `OptionsWidgets.lua` now has a hard floor on `LibKa0s-Pool-1.0`
 
 The file refuses to attach — no `lib.MODULES.OptionsWidgets`, no widget makers — when
 `LibKa0s-Pool-1.0` is absent or below minor 1, the same way `DebugLog.lua` refuses without
@@ -492,6 +568,37 @@ practice rather than enforced: a missing `parentTitle` silently becomes `""`, an
 reaches for it, not at `:New`. Treat the column as a contract you keep rather than one the library
 keeps for you.
 
+## The library surface
+
+Almost everything this major publishes hangs off the instance `lib:New(descriptor)` returns. One
+member does not, and cannot: a widget-registry entry is per **process**, so the thing that writes it
+has to be per library rather than per host.
+
+### `lib.__PatchLSM30Border()` → boolean
+
+**Since O15.** Wrap AceGUI-3.0-SharedMediaWidgets' `LSM30_Border` so it lines up on a canvas-layout
+settings page, and register the wrapper one version above whatever the registry currently holds.
+Returns `true` if this call performed the registration and `false` if there was nothing to do.
+
+| | |
+|---|---|
+| Where to call it | From the live arm of the host's options setup — the same place it resolves AceGUI. Safe at file load, and safe to call again later. |
+| What it does per instance | Hides `frame.displayButton`, re-anchors `frame.label` to the frame's own TOPLEFT and TOPRIGHT, and restores `frame.DLeft` to `GetBaseFrame`'s `BOTTOMLEFT, -17, -21`. |
+| What it wraps | Whatever constructor the registry holds when it runs — which may already be a skinning addon's — never a reimplementation of the widget. |
+| Idempotence | `lib.__lsmBorderPatched`, on the **library** table. Every vendored copy in the session shares one `lib`, so N copies calling this produce exactly one registration. |
+| Returns false when | The library is already patched, AceGUI is absent, or `LSM30_Border` is not in the registry yet. |
+| Scope | Border only. `LSM30_Font` and `LSM30_Statusbar` take `AGSMW:GetBaseFrame`, which has no `displayButton`. |
+
+**A `false` return is not an error and does not need handling.** The three reasons for it are all
+ordinary: another Ka0s addon got there first, this client has no AceGUI, or AGSMW has not loaded yet.
+The last of those is the reason the sentinel is set **only after a registration actually happens** —
+a host that calls this early and again after login gets its patch on the second call, where a flag
+set on the early return would have disarmed the surface for the whole session in silence.
+
+**`lib.__lsmBorderPatched` is readable but is not a supported write.** Clearing it does not
+un-register the wrapper; it only invites a second one to be registered on top of the first, which is
+the five-deep stack this member exists to end.
+
 ## The instance surface
 
 Everything `lib:New(descriptor)` returns on the instance.
@@ -763,10 +870,18 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. Nothing
-is added or taken away at this version.
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. One
+member is added at this version and nothing is taken away.
 
-**What moves at 14.14.3.3 is a lifetime, and nothing else.** The tab strip's buttons and the page's
+**What is added at 15.14.3.3 is `lib.__PatchLSM30Border()`, and nothing in this library calls it.** A
+host that ignores it renders byte-identically to 14.14.3.3, so the re-vendor on its own is a no-op —
+which is deliberate, because the addons this member is for have five private copies of the same patch
+to retire and that retirement cannot be proved out of game. The order is: re-vendor and add the call
+with every local copy still in place, confirm in the client with all five addons loaded that no
+Border dropdown depends on load order, then delete the copies one repository per commit. See
+[What changed at this version](#what-changed-at-this-version).
+
+**What moved at 14.14.3.3 is a lifetime, and nothing else.** The tab strip's buttons and the page's
 content panel are recycled rather than rebuilt on every click, so an options panel stops leaking one
 set per click. Every published member, signature and return value is identical to 14.13.3.3, the
 strip renders the same pixels, and **the adoption step is the re-vendor and nothing more**. The one
@@ -810,20 +925,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 15.14.3.3
-
-One file moves, `Options.lua` 14 → 15, and **one member is added**: `lib.__PatchLSM30Border()`, on
-the library table rather than on an instance, idempotent behind `lib.__lsmBorderPatched`. Nothing is
-removed, renamed or resignatured, and nothing in the library calls it.
-
-At this version there is no library-owned way to fix AceGUI-3.0-SharedMediaWidgets' `LSM30_Border`,
-so five addons in the collection each ship their own `core/LSMPatch.lua` and each re-registers the
-widget into AceGUI's **process-global** table. With all five loaded the wrappers stack five deep and
-the outermost belongs to whichever addon the client loaded last, which is a behavior no addon's own
-headless suite can observe. `library-stack-§9` now forbids that placement and 15.14.3.3 is the
-surface it points at.
-
-**Adoption is not the re-vendor alone.** Re-vendor and add the call with every local copy still in
-place, prove it in the client with all five addons loaded, then delete the copies one repository per
-commit — AbsorbTracker's last, because its copy is a callable rather than a `PLAYER_LOGIN` frame.
