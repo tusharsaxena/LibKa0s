@@ -17,8 +17,13 @@ the other seven.
 
 The collection's consolidated automated-test runner, and the only executable in the kit. It runs the
 four out-of-game suites and records every result as one frozen bundle under
-`docs/automated-tests/<YYYYMMDD-HHMMSS>/`, then rolls the run into `docs/automated-tests/RESULTS.md`
-(see `automated-tests` in the standard).
+`docs/automated-tests/<YYYYMMDD-HHMMSS>/`, then regenerates `docs/automated-tests/RESULTS.md` whole:
+the lead-in, the new row above every preserved older one, the complexity watch list and a standing
+section per suite (see `automated-tests` in the standard). **Exactly one cell in that file is
+authored** — the watch list's `Disposition`, which the runner carries forward while its entry is
+unchanged and leaves blank when the entry is new (`automated-tests-§4`, *the one boundary*). A
+generated sentence that is wrong is fixed in LibKa0s and arrives on the next re-vendor; edited here
+it is reverted silently by that re-vendor.
 
 ```sh
 tests/_kit/run-automated-tests.sh                            # all four, writes a bundle

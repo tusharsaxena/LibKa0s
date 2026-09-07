@@ -15,7 +15,7 @@ cannot drift. Release order is in
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
 **Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
 **OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 7**,
-**PerfPanel minor 4**, **kit revision 14**.
+**PerfPanel minor 4**, **kit revision 15**.
 
 The heading carries no date because the tag has not been cut. The release that cuts it dates this
 block and freezes its bundle; until then, this is what is staged for v1.27.0.
@@ -82,6 +82,60 @@ once per click in the log of whoever pressed it.
 **Consumers should expect a line on the first re-vendor.** Because the composer builds both resets
 unconditionally, any host not passing `onResetAll` starts printing this the moment it takes the new
 copy. That is the point, and the answer is to supply the handler rather than to silence the line.
+
+### `testkit` revision 15 — the runner records what it measured, and writes the record it was always asked for
+
+One file moves, `run-automated-tests.sh`, and no Lua surface moves at all. `framework.lua` changes
+for `Kit.VERSION` and nothing else; `loader.lua`, `mock_base.lua` and `vendor_sync.lua` are
+untouched. **No consumer's case count moves on adoption.** Full surface:
+[`docs/api/testkit/version-15-docs.md`](docs/api/testkit/version-15-docs.md).
+
+**The skipped count stops vanishing.** `framework.lua` has printed `N passed, N failed, N skipped,
+N total` since the skip status existed at revision 8, and the runner's regex could not span
+`, N skipped` — so the match stopped at `failed`, the positional read of the total came back empty,
+and `TESTS_TOTAL` fell back to `passed + failed`. A suite with three declared skips recorded as a
+suite three cases smaller, on every row of every trend line, with no `skipped` key in the manifest to
+contradict it. Every figure is now read **by its label** rather than by field position, which is the
+actual fix: the summary has grown a column twice and the positional read broke silently both times.
+`suites.tests.skipped` joins the manifest and the **Tests** cell becomes `passed/skipped/total` under
+the same column name.
+
+**A release run stops being filed against the version it replaces.** `--release X.Y.Z` runs before
+the tag (`automated-tests-§6`), so the `.toc` still carries the outgoing version while the run is the
+incoming one's evidence. The Version cell now reads `1.24.0 → 1.25.0` when the manifest carries a
+release — which is what this repo's own row for `20260903-161751` should have said and did not.
+
+**`RESULTS.md` is regenerated whole, rows preserved.** The runner had two write paths: an `awk` that
+inserted one row under the header, and a create-the-file branch carrying the header, the lead-in and
+everything else — reached only when the file was absent or its column set had changed, which in a
+repository that has ever run this script is never. The corrected four-checkpoint lead-in therefore
+sat in unreachable code while ten repositories carried the two-sentence text it was written to
+replace. The guard that matters stays: a file whose **header** is not the current column set is
+still left alone with a warning, because rewriting it would drop every previous row.
+
+**And the two things `automated-tests-§4` MUSTs and no runner had ever emitted.** The complexity
+watch list — warned functions (Function / CCN / Location / Disposition) and files by `layout-§1`
+band — generated from the run's own `lizard` output, and one standing section per suite generated
+from the same manifest. Until now `documentation-§3` called this file generated while
+`automated-tests-§4` mandated narrative nothing produced, and the state on the far side of that
+collision was not a badly-graded file but no file: the record went stale in ten of ten repositories.
+MultiMeters' hand-written watch list reported *"None — `lizard` reports 0 warnings"* above a table
+row recording 19; this repository's own test-suite section opened with *"499 cases"* against a suite
+running 764. The standard settled the boundary at v2.39.0 and this is the code half of it.
+
+**The one authored cell** is the watch list's `Disposition`. The runner carries it forward verbatim
+while its entry is unchanged and leaves it **blank** where the entry is new, so a blank cell is the
+record saying something crossed and nobody has ruled on it. The key is the function and its file —
+not a line range, which would blank every disposition in a file the moment anything above it grew a
+line — with the measured CCN breaking a tie between two warned functions of the same name in one
+file. A tie the CCN cannot break leaves the cell blank rather than attaching one entry's ruling to
+another.
+
+**Consumers should expect the record to move on the first run after re-vendoring**, and not the
+counts: a middle figure in the Tests column, the replaced lead-in, and a watch list with every
+disposition blank because there was no generated table to carry them forward from. Ruling on those
+blanks is a one-time cost. Any hand-written prose below the table is replaced, so a disposition worth
+keeping is copied into the generated cell in the same commit or it is gone.
 
 ## v1.26.0 — 2026-09-07
 
