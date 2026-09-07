@@ -810,6 +810,47 @@ test("widgets: InlineButtonPair tolerates a missing second spec", function()
   assertEqual(#Fixture.flowRows(ctx.scroll)[1].children, 1)
 end)
 
+test("widgets: InlineButtonPair reports a handler-less button once, and draws it anyway",
+  function()
+  -- OptionsCompose builds `resetAll` and `resetPosition` UNCONDITIONALLY, whether or not the host
+  -- spec supplied onResetAll/onResetPosition, so a spec that forgot one gets a live-looking button
+  -- whose OnClick returns early. Nothing said so. The cure follows EMPTY_DROPDOWN rather than
+  -- refusing to draw: an author who sees a gap in the pair fixes the spec, whereas a silently
+  -- missing button reads as a deliberate layout and ships.
+  local O, rec, ctx = bench()
+
+  local row = O.InlineButtonPair(ctx, { text = "Reset all settings", tooltip = "Put it back" }, nil)
+
+  local drawn = Fixture.flowRows(ctx.scroll)[1]
+  assertEqual(#drawn.children, 1, "the button is still drawn -- report and render, never refuse")
+  assertEqual(drawn.children[1].text, "Reset all settings")
+
+  local expected = lib.STRINGS.DEAD_BUTTON:format("Reset all settings")
+  local reports = 0
+  for _, line in ipairs(rec.chat) do
+    if line == expected then reports = reports + 1 end
+  end
+  assertEqual(reports, 1,
+    "reported exactly once, at build time: " .. table.concat(rec.chat, "\n"))
+
+  -- The report belongs to the BUILD, not to the press: a player leaning on a dead button must not
+  -- be able to fill the chat frame with it.
+  drawn.children[1]:__fire("OnClick")
+  drawn.children[1]:__fire("OnClick")
+  local after = 0
+  for _, line in ipairs(rec.chat) do
+    if line == expected then after = after + 1 end
+  end
+  assertEqual(after, 1, "and clicking it adds nothing")
+
+  -- The counterpart: a button that HAS a handler is silent, or the line lands on all nine hosts.
+  local O2, rec2, ctx2 = bench()
+  O2.InlineButtonPair(ctx2, { text = "Reset all settings", onClick = function() end }, nil)
+  assertEqual(table.concat(rec2.chat, "\n"):find("DEAD", 1, true), nil,
+    "a handled button says nothing")
+  assertTrue(row ~= nil)
+end)
+
 -- ── numeric enums render as dropdowns (WIDGETS_MINOR 5) ────────────────────────────────────
 --
 -- The two majors used to disagree about what one schema row IS. Slash.lua's parseNumber has always

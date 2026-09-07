@@ -446,7 +446,7 @@ badge and any count quoted in the docs must agree with it.
 - options: ClearScroll leaves the reserved band alone
 - options: ClearScroll resets BOTH heading trackers
 
-### test_options_widgets.lua (137)
+### test_options_widgets.lua (138)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -507,6 +507,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: ClearScroll reassigns ctx.refreshers rather than wiping it in place
 - widgets: InlineButtonPair lays two inset buttons into one Flow row and pcalls the click
 - widgets: InlineButtonPair tolerates a missing second spec
+- widgets: InlineButtonPair reports a handler-less button once, and draws it anyway
 - widgets: a number row carrying a values list renders as a Dropdown, not a Slider
 - widgets: the numeric dropdown lists its entries with their own labels
 - widgets: the numeric dropdown seeds the STORED number, not a stringified copy
@@ -858,7 +859,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog.lua | 67 |
 | test_slash.lua | 81 |
 | test_options.lua | 81 |
-| test_options_widgets.lua | 137 |
+| test_options_widgets.lua | 138 |
 | test_options_compose.lua | 24 |
 | test_perf_core.lua | 68 |
 | test_perf_run.lua | 33 |
@@ -871,4 +872,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **773** |
+| **Total** | **774** |

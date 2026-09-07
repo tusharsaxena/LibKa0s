@@ -1444,6 +1444,18 @@ function lib.__AttachWidgets(O, d)
 
     local function makeBtn(spec)
       if not spec then return end
+
+      -- AT BUILD TIME, and once. OptionsCompose emits the master group's two resets whether or
+      -- not the host spec carried onResetAll/onResetPosition, so a spec that forgot one hands
+      -- the player a button that looks live and swallows the click below. Saying so on the
+      -- click instead would only tell the one person who pressed it, and tell them again every
+      -- press; said here it lands once, in the log of whoever opened the panel, which is the
+      -- author. Report and render, exactly as EMPTY_DROPDOWN does further down: dropping the
+      -- button would leave a half-empty pair that reads as an intended layout.
+      if type(spec.onClick) ~= "function" then
+        print(lib.STRINGS.DEAD_BUTTON:format(tostring(spec.text or "")))
+      end
+
       local btn = O.AceGUI:Create("Button")
       btn:SetText(spec.text or "")
       btn:SetRelativeWidth(L.BUTTON_PAIR_REL)

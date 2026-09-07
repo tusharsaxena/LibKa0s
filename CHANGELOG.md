@@ -59,6 +59,30 @@ per-instance answer: hide the child and re-anchor the region at the addon's own 
 leave the registry alone. What this replaces is reaching the same end by editing the table every
 other addon in the client reads.
 
+**Also in minor 15: `lib.STRINGS.DEAD_BUTTON`, and a reset button that admits it does nothing.**
+The string is `Options.lua`'s, so it rides minor 15; the report site is `InlineButtonPair` in
+`OptionsWidgets.lua`, whose own counter stays at 14 because v1.26.0 released it there and the
+shell it is paired against moved instead. That pairing — `__widgetsShellMinor` against
+`lib.MINOR` — is what makes the unbumped file safe: a v1.26.0 copy loading beside this one
+re-attaches or defers on the shell's number, so the winning shell always carries the widgets
+file it shipped with, in either load order. It is the case `OptionsScroll.lua`'s comment
+describes, reached for real rather than in theory.
+
+`OptionsCompose` builds the master group's *Reset all settings* and *Reset position* whether or not
+the host spec supplied `onResetAll`/`onResetPosition` — deliberately, because the pair is the
+canonical shape `options-ui-§15` fixes and a composer that quietly dropped one would make the gap
+read as a layout decision. What was missing is anyone saying so: `makeBtn`'s `OnClick` simply
+returned early, so the player got a live-looking button that absorbed the click in silence and the
+author never heard about the handler they forgot. `InlineButtonPair` now reports once at BUILD time
+for a spec with no `onClick` and draws the button anyway — the shape `EMPTY_DROPDOWN` already sets,
+and not an error, because taking the page down over a convenience would be the worse trade. Said at
+build rather than on the press it lands once, in the log of whoever opened the panel, instead of
+once per click in the log of whoever pressed it.
+
+**Consumers should expect a line on the first re-vendor.** Because the composer builds both resets
+unconditionally, any host not passing `onResetAll` starts printing this the moment it takes the new
+copy. That is the point, and the answer is to supply the handler rather than to silence the line.
+
 ## v1.26.0 — 2026-09-07
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

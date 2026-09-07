@@ -399,6 +399,12 @@ function lib.__AttachCompose(O)
     -- The two resets are the tab's closing BUTTON PAIR (options-ui-§8), not schema rows: they are
     -- acts rather than settings. A frameless addon draws "Reset all settings" alone, which is the
     -- one shape InlineButtonPair's nil right-hand spec exists for.
+    --
+    -- BOTH ARE BUILT UNCONDITIONALLY, handler or no handler. That is deliberate -- the pair is
+    -- the canonical shape §15 fixes, and a composer that silently dropped a reset because the
+    -- host forgot to pass its callback would make the gap look like a layout decision. The
+    -- gap is named instead: InlineButtonPair reports lib.STRINGS.DEAD_BUTTON at build time
+    -- for a spec with no onClick, and draws the button anyway.
     local resetAll = {
       text    = "Reset all settings",
       tooltip = "Restore every setting in this addon to its default.",

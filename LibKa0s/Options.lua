@@ -210,6 +210,14 @@ lib.STRINGS = {
   -- shipping as a control that does nothing.
   EMPTY_DROPDOWN = "settings row '%s' is a string with no values and no dialogControl; it renders "
                    .. "as an empty dropdown",
+  -- The button half of the same bargain. OptionsCompose builds the master group's two resets
+  -- unconditionally, so a host spec that never supplied `onResetAll` or `onResetPosition` ships
+  -- a button that looks live, absorbs the click and does nothing. REPORTED at build time and
+  -- drawn anyway, for the reason EMPTY_DROPDOWN is: the missing handler is the author's bug and
+  -- naming it is how it gets fixed, whereas quietly dropping the button leaves a lopsided pair
+  -- that reads as a deliberate layout. Never an error -- options-ui-§12's reset is a
+  -- convenience, and taking the whole page down over it would be the worse trade.
+  DEAD_BUTTON    = "settings button '%s' has no onClick handler; it renders but does nothing",
   -- The only option a media dropdown can offer when the media library is absent or has nothing
   -- registered yet. A literal rather than a locale key: it is also the STORED value, so a
   -- translated one would be written into the host's SavedVariables.
