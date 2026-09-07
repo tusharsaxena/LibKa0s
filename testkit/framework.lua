@@ -413,6 +413,72 @@ local function suiteFilesOn(dir)
   return names, #listing
 end
 
+-- The suites list, folded into the four lookups the gate reads: declaration order, the index each
+-- name was declared at, the names that are deliberately absent, and the ones that live outside the
+-- runner's own directory.
+local function suiteDeclarations(suites)
+  local declared, order, pending, dirs = {}, {}, {}, {}
+  for i, entry in ipairs(suites or {}) do
+    local name, why, entryDir = suiteEntry(entry)
+    name = tostring(name)
+    declared[name] = i
+    order[#order + 1] = name
+    -- A `pending` entry is declared-and-deliberately-absent. Demanding it be on disk would make the
+    -- write-in-progress affordance unreachable, which is the whole point of keeping it. The other
+    -- direction still binds: if the file DOES appear, `loadSuites` raises rather than skipping it.
+    if why then pending[name] = true end
+    if entryDir then dirs[name] = entryDir end
+  end
+  return declared, order, pending, dirs
+end
+
+-- A directory that cannot be listed is not an empty directory. Both callers below would otherwise
+-- read "no suite files here" as "nothing has drifted" and report a gate that never ran as green.
+local function suiteNamesOrFail(dir)
+  local names, listed = suiteFilesOn(dir)
+  if listed == 0 then
+    fail("suite inventory: could not list " .. dir .. " — no `ls -A` and no `dir /b`; this gate "
+      .. "cannot run, and must not be reported as passing", 3)
+  end
+  return names
+end
+
+-- Direction one: declared but not on disk.
+local function collectMissing(problems, dir, order, dirs, pending, present)
+  for i, name in ipairs(order) do
+    -- An entry carrying its own `dir` is not expected in the runner's suite directory and is asked
+    -- about where it actually lives.
+    local at = dirs[name]
+    local found
+    if at then found = fileExists(at .. name .. ".lua") else found = present[name] end
+    if not found and not pending[name] then
+      problems[#problems + 1] = ("%s%s.lua is declared in the suites list (position %d) but is not "
+        .. "on disk — delete the entry or write the file"):format(at or dir, name, i)
+    end
+  end
+end
+
+-- Direction two: on disk but not declared. `describe` differs between the runner's own directory
+-- and the vendored kit because the fix differs — one is an entry, the other is an entry naming a
+-- directory the runner does not own.
+local function collectUndeclared(problems, dir, onDisk, declared, describe)
+  for _, name in ipairs(onDisk) do
+    if not declared[name] then
+      problems[#problems + 1] = describe(dir, name)
+    end
+  end
+end
+
+local function undeclaredHere(dir, name)
+  return ("%s%s.lua exists but is not declared in the suites list — add %q to the runner; it is "
+    .. "running zero cases today"):format(dir, name, name)
+end
+
+local function undeclaredInKit(dir, name)
+  return ("%s%s.lua arrived with the vendored kit but is not declared in the suites list — add "
+    .. "{ name = %q, dir = %q } to the runner; it is running zero cases today"):format(dir, name, name, dir)
+end
+
 --- Both directions of the suite list, asserted.
 ---
 --- `testing-§9` names the suite list as a list that MUST be pinned, and both of its silent failure
@@ -433,59 +499,19 @@ end
 --- vendors somewhere else is simply not asked about it.
 function Kit.assertSuiteInventory(dir, suites)
   dir = dir or "tests/"
-  local declared, order, pending, dirs = {}, {}, {}, {}
-  for i, entry in ipairs(suites or {}) do
-    local name, why, entryDir = suiteEntry(entry)
-    declared[tostring(name)] = i
-    order[#order + 1] = tostring(name)
-    -- A `pending` entry is declared-and-deliberately-absent. Demanding it be on disk would make the
-    -- write-in-progress affordance unreachable, which is the whole point of keeping it. The other
-    -- direction still binds: if the file DOES appear, `loadSuites` raises rather than skipping it.
-    if why then pending[tostring(name)] = true end
-    if entryDir then dirs[tostring(name)] = entryDir end
-  end
+  local declared, order, pending, dirs = suiteDeclarations(suites)
 
-  local onDisk, listed = suiteFilesOn(dir)
-  if listed == 0 then
-    fail("suite inventory: could not list " .. dir .. " — no `ls -A` and no `dir /b`; this gate "
-      .. "cannot run, and must not be reported as passing", 2)
-  end
+  local onDisk = suiteNamesOrFail(dir)
   local present = {}
   for _, name in ipairs(onDisk) do present[name] = true end
 
   local problems = {}
-  for i, name in ipairs(order) do
-    -- An entry carrying its own `dir` is not expected in the runner's suite directory and is asked
-    -- about where it actually lives.
-    local at = dirs[name]
-    local found
-    if at then found = fileExists(at .. name .. ".lua") else found = present[name] end
-    if not found and not pending[name] then
-      problems[#problems + 1] = ("%s%s.lua is declared in the suites list (position %d) but is not "
-        .. "on disk — delete the entry or write the file"):format(at or dir, name, i)
-    end
-  end
-  for _, name in ipairs(onDisk) do
-    if not declared[name] then
-      problems[#problems + 1] = ("%s%s.lua exists but is not declared in the suites list — add %q "
-        .. "to the runner; it is running zero cases today"):format(dir, name, name)
-    end
-  end
+  collectMissing(problems, dir, order, dirs, pending, present)
+  collectUndeclared(problems, dir, onDisk, declared, undeclaredHere)
 
   local kitDir = dir .. "_kit/"
   if fileExists(kitDir .. "framework.lua") then
-    local kitOnDisk, kitListed = suiteFilesOn(kitDir)
-    if kitListed == 0 then
-      fail("suite inventory: could not list " .. kitDir .. " — no `ls -A` and no `dir /b`; this "
-        .. "gate cannot run, and must not be reported as passing", 2)
-    end
-    for _, name in ipairs(kitOnDisk) do
-      if not declared[name] then
-        problems[#problems + 1] = ("%s%s.lua arrived with the vendored kit but is not declared in "
-          .. "the suites list — add { name = %q, dir = %q } to the runner; it is running zero "
-          .. "cases today"):format(kitDir, name, name, kitDir)
-      end
-    end
+    collectUndeclared(problems, kitDir, suiteNamesOrFail(kitDir), declared, undeclaredInKit)
   end
 
   if #problems > 0 then

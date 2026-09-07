@@ -10,15 +10,22 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.27.0 — unreleased
+## v1.27.0 — 2026-09-07
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
 **Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
 **OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 8**,
 **PerfPanel minor 4**, **kit revision 15**.
 
-The heading carries no date because the tag has not been cut. The release that cuts it dates this
-block and freezes its bundle; until then, this is what is staged for v1.27.0.
+Three files moved and the kit moved with them. `Options.lua` 15 takes over the `LSM30_Border`
+fixup five addons each keep a private copy of, and adds the string a handler-less button reports
+itself with. `Perf.lua` 8 stops rebuilding a bracket table it can reuse and asks
+`C_SpecializationInfo` before the two bare globals it kept as a fallback. Kit revision 15 is the
+larger half: the runner finally writes the record `automated-tests-§4` has always MUSTed of it,
+the line-ending gate reads the whole tracked set instead of one directory, the shared mock can be
+asked how tall something is, and a degradation stub can be checked against the surface it stands
+in for. Adoption is the re-vendor plus the two surfaces a consumer chooses to call; nothing here
+removes or renames a member, so a host that ignores all of it behaves as it did at v1.26.0.
 
 ### `Options.lua` minor 15 — the `LSM30_Border` fixup becomes the library's, once per session
 
@@ -231,6 +238,8 @@ name belongs to the consumer. `Kit.assertSuiteInventory` now scans `tests/_kit/`
 add rather than a green run over a gate that never executed. One shell-out answers `text` and `eol`
 for the whole repository, because asking per path cost about nine seconds a run in ten repositories,
 which is the price at which somebody adds a flag to switch a gate off.
+
+Widening that gate to two directories pushed `Kit.assertSuiteInventory` to CCN 20, which the release gate refuses at 15, so it is split here into the four pieces it had grown into: the suites list folded into its lookups, a listing that fails rather than reading an unlistable directory as an empty one, and one collector per direction. Behaviour is unchanged and all three failure messages are word for word what they were — which is how the split was checked, by planting each of the three violations in turn and reading the message back.
 
 **Consumers should expect the record to move on the first run after re-vendoring**, and the count to
 move by one: a middle figure in the Tests column, the replaced lead-in, and a watch list with every
