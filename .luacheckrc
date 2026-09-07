@@ -1,7 +1,7 @@
 std = "lua51"
 max_line_length = false
 codes = true
-exclude_files = { "tests/", "docs/" }
+exclude_files = { "tests/_kit/" }
 read_globals = {
   "LibStub", "CreateFrame", "UIParent", "UISpecialFrames", "DEFAULT_CHAT_FRAME",
   "time", "date", "debugprofilestop", "UnitAffectingCombat", "InCombatLockdown",
@@ -41,3 +41,16 @@ globals = { "_G" }
 -- which is what every one of those bodies means — and the outer one is exactly what the paragraph
 -- above says never to read.
 ignore = { "212/self", "212/event", "432/self" }
+
+-- The test tree is linted. Only `tests/_kit/` is excluded, because it is a byte copy of
+-- `testkit/`, which is linted here as source: linting both would report every finding twice, and
+-- would let the copy drift green while the original went red.
+--
+-- The kit publishes its exposed table under a per-repo global -- `LK_TEST` here, written at
+-- tests/run.lua:95 and read by every suite file. It is declared in this stanza rather than in the
+-- top-level `read_globals` on purpose: a name declared at the top level is a name `LibKa0s/*.lua`
+-- may then read unchallenged, and no shipped library file may ever reach for the harness.
+-- `globals` rather than `read_globals` because tests/run.lua is the writer.
+files["tests/"] = {
+  globals = { "LK_TEST" },
+}

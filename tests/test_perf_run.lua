@@ -103,7 +103,7 @@ end)
 
 test("lib: nothing is logged when no run is happening", function()
   -- Ungated does not mean chatty: the lines only exist inside a run.
-  local p, rec = Fixture.new()
+  local _, rec = Fixture.new()
   assertEqual(#rec.log, 0, "an idle instance writes nothing")
 end)
 

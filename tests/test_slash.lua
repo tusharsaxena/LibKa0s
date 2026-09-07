@@ -118,7 +118,7 @@ test("sl: FormatKV is a gold key, ' = ', a white value, and no trailing colon", 
 end)
 
 test("sl: FormatValue renders every schema type the library knows", function()
-  local Sl, rec = F.new()
+  local _, rec = F.new()
   local row = function(path) return rec.byPath[path] end
   assertEqual(slash.FormatValue(row("showOnlyInCombat"), false), "false")
   assertEqual(slash.FormatValue(row("showOnlyInCombat"), true), "true")

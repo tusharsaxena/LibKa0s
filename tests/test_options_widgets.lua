@@ -783,7 +783,7 @@ end)
 test("widgets: InlineButtonPair lays two inset buttons into one Flow row and pcalls the click",
   function()
   local O, rec, ctx = bench()
-  local left, right, blew = 0, 0, false
+  local left, right = 0, 0
   O.InlineButtonPair(ctx,
     { text = "Reset Position", tooltip = "Move it back", onClick = function() left = left + 1 end },
     { text = "Reset All",      onClick = function() right = right + 1; error("boom") end })
@@ -797,7 +797,7 @@ test("widgets: InlineButtonPair lays two inset buttons into one Flow row and pca
 
   row.children[1]:__fire("OnClick")
   assertEqual(left, 1)
-  blew = not pcall(function() row.children[2]:__fire("OnClick") end)
+  local blew = not pcall(function() row.children[2]:__fire("OnClick") end)
   assertFalse(blew, "a throwing onClick is reported, not propagated into AceGUI's dispatch")
   assertEqual(right, 1)
   assertTrue(table.concat(rec.chat, "\n"):find("boom", 1, true) ~= nil,

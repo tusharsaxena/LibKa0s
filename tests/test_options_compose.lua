@@ -122,8 +122,8 @@ test("compose: FontGroup's font row answers a populated list, not a second closu
   -- red under: wrapping O.LSMValues in an outer `function() ... end`, which hands enumList a
   -- function where it has already unwrapped and gets `{}` -- a dropdown with no options, silently,
   -- because the empty-list report at OptionsWidgets.lua:1442 is gated on `values == nil`.
-  local O, rec = Fixture.new()
-  local row = rowAt(O.FontGroup(spec()), "font")
+  local opts, rec = Fixture.new()
+  local row = rowAt(opts.FontGroup(spec()), "font")
   assertEqual(type(row.values), "function", "the row must stay a deferred reader")
 
   rec.lsm = { HashTable = function(_, kind)
@@ -140,8 +140,8 @@ test("compose: BorderGroup's border-style row answers a populated list", functio
   -- Its own case rather than a loop over the three, because a loop that broke on the first group
   -- would leave the other two unproven and the failure would name neither.
   -- red under: the same double wrap, in the border composer alone.
-  local O, rec = Fixture.new()
-  local row = rowAt(O.BorderGroup(spec()), "borderStyle")
+  local opts, rec = Fixture.new()
+  local row = rowAt(opts.BorderGroup(spec()), "borderStyle")
   assertEqual(type(row.values), "function", "the row must stay a deferred reader")
 
   rec.lsm = { HashTable = function(_, kind)
@@ -157,8 +157,8 @@ end)
 test("compose: BarGroup's bar-texture row answers a populated list", function()
   -- red under: the same double wrap, in the bar composer alone. This is the row KickCD's
   -- settings/Castbar.lua reaches through the composer eight times over.
-  local O, rec = Fixture.new()
-  local row = rowAt(O.BarGroup(spec()), "barTexture")
+  local opts, rec = Fixture.new()
+  local row = rowAt(opts.BarGroup(spec()), "barTexture")
   assertEqual(type(row.values), "function", "the row must stay a deferred reader")
 
   rec.lsm = { HashTable = function(_, kind)
@@ -182,9 +182,9 @@ function()
   -- This case is the only thing that makes the breach visible: with the outer wrapper in place a
   -- table-returner works by accident, late-evaluated, and nothing anywhere says the host is wrong.
   -- red under: restoring the outer closure, which demotes this assertion back to "a function".
-  local O = Fixture.new()
-  O.LSMValues = function(_) return { Blizzard = "Blizzard" } end
-  local row = rowAt(O.BarGroup(spec()), "barTexture")
+  local opts = Fixture.new()
+  opts.LSMValues = function(_) return { Blizzard = "Blizzard" } end
+  local row = rowAt(opts.BarGroup(spec()), "barTexture")
 
   assertEqual(type(row.values), "table",
     "a table-returning host LSMValues must land as the frozen literal it is, where a case can see it")
