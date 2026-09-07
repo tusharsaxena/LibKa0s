@@ -333,7 +333,7 @@ a real bug.
 **the frame itself**, not a distinct object. WhatGroup's and KickCD's own mocks make them distinct
 and treat that as a correctness requirement — and they are right.
 
-It is kept because changing it is not a harness change. AbsorbTracker's `tests/perf.lua` memoises
+It is kept because changing it is not a harness change. AbsorbTracker's `tests/perf.lua` memoizes
 frame proxies specifically *because* `bar.valueText` and `bar.statusBar` are the same table, so
 distinct objects move its `api/iter` figure — which is the parity gate for library extractions — and
 `tests/test_display.lua` counts `Show`/`Hide` calls that currently land on one shared object.

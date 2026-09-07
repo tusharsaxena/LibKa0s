@@ -231,7 +231,7 @@ end
 
 --- Claim a host hook for `key`, or nil if there is none or it has already run this render.
 ---
---- The lookup and the marking are ONE step on purpose. RenderRows honours two hook tables — pairWith
+--- The lookup and the marking are ONE step on purpose. RenderRows honors two hook tables — pairWith
 --- and afterGroup — and both are "fire at most once per render, and only if it actually fired";
 --- splitting the two halves is how a caller ends up marking a hook it never ran, or running one it
 --- already marked. `fired` is the LIBRARY's call-local ledger, never the host's table: see the note
@@ -623,10 +623,10 @@ local function dressTabArt(b, active)
   if b.SetHitRectInsets then b:SetHitRectInsets(0, 0, L.TAB_H - tabArtHeight(), 0) end
 end
 
---- The tab's label, anchored to the tab's BOTTOM rather than its centre, in the UNSELECTED font.
+--- The tab's label, anchored to the tab's BOTTOM rather than its center, in the UNSELECTED font.
 ---
 --- A tab is taller than its text by design -- the extra height is the foot that overlaps the
---- content panel -- so a centred label would float in the middle of the overlap instead of
+--- content panel -- so a centered label would float in the middle of the overlap instead of
 --- sitting on the tab's face.
 ---
 --- IT DOES NOT APPLY THE SELECTED FONT, and that is the whole reason it and setTabFont are two
@@ -1279,7 +1279,7 @@ function lib.__AttachWidgets(O, d)
   --- disappears the moment the player clicks a different one -- creating the thing the page edits,
   --- choosing which one is being edited, and the acts that apply to it whole (enable, unlock, copy,
   --- reset, delete) are all page-wide. O.PageBanner draws exactly one Dropdown and is documented as
-  --- the page's ONLY picker, so what is generalised here is the BAND, not the banner.
+  --- the page's ONLY picker, so what is generalized here is the BAND, not the banner.
   ---
   --- `spec` = { height = <number>, build = function(ctx, frame) end, divider = <boolean, default
   --- true> }. Returns the frame, or nil having drawn nothing.

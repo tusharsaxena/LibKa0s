@@ -226,6 +226,38 @@ path it names — because being red there is the whole reason it was widened. Ru
 blanks is a one-time cost. Any hand-written prose below the table is replaced, so a disposition worth
 keeping is copied into the generated cell in the same commit or it is gone.
 
+### US English across the shipped payload, and a prose gate that uses the published list
+
+**Twenty-seven authored spellings in `LibKa0s/` and `testkit/` were British, and five of them were
+text a player reads.** `Perf.lua` wrote `run CANCELLED` to the log and `perf run |cffcc5252CANCELLED|r`
+to chat, and reported a capture with no label as `unlabelled` in three places — the report header,
+the started line and the announcement. They are `CANCELED` and `unlabeled` now. The other
+twenty-two are comments in `DebugLog.lua`, `Options.lua`, `OptionsCompose.lua`, `OptionsWidgets.lua`,
+`Perf.lua`, `Slash.lua` and `Widgets.lua`, and prose in the kit's `README.md`, `mock_base.lua` and
+`run-automated-tests.sh`. Nothing else moves: no behavior, no signature, no minor.
+
+**The gate that was supposed to catch all of that had six substrings of its own choosing** —
+`colour`, `grey`, `behaviour`, `synthesise`, `normalis`, `recognis` — two of which are not in
+`localization-§5`'s own table at all. Run over the three spellings live in the payload it matched
+zero, which is how `CANCELLED` shipped in chat text for months under a green suite. That is
+`testing-§12`'s failure mode, a check that reads as coverage and provides none, sitting inside the
+gate for `localization-§5`. The section now publishes the canonical pair — 91 `BRITISH` substrings
+and 30 `ALLOWED` words — and requires a gate to carry both whole, so `tests/test_prose.lua` copies
+them rather than inventing a seventh opinion. `ALLOWED` exists because the substrings are small on
+purpose: *analysis* contains `analys` and *programmer* contains `programme`, so the correct US words
+are stripped **as whole words** before the substring scan runs.
+
+**One exemption, and it is ratified rather than hidden.** `lib.ICONS`'s `minimise` key stays. It is
+not prose — `lib.Icon` builds the texture path from the key and the file on disk is `minimise.tga`,
+vendored into every consumer's `libs/LibKa0s/media/icons/`, so a renamed key alone points at a
+texture that does not exist and that failure is silent by construction. The exemption is named by
+path and by the exact spelling it covers, never by a pattern, it carries a row in `CLAUDE.md`'s
+`## Documented deviations`, and the gate reddens if it ever stops matching — an exemption nobody can
+see expire is how this gate got here in the first place.
+
+**Consumers get this on the re-vendor and have nothing to adopt.** The only visible difference is the
+wording of the two `perf` lines and the three unlabeled captures.
+
 ## v1.26.0 — 2026-09-07
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

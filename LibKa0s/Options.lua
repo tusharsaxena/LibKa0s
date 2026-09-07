@@ -115,7 +115,7 @@ lib.LAYOUT = {
   --
   -- Taller than the art it carries, on purpose. The bottom of a tab is a FOOT that overlaps the
   -- content panel's top edge, which is what makes the selected tab merge into the page instead of
-  -- floating above it; the label is therefore anchored to the tab's bottom rather than centred.
+  -- floating above it; the label is therefore anchored to the tab's bottom rather than centered.
   -- OPie's number, from the reference implementation named in OptionsWidgets.lua's art section.
   TAB_H         = 37,
   -- Floor and fallback for the page banner's height. PUBLISHED as O.BANNER_H, same reason as

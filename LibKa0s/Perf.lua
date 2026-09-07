@@ -108,7 +108,7 @@ end
 --
 -- Every user-visible string routes through here so a host can override any of them via the
 -- optional `L` table, keyed identically. Hosts on the Ka0s standard pass their NS.L; hosts that
--- are not localised pass nothing and get these.
+-- are not localized pass nothing and get these.
 
 lib.STRINGS = {
   PANEL_TITLE_SUFFIX = " \226\128\148 Perf Run",
@@ -720,7 +720,7 @@ function lib:New(descriptor)
     end
 
     local f = record.fps
-    add("capture: %s  (%s, schema %d, v%s)", record.label ~= "" and record.label or "unlabelled",
+    add("capture: %s  (%s, schema %d, v%s)", record.label ~= "" and record.label or "unlabeled",
         record.addon, record.schema, record.version)
     for _, line in ipairs(P.ContextLines(record.context)) do add(line) end
 
@@ -861,7 +861,7 @@ function lib:New(descriptor)
     -- (that gate exists to keep the host quiet while idle). A perf run is explicit user action, so
     -- a user who started a run should not have to have debug logging enabled first to see it working.
     P.context = P.Context()
-    P.Log("run started \226\128\148 %s", P.label or "unlabelled")
+    P.Log("run started \226\128\148 %s", P.label or "unlabeled")
     for _, line in ipairs(P.ContextLines(P.context)) do P.Log(line) end
     local s = ensureSampler()
     if s then
@@ -945,7 +945,7 @@ function lib:New(descriptor)
     -- cancel prints empty buckets wearing the discarded run's character, realm and zone — a record
     -- that looks like a capture of somewhere nobody measured.
     P.context = nil
-    P.Log("run CANCELLED \226\128\148 measurements discarded, nothing saved")
+    P.Log("run CANCELED \226\128\148 measurements discarded, nothing saved")
     publishState()
     return true
   end
@@ -1026,7 +1026,7 @@ function lib:New(descriptor)
     local stamp = date and date("%Y-%m-%d %H:%M") or "capture"
     local label = (rest or ""):match("^%s*(.-)%s*$")
     P.Start(label ~= "" and (stamp .. " " .. label) or stamp)
-    P.Announce("perf run |cff40ff40STARTED|r \226\128\148 %s", P.label or "unlabelled")
+    P.Announce("perf run |cff40ff40STARTED|r \226\128\148 %s", P.label or "unlabeled")
     for _, line in ipairs(P.ContextLines(P.context)) do out[#out + 1] = line end
     showLog()
     -- The clickable equivalent of the steps just printed. Chat scrolls away the moment combat
@@ -1060,7 +1060,7 @@ function lib:New(descriptor)
       out[#out + 1] = "no perf run to cancel"
       return
     end
-    out[#out + 1] = "perf run |cffcc5252CANCELLED|r \226\128\148 nothing saved"
+    out[#out + 1] = "perf run |cffcc5252CANCELED|r \226\128\148 nothing saved"
   end
 
   function SUBS.finish(out)
@@ -1150,7 +1150,7 @@ function lib:New(descriptor)
   -- The click path PRINTS what OnCommand returns. A typed command reaches the user through the
   -- host's slash layer, which prints those lines; the panel has no slash layer behind it, so
   -- discarding them made a click quietly produce less output than typing the same thing — the
-  -- "ARMED" acknowledgement above all, which is the line telling the user the window is live.
+  -- "ARMED" acknowledgment above all, which is the line telling the user the window is live.
   if lib.__AttachPanel then
     lib.__AttachPanel(P, d, tr, function(cmd)
       local lines = P.OnCommand(cmd)

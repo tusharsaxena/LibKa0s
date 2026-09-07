@@ -452,7 +452,7 @@ if [ "$WRITE_BUNDLE" -eq 1 ]; then
     # WHAT THIS FILE IS AND WHO WRITES IT. `automated-tests-§4` MUSTs a complexity watch list and a
     # standing section for each of the four suites; `documentation-§3` calls this file generated and
     # never hand-edited. Until kit 15 the runner wrote one table row and a fixed lead-in and nothing
-    # else, so the two rules could not both be honoured by anyone: the mandated narrative had no
+    # else, so the two rules could not both be honored by anyone: the mandated narrative had no
     # producer, and ten of ten repositories wrote it by hand and watched it go stale on the next run.
     # MultiMeters' watch list read "None — lizard reports 0 warnings" directly above a table row
     # recording 19; LibKa0s' own test-suite section read "499 cases" against a suite running 764.
@@ -742,7 +742,7 @@ TOTALS
     #
     # The declared terminator is READ FROM GIT, per path, never assumed: `git check-attr` is the
     # only thing that knows what this repo pins, it answers correctly for a path that is untracked
-    # or does not exist yet, and it honours carve-outs like `*.sh text eol=lf`. An `unspecified`
+    # or does not exist yet, and it honors carve-outs like `*.sh text eol=lf`. An `unspecified`
     # answer means the repo has declared nothing, and this then does nothing at all.
     #
     # It asks for `text` AS WELL AS `eol`, and NEVER `eol` alone (line-endings-§7). The `binary`
@@ -750,8 +750,8 @@ TOTALS
     # repo pinned `* text=auto eol=crlf` still answers `eol: crlf`, inherited from the pin, for a
     # file git itself will never convert. `text: unset` IS the binary case, and it is the primary
     # test here: skip first, before any byte is read. The NUL heuristic below stays as a second
-    # line of defence, but it cannot be the first — a binary format that happens to be NUL-free
-    # (ncnn `.param`, an ASCII-armoured key, a truncated asset) walks straight through it and gets
+    # line of defense, but it cannot be the first — a binary format that happens to be NUL-free
+    # (ncnn `.param`, an ASCII-armored key, a truncated asset) walks straight through it and gets
     # rewritten. This is the same correction §7 made to the audit's working-tree check and
     # `wow-addon/scripts/normalize-eol.sh` made to the Write/Edit hook; the three now agree.
     #

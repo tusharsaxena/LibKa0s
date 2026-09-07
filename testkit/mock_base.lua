@@ -8,7 +8,7 @@
 -- WHAT BELONGS HERE: an API every addon in the collection touches, or would if it grew a window.
 -- WHAT DOES NOT: anything only one addon calls. A mock that stubs every addon's APIs for everyone
 -- is one more thing every future test has to reason about, and it hides a missing stub behind a
--- neighbour's.
+-- neighbor's.
 --
 -- ── Fidelity rules, which are the whole reason this is one file rather than eight ──────────────
 --
@@ -36,7 +36,7 @@
 -- records `__label`/`__state` on the button instead of asking the FontString).
 --
 -- It is kept for now because changing it is not a harness change: AbsorbTracker's tests/perf.lua
--- memoises frame proxies specifically BECAUSE `bar.valueText` and `bar.statusBar` are the same
+-- memoizes frame proxies specifically BECAUSE `bar.valueText` and `bar.statusBar` are the same
 -- table, so distinct objects move the api/iter parity figure, and tests/test_display.lua counts
 -- Show/Hide calls that currently land on one shared object. Fixing it is a deliberate change with
 -- its own test updates and a fresh parity baseline — not something to smuggle into an extraction.
@@ -230,7 +230,7 @@ return function()
   -- Capture-context lookups (LibKa0s-Perf-1.0). Settable so a test can assert the recorded context
   -- is the character's rather than a hard-coded string.
 --
-  -- Class lives here too, and `UnitClass` reads it rather than returning a literal: the localised
+  -- Class lives here too, and `UnitClass` reads it rather than returning a literal: the localized
   -- NAME and the uppercase TOKEN are different strings, and a stub that returned the token for both
   -- let a context field silently render as "?" in every test that claimed to cover it. Repos whose
   -- suites assert on a particular class override these two fields in their own extender.

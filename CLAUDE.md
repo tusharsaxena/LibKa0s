@@ -65,9 +65,11 @@ is re-vendored. Never patch a vendored copy downstream; fix it here and copy acr
 
 | Rule | What differs | Why | Decided | Re-check trigger |
 |---|---|---|---|---|
+| `localization-§5` | `lib.ICONS` keeps `minimise`, the one British spelling left in the shipped payload | The key is not prose. `lib.Icon` (`LibKa0s/Media.lua:202`) builds the texture path **from** the key — `base .. ICON_DIR .. "\\" .. name` — and the file on disk is `minimise.tga`, vendored into every consumer's `libs/LibKa0s/media/icons/`. Renaming the key alone points at a texture that does not exist, and `Media.lua:190-196` records what that costs: a texture that fails to load draws nothing and raises nothing, so the icon simply disappears from every consumer's title bar with no error anywhere. Renaming it safely needs a second `.tga` or an alias map, which is a change to `Media.lua`'s surface, not a spelling fix. | 2026-09-07, executing `M1-LK-11` | A `minimize.tga` shipped beside the current file, or an alias map in `lib.Icon` — either ends this row, and the key moves in the same change as the eight consumers' re-vendor. `tests/test_prose.lua` reddens on its own if the exemption ever stops matching, so a dead row cannot sit here unnoticed. |
 
-**None ratified today.** The table is here empty on purpose: the alternative is a register that gets
-created in the same breath as the first deviation, by whoever is already arguing for it.
+**One row, and it is a path fragment rather than prose.** The table is otherwise empty on purpose:
+the alternative is a register that gets created in the same breath as the first deviation, by whoever
+is already arguing for it.
 
 `library-stack-§7`'s "does not apply" list is **not** a deviation register — those sections do not
 bind this repo at all, so there is nothing to ratify. A row belongs here only when a section that

@@ -4,7 +4,7 @@
 -- four bar rows and the same eight master controls, and each copy would have been defensible on its
 -- own. The SET of them is the drift this library was extracted to end: color before flags here, no
 -- shadow there, "Font Outline" in one addon and "Font flags" in the next, thickness in px on one
--- page and unlabelled on another. options-ui-§15, §16 and §17 say what the blocks are; this file is
+-- page and unlabeled on another. options-ui-§15, §16 and §17 say what the blocks are; this file is
 -- what makes nine copies of them identical without nine people agreeing to be careful.
 --
 -- ── EVERY COMPOSER IS A PURE FUNCTION RETURNING AN ARRAY OF ORDINARY SCHEMA ROWS ───────────────
