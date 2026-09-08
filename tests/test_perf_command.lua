@@ -116,6 +116,50 @@ test("cmd: usage never hard-codes a slash prefix", function()
   assertTrue(joined(p.Usage()):find("/th", 1, true) == nil, "and only the host's")
 end)
 
+test("cmd: usage never leaves a bare pipe where the client reads an escape", function()
+  -- Reported from the game, three addons at once:
+  --
+  --   usage: /at perf <start|measure|finish|canceleport|dump|showideoggle>
+  --
+  -- `cancel|report` and `show|hide|toggle` are pipe-separated alternatives, and the client reads
+  -- `|r` as a color RESET, `|h` as a hyperlink and `|t` as the end of a texture. It ate all three
+  -- and the words fused. The eaten `|r` also swallowed the reset that ends the gold run, which is
+  -- why the whole line stayed yellow in the report.
+  --
+  -- `||` is the escape for a literal pipe. Checked over EVERY line rather than the one that broke:
+  -- the failure needs a pipe and one particular next letter, so any future line is one word away
+  -- from it and nothing else in the harness would notice.
+  -- red under: any bare `|` followed by an escape letter.
+  local p = Fixture.new()
+  for _, line in ipairs(p.Usage()) do
+    -- Strip the legitimate escapes first: a color open, a reset, and a doubled literal pipe.
+    local rest = line:gsub("||", ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+    local stray = rest:match("|(.)")
+    assertTrue(stray == nil,
+      ("a bare pipe before %q survives into chat and the client eats it: %s")
+        :format(tostring(stray), line))
+  end
+end)
+
+test("cmd: usage rows use the library's own row formatter", function()
+  -- The perf block hand-aligned its second column with leading spaces and wrapped each description
+  -- onto a continuation line. Chat is a PROPORTIONAL font and wraps on its own, so the columns did
+  -- not line up and the continuations read as orphaned fragments -- reported beside a screenshot of
+  -- the slash-command help, which looks right because it goes through lib.FormatRow.
+  --
+  -- One formatter, not two conventions for the same thing.
+  -- red under: hand-built rows, or a continuation line that starts with spaces.
+  local p = Fixture.new()
+  local rows = p.Usage()
+  for i = 2, #rows do
+    local line = rows[i]
+    assertTrue(line:find("\226\128\148", 1, true) ~= nil,
+      ("row %d carries no em dash, so it is not a FormatRow: %s"):format(i, line))
+    assertTrue(line:match("^%s*|cFFFFFF00") ~= nil,
+      ("row %d does not open on a gold verb: %s"):format(i, line))
+  end
+end)
+
 test("cmd: clicking a ready panel row takes the same path as typing it", function()
   local p = Fixture.new()
   p.ShowPanel()

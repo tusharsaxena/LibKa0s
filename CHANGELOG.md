@@ -10,6 +10,46 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.28.0 — 2026-09-09
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
+**OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 9**,
+**PerfPanel minor 4**, **kit revision 15**.
+
+One file moved, and it is a rendering fix a player reported from three addons at once. `Perf.lua` 9
+stops printing a usage block the client mangles and hand-aligns. Adoption is the re-vendor and
+nothing else: no member is added, removed or renamed, and `P.Usage()` returns what it always did —
+a table of chat lines — with different strings in it.
+
+### `Perf.lua` minor 9 — the usage block stops being eaten, and stops pretending chat is monospaced
+
+**Two defects, one block.** `P.Usage()` printed this:
+
+```
+usage: /at perf <start|measure|finish|canceleport|dump|showideoggle>
+```
+
+The verbs are pipe-separated alternatives and the client reads `|r` as a color **reset**, `|h` as a
+hyperlink and `|t` as the end of a texture. It ate all three: `cancel|report` fused into
+`canceleport`, `show|hide|toggle` into `showideoggle`. The eaten `|r` was also the reset that closed
+the gold run, which is why the whole line stayed yellow — one bug wearing two symptoms. The pipes are
+doubled now, `||` being the escape for a literal one.
+
+**The rest of the block hand-aligned a second column with leading spaces** and pushed the tail of
+each description onto a continuation line. Chat is a proportional font and wraps on its own, so the
+columns never lined up and the continuations arrived as orphaned fragments under the wrong verb. Each
+verb is one row now, through **`lib.FormatRow`** on the Slash major — reached through LibStub rather
+than copied, because that major's own API document calls it *the one command-row formatter in the
+collection* and a second copy here would make the sentence false. Where Slash is absent the row
+degrades to an uncolored `verb — description` rather than to a second gold format: a duplicate that
+only appears when a library is missing is still a duplicate.
+
+**A gate went in with it**, over every line `P.Usage()` returns rather than the one that broke: a
+bare `|` followed by an escape letter is the finding. The failure needs a pipe and one particular
+next letter, so any line added later is one word away from it and nothing else in the harness would
+notice.
+
 ## v1.27.0 — 2026-09-07
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
