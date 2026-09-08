@@ -871,6 +871,10 @@ badge and any count quoted in the docs must agree with it.
 - layoutcap: no census row outlives the breach it records
 - layoutcap: every census row carries a disposition that can be followed
 
+### test_register.lua (1)
+
+- every deviation id the register cites is assigned by a bundle in docs/audits/
+
 ### test_eol.lua (1)
 
 - eol: every tracked file carries the terminator .gitattributes declares for it
@@ -903,5 +907,6 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_layout_cap.lua | 3 |
+| test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **794** |
+| **Total** | **795** |
