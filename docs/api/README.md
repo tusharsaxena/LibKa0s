@@ -17,6 +17,31 @@ its version stops being current.
 
 ```
 docs/api/<Major>/version-<version-key>-docs.md
+docs/api/<Major>/members-<version-key>.json
+```
+
+## The member manifest beside each document
+
+The document is prose: accurate, versioned, and not something a test can compare anything against.
+`members-<version-key>.json` is the same major's **public surface as data** — every member the
+version publishes, with its type — generated from the live module by `tools/gen-api-members.lua`,
+never hand-edited, and regenerated and compared on every run by
+`tests/test_versioning.lua`.
+
+It exists because nine addons in this collection hand-write a degradation stub of a LibKa0s surface,
+and until now the only way a stub author could answer "what am I obliged to carry?" was to read the
+library's source at whatever moment they read it. That is how AbsorbTracker's Options stub came to
+omit `SetRenderer` with every suite in that repository green. The kit's
+`Kit.assertSurfaceParity(stub, majorName)` enforces exactly this list, and
+`Kit.publicMembers` is the one rule both it and the generator apply: no `MAJOR`, no `MINOR`, no
+`MODULES`, no `__`-prefixed internals — a stub owes none of those.
+
+It is keyed by version for the same reason the document is. A single `members.json` describing only
+HEAD answers the wrong question for every consumer that has not re-vendored yet, which is the whole
+failure this directory's shape was built to prevent.
+
+```sh
+lua tools/gen-api-members.lua      # from the repo root; rewrites every manifest
 ```
 
 ## Reading the version key
@@ -135,7 +160,10 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [14.13.2.3](./Options/version-14.13.2.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 2 · `OptionsScroll.lua` 3 | v1.25.0 | **Current** |
+| [15.14.3.3](./Options/version-15.14.3.3-docs.md) | `Options.lua` 15 · `OptionsWidgets.lua` 14 · `OptionsCompose.lua` 3 · `OptionsScroll.lua` 3 | v1.27.0 | **Current** |
+| [14.14.3.3](./Options/version-14.14.3.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 14 · `OptionsCompose.lua` 3 · `OptionsScroll.lua` 3 | v1.26.0 | Superseded |
+| [14.13.3.3](./Options/version-14.13.3.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 3 · `OptionsScroll.lua` 3 | v1.26.0 | Superseded |
+| [14.13.2.3](./Options/version-14.13.2.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 2 · `OptionsScroll.lua` 3 | v1.25.0 | Superseded |
 | [14.13.1.3](./Options/version-14.13.1.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 1 · `OptionsScroll.lua` 3 | v1.24.0 | Superseded |
 | [13.12.3](./Options/version-13.12.3-docs.md) | `Options.lua` 13 · `OptionsWidgets.lua` 12 · `OptionsScroll.lua` 3 | v1.23.0 | Superseded |
 | [12.11.3](./Options/version-12.11.3-docs.md) | `Options.lua` 12 · `OptionsWidgets.lua` 11 · `OptionsScroll.lua` 3 | v1.22.0 | Superseded |
@@ -155,7 +183,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7.4](./Perf/version-7.4-docs.md) | `Perf.lua` 7 · `PerfPanel.lua` 4 | v1.10.2 | **Current** |
+| [8.4](./Perf/version-8.4-docs.md) | `Perf.lua` 8 · `PerfPanel.lua` 4 | v1.27.0 | **Current** |
+| [7.4](./Perf/version-7.4-docs.md) | `Perf.lua` 7 · `PerfPanel.lua` 4 | v1.10.2 — v1.26.0 | Superseded |
 | [7.3](./Perf/version-7.3-docs.md) | `Perf.lua` 7 · `PerfPanel.lua` 3 | v1.8.0 – v1.10.1 | Superseded |
 | [6.3](./Perf/version-6.3-docs.md) | `Perf.lua` 6 · `PerfPanel.lua` 3 | v1.7.0 | Superseded |
 | [5.3](./Perf/version-5.3-docs.md) | `Perf.lua` 5 · `PerfPanel.lua` 3 | v1.0.0 – v1.6.3 (every release to date) | Superseded |
@@ -178,7 +207,8 @@ are never adopted separately. It is indexed here because the question it answers
 | [7](./testkit/version-7-docs.md) | same files; runs in a repo with no `.toc`; corrected luacheck install hint | unreleased | Superseded |
 | [8](./testkit/version-8-docs.md) | + `vendor_sync.lua`; the skip status, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity` | v1.8.0 | Superseded |
 | [9](./testkit/version-9-docs.md) | same files; `vendor_sync.lua` reads the provenance line from `CLAUDE.md`, via the new `provenanceFile` opt | v1.8.1 | Superseded |
-| [14](./testkit/version-14-docs.md) | same files; `stubFrame` tracks a real enabled state, so `SetEnabled`/`IsEnabled`/`Enable`/`Disable` answer for real | v1.20.0 | **Current** |
+| [15](./testkit/version-15-docs.md) | + `test_eol.lua`, the kit's own suite: the line-ending gate now reads the whole `git ls-files` set and ships to every consumer, wired as `{ name = "test_eol", dir = "tests/_kit/" }`; the runner records the skipped count, names both versions on a release row, regenerates the whole of `RESULTS.md`, and writes the complexity watch list and the four standing sections `automated-tests-§4` MUSTs; `mock_base.lua` grows `SetAtlas` and the opt-in `f:__setGeom`, with `GetHeight` still answering 0 until a test arms a frame | v1.27.0 | **Current** |
+| [14](./testkit/version-14-docs.md) | same files; `stubFrame` tracks a real enabled state, so `SetEnabled`/`IsEnabled`/`Enable`/`Disable` answer for real | v1.20.0 | Superseded |
 | [13](./testkit/version-13-docs.md) | same files; `CreateFrame` records its arguments on the frame it returns, so a suite can ask what a frame was NAMED | v1.16.0 | Superseded |
 | [12](./testkit/version-12-docs.md) | same files; the loader caches compiled chunks, `vendor_sync` batches its blob reads, and the runner can fan its suites out across processes with `--jobs` | v1.14.0 | Superseded |
 | [11](./testkit/version-11-docs.md) | same files; the vendored-payload gate recurses into subdirectories and compares a binary byte for byte | v1.9.0 | Superseded |

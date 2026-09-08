@@ -783,7 +783,7 @@ end)
 test("widgets: InlineButtonPair lays two inset buttons into one Flow row and pcalls the click",
   function()
   local O, rec, ctx = bench()
-  local left, right, blew = 0, 0, false
+  local left, right = 0, 0
   O.InlineButtonPair(ctx,
     { text = "Reset Position", tooltip = "Move it back", onClick = function() left = left + 1 end },
     { text = "Reset All",      onClick = function() right = right + 1; error("boom") end })
@@ -797,7 +797,7 @@ test("widgets: InlineButtonPair lays two inset buttons into one Flow row and pca
 
   row.children[1]:__fire("OnClick")
   assertEqual(left, 1)
-  blew = not pcall(function() row.children[2]:__fire("OnClick") end)
+  local blew = not pcall(function() row.children[2]:__fire("OnClick") end)
   assertFalse(blew, "a throwing onClick is reported, not propagated into AceGUI's dispatch")
   assertEqual(right, 1)
   assertTrue(table.concat(rec.chat, "\n"):find("boom", 1, true) ~= nil,
@@ -808,6 +808,47 @@ test("widgets: InlineButtonPair tolerates a missing second spec", function()
   local O, _, ctx = bench()
   assertTrue(pcall(O.InlineButtonPair, ctx, { text = "Only one" }, nil))
   assertEqual(#Fixture.flowRows(ctx.scroll)[1].children, 1)
+end)
+
+test("widgets: InlineButtonPair reports a handler-less button once, and draws it anyway",
+  function()
+  -- OptionsCompose builds `resetAll` and `resetPosition` UNCONDITIONALLY, whether or not the host
+  -- spec supplied onResetAll/onResetPosition, so a spec that forgot one gets a live-looking button
+  -- whose OnClick returns early. Nothing said so. The cure follows EMPTY_DROPDOWN rather than
+  -- refusing to draw: an author who sees a gap in the pair fixes the spec, whereas a silently
+  -- missing button reads as a deliberate layout and ships.
+  local O, rec, ctx = bench()
+
+  local row = O.InlineButtonPair(ctx, { text = "Reset all settings", tooltip = "Put it back" }, nil)
+
+  local drawn = Fixture.flowRows(ctx.scroll)[1]
+  assertEqual(#drawn.children, 1, "the button is still drawn -- report and render, never refuse")
+  assertEqual(drawn.children[1].text, "Reset all settings")
+
+  local expected = lib.STRINGS.DEAD_BUTTON:format("Reset all settings")
+  local reports = 0
+  for _, line in ipairs(rec.chat) do
+    if line == expected then reports = reports + 1 end
+  end
+  assertEqual(reports, 1,
+    "reported exactly once, at build time: " .. table.concat(rec.chat, "\n"))
+
+  -- The report belongs to the BUILD, not to the press: a player leaning on a dead button must not
+  -- be able to fill the chat frame with it.
+  drawn.children[1]:__fire("OnClick")
+  drawn.children[1]:__fire("OnClick")
+  local after = 0
+  for _, line in ipairs(rec.chat) do
+    if line == expected then after = after + 1 end
+  end
+  assertEqual(after, 1, "and clicking it adds nothing")
+
+  -- The counterpart: a button that HAS a handler is silent, or the line lands on all nine hosts.
+  local O2, rec2, ctx2 = bench()
+  O2.InlineButtonPair(ctx2, { text = "Reset all settings", onClick = function() end }, nil)
+  assertEqual(table.concat(rec2.chat, "\n"):find("DEAD", 1, true), nil,
+    "a handled button says nothing")
+  assertTrue(row ~= nil)
 end)
 
 -- ── numeric enums render as dropdowns (WIDGETS_MINOR 5) ────────────────────────────────────
@@ -1565,6 +1606,48 @@ test("widgets: a second TabStrip call replaces the first rather than stacking on
   assertEqual(#ctx.__tabKids, 3, "the first strip's furniture was released, not orphaned")
 end)
 
+test("widgets: re-selecting the same tabs builds no second set of frames", function()
+  -- The strip is torn down and redrawn on EVERY tab click, and WoW never destroys a frame. A
+  -- strip that CREATES its buttons and its content panel each time therefore leaks one full set
+  -- per click for as long as the player leaves the panel open, and the release that was supposed
+  -- to cover it only hid and unparented -- which is an allocator wearing a pool's name, the exact
+  -- shape LibKa0s-Pool-1.0 was extracted to end. Nothing about it is visible from outside: the
+  -- panel draws correctly, every case below this one stays green, and the only symptom is a
+  -- client that gets heavier the longer settings is open.
+  --
+  -- Counted through the MOCKS' CreateFrame for the same reason `instrument` above wraps it there:
+  -- a loaded chunk reads its globals through the loader's env, which resolves against the mocks
+  -- table first, so a _G assignment would never be seen.
+  -- red under: minor 13, where TabStrip calls makeTab and drawContentPanel per render.
+  local O, _, ctx = bench()
+  local tabs = {
+    { key = "one",   label = "One" },
+    { key = "two",   label = "Two" },
+    { key = "three", label = "Three", tooltip = "The third one" },
+  }
+  local function select(key)
+    O.TabStrip(ctx, { tabs = tabs, value = key, onSelect = function() end })
+  end
+
+  -- The first pass is deliberately UNCOUNTED. The claim is not that a strip never allocates --
+  -- it has to, once -- but that the second click over the same three tabs allocates nothing.
+  for _, key in ipairs({ "one", "two", "three" }) do select(key) end
+
+  local created, realCreateFrame = 0, T.mocks.CreateFrame
+  T.mocks.CreateFrame = function(...)
+    created = created + 1
+    return realCreateFrame(...)
+  end
+  local ok, err = pcall(function()
+    for _, key in ipairs({ "one", "two", "three" }) do select(key) end
+  end)
+  T.mocks.CreateFrame = realCreateFrame
+  if not ok then error(err) end
+
+  assertEqual(created, 0, "a second pass over the same tabs built frames instead of reusing them")
+  assertEqual(#ctx.__tabKids, 4, "three tabs and one content panel, not a growing pile")
+end)
+
 test("widgets: TabStrip refuses politely with no AceGUI and with no tabs", function()
   -- Every maker in this file answers nil having drawn nothing rather than raising, because the
   -- degraded path is a real one: a consumer vendored without AceGUI must show a plain page.
@@ -1818,6 +1901,34 @@ test("widgets: a page whose rows carry no group renders untabbed AND says so", f
     if line:find("orphans", 1, true) and line:find("no grouped rows", 1, true) then said = said + 1 end
   end
   assertEqual(said, 1, "the page key was reported exactly once")
+end)
+
+test("widgets: a host that omits print still sees NO_GROUPS in the chat frame", function()
+  -- The shell builds ONE sink at :New -- the descriptor's `print` when it is a function, and
+  -- DEFAULT_CHAT_FRAME:AddMessage when it is not (`LibKa0s/Options.lua`) -- and this file used to
+  -- build a second one, `d.print or function() end`, with neither the type guard nor the fallback.
+  -- A host that passes no printer therefore had every widget-side diagnostic dropped on the floor:
+  -- NO_GROUPS, EMPTY_DROPDOWN, DEAD_BUTTON and BUTTON_FAILED, which are the four lines that exist
+  -- to name an authoring defect out loud. C01 shipped in exactly that silence.
+  -- red under: __AttachWidgets building its own sink instead of reading the shell's O.__print.
+  local _, rec = Fixture.new()
+  local d = {}
+  for k, v in pairs(rec.d) do d[k] = v end
+  d.print = nil
+  d.rowsForPage = function()
+    return { { path = "orphanOne", type = "bool", label = "Orphan one", default = false } }
+  end
+  local O = lib:New(d)
+  local ctx = O.CreatePanel("NoPrinterPanel", "No printer", {})
+
+  local chat, got = T.mocks.DEFAULT_CHAT_FRAME, {}
+  rawset(chat, "AddMessage", function(_, line) got[#got + 1] = line end)
+  local ok, err = pcall(O.RenderTabbedSchema, ctx, "orphans")
+  rawset(chat, "AddMessage", nil)
+  if not ok then error(err) end
+
+  assertTrue(table.concat(got, "\n"):find("no grouped rows", 1, true) ~= nil,
+    "the report must reach the shell's sink, not a discard: " .. table.concat(got, "\n"))
 end)
 
 test("widgets: with no AceGUI a tabbed page reports no tabs and draws nothing", function()

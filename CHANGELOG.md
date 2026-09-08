@@ -10,6 +10,398 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.27.0 — 2026-09-07
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
+**OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 8**,
+**PerfPanel minor 4**, **kit revision 15**.
+
+Three files moved and the kit moved with them. `Options.lua` 15 takes over the `LSM30_Border`
+fixup five addons each keep a private copy of, and adds the string a handler-less button reports
+itself with. `Perf.lua` 8 stops rebuilding a bracket table it can reuse and asks
+`C_SpecializationInfo` before the two bare globals it kept as a fallback. Kit revision 15 is the
+larger half: the runner finally writes the record `automated-tests-§4` has always MUSTed of it,
+the line-ending gate reads the whole tracked set instead of one directory, the shared mock can be
+asked how tall something is, and a degradation stub can be checked against the surface it stands
+in for. Adoption is the re-vendor plus the two surfaces a consumer chooses to call; nothing here
+removes or renames a member, so a host that ignores all of it behaves as it did at v1.26.0.
+
+### `Options.lua` minor 15 — the `LSM30_Border` fixup becomes the library's, once per session
+
+**`lib.__PatchLSM30Border()`**, on the library table rather than on an instance, idempotent behind
+`lib.__lsmBorderPatched`. It wraps whatever constructor AceGUI currently holds for `LSM30_Border` and
+registers the wrapper one version higher, hiding the 42x42 preview tile upstream
+AceGUI-3.0-SharedMediaWidgets pins to the widget's TOPLEFT and putting the label and the dropdown
+bar's left cap back on the frame's own edge. Returns true if this call registered, false if there was
+nothing to do.
+
+**Why it is here rather than in an addon.** `AceGUI.WidgetRegistry` is one table shared by every
+addon in the client, Ka0s or not, and the highest version registered for a name wins for the rest of
+the session. Five addons in this collection each ship a private `core/LSMPatch.lua` doing exactly
+this — AbsorbTracker, ConsumableMaster, KickCD, MultiMeters and PanelMaster, five distinct files with
+one intent. Every one of those wrappers closes over whatever the registry held when its
+`PLAYER_LOGIN` fired, so with all five loaded the last addon to log in wraps the fourth, which wraps
+the third, and the outermost wrapper belongs to whichever addon the client happened to load last. The
+result is a function of load order, which is precisely why no addon's suite could ever see it: each
+one loads a single copy, registers once and passes. `library-stack-§9` and anti-pattern #76 now say
+so; this is the surface they point at.
+
+**The sentinel is the point, not a detail.** LibStub hands every vendored copy in the session the
+same `lib`, so five copies calling this produce exactly one registration — the count is independent
+of how many Ka0s addons are installed and in what order. And it is set only after a registration
+actually happens: AGSMW is a separate addon, so a call that arrives before it has loaded finds
+nothing to wrap and must leave the surface armed for the next one.
+
+**Adoption is not the re-vendor alone, and the order matters.** Nothing in this library calls the new
+member, so a host that ignores it is byte-identical to 14.14.3.3. The five addons carrying a private
+copy re-vendor and add the call **with every local copy still in place**, confirm in the client with
+all five loaded that no Border dropdown depends on load order, and only then delete the copies, one
+repository per commit, testing again after the first — AbsorbTracker last, because its copy is a
+callable `NS.ApplyLSMBorderPatch()` rather than a `PLAYER_LOGIN` frame. Deleting them together would
+leave no bisect point if the sentinel is wrong.
+
+**Registering a new widget type an addon defines for itself is untouched**, and so is the
+per-instance answer: hide the child and re-anchor the region at the addon's own creation site, and
+leave the registry alone. What this replaces is reaching the same end by editing the table every
+other addon in the client reads.
+
+**Also in minor 15: `lib.STRINGS.DEAD_BUTTON`, and a reset button that admits it does nothing.**
+The string is `Options.lua`'s, so it rides minor 15; the report site is `InlineButtonPair` in
+`OptionsWidgets.lua`, whose own counter stays at 14 because v1.26.0 released it there and the
+shell it is paired against moved instead. That pairing — `__widgetsShellMinor` against
+`lib.MINOR` — is what makes the unbumped file safe: a v1.26.0 copy loading beside this one
+re-attaches or defers on the shell's number, so the winning shell always carries the widgets
+file it shipped with, in either load order. It is the case `OptionsScroll.lua`'s comment
+describes, reached for real rather than in theory.
+
+`OptionsCompose` builds the master group's *Reset all settings* and *Reset position* whether or not
+the host spec supplied `onResetAll`/`onResetPosition` — deliberately, because the pair is the
+canonical shape `options-ui-§15` fixes and a composer that quietly dropped one would make the gap
+read as a layout decision. What was missing is anyone saying so: `makeBtn`'s `OnClick` simply
+returned early, so the player got a live-looking button that absorbed the click in silence and the
+author never heard about the handler they forgot. `InlineButtonPair` now reports once at BUILD time
+for a spec with no `onClick` and draws the button anyway — the shape `EMPTY_DROPDOWN` already sets,
+and not an error, because taking the page down over a convenience would be the worse trade. Said at
+build rather than on the press it lands once, in the log of whoever opened the panel, instead of
+once per click in the log of whoever pressed it.
+
+**Consumers should expect a line on the first re-vendor.** Because the composer builds both resets
+unconditionally, any host not passing `onResetAll` starts printing this the moment it takes the new
+copy. That is the point, and the answer is to supply the handler rather than to silence the line.
+
+### `testkit` revision 15 — the runner records what it measured, the mock can be asked how tall something is, a stub can be checked by name, and the kit ships a gate of its own
+
+Three files move and one is new. `run-automated-tests.sh` rewrites the record, `mock_base.lua` grows
+a geometry surface that answers nothing until a test asks it to, `framework.lua` grows a second
+calling form for `Kit.assertSurfaceParity` and learns to load a suite that ships in the kit, and
+`test_eol.lua` is the first suite the kit itself carries; `loader.lua` and `vendor_sync.lua` are
+untouched. **Every consumer's case count moves by exactly one on adoption** — the new suite, and
+nothing else. Full surface:
+[`docs/api/testkit/version-15-docs.md`](docs/api/testkit/version-15-docs.md).
+
+**The skipped count stops vanishing.** `framework.lua` has printed `N passed, N failed, N skipped,
+N total` since the skip status existed at revision 8, and the runner's regex could not span
+`, N skipped` — so the match stopped at `failed`, the positional read of the total came back empty,
+and `TESTS_TOTAL` fell back to `passed + failed`. A suite with three declared skips recorded as a
+suite three cases smaller, on every row of every trend line, with no `skipped` key in the manifest to
+contradict it. Every figure is now read **by its label** rather than by field position, which is the
+actual fix: the summary has grown a column twice and the positional read broke silently both times.
+`suites.tests.skipped` joins the manifest and the **Tests** cell becomes `passed/skipped/total` under
+the same column name.
+
+**A release run stops being filed against the version it replaces.** `--release X.Y.Z` runs before
+the tag (`automated-tests-§6`), so the `.toc` still carries the outgoing version while the run is the
+incoming one's evidence. The Version cell now reads `1.24.0 → 1.25.0` when the manifest carries a
+release — which is what this repo's own row for `20260903-161751` should have said and did not.
+
+**And a release run is now refused on a dirty tree.** `--release` does not label a run, it makes that
+run the evidence for a version — `automated-tests-§3`'s release gate and `/wow-addon:bump-version`
+read the manifest it writes and nothing else. A tree with uncommitted changes is not a commit, so the
+`git.sha` recorded beside the claim names bytes that were never measured. Of this library's
+twenty-nine release bundles, twenty-eight record `"dirty": true`; `20260903-161751` stamps
+`"release": "1.25.0"` at sha `895cdf4` on a tree that cannot be checked out, and from a trend line it
+is indistinguishable from a reproducible run. The runner now exits 2 before any suite runs, names the
+paths that made the tree dirty, and offers no override flag — an escape hatch on this gate would be
+reached for on the one release where the gate matters. Nothing else changes: a run without
+`--release` is unaffected, so the commit gate and every pre-commit hook keep their behavior and their
+exit code. `docs/releasing.md` step 7 carries the order this requires — commit the release, run the
+battery on the clean tree, then a second commit for the bundle and its `RESULTS.md` row, and the tag
+on that.
+
+**`RESULTS.md` is regenerated whole, rows preserved.** The runner had two write paths: an `awk` that
+inserted one row under the header, and a create-the-file branch carrying the header, the lead-in and
+everything else — reached only when the file was absent or its column set had changed, which in a
+repository that has ever run this script is never. The corrected four-checkpoint lead-in therefore
+sat in unreachable code while ten repositories carried the two-sentence text it was written to
+replace. The guard that matters stays: a file whose **header** is not the current column set is
+still left alone with a warning, because rewriting it would drop every previous row.
+
+**And the two things `automated-tests-§4` MUSTs and no runner had ever emitted.** The complexity
+watch list — warned functions (Function / CCN / Location / Disposition) and files by `layout-§1`
+band — generated from the run's own `lizard` output, and one standing section per suite generated
+from the same manifest. Until now `documentation-§3` called this file generated while
+`automated-tests-§4` mandated narrative nothing produced, and the state on the far side of that
+collision was not a badly-graded file but no file: the record went stale in ten of ten repositories.
+MultiMeters' hand-written watch list reported *"None — `lizard` reports 0 warnings"* above a table
+row recording 19; this repository's own test-suite section opened with *"499 cases"* against a suite
+running 764. The standard settled the boundary at v2.39.0 and this is the code half of it.
+
+**The one authored cell** is the watch list's `Disposition`. The runner carries it forward verbatim
+while its entry is unchanged and leaves it **blank** where the entry is new, so a blank cell is the
+record saying something crossed and nobody has ruled on it. The key is the function and its file —
+not a line range, which would blank every disposition in a file the moment anything above it grew a
+line — with the measured CCN breaking a tie between two warned functions of the same name in one
+file. A tie the CCN cannot break leaves the cell blank rather than attaching one entry's ruling to
+another.
+
+**`mock_base.lua` can now be asked how tall something is.** It answered `GetHeight()` with 0 for
+every frame and defined no `SetAtlas` at all, so `OptionsWidgets.lua`'s tab pitch — measured off the
+unselected tab art through a probe texture — always came back 0, always took its `L.TAB_H` fallback,
+and every `options-ui-§13` geometry-invariance assertion passed without measuring anything.
+AbsorbTracker, MultiMeters, PanelMaster and PrettyChat each filed the missing case and none of them
+could write it, because the fidelity it needs lives here. `SetAtlas(name, useAtlasSize)` now records
+the atlas name always and the published size when asked, `f:__setGeom(w, h)` is the opt-in that arms
+a frame, and `mock.__atlasSizes` is the fixture both read.
+
+**The opt-in belongs to the test and never to the code under test**, and that was learned rather than
+designed. The obvious shape — `SetAtlas` writes geometry, `GetHeight` answers it — was written first
+and three of this repo's own widget cases went red inside a minute: `tabArtHeight()` began measuring
+28 where it had always fallen back to 37, and the strip re-wrapped underneath cases that never
+mentioned geometry. Production calls `SetAtlas` on a probe texture no test holds a handle to, so a
+`SetAtlas` that arms geometry by itself is next revision's flip arriving by accident, in ten
+repositories at once. `GetHeight` therefore reads `(self.__geomLive and self.__geomH) or 0`, and a
+frame nobody armed answers exactly what it answered at revision 14.
+
+**Revision 16 deletes the `self.__geomLive and` from those two lines**, and that is the entire flip.
+It is a separate revision because roughly 308 test files across ten repositories lean on geometry
+answering zero and every assertion that passes *because* of it moves with the default. The surface
+lands now; the default moves once each consumer has adopted the opt-in where it needs geometry. Until
+then the four filed cases stay deferred and the interval is covered by an operator cycling the tab
+strips in the client, which is a weaker check than they asked for and is said here rather than left
+unstated.
+
+**A degradation stub can now be checked by name.** Nine addons hand-write a `settings/OptionsSetup.lua`
+arm mirroring the `LibKa0s-Options-1.0` surface — 185 to 384 lines each — and only three of them own a
+parity case at all, which is how AbsorbTracker's stub omits `SetRenderer` outright with every suite in
+that repository green. `Kit.assertSurfaceParity` has been here since revision 8 and went unadopted
+because its four-argument form asks the caller to produce the live half first: a grep, a derivation,
+and a comment explaining the derivation. It now also takes
+`assertSurfaceParity(stub, "LibKa0s-Options-1.0", ignore)` — a string in the second position selects
+the form — and resolves the live half itself. The original form is unchanged down to its message text.
+
+**What it compares is the PUBLIC surface**, `Kit.publicMembers`: every string key that is neither
+LibStub bookkeeping (`MAJOR`, `MINOR`, `MODULES`) nor `__`-prefixed. No stub in this collection
+carries those and none should — `MAJOR` and `MINOR` are how the library answers "which copy am I",
+and the `__` keys are a major's internals reached by a sibling file inside the same major. Reported
+raw, the Options major alone hands a stub author ten divergences that are all correct omissions, and
+a gate whose first run is ten false positives acquires an `ignore` list the size of its own output.
+
+**The harness says where a name resolves**, because the kit cannot know: it has no LibStub, no mock
+and no addon namespace, and `loader.lua` hands each chunk a mocked environment rather than writing
+into `_G` — a kit reaching for `_G.LibStub` would resolve nothing headlessly and pass every stub.
+`Kit.setSurfaceSource` takes a callable (`mocks.LibStub`, answering the library table) or a table
+(`{ ["LibKa0s-Options-1.0"] = NS.Helpers }`, for the far commoner case where the stub mirrors the
+INSTANCE `lib:New(descriptor)` returned, which the kit could never build for itself). `Kit.expose`
+wires the callable shape when the exposed table already carries a mock with a LibStub on it, and only
+when nothing is registered yet. An unresolvable name is a **failure** naming the fix, never a quiet
+pass — the bargain `assertSuiteInventory` already strikes.
+
+**And each major now publishes its member list as data**, at
+`docs/api/<Major>/members-<versionKey>.json`, generated from the live surface by
+`tools/gen-api-members.lua` and regenerated-and-compared on every run by `tests/test_versioning.lua`.
+`docs/api/` was the source of truth for every public contract and it was prose in every document:
+accurate, versioned, and not something a stub could be compared against. It is keyed by version like
+everything else in that directory, because a single file describing only HEAD answers the wrong
+question for every consumer that has not re-vendored yet. LibKa0s carries the reference
+`tests/test_surface_parity.lua` itself rather than asking nine repositories to write a case this repo
+does not run.
+
+**The line-ending gate reads the whole tracked set, and every consumer inherits it.** `test_eol.lua`
+has been this repo's own suite since revision 10, written beside the fix to the bundle writer, and it
+asked git about `docs/automated-tests/` and nothing else — 176 of 508 tracked paths here. That scope
+is the entire finding: `line-endings-§7` MUSTs the pin be checked mechanically, ten of ten
+repositories fail it, and the one repository that owned a gate ran it green over the directory that
+was already clean. Two of the files it could not see are `LibKa0s/DebugLog.lua` and `LibKa0s/Pool.lua`
+— the SHIPPED payload — which is why `diff -r LibKa0s <Addon>/libs/LibKa0s`, a SHOULD-be-empty check
+in [`docs/releasing.md`](docs/releasing.md), reported thousands of phantom lines in nine repositories
+on every re-vendor. A shell redirect is not the only way to write a file past git's clean filters —
+sed, an editor across a WSL mount, any generator that opens a path for writing — so the set to hold
+to the pin is the set git tracks.
+
+**It moved into the kit rather than being re-typed nine times**, which needed two small things from
+`framework.lua`. A suites entry may now carry its own `dir` —
+`{ name = "test_eol", dir = "tests/_kit/" }` — and `loadSuites` calls each suite chunk with the kit as
+`...` instead of `dofile`ing it, because a kit-shipped suite cannot read an exposed table whose global
+name belongs to the consumer. `Kit.assertSuiteInventory` now scans `tests/_kit/` for suites as well as
+`tests/`, so a kit suite that lands in a re-vendor and is never wired is a **red** naming the entry to
+add rather than a green run over a gate that never executed. One shell-out answers `text` and `eol`
+for the whole repository, because asking per path cost about nine seconds a run in ten repositories,
+which is the price at which somebody adds a flag to switch a gate off.
+
+Widening that gate to two directories pushed `Kit.assertSuiteInventory` to CCN 20, which the release gate refuses at 15, so it is split here into the four pieces it had grown into: the suites list folded into its lookups, a listing that fails rather than reading an unlistable directory as an empty one, and one collector per direction. Behaviour is unchanged and all three failure messages are word for word what they were — which is how the split was checked, by planting each of the three violations in turn and reading the message back.
+
+**Consumers should expect the record to move on the first run after re-vendoring**, and the count to
+move by one: a middle figure in the Tests column, the replaced lead-in, and a watch list with every
+disposition blank because there was no generated table to carry them forward from. Expect the EOL
+gate itself to be red until the working tree is repaired — `rm <path> && git checkout -- <path>`, per
+path it names — because being red there is the whole reason it was widened. Ruling on those
+blanks is a one-time cost. Any hand-written prose below the table is replaced, so a disposition worth
+keeping is copied into the generated cell in the same commit or it is gone.
+
+### US English across the shipped payload, and a prose gate that uses the published list
+
+**Twenty-seven authored spellings in `LibKa0s/` and `testkit/` were British, and five of them were
+text a player reads.** `Perf.lua` wrote `run CANCELLED` to the log and `perf run |cffcc5252CANCELLED|r`
+to chat, and reported a capture with no label as `unlabelled` in three places — the report header,
+the started line and the announcement. They are `CANCELED` and `unlabeled` now. The other
+twenty-two are comments in `DebugLog.lua`, `Options.lua`, `OptionsCompose.lua`, `OptionsWidgets.lua`,
+`Perf.lua`, `Slash.lua` and `Widgets.lua`, and prose in the kit's `README.md`, `mock_base.lua` and
+`run-automated-tests.sh`. Nothing else moves: no behavior, no signature, no minor.
+
+**The gate that was supposed to catch all of that had six substrings of its own choosing** —
+`colour`, `grey`, `behaviour`, `synthesise`, `normalis`, `recognis` — two of which are not in
+`localization-§5`'s own table at all. Run over the three spellings live in the payload it matched
+zero, which is how `CANCELLED` shipped in chat text for months under a green suite. That is
+`testing-§12`'s failure mode, a check that reads as coverage and provides none, sitting inside the
+gate for `localization-§5`. The section now publishes the canonical pair — 91 `BRITISH` substrings
+and 30 `ALLOWED` words — and requires a gate to carry both whole, so `tests/test_prose.lua` copies
+them rather than inventing a seventh opinion. `ALLOWED` exists because the substrings are small on
+purpose: *analysis* contains `analys` and *programmer* contains `programme`, so the correct US words
+are stripped **as whole words** before the substring scan runs.
+
+**One exemption, and it is ratified rather than hidden.** `lib.ICONS`'s `minimise` key stays. It is
+not prose — `lib.Icon` builds the texture path from the key and the file on disk is `minimise.tga`,
+vendored into every consumer's `libs/LibKa0s/media/icons/`, so a renamed key alone points at a
+texture that does not exist and that failure is silent by construction. The exemption is named by
+path and by the exact spelling it covers, never by a pattern, it carries a row in `CLAUDE.md`'s
+`## Documented deviations`, and the gate reddens if it ever stops matching — an exemption nobody can
+see expire is how this gate got here in the first place.
+
+**Consumers get this on the re-vendor and have nothing to adopt.** The only visible difference is the
+wording of the two `perf` lines and the three unlabeled captures.
+
+### `Perf.lua` minor 8 — the capture arm stops allocating, and the spec reader gets its namespaced rung
+
+**Nothing on the surface moves.** No member is added, removed or re-signatured; every adopter gets
+this on the re-vendor and has nothing to adopt. What moves is two internals, and both are the same
+kind of defect: something the file claimed about itself that was not true.
+
+**`P.Open` allocated a table per bracket while the probe was on.** `{ key = key, t0 = ... }`, once
+per `Open`, for the length of a window — so one table per bracketed call, on paths that are
+bracketed precisely because they run often. The collector then walks that garbage during the very
+capture whose entire job is to hold everything else still and read somebody else's frame cost, which
+is the probe perturbing the thing it is measuring. The open slots come from a **high-water free
+list** now: one table per nesting depth, built the first time a session nests that deep and reused
+by every bracket after it. Depth is two in every descriptor this collection ships, so the list stops
+growing almost immediately and the steady state allocates nothing on either arm.
+
+Behavior is otherwise identical. A bracket whose exit forgot its `Close` is still **discarded**
+rather than credited with time it never ran for — the slot is simply left above the open depth,
+where nothing reads it and the next `Open` at that depth overwrites it in place. `P.Reset` zeroes
+the depth and deliberately keeps the list, since emptying it would make the first brackets of every
+run allocate again, which is the one cost this shape exists to pay once.
+
+**The suite only measured the arm that was already free.** `tests/test_perf_isolation.lua` held a
+dormant-bracket case asserting that 10,000 `Open`/`Close` pairs with the probe **off** grow the heap
+by under 1 KB, and nothing at all for the arm a capture actually runs — which is the arm that was
+allocating. The active sibling is there now, at the same ceiling: **0.0 KB over three runs, against
+1406.2 KB before the free list.** `performance-§2` asks for the "instrumentation is free when off"
+claim to be a measured number rather than a comment; this is the other half of that bargain, and the
+docstring on `P.Open` states the active arm's cost in the same place it already stated the dormant
+one's.
+
+**`P.Context` read the spec through the bare `GetSpecialization`.** `Env.lua` has modeled the
+two-rung shape for `C_AddOns` since it was written — the namespaced reader wherever it exists, the
+deprecated global where it does not — and this file had only the global. That is exactly why it was
+easy to miss: the global still answers on today's client, so nothing is visibly wrong. The day it
+stops answering, every saved record names the spec `"?"`, and a record is read weeks later, when
+there is nothing left to go and look at. `C_SpecializationInfo.GetSpecialization` is taken first now.
+`GetSpecializationInfo` keeps its own guard on the global rather than being paired with a namespaced
+rung, because the reader known to have moved is the **index** one and a shim that claims more than
+it has checked is the defect being fixed.
+
+## v1.26.0 — 2026-09-07
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 14**,
+**OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 7**,
+**PerfPanel minor 4**, **kit revision 14**.
+
+Two files moved: `OptionsCompose.lua` and `OptionsWidgets.lua`. Everything else is byte-identical to
+v1.25.0. Both are silent shipped faults rather than new surface — one emptied every composed media
+dropdown in every consumer, the other leaked a set of frames per tab click — so this release adds
+nothing to adopt and asks for nothing but the re-vendor.
+
+### `OptionsCompose.lua` minor 3 — the composed media dropdowns actually have options in them
+
+**Every font, border and bar-texture dropdown these composers wrote was empty in the client, in
+every consumer, from v1.24.0 onward.** `O.LSMValues(mediaType)` already returns the deferred closure
+the flow engine wants, and its own docstring says why the deferral is load-bearing: an LSM-backed row
+is a schema-row literal evaluated at file load, long before the addons that register media have run.
+The three group composers wrapped that closure a second time — `values = function() return
+O.LSMValues("font") end` — and `enumList` unwraps a row's `values` exactly once, so it got a function
+where it expected a table and handed back `{}`.
+
+Nothing reported it. The *"no options"* warning is gated on `row.values == nil`, which is the guard
+that keeps a legitimately-empty deferred list quiet while media is still loading; a doubly-wrapped
+row is not nil, merely useless, so the dropdown opened on nothing in silence. That is how this
+shipped past a green suite, and the four cases written the item before this one are what make it
+impossible to ship again.
+
+The fix is three lines — the row carries `O.LSMValues("font")` itself — and it adds, removes and
+renames nothing.
+
+### `OptionsWidgets.lua` minor 14 — the tab strip stops leaking a set of frames per click
+
+**An options panel left open leaked one full set of tab buttons plus one content panel every time
+the player clicked a tab, for the life of the session.** `TabStrip` releases the strip and redraws it
+on every click; the redraw called `CreateFrame` per tab and once more for the panel, while the
+release only hid and unparented. WoW destroys no frame, so nothing was ever reclaimed.
+
+Nothing about it was visible. The panel drew correctly every time, every case in the suite stayed
+green, and the only symptom was a client that got heavier the longer settings stayed open — the same
+shape, and the same silence, as the hand-rolled pool leak that got `LibKa0s-Pool-1.0` extracted in
+the first place. This library published that pool at minor 3 and was the one repository in the
+collection not using it; four consumers already do.
+
+Each `ctx` now carries a `__tabPool` and a `__panelPool`, and `TabStrip` acquires from both.
+`makeTab` splits in two: `newTabButton` builds only what a selection cannot change — the button, its
+six textures and its font string — and `dressTab` re-applies everything that is per-tab, **`OnClick`
+included**, because the handler closes over that dress's selection and tab key. The tooltip moved to
+a `SetScript` pair set once at construction and re-aimed per dress: `O.AttachTooltip` takes the
+`HookScript` arm for a raw button, and `HookScript` accumulates, so a re-dressed button would have
+grown a pair of handlers per click — the same unbounded growth, moved from frames to scripts.
+
+`SubTabStrip` is deliberately left unpooled. Its buttons hang off a frame AceGUI takes back, so they
+must be unparented on release, and an unparented button off a free list is a button drawn onto
+nothing.
+
+`ctx.__tabKids` keeps its meaning — this render's furniture in draw order — and is now purely a
+ledger; the pools do the release.
+
+**One new floor, satisfied by construction.** `OptionsWidgets.lua` requires `LibKa0s-Pool-1.0` minor
+≥ 1 and is absent rather than degraded without it, the way `DebugLog.lua` is without `Widgets`.
+Degrading would mean falling back to allocating per click in silence, which is the defect this minor
+ends. `Pool.lua` ships in the same payload and loads first in `LibKa0s.xml`, so whole-folder
+re-vendoring — which is mandatory anyway — satisfies it.
+
+**Adoption is the re-vendor and nothing else.** No member, signature or return value moves. The
+strip renders the same pixels; what changes is how long its frames live. Because the headless proof
+is a `CreateFrame` count and the harness cannot see geometry, the in-client check belongs to the
+adoption wave: open every multi-tab panel, cycle its tabs, and confirm labels, selection state and
+band height are unchanged.
+
+**One contract tightened, and it is silent, so read this before re-vendoring.** `lib.__AttachCompose`
+lets a host supply its own `O.LSMValues`, and that member **must return a function**. Until now the
+composer called it inside a closure at dropdown-render time, so a host whose `LSMValues` returned a
+*table* worked by accident — late evaluation covered for it. The composer now reads the member once,
+at row-declaration time, so a table-returner lands a literal table frozen at file load: no error, no
+warning, and exactly the failure the deferral exists to prevent. A consumer that assigns
+`C.LSMValues = function(t) return lsmValues(t)() end` must pass the reader itself instead, in the
+same change as its re-vendor. A consumer that never touches the member, or that overrides a composed
+row's `values` afterwards, is unaffected.
+
 ## v1.25.0 — 2026-09-03
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

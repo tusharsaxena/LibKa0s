@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.28.0
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.39.0
 — as a **library repo**, which is a scope of its own: `library-stack-§7`'s applicability list is what
 binds here, not the addon rule set, because there is no TOC, no player-facing README, no settings
 canvas and no install. [`CLAUDE.md`](CLAUDE.md) spells out which sections apply and which do not, and
@@ -71,7 +71,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [9](docs/api/Widgets/version-9-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [7](docs/api/Slash/version-7-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block. | `Options.lua`, `OptionsWidgets.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [14.13.2.3](docs/api/Options/version-14.13.2.3-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [15.14.3.3](docs/api/Options/version-15.14.3.3-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [7.4](docs/api/Perf/version-7.4-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
@@ -191,11 +191,11 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.25.0**: `Core = { Core = 7 }`,
+different vendored copy of each. As of **v1.27.0**: `Core = { Core = 7 }`,
 `Env = { Env = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`, `Media = { Media = 3 }`,
 `Widgets = { Widgets = 9 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 7 }`,
-`Options = { Options = 14, OptionsWidgets = 13, OptionsCompose = 2, OptionsScroll = 3 }`,
-`Perf = { Perf = 7, PerfPanel = 4 }`. Those numbers move every release — read them from the top of
+`Options = { Options = 15, OptionsWidgets = 14, OptionsCompose = 3, OptionsScroll = 3 }`,
+`Perf = { Perf = 8, PerfPanel = 4 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
 attached to which probe?" from in-game, once several addons each ship their own vendored copy.
@@ -241,6 +241,9 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
   LICENSE            -- ships INSIDE the payload, so every vendored copy carries the MIT notice
+tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json from the LIVE
+                        surface, loaded through the same mock the suites use. Generated, never
+                        hand-edited; tests/test_versioning.lua regenerates and compares on every run
 tools/artwork/       -- icon_cleaner.py rebuilds media/icons/ from Open Iconic; bar_textures.py
                         synthesizes media/textures/ from named constants. Both ARE the provenance
                         record for their art -- upstream repo and license for the first, every value
@@ -253,7 +256,9 @@ tests/               -- this repo's own test harness, consuming testkit/ through
 docs/                -- development docs (not shipped)
   api/               -- THE API REFERENCE, and the source of truth for every public contract
                         <Major>/version-<minors>-docs.md, one per shipped version, never edited
-                        after that version stops being current; api/README.md indexes them all
+                        after that version stops being current; api/README.md indexes them all.
+                        Beside each, <Major>/members-<minors>.json -- the same version's public
+                        surface as DATA, which is what a degradation stub is checked against
   releasing.md       -- the two version numbers, the release order, the re-vendor rule
   record-schema.md   -- the capture record, field by field
   adoption-prompt.md -- the per-addon adoption prompt

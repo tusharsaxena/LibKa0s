@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **14** · `OptionsWidgets.lua` **13** · `OptionsCompose.lua` **2** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
 | Shipped in | v1.25.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 14.13.1.3](./version-14.13.1.3-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 14.13.3.3](./version-14.13.3.3-docs.md) — the composed media rows return the deferred reader itself |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 14, OptionsWidgets = 13, OptionsCompose = 2, OptionsScroll = 3 }` |
 
@@ -673,3 +673,19 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 14.13.3.3
+
+Three lines in one file, and they fix shipped, player-facing behaviour. `FontGroup`, `BorderGroup`
+and `BarGroup` each wrapped `O.LSMValues` in a second closure, and `enumList` unwraps a row's
+`values` exactly once — so every media dropdown these composers wrote was empty in the client, with
+no report, because the *"no options"* warning is gated on `values == nil` and a doubly-wrapped row is
+not nil. At 14.13.3.3 the row carries the deferred reader itself.
+
+One thing to check before adopting, because it cannot be detected at runtime and fails silently: if
+this host supplies its own `O.LSMValues` through `__AttachCompose`, **that member must return a
+function**. At this version the composer called it inside a closure, at render time, so a
+table-returner worked by accident; at 14.13.3.3 it is read once at row-declaration time and a table
+lands frozen at file load. Pass the deferred reader, not a caller of it.
+
+Nothing else in the major moves, and no member is added or removed.

@@ -1,6 +1,6 @@
 # CLAUDE.md — LibKa0s
 
-LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.28.0) —
+LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.39.0) —
 <https://github.com/tusharsaxena/WowAddonStandards>.
 
 **Read this first: LibKa0s is a library repo, not an addon.** It is in scope for the standard and it
@@ -65,13 +65,74 @@ is re-vendored. Never patch a vendored copy downstream; fix it here and copy acr
 
 | Rule | What differs | Why | Decided | Re-check trigger |
 |---|---|---|---|---|
+| `localization-§5` | `lib.ICONS` keeps `minimise`, the one British spelling left in the shipped payload | The key is not prose. `lib.Icon` (`LibKa0s/Media.lua:202`) builds the texture path **from** the key — `base .. ICON_DIR .. "\\" .. name` — and the file on disk is `minimise.tga`, vendored into every consumer's `libs/LibKa0s/media/icons/`. Renaming the key alone points at a texture that does not exist, and `Media.lua:190-196` records what that costs: a texture that fails to load draws nothing and raises nothing, so the icon simply disappears from every consumer's title bar with no error anywhere. Renaming it safely needs a second `.tga` or an alias map, which is a change to `Media.lua`'s surface, not a spelling fix. Filed as `LK-06` in `docs/audits/2026-09-07/`, which names the key as "a key consumers bind against" and asks for an alias rather than a rename. | 2026-09-07, executing `M1-LK-11` | A `minimize.tga` shipped beside the current file, or an alias map in `lib.Icon` — either ends this row, and the key moves in the same change as the eight consumers' re-vendor. `tests/test_prose.lua` reddens on its own if the exemption ever stops matching, so a dead row cannot sit here unnoticed. |
 
-**None ratified today.** The table is here empty on purpose: the alternative is a register that gets
-created in the same breath as the first deviation, by whoever is already arguing for it.
+**One row, and it is a path fragment rather than prose.** The table is otherwise empty on purpose:
+the alternative is a register that gets created in the same breath as the first deviation, by whoever
+is already arguing for it.
 
 `library-stack-§7`'s "does not apply" list is **not** a deviation register — those sections do not
 bind this repo at all, so there is nothing to ratify. A row belongs here only when a section that
 *does* bind is knowingly not followed.
+
+## Files over the 1500-line cap
+
+`layout-§1` caps every **authored** `.lua` file this repository tracks at 1500 lines. Two things are
+worth stating explicitly here, because this repo was one of the four that read the old, silent text
+differently: the cap binds `tests/`, and it binds a Ka0s-owned library's own payload folder — that is
+what `library-stack-§7`'s applicability list settles, and it is why the 2026-09-07 audit's Low grade
+on both breaches below no longer stands. `testkit/` is **authored here** and capped like anything
+else; `tests/_kit/` is this repo's own vendored copy of it and is not, on the same terms every
+consumer's copy is exempt. The second carve-out, generated non-shipping data, has no instance here.
+
+A file over the cap has three terminal states, not one: peeled, an **open issue naming the seam** a
+peel would follow, or a **ratified row** in `## Documented deviations` above carrying a re-check
+trigger. What the rule refuses is a fourth state — a breach nothing anywhere remarks on, "the count
+sitting in a bundle manifest that no document reads". This repo had precisely that: an `overCapFiles`
+figure in the `docs/automated-tests/` manifests that no document read, and a RESULTS.md watch list
+that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
+against a file in it.
+
+Two files, measured 2026-09-08 with
+
+```sh
+git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
+```
+
+| File | Lines (2026-09-08) | Disposition |
+|---|---|---|
+| `tests/test_options_widgets.lua` | 2398 | Issue [#8](https://github.com/tusharsaxena/LibKa0s/issues/8) — peels with `LibKa0s/OptionsWidgets.lua`, on that file's seam and in that file's commit |
+| `LibKa0s/OptionsWidgets.lua` | 1989 | Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16) — the tab and page chrome (`:378` art block, `:871`–`:1349` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine |
+
+**Both are issues, and neither is a register row.** The sibling repository doing this same work gives
+its *mirror suites* register rows rather than issues, on the argument that a suite has no seam of its
+own. That argument holds here too and is written into #8 — the suite peels on the module's seam, in
+the module's commit — but the row would have been a second record of a file that **already had an
+open issue**, opened when the file was 1114 lines and carrying its own hard trigger, "crosses 1500 →
+split". That trigger has fired. Rewriting the issue it fired on is one record; a register row beside
+it would be two records free to disagree, which is the failure this section exists to prevent. The
+deviation register above also stays deliberately near-empty (see its note), and a breach with a live
+issue is not a deviation from the standard — it is one of the states the standard allows.
+
+**The line counts are dated, and nothing asserts them.** What `tests/test_layout_cap.lua` asserts is
+the *membership* of this table, in both directions: a file that crosses 1500 and is not listed here
+turns the suite red, and so does a row for a file that has fallen back under the cap or been deleted,
+so the census cannot become a graveyard. A figure in this column is a measurement, not a claim about
+today — `OptionsWidgets.lua` was 1838 at the 2026-09-07 review and the suite 2287, and both moved
+while nobody was watching, which is the whole argument for having a gate rather than a paragraph.
+
+**Nothing is peeled this cycle.** The 2026-09-07 remediation plan rules out splitting any file
+(`03_SPEC.md` § C22 non-goals). Here that is more than a scheduling preference: `LibKa0s/` is
+re-vendored whole-folder into nine consumers and every file in it carries its own LibStub minor, so a
+peel adds a payload file, a `LibKa0s.xml` row, a minor and the multi-file pairing guard
+(`__widgetsShellMinor`, `LibKa0s/OptionsWidgets.lua:31`) — a deliberate release, not a tidy-up. The
+deliverable was the disposition, and the disposition is this table.
+
+**The 1000–1500 band is on notice, not in breach**: `tests/test_widgets.lua` (1493),
+`tests/test_options.lua` (1266), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1206, tracked as
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)) and `LibKa0s/Options.lua` (1036). They are
+named so a later reader can tell the band was looked at rather than missed; none needs a disposition
+until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one.
 
 ## Documentation map
 
@@ -88,7 +149,7 @@ never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests
 | Doc | Covers |
 |---|---|
 | [`README.md`](README.md) | What each module is, how to install and re-vendor, the repo layout |
-| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Pool`, `Item`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Options`, `Perf`, and `testkit`). A superseded document is never edited to describe new behavior |
+| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Pool`, `Item`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Options`, `Perf`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
 | [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
 | [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-analysis/README.md` points at rather than restating |
 | [`docs/adoption-prompt.md`](docs/adoption-prompt.md) | The brief handed to a consumer repo adopting a major: what to wire, what to delete, and what must not be hand-rolled |

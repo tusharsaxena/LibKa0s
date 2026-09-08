@@ -10,9 +10,9 @@
 | Version | **14** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.20.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 13](version-13-docs.md) — `CreateFrame` records its arguments on the frame it returns |
-| Superseded by | — |
+| Superseded by | [version 15](version-15-docs.md) — the runner records the skip, the release version, and the watch list it never wrote |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `14` |
 

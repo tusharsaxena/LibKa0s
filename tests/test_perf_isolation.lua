@@ -87,6 +87,46 @@ test("iso: a dormant Open/Close bracket allocates nothing and records nothing", 
   assertEqual(next(p.__buckets()), nil, "and recorded nothing")
 end)
 
+-- ── the active bracket ───────────────────────────────────────────────────────
+--
+-- The case above measures the arm nobody pays for, and it is the arm that was already free. The arm
+-- a capture actually runs was never measured at all, and it was the one allocating: a fresh
+-- `{ key = key, t0 = ... }` per Open, one table per bracketed call for the length of the window.
+-- Brackets sit on per-frame work, a window is minutes long, and the collector then has to walk that
+-- garbage during the very capture that is trying to read somebody else's frame cost -- the probe
+-- perturbing the thing it is holding still to measure. The slots are reused from a high-water free
+-- list instead, so the steady state allocates nothing on EITHER arm.
+
+test("iso: an active Open/Close bracket reuses its slots instead of allocating one per open",
+function()
+  local p = Fixture.new()
+  p.on = true
+
+  -- Warmed first, and deliberately: the free list's high-water slot for depth 1 and the `outer`
+  -- bucket are each allocated once, for the session, and neither is what this case is about. What
+  -- it is about is what the ten-thousandth bracket costs, which is the number a capture pays.
+  for _ = 1, 100 do p.Open("outer") p.Close("outer") end
+
+  collectgarbage("collect")
+  collectgarbage("collect")
+  local before = collectgarbage("count")
+  for _ = 1, 10000 do
+    p.Open("outer")
+    p.Close("outer")
+  end
+  local after = collectgarbage("count")
+
+  -- Kilobytes. One slot table per Open is ~10,000 tables here, which measured 1406.2, 1406.2 and
+  -- 1406.2 KB over three runs before the free list; with it the same three runs measured 0.0 KB.
+  -- The ceiling is the dormant case's 1 KB rather than a zero, for the reason stated there: a zero
+  -- would be brittle against the loop's own bookkeeping, and the claim being made is that nothing
+  -- MEASURABLE accrues, not that the allocator was never touched.
+  assertTrue(after - before < 1,
+    ("10k active brackets grew the heap by %.1f KB \226\128\148 the capture arm must reuse its slots")
+      :format(after - before))
+  assertEqual(p.__buckets().outer.calls, 10100, "and every one of them was still recorded")
+end)
+
 -- ── the panel frame ─────────────────────────────────────────────────────────────────────────
 
 test("iso: two instances create separate panel frames", function()

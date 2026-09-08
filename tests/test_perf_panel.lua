@@ -351,7 +351,7 @@ test("lib: cancelling mid-recording does not announce the experiment as ended", 
   p.Cancel()
   local lines = table.concat(rec.log, "\n")
   assertEqual(lines:find("ENDED", 1, true), nil, "no end-of-experiment line: " .. lines)
-  assertTrue(lines:find("CANCELLED", 1, true) ~= nil, "but it says it was cancelled")
+  assertTrue(lines:find("CANCELED", 1, true) ~= nil, "but it says it was cancelled")
 end)
 
 test("lib: cancelling detaches the sampler", function()

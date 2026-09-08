@@ -705,6 +705,126 @@ test("options: LSMValues offers a None placeholder rather than an empty list", f
   assertEqual(n, 1, "and it is the only entry")
 end)
 
+-- ── the AceGUI widget-registry patch (Options minor 15) ────────────────────────────────────
+--
+-- AceGUI's widget registry is process-global, so a re-registration is never one addon's private
+-- business: the highest version registered for a name is what every addon in the client gets for
+-- the rest of the session. library-stack-§9 therefore puts a re-registration of a type the addon
+-- did not itself define here, and requires it to be idempotent behind a sentinel on the LIBRARY
+-- table -- every consumer carries its own vendored copy and every copy calls this, so N copies in
+-- one session must produce exactly one registration.
+--
+-- The shape being replaced is five private core/LSMPatch.lua files. Each wraps whatever the
+-- registry held when its PLAYER_LOGIN fired, so with all five loaded the last addon to log in
+-- wraps the fourth, which wraps the third, and the outermost wrapper belongs to whichever addon
+-- the client happened to load last.
+
+--- A stand-in for AGSMW's LSM30_Border widget, built by hand rather than from the kit's frame mock.
+--- That mock answers any CAPITALIZED key with a function, so `frame.DLeft` would come back truthy
+--- and uncallable -- and the left cap is exactly one of the two regions this patch re-anchors. A
+--- plain recorder can also say what was done to it, which a no-op cannot.
+local function borderRegion()
+  local r = { points = {}, shown = true, cleared = 0 }
+  function r:ClearAllPoints() self.points, self.cleared = {}, self.cleared + 1 end
+  function r:SetPoint(...) self.points[#self.points + 1] = { ... } end
+  function r:Hide() self.shown = false end
+  return r
+end
+
+local function borderCtor()
+  return {
+    type  = "LSM30_Border",
+    frame = { displayButton = borderRegion(), label = borderRegion(), DLeft = borderRegion() },
+  }
+end
+
+--- Run `fn(AceGUI)` with the LSM30_Border slot and the library's sentinel saved and restored.
+---
+--- Both are process-lived state that outlives a case: the registry is the mocks' single AceGUI
+--- table, shared with every later suite, and the sentinel is on the library table itself. A case
+--- that left LSM30_Border registered would silently change what tests/test_options_compose.lua
+--- builds for a `dialogControl = "LSM30_Border"` row three suites later.
+local function withCleanRegistry(fn)
+  local AceGUI    = mocks.LibStub("AceGUI-3.0")
+  local ctor      = AceGUI.WidgetRegistry["LSM30_Border"]
+  local version   = AceGUI.__widgetVersions["LSM30_Border"]
+  local sentinel  = lib.__lsmBorderPatched
+  AceGUI.WidgetRegistry["LSM30_Border"]   = nil
+  AceGUI.__widgetVersions["LSM30_Border"] = nil
+  lib.__lsmBorderPatched                  = nil
+  local ok, err = pcall(fn, AceGUI)
+  AceGUI.WidgetRegistry["LSM30_Border"]   = ctor
+  AceGUI.__widgetVersions["LSM30_Border"] = version
+  lib.__lsmBorderPatched                  = sentinel
+  if not ok then error(err, 0) end
+end
+
+test("options: __PatchLSM30Border is published on the library, not on an instance", function()
+  -- The placement IS the contract. A per-instance member would be called once per host, and five
+  -- hosts in one client would be five registrations deep again -- which is the defect, not a
+  -- smaller version of it. A sentinel on `O` could not stop that either, because every host has
+  -- its own `O`.
+  -- red under: publishing it as O.PatchLSM30Border from inside lib:New.
+  assertEqual(type(lib.__PatchLSM30Border), "function", "the library owns the registration")
+  local O = Fixture.new()
+  assertNil(O.__PatchLSM30Border, "and no instance carries a copy of it")
+end)
+
+test("options: __PatchLSM30Border registers once and the second call is a no-op", function()
+  -- The case the whole surface exists for: every vendored copy of this library calls this, and
+  -- LibStub hands them all the same `lib`, so the second through fifth calls must do nothing at
+  -- all. Asserting the registry still holds the FIRST wrapper is what distinguishes "did not
+  -- register again" from "registered an identical-looking second wrapper around the first".
+  -- red under: dropping the `if lib.__lsmBorderPatched then return false end` guard.
+  withCleanRegistry(function(AceGUI)
+    AceGUI:RegisterWidgetType("LSM30_Border", borderCtor, 4)
+    assertTrue(lib.__PatchLSM30Border(), "the first call registers")
+    local wrapper = AceGUI.WidgetRegistry["LSM30_Border"]
+    assertTrue(wrapper ~= borderCtor, "and what is registered is not the constructor it found")
+    assertEqual(AceGUI:GetWidgetVersion("LSM30_Border"), 5, "one above what was there, to win")
+    assertTrue(lib.__lsmBorderPatched, "the sentinel records that this session is patched")
+
+    assertFalse(lib.__PatchLSM30Border(), "the second call declines")
+    assertEqual(AceGUI.WidgetRegistry["LSM30_Border"], wrapper, "the first wrapper is still it")
+    assertEqual(AceGUI:GetWidgetVersion("LSM30_Border"), 5, "and the version did not move again")
+  end)
+end)
+
+test("options: the patched constructor hides the preview tile and re-anchors the bar", function()
+  -- What the five private copies were for. Upstream AGSMW pins a 42x42 preview tile to the
+  -- widget's TOPLEFT and re-anchors the dropdown bar's left cap to that tile's BOTTOMRIGHT, which
+  -- on a canvas-layout settings page leaves the control sitting 42px right of every slider and
+  -- checkbox stacked with it. The fix is per instance, on the widget the wrapped constructor just
+  -- built -- the registry entry is a delivery mechanism, not the change.
+  -- red under: returning the wrapped widget without touching frame.displayButton.
+  withCleanRegistry(function(AceGUI)
+    AceGUI:RegisterWidgetType("LSM30_Border", borderCtor, 1)
+    lib.__PatchLSM30Border()
+    local f = AceGUI:Create("LSM30_Border").frame
+    assertFalse(f.displayButton.shown, "the preview tile is hidden")
+    assertEqual(f.label.points[1][1], "TOPLEFT", "the label starts at the frame's own left edge")
+    assertEqual(#f.label.points, 2, "and spans to its right one")
+    assertEqual(f.DLeft.points[1][1], "BOTTOMLEFT", "the bar's left cap comes back to the frame")
+  end)
+end)
+
+test("options: __PatchLSM30Border stays armed while the widget is absent", function()
+  -- The sentinel means "a registration happened", not "this was called". AGSMW is a separate
+  -- addon: a host that calls this at file load, before the library that ships LSM30_Border has
+  -- run, must still get its patch when it calls again from PLAYER_LOGIN. Setting the sentinel on
+  -- the way out of the early return would disarm the surface for the whole session, silently, in
+  -- exactly the load order it exists to survive.
+  -- red under: setting lib.__lsmBorderPatched before the registry lookup instead of after the
+  -- registration.
+  withCleanRegistry(function(AceGUI)
+    assertFalse(lib.__PatchLSM30Border(), "nothing to wrap, so nothing is registered")
+    assertNil(lib.__lsmBorderPatched, "and the sentinel is left clear")
+    AceGUI:RegisterWidgetType("LSM30_Border", borderCtor, 2)
+    assertTrue(lib.__PatchLSM30Border(), "the call after AGSMW loads takes")
+    assertEqual(AceGUI:GetWidgetVersion("LSM30_Border"), 3)
+  end)
+end)
+
 -- ── the always-shown scrollbar patch (OptionsScroll.lua) ───────────────────────────────────
 
 test("options: EnsureScroll is lazy, created once, and patched", function()

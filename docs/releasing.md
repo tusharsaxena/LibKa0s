@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.25.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.27.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -16,8 +16,9 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
    That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
-   is eighteen files, the fourteen in `LibKa0s/` plus four under `testkit/`, because `tests/` and
-   `docs/` are excluded. A consumer's is scoped too, and usually excludes `libs/` and `tests/`. 0/0
+   is forty-nine files since v1.27.0: everything but `tests/_kit/`, which is excluded only because
+   it is a byte copy of `testkit/` and would report every finding twice. A consumer's is scoped too,
+   and usually excludes `libs/` and `tests/`. 0/0
    only means something if the files carrying the seam are inside the checked set, so confirm that
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
@@ -62,36 +63,94 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    live `lib.MODULES` and fails naming every major whose document is missing — the same bargain
    `tests/test_kitsync.lua` strikes for `Kit.VERSION`. Bump a minor and the suite is red until the
    document is written, so step 7's green gate cannot be reached without it.
-6. **Regenerate the case list**: `lua tests/run.lua --list` into `docs/test-cases.md`, keeping CRLF
-   (see that file's own banner for the exact command).
-7. **Move the provenance template in this file to the version being released** — the templated line
-   under "Re-vendoring consumers" below, and the repo semver in the table at the top. It moves here,
-   before the tag, so the tagged commit already says what it bundles and step 8 is a copy rather than
-   a recollection. This is a numbered step because the alternative is remembering, and at v1.5.0 the
-   remembering did not happen: the template still read v1.4.0 while every consumer had been updated
-   correctly by hand. **Green gate again**, then — before the tag — **run the full battery and freeze
-   the release bundle**:
+
+   **Then regenerate the member manifests**, in the same commit as the document:
 
    ```sh
+   lua tools/gen-api-members.lua
+   ```
+
+   That writes `docs/api/<Major>/members-<version-key>.json` for every major — the public surface as
+   data, which is what the nine addons' degradation stubs are checked against by
+   `Kit.assertSurfaceParity(stub, majorName)`. It is a generated file and never hand-edited, and
+   `tests/test_versioning.lua` regenerates and compares it on every run, so a bumped minor whose
+   manifest has not been written is red for the same reason a bumped minor with no document is.
+6. **Regenerate the case list**: `lua tests/run.lua --list` into `docs/test-cases.md`, keeping CRLF
+   (see that file's own banner for the exact command).
+7. **Move every version-bearing line to the version being released, then prove the tree.** Two
+   hand-maintained pointers move here and nothing reads either of them, which is exactly why they
+   are inside a numbered step: both have already drifted, and neither drift was visible until
+   somebody went looking.
+
+   **The provenance template in this file** — the templated line under "Re-vendoring consumers"
+   below, and the repo semver in the table at the top. It moves here, before the tag, so the tagged
+   commit already says what it bundles and step 8 is a copy rather than a recollection. This is part
+   of the step because the alternative is remembering, and at v1.5.0 the remembering did not happen:
+   the template still read v1.4.0 while every consumer had been updated correctly by hand.
+
+   **The standards pointer**, in `CLAUDE.md` and `README.md`. Both name the version of the Ka0s WoW
+   Addon Standard this library is built to. Check them against the source, here, rather than leaving
+   it to the next audit:
+
+   ```sh
+   head -1 ../WowAddonStandards/standards/STANDARDS.md
+   grep -n 'v2\.' CLAUDE.md README.md
+   ```
+
+   The version the first prints must be the version both lines of the second carry. When the
+   2026-09-07 review looked, they read v2.28.0 against a live v2.38.0 — ten versions of the standard
+   — while `OptionsCompose.lua` cited `options-ui-§15`–`§18`, sections that arrived at v2.38.0 and
+   did not exist at the version the two files claimed the library was built to. Moving the number is
+   half of it: read what changed in the standard between the two, because a pointer that moves
+   without anyone reading the diff lies more confidently than one that is merely stale.
+
+   **Then the record, and the tree it is taken from.** Green gate again, then commit everything
+   above — the whole release except its own evidence. The tree must be clean before the next
+   command: since kit revision 15 the runner **refuses** `--release` on a dirty tree and exits 2
+   before a suite runs, and there is no override flag.
+
+   ```sh
+   git status --porcelain                                # must print nothing
    tests/_kit/run-automated-tests.sh --release <X.Y.Z>
    ```
 
-   This is a step, not a nicety. Every other repo in the collection gets its release bundle from
-   `/wow-addon:bump-version`; this repo has no such command and this order was the only place the
-   run could be written down, so until v1.8.0 it was written down nowhere. The cost is on disk:
-   the one bundle taken before this step existed, `20260805-002859`, carries `"release": null` on a
-   commit later than `v1.7.0^{}` — it records a working tree nobody released rather than the bytes
-   anyone got. **v1.8.0 is the first release of this library with a test record naming it.**
+   Then a **second** commit carrying the bundle and its `RESULTS.md` row, and the tag on that. Two
+   commits rather than one, deliberately: the manifest names the sha its suites actually measured,
+   and the tagged tree still contains the evidence for itself. The two trees differ by the record
+   and nothing else. Taking the run first and committing everything together is what produced the
+   history this order replaces — of this library's twenty-nine release bundles, twenty-eight record
+   `"dirty": true`, and `20260903-161751` stamps `"release": "1.25.0"` at sha `895cdf4`, a tree
+   nobody can check out. Each of them reads, from a trend line, exactly like a reproducible run.
+
+   The run itself is a step, not a nicety. Every other repo in the collection gets its release
+   bundle from `/wow-addon:bump-version`; this repo has no such command and this order was the only
+   place the run could be written down, so until v1.8.0 it was written down nowhere. The cost is on
+   disk: the one bundle taken before this step existed, `20260805-002859`, carries `"release": null`
+   on a commit later than `v1.7.0^{}` — it records a working tree nobody released rather than the
+   bytes anyone got. **v1.8.0 is the first release of this library with a test record naming it.**
    `--release` is what ties a bundle to a version; without the flag the field stays null however
    carefully the run is timed.
 
-   Read the four suites before tagging: **the release gate is all four at `pass` plus zero functions
-   above CCN 15** (`automated-tests-§3`), and a `skip` is NOT EVALUATED rather than passed. `perf` is
-   a standing `skip` here because this repo ships no `tests/perf.lua`; that is a known and recorded
-   hole in the gate, not a pass — see [`automated-tests/README.md`](automated-tests/README.md).
+   **The tag's preconditions, and they are hard.** Read them off the manifest the run just wrote —
+   the file, not the console text, and not a memory of the console text:
 
-   Then commit — the bundle and `RESULTS.md` row belong in the release commit, so the tagged tree
-   contains the evidence for itself — and tag the repo semver.
+   ```sh
+   S=docs/automated-tests/<stamp>/manifest.json
+   jq -r '.release'                     "$S"    # the version being tagged, never null
+   jq -r '.git.dirty'                   "$S"    # false
+   jq -r '.git.sha'                     "$S"    # the commit being tagged, or its parent
+   jq -r '.suites | to_entries[] | "\(.key) \(.value.status)"' "$S"
+   jq -r '.suites.complexity.warnings'  "$S"    # 0
+   ```
+
+   `lint`, `tests` and `complexity` must read `pass` and `complexity.warnings` must be zero — no
+   function above CCN 15 (`automated-tests-§3`, *The release gate*). A `skip` is NOT EVALUATED
+   rather than passed. `perf` is the one standing `skip` here, because this repo ships no
+   `tests/perf.lua`; that is a known and recorded hole in the gate rather than a pass — see
+   [`automated-tests/README.md`](automated-tests/README.md). **No tag is cut without a bundle whose
+   `release` field names it.** `v1.24.0` is the reason that sentence is here: the tag exists, the
+   bundles jump 1.23.0 to 1.25.0, and there is a released version of this library whose test record
+   does not.
 8. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
    includes bumping the version named in each consumer's `CLAUDE.md` provenance line, in the same
    commit as the copy.
@@ -137,7 +196,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.25.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.27.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That

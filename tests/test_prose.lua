@@ -76,7 +76,7 @@ local function shippedFiles()
   return paths
 end
 
---- Run `matcher(lowercasedLine)` over every line of every shipped file, collecting `file:line —
+--- Run `matcher(line, path)` over every line of every shipped file, collecting `file:line —
 --- <what>` for each hit. One walk, two gates: reading the payload twice would double the shell-outs
 --- for nothing.
 local function scan(matcher)
@@ -87,7 +87,7 @@ local function scan(matcher)
       local nline = 0
       for line in f:lines() do
         nline = nline + 1
-        local what = matcher(line)
+        local what = matcher(line, path)
         if what then
           hits[#hits + 1] = ("%s:%d — %s"):format(path, nline, what)
         end
@@ -99,27 +99,136 @@ local function scan(matcher)
   return hits
 end
 
--- ── US English (localization-§5, anti-patterns #46) ──────────────────────────────────────────
+-- ── US English (localization-§5, anti-patterns #46) ─────────────────────────────
 --
--- Matched as SUBSTRINGS so one entry covers a word's whole family: `colour` catches coloured and
--- colours, `normalis` catches normalise and normalised. Case-insensitive, because the sentence-
--- initial spelling is the same defect.
+-- BOTH LISTS BELOW ARE COPIED WHOLE OUT OF `localization-§5`, and the section requires exactly
+-- that: a gate MUST carry every published entry and MUST NOT carry one that is not published. This
+-- gate used to hold six substrings of its own choosing, two of which were not in the section at
+-- all, and it stayed green for months while `CANCELLED` shipped in the chat text Perf.lua writes.
+-- A private list is a coverage claim nobody outside this repo can check — which is `testing-§12`'s
+-- failure mode sitting inside the gate for `localization-§5`. If a sweep finds a British form
+-- neither list knows about, it amends the section first and this copy syncs after; a private
+-- addition here MUST NOT outlive the change that found it.
+--
+-- BRITISH is lowercase substrings, matched case-insensitively, so one entry covers a word's whole
+-- family: `colour` catches coloured and colours, `normalis` catches normalise and normalised. That
+-- economy is also the trap — *analysis* contains `analys`, *programmer* contains `programme` — so
+-- ALLOWED names the correct US words that collide, and they are REMOVED AS WHOLE WORDS before the
+-- substring scan runs. Whole words, not substrings: allowing `analyses` as a substring would
+-- swallow *analysed* inside it and hide the very defect this gate exists to find.
 --
 -- Two carve-outs, recorded here so a later sweep does not "fix" them back:
 --   * a Blizzard symbol reproduced verbatim (SetColorTexture, SetBackdropBorderColor) stays as
 --     Blizzard spells it — none of them is British, which is why no exemption is needed in code;
 --   * released CHANGELOG.md entries are history and stay, which is why CHANGELOG.md is not under
 --     either shipped directory and is not scanned.
-local BRITISH = { "colour", "grey", "behaviour", "synthesise", "normalis", "recognis" }
+local BRITISH = {
+  -- -our → -or
+  "colour", "behaviour", "favour", "honour", "neighbour", "armour", "flavour",
+  "labour", "rumour", "humour", "endeavour", "rigour", "vigour", "saviour",
+  -- -re → -er
+  "centre", "centring", "metre", "fibre", "calibre", "theatre", "manoeuvre",
+  -- -ce → -se
+  "defence", "licence", "offence", "pretence", "practis",
+  -- -ise / -isation → -ize / -ization, and the -yse verbs
+  "initialis", "normalis", "generalis", "specialis", "optimis", "customis",
+  "serialis", "summaris", "utilis", "organis", "authoris", "prioritis",
+  "alphabetis", "categoris", "sanitis", "visualis", "minimis", "maximis",
+  "itemis", "randomis", "tokenis", "capitalis", "localis", "modularis",
+  "standardis", "memois", "recognis", "analys", "paralys", "synthesis",
+  "emphasis",
+  -- a doubled consonant before a suffix, where US English keeps one
+  "cancelled", "cancelling", "cancellable", "labelled", "labelling",
+  "travelled", "travelling", "modelled", "modelling", "signalled",
+  "signalling", "levelled", "levelling", "fuelled", "fuelling", "totalled",
+  "totalling", "fulfil",
+  -- -ogue → -og
+  "catalogue", "dialogue", "analogue",
+  -- no family, just British
+  "grey", "artefact", "whilst", "amongst", "learnt", "ageing", "enquir",
+  "acknowledgement", "judgement", "sceptic", "mould", "sulphur", "programme",
+}
+
+local ALLOWED = {
+  "analysis", "analyses", "analyst", "analysts",
+  "organism", "organisms", "organist",
+  "specialist", "specialists", "generalist", "generalists",
+  "optimism", "optimist", "optimists", "optimistic", "optimistically",
+  "paralysis", "paralyses", "synthesis", "syntheses", "emphasis", "emphases",
+  "fulfill", "fulfills", "fulfilled", "fulfilling", "fulfillment",
+  "programmer", "programmers", "programmed",
+}
+
+-- The whole-word index ALLOWED is consulted through. `%a+` matches a maximal run of letters, so a
+-- lookup against it IS the "delimit on non-letters" the section mandates — there is no way for an
+-- allowance to match half of a longer word.
+local ALLOWED_WORDS = {}
+for _, word in ipairs(ALLOWED) do ALLOWED_WORDS[word] = true end
+
+-- ONE ratified exemption, and the register row is what ratifies it. `localization-§5` names its
+-- exclusions file by file rather than by pattern precisely so an exclusion list cannot quietly
+-- grow, and this table is keyed the same way: a path, and the exact spelling that path is allowed
+-- to carry. Nothing here is a pattern and nothing here is a directory.
+--
+-- `lib.ICONS`'s `minimise` key is a PATH FRAGMENT, not prose. `lib.Icon` builds
+-- `base .. ICON_DIR .. "\\" .. name` from the key, and the file on disk is `minimise.tga`,
+-- vendored into every consumer's `libs/LibKa0s/media/icons/`. Renaming the key alone points at a
+-- texture that does not exist, and a texture that fails to load draws nothing and raises nothing —
+-- the silent failure Media.lua:190-196 records. Changing it needs a second `.tga` or an alias map,
+-- so until then the key stays and CLAUDE.md's `## Documented deviations` carries the row.
+--
+-- An entry that stops matching is itself a failure below. An exemption nobody can see expiring is
+-- how a gate goes back to reading as coverage it does not provide.
+local RATIFIED = {
+  ["LibKa0s/Media.lua"] = { "minimise" },
+}
+local NO_EXEMPTIONS = {}
+
+--- Replace every plain (non-pattern) occurrence of `needle` in `s` with a space. Returns the new
+--- string and how many it replaced. Plain rather than `gsub` so an exemption is read as the literal
+--- text it is, with no chance of a magic character in it quietly widening what it covers.
+local function stripPlain(s, needle)
+  local out, i, n = {}, 1, 0
+  while true do
+    local a, b = s:find(needle, i, true)
+    if not a then break end
+    out[#out + 1] = s:sub(i, a - 1)
+    out[#out + 1] = " "
+    i, n = b + 1, n + 1
+  end
+  out[#out + 1] = s:sub(i)
+  return table.concat(out), n
+end
 
 test("prose: no British spelling in the shipped library or the shipped kit", function()
-  local hits = scan(function(line)
-    local lower = line:lower()
+  local used = {}
+  local hits = scan(function(line, path)
+    -- ALLOWED first, as WHOLE WORDS: `%a+` matches a maximal run of letters, so a token that
+    -- survives this lookup is a word and never a fragment of a longer one.
+    local lower = line:lower():gsub("%a+", function(word)
+      if ALLOWED_WORDS[word] then return " " end
+      return word
+    end)
+    for _, word in ipairs(RATIFIED[path] or NO_EXEMPTIONS) do
+      local stripped, n = stripPlain(lower, word)
+      if n > 0 then
+        lower, used[path .. " " .. word] = stripped, true
+      end
+    end
     for _, word in ipairs(BRITISH) do
       if lower:find(word, 1, true) then return word end
     end
     return nil
   end)
+  for path, words in pairs(RATIFIED) do
+    for _, word in ipairs(words) do
+      if not used[path .. " " .. word] then
+        hits[#hits + 1] = ("%s — ratified exemption `%s` matches nothing; drop it here and in "
+          .. "CLAUDE.md's `## Documented deviations`"):format(path, word)
+      end
+    end
+  end
+  table.sort(hits)
   assertEqual(table.concat(hits, "\n          "), "",
     "localization-§5 mandates US English and anti-patterns #46 names comments explicitly; these "
     .. "spellings ship to every consumer and no consumer can fix them")
