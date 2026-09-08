@@ -10,6 +10,45 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.26.0 — unreleased
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 14**,
+**OptionsWidgets minor 13**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 7**,
+**PerfPanel minor 4**, **kit revision 14**.
+
+The heading carries no date because the tag has not been cut. The release that cuts it dates this
+block and freezes its bundle; until then, this is what is staged for v1.26.0.
+
+### `OptionsCompose.lua` minor 3 — the composed media dropdowns actually have options in them
+
+**Every font, border and bar-texture dropdown these composers wrote was empty in the client, in
+every consumer, from v1.24.0 onward.** `O.LSMValues(mediaType)` already returns the deferred closure
+the flow engine wants, and its own docstring says why the deferral is load-bearing: an LSM-backed row
+is a schema-row literal evaluated at file load, long before the addons that register media have run.
+The three group composers wrapped that closure a second time — `values = function() return
+O.LSMValues("font") end` — and `enumList` unwraps a row's `values` exactly once, so it got a function
+where it expected a table and handed back `{}`.
+
+Nothing reported it. The *"no options"* warning is gated on `row.values == nil`, which is the guard
+that keeps a legitimately-empty deferred list quiet while media is still loading; a doubly-wrapped
+row is not nil, merely useless, so the dropdown opened on nothing in silence. That is how this
+shipped past a green suite, and the four cases written the item before this one are what make it
+impossible to ship again.
+
+The fix is three lines — the row carries `O.LSMValues("font")` itself — and it adds, removes and
+renames nothing.
+
+**One contract tightened, and it is silent, so read this before re-vendoring.** `lib.__AttachCompose`
+lets a host supply its own `O.LSMValues`, and that member **must return a function**. Until now the
+composer called it inside a closure at dropdown-render time, so a host whose `LSMValues` returned a
+*table* worked by accident — late evaluation covered for it. The composer now reads the member once,
+at row-declaration time, so a table-returner lands a literal table frozen at file load: no error, no
+warning, and exactly the failure the deferral exists to prevent. A consumer that assigns
+`C.LSMValues = function(t) return lsmValues(t)() end` must pass the reader itself instead, in the
+same change as its re-vendor. A consumer that never touches the member, or that overrides a composed
+row's `values` afterwards, is unaffected.
+
 ## v1.25.0 — 2026-09-03
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

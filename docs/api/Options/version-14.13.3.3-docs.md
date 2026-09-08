@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 14.13.2.3
+# `LibKa0s-Options-1.0` — version 14.13.3.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,63 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **14** · `OptionsWidgets.lua` **13** · `OptionsCompose.lua` **2** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **14** · `OptionsWidgets.lua` **13** · `OptionsCompose.lua` **3** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.25.0 |
-| Status | Superseded |
-| Supersedes | [version 14.13.1.3](./version-14.13.1.3-docs.md) |
-| Superseded by | [version 14.13.3.3](./version-14.13.3.3-docs.md) — the composed media rows return the deferred reader itself |
+| Shipped in | v1.26.0 |
+| Status | **Current** |
+| Supersedes | [version 14.13.2.3](./version-14.13.2.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 14, OptionsWidgets = 13, OptionsCompose = 2, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 14, OptionsWidgets = 13, OptionsCompose = 3, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O14`
-for `Options.lua` minor 14, `W13` for `OptionsWidgets.lua` minor 13, `C2` for `OptionsCompose.lua`
-minor 2, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
+for `Options.lua` minor 14, `W13` for `OptionsWidgets.lua` minor 13, `C3` for `OptionsCompose.lua`
+minor 3, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**`OptionsCompose.lua` minor 3 — the three media rows hand the flow engine the deferred reader
+itself, not a closure wrapped around it.** One file moved; everything else in this major is unchanged
+from 14.13.2.3. This is a **fix to shipped, player-facing behaviour**: every dropdown `FontGroup`,
+`BorderGroup` and `BarGroup` composed was empty in the client, in every consumer, from 14.13.1.3
+onward.
+
+`O.LSMValues(mediaType)` already returns the deferred closure the engine wants. The three group
+composers wrapped it a second time:
+
+```lua
+values = function() return O.LSMValues("font") end,   -- 14.13.1.3 and 14.13.2.3
+values = O.LSMValues("font"),                         -- 14.13.3.3
+```
+
+`enumList` unwraps a row's `values` **exactly once**. Handed a closure around a closure it got a
+function where it expected a table and returned `{}` — and nothing said so, because the *"no
+options"* report is gated on `row.values == nil` and a doubly-wrapped row is not nil, merely useless.
+That gate is correct and stays: it is what keeps a legitimately-empty deferred media list quiet while
+the addons that register fonts are still loading. What it cannot do is tell an empty list from a
+wrapper, which is why this shipped green.
+
+Three lines. No member is added, removed or renamed, and no host signature moves.
+
+### The one contract that tightened, for a host that supplies its own `LSMValues`
+
+`lib.__AttachCompose(O)` lets a host hand in its own `O.LSMValues`, and **that member must return a
+function**. It always had to; until this version the composer read it inside a closure, at
+dropdown-render time, so a host whose `LSMValues` returned a *table* worked by accident — late
+evaluation covered for it.
+
+The composer now reads that member **once, at row-declaration time**, and assigns the result
+straight into `values`. A table-returning host therefore lands a literal table frozen at file load:
+no error, no warning, and precisely the failure the deferral exists to prevent — the addons that
+register media have not run when a schema-row literal is evaluated.
+
+**This is the one thing to check before adopting 14.13.3.3.** A host that never touches
+`O.LSMValues` is unaffected; so is one that overrides a composed row's `values` afterwards. A host
+that assigns `C.LSMValues = function(t) return lsmValues(t)() end` must pass the reader itself
+instead — `C.LSMValues = lsmValues` — in the same change as the re-vendor.
+
+### Previously, at 14.13.2.3
 
 **`OptionsCompose.lua` minor 2 — `MasterControls` takes a `leadButton`.** One file moved; everything
 else in this major is unchanged from 14.13.1.3.
@@ -435,15 +477,15 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `__pages()` | O1 | The pages that actually built. A raising builder is reported by key and costs only itself. |
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
 | `ColorPair(spec)` | **C1** | A color swatch and its *use class color* companion, as exactly two adjacent rows. See [The schema composers](#the-schema-composers). |
-| `FontGroup(spec)` | **C1** | The canonical six font rows, in the canonical order. |
-| `BorderGroup(spec)` | **C1** | The canonical four border rows, optionally preceded by a *Show border* toggle. |
-| `BarGroup(spec)` | **C1** | The canonical four bar rows, for a surface with a **fill texture**. |
+| `FontGroup(spec)` | **C1** | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
+| `BorderGroup(spec)` | **C1** | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
+| `BarGroup(spec)` | **C1** | The canonical four bar rows, for a surface with a **fill texture**. Its `barTexture` row's `values` is `O.LSMValues("statusbar")` itself (**C3**). |
 | `MasterControls(spec)` | **C1** | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2**. |
 | `FONT_FLAGS` / `FONT_FLAGS_SORT` | **C1** | The font-flag key map and its declared order. |
 | `VISIBILITY_VALUES` / `VISIBILITY_SORT` | **C1** | The four general-visibility values and their declared order. General visibility is a dropdown, not a boolean: a boolean can only ever answer two of the four. |
 | `MASTER_GROUP` | **C1** | The literal `"Master controls"` — the group name, the tab label and the `afterGroup` key are one string, because the group name **is** the hook key. |
 | `CLASS_COLOR_NOTE` | **C1** | The sentence every composed swatch's tooltip carries, in place of the `disabledIf` it must never have. |
-| `LSMValues(mediaType)` | W1 (never-empty: **W4**) | A **deferred** closure pulling the live media hash at dropdown-render time. Never empty: a media library that has not loaded yet yields a single `None` placeholder, because a dropdown with no options cannot be opened and the CLI would refuse even the stored value. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. |
+| `LSMValues(mediaType)` | W1 (never-empty: **W4**) | A **deferred** closure pulling the live media hash at dropdown-render time. Never empty: a media library that has not loaded yet yields a single `None` placeholder, because a dropdown with no options cannot be opened and the CLI would refuse even the stored value. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. **Since C3 the media composers assign what this returns directly into a row's `values`**, which is why a host that replaces this member must return a function; see [The schema composers](#the-schema-composers). |
 | `PatchAlwaysShowScrollbar(scroll)` | S1 | The scrollbar override. Idempotent, and reversed on `OnRelease` — AceGUI pools ScrollFrames, so an unreleased patch escapes into whichever addon recycles the widget next. |
 | `ROW_VSPACER` / `SECTION_HEADING_H` / `BUTTON_PAIR_REL` | W1 | The cross-slice layout constants, mirrored onto the instance so a host's own page code stays in lockstep with the engine's spacing. |
 | `PADDING_X` | **O7** | The horizontal inset the library draws its own header, divider and body to. Read it to align a bespoke widget with any of the three; **do not restate it** (options-ui-§8). |
@@ -543,6 +585,22 @@ font / border / bar groups, §17 for the class-color companion.
 written to — a host may hoist its spec, and its `extra` rows, to a file constant and re-render
 freely. What comes out is indistinguishable from hand-written rows, which is what lets every existing
 seam keep working unchanged.
+
+### The media rows, and what a host's own `LSMValues` must return
+
+`FontGroup`, `BorderGroup` and `BarGroup` each carry one LSM-backed dropdown — `font`,
+`borderStyle`, `barTexture` — and each assigns `O.LSMValues(<mediaType>)` **as** the row's `values`
+(**C3**). Not a closure around it: `enumList` unwraps `values` exactly once, so a second wrapper
+reaches it as a function and the dropdown comes back empty with no report.
+
+That makes `O.LSMValues` part of the composer's contract rather than an implementation detail of one
+row. A host that supplies its own — `__AttachCompose` reads the member off the instance it is handed
+— **must return a function**. Return a table and the composer stores that table, frozen at the
+moment the schema file loaded, before any addon that registers media has run. Nothing errors and
+nothing warns; the dropdown simply never learns about anything registered later.
+
+A host that overrides a composed row's `values` after the composer returns is unaffected, and so is
+one that never touches `O.LSMValues` at all — which is every consumer that just calls the composers.
 
 ### The common spec
 
@@ -644,8 +702,18 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. Six
-members and three row fields are added at this version and nothing is taken away.
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. Nothing
+is added or taken away at this version.
+
+**What moves at 14.13.3.3 is behaviour, and it moves in the direction of working.** The three
+composed media dropdowns populate. A consumer that worked around the empty lists — by overriding a
+composed row's `values`, or by patching `fixMediaValues`-style over the block — keeps working, and
+its workaround is now dead code it can delete on its own schedule.
+
+**The single incompatibility is a host-supplied `O.LSMValues` that returns a table.** It must return
+a function; see [The schema composers](#the-schema-composers). This is the only adoption step
+14.13.3.3 asks of anybody, it cannot be detected at runtime, and it fails silently, so check it
+before you re-vendor rather than after.
 
 **One behavior change is visible without a code change**, and it is deliberate: a page rendered
 through `RenderTabbedSchema` whose rows declare exactly **one** group now draws a one-tab strip and
@@ -673,19 +741,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 14.13.3.3
-
-Three lines in one file, and they fix shipped, player-facing behaviour. `FontGroup`, `BorderGroup`
-and `BarGroup` each wrapped `O.LSMValues` in a second closure, and `enumList` unwraps a row's
-`values` exactly once — so every media dropdown these composers wrote was empty in the client, with
-no report, because the *"no options"* warning is gated on `values == nil` and a doubly-wrapped row is
-not nil. At 14.13.3.3 the row carries the deferred reader itself.
-
-One thing to check before adopting, because it cannot be detected at runtime and fails silently: if
-this host supplies its own `O.LSMValues` through `__AttachCompose`, **that member must return a
-function**. At this version the composer called it inside a closure, at render time, so a
-table-returner worked by accident; at 14.13.3.3 it is read once at row-declaration time and a table
-lands frozen at file load. Pass the deferred reader, not a caller of it.
-
-Nothing else in the major moves, and no member is added or removed.

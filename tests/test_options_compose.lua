@@ -31,6 +31,14 @@ local function rowAt(rows, path)
   end
 end
 
+--- How many keys `t` holds. A media list is a key map keyed on the media name, so `#t` answers 0
+--- for a perfectly full one and says nothing at all about whether the dropdown has options.
+local function size(t)
+  local n = 0
+  for _ in pairs(t) do n = n + 1 end
+  return n
+end
+
 local BLOCK = { page = "general", group = "Appearance", subgroup = "Bar" }
 
 --- The common spec every case starts from, plus whatever it is adding.
@@ -96,6 +104,91 @@ function()
   assertEqual(paths(O.ColorPair(spec{ key = "accent", companionKey = "accentClassColor" })),
     "accent|accentClassColor")
   assertEqual(paths(O.ColorPair(spec())), "color|useClassColorColor")
+end)
+
+-- ── the media rows are deferred readers (LIBKA0S-A-01d) ──────────────────────────
+
+-- Nothing in this suite ever CALLED a media row's `values` before these four, and that is how the
+-- collection's only Critical shipped past 764 green cases: the sole `values` assertion here
+-- (MasterControls' visibility list, below) compares a table by identity and never invokes anything.
+-- `enumList` (OptionsWidgets.lua:78-79) unwraps a row's `values` exactly ONCE, so what the composer
+-- assigns must be the deferred reader itself and not a wrapper around it. These cases call the row
+-- the way the flow engine does and look at what comes back.
+
+test("compose: FontGroup's font row answers a populated list, not a second closure", function()
+  -- The list is read AFTER the row is declared, which is the whole point of the deferral
+  -- (Options.lua:759-763): the addons that register fonts have not run at file load. So the fixture
+  -- gets its media only once the row exists, and the row still has to see it.
+  -- red under: wrapping O.LSMValues in an outer `function() ... end`, which hands enumList a
+  -- function where it has already unwrapped and gets `{}` -- a dropdown with no options, silently,
+  -- because the empty-list report at OptionsWidgets.lua:1442 is gated on `values == nil`.
+  local O, rec = Fixture.new()
+  local row = rowAt(O.FontGroup(spec()), "font")
+  assertEqual(type(row.values), "function", "the row must stay a deferred reader")
+
+  rec.lsm = { HashTable = function(_, kind)
+    assertEqual(kind, "font", "the media type is carried through to the call")
+    return { ["Friz Quadrata TT"] = "path/a", Arial = "path/b" }
+  end }
+  local list = row.values()
+  assertEqual(type(list), "table", "enumList unwraps once; a second closure reaches it as a function")
+  assertEqual(size(list), 2, "the live font list, not an empty dropdown")
+  assertEqual(list.Arial, "Arial", "keyed on the name, valued with the name (an AceGUI list)")
+end)
+
+test("compose: BorderGroup's border-style row answers a populated list", function()
+  -- Its own case rather than a loop over the three, because a loop that broke on the first group
+  -- would leave the other two unproven and the failure would name neither.
+  -- red under: the same double wrap, in the border composer alone.
+  local O, rec = Fixture.new()
+  local row = rowAt(O.BorderGroup(spec()), "borderStyle")
+  assertEqual(type(row.values), "function", "the row must stay a deferred reader")
+
+  rec.lsm = { HashTable = function(_, kind)
+    assertEqual(kind, "border", "the media type is carried through to the call")
+    return { Blizzard = "path/a", Chat = "path/b" }
+  end }
+  local list = row.values()
+  assertEqual(type(list), "table", "enumList unwraps once; a second closure reaches it as a function")
+  assertEqual(size(list), 2, "the live border list, not an empty dropdown")
+  assertEqual(list.Chat, "Chat")
+end)
+
+test("compose: BarGroup's bar-texture row answers a populated list", function()
+  -- red under: the same double wrap, in the bar composer alone. This is the row KickCD's
+  -- settings/Castbar.lua reaches through the composer eight times over.
+  local O, rec = Fixture.new()
+  local row = rowAt(O.BarGroup(spec()), "barTexture")
+  assertEqual(type(row.values), "function", "the row must stay a deferred reader")
+
+  rec.lsm = { HashTable = function(_, kind)
+    assertEqual(kind, "statusbar", "the media type is carried through to the call")
+    return { Blizzard = "path/a", Smooth = "path/b" }
+  end }
+  local list = row.values()
+  assertEqual(type(list), "table", "enumList unwraps once; a second closure reaches it as a function")
+  assertEqual(size(list), 2, "the live statusbar list, not an empty dropdown")
+  assertEqual(list.Smooth, "Smooth")
+end)
+
+test("compose: a host whose own LSMValues returns a TABLE lands a frozen list, which is the breach",
+function()
+  -- __AttachCompose lets a host supply its own O.LSMValues, and the composer reads that member
+  -- once, at row-declaration time. A host handing back a TABLE therefore freezes its media list at
+  -- whatever happened to be registered when the file loaded -- exactly the failure the deferral
+  -- exists to prevent. MultiMeters ships that shape today (settings/Schema.lua:670 reads
+  -- `C.LSMValues = function(t) return lsmValues(t)() end`) and must hand back the closure instead.
+  --
+  -- This case is the only thing that makes the breach visible: with the outer wrapper in place a
+  -- table-returner works by accident, late-evaluated, and nothing anywhere says the host is wrong.
+  -- red under: restoring the outer closure, which demotes this assertion back to "a function".
+  local O = Fixture.new()
+  O.LSMValues = function(_) return { Blizzard = "Blizzard" } end
+  local row = rowAt(O.BarGroup(spec()), "barTexture")
+
+  assertEqual(type(row.values), "table",
+    "a table-returning host LSMValues must land as the frozen literal it is, where a case can see it")
+  assertEqual(row.values.Blizzard, "Blizzard", "and it is the host's list, frozen at declaration")
 end)
 
 -- ── the color companion (options-ui-§17) ───────────────────────────────────────────────────

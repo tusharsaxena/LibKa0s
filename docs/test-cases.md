@@ -581,13 +581,17 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
 
-### test_options_compose.lua (20)
+### test_options_compose.lua (24)
 
 - compose: the instance carries every composer and every published constant
 - compose: FontGroup emits the six canonical leaves in the canonical order
 - compose: BorderGroup emits the four mandated leaves, and the toggle only when asked
 - compose: BarGroup emits texture, opacity, color, companion -- in that layout
 - compose: ColorPair emits exactly two rows, and names the companion after the swatch
+- compose: FontGroup's font row answers a populated list, not a second closure
+- compose: BorderGroup's border-style row answers a populated list
+- compose: BarGroup's bar-texture row answers a populated list
+- compose: a host whose own LSMValues returns a TABLE lands a frozen list, which is the breach
 - compose: every color row is immediately followed by its companion, and starts a line
 - compose: no composed row anywhere carries disabledIf
 - compose: the class-color SOURCE is stamped on both halves of every pair
@@ -850,7 +854,7 @@ badge and any count quoted in the docs must agree with it.
 | test_slash.lua | 81 |
 | test_options.lua | 77 |
 | test_options_widgets.lua | 136 |
-| test_options_compose.lua | 20 |
+| test_options_compose.lua | 24 |
 | test_perf_core.lua | 68 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 45 |
@@ -862,4 +866,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
 | test_eol.lua | 1 |
-| **Total** | **764** |
+| **Total** | **768** |
