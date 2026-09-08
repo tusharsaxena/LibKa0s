@@ -865,6 +865,12 @@ badge and any count quoted in the docs must agree with it.
 - prose: no British spelling in the shipped library or the shipped kit
 - prose: no retired §N.M section reference in the shipped library or the shipped kit
 
+### test_layout_cap.lua (3)
+
+- layoutcap: every authored file over 1500 lines is named in the CLAUDE.md census
+- layoutcap: no census row outlives the breach it records
+- layoutcap: every census row carries a disposition that can be followed
+
 ### test_eol.lua (1)
 
 - eol: every tracked file carries the terminator .gitattributes declares for it
@@ -896,5 +902,6 @@ badge and any count quoted in the docs must agree with it.
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 5 |
 | test_prose.lua | 2 |
+| test_layout_cap.lua | 3 |
 | test_eol.lua | 1 |
-| **Total** | **791** |
+| **Total** | **794** |

@@ -75,6 +75,65 @@ is already arguing for it.
 bind this repo at all, so there is nothing to ratify. A row belongs here only when a section that
 *does* bind is knowingly not followed.
 
+## Files over the 1500-line cap
+
+`layout-§1` caps every **authored** `.lua` file this repository tracks at 1500 lines. Two things are
+worth stating explicitly here, because this repo was one of the four that read the old, silent text
+differently: the cap binds `tests/`, and it binds a Ka0s-owned library's own payload folder — that is
+what `library-stack-§7`'s applicability list settles, and it is why the 2026-09-07 audit's Low grade
+on both breaches below no longer stands. `testkit/` is **authored here** and capped like anything
+else; `tests/_kit/` is this repo's own vendored copy of it and is not, on the same terms every
+consumer's copy is exempt. The second carve-out, generated non-shipping data, has no instance here.
+
+A file over the cap has three terminal states, not one: peeled, an **open issue naming the seam** a
+peel would follow, or a **ratified row** in `## Documented deviations` above carrying a re-check
+trigger. What the rule refuses is a fourth state — a breach nothing anywhere remarks on, "the count
+sitting in a bundle manifest that no document reads". This repo had precisely that: an `overCapFiles`
+figure in the `docs/automated-tests/` manifests that no document read, and a RESULTS.md watch list
+that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
+against a file in it.
+
+Two files, measured 2026-09-08 with
+
+```sh
+git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
+```
+
+| File | Lines (2026-09-08) | Disposition |
+|---|---|---|
+| `tests/test_options_widgets.lua` | 2398 | Issue [#8](https://github.com/tusharsaxena/LibKa0s/issues/8) — peels with `LibKa0s/OptionsWidgets.lua`, on that file's seam and in that file's commit |
+| `LibKa0s/OptionsWidgets.lua` | 1989 | Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16) — the tab and page chrome (`:378` art block, `:871`–`:1349` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine |
+
+**Both are issues, and neither is a register row.** The sibling repository doing this same work gives
+its *mirror suites* register rows rather than issues, on the argument that a suite has no seam of its
+own. That argument holds here too and is written into #8 — the suite peels on the module's seam, in
+the module's commit — but the row would have been a second record of a file that **already had an
+open issue**, opened when the file was 1114 lines and carrying its own hard trigger, "crosses 1500 →
+split". That trigger has fired. Rewriting the issue it fired on is one record; a register row beside
+it would be two records free to disagree, which is the failure this section exists to prevent. The
+deviation register above also stays deliberately near-empty (see its note), and a breach with a live
+issue is not a deviation from the standard — it is one of the states the standard allows.
+
+**The line counts are dated, and nothing asserts them.** What `tests/test_layout_cap.lua` asserts is
+the *membership* of this table, in both directions: a file that crosses 1500 and is not listed here
+turns the suite red, and so does a row for a file that has fallen back under the cap or been deleted,
+so the census cannot become a graveyard. A figure in this column is a measurement, not a claim about
+today — `OptionsWidgets.lua` was 1838 at the 2026-09-07 review and the suite 2287, and both moved
+while nobody was watching, which is the whole argument for having a gate rather than a paragraph.
+
+**Nothing is peeled this cycle.** The 2026-09-07 remediation plan rules out splitting any file
+(`03_SPEC.md` § C22 non-goals). Here that is more than a scheduling preference: `LibKa0s/` is
+re-vendored whole-folder into nine consumers and every file in it carries its own LibStub minor, so a
+peel adds a payload file, a `LibKa0s.xml` row, a minor and the multi-file pairing guard
+(`__widgetsShellMinor`, `LibKa0s/OptionsWidgets.lua:31`) — a deliberate release, not a tidy-up. The
+deliverable was the disposition, and the disposition is this table.
+
+**The 1000–1500 band is on notice, not in breach**: `tests/test_widgets.lua` (1493),
+`tests/test_options.lua` (1266), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1206, tracked as
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)) and `LibKa0s/Options.lua` (1036). They are
+named so a later reader can tell the band was looked at rather than missed; none needs a disposition
+until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one.
+
 ## Documentation map
 
 `documentation-§3`'s tier model does not bind a library repo (see the applicability list above), so
