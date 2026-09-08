@@ -76,15 +76,37 @@ test("cmd: report writes the summary to the log sink and opens it", function()
   assertEqual(p.Progress().report, "used", "and the step is marked without being disabled")
 end)
 
-test("cmd: dump writes one line of JSON to the log sink", function()
+test("cmd: report writes the summary AND the JSON, in that order", function()
+  -- `dump` was its own verb and its own panel step until 2026-09-09. Both artifacts go to the same
+  -- place, both describe the same finished run, and the perf-analysis workflow wants BOTH -- so
+  -- asking for them separately was a second click and a second thing to remember, and a run
+  -- reported without its dump was the easy mistake to make.
+  --
+  -- Order matters: the summary is what a person reads and the JSON is what they copy, so the human
+  -- half goes first and the machine half is the last line, where a copy-paste starts.
+  -- red under: a report that prints only the summary.
   local p, rec = Fixture.new()
   p.OnCommand("start")
   p.OnCommand("finish")
-  p.OnCommand("dump")
+  p.OnCommand("report")
+
   local last = rec.log[#rec.log]
-  assertEqual(last:sub(1, 1), "{", "one JSON object")
+  assertEqual(last:sub(1, 1), "{", "the JSON is not the last line of a report")
   assertTrue(last:find('"addon":"TestHost"', 1, true) ~= nil, "self-identifying")
-  assertEqual(p.Progress().dump, "used", "marked")
+  assertTrue(#rec.log > 1, "the summary went missing with the fold")
+  assertEqual(p.Progress().report, "used", "marked")
+end)
+
+test("cmd: dump is no longer a verb of its own", function()
+  -- Folded, not aliased: an alias would be the duplication the fold exists to remove, and the
+  -- unknown-verb path already prints the usage -- where `report` now says it renders the JSON too.
+  -- That is a better answer to someone with the old command in their fingers than a silent synonym.
+  -- red under: keeping SUBS.dump, or re-pointing it at report.
+  local p = Fixture.new()
+  local out = joined(p.OnCommand("dump"))
+  assertTrue(out:find("usage:", 1, true) ~= nil,
+    "an unknown verb must fall through to the usage block; got: " .. out)
+  assertTrue(p.Progress().dump == nil, "Progress still carries a dump step")
 end)
 
 test("cmd: cancel refuses when there is nothing to cancel", function()

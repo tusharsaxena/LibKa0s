@@ -1,0 +1,16 @@
+{
+  "major": "LibKa0s-Perf-1.0",
+  "versionKey": "10.5",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Perf", "minor": 10 },
+    { "file": "PerfPanel", "minor": 5 }
+  ],
+  "members": [
+    { "name": "DEFAULT_RING", "kind": "number" },
+    { "name": "EncodeJSON", "kind": "function" },
+    { "name": "New", "kind": "function" },
+    { "name": "SCHEMA", "kind": "number" },
+    { "name": "STRINGS", "kind": "table" }
+  ]
+}

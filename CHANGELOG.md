@@ -10,6 +10,34 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.29.0 — 2026-09-09
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
+**OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 10**,
+**PerfPanel minor 5**, **kit revision 15**.
+
+`dump` stops being a step. **This removes a sub-verb and a `Progress()` field**, which is the first
+release since v1.20.0 to take anything away — a host reading `Progress().dump`, or offering
+`perf dump` in its own help, has one line to delete.
+
+### `Perf.lua` minor 10, `PerfPanel.lua` minor 5 — one review step, two artifacts
+
+`report` printed the summary and `dump` printed the run as one line of JSON. Both went to the same
+log, both described the same finished run, and `perf-analysis` asks for **both** — so splitting them
+across two verbs and two panel rows was a second click, a second thing to remember, and a run
+reported without its dump was the easy mistake to make. It is one step now: `report` writes the
+summary and then the JSON.
+
+**The JSON is last on purpose.** The summary is what a person reads and the JSON is what they copy,
+and a copy-paste starts at the bottom of the window.
+
+**Folded, not aliased.** `perf dump` is no longer a verb at all, rather than a synonym for `report`:
+an alias would be exactly the duplication the fold removes. The unknown-verb path already prints the
+usage block, where `report` now says it renders the JSON too, which is a better answer to someone
+with the old command in their fingers than a silent synonym would be. The panel loses its `JSON
+Dump` row and its `STEP_DUMP` string with it, and the review tracker goes from two keys to one.
+
 ## v1.28.0 — 2026-09-09
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
