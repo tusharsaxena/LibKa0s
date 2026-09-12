@@ -510,7 +510,9 @@ test("widgets: clicking the lit ChoiceGrid cell keeps it lit and writes nothing"
   local realSet = rec.d.set
   rec.d.set = function(path, value) writes = writes + 1; return realSet(path, value) end
   -- AceGUI toggles a CheckBox on every click, a radio-typed one included, so a click on the lit
-  -- cell arrives as `false`.
+  -- cell arrives as `false`. AceGUI's ToggleChecked unchecks the widget before it fires, and the
+  -- kit's __fire only calls the callback, so mirror that toggle here.
+  cb:SetValue(false)
   cb:__fire("OnValueChanged", false)
   -- red under: re-syncing only through a write (the lit cell would read unlit until the next one)
   assertTrue(cb.value, "a radio cannot be clicked off")
@@ -582,6 +584,9 @@ test("widgets: ChoiceGrid disables a row's cells by its disabledIf", function()
   syncAll(ctx)
   -- red under: evaluating disabledIf at build only
   for _, cb in ipairs(radiosOf(lines[1])) do assertFalse(cb.disabled, "re-evaluated on refresh") end
+  -- red under: not registering the label's disable refresher (the label stays dimmed once its
+  -- row re-enables)
+  assertFalse(lines[1].children[4].disabled, "the label brightens with its cells")
   assertTrue(rec ~= nil)
 end)
 
