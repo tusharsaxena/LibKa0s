@@ -1933,6 +1933,136 @@ function lib.__AttachWidgets(O, d)
     flushRow()
   end
 
+  -- ── the choice grid (minor 19) ───────────────────────────────────────────────────────────
+  --
+  -- One radio cell per column, then the row's label across what is left of the line. The label
+  -- gives back CHOICE_CLIP_INSET for the reason BUTTON_PAIR_REL sits under half: the widget that
+  -- ends at the right edge is clipped by the ScrollFrame's clip rectangle (options-ui-§8), and a
+  -- line summing to exactly 1 can wrap its last cell on a float rounding.
+  local CHOICE_CELL_REL   = 0.12
+  local CHOICE_CLIP_INSET = 0.02
+  -- The label column's heading when the host names none. A literal, as lib.STRINGS' own are: the
+  -- library carries no locale, and a host that has one passes `labelHeader`.
+  local CHOICE_LABEL_HEADER = "Category"
+
+  local function choiceLabelRel(columnCount)
+    return math.max(1 - columnCount * CHOICE_CELL_REL - CHOICE_CLIP_INSET, CHOICE_CELL_REL)
+  end
+
+  --- The header line: each column's label over its cells, then the label column's heading.
+  local function choiceHeader(scroll, columns, labelHeader)
+    local line = startRow(O)
+    for _, col in ipairs(columns) do
+      local lbl = O.AceGUI:Create("Label")
+      lbl:SetText(col.label or tostring(col.value))
+      lbl:SetRelativeWidth(CHOICE_CELL_REL)
+      line:AddChild(lbl)
+    end
+    local lbl = O.AceGUI:Create("Label")
+    lbl:SetText(labelHeader or CHOICE_LABEL_HEADER)
+    lbl:SetRelativeWidth(choiceLabelRel(#columns))
+    line:AddChild(lbl)
+    scroll:AddChild(line)
+  end
+
+  --- One radio cell: lit while the row holds this column's value, writing it on a click.
+  ---
+  --- AceGUI toggles a CheckBox on every click, a radio-typed one included, so a click on the lit
+  --- cell arrives as `false`. That is not a choice -- a radio cannot be clicked off -- so it
+  --- re-lights the cell and writes nothing, rather than sweeping every panel for a no-op write.
+  --- SetType is guarded because a host's own AceGUI fake may not carry it; the radio's look is
+  --- cosmetic, and the exclusive behavior is this function's, not the widget's.
+  local function choiceCell(ctx, row, col, line)
+    local cb = O.AceGUI:Create("CheckBox")
+    if cb.SetType then cb:SetType("radio") end
+    cb:SetLabel("")
+    cb:SetRelativeWidth(CHOICE_CELL_REL)
+
+    local function lit() return read(row) == col.value end
+    cb:SetValue(lit())
+    local applyDisabled = bindDisabled(ctx, row, cb)
+    ctx.refreshers[#ctx.refreshers + 1] = function()
+      cb:SetValue(lit())
+      applyDisabled()
+    end
+
+    cb:SetCallback("OnValueChanged", function()
+      if lit() then cb:SetValue(true) return end
+      set(row, col.value)
+    end)
+    O.AttachTooltip(cb, row.label, col.label)
+    line:AddChild(cb)
+  end
+
+  --- Fill one row's line: its cells, then its label carrying the row's tooltip. The label dims
+  --- with the cells, so a disabled row reads as disabled across the whole line.
+  local function choiceLine(ctx, row, columns, line)
+    for _, col in ipairs(columns) do choiceCell(ctx, row, col, line) end
+    local lbl = O.AceGUI:Create("InteractiveLabel")
+    lbl:SetText(row.label or row.path)
+    lbl:SetRelativeWidth(choiceLabelRel(#columns))
+    local applyDisabled = bindDisabled(ctx, row, lbl)
+    if applyDisabled ~= noop then ctx.refreshers[#ctx.refreshers + 1] = applyDisabled end
+    O.AttachTooltip(lbl, row.label, tooltipBody(row))
+    line:AddChild(lbl)
+  end
+
+  --- The grid's body, under the disable flag O.ChoiceGrid holds for it.
+  local function drawChoiceGrid(ctx, scroll, spec)
+    local columns = spec.columns or {}
+    if spec.heading then
+      O.Section(ctx, spec.heading)
+      ctx.lastGroup = spec.heading
+    end
+    choiceHeader(scroll, columns, spec.labelHeader)
+
+    -- Guarded per line, as RenderRows guards per row: a row whose `get` raises costs that line
+    -- and is reported, and every line after it still draws. A half-built line is not added.
+    local lines = {}
+    for _, row in ipairs(spec.rows or {}) do
+      local line = startRow(O)
+      if renderRowGuarded(print, row.path or row.label, choiceLine, ctx, row, columns, line) then
+        scroll:AddChild(line)
+        lines[#lines + 1] = line
+      end
+    end
+    O.AddSpacer(scroll, L.ROW_VSPACER)
+    if scroll.DoLayout then scroll:DoLayout() end
+    return lines
+  end
+
+  --- A matrix of radio cells over rows that share one value list (minor 19): a header line of
+  --- column labels, then one line per row -- a radio per column, then the row's label with its
+  --- tooltip. A category that is Default, Whitelist or Blacklist is the shape it exists for.
+  ---
+  --- spec = {
+  ---   rows        = schema rows: `path` (or a path-less `get`/`set`), `label`, `tooltip`/`desc`,
+  ---                 `disabledIf`. Read and written through the same seam as every maker, so a
+  ---                 click runs RefreshScalars and every cell re-syncs. The rows should carry
+  ---                 `skipRender` so the flow engine leaves them to the grid; the grid draws them
+  ---                 regardless, and they stay in the schema for the CLI and the resets.
+  ---   columns     = ordered { { value =, label = }, ... }. A stored value no column carries
+  ---                 lights no cell: guessing a column would hide the stale value behind a choice.
+  ---   heading     = optional section heading, drawn with O.Section.
+  ---   labelHeader = optional heading for the label column ("Category" when absent).
+  ---   disabled    = optional; draws every cell disabled, as RenderRows' `opts.disabled` does. A
+  ---                 grid drawn inside a disabled render inherits that render's flag either way.
+  --- }
+  ---
+  --- Returns the row lines (full-width Flow SimpleGroups) in row order; a row that failed to draw
+  --- has no line. Nil, drawing nothing, with no AceGUI.
+  function O.ChoiceGrid(ctx, spec)
+    local scroll = O.EnsureScroll(ctx)
+    if not scroll then return end
+    spec = spec or {}
+    local outer = ctx.__renderDisabled
+    ctx.__renderDisabled = (spec.disabled or outer) and true or nil
+    local ok, res = pcall(drawChoiceGrid, ctx, scroll, spec)
+    ctx.__renderDisabled = outer
+    if not ok then error(res, 0) end
+    return res
+  end
+
   --- The flow engine's loop, under the disable flag RenderRows holds for it.
   local function flowRows(ctx, scroll, rows, afterGroup, pairWith, opts)
     local pendingRow, pendingCount = nil, 0
