@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 15.14.3.3
+# `LibKa0s-Options-1.0` — version 15.15.4.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,102 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **15** · `OptionsWidgets.lua` **14** · `OptionsCompose.lua` **3** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **15** · `OptionsWidgets.lua` **15** · `OptionsCompose.lua` **4** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.27.0 |
-| Status | Superseded |
-| Supersedes | [version 14.14.3.3](./version-14.14.3.3-docs.md) |
-| Superseded by | [version 15.15.4.3](./version-15.15.4.3-docs.md) — the composers gain a record-backed arm |
+| Shipped in | v1.31.0 |
+| Status | **Current** |
+| Supersedes | [version 15.14.3.3](./version-15.14.3.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 15, OptionsWidgets = 14, OptionsCompose = 3, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 15, OptionsWidgets = 15, OptionsCompose = 4, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O15`
-for `Options.lua` minor 15, `W14` for `OptionsWidgets.lua` minor 14, `C3` for `OptionsCompose.lua`
-minor 3, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
+for `Options.lua` minor 15, `W15` for `OptionsWidgets.lua` minor 15, `C4` for `OptionsCompose.lua`
+minor 4, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**Two files move, `OptionsWidgets.lua` 14 → 15 and `OptionsCompose.lua` 3 → 4, and together they add
+a record-backed arm to the composers.** No member is added, removed, renamed or resignatured — the
+member manifest differs from 15.14.3.3's in its version key alone. What is added is one spec field,
+`bind`, on every composer, and two row fields the flow engine reads, `get` and `set`, on a row with
+no `path`. A host that passes neither renders byte-identically to 15.14.3.3.
+
+It exists for [PanelMaster#48](https://github.com/tusharsaxena/PanelMaster/issues/48), finding
+`PANELMASTER-A-03` under `options-ui-§16`. `O.BorderGroup` and `O.BarGroup` emitted **path-keyed**
+schema rows, and PanelMaster's panel editor edits **registry records** — a panel is a record with an
+id, not a settings path — so its three canonical groups (the panel's border, the accent bar, and the
+accent bar's own border) were typed out by hand in `settings/PanelEditor.lua` and ratified as three
+register rows whose re-check trigger was exactly this arm. The rows, their order and their shapes are
+still the composer's; the arm changes only where a value is read from and written to.
+
+### `OptionsCompose.lua` minor 4 — `spec.bind`
+
+```lua
+spec.bind = {
+  set    = function(field, value, row) end,   -- required: the record's single write seam
+  get    = function(field, row) return v end, -- read the LIVE record
+  record = function() return rec end,         -- or this instead of get: get becomes record()[field]
+}
+```
+
+Under `spec.bind` every composed row carries **no `path`**. It carries `field` — the record key,
+computed exactly as its path would have been, so `prefix` and `keys` rename a record field the way
+they rename a leaf — and `get()` / `set(value)` closures over the bind. Everything else on the row is
+unchanged: the leaves, their order, the labels and defaults, `startsLine`, the class-color stamps, the
+media rows' `values`. `extra` rows follow the same rule: under `bind`, an extra declares its record
+`field` in full and is bound like a canonical row; an extra that declares a `path`, or brings its own
+`get`/`set`, is left exactly as given.
+
+A bind that cannot both read and write is **refused when the block is composed** — no `set`, or
+neither `get` nor `record` — because a bound control with nowhere to write is a dead control that
+looks alive.
+
+**Bound rows are not settings.** They have no path, so the CLI cannot address them and
+`RestoreDefaults` cannot reset them, and they must never be put in the host's schema. Render them
+directly: `O.RenderField(ctx, row, parent, relWidth)` into the host's own container, or
+`O.RenderRows(ctx, rows)` over the returned list. Resetting a record stays the host's operation, as
+it always was.
+
+### `OptionsWidgets.lua` minor 15 — a row with no path reads and writes through its own `get` / `set`
+
+Every maker used to read `d.get(row.path)` and write `d.set(row.path, value)`. From W15 a row whose
+`path` is nil and which carries a `get` function is read with `row.get()`, and one carrying a `set`
+function is written with `row.set(value)` — the checkbox, slider, dropdown, edit box and color picker
+alike, the color picker's throttled and confirmed commits included. The refreshers read the same way,
+so a write that lands on the record from anywhere else repaints the control on the next
+`RefreshScalars`, exactly as a settings row repaints.
+
+**The gate is `path == nil`, not "has a get".** A row that has a path goes through the descriptor
+exactly as before, whatever other fields a host's schema happens to give it, so no path-keyed row
+anywhere in the collection can change behavior because of this minor. The color codec is still the
+descriptor's (`colorDecode` / `colorEncode`): a bind over a record that stores colors in another
+shape converts in its own `get` and `set`, which receive the row and can test `row.type`.
+
+`lib.STRINGS.EMPTY_DROPDOWN` names a bound row by its `field`; for a path row it names the path, as
+before.
+
+### What the arm does not change
+
+- **Path-keyed output is byte-for-byte what compose minor 3 emitted.** `tests/fixture_compose_golden.lua`
+  holds ten composer calls serialized from OptionsCompose.lua minor 3 — every spec field the common
+  spec documents and every composer-specific one — and `tests/test_options_compose.lua` compares the
+  current output against it on every run.
+- **Nothing reads `bind` outside `emit` and `appendExtra`.** `MasterControls` takes it like any other
+  composer (its `debugConsole` row's verbatim path becomes that row's `field`), but its closing button
+  pair is not a row and is not bound.
+- **The composers still create no widget and touch no AceGUI.** A bound row's closures read state only
+  when the flow engine calls them.
+
+### Adopting it
+
+Re-vendoring changes nothing for a host that passes no `bind`. PanelMaster adopts by composing its
+three blocks with a bind over `NS.Registry` — see [the worked example](#worked-example-panelmasters-three-groups)
+— and retiring the three `options-ui-§16` register rows in its `docs/ARCHITECTURE.md` in the same
+change. That adoption is PanelMaster's step; nothing in this release makes it.
+
+### Previously, at 15.14.3.3
 
 **`Options.lua` minor 15 — the library registers the `LSM30_Border` fixup, because AceGUI's widget
 registry belongs to the process and not to any one addon.** One file moved; everything else in this
@@ -54,7 +135,7 @@ that rule points at. It belongs to the Options major on the evidence: `OptionsCo
 writes `dialogControl = "LSM30_Border"` in the first place, and the panel descriptor already takes
 `getLSM()`.
 
-### `lib.__PatchLSM30Border()` — library-level, and idempotent behind a sentinel
+#### `lib.__PatchLSM30Border()` — library-level, and idempotent behind a sentinel
 
 It is on **`lib`**, not on the instance, and that placement is the contract rather than a convenience.
 A per-instance member would be called once per host, so five hosts in one client would be five
@@ -78,7 +159,7 @@ back on `GetBaseFrame`'s own numbers. `LSM30_Font` and `LSM30_Statusbar` take `A
 which has no `displayButton`, so this is Border-specific, and the popup's per-row hover preview is
 untouched.
 
-### Adopting it
+#### Adopting it
 
 **The re-vendor alone changes nothing.** Nothing in this library calls the new member; a host that
 never calls it is byte-identical in behavior to 14.14.3.3.
@@ -615,7 +696,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `BuildLandingPage(ctx, spec)` | **W6** | The whole landing body: clear, logo, one-liner, then a heading and its rows per section. See [The landing page](#the-landing-page). |
 | `AttachTooltip(widget, label, tooltip)` | W1 | Works on AceGUI widgets and on plain frames. |
 | `InlineButtonPair(ctx, left, right)` | W1 | Two action buttons (not settings) in one Flow row, each inset to `BUTTON_PAIR_REL`. A **nil** `right` draws the left button alone, at the pair's width, so it still lines up with every other page's — which is the shape a frameless addon's Master controls tab needs. A throwing `onClick` is reported, never propagated into AceGUI's dispatch. A spec carrying **no** `onClick` is reported once at BUILD time (`lib.STRINGS.DEAD_BUTTON`, naming the button's text) and drawn anyway — the composer emits the master group's two resets unconditionally, so a host that never supplied `onResetAll`/`onResetPosition` is told rather than shipping a live-looking button that swallows the click. |
-| `RenderField(ctx, row, parent, relWidth)` | W1 | Dispatch by `row.type` to one of the five makers. Returns nil for an unknown type rather than erroring — a misspelled type costs one row, not the page. |
+| `RenderField(ctx, row, parent, relWidth)` | W1 (path-less rows: **W15**) | Dispatch by `row.type` to one of the five makers. Returns nil for an unknown type rather than erroring — a misspelled type costs one row, not the page. A row with no `path` is read and written through its own `get` / `set` from W15 — see [What changed](#what-changed-at-this-version). |
 | `SessionCheckbox(ctx, parent, relWidth, spec)` | W1 | A checkbox wired to caller-supplied `get`/`set` instead of a settings path, for runtime-only toggles that must never persist. |
 | `RenderRows(ctx, rows, afterGroup, pairWith, opts)` | W1 (`opts.noHeadings`: **W9**) | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. `opts = { noHeadings = true }` suppresses the automatic `Section` heading, for a page whose sections are drawn as tabs instead (options-ui-§13); the row-boundary flush and `ctx.lastGroup` advance still happen. Omitted by every untabbed caller. |
 | `RenderSchema(ctx, pageKey, afterGroup, pairWith)` | W1 | The per-page wrapper. |
@@ -644,11 +725,11 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshPanel(ctx, structural)` | O8 | **One page, either tier.** `structural` true re-runs that ctx's renderer; false runs its refreshers in place. A hidden page is flagged dirty and repaints on its next show, so the caller never has to ask whether it is on screen. For a host whose page repaints off its own message bus rather than off a widget's `set()`. |
 | `__pages()` | O1 | The pages that actually built. A raising builder is reported by key and costs only itself. |
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
-| `ColorPair(spec)` | **C1** | A color swatch and its *use class color* companion, as exactly two adjacent rows. See [The schema composers](#the-schema-composers). |
-| `FontGroup(spec)` | **C1** | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
-| `BorderGroup(spec)` | **C1** | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
-| `BarGroup(spec)` | **C1** | The canonical four bar rows, for a surface with a **fill texture**. Its `barTexture` row's `values` is `O.LSMValues("statusbar")` itself (**C3**). |
-| `MasterControls(spec)` | **C1** | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2**. |
+| `ColorPair(spec)` | **C1** (`spec.bind`: **C4**) | A color swatch and its *use class color* companion, as exactly two adjacent rows. See [The schema composers](#the-schema-composers). |
+| `FontGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
+| `BorderGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
+| `BarGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four bar rows, for a surface with a **fill texture**. Its `barTexture` row's `values` is `O.LSMValues("statusbar")` itself (**C3**). |
+| `MasterControls(spec)` | **C1** (`spec.bind`: **C4**) | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2**. |
 | `FONT_FLAGS` / `FONT_FLAGS_SORT` | **C1** | The font-flag key map and its declared order. |
 | `VISIBILITY_VALUES` / `VISIBILITY_SORT` | **C1** | The four general-visibility values and their declared order. General visibility is a dropdown, not a boolean: a boolean can only ever answer two of the four. |
 | `MASTER_GROUP` | **C1** | The literal `"Master controls"` — the group name, the tab label and the `afterGroup` key are one string, because the group name **is** the hook key. |
@@ -742,6 +823,8 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 | `commitOn` | W1 | `"change"` makes this slider commit on the drag, throttled; `"release"` opts out of a descriptor-wide `sliderCommit`. Default is release-only. |
 | `isPercent` | W1 | Slider renders a 0–1 ratio as a percentage. |
 | `maxLetters` | W1 | Edit box only. |
+| `get` / `set` | **W15** | On a row with **no `path`** only: the row is read with `row.get()` and written with `row.set(value)` instead of through the descriptor's `get` / `set`. What a composer's `spec.bind` produces; a hand-written record row may carry them too. A row that has a `path` is always read and written through the descriptor, whatever else it carries. |
+| `field` | **C4** | On a row a composer bound with `spec.bind`: the record key the row reads and writes, exactly what its path would have been. The flow engine reads it only to name the row in the empty-dropdown report. |
 
 ## The schema composers
 
@@ -753,6 +836,11 @@ font / border / bar groups, §17 for the class-color companion.
 written to — a host may hoist its spec, and its `extra` rows, to a file constant and re-render
 freely. What comes out is indistinguishable from hand-written rows, which is what lets every existing
 seam keep working unchanged.
+
+**Since C4 a composer can also bind its rows to a registry record** (`spec.bind`, below). A bound
+row is still an ordinary table and the composer still reads no state — the row's `get` and `set`
+closures read and write the record when the flow engine calls them — but a bound row has no path, so
+it is rendered directly and never put in the schema.
 
 ### The media rows, and what a host's own `LSMValues` must return
 
@@ -786,7 +874,147 @@ Every composer takes these, and each is optional except `page` and `group` in pr
 | `defaults` | table | `{ <canonicalLeaf> = <value> }` — default overrides. |
 | `omit` | table | `{ <canonicalLeaf> = true }` — leave the row out. The survivors stay contiguous, so an omission leaves no hole in the order. |
 | `classColor` | table | `{ source = "player" \| "unit", unit = <token>, default = <boolean> }`. Stamped on both rows of every color pair. |
-| `extra` | array | Rows appended **after** the canonical block, order continuing, copied rather than stamped in place. An extra declares its own `path` in full. |
+| `extra` | array | Rows appended **after** the canonical block, order continuing, copied rather than stamped in place. An extra declares its own `path` in full — or, under `bind`, its own record `field` (**C4**). |
+| `bind` | table | **C4.** `{ set, get \| record }` — bind every row to a registry record instead of a settings path. See [The record-backed arm](#the-record-backed-arm-specbind). |
+
+### The record-backed arm: `spec.bind`
+
+New at `OptionsCompose.lua` minor 4, read by `OptionsWidgets.lua` minor 15.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `bind.set(field, value, row)` | function | **Required.** Write `value` to the record's `field`. The row is handed through so a bind can convert by `row.type`. |
+| `bind.get(field, row)` | function | Read the record's `field`. Read the **live** record here, not one captured when the block was composed. |
+| `bind.record()` | function | Instead of `get`: answer the live record, and `get` becomes `record()[field]`. |
+
+What a bound row carries, in place of `path`:
+
+| Field | Value |
+|---|---|
+| `field` | `(prefix or "") .. (keys[leaf] or leaf)` — or an extra's own `field` |
+| `get` | `function() return bind.get(field, row) end` |
+| `set` | `function(value) return bind.set(field, value, row) end` |
+
+A missing `set`, or a bind with neither `get` nor `record`, raises when the block is composed.
+
+#### Worked example: PanelMaster's three groups
+
+`settings/PanelEditor.lua` in PanelMaster types out three `options-ui-§16` groups over a panel
+record — at `b884ca8`, `:776-790` (the panel's border), `:818-838` (the accent bar) and `:852-866`
+(the accent bar's own border); PanelMaster#48 cites the same three blocks at `:738-757`, `:770-800`
+and `:814-830`, where they sat when it was filed. All three compose. `tests/test_options_compose.lua`
+builds exactly these three blocks against a stand-in registry and asserts the field order, the
+binding and a write through it, so this example is checked rather than illustrative.
+
+```lua
+-- Inside buildPanelEditor(ctx, parent, rec). `O` is NS.Helpers, the lib:New instance; `group`,
+-- `editorRow`, `editorSpacer` and EDITOR_ROW_GAP are the editor's own, unchanged.
+
+-- ONE bind for all three blocks. It reads the LIVE record by id -- a profile switch replaces the
+-- panel tables, which is why the hand-written refreshers look the record up again -- and writes
+-- through NS.Registry:Set, the registry writer architecture-§5 names. Panel colors are stored as
+-- { r, g, b, a } arrays and the descriptor codec reads named keys, so the bind converts the one row
+-- type whose shape differs.
+local function recordBind(rec)
+  local function live() return NS.Registry:Get(rec.id) or rec end
+  return {
+    get = function(field, row)
+      local v = live()[field]
+      if row.type ~= "color" then return v end
+      local c = NS.Util.Color(v)
+      return { r = c[1], g = c[2], b = c[3], a = c[4] }
+    end,
+    set = function(field, v, row)
+      if row.type == "color" then v = { v.r, v.g, v.b, v.a } end
+      NS.Registry:Set(rec.id, field, v)
+    end,
+  }
+end
+
+-- The editor draws into its own container, two controls to a line. A composed block's first and
+-- third rows carry startsLine, so pairing them in twos IS the canonical layout.
+local function renderBlock(rows)
+  for i = 1, #rows, 2 do
+    local line = editorRow(group)
+    O.RenderField(ctx, rows[i], line, 0.5)
+    if rows[i + 1] then O.RenderField(ctx, rows[i + 1], line, 0.5) end
+    editorSpacer(group, EDITOR_ROW_GAP)
+  end
+end
+
+-- Composed rows are fresh plain tables, so the page may retune one before drawing it. This
+-- addon's border reaches C.MAX_BORDER (32), not the composer's 16, and its media lists come from
+-- NS.Compat.MediaList, which carries its own 'Solid' and 'None', rather than from O.LSMValues.
+local function mediaValues(kind)
+  return function()
+    local list = {}
+    for _, name in ipairs(NS.Compat.MediaList(kind)) do list[name] = name end
+    return list
+  end
+end
+
+local bind = recordBind(rec)
+
+-- 1. The panel's own border (TAB_SURFACE).
+local border = O.BorderGroup{
+  bind = bind,
+  keys = { borderStyle = "borderTexture", borderSize = "borderSize",
+           borderColor = "borderColor", useClassColorBorder = "borderClassColor" },
+  extra = { { field = "borderOffset", type = "number", label = "Border offset",
+              min = C.MIN_BORDER_OFFSET, max = C.MAX_BORDER_OFFSET, step = 1,
+              tooltip = "How far the border sits from the panel's edge." } },
+}
+border[1].values = mediaValues("border")
+border[2].max = C.MAX_BORDER
+renderBlock(border)
+
+-- 2. The accent bar (TAB_ACCENT). Its "Enable accent bar" toggle stays the page's own row above the
+--    block: only a border's "Show border" may lead a composed block (options-ui-§16).
+local bar = O.BarGroup{
+  bind = bind,
+  keys = { barTexture = "accentTexture", barAlpha = "accentAlpha",
+           barColor = "accentColor", useClassColorBar = "accentClassColor" },
+  extra = {
+    { field = "accentThickness", type = "number", label = "Bar thickness",
+      min = C.MIN_ACCENT_THICKNESS, max = C.MAX_ACCENT_THICKNESS, step = 1 },
+    { field = "accentOffset", type = "number", label = "Bar offset",
+      min = C.MIN_ACCENT_OFFSET, max = C.MAX_ACCENT_OFFSET, step = 1 },
+  },
+}
+bar[1].values = mediaValues("statusbar")
+renderBlock(bar)
+
+-- 3. The accent bar's own border (TAB_ACCENT, after the Edges heading).
+local barBorder = O.BorderGroup{
+  bind = bind,
+  keys = { borderStyle = "accentBorderTexture", borderSize = "accentBorderSize",
+           borderColor = "accentBorderColor", useClassColorBorder = "accentBorderClassColor" },
+  extra = { { field = "accentBorderOffset", type = "number", label = "Border offset",
+              min = C.MIN_BORDER_OFFSET, max = C.MAX_BORDER_OFFSET, step = 1 } },
+}
+barBorder[1].values = mediaValues("border")
+barBorder[2].max = C.MAX_BORDER
+renderBlock(barBorder)
+```
+
+The three blocks come out as:
+
+| Block | Fields, in order |
+|---|---|
+| Panel border | `borderTexture` · `borderSize` · `borderColor` · `borderClassColor` · `borderOffset` |
+| Accent bar | `accentTexture` · `accentAlpha` · `accentColor` · `accentClassColor` · `accentThickness` · `accentOffset` |
+| Accent bar border | `accentBorderTexture` · `accentBorderSize` · `accentBorderColor` · `accentBorderClassColor` · `accentBorderOffset` |
+
+— the order the editor draws today, with the mandated four first and the addon's own rows after them.
+
+**What adoption changes on screen, for PanelMaster to decide.** The canonical tooltips replace the
+page's longer ones (a host may retune `tooltip` the same way it retunes `max`). *Bar opacity* renders
+as a percentage, because the canonical row carries `isPercent`. And the swatch stops relabeling itself
+*Border color (opacity)* while its companion is ticked: the composed swatch says the same thing in its
+tooltip, in `O.CLASS_COLOR_NOTE`'s words, which is the form `options-ui-§17` fixes. The
+`dd:SetValue(value)` push the hand-written media dropdown needs after an AceGUI-3.0-SharedMediaWidgets
+change is not needed: the flow engine's `set` runs `RefreshScalars`, and the refresher re-applies
+the value.
 
 ### `O.ColorPair(spec)` → rows
 
@@ -870,8 +1098,15 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. One
-member is added at this version and nothing is taken away.
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. No
+member is added at this version and nothing is taken away; one spec field and three row fields are
+added.
+
+**What is added at 15.15.4.3 is `spec.bind` on every composer, and `get` / `set` / `field` on a row
+with no path.** A host that passes no `bind` and renders no path-less row renders byte-identically to
+15.14.3.3: the composers' path-keyed output is pinned against a record taken from compose minor 3, and
+the flow engine's record branch opens only for a row whose `path` is nil. The re-vendor is the whole
+adoption for every consumer but PanelMaster, whose adoption is the worked example above.
 
 **What is added at 15.14.3.3 is `lib.__PatchLSM30Border()`, and nothing in this library calls it.** A
 host that ignores it renders byte-identically to 14.14.3.3, so the re-vendor on its own is a no-op —
@@ -925,21 +1160,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 15.15.4.3
-
-Two files move, `OptionsWidgets.lua` 14 → 15 and `OptionsCompose.lua` 3 → 4. **No member is added,
-removed, renamed or resignatured.** What is added is `spec.bind` on every composer, which binds a
-composed block to a registry record instead of to settings paths, and `get` / `set` on a row with no
-`path`, which the flow engine reads and writes through instead of the descriptor.
-
-At this version every composed row is path-keyed, so a page that edits registry records cannot use
-the composers and types its canonical groups out by hand. PanelMaster's panel editor does exactly
-that for three `options-ui-§16` groups (PanelMaster#48, `PANELMASTER-A-03`), and 15.15.4.3 is the
-arm its three register rows name as their re-check trigger.
-
-**The re-vendor alone changes nothing.** A host that passes no `bind` gets byte-for-byte the rows it
-got here — pinned against a record taken from this version's `OptionsCompose.lua` — and a row with a
-path is read and written through the descriptor exactly as it is here. See
-[version 15.15.4.3](./version-15.15.4.3-docs.md) for the arm and PanelMaster's three blocks as a
-worked example.

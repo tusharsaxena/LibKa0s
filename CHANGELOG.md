@@ -10,6 +10,47 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.31.0 — 2026-09-12
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
+**OptionsWidgets minor 15**, **OptionsCompose minor 4**, **OptionsScroll minor 3**, **Perf minor 10**,
+**PerfPanel minor 5**, **kit revision 16**.
+
+Two files in `LibKa0s/` move and add a record-backed arm to the Options composers, so a page that
+edits registry records can compose its canonical groups
+([PanelMaster#48](https://github.com/tusharsaxena/PanelMaster/issues/48)). No member is added,
+removed or renamed. The details are in
+[`docs/api/Options/version-15.15.4.3-docs.md`](docs/api/Options/version-15.15.4.3-docs.md).
+
+### `OptionsCompose.lua` minor 4 — `spec.bind`, the record-backed arm
+
+`O.BorderGroup` and `O.BarGroup` emitted path-keyed schema rows, and PanelMaster's panel editor edits
+registry records, so its three `options-ui-§16` groups — the panel's border, the accent bar, the
+accent bar's own border — were typed out by hand (`PANELMASTER-A-03`) and carried three register rows
+whose re-check trigger was this arm. Every composer now takes
+`spec.bind = { set = function(field, value, row) end, get = function(field, row) end }`, or `record`
+in place of `get`. A bound row carries no `path`: it carries `field`, computed exactly as its path
+would have been, and `get` / `set` closures over the bind. Extras declare their own `field` under
+`bind` and are bound too. The rows, their order and their mandated shapes are the composer's,
+unchanged. A bind that cannot both read and write is refused when the block is composed. Bound rows
+are rendered directly, never put in a schema.
+
+**Path-keyed callers are byte-for-byte unaffected**, and that is pinned rather than claimed:
+`tests/fixture_compose_golden.lua` holds ten composer calls serialized from minor 3, covering every
+common-spec field and every composer-specific one, and the suite compares current output against it.
+The Options API document carries PanelMaster's three blocks as a worked example, and the suite builds
+the same three against a stand-in registry. Adopting it in PanelMaster, and retiring the three rows,
+is PanelMaster's step.
+
+### `OptionsWidgets.lua` minor 15 — a row with no path reads and writes through its own `get` / `set`
+
+The flow engine's half. Every maker — checkbox, slider, dropdown, edit box, color picker, the color
+picker's throttled and confirmed commits, and every refresher — reads `row.get()` and writes
+`row.set(value)` for a row whose `path` is nil. The gate is `path == nil`, not the presence of a
+`get`, so a path-keyed row is read and written through the descriptor exactly as before, whatever else
+a host's schema gives it. The empty-dropdown report names a bound row by its `field`.
+
 ## v1.30.0 — 2026-09-12
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
