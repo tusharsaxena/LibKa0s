@@ -324,12 +324,15 @@ pieces arrived at kit revision 16, each replacing a shim a consumer had written 
 the local copy when you re-vendor:
 
 - **`AceGUI:Release(w)`** follows the real one's order and records what it took back:
-  `w.__released = true`, and `AceGUI.__released` in order. It fires `"OnRelease"` before it drops
-  the widget's callbacks, and `Release(nil)` raises as it does in the client.
+  `w.__released = true`, and `AceGUI.__released` in order. It fires `"OnRelease"` before it wipes
+  the widget's callbacks and `userdata`. `Release(nil)` and a second release of the same widget both
+  raise, as they do in the client. `w:Release()` is the same call.
 - **An `AceEvent:Embed(t)` target** records game events with `RegisterEvent`, `UnregisterEvent` and
   `UnregisterAllEvents` on `t.__events`. These are the same functions the `NewAddon` target carries,
-  so a module's own event target and the addon object behave identically. Fire a recorded handler as
-  CallbackHandler does: `t.__events[event](event, ...)`.
+  so a module's own event target and the addon object behave identically. `RegisterEvent` raises
+  where CallbackHandler does, including a missing method. Fire a recorded function as
+  CallbackHandler does, `t.__events[event](event, ...)`, and a recorded method name as
+  `t[method](t, event, ...)`.
 - **`NewAddon`** stamps AceConsole's `Printf` beside its `Print`, so an addon that forgets to take
   its own `NS.Printf` back after `NewAddon` fails the way it does in the client.
 - **`vendor_sync.lua`** checks the runner's recorded mode, as described above.

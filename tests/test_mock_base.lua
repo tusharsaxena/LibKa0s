@@ -189,8 +189,42 @@ test("mock: AceGUI:Release(nil) raises, as the real one does", function()
   assertFalse(pcall(AceGUI.Release, AceGUI, nil), "releasing nil raised")
 end)
 
+test("mock: releasing a widget twice raises, as AceGUI's delWidget does", function()
+  local AceGUI = buildMocks().LibStub("AceGUI-3.0")
+  local w = AceGUI:Create("Label")
+  AceGUI:Release(w)
+  local ok, err = pcall(AceGUI.Release, AceGUI, w)
+  assertFalse(ok, "the second release raised")
+  assertTrue(tostring(err):find("already released", 1, true) ~= nil, "with the real message")
+  assertEqual(#AceGUI.__released, 1, "and was not recorded a second time")
+end)
+
+test("mock: widget:Release() is AceGUI:Release(widget), as WidgetBase.Release is", function()
+  local AceGUI = buildMocks().LibStub("AceGUI-3.0")
+  local w = AceGUI:Create("Label")
+  assertTrue(type(w.Release) == "function", "a widget carries the method form")
+  w:Release()
+  assertTrue(w.__released == true and AceGUI.__released[1] == w, "and it went through AceGUI:Release")
+end)
+
+test("mock: AceGUI:Release wipes userdata in place and the size fields, as the real one does", function()
+  local AceGUI = buildMocks().LibStub("AceGUI-3.0")
+  local w = AceGUI:Create("Label")
+  local data = w.userdata
+  data.key = "row-7"
+  w:SetWidth(120); w:SetHeight(20); w:SetRelativeWidth(0.5)
+  w.relWidth, w.relHeight, w.noAutoHeight = 0.5, 0.5, true
+  AceGUI:Release(w)
+  assertNil(next(w.userdata), "userdata is emptied")
+  assertTrue(w.userdata == data, "in place, so a captured table stays the live one")
+  for _, k in ipairs({ "width", "height", "relativeWidth", "relWidth", "relHeight", "noAutoHeight" }) do
+    assertNil(w[k], k .. " is dropped")
+  end
+end)
+
 test("mock: an AceEvent embed records game events the way the NewAddon target does", function()
-  local t = buildMocks().LibStub("AceEvent-3.0"):Embed({})
+  -- No handler means the method named after the event, so the target must carry one.
+  local t = buildMocks().LibStub("AceEvent-3.0"):Embed({ PLAYER_LOGIN = function() end })
   assertTrue(type(t.RegisterEvent) == "function", "the embed carries RegisterEvent")
   local onAura = function() end
   t:RegisterEvent("UNIT_AURA", onAura)
@@ -219,7 +253,7 @@ end)
 test("mock: UnregisterAllEvents leaves an embed's message registrations alone", function()
   -- Real AceEvent keeps events and messages in two CallbackHandler registries, which is exactly why
   -- a module gives its game events a target of their own.
-  local t = buildMocks().LibStub("AceEvent-3.0"):Embed({})
+  local t = buildMocks().LibStub("AceEvent-3.0"):Embed({ PLAYER_LOGIN = function() end })
   local heard = 0
   t:RegisterMessage("HOST_CHANGED", function() heard = heard + 1 end)
   t:RegisterEvent("PLAYER_LOGIN")
@@ -232,12 +266,41 @@ test("mock: embedding a target a second time keeps what it had registered", func
   -- The real registry is keyed by (event, target) and lives in the library, not on the target, so
   -- a second Embed stamps the same mixins and forgets nothing.
   local AceEvent = buildMocks().LibStub("AceEvent-3.0")
-  local t = AceEvent:Embed({})
+  local t = AceEvent:Embed({ PLAYER_LOGIN = function() end })
   t:RegisterEvent("PLAYER_LOGIN")
   local live = t.__events
   AceEvent:Embed(t)
   assertEqual(t.__events.PLAYER_LOGIN, true, "the registration survived the second Embed")
   assertTrue(t.__events == live, "and so did the table")
+end)
+
+test("mock: a target reused by a later mock build starts with nothing registered", function()
+  -- The real registry lives in the library, so a fresh library sees none of an old one's
+  -- registrations. Keyed on the target table, a registry would leak between builds.
+  local t = { PLAYER_LOGIN = function() end }
+  buildMocks().LibStub("AceEvent-3.0"):Embed(t)
+  t:RegisterEvent("PLAYER_LOGIN")
+  buildMocks().LibStub("AceEvent-3.0"):Embed(t)
+  assertNil(t.__events.PLAYER_LOGIN, "an Embed in a new build forgot the old build's registration")
+  local ns = { PLAYER_LOGIN = function() end }
+  buildMocks().LibStub("AceAddon-3.0"):NewAddon(ns, "Host")
+  ns:RegisterEvent("PLAYER_LOGIN")
+  buildMocks().LibStub("AceAddon-3.0"):NewAddon(ns, "Host")
+  assertNil(ns.__events.PLAYER_LOGIN, "and so did a NewAddon in a new build")
+end)
+
+test("mock: RegisterEvent refuses what CallbackHandler refuses", function()
+  -- A registration the client raises on must not pass headlessly (fidelity rule 1).
+  local t = buildMocks().LibStub("AceEvent-3.0"):Embed({ OnLogin = function() end })
+  assertFalse(pcall(t.RegisterEvent, t, 42), "an event that is not a string raised")
+  assertFalse(pcall(t.RegisterEvent, t, "PLAYER_LOGIN"),
+    "no handler and no method named after the event raised")
+  assertFalse(pcall(t.RegisterEvent, t, "PLAYER_LOGIN", "OnTypo"), "a method self does not carry raised")
+  assertFalse(pcall(t.RegisterEvent, t, "PLAYER_LOGIN", 7), "a handler that is neither raised")
+  assertFalse(pcall(t.UnregisterEvent, t, 42), "UnregisterEvent of a non-string raised")
+  assertNil(next(t.__events), "and none of them recorded anything")
+  t:RegisterEvent("PLAYER_LOGIN", "OnLogin")
+  assertEqual(t.__events.PLAYER_LOGIN, "OnLogin", "a method self carries is recorded as given")
 end)
 
 test("mock: NewAddon clobbers a custom Printf exactly as it clobbers Print", function()

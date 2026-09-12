@@ -188,14 +188,36 @@ end
 -- registered right now. `__events[event]` is the handler, or `true` when none was given, and a test
 -- fires one the way CallbackHandler fires a function ref: `handler(event, ...)`.
 --
+-- Validated as CallbackHandler validates, because a registration the client refuses must not pass
+-- headlessly (fidelity rule 1): the event must be a string; the method defaults to the event's own
+-- name; it must be a function or a string; and a string must name a function `self` carries NOW.
+-- So `t:RegisterEvent("PLAYER_LOGIN")` on a target with no `PLAYER_LOGIN` method raises, as does
+-- `t:RegisterEvent(e, "OnTypo")`. What is recorded is unchanged -- the handler as given, or `true`
+-- -- so a string method is recorded as the string, and the optional `arg` form is accepted and not
+-- recorded. Firing a string method is `t[method](t, event, ...)`, CallbackHandler's own call.
+--
 -- Module-level functions rather than closures made per target, so the two call sites share the
 -- very same functions and cannot drift apart. tests/test_mock_base.lua asserts the identity.
 local function registerEvent(self, event, handler)
+  if type(event) ~= "string" then
+    error("Usage: RegisterEvent(eventname, method[, arg]): 'eventname' - string expected.", 2)
+  end
+  local method = handler or event
+  if type(method) ~= "string" and type(method) ~= "function" then
+    error("Usage: RegisterEvent(\"eventname\", \"methodname\"): 'methodname' - string or function expected.", 2)
+  end
+  if type(method) == "string" and type(self[method]) ~= "function" then
+    error("Usage: RegisterEvent(\"eventname\", \"methodname\"): 'methodname' - method '"
+      .. method .. "' not found on self.", 2)
+  end
   self.__events[event] = handler or true
   return self
 end
 
 local function unregisterEvent(self, event)
+  if type(event) ~= "string" then
+    error("Usage: UnregisterEvent(eventname): 'eventname' - string expected.", 2)
+  end
   self.__events[event] = nil
   return self
 end
@@ -207,10 +229,14 @@ local function unregisterAllEvents(self)
   return self
 end
 
---- Stamp the event half onto `target`. A target that already carries a registry keeps it: the real
---- registry is keyed by (event, target) inside the library, so a second Embed forgets nothing.
-local function embedEvents(target)
-  target.__events = target.__events or {}
+--- Stamp the event half onto `target`, pointing `target.__events` at the target's table in
+--- `registry`. The registry is one per mock build, keyed by target, because the real one lives
+--- inside the library rather than on the target: a second Embed in the same build forgets nothing,
+--- and a target table reused by a later build starts with nothing registered, as a fresh client
+--- library would -- the same per-build isolation the message bus has.
+local function embedEvents(target, registry)
+  registry[target] = registry[target] or {}
+  target.__events = registry[target]
   target.RegisterEvent = registerEvent
   target.UnregisterEvent = unregisterEvent
   target.UnregisterAllEvents = unregisterAllEvents
@@ -522,13 +548,17 @@ return function()
     end,
   }
 
+  -- The event half's registry, fresh per build and shared by NewAddon and AceEvent:Embed below:
+  -- [target] = { [event] = handler or true }. Weak-keyed, so a target nobody holds is not kept.
+  local eventRegistry = setmetatable({}, { __mode = "k" })
+
   libs["AceAddon-3.0"] = {
     NewAddon = function(_, target)
       target = target or {}
       local noop = function() end
       -- AceEvent's event half, recorded -- the same three functions an `AceEvent:Embed` target gets
       -- (see embedEvents above).
-      embedEvents(target)
+      embedEvents(target, eventRegistry)
       target.RegisterChatCommand = noop
       target.ScheduleTimer = function(_, fn, delay)
         local timer = { fn = fn, delay = delay }
@@ -563,7 +593,7 @@ return function()
   local busRegistry = {}  -- [message] = { [target] = fn }
   libs["AceEvent-3.0"] = {
     Embed = function(_, obj)
-      embedEvents(obj)
+      embedEvents(obj, eventRegistry)
       obj.RegisterMessage = function(self, msg, fn)
         busRegistry[msg] = busRegistry[msg] or {}
         busRegistry[msg][self] = fn
@@ -585,13 +615,20 @@ return function()
   -- frames: they remember what was set on them and, crucially, expose __fire so a test can drive
   -- the OnValueChanged / OnMouseUp / OnValueConfirmed callbacks the way a real click would — which
   -- is what exercises the read → write → refresh loop.
+  --
+  -- `aceGUI` is declared here and built below, so a widget's `:Release()` can reach it.
+  local aceGUI
   local function makeWidget(wtype)
     local w = {
       type      = wtype,
       children  = {},
       callbacks = {},
+      -- AceGUI's documented per-widget scratch table, cleared in place by Release.
+      userdata  = {},
       frame     = stubFrame(),
     }
+    -- WidgetBase.Release: the method form of AceGUI:Release, which correct code may call instead.
+    function w:Release() return aceGUI:Release(self) end
     function w:SetLabel(v) self.labelText = v; return self end
     function w:SetText(v) self.text = v; return self end
     function w:SetValue(v) self.value = v; return self end
@@ -637,7 +674,7 @@ return function()
     return w
   end
 
-  local aceGUI = {
+  aceGUI = {
     -- Populated by RegisterWidgetType. Empty by default, which models
     -- AceGUI-3.0-SharedMediaWidgets being absent: a dropdown maker asks GetWidgetVersion about
     -- LSM30_* and falls back to a plain Dropdown when it comes back nil.
@@ -663,7 +700,10 @@ return function()
   -- AceGUI:Release, in the real one's order (AceGUI-3.0.lua): guarded against a release reached
   -- from inside its own release, the frame hidden, "OnRelease" fired while the widget still has its
   -- children and its callbacks, the children released, the widget's own :OnRelease() run, and only
-  -- then the callbacks dropped -- in place, so a widget handed back cannot fire a stale one.
+  -- then the widget wiped: `userdata` and the callbacks cleared in place, so a widget handed back
+  -- cannot fire a stale handler or carry stale data; the size fields the real one nils (`width`,
+  -- `height`, `relWidth`, `relHeight`, `noAutoHeight`, plus `relativeWidth`, this fake's recorder
+  -- for SetRelativeWidth) dropped; the frame's points cleared and its parent reset to UIParent.
   -- LibKa0s's OptionsWidgets.lua relies on that order: it hides its band texture from an OnRelease
   -- callback. On top of the real behavior sits the recorder a test needs and the client does not:
   -- `w.__released = true`, and `AceGUI.__released` listing every widget taken back, in order.
@@ -674,17 +714,29 @@ return function()
   -- factory forgets them rather than releasing each one: making it release them is a change to
   -- every re-rendering panel in the collection, and a revision of its own.
   --
-  -- `nil` raises, as it does in the client, on the first index (fidelity rule 1).
+  -- Two raises, both as in the client (fidelity rule 1). `nil` raises on the first index. A second
+  -- Release of the same widget raises "Attempt to Release Widget that is already released", which
+  -- the real one raises from delWidget at its END, after re-running the steps above; because this
+  -- factory never reuses a widget, the fake can tell at the top and raises before touching it.
   aceGUI.__released = {}
   function aceGUI:Release(widget)
     if widget.isQueuedForRelease then return end
+    if widget.__released then error("Attempt to Release Widget that is already released", 2) end
     widget.isQueuedForRelease = true
     if widget.frame then widget.frame:Hide() end
     if widget.__fire then widget:__fire("OnRelease") end
     if widget.ReleaseChildren then widget:ReleaseChildren() end
     if widget.OnRelease then widget:OnRelease() end
-    if type(widget.callbacks) == "table" then
-      for k in pairs(widget.callbacks) do widget.callbacks[k] = nil end
+    for _, bag in ipairs({ widget.userdata, widget.callbacks }) do
+      if type(bag) == "table" then
+        for k in pairs(bag) do bag[k] = nil end
+      end
+    end
+    widget.width, widget.height, widget.relativeWidth = nil, nil, nil
+    widget.relWidth, widget.relHeight, widget.noAutoHeight = nil, nil, nil
+    if widget.frame then
+      widget.frame:ClearAllPoints()
+      widget.frame:SetParent(M.UIParent)
     end
     widget.__released = true
     self.__released[#self.__released + 1] = widget

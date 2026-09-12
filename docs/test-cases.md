@@ -824,7 +824,7 @@ badge and any count quoted in the docs must agree with it.
 - parallel: the split is balanced to within one suite
 - parallel: more shards than suites yields empty shards, not overlapping ones
 
-### test_mock_base.lua (17)
+### test_mock_base.lua (22)
 
 - mock: a frame that was never armed answers zero, dressed or not
 - mock: __setGeom is the opt-in, and the only thing that arms a frame
@@ -836,10 +836,15 @@ badge and any count quoted in the docs must agree with it.
 - mock: AceGUI:Release fires OnRelease, then drops the children and the callbacks
 - mock: a Release reached from the widget's own OnRelease is ignored, as AceGUI's guard ignores it
 - mock: AceGUI:Release(nil) raises, as the real one does
+- mock: releasing a widget twice raises, as AceGUI's delWidget does
+- mock: widget:Release() is AceGUI:Release(widget), as WidgetBase.Release is
+- mock: AceGUI:Release wipes userdata in place and the size fields, as the real one does
 - mock: an AceEvent embed records game events the way the NewAddon target does
 - mock: the embed and the NewAddon target share one event implementation
 - mock: UnregisterAllEvents leaves an embed's message registrations alone
 - mock: embedding a target a second time keeps what it had registered
+- mock: a target reused by a later mock build starts with nothing registered
+- mock: RegisterEvent refuses what CallbackHandler refuses
 - mock: NewAddon clobbers a custom Printf exactly as it clobbers Print
 - mock: the console mixins print as AceConsole's do, bare, as methods and to a given frame
 - mock: a bare Printf with nothing after the format string raises, as format() does
@@ -920,7 +925,7 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 11 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
-| test_mock_base.lua | 17 |
+| test_mock_base.lua | 22 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 10 |
@@ -928,4 +933,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **814** |
+| **Total** | **819** |

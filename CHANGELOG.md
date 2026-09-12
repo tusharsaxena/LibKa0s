@@ -40,11 +40,16 @@ their own `Release`. The kit now has one, and it follows `AceGUI-3.0.lua` step f
 3. `"OnRelease"` fires while the widget still has its children and its callbacks. LibKa0s's own
    `OptionsWidgets.lua` depends on that order.
 4. `ReleaseChildren` runs, then the widget's own `:OnRelease()`.
-5. Every callback is dropped, in place.
+5. The widget is wiped: `userdata` and every callback are cleared in place, the size fields the real
+   one nils are dropped, and the frame's points and parent are reset.
 
 On top sits the recorder AuraMaster's shim introduced, `w.__released = true` and `AceGUI.__released`
 in order, so a suite written against the shim reads the same fields. Where the shim and the client
-disagree, the kit follows the client: `Release(nil)` raises instead of returning quietly.
+disagree, the kit follows the client: `Release(nil)` raises instead of returning quietly, and so does
+a second release of the same widget, with the real `"Attempt to Release Widget that is already
+released"`. The fake raises that one before touching the widget, where the client raises at the end.
+Every widget also carries `userdata = {}` and a `widget:Release()` method that is
+`AceGUI:Release(widget)`, as the real `WidgetBase.Release` is.
 
 Two differences from the real one are kept on purpose. There is no pool, so a `Create` after a
 `Release` is always a fresh widget. And the children go through the fake's own `ReleaseChildren`,
@@ -66,8 +71,14 @@ target always had:
 - `__events[event]` holds the handler, or `true` when none was given.
 - `UnregisterAllEvents` clears it in place and leaves message registrations alone, as the client's
   two separate registries do. It is new on the `NewAddon` target too.
-- A second `Embed` keeps what the target had registered, because the real registry lives in the
-  library and is keyed by target.
+- `RegisterEvent` now validates as CallbackHandler does, with its messages: the event must be a
+  string, the method defaults to the event's name, and a string method must be a function on the
+  target. So `RegisterEvent("PLAYER_LOGIN")` on a target with no `PLAYER_LOGIN` method raises, as
+  does a misspelled method name. What is recorded is unchanged. Every production registration in the
+  ten consumers passes the checks.
+- The registry is one per mock build, keyed by target, as the real one lives in the library. A
+  second `Embed` in the same build keeps what the target had registered; a target table reused by a
+  later build starts empty.
 
 ### Kit revision 16, `mock_base.lua` — `Printf` beside `Print` (#30)
 
@@ -134,8 +145,8 @@ collision is #29's fix itself. Delete that shim and fire the recorded handler,
   `tests/test_vendor_sync.lua`. Measured with all four removed: the total is unchanged and one case
   fails. That case is AuraMaster's citation gate: `DEPENDENCIES.md:45` cites a line of the deleted
   case, so move the citation in the same commit.
-- **AbsorbTracker:** the `AceGUI:Release` shim.
-- **PrettyChat:** the `Printf = noop` override. Removing these last two was not measured.
+- **AbsorbTracker:** the `AceGUI:Release` shim. Measured with it removed: 561 total, all green.
+- **PrettyChat:** the `Printf = noop` override. Removing it was not measured.
 
 ## v1.29.0 — 2026-09-09
 

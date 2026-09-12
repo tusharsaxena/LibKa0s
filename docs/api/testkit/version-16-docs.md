@@ -55,7 +55,15 @@ It follows `AceGUI-3.0.lua`'s `Release`, step for step:
    that order: it hides its band texture from an `OnRelease` callback, which is only safe because
    AceGUI fires the callback before it clears them.
 4. **`ReleaseChildren`**, then the widget's own **`:OnRelease()`** method if it has one.
-5. **Drop every callback, in place**, so a widget handed back cannot fire a stale handler.
+5. **Wipe the widget.** `userdata` and the callbacks are cleared **in place**, so a widget handed
+   back cannot fire a stale handler or carry stale data. The size fields the real one nils go too:
+   `width`, `height`, `relWidth`, `relHeight`, `noAutoHeight`, and `relativeWidth`, which is this
+   fake's recorder for `SetRelativeWidth`. The frame's points are cleared and its parent is reset
+   to `UIParent`.
+
+Every widget from this factory now carries `userdata = {}`, AceGUI's documented per-widget scratch
+table, and a **`widget:Release()`** method that is `AceGUI:Release(widget)`, as the real
+`WidgetBase.Release` is. Correct code may call either form.
 
 On top of that sits the recorder, which a test needs and the client does not:
 
@@ -68,6 +76,13 @@ On top of that sits the recorder, which a test needs and the client does not:
 **`AceGUI:Release(nil)` raises**, as it does in the client on its first line. AuraMaster's shim
 returned quietly instead, and fidelity rule 1 is the reason the kit does not: a host that can pass
 nil has a bug the suite must be able to see.
+
+**Releasing the same widget twice raises** `"Attempt to Release Widget that is already released"`,
+the real message. Double release is the typical `Release` bug: a page that releases a ledger of
+widgets after a render, and holds one twice, has it. The client raises from `delWidget` at the
+**end** of the second release, after re-running the steps above. This factory never reuses a
+widget, so any second release of the same object is the bug, and the fake raises at the **top**,
+before it touches the widget. The second release is not recorded in `AceGUI.__released`.
 
 **Two deliberate differences from the real one.** The real `Release` puts the widget in a pool that
 a later `Create` may hand back. This factory never reuses a widget, so a `Create` after a `Release`
@@ -92,16 +107,33 @@ both. `tests/test_mock_base.lua` asserts that identity, so the two cannot drift 
 
 | Member | Contract |
 |---|---|
-| `t:RegisterEvent(event, handler)` | `t.__events[event] = handler or true`. Returns `t` |
-| `t:UnregisterEvent(event)` | `t.__events[event] = nil`. Returns `t` |
+| `t:RegisterEvent(event, handler)` | Validated first, then `t.__events[event] = handler or true`. Returns `t` |
+| `t:UnregisterEvent(event)` | `t.__events[event] = nil`. Raises when `event` is not a string. Returns `t` |
 | `t:UnregisterAllEvents()` | Clears `t.__events` **in place**, so a table a test captured stays the live one. Messages are untouched, as they are in the client, where the two live in separate CallbackHandler registries. Returns `t`. **New on the `NewAddon` target too** |
 | `t.__events` | `[event] = handler` (or `true`). A test fires a handler the way CallbackHandler fires a function ref: `t.__events[event](event, ...)` |
 
-**A second `Embed` keeps what the target had registered.** The real registry is keyed by
-`(event, target)` inside the library rather than on the target, so embedding a target twice
-forgets nothing. `__events` is therefore created only when the target does not already carry one.
-The `NewAddon` target used to get a fresh table unconditionally. The only way to see the difference
-is to pass `NewAddon` a table that already has `__events`, and no consumer in the collection does.
+**`RegisterEvent` refuses what CallbackHandler refuses.** A registration the client raises on must
+not pass headlessly (fidelity rule 1), so the fake checks the same things, with the same messages:
+
+- The event must be a string.
+- The method defaults to the event's own name, so `t:RegisterEvent("PLAYER_LOGIN")` needs a
+  `t.PLAYER_LOGIN` function.
+- The method must be a function or a string, and a string must name a function `t` carries at the
+  time of the call. `t:RegisterEvent(e, "OnTypo")` raises.
+
+What is recorded does not change: the handler as given, or `true`. A string method is recorded as
+the string, and a test fires it the way CallbackHandler does, `t[method](t, event, ...)`. The
+optional third argument, CallbackHandler's `arg`, is accepted and not recorded. Every production
+registration in the ten consumers already passes these checks; they were measured against it (see
+below).
+
+**The registry belongs to the mock build, not the target.** The real registry lives inside the
+library, keyed by `(event, target)`. The fake keeps one per build, keyed by target, and each
+`Embed` or `NewAddon` points `t.__events` at the target's table in it. So a second `Embed` in the
+same build forgets nothing, and a target table that a later build embeds again starts with nothing
+registered, as a fresh client library would. This is the same per-build isolation the message bus
+has always had. Before revision 16 the `NewAddon` target got a fresh table on every call. No
+consumer in the collection passes `NewAddon` or `Embed` a table carrying its own `__events`.
 
 ### `Printf`, and the reclaim it exists to test (#30)
 
@@ -176,7 +208,8 @@ plan exists to rule out. Only the number moves: the flip is the next revision th
 
 **Measured, not assumed.** This revision's `testkit/` was dropped into fresh clones of all ten
 consumers at their current `master`. Every total moved by exactly one — the runner-mode case, which
-passes in all ten:
+passes in all ten. The table was measured again after the double-release raise, the wipe, the
+`RegisterEvent` validation and the per-build registry went in, and every row came back identical:
 
 | Consumer | Before | After |
 |---|---|---|
@@ -214,7 +247,8 @@ not left wondering which of two answers is authoritative:
   `tests/test_vendor_sync.lua:36`, a line the deletion removes. Point the citation at the kit's
   `tests/_kit/vendor_sync.lua` in the same commit.
 - **AbsorbTracker**: the `AceGUI:Release` shim in `tests/wow_mock.lua`, which overwrites the kit's.
-  Not measured with the shim removed.
+  Measured with the shim removed: 559 passed, 2 skipped, 561 total, the same as with it, so nothing
+  there releases a widget twice.
 - **PrettyChat**: `object.Printf = noop` in its `NewAddon` wrapper overwrites the kit's `Printf`, and
   with it the forgotten-reclaim failure this revision exists to surface. Not measured with the line
   removed.
