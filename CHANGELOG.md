@@ -118,8 +118,16 @@ again: **20 at the earliest**. `testkit/mock_base.lua`'s comment and
 
 ### What each consumer can adopt
 
-- **`profilesPage = true`** on the Options descriptor: AbsorbTracker, AuraMaster, KickCD and
-  MultiMeters, which ship a Profiles page and supply `resetProfile`. ConsumableMaster and
+- **`profilesPage = true`** on the Options descriptor: AbsorbTracker, AuraMaster and KickCD, which
+  ship a Profiles page, supply `resetProfile` and compose their Master controls on the `lib:New`
+  instance. *Corrected after the tag:* this line also named **MultiMeters**, and it is not a
+  one-line adopter. It composes its Master controls with its own compose descriptor: a table of
+  its own, attached by `lib.__AttachCompose(C)` at `settings/Schema_Compose.lua` load, before its
+  Options descriptor exists. The composer reads `resetProfile` and `profilesPage` off the
+  descriptor it was attached with, when `MasterControls` runs, so the field on the `lib:New`
+  descriptor never reached its button, and its tooltip did not even move to the second row. It
+  adopts by passing `{ profilesPage = true, resetProfile = <forwarder> }` as that call's second
+  argument, the forwarder calling its real descriptor's `resetProfile` at call time. ConsumableMaster and
   PanelMaster ship a Profiles page but reset through their own handlers and supply no
   `resetProfile`, so the field does nothing for them until they adopt it (`options-ui-§12`). The
   other four ship no Profiles page. Every consumer draws the button through `MasterControls`.

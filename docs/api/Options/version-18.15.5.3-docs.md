@@ -74,6 +74,14 @@ arrow are byte escapes in the source, for the reason `COMBAT_REFUSED`'s em dash 
   is its own act or a walk of every row, and the library cannot tell which. A host that ships a
   Profiles page and resets through its own handler is a candidate for `resetProfile` first
   (`options-ui-§12`); the tooltip follows from that.
+- **A host that attaches the composers itself**, calling `lib.__AttachCompose(C)` onto a table of
+  its own rather than composing on the instance `lib:New` returns: the `lib:New` descriptor never
+  reaches that table, so the tooltip keeps the first row whatever it says. Pass a compose
+  descriptor as the second argument instead. The composer reads nothing off it but `resetProfile`
+  and `profilesPage`, and only for this tooltip, so `{ profilesPage = true, resetProfile =
+  <forwarder> }` is enough, with the forwarder calling the real descriptor's `resetProfile` at call
+  time rather than restating it. MultiMeters is that host (`settings/Schema_Compose.lua`). *Added
+  after the tag, 2026-09-13; no code changed.*
 
 ### Previously, at 17.15.4.3
 
