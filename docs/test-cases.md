@@ -732,7 +732,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: an armed or recording experiment reads busy, not ready
 - lib: completing A unlocks B and nothing else
 - lib: completing B unlocks Finish
-- lib: finishing unlocks Report and Dump
+- lib: finishing unlocks Report
 - lib: exactly one step is ready at any point in a run
 - lib: re-arming a completed experiment sends it back to busy
 - lib: re-arming Experiment B relocks Finish
@@ -762,7 +762,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: the fallback close button is told which addon is asking
 - lib: an addonName in the descriptor wins over the name
 - lib: a host that decorates gets no close button from the library
-- lib: report and dump stay clickable after use, but read as done
+- lib: report stays clickable after use, but reads as done
 - lib: marking a review action twice is a no-op
 - lib: MarkReviewed ignores keys that are not review actions
 - lib: a fresh run clears the review marks
@@ -771,7 +771,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: every step label names what it acts on
 - lib: a panel-less instance answers STEPS, PanelStateOf and PanelIsActionable safely
 
-### test_perf_command.lua (17)
+### test_perf_command.lua (20)
 
 - cmd: OnCommand always returns a line table, never nil
 - cmd: start begins a run and shows the panel
@@ -782,11 +782,14 @@ badge and any count quoted in the docs must agree with it.
 - cmd: finish resumes the host before it saves
 - cmd: finish prints no report
 - cmd: report writes the summary to the log sink and opens it
-- cmd: dump writes one line of JSON to the log sink
+- cmd: report writes the summary AND the JSON, in that order
+- cmd: dump is no longer a verb of its own
 - cmd: cancel refuses when there is nothing to cancel
 - cmd: show, hide and toggle drive the panel and nothing else
 - cmd: a bare command reports the phase and prints the usage
 - cmd: usage never hard-codes a slash prefix
+- cmd: usage never leaves a bare pipe where the client reads an escape
+- cmd: usage rows use the library's own row formatter
 - cmd: clicking a ready panel row takes the same path as typing it
 - cmd: a panel click prints exactly what typing the command prints
 - cmd: clicking a locked panel row does nothing
@@ -821,7 +824,7 @@ badge and any count quoted in the docs must agree with it.
 - parallel: the split is balanced to within one suite
 - parallel: more shards than suites yields empty shards, not overlapping ones
 
-### test_mock_base.lua (6)
+### test_mock_base.lua (17)
 
 - mock: a frame that was never armed answers zero, dressed or not
 - mock: __setGeom is the opt-in, and the only thing that arms a frame
@@ -829,6 +832,17 @@ badge and any count quoted in the docs must agree with it.
 - mock: SetAtlas records the name whether or not a size was asked for
 - mock: an atlas the table does not publish leaves geometry alone
 - mock: the selected and unselected tab atlases are published at different heights
+- mock: AceGUI:Release takes a widget back: flagged, frame hidden, recorded in order
+- mock: AceGUI:Release fires OnRelease, then drops the children and the callbacks
+- mock: a Release reached from the widget's own OnRelease is ignored, as AceGUI's guard ignores it
+- mock: AceGUI:Release(nil) raises, as the real one does
+- mock: an AceEvent embed records game events the way the NewAddon target does
+- mock: the embed and the NewAddon target share one event implementation
+- mock: UnregisterAllEvents leaves an embed's message registrations alone
+- mock: embedding a target a second time keeps what it had registered
+- mock: NewAddon clobbers a custom Printf exactly as it clobbers Print
+- mock: the console mixins print as AceConsole's do, bare, as methods and to a given frame
+- mock: a bare Printf with nothing after the format string raises, as format() does
 
 ### test_surface_parity.lua (7)
 
@@ -852,13 +866,18 @@ badge and any count quoted in the docs must agree with it.
 - versioning: every major's live version has its API document on disk
 - versioning: every major's published member manifest matches its live surface
 
-### test_kitsync.lua (5)
+### test_kitsync.lua (10)
 
 - kitsync: Kit.VERSION is a positive integer and reaches the exposed table
 - kitsync: the kit revision has an API document
 - kitsync: the runner is mode 100755 in the git index, in BOTH copies
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
+- kitsync: vendor_sync checks the runner's recorded mode, and this repo's copy passes
+- kitsync: the runner-mode case fails on a path the index records 100644
+- kitsync: the runner-mode case fails on a path the index does not track
+- kitsync: the runner-mode case skips, with a reason, where there is no work tree
+- kitsync: the runner-mode case skips, with a reason, where io.popen is unavailable
 
 ### test_prose.lua (2)
 
@@ -897,16 +916,16 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_core.lua | 69 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 45 |
-| test_perf_command.lua | 17 |
+| test_perf_command.lua | 20 |
 | test_perf_isolation.lua | 11 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
-| test_mock_base.lua | 6 |
+| test_mock_base.lua | 17 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
-| test_kitsync.lua | 5 |
+| test_kitsync.lua | 10 |
 | test_prose.lua | 2 |
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **795** |
+| **Total** | **814** |

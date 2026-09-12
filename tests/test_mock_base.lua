@@ -34,7 +34,9 @@ local function frame()
 end
 
 test("mock: a frame that was never armed answers zero, dressed or not", function()
-  -- The additive contract, and the line kit 16 crosses on purpose. Roughly 308 test files across
+  -- The additive contract, and the line the geometry flip crosses on purpose -- planned at kit 16,
+  -- moved to the next revision that ships it alone when 16 carried the Ace-fake fixes (see
+  -- docs/api/testkit/version-16-docs.md). Roughly 308 test files across
   -- the collection rest on this answer; if this case ever goes red without somebody meaning it to,
   -- the flip has arrived early and nine suites are about to disagree with their own trend lines.
   local f = frame()
@@ -105,4 +107,176 @@ test("mock: the selected and unselected tab atlases are published at different h
   assertTrue(type(off) == "table" and type(on) == "table", "both families are published")
   assertTrue(off[2] ~= on[2],
     "the two tab atlas families must not share a height, or an invariance case cannot fail")
+end)
+
+-- ── the Ace fakes: AceGUI:Release, AceEvent's event half, AceConsole's Printf ─────────────────
+--
+-- Three gaps between the kit's Ace fakes and the real Ace3 libraries, each of which a consumer had
+-- to shim locally (LibKa0s#27, #29, #30). Every case below builds a FRESH environment from this
+-- repo's own mock builder rather than reusing `T.mocks`, because the recorders under test
+-- (`AceGUI.__released`, a target's `__events`) accumulate, and a count read off a shared instance
+-- would depend on which suite ran first.
+
+local assertFalse = T.assertFalse
+local buildMocks = dofile("tests/wow_mock.lua")
+
+--- A chat-frame stand-in that records every line. A plain table with an `AddMessage` member, which is
+--- exactly what AceConsole tests for when it decides whether its first argument is a frame.
+local function chatRecorder()
+  local rec = { lines = {} }
+  function rec:AddMessage(s) self.lines[#self.lines + 1] = s end
+  return rec
+end
+
+--- Run `fn` with the process global DEFAULT_CHAT_FRAME pointed at `chat`, restoring it however `fn`
+--- exits. The kit's console mixins read the global at call time, as AceConsole reads the client's.
+local function withChatFrame(chat, fn)
+  local saved = rawget(_G, "DEFAULT_CHAT_FRAME")
+  rawset(_G, "DEFAULT_CHAT_FRAME", chat)
+  local ok, err = pcall(fn)
+  rawset(_G, "DEFAULT_CHAT_FRAME", saved)
+  if not ok then error(err, 0) end
+end
+
+test("mock: AceGUI:Release takes a widget back: flagged, frame hidden, recorded in order", function()
+  local AceGUI = buildMocks().LibStub("AceGUI-3.0")
+  assertTrue(type(AceGUI.Release) == "function", "the AceGUI fake has a Release")
+  local a, b, kept = AceGUI:Create("Dropdown"), AceGUI:Create("Label"), AceGUI:Create("Label")
+  a.frame:Show()
+  AceGUI:Release(a)
+  AceGUI:Release(b)
+  assertTrue(a.__released == true and b.__released == true, "a released widget is flagged")
+  assertFalse(a.frame:IsShown(), "releasing a widget hides its frame, as the real Release does")
+  assertEqual(#AceGUI.__released, 2, "every release is recorded")
+  assertTrue(AceGUI.__released[1] == a and AceGUI.__released[2] == b, "in the order it happened")
+  assertNil(kept.__released, "a widget nobody released is not flagged")
+end)
+
+test("mock: AceGUI:Release fires OnRelease, then drops the children and the callbacks", function()
+  -- The real order, and LibKa0s's own OptionsWidgets.lua leans on it: `Fire("OnRelease")` runs
+  -- while the widget still has its children and its callbacks, and only then are both cleared.
+  local AceGUI = buildMocks().LibStub("AceGUI-3.0")
+  local group = AceGUI:Create("SimpleGroup")
+  group:AddChild(AceGUI:Create("Label"))
+  local seen = {}
+  group:SetCallback("OnRelease", function(w, name) seen[#seen + 1] = { w, name, #w.children } end)
+  group:SetCallback("OnClick", function() end)
+  local callbacks = group.callbacks
+  AceGUI:Release(group)
+  assertEqual(#seen, 1, "OnRelease fired once")
+  assertTrue(seen[1][1] == group, "with the widget as its first argument")
+  assertEqual(seen[1][2], "OnRelease", "and the event name as its second, as AceGUI fires it")
+  assertEqual(seen[1][3], 1, "while the widget still had its child")
+  assertEqual(#group.children, 0, "the children are gone afterwards")
+  assertNil(next(group.callbacks), "every callback is dropped, so a pooled widget cannot fire a stale one")
+  assertTrue(group.callbacks == callbacks, "cleared in place, so a captured table stays the live one")
+end)
+
+test("mock: a Release reached from the widget's own OnRelease is ignored, as AceGUI's guard ignores it", function()
+  local AceGUI = buildMocks().LibStub("AceGUI-3.0")
+  local w = AceGUI:Create("Label")
+  w:SetCallback("OnRelease", function(self) AceGUI:Release(self) end)
+  AceGUI:Release(w)
+  assertEqual(#AceGUI.__released, 1, "the nested Release recorded nothing")
+  assertNil(w.isQueuedForRelease, "the guard is lifted once the release completes")
+end)
+
+test("mock: AceGUI:Release(nil) raises, as the real one does", function()
+  -- A guard here would be a stub that silently succeeds (fidelity rule 1): the client indexes the
+  -- widget on the first line and errors, so a host that can pass nil has a bug the suite must see.
+  local AceGUI = buildMocks().LibStub("AceGUI-3.0")
+  assertTrue(type(AceGUI.Release) == "function", "the AceGUI fake has a Release to call")
+  assertFalse(pcall(AceGUI.Release, AceGUI, nil), "releasing nil raised")
+end)
+
+test("mock: an AceEvent embed records game events the way the NewAddon target does", function()
+  local t = buildMocks().LibStub("AceEvent-3.0"):Embed({})
+  assertTrue(type(t.RegisterEvent) == "function", "the embed carries RegisterEvent")
+  local onAura = function() end
+  t:RegisterEvent("UNIT_AURA", onAura)
+  t:RegisterEvent("PLAYER_LOGIN")
+  assertTrue(t.__events.UNIT_AURA == onAura, "a handler is recorded as given")
+  assertEqual(t.__events.PLAYER_LOGIN, true, "no handler records true")
+  t:UnregisterEvent("UNIT_AURA")
+  assertNil(t.__events.UNIT_AURA, "UnregisterEvent drops one registration")
+  assertEqual(t.__events.PLAYER_LOGIN, true, "and only that one")
+  local live = t.__events
+  t:UnregisterAllEvents()
+  assertNil(next(t.__events), "UnregisterAllEvents drops every registration")
+  assertTrue(t.__events == live, "cleared in place, so a captured table stays the live one")
+end)
+
+test("mock: the embed and the NewAddon target share one event implementation", function()
+  local M = buildMocks()
+  local addon = M.LibStub("AceAddon-3.0"):NewAddon({}, "Host")
+  local embed = M.LibStub("AceEvent-3.0"):Embed({})
+  for _, name in ipairs({ "RegisterEvent", "UnregisterEvent", "UnregisterAllEvents" }) do
+    assertTrue(type(addon[name]) == "function", "the NewAddon target carries " .. name)
+    assertTrue(addon[name] == embed[name], name .. " is the same function on both")
+  end
+end)
+
+test("mock: UnregisterAllEvents leaves an embed's message registrations alone", function()
+  -- Real AceEvent keeps events and messages in two CallbackHandler registries, which is exactly why
+  -- a module gives its game events a target of their own.
+  local t = buildMocks().LibStub("AceEvent-3.0"):Embed({})
+  local heard = 0
+  t:RegisterMessage("HOST_CHANGED", function() heard = heard + 1 end)
+  t:RegisterEvent("PLAYER_LOGIN")
+  t:UnregisterAllEvents()
+  t:SendMessage("HOST_CHANGED")
+  assertEqual(heard, 1, "the message registration survived UnregisterAllEvents")
+end)
+
+test("mock: embedding a target a second time keeps what it had registered", function()
+  -- The real registry is keyed by (event, target) and lives in the library, not on the target, so
+  -- a second Embed stamps the same mixins and forgets nothing.
+  local AceEvent = buildMocks().LibStub("AceEvent-3.0")
+  local t = AceEvent:Embed({})
+  t:RegisterEvent("PLAYER_LOGIN")
+  local live = t.__events
+  AceEvent:Embed(t)
+  assertEqual(t.__events.PLAYER_LOGIN, true, "the registration survived the second Embed")
+  assertTrue(t.__events == live, "and so did the table")
+end)
+
+test("mock: NewAddon clobbers a custom Printf exactly as it clobbers Print", function()
+  -- AceConsole's mixins are Print AND Printf, so an addon that publishes its own NS.Printf must take
+  -- it back after NewAddon too. A fake that stamped only Print let an addon that forgot pass.
+  local ns = {}
+  local mine = function() end
+  ns.Print, ns.Printf = mine, mine
+  buildMocks().LibStub("AceAddon-3.0"):NewAddon(ns, "Host")
+  assertTrue(type(ns.Print) == "function" and ns.Print ~= mine, "Print is AceConsole's after NewAddon")
+  assertTrue(type(ns.Printf) == "function" and ns.Printf ~= mine, "Printf is AceConsole's after NewAddon")
+end)
+
+test("mock: the console mixins print as AceConsole's do, bare, as methods and to a given frame", function()
+  local ns = buildMocks().LibStub("AceAddon-3.0"):NewAddon({}, "Host")
+  local chat, other = chatRecorder(), chatRecorder()
+  withChatFrame(chat, function()
+    -- Bare: the format string lands in `self`, and the NEXT argument is what gets formatted.
+    ns.Printf("%d items", 3)
+    -- As a method: `self` is the addon object and the whole argument list is formatted.
+    ns:Printf("%d items", 3)
+    -- A first argument with an AddMessage member is the frame to print to.
+    ns:Printf(other, "%s!", "hi")
+    ns:Print(other, "a", "b")
+  end)
+  local tag = "|cff33ff99" .. tostring(ns) .. "|r:"
+  assertEqual(chat.lines[1], "|cff33ff99%d items|r: 3", "a bare Printf")
+  assertEqual(chat.lines[2], tag .. " 3 items", "Printf as a method")
+  assertEqual(#chat.lines, 2, "nothing addressed to another frame reached the default one")
+  assertEqual(other.lines[1], tag .. " hi!", "Printf to a given frame")
+  assertEqual(other.lines[2], tag .. " a b", "Print to a given frame")
+end)
+
+test("mock: a bare Printf with nothing after the format string raises, as format() does", function()
+  -- The real one calls format(...) on what follows `self`; bare, that is nothing at all, and
+  -- string.format with no arguments raises. This is the loudest form of the forgotten reclaim.
+  local ns = buildMocks().LibStub("AceAddon-3.0"):NewAddon({}, "Host")
+  assertTrue(type(ns.Printf) == "function", "NewAddon stamped a Printf to call")
+  withChatFrame(chatRecorder(), function()
+    assertFalse(pcall(ns.Printf, "hello"), "a bare one-argument Printf raised")
+  end)
 end)
