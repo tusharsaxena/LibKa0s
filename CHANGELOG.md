@@ -10,6 +10,121 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.33.0 — 2026-09-12
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 9**, **Options minor 17**,
+**OptionsWidgets minor 15**, **OptionsCompose minor 4**, **OptionsScroll minor 3**, **Perf minor 11**,
+**PerfPanel minor 5**, **kit revision 18**.
+
+Three changes. Two files in `LibKa0s/` move, and so does the kit. `Options.lua` loads every
+LibSharedMedia font the first time a Ka0s settings panel is shown, so a font dropdown no longer
+opens on blank rows. `Options.lua` and `Slash.lua` correct the source docstrings that still called
+the bulk bracket's `count` "rows actually written". Kit revision 18 makes the AceDB fake hand
+`OnProfileCopied` the source profile's key, as AceDB-3.0 does.
+
+Nothing is removed or renamed, and no member or descriptor field is added. With the whole payload
+in, `LibKa0s/` into `libs/LibKa0s/` and `testkit/` into `tests/_kit/`, **nothing moves in any
+consumer**. That was measured in scratch clones of all ten, each at the commit shown, before and
+after:
+
+| Consumer | Commit | Before (v1.32.0, kit 17) | After (v1.33.0, kit 18) |
+|---|---|---|---|
+| AbsorbTracker | `f26769c` | 585 / 0 failed / 2 skipped / 587 | 585 / 0 / 2 / 587 |
+| AuraMaster | `c1fc62d` | 264 / 0 / 2 / 266 | 264 / 0 / 2 / 266 |
+| BankLedger | `996bd9f` | 869 / 0 / 2 / 871 | 869 / 0 / 2 / 871 |
+| ConsumableMaster | `3e5a381` | 850 / 0 / 2 / 852 | 850 / 0 / 2 / 852 |
+| KickCD | `f16a392` | 927 / 0 / 2 / 929 | 927 / 0 / 2 / 929 |
+| LootHistory | `ee2c8ec` | 736 / 0 / 2 / 738 | 736 / 0 / 2 / 738 |
+| MultiMeters | `c5441f6` | 1819 / 0 / 2 / 1821 | 1819 / 0 / 2 / 1821 |
+| PanelMaster | `a947e35` | 805 / 0 / 2 / 807 | 805 / 0 / 2 / 807 |
+| PrettyChat | `a0fdd98` | 348 / 0 / 2 / 350 | 348 / 0 / 2 / 350 |
+| WhatGroup | `03860d2` | 600 / 0 / 2 / 602 | 600 / 0 / 2 / 602 |
+
+The two skips in every row are the vendored-payload pair cases, because the clones had no sibling
+LibKa0s. Re-vendoring the consumers is a separate step, not taken at this tag. The details are in
+[`docs/api/Options/version-17.15.4.3-docs.md`](docs/api/Options/version-17.15.4.3-docs.md),
+[`docs/api/Slash/version-9-docs.md`](docs/api/Slash/version-9-docs.md) and
+[`docs/api/testkit/version-18-docs.md`](docs/api/testkit/version-18-docs.md).
+
+### `Options.lua` minor 17 — every LSM font loaded on the first panel show
+
+Reported by the owner in every Ka0s addon: the first time a font dropdown opens, many rows are
+blank, and the second time they all draw. The dropdown is AceGUI-3.0-SharedMediaWidgets'
+`LSM30_Font`, which `O.FontGroup` writes as its `dialogControl`. It builds its list on open, running
+`SetFont(face)` then `SetText(name)` for every registered face. The client loads a font file on its
+first reference, and text set with a face that is not loaded yet draws blank until something sets it
+again. The blank rows were the faces nothing had used yet that session, mostly third-party LSM
+faces. The widget is upstream and vendored, and it is not edited.
+
+The library now loads every LSM face the first time any Ka0s settings panel is shown. It is never
+done at load or at `PLAYER_LOGIN`. Loading every face costs memory, some of Blizzard's CJK faces are
+large, and a player who never opens settings must not pay for it. One frame for the session,
+parented to `UIParent`, shown, at full alpha and parked off-screen at 1x1, holds one FontString per
+distinct font path: `SetFont(path, 12, "")` then `SetText("Aa")`. The state is library-level
+(`lib.__fontPreload`), so every host shares it, a LibStub minor upgrade keeps it, and a session with
+several Ka0s addons loads each path once. After the first preload the library subscribes once to
+LSM's `LibSharedMedia_Registered` callback, and loads fonts registered later as they arrive. A
+missing LSM, a raising `getLSM`, a missing `CreateFrame` or a face the client refuses costs the
+preload and never the page, and nothing is reported.
+
+It runs from two places, because two kinds of page exist. `O.SetRenderer`'s OnShow covers every page
+with a renderer, and the main page when `buildMain` is set; there it runs **after** the combat
+refusal. The refusal closes the window, so no dropdown can open on that show, and loading every face
+mid-fight is a hitch that buys nothing; the next show outside combat loads them. An OnShow hook that
+`O.CreatePanel` installs covers a page with no renderer. Such a page is still supported, and since
+`RenderRows` is public it can hold a font row. The hook makes no combat decision, because that page
+has no refusal and its dropdowns are reachable. `SetRenderer`'s `SetScript` replaces the hook, which
+is why `SetRenderer`'s handler calls the preload itself.
+
+It lives in the Options major rather than in Media. The trigger is the panel lifecycle, which
+Options owns and Media has none of. `getLSM` is already on the Options descriptor. And `LSM30_Font`
+is the control this major's own `O.FontGroup` writes. No descriptor field and no instance member is
+added. The one new library-level member, `lib.__PreloadFonts(LSM)`, is `__`-prefixed and outside
+the member manifest. Eleven cases in a new suite, `tests/test_options_fontpreload.lua`, pin it: once
+per path, once per session across a second show and a second host, a late registration, no LSM, no
+`CreateFrame`, a raising `SetFont`, combat, a renderer-less page and the main page.
+
+### `Options.lua` minor 17 and `Slash.lua` minor 9 — the `count` docstrings
+
+The API documents were corrected after the v1.32.0 tag (6233e3e, bf8ed91); the source was not.
+Five docstrings, three in `Options.lua` and two in `Slash.lua`, still described the bulk bracket's
+`count` as the rows "actually written", and the Options descriptor entry told the host to log
+"N = count". They now say what the documents say. `count` is the number of rows the walk called
+`applyDefault` for and that returned, including rows already at their default. It is **not**
+`debug-logging-§10`'s N, which the host tallies itself from the writes that change a stored value.
+Comments only, but a comment-only change still bumps (see the v1.8.0 entry), so `Slash.lua` moves
+8 → 9 for it alone.
+
+### Kit revision 18 — AceDB's `OnProfileCopied` carries the source key
+
+The kit's AceDB fake fired every profile callback as `(event, db, <active profile>)`. AceDB-3.0's
+`CopyProfile` ends `self.callbacks:Fire("OnProfileCopied", self, name)`, with `name` the profile
+copied **from**. So under the kit, a copy of `"Raid"` into `"Default"` reached a handler as a copy of
+`"Default"`. Every consumer with a copy handler logs `copied profile '<source>' → '<active>'`, and
+the four on the kit's AceDB (AbsorbTracker, AuraMaster, PrettyChat, WhatGroup) pinned that line by
+calling the handler directly. `CopyProfile` now fires with the source.
+`OnProfileChanged` keeps the profile switched to, and `OnProfileReset` keeps the active profile it
+always carried here. `tests/test_mock_ace.lua` pins all three. `framework.lua` changes only its
+revision number, and `README.md` gains a paragraph.
+
+**No consumer test changes outcome**, as the measurement above shows. Five tests in three consumers
+run the kit's `CopyProfile`: AbsorbTracker's `tests/test_slashcmds.lua:521` and `:647`, AuraMaster's
+`tests/test_bulklog.lua:126` and `tests/test_containermanager.lua:446`, and PrettyChat's
+`tests/test_debuglog.lua:366`. None of them pins the source name, so each passes with either key.
+Every test that does pin the source either calls the handler directly or runs through a consumer's
+own AceDB fake. ConsumableMaster, KickCD, PanelMaster and BankLedger ship their own, and MultiMeters
+re-fires through a wrapper that already passes the source. Five comments that describe the old key
+become stale and are each consumer's to correct; the testkit document lists them.
+
+### Revision 18 is not the geometry flip
+
+The v1.32.0 and v1.31.0 entries below leave the flip, deleting `self.__geomLive and` from
+`GetHeight` and `GetWidth`, at "18 at the earliest". **Revision 18 does not ship it.** The flip is
+still its own revision with its own adoption, because roughly 308 test files lean on the zeros, so
+the number moves again: **19 at the earliest**. `testkit/mock_base.lua`'s comment and
+`docs/api/testkit/version-18-docs.md` record the move.
+
 ## v1.32.0 — 2026-09-12
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

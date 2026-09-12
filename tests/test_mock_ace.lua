@@ -631,3 +631,38 @@ test("ace: AceGUI's layout registry and version table carry their real names", f
   assertEqual(AceGUI.WidgetVersions.MyWidget, 7, "WidgetVersions is the real table name")
   assertTrue(AceGUI.WidgetVersions == AceGUI.__widgetVersions, "the same table the kit always kept")
 end)
+
+-- ── AceDB ──────────────────────────────────────────────────────────────────────────────────────
+
+test("ace: AceDB's OnProfileCopied carries the SOURCE profile's key, as AceDB-3.0 fires it", function()
+  -- Revision 18. AceDB-3.0's CopyProfile ends `self.callbacks:Fire("OnProfileCopied", self, name)`
+  -- with `name` the profile copied FROM. Through revision 17 the fake fired every event with the
+  -- active profile, so a copy of "Raid" into "Default" reached a handler as a copy of "Default",
+  -- and a handler that logged `copied profile '<source>' → '<active>'` could not be tested through
+  -- CopyProfile at all. The other two events keep the key they had.
+  local AceDB = buildMocks().LibStub("AceDB-3.0")
+  local db = AceDB:New({ profiles = { Raid = { width = 7 } } }, { profile = { width = 1 } })
+  local heard = {}
+  local function listen(event)
+    db.RegisterCallback({}, event, function(ev, from, key)
+      heard[#heard + 1] = { event = ev, db = from, key = key }
+    end)
+  end
+  listen("OnProfileCopied"); listen("OnProfileChanged"); listen("OnProfileReset")
+
+  db:CopyProfile("Raid")
+  assertEqual(#heard, 1, "one callback for one copy")
+  assertEqual(heard[1].event, "OnProfileCopied")
+  assertTrue(heard[1].db == db, "the database is the second argument")
+  assertEqual(heard[1].key, "Raid", "the SOURCE, not the active 'Default'")
+  assertEqual(db:GetCurrentProfile(), "Default", "the copy lands in the active profile")
+  assertEqual(db.profile.width, 7, "with the source's values")
+
+  db:SetProfile("Raid")
+  assertEqual(heard[2].event, "OnProfileChanged")
+  assertEqual(heard[2].key, "Raid", "a switch still carries the profile switched TO")
+
+  db:ResetProfile()
+  assertEqual(heard[3].event, "OnProfileReset")
+  assertEqual(heard[3].key, "Raid", "and a reset the active profile, as it always has here")
+end)

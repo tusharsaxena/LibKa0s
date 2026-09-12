@@ -465,6 +465,20 @@ badge and any count quoted in the docs must agree with it.
 - options: a resetProfile that raises leaves info.profileReset false and hands bulkEnd the error
 - options: with NO bracket the walk is exactly minor 15's — same calls, same order, and an error escapes with its own stack
 
+### test_options_fontpreload.lua (11)
+
+- fontpreload: the first panel OnShow loads each LSM font path exactly once
+- fontpreload: the strings live on one shown, full-alpha frame parented to UIParent
+- fontpreload: a second show, and a second host's panel, load nothing new
+- fontpreload: a font registered after the preload is loaded when it registers
+- fontpreload: no registration callback before the first show
+- fontpreload: no LibSharedMedia is no error and creates nothing
+- fontpreload: no CreateFrame is no error, and the next show can still load
+- fontpreload: a SetFont that raises costs that face and nothing else
+- fontpreload: a show refused for combat loads nothing; the next show does
+- fontpreload: a page with no renderer loads on its show too
+- fontpreload: the main page loads on its first show, with a buildMain and without
+
 ### test_options_widgets.lua (139)
 
 - widgets: the cross-slice layout constants are published on the instance
@@ -881,7 +895,7 @@ badge and any count quoted in the docs must agree with it.
 - mock: the console mixins print as AceConsole's do, bare, as methods and to a given frame
 - mock: a bare Printf with nothing after the format string raises, as format() does
 
-### test_mock_ace.lua (37)
+### test_mock_ace.lua (38)
 
 - ace: NewAddon with a name embeds exactly the libraries it lists
 - ace: NewAddon refuses what AceAddon refuses
@@ -920,6 +934,7 @@ badge and any count quoted in the docs must agree with it.
 - ace: ADDON_LOADED after the login enables a load-on-demand addon, reading IsLoggedIn at call time
 - ace: the AceEvent library carries the message registration API, as CallbackHandler publishes it
 - ace: AceGUI's layout registry and version table carry their real names
+- ace: AceDB's OnProfileCopied carries the SOURCE profile's key, as AceDB-3.0 fires it
 
 ### test_surface_parity.lua (7)
 
@@ -989,6 +1004,7 @@ badge and any count quoted in the docs must agree with it.
 | test_slash.lua | 86 |
 | test_options.lua | 81 |
 | test_options_bulk.lua | 11 |
+| test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 139 |
 | test_options_compose.lua | 36 |
 | test_perf_core.lua | 70 |
@@ -999,7 +1015,7 @@ badge and any count quoted in the docs must agree with it.
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_mock_base.lua | 22 |
-| test_mock_ace.lua | 37 |
+| test_mock_ace.lua | 38 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 10 |
@@ -1007,4 +1023,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **885** |
+| **Total** | **897** |

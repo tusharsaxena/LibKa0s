@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 16.15.4.3
+# `LibKa0s-Options-1.0` — version 17.15.4.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,117 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **16** · `OptionsWidgets.lua` **15** · `OptionsCompose.lua` **4** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **17** · `OptionsWidgets.lua` **15** · `OptionsCompose.lua` **4** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.32.0 |
-| Status | Superseded |
-| Supersedes | [version 15.15.4.3](./version-15.15.4.3-docs.md) |
-| Superseded by | [version 17.15.4.3](./version-17.15.4.3-docs.md) |
+| Shipped in | v1.33.0 |
+| Status | **Current** |
+| Supersedes | [version 16.15.4.3](./version-16.15.4.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 16, OptionsWidgets = 15, OptionsCompose = 4, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 17, OptionsWidgets = 15, OptionsCompose = 4, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O16`
-for `Options.lua` minor 16, `W15` for `OptionsWidgets.lua` minor 15, `C4` for `OptionsCompose.lua`
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O17`
+for `Options.lua` minor 17, `W15` for `OptionsWidgets.lua` minor 15, `C4` for `OptionsCompose.lua`
 minor 4, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**One file moves, `Options.lua` 16 → 17, and it loads every LibSharedMedia font the first time a
+Ka0s settings panel is shown.** No member is added, removed, renamed or resignatured, and no
+descriptor field is added: the member manifest differs from 16.15.4.3's in the `Options` minor
+alone, and the preload reads the `getLSM` the descriptor already carries. One library-level member
+arrives, `lib.__PreloadFonts(LSM)`. It is `__`-prefixed, so it is outside the manifest, and no host
+calls it; see [The library surface](#the-library-surface). The same minor corrects three source
+docstrings on the bulk bracket's `count`. That is a comment change, and the contract below already
+said it.
+
+**Why.** Reported by the owner against every Ka0s addon: the first time a font dropdown opens in a
+session, many of its rows are blank, and the second time every row draws. The dropdown is
+AceGUI-3.0-SharedMediaWidgets' `LSM30_Font`, the `dialogControl` `O.FontGroup` writes. It builds its
+pull-out list when it opens, running `f.text:SetFont(font, size, outline); f.text:SetText(k)` for
+every registered face (`FontWidget.lua`, `ToggleDrop`). The client loads a font file the first time
+something references it, and text set with a face that is not loaded yet draws blank until
+something sets it again. The blank rows are exactly the faces nothing had used yet that session,
+which in practice means third-party LSM faces; the ones the client had already loaded (Blizzard's
+2002, AR Hei and the like) drew fine. The widget is an upstream vendored library and is not edited.
+What the library can do is make sure every face is loaded before a dropdown can be opened, and a
+dropdown can only be opened from a panel that has been shown.
+
+### When it runs
+
+| Trigger | Covers | In combat |
+|---|---|---|
+| `O.SetRenderer`'s OnShow, after the combat refusal and before the render check | Every page with a renderer, and the main page when `buildMain` is set | Skipped. The refusal has just closed the window, so no dropdown can open on that show. |
+| An OnShow hook `O.CreatePanel` installs on every panel | A page that never goes through `SetRenderer`, including the main page without `buildMain` | Runs. That page has no refusal, so if it is on screen its dropdowns can be opened. |
+
+**Never at load or at `PLAYER_LOGIN`.** Loading every face costs memory, and some of Blizzard's CJK
+faces are large. A player who never opens settings must not pay for it. Opening a font dropdown
+loads every face anyway, so a player who does open settings pays nothing extra, only earlier.
+
+**Why the two triggers.** `SetRenderer` is the seam every page in the collection draws through, and
+the main page takes it when `buildMain` is set. A page without a renderer is still supported: the
+refresh tiers keep a migration seam for it, and `RenderRows` / `RenderField` are public, so such a
+page can hold an `LSM30_Font` row the library never sees drawn. `CreatePanel` is the one call every
+page passes through, so the hook goes there. `SetRenderer`'s `SetScript` replaces that hook, which
+is why its own handler calls the preload itself. A host that `SetScript`s its own OnShow onto a
+renderer-less page replaces the hook as well. No consumer did, in the sweep taken for this release.
+
+**Why skip it in combat on the renderer path.** Creating FontStrings is not protected, so this is a
+cost decision rather than a taint one. Loading every face is a disk hitch, the middle of a fight is
+the worst time for one, and the show being refused cannot open a dropdown. The next show outside
+combat is the first one on which a dropdown can be opened, and it preloads before anything is drawn.
+
+**On every show, not only the first.** After the first, the call walks LSM's font table and loads
+nothing. It also retries a show that found no LSM or no `CreateFrame`.
+
+### What it does
+
+- **One frame for the whole session**, parented to `UIParent`, shown, at full alpha, 1x1 and parked
+  off the left edge of the screen. It is not hidden and not alpha 0, because the client may skip work
+  for a region it will not draw. It is not parented to a page, because a page's hide would hide it.
+- **One FontString per distinct font path**, not per LSM key, since several keys can name one file:
+  `fs:SetFont(path, 12, "")` then `fs:SetText("Aa")`, `pcall`'d together. A `SetFont` that fails
+  without raising leaves a string whose `SetText` raises instead.
+- **A path is marked before it is tried**, so a face the client refuses is tried once rather than on
+  every show, and costs that face alone.
+- **Faces registered later are loaded as they register.** After the first preload the library
+  subscribes once to LSM's `LibSharedMedia_Registered` callback, and a `font` registration re-runs
+  the preload, which loads only the new path. A player who never opens settings is never
+  subscribed.
+- **Nothing is reported.** No LSM, an LSM without `HashTable`, a `getLSM` that raises, no
+  `CreateFrame`, a face the client refuses: each costs the preload and never the page, and none of
+  them is the page's fault. With no `CreateFrame`, nothing is marked, and the next show tries again.
+
+**The state is library-level**, on `lib.__fontPreload`, and so is the subscription. Every host's
+`lib:New` shares it, and a LibStub minor upgrade keeps it, because every vendored copy in the
+session is handed the same `lib`. A client running several Ka0s addons loads each face once.
+Both callers, an instance's trigger and the LSM callback, look `lib.__PreloadFonts` up on `lib`
+at call time, so after an upgrade the newest copy's code is what runs.
+
+### What the host does
+
+**Nothing.** A host that passes `getLSM` gets the preload on re-vendor. A host that does not pass it
+gets none, and it has no LSM-backed values either, because `O.LSMValues` reads the same field.
+
+**WhatGroup** wraps `SetRenderer` and `EnsureDefaultsButton` so that the page body and the Defaults
+button build one frame after OnShow rather than inside it. The preload runs in the library's own
+OnShow, so under that wrapper it still runs synchronously, on the first show. It creates one plain
+frame and its FontStrings and no AceGUI widget. WhatGroup's `tests/test_panel.lua` pins that no AceGUI
+widget is created synchronously on OnShow, and that stays true. Its GameMenu Logout taint smoke test
+is still the check to run after the re-vendor.
+
+### The `count` docstrings
+
+Three source docstrings in `Options.lua`, all on the bulk bracket, still described `count` as "the
+rows actually written". They were the descriptor's `bulkEnd` entry, `runBulk`'s, and
+`RestoreAllDefaults`'. The descriptor entry also told the host to emit its line with "N = count".
+This document and 16.15.4.3's were corrected after the v1.32.0 tag. The source now says the same:
+`count` is the number of rows the walk called `applyDefault` for and that returned, including a row
+already at its default. It is therefore **not** `debug-logging-§10`'s N, which the host tallies
+itself. No behavior changed.
+
+### Previously, at 16.15.4.3
 
 **One file moves, `Options.lua` 15 → 16, and it gives the two reset walks an optional bulk
 bracket.** No member is added, removed, renamed or resignatured — the member manifest differs from
@@ -41,7 +137,7 @@ descriptor's `applyDefault` per row, and the host's write seam logs one `[Set]` 
 this minor every Defaults press was N lines and the host had no way to tell a reset from N single
 writes. The library knows when the act starts and ends; the bracket tells the host.
 
-### The two fields
+#### The two fields
 
 | Field | Signature | Called |
 |---|---|---|
@@ -74,7 +170,7 @@ alone, to observe acts without muting anything. **A host that mutes its seam in 
 also supply `bulkEnd`.** `bulkEnd` is the only place the mute is released. A `bulkBegin` with no
 `bulkEnd` leaves the seam silent for the rest of the session, and the library cannot detect that.
 
-### What the host logs — the contract
+#### What the host logs — the contract
 
 `debug-logging-§10` (standard v2.44.0, the owner's final ruling) fixes the line, and `info` is how
 the host knows which case it is in:
@@ -93,7 +189,7 @@ the host knows which case it is in:
 - **A `resetProfile` that raised leaves `profileReset` false.** The reset may never have reached the
   profile-event handler, so the host logs its line and `err` says why.
 
-### Call order and error semantics
+#### Call order and error semantics
 
 ```
 bulkBegin(act, scope)        -- inside the protected region
@@ -129,7 +225,7 @@ refresh                      -- only if nothing raised, as before
   `tests/test_options_bulk.lua`, which compares the call sequence and checks the traceback still
   holds the row's frame.
 
-### Brackets nest, and the host logs once, for the outermost
+#### Brackets nest, and the host logs once, for the outermost
 
 A bracket can open inside another one, and each level calls `bulkEnd`:
 
@@ -146,7 +242,7 @@ level, logs **only when the depth returns to 0**, and stays **silent if any leve
 `info.profileReset`**. The outermost act's `act` and `scope` name the line. A host that brackets
 an act of its own calls the same two functions itself, so its act is the outer one.
 
-### Worked example: tally the writes, log once — or not at all
+#### Worked example: tally the writes, log once — or not at all
 
 The shape `debug-logging-§10` asks for, on a host whose single write seam logs every write and whose
 `NS.Debug(tag, fmt, …)` prints `[tag] …`. The pair is built once, because the Slash descriptor takes
@@ -218,7 +314,7 @@ is silent on `profileReset`, to show the two logging cases end to end. It does *
 changed-write tally or the nesting rule above. Those live in the host, and each adopting host
 tests them in its own suite.
 
-### What the bracket does not do
+#### What the bracket does not do
 
 - It does not batch the writes or defer `onChange`. Every row is still written through
   `applyDefault`, one at a time, in the same order. Only the host's log collapses.
@@ -846,7 +942,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `bulkBegin` | function(act, scope) | no | **O16** | Called once before `RestoreDefaults` (act `"reset"`, scope the `pageKey`) or `RestoreAllDefaults` (act `"reset"`, scope `"all"`) writes its first row. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. See [The two fields](#the-two-fields). |
 | `bulkEnd` | function(act, scope, count, err, info) | no | **O16** | Called once when the act ends, **always** when the bracket was begun — even if a row, `resetProfile`, `afterRestoreAll` or `bulkBegin` raised. `count` is the rows whose `applyDefault` returned, including rows already at their default, so it is **not** §10's N; `err` is the raised value or `nil` (a raise of `nil`/`false` also arrives as `nil`), and is re-raised unchanged after this returns; `info` is `{ profileReset = <boolean> }`, `true` only when `RestoreAllDefaults` called `resetProfile` and it returned. Unmute here. Then, only when the outermost bracket closes: if any level reported `info.profileReset`, the host **MUST NOT** emit a bulk line (its profile-event handler logs the reset once); otherwise it emits `[Set] reset <scope>: N rows`, with N its own tally of writes that changed a stored value. A host that mutes in `bulkBegin` MUST supply this field. See [What the host logs](#what-the-host-logs--the-contract). A host supplying neither field runs minor 15's walk exactly. |
 | `scheduleTimer` | function(fn, delay) | no | O1 | Backs the 50 ms colour-drag throttle. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. |
-| `getLSM` | function | no | O1 | Returns LibSharedMedia-3.0, for `LSMValues`. |
+| `getLSM` | function | no | O1 | Returns LibSharedMedia-3.0, for `LSMValues` and, **since O17**, for the font preload a panel's show runs ([`lib.__PreloadFonts`](#lib__preloadfontslsm--number)). Absent, a host gets no preload. |
 | `validate` | function | no | O1 | Runs once, before the page builders. A host's schema-shape check. |
 | `onAceGUI` | function(AceGUI) | no | O1 | Handed the resolved AceGUI so the host can stash it (library-stack-§4) for its own page files. |
 | `buildMain` | function(ctx) | no | O1 | Draws the main page's body, on its first OnShow. |
@@ -864,9 +960,9 @@ keeps for you.
 
 ## The library surface
 
-Almost everything this major publishes hangs off the instance `lib:New(descriptor)` returns. One
-member does not, and cannot: a widget-registry entry is per **process**, so the thing that writes it
-has to be per library rather than per host.
+Almost everything this major publishes hangs off the instance `lib:New(descriptor)` returns. Two
+members do not, and cannot. A widget-registry entry is per **process**, and so is a loaded font
+file, so the thing that writes either has to be per library rather than per host.
 
 ### `lib.__PatchLSM30Border()` → boolean
 
@@ -892,6 +988,25 @@ set on the early return would have disarmed the surface for the whole session in
 **`lib.__lsmBorderPatched` is readable but is not a supported write.** Clearing it does not
 un-register the wrapper; it only invites a second one to be registered on top of the first, which is
 the five-deep stack this member exists to end.
+
+### `lib.__PreloadFonts(LSM)` → number
+
+**Since O17.** Load every LibSharedMedia font face not loaded yet, then subscribe once to faces
+registered later. Returns how many faces this call loaded. See
+[What changed at this version](#what-changed-at-this-version) for why.
+
+| | |
+|---|---|
+| Who calls it | The library, from every panel show: `O.SetRenderer`'s OnShow after its combat refusal, and the OnShow hook `O.CreatePanel` installs. A host does not call it. |
+| `LSM` | What the host's `getLSM()` returns. Anything that is not a table with `HashTable` answers 0 and creates nothing. |
+| What it creates | On the first call that loads anything: one frame for the session, parented to `UIParent`, shown, full alpha, 1x1, off the left edge of the screen. Then one FontString per distinct font path, `SetFont(path, 12, "")` and `SetText("Aa")`, `pcall`'d together. |
+| Idempotence | `lib.__fontPreload`, on the **library** table: `{ paths = { [path] = true }, frame, subscribed }`. Every host and every vendored copy shares it, so each path is loaded once per session. A path is marked before it is tried, so a face the client refuses is not retried. |
+| Late faces | After the first call that finds a `CreateFrame`, one subscription to `LibSharedMedia_Registered`, with the state table as its target. A `font` registration re-runs this, which loads only the new path. |
+| Degrades | No `CreateFrame` answers 0 and marks nothing, so the next call tries again. A raising `HashTable` answers 0. The instance trigger `pcall`s the whole call, `getLSM` included, and reports nothing. |
+| After an upgrade | Both callers look the member up on `lib` at call time, so the newest copy's code runs against the state the older copy left. |
+
+**`lib.__fontPreload` is readable but is not a supported write.** The suite resets it between cases.
+A host that clears it loads every face a second time, into a second frame, for nothing.
 
 ## The instance surface
 
@@ -1380,15 +1495,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 17.15.4.3
-
-One file moves, `Options.lua` 16 → 17. **No member is added, removed, renamed or resignatured, and no
-descriptor field is added.** What changes is something the host does not call. The first time any
-Ka0s settings panel is shown, the library loads every LibSharedMedia font face, so the first open of
-an `LSM30_Font` dropdown no longer draws blank rows for faces nothing had used yet. It reads the
-`getLSM` the descriptor already carries. The same minor corrects three source docstrings on the bulk
-bracket's `count`, which now say what this document says.
-
-**The re-vendor is the whole adoption.** See [version 17.15.4.3](./version-17.15.4.3-docs.md) for
-when the preload runs, what it costs and how it degrades.

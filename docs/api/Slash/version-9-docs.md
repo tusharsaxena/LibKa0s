@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 8
+# `LibKa0s-Slash-1.0` — version 9
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **8** |
-| Shipped in | v1.32.0 |
-| Status | Superseded |
-| Supersedes | [version 7](./version-7-docs.md) |
-| Superseded by | [version 9](./version-9-docs.md) |
+| Files and minors | `Slash.lua` minor **9** |
+| Shipped in | v1.33.0 |
+| Status | **Current** |
+| Supersedes | [version 8](./version-8-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 8 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 9 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -36,6 +36,25 @@ returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
 
+**Comments only. The surface does not move.** Every member, descriptor field, value and behavior
+described below is exactly what version 8 shipped. A host written against version 8 is correct here
+unmodified, and there is nothing to migrate.
+
+Two docstrings in `Slash.lua`, the descriptor's `bulkEnd` entry and `runBulk`'s, still called
+`count` "the rows actually written". The descriptor entry also told the host to emit
+`[Set] reset all: N rows` without saying where N comes from. Both now say what this document has
+said since its correction after the v1.32.0 tag (6233e3e, bf8ed91). `count` is the number of rows
+the walk called `applyDefault` for and that returned, including a row already at its default, so it
+is **not** `debug-logging-§10`'s N. The host tallies N itself, counting only writes that change a
+stored value. `Options.lua` carried the same phrasing and is corrected in the same release, at
+Options 17.15.4.3.
+
+The bump exists because the file's bytes changed, and LibStub decides which vendored copy wins by
+comparing minors. A comment-only change still bumps: see [`docs/releasing.md`](../../releasing.md)
+step 2, and the v1.8.0 entry in `CHANGELOG.md`.
+
+### Previously, at version 8
+
 **`CliResetAll` gains an optional bulk bracket — the same one the Options major gains at
 16.15.4.3, with the same field names, signatures, call order and error semantics, so a host passes
 one pair to both.** No member is added, removed, renamed or resignatured; the member manifest differs
@@ -51,7 +70,7 @@ row's `onChange` still run per row. `CliResetAll` walks every row through the de
 major: BankLedger's and LootHistory's Defaults button and `/<slash> resetall`, and MultiMeters'
 `/mm resetall`. Their seams logged 15, 16 and 169 `[Set]` lines per reset.
 
-### The two fields
+#### The two fields
 
 | Field | Signature | Called |
 |---|---|---|
@@ -78,7 +97,7 @@ that changed a stored value, never `count`. If any bracket open at the time repo
 flag cannot come from this major, but a `CliResetAll` can run inside an Options bracket that
 carries it; see the nesting rule in the Options document.
 
-### Call order and error semantics
+#### Call order and error semantics
 
 ```
 bulkBegin("reset", "all")        -- inside the protected region
@@ -104,7 +123,7 @@ print RESET_ALL                  -- only if nothing raised, as before
 No other verb here loops rows through the descriptor: `CliReset` writes one row, which is one
 `[Set]` line either way, and `BuildListLines` only reads.
 
-### Worked example: tally the writes, log once
+#### Worked example: tally the writes, log once
 
 The same host pair as the Options document's — build it once and hand it to both descriptors. The
 seam tallies only the writes that change a stored value, and the depth counter sums the tally
@@ -345,11 +364,3 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
-
-## Moving to version 9
-
-**Comments only; there is nothing to migrate.** Two docstrings in `Slash.lua` still called
-`count` "the rows actually written". Version 9 corrects them to what this document says: `count`
-is the rows the walk called `applyDefault` for and that returned, including rows already at their
-default, and the host logs its own tally of changed writes. The file's minor moves because its
-bytes did. See [version 9](./version-9-docs.md).
