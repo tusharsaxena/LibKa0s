@@ -40,8 +40,15 @@ Two optional descriptor fields: `bulkBegin(act, scope)` before the act writes it
 page walk as `"reset"`, scope `pageKey`. `RestoreAllDefaults()` brackets the whole act as `"reset"`,
 scope `"all"`: the row walk, then `resetProfile`, then `afterRestoreAll`. A write any of those makes
 through the host's seam is part of the reset. Both refreshes run after the bracket closes. `count` is
-the rows actually written through `applyDefault`: vetoed rows, rows the `resetProfile` narrowing
-skips and a raising row are not counted.
+the rows whose `applyDefault` returned. Vetoed rows, rows the `resetProfile` narrowing skips and a
+raising row are not counted, but a row already at its default **is**. So `count` is **not** the N
+in §10's line, which counts only rows the act actually changed. The host tallies N itself in its
+muted write seam, counting only writes that change a stored value, and logs that tally. It keeps a
+depth counter so that nested brackets — an `afterRestoreAll` that calls `RestoreDefaults`, a
+`CliResetAll` inside an Options bracket — sum into one line, logged when the depth returns to
+zero. A host that mutes in `bulkBegin` must also supply `bulkEnd`. A raise of `nil` or `false`
+inside the bracket reaches `bulkEnd` as `err = nil`. The API documents' worked examples show all
+of this. (Documentation corrected after the tag, on review; the payload did not change.)
 
 **`info.profileReset` settles who logs a profile reset.** The owner's final ruling in
 `debug-logging-§10` (standard v2.44.0, WowAddonStandards 7883278) logs a whole-profile reset
@@ -58,7 +65,8 @@ because the reset may never have reached the handler.
 runs, once, with the count so far and the raised value as `err`. The library then re-raises that
 same value with `error(err, 0)`, unwrapped. The walk still stops at the first raising row and the
 refresh does not run, as before. A `bulkEnd` that raises propagates its own error. Either field
-may be supplied alone. With neither, the walk runs bare: the same calls in the same order, and a
+may be supplied alone, but a host that mutes in `bulkBegin` must supply `bulkEnd`, the only place
+the mute is released. With neither, the walk runs bare: the same calls in the same order, and a
 raising row escapes with its own stack. `tests/test_options_bulk.lua`, a new suite peeled off
 `tests/test_options.lua` rather than taking it past `layout-§1`'s 1500-line cap, pins the call
 sequence, the traceback and each logging case.
