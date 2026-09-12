@@ -763,12 +763,13 @@ cannot reach where you need it:
   or a contiguous block of text lines with no gutter, is not expressible today without changing its
   appearance.
 
-- **A free-text `string` row cannot hold a value containing a space.** `lib.ParseValue` splits the
-  remainder on whitespace (`Slash.lua:335`, in `lib.ParseValue`) and `parseString` returns `args[1]`
-  (`Slash.lua:306`), so
-  `/at set <path> Hello World` stores `"Hello"`. It stores it silently — nothing raises, and only the
-  echo shows the truncation. slash-commands-§6 sanctions a descriptor `parse` for exotic row types and
-  that is what PrettyChat supplies, so a host is not stuck; but this is not an exotic type, it is the
+- **Closed at Slash minor 10 (v1.34.0): a free-text `string` row could not hold a value containing a
+  space.** Through minor 9, `lib.ParseValue` split the remainder on whitespace and a `string` row took
+  the first token, so
+  `/at set <path> Hello World` stored `"Hello"`. It stored it silently — nothing raised, and only the
+  echo showed the truncation. From minor 10 a `string` row takes the whole remainder, trimmed at both
+  ends with its interior spacing kept, and an enum is matched on the full string, so no descriptor
+  `parse` is needed for this any more. It was never an exotic type: it is the
   ordinary free-text row the `dialogControl = "EditBox"` widget writes. Found by PrettyChat, where
   every stored value is a Blizzard format string and therefore contains spaces.
 

@@ -70,8 +70,8 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [3](docs/api/Media/version-3-docs.md) |
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [9](docs/api/Widgets/version-9-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
-| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [8](docs/api/Slash/version-8-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [16.15.4.3](docs/api/Options/version-16.15.4.3-docs.md) |
+| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [10](docs/api/Slash/version-10-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [18.15.5.3](docs/api/Options/version-18.15.5.3-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [11.5](docs/api/Perf/version-11.5-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
@@ -211,8 +211,9 @@ Full release order — bump, changelog, regenerate, tag, then **re-vendor every 
 [docs/releasing.md](docs/releasing.md). That last step is the one that gets forgotten: it already
 happened once, with both repos' suites green throughout.
 
-Re-vendoring is **whole-folder**, never file by file. Every dependent major — DebugLog, Slash,
-Options and Perf — resolves `LibKa0s-Core-1.0` before it calls `NewLibrary` and returns outright if
+Re-vendoring is **whole-folder**, never file by file. Every major but Core — Env, Pool, Item,
+Media, Widgets, DebugLog, Slash, Options and Perf — resolves `LibKa0s-Core-1.0` before it calls
+`NewLibrary` and returns outright if
 Core is missing or below the minor it needs, so a consumer that copied a new `Perf.lua` over an old
 `Core.lua` gets no probe at all rather than a half-updated one — the host's setup stub then says
 "perf is not installed", which is the honest answer. AbsorbTracker's `core/DebugLogSetup.lua` and

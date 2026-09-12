@@ -27,12 +27,12 @@ Three tools. Only the first has a version that matters.
 
 | Tool | Version | Verified with | Why it is needed |
 |---|---|---|---|
-| `lua5.1` | **5.1 exactly — a hard requirement** | Lua 5.1.5 | The headless harness sets each chunk's environment with **`setfenv`** (`testkit/loader.lua:31` and `:50`), which exists only in Lua 5.1. |
+| `lua5.1` | **5.1 exactly — a hard requirement** | Lua 5.1.5 | The headless harness sets each chunk's environment with **`setfenv`** (`testkit/loader.lua:72` and `:91`), which exists only in Lua 5.1. |
 | `luacheck` | any recent | 1.2.0 | The `lint` suite — `luacheck .`, the gating half of the green gate. |
 | `lizard` | any recent | 1.24.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). |
 
 The "verified with" column is the toolchain of the last recorded run,
-[`docs/automated-tests/20260903-161751/manifest.json`](docs/automated-tests/20260903-161751/manifest.json)
+[`docs/automated-tests/20260913-002423/manifest.json`](docs/automated-tests/20260913-002423/manifest.json)
 → `host` — evidence, not a pin. `luacheck` and `lizard` are pinned nowhere and pinning them would be
 false precision; `lua5.1` is not a preference. "5.2 will probably work" is **false**, and it costs an
 hour to disprove: 5.2 removed `setfenv`, and the loader is the first thing every suite touches.
@@ -42,7 +42,7 @@ Also assumed present, and not installed separately on any normal WSL2 / Ubuntu b
 | Tool | Why it is needed |
 |---|---|
 | `git` | `tests/test_kitsync.lua` shells out to `git ls-files -s` to assert the runner's `100755` mode in **both** kit copies. The exec bit is not in a file's bytes, so no byte-identity check can ever see it. |
-| POSIX `ls` | `Kit.assertSuiteInventory` lists `tests/` with `ls -A` via `io.popen` (`testkit/framework.lua:214`), falling back to `dir /b` under cmd.exe. When neither is available the gate **fails** rather than reporting a pass — an empty listing means "could not look", never "empty directory". |
+| POSIX `ls` | `Kit.assertSuiteInventory` lists `tests/` with `ls -A` via `io.popen` (`testkit/framework.lua:357`), falling back to `dir /b` under cmd.exe. When neither is available the gate **fails** rather than reporting a pass — an empty listing means "could not look", never "empty directory". |
 | `bash` | `testkit/run-automated-tests.sh` is `#!/usr/bin/env bash` and uses `set -uo pipefail` and arrays. |
 
 ### Install
@@ -89,13 +89,15 @@ does not bind a library repo (`library-stack-§7`), and releasing is git plus th
 changes. `tools/artwork/icon_cleaner.py` rebuilds `LibKa0s/media/icons/` from Open Iconic — it is the
 provenance record for that art, not a build step, and the TGAs it produces are committed. You need it
 to add or replace an icon; you do not need it to fix a typo, run the suite, or cut a release that
-does not touch the art.
+does not touch the art. Its sibling `tools/artwork/bar_textures.py` synthesizes
+`LibKa0s/media/textures/` from named constants — no network and no input files — and needs Python 3,
+Pillow and NumPy only.
 
 | Tool | Why | Install |
 |---|---|---|
-| Python 3 | The tool is a Python script (`tools/artwork/icon_cleaner.py`) | `sudo apt install python3` |
-| Pillow | Reads the source PNGs and writes the RLE TGAs (`from PIL import Image`) | `pipx install pillow` — or `sudo apt install python3-pil` |
-| NumPy | The recolour, solidify and normalize stages are array work (`import numpy as np`) | `pipx install numpy` — or `sudo apt install python3-numpy` |
+| Python 3 | Both tools are Python scripts (`tools/artwork/icon_cleaner.py`, `tools/artwork/bar_textures.py`) | `sudo apt install python3` |
+| Pillow | Reads the source PNGs and writes the RLE TGAs (`from PIL import Image`, in both scripts) | `pipx install pillow` — or `sudo apt install python3-pil` |
+| NumPy | The recolour, solidify and normalize stages, and the bar gradients, are array work (`import numpy as np`, in both scripts) | `pipx install numpy` — or `sudo apt install python3-numpy` |
 | GitHub CLI | Fetches the upstream PNGs through `gh api`, which the script uses in place of raw.githubusercontent.com because that host times out from here often enough to be useless in a script | `sudo apt install gh && gh auth login` |
 
 **Ubuntu 24.04 trap:** `pip install pillow` fails on PEP 668's `EXTERNALLY-MANAGED` marker. Use
@@ -117,14 +119,15 @@ From the repo root, with the development set installed:
 
 ```sh
 lua5.1 tests/run.lua                                # the headless suite — 0 failed
-luacheck .                                          # 0 warnings / 0 errors, in 18 files
+luacheck .                                          # 0 warnings / 0 errors, in 55 files
 lizard -l lua -x "./libs/*" -x "./tests/_kit/*" .   # recorded; 0 functions above CCN 15
 tests/_kit/run-automated-tests.sh                   # all of the above, frozen into a bundle
 ```
 
 The first two are the **green gate**: no commit without both clean. The `luacheck` count is scoped by
-`.luacheckrc`'s `exclude_files` — the fourteen files in `LibKa0s/` plus the four in `testkit/`; `tests/`
-and `docs/` are excluded, so 0/0 only means something if what you changed is inside that set.
+`.luacheckrc`'s `exclude_files` — everything but `tests/_kit/`, which is a byte copy of `testkit/`
+and would report every finding twice (`.luacheckrc:4`). 0/0 only means something if what you changed
+is inside that set.
 
 There is **no `tests/perf.lua`** here, so the runner's `perf` suite is a standing `skip`. A skip is
 never a pass — see [`docs/automated-tests/README.md`](docs/automated-tests/README.md).
