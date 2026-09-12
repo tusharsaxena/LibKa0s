@@ -10,9 +10,9 @@
 | Version | **16** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.30.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 15](version-15-docs.md) — the runner writes the record, `test_eol.lua` ships, and the geometry opt-in lands |
-| Superseded by | — |
+| Superseded by | [version 17](version-17-docs.md) — the Ace surfaces six consumer harnesses migrate onto: AceAddon's object model and lifecycle, AceEvent on CallbackHandler's terms, a real AceTimer, AceConsole's chat commands |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `16` |
 
@@ -295,3 +295,21 @@ downstream, and a kit change that would break a consumer breaks this repo first.
 4. Re-vendor into `tests/_kit/` here **and** into every consumer's `tests/_kit/`, then run each
    repo's suite.
 5. Add the row to [`../README.md`](../README.md).
+
+## Moving to revision 17
+
+**Take it.** Six consumer harnesses replaced the kit's Ace fakes wholesale, so no revision reached
+their suites (BankLedger#18 and #19, ConsumableMaster#38, KickCD#21, PanelMaster#50, WhatGroup#19).
+Revision 17 models what those copies were written to model, each piece checked against the real Ace3
+source: `NewAddon` honoring its mixin list, `NewModule` and the lifecycle driven through AceAddon's own
+frame, AceEvent's two CallbackHandler registries with string methods, `arg` and
+`UnregisterAllMessages`, a real AceTimer whose cancellation the queue honors, AceConsole's chat
+commands, and the client refusing an event it does not know.
+
+**Nothing moves on re-vendor.** It was measured in all ten consumers at their current `master`, and
+every total is identical to this revision's. Unlike 16, 17 adds no consumer-side case.
+
+**One correction to this document**, the same one version 15 had to make: the section above says the
+geometry flip is "17 at the earliest". It is not 17 either. Revision 17 carries the harness surfaces,
+so the flip moves again, to the next revision that ships it alone — 18 at the earliest. See
+[version 17](version-17-docs.md#revision-17-is-not-the-geometry-flip).
