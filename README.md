@@ -195,7 +195,7 @@ different vendored copy of each. As of **v1.31.0**: `Core = { Core = 7 }`,
 `Env = { Env = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`, `Media = { Media = 3 }`,
 `Widgets = { Widgets = 9 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 7 }`,
 `Options = { Options = 15, OptionsWidgets = 15, OptionsCompose = 4, OptionsScroll = 3 }`,
-`Perf = { Perf = 10, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
+`Perf = { Perf = 11, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
 attached to which probe?" from in-game, once several addons each ship their own vendored copy.

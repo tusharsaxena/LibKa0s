@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
 **Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
-**OptionsWidgets minor 15**, **OptionsCompose minor 4**, **OptionsScroll minor 3**, **Perf minor 10**,
+**OptionsWidgets minor 15**, **OptionsCompose minor 4**, **OptionsScroll minor 3**, **Perf minor 11**,
 **PerfPanel minor 5**, **kit revision 17**.
 
 Two scopes, both approved by the owner on 2026-09-12. Two files in `LibKa0s/` move and add a
@@ -46,6 +46,14 @@ common-spec field and every composer-specific one, and the suite compares curren
 The Options API document carries PanelMaster's three blocks as a worked example, and the suite builds
 the same three against a stand-in registry. Adopting it in PanelMaster, and retiring the three rows,
 is PanelMaster's step.
+
+### `Perf.lua` minor 11 — `Save` traces its retention prune
+
+`P.Save` trims the capture ring past its size (`ring`, default 10) and did it silently; two consumers
+found the prune missing from their logs, and `debug-logging-§8` requires a retention prune to be
+traced. A save that trims now writes one line through `P.Log`, the host's console path:
+`perf ring at its cap of <ring> — dropped <n> oldest record(s)`. One line per prune, nothing while the
+ring is under its cap, and nothing else about `Save` changes. `docs/api/Perf/version-11.5-docs.md`.
 
 ### `OptionsWidgets.lua` minor 15 — a row with no path reads and writes through its own `get` / `set`
 
