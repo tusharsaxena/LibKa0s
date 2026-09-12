@@ -588,7 +588,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
 
-### test_options_compose.lua (24)
+### test_options_compose.lua (34)
 
 - compose: the instance carries every composer and every published constant
 - compose: FontGroup emits the six canonical leaves in the canonical order
@@ -614,6 +614,16 @@ badge and any count quoted in the docs must agree with it.
 - compose: a frameless addon's lead button shares the pair with Reset all settings
 - compose: a FRAMED addon's lead button takes its own row above the full pair
 - compose: the tail draws the two resets as the tab's closing button pair
+- compose: a path-keyed call emits byte-for-byte what compose minor 3 emitted
+- compose: the bind arm emits the same rows as the path arm, with the binding in place of path
+- compose: a bound row's get and set reach the bind with the record field and the row
+- compose: bind.record is enough to read, and an extra's own path is left alone
+- compose: a bind with no setter, or with nothing to read, is refused when the block is composed
+- compose: every maker reads a bound row through get and writes it through set, never the store
+- compose: a bound row's refresher re-reads the record, so a write elsewhere repaints it
+- compose: a row WITH a path is read through the descriptor even when it carries get and set
+- compose: PanelMaster's three record-backed groups compose, in the order the editor draws them
+- compose: a PanelMaster block writes through the registry and repaints off the live record
 
 ### test_perf_core.lua (69)
 
@@ -849,6 +859,40 @@ badge and any count quoted in the docs must agree with it.
 - mock: the console mixins print as AceConsole's do, bare, as methods and to a given frame
 - mock: a bare Printf with nothing after the format string raises, as format() does
 
+### test_mock_ace.lua (31)
+
+- ace: NewAddon with a name embeds exactly the libraries it lists
+- ace: NewAddon refuses what AceAddon refuses
+- ace: NewAddon(name) builds the object itself, named and printable as its name
+- ace: a table with no name keeps revision 16's NewAddon, stamps and all
+- ace: NewModule makes a named child addon, in creation order
+- ace: a module takes its prototype, default libraries and default state
+- ace: PLAYER_LOGIN initializes everything queued, then enables the addon before its modules
+- ace: ADDON_LOADED initializes; enabling waits for the login
+- ace: a module created disabled is skipped by the cascade and enabled on demand
+- ace: Disable runs OnDisable, then disables every module, and Enable brings them back
+- ace: Enable on an addon still queued for initialization only records the state
+- ace: disabling an addon unregisters its events and messages and cancels its timers
+- ace: an OnEnable that raises costs only itself, and the cascade reports it afterwards
+- ace: RegisterMessage dispatches a string method, a default method and the optional arg
+- ace: RegisterMessage refuses what CallbackHandler refuses
+- ace: UnregisterAllMessages drops this target's messages and nobody else's
+- ace: the library's own SendMessage fans out, and the registry holds a function as given
+- ace: a registration made while a message is being sent waits for the send to finish
+- ace: __fireEvent dispatches a game event the way CallbackHandler does
+- ace: an event the client does not know raises on its first registration
+- ace: ScheduleTimer queues a timer __fireTimers runs, with its arguments
+- ace: ScheduleTimer refuses what AceTimer refuses
+- ace: CancelTimer is honored, answered, and not counted as a run
+- ace: a repeating timer fires once per pass until it is canceled, even from inside itself
+- ace: CancelAllTimers cancels this object's timers and nobody else's
+- ace: TimeLeft reads the clock; a short delay is floored at AceTimer's 0.01
+- ace: a C_Timer.NewTimer handle's Cancel is honored too
+- ace: RegisterChatCommand records the command and dispatches it as the client would
+- ace: where the environment models SlashCmdList, RegisterChatCommand writes the client's globals
+- ace: every Embed works when a consumer's wrapper calls it with its own table as self
+- ace: AceGUI's layout registry and version table carry their real names
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -917,7 +961,7 @@ badge and any count quoted in the docs must agree with it.
 | test_slash.lua | 81 |
 | test_options.lua | 81 |
 | test_options_widgets.lua | 139 |
-| test_options_compose.lua | 24 |
+| test_options_compose.lua | 34 |
 | test_perf_core.lua | 69 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 45 |
@@ -926,6 +970,7 @@ badge and any count quoted in the docs must agree with it.
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_mock_base.lua | 22 |
+| test_mock_ace.lua | 31 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 10 |
@@ -933,4 +978,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **819** |
+| **Total** | **860** |

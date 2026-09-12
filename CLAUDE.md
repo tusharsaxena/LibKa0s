@@ -1,6 +1,6 @@
 # CLAUDE.md — LibKa0s
 
-LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.43.0) —
+LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.44.0) —
 <https://github.com/tusharsaxena/WowAddonStandards>.
 
 **Read this first: LibKa0s is a library repo, not an addon.** It is in scope for the standard and it
@@ -130,7 +130,7 @@ deliverable was the disposition, and the disposition is this table.
 
 **The 1000–1500 band is on notice, not in breach**: `tests/test_widgets.lua` (1493),
 `tests/test_options.lua` (1266), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1206, tracked as
-[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)) and `LibKa0s/Options.lua` (1036). They are
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1036) and, since kit revision 17, `testkit/mock_base.lua` (1424). They are
 named so a later reader can tell the band was looked at rather than missed; none needs a disposition
 until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one.
 
@@ -174,6 +174,6 @@ lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for w
 luacheck .          # 0 warnings / 0 errors
 ```
 
-That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — fifty-one
-files at v1.30.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
+That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — fifty-three
+files at v1.31.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
 only means something if the files carrying the change are inside the checked set.
