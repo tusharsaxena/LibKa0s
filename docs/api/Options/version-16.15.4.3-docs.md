@@ -46,28 +46,48 @@ writes. The library knows when the act starts and ends; the bracket tells the ho
 | Field | Signature | Called |
 |---|---|---|
 | `bulkBegin` | `function(act, scope)` | Once, before the act writes its first row. |
-| `bulkEnd` | `function(act, scope, count, err)` | Once, after the act — **always**, whenever the bracket was begun. |
+| `bulkEnd` | `function(act, scope, count, err, info)` | Once, after the act — **always**, whenever the bracket was begun. |
 
-| Walk | `act` | `scope` | What the bracket spans | `count` |
-|---|---|---|---|---|
-| `O.RestoreDefaults(pageKey, ctx)` | `"reset"` | `pageKey`, as passed | the page's row walk | rows written through `applyDefault` |
-| `O.RestoreAllDefaults()` | `"reset"` | `"all"` | the row walk, then `resetProfile`, then `afterRestoreAll` | rows written through `applyDefault` — with `resetProfile` supplied, the `sessionOnly` rows alone, because the profile is reset whole |
+`info` is a table, `{ profileReset = <boolean> }`, and it is never `nil` when `bulkEnd` is called.
+
+| Walk | `act` | `scope` | What the bracket spans | `count` | `info.profileReset` |
+|---|---|---|---|---|---|
+| `O.RestoreDefaults(pageKey, ctx)` | `"reset"` | `pageKey`, as passed | the page's row walk | rows written through `applyDefault` | always `false` |
+| `O.RestoreAllDefaults()` | `"reset"` | `"all"` | the row walk, then `resetProfile`, then `afterRestoreAll` | rows written through `applyDefault` — with `resetProfile` supplied, the `sessionOnly` rows alone, because the profile is reset whole | `true` when `resetProfile` was called **and returned**; otherwise `false` |
 
 The refresh (`ctx.refreshers` for a page, `RefreshAllPanels` for all) runs **after** `bulkEnd`,
-outside the bracket: it writes nothing. `resetProfile` and `afterRestoreAll` run **inside** it,
-because a write either makes through the host's seam — an `OnProfileReset` handler re-seeding a
-row, a hook clearing a sessionOnly value — is part of the reset and belongs under its one line.
-Each field is independently optional: a host may supply only `bulkEnd` (and log from the count) or
-only `bulkBegin`.
+outside the bracket: it writes nothing. `resetProfile` and `afterRestoreAll` run **inside** it, so
+the `sessionOnly` rows the library writes one by one before the profile reset, and any write a
+hook makes through the host's seam, stay under the mute. Each field is independently optional: a
+host may supply only `bulkEnd` (and log from the count) or only `bulkBegin`.
+
+### What the host logs — the contract
+
+`debug-logging-§10` (standard v2.44.0, the owner's final ruling) fixes the line, and `info` is how
+the host knows which case it is in:
+
+- **`info.profileReset` is `true`: the host MUST NOT emit a bulk line.** The act included a
+  whole-profile reset. AceDB replaced the profile (`db:ResetProfile()`), and §10 logs that
+  **once**, by the host's profile-event handler — `[Set] reset profile 'Default' to defaults
+  (N rows)` — and forbids any bulk bracket from adding a second line. The host still releases its
+  mute. Because the session rows were written under that mute, a Restore All on a profile-reset
+  host reads as exactly one line, the handler's.
+- **Otherwise the host emits exactly one line, `[Set] reset <scope>: N rows`.** The tag **MUST** be
+  `[Set]`, and `N` is `count` — the rows the act actually wrote, never the rows in its scope. A page
+  reset reads `[Set] reset general: 14 rows`. A Restore All on a host with no `resetProfile` reads
+  `[Set] reset all: 31 rows`.
+- **A `resetProfile` that raised leaves `profileReset` false.** The reset may never have reached the
+  profile-event handler, so the host logs its line and `err` says why.
 
 ### Call order and error semantics
 
 ```
 bulkBegin(act, scope)        -- inside the protected region
   applyDefault(row) × N      -- stops at the first row that raises, exactly as unbracketed
-  resetProfile()             -- RestoreAllDefaults only, when supplied
+  resetProfile()             -- RestoreAllDefaults only, when supplied;
+                             --   info.profileReset = true once it returns
   afterRestoreAll()          -- RestoreAllDefaults only, when supplied
-bulkEnd(act, scope, count, err)   -- ALWAYS, once; err is nil unless something above raised
+bulkEnd(act, scope, count, err, info)   -- ALWAYS, once; err is nil unless something above raised
 error(err, 0)                -- only if something raised: the same value, re-raised unchanged
 refresh                      -- only if nothing raised, as before
 ```
@@ -85,14 +105,15 @@ refresh                      -- only if nothing raised, as before
 - **A `bulkEnd` that raises propagates its own error.** It was handed the original first, as `err`.
 - **Unbracketed — neither field a function — nothing above applies.** The walk runs bare, a raising
   row escapes with its own stack, and the call sequence is minor 15's. Pinned by
-  `tests/test_options.lua`, which compares the call sequence and checks the traceback still holds
-  the row's frame.
+  `tests/test_options_bulk.lua`, which compares the call sequence and checks the traceback still
+  holds the row's frame.
 
-### Worked example: mute the seam, emit one line
+### Worked example: mute the seam, emit one line — or none
 
-The shape `debug-logging-§10` asks for, on a host whose single write seam logs every write. A
-depth counter rather than a boolean, so a host that brackets an act of its own around a library
-reset still unmutes at the right time.
+The shape `debug-logging-§10` asks for, on a host whose single write seam logs every write and whose
+`NS.Debug(tag, fmt, …)` prints `[tag] …`. The mute is a depth counter rather than a boolean, so a
+host that brackets an act of its own around a library reset still unmutes at the right time. The
+pair is built once, because the Slash descriptor takes the same two fields.
 
 ```lua
 -- settings/Schema.lua — the host's single write seam
@@ -105,26 +126,41 @@ function NS.Set(path, value)
   end
 end
 
+NS.Bulk = {
+  begin  = function(act, scope) bulkDepth = bulkDepth + 1 end,
+  finish = function(act, scope, count, err, info)
+    bulkDepth = bulkDepth - 1
+    -- A whole-profile reset is logged once, by OnProfileReset below. Add nothing.
+    if info.profileReset then return end
+    NS.Debug("Set", "%s %s: %d rows", act, tostring(scope), count)   -- [Set] reset <scope>: N rows
+  end,
+}
+
+-- core/Database.lua — the profile-event handler: a profile reset's one line
+function NS:OnProfileReset(_, db)
+  NS.Debug("Set", "reset profile '%s' to defaults (%d rows)", db:GetCurrentProfile(), NS.SchemaRowCount())
+end
+
 -- settings/OptionsSetup.lua — the Options descriptor
 NS.Helpers = O:New({
   -- … parentTitle, mainPanelName, get, set, applyDefault, rowsForPage, allRows …
-  bulkBegin = function(act, scope)
-    bulkDepth = bulkDepth + 1
-  end,
-  bulkEnd = function(act, scope, count, err)
-    bulkDepth = bulkDepth - 1
-    local where = scope == "all" and "all settings" or (tostring(scope) .. " page")
-    NS.Debug("Set", "%s %s: %d rows%s", act, where, count, err and " (stopped by an error)" or "")
-  end,
+  resetProfile = function() NS.db:ResetProfile() end,
+  bulkBegin    = NS.Bulk.begin,
+  bulkEnd      = NS.Bulk.finish,
 })
 ```
 
-A Defaults press on the General page now logs `[Set] reset general page: 14 rows` and nothing else;
-a global reset logs `[Set] reset all settings: 2 rows` on a host with `resetProfile` (the two
-`sessionOnly` rows — say so in the wording if the host wants the profile reset named). Hand the
-**same pair** to the Slash descriptor and `/<slash> resetall` logs one line too — Slash minor 8
-brackets `CliResetAll` with the same fields, act and error semantics. `tests/test_options.lua` runs
-this example for real.
+What the console shows, case by case:
+
+| Act | Lines logged |
+|---|---|
+| The General page's Defaults button — `RestoreDefaults("general", ctx)`, 14 rows written | `[Set] reset general: 14 rows` |
+| Restore All on this host — `resetProfile` supplied, so `info.profileReset` is `true` | `[Set] reset profile 'Default' to defaults (31 rows)`, from `OnProfileReset`, and **nothing** from `bulkEnd`. The two `sessionOnly` rows written first were muted. |
+| Restore All on a host with **no** `resetProfile` — every unvetoed row walked, 31 written | `[Set] reset all: 31 rows` |
+| `/<slash> resetall` through Slash minor 8, handed the same pair | `[Set] reset all: <rows written>` — `info.profileReset` is always `false` there |
+
+Before this minor each of those was one `[Set]` line per row. `tests/test_options_bulk.lua` runs the
+host above for real, and each case has its own test.
 
 ### What the bracket does not do
 
@@ -752,7 +788,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `skipRestoreAll` | function(row) | no | O1 | Return true to exclude a row from a global reset. With `resetProfile` supplied the profiles-page veto this was invented for is **implied** (an AceDBOptions row is not `sessionOnly`, so it is already outside the narrowed walk); the field is still honored, and is the whole policy for a host that supplies no `resetProfile`. |
 | `afterRestoreAll` | function | no | O1 | Runs after the rows are reset **and after `resetProfile`**, and **before** the panels refresh, for state in neither the schema nor the profile. The order is load-bearing: a refresh first would paint the pre-hook values. A dragged frame's saved position is **not** an example any more — a position lives in the profile and comes back with it. |
 | `bulkBegin` | function(act, scope) | no | **O16** | Called once before `RestoreDefaults` (act `"reset"`, scope the `pageKey`) or `RestoreAllDefaults` (act `"reset"`, scope `"all"`) writes its first row. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. See [The two fields](#the-two-fields). |
-| `bulkEnd` | function(act, scope, count, err) | no | **O16** | Called once when the act ends, **always** when the bracket was begun — even if a row, `resetProfile`, `afterRestoreAll` or `bulkBegin` raised. `count` is the rows actually written through `applyDefault`; `err` is the raised value or `nil`, and is re-raised unchanged after this returns. Unmute and emit the one summary line here. A host supplying neither field runs minor 15's walk exactly. |
+| `bulkEnd` | function(act, scope, count, err, info) | no | **O16** | Called once when the act ends, **always** when the bracket was begun — even if a row, `resetProfile`, `afterRestoreAll` or `bulkBegin` raised. `count` is the rows actually written through `applyDefault`; `err` is the raised value or `nil`, and is re-raised unchanged after this returns; `info` is `{ profileReset = <boolean> }`, `true` only when `RestoreAllDefaults` called `resetProfile` and it returned. Unmute here, then: with `info.profileReset` true the host **MUST NOT** emit a bulk line (its profile-event handler logs the reset once); otherwise it emits `[Set] reset <scope>: N rows`, N = `count`. See [What the host logs](#what-the-host-logs--the-contract). A host supplying neither field runs minor 15's walk exactly. |
 | `scheduleTimer` | function(fn, delay) | no | O1 | Backs the 50 ms colour-drag throttle. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. |
 | `getLSM` | function | no | O1 | Returns LibSharedMedia-3.0, for `LSMValues`. |
 | `validate` | function | no | O1 | Runs once, before the page builders. A host's schema-shape check. |
@@ -1225,7 +1261,7 @@ member is added at this version and nothing is taken away; two descriptor fields
 **What is added at 16.15.4.3 is `bulkBegin` / `bulkEnd` on the descriptor, and nothing else.** A host
 that supplies neither runs `RestoreDefaults` and `RestoreAllDefaults` exactly as 15.15.4.3 did — the
 same `applyDefault` calls in the same order, the same refresh, and no `pcall` on the path, so a
-raising row still escapes with its own stack. That is pinned in `tests/test_options.lua` and was
+raising row still escapes with its own stack. That is pinned in `tests/test_options_bulk.lua` and was
 measured on all ten consumers with the payload dropped in: nothing moves on re-vendor. Adopting it is
 two descriptor fields and a mute in the host's write seam, per [the worked
 example](#worked-example-mute-the-seam-emit-one-line).

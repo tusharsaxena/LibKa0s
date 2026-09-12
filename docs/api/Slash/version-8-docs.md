@@ -56,19 +56,26 @@ major: BankLedger's and LootHistory's Defaults button and `/<slash> resetall`, a
 | Field | Signature | Called |
 |---|---|---|
 | `bulkBegin` | `function(act, scope)` | Once, before `CliResetAll` writes its first row: act `"reset"`, scope `"all"`. |
-| `bulkEnd` | `function(act, scope, count, err)` | Once, after the walk — **always**, whenever the bracket was begun. |
+| `bulkEnd` | `function(act, scope, count, err, info)` | Once, after the walk — **always**, whenever the bracket was begun. |
 
 `count` is the rows actually written: a row counts when its `applyDefault` returned. A descriptor
-with no `applyDefault` still gets the bracket, with a count of zero. The `RESET_ALL` acknowledgment is
-printed **after** `bulkEnd`, and not at all if the walk raised. Each field is independently
-optional.
+with no `applyDefault` still gets the bracket, with a count of zero. `info` is the Options major's
+table, `{ profileReset = <boolean> }`, and here `profileReset` is **always `false`**. No Slash walk
+resets a profile, so a host that hands one pair to both majors always logs its line for a resetall.
+The `RESET_ALL` acknowledgment is printed **after** `bulkEnd`, and not at all if the walk raised.
+Each field is independently optional.
+
+**What the host logs.** `debug-logging-§10` (standard v2.44.0): exactly one line, `[Set] reset all:
+N rows`. The tag **MUST** be `[Set]`, and `N` is `count`, the rows actually written. The Options
+document gives the other half of the contract: when `info.profileReset` is `true` the host emits
+nothing, because its profile-event handler logs the reset. That case cannot arise from this major.
 
 ### Call order and error semantics
 
 ```
 bulkBegin("reset", "all")        -- inside the protected region
   applyDefault(row) × N          -- stops at the first row that raises, exactly as unbracketed
-bulkEnd("reset", "all", count, err)   -- ALWAYS, once; err is nil unless something above raised
+bulkEnd("reset", "all", count, err, info)   -- ALWAYS, once; info.profileReset is false
 error(err, 0)                    -- only if something raised: the same value, re-raised unchanged
 print RESET_ALL                  -- only if nothing raised, as before
 ```
@@ -104,10 +111,12 @@ end
 
 NS.Bulk = {
   begin  = function(act, scope) bulkDepth = bulkDepth + 1 end,
-  finish = function(act, scope, count, err)
+  finish = function(act, scope, count, err, info)
     bulkDepth = bulkDepth - 1
-    local where = scope == "all" and "all settings" or (tostring(scope) .. " page")
-    NS.Debug("Set", "%s %s: %d rows%s", act, where, count, err and " (stopped by an error)" or "")
+    -- A whole-profile reset (Options' RestoreAllDefaults with resetProfile) is logged once, by
+    -- the profile-event handler. Add nothing. Never true for a Slash walk.
+    if info.profileReset then return end
+    NS.Debug("Set", "%s %s: %d rows", act, tostring(scope), count)   -- [Set] reset <scope>: N rows
   end,
 }
 
@@ -120,7 +129,7 @@ NS.Slash = SlashLib:New({
 -- settings/OptionsSetup.lua passes the same two to the Options descriptor.
 ```
 
-`/<slash> resetall` now logs `[Set] reset all settings: 169 rows` and nothing else, where it logged
+`/<slash> resetall` now logs `[Set] reset all: 169 rows` and nothing else, where it logged
 169 lines. A counter rather than a boolean, so a host whose Defaults button brackets an act of its own
 around `CliResetAll` still unmutes at the right time.
 
@@ -258,7 +267,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `allRows` | function | no | 1 | Every row, in declaration order — which is the order `list` prints. |
 | `applyDefault` | function(row) | no | 1 | Restore one row to its default. |
 | `bulkBegin` | function(act, scope) | no | **8** | Called once before `CliResetAll` writes its first row: act `"reset"`, scope `"all"`. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. Same field as the Options descriptor's. See [The two fields](#the-two-fields). |
-| `bulkEnd` | function(act, scope, count, err) | no | **8** | Called once after the walk, **always** when the bracket was begun — even if a row or `bulkBegin` raised. `count` is the rows actually written; `err` is the raised value or `nil`, re-raised unchanged after this returns. Unmute and emit the one summary line here. A host supplying neither runs version 7's walk exactly. |
+| `bulkEnd` | function(act, scope, count, err, info) | no | **8** | The fifth argument is the Options major's `info` table, whose `profileReset` is always `false` here, so the host emits `[Set] reset all: N rows`. Called once after the walk, **always** when the bracket was begun — even if a row or `bulkBegin` raised. `count` is the rows actually written; `err` is the raised value or `nil`, re-raised unchanged after this returns. Unmute and emit the one summary line here. A host supplying neither runs version 7's walk exactly. |
 | `parse` | function(row, text) | no | 1 | Defaults to `lib.ParseValue`. |
 | `format` | function(row, stored) | no | **5** | Renders a value for display, replacing `lib.FormatValue` outright, at every list/get/set/reset echo. The counterpart of `parse`: for a row type this library does not know — a set, a pattern needing its pipes doubled. Handed the value **as stored**, and taking precedence over `colorDecode`. |
 | `groupKey` | function(row) | no | 1 | Row → the heading it lists under. Defaults to `row.page or "settings"` — a row with no page still lists somewhere. |

@@ -217,7 +217,7 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 ## Moving to version 8
 
 **No member is added, removed, renamed or resignatured.** What is added is two optional descriptor
-fields, `bulkBegin(act, scope)` and `bulkEnd(act, scope, count, err)`, which `CliResetAll` calls
+fields, `bulkBegin(act, scope)` and `bulkEnd(act, scope, count, err, info)`, which `CliResetAll` calls
 around its walk so a host can log a global reset as the one line `debug-logging-§10` (standard
 v2.44.0) requires, rather than one `[Set]` per row. They are the Options major's fields at
 16.15.4.3, with the same semantics, so a host passes one pair to both.

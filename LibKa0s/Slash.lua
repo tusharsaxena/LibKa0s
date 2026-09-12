@@ -363,10 +363,12 @@ end
 ---   bulkBegin    function  optional, minor 8. function(act, scope). Called before CliResetAll
 ---                          writes its first row, act "reset", scope "all". Mute the host
 ---                          seam's per-row `[Set]` line here (debug-logging-§10).
----   bulkEnd      function  optional, minor 8. function(act, scope, count, err). Called once after
----                          the walk, ALWAYS when the bracket was begun: `count` is the rows
+---   bulkEnd      function  optional, minor 8. function(act, scope, count, err, info). Called once
+---                          after the walk, ALWAYS when the bracket was begun: `count` is the rows
 ---                          actually written, `err` the raised value if the walk raised (it is
----                          re-raised after this returns). Emit the one summary line here.
+---                          re-raised after this returns), `info` the Options major's table —
+---                          `info.profileReset` is always false here, since no Slash walk resets
+---                          a profile. Unmute and emit `[Set] reset all: N rows` here.
 ---   parse        function  optional, defaults to lib.ParseValue.
 ---   format       function  optional, minor 5. function(row, storedValue) -> string. Renders a
 ---                          value for display, replacing lib.FormatValue outright, at every one
@@ -578,9 +580,14 @@ function lib:New(d)
   --- and a raising row escapes with its own stack. Bracketed, a begun bracket always closes:
   --- bulkBegin and the walk share one pcall, bulkEnd runs once with the rows actually written and
   --- the raised value if any, and only then is that value re-raised unchanged.
+  ---
+  --- bulkEnd's fifth argument is the Options major's `info` table. No Slash walk resets a profile,
+  --- so `info.profileReset` is always false here and a host passing one pair to both majors always
+  --- logs its `[Set] <act> <scope>: N rows` line for a resetall.
   local function runBulk(act, scope, walk)
     local begin, finish = d.bulkBegin, d.bulkEnd
     local count = 0
+    local info = { profileReset = false }
     local function write(row)
       if type(d.applyDefault) == "function" then
         d.applyDefault(row)
@@ -595,7 +602,7 @@ function lib:New(d)
       if type(begin) == "function" then begin(act, scope) end
       walk(write)
     end)
-    if type(finish) == "function" then finish(act, scope, count, err) end
+    if type(finish) == "function" then finish(act, scope, count, err, info) end
     if not ok then error(err, 0) end
   end
 

@@ -1168,9 +1168,11 @@ why `docs/releasing.md` mandates whole-folder re-vendoring.
 
 One file moves, `Options.lua` 15 → 16. **No member is added, removed, renamed or resignatured.**
 What is added is two optional descriptor fields, `bulkBegin(act, scope)` and
-`bulkEnd(act, scope, count, err)`, which `RestoreDefaults` and `RestoreAllDefaults` call around their
-walks so a host can log a reset as the one line `debug-logging-§10` (standard v2.44.0) requires,
-rather than one `[Set]` per row.
+`bulkEnd(act, scope, count, err, info)`, which `RestoreDefaults` and `RestoreAllDefaults` call around
+their walks so a host can log a reset as the one line `debug-logging-§10` (standard v2.44.0)
+requires, rather than one `[Set]` per row. `info.profileReset` tells the host that a Restore All
+included a whole-profile reset, whose one line is the host's profile-event handler's, so the host
+adds none of its own.
 
 **The re-vendor alone changes nothing.** A host that supplies neither field runs exactly this
 version's walk — the same `applyDefault` calls in the same order, and no `pcall` on the path.

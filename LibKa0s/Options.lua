@@ -344,12 +344,16 @@ end
 ---                              row (act "reset", scope the pageKey) and before RestoreAllDefaults
 ---                              starts (act "reset", scope "all"). Mute the host seam's per-row
 ---                              `[Set]` line here: debug-logging-§10 makes a bulk reset ONE line.
----   bulkEnd(act, scope, count, err)  optional, minor 16. Called once when the act ends — ALWAYS,
----                              when the bracket was begun, even if a row, the profile reset or the
----                              after-hook raised. `count` is the rows actually written through
----                              applyDefault; `err` is the raised value, re-raised after this
----                              returns. Unmute and emit the one summary line here. A host that
----                              supplies neither field gets minor 15's walk exactly, with no pcall.
+---   bulkEnd(act, scope, count, err, info)  optional, minor 16. Called once when the act ends —
+---                              ALWAYS, when the bracket was begun, even if a row, the profile reset
+---                              or the after-hook raised. `count` is the rows actually written
+---                              through applyDefault; `err` is the raised value, re-raised after
+---                              this returns; `info.profileReset` is true when RestoreAllDefaults
+---                              called `resetProfile` and it returned. Unmute here, then: with
+---                              profileReset true emit NOTHING — the host's profile-event handler
+---                              logs a profile reset once (debug-logging-§10) — otherwise emit
+---                              `[Set] reset <scope>: N rows`, N = count. A host that supplies
+---                              neither field gets minor 15's walk exactly, with no pcall.
 ---   scheduleTimer(fn, delay)   optional. Backs the color picker's 50 ms drag throttle. A
 ---                              descriptor field rather than an AceTimer embed, because embedding
 ---                              would be this library's second dependency-budget breach.
@@ -703,22 +707,29 @@ function lib:New(d)
   --- actually written and, if anything raised, the raised value; and only then is that value
   --- re-raised, unchanged. The walk still stops at the first raising row, as it always did. A
   --- bulkEnd that raises propagates its own error — it was handed the original one first.
+  ---
+  --- `info` is bulkEnd's fifth argument, filled in by the walk. `info.profileReset` is true only
+  --- when the act called the host's `resetProfile` AND it returned: debug-logging-§10 gives a
+  --- whole-profile reset exactly one line, the host's profile-event handler's, so a host seeing
+  --- the flag emits no bulk line of its own. A reset that raised may never have reached that
+  --- handler, so the flag stays false and the host still logs.
   local function runBulk(act, scope, walk)
     local begin, finish = d.bulkBegin, d.bulkEnd
     local count = 0
+    local info = { profileReset = false }
     local function write(row)
       d.applyDefault(row)
       count = count + 1
     end
     if type(begin) ~= "function" and type(finish) ~= "function" then
-      walk(write)
+      walk(write, info)
       return
     end
     local ok, err = pcall(function()
       if type(begin) == "function" then begin(act, scope) end
-      walk(write)
+      walk(write, info)
     end)
-    if type(finish) == "function" then finish(act, scope, count, err) end
+    if type(finish) == "function" then finish(act, scope, count, err, info) end
     if not ok then error(err, 0) end
   end
 
@@ -772,12 +783,17 @@ function lib:New(d)
   --- host's seam is part of the reset. `count` is the rows written through `applyDefault`: with
   --- `resetProfile` supplied that is the sessionOnly rows alone, the profile being reset whole. The
   --- refresh runs after the bracket closes; it writes nothing.
+  ---
+  --- When `resetProfile` returns, bulkEnd's `info.profileReset` is true. debug-logging-§10 logs a
+  --- whole-profile reset once, by the host's profile-event handler, and forbids a bracket from
+  --- adding a second line, so the flag is how the host knows to stay silent. The bracket still
+  --- spans the act, so the session rows' per-row `[Set]` lines stay muted.
   function O.RestoreAllDefaults()
     local veto        = d.skipRestoreAll
     local resetProfile = d.resetProfile
     local profileReset = type(resetProfile) == "function"
 
-    runBulk("reset", "all", function(write)
+    runBulk("reset", "all", function(write, info)
       for _, row in ipairs(d.allRows() or {}) do
         local skip = false
         -- The narrowing comes FIRST, so a host that supplies both does not have to make its veto
@@ -792,7 +808,12 @@ function lib:New(d)
       -- profile in place, the defaults merge back, and the host's own profile-changed handler runs
       -- off `OnProfileReset` — migrations, re-seeding, and the host's config-changed message, off
       -- which its windows rebuild. The library neither knows nor needs to know any of that.
-      if profileReset then resetProfile() end
+      -- The flag is set only once the reset RETURNS: a reset that raised may never have reached
+      -- the host's profile-event handler, and then the host's own bulk line is the only record.
+      if profileReset then
+        resetProfile()
+        info.profileReset = true
+      end
 
       -- Before the refresh, not after: the hook exists to clear state neither the schema nor the
       -- profile owns, and a refresh that ran first would paint the panel from the pre-hook values.

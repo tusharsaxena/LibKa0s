@@ -700,6 +700,30 @@ test("sl: resetall with no applyDefault still brackets, and counts zero rows wri
   assertEqual(trace[2], "end:reset:all:0:nil")
 end)
 
+test("sl: resetall hands bulkEnd an info whose profileReset is false, and the host logs "
+  .. "[Set] reset all: N rows", function()
+  -- The same fifth argument as the Options descriptor's. A Slash walk never resets a profile, so a
+  -- host passing one pair to both majors always logs its line here (debug-logging-§10).
+  -- red under: bulkEnd called without its info argument.
+  local log, depth = {}, 0
+  local Sl, rec
+  Sl, rec = F.new{
+    applyDefault = function(row)
+      rec.store[row.path] = row.default
+      if depth == 0 then log[#log + 1] = "[Set] " .. row.path end
+    end,
+    bulkBegin = function() depth = depth + 1 end,
+    bulkEnd   = function(act, scope, count, _, info)
+      depth = depth - 1
+      if info.profileReset then return end
+      log[#log + 1] = ("[Set] %s %s: %d rows"):format(act, scope, count)
+    end,
+  }
+  Sl:CliResetAll()
+  assertEqual(table.concat(log, " | "), ("[Set] reset all: %d rows"):format(#rec.rows))
+  assertEqual(depth, 0)
+end)
+
 test("sl: resetall with NO bracket is minor 7's walk — an error escapes with its own stack",
   function()
   -- The compatibility half: no pcall is interposed when the host supplies neither field, so the

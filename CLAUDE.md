@@ -131,11 +131,12 @@ peel adds a payload file, a `LibKa0s.xml` row, a minor and the multi-file pairin
 deliverable was the disposition, and the disposition is this table.
 
 **The 1000–1500 band is on notice, not in breach**: `tests/test_widgets.lua` (1493),
-`tests/test_options.lua` (1483 since v1.32.0's bulk-bracket cases; 1266 before), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1206, tracked as
-[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1093) and, since kit revision 17, `testkit/mock_base.lua` (1424). They are
+`tests/test_options.lua` (1266), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1206, tracked as
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1114) and, since kit revision 17, `testkit/mock_base.lua` (1424). They are
 named so a later reader can tell the band was looked at rather than missed; none needs a disposition
-until it crosses, and `tests/test_widgets.lua` at 1493 and `tests/test_options.lua` at 1483 are seven
-and seventeen lines from needing one.
+until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. v1.32.0's
+bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
+`tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own.
 
 ## Documentation map
 
