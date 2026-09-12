@@ -123,7 +123,7 @@ while nobody was watching, which is the whole argument for having a gate rather 
 
 **Nothing is peeled this cycle.** The 2026-09-07 remediation plan rules out splitting any file
 (`03_SPEC.md` § C22 non-goals). Here that is more than a scheduling preference: `LibKa0s/` is
-re-vendored whole-folder into nine consumers and every file in it carries its own LibStub minor, so a
+re-vendored whole-folder into ten consumers and every file in it carries its own LibStub minor, so a
 peel adds a payload file, a `LibKa0s.xml` row, a minor and the multi-file pairing guard
 (`__widgetsShellMinor`, `LibKa0s/OptionsWidgets.lua:31`) — a deliberate release, not a tidy-up. The
 deliverable was the disposition, and the disposition is this table.
