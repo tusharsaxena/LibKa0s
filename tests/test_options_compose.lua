@@ -761,3 +761,100 @@ test("compose: disabledIf on a bound row reads the record through the bind, not 
   assertEqual(cp.disabled, true, "the record's own flag grayed the swatch")
   assertEqual(rows[3].get("locked"), true, "get(key) reads another field of the same record")
 end)
+
+-- ── the Reset all settings tooltip follows what the reset IS (compose minor 5) ──────────────────
+--
+-- options-ui-§12: with `resetProfile` supplied the global reset is a PROFILE reset, and the control's
+-- tooltip SHOULD name the equivalence with Profiles -> Reset Profile. Through compose minor 4 it was
+-- one literal, "Restore every setting in this addon to its default", whatever the reset did, and a
+-- host could not change it without keeping a second copy of the button. The Options descriptor
+-- picks the wording now: `resetProfile`, and `profilesPage` for a host that ships that page.
+
+local tipPanels = 0
+
+--- The tooltip body the Reset all settings button shows, for a host built from `overrides`.
+--- Frameless, so the button is alone on its row; the tooltip is read by firing the button's
+--- OnEnter with GameTooltip:AddLine spied, which is the only place AttachTooltip puts it.
+local function resetAllTip(overrides, attach)
+  local Oi = Fixture.new(overrides)
+  if attach then attach(Oi) end
+  local _, tail = Oi.MasterControls{
+    page = "general", addonName = "X", frameless = true, onResetAll = function() end,
+  }
+  tipPanels = tipPanels + 1
+  local ctx = Oi.CreatePanel("ComposeTip" .. tipPanels, "Compose tip", {})
+  tail(ctx)
+  local btn = Fixture.flowRows(ctx.scroll)[1].children[1]
+  assertEqual(btn.text, "Reset all settings")
+  local lines, tip = {}, T.mocks.GameTooltip   -- the chunk env reads mocks first
+  local saved = rawget(tip, "AddLine")
+  rawset(tip, "AddLine", function(_, text) lines[#lines + 1] = text end)
+  local ok, err = pcall(btn.callbacks.OnEnter)
+  rawset(tip, "AddLine", saved)
+  assertTrue(ok, tostring(err))
+  assertEqual(#lines, 1, "one tooltip line")
+  return lines[1]
+end
+
+local function resetProfile() end
+local S = T.options.STRINGS
+
+test("compose: with no resetProfile the Reset all tooltip keeps its minor-4 wording, byte for byte", function()
+  -- red under: dropping the old literal, or letting `profilesPage` alone change it.
+  assertEqual(resetAllTip(), "Restore every setting in this addon to its default.")
+  assertEqual(S.RESET_ALL_TIP, "Restore every setting in this addon to its default.")
+  assertEqual(resetAllTip{ profilesPage = true }, S.RESET_ALL_TIP,
+    "profilesPage is ignored without resetProfile: there the reset really walks every setting")
+end)
+
+test("compose: with resetProfile the Reset all tooltip says it resets the current profile only", function()
+  -- red under: the minor-4 literal, which overstates a profile reset -- other profiles survive it.
+  local tip = resetAllTip{ resetProfile = resetProfile }
+  assertEqual(tip, "Reset the current profile to its defaults. Your other profiles are not affected.")
+  assertEqual(tip, S.RESET_ALL_TIP_PROFILE)
+  assertTrue(tip:find("Reset Profile", 1, true) == nil,
+    "no Profiles page declared, so the tooltip must not point at one")
+end)
+
+test("compose: with resetProfile and profilesPage the tooltip names Profiles -> Reset Profile", function()
+  -- options-ui-§12: "the same thing Profiles → Reset Profile does".
+  local tip = resetAllTip{ resetProfile = resetProfile, profilesPage = true }
+  assertEqual(tip, "Reset the current profile to its defaults \226\128\148 the same thing Profiles " ..
+    "\226\134\146 Reset Profile does. Your other profiles are not affected.")
+  assertEqual(tip, S.RESET_ALL_TIP_PROFILES_PAGE)
+end)
+
+test("compose: the descriptor moves the Reset all tooltip and nothing else Master controls draws", function()
+  -- A descriptor without profilesPage behaves exactly as before apart from resetProfile's wording:
+  -- the same rows, the same buttons, the same order, the same handlers.
+  -- red under: the descriptor reaching any row or button field other than that one tooltip.
+  local function shape(overrides)
+    local Oi = Fixture.new(overrides)
+    local rows, tail = Oi.MasterControls{
+      page = "general", addonName = "KickCD", onResetPosition = function() end,
+      onResetAll = function() end,
+    }
+    tipPanels = tipPanels + 1
+    local ctx = Oi.CreatePanel("ComposeShape" .. tipPanels, "Compose shape", {})
+    tail(ctx)
+    local out = { paths(rows) }
+    for _, row in ipairs(Fixture.flowRows(ctx.scroll)) do
+      for _, child in ipairs(row.children) do out[#out + 1] = child.text end
+    end
+    return table.concat(out, "|")
+  end
+  local before = shape()
+  assertEqual(before, "enabled|visibility|scale|alpha|locked|state.debugConsole|" ..
+    "Reset position|Reset all settings")
+  assertEqual(shape{ resetProfile = resetProfile }, before)
+  assertEqual(shape{ resetProfile = resetProfile, profilesPage = true }, before)
+end)
+
+test("compose: a shell that hands __AttachCompose no descriptor keeps the minor-4 tooltip", function()
+  -- Options.lua before minor 18 called __AttachCompose(O). Whole-folder vendoring keeps that pair
+  -- out of the wild, but a missing descriptor must read as "no resetProfile", never raise.
+  -- red under: indexing a nil descriptor.
+  local tip = resetAllTip({ resetProfile = resetProfile, profilesPage = true },
+    function(Oi) T.options.__AttachCompose(Oi) end)
+  assertEqual(tip, S.RESET_ALL_TIP)
+end)

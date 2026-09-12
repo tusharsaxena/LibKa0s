@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 17.15.4.3
+# `LibKa0s-Options-1.0` — version 18.15.5.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,82 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **17** · `OptionsWidgets.lua` **15** · `OptionsCompose.lua` **4** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **18** · `OptionsWidgets.lua` **15** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.33.0 |
-| Status | Superseded |
-| Supersedes | [version 16.15.4.3](./version-16.15.4.3-docs.md) |
-| Superseded by | [version 18.15.5.3](./version-18.15.5.3-docs.md) — the *Reset all settings* tooltip follows `resetProfile`, and the new `profilesPage` descriptor field |
+| Shipped in | v1.34.0 |
+| Status | **Current** |
+| Supersedes | [version 17.15.4.3](./version-17.15.4.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 17, OptionsWidgets = 15, OptionsCompose = 4, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 18, OptionsWidgets = 15, OptionsCompose = 5, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O17`
-for `Options.lua` minor 17, `W15` for `OptionsWidgets.lua` minor 15, `C4` for `OptionsCompose.lua`
-minor 4, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O18`
+for `Options.lua` minor 18, `W15` for `OptionsWidgets.lua` minor 15, `C5` for `OptionsCompose.lua`
+minor 5, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**Two files move, `Options.lua` 17 → 18 and `OptionsCompose.lua` 4 → 5, and the *Reset all
+settings* button's tooltip now says what the reset does.** One descriptor field is added,
+`profilesPage` (**O18**). No member is added, removed, renamed or resignatured: the member manifest
+differs from 17.15.4.3's in the minors alone. Three strings are added to `lib.STRINGS`.
+
+**Why.** `options-ui-§12` makes the global reset a **profile reset** on an AceDB host, and a host says
+it is one by supplying `resetProfile`. The reset puts the current profile back to its defaults and
+leaves every other profile alone. The control's tooltip was one literal in `OptionsCompose.lua`,
+*"Restore every setting in this addon to its default."*, whatever the reset did. For a profile
+reset that overstates the blast radius, and §12 says the tooltip **SHOULD** name the equivalence
+instead: *"the same thing Profiles → Reset Profile does"*. A host could not fix it, because the
+composer is the only writer of the reset's text (`options-ui-§15`), which is the reason
+`leadButton` exists.
+
+The wording now follows the descriptor:
+
+| Descriptor | Tooltip | `lib.STRINGS` key |
+|---|---|---|
+| no `resetProfile` (`profilesPage` ignored) | Restore every setting in this addon to its default. | `RESET_ALL_TIP` |
+| `resetProfile` | Reset the current profile to its defaults. Your other profiles are not affected. | `RESET_ALL_TIP_PROFILE` |
+| `resetProfile` and `profilesPage = true` | Reset the current profile to its defaults — the same thing Profiles → Reset Profile does. Your other profiles are not affected. | `RESET_ALL_TIP_PROFILES_PAGE` |
+
+The first row is 17.15.4.3's text, byte for byte. "Supplied" means `type(d.resetProfile) ==
+"function"`, the same test `RestoreAllDefaults` uses to decide it is doing a profile reset, so the
+tooltip and the act cannot disagree about which kind of reset this is.
+
+**Why a field.** The library cannot see which pages a host registers: a Profiles page is AceConfig's
+`AceDBOptions-3.0` table in a host's own file, not something built through this major. So the host
+declares it. `profilesPage` is read by `MasterControls` alone, and changes nothing but that tooltip.
+
+**How.** `lib:New` hands its descriptor to `lib.__AttachCompose(O, d)`, where 17.15.4.3 passed `O`
+alone. `MasterControls` reads `resetProfile` and `profilesPage` when it is called, which is when a
+host's page file declares its General page: after `lib:New`. The rows, the buttons, their order and
+their handlers do not move, and `tests/test_options_compose.lua` pins that across all three
+descriptor shapes. A shell older than O18 passes no descriptor; the composer reads that as no
+`resetProfile` and keeps the first row's text.
+
+The strings live in `lib.STRINGS` beside the shell's other user-visible text. The em dash and the
+arrow are byte escapes in the source, for the reason `COMBAT_REFUSED`'s em dash is.
+
+### What the host does
+
+- **A Profiles page and `resetProfile`:** add `profilesPage = true` to the `lib:New` descriptor.
+  Without it the tooltip takes the second row, which is correct but does not point at the page.
+- **`resetProfile` and no Profiles page:** nothing. The tooltip moves to the second row on the
+  re-vendor.
+- **No `resetProfile`:** nothing changes, whether or not a Profiles page exists. Such a host's reset
+  is its own act or a walk of every row, and the library cannot tell which. A host that ships a
+  Profiles page and resets through its own handler is a candidate for `resetProfile` first
+  (`options-ui-§12`); the tooltip follows from that.
+- **A host that attaches the composers itself**, calling `lib.__AttachCompose(C)` onto a table of
+  its own rather than composing on the instance `lib:New` returns: the `lib:New` descriptor never
+  reaches that table, so the tooltip keeps the first row whatever it says. Pass a compose
+  descriptor as the second argument instead. The composer reads nothing off it but `resetProfile`
+  and `profilesPage`, and only for this tooltip, so `{ profilesPage = true, resetProfile =
+  <forwarder> }` is enough, with the forwarder calling the real descriptor's `resetProfile` at call
+  time rather than restating it. MultiMeters is that host (`settings/Schema_Compose.lua`). *Added
+  after the tag, 2026-09-13; no code changed.*
+
+### Previously, at 17.15.4.3
 
 **One file moves, `Options.lua` 16 → 17, and it loads every LibSharedMedia font the first time a
 Ka0s settings panel is shown.** No member is added, removed, renamed or resignatured, and no
@@ -45,7 +106,7 @@ which in practice means third-party LSM faces; the ones the client had already l
 What the library can do is make sure every face is loaded before a dropdown can be opened, and a
 dropdown can only be opened from a panel that has been shown.
 
-### When it runs
+#### When it runs
 
 | Trigger | Covers | In combat |
 |---|---|---|
@@ -72,7 +133,7 @@ combat is the first one on which a dropdown can be opened, and it preloads befor
 **On every show, not only the first.** After the first, the call walks LSM's font table and loads
 nothing. It also retries a show that found no LSM or no `CreateFrame`.
 
-### What it does
+#### What it does
 
 - **One frame for the whole session**, parented to `UIParent`, shown, at full alpha, 1x1 and parked
   off the left edge of the screen. It is not hidden and not alpha 0, because the client may skip work
@@ -96,7 +157,7 @@ session is handed the same `lib`. A client running several Ka0s addons loads eac
 Both callers, an instance's trigger and the LSM callback, look `lib.__PreloadFonts` up on `lib`
 at call time, so after an upgrade the newest copy's code is what runs.
 
-### What the host does
+#### What the host does
 
 **Nothing.** A host that passes `getLSM` gets the preload on re-vendor. A host that does not pass it
 gets none, and it has no LSM-backed values either, because `O.LSMValues` reads the same field.
@@ -108,7 +169,7 @@ frame and its FontStrings and no AceGUI widget. WhatGroup's `tests/test_panel.lu
 widget is created synchronously on OnShow, and that stays true. Its GameMenu Logout taint smoke test
 is still the check to run after the re-vendor.
 
-### The `count` docstrings
+#### The `count` docstrings
 
 Three source docstrings in `Options.lua`, all on the bulk bracket, still described `count` as "the
 rows actually written". They were the descriptor's `bulkEnd` entry, `runBulk`'s, and
@@ -936,7 +997,8 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `applyDefault` | function(row) | yes | O1 | Reset one row. Same reasoning. |
 | `rowsForPage` | function(pageKey, filter) | yes | O1 | The rows of one page, in render order. `filter` is `ctx.unit`, passed through untouched — the library never interprets it. |
 | `allRows` | function | yes | O1 | Every row, for `RestoreAllDefaults`. |
-| `resetProfile` | function | no | O9 | Supply it and a global reset becomes a **profile reset**: the `sessionOnly` rows are swept row by row, then this is called, then every panel refreshes. Pass `function() NS.db:ResetProfile() end`. With it supplied the library narrows the row walk itself — see `RestoreAllDefaults` below. |
+| `resetProfile` | function | no | O9 | Supply it and a global reset becomes a **profile reset**: the `sessionOnly` rows are swept row by row, then this is called, then every panel refreshes. Pass `function() NS.db:ResetProfile() end`. With it supplied the library narrows the row walk itself — see `RestoreAllDefaults` below. **Since O18 / C5** it also picks the wording of `MasterControls`' *Reset all settings* tooltip: see [What changed at this version](#what-changed-at-this-version). |
+| `profilesPage` | boolean | no | **O18** | `true` when the host ships an AceDBOptions Profiles sub-page (`options-ui-§3`). Read by `MasterControls` alone, and only with `resetProfile` supplied: the *Reset all settings* tooltip then names the equivalence `options-ui-§12` asks for, *"the same thing Profiles → Reset Profile does"*. The library cannot see which pages a host registers, so the host declares it. Ignored without `resetProfile`, and changes nothing but that tooltip. |
 | `skipRestoreAll` | function(row) | no | O1 | Return true to exclude a row from a global reset. With `resetProfile` supplied the profiles-page veto this was invented for is **implied** (an AceDBOptions row is not `sessionOnly`, so it is already outside the narrowed walk); the field is still honored, and is the whole policy for a host that supplies no `resetProfile`. |
 | `afterRestoreAll` | function | no | O1 | Runs after the rows are reset **and after `resetProfile`**, and **before** the panels refresh, for state in neither the schema nor the profile. The order is load-bearing: a refresh first would paint the pre-hook values. A dragged frame's saved position is **not** an example any more — a position lives in the profile and comes back with it. |
 | `bulkBegin` | function(act, scope) | no | **O16** | Called once before `RestoreDefaults` (act `"reset"`, scope the `pageKey`) or `RestoreAllDefaults` (act `"reset"`, scope `"all"`) writes its first row. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. See [The two fields](#the-two-fields). |
@@ -1057,7 +1119,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `FontGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
 | `BorderGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
 | `BarGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four bar rows, for a surface with a **fill texture**. Its `barTexture` row's `values` is `O.LSMValues("statusbar")` itself (**C3**). |
-| `MasterControls(spec)` | **C1** (`spec.bind`: **C4**) | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2**. |
+| `MasterControls(spec)` | **C1** (`spec.bind`: **C4**) | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2**. Its *Reset all settings* tooltip follows the descriptor's `resetProfile` and `profilesPage` since **C5**. |
 | `FONT_FLAGS` / `FONT_FLAGS_SORT` | **C1** | The font-flag key map and its declared order. |
 | `VISIBILITY_VALUES` / `VISIBILITY_SORT` | **C1** | The four general-visibility values and their declared order. General visibility is a dropdown, not a boolean: a boolean can only ever answer two of the four. |
 | `MASTER_GROUP` | **C1** | The literal `"Master controls"` — the group name, the tab label and the `afterGroup` key are one string, because the group name **is** the hook key. |
@@ -1422,12 +1484,23 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
   `afterGroup` hook for the group; wire it as
   `H.RenderTabbedSchema(ctx, page, { ["Master controls"] = tail }, pairWith)`. The **group name is
   the hook key**, so renaming the group detaches the hook.
+- **The *Reset all settings* tooltip comes from the descriptor, not the spec** (**C5**). Without
+  `resetProfile` it reads *"Restore every setting in this addon to its default."*; with it, that
+  the current profile is reset and other profiles are not affected; with `profilesPage` as well,
+  that it is the same thing Profiles → Reset Profile does. See
+  [What changed at this version](#what-changed-at-this-version). *Reset position*'s tooltip is
+  unchanged.
 
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
 never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. No
-member is added at this version and nothing is taken away; two descriptor fields are added.
+member is added at this version and nothing is taken away; one descriptor field is added.
+
+**What moves at 18.15.5.3 is one tooltip, and what is added is `profilesPage`.** A host that
+supplies no `resetProfile` renders byte-identically to 17.15.4.3. A host that supplies it sees the
+*Reset all settings* tooltip say "current profile", and nothing else moves. Adopting the field is
+one line on the descriptor, for a host that ships a Profiles page.
 
 **What is added at 16.15.4.3 is `bulkBegin` / `bulkEnd` on the descriptor, and nothing else.** A host
 that supplies neither runs `RestoreDefaults` and `RestoreAllDefaults` exactly as 15.15.4.3 did — the
@@ -1495,16 +1568,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 18.15.5.3
-
-Two files move, `Options.lua` 17 → 18 and `OptionsCompose.lua` 4 → 5. **No member is added, removed,
-renamed or resignatured; one descriptor field is added, `profilesPage`.** The *Reset all settings*
-button's tooltip, a literal at this version, now follows the descriptor. A host with no
-`resetProfile` keeps this version's text exactly. A host with `resetProfile` gets *"Reset the
-current profile to its defaults. Your other profiles are not affected."* A host that also sets
-`profilesPage = true` gets the equivalence `options-ui-§12` asks for, *"the same thing Profiles →
-Reset Profile does"*.
-
-**The re-vendor is the whole adoption**, plus `profilesPage = true` for a host that ships a Profiles
-page and supplies `resetProfile`. See [version 18.15.5.3](./version-18.15.5.3-docs.md).

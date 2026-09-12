@@ -10,6 +10,135 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.34.0 — 2026-09-13
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 10**, **Options minor 18**,
+**OptionsWidgets minor 15**, **OptionsCompose minor 5**, **OptionsScroll minor 3**, **Perf minor 11**,
+**PerfPanel minor 5**, **kit revision 19**.
+
+Three changes. Three files in `LibKa0s/` move, and so does the kit. `Slash.lua` gives a `string` row
+the whole value typed after the path, not its first word. `Options.lua` and `OptionsCompose.lua`
+make the *Reset all settings* tooltip say what the reset does, with one new optional descriptor
+field, `profilesPage`. Kit revision 19 makes the AceDB fake fire `OnProfileReset` with no key, as
+AceDB-3.0 does.
+
+Nothing is removed or renamed and no member is added. With the whole payload in, `LibKa0s/` into
+`libs/LibKa0s/` and `testkit/` into `tests/_kit/`, **nothing moves in any consumer**. That was
+measured in scratch clones of all ten, each at the branch it had checked out, before and after:
+
+| Consumer | Branch | Commit | Before (v1.33.0, kit 18) | After (v1.34.0, kit 19) |
+|---|---|---|---|---|
+| AbsorbTracker | `chore/2026-09-12-libka0s-1.33.0` | `8dbda30` | 586 / 0 failed / 2 skipped / 588 | 586 / 0 / 2 / 588 |
+| AuraMaster | `test/2026-09-12-coverage` | `e15aa9c` | 667 / 0 failed / 2 skipped / 669 | 667 / 0 / 2 / 669 |
+| BankLedger | `chore/2026-09-12-libka0s-1.33.0` | `e6bd2a8` | 869 / 0 failed / 2 skipped / 871 | 869 / 0 / 2 / 871 |
+| ConsumableMaster | `feat/2026-09-12-profiles-buttons` | `5cebe6a` | 870 / 0 failed / 2 skipped / 872 | 870 / 0 / 2 / 872 |
+| KickCD | `chore/2026-09-12-libka0s-1.33.0` | `cae55d2` | 929 / 0 failed / 2 skipped / 931 | 929 / 0 / 2 / 931 |
+| LootHistory | `chore/2026-09-12-libka0s-1.33.0` | `af81ba6` | 736 / 0 failed / 2 skipped / 738 | 736 / 0 / 2 / 738 |
+| MultiMeters | `chore/2026-09-12-libka0s-1.33.0` | `e66fa0c` | 1821 / 0 failed / 2 skipped / 1823 | 1821 / 0 / 2 / 1823 |
+| PanelMaster | `chore/2026-09-12-libka0s-1.33.0` | `0f487c7` | 805 / 0 failed / 2 skipped / 807 | 805 / 0 / 2 / 807 |
+| PrettyChat | `chore/2026-09-12-libka0s-1.33.0` | `43f5afb` | 348 / 0 failed / 2 skipped / 350 | 348 / 0 / 2 / 350 |
+| WhatGroup | `chore/2026-09-12-libka0s-1.33.0` | `0fb1ef9` | 606 / 0 failed / 2 skipped / 608 | 606 / 0 / 2 / 608 |
+
+The two skips in every row are the vendored-payload pair cases, because the clones had no sibling
+LibKa0s. Re-vendoring the consumers is a separate step, not taken at this tag. The details are in
+[`docs/api/Slash/version-10-docs.md`](docs/api/Slash/version-10-docs.md),
+[`docs/api/Options/version-18.15.5.3-docs.md`](docs/api/Options/version-18.15.5.3-docs.md) and
+[`docs/api/testkit/version-19-docs.md`](docs/api/testkit/version-19-docs.md).
+
+### `Slash.lua` minor 10 — a free-text value keeps every word
+
+Found by an AuraMaster test agent: `/am set container.name My Raid Buffs` stored `"My"`.
+`lib.ParseValue` split its text on whitespace for every row type, and a `string` row took the first
+token. The same truncation made an enum entry containing a space unsettable from the CLI: an LSM font
+such as `"Friz Quadrata TT"`, a statusbar such as `"Blizzard Raid Bar"`, the composers' own
+`"OUTLINE, MONOCHROME"` font flag. Nothing was raised; the value was stored and only the echo showed
+it. `docs/releasing.md` had carried it since PrettyChat found it as a note, not a defect, because
+PrettyChat worked around it with a descriptor `parse`.
+
+A `string` row now takes the whole remainder, trimmed at both ends, with internal spacing kept. When
+the row declares `values`, the full string is matched against them. So one input is refused that
+used to be accepted: a valid entry followed by more words (`short extra`), which version 9 cut down
+to `short`. An empty or blank value is refused with `expected a value`, as before, and nothing is
+written. `bool`, `number` and `color` rows parse exactly as before. `CliSet` is the only verb that
+feeds a parser, and it already passed everything after the path. Six cases in
+`tests/test_slash.lua` pin it; four were red on minor 9.
+
+### `Options.lua` minor 18 and `OptionsCompose.lua` minor 5 — the *Reset all settings* tooltip says what it does
+
+`options-ui-§12` makes the global reset a profile reset on an AceDB host. The control's tooltip
+**SHOULD** name the equivalence: *"the same thing Profiles → Reset Profile does"*. The tooltip was one
+literal in `OptionsCompose.lua`, *"Restore every setting in this addon to its default."*, whatever
+the reset did. A host that supplies `resetProfile` resets the current profile and leaves the others
+alone, so the text overstated it, and a host could not change it because the composer is the only
+writer of the reset's text (`options-ui-§15`).
+
+The wording now follows the Options descriptor:
+
+| Descriptor | Tooltip |
+|---|---|
+| no `resetProfile` | Restore every setting in this addon to its default. *(unchanged)* |
+| `resetProfile` | Reset the current profile to its defaults. Your other profiles are not affected. |
+| `resetProfile`, `profilesPage = true` | Reset the current profile to its defaults — the same thing Profiles → Reset Profile does. Your other profiles are not affected. |
+
+`profilesPage` is the one new descriptor field (**O18**): `true` when the host ships an AceDBOptions
+Profiles sub-page. The library cannot see which pages a host registers, so the host says so. It is
+read by `MasterControls` alone, only with `resetProfile` supplied, and changes nothing but that
+tooltip. The three strings are `lib.STRINGS.RESET_ALL_TIP`, `RESET_ALL_TIP_PROFILE` and
+`RESET_ALL_TIP_PROFILES_PAGE`. `lib:New` now passes its descriptor to `lib.__AttachCompose(O, d)`,
+which is why `Options.lua` moves as well as the composer. A shell older than O18 passes none, and
+the composer reads that as no `resetProfile`. Five cases in `tests/test_options_compose.lua` pin
+the three shapes, the unchanged rows and buttons, and the missing descriptor.
+
+### Kit revision 19 — AceDB's `OnProfileReset` carries no key
+
+AceDB-3.0's `ResetProfile` ends `self.callbacks:Fire("OnProfileReset", self)`: no key. The kit's
+fake passed the active profile as a third argument, so a reset handler that read one passed under
+the kit and got `nil` in the client. Revision 18 recorded the gap and left it for its own revision.
+`ResetProfile` now fires with the database alone, and the fake's `fire` is a vararg, so the callback
+gets exactly `(event, db)`. `OnProfileChanged` and `OnProfileCopied` keep their keys.
+`tests/test_mock_ace.lua` counts the arguments. `framework.lua` changes only its revision number,
+and `README.md` gains a paragraph.
+
+**No production handler in the collection reads the key.** Every consumer that registers
+`OnProfileReset` gets the name from `db:GetCurrentProfile()`, or, in KickCD, skips its third argument
+for a reset. **No consumer test asserts on it**: every reset-log assertion that goes through the
+kit's `ResetProfile` builds the name from `GetCurrentProfile()` or hard-codes the active profile.
+ConsumableMaster and KickCD replace the fake and still pass a key on a reset, which real AceDB does
+not; MultiMeters' wrapper already passes none to its string-form handlers; PanelMaster's and
+BankLedger's fakes are their own. The testkit document lists each with its lines.
+
+### Revision 19 is not the geometry flip
+
+The v1.33.0 entry below leaves the flip, deleting `self.__geomLive and` from `GetHeight` and
+`GetWidth`, at "19 at the earliest". **Revision 19 does not ship it.** The flip is still its own
+revision with its own adoption, because roughly 308 test files lean on the zeros, so the number moves
+again: **20 at the earliest**. `testkit/mock_base.lua`'s comment and
+`docs/api/testkit/version-19-docs.md` record the move.
+
+### What each consumer can adopt
+
+- **`profilesPage = true`** on the Options descriptor: AbsorbTracker, AuraMaster and KickCD, which
+  ship a Profiles page, supply `resetProfile` and compose their Master controls on the `lib:New`
+  instance. *Corrected after the tag:* this line also named **MultiMeters**, and it is not a
+  one-line adopter. It composes its Master controls with its own compose descriptor: a table of
+  its own, attached by `lib.__AttachCompose(C)` at `settings/Schema_Compose.lua` load, before its
+  Options descriptor exists. The composer reads `resetProfile` and `profilesPage` off the
+  descriptor it was attached with, when `MasterControls` runs, so the field on the `lib:New`
+  descriptor never reached its button, and its tooltip did not even move to the second row. It
+  adopts by passing `{ profilesPage = true, resetProfile = <forwarder> }` as that call's second
+  argument, the forwarder calling its real descriptor's `resetProfile` at call time. ConsumableMaster and
+  PanelMaster ship a Profiles page but reset through their own handlers and supply no
+  `resetProfile`, so the field does nothing for them until they adopt it (`options-ui-§12`). The
+  other four ship no Profiles page. Every consumer draws the button through `MasterControls`.
+- **Slash, nothing required.** PrettyChat's `parse` keeps its `||` unescape; its whitespace half is
+  now redundant, and it does not trim where the library does. PanelMaster's adapter upper-cases the
+  whole remainder before delegating, so `set settings.defaultStrata low junk` is now refused rather
+  than stored as `LOW`. KickCD's `parseForHost` only appends a hint on failure and is unaffected.
+  ConsumableMaster, BankLedger and WhatGroup tokenize only non-string rows. Rows that start working:
+  AuraMaster's `container.name` and `container.attach.frame`, KickCD's `label.text`, MultiMeters'
+  `window.name` and `export.whisperTo`, and every LSM font, texture or border name with a space.
+
 ## v1.33.0 — 2026-09-12
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

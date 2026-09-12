@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 9
+# `LibKa0s-Slash-1.0` — version 10
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **9** |
-| Shipped in | v1.33.0 |
-| Status | Superseded |
-| Supersedes | [version 8](./version-8-docs.md) |
-| Superseded by | [version 10](./version-10-docs.md) — a `string` row parses the whole trimmed remainder, not its first token |
+| Files and minors | `Slash.lua` minor **10** |
+| Shipped in | v1.34.0 |
+| Status | **Current** |
+| Supersedes | [version 9](./version-9-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 9 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 10 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -35,6 +35,55 @@ Like DebugLog, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon fram
 returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
+
+**One behavior moves: a `string` row's value is the whole remainder, trimmed at both ends, not its
+first token.** No member is added, removed, renamed or resignatured, and no descriptor field is
+added. The member manifest differs from version 9's in the minor alone.
+
+Through version 9, `lib.ParseValue` split `text` on whitespace for every row type, and a `string`
+row took the first token. So `/am set container.name My Raid Buffs` stored `"My"`. An enum whose
+entries contain a space could not be named at all: an LSM font such as `"Friz Quadrata TT"`, a
+statusbar such as `"Blizzard Raid Bar"`, or the Options composers' own `"OUTLINE, MONOCHROME"` font
+flag. Nothing was raised. The value was stored, and only the echo showed the truncation. An
+AuraMaster test agent found it; PrettyChat had already worked around it with a descriptor `parse`.
+
+A `string` row now reads all of `text`, trimmed at both ends. Internal spacing is kept verbatim,
+because it is the user's data. When the row declares `values`, the **full** string is matched
+against them. Every other type reads whitespace-separated tokens exactly as before.
+
+| `text` | Row | Version 9 | Version 10 |
+|---|---|---|---|
+| `"My Raid Buffs"` | `string`, no `values` | `"My"` | `"My Raid Buffs"` |
+| `"   My Raid Buffs  "` | `string`, no `values` | `"My"` | `"My Raid Buffs"` |
+| `"a  b"` | `string`, no `values` | `"a"` | `"a  b"` |
+| `"Friz Quadrata TT"` | `string`, `values` holding it | refused: `"Friz"` is not an entry | `"Friz Quadrata TT"` |
+| `"short extra"` | `string`, `values = { short = true }` | `"short"` | refused, `allowed values: short` |
+| `""`, `"   "` | `string` | `nil`, `expected a value` | unchanged |
+| `"on and more"` | `bool` | `true` | unchanged |
+| `"250 px"` | `number` | `250` | unchanged |
+| `"0.1 0.2 0.3 0.4 extra"` | `color` | the four channels | unchanged |
+
+**One input is refused now that was accepted before**: a constrained string followed by more words.
+Version 9 dropped the extra words and stored the first; version 10 refuses the whole string rather
+than guess which part was meant. That is the same rule the parser has always applied to a misspelt
+entry.
+
+`CliSet` is the only verb in this major that feeds a parser. It already handed the parser everything
+after the path, so nothing changed there: the change is in how `lib.ParseValue` reads what it is
+handed. A path with no value still reaches the parser as `""`, and still prints
+`Invalid value for <path>` and `  expected a value`, writing nothing.
+
+### What the host does
+
+- **No descriptor `parse`:** nothing. A free-text row accepts several words and an enum entry with a
+  space is settable, from the re-vendor on.
+- **A `parse` adapter that delegates to `lib.ParseValue`:** nothing, unless it tokenizes or
+  truncates the text itself before delegating. It gets the new reading for its string rows.
+- **A `parse` adapter that exists to keep a multi-word string:** that part is now redundant, and the
+  host can delete it on its own schedule. It is not wrong to keep it; note that the library trims
+  both ends and an adapter that does not will keep a trailing space.
+
+### Previously, at version 9
 
 **Comments only. The surface does not move.** Every member, descriptor field, value and behavior
 described below is exactly what version 8 shipped. A host written against version 8 is correct here
@@ -227,7 +276,7 @@ rendered row depends on which instance rendered it.
 | `lib.FormatRow(command, description)` | 1 | One command row: `\|cFFFFFF00` command, an em dash with a single space either side, `\|cFFFFFFFF` description. **Not** indented — the indent belongs to whoever renders, because a chat line sits under a header and a settings-panel label does not. This is the one command-row formatter in the collection; the `/at list` header, its group headings and any host annotation are a different, lower-case-hex family and stay that way. |
 | `lib.FormatKV(path, valueStr)` | 1 | One `key = value` pair, gold key and white value, no trailing colon. Used by the list rows and by the get/set echo, so a setting reads identically wherever it is printed. |
 | `lib.FormatValue(row, v)` | 1 | Render a stored value by the row's declared type — a colour as `{r, g, b, a}` to two places, a number through the row's `fmt`, an empty string as `STRINGS.NONE`, anything else through Core's `SafeToString`. At this minor the descriptor's `format` hook, when present, takes precedence over this entirely. |
-| `lib.ParseValue(row, text)` | 1 | The type-aware parser. Returns the value, or `nil` plus a reason. |
+| `lib.ParseValue(row, text)` | 1 | The type-aware parser. Returns the value, or `nil` plus a reason. A `string` row reads the whole of `text`, trimmed at both ends, and an enum is matched on that full string (**10**); every other type reads whitespace-separated tokens. |
 | `lib.SplitVerb(rest)` | **6** | → `verb, remainder`. The verb **lowercased**, the remainder's case *and* internal spacing preserved. The asymmetry is the contract, not an oversight — see below. Both default to `""`. |
 | `lib.FindCommand(list, name)` | **6** | → the matched `{ name, description, handler }` entry, or `nil`. Linear scan, compared verbatim; callers lowercase through `lib.SplitVerb` first. |
 | `lib.CommandRows(prefix, commands, indent)` | **6** | → an array of rendered rows, one per entry: `indent .. lib.FormatRow(prefix .. " " .. entry[1], entry[2])`. `indent` defaults to `""`. |
@@ -248,6 +297,11 @@ channels that happen to exceed 1 would mangle the rest.
 Failure is signalled by a `nil` first return plus a message. No row type has a valid value that is
 itself `nil`, which is what makes that unambiguous; adding one would be a contract change rather
 than a new type.
+
+A `string` row's value is the whole of `text`, trimmed at both ends (**since 10**), so a free-text
+row holds several words and an enum entry containing a space, such as an LSM font name, can be
+named. A `bool` and a `number` read their first token and a colour its first four, as they always
+have.
 
 ## The sub-command vocabulary
 
@@ -312,7 +366,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `applyDefault` | function(row) | no | 1 | Restore one row to its default. |
 | `bulkBegin` | function(act, scope) | no | **8** | Called once before `CliResetAll` writes its first row: act `"reset"`, scope `"all"`. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. Same field as the Options descriptor's. See [The two fields](#the-two-fields). |
 | `bulkEnd` | function(act, scope, count, err, info) | no | **8** | The fifth argument is the Options major's `info` table, whose `profileReset` is always `false` here. The host emits `[Set] reset all: N rows` when its outermost bracket closes, with N its own tally of writes that changed a stored value — **not** `count`, which includes rows already at their default. A host that mutes in `bulkBegin` MUST supply this field. Called once after the walk, **always** when the bracket was begun — even if a row or `bulkBegin` raised. `count` is the number of rows `applyDefault` returned for, including rows already at their default — the host logs its own tally of changed writes instead; `err` is the raised value or `nil` (a raise of `nil`/`false` also arrives as `nil`), re-raised unchanged after this returns. Unmute here, and emit the one summary line only when the outermost bracket closes. A host supplying neither runs version 7's walk exactly. |
-| `parse` | function(row, text) | no | 1 | Defaults to `lib.ParseValue`. |
+| `parse` | function(row, text) | no | 1 | Defaults to `lib.ParseValue`. Called with the row and everything after the path, untrimmed. |
 | `format` | function(row, stored) | no | **5** | Renders a value for display, replacing `lib.FormatValue` outright, at every list/get/set/reset echo. The counterpart of `parse`: for a row type this library does not know — a set, a pattern needing its pipes doubled. Handed the value **as stored**, and taking precedence over `colorDecode`. |
 | `groupKey` | function(row) | no | 1 | Row → the heading it lists under. Defaults to `row.page or "settings"` — a row with no page still lists somewhere. |
 | `colorDecode` | function(stored) | no | 4 | → `r, g, b, a`. Same field name as the Options descriptor's, so a host passes one pair to both majors. Defaults to reading the named-key form, then the positional one. |
@@ -359,18 +413,13 @@ correct on every minor.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+**What moves at version 10 is behavior, in the direction of working.** A `string` row stores the
+whole trimmed value where it stored the first word. Every input version 9 accepted is still
+accepted, with one exception: a constrained string with trailing words is refused instead of cut
+short. No consumer test in the collection pinned the old truncation when this was measured.
+
 **What is added at version 8 is `bulkBegin` / `bulkEnd` on the descriptor, and nothing else.** A host
 that supplies neither runs `CliResetAll` exactly as version 7 did — the same `applyDefault` calls in
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
-
-## Moving to version 10
-
-**A behavior change, and no migration.** `lib.ParseValue` gives a `string` row the whole of its
-text, trimmed at both ends, where this version took the first whitespace-separated token. So
-`set container.name My Raid Buffs` stores `"My Raid Buffs"` rather than `"My"`, and an enum entry
-with a space in it, such as an LSM font name, can be set. A constrained string followed by extra
-words is refused rather than truncated. `bool`, `number` and `color` rows parse exactly as here. A
-host `parse` adapter that exists only to keep a multi-word string becomes redundant. See
-[version 10](./version-10-docs.md).

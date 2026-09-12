@@ -104,7 +104,7 @@ git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 | File | Lines (2026-09-08) | Disposition |
 |---|---|---|
 | `tests/test_options_widgets.lua` | 2398 | Issue [#8](https://github.com/tusharsaxena/LibKa0s/issues/8) — peels with `LibKa0s/OptionsWidgets.lua`, on that file's seam and in that file's commit |
-| `LibKa0s/OptionsWidgets.lua` | 1989 | Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16) — the tab and page chrome (`:378` art block, `:871`–`:1349` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine |
+| `LibKa0s/OptionsWidgets.lua` | 1989 | Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16) — the tab and page chrome (`:379` art block, `:891`–`:1369` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine |
 
 **Both are issues, and neither is a register row.** The sibling repository doing this same work gives
 its *mirror suites* register rows rather than issues, on the argument that a suite has no seam of its
@@ -127,12 +127,12 @@ while nobody was watching, which is the whole argument for having a gate rather 
 (`03_SPEC.md` § C22 non-goals). Here that is more than a scheduling preference: `LibKa0s/` is
 re-vendored whole-folder into ten consumers and every file in it carries its own LibStub minor, so a
 peel adds a payload file, a `LibKa0s.xml` row, a minor and the multi-file pairing guard
-(`__widgetsShellMinor`, `LibKa0s/OptionsWidgets.lua:31`) — a deliberate release, not a tidy-up. The
+(`__widgetsShellMinor`, `LibKa0s/OptionsWidgets.lua:32`) — a deliberate release, not a tidy-up. The
 deliverable was the disposition, and the disposition is this table.
 
 **The 1000–1500 band is on notice, not in breach**: `tests/test_widgets.lua` (1493),
-`tests/test_options.lua` (1266), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1206, tracked as
-[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1260 at v1.33.0) and, since kit revision 17, `testkit/mock_base.lua` (1478 at kit revision 18, twenty-two lines from the cap). They are
+`tests/test_options.lua` (1266), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1231 at v1.34.0, tracked as
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1284 at v1.34.0), since kit revision 17 `testkit/mock_base.lua` (1482 at kit revision 19, eighteen lines from the cap) and, since v1.34.0, `tests/test_slash.lua` (1034). They are
 named so a later reader can tell the band was looked at rather than missed; none needs a disposition
 until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
@@ -180,5 +180,5 @@ luacheck .          # 0 warnings / 0 errors
 ```
 
 That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — fifty-five
-files at v1.33.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
+files at v1.34.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
 only means something if the files carrying the change are inside the checked set.
