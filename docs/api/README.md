@@ -151,7 +151,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7](./Slash/version-7-docs.md) | `Slash.lua` 7 | v1.8.0 | **Current** |
+| [8](./Slash/version-8-docs.md) | `Slash.lua` 8 | v1.32.0 | **Current** |
+| [7](./Slash/version-7-docs.md) | `Slash.lua` 7 | v1.8.0 – v1.31.0 | Superseded |
 | [6](./Slash/version-6-docs.md) | `Slash.lua` 6 | v1.7.0 | Superseded |
 | [5](./Slash/version-5-docs.md) | `Slash.lua` 5 | v1.2.0 – v1.6.3 | Superseded |
 | [4](./Slash/version-4-docs.md) | `Slash.lua` 4 | v1.0.0, v1.1.0, v1.1.1 | Superseded |
@@ -160,7 +161,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.15.4.3](./Options/version-15.15.4.3-docs.md) | `Options.lua` 15 · `OptionsWidgets.lua` 15 · `OptionsCompose.lua` 4 · `OptionsScroll.lua` 3 | v1.31.0 | **Current** |
+| [16.15.4.3](./Options/version-16.15.4.3-docs.md) | `Options.lua` 16 · `OptionsWidgets.lua` 15 · `OptionsCompose.lua` 4 · `OptionsScroll.lua` 3 | v1.32.0 | **Current** |
+| [15.15.4.3](./Options/version-15.15.4.3-docs.md) | `Options.lua` 15 · `OptionsWidgets.lua` 15 · `OptionsCompose.lua` 4 · `OptionsScroll.lua` 3 | v1.31.0 | Superseded |
 | [15.14.3.3](./Options/version-15.14.3.3-docs.md) | `Options.lua` 15 · `OptionsWidgets.lua` 14 · `OptionsCompose.lua` 3 · `OptionsScroll.lua` 3 | v1.27.0 – v1.30.0 | Superseded |
 | [14.14.3.3](./Options/version-14.14.3.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 14 · `OptionsCompose.lua` 3 · `OptionsScroll.lua` 3 | v1.26.0 | Superseded |
 | [14.13.3.3](./Options/version-14.13.3.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 3 · `OptionsScroll.lua` 3 | v1.26.0 | Superseded |

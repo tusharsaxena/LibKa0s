@@ -278,7 +278,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the copy window still shows the whole buffer, in order
 - dbg: the copy window re-anchors to the console instead of a fixed centre
 
-### test_slash.lua (81)
+### test_slash.lua (85)
 
 - sl: an empty message prints the help index
 - sl: whitespace-only input is treated as empty
@@ -348,6 +348,10 @@ badge and any count quoted in the docs must agree with it.
 - sl: reset with no path prints usage; an unknown path says so
 - sl: reset does not lowercase its argument
 - sl: resetall applies every row's default
+- sl: resetall brackets its walk, and acknowledges after the bracket closes
+- sl: a row that raises inside resetall still closes the bracket; the error propagates and nothing is acknowledged
+- sl: resetall with no applyDefault still brackets, and counts zero rows written
+- sl: resetall with NO bracket is minor 7's walk — an error escapes with its own stack
 - sl: version prints one line and nothing else
 - sl: the annotator fires on list, get and set — and on nothing else
 - sl: the annotation follows the coloured pair rather than interrupting it
@@ -362,7 +366,7 @@ badge and any count quoted in the docs must agree with it.
 - slash: the format hook takes precedence over the colour codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
 
-### test_options.lua (81)
+### test_options.lua (89)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -389,6 +393,14 @@ badge and any count quoted in the docs must agree with it.
 - options: with NO resetProfile the reset is exactly what it always was
 - options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the panels
 - options: RestoreAllDefaults honours the host's skipRestoreAll veto
+- options: RestoreDefaults brackets its page walk — begin, every row, end with the count, then the refresh
+- options: RestoreAllDefaults brackets the whole act — rows, afterRestoreAll — and refreshes after the end
+- options: with resetProfile the bracket spans the session rows, the profile reset and the hook
+- options: a row that raises mid-walk still closes the bracket, then the error propagates
+- options: the bracket closes when afterRestoreAll or bulkBegin itself raises
+- options: either half of the bracket works alone
+- options: a host mutes its seam's [Set] inside the bracket and logs ONE line — the documented worked example
+- options: with NO bracket the walk is exactly minor 15's — same calls, same order, and an error escapes with its own stack
 - options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower
 - options: registered page builders run in registration order, once, at CreateOptionsPanel
 - options: CreateOptionsPanel hands the host the AceGUI it resolved
@@ -967,8 +979,8 @@ badge and any count quoted in the docs must agree with it.
 | test_media.lua | 15 |
 | test_widgets.lua | 81 |
 | test_debuglog.lua | 67 |
-| test_slash.lua | 81 |
-| test_options.lua | 81 |
+| test_slash.lua | 85 |
+| test_options.lua | 89 |
 | test_options_widgets.lua | 139 |
 | test_options_compose.lua | 36 |
 | test_perf_core.lua | 70 |
@@ -987,4 +999,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **869** |
+| **Total** | **881** |

@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **7** |
-| Shipped in | v1.8.0 – v1.31.0 |
-| Status | Superseded |
-| Supersedes | [version 6](./version-6-docs.md) |
-| Superseded by | [version 8](./version-8-docs.md) — `CliResetAll` gains an optional bulk bracket |
+| Files and minors | `Slash.lua` minor **8** |
+| Shipped in | v1.32.0 |
+| Status | **Current** |
+| Supersedes | [version 7](./version-7-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 7 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 8 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -35,6 +35,96 @@ Like DebugLog, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon fram
 returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
+
+**`CliResetAll` gains an optional bulk bracket — the same one the Options major gains at
+16.15.4.3, with the same field names, signatures, call order and error semantics, so a host passes
+one pair to both.** No member is added, removed, renamed or resignatured; the member manifest differs
+from version 7's in its version key alone. What is added is two optional descriptor fields,
+`bulkBegin` and `bulkEnd`. A host that supplies neither runs exactly version 7's walk, with no
+`pcall` on the path.
+
+**Why.** On 2026-09-12 the owner ruled, and standard v2.44.0 codified in `debug-logging-§10`, that a
+**bulk copy or reset through the settings helper is ONE `debug-logging-§8` flow line** naming the
+act, its scope and the row count, and **MUST NOT** emit a per-row `[Set]` line. Validation and each
+row's `onChange` still run per row. `CliResetAll` walks every row through the descriptor's
+`applyDefault`, and three hosts reach their global reset through it rather than through the Options
+major: BankLedger's and LootHistory's Defaults button and `/<slash> resetall`, and MultiMeters'
+`/mm resetall`. Their seams logged 15, 16 and 169 `[Set]` lines per reset.
+
+### The two fields
+
+| Field | Signature | Called |
+|---|---|---|
+| `bulkBegin` | `function(act, scope)` | Once, before `CliResetAll` writes its first row: act `"reset"`, scope `"all"`. |
+| `bulkEnd` | `function(act, scope, count, err)` | Once, after the walk — **always**, whenever the bracket was begun. |
+
+`count` is the rows actually written: a row counts when its `applyDefault` returned. A descriptor
+with no `applyDefault` still gets the bracket, with a count of zero. The `RESET_ALL` acknowledgment is
+printed **after** `bulkEnd`, and not at all if the walk raised. Each field is independently
+optional.
+
+### Call order and error semantics
+
+```
+bulkBegin("reset", "all")        -- inside the protected region
+  applyDefault(row) × N          -- stops at the first row that raises, exactly as unbracketed
+bulkEnd("reset", "all", count, err)   -- ALWAYS, once; err is nil unless something above raised
+error(err, 0)                    -- only if something raised: the same value, re-raised unchanged
+print RESET_ALL                  -- only if nothing raised, as before
+```
+
+- **A begun bracket always closes, so a host's mute cannot stick.** `bulkBegin` and the walk share
+  one `pcall`. Whatever raises — a row, or `bulkBegin` itself after setting its mute flag —
+  `bulkEnd` still runs, once.
+- **The error is not swallowed and not re-wrapped.** `bulkEnd` receives it as `err`, then the
+  library re-raises the same value with `error(err, 0)`, so a string keeps its original
+  `file:line:` prefix. What changes under a bracket is the stack: a traceback shows the re-raise
+  site rather than the row's frame. A `bulkEnd` that raises propagates its own error.
+- **Unbracketed — neither field a function — nothing above applies.** The walk runs bare and a
+  raising row escapes with its own stack. Pinned by `tests/test_slash.lua`.
+
+No other verb here loops rows through the descriptor: `CliReset` writes one row, which is one
+`[Set]` line either way, and `BuildListLines` only reads.
+
+### Worked example: mute the seam, emit one line
+
+The same shape as the Options document's, and the same pair — build it once and hand it to both
+descriptors:
+
+```lua
+-- settings/Schema.lua — the host's single write seam
+local bulkDepth = 0
+
+function NS.Set(path, value)
+  -- … validate, store, fire the row's onChange — all still per row …
+  if bulkDepth == 0 then
+    NS.Debug("Set", "%s = %s", path, NS.FormatSchemaValue(path, value))
+  end
+end
+
+NS.Bulk = {
+  begin  = function(act, scope) bulkDepth = bulkDepth + 1 end,
+  finish = function(act, scope, count, err)
+    bulkDepth = bulkDepth - 1
+    local where = scope == "all" and "all settings" or (tostring(scope) .. " page")
+    NS.Debug("Set", "%s %s: %d rows%s", act, where, count, err and " (stopped by an error)" or "")
+  end,
+}
+
+-- settings/Slash.lua — the Slash descriptor
+NS.Slash = SlashLib:New({
+  -- … slash, commands, get, set, findRow, allRows, applyDefault …
+  bulkBegin = NS.Bulk.begin,
+  bulkEnd   = NS.Bulk.finish,
+})
+-- settings/OptionsSetup.lua passes the same two to the Options descriptor.
+```
+
+`/<slash> resetall` now logs `[Set] reset all settings: 169 rows` and nothing else, where it logged
+169 lines. A counter rather than a boolean, so a host whose Defaults button brackets an act of its own
+around `CliResetAll` still unmutes at the right time.
+
+### Previously, at version 7
 
 **Comments only. The surface does not move.** Every member, descriptor field, row field, value and
 behaviour described below is exactly what version 6 shipped, so a host written against version
@@ -167,6 +257,8 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `findRow` | function(path) | no | 1 | Resolve a path to a schema row, or nil. |
 | `allRows` | function | no | 1 | Every row, in declaration order — which is the order `list` prints. |
 | `applyDefault` | function(row) | no | 1 | Restore one row to its default. |
+| `bulkBegin` | function(act, scope) | no | **8** | Called once before `CliResetAll` writes its first row: act `"reset"`, scope `"all"`. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. Same field as the Options descriptor's. See [The two fields](#the-two-fields). |
+| `bulkEnd` | function(act, scope, count, err) | no | **8** | Called once after the walk, **always** when the bracket was begun — even if a row or `bulkBegin` raised. `count` is the rows actually written; `err` is the raised value or `nil`, re-raised unchanged after this returns. Unmute and emit the one summary line here. A host supplying neither runs version 7's walk exactly. |
 | `parse` | function(row, text) | no | 1 | Defaults to `lib.ParseValue`. |
 | `format` | function(row, stored) | no | **5** | Renders a value for display, replacing `lib.FormatValue` outright, at every list/get/set/reset echo. The counterpart of `parse`: for a row type this library does not know — a set, a pattern needing its pipes doubled. Handed the value **as stored**, and taking precedence over `colorDecode`. |
 | `groupKey` | function(row) | no | 1 | Row → the heading it lists under. Defaults to `row.page or "settings"` — a row with no page still lists somewhere. |
@@ -195,7 +287,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `CliGet(rest)` | 1 | Echo one setting. |
 | `CliSet(rest)` | 1 | Parse and store one setting, then echo it by **re-reading** — a clamped number is only visible to the user because the echo reports what was actually stored, not what was typed. |
 | `CliReset(rest)` | 1 | Reset one setting by path, and echo it. Never annotated. |
-| `CliResetAll()` | 1 | `applyDefault` over every row, then one acknowledgement. |
+| `CliResetAll()` | 1 | `applyDefault` over every row, then one acknowledgment. **From 8** the walk runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `"all"`), and the acknowledgment is printed after `bulkEnd` — not at all if the walk raised. |
 | `CliVersion()` | 1 | The host's version. |
 | `SetRowAnnotator(fn)` | 1 | Install a host suffix appended to a rendered setting — most usefully a note that the stored value is not the one in effect. Applied at exactly three sites: a list row, a get echo and a set echo. Never on reset or resetall, where an explanation of what a value means is noise stapled to an acknowledgement that the value went away. |
 | `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
@@ -214,13 +306,8 @@ correct on every minor.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
-## Moving to version 8
-
-**No member is added, removed, renamed or resignatured.** What is added is two optional descriptor
-fields, `bulkBegin(act, scope)` and `bulkEnd(act, scope, count, err)`, which `CliResetAll` calls
-around its walk so a host can log a global reset as the one line `debug-logging-§10` (standard
-v2.44.0) requires, rather than one `[Set]` per row. They are the Options major's fields at
-16.15.4.3, with the same semantics, so a host passes one pair to both.
-
-**The re-vendor alone changes nothing.** A host that supplies neither field runs exactly this
-version's walk, with no `pcall` on the path. See [version 8](./version-8-docs.md).
+**What is added at version 8 is `bulkBegin` / `bulkEnd` on the descriptor, and nothing else.** A host
+that supplies neither runs `CliResetAll` exactly as version 7 did — the same `applyDefault` calls in
+the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
+`tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
+moves on re-vendor.

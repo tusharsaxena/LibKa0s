@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 15.15.4.3
+# `LibKa0s-Options-1.0` — version 16.15.4.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,137 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **15** · `OptionsWidgets.lua` **15** · `OptionsCompose.lua` **4** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **16** · `OptionsWidgets.lua` **15** · `OptionsCompose.lua` **4** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.31.0 |
-| Status | Superseded |
-| Supersedes | [version 15.14.3.3](./version-15.14.3.3-docs.md) |
-| Superseded by | [version 16.15.4.3](./version-16.15.4.3-docs.md) — the reset walks gain an optional bulk bracket |
+| Shipped in | v1.32.0 |
+| Status | **Current** |
+| Supersedes | [version 15.15.4.3](./version-15.15.4.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 15, OptionsWidgets = 15, OptionsCompose = 4, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 16, OptionsWidgets = 15, OptionsCompose = 4, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O15`
-for `Options.lua` minor 15, `W15` for `OptionsWidgets.lua` minor 15, `C4` for `OptionsCompose.lua`
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O16`
+for `Options.lua` minor 16, `W15` for `OptionsWidgets.lua` minor 15, `C4` for `OptionsCompose.lua`
 minor 4, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**One file moves, `Options.lua` 15 → 16, and it gives the two reset walks an optional bulk
+bracket.** No member is added, removed, renamed or resignatured — the member manifest differs from
+15.15.4.3's in the `Options` minor alone. What is added is two optional descriptor fields,
+`bulkBegin` and `bulkEnd`, which `RestoreDefaults` and `RestoreAllDefaults` call around their walks.
+A host that supplies neither runs exactly minor 15's walk: the same calls in the same order, and no
+`pcall` anywhere on the path.
+
+**Why.** On 2026-09-12 the owner ruled, and the standard codified at v2.44.0 in
+`debug-logging-§10`, that a **bulk copy or reset through the settings helper is logged as ONE
+`debug-logging-§8` flow line** naming the act, its scope and the row count — for example
+`[Set] reset General page: 14 rows` — and **MUST NOT** emit a per-row `[Set]` line. Validation and
+each row's `onChange` still run per row. Most Ka0s addons' Defaults buttons go through
+`RestoreDefaults`, and their global reset through `RestoreAllDefaults`. Both walk rows and call the
+descriptor's `applyDefault` per row, and the host's write seam logs one `[Set]` per call, so until
+this minor every Defaults press was N lines and the host had no way to tell a reset from N single
+writes. The library knows when the act starts and ends; the bracket tells the host.
+
+### The two fields
+
+| Field | Signature | Called |
+|---|---|---|
+| `bulkBegin` | `function(act, scope)` | Once, before the act writes its first row. |
+| `bulkEnd` | `function(act, scope, count, err)` | Once, after the act — **always**, whenever the bracket was begun. |
+
+| Walk | `act` | `scope` | What the bracket spans | `count` |
+|---|---|---|---|---|
+| `O.RestoreDefaults(pageKey, ctx)` | `"reset"` | `pageKey`, as passed | the page's row walk | rows written through `applyDefault` |
+| `O.RestoreAllDefaults()` | `"reset"` | `"all"` | the row walk, then `resetProfile`, then `afterRestoreAll` | rows written through `applyDefault` — with `resetProfile` supplied, the `sessionOnly` rows alone, because the profile is reset whole |
+
+The refresh (`ctx.refreshers` for a page, `RefreshAllPanels` for all) runs **after** `bulkEnd`,
+outside the bracket: it writes nothing. `resetProfile` and `afterRestoreAll` run **inside** it,
+because a write either makes through the host's seam — an `OnProfileReset` handler re-seeding a
+row, a hook clearing a sessionOnly value — is part of the reset and belongs under its one line.
+Each field is independently optional: a host may supply only `bulkEnd` (and log from the count) or
+only `bulkBegin`.
+
+### Call order and error semantics
+
+```
+bulkBegin(act, scope)        -- inside the protected region
+  applyDefault(row) × N      -- stops at the first row that raises, exactly as unbracketed
+  resetProfile()             -- RestoreAllDefaults only, when supplied
+  afterRestoreAll()          -- RestoreAllDefaults only, when supplied
+bulkEnd(act, scope, count, err)   -- ALWAYS, once; err is nil unless something above raised
+error(err, 0)                -- only if something raised: the same value, re-raised unchanged
+refresh                      -- only if nothing raised, as before
+```
+
+- **A begun bracket always closes, so a host's mute cannot stick.** `bulkBegin` and the whole act
+  run inside one `pcall`. Whatever raises — a row, `resetProfile`, `afterRestoreAll`, or
+  `bulkBegin` itself after setting its mute flag — `bulkEnd` still runs, once.
+- **`count` is rows actually written:** a row counts when its `applyDefault` returned. A vetoed
+  row, a row the `resetProfile` narrowing skips and the row that raised are not counted.
+- **The error is not swallowed and not re-wrapped.** `bulkEnd` receives the raised value as `err`,
+  then the library re-raises that same value with `error(err, 0)`, so a string keeps its original
+  `file:line:` prefix and a table error is the same table. The refresh does not run, which is what
+  a raising row has always meant. What changes under a bracket is the stack: the error is re-raised
+  from the library, so a traceback shows the re-raise site rather than the row's frame.
+- **A `bulkEnd` that raises propagates its own error.** It was handed the original first, as `err`.
+- **Unbracketed — neither field a function — nothing above applies.** The walk runs bare, a raising
+  row escapes with its own stack, and the call sequence is minor 15's. Pinned by
+  `tests/test_options.lua`, which compares the call sequence and checks the traceback still holds
+  the row's frame.
+
+### Worked example: mute the seam, emit one line
+
+The shape `debug-logging-§10` asks for, on a host whose single write seam logs every write. A
+depth counter rather than a boolean, so a host that brackets an act of its own around a library
+reset still unmutes at the right time.
+
+```lua
+-- settings/Schema.lua — the host's single write seam
+local bulkDepth = 0
+
+function NS.Set(path, value)
+  -- … validate, store, fire the row's onChange — all still per row …
+  if bulkDepth == 0 then
+    NS.Debug("Set", "%s = %s", path, NS.FormatSchemaValue(path, value))
+  end
+end
+
+-- settings/OptionsSetup.lua — the Options descriptor
+NS.Helpers = O:New({
+  -- … parentTitle, mainPanelName, get, set, applyDefault, rowsForPage, allRows …
+  bulkBegin = function(act, scope)
+    bulkDepth = bulkDepth + 1
+  end,
+  bulkEnd = function(act, scope, count, err)
+    bulkDepth = bulkDepth - 1
+    local where = scope == "all" and "all settings" or (tostring(scope) .. " page")
+    NS.Debug("Set", "%s %s: %d rows%s", act, where, count, err and " (stopped by an error)" or "")
+  end,
+})
+```
+
+A Defaults press on the General page now logs `[Set] reset general page: 14 rows` and nothing else;
+a global reset logs `[Set] reset all settings: 2 rows` on a host with `resetProfile` (the two
+`sessionOnly` rows — say so in the wording if the host wants the profile reset named). Hand the
+**same pair** to the Slash descriptor and `/<slash> resetall` logs one line too — Slash minor 8
+brackets `CliResetAll` with the same fields, act and error semantics. `tests/test_options.lua` runs
+this example for real.
+
+### What the bracket does not do
+
+- It does not batch the writes or defer `onChange`. Every row is still written through
+  `applyDefault`, one at a time, in the same order. Only the host's log collapses.
+- It does not bracket a host's own bulk acts (a copy from one unit to another, a section reset the
+  host writes itself). Those are the host's to bracket in its own seam; `debug-logging-§10` binds
+  them the same way.
+- No other loop in this library resets or copies rows through the descriptor. `OptionsCompose.lua`
+  composes rows and writes none; `MasterControls`' two reset buttons call the host's own
+  `onResetAll` / `onResetPosition`; `PerfPanel.lua` and `OptionsWidgets.lua` write one row per user
+  gesture.
+
+### Previously, at 15.15.4.3
 
 **Two files move, `OptionsWidgets.lua` 14 → 15 and `OptionsCompose.lua` 3 → 4, and together they add
 a record-backed arm to the composers.** No member is added, removed, renamed or resignatured — the
@@ -38,7 +154,7 @@ accent bar's own border) were typed out by hand in `settings/PanelEditor.lua` an
 register rows whose re-check trigger was exactly this arm. The rows, their order and their shapes are
 still the composer's; the arm changes only where a value is read from and written to.
 
-### `OptionsCompose.lua` minor 4 — `spec.bind`
+#### `OptionsCompose.lua` minor 4 — `spec.bind`
 
 ```lua
 spec.bind = {
@@ -66,7 +182,7 @@ directly: `O.RenderField(ctx, row, parent, relWidth)` into the host's own contai
 `O.RenderRows(ctx, rows)` over the returned list. Resetting a record stays the host's operation, as
 it always was.
 
-### `OptionsWidgets.lua` minor 15 — a row with no path reads and writes through its own `get` / `set`
+#### `OptionsWidgets.lua` minor 15 — a row with no path reads and writes through its own `get` / `set`
 
 Every maker used to read `d.get(row.path)` and write `d.set(row.path, value)`. From W15 a row whose
 `path` is nil and which carries a `get` function is read with `row.get()`, and one carrying a `set`
@@ -87,7 +203,7 @@ before. Two other path-keyed lookups follow the row: `RenderRows`' `pairWith` is
 `disabledIf` is read with `row.get(key)` — for a composed row, that field of the same record — rather
 than as a settings path. A composed row's `get` takes that optional key for exactly this reason.
 
-### What the arm does not change
+#### What the arm does not change
 
 - **Path-keyed output is byte-for-byte what compose minor 3 emitted.** `tests/fixture_compose_golden.lua`
   holds ten composer calls serialized from OptionsCompose.lua minor 3 — every spec field the common
@@ -99,7 +215,7 @@ than as a settings path. A composed row's `get` takes that optional key for exac
 - **The composers still create no widget and touch no AceGUI.** A bound row's closures read state only
   when the flow engine calls them.
 
-### Adopting it
+#### Adopting it
 
 Re-vendoring changes nothing for a host that passes no `bind`. PanelMaster adopts by composing its
 three blocks with a bind over `NS.Registry` — see [the worked example](#worked-example-panelmasters-three-groups)
@@ -635,6 +751,8 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `resetProfile` | function | no | O9 | Supply it and a global reset becomes a **profile reset**: the `sessionOnly` rows are swept row by row, then this is called, then every panel refreshes. Pass `function() NS.db:ResetProfile() end`. With it supplied the library narrows the row walk itself — see `RestoreAllDefaults` below. |
 | `skipRestoreAll` | function(row) | no | O1 | Return true to exclude a row from a global reset. With `resetProfile` supplied the profiles-page veto this was invented for is **implied** (an AceDBOptions row is not `sessionOnly`, so it is already outside the narrowed walk); the field is still honored, and is the whole policy for a host that supplies no `resetProfile`. |
 | `afterRestoreAll` | function | no | O1 | Runs after the rows are reset **and after `resetProfile`**, and **before** the panels refresh, for state in neither the schema nor the profile. The order is load-bearing: a refresh first would paint the pre-hook values. A dragged frame's saved position is **not** an example any more — a position lives in the profile and comes back with it. |
+| `bulkBegin` | function(act, scope) | no | **O16** | Called once before `RestoreDefaults` (act `"reset"`, scope the `pageKey`) or `RestoreAllDefaults` (act `"reset"`, scope `"all"`) writes its first row. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. See [The two fields](#the-two-fields). |
+| `bulkEnd` | function(act, scope, count, err) | no | **O16** | Called once when the act ends, **always** when the bracket was begun — even if a row, `resetProfile`, `afterRestoreAll` or `bulkBegin` raised. `count` is the rows actually written through `applyDefault`; `err` is the raised value or `nil`, and is re-raised unchanged after this returns. Unmute and emit the one summary line here. A host supplying neither field runs minor 15's walk exactly. |
 | `scheduleTimer` | function(fn, delay) | no | O1 | Backs the 50 ms colour-drag throttle. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. |
 | `getLSM` | function | no | O1 | Returns LibSharedMedia-3.0, for `LSMValues`. |
 | `validate` | function | no | O1 | Runs once, before the page builders. A host's schema-shape check. |
@@ -720,8 +838,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RegisterOptionsPage(key, name, builder)` | O1 | Queue a page. Builders run once, in order, at `CreateOptionsPanel`. |
 | `CreateOptionsPanel()` | O1 | Resolve AceGUI, hand it to the host, validate, register the main canvas, run every builder. |
 | `OpenOptionsPanel()` | O1 (combat refusal: O3) | Open the category. **Refuses** under combat and never defers-and-replays. |
-| `RestoreDefaults(pageKey, ctx)` | O1 | The per-page Defaults button. Refreshes only the ctx it was given. |
-| `RestoreAllDefaults()` | O1 | Without `resetProfile`: every non-vetoed row, then `afterRestoreAll`, then a full refresh — unchanged. **With `resetProfile` (O9):** only the `sessionOnly` rows, then `resetProfile()`, then `afterRestoreAll`, then a full refresh. |
+| `RestoreDefaults(pageKey, ctx)` | O1 | The per-page Defaults button. Refreshes only the ctx it was given. **From O16** the page walk runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `pageKey`); the refresh runs after it closes. |
+| `RestoreAllDefaults()` | O1 | Without `resetProfile`: every non-vetoed row, then `afterRestoreAll`, then a full refresh — unchanged. **With `resetProfile` (O9):** only the `sessionOnly` rows, then `resetProfile()`, then `afterRestoreAll`, then a full refresh. **From O16** everything before the refresh — the row walk, `resetProfile` and `afterRestoreAll` — runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `"all"`). |
 | `SetRenderer(ctx, fn)` | O1 | Declare how a page draws itself. The library owns *when*: first show, and again after a refresh marked it dirty while hidden. Also builds the Defaults button and refuses to render under combat. |
 | `RefreshAllPanels()` | O1 (two tiers: O3) | **Structural.** Re-run each page's renderer, so rows that appeared or disappeared are drawn. Hidden pages are flagged dirty and re-render on their next show. |
 | `RefreshScalars()` | O3 | **In place.** Refreshers only, no rebuild — what every widget maker's own `set()` calls, since writing a value does not change which rows exist. Each is pcall'd, so one dead widget cannot take the UI with it. |
@@ -1102,8 +1220,15 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
 never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. No
-member is added at this version and nothing is taken away; one spec field and three row fields are
-added.
+member is added at this version and nothing is taken away; two descriptor fields are added.
+
+**What is added at 16.15.4.3 is `bulkBegin` / `bulkEnd` on the descriptor, and nothing else.** A host
+that supplies neither runs `RestoreDefaults` and `RestoreAllDefaults` exactly as 15.15.4.3 did — the
+same `applyDefault` calls in the same order, the same refresh, and no `pcall` on the path, so a
+raising row still escapes with its own stack. That is pinned in `tests/test_options.lua` and was
+measured on all ten consumers with the payload dropped in: nothing moves on re-vendor. Adopting it is
+two descriptor fields and a mute in the host's write seam, per [the worked
+example](#worked-example-mute-the-seam-emit-one-line).
 
 **What is added at 15.15.4.3 is `spec.bind` on every composer, and `get` / `set` / `field` on a row
 with no path.** A host that passes no `bind` and renders no path-less row renders byte-identically to
@@ -1163,17 +1288,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 16.15.4.3
-
-One file moves, `Options.lua` 15 → 16. **No member is added, removed, renamed or resignatured.**
-What is added is two optional descriptor fields, `bulkBegin(act, scope)` and
-`bulkEnd(act, scope, count, err)`, which `RestoreDefaults` and `RestoreAllDefaults` call around their
-walks so a host can log a reset as the one line `debug-logging-§10` (standard v2.44.0) requires,
-rather than one `[Set]` per row.
-
-**The re-vendor alone changes nothing.** A host that supplies neither field runs exactly this
-version's walk — the same `applyDefault` calls in the same order, and no `pcall` on the path.
-Adopting it is two descriptor fields and a mute in the host's write seam; see
-[version 16.15.4.3](./version-16.15.4.3-docs.md) for the call order, the error semantics and a
-worked host example.
