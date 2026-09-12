@@ -360,14 +360,14 @@ Core, DebugLog, Slash, Options, Media, Env, Pool and Perf. It does not look up W
 is the host that found the four kit gaps revision 16 closes (#27–#30). **No addon on the standard
 remains unadopted.**
 
-**Where v1.30.0 stands in the consumers (2026-09-12).** Step 8 is done and merged. All ten
-consumers bundle v1.30.0 on `master`, and each `CLAUDE.md` provenance line says so. No file in
-`LibKa0s/` moved at v1.30.0, so the re-vendor brought kit revision 16 in `tests/_kit/` and retired
-the local shims it made redundant. Where a consumer's harness replaces the kit's Ace fakes wholesale,
-so revision 16 cannot reach its suite, that consumer carries its own follow-up issue. The step-9
-sweep above was run against the re-vendor branches before they merged, and their lookup sites match
-`master` site for site. `WhoGotLoots` and `BuffTextNotifications` are out of scope until they are
-on the standard at all.
+**Where v1.32.0 stands in the consumers (2026-09-12).** Step 8 is done and merged. All ten
+consumers bundle v1.32.0 on `master`, and each `CLAUDE.md` provenance line says so. v1.31.0 and
+v1.32.0 were re-vendored in the same batch, so every `master` went from v1.30.0 straight to v1.32.0,
+kit revision 17 included. The follow-up issues filed at v1.30.0 for harnesses that replaced the
+kit's Ace fakes wholesale were closed in that batch by migrating those harnesses onto the kit. The
+step-9 sweep above was run against trees identical to the merged `master`s: 84 lookup files, every
+one in the table. `WhoGotLoots` and `BuffTextNotifications` are out of scope until they are on the
+standard at all.
 
 WhatGroup has Core, DebugLog, Media, Options and Slash — `core/CoreSetup.lua`,
 `core/DebugLogSetup.lua`, `core/MediaSetup.lua`, `settings/OptionsSetup.lua` (decorated by
