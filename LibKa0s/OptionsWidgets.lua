@@ -784,6 +784,42 @@ function lib.__AttachWidgets(O, d)
     return d.set(row.path, value)
   end
 
+  -- Is `row` drawn disabled? `pageDisabled` is RenderRows' `opts.disabled`, snapshotted by the
+  -- maker at BUILD time and never re-read from the ctx: the flag is cleared when that render
+  -- returns, so a refresher reading it live would lift a disabled page's dimming on the first
+  -- write anywhere, and a later render's flag could reach an earlier page's widgets.
+  --
+  -- `disabledIf` is a settings path (read through readKey, so a composed row reads its record) or,
+  -- from minor 19, a predicate `function(row) -> bool`. A predicate that raises reads as enabled:
+  -- the refresher is pcall'd by the sweep anyway, and a raise at build would cost the whole row
+  -- for the sake of its dimming.
+  local function isDisabled(row, pageDisabled)
+    if pageDisabled then return true end
+    local cond = row.disabledIf
+    if type(cond) == "function" then
+      local ok, v = pcall(cond, row)
+      return (ok and v) and true or false
+    end
+    return readKey(row, cond) and true or false
+  end
+
+  local function noop() end
+
+  --- Apply `row`'s disabled state to `widget` now, and hand back the function its refresher calls
+  --- to re-apply it (minor 19; the color picker's private copy of this was the only one before).
+  ---
+  --- A row with no `disabledIf`, drawn outside a disabled render, is NEVER touched: it gets a no-op.
+  --- Calling SetDisabled(false) on it would re-enable, on the next write anywhere, a widget the
+  --- host disabled itself -- five hosts call SetDisabled on their own widgets.
+  local function bindDisabled(ctx, row, widget)
+    local pageDisabled = ctx.__renderDisabled and true or false
+    if row.disabledIf == nil and not pageDisabled then return noop end
+    if type(widget.SetDisabled) ~= "function" then return noop end
+    local function apply() widget:SetDisabled(isDisabled(row, pageDisabled)) end
+    apply()
+    return apply
+  end
+
   -- Write a row's value through the host's single write seam, then re-sync every widget on every
   -- panel. That is what makes paired controls just work: a "Use Class Color" toggle flips and its
   -- matching swatch grays out on the same frame. AceGUI's SetValue does not fire OnValueChanged,
@@ -1486,6 +1522,9 @@ function lib.__AttachWidgets(O, d)
       local btn = O.AceGUI:Create("Button")
       btn:SetText(spec.text or "")
       btn:SetRelativeWidth(L.BUTTON_PAIR_REL)
+      -- Inside a RenderRows call carrying `opts.disabled` (minor 19) -- an afterGroup hook on a
+      -- page drawn disabled -- the buttons are part of that page and are disabled with it.
+      if ctx.__renderDisabled then btn:SetDisabled(true) end
       btn:SetCallback("OnClick", function()
         if not spec.onClick then return end
         -- pcall'd and REPORTED. A host's button body reaches into live addon state, and a raise
@@ -1518,7 +1557,11 @@ function lib.__AttachWidgets(O, d)
     local function readValue() return read(row) and true or false end
 
     cb:SetValue(readValue())
-    local function refresh() cb:SetValue(readValue()) end
+    local applyDisabled = bindDisabled(ctx, row, cb)
+    local function refresh()
+      cb:SetValue(readValue())
+      applyDisabled()
+    end
 
     cb:SetCallback("OnValueChanged", function(_, _, value)
       set(row, value and true or false)
@@ -1540,12 +1583,14 @@ function lib.__AttachWidgets(O, d)
     s:SetIsPercent(row.isPercent and true or false)
     applyWidth(s, relativeWidth)
 
+    local applyDisabled = bindDisabled(ctx, row, s)
     local function refresh()
       local v = read(row)
       -- A corrupt SavedVariable would otherwise hand AceGUI a nil or a string and blow up the
       -- layout pass, taking the whole page with it.
       if type(v) ~= "number" then v = row.default or row.min or 0 end
       s:SetValue(v)
+      applyDisabled()
     end
 
     local function commitSlider(value)
@@ -1625,9 +1670,11 @@ function lib.__AttachWidgets(O, d)
     applyList()
     dd:SetValue(read(row))
 
+    local applyDisabled = bindDisabled(ctx, row, dd)
     local function refresh()
       applyList()                            -- media lists grow as other addons register into them
       dd:SetValue(read(row))
+      applyDisabled()
     end
 
     dd:SetCallback("OnValueChanged", function(_, _, value) set(row, value) end)
@@ -1650,7 +1697,11 @@ function lib.__AttachWidgets(O, d)
     if row.maxLetters then eb:SetMaxLetters(row.maxLetters) end
     eb:SetText(read(row) or "")
 
-    local function refresh() eb:SetText(read(row) or "") end
+    local applyDisabled = bindDisabled(ctx, row, eb)
+    local function refresh()
+      eb:SetText(read(row) or "")
+      applyDisabled()
+    end
 
     -- OnEnterPressed only, never OnTextChanged: committing per keystroke would fire the row's
     -- onChange on every letter typed.
@@ -1679,12 +1730,7 @@ function lib.__AttachWidgets(O, d)
 
     cp:SetColor(readColor())
 
-    local function applyDisabled()
-      if row.disabledIf then
-        cp:SetDisabled(readKey(row, row.disabledIf) and true or false)
-      end
-    end
-    applyDisabled()
+    local applyDisabled = bindDisabled(ctx, row, cp)
 
     local function refresh()
       cp:SetColor(readColor())
@@ -1772,6 +1818,8 @@ function lib.__AttachWidgets(O, d)
     applyWidth(cb, relativeWidth)
 
     cb:SetValue(spec.get() and true or false)
+    -- Part of a page drawn disabled when drawn from inside it (minor 19), like InlineButtonPair.
+    if ctx.__renderDisabled then cb:SetDisabled(true) end
     local function refresh() cb:SetValue(spec.get() and true or false) end
 
     cb:SetCallback("OnValueChanged", function(_, _, value)
@@ -1821,6 +1869,13 @@ function lib.__AttachWidgets(O, d)
   --               untabbed caller, which is why it is a fifth argument rather than a field on
   --               the ctx: a page's tabbedness is a property of THIS render, and a ctx flag
   --               would leak it into the next one.
+  --               { disabled = true } (minor 19) draws every widget of the call disabled -- the
+  --               rows, and the buttons an afterGroup or pairWith hook draws -- for a page whose
+  --               subject does not apply (a Bars page over an icons container). It rides on
+  --               `ctx.__renderDisabled` for the call's duration only, for the reason just given.
+  --   disabledIf  (a row field) a settings path, or from minor 19 a predicate function(row) ->
+  --               bool, whose truth draws the row disabled. Honored by every maker (only the
+  --               color picker read it before minor 19) and re-evaluated on every refresh.
 
   --- Render an EXPLICIT list of rows. Taking a list rather than a page key is what lets a host
   --- render a filtered subset (a mirrored unit's partition) through the same engine.
@@ -1878,9 +1933,8 @@ function lib.__AttachWidgets(O, d)
     flushRow()
   end
 
-  function O.RenderRows(ctx, rows, afterGroup, pairWith, opts)
-    local scroll = O.EnsureScroll(ctx)
-    if not scroll then return end
+  --- The flow engine's loop, under the disable flag RenderRows holds for it.
+  local function flowRows(ctx, scroll, rows, afterGroup, pairWith, opts)
     local pendingRow, pendingCount = nil, 0
 
     -- The one-shot bookkeeping below is the LIBRARY's, and it lives in these two call-local sets
@@ -1918,6 +1972,22 @@ function lib.__AttachWidgets(O, d)
     end
     flushRow()
     if scroll.DoLayout then scroll:DoLayout() end
+  end
+
+  function O.RenderRows(ctx, rows, afterGroup, pairWith, opts)
+    local scroll = O.EnsureScroll(ctx)
+    if not scroll then return end
+    -- `opts.disabled` (minor 19) holds `ctx.__renderDisabled` for exactly this call: every maker
+    -- snapshots it at build, and InlineButtonPair / SessionCheckbox read it, so a widget an
+    -- afterGroup or pairWith hook draws is disabled with the page. A nested call with no opts of
+    -- its own INHERITS the outer flag, since its widgets are part of the same disabled page, and
+    -- the outer value is restored on the way out -- a raise included, or the flag would be
+    -- stranded on the ctx and dim the next render. The raise still propagates, as it always has.
+    local outer = ctx.__renderDisabled
+    ctx.__renderDisabled = ((opts and opts.disabled) or outer) and true or nil
+    local ok, err = pcall(flowRows, ctx, scroll, rows, afterGroup, pairWith, opts)
+    ctx.__renderDisabled = outer
+    if not ok then error(err, 0) end
   end
 
   --- The per-page wrapper. `ctx.unit` is passed through as the host's filter argument, which is

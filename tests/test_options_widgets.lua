@@ -458,6 +458,160 @@ test("widgets: disabledIf greys the swatch out while its sibling toggle is on", 
   assertFalse(cp.disabled, "and the refresher re-evaluates it, so the pair tracks on one frame")
 end)
 
+-- ── disabledIf on every maker, and RenderRows' page-level disable ─────────────────────────
+--
+-- Until minor 19 only the color picker read `disabledIf`, and only as a settings path. A Layout
+-- page that dims the rows of an anchor mode not in use needs it on checkboxes, sliders, dropdowns
+-- and edit boxes too, and needs to say it as a predicate: "not in container mode" is not a stored
+-- boolean. One fixture path per maker the dispatch reaches, the LSM media dropdown and the numeric
+-- enum included, because both arrive at makeDropdown by a different branch of RenderField.
+
+local function runRefreshers(ctx)
+  for _, fn in ipairs(ctx.refreshers) do fn() end
+end
+
+local MAKER_PATHS = {
+  { path = "locked",        widget = "CheckBox" },
+  { path = "barWidth",      widget = "Slider" },
+  { path = "anchor",        widget = "Dropdown" },
+  { path = "retentionDays", widget = "Dropdown" },
+  { path = "barTexture" },                       -- LSM30_Statusbar, or its Dropdown fallback
+  { path = "profileName",   widget = "EditBox" },
+  { path = "borderColor",   widget = "ColorPicker" },
+}
+
+--- The first widget under the ctx's scroll whose label reads `label`.
+local function widgetLabelled(O, ctx, label)
+  for _, w in ipairs(Fixture.flatten(O.EnsureScroll(ctx))) do
+    if w.labelText == label or w.text == label then return w end
+  end
+end
+
+test("widgets: a function disabledIf disables every maker and is re-evaluated on refresh", function()
+  for _, m in ipairs(MAKER_PATHS) do
+    local O, rec, ctx = bench()
+    local mode, handed = "screen", nil
+    local row = rec.byPath[m.path]
+    row.disabledIf = function(r) handed = r; return mode == "screen" end
+    local w = O.RenderField(ctx, row, O.AceGUI:Create("SimpleGroup"), 0.5)
+    if m.widget then assertEqual(w.type, m.widget, m.path .. " reaches its maker") end
+    -- red under: only makeColorPicker reading disabledIf (every other maker ignored it)
+    assertTrue(w.disabled, m.path .. ": the predicate disabled it at build")
+    assertTrue(handed == row, m.path .. ": the predicate is handed its own row")
+
+    mode = "frame"
+    runRefreshers(ctx)
+    -- red under: evaluating disabledIf at build time only (the dimming would never lift)
+    assertFalse(w.disabled, m.path .. ": the refresher re-evaluated the predicate")
+    mode = "screen"
+    runRefreshers(ctx)
+    assertTrue(w.disabled, m.path .. ": and dims it again")
+  end
+end)
+
+test("widgets: a path disabledIf disables every maker while that setting is on", function()
+  for _, m in ipairs(MAKER_PATHS) do
+    local O, rec, ctx = bench()
+    local row = rec.byPath[m.path]
+    row.disabledIf = "useClassColor"
+    rec.store.useClassColor = true
+    local w = O.RenderField(ctx, row, O.AceGUI:Create("SimpleGroup"), 0.5)
+    -- red under: the path form still read by the color picker alone
+    assertTrue(w.disabled, m.path .. ": the setting is on, so the row is disabled")
+    rec.store.useClassColor = false
+    runRefreshers(ctx)
+    assertFalse(w.disabled, m.path .. ": and enabled again once it is off")
+  end
+end)
+
+test("widgets: a row with no disabledIf never has its disabled state touched", function()
+  for _, m in ipairs(MAKER_PATHS) do
+    local O, rec, ctx = bench()
+    local w = O.RenderField(ctx, rec.byPath[m.path], O.AceGUI:Create("SimpleGroup"), 0.5)
+    -- red under: every maker calling SetDisabled(false) unconditionally, which re-enables on the
+    -- next write anywhere a widget the host disabled itself
+    assertNil(w.disabled, m.path .. ": SetDisabled never called")
+    w:SetDisabled(true)
+    runRefreshers(ctx)
+    assertTrue(w.disabled, m.path .. ": a host's own SetDisabled survives a refresh")
+  end
+end)
+
+test("widgets: a disabledIf predicate that raises leaves the row drawn and enabled", function()
+  local O, rec, ctx = bench()
+  local row = rec.byPath.locked
+  row.disabledIf = function() error("predicate bug") end
+  local w = O.RenderField(ctx, row, O.AceGUI:Create("SimpleGroup"), 0.5)
+  -- red under: calling the predicate unguarded (the row fails to draw at all)
+  assertTrue(w ~= nil, "the row still drew")
+  assertFalse(w.disabled, "an unanswerable predicate reads as enabled")
+end)
+
+test("widgets: RenderRows opts.disabled disables every widget it draws, after-group ones included",
+  function()
+  local O, rec, ctx = bench()
+  local after = {
+    Size = function(c)
+      O.InlineButtonPair(c, { text = "Left", onClick = function() end },
+                            { text = "Right", onClick = function() end })
+      O.SessionCheckbox(c, nil, 0.5, { label = "Session box",
+        get = function() return false end, set = function() end })
+    end,
+  }
+  O.RenderRows(ctx, rec.d.rowsForPage("bar"), after, nil, { disabled = true })
+
+  local CONTROL = { CheckBox = true, Slider = true, Dropdown = true, EditBox = true,
+                    ColorPicker = true, Button = true, LSM30_Statusbar = true }
+  local drawn = 0
+  for _, w in ipairs(Fixture.flatten(O.EnsureScroll(ctx))) do
+    if CONTROL[w.type] then
+      drawn = drawn + 1
+      -- red under: RenderRows ignoring opts.disabled, or InlineButtonPair / SessionCheckbox not
+      -- reading the render's flag
+      assertTrue(w.disabled, tostring(w.labelText or w.text) .. " is disabled")
+    end
+  end
+  -- The bar page's ten drawn rows (mirror is skipRender), two buttons and the session box.
+  assertEqual(drawn, 13, "every control on the page was checked")
+  -- red under: leaving the flag on the ctx after the call
+  assertNil(ctx.__renderDisabled, "the flag lives for the call only")
+end)
+
+test("widgets: a disabled render's flag never leaks into a later render or into its refresh",
+  function()
+  local O, rec, ctx = bench()
+  O.RenderRows(ctx, { rec.byPath.locked }, nil, nil, { disabled = true })
+  O.RenderRows(ctx, { rec.byPath.showTooltips })
+  local first = widgetLabelled(O, ctx, "Lock Position")
+  local second = widgetLabelled(O, ctx, "Show tooltips")
+  assertTrue(first.disabled)
+  assertNil(second.disabled, "a later render without opts draws enabled, untouched widgets")
+
+  runRefreshers(ctx)
+  -- red under: the refresher reading ctx.__renderDisabled live instead of the build-time snapshot
+  assertTrue(first.disabled, "the disabled page's widget stays disabled through a refresh")
+  assertNil(second.disabled)
+end)
+
+test("widgets: a render nested inside a disabled render inherits the disable", function()
+  local O, rec, ctx = bench()
+  local after = { Master = function(c) O.RenderRows(c, { rec.byPath.profileName }) end }
+  O.RenderRows(ctx, { rec.byPath.locked }, after, nil, { disabled = true })
+  -- red under: a nested RenderRows resetting the flag to its own (absent) opts
+  assertTrue(widgetLabelled(O, ctx, "Profile label").disabled,
+    "a bespoke block drawn from an afterGroup hook is part of the disabled page")
+  assertNil(ctx.__renderDisabled, "and the outer call still clears it")
+end)
+
+test("widgets: an afterGroup hook that raises still propagates, and the flag is cleared", function()
+  local O, rec, ctx = bench()
+  local after = { Master = function() error("hook bug") end }
+  local ok = pcall(O.RenderRows, ctx, { rec.byPath.locked }, after, nil, { disabled = true })
+  assertFalse(ok, "a raising hook propagates, as it always has")
+  -- red under: clearing the flag only on the normal return path
+  assertNil(ctx.__renderDisabled, "a raise does not strand the flag on the ctx")
+end)
+
 test("widgets: OnValueConfirmed commits immediately — cancel must not wait on the throttle",
   function()
   local cp, _, _, rec = render("barColor")
