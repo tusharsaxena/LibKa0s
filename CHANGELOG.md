@@ -10,6 +10,81 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.32.0 — 2026-09-12
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 8**, **Options minor 16**,
+**OptionsWidgets minor 15**, **OptionsCompose minor 4**, **OptionsScroll minor 3**, **Perf minor 11**,
+**PerfPanel minor 5**, **kit revision 17**.
+
+One change, and two files in `LibKa0s/` move. On 2026-09-12 the owner ruled, and standard v2.44.0
+codified in `debug-logging-§10`, that a **bulk copy or reset through the settings helper is logged as
+ONE `debug-logging-§8` flow line** naming the act, its scope and the row count
+(`[Set] reset General page: 14 rows`), never one `[Set]` per row. Validation and each row's
+`onChange` still run per row. The library owns three of the collection's reset walks, and each wrote
+row by row through the host's descriptor, so the host's seam logged every Defaults press as N lines
+with no way to tell a reset from N single writes. `Options.lua` and `Slash.lua` now call an optional
+bulk bracket around those walks, and the host mutes its per-row line inside it.
+
+Nothing is removed or renamed, no member is added, and `testkit/` does not move. A host that
+supplies neither new field runs the exact walk it ran at v1.31.0, with no `pcall` on the path. Measured
+with the whole payload in on all ten consumers' `fix/2026-09-12-triage` branches, nothing moves on
+re-vendor. Adopting the bracket is each host's step. The details and a worked host example are in
+[`docs/api/Options/version-16.15.4.3-docs.md`](docs/api/Options/version-16.15.4.3-docs.md) and
+[`docs/api/Slash/version-8-docs.md`](docs/api/Slash/version-8-docs.md).
+
+### `Options.lua` minor 16 — `bulkBegin` / `bulkEnd` around `RestoreDefaults` and `RestoreAllDefaults`
+
+Two optional descriptor fields: `bulkBegin(act, scope)` before the act writes its first row, and
+`bulkEnd(act, scope, count, err, info)` once after it. `RestoreDefaults(pageKey, ctx)` brackets its
+page walk as `"reset"`, scope `pageKey`. `RestoreAllDefaults()` brackets the whole act as `"reset"`,
+scope `"all"`: the row walk, then `resetProfile`, then `afterRestoreAll`. A write any of those makes
+through the host's seam is part of the reset. Both refreshes run after the bracket closes. `count` is
+the rows whose `applyDefault` returned. Vetoed rows, rows the `resetProfile` narrowing skips and a
+raising row are not counted, but a row already at its default **is**. So `count` is **not** the N
+in §10's line, which counts only rows the act actually changed. The host tallies N itself in its
+muted write seam, counting only writes that change a stored value, and logs that tally. It keeps a
+depth counter so that nested brackets — an `afterRestoreAll` that calls `RestoreDefaults`, a
+`CliResetAll` inside an Options bracket — sum into one line, logged when the depth returns to
+zero. A host that mutes in `bulkBegin` must also supply `bulkEnd`. A raise of `nil` or `false`
+inside the bracket reaches `bulkEnd` as `err = nil`. The API documents' worked examples show all
+of this. (Documentation corrected after the tag, on review; the payload did not change.)
+
+**`info.profileReset` settles who logs a profile reset.** The owner's final ruling in
+`debug-logging-§10` (standard v2.44.0, WowAddonStandards 7883278) logs a whole-profile reset
+**once**, by the host's profile-event handler (`[Set] reset profile 'Default' to defaults (N rows)`),
+and no bulk bracket may add a second line. `info` is `{ profileReset = <boolean> }`, never `nil`.
+`profileReset` is `true` only when `RestoreAllDefaults` called `resetProfile` and it returned; the
+host then emits nothing from `bulkEnd`. Otherwise it emits exactly `[Set] reset <scope>: N rows`,
+with N the rows actually written. The session rows written before the profile reset stay muted, so
+a profile-reset Restore All reads as one line. A `resetProfile` that raised leaves the flag `false`,
+because the reset may never have reached the handler.
+
+**A begun bracket always closes, so a host's mute cannot stick.** `bulkBegin` and the act share one
+`pcall`. If a row, `resetProfile`, `afterRestoreAll` or `bulkBegin` itself raises, `bulkEnd` still
+runs, once, with the count so far and the raised value as `err`. The library then re-raises that
+same value with `error(err, 0)`, unwrapped. The walk still stops at the first raising row and the
+refresh does not run, as before. A `bulkEnd` that raises propagates its own error. Either field
+may be supplied alone, but a host that mutes in `bulkBegin` must supply `bulkEnd`, the only place
+the mute is released. With neither, the walk runs bare: the same calls in the same order, and a
+raising row escapes with its own stack. `tests/test_options_bulk.lua`, a new suite peeled off
+`tests/test_options.lua` rather than taking it past `layout-§1`'s 1500-line cap, pins the call
+sequence, the traceback and each logging case.
+
+### `Slash.lua` minor 8 — the same bracket around `CliResetAll`
+
+BankLedger's and LootHistory's Defaults button and `/<slash> resetall`, and MultiMeters'
+`/mm resetall`, reach the library through `Sl:CliResetAll`, not through Options. It walks every row
+through `applyDefault`, which logs 15, 16 and 169 `[Set]` lines respectively. The Slash descriptor
+takes the same two fields, with the same names, signatures, call order and error semantics, so a
+host passes one pair to both majors. `CliResetAll` brackets its walk as `"reset"`, scope `"all"`, and
+prints its acknowledgment after `bulkEnd`, and not at all if the walk raised. With no `applyDefault`
+the bracket still runs and counts zero rows. `bulkEnd` receives the same `info` table, and its
+`profileReset` is always `false` here, because no Slash walk resets a profile: a host handing one
+pair to both majors logs `[Set] reset all: N rows` for a resetall. No other Slash verb loops rows
+through the descriptor:
+`CliReset` writes one row and `BuildListLines` only reads.
+
 ## v1.31.0 — 2026-09-12
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

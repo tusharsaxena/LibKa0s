@@ -23,6 +23,8 @@ The **Tests** cell reads `passed/skipped/total`.
 
 | Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260912-190219`](20260912-190219/) | 1.31.0 → 1.32.0 | 0/0 | 54 | 885/0/885 | skip | 16622 | 2346 | 6.5 | 1.9 | 14 | 0 | **green** |
+| [`20260912-185115`](20260912-185115/) | 1.31.0 → 1.32.0 | 0/0 | 53 | 881/0/881 | skip | 16548 | 2333 | 6.5 | 2.0 | 14 | 0 | **green** |
 | [`20260912-151813`](20260912-151813/) | 1.31.0 → 1.31.0 | 0/0 | 53 | 869/0/869 | skip | 16270 | 2279 | 6.6 | 2.0 | 14 | 0 | **green** |
 | [`20260912-145039`](20260912-145039/) | 1.30.0 → 1.31.0 | 0/0 | 53 | 860/0/860 | skip | 16133 | 2252 | 6.6 | 2.0 | 14 | 0 | **green** |
 | [`20260912-103140`](20260912-103140/) | 1.29.0 → 1.30.0 | 0/0 | 51 | 819/0/819 | skip | 14918 | 2043 | 6.7 | 2.0 | 14 | 0 | **green** |
@@ -64,18 +66,18 @@ The **Tests** cell reads `passed/skipped/total`.
 
 ## Test suite
 
-**869 cases** — 869 passed, 0 failed, 0 skipped. The generated inventory
-[`20260912-151813/test-cases.md`](20260912-151813/test-cases.md) is the authority on which cases existed at this run;
+**885 cases** — 885 passed, 0 failed, 0 skipped. The generated inventory
+[`20260912-190219/test-cases.md`](20260912-190219/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **860 → 869** since the previous run.
+Moved **881 → 885** since the previous run.
 
 No case reported a `skip`, so passed and total agree and nothing in this row claims coverage
 that was not exercised.
 
 ## Lint
 
-**0 warnings / 0 errors over 53 files** (`luacheck .`).
+**0 warnings / 0 errors over 54 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` sets `exclude_files = { "tests/_kit/" }`, so those paths
 are not in it. A `0/0` that never moves is partly a statement about what was never looked at, which
@@ -91,7 +93,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20260912-151813`](20260912-151813/) — **this run's measurement, not its diff.** Max CCN **14** across 2279
+Current as of [`20260912-190219`](20260912-190219/) — **this run's measurement, not its diff.** Max CCN **14** across 2346
 functions, **0** of them warned on; 6 file(s) in the 1000–1500 band and 2 over the 1500 cap
 (`layout-§1`).
 
@@ -108,7 +110,7 @@ None.
 
 | Band | File | LOC | Disposition |
 |---|---|---|---|
-| 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1036 | **Accepted.** 36 lines into the band, unchanged since the v1.27.0 release run, and 464 clear of the cap. It is the panel builder every host addon enters the library through, so a split here would be a published surface change rather than an internal tidy. Re-check at 1200. |
+| 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1114 | **Accepted.** 114 lines into the band and 386 clear of the cap. It changed in v1.32.0: 1036 → 1114, for the optional `bulkBegin`/`bulkEnd` bracket around `RestoreDefaults` and `RestoreAllDefaults` (Options minor 16). 60 of the 99 added lines are the contract's own comments, and no function in the file warns on CCN. It is the panel builder every host addon enters the library through, so a split here would be a published surface change rather than an internal tidy. Re-check at 1200. |
 | 1000–1500 (on notice) | `LibKa0s/Perf.lua` | 1231 | **Already tracked as [`#7`](https://github.com/tusharsaxena/LibKa0s/issues/7)** (owner: @tusharsaxena). Not a violation — the file is under `layout-§1`'s 1500 cap; the issue records the decision and its trigger so it is not re-argued each run. Was 1052; it grew for the observed-containment record and the keyed `Open`/`Close` bracket. Still the only shipped file in the band and the widest surface the consumers bind against. Worst function in the file is `groupContext` at CCN 11 and the file's avg CCN is 3.4, so this is breadth, not knots; the sampler and the group/scenario bookkeeping are the peel seam if it crosses 1500. |
 | 1000–1500 (on notice) | `LibKa0s/Widgets.lua` | 1232 | **Accepted.** Unchanged since the v1.27.0 release run. It holds two of the library's three highest-CCN functions — `list@1178-1219` and `paintMenuRow@126-159`, both at 13 — so density and size want reading together here. Per-widget files are the seam if it needs one; each widget is already a self-contained constructor. Re-check at 1350. |
 | 1000–1500 (on notice) | `testkit/mock_base.lua` | 1471 |  |
