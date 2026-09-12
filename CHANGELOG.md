@@ -10,6 +10,140 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.31.0 — 2026-09-12
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
+**OptionsWidgets minor 15**, **OptionsCompose minor 4**, **OptionsScroll minor 3**, **Perf minor 11**,
+**PerfPanel minor 5**, **kit revision 17**.
+
+Three changes, all approved by the owner on 2026-09-12, and three files in `LibKa0s/` move.
+`OptionsCompose.lua` and `OptionsWidgets.lua` add a record-backed arm to the Options composers, so a
+page that edits registry records can compose its canonical groups
+([PanelMaster#48](https://github.com/tusharsaxena/PanelMaster/issues/48)). `Perf.lua` traces the
+retention prune its `Save` makes when the capture ring passes its size, which `debug-logging-§8`
+requires. And kit revision 17 gives the kit's Ace fakes the surfaces six consumer harnesses need, so
+those harnesses can migrate onto the kit rather than keep replacing it (BankLedger#18 and #19,
+ConsumableMaster#38, KickCD#21, PanelMaster#50, WhatGroup#19). Nothing is removed or renamed and no
+member is added. Measured with the whole payload in, on all ten consumers' `master` and on their
+`fix/2026-09-12-triage` branches, nothing moves on re-vendor except one case in WhatGroup: its
+migrated `tests/test_notify.lua` reads the timer handle's `.canceled`, and ports to `.cancelled` —
+the one consumer follow-up this release asks for. The details are in
+[`docs/api/Options/version-15.15.4.3-docs.md`](docs/api/Options/version-15.15.4.3-docs.md),
+[`docs/api/Perf/version-11.5-docs.md`](docs/api/Perf/version-11.5-docs.md) and
+[`docs/api/testkit/version-17-docs.md`](docs/api/testkit/version-17-docs.md).
+
+### `OptionsCompose.lua` minor 4 — `spec.bind`, the record-backed arm
+
+`O.BorderGroup` and `O.BarGroup` emitted path-keyed schema rows, and PanelMaster's panel editor edits
+registry records, so its three `options-ui-§16` groups — the panel's border, the accent bar, the
+accent bar's own border — were typed out by hand (`PANELMASTER-A-03`) and carried three register rows
+whose re-check trigger was this arm. Every composer now takes
+`spec.bind = { set = function(field, value, row) end, get = function(field, row) end }`, or `record`
+in place of `get`. A bound row carries no `path`: it carries `field`, computed exactly as its path
+would have been, and `get` / `set` closures over the bind. Extras declare their own `field` under
+`bind` and are bound too. The rows, their order and their mandated shapes are the composer's,
+unchanged. A bind that cannot both read and write is refused when the block is composed. Bound rows
+are rendered directly, never put in a schema.
+
+**Path-keyed callers are byte-for-byte unaffected**, and that is pinned rather than claimed:
+`tests/fixture_compose_golden.lua` holds ten composer calls serialized from minor 3, covering every
+common-spec field and every composer-specific one, and the suite compares current output against it.
+The Options API document carries PanelMaster's three blocks as a worked example, and the suite builds
+the same three against a stand-in registry. Adopting it in PanelMaster, and retiring the three rows,
+is PanelMaster's step.
+
+### `Perf.lua` minor 11 — `Save` traces its retention prune
+
+`P.Save` trims the capture ring past its size (`ring`, default 10) and did it silently; two consumers
+found the prune missing from their logs, and `debug-logging-§8` requires a retention prune to be
+traced. A save that trims now writes one line through `P.Log`, the host's console path:
+`perf ring at its cap of <ring> — dropped <n> oldest record(s)`. One line per prune, nothing while the
+ring is under its cap, and nothing else about `Save` changes. `docs/api/Perf/version-11.5-docs.md`.
+
+### `OptionsWidgets.lua` minor 15 — a row with no path reads and writes through its own `get` / `set`
+
+The flow engine's half. Every maker — checkbox, slider, dropdown, edit box, color picker, the color
+picker's throttled and confirmed commits, and every refresher — reads `row.get()` and writes
+`row.set(value)` for a row whose `path` is nil. The gate is `path == nil`, not the presence of a
+`get`, so a path-keyed row is read and written through the descriptor exactly as before, whatever else
+a host's schema gives it. The empty-dropdown report names a bound row by its `field`, `RenderRows`'
+`pairWith` finds a bound row's partner under its field, and a path-less row's `disabledIf` is read
+with `row.get(key)` — for a composed row, that field of the same record.
+
+### Kit revision 17, `mock_base.lua` — the Ace surfaces six harnesses migrate onto
+
+Each piece was checked against the real Ace3 source vendored in the consumers' `libs/`.
+
+- **AceAddon.** `NewAddon([object,] name, lib, ...)` now honors its mixin list: it embeds exactly the
+  named libraries, through `LibStub`, validates the name, names the object (its `tostring` is the
+  name), registers it for `GetAddon` and stamps the fourteen mixins. `NewModule` builds child addons
+  with prototypes, default libraries and default state. The lifecycle runs the way the client runs
+  it, from `ADDON_LOADED` and `PLAYER_LOGIN` on `AceAddon.frame`, so a test fires
+  `AceAddon.frame:__fire("OnEvent", "PLAYER_LOGIN")`. `EnableAddon` runs the addon's `OnEnable`, then
+  its modules in creation order, and `DisableAddon` calls every embedded library's `OnEmbedDisable`.
+- **AceEvent** is two CallbackHandler registries. Messages get string methods, the default method
+  named after the message, the optional `arg`, validation, `UnregisterAllMessages`, and a
+  registration made mid-dispatch applied when the dispatch ends. `M.__msgRegistry` publishes the
+  registry. `M.__fireEvent(event, ...)` dispatches a game event to every registrant.
+  `M.__badEvents` makes the client refuse an unknown event on its first registration, after the
+  callback is stored, which is where retail raises.
+- **AceTimer** is real: `ScheduleTimer`, `ScheduleRepeatingTimer`, `CancelTimer`, `CancelAllTimers`
+  and `TimeLeft`, on the kit's own queue. `M.__fireTimers()` skips a canceled entry and answers how
+  many ran, and `C_Timer.NewTimer`'s `Cancel` is honored.
+- **AceConsole** stamps `Print`, `Printf`, `RegisterChatCommand` and `UnregisterChatCommand`;
+  `AceConsole.commands` records a command and `AceConsole:__slash(command, input)` runs it.
+- **AceGUI** publishes `WidgetVersions` beside `__widgetVersions`, as the same table, and gains
+  `RegisterLayout` / `GetLayout`.
+
+Two divergences are deliberate. `NewAddon(target)` — exactly one argument, a table — keeps revision
+16's behavior, for safety; any other call without a string name raises, as the real one does. An error inside a
+lifecycle callback lets the cascade finish, as the client does, and is then raised instead of
+swallowed; a message or event handler that raises is treated the same way. A canceled AceTimer
+handle carries AceTimer's own field, `handle.cancelled`, and a `C_Timer.NewTimer` handle answers
+`IsCancelled()`: third-party API identifiers, which the prose gate exempts by name under a new
+`localization-§5` row in `CLAUDE.md` (owner decision, 2026-09-12). Declined for this revision: `AceConsole:GetArgs`, a kit
+`SetTitle`, and the second return of `LibStub:NewLibrary`, which the kit answers as the new minor where
+the real one answers the old. The last was found during this work; BankLedger's harness reads that
+return, so fixing it is a revision of its own.
+
+### Revision 17 is not the geometry flip
+
+The v1.30.0 entry below says the flip, deleting `self.__geomLive and` from `GetHeight` and
+`GetWidth`, is "17 at the earliest". **Revision 17 does not ship it.** The owner accepted that the
+harness surfaces take revision 17, and the plan behind the flip still holds: it ships alone, with its
+own adoption, because roughly 308 test files lean on the zeros. So the number moves again. The flip is
+the next revision that ships it alone, **18 at the earliest**. That entry is history and stays as it
+was written; `testkit/mock_base.lua` and `docs/api/testkit/version-16-docs.md`'s closing section record
+the move.
+
+### Adoption: nothing moves
+
+**Measured.** Revision 17's `testkit/` went into fresh clones of all ten consumers, against a baseline
+taken with revision 16 at the same commit, and then the whole payload went in with `LibKa0s/` in
+`libs/` as well. Every total is identical in all three runs: AbsorbTracker 565, AuraMaster 251,
+BankLedger 850, ConsumableMaster 797, KickCD 888, LootHistory 721, MultiMeters 1764, PanelMaster 785,
+PrettyChat 333 and WhatGroup 573, each with its two vendored-payload skips. Unlike 16, 17 adds no
+consumer-side case. Adoption is the re-vendor, and the six migrations are each consumer's own
+follow-up, with what stays local listed per consumer in the testkit document.
+
+**Re-measured after the review**, on the ten consumers' `fix/2026-09-12-triage` branches, where six
+harnesses have migrated or are migrating onto kit 17: as each branch stands, with the pre-review
+payload, and with this one. Nine are identical across all three. **WhatGroup moves**: its migrated
+`tests/test_notify.lua:159` reads `firstHandle.canceled`, the pre-review spelling, and fails once the
+field is AceTimer's `cancelled`. Porting that one identifier makes it 579 green again. The table is
+in the testkit document.
+
+**Also from the review.** A repeating AceTimer keeps its period when a test never moves the clock
+(the drift compensation read an unadvanced clock as the timer being early). The no-name `NewAddon`
+path is taken only for a lone table argument, and its `CancelTimer` is honored. A message or event
+handler that raises no longer ends the dispatch. `ADDON_LOADED` after the login enables a
+load-on-demand addon, reading `IsLoggedIn` at call time. And the AceEvent library object carries
+`RegisterMessage`, `UnregisterMessage` and a multi-target `UnregisterAllMessages`.
+
+The standards pointer moves from v2.43.0 to v2.44.0. The only change between them is to
+`architecture-§5`, which is not on this repo's `library-stack-§7` applicability list.
+
 ## v1.30.0 — 2026-09-12
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

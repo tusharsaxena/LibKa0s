@@ -242,7 +242,8 @@ end)
 
 test("mock: the embed and the NewAddon target share one event implementation", function()
   local M = buildMocks()
-  local addon = M.LibStub("AceAddon-3.0"):NewAddon({}, "Host")
+  -- The mixin is listed: since revision 17 a named NewAddon embeds exactly what it is told to.
+  local addon = M.LibStub("AceAddon-3.0"):NewAddon({}, "Host", "AceEvent-3.0")
   local embed = M.LibStub("AceEvent-3.0"):Embed({})
   for _, name in ipairs({ "RegisterEvent", "UnregisterEvent", "UnregisterAllEvents" }) do
     assertTrue(type(addon[name]) == "function", "the NewAddon target carries " .. name)
@@ -283,9 +284,9 @@ test("mock: a target reused by a later mock build starts with nothing registered
   buildMocks().LibStub("AceEvent-3.0"):Embed(t)
   assertNil(t.__events.PLAYER_LOGIN, "an Embed in a new build forgot the old build's registration")
   local ns = { PLAYER_LOGIN = function() end }
-  buildMocks().LibStub("AceAddon-3.0"):NewAddon(ns, "Host")
+  buildMocks().LibStub("AceAddon-3.0"):NewAddon(ns, "Host", "AceEvent-3.0")
   ns:RegisterEvent("PLAYER_LOGIN")
-  buildMocks().LibStub("AceAddon-3.0"):NewAddon(ns, "Host")
+  buildMocks().LibStub("AceAddon-3.0"):NewAddon(ns, "Host", "AceEvent-3.0")
   assertNil(ns.__events.PLAYER_LOGIN, "and so did a NewAddon in a new build")
 end)
 
@@ -309,13 +310,13 @@ test("mock: NewAddon clobbers a custom Printf exactly as it clobbers Print", fun
   local ns = {}
   local mine = function() end
   ns.Print, ns.Printf = mine, mine
-  buildMocks().LibStub("AceAddon-3.0"):NewAddon(ns, "Host")
+  buildMocks().LibStub("AceAddon-3.0"):NewAddon(ns, "Host", "AceConsole-3.0")
   assertTrue(type(ns.Print) == "function" and ns.Print ~= mine, "Print is AceConsole's after NewAddon")
   assertTrue(type(ns.Printf) == "function" and ns.Printf ~= mine, "Printf is AceConsole's after NewAddon")
 end)
 
 test("mock: the console mixins print as AceConsole's do, bare, as methods and to a given frame", function()
-  local ns = buildMocks().LibStub("AceAddon-3.0"):NewAddon({}, "Host")
+  local ns = buildMocks().LibStub("AceAddon-3.0"):NewAddon({}, "Host", "AceConsole-3.0")
   local chat, other = chatRecorder(), chatRecorder()
   withChatFrame(chat, function()
     -- Bare: the format string lands in `self`, and the NEXT argument is what gets formatted.
@@ -337,7 +338,7 @@ end)
 test("mock: a bare Printf with nothing after the format string raises, as format() does", function()
   -- The real one calls format(...) on what follows `self`; bare, that is nothing at all, and
   -- string.format with no arguments raises. This is the loudest form of the forgotten reclaim.
-  local ns = buildMocks().LibStub("AceAddon-3.0"):NewAddon({}, "Host")
+  local ns = buildMocks().LibStub("AceAddon-3.0"):NewAddon({}, "Host", "AceConsole-3.0")
   assertTrue(type(ns.Printf) == "function", "NewAddon stamped a Printf to call")
   withChatFrame(chatRecorder(), function()
     assertFalse(pcall(ns.Printf, "hello"), "a bare one-argument Printf raised")

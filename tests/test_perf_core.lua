@@ -438,6 +438,23 @@ test("lib: Save trims the ring to ringMax, dropping the oldest", function()
   assertEqual(runs[#runs].label, "run" .. 6, "newest kept")
 end)
 
+test("lib: Save traces a retention prune to the host log, and only when it prunes", function()
+  -- debug-logging-§8: a retention prune is a main flow and MUST be traced. Two consumers found
+  -- the ring trimming silently.
+  local p, rec = Fixture.new({ ring = 2 })
+  p.Save(p.BuildRecord("a")); p.Save(p.BuildRecord("b"))
+  for _, line in ipairs(rec.log) do
+    T.assertTrue(not line:find("oldest", 1, true), "nothing is traced while the ring is under its cap")
+  end
+  p.Save(p.BuildRecord("c"))
+  local traced
+  for _, line in ipairs(rec.log) do
+    if line:find("dropped 1 oldest", 1, true) then traced = line end
+  end
+  T.assertTrue(traced ~= nil, "the prune named how many records it dropped")
+  T.assertTrue(traced:find("2", 1, true) ~= nil, "and the cap it pruned to")
+end)
+
 test("lib: a ring written under another schema is discarded, not converted", function()
   local p = Fixture.new()
   _G.TestHostPerfDB = { schema = 1, runs = { { schema = 1 }, { schema = 1 } } }

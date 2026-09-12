@@ -1,4 +1,4 @@
-# `LibKa0s-Perf-1.0` — version 9.4
+# `LibKa0s-Perf-1.0` — version 11.5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Perf surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **9** · `PerfPanel.lua` **4** |
+| Files and minors | `Perf.lua` **11** · `PerfPanel.lua` **5** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.28.0 |
-| Status | Superseded |
-| Supersedes | [version 8.4](./version-8.4-docs.md) |
-| Superseded by | [version 10.5](./version-10.5-docs.md) |
+| Shipped in | v1.31.0 |
+| Status | **Current** |
+| Supersedes | [version 10.5](./version-10.5-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 9, PerfPanel = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 11, PerfPanel = 5 }` |
 
-`Since` names the file and minor a member first appeared in — `P9` for `Perf.lua` minor 9, `PP4`
-for `PerfPanel.lua` minor 4. It is `1` for nearly everything: this major did not move at all between
+`Since` names the file and minor a member first appeared in — `P11` for `Perf.lua` minor 11, `PP5`
+for `PerfPanel.lua` minor 5. It is `1` for nearly everything: this major did not move at all between
 the first tag and minor 6, so every adopter before that version is on the same one.
 
 Adopters today: **AbsorbTracker** (`core/PerfSetup.lua`), **KickCD** (`core/PerfSetup.lua`),
@@ -35,6 +35,25 @@ major for the same reason Options is one: a shell and a panel from different ven
 a state LibStub can detect. **This is why the version key above is a pair.**
 
 ## What changed at this version
+
+**`Perf.lua` minor 11 — `Save` traces its retention prune.** One file moves, 10 → 11, and nothing is
+added, removed, renamed or resignatured; the member manifest differs from 10.5's in its version key
+alone.
+
+`P.Save(record)` appends to the host's SavedVariables ring and trims the oldest records past the
+ring's size (`ring`, default `lib.DEFAULT_RING`). The trim was silent. `debug-logging-§8` requires a
+retention prune to be traced, and two consumers found this one could not be seen in their logs. From
+P11 a `Save` that prunes writes one line through `P.Log` — the host's `log`, the same console-only
+path the schema-discard line already used:
+
+```
+perf ring at its cap of <ring> — dropped <n> oldest record(s)
+```
+
+One line per prune, never one per record (`debug-logging-§9`), and nothing at all while the ring is
+under its cap. What `Save` stores and returns is unchanged.
+
+### Previously, at 10.5
 
 **Nothing on the surface moves.** No member is added, removed or re-signatured, and every call site
 in every adopter keeps working untouched on the re-vendor alone. Two internals change, and both are
@@ -301,7 +320,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `Context()` | 1 | Who / where / what, snapshotted once at `Start()`. Reads the spec through `C_SpecializationInfo.GetSpecialization` first, the deprecated global second, as of **P8**. |
 | `ContextLines(ctx)` | 1 | `Context()` rendered as display lines, shared by the chat ack and the report. |
 | `BuildRecord(label)` | 1 | Assemble the current capture into the record schema (`docs/record-schema.md`). |
-| `Save(record)` | 1 | Append a record to the host's SavedVariables ring, trimming past `ring`. |
+| `Save(record)` | 1 (prune trace: **P11**) | Append a record to the host's SavedVariables ring, trimming past `ring`. A save that trims logs one line through `P.Log` naming the cap and how many records it dropped. |
 | `FormatReport(record)` | 1 | Render a record as plain lines, for `Log`/testing. |
 | `Start(label)` | 1 | Begin an experiment. Samples nothing until a window is armed. |
 | `Measure(token)` | 1 | Arm window `"a"` or `"b"`; sets suspend state as the independent variable. |

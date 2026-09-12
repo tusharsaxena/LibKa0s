@@ -160,7 +160,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.14.3.3](./Options/version-15.14.3.3-docs.md) | `Options.lua` 15 · `OptionsWidgets.lua` 14 · `OptionsCompose.lua` 3 · `OptionsScroll.lua` 3 | v1.27.0 | **Current** |
+| [15.15.4.3](./Options/version-15.15.4.3-docs.md) | `Options.lua` 15 · `OptionsWidgets.lua` 15 · `OptionsCompose.lua` 4 · `OptionsScroll.lua` 3 | v1.31.0 | **Current** |
+| [15.14.3.3](./Options/version-15.14.3.3-docs.md) | `Options.lua` 15 · `OptionsWidgets.lua` 14 · `OptionsCompose.lua` 3 · `OptionsScroll.lua` 3 | v1.27.0 – v1.30.0 | Superseded |
 | [14.14.3.3](./Options/version-14.14.3.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 14 · `OptionsCompose.lua` 3 · `OptionsScroll.lua` 3 | v1.26.0 | Superseded |
 | [14.13.3.3](./Options/version-14.13.3.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 3 · `OptionsScroll.lua` 3 | v1.26.0 | Superseded |
 | [14.13.2.3](./Options/version-14.13.2.3-docs.md) | `Options.lua` 14 · `OptionsWidgets.lua` 13 · `OptionsCompose.lua` 2 · `OptionsScroll.lua` 3 | v1.25.0 | Superseded |
@@ -183,7 +184,10 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [8.4](./Perf/version-8.4-docs.md) | `Perf.lua` 8 · `PerfPanel.lua` 4 | v1.27.0 | **Current** |
+| [11.5](./Perf/version-11.5-docs.md) | `Perf.lua` 11 · `PerfPanel.lua` 5 | v1.31.0 | **Current** |
+| [10.5](./Perf/version-10.5-docs.md) | `Perf.lua` 10 · `PerfPanel.lua` 5 | v1.29.0 – v1.30.0 | Superseded |
+| [9.4](./Perf/version-9.4-docs.md) | `Perf.lua` 9 · `PerfPanel.lua` 4 | v1.28.0 | Superseded |
+| [8.4](./Perf/version-8.4-docs.md) | `Perf.lua` 8 · `PerfPanel.lua` 4 | v1.27.0 | Superseded |
 | [7.4](./Perf/version-7.4-docs.md) | `Perf.lua` 7 · `PerfPanel.lua` 4 | v1.10.2 — v1.26.0 | Superseded |
 | [7.3](./Perf/version-7.3-docs.md) | `Perf.lua` 7 · `PerfPanel.lua` 3 | v1.8.0 – v1.10.1 | Superseded |
 | [6.3](./Perf/version-6.3-docs.md) | `Perf.lua` 6 · `PerfPanel.lua` 3 | v1.7.0 | Superseded |
@@ -207,7 +211,8 @@ are never adopted separately. It is indexed here because the question it answers
 | [7](./testkit/version-7-docs.md) | same files; runs in a repo with no `.toc`; corrected luacheck install hint | unreleased | Superseded |
 | [8](./testkit/version-8-docs.md) | + `vendor_sync.lua`; the skip status, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity` | v1.8.0 | Superseded |
 | [9](./testkit/version-9-docs.md) | same files; `vendor_sync.lua` reads the provenance line from `CLAUDE.md`, via the new `provenanceFile` opt | v1.8.1 | Superseded |
-| [16](./testkit/version-16-docs.md) | same files; `mock_base.lua` models `AceGUI:Release` (with the `__released` recorder), gives an `AceEvent:Embed` target the recorded event half the `NewAddon` target has — one implementation for both — and stamps `Printf` beside `Print`; `vendor_sync.lua` asserts the runner is recorded `100755` in the consumer's git index. Not the geometry flip: `GetHeight` still answers 0 until a test arms a frame | v1.30.0 | **Current** |
+| [17](./testkit/version-17-docs.md) | same files; `mock_base.lua` gains the Ace surfaces six consumer harnesses migrate onto — `NewAddon` honoring its mixin list, `GetAddon`, `NewModule` and the lifecycle driven through `AceAddon.frame`; AceEvent on two CallbackHandler registries (string methods, `arg`, `UnregisterAllMessages`, mid-dispatch queueing, `M.__msgRegistry`, `M.__fireEvent`, `M.__badEvents`); the message registration API on the AceEvent library object (`RegisterMessage`, `UnregisterMessage`, a multi-target `UnregisterAllMessages`); a real AceTimer whose cancellation `__fireTimers` honors and counts, with `C_Timer.NewTimer` handles answering `IsCancelled()`; AceConsole's chat commands; AceGUI's layout registry. `NewAddon(target)` with exactly one table argument keeps revision 16's behavior; any other nameless call raises. Not the geometry flip | v1.31.0 | **Current** |
+| [16](./testkit/version-16-docs.md) | same files; `mock_base.lua` models `AceGUI:Release` (with the `__released` recorder), gives an `AceEvent:Embed` target the recorded event half the `NewAddon` target has — one implementation for both — and stamps `Printf` beside `Print`; `vendor_sync.lua` asserts the runner is recorded `100755` in the consumer's git index. Not the geometry flip: `GetHeight` still answers 0 until a test arms a frame | v1.30.0 | Superseded |
 | [15](./testkit/version-15-docs.md) | + `test_eol.lua`, the kit's own suite: the line-ending gate now reads the whole `git ls-files` set and ships to every consumer, wired as `{ name = "test_eol", dir = "tests/_kit/" }`; the runner records the skipped count, names both versions on a release row, regenerates the whole of `RESULTS.md`, and writes the complexity watch list and the four standing sections `automated-tests-§4` MUSTs; `mock_base.lua` grows `SetAtlas` and the opt-in `f:__setGeom`, with `GetHeight` still answering 0 until a test arms a frame | v1.27.0 | Superseded |
 | [14](./testkit/version-14-docs.md) | same files; `stubFrame` tracks a real enabled state, so `SetEnabled`/`IsEnabled`/`Enable`/`Disable` answer for real | v1.20.0 | Superseded |
 | [13](./testkit/version-13-docs.md) | same files; `CreateFrame` records its arguments on the frame it returns, so a suite can ask what a frame was NAMED | v1.16.0 | Superseded |

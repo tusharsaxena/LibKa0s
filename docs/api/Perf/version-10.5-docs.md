@@ -8,15 +8,15 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **8** · `PerfPanel.lua` **4** |
+| Files and minors | `Perf.lua` **10** · `PerfPanel.lua` **5** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.27.0 |
-| Status | **Current** |
-| Supersedes | [version 7.4](./version-7.4-docs.md) |
-| Superseded by | — |
+| Shipped in | v1.29.0 – v1.30.0 |
+| Status | Superseded |
+| Supersedes | [version 9.4](./version-9.4-docs.md) |
+| Superseded by | [version 11.5](./version-11.5-docs.md) — `Save` traces its retention prune |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 8, PerfPanel = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 10, PerfPanel = 5 }` |
 
 `Since` names the file and minor a member first appeared in — `P10` for `Perf.lua` minor 10, `PP4`
 for `PerfPanel.lua` minor 4. It is `1` for nearly everything: this major did not move at all between
@@ -457,3 +457,10 @@ host that passes nothing gets a better-looking button from the same call it alwa
 The two files move as one. A consumer holding `Perf.lua` from one vendored copy and `PerfPanel.lua`
 from another is not a supported state and LibStub cannot detect it — which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 11.5
+
+One file moves, `Perf.lua` 10 → 11, and no member changes. At this version `Save` trims the ring past
+its size without a word; at 11.5 a save that trims writes one line through `P.Log` naming the cap and
+how many records it dropped, which `debug-logging-§8` requires of a retention prune. The re-vendor is
+the whole adoption. See [version 11.5](./version-11.5-docs.md).

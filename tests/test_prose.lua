@@ -165,7 +165,7 @@ local ALLOWED = {
 local ALLOWED_WORDS = {}
 for _, word in ipairs(ALLOWED) do ALLOWED_WORDS[word] = true end
 
--- ONE ratified exemption, and the register row is what ratifies it. `localization-§5` names its
+-- TWO ratified exemptions, and the register rows are what ratify them. `localization-§5` names its
 -- exclusions file by file rather than by pattern precisely so an exclusion list cannot quietly
 -- grow, and this table is keyed the same way: a path, and the exact spelling that path is allowed
 -- to carry. Nothing here is a pattern and nothing here is a directory.
@@ -179,8 +179,15 @@ for _, word in ipairs(ALLOWED) do ALLOWED_WORDS[word] = true end
 --
 -- An entry that stops matching is itself a failure below. An exemption nobody can see expiring is
 -- how a gate goes back to reading as coverage it does not provide.
+--
+-- The SECOND is a pair of third-party API identifiers the kit reproduces verbatim, not prose:
+-- AceTimer-3.0's handle field `cancelled`, matched only as a member access (`.cancelled`), and the
+-- `IsCancelled` method Blizzard's C_Timer handles carry. Renaming either in the fake is fidelity
+-- rule 1's failure: a suite written against the real field would read nil and pass. Owner decision
+-- 2026-09-12, recorded beside the first in CLAUDE.md's `## Documented deviations`.
 local RATIFIED = {
   ["LibKa0s/Media.lua"] = { "minimise" },
+  ["testkit/mock_base.lua"] = { ".cancelled", "iscancelled" },
 }
 local NO_EXEMPTIONS = {}
 
