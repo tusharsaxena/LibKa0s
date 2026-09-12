@@ -1,6 +1,6 @@
 # CLAUDE.md — LibKa0s
 
-LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.39.0) —
+LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.43.0) —
 <https://github.com/tusharsaxena/WowAddonStandards>.
 
 **Read this first: LibKa0s is a library repo, not an addon.** It is in scope for the standard and it
@@ -123,7 +123,7 @@ while nobody was watching, which is the whole argument for having a gate rather 
 
 **Nothing is peeled this cycle.** The 2026-09-07 remediation plan rules out splitting any file
 (`03_SPEC.md` § C22 non-goals). Here that is more than a scheduling preference: `LibKa0s/` is
-re-vendored whole-folder into nine consumers and every file in it carries its own LibStub minor, so a
+re-vendored whole-folder into ten consumers and every file in it carries its own LibStub minor, so a
 peel adds a payload file, a `LibKa0s.xml` row, a minor and the multi-file pairing guard
 (`__widgetsShellMinor`, `LibKa0s/OptionsWidgets.lua:31`) — a deliberate release, not a tidy-up. The
 deliverable was the disposition, and the disposition is this table.
@@ -174,6 +174,6 @@ lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for w
 luacheck .          # 0 warnings / 0 errors
 ```
 
-That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — eighteen
-files today, the fourteen in `LibKa0s/` plus four under `testkit/`. 0/0 only means something if the files
-carrying the change are inside the checked set.
+That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — fifty-one
+files at v1.30.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
+only means something if the files carrying the change are inside the checked set.

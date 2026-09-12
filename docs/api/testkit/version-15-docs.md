@@ -10,9 +10,9 @@
 | Version | **15** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.27.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 14](version-14-docs.md) — `stubFrame` tracks a real enabled state |
-| Superseded by | — |
+| Superseded by | [version 16](version-16-docs.md) — `AceGUI:Release`, AceEvent's event half on an embed, `Printf`, and the runner's mode in every consumer |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `15` |
 
@@ -430,3 +430,22 @@ downstream, and a kit change that would break a consumer breaks this repo first.
 4. Re-vendor into `tests/_kit/` here **and** into every consumer's `tests/_kit/`, then run each
    repo's suite.
 5. Add the row to [`../README.md`](../README.md).
+
+## Moving to revision 16
+
+**Take it.** Four Ace-fake and vendoring gaps close, each one a local shim a consumer had to carry
+(LibKa0s#27–#30). `AceGUI:Release` exists and records what it took back. A target made by
+`AceEvent:Embed` records game events with the same functions the `NewAddon` target uses. `NewAddon`
+stamps `Printf` beside `Print`. And `VendorSync.register` checks the runner's recorded mode in the
+consumer's own git index. The total moves by exactly `+1`.
+
+**One correction to this document.** The section above headed *What revision 16 will do* is the
+plan as it stood at this revision, and it did not happen at 16. Revision 16 does **not** flip
+geometry: `GetHeight` and `GetWidth` still answer 0 until a test arms the frame. The flip keeps its
+own revision and its own adoption, and moves to the next revision that ships it alone. See
+[version 16](version-16-docs.md#revision-16-is-not-the-geometry-flip).
+
+The one thing to check after re-vendoring: **a local event-half shim on `AceEvent:Embed` may stop
+working.** A shim that installs itself only when the kit's Embed left `RegisterEvent` unset — as
+LootHistory's does — never installs at 16. Delete it and fire the recorded handler instead. The full
+list of shims to delete is in [version 16](version-16-docs.md#for-consumers-1-case-one-collision-and-shims-to-delete).

@@ -10,6 +10,144 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.30.0 — 2026-09-12
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 7**, **Options minor 15**,
+**OptionsWidgets minor 14**, **OptionsCompose minor 3**, **OptionsScroll minor 3**, **Perf minor 10**,
+**PerfPanel minor 5**, **kit revision 16**.
+
+No file in `LibKa0s/` moved, so every minor above is the one v1.29.0 shipped, and LibStub sees no
+difference between the two. The release is kit revision 16. It closes four gaps between the kit's
+Ace fakes and the real Ace3, and adds the consumer check `automated-tests-§2` requires. AuraMaster
+found all four and shimmed each one locally
+([#27](https://github.com/tusharsaxena/LibKa0s/issues/27),
+[#28](https://github.com/tusharsaxena/LibKa0s/issues/28),
+[#29](https://github.com/tusharsaxena/LibKa0s/issues/29),
+[#30](https://github.com/tusharsaxena/LibKa0s/issues/30)). Adoption is the kit re-vendor, deleting
+the shims it replaces, and one edit in LootHistory, whose own event shim this revision switches off.
+The whole of it is in [`docs/api/testkit/version-16-docs.md`](docs/api/testkit/version-16-docs.md).
+
+### Kit revision 16, `mock_base.lua` — `AceGUI:Release` (#27)
+
+The kit's AceGUI factory handed widgets out and never took one back, so a settings page that
+releases the previous render's widgets raised on the call. AuraMaster and AbsorbTracker each carried
+their own `Release`. The kit now has one, and it follows `AceGUI-3.0.lua` step for step:
+
+1. A guard, the real `isQueuedForRelease`, against a release reached from the widget's own
+   `OnRelease`.
+2. The frame is hidden.
+3. `"OnRelease"` fires while the widget still has its children and its callbacks. LibKa0s's own
+   `OptionsWidgets.lua` depends on that order.
+4. `ReleaseChildren` runs, then the widget's own `:OnRelease()`.
+5. The widget is wiped: `userdata` and every callback are cleared in place, the size fields the real
+   one nils are dropped, and the frame's points and parent are reset.
+
+On top sits the recorder AuraMaster's shim introduced, `w.__released = true` and `AceGUI.__released`
+in order, so a suite written against the shim reads the same fields. Where the shim and the client
+disagree, the kit follows the client: `Release(nil)` raises instead of returning quietly, and so does
+a second release of the same widget, with the real `"Attempt to Release Widget that is already
+released"`. The fake raises that one before touching the widget, where the client raises at the end.
+Every widget also carries `userdata = {}` and a `widget:Release()` method that is
+`AceGUI:Release(widget)`, as the real `WidgetBase.Release` is.
+
+Two differences from the real one are kept on purpose. There is no pool, so a `Create` after a
+`Release` is always a fresh widget. And the children go through the fake's own `ReleaseChildren`,
+which forgets them rather than releasing each one. Making it release them would change every
+re-rendering panel in the collection at once, which is a revision of its own.
+
+### Kit revision 16, `mock_base.lua` — AceEvent's event half on an embed (#29)
+
+The real `AceEvent:Embed` stamps the event half as well as the message half: `RegisterEvent`,
+`UnregisterEvent`, `UnregisterAllEvents`. The kit's Embed modeled messages only. So a module that
+registers game events on a target of its own, the `NS.NewBusTarget()` shape `architecture-§4`
+prescribes, hit a nil field headlessly. Only the `NewAddon` target recorded events.
+
+**Both now share one implementation.** The three functions are module-level locals, stamped onto the
+`NewAddon` target and onto every Embed target by one helper, so they are the same function objects
+on both. `tests/test_mock_base.lua` asserts that identity. The contract is the one the `NewAddon`
+target always had:
+
+- `__events[event]` holds the handler, or `true` when none was given.
+- `UnregisterAllEvents` clears it in place and leaves message registrations alone, as the client's
+  two separate registries do. It is new on the `NewAddon` target too.
+- `RegisterEvent` now validates as CallbackHandler does, with its messages: the event must be a
+  string, the method defaults to the event's name, and a string method must be a function on the
+  target. So `RegisterEvent("PLAYER_LOGIN")` on a target with no `PLAYER_LOGIN` method raises, as
+  does a misspelled method name. What is recorded is unchanged. Every production registration in the
+  ten consumers passes the checks.
+- The registry is one per mock build, keyed by target, as the real one lives in the library. A
+  second `Embed` in the same build keeps what the target had registered; a target table reused by a
+  later build starts empty.
+
+### Kit revision 16, `mock_base.lua` — `Printf` beside `Print` (#30)
+
+AceConsole-3.0's mixins are `Print` and `Printf`, so `NewAddon` clobbers an addon's own `NS.Printf`
+exactly as it clobbers `NS.Print`, and the addon has to take both back (`architecture-§2`,
+anti-pattern #36). The kit stamped only `Print`, so an addon that forgot `Printf` passed every suite.
+
+Both mixins now end in one local shaped like AceConsole's `Print(self, frame, ...)`:
+
+- A first argument with an `AddMessage` member is the frame to print to. That branch is new for
+  `Print` as well.
+- `Printf` formats with `string.format`.
+- Called bare, as `NS.Printf(fmt, ...)`, the format string lands in `self` and what follows it is
+  formatted, exactly as in the client. So `NS.Printf("%d items", 3)` prints
+  `"|cff33ff99%d items|r: 3"`, and a bare `NS.Printf(fmt)` with nothing after it raises, as
+  `string.format()` does.
+
+### Kit revision 16, `vendor_sync.lua` — the runner's recorded mode, in every consumer (#28)
+
+`automated-tests-§2` requires that the vendored-payload gate assert the runner is recorded `100755`.
+This repo has asserted it for its own two copies since revision 11, and no consumer had any check.
+A byte comparison cannot see a mode, and neither can `ls -l` on DrvFs with `core.fileMode=false`.
+
+`VendorSync.register` now adds a case named
+`the automated-test runner is recorded executable (100755)`. It runs
+`git -C <root> ls-files -s -- tests/_kit/run-automated-tests.sh` and asserts the mode. It needs no
+sibling, so a missing LibKa0s checkout does not skip it. It skips, with a reason saying the mode was
+not checked, only where there is no `io.popen`, no git or no work tree, and it never passes
+silently. `opts.runner` and `opts.runnerCase` override the path and the name.
+
+In this repo the default path is also correct, because LibKa0s vendors its own kit to `tests/_kit/`.
+The library still cannot run `register` end to end, since it has no sibling, so
+`tests/test_kitsync.lua` drives the new case through a stand-in test table. It covers five outcomes:
+a pass on this repo's copy, a failure on a `100644` path and on an untracked one, and a skip with a
+reason for a missing work tree and a missing `io.popen`. The two-copies case stays beside it.
+
+### Revision 16 is not the geometry flip
+
+The v1.27.0 entry below says that revision 16 deletes the `self.__geomLive and` from `GetHeight` and
+`GetWidth`. **It does not.** A frame nobody armed still answers 0. The plan's substance holds: the
+flip is its own revision with its own adoption, shared with nothing, because roughly 308 test files
+lean on the zeros. So the number moves instead. The flip is the next revision that ships it alone,
+17 at the earliest. That entry is history and stays as it was written; `testkit/mock_base.lua` and
+`docs/api/testkit/version-15-docs.md`'s closing section record the move.
+
+### Adoption: +1 case, one collision, and shims to delete
+
+**Measured.** Revision 16's `testkit/` was dropped into fresh clones of all ten consumers. Every total
+went up by exactly one, the runner-mode case, which passes in all ten: AbsorbTracker 560 → 561,
+BankLedger 849 → 850, ConsumableMaster 796 → 797, KickCD 870 → 871, LootHistory 720 → 721,
+MultiMeters 1748 → 1749, PanelMaster 783 → 784, PrettyChat 328 → 329, WhatGroup 568 → 569 and
+AuraMaster 251 → 252.
+
+**LootHistory is the one red.** Its mock installs a private event registry on an Embed target only
+when the kit's Embed left `RegisterEvent` unset, which at 16 never happens. So
+`browser: a combat transition re-applies visibility through the private event target` fails. The
+collision is #29's fix itself. Delete that shim and fire the recorded handler,
+`target.__events[event](event, ...)`.
+
+**Delete the shims in the re-vendor commit:**
+
+- **AuraMaster:** the three `tests/wow_mock.lua` blocks ("AceGUI:Release", "AceConsole's Printf",
+  "AceEvent's event half on an embed"), and the local runner-mode case in
+  `tests/test_vendor_sync.lua`. Measured with all four removed: the total is unchanged and one case
+  fails. That case is AuraMaster's citation gate: `DEPENDENCIES.md:45` cites a line of the deleted
+  case, so move the citation in the same commit.
+- **AbsorbTracker:** the `AceGUI:Release` shim. Measured with it removed: 561 total, all green.
+- **PrettyChat:** the `Printf = noop` override. Removing it was not measured.
+
 ## v1.29.0 — 2026-09-09
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

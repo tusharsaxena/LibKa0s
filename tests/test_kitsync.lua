@@ -168,3 +168,73 @@ test("kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, REA
     end
   end
 end)
+
+-- ── the consumer gate's runner-mode case (LibKa0s#28) ─────────────────────────────────────────
+--
+-- `automated-tests-§2` MUSTs that the vendored-payload gate assert `tests/_kit/run-automated-tests.sh`
+-- is recorded 100755. The case above asserts it for THIS repo's two copies; the case below is the
+-- one `vendor_sync.lua` registers in every consumer. LibKa0s cannot run that gate end to end (there
+-- is no sibling to compare against), so its cases are driven here through a stand-in test table and
+-- only the runner-mode case is executed. Its default path is right in this repo too: LibKa0s vendors
+-- its own kit to `tests/_kit/` exactly as a consumer does.
+
+local VendorSync = dofile("tests/_kit/vendor_sync.lua")
+local RUNNER_CASE = "the automated-test runner is recorded executable (100755)"
+
+--- Register VendorSync's cases on a stand-in test table and return the runner-mode case's body.
+local function runnerCase(opts)
+  local body
+  local stand = {
+    test = function(name, fn) if name == RUNNER_CASE then body = fn end end,
+    skip = T.skip, fail = T.fail, assertTrue = T.assertTrue, assertEqual = T.assertEqual,
+  }
+  VendorSync.register(stand, opts)
+  if not body then
+    fail("kit sync: vendor_sync.lua registers no case named `" .. RUNNER_CASE .. "`", 2)
+  end
+  return body
+end
+
+--- Run a case body: "pass"; "skip" and its reason; or "fail" and its message.
+local function outcome(body)
+  local ok, err = pcall(body)
+  if ok then return "pass" end
+  if type(err) == "table" and err.reason then return "skip", err.reason end
+  return "fail", tostring(err)
+end
+
+test("kitsync: vendor_sync checks the runner's recorded mode, and this repo's copy passes", function()
+  local status, detail = outcome(runnerCase({}))
+  T.assertEqual(status, "pass", "the runner-mode case on tests/_kit/run-automated-tests.sh: "
+    .. tostring(detail))
+end)
+
+test("kitsync: the runner-mode case fails on a path the index records 100644", function()
+  local status, detail = outcome(runnerCase({ runner = "tests/run.lua" }))
+  T.assertEqual(status, "fail", "a 100644 runner failed")
+  T.assertTrue(detail:find("100644", 1, true) ~= nil, "and the message names the mode: " .. detail)
+end)
+
+test("kitsync: the runner-mode case fails on a path the index does not track", function()
+  local status, detail = outcome(runnerCase({ runner = "tests/_kit/no-such-runner.sh" }))
+  T.assertEqual(status, "fail", "an untracked runner failed")
+  T.assertTrue(detail:find("not tracked", 1, true) ~= nil, "and the message says so: " .. detail)
+end)
+
+test("kitsync: the runner-mode case skips, with a reason, where there is no work tree", function()
+  local status, reason = outcome(runnerCase({ root = "/nonexistent/libka0s-runner-probe" }))
+  T.assertEqual(status, "skip", "no work tree is a skip, never a pass")
+  T.assertTrue(reason:find("NOT checked", 1, true) ~= nil, "and the reason says so: " .. reason)
+end)
+
+test("kitsync: the runner-mode case skips, with a reason, where io.popen is unavailable", function()
+  local body = runnerCase({})
+  -- rawset rather than assignment: `io` is a standard table luacheck rightly treats as read-only,
+  -- and this is the one place a case has to take a piece of it away and put it back.
+  local saved = io.popen
+  rawset(io, "popen", nil)
+  local status, reason = outcome(body)
+  rawset(io, "popen", saved)
+  T.assertEqual(status, "skip", "no io.popen is a skip, never a pass")
+  T.assertTrue(reason:find("io.popen", 1, true) ~= nil, "and the reason names it: " .. reason)
+end)
