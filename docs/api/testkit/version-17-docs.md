@@ -10,9 +10,9 @@
 | Version | **17** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.31.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 16](version-16-docs.md) — `AceGUI:Release`, AceEvent's event half on an embed, `Printf`, and the runner's mode in every consumer |
-| Superseded by | — |
+| Superseded by | [version 18](version-18-docs.md) — the AceDB fake's `OnProfileCopied` carries the source profile's key, as AceDB-3.0 fires it |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `17` |
 
@@ -486,3 +486,12 @@ downstream, and a kit change that would break a consumer breaks this repo first.
 4. Re-vendor into `tests/_kit/` here **and** into every consumer's `tests/_kit/`, then run each
    repo's suite.
 5. Add the row to [`../README.md`](../README.md).
+
+## Moving to revision 18
+
+One argument changes. The AceDB fake's `CopyProfile` now fires `OnProfileCopied` with the
+**source** profile's key as its third argument, which is what AceDB-3.0 does. At this revision it
+passed the active profile, so a copy of `"Raid"` into `"Default"` reached a handler as a copy of
+`"Default"`. `OnProfileChanged` and `OnProfileReset` are unchanged. Nothing else in the kit moves,
+and it is still not the geometry flip. See [version 18](version-18-docs.md), which lists every
+consumer test that goes through the copy path and what happens to each.

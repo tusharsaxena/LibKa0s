@@ -60,7 +60,8 @@ Kit.run{
   dir = "tests/",
   suites = {
     "test_core", "test_env", "test_pool", "test_item", "test_media", "test_widgets", "test_debuglog", "test_slash",
-    "test_options", "test_options_bulk", "test_options_widgets", "test_options_compose",
+    "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
+    "test_options_compose",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
     "test_loader", "test_parallel",
     "test_mock_base", "test_mock_ace",

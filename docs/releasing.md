@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.32.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.33.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -16,7 +16,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
    That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
-   is fifty-four files at v1.32.0: everything but `tests/_kit/`, which is excluded only because
+   is fifty-five files at v1.33.0: everything but `tests/_kit/`, which is excluded only because
    it is a byte copy of `testkit/` and would report every finding twice. A consumer's is scoped too,
    and usually excludes `libs/` and `tests/`. 0/0
    only means something if the files carrying the seam are inside the checked set, so confirm that
@@ -196,7 +196,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.32.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.33.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -368,6 +368,12 @@ kit's Ace fakes wholesale were closed in that batch by migrating those harnesses
 step-9 sweep above was run against trees identical to the merged `master`s: 84 lookup files, every
 one in the table. `WhoGotLoots` and `BuffTextNotifications` are out of scope until they are on the
 standard at all.
+
+**v1.33.0 is tagged and not yet re-vendored (2026-09-12).** Steps 1–7 are done. Step 8, the copy
+into all ten consumers, and step 9, the sweep, are a separate step not yet taken, so every `master`
+still bundles v1.32.0 and kit revision 17. The payload was measured in scratch clones of all ten
+consumers; the result is in the v1.33.0 `CHANGELOG.md` entry. Move this paragraph when step 8 is
+merged.
 
 WhatGroup has Core, DebugLog, Media, Options and Slash — `core/CoreSetup.lua`,
 `core/DebugLogSetup.lua`, `core/MediaSetup.lua`, `settings/OptionsSetup.lua` (decorated by

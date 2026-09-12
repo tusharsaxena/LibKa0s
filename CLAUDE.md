@@ -132,11 +132,12 @@ deliverable was the disposition, and the disposition is this table.
 
 **The 1000–1500 band is on notice, not in breach**: `tests/test_widgets.lua` (1493),
 `tests/test_options.lua` (1266), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1206, tracked as
-[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1114) and, since kit revision 17, `testkit/mock_base.lua` (1424). They are
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1260 at v1.33.0) and, since kit revision 17, `testkit/mock_base.lua` (1478 at kit revision 18, twenty-two lines from the cap). They are
 named so a later reader can tell the band was looked at rather than missed; none needs a disposition
 until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
-`tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own.
+`tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own. v1.33.0's
+font-preload cases did the same, into `tests/test_options_fontpreload.lua`.
 
 ## Documentation map
 
@@ -178,6 +179,6 @@ lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for w
 luacheck .          # 0 warnings / 0 errors
 ```
 
-That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — fifty-four
-files at v1.32.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
+That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — fifty-five
+files at v1.33.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
 only means something if the files carrying the change are inside the checked set.
