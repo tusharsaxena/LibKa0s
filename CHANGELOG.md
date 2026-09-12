@@ -17,15 +17,21 @@ Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, *
 **OptionsWidgets minor 15**, **OptionsCompose minor 4**, **OptionsScroll minor 3**, **Perf minor 11**,
 **PerfPanel minor 5**, **kit revision 17**.
 
-Two scopes, both approved by the owner on 2026-09-12. Two files in `LibKa0s/` move and add a
-record-backed arm to the Options composers, so a page that edits registry records can compose its
-canonical groups ([PanelMaster#48](https://github.com/tusharsaxena/PanelMaster/issues/48)). And kit
-revision 17 gives the kit's Ace fakes the surfaces six consumer harnesses need, so those harnesses
-can migrate onto the kit rather than keep replacing it (BankLedger#18 and #19, ConsumableMaster#38,
-KickCD#21, PanelMaster#50, WhatGroup#19). Nothing is removed or renamed, no member is added, and
-nothing moves in any consumer on re-vendor: all ten were measured with the whole payload in. The
-details are in [`docs/api/Options/version-15.15.4.3-docs.md`](docs/api/Options/version-15.15.4.3-docs.md)
-and [`docs/api/testkit/version-17-docs.md`](docs/api/testkit/version-17-docs.md).
+Three changes, all approved by the owner on 2026-09-12, and three files in `LibKa0s/` move.
+`OptionsCompose.lua` and `OptionsWidgets.lua` add a record-backed arm to the Options composers, so a
+page that edits registry records can compose its canonical groups
+([PanelMaster#48](https://github.com/tusharsaxena/PanelMaster/issues/48)). `Perf.lua` traces the
+retention prune its `Save` makes when the capture ring passes its size, which `debug-logging-§8`
+requires. And kit revision 17 gives the kit's Ace fakes the surfaces six consumer harnesses need, so
+those harnesses can migrate onto the kit rather than keep replacing it (BankLedger#18 and #19,
+ConsumableMaster#38, KickCD#21, PanelMaster#50, WhatGroup#19). Nothing is removed or renamed and no
+member is added. Measured with the whole payload in, on all ten consumers' `master` and on their
+`fix/2026-09-12-triage` branches, nothing moves on re-vendor except one case in WhatGroup: its
+migrated `tests/test_notify.lua` reads the timer handle's `.canceled`, and ports to `.cancelled` —
+the one consumer follow-up this release asks for. The details are in
+[`docs/api/Options/version-15.15.4.3-docs.md`](docs/api/Options/version-15.15.4.3-docs.md),
+[`docs/api/Perf/version-11.5-docs.md`](docs/api/Perf/version-11.5-docs.md) and
+[`docs/api/testkit/version-17-docs.md`](docs/api/testkit/version-17-docs.md).
 
 ### `OptionsCompose.lua` minor 4 — `spec.bind`, the record-backed arm
 

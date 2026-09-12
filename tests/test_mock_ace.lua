@@ -559,16 +559,30 @@ end)
 
 test("ace: a message handler that raises costs only itself, and the send reports it afterwards", function()
   -- The same shape as the lifecycle cascade: the dispatch carries on, then the first error is raised.
-  local AceEvent = buildMocks().LibStub("AceEvent-3.0")
-  local heard = 0
-  AceEvent:Embed({}):RegisterMessage("BOOM", function() error("boom one") end)
-  AceEvent:Embed({}):RegisterMessage("BOOM", function() error("boom two") end)
+  -- TWO raising handlers and one healthy one, and every call counted: whatever order the registry
+  -- visits them in, a dispatch that stopped at the first error runs at most two of the three, so
+  -- the counts fail deterministically on a kit that let the error end the dispatch.
+  local M = buildMocks()
+  local AceEvent = M.LibStub("AceEvent-3.0")
+  local raised, heard = 0, 0
+  AceEvent:Embed({}):RegisterMessage("BOOM", function() raised = raised + 1; error("boom one") end)
+  AceEvent:Embed({}):RegisterMessage("BOOM", function() raised = raised + 1; error("boom two") end)
   local t = AceEvent:Embed({})
   t:RegisterMessage("BOOM", function() heard = heard + 1 end)
   local err = assertError(function() t:SendMessage("BOOM") end, "the send raised")
   assertTrue(has(err, "boom"), "with a handler's own message")
+  assertEqual(raised, 2, "both raising handlers ran: the first error did not end the dispatch")
   assertEqual(heard, 1, "and the healthy handler still heard it, wherever it sat in the order")
   t:SendMessage("QUIET")
+
+  -- The same through the events registry, fired the way AceEvent's frame fires one.
+  local evRaised, evHeard = 0, 0
+  AceEvent:Embed({}):RegisterEvent("PLAYER_LOGOUT", function() evRaised = evRaised + 1; error("event one") end)
+  AceEvent:Embed({}):RegisterEvent("PLAYER_LOGOUT", function() evRaised = evRaised + 1; error("event two") end)
+  AceEvent:Embed({}):RegisterEvent("PLAYER_LOGOUT", function() evHeard = evHeard + 1 end)
+  assertTrue(has(assertError(function() M.__fireEvent("PLAYER_LOGOUT") end, "the fire raised"), "event"),
+    "with a handler's own message")
+  assertTrue(evRaised == 2 and evHeard == 1, "every event handler ran, raising or not")
 end)
 
 test("ace: ADDON_LOADED after the login enables a load-on-demand addon, reading IsLoggedIn at call time", function()

@@ -8,15 +8,15 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **8** · `PerfPanel.lua` **4** |
+| Files and minors | `Perf.lua` **10** · `PerfPanel.lua` **5** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.27.0 |
+| Shipped in | v1.29.0 – v1.30.0 |
 | Status | Superseded |
-| Supersedes | [version 7.4](./version-7.4-docs.md) |
+| Supersedes | [version 9.4](./version-9.4-docs.md) |
 | Superseded by | [version 11.5](./version-11.5-docs.md) — `Save` traces its retention prune |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 8, PerfPanel = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 10, PerfPanel = 5 }` |
 
 `Since` names the file and minor a member first appeared in — `P10` for `Perf.lua` minor 10, `PP4`
 for `PerfPanel.lua` minor 4. It is `1` for nearly everything: this major did not move at all between

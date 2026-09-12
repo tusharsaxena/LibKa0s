@@ -827,7 +827,7 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 | `isPercent` | W1 | Slider renders a 0–1 ratio as a percentage. |
 | `maxLetters` | W1 | Edit box only. |
 | `get` / `set` | **W15** | On a row with **no `path`** only: the row is read with `row.get()` and written with `row.set(value)` instead of through the descriptor's `get` / `set`. `row.get(key)` with an argument reads another key on the row's behalf: the flow engine resolves a path-less row's `disabledIf` that way, and a composed row reads that field of the same record. What a composer's `spec.bind` produces; a hand-written record row may carry them too. A row that has a `path` is always read and written through the descriptor, whatever else it carries. |
-| `field` | **C4** | On a row a composer bound with `spec.bind`: the record key the row reads and writes, exactly what its path would have been. The flow engine reads it only to name the row in the empty-dropdown report. |
+| `field` | **C4** | On a row a composer bound with `spec.bind`: the record key the row reads and writes, exactly what its path would have been. The flow engine reads it to name the row in the empty-dropdown report, and as the row's `pairWith` key — `RenderRows` looks a partner up by `row.path or row.field` (**W15**). |
 
 ## The schema composers
 

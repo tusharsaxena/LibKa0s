@@ -419,6 +419,19 @@ own `mock.timers`, and the kit's AceTimer pushes onto `M.__timers`, so `fireAceT
 
 ### What the kit declined
 
+**Known fidelity gaps, recorded rather than fixed.** Three places the kit still differs from the real
+Ace3, none of which any consumer in the collection reaches today:
+
+- **The library object's `RegisterEvent` family.** CallbackHandler publishes `RegisterEvent`,
+  `UnregisterEvent` and `UnregisterAllEvents` onto the AceEvent library itself as well as onto every
+  embed. The kit's library object carries the message family only; events are registered on a target.
+- **When `IsLoggedIn` is read.** `AceAddon-3.0.lua` asks `IsLoggedIn()` after the initialize loop
+  (its line 623); the kit reads it once, before that loop. The two differ only for an `OnInitialize`
+  that changes the answer.
+- **The no-name path's `CancelTimer` return value.** AceTimer's answers true for a live timer and
+  false otherwise; the revision-16 stand-in the no-name `NewAddon` path stamps marks the handle and
+  answers nothing.
+
 - **`AceConsole:GetArgs`.** A parser nothing in the collection calls; see [AceConsole](#aceconsole).
 - **`SetTitle` on AceGUI container widgets.** BankLedger and PanelMaster each add it, recording to
   different fields (`titleText`, `title`). Both wraps are guarded `if not w.SetTitle`, so a kit

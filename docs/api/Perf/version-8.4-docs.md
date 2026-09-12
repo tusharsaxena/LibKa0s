@@ -11,9 +11,9 @@
 | Files and minors | `Perf.lua` **8** · `PerfPanel.lua` **4** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
 | Shipped in | v1.27.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 7.4](./version-7.4-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 9.4](./version-9.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 8, PerfPanel = 4 }` |
