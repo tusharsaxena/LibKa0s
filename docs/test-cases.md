@@ -588,7 +588,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
 
-### test_options_compose.lua (34)
+### test_options_compose.lua (36)
 
 - compose: the instance carries every composer and every published constant
 - compose: FontGroup emits the six canonical leaves in the canonical order
@@ -624,8 +624,10 @@ badge and any count quoted in the docs must agree with it.
 - compose: a row WITH a path is read through the descriptor even when it carries get and set
 - compose: PanelMaster's three record-backed groups compose, in the order the editor draws them
 - compose: a PanelMaster block writes through the registry and repaints off the live record
+- compose: a bound row takes its pairWith partner, keyed by its field
+- compose: disabledIf on a bound row reads the record through the bind, not the settings store
 
-### test_perf_core.lua (69)
+### test_perf_core.lua (70)
 
 - lib: registers under its major with a schema and a default ring
 - lib: New requires a name, an sv global and a suspend/resume pair
@@ -671,6 +673,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: Save creates the perf global and appends the run
 - lib: Save stamps the schema on the store
 - lib: Save trims the ring to ringMax, dropping the oldest
+- lib: Save traces a retention prune to the host log, and only when it prunes
 - lib: a ring written under another schema is discarded, not converted
 - lib: FormatReport emits its sections in reading order
 - lib: FormatReport marks an unsampled arm rather than printing zeros
@@ -859,7 +862,7 @@ badge and any count quoted in the docs must agree with it.
 - mock: the console mixins print as AceConsole's do, bare, as methods and to a given frame
 - mock: a bare Printf with nothing after the format string raises, as format() does
 
-### test_mock_ace.lua (31)
+### test_mock_ace.lua (37)
 
 - ace: NewAddon with a name embeds exactly the libraries it lists
 - ace: NewAddon refuses what AceAddon refuses
@@ -891,6 +894,12 @@ badge and any count quoted in the docs must agree with it.
 - ace: RegisterChatCommand records the command and dispatches it as the client would
 - ace: where the environment models SlashCmdList, RegisterChatCommand writes the client's globals
 - ace: every Embed works when a consumer's wrapper calls it with its own table as self
+- ace: a repeating timer keeps its delay and its TimeLeft when the test never moves the clock
+- ace: only a lone table argument takes the no-name path; everything else is validated
+- ace: the no-name path's CancelTimer is honored by __fireTimers
+- ace: a message handler that raises costs only itself, and the send reports it afterwards
+- ace: ADDON_LOADED after the login enables a load-on-demand addon, reading IsLoggedIn at call time
+- ace: the AceEvent library carries the message registration API, as CallbackHandler publishes it
 - ace: AceGUI's layout registry and version table carry their real names
 
 ### test_surface_parity.lua (7)
@@ -961,8 +970,8 @@ badge and any count quoted in the docs must agree with it.
 | test_slash.lua | 81 |
 | test_options.lua | 81 |
 | test_options_widgets.lua | 139 |
-| test_options_compose.lua | 34 |
-| test_perf_core.lua | 69 |
+| test_options_compose.lua | 36 |
+| test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 45 |
 | test_perf_command.lua | 20 |
@@ -970,7 +979,7 @@ badge and any count quoted in the docs must agree with it.
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_mock_base.lua | 22 |
-| test_mock_ace.lua | 31 |
+| test_mock_ace.lua | 37 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 10 |
@@ -978,4 +987,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **860** |
+| **Total** | **869** |

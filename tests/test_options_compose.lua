@@ -739,3 +739,25 @@ test("compose: a PanelMaster block writes through the registry and repaints off 
   runRefreshers(ctx)
   assertEqual(alpha.value, 0.4, "and the opacity slider repainted from the live record")
 end)
+
+test("compose: a bound row takes its pairWith partner, keyed by its field", function()
+  -- pairWith is keyed by path, and a bound row has none, so its partner never attached.
+  local opts = Fixture.new()
+  local reg = registry({ a = true })
+  local rows = opts.ColorPair{ page = "p", group = "G", bind = recordBind(reg, "p1"),
+    extra = { { field = "a", type = "bool", label = "Alone", solo = true } } }
+  local ctx = opts.CreatePanel("ComposePairWith", "Compose pairWith", {})
+  local fired = 0
+  opts.RenderRows(ctx, { rows[3] }, nil, { a = function() fired = fired + 1 end })
+  assertEqual(fired, 1, "the partner keyed by the bound row's field attached")
+end)
+
+test("compose: disabledIf on a bound row reads the record through the bind, not the settings store", function()
+  local opts = Fixture.new()
+  local reg = registry({ tint = { r = 1, g = 1, b = 1, a = 1 }, locked = true })
+  local rows = opts.ColorPair{ page = "p", group = "G", bind = recordBind(reg, "p1"),
+    extra = { { field = "tint", type = "color", label = "Tint", disabledIf = "locked" } } }
+  local cp = renderBound(opts, rows[3])
+  assertEqual(cp.disabled, true, "the record's own flag grayed the swatch")
+  assertEqual(rows[3].get("locked"), true, "get(key) reads another field of the same record")
+end)

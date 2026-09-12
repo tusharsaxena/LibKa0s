@@ -82,7 +82,10 @@ descriptor's (`colorDecode` / `colorEncode`): a bind over a record that stores c
 shape converts in its own `get` and `set`, which receive the row and can test `row.type`.
 
 `lib.STRINGS.EMPTY_DROPDOWN` names a bound row by its `field`; for a path row it names the path, as
-before.
+before. Two other path-keyed lookups follow the row: `RenderRows`' `pairWith` is keyed by
+`row.path or row.field`, so a bound row takes its partner under its field, and a path-less row's
+`disabledIf` is read with `row.get(key)` — for a composed row, that field of the same record — rather
+than as a settings path. A composed row's `get` takes that optional key for exactly this reason.
 
 ### What the arm does not change
 
@@ -823,7 +826,7 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 | `commitOn` | W1 | `"change"` makes this slider commit on the drag, throttled; `"release"` opts out of a descriptor-wide `sliderCommit`. Default is release-only. |
 | `isPercent` | W1 | Slider renders a 0–1 ratio as a percentage. |
 | `maxLetters` | W1 | Edit box only. |
-| `get` / `set` | **W15** | On a row with **no `path`** only: the row is read with `row.get()` and written with `row.set(value)` instead of through the descriptor's `get` / `set`. What a composer's `spec.bind` produces; a hand-written record row may carry them too. A row that has a `path` is always read and written through the descriptor, whatever else it carries. |
+| `get` / `set` | **W15** | On a row with **no `path`** only: the row is read with `row.get()` and written with `row.set(value)` instead of through the descriptor's `get` / `set`. `row.get(key)` with an argument reads another key on the row's behalf: the flow engine resolves a path-less row's `disabledIf` that way, and a composed row reads that field of the same record. What a composer's `spec.bind` produces; a hand-written record row may carry them too. A row that has a `path` is always read and written through the descriptor, whatever else it carries. |
 | `field` | **C4** | On a row a composer bound with `spec.bind`: the record key the row reads and writes, exactly what its path would have been. The flow engine reads it only to name the row in the empty-dropdown report. |
 
 ## The schema composers

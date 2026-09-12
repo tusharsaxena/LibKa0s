@@ -234,7 +234,7 @@ test("ace: disabling an addon unregisters its events and messages and cancels it
   assertNil(next(host.__events), "the events went")
   host:SendMessage("EMBEDS_CHANGED")
   assertEqual(heard, 0, "the message registration went")
-  assertTrue(timer.canceled, "the timer was canceled")
+  assertTrue(timer.cancelled, "the timer was canceled")
   assertEqual(M.__fireTimers(), 0, "and a canceled timer does not run")
 end)
 
@@ -412,7 +412,7 @@ test("ace: CancelTimer is honored, answered, and not counted as a run", function
   local drop = t:ScheduleTimer(function() ran = ran + 10 end, 1)
   assertTrue(t:CancelTimer(drop), "the first cancel answers true")
   assertFalse(t:CancelTimer(drop), "a second answers false")
-  assertTrue(drop.canceled, "the handle says so, in US spelling (localization-§5 binds the kit)")
+  assertTrue(drop.cancelled, "the handle says so, under AceTimer's own field name")
   assertEqual(M.__fireTimers(), 1, "only the live timer counted")
   assertEqual(ran, 1, "and only it ran")
   assertFalse(t:CancelTimer(keep), "a timer that has already fired cannot be canceled")
@@ -440,8 +440,8 @@ test("ace: CancelAllTimers cancels this object's timers and nobody else's", func
   local mine = t:ScheduleTimer(function() end, 1)
   local theirs = other:ScheduleTimer(function() end, 1)
   t:CancelAllTimers()
-  assertTrue(mine.canceled, "its own timer went")
-  assertNil(theirs.canceled, "the other object's did not")
+  assertTrue(mine.cancelled, "its own timer went")
+  assertNil(theirs.cancelled, "the other object's did not")
 end)
 
 test("ace: TimeLeft reads the clock; a short delay is floored at AceTimer's 0.01", function()
@@ -460,8 +460,9 @@ test("ace: a C_Timer.NewTimer handle's Cancel is honored too", function()
   M.__timers = {}
   local ran = 0
   local h = M.C_Timer.NewTimer(1, function() ran = ran + 1 end)
+  assertFalse(h:IsCancelled(), "live until Cancel")
   h:Cancel()
-  assertTrue(h.canceled, "the handle records the cancel")
+  assertTrue(h:IsCancelled() and h.cancelled, "IsCancelled and the handle both record the cancel")
   assertEqual(M.__fireTimers(), 0, "the canceled timer did not run")
   assertEqual(ran, 0)
 end)
@@ -519,6 +520,88 @@ test("ace: every Embed works when a consumer's wrapper calls it with its own tab
   t:RegisterChatCommand("wrapped", function(input) heard = input end)
   AceConsole.__slash({}, "wrapped", "ok")
   assertEqual(heard, "ok", "__slash reads the library, not its receiver")
+end)
+
+-- ── review fixes (2026-09-12) ──────────────────────────────────────────────────────────────────
+
+test("ace: a repeating timer keeps its delay and its TimeLeft when the test never moves the clock", function()
+  -- AceTimer compensates the next delay by how late this run was. Headlessly a pass runs with the
+  -- clock wherever the test left it, usually BEFORE the timer's due time, and the compensation read
+  -- that as the timer being early -- so the delay and TimeLeft grew by one period every pass.
+  local M, t = timerHost()
+  M.__now = 100
+  local h = t:ScheduleRepeatingTimer(function() end, 1)
+  for pass = 1, 4 do
+    M.__fireTimers()
+    assertEqual(M.__timers[1].delay, 1, "the re-queued delay on pass " .. pass)
+    assertEqual(t:TimeLeft(h), 1, "TimeLeft on pass " .. pass)
+  end
+end)
+
+test("ace: only a lone table argument takes the no-name path; everything else is validated", function()
+  local _, AceAddon = fresh()
+  assertTrue(has(assertError(function() AceAddon:NewAddon({}, nil, "AceEvent-3.0") end), "string expected"),
+    "a table, a nil name and a library list raised as AceAddon raises")
+  assertTrue(has(assertError(function() AceAddon:NewAddon() end), "string expected"),
+    "a bare NewAddon() raised")
+end)
+
+test("ace: the no-name path's CancelTimer is honored by __fireTimers", function()
+  local M, AceAddon = fresh()
+  M.__timers = {}
+  local t = AceAddon:NewAddon({})
+  local ran = 0
+  local h = t:ScheduleTimer(function() ran = ran + 1 end, 1)
+  t:CancelTimer(h)
+  assertEqual(M.__fireTimers(), 0, "the canceled timer did not run")
+  assertEqual(ran, 0)
+end)
+
+test("ace: a message handler that raises costs only itself, and the send reports it afterwards", function()
+  -- The same shape as the lifecycle cascade: the dispatch carries on, then the first error is raised.
+  local AceEvent = buildMocks().LibStub("AceEvent-3.0")
+  local heard = 0
+  AceEvent:Embed({}):RegisterMessage("BOOM", function() error("boom one") end)
+  AceEvent:Embed({}):RegisterMessage("BOOM", function() error("boom two") end)
+  local t = AceEvent:Embed({})
+  t:RegisterMessage("BOOM", function() heard = heard + 1 end)
+  local err = assertError(function() t:SendMessage("BOOM") end, "the send raised")
+  assertTrue(has(err, "boom"), "with a handler's own message")
+  assertEqual(heard, 1, "and the healthy handler still heard it, wherever it sat in the order")
+  t:SendMessage("QUIET")
+end)
+
+test("ace: ADDON_LOADED after the login enables a load-on-demand addon, reading IsLoggedIn at call time", function()
+  local M, AceAddon = fresh()
+  local log = {}
+  local lod = AceAddon:NewAddon({}, "OnDemand")
+  function lod.OnEnable() log[#log + 1] = "enable" end
+  M.IsLoggedIn = function() return true end
+  fire(AceAddon, "ADDON_LOADED", "OnDemand")
+  assertEqual(log[1], "enable", "the client is logged in, so the load pass enabled it")
+end)
+
+test("ace: the AceEvent library carries the message registration API, as CallbackHandler publishes it", function()
+  local AceEvent = buildMocks().LibStub("AceEvent-3.0")
+  local got = 0
+  AceEvent.RegisterMessage("SomeAddon", "PING", function() got = got + 1 end)
+  AceEvent:SendMessage("PING")
+  assertEqual(got, 1, "an addonId string may register a function")
+  AceEvent.UnregisterMessage("SomeAddon", "PING")
+  AceEvent:SendMessage("PING")
+  assertEqual(got, 1, "and unregister it")
+  assertTrue(has(assertError(function() AceEvent:RegisterMessage("PING", "Method") end), "use your own 'self'"),
+    "a method name registered on the library itself raised")
+
+  local a, b = AceEvent:Embed({}), AceEvent:Embed({})
+  local heard = 0
+  a:RegisterMessage("M", function() heard = heard + 1 end)
+  b:RegisterMessage("M", function() heard = heard + 10 end)
+  AceEvent.UnregisterAllMessages(a, b)
+  AceEvent:SendMessage("M")
+  assertEqual(heard, 0, "UnregisterAllMessages takes several targets at once")
+  assertError(function() AceEvent:UnregisterAllMessages() end, "the library alone is not a meaningful target")
+  assertError(function() AceEvent.UnregisterAllMessages() end, "and nothing at all raised too")
 end)
 
 -- ── AceGUI ─────────────────────────────────────────────────────────────────────────────────────

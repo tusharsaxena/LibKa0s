@@ -38,7 +38,7 @@ Two files change: `mock_base.lua`, and `framework.lua`, which changes only its r
 | | At 16 | At 17 |
 |---|---|---|
 | `NewAddon([object,] name, lib, ...)` | Ignored the name and the list; stamped the event half, a no-op `RegisterChatCommand`, a fire-once `ScheduleTimer`, `Print` and `Printf` on everything | **Honors the list**: embeds exactly the named libraries, through `LibStub`, as `EmbedLibraries` does. Names the object, registers it with `GetAddon`, stamps AceAddon's fourteen mixins, queues it for the lifecycle |
-| `NewAddon(target)`, **no name** | As above | **Unchanged** — revision 16's behavior, kept for the harnesses that still call it that way (see [Divergences](#two-deliberate-divergences)) |
+| `NewAddon(target)` — exactly one argument, a table | As above | **Unchanged** — revision 16's behavior, kept for safety (see [Divergences](#two-deliberate-divergences)). Any other call without a string name raises |
 | Modules | None | `NewModule` with prototypes, default libraries and default state; `GetModule`, `EnableModule`, `DisableModule`, `IterateModules`, `orderedModules` |
 | Lifecycle | None | `ADDON_LOADED` / `PLAYER_LOGIN` on `AceAddon.frame`; `InitializeAddon`, `EnableAddon`, `DisableAddon`; `OnEmbedEnable` / `OnEmbedDisable` on every embedded library |
 | AceEvent messages | `RegisterMessage(msg, fn)`, function handlers only; `UnregisterMessage`; `SendMessage` | CallbackHandler's rules: string methods, the default method named after the message, the optional `arg`, validation, **`UnregisterAllMessages`**, a registration made mid-dispatch applied when the dispatch ends, `AceEvent:SendMessage`, `M.__msgRegistry` |
@@ -108,7 +108,10 @@ AceAddon.frame:__fire("OnEvent", "PLAYER_LOGIN")             -- initialize the r
   in creation order — calling `OnInitialize` and each embedded library's `OnEmbedInitialize`.
   `ADDON_LOADED` records its argument as `addon.baseName` and ignores the six early-loading Blizzard
   addons the real one ignores.
-- Once `PLAYER_LOGIN` has fired, each pass then enables everything queued. **`EnableAddon` runs the
+- Once the client is logged in, each pass then enables everything queued. "Logged in" is
+  `M.IsLoggedIn()`, read at call time where the environment models it, or the kit's own flag once
+  `PLAYER_LOGIN` has fired — so an `ADDON_LOADED` that arrives after the login enables a
+  load-on-demand addon, as the client's does. **`EnableAddon` runs the
   addon's `OnEnable` first, then `OnEmbedEnable`, then enables its `orderedModules` in order**,
   skipping any whose `enabledState` is false and any already enabled.
 - `addon:Enable()` on an object still waiting to be initialized only records the state, as the real
@@ -142,8 +145,13 @@ per (message, target), so a second registration on the same target overwrites th
 `SendMessage` from any target reaches every target registered — the architecture-§4 shape.
 
 **`t:UnregisterAllMessages()`** drops every message registration the target holds and nobody else's,
-and leaves its events alone, as `UnregisterAllEvents` leaves its messages. **`AceEvent:SendMessage`**,
-on the library itself, fans out like any target's.
+and leaves its events alone, as `UnregisterAllEvents` leaves its messages. Like CallbackHandler's it
+takes any number of targets — `AceEvent.UnregisterAllMessages(a, b)` — and refuses none, or the
+library alone. The library object carries the registration API as CallbackHandler publishes it:
+`AceEvent.RegisterMessage("addonId", msg, fn)` registers under an addon-id string,
+`AceEvent.UnregisterMessage` and `AceEvent.UnregisterAllMessages` undo it, and a method **name**
+registered with the library itself as `self` raises `do not use Library:RegisterMessage(), use your
+own 'self'`. **`AceEvent:SendMessage`**, on the library itself, fans out like any target's.
 
 **A NEW registration made while a registry is dispatching waits for the dispatch to finish.** The
 newcomer does not hear the message already in flight and hears the next one. That is CallbackHandler's
@@ -155,9 +163,10 @@ does in the client.
 callable is what the table above says is stored. BankLedger and PanelMaster already read a table by
 that name from their own buses; after migrating, it is the kit's.
 
-**One divergence, kept.** CallbackHandler dispatches through `securecallfunction`, which reports a
-handler's error and carries on. The kit lets the error propagate out of `SendMessage`, as revision 16
-did. A harness that swallowed it would be a stub that silently succeeds.
+**One divergence, kept.** CallbackHandler dispatches through `securecallfunction`, which hands a
+handler's error to the error handler and carries on. The kit carries on too — every other handler
+still runs — and then raises the **first** error out of `SendMessage` (or `M.__fireEvent`), the same
+shape as the lifecycle cascade. A harness that swallowed it would be a stub that silently succeeds.
 
 ### AceEvent: firing a game event, and the events the client does not know
 
@@ -203,14 +212,23 @@ do, to keep another deferral from running — must not silence AceTimer with it.
 The handle is AceTimer's own table: `object`, `func`, `looping`, `delay`, `ends`, `callback` and the
 arguments. `delay` is floored at 0.01, as the real one floors it for `C_Timer`. `GetTime` is read at
 call time, so a harness that pins its own clock is honored. **A canceled handle carries
-`canceled = true`.** AceTimer's internal field doubles the l; the kit's does not, because
-`localization-§5` binds the shipped kit and the field is AceTimer's private bookkeeping, not its API.
-A case that wants to stay spelling-agnostic asks `CancelTimer`'s answer or `TimeLeft` instead.
+`handle.cancelled = true`, AceTimer's own field name.** It is a third-party API identifier, not prose,
+and renaming it would let a suite written against the real field read nil and pass; the prose gate
+carries a ratified exemption for exactly this identifier, recorded in LibKa0s's `CLAUDE.md` →
+*Documented deviations* (owner decision, 2026-09-12).
+
+**A repeating timer keeps its period when the test does not move the clock.** AceTimer takes "how
+late was this run" off the next delay. In the client a run is never early; headlessly a pass runs
+wherever the test left `M.__now`, usually before the due time, and read unclamped that grew the delay
+and `TimeLeft` by a period every pass. The kit clamps the "now" it compensates from to the due time,
+so an on-time run re-queues at its own delay, and takes `ends` from the clock as the real one does.
 
 ### `M.__fireTimers()` honors cancellation
 
 It runs every entry that was due and answers **how many actually ran**. An entry is skipped when it
-was canceled: a `C_Timer.NewTimer` handle through its own `Cancel` (which revision 16 made a no-op),
+was canceled: a `C_Timer.NewTimer` handle through its own `Cancel` (which revision 16 made a no-op; the
+handle also answers `IsCancelled()`, as the client's does), the no-name `NewAddon` path's handle
+through its `CancelTimer`,
 an AceTimer handle through `CancelTimer`. So "three events, one reconcile pass" and "the pending timer
 was canceled" are both assertable against the kit — the two things BankLedger's and PanelMaster's
 own `__fireTimers` existed to make assertable. A `C_Timer.After` entry cannot be canceled, as in the
@@ -244,12 +262,13 @@ case-insensitively, as the real pair does.
 
 ### Two deliberate divergences
 
-1. **`NewAddon(target)` with no name keeps revision 16's behavior.** The real AceAddon raises on it.
-   PrettyChat's and WhatGroup's harnesses wrap the kit's `NewAddon` and call it that way, passing the
-   object alone; raising there would turn two green suites red for a call their production code never
-   makes. So a name is what selects the faithful path, and the no-name call still stamps the event
-   half, `RegisterChatCommand`, the fire-once `ScheduleTimer`, `Print` and `Printf`, and none of the
-   object model. It retires when those two wrappers forward the name and the list.
+1. **`NewAddon(target)` — exactly one argument, a table — keeps revision 16's behavior.** The real
+   AceAddon raises on it. PrettyChat's and WhatGroup's harnesses called it that way on `master`; on
+   their `fix/2026-09-12-triage` branches both now pass the name, so the path is kept for safety only.
+   It stamps the event half, `RegisterChatCommand`, the fire-once `ScheduleTimer`, a `CancelTimer`
+   that `__fireTimers` honors, `Print` and `Printf`, and none of the object model. **Anything else
+   without a string name** — `NewAddon({}, nil, "AceEvent-3.0")`, a bare `NewAddon()` — goes through
+   the real validation and raises.
 2. **An error inside `OnInitialize`, `OnEnable`, `OnDisable` or `OnModuleCreated` is reported after
    the cascade, not swallowed.** The client catches it, hands it to `geterrorhandler()` and carries on
    with the next object. The kit catches it and carries on too, then raises the **first** such error
@@ -306,6 +325,36 @@ wrapper as `self`; a first draft that read `self.embeds` raised on PanelMaster's
 No fake reads its receiver now, and `tests/test_mock_ace.lua` pins the wrapper shape for all three
 Embeds.
 
+### Re-measured after the v1.31.0 review
+
+The review changed the kit before release: `handle.cancelled` under AceTimer's own name, the no-name
+path narrowed to a lone table, a repeating timer's period held when the clock does not move, the
+no-name `CancelTimer` honored, a handler error no longer ending a dispatch, `IsLoggedIn` read at call
+time, and the message registration API on the AceEvent library. Six harnesses had migrated or were
+migrating onto the pre-review kit 17 on their `fix/2026-09-12-triage` branches, so the measurement
+was taken there, three ways per consumer: as the branch stands (nine vendor the pre-review kit 17,
+MultiMeters still kit 16), with the pre-review v1.31.0 payload dropped in, and with the reviewed
+payload — kit and `libs/LibKa0s/` both.
+
+| Consumer | Branch tip | As the branch stands | Pre-review v1.31.0 | Reviewed v1.31.0 |
+|---|---|---|---|---|
+| AbsorbTracker | `d6a2637` | 563 / 2 / 565 | 563 / 2 / 565 | 563 / 2 / 565 |
+| AuraMaster | `7618fc8` | 250 / 2 / 252 | 250 / 2 / 252 | 250 / 2 / 252 |
+| BankLedger | `f52326a` | 855 / 2 / 857 | 855 / 2 / 857 | 855 / 2 / 857 |
+| ConsumableMaster | `d4e5af9` | 832 / 2 / 834 | 832 / 2 / 834 | 832 / 2 / 834 |
+| KickCD | `c6aad74` | 899 / 2 / 901 | 899 / 2 / 901 | 899 / 2 / 901 |
+| LootHistory | `c829724` | 722 / 2 / 724 | 722 / 2 / 724 | 722 / 2 / 724 |
+| MultiMeters | `fa24bc5` | 1773 / 2 / 1775 | 1773 / 2 / 1775 | 1773 / 2 / 1775 |
+| PanelMaster | `5f04c5f` | 787 / 2 / 789 | 787 / 2 / 789 | 787 / 2 / 789 |
+| PrettyChat | `d11e92f` | 331 / 2 / 333 | 331 / 2 / 333 | 331 / 2 / 333 |
+| WhatGroup | `abeebff` | 577 / 2 / 579 | 577 / 2 / 579 | 576 / **1 failed** / 2 / 579 |
+
+**WhatGroup is the one that moves, and it is the spelling decision itself.** Its migrated
+`tests/test_notify.lua:159` reads `firstHandle.canceled` — the pre-review kit's spelling — so
+`notify: a re-fire cancels the in-flight timer so two can't race` goes red when the field becomes
+AceTimer's own. The port is that one identifier; with it made, the branch is 579 / 0 failed / 2
+skipped on the reviewed payload. Nothing else moves anywhere.
+
 ## For the six migrations: what stays local
 
 Each consumer layers over the kit what is genuinely its own. The layering is the consumer's change,
@@ -317,7 +366,8 @@ and `M.__msgRegistry`, AceTimer with cancellation, and `M.__fireTimers`' count. 
 (real geometry, OnHide, recorded `SetTexture`/`SetText`, frames shown by default), the
 `defaultedStore` AceDB, `__settingsPanels`, the plain-table `DEFAULT_CHAT_FRAME`, the nil `GameTooltip`
 and `StaticPopup_Show`, the `SetTitle` wrap on AceGUI, `LibStub.minors`, the no-op `C_Timer.After`
-and the fixed clock. Test ports: `handle.canceled` and `handle.callback` read the same; the
+and the fixed clock. Test ports: `handle.canceled` reads `handle.cancelled`, `handle.callback` reads
+the same; the
 unknown-event message text differs, which nothing asserts. **`tests/test_ledger.lua`'s `reEnable`
 re-registers the same events on `NS.addon` under a different `__badEvents` set in one build**, and
 under the client's first-registrant rule an event already registered does not raise again — so that
@@ -365,7 +415,7 @@ own `mock.timers`, and the kit's AceTimer pushes onto `M.__timers`, so `fireAceT
 `C_LFGList`, the Settings registry and `mock._G = mock`. Test ports: `mock.addonEvents[...]` reads
 `addon.__events[...]` — an explicit handler name is recorded identically, so the
 `== "OnCombatStateChanged"` assertions hold; a handle's `repeating` reads `looping`;
-`mock.chatCommands` reads `AceConsole.commands`.
+`mock.chatCommands` reads `AceConsole.commands`; a handle's `canceled` reads `cancelled`.
 
 ### What the kit declined
 
@@ -378,9 +428,12 @@ own `mock.timers`, and the kit's AceTimer pushes onto `M.__timers`, so `fireAceT
   the new one. It was found during this work and is not fixed in it: BankLedger's `LibStub.minors`
   wrapper reads that return as the registered minor, so the fix changes a consumer's harness and is
   a revision of its own.
-- **`C_Timer.NewTimer`'s callback argument and `IsCancelled`.** The client hands a `NewTimer` callback
-  its handle and answers `IsCancelled()`. Neither was asked for, and the second's spelling is exactly
-  the one the prose gate refuses in shipped code; `Cancel` is what a debounce needs and it is honored.
+- **`C_Timer.NewTimer`'s callback argument.** The client hands a `NewTimer` callback its handle; the
+  kit's calls it with nothing, as every revision has. Nothing in the collection reads it, and passing
+  it would change the arguments every existing `NewTimer` callback receives.
+- **Multi-target `UnregisterAllEvents`.** CallbackHandler's takes several targets for events too.
+  The event trio is the module-level set revision 16 made identical on every target, and it keeps the
+  one-target form; `UnregisterAllMessages` takes several.
 
 ## Adopting it is one commit
 

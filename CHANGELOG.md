@@ -61,7 +61,9 @@ The flow engine's half. Every maker — checkbox, slider, dropdown, edit box, co
 picker's throttled and confirmed commits, and every refresher — reads `row.get()` and writes
 `row.set(value)` for a row whose `path` is nil. The gate is `path == nil`, not the presence of a
 `get`, so a path-keyed row is read and written through the descriptor exactly as before, whatever else
-a host's schema gives it. The empty-dropdown report names a bound row by its `field`.
+a host's schema gives it. The empty-dropdown report names a bound row by its `field`, `RenderRows`'
+`pairWith` finds a bound row's partner under its field, and a path-less row's `disabledIf` is read
+with `row.get(key)` — for a composed row, that field of the same record.
 
 ### Kit revision 17, `mock_base.lua` — the Ace surfaces six harnesses migrate onto
 
@@ -88,11 +90,13 @@ Each piece was checked against the real Ace3 source vendored in the consumers' `
 - **AceGUI** publishes `WidgetVersions` beside `__widgetVersions`, as the same table, and gains
   `RegisterLayout` / `GetLayout`.
 
-Two divergences are deliberate. `NewAddon(target)` with no name keeps revision 16's behavior, because
-PrettyChat's and WhatGroup's harnesses call it that way and the real one raises. An error inside a
+Two divergences are deliberate. `NewAddon(target)` — exactly one argument, a table — keeps revision
+16's behavior, for safety; any other call without a string name raises, as the real one does. An error inside a
 lifecycle callback lets the cascade finish, as the client does, and is then raised instead of
-swallowed. A canceled AceTimer handle says `canceled`, not AceTimer's doubled `l`, because
-`localization-§5` binds the shipped kit. Declined for this revision: `AceConsole:GetArgs`, a kit
+swallowed; a message or event handler that raises is treated the same way. A canceled AceTimer
+handle carries AceTimer's own field, `handle.cancelled`, and a `C_Timer.NewTimer` handle answers
+`IsCancelled()`: third-party API identifiers, which the prose gate exempts by name under a new
+`localization-§5` row in `CLAUDE.md` (owner decision, 2026-09-12). Declined for this revision: `AceConsole:GetArgs`, a kit
 `SetTitle`, and the second return of `LibStub:NewLibrary`, which the kit answers as the new minor where
 the real one answers the old. The last was found during this work; BankLedger's harness reads that
 return, so fixing it is a revision of its own.
@@ -116,6 +120,20 @@ BankLedger 850, ConsumableMaster 797, KickCD 888, LootHistory 721, MultiMeters 1
 PrettyChat 333 and WhatGroup 573, each with its two vendored-payload skips. Unlike 16, 17 adds no
 consumer-side case. Adoption is the re-vendor, and the six migrations are each consumer's own
 follow-up, with what stays local listed per consumer in the testkit document.
+
+**Re-measured after the review**, on the ten consumers' `fix/2026-09-12-triage` branches, where six
+harnesses have migrated or are migrating onto kit 17: as each branch stands, with the pre-review
+payload, and with this one. Nine are identical across all three. **WhatGroup moves**: its migrated
+`tests/test_notify.lua:159` reads `firstHandle.canceled`, the pre-review spelling, and fails once the
+field is AceTimer's `cancelled`. Porting that one identifier makes it 579 green again. The table is
+in the testkit document.
+
+**Also from the review.** A repeating AceTimer keeps its period when a test never moves the clock
+(the drift compensation read an unadvanced clock as the timer being early). The no-name `NewAddon`
+path is taken only for a lone table argument, and its `CancelTimer` is honored. A message or event
+handler that raises no longer ends the dispatch. `ADDON_LOADED` after the login enables a
+load-on-demand addon, reading `IsLoggedIn` at call time. And the AceEvent library object carries
+`RegisterMessage`, `UnregisterMessage` and a multi-target `UnregisterAllMessages`.
 
 The standards pointer moves from v2.43.0 to v2.44.0. The only change between them is to
 `architecture-§5`, which is not on this repo's `library-stack-§7` applicability list.
