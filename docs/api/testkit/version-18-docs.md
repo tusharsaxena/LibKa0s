@@ -10,9 +10,9 @@
 | Version | **18** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.33.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 17](version-17-docs.md) — the Ace surfaces six consumer harnesses migrate onto: AceAddon's object model and lifecycle, AceEvent on CallbackHandler's terms, a real AceTimer, AceConsole's chat commands |
-| Superseded by | — |
+| Superseded by | [version 19](version-19-docs.md) — the AceDB fake's `OnProfileReset` carries no key, as AceDB-3.0 fires it |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `18` |
 
@@ -175,3 +175,12 @@ downstream, and a kit change that would break a consumer breaks this repo first.
 4. Re-vendor into `tests/_kit/` here **and** into every consumer's `tests/_kit/`, then run each
    repo's suite.
 5. Add the row to [`../README.md`](../README.md).
+
+## Moving to revision 19
+
+One argument goes. The AceDB fake's `ResetProfile` now fires `OnProfileReset` with the database
+alone, `(event, db)`, which is what AceDB-3.0 does. At this revision it passed the active profile as
+a third argument, so a reset handler that read one passed here and got `nil` in the client.
+`OnProfileChanged` and `OnProfileCopied` are unchanged. Nothing else in the kit moves, and it is
+still not the geometry flip, which moves to 20 at the earliest. No production reset handler in the
+collection reads the key. See [version 19](version-19-docs.md).

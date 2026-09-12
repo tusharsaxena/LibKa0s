@@ -664,5 +664,25 @@ test("ace: AceDB's OnProfileCopied carries the SOURCE profile's key, as AceDB-3.
 
   db:ResetProfile()
   assertEqual(heard[3].event, "OnProfileReset")
-  assertEqual(heard[3].key, "Raid", "and a reset the active profile, as it always has here")
+  assertEqual(heard[3].key, nil, "and a reset no key at all (revision 19)")
+end)
+
+test("mock_ace: AceDB's ResetProfile fires OnProfileReset with the database alone", function()
+  -- AceDB-3.0's DBObjectLib:ResetProfile ends `self.callbacks:Fire("OnProfileReset", self)`: no
+  -- key. Through revision 18 the fake passed the active profile, so a reset handler that read a
+  -- third argument passed here and got nil in the client -- fidelity rule 5. It counts the
+  -- arguments rather than reading the third, because a trailing nil is still an argument.
+  -- red under: fire("OnProfileReset", current).
+  local AceDB = buildMocks().LibStub("AceDB-3.0")
+  local db = AceDB:New({ profiles = { Raid = { width = 7 } } }, { profile = { width = 1 } })
+  db:SetProfile("Raid")
+  local got
+  db.RegisterCallback({}, "OnProfileReset", function(...) got = { n = select("#", ...), ... } end)
+  db:ResetProfile()
+  assertTrue(got ~= nil, "the reset fired OnProfileReset")
+  assertEqual(got.n, 2, "exactly (event, db), as CallbackHandler hands it")
+  assertEqual(got[1], "OnProfileReset")
+  assertTrue(got[2] == db, "the database is the second argument")
+  assertEqual(db:GetCurrentProfile(), "Raid", "the profile is still asked of the db")
+  assertEqual(db.profile.width, 1, "and the active profile is back at its defaults")
 end)

@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.33.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.34.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -16,7 +16,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
    That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
-   is fifty-five files at v1.33.0: everything but `tests/_kit/`, which is excluded only because
+   is fifty-five files at v1.34.0: everything but `tests/_kit/`, which is excluded only because
    it is a byte copy of `testkit/` and would report every finding twice. A consumer's is scoped too,
    and usually excludes `libs/` and `tests/`. 0/0
    only means something if the files carrying the seam are inside the checked set, so confirm that
@@ -196,7 +196,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.33.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.34.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -332,7 +332,15 @@ dropped `makeCloseButton`, which as of v1.5.0 has no consumer at all** — it as
 | `LibKa0s-Pool-1.0` | BankLedger, LootHistory, MultiMeters, KickCD, AuraMaster | All five look it up in `core/PoolSetup.lua` and expose it as `NS.Pool`, each keeping a local fallback so a degraded install still pools rather than allocating a frame per row per refresh. BankLedger: five sites across four files — `modules/LedgerTable.lua` and `modules/SessionWindow.lua` row pools, plus `modules/Insights.lua` and `modules/InsightsWidgets.lua`, where a nested `ReleaseAll(pool, fn)` hook releases each panel's `_rows`. LootHistory: the heaviest consumer and the leak that motivated the module — `modules/BrowserTable.lua`'s row pool plus ~36 array pools in `modules/Analytics.lua` (bars, swatches, legends, list rows). MultiMeters: `modules/Window.lua`, and the ONLY consumer that takes position from acquire order — the pooled object is the row TABLE, not the frame it wraps, with `row:Release()` as the `before` hook. It is why minor 3 exists: see the CHANGELOG. KickCD: the only KEYED consumer — `modules/IconGrid.lua` keys buttons by spellID through `NewKeyed`/`AcquireKeyed`/`ReleaseAllKeyed` so a cooldown message reaches one widget without a scan, which is why `NewKeyed` was added at minor 2. AuraMaster: an array pool per container for the preview's placeholder elements, with `modules/Preview.lua` its only caller. The live aura buttons are Blizzard's and never come from the pool. **Ordering matters to two of them.** Minor 3's guarantee — a position gets its own object back — is load-bearing for MultiMeters and for AuraMaster, where a re-dressed preview keeps every placeholder in the slot it held (its local fallback reproduces the same backward release). It is inert for the three whose redraws are event-driven and whose figures are plain, and meaningless for KickCD, where the key is the mapping |
 | `LibKa0s-Item-1.0` | BankLedger, ConsumableMaster, LootHistory | `core/ItemSetup.lua` (all three). The adoption plan named BankLedger and LootHistory; **ConsumableMaster is a third that arrived without one**, which is the sort of thing only this sweep finds. MultiMeters is a deliberate NON-consumer and says so upstream — a damage meter has no item surface — so its absence here is a decision rather than a gap, unlike the six addons that simply have no reason to look it up |
 
-**A gap the Slash consumers should know about, found by PrettyChat.** `lib.ParseValue` splits the remainder on whitespace and `parseString` returns `args[1]`, so a free-text `string` row cannot hold a value containing a **space**: `/pc set <path> You receive loot: %s` stores `"You"`. Every value in that addon's schema is a Blizzard format string, so it supplies a descriptor `parse` — which slash-commands-§6 sanctions, and which is why this is filed as a note rather than a defect. But the shortfall is not addon-specific, and the next host with a free-text row will hit it silently: the value is stored, no error is raised, and only the echo shows the truncation.
+**A gap the Slash consumers had, found by PrettyChat and closed at Slash minor 10 (v1.34.0).**
+Through Slash minor 9, `lib.ParseValue` split the remainder on whitespace and a `string` row took the
+first token, so a free-text row could not hold a value containing a **space**: `/pc set <path> You
+receive loot: %s` stored `"You"`, and an enum entry with a space in it (an LSM font name) could not be
+set at all. The value was stored, no error was raised, and only the echo showed the truncation.
+PrettyChat supplied a descriptor `parse`, which slash-commands-§6 sanctions; the same bug later
+reached AuraMaster's `container.name`, found by a test agent. From Slash minor 10 a `string` row
+takes the whole remainder, trimmed at both ends, and an enum is matched on the full string.
+PrettyChat's adapter keeps its `||` unescape; its whitespace half is redundant from v1.34.0.
 
 AbsorbTracker vendors to `libs/LibKa0s/` and is consumer #1 for the five it drove — Core, DebugLog, Slash, Options, Perf. Media is not one of them and never was: it reached all nine consumers in one pass at v1.9.0, so it has no #1. Its `settings/UnitPanel.lua`
 is the one non-obvious entry: it **decorates the library instance itself** — `NS.Helpers` *is* the
@@ -369,11 +377,12 @@ step-9 sweep above was run against trees identical to the merged `master`s: 84 l
 one in the table. `WhoGotLoots` and `BuffTextNotifications` are out of scope until they are on the
 standard at all.
 
-**v1.33.0 is tagged and not yet re-vendored (2026-09-12).** Steps 1–7 are done. Step 8, the copy
-into all ten consumers, and step 9, the sweep, are a separate step not yet taken, so every `master`
-still bundles v1.32.0 and kit revision 17. The payload was measured in scratch clones of all ten
-consumers; the result is in the v1.33.0 `CHANGELOG.md` entry. Move this paragraph when step 8 is
-merged.
+**v1.33.0 and v1.34.0 are tagged and not yet re-vendored (2026-09-13).** Steps 1–7 are done for
+both. Step 8, the copy into all ten consumers, and step 9, the sweep, are a separate step not yet
+taken, so every `master` still bundles v1.32.0 and kit revision 17. The v1.34.0 payload was measured
+in scratch clones of all ten consumers, each at the branch it had checked out, every one of which
+already carries v1.33.0 and kit revision 18 unmerged; the result is in the v1.34.0 `CHANGELOG.md`
+entry. Move this paragraph when step 8 is merged.
 
 WhatGroup has Core, DebugLog, Media, Options and Slash — `core/CoreSetup.lua`,
 `core/DebugLogSetup.lua`, `core/MediaSetup.lua`, `settings/OptionsSetup.lua` (decorated by

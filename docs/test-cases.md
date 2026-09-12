@@ -278,7 +278,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the copy window still shows the whole buffer, in order
 - dbg: the copy window re-anchors to the console instead of a fixed centre
 
-### test_slash.lua (86)
+### test_slash.lua (92)
 
 - sl: an empty message prints the help index
 - sl: whitespace-only input is treated as empty
@@ -327,6 +327,12 @@ badge and any count quoted in the docs must agree with it.
 - sl: a numeric dropdown rejects an out-of-list value rather than clamping it
 - sl: a number row with no values list still clamps to min/max
 - sl: a string row with no values list accepts free text
+- sl: a free-text string row keeps every word of a multi-word value
+- sl: a string enum accepts an entry that contains spaces, in both enum shapes
+- sl: a string value is trimmed at both ends before it is stored or validated
+- sl: an empty or blank string value is still refused with 'expected a value'
+- sl: bool, number and color rows still read tokens exactly as before
+- sl: set stores a multi-word free-text value whole, through the dispatcher
 - sl: a key SET labels its entries with its keys, not with 'true'
 - sl: an enum supplied as a function is evaluated at parse time
 - sl: a colour parses r g b with an optional alpha
@@ -621,7 +627,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
 
-### test_options_compose.lua (36)
+### test_options_compose.lua (41)
 
 - compose: the instance carries every composer and every published constant
 - compose: FontGroup emits the six canonical leaves in the canonical order
@@ -659,6 +665,11 @@ badge and any count quoted in the docs must agree with it.
 - compose: a PanelMaster block writes through the registry and repaints off the live record
 - compose: a bound row takes its pairWith partner, keyed by its field
 - compose: disabledIf on a bound row reads the record through the bind, not the settings store
+- compose: with no resetProfile the Reset all tooltip keeps its minor-4 wording, byte for byte
+- compose: with resetProfile the Reset all tooltip says it resets the current profile only
+- compose: with resetProfile and profilesPage the tooltip names Profiles -> Reset Profile
+- compose: the descriptor moves the Reset all tooltip and nothing else Master controls draws
+- compose: a shell that hands __AttachCompose no descriptor keeps the minor-4 tooltip
 
 ### test_perf_core.lua (70)
 
@@ -895,7 +906,7 @@ badge and any count quoted in the docs must agree with it.
 - mock: the console mixins print as AceConsole's do, bare, as methods and to a given frame
 - mock: a bare Printf with nothing after the format string raises, as format() does
 
-### test_mock_ace.lua (38)
+### test_mock_ace.lua (39)
 
 - ace: NewAddon with a name embeds exactly the libraries it lists
 - ace: NewAddon refuses what AceAddon refuses
@@ -935,6 +946,7 @@ badge and any count quoted in the docs must agree with it.
 - ace: the AceEvent library carries the message registration API, as CallbackHandler publishes it
 - ace: AceGUI's layout registry and version table carry their real names
 - ace: AceDB's OnProfileCopied carries the SOURCE profile's key, as AceDB-3.0 fires it
+- mock_ace: AceDB's ResetProfile fires OnProfileReset with the database alone
 
 ### test_surface_parity.lua (7)
 
@@ -1001,12 +1013,12 @@ badge and any count quoted in the docs must agree with it.
 | test_media.lua | 15 |
 | test_widgets.lua | 81 |
 | test_debuglog.lua | 67 |
-| test_slash.lua | 86 |
+| test_slash.lua | 92 |
 | test_options.lua | 81 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 139 |
-| test_options_compose.lua | 36 |
+| test_options_compose.lua | 41 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 45 |
@@ -1015,7 +1027,7 @@ badge and any count quoted in the docs must agree with it.
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_mock_base.lua | 22 |
-| test_mock_ace.lua | 38 |
+| test_mock_ace.lua | 39 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 10 |
@@ -1023,4 +1035,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **897** |
+| **Total** | **909** |
