@@ -180,6 +180,16 @@ suggestCase("IdInput suggestions: digits match ids by prefix; a name needs two l
   assertEqual(shownIds(b), "191395,191396")
 end)
 
+suggestCase("IdInput suggestions: two letters means two characters, not two bytes", function(made)
+  mocks.addIdRecord("item", 800, "Caf\195\169 Draught", 1, nil, 1)
+  local b = input(made, { kind = "item", candidates = function() return { 800 } end })
+  typeText(b, "\195\169")
+  -- red under: a byte count (one two-byte letter would pass the two-letter floor)
+  assertEqual(shownIds(b), "", "one non-ASCII letter is one character")
+  typeText(b, "f\195\169")
+  assertEqual(shownIds(b), "800", "two characters, three bytes")
+end)
+
 -- ── ranks ────────────────────────────────────────────────────────────────────────────────────
 
 suggestCase("IdInput suggestions: every rank is its own row, labeled, beside the others", function(made)
@@ -276,6 +286,59 @@ suggestCase("IdInput suggestions: Enter with no row highlighted still refuses a 
   typeText(b, "zephyr")
   b.add:__fire("OnClick")
   assertFalse(shown(b), "and so does Add")
+end)
+
+suggestCase("IdInput suggestions: a shared name the bags or the spellbook carry is refused, not one rank added", function(made)
+  -- Two quality tiers of one potion in the bags and no candidates: the client's name lookup answers
+  -- ONE of them, and the list shows both.
+  seedZephyr()
+  mocks.setBagItems(0, { 191396, 191395 })
+  local b = input(made, { kind = "item" })
+  typeText(b, ZEPHYR)
+  assertEqual(shownIds(b), "191395,191396")
+  b.eb:__fire("OnEnterPressed", ZEPHYR)
+  -- red under: a shared-name check that reads the candidates alone (the client's rank added unpicked)
+  assertEqual(#b.added, 0, "Enter with nothing picked adds no rank")
+  assertEqual(b.status.text, "Several items are named '" .. ZEPHYR ..
+    "' \226\128\148 pick one from the list, or use the id.")
+  assertEqual(shownIds(b), "191395,191396", "the ranks the refusal points at stay listed")
+  local id, reason = b.O.ResolveId("item", ZEPHYR, function() return { 191395 } end)
+  assertNil(id); assertEqual(reason, "ambiguous", "candidates covering one rank, the other in the bags")
+  mocks.setBagItems(0, { 191395 })
+  assertEqual(b.O.ResolveId("item", ZEPHYR), 191395, "one rank carried is that rank")
+
+  mocks.addIdRecord("spell", 900001, "Twin Strike", 11)
+  mocks.addIdRecord("spell", 900002, "Twin Strike", 12)
+  mocks.setSpellBook({ 900002, 900001 })
+  local s = input(made, { kind = "spell" }, b.O)
+  typeText(s, "Twin Strike")
+  s.eb:__fire("OnEnterPressed", "Twin Strike")
+  assertEqual(#s.added, 0, "two spellbook spells of one name: neither added unpicked")
+  assertEqual(shownIds(s), "900001,900002")
+end)
+
+suggestCase("IdInput suggestions: typing drops the highlight, so Enter never takes a row the text left", function(made)
+  seedZephyr()
+  mocks.addIdRecord("item", 100, "Zephyr Draught", 1, nil, 1)
+  local b = input(made, { kind = "item", candidates = function()
+    local ids = zephyrs(); ids[#ids + 1] = 100; return ids end })
+  typeText(b, "zephyr")
+  assertEqual(shownIds(b), "100,191395,191396,191397")
+  press(b, "DOWN"); press(b, "DOWN")
+  local rows = dropdown(made).rows
+  assertTrue(rows[2].selected)
+  -- More typing, then Enter inside the 0.1 s pause: the list on screen is still the old one.
+  b.eb:SetText("zephyr dr"); b.eb:__fire("OnTextChanged", "zephyr dr")
+  -- red under: a keystroke that leaves the highlight (Enter would take 191395, which "zephyr dr" left)
+  assertFalse(rows[2].selected, "the row is no longer drawn highlighted")
+  b.eb:__fire("OnEnterPressed", "zephyr dr")
+  assertEqual(#b.added, 0, "Enter submits the text, which names nothing")
+  mocks.__fireTimers()
+  typeText(b, "zephyr dr")
+  assertEqual(shownIds(b), "100")
+  press(b, "DOWN")
+  b.eb:__fire("OnEnterPressed", "zephyr dr")
+  assertEqual(table.concat(b.added, ","), "100", "a highlight made after the typing is taken")
 end)
 
 suggestCase("IdInput suggestions: a shared name refused by Add, or before the pause, lists its ranks", function(made)
@@ -507,6 +570,54 @@ suggestCase("IdInput suggestions: a box pooled into a second render is hooked on
   -- red under: hooks installed on every render (one Down would move the highlight twice)
   local rows = dropdown(made).rows
   assertTrue(rows[1].selected, "one Down, one row"); assertFalse(rows[2].selected)
+end)
+
+suggestCase("IdInput suggestions: a box pooled into another instance wakes no list of the first's", function(made)
+  seedZephyr()
+  local b = input(made, { kind = "item", candidates = zephyrs })
+  typeText(b, ZEPHYR)
+  b.eb:__fire("OnEnterPressed", ZEPHYR)
+  local first = dropdown(made)
+  assertTrue(first:IsShown(), "the first instance's refusal lists the ranks")
+  local eb = b.eb
+  eb:Release()
+  assertFalse(first:IsShown())
+  -- AceGUI's pool is global: ANOTHER instance draws the released box. The first instance's hooks
+  -- stay on its frames and still map them to the first render's parts.
+  eb.__released = nil
+  local gui = mocks.__libs["AceGUI-3.0"]
+  local saved = gui.WidgetRegistry.EditBox
+  gui.WidgetRegistry.EditBox = function() return eb end
+  local ok, c = pcall(input, made, { kind = "item", candidates = zephyrs })
+  gui.WidgetRegistry.EditBox = saved
+  assertTrue(ok, tostring(c))
+  assertTrue(c.eb == eb and c.O ~= b.O, "a second instance drew the pooled box")
+  typeText(c, ZEPHYR)
+  eb.editbox:__fire("OnEditFocusGained")
+  -- red under: a released box's parts still allowed to suggest (the first instance's list goes up
+  -- under the second instance's box)
+  assertFalse(first:IsShown(), "the released render's refused name is not offered again")
+end)
+
+suggestCase("IdInput suggestions: a released box lets its render's index go", function(made)
+  local icons = setmetatable({}, { __mode = "v" })
+  local names = { [1] = "Alpha", [2] = "Beta", [3] = "Gamma" }
+  local kind = { noun = "widget", plural = "widgets", resolve = function() return nil, "notFound" end,
+                 info = function(id)
+                   local icon = { id }
+                   icons[id] = icon
+                   return names[id], icon
+                 end }
+  local b = input(made, { kind = kind, candidates = function() return { 1, 2, 3 } end })
+  typeText(b, "beta")
+  assertEqual(shownIds(b), "2")
+  assertTrue(icons[1] ~= nil and icons[3] ~= nil, "the index holds the unmatched entries")
+  b.eb:Release()
+  collectgarbage("collect"); collectgarbage("collect")
+  -- red under: an index kept with the parts the pooled frame still maps to (up to 2000 entries held
+  -- until the same instance draws on that frame again)
+  assertNil(icons[1], "an entry only the index held is gone")
+  assertNil(icons[3])
 end)
 
 suggestCase("IdInput suggestions: Enter in a box that no longer owns the dropdown submits its text", function(made)
