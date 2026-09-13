@@ -1389,10 +1389,13 @@ clip reason above.
 | `strings` | Optional overrides of the words, by key — see below. |
 | `disabled` | Optional; draws both widgets disabled. A disabled render is inherited. |
 
-Enter in the box, or Add, resolves the trimmed text. Success calls `onAdd(id)`, then clears the box
-and the status line. Failure writes the reason on the status line in orange (`1, 0.5, 0`), keeps the
-text, and calls nothing. **It redraws nothing after an add**: a host that draws its own rows redraws
-them itself. It returns nil, drawing nothing, with no AceGUI.
+Enter in the box, or Add, resolves the trimmed text. Success clears the box and the status line,
+then calls `onAdd(id)`. The clear comes first so that `onAdd` may redraw the page synchronously: a
+redraw releases both widgets into AceGUI's pool, where the new render may take them, and nothing
+touches either widget after `onAdd` returns. A raising `onAdd` adds nothing, so the text and the
+status line go back as they were. Failure writes the reason on the status line in orange
+(`1, 0.5, 0`), keeps the text, and calls nothing. **It redraws nothing after an add**: a host that
+draws its own rows redraws them itself. It returns nil, drawing nothing, with no AceGUI.
 
 The words, and their defaults. `{name}` tokens rather than format specifiers, so a translation can
 reorder them:

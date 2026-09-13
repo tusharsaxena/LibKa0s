@@ -866,10 +866,32 @@ end)
 test("IdInput: a raising onAdd is reported, and the box keeps its text", function()
   local b = inputBench({ onAdd = function() error("store exploded") end })
   b.rec.chat = {}
+  typeEnter(b.eb, "zzz")
   typeEnter(b.eb, "21562")
   -- red under: an unguarded onAdd (a raise inside AceGUI's dispatch takes the frame's clicks down)
   assertTrue(table.concat(b.rec.chat, "\n"):find("store exploded", 1, true) ~= nil)
   assertEqual(b.eb.text, "21562", "the add did not happen, so the input is not cleared")
+  assertEqual(b.status.text, "No spell named 'zzz'.", "and the status line is as it was")
+end)
+
+test("IdInput: the box and status line are cleared before onAdd, so onAdd may redraw the page", function()
+  local b
+  local seen = {}
+  b = inputBench({ onAdd = function()
+    seen.text, seen.status = b.eb.text, b.status.text
+    -- What a synchronous redraw does: both widgets go back to AceGUI's pool, and the next render
+    -- may take them. Anything written to them from here on lands on someone else's widget.
+    b.eb.SetText = function() seen.touched = true end
+    b.status.SetText = function() seen.touched = true end
+    b.status.SetColor = function() seen.touched = true end
+  end })
+  typeEnter(b.eb, "zzz")
+  typeEnter(b.eb, "21562")
+  -- red under: clearing after onAdd returns (a host that redraws inside onAdd has its new page's
+  -- widgets blanked -- ConsumableMaster and LootHistory each coded around it)
+  assertEqual(seen.text, "", "the box was cleared before onAdd ran")
+  assertEqual(seen.status, "", "and so was the status line")
+  assertNil(seen.touched, "nothing touches either widget after onAdd returns")
 end)
 
 test("IdInput: drawn inside a disabled render, or with spec.disabled, it is disabled", function()

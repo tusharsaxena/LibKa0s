@@ -110,8 +110,9 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   It returns `id, name, icon`, or `nil, reason` for `empty`, `notFound` or `ambiguous`. `kind` is
   `"spell"`, `"item"` or `"currency"`, or a host table with its own `resolve`.
 - **`O.IdInput(ctx, parent, spec)`** draws an edit box, an Add button and a status line. Enter or
-  Add resolves the text and calls `spec.onAdd(id)`. On failure it writes the reason in orange and
-  adds nothing.
+  Add resolves the text, clears the box and the status line, then calls `spec.onAdd(id)`, so
+  `onAdd` may redraw the page synchronously. A raising `onAdd` gets both back. On failure it writes
+  the reason in orange and adds nothing.
 - **`O.IdList(ctx, spec)`** draws that input plus one line per entry: icon, name, gray id, then
   Remove, or a checkbox for a toggle entry. An unknown id reads "Unknown spell 12345". An uncached
   item is asked for through `LibKa0s-Item-1.0`'s `LoadItem` when present. The ids one render asks

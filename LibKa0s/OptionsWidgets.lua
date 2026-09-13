@@ -2302,22 +2302,37 @@ function lib.__AttachWidgets(O, d)
     return a, b, c, e
   end
 
+  --- Write the status line, remembering what it says: AceGUI's Label has no getter, and a raising
+  --- onAdd puts back what was there.
+  local function showStatus(parts, text)
+    parts.shown = text
+    parts.status:SetText(text)
+  end
+
   --- Resolve what was typed and hand the id to the host. A failure says why on the status line, in
-  --- orange, and keeps the text so the player can correct it; so does a raising onAdd. A success
-  --- clears both, then runs `afterAdd` -- IdList's rebuild.
+  --- orange, and keeps the text so the player can correct it. A success clears the box and the
+  --- status line BEFORE onAdd, because a host whose onAdd redraws the page has released both into
+  --- AceGUI's pool by the time it returns, and the pool may already have handed them to the new
+  --- render. Nothing touches either widget after a clean onAdd. A raising one adds nothing, so the
+  --- text and the status line go back as they were. Then `afterAdd` -- IdList's rebuild.
   local function submitId(ctx, spec, parts, text, afterAdd)
     local typed = type(text) == "string" and text:match("^%s*(.-)%s*$") or ""
     local id, reason = resolveId(spec.kind, typed, spec.candidates)
     if id == nil then
       local noun, plural = kindWords(idKind(spec.kind))
-      parts.status:SetText(idText(spec, reason, { noun = noun, plural = plural, text = typed }))
+      showStatus(parts, idText(spec, reason, { noun = noun, plural = plural, text = typed }))
       if parts.status.SetColor then parts.status:SetColor(ID_WARN_R, ID_WARN_G, ID_WARN_B) end
       return
     end
-    if not callHost(spec.onAdd, id) then return end
-    parts.status:SetText("")
+    local shown = parts.shown or ""
+    showStatus(parts, "")
     parts.edit:SetText("")
-    if afterAdd then afterAdd(ctx) end
+    if callHost(spec.onAdd, id) then
+      if afterAdd then afterAdd(ctx) end
+      return
+    end
+    parts.edit:SetText(type(text) == "string" and text or typed)
+    showStatus(parts, shown)
   end
 
   local function drawIdInput(ctx, parent, spec, afterAdd)
@@ -2355,8 +2370,10 @@ function lib.__AttachWidgets(O, d)
   --- One line an id is added through (minor 16): an edit box taking a number, a shift-clicked link
   --- or a name, an Add button beside it, and a status line under both. Enter or Add resolves the
   --- text through O.ResolveId and hands the id to `spec.onAdd`; the widget never writes a path, so
-  --- the host owns storage and its shape. It does NOT redraw anything after an add -- a host that
-  --- draws its own rows redraws them itself. O.IdList is this plus the entry lines, and it does.
+  --- the host owns storage and its shape. The box and the status line are cleared before onAdd
+  --- runs, so onAdd may redraw the page synchronously; a raising onAdd gets both back. It does NOT
+  --- redraw anything after an add -- a host that draws its own rows redraws them itself. O.IdList
+  --- is this plus the entry lines, and it does.
   ---
   --- spec = {
   ---   kind       = "spell" | "item" | "currency", or a host table (see O.ResolveId);
