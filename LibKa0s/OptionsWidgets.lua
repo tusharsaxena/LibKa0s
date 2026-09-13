@@ -2255,10 +2255,15 @@ function lib.__AttachWidgets(O, d)
 
   O.ResolveId = resolveId
 
-  -- Item ids this instance has asked the client to load. Once per id: a list whose item never
-  -- loads (an id the client does not have) would otherwise re-request on every rebuild the
-  -- previous request's own callback caused.
+  -- Uncached items. `itemLoads[id]` counts the asks this instance has made for an id, capped at
+  -- ITEM_LOAD_TRIES: an id the client does not have never loads, and past five asks (two seconds
+  -- at LoadItem's 0.4) the entry stays "Unknown item N" rather than asking for ever.
+  -- `loadBatches[ctx]` is the ids asked for since that page's last check, `{ [id] = kind }`: one
+  -- LoadItem callback per batch, however many ids join it, so twenty uncached ids cost one check
+  -- and at most one redraw rather than twenty page renders in the same frame.
+  local ITEM_LOAD_TRIES = 5
   local itemLoads = {}
+  local loadBatches = setmetatable({}, { __mode = "k" })
 
   local function idText(spec, key, fields)
     local t = spec.strings and spec.strings[key] or ID_TEXT[key]
@@ -2379,15 +2384,53 @@ function lib.__AttachWidgets(O, d)
     return idText(spec, "unknown", { noun = (kindWords(k)), id = id })
   end
 
-  --- Ask the client to load an item the list could not name, and draw the list again when it
-  --- lands. Through LibKa0s-Item-1.0, looked up at call time so its load order does not matter; a
-  --- payload without it leaves the entry unnamed rather than raising.
+  --- Whether the kind names `id` yet. A raising lookup reads as not yet.
+  local function entryNamed(k, id)
+    if type(k.info) ~= "function" then return false end
+    local ok, name = pcall(k.info, id)
+    return ok and type(name) == "string" and name ~= ""
+  end
+
+  local askItem
+
+  --- A batch's check, LoadItem's callback: redraw once if any name arrived, and ask again, as a
+  --- fresh batch under one new callback, for each id still unnamed with asks left. Asked before
+  --- the redraw, so the redraw finds them already pending and asks nothing twice.
+  local function settleBatch(ctx, Item)
+    local batch = loadBatches[ctx]
+    loadBatches[ctx] = nil
+    if not batch then return end
+    local landed = false
+    for id, k in pairs(batch) do
+      if entryNamed(k, id) then landed = true else askItem(ctx, Item, k, id) end
+    end
+    if landed then rebuildIdList(ctx) end
+  end
+
+  --- Ask for one item into `ctx`'s batch: the first id of a batch carries the check, the rest only
+  --- ask. Nothing for an id already pending there, or out of asks.
+  askItem = function(ctx, Item, k, id)
+    local asked = itemLoads[id] or 0
+    local batch = loadBatches[ctx]
+    if asked >= ITEM_LOAD_TRIES or (batch and batch[id]) then return end
+    itemLoads[id] = asked + 1
+    if batch then
+      batch[id] = k
+      Item.LoadItem(id)
+    else
+      loadBatches[ctx] = { [id] = k }
+      Item.LoadItem(id, function() settleBatch(ctx, Item) end)
+    end
+  end
+
+  --- Ask the client to load an item the list could not name; the list is drawn again once a check
+  --- finds it named. Through LibKa0s-Item-1.0, looked up at call time so its load order does not
+  --- matter; a payload without it leaves the entry unnamed rather than raising.
   local function loadEntry(ctx, k, id)
-    if not k.loads or itemLoads[id] then return end
+    if not k.loads then return end
     local Item = LibStub and LibStub("LibKa0s-Item-1.0", true)
     if not (Item and Item.LoadItem) then return end
-    itemLoads[id] = true
-    Item.LoadItem(id, function() rebuildIdList(ctx) end)
+    askItem(ctx, Item, k, id)
   end
 
   --- The client's own tooltip for the entry: GameTooltip's per-kind method, or a host kind's
@@ -2487,7 +2530,9 @@ function lib.__AttachWidgets(O, d)
   --- An editable id list (minor 16): an optional heading, the O.IdInput line, then one line per
   --- entry -- icon, name and id in gray ("Unknown spell 12345" when the client cannot name it),
   --- then Remove, or a checkbox for a toggle entry. An item the client has not cached is asked
-  --- for through LibKa0s-Item-1.0's LoadItem, once, and the list is drawn again when it lands.
+  --- for through LibKa0s-Item-1.0's LoadItem. Every id a render asks for joins one batch, checked
+  --- once 0.4 s later: the list is drawn again once if any of them is named by then, and an id
+  --- still unnamed is asked for again, up to five asks in all.
   ---
   --- spec = everything O.IdInput takes, plus:
   ---   entries     = function() -> ordered { { id =, toggle = bool?, on = bool? }, ... };

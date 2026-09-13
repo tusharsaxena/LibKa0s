@@ -1432,9 +1432,15 @@ name it. Hovering it shows the client's own tooltip for that kind. The action is
 - **Redraws.** After an add, or a Remove whose `onRemove` returned, the list redraws through
   `ctx.rebuild` when the host set one, and otherwise through `O.RefreshAllPanels()`, which is
   structural, because the set of lines changed. A toggle redraws nothing.
-- **Uncached items.** An item the client cannot name yet is asked for once per id per instance,
-  through `LibStub("LibKa0s-Item-1.0", true).LoadItem`, looked up at call time. The list redraws
-  when the load lands. Without the Item major the entry stays unnamed, and nothing raises.
+- **Uncached items.** An item the client cannot name yet is asked for through
+  `LibStub("LibKa0s-Item-1.0", true).LoadItem`, looked up at call time. `LoadItem` does not wait
+  for the item: it fires its callback 0.4 s after the request whether the item arrived or not. So
+  every id one render asks for joins one batch per page, and the batch is checked once, by the
+  first id's callback. If any of them is named by then, the list redraws once. Twenty uncached ids
+  cost one check and at most one redraw, not twenty. An id still unnamed is asked for again in a
+  fresh batch, up to five asks per id per instance (two seconds), and after that it stays
+  `Unknown item <id>` until some other redraw finds it named. Without the Item major the entry
+  stays unnamed, and nothing raises.
 
 It returns the entry lines in order. It returns nil, drawing nothing, with no AceGUI.
 

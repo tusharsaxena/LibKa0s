@@ -989,25 +989,77 @@ test("IdList: an empty list shows the host's empty text", function()
   assertTrue(found, "the empty text is on the page")
 end)
 
-test("IdList: an uncached item asks to load once, and the load asks for a rebuild", function()
-  local requests = 0
+--- Run `fn(requests)` with every C_Item.RequestLoadItemDataByID counted per id (and in total, as
+--- `requests.total`), on an empty timer queue; the real request is put back however `fn` ends.
+local function countingLoads(fn)
+  local requests = { total = 0 }
   local realRequest = mocks.C_Item.RequestLoadItemDataByID
-  mocks.C_Item.RequestLoadItemDataByID = function(id) requests = requests + 1; realRequest(id) end
+  mocks.C_Item.RequestLoadItemDataByID = function(id)
+    requests.total = requests.total + 1
+    requests[id] = (requests[id] or 0) + 1
+    realRequest(id)
+  end
   mocks.__timers = {}
-  local ok, err = pcall(function()
+  local ok, err = pcall(fn, requests)
+  mocks.C_Item.RequestLoadItemDataByID = realRequest
+  assertTrue(ok, tostring(err))
+end
+
+test("IdList: an uncached item asks to load, and the list redraws once its name lands", function()
+  countingLoads(function(requests)
     local O, _, ctx, lines, log = listBench({ { id = 2589 }, { id = 6948 } }, { kind = "item" })
     assertEqual(lines[1].children[1].text, "Unknown item 2589", "no name until it is cached")
     -- red under: never asking the client for the item (its name would never arrive)
-    assertEqual(requests, 1, "one request, for the uncached item only")
+    assertEqual(requests.total, 1, "one request, for the uncached item only")
+    mocks.addIdRecord("item", 2589, "Linen Cloth", 132889)
     mocks.__fireTimers()
     -- red under: a load callback that redraws nothing
     assertEqual(log.rebuilt, 1, "the load rebuilt the list")
+    assertEqual(#mocks.__timers, 0, "a landed item is not asked for again")
     O.IdList(ctx, { kind = "item", entries = function() return { { id = 2589 } } end })
-    -- red under: re-requesting on every render (an id the client never loads would loop forever)
-    assertEqual(requests, 1, "a second render does not ask again")
+    assertEqual(requests.total, 1, "a named item needs no request")
   end)
-  mocks.C_Item.RequestLoadItemDataByID = realRequest
-  assertTrue(ok, tostring(err))
+end)
+
+test("IdList: uncached items load as one batch -- one timer and one rebuild, however many", function()
+  countingLoads(function(requests)
+    local entries = {}
+    for i = 1, 20 do entries[i] = { id = 900000 + i } end
+    local _, _, _, _, log = listBench(entries, { kind = "item" })
+    assertEqual(requests.total, 20, "every uncached item is asked for")
+    -- red under: one timer per id (twenty full page renders landing in the same frame)
+    assertEqual(#mocks.__timers, 1, "one check for the whole batch")
+    for i = 1, 20 do mocks.addIdRecord("item", 900000 + i, "Item " .. i, 1) end
+    mocks.__fireTimers()
+    assertEqual(log.rebuilt, 1, "one rebuild draws every name that landed")
+  end)
+end)
+
+test("IdList: an item not cached by the check is asked for again, a bounded number of times", function()
+  countingLoads(function(requests)
+    local _, _, _, _, log = listBench({ { id = 2589 } }, { kind = "item" })
+    mocks.__fireTimers()
+    -- red under: giving up after one fixed delay (a slow load reads "Unknown item" until some
+    -- unrelated redraw)
+    assertEqual(requests[2589], 2, "asked again once the first check found no name")
+    assertEqual(log.rebuilt, 0, "nothing landed, so nothing is redrawn")
+    mocks.addIdRecord("item", 2589, "Linen Cloth", 132889)
+    mocks.__fireTimers()
+    assertEqual(log.rebuilt, 1, "the retry's check redraws the name that landed")
+    assertEqual(#mocks.__timers, 0)
+
+    -- An id the client does not have never loads: the asks stop.
+    local _, _, _, _, never = listBench({ { id = 999001 } }, { kind = "item" })
+    local rounds = 0
+    while #mocks.__timers > 0 and rounds < 50 do
+      mocks.__fireTimers()
+      rounds = rounds + 1
+    end
+    -- red under: re-requesting for ever (an id the client never loads would loop forever)
+    assertTrue(rounds < 50, "the asks stop on their own")
+    assertEqual(requests[999001], 5, "five asks, then the entry stays unnamed")
+    assertEqual(never.rebuilt, 0)
+  end)
 end)
 
 test("IdList: an entry's label shows the client's own tooltip for it", function()

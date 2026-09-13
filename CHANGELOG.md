@@ -114,8 +114,9 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   adds nothing.
 - **`O.IdList(ctx, spec)`** draws that input plus one line per entry: icon, name, gray id, then
   Remove, or a checkbox for a toggle entry. An unknown id reads "Unknown spell 12345". An uncached
-  item is loaded once, through `LibKa0s-Item-1.0`'s `LoadItem` when present, and the list redraws
-  when it lands.
+  item is asked for through `LibKa0s-Item-1.0`'s `LoadItem` when present. The ids one render asks
+  for share one check, 0.4 s later, which redraws the list once if any of them is named by then.
+  An id still unnamed is asked for again, up to five asks, then stays "Unknown item N".
 
 The widgets never write a path, so the host keeps its stored shape. After an add or a remove,
 `O.IdList` redraws through `ctx.rebuild` when the host set one, and otherwise through
