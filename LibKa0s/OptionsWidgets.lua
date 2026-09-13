@@ -855,6 +855,7 @@ local ID_TEXT = {
   unknown   = "Unknown {noun} {id}",
   looking   = "Looking up {plural}\226\128\166",
   nameHint  = "",
+  more      = "+{count} more",
 }
 
 -- The named kinds' own words, over ID_TEXT's: a notFound that says where a name can come from, and
@@ -1039,6 +1040,221 @@ end
 --- any other host kind, a raising candidates(), or a client that cannot load an item.
 local function unnamedCandidates(kind, candidates)
   return unnamedIds(kind, candidates)
+end
+
+-- ── suggestions while typing (minor 16, issue #31) ────────────────────────────────────────
+--
+-- What IdInput's dropdown lists as the player types. Pure, and at file scope for the reason id
+-- resolution is. The client has no item-name or spell-name search, so every row is an id something
+-- already knows: the host's candidates(), plus what the client enumerates cheaply for the kind --
+-- the items in the player's bags, the spells in the spellbook. A currency, or a host's own kind,
+-- has the candidates alone.
+
+-- At most this many rows under the box; a longer list ends in a "+N more" line.
+local SUGGEST_ROWS = 10
+-- A name suggests nothing under two typed characters; digits match ids from the first one.
+local SUGGEST_MIN_NAME = 2
+-- The most ids one render's index holds, the host's candidates first. Each is named once, on the
+-- render's first keystroke; every later keystroke scans those cached names with no client call, and
+-- re-reads at most ID_LOOKUP_CAP of the ids the client could not name yet.
+local SUGGEST_INDEX_CAP = 2000
+-- The pause after the last keystroke before the list is worked out again, in seconds.
+local SUGGEST_DEBOUNCE = 0.1
+-- The client's own small icon for a crafted or reagent quality tier, inline.
+local QUALITY_ATLAS = "|A:Professions-Icon-Quality-Tier%d-Small:14:14|a"
+
+--- Every item id in the backpack and the equipped bags (the reagent bag too, where the client has
+--- one), slot by slot.
+local function scanBags(C, out)
+  local last = tonumber(NUM_TOTAL_EQUIPPED_BAG_SLOTS) or tonumber(NUM_BAG_SLOTS) or 4
+  for bag = 0, last do
+    for slot = 1, tonumber(C.GetContainerNumSlots(bag)) or 0 do
+      local id = C.GetContainerItemID(bag, slot)
+      if type(id) == "number" then out[#out + 1] = id end
+    end
+  end
+end
+
+--- The item ids the player carries. None on a client without C_Container; a raise ends the scan
+--- where it raised.
+local function bagItemIds()
+  local C, out = C_Container, {}
+  if C and C.GetContainerNumSlots and C.GetContainerItemID then pcall(scanBags, C, out) end
+  return out
+end
+
+--- One skill line's spells: its Spell and FutureSpell slots, never a flyout or a pet action.
+local function scanSpellLine(B, line, bank, spellTypes, out)
+  local info = B.GetSpellBookSkillLineInfo(line)
+  if type(info) ~= "table" then return end
+  local first = tonumber(info.itemIndexOffset) or 0
+  for slot = first + 1, first + (tonumber(info.numSpellBookItems) or 0) do
+    local item = B.GetSpellBookItemInfo(slot, bank)
+    if type(item) == "table" and type(item.spellID) == "number" and spellTypes[item.itemType] then
+      out[#out + 1] = item.spellID
+    end
+  end
+end
+
+--- The player's own spellbook bank, every skill line. Enum is read at call time, with the client's
+--- values as the fallback.
+local function scanSpellBook(B, out)
+  local E = Enum
+  local bank = E and E.SpellBookSpellBank and E.SpellBookSpellBank.Player or 0
+  local types = E and E.SpellBookItemType or {}
+  local spellTypes = { [types.Spell or 1] = true, [types.FutureSpell or 2] = true }
+  for line = 1, tonumber(B.GetNumSpellBookSkillLines()) or 0 do
+    scanSpellLine(B, line, bank, spellTypes, out)
+  end
+end
+
+--- The spell ids in the player's spellbook. None on a client without C_SpellBook's enumeration.
+local function spellBookIds()
+  local B, out = C_SpellBook, {}
+  if B and B.GetNumSpellBookSkillLines and B.GetSpellBookSkillLineInfo and B.GetSpellBookItemInfo then
+    pcall(scanSpellBook, B, out)
+  end
+  return out
+end
+
+--- A quality tier from one of the client's two tier lookups, or nil. A raise reads as none.
+local function qualityTier(fn, id)
+  if type(fn) ~= "function" then return nil end
+  local ok, tier = pcall(fn, id)
+  if ok and type(tier) == "number" and tier > 0 then return tier end
+end
+
+--- An item's rank: its crafted-quality tier, else its reagent-quality tier, as the number a row
+--- sorts by and the client's tier icon it shows. Nil for an item with neither, or a client without
+--- C_TradeSkillUI.
+local function itemRank(id)
+  local T = C_TradeSkillUI
+  if not T then return nil end
+  local tier = qualityTier(T.GetItemCraftedQualityByItemInfo, id)
+    or qualityTier(T.GetItemReagentQualityByItemInfo, id)
+  if tier then return tier, QUALITY_ATLAS:format(tier) end
+end
+
+--- A spell's rank: the client's subtext ("Rank 2", "Racial"), shown as the client words it and
+--- sorted by the number in it. Nil for a spell with none, or a client without GetSpellSubtext.
+local function spellRank(id)
+  local fn = C_Spell and C_Spell.GetSpellSubtext
+  if type(fn) ~= "function" then return nil end
+  local ok, text = pcall(fn, id)
+  if not ok or type(text) ~= "string" or text == "" then return nil end
+  return tonumber(text:match("%d+")) or 0, text
+end
+
+-- The named kinds' client source and rank, keyed by the kind table as NAME_COLOR is, so a host's
+-- own kind -- whose ids need not be the client's -- has neither.
+local SUGGEST_KIND = {
+  [ID_KINDS.item]  = { sources = bagItemIds, rank = itemRank },
+  [ID_KINDS.spell] = { sources = spellBookIds, rank = spellRank },
+}
+
+--- The ids one render's index covers: the host's candidates, then the kind's client source;
+--- numbers only, each once, at most SUGGEST_INDEX_CAP.
+local function suggestIds(k, candidates)
+  local out, seen = {}, {}
+  local function take(list)
+    for _, id in ipairs(list) do
+      if #out >= SUGGEST_INDEX_CAP then return end
+      if type(id) == "number" and not seen[id] then
+        seen[id] = true
+        out[#out + 1] = id
+      end
+    end
+  end
+  take(candidateIds(candidates))
+  if SUGGEST_KIND[k] then take(SUGGEST_KIND[k].sources()) end
+  return out
+end
+
+--- One row's worth of `id`, or nil while the kind cannot name it. A raising lookup reads as
+--- unnamed.
+local function suggestEntry(k, id)
+  local ok, name, icon = pcall(k.info, id)
+  if not ok or type(name) ~= "string" or name == "" then return nil end
+  local e = { id = id, name = name, lower = name:lower(), icon = icon }
+  if SUGGEST_KIND[k] then e.rank, e.rankLabel = SUGGEST_KIND[k].rank(id) end
+  return e
+end
+
+--- One render's index: the named entries, and the ids still unnamed. Empty for a kind with no
+--- `info`, which has nothing to name a row with.
+local function buildSuggestIndex(k, candidates)
+  local index = { entries = {}, unnamed = {} }
+  if type(k.info) ~= "function" then return index end
+  for _, id in ipairs(suggestIds(k, candidates)) do
+    local e = suggestEntry(k, id)
+    if e then index.entries[#index.entries + 1] = e else index.unnamed[#index.unnamed + 1] = id end
+  end
+  return index
+end
+
+--- Read the index's unnamed ids again, the first ID_LOOKUP_CAP of them: IdInput's pre-warm or
+--- lookup may have landed them since. The ones now named join the entries.
+local function nameUnnamed(k, index)
+  local still = {}
+  for i, id in ipairs(index.unnamed) do
+    local e = i <= ID_LOOKUP_CAP and suggestEntry(k, id)
+    if e then index.entries[#index.entries + 1] = e else still[#still + 1] = id end
+  end
+  index.unnamed = still
+end
+
+--- How well the lower-case name `lower` matches the lower-case `text`: 1 the whole name, 2 its
+--- start, 3 the start of a word inside it, 4 anywhere in it; nil for no match.
+local function nameTier(lower, text)
+  if lower == text then return 1 end
+  local at = lower:find(text, 1, true)
+  if not at then return nil end
+  if at == 1 then return 2 end
+  while at do
+    if lower:sub(at - 1, at - 1):find("[^%w']") then return 3 end
+    at = lower:find(text, at + 1, true)
+  end
+  return 4
+end
+
+--- The dropdown's order: by tier, then shorter names first, then by name, then by rank (none is
+--- 0), then by id. One name's ranks tie on everything before rank, so they sit together.
+local function suggestBefore(a, b)
+  if a.tier ~= b.tier then return a.tier < b.tier end
+  if #a.lower ~= #b.lower then return #a.lower < #b.lower end
+  if a.lower ~= b.lower then return a.lower < b.lower end
+  local ra, rb = a.rank or 0, b.rank or 0
+  if ra ~= rb then return ra < rb end
+  return a.id < b.id
+end
+
+--- The length of `text` in characters rather than bytes: a UTF-8 continuation byte is not one.
+local function charCount(text)
+  return #(text:gsub("[\128-\191]", ""))
+end
+
+--- The entries whose id starts with `digits`, ascending.
+local function byIdPrefix(entries, digits)
+  local out = {}
+  for _, e in ipairs(entries) do
+    if tostring(e.id):sub(1, #digits) == digits then out[#out + 1] = e end
+  end
+  table.sort(out, function(a, b) return a.id < b.id end)
+  return out
+end
+
+--- The entries the trimmed `text` suggests, in the dropdown's order: ids by prefix for digits,
+--- names by tier otherwise, and nothing for a name under SUGGEST_MIN_NAME characters.
+local function matchSuggestions(entries, text)
+  if text:match("^%d+$") then return byIdPrefix(entries, text) end
+  if charCount(text) < SUGGEST_MIN_NAME then return {} end
+  local want, out = text:lower(), {}
+  for _, e in ipairs(entries) do
+    e.tier = nameTier(e.lower, want)
+    if e.tier then out[#out + 1] = e end
+  end
+  table.sort(out, suggestBefore)
+  return out
 end
 
 --- Attach the widget makers and the flow engine to one instance. Called at the end of lib:New, so
@@ -2589,6 +2805,243 @@ function lib.__AttachWidgets(O, d)
     reportFailure(spec, parts, reason, sub.typed)
   end
 
+  -- ── the suggestion dropdown (minor 16, issue #31) ────────────────────────────────────────
+  --
+  -- One dropdown per instance, built the first time it shows and shared by every IdInput the
+  -- instance draws: only the box the player is typing in shows one. `suggest.owner` is that box's
+  -- parts. The ten rows and the "+N more" line are built with the frame and reused for every
+  -- list, so a redraw of the page builds no frame. It is parented to UIParent at FULLSCREEN_DIALOG
+  -- strata and clamped to the screen, so the settings panel's scroll frame cannot clip it and it
+  -- draws above the panel. Escape, focus leaving the box, the box hiding with its panel, and the
+  -- box's release close it. Plain frames, nothing protected: none of it is refused in combat.
+  local SUGGEST_ROW_H = 18
+  local SUGGEST_PAD   = 6
+  local SUGGEST_ICON  = 16
+  local SUGGEST_MIN_W = 260
+  local SUGGEST_HIGHLIGHT = "Interface\\QuestFrame\\UI-QuestTitleHighlight"
+  local SUGGEST_BACKDROP = {
+    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true, tileSize = 16, edgeSize = 16,
+    insets = { left = 4, right = 4, top = 4, bottom = 4 },
+  }
+  local ARROW_STEP = { UP = -1, DOWN = 1 }
+  local suggest = {}
+  -- The frames already hooked, per script. AceGUI pools its widgets, so a box another page drew
+  -- is hooked once, and every hook asks whether its box owns the dropdown now.
+  local hookedFrames = setmetatable({}, { __mode = "k" })
+
+  --- Close the dropdown if `parts` owns it, and drop any update still waiting on the debounce.
+  local function closeSuggest(parts)
+    parts.suggestSeq = (parts.suggestSeq or 0) + 1
+    parts.sel = nil
+    if suggest.owner ~= parts then return end
+    suggest.owner = nil
+    if suggest.frame then suggest.frame:Hide() end
+  end
+
+  --- Add a picked row's id the way a typed add goes: the box and the status line cleared, then
+  --- onAdd, then IdList's rebuild. A pick names one id, so no lookup runs.
+  local function pickSuggestion(parts, entry)
+    closeSuggest(parts)
+    parts.lookup = nil
+    local text = parts.edit.GetText and parts.edit:GetText() or ""
+    addResolved(parts.ctx, parts.spec, parts, entry.id,
+      { text = text, typed = trimmed(text), afterAdd = parts.afterAdd }, parts.shown or "")
+  end
+
+  --- The keyboard highlight: the row's own highlight texture, locked on. `selected` records it.
+  local function markRow(row, on)
+    row.selected = on
+    if on then row:LockHighlight() else row:UnlockHighlight() end
+  end
+
+  --- A line at row position `i`: an icon, then the label, left-aligned on one line.
+  local function newSuggestLine(frame, i, font)
+    local line = CreateFrame("Button", nil, frame)
+    line:SetHeight(SUGGEST_ROW_H)
+    local y = -SUGGEST_PAD - (i - 1) * SUGGEST_ROW_H
+    line:SetPoint("TOPLEFT", frame, "TOPLEFT", SUGGEST_PAD, y)
+    line:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -SUGGEST_PAD, y)
+    line.icon = line:CreateTexture(nil, "ARTWORK")
+    line.icon:SetSize(SUGGEST_ICON, SUGGEST_ICON)
+    line.icon:SetPoint("LEFT", line, "LEFT", 2, 0)
+    line.label = line:CreateFontString(nil, "OVERLAY", font)
+    line.label:SetPoint("LEFT", line, "LEFT", SUGGEST_ICON + 6, 0)
+    line.label:SetPoint("RIGHT", line, "RIGHT", -2, 0)
+    line.label:SetJustifyH("LEFT")
+    line.label:SetWordWrap(false)
+    line:Hide()
+    return line
+  end
+
+  --- A row the player can click: it adds its entry for whichever box owns the dropdown then.
+  local function newSuggestRow(frame, i)
+    local row = newSuggestLine(frame, i, "GameFontHighlightSmall")
+    row:SetHighlightTexture(SUGGEST_HIGHLIGHT, "ADD")
+    row:SetScript("OnClick", function(self)
+      local owner = suggest.owner
+      if owner and self.entry then pickSuggestion(owner, self.entry) end
+    end)
+    return row
+  end
+
+  --- The dropdown, built once per instance.
+  local function suggestFrame()
+    if suggest.frame then return suggest.frame end
+    local f = CreateFrame("Frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+    f:SetFrameStrata("FULLSCREEN_DIALOG")
+    f:SetClampedToScreen(true)
+    f:EnableMouse(true)
+    if f.SetBackdrop then
+      f:SetBackdrop(SUGGEST_BACKDROP)
+      f:SetBackdropColor(0, 0, 0, 0.92)
+    end
+    f.rows = {}
+    for i = 1, SUGGEST_ROWS do f.rows[i] = newSuggestRow(f, i) end
+    -- The "+N more" line: a label, not a choice.
+    f.more = newSuggestLine(f, SUGGEST_ROWS + 1, "GameFontDisableSmall")
+    f.more:EnableMouse(false)
+    f:Hide()
+    suggest.frame = f
+    return f
+  end
+
+  --- A row's text: the name (an item's in its quality color), its rank where it has one, and its
+  --- id in gray -- which is all that tells two unranked ids of one name apart.
+  local function suggestLabel(k, e)
+    local name = e.name
+    local color = NAME_COLOR[k] and NAME_COLOR[k](e.id)
+    if color then name = color .. name .. "|r" end
+    if e.rankLabel then name = name .. " " .. e.rankLabel end
+    return name .. " " .. ID_GRAY .. "(" .. tostring(e.id) .. ")|r"
+  end
+
+  --- Show `entry` on `row`, or hide the row for none. `entry` and `labelText` record what it shows.
+  local function fillRow(k, row, entry)
+    row.entry = entry
+    markRow(row, false)
+    if not entry then
+      row.labelText = nil
+      return row:Hide()
+    end
+    row.labelText = suggestLabel(k, entry)
+    row.label:SetText(row.labelText)
+    row.icon:SetTexture(entry.icon)
+    row:Show()
+  end
+
+  local function fillMore(spec, more, left)
+    if left <= 0 then
+      more.labelText = nil
+      return more:Hide()
+    end
+    more.labelText = idText(spec, "more", { count = left })
+    more.label:SetText(more.labelText)
+    more:Show()
+  end
+
+  --- Size the dropdown to `lines` lines and hang it under the box's input.
+  local function placeSuggest(f, edit, lines)
+    local anchor = edit.editbox or edit.frame
+    f:ClearAllPoints()
+    f:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -2)
+    local width = anchor and anchor.GetWidth and anchor:GetWidth()
+    f:SetWidth(math.max(type(width) == "number" and width or 0, SUGGEST_MIN_W))
+    f:SetHeight(lines * SUGGEST_ROW_H + 2 * SUGGEST_PAD)
+  end
+
+  local function showSuggestions(parts, matches)
+    local f = suggestFrame()
+    suggest.owner, parts.matches, parts.sel = parts, matches, nil
+    local k = idKind(parts.spec.kind)
+    for i, row in ipairs(f.rows) do fillRow(k, row, matches[i]) end
+    local rows = math.min(#matches, SUGGEST_ROWS)
+    fillMore(parts.spec, f.more, #matches - rows)
+    placeSuggest(f, parts.edit, rows + (#matches > rows and 1 or 0))
+    f:Show()
+  end
+
+  --- Up and Down move the highlight over the rows, wrapping; from none, Down takes the first row
+  --- and Up the last. The "+N more" line is never highlighted.
+  local function moveSelection(parts, step)
+    local n = math.min(#(parts.matches or {}), SUGGEST_ROWS)
+    if n == 0 then return end
+    local sel = parts.sel
+    if sel then sel = (sel - 1 + step) % n + 1 elseif step > 0 then sel = 1 else sel = n end
+    parts.sel = sel
+    for i, row in ipairs(suggest.frame.rows) do markRow(row, i == sel) end
+  end
+
+  --- The parts owning the dropdown, when `frame` is its box's input or its box's frame.
+  local function ownerOf(frame)
+    local o = suggest.owner
+    if o and (o.edit.editbox == frame or o.edit.frame == frame) then return o end
+  end
+
+  --- Whether the pointer is over the dropdown: focus lost to a click on a row keeps it open for
+  --- the click. Only a real `true` counts.
+  local function pointerOnSuggest()
+    local f = suggest.frame
+    return f ~= nil and f.IsMouseOver ~= nil and f:IsMouseOver() == true
+  end
+
+  local function hookOnce(frame, script, fn)
+    if not (frame and frame.HookScript) then return end
+    local done = hookedFrames[frame] or {}
+    hookedFrames[frame] = done
+    if done[script] then return end
+    done[script] = true
+    frame:HookScript(script, fn)
+  end
+
+  --- The keys and the hiding AceGUI's EditBox has no callback for, hooked on its input frame and
+  --- its own frame. A host's AceGUI without the input frame gets no keys, and the mouse still
+  --- picks.
+  local function hookBox(edit)
+    hookOnce(edit.editbox, "OnArrowPressed", function(self, key)
+      local o = ownerOf(self)
+      if o and ARROW_STEP[key] then moveSelection(o, ARROW_STEP[key]) end
+    end)
+    hookOnce(edit.editbox, "OnEscapePressed", function(self)
+      local o = ownerOf(self)
+      if o then closeSuggest(o) end
+    end)
+    hookOnce(edit.editbox, "OnEditFocusLost", function(self)
+      local o = ownerOf(self)
+      if o and not pointerOnSuggest() then closeSuggest(o) end
+    end)
+    hookOnce(edit.frame, "OnHide", function(self)
+      local o = ownerOf(self)
+      if o then closeSuggest(o) end
+    end)
+  end
+
+  --- Work the list out for `text` and show it, or close the dropdown when nothing matches. The
+  --- render's index is built on its first keystroke; each later one re-reads the unnamed items.
+  local function updateSuggest(parts, text)
+    local k = idKind(parts.spec.kind)
+    if not parts.index then
+      parts.index = buildSuggestIndex(k, parts.spec.candidates)
+    elseif k.loads then
+      nameUnnamed(k, parts.index)
+    end
+    local matches = matchSuggestions(parts.index.entries, trimmed(text))
+    if #matches > 0 then return showSuggestions(parts, matches) end
+    -- Whichever box showed it, the player is typing here now.
+    if suggest.owner then closeSuggest(suggest.owner) end
+  end
+
+  --- A keystroke: the list is worked out SUGGEST_DEBOUNCE after the last one, for the text then.
+  local function onTyped(parts, text)
+    parts.suggestSeq = (parts.suggestSeq or 0) + 1
+    local seq = parts.suggestSeq
+    local function run()
+      if parts.suggestSeq == seq and not parts.released then updateSuggest(parts, text) end
+    end
+    if C_Timer and C_Timer.After then C_Timer.After(SUGGEST_DEBOUNCE, run) else run() end
+  end
+
   local function drawIdInput(ctx, parent, spec, afterAdd)
     local group = startRow(O)
     local eb = O.AceGUI:Create("EditBox")
@@ -2605,16 +3058,29 @@ function lib.__AttachWidgets(O, d)
     disableIfRender(ctx, eb)
     disableIfRender(ctx, add)
 
-    local parts = { edit = eb, status = status }
-    -- A released box drops its pending lookup: AceGUI's pool may hand the box and its status line
-    -- to another page before the lookup's check runs.
-    eb:SetCallback("OnRelease", function() parts.lookup = nil end)
+    local parts = { edit = eb, status = status, ctx = ctx, spec = spec, afterAdd = afterAdd }
+    -- A released box drops its pending lookup and its suggestions: AceGUI's pool may hand the box
+    -- and its status line to another page before the lookup's check or the debounce runs.
+    eb:SetCallback("OnRelease", function()
+      parts.lookup = nil
+      parts.released = true
+      closeSuggest(parts)
+    end)
+    eb:SetCallback("OnTextChanged", function(_, _, text) onTyped(parts, text) end)
+    -- Enter takes the highlighted row; with none, it submits what was typed, as it always has --
+    -- so a name several ranks share is still refused, never one rank added for the player.
     eb:SetCallback("OnEnterPressed", function(_, _, text)
+      if suggest.owner == parts and parts.sel then
+        return pickSuggestion(parts, parts.matches[parts.sel])
+      end
+      closeSuggest(parts)
       submitId(ctx, spec, parts, text, afterAdd)
     end)
     add:SetCallback("OnClick", function()
+      closeSuggest(parts)
       submitId(ctx, spec, parts, eb.GetText and eb:GetText() or "", afterAdd)
     end)
+    hookBox(eb)
     O.AttachTooltip(eb, spec.label, spec.tooltip)
     O.AttachTooltip(add, spec.label, spec.tooltip)
     group:AddChild(eb)

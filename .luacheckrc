@@ -11,6 +11,10 @@ read_globals = {
   -- An id list's name lookups (LibKa0s-Options-1.0's ResolveId / IdInput / IdList, minor 19), each
   -- read at call time and guarded, so a client without one degrades to id-only input.
   "C_Spell", "C_CurrencyInfo",
+  -- IdInput's suggestions (issue #31): the bags and the spellbook it lists, the quality tier it
+  -- labels an item's rank with, and the dropdown's backdrop. All read at call time and guarded.
+  "C_Container", "C_SpellBook", "C_TradeSkillUI", "Enum", "NUM_TOTAL_EQUIPPED_BAG_SLOTS",
+  "NUM_BAG_SLOTS", "BackdropTemplateMixin",
   "GetBuildInfo",   -- the client interface version a perf record stamps
   -- The settings canvas (LibKa0s-Options-1.0). `Settings` is the public registration API;
   -- `SettingsPanel` is private and only ever reached inside a pcall, for expanding the left tree,
