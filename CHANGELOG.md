@@ -22,28 +22,33 @@ and so does the kit:
 - `disabledIf` on every widget maker, as a settings path or a predicate, plus a `RenderRows`
   option that draws a whole call disabled;
 - `O.ChoiceGrid`, a matrix of radio cells;
-- `O.ResolveId`, `O.IdInput` and `O.IdList`, which add an id by number, link or name.
+- `O.ResolveId`, `O.IdInput` and `O.IdList`, which add an id by number, link or name, with
+  `O.UnnamedCandidates` and `O.ID_NAME_HINT` beside them.
 
 Kit revision 20 adds `mock_ids.lua` so a suite can drive the id widgets. All three came out of
 AuraMaster's settings rework (feedback batch 5), and ConsumableMaster, BankLedger and LootHistory
 adopt the id widgets.
 
-No member is removed, renamed or resignatured, and no descriptor field is added. Four **instance**
-members are added: `ChoiceGrid`, `ResolveId`, `IdInput` and `IdList`. The Options member manifest
+No member is removed, renamed or resignatured, and no descriptor field is added. Six **instance**
+members are added: `ChoiceGrid`, `ResolveId`, `UnnamedCandidates`, `IdInput`, `IdList` and
+the table `ID_NAME_HINT`. The Options member manifest
 lists the library table's members only, so it differs from 18.15.5.3's in the minor alone.
 
 **Re-vendoring moves one case in nine consumers.** With the whole payload in, `LibKa0s/` into
 `libs/LibKa0s/` and `testkit/` into `tests/_kit/`, every consumer's Options degradation-stub parity
-check (`Kit.assertSurfaceParity`) names the four new members as missing from its hand-written stub:
+check (`Kit.assertSurfaceParity`) names the six new members as missing from its hand-written stub:
 
 ```
-LibKa0s-Options-1.0: the degraded stub diverges from the live surface in 4 place(s) — ChoiceGrid
-is missing (live: function); IdInput is missing (live: function); IdList is missing (live:
-function); ResolveId is missing (live: function)
+LibKa0s-Options-1.0: the degraded stub diverges from the live surface in 6 place(s) — ChoiceGrid
+is missing (live: function); ID_NAME_HINT is missing (live: table); IdInput is missing (live:
+function); IdList is missing (live: function); ResolveId is missing (live: function);
+UnnamedCandidates is missing (live: function)
 ```
 
-That is the gate working. A stub owes every instance member, and each consumer adds four inert
-members to its stub in the re-vendor commit. ConsumableMaster's stub check does not move. Measured in
+That is the gate working. A stub owes every instance member, and each consumer adds six inert
+members to its stub in the re-vendor commit (a table for `ID_NAME_HINT`). The clones below were
+measured when the payload added four; the two added since land in the same single parity case, so
+the failure counts stand. ConsumableMaster's stub check does not move. Measured in
 scratch clones of all ten, each at the branch it had checked out:
 
 | Consumer | Branch | Commit | Before (v1.34.0, kit 19) | After (v1.35.0, kit 20) |
@@ -108,12 +113,33 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   3. the client's name lookup (`C_Spell.GetSpellInfo(name)`, `C_Item.GetItemInfoInstant(name)`);
   4. a case-insensitive exact name over the host's `candidates()`.
 
+  A name two distinct ids carry is `ambiguous`: two candidates, or the client's step-3 hit and a
+  different candidate. The client answers one id for a name several share (an item's
+  crafted-quality ranks), so the hit alone would add a rank the player did not pick.
+
   It returns `id, name, icon`, or `nil, reason` for `empty`, `notFound` or `ambiguous`. `kind` is
   `"spell"`, `"item"` or `"currency"`, or a host table with its own `resolve`.
 - **`O.IdInput(ctx, parent, spec)`** draws an edit box, an Add button and a status line. Enter or
   Add resolves the text, clears the box and the status line, then calls `spec.onAdd(id)`, so
   `onAdd` may redraw the page synchronously. A raising `onAdd` gets both back. On failure it writes
   the reason in orange and adds nothing.
+
+  The client has no item-name search. `GetItemInfoInstant(name)` answers only for an item the
+  player carries or carried this session, and a candidate the client has not cached has no name to
+  match. So an `IdInput` (or `IdList`) drawn with item `candidates` asks the client for up to 200 of
+  the unnamed ones when it is drawn, once a session per instance. A name that still finds nothing
+  while some are unnamed is **looked up**: they are asked for again as one batch, the status line
+  reads *Looking up items…* in a neutral color, and the text is tried once more when they land. The
+  wait is bounded to five asks at 0.4 s. A new submit, a box the player typed over, or a released box
+  drops the lookup. The retry does not add a rank of a shared name while another rank is still
+  loading: it waits for every id it asked for.
+- **`O.UnnamedCandidates(kind, candidates)`** is pure: the item candidates the client cannot name
+  yet, each once, in the host's order, at most 200 of them. It returns none for spells, currencies
+  and host kinds, or on a client that cannot load an item.
+- **`O.ID_NAME_HINT`** holds the default hints (`item`, `spell`, `currency`), one copy per instance,
+  for a host's tooltip. The not-found words now say where a name can come from, for example "No item
+  named '…' that the game can find." followed by the item hint. The ambiguous words say "pick one
+  from the list, or use the id."
 - **`O.IdList(ctx, spec)`** draws that input plus one line per entry: icon, name, gray id, then
   Remove, or a checkbox for a toggle entry. An item's name is drawn in its quality color
   (`C_Item.GetItemQualityByID` through `ITEM_QUALITY_COLORS`), as BankLedger's and LootHistory's
@@ -125,7 +151,8 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
 
 The widgets never write a path, so the host keeps its stored shape. After an add or a remove,
 `O.IdList` redraws through `ctx.rebuild` when the host set one, and otherwise through
-`O.RefreshAllPanels()`. The words are a per-call `spec.strings` table, not `lib.STRINGS` keys.
+`O.RefreshAllPanels()`. The words are a per-call `spec.strings` table, not `lib.STRINGS` keys. Two keys join
+`add`, `remove`, `empty`, `notFound`, `ambiguous` and `unknown`: `looking` and `nameHint`.
 
 The design's `O.IdInput(ctx, spec)` shipped as `O.IdInput(ctx, parent, spec)`, with `parent`
 defaulting to the page scroll, so ConsumableMaster can draw the line into its own container.

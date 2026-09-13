@@ -851,9 +851,41 @@ local ID_TEXT = {
   remove    = "Remove",
   empty     = "Type an id, a link or a name.",
   notFound  = "No {noun} named '{text}'.",
-  ambiguous = "Several {plural} are named '{text}' \226\128\148 use the id.",
+  ambiguous = "Several {plural} are named '{text}' \226\128\148 pick one from the list, or use the id.",
   unknown   = "Unknown {noun} {id}",
+  looking   = "Looking up {plural}\226\128\166",
+  nameHint  = "",
 }
+
+-- The named kinds' own words, over ID_TEXT's: a notFound that says where a name can come from, and
+-- the hint it ends with (`{hint}`, filled from the `nameHint` key, so a host that rewords the hint
+-- rewords both). Keyed by the kind table, as NAME_COLOR is, so a host's own kind never matches.
+-- The client has no item-name search: GetItemInfoInstant(name) answers only for an item the player
+-- carries or carried this session, and a spell name only for a spell the client knows. Anything
+-- else reaches a name through the host's candidates alone.
+local KIND_TEXT = {
+  [ID_KINDS.item] = {
+    notFound = "No item named '{text}' that the game can find. {hint}",
+    nameHint = "Names work for items you carry (or carried this session) and ones this list "
+      .. "knows; otherwise use the id or shift-click a link.",
+  },
+  [ID_KINDS.spell] = {
+    notFound = "No spell named '{text}' that the game knows. {hint}",
+    nameHint = "Names work for spells the game knows and ones this list knows; otherwise use the "
+      .. "id or shift-click a link.",
+  },
+  [ID_KINDS.currency] = {
+    notFound = "No currency named '{text}' that this list knows. {hint}",
+    nameHint = "Currency names work only for the currencies this list knows; otherwise use the id "
+      .. "or shift-click a link.",
+  },
+}
+
+--- A word for `key` in `kind`'s own set, or nil for the shared default.
+local function kindText(kind, key)
+  local row = KIND_TEXT[idKind(kind)]
+  return row and row[key]
+end
 
 --- Fill `{name}` tokens from `fields`; a token with no field is left as written.
 local function fillText(template, fields)
@@ -906,6 +938,15 @@ local function byCandidates(k, text, candidates)
   return nil, "notFound"
 end
 
+--- The client's name hit, unless a candidate with a DIFFERENT id carries the same name. The client
+--- answers one id for a name several share (an item's crafted-quality ranks), so the hit alone
+--- would hand the player one rank they did not pick.
+local function unlessShared(k, text, candidates, id, name, icon)
+  local other, why = byCandidates(k, text, candidates)
+  if why == "ambiguous" or (other ~= nil and other ~= id) then return nil, "ambiguous" end
+  return id, name, icon
+end
+
 local RESOLVE_REASONS = { empty = true, notFound = true, ambiguous = true }
 
 --- A host kind's own resolver, handed everything typed: a number, a link or a name. It answers
@@ -926,6 +967,8 @@ end
 ---   2. a link of the kind's own type (`|Hspell:21562:...`, or the bare `spell:21562`);
 ---   3. the client's name lookup (spells and items; currencies have none);
 ---   4. a case-insensitive exact name over the ids `candidates()` returns.
+--- A name is "ambiguous" when two DISTINCT ids carry it: two candidates, or the client's hit at
+--- step 3 and a different candidate (an item's crafted-quality ranks share one name).
 --- Returns `id, name, icon` -- a number the client cannot name still resolves, with no name, which
 --- is the degraded mode -- or `nil, reason` with reason "empty", "notFound" or "ambiguous".
 local function resolveId(kind, text, candidates)
@@ -941,8 +984,38 @@ local function resolveId(kind, text, candidates)
     return id, k.info(id)
   end
   local found, name, icon = byClientName(k, text)
-  if found then return found, name, icon end
+  if found then return unlessShared(k, text, candidates, found, name, icon) end
   return byCandidates(k, text, candidates)
+end
+
+-- The most unnamed candidates one lookup, or one build's pre-warm, asks the client for. A host's
+-- candidate list can be a whole bag or an expansion's consumables; asking for thousands of items
+-- at once floods the client's item-data queue for one typed name. Past the cap, a name among the
+-- later candidates resolves once something else has cached them.
+local ID_LOOKUP_CAP = 200
+
+--- Whether this client can both load an item and name one: without either, an unnamed item stays
+--- unnamed, and there is nothing to wait for.
+local function itemLoadable()
+  return C_Item and C_Item.GetItemNameByID and C_Item.RequestLoadItemDataByID and true or false
+end
+
+--- The candidates of a kind the client loads (items) that it cannot name yet: numbers, each once,
+--- in the host's order, at most ID_LOOKUP_CAP of them. Pure; published as O.UnnamedCandidates.
+--- None for a spell, a currency or a host kind, for a raising candidates(), or on a client that
+--- cannot load an item. A raising id lookup reads as named, so it is not asked for.
+local function unnamedCandidates(kind, candidates)
+  local k, out, seen = idKind(kind), {}, {}
+  if not (k.loads and type(k.info) == "function" and itemLoadable()) then return out end
+  for _, id in ipairs(candidateIds(candidates)) do
+    if type(id) == "number" and not seen[id] then
+      seen[id] = true
+      local ok, name = pcall(k.info, id)
+      if ok and (type(name) ~= "string" or name == "") then out[#out + 1] = id end
+      if #out >= ID_LOOKUP_CAP then break end
+    end
+  end
+  return out
 end
 
 --- Attach the widget makers and the flow engine to one instance. Called at the end of lib:New, so
@@ -2270,6 +2343,22 @@ function lib.__AttachWidgets(O, d)
   local ID_GRAY = "|cff808080"
 
   O.ResolveId = resolveId
+  O.UnnamedCandidates = unnamedCandidates
+  -- The default name hints, per named kind, for a host's tooltip. A copy per instance, so a host
+  -- that rewrites one changes its own and no other host's; the widgets read `spec.strings.nameHint`
+  -- and their own defaults, never this table.
+  O.ID_NAME_HINT = {}
+  for name, k in pairs(ID_KINDS) do O.ID_NAME_HINT[name] = KIND_TEXT[k].nameHint end
+
+  -- A typed name that finds nothing, where some item candidates are still unnamed, is looked up:
+  -- those items are asked for and the text tried once more when they land. The wait is bounded as
+  -- IdList's is -- a check 0.4 s after each ask, at most LOOKUP_ROUNDS asks -- and the status line
+  -- reads the neutral `looking` words in the meantime.
+  local LOOKUP_ROUNDS = 5
+  local ID_NEUTRAL_R, ID_NEUTRAL_G, ID_NEUTRAL_B = 1, 1, 1
+  -- The candidate ids this instance has pre-warmed: each is asked for once a session, however
+  -- many renders draw the input.
+  local prewarmed = {}
 
   -- Uncached items. `itemLoads[id]` counts the asks this instance has made for an id, capped at
   -- ITEM_LOAD_TRIES: an id the client does not have never loads, and past five asks (two seconds
@@ -2282,7 +2371,7 @@ function lib.__AttachWidgets(O, d)
   local loadBatches = setmetatable({}, { __mode = "k" })
 
   local function idText(spec, key, fields)
-    local t = spec.strings and spec.strings[key] or ID_TEXT[key]
+    local t = spec.strings and spec.strings[key] or kindText(spec.kind, key) or ID_TEXT[key]
     return fillText(t, fields or {})
   end
 
@@ -2325,30 +2414,136 @@ function lib.__AttachWidgets(O, d)
     parts.status:SetText(text)
   end
 
-  --- Resolve what was typed and hand the id to the host. A failure says why on the status line, in
-  --- orange, and keeps the text so the player can correct it. A success clears the box and the
-  --- status line BEFORE onAdd, because a host whose onAdd redraws the page has released both into
-  --- AceGUI's pool by the time it returns, and the pool may already have handed them to the new
-  --- render. Nothing touches either widget after a clean onAdd. A raising one adds nothing, so the
-  --- text and the status line go back as they were. Then `afterAdd` -- IdList's rebuild.
-  local function submitId(ctx, spec, parts, text, afterAdd)
-    local typed = type(text) == "string" and text:match("^%s*(.-)%s*$") or ""
-    local id, reason = resolveId(spec.kind, typed, spec.candidates)
-    if id == nil then
-      local noun, plural = kindWords(idKind(spec.kind))
-      showStatus(parts, idText(spec, reason, { noun = noun, plural = plural, text = typed }))
-      if parts.status.SetColor then parts.status:SetColor(ID_WARN_R, ID_WARN_G, ID_WARN_B) end
-      return
-    end
-    local shown = parts.shown or ""
+  local function trimmed(text)
+    return type(text) == "string" and text:match("^%s*(.-)%s*$") or ""
+  end
+
+  --- Say why nothing was added, in orange; the text stays so the player can correct it.
+  local function reportFailure(spec, parts, reason, typed)
+    local noun, plural = kindWords(idKind(spec.kind))
+    showStatus(parts, idText(spec, reason, { noun = noun, plural = plural, text = typed,
+                                             hint = idText(spec, "nameHint") }))
+    if parts.status.SetColor then parts.status:SetColor(ID_WARN_R, ID_WARN_G, ID_WARN_B) end
+  end
+
+  --- Hand a resolved id to the host. The box and the status line are cleared BEFORE onAdd, because
+  --- a host whose onAdd redraws the page has released both into AceGUI's pool by the time it
+  --- returns, and the pool may already have handed them to the new render. Nothing touches either
+  --- widget after a clean onAdd. A raising one adds nothing, so the text goes back and the status
+  --- line reads `restore`. Then `sub.afterAdd` -- IdList's rebuild.
+  local function addResolved(ctx, spec, parts, id, sub, restore)
     showStatus(parts, "")
     parts.edit:SetText("")
     if callHost(spec.onAdd, id) then
-      if afterAdd then afterAdd(ctx) end
+      if sub.afterAdd then sub.afterAdd(ctx) end
       return
     end
-    parts.edit:SetText(type(text) == "string" and text or typed)
-    showStatus(parts, shown)
+    parts.edit:SetText(type(sub.text) == "string" and sub.text or sub.typed)
+    showStatus(parts, restore)
+  end
+
+  --- Whether the kind names `id` yet. A raising lookup reads as not yet.
+  local function entryNamed(k, id)
+    if type(k.info) ~= "function" then return false end
+    local ok, name = pcall(k.info, id)
+    return ok and type(name) == "string" and name ~= ""
+  end
+
+  --- Ask the client for items: through LibKa0s-Item-1.0's LoadItem when it is loaded (the first id
+  --- carries `cb`), else straight through C_Item, with C_Timer for `cb`. `cb`, when given, runs once,
+  --- 0.4 s on, whether or not they arrived. Answers false, asking nothing, on a client that cannot
+  --- ask -- or cannot call back, when a callback is wanted.
+  local function requestItems(ids, cb)
+    if not (C_Item and C_Item.RequestLoadItemDataByID) then return false end
+    if cb and not (C_Timer and C_Timer.After) then return false end
+    local Item = LibStub and LibStub("LibKa0s-Item-1.0", true)
+    local load = Item and Item.LoadItem
+    for i, id in ipairs(ids) do
+      if load then load(id, i == 1 and cb or nil) else C_Item.RequestLoadItemDataByID(id) end
+    end
+    if cb and not load then C_Timer.After(0.4, cb) end
+    return true
+  end
+
+  --- Ask, once a session per instance, for the item candidates the client cannot name yet, so a
+  --- name among them resolves on the first try. At most ID_LOOKUP_CAP a build; nothing waits.
+  local function prewarm(spec)
+    if type(spec.candidates) ~= "function" then return end
+    local fresh = {}
+    for _, id in ipairs(unnamedCandidates(spec.kind, spec.candidates)) do
+      if not prewarmed[id] then fresh[#fresh + 1] = id end
+    end
+    if #fresh > 0 and requestItems(fresh) then
+      for _, id in ipairs(fresh) do prewarmed[id] = true end
+    end
+  end
+
+  --- The last try: the same text once more, now its candidates have had their chance to load. No
+  --- second lookup -- it adds, or it says why.
+  local function finishLookup(ctx, spec, parts, sub)
+    local id, reason = resolveId(spec.kind, sub.typed, spec.candidates)
+    if id == nil then return reportFailure(spec, parts, reason, sub.typed) end
+    addResolved(ctx, spec, parts, id, sub, "")
+  end
+
+  --- Whether the box still holds what was submitted. A widget with no getter is taken at its word.
+  local function stillTyped(parts, typed)
+    if not parts.edit.GetText then return true end
+    return trimmed(parts.edit:GetText()) == typed
+  end
+
+  --- A lookup's check, 0.4 s after each ask. Nothing for a lookup a newer submit or a release has
+  --- dropped; a box the player has typed over drops it and clears the looking line. Otherwise it
+  --- waits while any id it asked for is still unnamed and asks have not run out -- retrying as
+  --- soon as ONE lands could add one rank of a name the next rank to land also carries -- and then
+  --- tries the text once more.
+  local function checkLookup(ctx, spec, parts, lookup)
+    if parts.lookup ~= lookup then return end
+    if not stillTyped(parts, lookup.sub.typed) then
+      parts.lookup = nil
+      return showStatus(parts, "")
+    end
+    lookup.rounds = lookup.rounds + 1
+    local waiting, k = {}, idKind(spec.kind)
+    for _, id in ipairs(lookup.ids) do
+      if not entryNamed(k, id) then waiting[#waiting + 1] = id end
+    end
+    if #waiting > 0 and lookup.rounds < LOOKUP_ROUNDS then
+      lookup.ids = waiting
+      if requestItems(waiting, lookup.check) then return end
+    end
+    parts.lookup = nil
+    finishLookup(ctx, spec, parts, lookup.sub)
+  end
+
+  --- Start a lookup for a name that found nothing: answers false, starting none, when no candidate
+  --- is unnamed or the client cannot ask.
+  local function startLookup(ctx, spec, parts, sub)
+    local ids = unnamedCandidates(spec.kind, spec.candidates)
+    if #ids == 0 then return false end
+    local lookup = { ids = ids, rounds = 0, sub = sub }
+    lookup.check = function() checkLookup(ctx, spec, parts, lookup) end
+    parts.lookup = lookup
+    if not requestItems(ids, lookup.check) then
+      parts.lookup = nil
+      return false
+    end
+    local noun, plural = kindWords(idKind(spec.kind))
+    showStatus(parts, idText(spec, "looking", { noun = noun, plural = plural, text = sub.typed }))
+    if parts.status.SetColor then parts.status:SetColor(ID_NEUTRAL_R, ID_NEUTRAL_G, ID_NEUTRAL_B) end
+    return true
+  end
+
+  --- Resolve what was typed and hand the id to the host. A name that finds nothing while some item
+  --- candidates are still unnamed is looked up first (startLookup); any other failure says why on
+  --- the status line. A submit replaces any lookup still pending.
+  local function submitId(ctx, spec, parts, text, afterAdd)
+    parts.lookup = nil
+    local sub = { text = text, typed = trimmed(text), afterAdd = afterAdd }
+    local id, reason = resolveId(spec.kind, sub.typed, spec.candidates)
+    if id ~= nil then return addResolved(ctx, spec, parts, id, sub, parts.shown or "") end
+    if reason == "notFound" and startLookup(ctx, spec, parts, sub) then return end
+    reportFailure(spec, parts, reason, sub.typed)
   end
 
   local function drawIdInput(ctx, parent, spec, afterAdd)
@@ -2368,6 +2563,9 @@ function lib.__AttachWidgets(O, d)
     disableIfRender(ctx, add)
 
     local parts = { edit = eb, status = status }
+    -- A released box drops its pending lookup: AceGUI's pool may hand the box and its status line
+    -- to another page before the lookup's check runs.
+    eb:SetCallback("OnRelease", function() parts.lookup = nil end)
     eb:SetCallback("OnEnterPressed", function(_, _, text)
       submitId(ctx, spec, parts, text, afterAdd)
     end)
@@ -2380,6 +2578,7 @@ function lib.__AttachWidgets(O, d)
     group:AddChild(add)
     group:AddChild(status)
     parent:AddChild(group)
+    prewarm(spec)
     return group, eb, add, status
   end
 
@@ -2391,12 +2590,19 @@ function lib.__AttachWidgets(O, d)
   --- redraw anything after an add -- a host that draws its own rows redraws them itself. O.IdList
   --- is this plus the entry lines, and it does.
   ---
+  --- Item candidates the client has not cached have no name to match. Drawing the input asks for up
+  --- to 200 of them (once a session per instance), and a name that still finds nothing while some
+  --- are unnamed is looked up: they are asked for again, the status line reads `looking`, and the
+  --- text is tried once more when they land (a bounded wait, five asks at 0.4 s). A new submit, a
+  --- box the player types over, or a released box drops the lookup.
+  ---
   --- spec = {
   ---   kind       = "spell" | "item" | "currency", or a host table (see O.ResolveId);
   ---   onAdd      = function(id), called once per successful add;
   ---   candidates = optional function() -> ids, searched by name when the client cannot look one up;
   ---   label, tooltip = the edit box's label and both widgets' tooltip;
-  ---   strings    = optional overrides of the words (add, empty, notFound, ambiguous);
+  ---   strings    = optional overrides of the words (add, empty, notFound, ambiguous, looking,
+  ---                nameHint);
   ---   disabled   = optional; drawn disabled, as ChoiceGrid's is. A disabled render is inherited.
   --- }
   ---
@@ -2418,13 +2624,6 @@ function lib.__AttachWidgets(O, d)
       return name .. " " .. ID_GRAY .. "(" .. tostring(id) .. ")|r"
     end
     return idText(spec, "unknown", { noun = (kindWords(k)), id = id })
-  end
-
-  --- Whether the kind names `id` yet. A raising lookup reads as not yet.
-  local function entryNamed(k, id)
-    if type(k.info) ~= "function" then return false end
-    local ok, name = pcall(k.info, id)
-    return ok and type(name) == "string" and name ~= ""
   end
 
   local askItem

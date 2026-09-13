@@ -386,8 +386,8 @@ the Macro Bar's Buttons drag list — was added to the Widgets row by that sweep
 **Where v1.35.0 stands (2026-09-13).** Steps 1–7 are done, and the tag is local only. It has not
 been pushed. Step 8 is next, for four hosts: AuraMaster, ConsumableMaster, BankLedger and
 LootHistory re-vendor now because they adopt the new widgets. The other six take v1.35.0 at their
-next routine re-vendor. **Each re-vendor adds four members to the host's Options degradation stub**
-(`ChoiceGrid`, `ResolveId`, `IdInput`, `IdList`), because the payload alone reddens the stub parity
+next routine re-vendor. **Each re-vendor adds six members to the host's Options degradation stub**
+(`ChoiceGrid`, `ResolveId`, `UnnamedCandidates`, `IdInput`, `IdList`, and the table `ID_NAME_HINT`), because the payload alone reddens the stub parity
 case in nine of the ten; the v1.35.0 `CHANGELOG.md` entry has the measurement. Move this paragraph
 when step 8 is merged.
 

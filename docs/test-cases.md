@@ -485,7 +485,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (194)
+### test_options_widgets.lua (203)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -562,6 +562,15 @@ badge and any count quoted in the docs must agree with it.
 - IdList: a raising entries() is reported and still draws the input
 - IdList: drawn disabled, every Remove and checkbox is disabled
 - IdList: with no AceGUI it draws nothing
+- ResolveId: a client name hit another candidate shares its name with is ambiguous
+- UnnamedCandidates: the item candidates the client cannot name yet, each once, capped
+- IdInput: a name among uncached candidates is looked up, and added once it lands
+- IdInput: a lookup waits for every candidate it asked for, then refuses a shared name
+- IdInput: a lookup that never lands gives up after a bounded wait, with the honest reason
+- IdInput: a second submit, a changed box or a released box drops a pending lookup
+- IdInput and IdList: built with item candidates, they ask for the unnamed ones up front
+- IdInput: a name that finds nothing says where names work, per kind; the hint is exported
+- IdInput: the looking line can be reworded
 - widgets: a string row asking for an EditBox gets one, not a dropdown
 - widgets: an edit box commits on OnEnterPressed and re-reads on refresh
 - widgets: a color row renders a ColorPicker seeded through the descriptor's codec
@@ -1080,7 +1089,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 81 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 194 |
+| test_options_widgets.lua | 203 |
 | test_options_compose.lua | 41 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
@@ -1098,4 +1107,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **972** |
+| **Total** | **981** |

@@ -14,7 +14,7 @@
 | Status | **Current** |
 | Supersedes | [version 18.15.5.3](./version-18.15.5.3-docs.md) |
 | Superseded by | — |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 18, OptionsWidgets = 16, OptionsCompose = 5, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O18`
@@ -24,12 +24,12 @@ minor 5, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were 
 
 ## What changed at this version
 
-**One file moves, `OptionsWidgets.lua` 15 → 16.** It adds four instance members, `O.ChoiceGrid`,
-`O.ResolveId`, `O.IdInput` and `O.IdList`, all **W16**. It widens one row field: `disabledIf` is read
+**One file moves, `OptionsWidgets.lua` 15 → 16.** It adds six instance members, `O.ChoiceGrid`,
+`O.ResolveId`, `O.UnnamedCandidates`, `O.IdInput`, `O.IdList` and the table `O.ID_NAME_HINT`, all **W16**. It widens one row field: `disabledIf` is read
 by every maker, and it may be a predicate as well as a path. It adds one `RenderRows` option,
 `opts.disabled`. No member is removed, renamed or resignatured. The member manifest differs from
 18.15.5.3's in the `OptionsWidgets` minor alone, because it lists the library table's members, and
-all four additions hang off the instance `lib:New` returns. `lib.STRINGS` gains no key. The id
+all six additions hang off the instance `lib:New` returns. `lib.STRINGS` gains no key. The id
 widgets' words are a table of their own, overridable per call (see
 [the id input and the id list](#the-id-input-and-the-id-list)).
 
@@ -124,7 +124,7 @@ the line into a container of its own. ConsumableMaster's priority list does exac
 
 ### What the host does
 
-**Nothing, on the re-vendor.** A host that calls none of the four members, passes no
+**Nothing, on the re-vendor.** A host that calls none of the six members, passes no
 `opts.disabled`, and carries `disabledIf` only in the color picker's path form, which reads as it
 always did, renders as it did at 18.15.5.3. A row of any other type that already carried a
 `disabledIf` would start dimming, since the field was ignored there until W16. A sweep of the ten
@@ -1231,8 +1231,10 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `__pages()` | O1 | The pages that actually built. A raising builder is reported by key and costs only itself. |
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
 | `ChoiceGrid(ctx, spec)` | **W16** | A matrix of radio cells over rows that share one value list: a header line of column labels, then per row one radio per column and the row's label with its tooltip. Reads and writes through the maker seam and re-syncs on `RefreshScalars`. Returns the row lines. See [The choice grid](#the-choice-grid). |
-| `ResolveId(kind, text, candidates)` | **W16** | Pure. Typed text → `id, name, icon`, or `nil, reason` (`"empty"`, `"notFound"`, `"ambiguous"`): a number, a link of the kind's own type, the client's name lookup, then the host's candidates by name. See [The id input and the id list](#the-id-input-and-the-id-list). |
-| `IdInput(ctx, parent, spec)` | **W16** | One add-by-id line — an edit box, an Add button and a status line — into `parent`, default the page's scroll. Resolves through `ResolveId` and calls `spec.onAdd(id)`; never writes a path and redraws nothing. Returns the group, the edit box, the button and the status label. |
+| `ResolveId(kind, text, candidates)` | **W16** | Pure. Typed text → `id, name, icon`, or `nil, reason` (`"empty"`, `"notFound"`, `"ambiguous"`): a number, a link of the kind's own type, the client's name lookup, then the host's candidates by name. A name two distinct ids carry is ambiguous. See [The id input and the id list](#the-id-input-and-the-id-list). |
+| `IdInput(ctx, parent, spec)` | **W16** | One add-by-id line — an edit box, an Add button and a status line — into `parent`, default the page's scroll. Resolves through `ResolveId` and calls `spec.onAdd(id)`; never writes a path and redraws nothing. With item `candidates`, pre-warms the unnamed ones and looks a name up among them before refusing it. Returns the group, the edit box, the button and the status label. |
+| `UnnamedCandidates(kind, candidates)` | **W16** | Pure. The item candidates the client cannot name yet, each once, at most 200 — what `IdInput` asks the client for. See [`O.UnnamedCandidates`](#ounnamedcandidateskind-candidates--ids). |
+| `ID_NAME_HINT` | **W16** | A table: the default name hint per named kind (`item`, `spell`, `currency`), a copy per instance, for a host's tooltip. See [`O.ID_NAME_HINT`](#oid_name_hint). |
 | `IdList(ctx, spec)` | **W16** | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry — icon, name (an item's in its quality color), gray id, and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns the entry lines. |
 | `ColorPair(spec)` | **C1** (`spec.bind`: **C4**) | A color swatch and its *use class color* companion, as exactly two adjacent rows. See [The schema composers](#the-schema-composers). |
 | `FontGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
@@ -1355,13 +1357,18 @@ Pure, and needs no ctx. `text` is trimmed first, and a number `text` is taken as
 |---|---|---|
 | 1 | a number, `^(%d+)$` | all |
 | 2 | a link of the kind's own type — `|Hspell:123:…`, `|Hitem:123:…`, `|Hcurrency:123:…` — or the bare `spell:123` / `item:123` / `currency:123`. An item link typed into a spell list is not a spell. | spell, item, currency |
-| 3 | the client's name lookup: `C_Spell.GetSpellInfo(name)` → `spellID`; `C_Item.GetItemInfoInstant(name)` → the first return | spell, item |
+| 3 | the client's name lookup: `C_Spell.GetSpellInfo(name)` → `spellID`; `C_Item.GetItemInfoInstant(name)` → the first return. The item lookup answers only for an item the player carries or carried this session. A hit a **different** candidate id also carries → `"ambiguous"`. | spell, item |
 | 4 | a case-insensitive exact name over the ids `candidates()` returns, named through the kind's own id lookup. Two **distinct** ids with the name → `"ambiguous"`; one id listed twice is one. | spell, item, currency |
 
 `reason` is `"empty"`, `"notFound"` or `"ambiguous"`. A number the client cannot name still
 resolves, with no name: that is the degraded mode. Every client API is read at call time and
 guarded, so with no `C_Spell` or `C_Item` a number or a link resolves, a name finds nothing, and
 nothing raises. A raising `candidates()` costs step 4 and is not reported.
+
+**A shared name is ambiguous at step 3 too.** The client answers one id for a name several share,
+such as an item's crafted-quality ranks. Its hit alone would add a rank the player did not pick, so
+a candidate with a different id and the same name makes it `"ambiguous"`. A candidate the client
+cannot name yet (an uncached item) is not a match, which is what `O.IdInput`'s lookup is for.
 
 `kind`:
 
@@ -1372,6 +1379,33 @@ nothing raises. A raising `candidates()` costs step 4 and is not reported.
 | `"currency"` | `C_CurrencyInfo.GetCurrencyInfo(id)`; an empty name is the client's answer for an id it does not have | `GameTooltip:SetCurrencyByID` |
 | a host table | `{ resolve = function(text, candidates) -> id, name, icon \| nil, reason; info = function(id) -> name, icon; noun; plural; tooltip = function(tooltip, id) or a GameTooltip method name }`. `resolve` replaces all four steps, is handed the trimmed text, and is `pcall`'d — a raise or an unknown reason reads as `"notFound"`. | as given |
 | anything else | numbers only | none |
+
+### `O.UnnamedCandidates(kind, candidates)` → ids
+
+Pure, and needs no ctx. It returns the ids `candidates()` returns that the client cannot name
+yet: numbers only, each once, in the host's order, at most **200** (`ID_LOOKUP_CAP`). The cap
+exists because a host's candidate list can be a whole bag or an expansion's consumables, and asking
+for thousands of items at once floods the client's item-data queue for one typed name. A name among
+candidates past the cap resolves once something else has cached them.
+
+It returns an empty table for a kind the client does not load (`"spell"`, `"currency"`, a host
+table, or anything else), for a raising or absent `candidates`, and on a client without
+`C_Item.GetItemNameByID` or `C_Item.RequestLoadItemDataByID`. An id whose name lookup raises reads as
+named, so it is not asked for.
+
+### `O.ID_NAME_HINT`
+
+A table of the default name hints, one per named kind, for a host to reuse in the input's tooltip:
+
+| Key | Default |
+|---|---|
+| `item` | `Names work for items you carry (or carried this session) and ones this list knows; otherwise use the id or shift-click a link.` |
+| `spell` | `Names work for spells the game knows and ones this list knows; otherwise use the id or shift-click a link.` |
+| `currency` | `Currency names work only for the currencies this list knows; otherwise use the id or shift-click a link.` |
+
+Each instance gets its own copy, so a host that rewrites an entry changes its own table and no other
+host's. The widgets never read it: they read `spec.strings.nameHint`, then these defaults. A host with
+a locale passes its translation as `spec.strings.nameHint`, and uses the same string in its tooltip.
 
 ### `O.IdInput(ctx, parent, spec)` → group, editBox, button, status
 
@@ -1384,7 +1418,7 @@ clip reason above.
 |---|---|
 | `kind` | As `ResolveId`'s. |
 | `onAdd` | `function(id)`, called once per successful add. A raise is reported through `lib.STRINGS.BUTTON_FAILED` and counts as a failure: the text stays. |
-| `candidates` | Optional `function() -> ids`, searched by name at step 4. |
+| `candidates` | Optional `function() -> ids`, searched by name at step 4. For `kind = "item"`, the unnamed ones are pre-warmed and looked up (below). |
 | `label`, `tooltip` | The edit box's label, and the tooltip on both widgets. |
 | `strings` | Optional overrides of the words, by key — see below. |
 | `disabled` | Optional; draws both widgets disabled. A disabled render is inherited. |
@@ -1397,6 +1431,26 @@ status line go back as they were. Failure writes the reason on the status line i
 (`1, 0.5, 0`), keeps the text, and calls nothing. **It redraws nothing after an add**: a host that
 draws its own rows redraws them itself. It returns nil, drawing nothing, with no AceGUI.
 
+**Unnamed item candidates.** The client has no item-name search, and a candidate it has not cached
+has no name for step 4 to match. Two things cover that, both only for `kind = "item"` with
+`candidates`, and both inert on a client that cannot load an item:
+
+- **Pre-warm.** Drawing the input asks the client for `O.UnnamedCandidates(kind, candidates)`, at
+  most 200 a build, and each id once a session per instance, however many renders draw it. Nothing
+  waits on it.
+- **Lookup.** A name that resolves to `"notFound"` while some candidates are still unnamed does not
+  fail yet. Those ids are asked for as one batch, and the status line reads `looking` in a neutral
+  color (`1, 1, 1`). The batch is checked 0.4 s later. While any id it asked for is still unnamed,
+  and fewer than five asks have run, the unnamed ones are asked for again. Then the same text is
+  resolved **once** more: it adds as a normal submit does, or writes the normal reason in orange.
+  It waits for every id rather than retrying when the first lands, because a name several ranks
+  share would otherwise add whichever rank landed first. The asks go through
+  `LibKa0s-Item-1.0`'s `LoadItem` when it is loaded, else `C_Item.RequestLoadItemDataByID` with
+  `C_Timer.After`. `O.ResolveId` itself stays pure and synchronous.
+- **What drops a lookup.** A second submit replaces it. A box the player has typed over by the check
+  drops it and clears the looking line. A released edit box (`OnRelease`) drops it without touching
+  either widget, because AceGUI's pool may have handed them to another page.
+
 The words, and their defaults. `{name}` tokens rather than format specifiers, so a translation can
 reorder them:
 
@@ -1405,12 +1459,16 @@ reorder them:
 | `add` | `Add` |
 | `remove` | `Remove` (IdList) |
 | `empty` | `Type an id, a link or a name.` |
-| `notFound` | `No {noun} named '{text}'.` |
-| `ambiguous` | `Several {plural} are named '{text}' — use the id.` |
+| `notFound` | item: `No item named '{text}' that the game can find. {hint}`; spell: `No spell named '{text}' that the game knows. {hint}`; currency: `No currency named '{text}' that this list knows. {hint}`; a host kind or none: `No {noun} named '{text}'.` |
+| `ambiguous` | `Several {plural} are named '{text}' — pick one from the list, or use the id.` |
+| `looking` | `Looking up {plural}…` (the lookup's status line) |
+| `nameHint` | The kind's entry in [`O.ID_NAME_HINT`](#oid_name_hint); empty for a host kind. Fills `notFound`'s `{hint}`. |
 | `unknown` | `Unknown {noun} {id}` (IdList) |
 
 `{noun}` / `{plural}` are `spell`/`spells`, `item`/`items`, `currency`/`currencies`, a host
-kind's own `noun` / `plural`, or `entry`/`entries`.
+kind's own `noun` / `plural`, or `entry`/`entries`. `{text}` is the trimmed text. `{hint}` is the
+`nameHint` word, so a host that overrides `nameHint` alone changes the hint inside the default
+`notFound` as well.
 
 ### `O.IdList(ctx, spec)` → lines or `nil`
 
@@ -1755,14 +1813,14 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. Four
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. Six
 instance members are added at this version, one row field widens, and nothing is taken away.
 
-**What is added at 18.16.5.3 is four instance members, `disabledIf` on every maker, and
-`RenderRows`' `opts.disabled`.** A host that calls none of the four, passes no `opts.disabled`, and
+**What is added at 18.16.5.3 is six instance members, `disabledIf` on every maker, and
+`RenderRows`' `opts.disabled`.** A host that calls none of the six, passes no `opts.disabled`, and
 carries `disabledIf` only on color rows (as a path) renders as it did at 18.15.5.3. Two things move
 underneath it. First, `RenderRows` now re-raises an escaping hook error from its own frame, with
-the same value. Second, a hand-written degradation stub of this instance owes four more members:
+the same value. Second, a hand-written degradation stub of this instance owes six more members:
 `Kit.assertSurfaceParity` names them on the re-vendor, and each consumer adds them in that commit.
 
 **What moves at 18.15.5.3 is one tooltip, and what is added is `profilesPage`.** A host that
