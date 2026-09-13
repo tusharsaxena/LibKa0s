@@ -77,6 +77,42 @@ to see an item name colored also defines `ITEM_QUALITY_COLORS`, as the client do
 - **`mock_base.lua` sits at `layout-§1`'s cap.** It is 1487 lines at this revision. A surface a
   suite asks for is a file of its own rather than a breach of the cap.
 
+### A second opt-in, `M.installIdSuggestions()`: what IdInput's suggestions read
+
+`O.IdInput`'s dropdown (issue #31) lists items in the player's bags and spells in the spellbook,
+labels a row with an item's quality tier or a spell's subtext, and takes Up, Down and Escape from
+the keys that land on AceGUI's `EditBox` input frame. `mock_ids.lua` carries all of that, behind a
+**second** opt-in. The installer alone installs none of it, so a harness that already installs the
+lookups sees nothing new:
+
+```lua
+dofile("tests/_kit/mock_ids.lua")(M)
+M.installIdSuggestions()          -- after the harness's own C_Container / C_SpellBook, if any
+M.setBagItems(0, { 6948, false, 19019 })
+M.setCraftedQuality(191395, 1)
+```
+
+| Member | Contract |
+|---|---|
+| `M.installIdSuggestions()` | Fills, only where missing, `C_Container.GetContainerNumSlots` / `GetContainerItemID`, `C_SpellBook.GetNumSpellBookSkillLines` / `GetSpellBookSkillLineInfo` / `GetSpellBookItemInfo`, `C_TradeSkillUI.GetItemCraftedQualityByItemInfo` / `GetItemReagentQualityByItemInfo` and `C_Spell.GetSpellSubtext`. It also registers an `EditBox` in the AceGUI fake's `WidgetRegistry` that carries an `editbox` frame, unless the harness registered an EditBox of its own. The registration has no version, so `GetWidgetVersion("EditBox")` still answers nil. The frame comes from the `CreateFrame` in place at the call, so a suite that spies `CreateFrame` later does not count it. |
+| `M.setBagItems(bag, ids)` | Bag `bag`'s slots in order; `false` is an empty slot. `GetContainerNumSlots` answers `#ids`, 0 for a bag nobody seeded. |
+| `M.setSpellBook(ids)` | The player's spellbook as one skill line (`itemIndexOffset = 0`). `GetSpellBookItemInfo(slot, 0)` answers a Spell slot (`itemType = 1`) named from the spell records; the pet bank (1) is empty. |
+| `M.setCraftedQuality(id, tier)`, `M.setReagentQuality(id, tier)` | The tier each `C_TradeSkillUI` lookup answers, by id or link, and nil while the item is uncached, as its quality is. |
+| `M.setSpellSubtext(id, text)` | What `C_Spell.GetSpellSubtext(id)` answers; `""` for a spell with none. |
+
+`M.clearIdRecords()` empties all of it with the records.
+
+**Why a second opt-in, and why not the base.** Three consumers would see a difference otherwise:
+- ConsumableMaster's harness walks its bags through `_G.C_Container` and installs the lookups. The
+  loader reads the mock before `_G`, so a `C_Container` on the mock would shadow its bags.
+- WhatGroup reaches a Compat rung by clearing `C_SpellBook`.
+- PanelMaster's harness gives an EditBox an `editbox` (`HasFocus` answering false) only when it has
+  none, and `settings/PanelEditor.lua` reads it. A kit `editbox` would skip that shim, and the stub's
+  `HasFocus` would answer the frame.
+
+So `mock_base.lua` is untouched by this, and stays at 1487 lines. LibKa0s's own
+`tests/wow_mock.lua` calls it.
+
 ### Three widget methods on the AceGUI fake
 
 | Method | Records | Why |
@@ -100,6 +136,10 @@ three methods:
 - the uncached item's two answers;
 - an item's quality, by id and by link, and none while it is uncached;
 - currencies and `clearIdRecords`;
+- the suggestion sources: absent until `installIdSuggestions`, a harness's own function kept, the
+  bags, the spellbook, both tiers (none while uncached), the subtext, and `clearIdRecords`;
+- the EditBox's `editbox`: absent in the base and after the lookups alone, present after
+  `installIdSuggestions`, hookable and fireable, no version, and a harness's own EditBox kept;
 - the three widget methods.
 
 ### Revision 20 is not the geometry flip

@@ -117,6 +117,11 @@ a status line. `O.IdList(ctx, spec)` is that line plus one line per entry. See
   why, in orange, and keeps the text so the player can correct it.
 - **Degraded mode.** The client APIs are read at call time and each one is guarded. With no
   `C_Spell` or `C_Item`, a number or a link still resolves and a name finds nothing. Nothing raises.
+- **Suggestions while typing** (issue #31). As the player types, `IdInput` (and so `IdList`) lists
+  up to ten matching entries under the box, every rank of a shared name as its own labeled row. A
+  click, or Up/Down and Enter, adds that id through `onAdd`. Enter with nothing highlighted still
+  submits the typed text, so a shared name is still refused. See
+  [suggestions while typing](#suggestions-while-typing).
 
 The design (X-1) named the input line `O.IdInput(ctx, spec)`. It shipped as
 `O.IdInput(ctx, parent, spec)`, with `parent` defaulting to the page's scroll, so a host can draw
@@ -134,8 +139,10 @@ at all, only comments explaining why a color row must not.
 Adopting is per host. AuraMaster takes `ChoiceGrid`, `IdList`, `disabledIf` and `opts.disabled`.
 ConsumableMaster takes `O.IdInput` alone and keeps its own rows. BankLedger and LootHistory take
 `O.IdList`, with `kind = "item"`, and LootHistory also with `kind = "currency"`. A suite driving the
-id widgets installs kit revision 20's `mock_ids.lua` (see
-[testkit version 20](../testkit/version-20-docs.md)).
+id widgets installs kit revision 20's `mock_ids.lua`, and a suite driving the suggestions also calls
+its `M.installIdSuggestions()` (see [testkit version 20](../testkit/version-20-docs.md)).
+ConsumableMaster lists every rank of its consumables by passing `candidates` that returns every
+consumable id it knows, all ranks included.
 
 ### Previously, at 18.15.5.3
 
@@ -1232,7 +1239,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
 | `ChoiceGrid(ctx, spec)` | **W16** | A matrix of radio cells over rows that share one value list: a header line of column labels, then per row one radio per column and the row's label with its tooltip. Reads and writes through the maker seam and re-syncs on `RefreshScalars`. Returns the row lines. See [The choice grid](#the-choice-grid). |
 | `ResolveId(kind, text, candidates)` | **W16** | Pure. Typed text → `id, name, icon`, or `nil, reason` (`"empty"`, `"notFound"`, `"ambiguous"`): a number, a link of the kind's own type, the client's name lookup, then the host's candidates by name. A name two distinct ids carry is ambiguous. See [The id input and the id list](#the-id-input-and-the-id-list). |
-| `IdInput(ctx, parent, spec)` | **W16** | One add-by-id line — an edit box, an Add button and a status line — into `parent`, default the page's scroll. Resolves through `ResolveId` and calls `spec.onAdd(id)`; never writes a path and redraws nothing. With item `candidates`, pre-warms the unnamed ones and looks a name up among them before refusing it. Returns the group, the edit box, the button and the status label. |
+| `IdInput(ctx, parent, spec)` | **W16** | One add-by-id line — an edit box, an Add button and a status line — into `parent`, default the page's scroll. Resolves through `ResolveId` and calls `spec.onAdd(id)`; never writes a path and redraws nothing. With item `candidates`, pre-warms the unnamed ones and looks a name up among them before refusing it. While the player types, lists up to ten matching entries under the box, every rank its own row, to pick with a click or the keys. Returns the group, the edit box, the button and the status label. |
 | `UnnamedCandidates(kind, candidates)` | **W16** | Pure. The item candidates the client cannot name yet, each once, at most 200 — what `IdInput` asks the client for. See [`O.UnnamedCandidates`](#ounnamedcandidateskind-candidates--ids). |
 | `ID_NAME_HINT` | **W16** | A table: the default name hint per named kind (`item`, `spell`, `currency`), a copy per instance, for a host's tooltip. See [`O.ID_NAME_HINT`](#oid_name_hint). |
 | `IdList(ctx, spec)` | **W16** | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry — icon, name (an item's in its quality color), gray id, and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns the entry lines. |
@@ -1420,7 +1427,7 @@ clip reason above.
 |---|---|
 | `kind` | As `ResolveId`'s. |
 | `onAdd` | `function(id)`, called once per successful add. A raise is reported through `lib.STRINGS.BUTTON_FAILED` and counts as a failure: the text stays. |
-| `candidates` | Optional `function() -> ids`, searched by name at step 4 and handed to a host kind's `resolve`. For `kind = "item"`, or a host kind with `loads = true` and an `info`, the unnamed ones are pre-warmed and looked up (below). |
+| `candidates` | Optional `function() -> ids`, searched by name at step 4 and handed to a host kind's `resolve`. For `kind = "item"`, or a host kind with `loads = true` and an `info`, the unnamed ones are pre-warmed and looked up (below). The suggestions list them first (below). It may be called at every draw, every submit, and a render's first keystroke. |
 | `label`, `tooltip` | The edit box's label, and the tooltip on both widgets. |
 | `strings` | Optional overrides of the words, by key — see below. |
 | `disabled` | Optional; draws both widgets disabled. A disabled render is inherited. |
@@ -1460,6 +1467,74 @@ an `info`) with `candidates`, and both inert on a client that cannot load an ite
   drops it and clears the looking line. A released edit box (`OnRelease`) drops it without touching
   either widget, because AceGUI's pool may have handed them to another page.
 
+#### Suggestions while typing
+
+New with issue #31. While the player types, a dropdown under the box lists the entries whose name
+or id matches the text: at most **10** rows, each the entry's icon, its name (an item's in its
+quality color, as `IdList` draws it), its rank where it has one, and its id in gray. A longer list
+ends in a line that is not a choice, `+N more` (the `more` word). The list is worked out 0.1 s after
+the last keystroke, for the text then.
+
+| Typed (trimmed) | Matches |
+|---|---|
+| digits, one or more | the ids that start with them, ascending |
+| two characters or more | names, case-insensitive, in four tiers: 1 the whole name; 2 the name starts with the text; 3 a word inside the name starts with it; 4 the text appears anywhere in it |
+| one character that is not a digit | nothing |
+
+Within a tier: shorter names first, then by name (case-insensitive), then by rank ascending (an
+entry with no rank counts as 0), then by id ascending. **Every rank is its own row.** Ids that share
+a name tie on everything before rank, so they sit together, each labeled with its rank:
+
+| Kind | Rank label | Read from |
+|---|---|---|
+| `"item"` | the client's tier icon, inline: `\|A:Professions-Icon-Quality-Tier<N>-Small:14:14\|a` | `C_TradeSkillUI.GetItemCraftedQualityByItemInfo(id)`, else `C_TradeSkillUI.GetItemReagentQualityByItemInfo(id)` |
+| `"spell"` | the client's subtext as the client words it (`Rank 2`, `Racial`), sorted by the number in it | `C_Spell.GetSpellSubtext(id)` |
+| anything else | none; the gray id tells two rows apart | — |
+
+**Where the rows come from.** The client has no name search, so every row is an id something
+already knows:
+
+| Kind | Sources |
+|---|---|
+| `"item"` | `candidates()`, then every item in the backpack and the equipped bags, through `C_Container.GetContainerNumSlots` / `GetContainerItemID`: bags `0` to `NUM_TOTAL_EQUIPPED_BAG_SLOTS` (the reagent bag included), else to `NUM_BAG_SLOTS`, else to `4` |
+| `"spell"` | `candidates()`, then the Spell and FutureSpell slots of the player's spellbook through `C_SpellBook` (`GetNumSpellBookSkillLines`, `GetSpellBookSkillLineInfo`, `GetSpellBookItemInfo`); a flyout or a pet action is never listed |
+| `"currency"`, or a host table | `candidates()` alone |
+
+A kind with no `info` (a host table without one, or no kind) has nothing to name a row with, and
+suggests nothing. Every source is read at call time and guarded: a client without one, a raising
+`candidates()` or a raising lookup costs that source and nothing else.
+
+**Cost.** A render's index is built on its first keystroke: the ids, each once, the host's first,
+at most **2000**, each named once through the kind's `info`. Every later keystroke scans those
+cached names with no client call, and re-reads at most 200 of the ids the client could not name
+yet. So an uncached item candidate, which the pre-warm asked for, joins the list once it lands. A
+redraw builds a fresh index.
+
+**Choosing.** A click on a row, or Up/Down to highlight one and then Enter, adds that row's id
+exactly as a typed add does: the box and the status line are cleared, then `onAdd(id)` runs, then
+`IdList`'s rebuild. A pick names one id, so no lookup runs. Up and Down wrap. From no highlight,
+Down takes the first row and Up the last. The `+N more` line is never highlighted. **Enter with no
+row highlighted submits the typed text as it always has**, so a name several ranks share is still
+refused as `"ambiguous"`: never one rank added for the player, and never all of them. Add submits
+the typed text too.
+
+**Closing.** Escape, focus leaving the box, the box hiding with its panel, the box's release (a
+redraw), a submit, and text that matches nothing all close it. Focus lost while the pointer is on
+the dropdown keeps it open, because a click on a row is on its way.
+
+**The frame.** One dropdown per instance, built the first time it shows and shared by every
+`IdInput` the instance draws. Its ten rows and the more line are built with it and reused, so a
+redraw builds no frame. It is parented to `UIParent` at `FULLSCREEN_DIALOG` strata, clamped to the
+screen and anchored under the box's input, so the panel's scroll frame cannot clip it. These are
+plain frames with nothing protected, so none of it is refused in combat. The keys come from hooks on
+AceGUI's `EditBox` input frame (`widget.editbox`: `OnArrowPressed`, `OnEscapePressed`,
+`OnEditFocusLost`) and `OnHide` on the widget's frame. Each is hooked once per frame and does
+nothing unless its box owns the dropdown, because AceGUI pools its widgets. A host AceGUI without
+the input frame gets no keys, and a click still picks.
+
+**What the host does.** Nothing, to get the dropdown. To list ids the client does not enumerate,
+such as every consumable a host knows with all its ranks, pass `candidates`.
+
 The words, and their defaults. `{name}` tokens rather than format specifiers, so a translation can
 reorder them:
 
@@ -1473,6 +1548,7 @@ reorder them:
 | `looking` | `Looking up {plural}…` (the lookup's status line) |
 | `nameHint` | The kind's entry in [`O.ID_NAME_HINT`](#oid_name_hint); empty for a host kind. Fills `notFound`'s `{hint}`. |
 | `unknown` | `Unknown {noun} {id}` (IdList) |
+| `more` | `+{count} more` (the suggestions' last line; `{count}` is how many were left out) |
 
 `{noun}` / `{plural}` are `spell`/`spells`, `item`/`items`, `currency`/`currencies`, a host
 kind's own `noun` / `plural`, or `entry`/`entries`. `{text}` is the trimmed text. `{hint}` is the

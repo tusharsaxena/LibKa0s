@@ -698,6 +698,25 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
 
+### test_options_idsuggest.lua (16)
+
+- IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
+- IdInput suggestions: one name's rows sort by rank, then by id
+- IdInput suggestions: at most ten rows, then a line saying how many were left out
+- IdInput suggestions: digits match ids by prefix; a name needs two letters
+- IdInput suggestions: every rank is its own row, labeled, beside the others
+- IdInput suggestions: a spell's rank is the client's subtext
+- IdInput suggestions: a click adds that row's id once, through onAdd, and closes
+- IdInput suggestions: Up and Down move the highlight, and Enter adds it
+- IdInput suggestions: Enter with no row highlighted still refuses a shared name
+- IdList suggestions: a pick reaches onAdd and rebuilds the list
+- IdInput suggestions: Escape, focus loss, a hidden panel and a release close it
+- IdInput suggestions: typing is debounced, and a released box's pending update is dropped
+- IdInput suggestions: items in the bags and spells in the spellbook need no candidates
+- IdInput suggestions: a missing source, a raising candidates() or no info costs nothing
+- IdInput suggestions: an uncached candidate joins the list once it is named
+- IdInput suggestions: one dropdown per instance, whatever the renders
+
 ### test_options_compose.lua (41)
 
 - compose: the instance carries every composer and every published constant
@@ -952,7 +971,7 @@ badge and any count quoted in the docs must agree with it.
 - parallel: the split is balanced to within one suite
 - parallel: more shards than suites yields empty shards, not overlapping ones
 
-### test_mock_base.lua (29)
+### test_mock_base.lua (31)
 
 - mock: a frame that was never armed answers zero, dressed or not
 - mock: __setGeom is the opt-in, and the only thing that arms a frame
@@ -982,6 +1001,8 @@ badge and any count quoted in the docs must agree with it.
 - mock: an uncached item keeps its icon and hides its name until it loads
 - mock: an item record answers its quality by id and by link, and none while uncached
 - mock: a currency record answers by id, and clearIdRecords empties every kind
+- mock: the suggestion sources answer what a suite seeds -- bags, spellbook, tiers, subtext
+- mock: installIdSuggestions gives an AceGUI EditBox its editbox frame, and nothing else
 - mock: an AceGUI widget answers GetText and records SetType and DisableButton
 
 ### test_mock_ace.lua (39)
@@ -1097,6 +1118,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 210 |
+| test_options_idsuggest.lua | 16 |
 | test_options_compose.lua | 41 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
@@ -1105,7 +1127,7 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 11 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
-| test_mock_base.lua | 29 |
+| test_mock_base.lua | 31 |
 | test_mock_ace.lua | 39 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
@@ -1114,4 +1136,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **988** |
+| **Total** | **1006** |

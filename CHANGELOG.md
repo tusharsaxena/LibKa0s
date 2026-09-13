@@ -157,11 +157,25 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   item is asked for through `LibKa0s-Item-1.0`'s `LoadItem` when present. The ids one render asks
   for share one check, 0.4 s later, which redraws the list once if any of them is named by then.
   An id still unnamed is asked for again, up to five asks, then stays "Unknown item N".
+- **Suggestions while typing** (issue #31). `O.IdInput`, and so `O.IdList`, lists up to ten
+  matching entries under the box as the player types, 0.1 s after the last keystroke: icon, name,
+  rank and gray id. Digits match ids by prefix. Two or more characters match names in four tiers
+  (the whole name, its start, the start of a word inside it, anywhere), then by shorter name, name,
+  rank and id. Every rank is its own row, kept together and labeled: an item's crafted or reagent
+  quality tier as the client's tier icon, a spell's subtext. More than ten ends in "+N more". The
+  rows come from `candidates()`, plus the bags for items and the spellbook for spells; a currency
+  has the candidates alone. A click, or Up/Down and Enter, adds that id through `onAdd`. Enter with
+  nothing highlighted still submits the typed text, so a shared name is still refused as ambiguous.
+  Escape, focus loss, the panel hiding and a redraw close it. There is one dropdown frame per
+  instance, its rows built once, at `FULLSCREEN_DIALOG` strata over the panel. One render names at
+  most 2000 ids, once, and each keystroke scans those names and re-reads at most 200 unnamed ones.
+  No member is added. ConsumableMaster lists every rank by passing `candidates`.
 
 The widgets never write a path, so the host keeps its stored shape. After an add or a remove,
 `O.IdList` redraws through `ctx.rebuild` when the host set one, and otherwise through
-`O.RefreshAllPanels()`. The words are a per-call `spec.strings` table, not `lib.STRINGS` keys. Two keys join
-`add`, `remove`, `empty`, `notFound`, `ambiguous` and `unknown`: `looking` and `nameHint`.
+`O.RefreshAllPanels()`. The words are a per-call `spec.strings` table, not `lib.STRINGS` keys. Three keys join
+`add`, `remove`, `empty`, `notFound`, `ambiguous` and `unknown`: `looking`, `nameHint` and `more`.
+Sixteen cases in `tests/test_options_idsuggest.lua` pin the suggestions.
 
 The design's `O.IdInput(ctx, spec)` shipped as `O.IdInput(ctx, parent, spec)`, with `parent`
 defaulting to the page scroll, so ConsumableMaster can draw the line into its own container.
@@ -179,6 +193,14 @@ It lives in a file of its own, and the base mock stays clear of these namespaces
 ConsumableMaster, WhatGroup and MultiMeters reach their Compat fallbacks by clearing `C_Spell` or
 `C_Item`. And `mock_base.lua` is 1487 lines against `layout-§1`'s cap of 1500. The AceGUI fake gains
 `GetText`, `SetType` and `DisableButton`.
+
+What `O.IdInput`'s suggestions read is a second opt-in, `M.installIdSuggestions()`. It fills, only
+where missing, `C_Container`'s bag walk, `C_SpellBook`'s enumeration, `C_TradeSkillUI`'s two
+quality-tier lookups and `C_Spell.GetSpellSubtext`, seeded with `M.setBagItems`, `M.setSpellBook`,
+`M.setCraftedQuality`, `M.setReagentQuality` and `M.setSpellSubtext`. It also gives the AceGUI
+fake's EditBox the `editbox` input frame the keys land on. It is not part of the plain install or
+the base, because ConsumableMaster walks its bags through `_G.C_Container`, which a mock-level
+namespace would shadow, and PanelMaster's harness adds its own `editbox` only when there is none.
 
 ## v1.34.0 — 2026-09-13
 
