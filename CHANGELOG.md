@@ -80,14 +80,15 @@ draws is disabled, including an `afterGroup` hook's `InlineButtonPair` and a `Se
 rides on `ctx.__renderDisabled` for the call alone. Makers snapshot it at build, and a nested call
 inherits it. The loop now runs under a `pcall` so the flag is restored on a raise. The raise is
 re-raised unchanged with `error(err, 0)`, so a traceback shows the re-raise site rather than the
-hook's frame. Seven cases in `tests/test_options_widgets.lua` pin it:
+hook's frame. Eight cases in `tests/test_options_widgets.lua` pin it:
 - the predicate form across every maker, with the refresh flip;
 - the path form;
 - a row with no `disabledIf` left alone;
 - a raising predicate;
 - the page flag;
 - the page flag not leaking into a later render;
-- a nested render inheriting it.
+- a nested render inheriting it;
+- an `afterGroup` hook that raises, which still propagates and leaves the flag cleared.
 
 ### `OptionsWidgets.lua` minor 16 — `O.ChoiceGrid(ctx, spec)`
 
