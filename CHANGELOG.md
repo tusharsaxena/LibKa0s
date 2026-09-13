@@ -165,17 +165,27 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   quality tier as the client's tier icon, a spell's subtext. More than ten ends in "+N more". The
   rows come from `candidates()`, plus the bags for items and the spellbook for spells; a currency
   has the candidates alone. A click, or Up/Down and Enter, adds that id through `onAdd`. Enter with
-  nothing highlighted still submits the typed text, so a shared name is still refused as ambiguous.
-  Escape, focus loss, the panel hiding and a redraw close it. There is one dropdown frame per
-  instance, its rows built once, at `FULLSCREEN_DIALOG` strata over the panel. One render names at
-  most 2000 ids, once, and each keystroke scans those names and re-reads at most 200 unnamed ones.
+  nothing highlighted still submits the typed text, so a shared name is still refused as ambiguous,
+  and the refusal opens the list for that text at once, so "pick one from the list" has a list to
+  pick from, even for Enter inside the debounce or a lookup's last try. Add's refusal hands the box
+  the keys first. A second Enter with nothing highlighted refuses again, so no rank is added
+  unpicked. Escape, focus loss, the panel hiding and a redraw close it, and drop an update still
+  waiting on the debounce whether or not the box shows the list yet, so no list goes up under a box
+  the player has left. Focus lost to a click on the dropdown's backdrop goes back to the box, so
+  Escape still reaches it. The list is as wide as the box at the dropdown's own scale. There is one
+  dropdown frame per instance, its rows built once, at `FULLSCREEN_DIALOG` strata over the panel.
+  One render names at most 2000 ids, once, and each keystroke scans those names and re-reads at most
+  200 unnamed ones.
   No member is added. ConsumableMaster lists every rank by passing `candidates`.
 
 The widgets never write a path, so the host keeps its stored shape. After an add or a remove,
 `O.IdList` redraws through `ctx.rebuild` when the host set one, and otherwise through
 `O.RefreshAllPanels()`. The words are a per-call `spec.strings` table, not `lib.STRINGS` keys. Three keys join
 `add`, `remove`, `empty`, `notFound`, `ambiguous` and `unknown`: `looking`, `nameHint` and `more`.
-Sixteen cases in `tests/test_options_idsuggest.lua` pin the suggestions.
+Twenty-five cases in `tests/test_options_idsuggest.lua` pin the suggestions. What the headless
+suite cannot see, and what a host should know, is in the Options 18.16.5.3 API doc under
+*Suggestions while typing*: the dropdown following a scrolled box past the page's clip edge, the
+200-id pre-warm the suggestions read from, and the index built once per render.
 
 The design's `O.IdInput(ctx, spec)` shipped as `O.IdInput(ctx, parent, spec)`, with `parent`
 defaulting to the page scroll, so ConsumableMaster can draw the line into its own container.

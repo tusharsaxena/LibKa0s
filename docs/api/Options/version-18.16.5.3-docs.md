@@ -1518,22 +1518,55 @@ row highlighted submits the typed text as it always has**, so a name several ran
 refused as `"ambiguous"`: never one rank added for the player, and never all of them. Add submits
 the typed text too.
 
+**A refused shared name lists its ranks.** When a submit, or a lookup's last try, refuses the text
+as `"ambiguous"`, the dropdown opens for that text at once. So the list the refusal points at
+(*pick one from the list*) is on screen, even when Enter came inside the 0.1 s pause and the list
+had never shown. A refusal from Add hands the box the keys first, so Up, Down and Enter reach the
+list. Enter again with nothing highlighted refuses again. A box the player has left by the time a
+lookup refuses is not handed the list; it comes back when focus returns to the box while it still
+holds the name.
+
 **Closing.** Escape, focus leaving the box, the box hiding with its panel, the box's release (a
-redraw), a submit, and text that matches nothing all close it. Focus lost while the pointer is on
-the dropdown keeps it open, because a click on a row is on its way.
+redraw), a submit the list cannot help, and text that matches nothing all close it. The first four
+also drop an update still waiting on the debounce, whether or not the box shows the dropdown yet,
+so a list never goes up under a box the player has left. A hidden box suggests nothing until its
+panel shows again. Focus lost while the pointer is on the dropdown keeps it open, because a click
+on a row is on its way. The box takes the keys back on the next frame unless a pick has closed the
+list, so after a click on the backdrop or the `+N more` line, Escape still reaches it.
 
 **The frame.** One dropdown per instance, built the first time it shows and shared by every
 `IdInput` the instance draws. Its ten rows and the more line are built with it and reused, so a
 redraw builds no frame. It is parented to `UIParent` at `FULLSCREEN_DIALOG` strata, clamped to the
-screen and anchored under the box's input, so the panel's scroll frame cannot clip it. These are
-plain frames with nothing protected, so none of it is refused in combat. The keys come from hooks on
-AceGUI's `EditBox` input frame (`widget.editbox`: `OnArrowPressed`, `OnEscapePressed`,
-`OnEditFocusLost`) and `OnHide` on the widget's frame. Each is hooked once per frame and does
-nothing unless its box owns the dropdown, because AceGUI pools its widgets. A host AceGUI without
-the input frame gets no keys, and a click still picks.
+screen and anchored under the box's input, so the panel's scroll frame cannot clip it. Its width is
+the box's, converted to the dropdown's own scale. These are plain frames with nothing protected, so
+none of it is refused in combat. The keys come from hooks on AceGUI's `EditBox` input frame
+(`widget.editbox`: `OnArrowPressed`, `OnEscapePressed`, `OnEditFocusLost`, `OnEditFocusGained`)
+and `OnHide` on the widget's frame. Each is hooked once per frame, because AceGUI pools its
+widgets, and acts for the box that frame was drawn for last; the arrows act only while that box
+owns the dropdown. Whether a hidden box is shown again is read from its frame's `IsVisible()`
+rather than hooked, because AceGUI's EditBox sets its own frame's `OnShow` script. A host AceGUI
+without the input frame gets no keys, and a click still picks.
 
 **What the host does.** Nothing, to get the dropdown. To list ids the client does not enumerate,
 such as every consumable a host knows with all its ranks, pass `candidates`.
+
+**Limits a host should know.**
+
+- **No candidates, no rows beyond what the player carries.** A shared name the player does not
+  carry, such as ConsumableMaster's *Potion of the Hushed Zephyr* with no rank in the bags, lists
+  nothing until the host passes `candidates` naming its ranks.
+- **The suggestions never ask the client to load an id.** They re-read what the input's pre-warm
+  asked for, at most 200 candidates a build. A host with more uncached candidates than that may not
+  list the later ones on a session's first draw; each redraw asks for the next 200.
+- **The index is built once per render.** A bag change, or an id outside the index that the cache
+  names later, shows at the next redraw.
+
+**Check in game** (the headless suite cannot observe these): the dropdown draws above the Settings
+panel; the tier atlas renders inline; `OnArrowPressed` reaches AceGUI's EditBox for Up and Down; a
+click on a row picks after the box has lost focus; the box takes focus back after a click on the
+backdrop; `C_SpellBook`'s enumeration lists the spellbook; the width matches the box on a scaled
+panel. Known cosmetic gap: the dropdown is parented to `UIParent` and anchored to the box, so if
+the page scrolls while it is open it follows the box past the scroll frame's clip edge.
 
 The words, and their defaults. `{name}` tokens rather than format specifiers, so a translation can
 reorder them:
