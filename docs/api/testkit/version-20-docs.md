@@ -47,19 +47,21 @@ end
 
 | Member | Contract |
 |---|---|
-| `M.addIdRecord(kind, id, name, icon, uncached)` | Seeds one record. `kind` is `"spell"`, `"item"` or `"currency"`. |
+| `M.addIdRecord(kind, id, name, icon, uncached, quality)` | Seeds one record. `kind` is `"spell"`, `"item"` or `"currency"`. `quality` is an item's `Enum.ItemQuality` number, and optional. |
 | `M.clearIdRecords()` | Empties every kind. The records live on the mock, so a harness that builds one mock per run must clear them between cases. |
 | `M.__idRecords` | `{ spell = {}, item = {}, currency = {} }`, id-keyed. |
 | `C_Spell.GetSpellInfo(idOrName)` | A SpellInfo table (`name`, `iconID`, `spellID`, …), or nil. |
 | `C_Item.GetItemInfoInstant(idOrNameOrLink)` | `id, "Miscellaneous", "Junk", "", icon, 15, 0`, or nil. |
 | `C_Item.GetItemNameByID(id)` | The name, or nil while the item is uncached. |
+| `C_Item.GetItemQualityByID(idOrLink)` | The record's `quality`, or nil while the item is uncached or when it was seeded with none. `O.IdList` colors an item's name with it. |
 | `C_CurrencyInfo.GetCurrencyInfo(id)` | A CurrencyInfo table (`name`, `iconFileID`, …), or nil. |
 
 A name lookup ignores case, as the client's does, and answers the **lowest** matching id, so two
 records that share a name resolve the same way on every run. An item added `uncached` is one the
 client has not loaded. Its icon answers by id, because `GetItemInfoInstant` needs no cache. Its name
-does not answer, by id or by name, until the record is added again without the flag, which is how a
-suite lands a load.
+and quality do not answer, by id or by name, until the record is added again without the flag,
+which is how a suite lands a load. The installer supplies no quality palette: a harness that wants
+to see an item name colored also defines `ITEM_QUALITY_COLORS`, as the client does.
 
 **Why it is opt-in, and why it is a file of its own:**
 
@@ -96,6 +98,7 @@ three methods:
 - only the missing keys are filled;
 - a name in any case;
 - the uncached item's two answers;
+- an item's quality, by id and by link, and none while it is uncached;
 - currencies and `clearIdRecords`;
 - the three widget methods.
 

@@ -47,8 +47,9 @@ return function()
   -- defined, so the load request above survives and the name lookups join it.
   dofile("tests/_kit/mock_ids.lua")(M)
 
-  -- The colour table QualityFromLink builds its reverse map out of. Real hex values — the parse is
-  -- the thing under test and a made-up palette would test the parser against itself.
+  -- The colour table QualityFromLink builds its reverse map out of, and O.IdList colors an item's
+  -- name from. Real hex values — the parse is the thing under test and a made-up palette would test
+  -- the parser against itself.
   M.ITEM_QUALITY_COLORS = {
     [0] = { hex = "|cff9d9d9d" }, [1] = { hex = "|cffffffff" }, [2] = { hex = "|cff1eff00" },
     [3] = { hex = "|cff0070dd" }, [4] = { hex = "|cffa335ee" }, [5] = { hex = "|cffff8000" },

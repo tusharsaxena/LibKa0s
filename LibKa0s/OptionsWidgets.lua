@@ -793,6 +793,18 @@ local function itemByName(text)
   return id, itemName(id) or text, icon
 end
 
+--- The color code an item's name is drawn in: the client's quality for the id, through its own
+--- ITEM_QUALITY_COLORS palette. Nil, for a plain name, while the item is uncached (the client
+--- answers no quality until it is) or the palette has no entry; the redraw a load triggers colors
+--- it. The palette is read at call time, as LibKa0s-Item-1.0 reads it: it may be unpopulated when
+--- this file loads.
+local function itemQualityColor(id)
+  local quality = C_Item and C_Item.GetItemQualityByID and C_Item.GetItemQualityByID(id)
+  local color = type(quality) == "number" and type(ITEM_QUALITY_COLORS) == "table"
+    and ITEM_QUALITY_COLORS[quality]
+  return type(color) == "table" and type(color.hex) == "string" and color.hex or nil
+end
+
 --- A currency has no client name lookup, so a name reaches one only through the host's
 --- candidates. An empty name is the client's answer for an id it does not have.
 local function currencyInfo(id)
@@ -813,6 +825,10 @@ local ID_KINDS = {
                tooltip = "SetCurrencyByID" },
 }
 local ID_ONLY = { noun = "entry", plural = "entries" }
+
+-- The kinds whose entry names are drawn in a color, keyed by the kind table itself so a host's own
+-- kind table never matches: an item's quality color. A spell and a currency are drawn plain.
+local NAME_COLOR = { [ID_KINDS.item] = itemQualityColor }
 
 --- The kind table for `kind`: a host's own table as given, a named kind, or ID_ONLY.
 local function idKind(kind)
@@ -2393,9 +2409,12 @@ function lib.__AttachWidgets(O, d)
     return underDisable(ctx, spec.disabled, drawIdInput, ctx, parent, spec, nil)
   end
 
-  --- The text an entry's label reads: its name and its id in gray, or "Unknown <kind> <id>".
+  --- The text an entry's label reads: its name (an item's in its quality color) and its id in
+  --- gray, or "Unknown <kind> <id>".
   local function entryLabel(spec, k, id, name)
     if type(name) == "string" and name ~= "" then
+      local color = NAME_COLOR[k] and NAME_COLOR[k](id)
+      if color then name = color .. name .. "|r" end
       return name .. " " .. ID_GRAY .. "(" .. tostring(id) .. ")|r"
     end
     return idText(spec, "unknown", { noun = (kindWords(k)), id = id })
@@ -2546,7 +2565,8 @@ function lib.__AttachWidgets(O, d)
 
   --- An editable id list (minor 16): an optional heading, the O.IdInput line, then one line per
   --- entry -- icon, name and id in gray ("Unknown spell 12345" when the client cannot name it),
-  --- then Remove, or a checkbox for a toggle entry. An item the client has not cached is asked
+  --- then Remove, or a checkbox for a toggle entry. An item's name is drawn in its quality color
+  --- once the client answers one; spell and currency names are plain. An item the client has not cached is asked
   --- for through LibKa0s-Item-1.0's LoadItem. Every id a render asks for joins one batch, checked
   --- once 0.4 s later: the list is drawn again once if any of them is named by then, and an id
   --- still unnamed is asked for again, up to five asks in all.

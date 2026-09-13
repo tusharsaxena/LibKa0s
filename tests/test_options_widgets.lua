@@ -664,14 +664,17 @@ end)
 
 local mocks = T.mocks
 
---- Reset the kit's id records to a known set: two spells, two items (one uncached), and three
---- currencies, two of which share a name.
+--- Reset the kit's id records to a known set: two spells, four items (one uncached, one the client
+--- answers no quality for, the others Common and Legendary), and three currencies, two of which
+--- share a name.
 local function seedIds()
   mocks.clearIdRecords()
   mocks.addIdRecord("spell", 21562, "Power Word: Fortitude", 135987)
   mocks.addIdRecord("spell", 774, "Rejuvenation", 136081)
-  mocks.addIdRecord("item", 6948, "Hearthstone", 134414)
-  mocks.addIdRecord("item", 2589, "Linen Cloth", 132889, true)
+  mocks.addIdRecord("item", 6948, "Hearthstone", 134414, nil, 1)
+  mocks.addIdRecord("item", 2589, "Linen Cloth", 132889, true, 1)
+  mocks.addIdRecord("item", 19019, "Thunderfury", 135349, nil, 5)
+  mocks.addIdRecord("item", 777001, "Nameless Quality", 1)
   mocks.addIdRecord("currency", 3008, "Valorstones", 5872049)
   mocks.addIdRecord("currency", 2914, "Crest", 5872050)
   mocks.addIdRecord("currency", 2915, "Crest", 5872051)
@@ -1041,6 +1044,36 @@ test("IdList: an uncached item asks to load, and the list redraws once its name 
     O.IdList(ctx, { kind = "item", entries = function() return { { id = 2589 } } end })
     assertEqual(requests.total, 1, "a named item needs no request")
   end)
+end)
+
+test("IdList: an item's name is colored by its quality; a spell's and a currency's are not", function()
+  local O, _, ctx, lines = listBench({ { id = 6948 }, { id = 19019 } }, { kind = "item" })
+  -- red under: an item name drawn plain (BankLedger and LootHistory colored theirs by quality)
+  assertEqual(lines[1].children[1].text, "|cffffffffHearthstone|r |cff808080(6948)|r")
+  assertEqual(lines[2].children[1].text, "|cffff8000Thunderfury|r |cff808080(19019)|r")
+  local spell = O.IdList(ctx, { kind = "spell", entries = function() return { { id = 21562 } } end })
+  assertEqual(spell[1].children[1].text, "Power Word: Fortitude |cff808080(21562)|r")
+  local currency = O.IdList(ctx, { kind = "currency", entries = function() return { { id = 3008 } } end })
+  assertEqual(currency[1].children[1].text, "Valorstones |cff808080(3008)|r")
+end)
+
+test("IdList: an item with no quality yet, or no palette for it, is drawn uncolored", function()
+  local O, _, ctx, lines = listBench({ { id = 2589 }, { id = 777001 } }, { kind = "item" })
+  mocks.__timers = {}
+  assertEqual(lines[1].children[1].text, "Unknown item 2589", "an uncached item is not colored")
+  assertEqual(lines[2].children[1].text, "Nameless Quality |cff808080(777001)|r",
+    "a named item the client answers no quality for is drawn plain")
+  mocks.addIdRecord("item", 2589, "Linen Cloth", 132889, nil, 1)
+  local landed = O.IdList(ctx, { kind = "item", entries = function() return { { id = 2589 } } end })
+  assertEqual(landed[1].children[1].text, "|cffffffffLinen Cloth|r |cff808080(2589)|r",
+    "the redraw after the load colors it")
+  local palette = mocks.ITEM_QUALITY_COLORS
+  mocks.ITEM_QUALITY_COLORS = nil
+  local ok, bare = pcall(O.IdList, ctx, { kind = "item", entries = function() return { { id = 6948 } } end })
+  mocks.ITEM_QUALITY_COLORS = palette
+  assertTrue(ok, tostring(bare))
+  -- red under: indexing a missing palette (the line would be lost to its guard)
+  assertEqual(bare[1].children[1].text, "Hearthstone |cff808080(6948)|r")
 end)
 
 test("IdList: uncached items load as one batch -- one timer and one rebuild, however many", function()

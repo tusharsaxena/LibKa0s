@@ -115,7 +115,10 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   `onAdd` may redraw the page synchronously. A raising `onAdd` gets both back. On failure it writes
   the reason in orange and adds nothing.
 - **`O.IdList(ctx, spec)`** draws that input plus one line per entry: icon, name, gray id, then
-  Remove, or a checkbox for a toggle entry. An unknown id reads "Unknown spell 12345". An uncached
+  Remove, or a checkbox for a toggle entry. An item's name is drawn in its quality color
+  (`C_Item.GetItemQualityByID` through `ITEM_QUALITY_COLORS`), as BankLedger's and LootHistory's
+  own lists drew it. It is drawn plain until the client answers a quality. Spell and currency names
+  are plain. An unknown id reads "Unknown spell 12345". An uncached
   item is asked for through `LibKa0s-Item-1.0`'s `LoadItem` when present. The ids one render asks
   for share one check, 0.4 s later, which redraws the list once if any of them is named by then.
   An id still unnamed is asked for again, up to five asks, then stays "Unknown item N".
@@ -131,9 +134,10 @@ defaulting to the page scroll, so ConsumableMaster can draw the line into its ow
 
 It is opt-in, and a harness calls it after defining its own `C_Item` and `C_CurrencyInfo`:
 `dofile("tests/_kit/mock_ids.lua")(M)`. It fills only the keys the harness lacks. It provides
-`C_Spell.GetSpellInfo`, `C_Item.GetItemInfoInstant`, `C_Item.GetItemNameByID` and
-`C_CurrencyInfo.GetCurrencyInfo`, looked up by id or by a case-insensitive name. `M.addIdRecord` and
-`M.clearIdRecords` seed the records.
+`C_Spell.GetSpellInfo`, `C_Item.GetItemInfoInstant`, `C_Item.GetItemNameByID`,
+`C_Item.GetItemQualityByID` and `C_CurrencyInfo.GetCurrencyInfo`, looked up by id or by a
+case-insensitive name. `M.addIdRecord` and `M.clearIdRecords` seed the records. An item record's
+optional sixth argument is its quality, which is nil while the item is uncached.
 
 It lives in a file of its own, and the base mock stays clear of these namespaces, for two reasons.
 ConsumableMaster, WhatGroup and MultiMeters reach their Compat fallbacks by clearing `C_Spell` or

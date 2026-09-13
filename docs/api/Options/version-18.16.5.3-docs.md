@@ -1233,7 +1233,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `ChoiceGrid(ctx, spec)` | **W16** | A matrix of radio cells over rows that share one value list: a header line of column labels, then per row one radio per column and the row's label with its tooltip. Reads and writes through the maker seam and re-syncs on `RefreshScalars`. Returns the row lines. See [The choice grid](#the-choice-grid). |
 | `ResolveId(kind, text, candidates)` | **W16** | Pure. Typed text → `id, name, icon`, or `nil, reason` (`"empty"`, `"notFound"`, `"ambiguous"`): a number, a link of the kind's own type, the client's name lookup, then the host's candidates by name. See [The id input and the id list](#the-id-input-and-the-id-list). |
 | `IdInput(ctx, parent, spec)` | **W16** | One add-by-id line — an edit box, an Add button and a status line — into `parent`, default the page's scroll. Resolves through `ResolveId` and calls `spec.onAdd(id)`; never writes a path and redraws nothing. Returns the group, the edit box, the button and the status label. |
-| `IdList(ctx, spec)` | **W16** | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry — icon, name, gray id, and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns the entry lines. |
+| `IdList(ctx, spec)` | **W16** | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry — icon, name (an item's in its quality color), gray id, and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns the entry lines. |
 | `ColorPair(spec)` | **C1** (`spec.bind`: **C4**) | A color swatch and its *use class color* companion, as exactly two adjacent rows. See [The schema composers](#the-schema-composers). |
 | `FontGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
 | `BorderGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
@@ -1428,7 +1428,11 @@ Everything `IdInput` takes, plus:
 It draws into the page's scroll: the heading, the input line, then one line per entry, guarded per
 line. Each entry line has an `InteractiveLabel` at `0.78` and the action at `0.20`. The label shows
 the entry's icon (16px), its name, and its id in gray, or `Unknown <noun> <id>` when the kind cannot
-name it. Hovering it shows the client's own tooltip for that kind. The action is Remove, or a
+name it. An **item**'s name is drawn in its quality color: `C_Item.GetItemQualityByID(id)` through
+the client's `ITEM_QUALITY_COLORS[quality].hex`, both read at draw time. An item whose quality the
+client does not answer yet, or whose quality has no palette entry, is drawn plain. An uncached item
+has no name to color, and the redraw its load triggers colors it. Spell and currency names, and a
+host kind table's, are drawn plain. Hovering it shows the client's own tooltip for that kind. The action is Remove, or a
 `CheckBox` for a `toggle` entry (a starter the host can switch off without forgetting it), lit by
 `on`.
 
