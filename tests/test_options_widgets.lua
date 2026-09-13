@@ -655,6 +655,398 @@ test("widgets: ChoiceGrid with no AceGUI draws nothing", function()
   end)
 end)
 
+-- ── ResolveId / IdInput / IdList (minor 19) ────────────────────────────────────────────────
+--
+-- An id list a player edits by typing a number, pasting a link or typing a name. Before this each
+-- host drew its own edit box and Add button and accepted a bare number only (BankLedger,
+-- LootHistory, ConsumableMaster), so a player had to look an id up outside the game. The records
+-- below go through the kit's opt-in id lookups, which this repo's tests/wow_mock.lua installs.
+
+local mocks = T.mocks
+
+--- Reset the kit's id records to a known set: two spells, two items (one uncached), and three
+--- currencies, two of which share a name.
+local function seedIds()
+  mocks.clearIdRecords()
+  mocks.addIdRecord("spell", 21562, "Power Word: Fortitude", 135987)
+  mocks.addIdRecord("spell", 774, "Rejuvenation", 136081)
+  mocks.addIdRecord("item", 6948, "Hearthstone", 134414)
+  mocks.addIdRecord("item", 2589, "Linen Cloth", 132889, true)
+  mocks.addIdRecord("currency", 3008, "Valorstones", 5872049)
+  mocks.addIdRecord("currency", 2914, "Crest", 5872050)
+  mocks.addIdRecord("currency", 2915, "Crest", 5872051)
+end
+
+test("ResolveId: a number is an id, and a known one carries its name and icon", function()
+  local O = Fixture.new()
+  seedIds()
+  local id, name, icon = O.ResolveId("spell", " 21562 ")
+  assertEqual(id, 21562); assertEqual(name, "Power Word: Fortitude"); assertEqual(icon, 135987)
+  -- red under: refusing an id the client cannot name (id-only input is the degraded mode)
+  local unknown, noName = O.ResolveId("spell", "99999")
+  assertEqual(unknown, 99999)
+  assertNil(noName, "an unknown id resolves with no name")
+end)
+
+test("ResolveId: every link form resolves, for its own kind only", function()
+  local O = Fixture.new()
+  seedIds()
+  assertEqual(O.ResolveId("spell", "|cff71d5ff|Hspell:21562:0|h[Power Word: Fortitude]|h|r"), 21562)
+  assertEqual(O.ResolveId("item", "|cffffffff|Hitem:6948::::::::80:::::|h[Hearthstone]|h|r"), 6948)
+  assertEqual(O.ResolveId("currency", "|cffffffff|Hcurrency:3008:0|h[Valorstones]|h|r"), 3008)
+  assertEqual(O.ResolveId("spell", "spell:21562"), 21562)
+  assertEqual(O.ResolveId("item", "item:6948"), 6948)
+  assertEqual(O.ResolveId("currency", "currency:3008"), 3008)
+  -- red under: one link pattern for every kind (an item link would add item 6948 as a spell)
+  local id, reason = O.ResolveId("spell", "|cffffffff|Hitem:6948|h[Hearthstone]|h|r")
+  assertNil(id); assertEqual(reason, "notFound")
+end)
+
+test("ResolveId: a spell name the client knows resolves to its id", function()
+  local O = Fixture.new()
+  seedIds()
+  local id, name, icon = O.ResolveId("spell", "power word: fortitude")
+  -- red under: a case-sensitive lookup (players type names in lower case)
+  assertEqual(id, 21562); assertEqual(name, "Power Word: Fortitude"); assertEqual(icon, 135987)
+  local item, itemName = O.ResolveId("item", "HEARTHSTONE")
+  assertEqual(item, 6948); assertEqual(itemName, "Hearthstone")
+end)
+
+test("ResolveId: a name the client cannot look up is found among the host's candidates", function()
+  local O = Fixture.new()
+  seedIds()
+  local candidates = function() return { 2914, 3008 } end
+  local id, name, icon = O.ResolveId("currency", "valorstones", candidates)
+  -- red under: no candidates step (a currency has no client name lookup at all)
+  assertEqual(id, 3008); assertEqual(name, "Valorstones"); assertEqual(icon, 5872049)
+  local none, reason = O.ResolveId("currency", "valorstones")
+  assertNil(none); assertEqual(reason, "notFound", "with no candidates there is nothing to search")
+end)
+
+test("ResolveId: two candidates with the name are ambiguous, one listed twice is not", function()
+  local O = Fixture.new()
+  seedIds()
+  local id, reason = O.ResolveId("currency", "crest", function() return { 2914, 2915 } end)
+  -- red under: taking the first match (the player would get a currency they did not mean)
+  assertNil(id); assertEqual(reason, "ambiguous")
+  -- red under: counting matches rather than distinct ids
+  assertEqual(O.ResolveId("currency", "crest", function() return { 2914, 2914 } end), 2914)
+end)
+
+test("ResolveId: nothing typed is empty, and an unknown name is not found", function()
+  local O = Fixture.new()
+  seedIds()
+  local id, reason = O.ResolveId("spell", "   ")
+  assertNil(id); assertEqual(reason, "empty")
+  assertEqual(select(2, O.ResolveId("spell", nil)), "empty")
+  id, reason = O.ResolveId("spell", "Shadow Word: Pain")
+  assertNil(id); assertEqual(reason, "notFound")
+  -- A raising candidates() is a host bug, and costs the name step rather than the player's click.
+  id, reason = O.ResolveId("spell", "Shadow Word: Pain", function() error("boom") end)
+  assertNil(id); assertEqual(reason, "notFound")
+end)
+
+test("ResolveId: a custom kind's resolver is handed everything typed", function()
+  local O = Fixture.new()
+  local seen
+  local kind = { noun = "thing", resolve = function(text)
+    seen = text
+    if text == "42" then return -42, "Forty-two", 7 end
+    if text == "twin" then return nil, "ambiguous" end
+    if text == "boom" then error("resolver exploded") end
+    return nil
+  end }
+  local id, name, icon = O.ResolveId(kind, " 42 ")
+  -- red under: parsing a number before the resolver (a host that stores spells as -id could not)
+  assertEqual(id, -42); assertEqual(name, "Forty-two"); assertEqual(icon, 7)
+  assertEqual(seen, "42", "trimmed, and otherwise untouched")
+  assertEqual(select(2, O.ResolveId(kind, "twin")), "ambiguous", "a resolver can say why")
+  assertEqual(select(2, O.ResolveId(kind, "nope")), "notFound")
+  assertEqual(select(2, O.ResolveId(kind, "boom")), "notFound", "a raising resolver finds nothing")
+  assertEqual(select(2, O.ResolveId(kind, "")), "empty", "empty is decided before the resolver")
+end)
+
+test("ResolveId: with no client APIs a number still resolves and a name finds nothing", function()
+  local O = Fixture.new()
+  local savedSpell, savedItem = mocks.C_Spell, mocks.C_Item
+  mocks.C_Spell, mocks.C_Item = nil, nil
+  local ok, err = pcall(function()
+    assertEqual(O.ResolveId("spell", "21562"), 21562)
+    -- red under: an unguarded C_Spell (the whole input raises on a client without it)
+    assertEqual(select(2, O.ResolveId("spell", "Power Word: Fortitude")), "notFound")
+    assertEqual(select(2, O.ResolveId("item", "Hearthstone")), "notFound")
+  end)
+  mocks.C_Spell, mocks.C_Item = savedSpell, savedItem
+  assertTrue(ok, tostring(err))
+end)
+
+--- One IdInput on a throwaway page, recording every onAdd.
+local function inputBench(spec)
+  local O, rec, ctx = bench()
+  seedIds()
+  local added = {}
+  spec = spec or {}
+  spec.kind = spec.kind or "spell"
+  spec.onAdd = spec.onAdd or function(id) added[#added + 1] = id end
+  local group, eb, add, status = O.IdInput(ctx, nil, spec)
+  return { O = O, rec = rec, ctx = ctx, group = group, eb = eb, add = add, status = status,
+           added = added }
+end
+
+--- Type into an edit box the way AceGUI's does, then press Enter.
+local function typeEnter(eb, text)
+  eb:SetText(text)
+  eb:__fire("OnEnterPressed", text)
+end
+
+test("IdInput: an edit box and an Add button share a line, with a status line under them", function()
+  local b = inputBench({ label = "Add spell", tooltip = "An id, a link or a name." })
+  -- red under: O.IdInput absent (every host keeps its own id-only edit box)
+  assertEqual(b.eb.type, "EditBox"); assertEqual(b.add.type, "Button")
+  assertEqual(b.eb.labelText, "Add spell")
+  assertNear(b.eb.relativeWidth, 0.78, 1e-6)
+  assertNear(b.add.relativeWidth, 0.20, 1e-6)
+  assertEqual(b.add.text, "Add")
+  assertTrue(b.eb.buttonDisabled, "the edit box's own Okay button is hidden: Add is the button")
+  assertEqual(b.status.type, "Label"); assertEqual(b.status.text, "")
+  assertTrue(b.group.children[1] == b.eb and b.group.children[2] == b.add
+    and b.group.children[3] == b.status, "all three in one group, in that order")
+  local scroll = b.O.EnsureScroll(b.ctx)
+  assertTrue(scroll.children[#scroll.children] == b.group, "added to the page's scroll")
+  assertTrue(b.eb.callbacks.OnEnter ~= nil, "the tooltip is attached")
+end)
+
+test("IdInput: Enter with a valid name adds it once and clears the box", function()
+  local b = inputBench()
+  typeEnter(b.eb, "power word: fortitude")
+  -- red under: Enter not wired (only the button would submit)
+  assertEqual(#b.added, 1, "onAdd ran once")
+  assertEqual(b.added[1], 21562, "with the resolved id")
+  assertEqual(b.eb.text, "", "the box is cleared for the next one")
+  assertEqual(b.status.text, "")
+end)
+
+test("IdInput: the Add button submits what was typed", function()
+  local b = inputBench()
+  b.eb:SetText("|Hspell:774|h[Rejuvenation]|h")
+  b.add:__fire("OnClick")
+  -- red under: the button resolving nothing (it would need Enter to be pressed first)
+  assertEqual(b.added[1], 774)
+end)
+
+test("IdInput: a name that resolves to nothing says so inline and adds nothing", function()
+  local b = inputBench()
+  typeEnter(b.eb, "Shadow Word: Pain")
+  -- red under: adding on a failed resolve, or failing silently
+  assertEqual(#b.added, 0, "nothing added")
+  assertEqual(b.status.text, "No spell named 'Shadow Word: Pain'.")
+  assertTrue(b.status.color ~= nil and b.status.color.r == 1 and b.status.color.b == 0,
+    "in orange")
+  assertEqual(b.eb.text, "Shadow Word: Pain", "the text stays, so the player can correct it")
+  typeEnter(b.eb, "21562")
+  assertEqual(b.status.text, "", "a success clears the message")
+end)
+
+test("IdInput: an ambiguous name asks for the id, in the kind's own plural", function()
+  local b = inputBench({ kind = "currency", candidates = function() return { 2914, 2915 } end })
+  typeEnter(b.eb, "Crest")
+  assertEqual(#b.added, 0)
+  -- red under: pluralizing by adding "s" ("currencys")
+  assertEqual(b.status.text, "Several currencies are named 'Crest' \226\128\148 use the id.")
+end)
+
+test("IdInput: the host can reword the button and the messages", function()
+  local b = inputBench({ strings = { add = "Include", notFound = "Nope: {text}" } })
+  assertEqual(b.add.text, "Include")
+  typeEnter(b.eb, "zzz")
+  -- red under: ignoring spec.strings (a localized host would show English)
+  assertEqual(b.status.text, "Nope: zzz")
+end)
+
+test("IdInput: a raising onAdd is reported, and the box keeps its text", function()
+  local b = inputBench({ onAdd = function() error("store exploded") end })
+  b.rec.chat = {}
+  typeEnter(b.eb, "21562")
+  -- red under: an unguarded onAdd (a raise inside AceGUI's dispatch takes the frame's clicks down)
+  assertTrue(table.concat(b.rec.chat, "\n"):find("store exploded", 1, true) ~= nil)
+  assertEqual(b.eb.text, "21562", "the add did not happen, so the input is not cleared")
+end)
+
+test("IdInput: drawn inside a disabled render, or with spec.disabled, it is disabled", function()
+  local O, rec, ctx = bench()
+  local eb, add
+  local after = { Master = function(c)
+    local _
+    _, eb, add = O.IdInput(c, nil, { kind = "spell", onAdd = function() end })
+  end }
+  O.RenderRows(ctx, { rec.byPath.locked }, after, nil, { disabled = true })
+  -- red under: the input ignoring the render's flag (a disabled page would still take ids)
+  assertTrue(eb.disabled); assertTrue(add.disabled)
+  local b = inputBench({ disabled = true })
+  assertTrue(b.eb.disabled); assertTrue(b.add.disabled)
+  assertNil(b.ctx.__renderDisabled, "the flag lives for the call only")
+  local live = inputBench()
+  assertNil(live.eb.disabled, "an input drawn normally is never touched")
+end)
+
+test("IdInput: with no AceGUI it draws nothing", function()
+  withoutAceGUI(function()
+    local O, _, ctx = bench()
+    assertNil(O.IdInput(ctx, nil, { kind = "spell", onAdd = function() end }))
+  end)
+end)
+
+--- One IdList on a throwaway page. `entries` is the host's list; every callback is recorded.
+local function listBench(entries, spec)
+  local O, rec, ctx = bench()
+  seedIds()
+  local log = { added = {}, removed = {}, toggled = {}, rebuilt = 0 }
+  ctx.rebuild = function() log.rebuilt = log.rebuilt + 1 end
+  spec = spec or {}
+  spec.kind = spec.kind or "spell"
+  spec.entries = spec.entries or function() return entries end
+  spec.onAdd = function(id) log.added[#log.added + 1] = id end
+  spec.onRemove = function(id) log.removed[#log.removed + 1] = id end
+  spec.onToggle = function(id, on) log.toggled[#log.toggled + 1] = { id, on } end
+  local lines = O.IdList(ctx, spec)
+  return O, rec, ctx, lines, log
+end
+
+--- The input group an IdList drew: the first SimpleGroup in the scroll holding an EditBox.
+local function listInput(O, ctx)
+  for _, w in ipairs(O.EnsureScroll(ctx).children) do
+    if w.children and w.children[1] and w.children[1].type == "EditBox" then
+      return w.children[1], w.children[2], w.children[3]
+    end
+  end
+end
+
+test("IdList: one line per entry -- icon, name and gray id, then Remove or a checkbox", function()
+  local O, _, ctx, lines = listBench({
+    { id = 21562 }, { id = 99999 }, { id = 774, toggle = true, on = true },
+  }, { heading = "Spells" })
+  -- red under: O.IdList absent
+  assertEqual(#lines, 3, "one line per entry, returned in order")
+  local flat = Fixture.flatten(O.EnsureScroll(ctx))
+  assertEqual(flat[1].type, "Heading"); assertEqual(flat[1].text, "Spells")
+  assertTrue(listInput(O, ctx) ~= nil, "the input is drawn above the entries")
+
+  local label, action = lines[1].children[1], lines[1].children[2]
+  assertEqual(label.type, "InteractiveLabel")
+  assertEqual(label.text, "Power Word: Fortitude |cff808080(21562)|r")
+  assertEqual(label.image[1], 135987, "with its icon")
+  assertEqual(action.type, "Button"); assertEqual(action.text, "Remove")
+  -- red under: formatting a nil name (the line would raise, or read "nil")
+  assertEqual(lines[2].children[1].text, "Unknown spell 99999")
+  local toggle = lines[3].children[2]
+  assertEqual(toggle.type, "CheckBox", "a toggle entry gets a checkbox instead of Remove")
+  assertTrue(toggle.value, "seeded from the entry")
+end)
+
+test("IdList: Remove and a toggle call the host back, and Remove asks for a rebuild", function()
+  local _, _, _, lines, log = listBench({ { id = 21562 }, { id = 774, toggle = true, on = true } })
+  lines[1].children[2]:__fire("OnClick")
+  -- red under: Remove not wired to onRemove
+  assertEqual(log.removed[1], 21562)
+  -- red under: no rebuild after a remove (the removed line would stay on screen)
+  assertEqual(log.rebuilt, 1, "the list's shape changed, so the page is rebuilt")
+  lines[2].children[2]:__fire("OnValueChanged", false)
+  assertEqual(log.toggled[1][1], 774)
+  assertEqual(log.toggled[1][2], false)
+end)
+
+test("IdList: an add through its input reaches onAdd and rebuilds the list", function()
+  local O, _, ctx, _, log = listBench({})
+  local eb = listInput(O, ctx)
+  typeEnter(eb, "rejuvenation")
+  assertEqual(log.added[1], 774)
+  -- red under: IdList not rebuilding after an add (the new entry would not appear)
+  assertEqual(log.rebuilt, 1)
+end)
+
+test("IdList: with no ctx.rebuild the library's structural refresh redraws it", function()
+  local O, _, ctx = bench()
+  seedIds()
+  local refreshed = 0
+  local real = O.RefreshAllPanels
+  O.RefreshAllPanels = function() refreshed = refreshed + 1 end
+  local lines = O.IdList(ctx, { kind = "spell", entries = function() return { { id = 21562 } } end,
+                                onRemove = function() end })
+  lines[1].children[2]:__fire("OnClick")
+  O.RefreshAllPanels = real
+  -- red under: no fallback when the host sets no ctx.rebuild
+  assertEqual(refreshed, 1)
+end)
+
+test("IdList: an empty list shows the host's empty text", function()
+  local O, _, ctx, lines = listBench({}, { emptyText = "No spells added." })
+  assertEqual(#lines, 0)
+  -- red under: drawing nothing for an empty list (the page reads as broken)
+  local found = false
+  for _, w in ipairs(Fixture.flatten(O.EnsureScroll(ctx))) do
+    if w.type == "Label" and w.text == "No spells added." then found = true end
+  end
+  assertTrue(found, "the empty text is on the page")
+end)
+
+test("IdList: an uncached item asks to load once, and the load asks for a rebuild", function()
+  local requests = 0
+  local realRequest = mocks.C_Item.RequestLoadItemDataByID
+  mocks.C_Item.RequestLoadItemDataByID = function(id) requests = requests + 1; realRequest(id) end
+  mocks.__timers = {}
+  local ok, err = pcall(function()
+    local O, _, ctx, lines, log = listBench({ { id = 2589 }, { id = 6948 } }, { kind = "item" })
+    assertEqual(lines[1].children[1].text, "Unknown item 2589", "no name until it is cached")
+    -- red under: never asking the client for the item (its name would never arrive)
+    assertEqual(requests, 1, "one request, for the uncached item only")
+    mocks.__fireTimers()
+    -- red under: a load callback that redraws nothing
+    assertEqual(log.rebuilt, 1, "the load rebuilt the list")
+    O.IdList(ctx, { kind = "item", entries = function() return { { id = 2589 } } end })
+    -- red under: re-requesting on every render (an id the client never loads would loop forever)
+    assertEqual(requests, 1, "a second render does not ask again")
+  end)
+  mocks.C_Item.RequestLoadItemDataByID = realRequest
+  assertTrue(ok, tostring(err))
+end)
+
+test("IdList: an entry's label shows the client's own tooltip for it", function()
+  local _, _, _, lines = listBench({ { id = 21562 } })
+  local tip, seen = mocks.GameTooltip, {}
+  local saved = rawget(tip, "SetSpellByID")
+  tip.SetSpellByID = function(_, id) seen.id = id end
+  local label = lines[1].children[1]
+  local ok, err = pcall(label.__fire, label, "OnEnter")
+  tip.SetSpellByID = saved
+  assertTrue(ok, tostring(err))
+  -- red under: no tooltip on the entry label
+  assertEqual(seen.id, 21562)
+end)
+
+test("IdList: a raising entries() is reported and still draws the input", function()
+  local O, rec, ctx = bench()
+  rec.chat = {}
+  local lines = O.IdList(ctx, { kind = "spell", entries = function() error("list exploded") end })
+  -- red under: an unguarded entries() (the whole page stops at the list)
+  assertEqual(#lines, 0)
+  assertTrue(listInput(O, ctx) ~= nil, "the input is still there to add with")
+  assertTrue(table.concat(rec.chat, "\n"):find("list exploded", 1, true) ~= nil)
+end)
+
+test("IdList: drawn disabled, every Remove and checkbox is disabled", function()
+  local _, _, _, lines = listBench({ { id = 21562 }, { id = 774, toggle = true } }, { disabled = true })
+  -- red under: entries ignoring the disable (a disabled page would still remove ids)
+  assertTrue(lines[1].children[2].disabled)
+  assertTrue(lines[2].children[2].disabled)
+end)
+
+test("IdList: with no AceGUI it draws nothing", function()
+  withoutAceGUI(function()
+    local O, _, ctx = bench()
+    assertNil(O.IdList(ctx, { kind = "spell", entries = function() return {} end }))
+  end)
+end)
+
 -- ── edit box (the fifth widget type) ───────────────────────────────────────────────────────
 
 test("widgets: a string row asking for an EditBox gets one, not a dropdown", function()

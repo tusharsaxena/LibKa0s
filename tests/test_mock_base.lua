@@ -344,3 +344,91 @@ test("mock: a bare Printf with nothing after the format string raises, as format
     assertFalse(pcall(ns.Printf, "hello"), "a bare one-argument Printf raised")
   end)
 end)
+
+-- ── the id lookups (revision 20) ───────────────────────────────────────────────────────────
+--
+-- LibKa0s-Options-1.0's IdInput / IdList resolve a typed name through the client, and a suite can
+-- only drive that if the mock answers a NAME. OPT-IN, not installed by the base: three consumers
+-- reach their Compat fallbacks by clearing C_Spell or C_Item, and a base-level namespace would
+-- resolve ahead of theirs and make those branches unreachable (the C_AddOns note in this repo's
+-- tests/wow_mock.lua is the same fact). Each case builds a fresh environment, so none of them can
+-- leak a record into a later suite.
+
+test("mock: the id lookups are absent until a harness installs them", function()
+  local M = dofile("tests/_kit/mock_base.lua")()
+  -- red under: installing the namespaces in the base (a consumer's cleared C_Spell would be shadowed)
+  assertNil(M.C_Spell, "no spell namespace by default")
+  assertNil(M.C_CurrencyInfo, "no currency namespace by default")
+  dofile("tests/_kit/mock_ids.lua")(M)
+  assertEqual(type(M.C_Spell.GetSpellInfo), "function")
+  assertEqual(type(M.C_Item.GetItemInfoInstant), "function")
+  assertEqual(type(M.C_Item.GetItemNameByID), "function")
+  assertEqual(type(M.C_CurrencyInfo.GetCurrencyInfo), "function")
+end)
+
+test("mock: installing the id lookups fills only what a harness has not defined", function()
+  local M = dofile("tests/_kit/mock_base.lua")()
+  local mine = function() return "mine" end
+  M.C_Item = { GetItemInfoInstant = mine, RequestLoadItemDataByID = function() end }
+  dofile("tests/_kit/mock_ids.lua")(M)
+  -- red under: overwriting the harness's own function (a consumer's item fixture would stop answering)
+  assertTrue(M.C_Item.GetItemInfoInstant == mine, "the harness's own function is kept")
+  assertEqual(type(M.C_Item.RequestLoadItemDataByID), "function", "and so is everything else on it")
+  assertEqual(type(M.C_Item.GetItemNameByID), "function", "only the missing key is filled")
+end)
+
+test("mock: a spell record answers by id and by name, the name in any case", function()
+  local M = dofile("tests/_kit/mock_base.lua")()
+  dofile("tests/_kit/mock_ids.lua")(M)
+  M.addIdRecord("spell", 21562, "Power Word: Fortitude", 135987)
+  local info = M.C_Spell.GetSpellInfo(21562)
+  assertEqual(info.name, "Power Word: Fortitude")
+  assertEqual(info.iconID, 135987)
+  assertEqual(info.spellID, 21562)
+  -- red under: a case-sensitive name match (the client's name lookup ignores case)
+  assertEqual(M.C_Spell.GetSpellInfo("power word: FORTITUDE").spellID, 21562)
+  assertNil(M.C_Spell.GetSpellInfo("Shadow Word: Pain"), "an unknown name answers nil, as the client does")
+  assertNil(M.C_Spell.GetSpellInfo(1), "and so does an unknown id")
+end)
+
+test("mock: an uncached item keeps its icon and hides its name until it loads", function()
+  local M = dofile("tests/_kit/mock_base.lua")()
+  dofile("tests/_kit/mock_ids.lua")(M)
+  M.addIdRecord("item", 6948, "Hearthstone", 134414)
+  M.addIdRecord("item", 2589, "Linen Cloth", 132889, true)
+  local id, _, _, _, icon = M.C_Item.GetItemInfoInstant("hearthstone")
+  assertEqual(id, 6948); assertEqual(icon, 134414)
+  assertEqual(M.C_Item.GetItemNameByID(6948), "Hearthstone")
+  -- red under: answering an uncached item's name (a list could never exercise its load path)
+  assertNil(M.C_Item.GetItemNameByID(2589), "no name before the item is cached")
+  assertNil(M.C_Item.GetItemInfoInstant("Linen Cloth"), "nor a name lookup")
+  assertEqual(select(5, M.C_Item.GetItemInfoInstant(2589)), 132889, "the instant lookup by id still answers")
+  M.addIdRecord("item", 2589, "Linen Cloth", 132889)
+  assertEqual(M.C_Item.GetItemNameByID(2589), "Linen Cloth", "re-adding it cached is how a load lands")
+end)
+
+test("mock: a currency record answers by id, and clearIdRecords empties every kind", function()
+  local M = dofile("tests/_kit/mock_base.lua")()
+  dofile("tests/_kit/mock_ids.lua")(M)
+  M.addIdRecord("currency", 3008, "Valorstones", 5872049)
+  local info = M.C_CurrencyInfo.GetCurrencyInfo(3008)
+  assertEqual(info.name, "Valorstones"); assertEqual(info.iconFileID, 5872049)
+  assertNil(M.C_CurrencyInfo.GetCurrencyInfo(1))
+  M.addIdRecord("spell", 1, "One", 1)
+  M.clearIdRecords()
+  -- red under: a clear that forgets a kind (a record would leak into the next case)
+  assertNil(M.C_CurrencyInfo.GetCurrencyInfo(3008))
+  assertNil(M.C_Spell.GetSpellInfo(1))
+end)
+
+test("mock: an AceGUI widget answers GetText and records SetType and DisableButton", function()
+  local w = buildMocks().LibStub("AceGUI-3.0"):Create("EditBox")
+  w:SetText("21562")
+  -- red under: no GetText (an Add button beside an edit box could not read what was typed)
+  assertEqual(w:GetText(), "21562")
+  w:DisableButton(true)
+  assertTrue(w.buttonDisabled, "the edit box's own Okay button was asked to hide")
+  local cb = buildMocks().LibStub("AceGUI-3.0"):Create("CheckBox")
+  cb:SetType("radio")
+  assertEqual(cb.checkType, "radio")
+end)

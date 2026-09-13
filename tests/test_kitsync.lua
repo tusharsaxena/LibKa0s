@@ -109,6 +109,25 @@ test("kitsync: the kit revision has an API document", function()
   f:close()
 end)
 
+test("kitsync: the kit revision is indexed in docs/api/README.md as the one Current revision", function()
+  -- docs/api/README.md's "Adding a version" ends with "Add the row to the table above". A revision
+  -- whose document exists but whose row does not leaves the index naming the previous revision as
+  -- Current, which is the question the index exists to answer.
+  -- red under: writing version-N-docs.md and marking N-1 Superseded without touching the index
+  local index = readBytes("docs/api/README.md")
+  if not index then fail("kit index: docs/api/README.md cannot be read", 2) end
+  local want, current = tostring(T.KIT_VERSION), {}
+  for line in index:gmatch("[^\n]+") do
+    local v = line:match("^| %[(%d+)%]%(%./testkit/version%-%d+%-docs%.md%)")
+    if v and line:match("| %*%*Current%*%* |%s*$") then current[#current + 1] = v end
+  end
+  if #current ~= 1 or current[1] ~= want then
+    fail("kit index: Kit.VERSION is " .. want .. " but docs/api/README.md's testkit table marks "
+      .. (#current == 0 and "no revision" or table.concat(current, ", ")) .. " Current - add revision "
+      .. want .. "'s row and mark the one before it Superseded", 2)
+  end
+end)
+
 test("kitsync: the runner is mode 100755 in the git index, in BOTH copies", function()
   -- The runner shipped `100644` in all nine repos of the collection, source included. Nobody could
   -- see it: `core.fileMode=false` everywhere means git never complains, and DrvFs reports

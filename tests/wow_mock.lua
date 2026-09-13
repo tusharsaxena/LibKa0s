@@ -42,6 +42,11 @@ return function()
     RequestLoadItemDataByID = function(id) M.__loadRequests[id] = true end,
   }
 
+  -- The kit's opt-in id lookups (revision 20), for LibKa0s-Options-1.0's ResolveId / IdInput /
+  -- IdList. Installed AFTER C_Item above: the install fills only the keys a harness has not
+  -- defined, so the load request above survives and the name lookups join it.
+  dofile("tests/_kit/mock_ids.lua")(M)
+
   -- The colour table QualityFromLink builds its reverse map out of. Real hex values — the parse is
   -- the thing under test and a made-up palette would test the parser against itself.
   M.ITEM_QUALITY_COLORS = {
