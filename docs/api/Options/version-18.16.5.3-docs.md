@@ -1388,8 +1388,45 @@ it names the unnamed candidates before it takes a name's result, the client's hi
 | `"spell"` | `C_Spell.GetSpellInfo(id)` | `GameTooltip:SetSpellByID` |
 | `"item"` | icon from `C_Item.GetItemInfoInstant(id)` (no cache needed), name from `C_Item.GetItemNameByID(id)` (cache needed) | `GameTooltip:SetItemByID` |
 | `"currency"` | `C_CurrencyInfo.GetCurrencyInfo(id)`; an empty name is the client's answer for an id it does not have | `GameTooltip:SetCurrencyByID` |
-| a host table | `{ resolve = function(text, candidates) -> id, name, icon \| nil, reason; info = function(id) -> name, icon; noun; plural; tooltip = function(tooltip, id) or a GameTooltip method name; loads = bool }`. `resolve` replaces all four steps, is handed the trimmed text and `candidates`, and is `pcall`'d — a raise or an unknown reason reads as `"notFound"`. `loads = true` with an `info` says its ids are items the client loads: `IdInput` then pre-warms and looks up its candidates as it does `"item"`'s. A resolver that hands a name on to `O.ResolveId("item", text, candidates)` gets the shared-name check too. | as given |
+| a host table | `{ resolve = function(text, candidates) -> id, name, icon \| nil, reason; info = function(id) -> name, icon; noun; plural; tooltip = function(tooltip, id) or a GameTooltip method name; loads = bool }`. `resolve` replaces all four steps, is handed the trimmed text and `candidates`, and is `pcall`'d — a raise or an unknown reason reads as `"notFound"`. `loads = true` with an `info` says its ids are items the client loads: `IdInput` then pre-warms and looks up its candidates as it does `"item"`'s. `base = "item"` (or `"spell"`, `"currency"`) says its ids are that kind's — see below. A resolver that hands a name on to `O.ResolveId("item", text, candidates)` gets the shared-name check too. | as given, else the base's |
 | anything else | numbers only | none |
+
+#### A host kind based on a library kind: `base`
+
+A host kind keeps its own `resolve` for what the library cannot know: an existence check, a
+refusal when there is nowhere to file an id, a stored shape of its own. Its ids may still be one
+library kind's. `base` says which: `"item"`, `"spell"` or `"currency"`. Any other value, or none, is
+no base, and the kind behaves exactly as a host kind without one.
+
+| A based host kind gets | From the base |
+|---|---|
+| fields it does not set itself | `info`, `link`, `tooltip`, `loads`, `noun`, `plural`. A field the host sets wins, `false` included, so a host that sets `info = false` to show no list keeps showing none. |
+| its name color | an item's quality color, on the suggestion rows and on `IdList`'s entry names. A spell's and a currency's are plain. |
+| its rank label | an item's crafted or reagent quality tier icon, a spell's subtext, on the suggestion rows. |
+| its tooltip | `GameTooltip:SetItemByID` / `SetSpellByID` / `SetCurrencyByID` on `IdList`'s entries, unless the host sets `tooltip`. |
+| pre-warm and lookup | as `"item"`'s, when the base is `"item"` (its `loads` and `info`) or the host sets `loads = true` and an `info` itself. |
+
+What it does **not** get: the base's client name lookup (`C_Item.GetItemInfoInstant(name)`,
+`C_Spell.GetSpellInfo(name)`) and its client source (the bags, the spellbook). What a host kind
+resolves, and the ids it suggests, stay its own `candidates()`. A resolver that wants the client's
+lookup and the shared-name check hands a name to `O.ResolveId("item", text, candidates)`, as
+before. A based kind with no `resolve` resolves a number, a link of the base's type, and a name
+over its candidates.
+
+**The host still decides what is added.** A pick from a based kind's suggestions is handed to its
+`resolve` first, as the id's digits with the same `candidates`. A refusal adds nothing, keeps the
+typed text, and writes the reason on the status line as a submit's refusal does (`No item named
+'191396'.` with the default words). An id the resolver answers is the one added. A host kind
+without a base adds a picked row's id as it stands, as it always has.
+
+`base` is read on every use, so a kind that reads its fields through to whichever type a host
+dropdown names (ConsumableMaster's Item / Spell choice) changes base with it.
+
+```lua
+local kind = setmetatable({
+  resolve = function(text, candidates) return myResolve(text, candidates) end,
+}, { __index = function(_, key) return currentType()[key] end })   -- currentType().base = "item"
+```
 
 ### `O.UnnamedCandidates(kind, candidates)` → ids
 
@@ -1400,7 +1437,8 @@ for thousands of items at once floods the client's item-data queue for one typed
 moves past the cap itself: its pre-warm and its lookup work in windows of 200 (below).
 
 It returns an empty table for a kind the client does not load (`"spell"`, `"currency"`, a host
-table without `loads = true` and an `info`, or anything else), for a raising or absent
+table with neither `loads = true` and an `info` of its own nor `base = "item"`, or anything else),
+for a raising or absent
 `candidates`, and on a client without
 `C_Item.GetItemNameByID` or `C_Item.RequestLoadItemDataByID`. An id whose name lookup raises reads as
 named, so it is not asked for.
@@ -1430,7 +1468,7 @@ clip reason above.
 |---|---|
 | `kind` | As `ResolveId`'s. |
 | `onAdd` | `function(id)`, called once per successful add. A raise is reported through `lib.STRINGS.BUTTON_FAILED` and counts as a failure: the text stays. |
-| `candidates` | Optional `function() -> ids`, searched by name at step 4 and handed to a host kind's `resolve`. For `kind = "item"`, or a host kind with `loads = true` and an `info`, the unnamed ones are pre-warmed and looked up (below). The suggestions list them first (below). It may be called at every draw, every submit, and a render's first keystroke. |
+| `candidates` | Optional `function() -> ids`, searched by name at step 4 and handed to a host kind's `resolve`. For `kind = "item"`, or a host kind with `loads = true` and an `info` (its own, or from `base = "item"`), the unnamed ones are pre-warmed and looked up (below). The suggestions list them first (below). It may be called at every draw, every submit, and a render's first keystroke. |
 | `label`, `tooltip` | The edit box's label, and the tooltip on both widgets. |
 | `strings` | Optional overrides of the words, by key — see below. |
 | `disabled` | Optional; draws both widgets disabled. A disabled render is inherited. |
@@ -1492,6 +1530,7 @@ a name tie on everything before rank, so they sit together, each labeled with it
 |---|---|---|
 | `"item"` | the client's tier icon, inline: `\|A:Professions-Icon-Quality-Tier<N>-Small:14:14\|a` | `C_TradeSkillUI.GetItemCraftedQualityByItemInfo(id)`, else `C_TradeSkillUI.GetItemReagentQualityByItemInfo(id)` |
 | `"spell"` | the client's subtext as the client words it (`Rank 2`, `Racial`), sorted by the number in it | `C_Spell.GetSpellSubtext(id)` |
+| a host table with `base` | its base's, above | as its base |
 | anything else | none; the gray id tells two rows apart | — |
 
 **Where the rows come from.** The client has no name search, so every row is an id something
@@ -1501,7 +1540,7 @@ already knows:
 |---|---|
 | `"item"` | `candidates()`, then every item in the backpack and the equipped bags, through `C_Container.GetContainerNumSlots` / `GetContainerItemID`: bags `0` to `NUM_TOTAL_EQUIPPED_BAG_SLOTS` (the reagent bag included), else to `NUM_BAG_SLOTS`, else to `4` |
 | `"spell"` | `candidates()`, then the Spell and FutureSpell slots of the player's spellbook through `C_SpellBook` (`GetNumSpellBookSkillLines`, `GetSpellBookSkillLineInfo`, `GetSpellBookItemInfo`); a flyout or a pet action is never listed |
-| `"currency"`, or a host table | `candidates()` alone |
+| `"currency"`, or a host table (with a `base` or without) | `candidates()` alone |
 
 A kind with no `info` (a host table without one, or no kind) has nothing to name a row with, and
 suggests nothing. Every source is read at call time and guarded: a client without one, a raising
@@ -1515,7 +1554,9 @@ redraw builds a fresh index.
 
 **Choosing.** A click on a row, or Up/Down to highlight one and then Enter, adds that row's id
 exactly as a typed add does: the box and the status line are cleared, then `onAdd(id)` runs, then
-`IdList`'s rebuild. A pick names one id, so no lookup runs. Up and Down wrap. From no highlight,
+`IdList`'s rebuild. A pick names one id, so no lookup runs. A host kind with a `base` asks its own
+`resolve` about the id first, and a refusal adds nothing (see
+[`base`](#a-host-kind-based-on-a-library-kind-base)). Up and Down wrap. From no highlight,
 Down takes the first row and Up the last. The `+N more` line is never highlighted. **Enter with no
 row highlighted submits the typed text as it always has**, so a name several ranks share is still
 refused as `"ambiguous"`: never one rank added for the player, and never all of them, whether the
@@ -1587,7 +1628,7 @@ reorder them:
 | `add` | `Add` |
 | `remove` | `Remove` (IdList) |
 | `empty` | `Type an id, a link or a name.` |
-| `notFound` | item: `No item named '{text}' that the game can find. {hint}`; spell: `No spell named '{text}' in your spellbook. {hint}`; currency: `No currency named '{text}' that this list knows. {hint}`; a host kind or none: `No {noun} named '{text}'.` |
+| `notFound` | item: `No item named '{text}' that the game can find. {hint}`; spell: `No spell named '{text}' in your spellbook. {hint}`; currency: `No currency named '{text}' that this list knows. {hint}`; a host kind (with a `base` or without) or none: `No {noun} named '{text}'.` |
 | `ambiguous` | `Several {plural} are named '{text}' — pick one from the list, or use the id.` |
 | `looking` | `Looking up {plural}…` (the lookup's status line) |
 | `nameHint` | The kind's entry in [`O.ID_NAME_HINT`](#oid_name_hint); empty for a host kind. Fills `notFound`'s `{hint}`. |

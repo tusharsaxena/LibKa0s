@@ -1135,6 +1135,56 @@ test("IdList: an entry's label shows the client's own tooltip for it", function(
   assertEqual(seen.id, 21562)
 end)
 
+--- Hover an entry's label with GameTooltip's `method` spied; answers the id it was handed.
+local function hoverWith(label, method)
+  local tip, seen = mocks.GameTooltip, {}
+  local saved = rawget(tip, method)
+  tip[method] = function(_, id) seen.id = id end
+  local ok, err = pcall(label.__fire, label, "OnEnter")
+  tip[method] = saved
+  assertTrue(ok, tostring(err))
+  return seen.id
+end
+
+test("IdList: a host kind with base = \"item\" wears the item kind's color, tooltip and loads", function()
+  -- ConsumableMaster's shape: its own resolve (existence checks the library does not know), and
+  -- ids that are items. Without `base` it gets none of the item kind's decorations.
+  local kind = { noun = "potion", plural = "potions", base = "item",
+                 resolve = function(text) return tonumber(text) end }
+  local O, _, ctx, lines = listBench({ { id = 6948 }, { id = 19019 }, { id = 2589 } }, { kind = kind })
+  mocks.__timers = {}
+  -- red under: NAME_COLOR keyed by the library's kind table alone (a host kind's names drawn plain)
+  assertEqual(lines[1].children[1].text, "|cffffffffHearthstone|r |cff808080(6948)|r",
+    "the item kind's quality color, and its info names the entry")
+  assertEqual(lines[2].children[1].text, "|cffff8000Thunderfury|r |cff808080(19019)|r")
+  assertEqual(lines[3].children[1].text, "Unknown potion 2589", "the host's own noun wins")
+  assertEqual(hoverWith(lines[1].children[1], "SetItemByID"), 6948, "the item kind's tooltip")
+  assertEqual(table.concat(O.UnnamedCandidates(kind, function() return { 2589, 6948 } end), ","),
+    "2589", "the item kind's loads and info: its unnamed candidates are pre-warmed and looked up")
+
+  -- A field the host sets itself wins over the base's.
+  local own
+  own = { noun = "potion", base = "item", resolve = kind.resolve,
+          tooltip = function(_, id) own.shown = id end }
+  local mine = O.IdList(ctx, { kind = own, entries = function() return { { id = 6948 } } end })
+  assertEqual(hoverWith(mine[1].children[1], "SetItemByID"), nil, "not the base's tooltip")
+  assertEqual(own.shown, 6948, "the host's own")
+end)
+
+test("IdList: a host kind without base, or with a base no library kind has, is drawn as before", function()
+  local itemName = function(id) return mocks.C_Item.GetItemNameByID(id) end
+  for _, base in ipairs({ false, "widget" }) do
+    local kind = { noun = "potion", base = base or nil, info = itemName, loads = true,
+                   resolve = function(text) return tonumber(text) end }
+    local O, _, _, lines = listBench({ { id = 6948 } }, { kind = kind })
+    -- red under: a decoration read off every host kind (a host's own ids need not be items)
+    assertEqual(lines[1].children[1].text, "Hearthstone |cff808080(6948)|r", "plain, as today")
+    assertNil(hoverWith(lines[1].children[1], "SetItemByID"), "no tooltip it did not declare")
+    assertEqual(table.concat(O.UnnamedCandidates(kind, function() return { 2589 } end), ","), "2589",
+      "its own loads and info still count")
+  end
+end)
+
 test("IdList: a raising entries() is reported and still draws the input", function()
   local O, rec, ctx = bench()
   rec.chat = {}

@@ -527,6 +527,108 @@ suggestCase("IdInput suggestions: an uncached candidate joins the list once it i
   assertEqual(shownIds(b), "191395,191396,191397")
 end)
 
+-- ── a host kind based on a library kind ──────────────────────────────────────────────────────
+--
+-- ConsumableMaster's Add-by-ID is a host kind: its own resolve keeps its existence checks and its
+-- no-active-spec refusal. Its ids are items, and `base = "item"` says so, so its rows wear the item
+-- kind's tier icon and quality color. Without `base` a host kind's rows are drawn as they were.
+
+--- ConsumableMaster's shape: digits taken itself, a name handed to O.ResolveId("item"), and any
+--- id `refuse` names refused as not found. `extra` fields go onto the kind.
+local function hostKind(O, extra, refuse)
+  local k = { noun = "item", plural = "items", resolve = function(text, candidates)
+    local id, name = tonumber(text:match("^%d+$")), nil
+    if not id then id, name = O.ResolveId("item", text, candidates) end
+    if id == nil then return nil, name end
+    if refuse and refuse[id] then return nil, "notFound" end
+    return id, name
+  end }
+  for key, v in pairs(extra or {}) do k[key] = v end
+  return k
+end
+
+local function rankLabel(tier, plain)
+  local name = plain and ZEPHYR or (WHITE .. ZEPHYR .. "|r")
+  return name .. " " .. (plain and "" or (atlas(tier) .. " ")) .. GRAY .. "(" .. (191394 + tier) .. ")|r"
+end
+
+suggestCase("IdInput suggestions: a host kind with base = \"item\" shows each rank's tier and color", function(made)
+  seedZephyr()
+  local O = Fixture.new()
+  local ownInfo = function(id) return mocks.C_Item.GetItemNameByID(id), 4638 end
+  for _, extra in ipairs({ { base = "item", info = ownInfo, loads = true }, { base = "item" } }) do
+    local b = input(made, { kind = hostKind(O, extra), candidates = zephyrs }, O)
+    typeText(b, "hushed")
+    assertEqual(shownIds(b), "191395,191396,191397", "a shared name lists every rank")
+    local rows = dropdown(made).rows
+    for tier = 1, 3 do
+      -- red under: SUGGEST_KIND and NAME_COLOR keyed by the library's kind alone (labeled by id only)
+      assertEqual(rows[tier].labelText, rankLabel(tier), "tier icon and quality color")
+    end
+    b.eb:__fire("OnEnterPressed", "hushed")
+    b.eb:__fire("OnEnterPressed", ZEPHYR)
+    assertEqual(#b.added, 0, "Enter without a pick still refuses the shared name")
+    assertEqual(b.status.text, "Several items are named '" .. ZEPHYR ..
+      "' \226\128\148 pick one from the list, or use the id.")
+  end
+
+  -- red under: a decoration read off every host kind
+  local plain = input(made, { kind = hostKind(O, { info = ownInfo }), candidates = zephyrs }, O)
+  typeText(plain, "hushed")
+  assertEqual(shownIds(plain), "191395,191396,191397")
+  assertEqual(dropdown(made).rows[1].labelText, rankLabel(1, true), "no base: drawn as before")
+  dropdown(made).rows[2]:__fire("OnClick")
+  assertEqual(table.concat(plain.added, ","), "191396", "and a pick goes to onAdd as before")
+end)
+
+suggestCase("IdInput suggestions: a based host kind's resolve still decides what a pick adds", function(made)
+  seedZephyr()
+  local O = Fixture.new()
+  local calls = 0
+  local kind = hostKind(O, { base = "item" }, { [191396] = true })
+  local resolve = kind.resolve
+  kind.resolve = function(...) calls = calls + 1; return resolve(...) end
+  local b = input(made, { kind = kind, candidates = zephyrs }, O)
+  typeText(b, "hushed")
+  assertEqual(shownIds(b), "191395,191396,191397", "the refused rank is still suggested")
+  dropdown(made).rows[2]:__fire("OnClick")
+  -- red under: a pick handed straight to onAdd (an id the host refuses added anyway)
+  assertEqual(#b.added, 0, "the host refused it")
+  assertEqual(b.status.text, "No item named '191396'.", "and says so, as a typed id would")
+  assertEqual(b.eb.text, "hushed", "the text stays for the player to correct")
+  assertEqual(calls, 1, "asked once, about the id")
+  typeText(b, "hushed")
+  dropdown(made).rows[1]:__fire("OnClick")
+  assertEqual(table.concat(b.added, ","), "191395", "a rank the host takes is added")
+  assertEqual(b.eb.text, "")
+  assertEqual(b.status.text, "")
+end)
+
+suggestCase("IdInput suggestions: any library kind can be a base; its ranks and fields come with it", function(made)
+  mocks.addIdRecord("spell", 900001, "Twin Strike", 11)
+  mocks.addIdRecord("spell", 900002, "Twin Strike", 12)
+  mocks.setSpellSubtext(900001, "Rank 2")
+  mocks.setSpellSubtext(900002, "Rank 1")
+  local O = Fixture.new()
+  local kind = { base = "spell", resolve = function(text) return tonumber(text) end }
+  local b = input(made, { kind = kind, candidates = function() return { 900001, 900002 } end }, O)
+  typeText(b, "twin")
+  -- red under: only an item base honored
+  assertEqual(dropdown(made).rows[1].labelText, "Twin Strike Rank 1 " .. GRAY .. "(900002)|r",
+    "the spell kind's rank, and its plain name")
+
+  -- With no resolve of its own, a based kind resolves with the base's link and info, over the
+  -- candidates; the client's name lookup and its bags stay the library kind's.
+  mocks.addIdRecord("item", 6948, "Hearthstone", 134414, nil, 1)
+  mocks.setBagItems(0, { 6948 })
+  local bare = { base = "item" }
+  assertEqual(O.ResolveId(bare, "|cffffffff|Hitem:6948::::|h[Hearthstone]|h|r"), 6948, "the item link")
+  local _, reason = O.ResolveId(bare, "Hearthstone")
+  assertEqual(reason, "notFound", "a name reaches the host's candidates alone")
+  local id, name = O.ResolveId(bare, "hearthstone", function() return { 6948 } end)
+  assertEqual(id, 6948); assertEqual(name, "Hearthstone")
+end)
+
 -- ── frames ───────────────────────────────────────────────────────────────────────────────────
 
 suggestCase("IdInput suggestions: one dropdown per instance, whatever the renders", function(made)

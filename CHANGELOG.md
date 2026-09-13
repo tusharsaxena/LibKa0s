@@ -152,6 +152,18 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   A host kind with its own `resolve` joins in by declaring `loads = true` and an `info`, and by
   passing on the `candidates` its resolver is handed to `O.ResolveId("item", text, candidates)`.
   ConsumableMaster's Add-by-ID is that shape.
+- **A host kind's `base`.** A host kind whose ids are one library kind's says so with
+  `base = "item"` (or `"spell"`, `"currency"`). It takes `info`, `link`, `tooltip`, `loads`,
+  `noun` and `plural` from the base where it sets none of its own, and wears the base's
+  decorations: an item's quality color on suggestion rows and `IdList` names, the tier icon (or a
+  spell's subtext) on suggestion rows, and the item's tooltip on entries. Its own `resolve`, and any
+  field it sets, `false` included, win. It never takes the base's client name lookup or its bags or
+  spellbook: what it resolves and suggests stay its own. A pick from a based kind's list is handed
+  to its `resolve` first, as the id's digits, and a refusal adds nothing and says why. Without
+  `base`, or with a value no library kind has, a host kind is drawn exactly as before, and its pick
+  still goes straight to `onAdd`. ConsumableMaster's kind, which keeps its own existence checks and
+  its no-active-spec refusal, sets `base` to list *Potion of the Hushed Zephyr*'s three ranks with
+  their tier icons rather than by id alone.
 - **`O.UnnamedCandidates(kind, candidates)`** is pure: the item candidates the client cannot name
   yet, each once, in the host's order, at most 200 of them. It returns none for spells, currencies,
   a host kind that does not declare `loads` and `info`, or on a client that cannot load an item.
@@ -194,7 +206,9 @@ The widgets never write a path, so the host keeps its stored shape. After an add
 `O.IdList` redraws through `ctx.rebuild` when the host set one, and otherwise through
 `O.RefreshAllPanels()`. The words are a per-call `spec.strings` table, not `lib.STRINGS` keys. Three keys join
 `add`, `remove`, `empty`, `notFound`, `ambiguous` and `unknown`: `looking`, `nameHint` and `more`.
-Thirty cases in `tests/test_options_idsuggest.lua` pin the suggestions. What the headless
+Thirty-three cases in `tests/test_options_idsuggest.lua` pin the suggestions, three of them a
+based host kind's rows, picks and resolution; two in `tests/test_options_widgets.lua` pin a based
+kind's entry lines and a host kind without one. What the headless
 suite cannot see, and what a host should know, is in the Options 18.16.5.3 API doc under
 *Suggestions while typing*: the dropdown following a scrolled box past the page's clip edge, the
 200-id pre-warm the suggestions read from, and the index built once per render.
