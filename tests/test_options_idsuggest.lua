@@ -262,10 +262,66 @@ suggestCase("IdInput suggestions: Enter with no row highlighted still refuses a 
   assertEqual(#b.added, 0, "neither one rank nor all of them")
   assertEqual(b.status.text, "Several items are named '" .. ZEPHYR ..
     "' \226\128\148 pick one from the list, or use the id.")
-  assertFalse(shown(b), "the dropdown closes on a submit")
+  -- red under: the dropdown closed by the submit (the refusal pointed at a list that was not there)
+  assertEqual(shownIds(b), "191395,191396,191397", "the ranks the refusal points at stay listed")
+  b.eb:__fire("OnEnterPressed", ZEPHYR)
+  assertEqual(#b.added, 0, "a second Enter with nothing highlighted still adds nothing")
+  assertEqual(shownIds(b), "191395,191396,191397")
+  press(b, "DOWN"); press(b, "DOWN")
+  b.eb:__fire("OnEnterPressed", ZEPHYR)
+  assertEqual(table.concat(b.added, ","), "191396", "Down, Down, Enter takes the second rank")
+  typeText(b, "zephyr")
+  b.eb:__fire("OnEnterPressed", "zephyr")
+  assertFalse(shown(b), "a submit the list cannot help closes it")
   typeText(b, "zephyr")
   b.add:__fire("OnClick")
-  assertFalse(shown(b), "and on Add")
+  assertFalse(shown(b), "and so does Add")
+end)
+
+suggestCase("IdInput suggestions: a shared name refused by Add, or before the pause, lists its ranks", function(made)
+  seedZephyr()
+  local b = input(made, { kind = "item", candidates = zephyrs })
+  b.eb:SetText(ZEPHYR); b.eb:__fire("OnTextChanged", ZEPHYR)
+  b.eb:__fire("OnEnterPressed", ZEPHYR)
+  -- red under: only the debounce showing the list (a paste then Enter never showed it at all)
+  assertEqual(shownIds(b), "191395,191396,191397", "Enter inside the 0.1 s pause")
+  mocks.__fireTimers()
+  assertEqual(shownIds(b), "191395,191396,191397", "and the dropped update does not close it")
+
+  local c = input(made, { kind = "item", candidates = zephyrs }, b.O)
+  local focused = 0
+  c.eb.SetFocus = function() focused = focused + 1 end
+  typeText(c, ZEPHYR)
+  c.add:__fire("OnClick")
+  assertEqual(#c.added, 0)
+  assertEqual(shownIds(c), "191395,191396,191397", "Add refuses and lists them too")
+  assertEqual(focused, 1, "and hands the box the keys, so Up, Down and Enter pick")
+end)
+
+suggestCase("IdInput suggestions: a shared name refused after a lookup lists its ranks", function(made)
+  for _, id in ipairs(zephyrs()) do mocks.addIdRecord("item", id, ZEPHYR, 4638, true, 1) end
+  local b = input(made, { kind = "item", candidates = zephyrs })
+  typeText(b, ZEPHYR)
+  b.eb:__fire("OnEnterPressed", ZEPHYR)
+  assertEqual(b.status.text, "Looking up items\226\128\166")
+  seedZephyr()
+  mocks.__fireTimers()
+  assertEqual(#b.added, 0)
+  -- red under: the lookup's refusal leaving the list closed
+  assertEqual(shownIds(b), "191395,191396,191397")
+
+  local c = input(made, { kind = "item", candidates = zephyrs }, b.O)
+  for _, id in ipairs(zephyrs()) do mocks.addIdRecord("item", id, ZEPHYR, 4638, true, 1) end
+  typeText(c, ZEPHYR)
+  c.eb:__fire("OnEnterPressed", ZEPHYR)
+  c.eb.editbox.HasFocus = function() return false end
+  c.eb.editbox:__fire("OnEditFocusLost")
+  seedZephyr()
+  mocks.__fireTimers()
+  assertEqual(shownIds(c), "", "a player who left the box is not handed a list")
+  c.eb.editbox.HasFocus = nil
+  c.eb.editbox:__fire("OnEditFocusGained")
+  assertEqual(shownIds(c), "191395,191396,191397", "coming back to the box brings it")
 end)
 
 suggestCase("IdList suggestions: a pick reaches onAdd and rebuilds the list", function(made)
@@ -309,7 +365,9 @@ suggestCase("IdInput suggestions: Escape, focus loss, a hidden panel and a relea
   typeText(b, "zephyr")
   b.eb.frame:__fire("OnHide")
   assertFalse(dd:IsShown(), "the box hidden with its panel")
+  b.eb.frame:Show()
   typeText(b, "zephyr")
+  assertTrue(dd:IsShown(), "the panel shown again suggests again")
   b.eb:Release()
   assertFalse(dd:IsShown(), "the box released by a re-render")
   press(b, "DOWN")
@@ -428,4 +486,131 @@ suggestCase("IdInput suggestions: one dropdown per instance, whatever the render
   assertTrue(dd:IsShown(), "the first render's box no longer owns it")
   typeText(c, "zephyr")
   assertEqual(shownIds(c), "191395,191396,191397")
+end)
+
+suggestCase("IdInput suggestions: a box pooled into a second render is hooked once", function(made)
+  seedZephyr()
+  local b = input(made, { kind = "item", candidates = zephyrs })
+  local eb = b.eb
+  eb:Release()
+  -- AceGUI's pool hands the released box to the next render; the kit's factory never reuses one.
+  eb.__released = nil
+  local gui = mocks.__libs["AceGUI-3.0"]
+  local saved = gui.WidgetRegistry.EditBox
+  gui.WidgetRegistry.EditBox = function() return eb end
+  local ok, c = pcall(input, made, { kind = "item", candidates = zephyrs }, b.O)
+  gui.WidgetRegistry.EditBox = saved
+  assertTrue(ok, tostring(c))
+  assertTrue(c.eb == eb, "the second render drew the pooled box")
+  typeText(c, "zephyr")
+  press(c, "DOWN")
+  -- red under: hooks installed on every render (one Down would move the highlight twice)
+  local rows = dropdown(made).rows
+  assertTrue(rows[1].selected, "one Down, one row"); assertFalse(rows[2].selected)
+end)
+
+suggestCase("IdInput suggestions: Enter in a box that no longer owns the dropdown submits its text", function(made)
+  seedZephyr()
+  local b = input(made, { kind = "item", candidates = zephyrs })
+  local c = input(made, { kind = "item", candidates = zephyrs }, b.O)
+  typeText(b, "zephyr")
+  press(b, "DOWN")
+  typeText(c, "zephyr")
+  b.eb:__fire("OnEnterPressed", "zephyr")
+  -- red under: Enter taking a highlight another box's list replaced (a row the player cannot see)
+  assertEqual(#b.added, 0, "the first box's old highlight is not picked")
+  assertEqual(shownIds(c), "191395,191396,191397", "the other box keeps its list")
+end)
+
+suggestCase("IdInput suggestions: a box that left before the pause shows nothing", function(made)
+  seedZephyr()
+  local b = input(made, { kind = "item", candidates = zephyrs })
+  local function typeThen(away, why)
+    b.eb:SetText("zephyr"); b.eb:__fire("OnTextChanged", "zephyr")
+    away()
+    mocks.__fireTimers()
+    -- red under: hooks that act only once their box owns the dropdown (the timer shows it anyway)
+    assertFalse(shown(b), why)
+  end
+  typeThen(function() b.eb.editbox:__fire("OnEditFocusLost") end, "focus lost")
+  typeThen(function() b.eb.editbox:__fire("OnEscapePressed") end, "Escape")
+  typeThen(function()
+    b.eb.editbox:__fire("OnEditFocusLost")
+    b.eb.frame:__fire("OnHide")
+  end, "focus lost, then the panel hidden (Escape twice)")
+  typeText(b, "zephyr")
+  assertFalse(shown(b), "a hidden box stays quiet")
+  b.eb.frame:Show()
+  typeText(b, "zephyr")
+  assertEqual(shownIds(b), "191395,191396,191397", "until its panel is shown again")
+end)
+
+suggestCase("IdInput suggestions: focus lost to the dropdown itself goes back to the box", function(made)
+  seedZephyr()
+  local b = input(made, { kind = "item", candidates = zephyrs })
+  typeText(b, "zephyr")
+  local dd = dropdown(made)
+  local focused = 0
+  b.eb.editbox.SetFocus = function() focused = focused + 1 end
+  dd.IsMouseOver = function() return true end
+  b.eb.editbox:__fire("OnEditFocusLost")
+  mocks.__fireTimers()
+  dd.IsMouseOver = nil
+  -- red under: a click on the backdrop or the "+N more" line leaving the box without the keys
+  assertEqual(focused, 1, "the box takes the keys back, so Escape still reaches it")
+  assertTrue(dd:IsShown())
+  b.eb.editbox:__fire("OnEscapePressed")
+  assertFalse(dd:IsShown())
+
+  typeText(b, "zephyr")
+  dd.IsMouseOver = function() return true end
+  b.eb.editbox:__fire("OnEditFocusLost")
+  dd.rows[1]:__fire("OnClick")
+  mocks.__fireTimers()
+  assertEqual(table.concat(b.added, ","), "191395", "a click on a row still picks it")
+  assertEqual(focused, 1, "and nothing is focused for a closed list")
+end)
+
+suggestCase("IdInput suggestions: one render names at most 2000 ids", function(made)
+  local ids = {}
+  for i = 1, 2001 do
+    ids[i] = 700000 + i
+    mocks.addIdRecord("item", ids[i], i == 2000 and "Edge Draught" or i == 2001 and "Past Draught"
+      or ("Filler %d"):format(i), 1)
+  end
+  local b = input(made, { kind = "item", candidates = function() return ids end })
+  typeText(b, "draught")
+  -- red under: no cap on the index (a host's long list named whole on the first keystroke)
+  assertEqual(shownIds(b), "702000", "the 2000th id is in, the 2001st is not")
+end)
+
+suggestCase("IdInput suggestions: a raising info costs that id's row, not the list", function(made)
+  local kind = { noun = "widget", plural = "widgets", resolve = function() return nil, "notFound" end,
+                 info = function(id)
+                   if id == 2 then error("boom") end
+                   return "Widget " .. id, 100 + id
+                 end }
+  local b = input(made, { kind = kind, candidates = function() return { 1, 2, 3 } end })
+  -- red under: an unguarded info (the debounced update raises, and the list never shows)
+  local ok, err = pcall(typeText, b, "widget")
+  assertTrue(ok, tostring(err))
+  assertEqual(shownIds(b), "1,3")
+end)
+
+suggestCase("IdInput suggestions: the dropdown is as wide as the box looks", function(made)
+  seedZephyr()
+  local b = input(made, { kind = "item", candidates = zephyrs })
+  typeText(b, "zephyr")
+  local dd = dropdown(made)
+  local width
+  dd.SetWidth = function(_, w) width = w end
+  dd.GetEffectiveScale = function() return 1 end
+  b.eb.editbox.GetWidth = function() return 300 end
+  b.eb.editbox.GetEffectiveScale = function() return 1.5 end
+  typeText(b, "zephy")
+  -- red under: the box's width taken at its own scale (a scaled panel's list too narrow or wide)
+  assertEqual(width, 450)
+  b.eb.editbox.GetEffectiveScale = nil
+  typeText(b, "zephyr")
+  assertEqual(width, 300, "a scale the client does not answer is taken as the same")
 end)

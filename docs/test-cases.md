@@ -698,7 +698,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
 
-### test_options_idsuggest.lua (16)
+### test_options_idsuggest.lua (25)
 
 - IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
 - IdInput suggestions: one name's rows sort by rank, then by id
@@ -709,6 +709,8 @@ badge and any count quoted in the docs must agree with it.
 - IdInput suggestions: a click adds that row's id once, through onAdd, and closes
 - IdInput suggestions: Up and Down move the highlight, and Enter adds it
 - IdInput suggestions: Enter with no row highlighted still refuses a shared name
+- IdInput suggestions: a shared name refused by Add, or before the pause, lists its ranks
+- IdInput suggestions: a shared name refused after a lookup lists its ranks
 - IdList suggestions: a pick reaches onAdd and rebuilds the list
 - IdInput suggestions: Escape, focus loss, a hidden panel and a release close it
 - IdInput suggestions: typing is debounced, and a released box's pending update is dropped
@@ -716,6 +718,13 @@ badge and any count quoted in the docs must agree with it.
 - IdInput suggestions: a missing source, a raising candidates() or no info costs nothing
 - IdInput suggestions: an uncached candidate joins the list once it is named
 - IdInput suggestions: one dropdown per instance, whatever the renders
+- IdInput suggestions: a box pooled into a second render is hooked once
+- IdInput suggestions: Enter in a box that no longer owns the dropdown submits its text
+- IdInput suggestions: a box that left before the pause shows nothing
+- IdInput suggestions: focus lost to the dropdown itself goes back to the box
+- IdInput suggestions: one render names at most 2000 ids
+- IdInput suggestions: a raising info costs that id's row, not the list
+- IdInput suggestions: the dropdown is as wide as the box looks
 
 ### test_options_compose.lua (41)
 
@@ -1118,7 +1127,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 210 |
-| test_options_idsuggest.lua | 16 |
+| test_options_idsuggest.lua | 25 |
 | test_options_compose.lua | 41 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
@@ -1136,4 +1145,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1006** |
+| **Total** | **1015** |

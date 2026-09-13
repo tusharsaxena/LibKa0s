@@ -2663,12 +2663,17 @@ function lib.__AttachWidgets(O, d)
     return type(text) == "string" and text:match("^%s*(.-)%s*$") or ""
   end
 
-  --- Say why nothing was added, in orange; the text stays so the player can correct it.
+  -- The suggestion dropdown's answer to a refused shared name, defined with the dropdown below.
+  local offerRanks
+
+  --- Say why nothing was added, in orange; the text stays so the player can correct it. A name
+  --- several ids share is refused with "pick one from the list", so the list is put up for it.
   local function reportFailure(spec, parts, reason, typed)
     local noun, plural = kindWords(idKind(spec.kind))
     showStatus(parts, idText(spec, reason, { noun = noun, plural = plural, text = typed,
                                              hint = idText(spec, "nameHint") }))
     if parts.status.SetColor then parts.status:SetColor(ID_WARN_R, ID_WARN_G, ID_WARN_B) end
+    if reason == "ambiguous" then offerRanks(parts, typed) end
   end
 
   --- Hand a resolved id to the host. The box and the status line are cleared BEFORE onAdd, because
@@ -2797,6 +2802,7 @@ function lib.__AttachWidgets(O, d)
   --- failure says why on the status line. A submit replaces any lookup still pending.
   local function submitId(ctx, spec, parts, text, afterAdd)
     parts.lookup = nil
+    parts.offer = nil
     local sub = { text = text, typed = trimmed(text), afterAdd = afterAdd }
     local id, reason = resolveId(spec.kind, sub.typed, spec.candidates)
     local byName = (id ~= nil or reason == "notFound") and isNameText(sub.typed)
@@ -2813,7 +2819,9 @@ function lib.__AttachWidgets(O, d)
   -- list, so a redraw of the page builds no frame. It is parented to UIParent at FULLSCREEN_DIALOG
   -- strata and clamped to the screen, so the settings panel's scroll frame cannot clip it and it
   -- draws above the panel. Escape, focus leaving the box, the box hiding with its panel, and the
-  -- box's release close it. Plain frames, nothing protected: none of it is refused in combat.
+  -- box's release close it, and drop an update still waiting on the debounce. A shared name the
+  -- box refuses puts its ranks up to pick from. Plain frames, nothing protected: none of it is
+  -- refused in combat.
   local SUGGEST_ROW_H = 18
   local SUGGEST_PAD   = 6
   local SUGGEST_ICON  = 16
@@ -2828,8 +2836,11 @@ function lib.__AttachWidgets(O, d)
   local ARROW_STEP = { UP = -1, DOWN = 1 }
   local suggest = {}
   -- The frames already hooked, per script. AceGUI pools its widgets, so a box another page drew
-  -- is hooked once, and every hook asks whether its box owns the dropdown now.
+  -- is hooked once, and every hook finds its box through `boxParts`.
   local hookedFrames = setmetatable({}, { __mode = "k" })
+  -- The box each hooked frame was drawn for last: its input frame and its own frame both map to
+  -- that box's parts, so a hook acts for the render the pooled frame belongs to now.
+  local boxParts = setmetatable({}, { __mode = "k" })
 
   --- Close the dropdown if `parts` owns it, and drop any update still waiting on the debounce.
   local function closeSuggest(parts)
@@ -2845,6 +2856,7 @@ function lib.__AttachWidgets(O, d)
   local function pickSuggestion(parts, entry)
     closeSuggest(parts)
     parts.lookup = nil
+    parts.offer = nil
     local text = parts.edit.GetText and parts.edit:GetText() or ""
     addResolved(parts.ctx, parts.spec, parts, entry.id,
       { text = text, typed = trimmed(text), afterAdd = parts.afterAdd }, parts.shown or "")
@@ -2941,13 +2953,25 @@ function lib.__AttachWidgets(O, d)
     more:Show()
   end
 
+  --- The box's width in the dropdown's own units: a panel scaled apart from UIParent draws the box
+  --- at another scale than the dropdown. A scale the client does not answer is taken as the same.
+  local function boxWidth(f, anchor)
+    local width = anchor and anchor.GetWidth and anchor:GetWidth()
+    if type(width) ~= "number" then return 0 end
+    local from = anchor.GetEffectiveScale and anchor:GetEffectiveScale()
+    local to = f.GetEffectiveScale and f:GetEffectiveScale()
+    if type(from) == "number" and type(to) == "number" and from > 0 and to > 0 then
+      return width * from / to
+    end
+    return width
+  end
+
   --- Size the dropdown to `lines` lines and hang it under the box's input.
   local function placeSuggest(f, edit, lines)
     local anchor = edit.editbox or edit.frame
     f:ClearAllPoints()
     f:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -2)
-    local width = anchor and anchor.GetWidth and anchor:GetWidth()
-    f:SetWidth(math.max(type(width) == "number" and width or 0, SUGGEST_MIN_W))
+    f:SetWidth(math.max(boxWidth(f, anchor), SUGGEST_MIN_W))
     f:SetHeight(lines * SUGGEST_ROW_H + 2 * SUGGEST_PAD)
   end
 
@@ -2975,8 +2999,8 @@ function lib.__AttachWidgets(O, d)
 
   --- The parts owning the dropdown, when `frame` is its box's input or its box's frame.
   local function ownerOf(frame)
-    local o = suggest.owner
-    if o and (o.edit.editbox == frame or o.edit.frame == frame) then return o end
+    local o = boxParts[frame]
+    if o and suggest.owner == o then return o end
   end
 
   --- Whether the pointer is over the dropdown: focus lost to a click on a row keeps it open for
@@ -2986,35 +3010,19 @@ function lib.__AttachWidgets(O, d)
     return f ~= nil and f.IsMouseOver ~= nil and f:IsMouseOver() == true
   end
 
-  local function hookOnce(frame, script, fn)
-    if not (frame and frame.HookScript) then return end
-    local done = hookedFrames[frame] or {}
-    hookedFrames[frame] = done
-    if done[script] then return end
-    done[script] = true
-    frame:HookScript(script, fn)
-  end
-
-  --- The keys and the hiding AceGUI's EditBox has no callback for, hooked on its input frame and
-  --- its own frame. A host's AceGUI without the input frame gets no keys, and the mouse still
-  --- picks.
-  local function hookBox(edit)
-    hookOnce(edit.editbox, "OnArrowPressed", function(self, key)
-      local o = ownerOf(self)
-      if o and ARROW_STEP[key] then moveSelection(o, ARROW_STEP[key]) end
-    end)
-    hookOnce(edit.editbox, "OnEscapePressed", function(self)
-      local o = ownerOf(self)
-      if o then closeSuggest(o) end
-    end)
-    hookOnce(edit.editbox, "OnEditFocusLost", function(self)
-      local o = ownerOf(self)
-      if o and not pointerOnSuggest() then closeSuggest(o) end
-    end)
-    hookOnce(edit.frame, "OnHide", function(self)
-      local o = ownerOf(self)
-      if o then closeSuggest(o) end
-    end)
+  --- Whether `parts` may show the dropdown: not released, not hidden since its panel last showed,
+  --- and holding the keys. Shown again is read off the frame, because AceGUI's EditBox sets its own
+  --- frame's OnShow script and would drop a hook there. Only a real `false` from HasFocus counts as
+  --- the keys being elsewhere.
+  local function canSuggest(parts)
+    if parts.released then return false end
+    if parts.hidden then
+      local f = parts.edit.frame
+      if not (f and f.IsVisible and f:IsVisible() == true) then return false end
+      parts.hidden = nil
+    end
+    local input = parts.edit.editbox
+    return not (input and input.HasFocus and input:HasFocus() == false)
   end
 
   --- Work the list out for `text` and show it, or close the dropdown when nothing matches. The
@@ -3032,12 +3040,90 @@ function lib.__AttachWidgets(O, d)
     if suggest.owner then closeSuggest(suggest.owner) end
   end
 
-  --- A keystroke: the list is worked out SUGGEST_DEBOUNCE after the last one, for the text then.
+  --- A shared name refused (reportFailure, from a submit or a lookup's last try): its ranks are
+  --- listed for the player to pick from, and listed again when focus comes back to a box still
+  --- holding the name. Refused by Add, the box gets the keys back first, so Up, Down and Enter
+  --- reach the list. Enter with nothing highlighted refuses again, so no rank is added unpicked.
+  offerRanks = function(parts, typed)
+    parts.offer = typed
+    if parts.refocus and parts.edit.SetFocus then parts.edit:SetFocus() end
+    if canSuggest(parts) then updateSuggest(parts, typed) end
+  end
+
+  --- Focus back in a box: a refused shared name it still holds lists its ranks again.
+  local function reoffer(parts)
+    if not parts.offer or suggest.owner == parts then return end
+    if not stillTyped(parts, parts.offer) then
+      parts.offer = nil
+      return
+    end
+    if canSuggest(parts) then updateSuggest(parts, parts.offer) end
+  end
+
+  --- Focus lost to a click on the dropdown. A row's click picks and closes it; a click anywhere
+  --- else on it (the backdrop, the "+N more" line) would leave it open under a box without the
+  --- keys, where Escape cannot reach it. So the box takes them back on the next frame, unless a
+  --- pick has closed the dropdown by then.
+  local function refocusLater(parts)
+    local function refocus()
+      local input = parts.edit.editbox
+      if suggest.owner == parts and not parts.released and input and input.SetFocus then
+        input:SetFocus()
+      end
+    end
+    if C_Timer and C_Timer.After then C_Timer.After(0, refocus) else refocus() end
+  end
+
+  local function hookOnce(frame, script, fn)
+    if not (frame and frame.HookScript) then return end
+    local done = hookedFrames[frame] or {}
+    hookedFrames[frame] = done
+    if done[script] then return end
+    done[script] = true
+    frame:HookScript(script, fn)
+  end
+
+  --- The keys, the focus and the hiding AceGUI's EditBox has no callback for, hooked once per
+  --- pooled frame on its input frame and its own frame. Each hook acts for the box its frame was
+  --- drawn for last, and the arrows only while that box owns the dropdown. Leaving -- Escape,
+  --- focus lost, the frame hidden -- drops that box's pending update whether or not it shows the
+  --- dropdown yet, so a debounce cannot put one up under a box the player has left. A host's AceGUI
+  --- without the input frame gets no keys, and the mouse still picks.
+  local function hookBox(edit)
+    hookOnce(edit.editbox, "OnArrowPressed", function(self, key)
+      local o = ownerOf(self)
+      if o and ARROW_STEP[key] then moveSelection(o, ARROW_STEP[key]) end
+    end)
+    hookOnce(edit.editbox, "OnEscapePressed", function(self)
+      local p = boxParts[self]
+      if p then closeSuggest(p) end
+    end)
+    hookOnce(edit.editbox, "OnEditFocusLost", function(self)
+      local p = boxParts[self]
+      if not p then return end
+      if suggest.owner == p and pointerOnSuggest() then return refocusLater(p) end
+      closeSuggest(p)
+    end)
+    hookOnce(edit.editbox, "OnEditFocusGained", function(self)
+      local p = boxParts[self]
+      if p then reoffer(p) end
+    end)
+    hookOnce(edit.frame, "OnHide", function(self)
+      local p = boxParts[self]
+      if not p then return end
+      p.hidden = true
+      closeSuggest(p)
+    end)
+  end
+
+  --- A keystroke: the list is worked out SUGGEST_DEBOUNCE after the last one, for the text then,
+  --- if the box is still there to show it under.
   local function onTyped(parts, text)
     parts.suggestSeq = (parts.suggestSeq or 0) + 1
+    parts.offer = nil
     local seq = parts.suggestSeq
     local function run()
-      if parts.suggestSeq == seq and not parts.released then updateSuggest(parts, text) end
+      if parts.suggestSeq == seq and canSuggest(parts) then updateSuggest(parts, text) end
     end
     if C_Timer and C_Timer.After then C_Timer.After(SUGGEST_DEBOUNCE, run) else run() end
   end
@@ -3059,6 +3145,9 @@ function lib.__AttachWidgets(O, d)
     disableIfRender(ctx, add)
 
     local parts = { edit = eb, status = status, ctx = ctx, spec = spec, afterAdd = afterAdd }
+    -- The hooks find the box from its frames; a pooled frame answers for this render from now on.
+    if eb.editbox then boxParts[eb.editbox] = parts end
+    if eb.frame then boxParts[eb.frame] = parts end
     -- A released box drops its pending lookup and its suggestions: AceGUI's pool may hand the box
     -- and its status line to another page before the lookup's check or the debounce runs.
     eb:SetCallback("OnRelease", function()
@@ -3078,7 +3167,10 @@ function lib.__AttachWidgets(O, d)
     end)
     add:SetCallback("OnClick", function()
       closeSuggest(parts)
+      -- A shared name refused here hands the box the keys, so the list it puts up can be picked.
+      parts.refocus = true
       submitId(ctx, spec, parts, eb.GetText and eb:GetText() or "", afterAdd)
+      parts.refocus = nil
     end)
     hookBox(eb)
     O.AttachTooltip(eb, spec.label, spec.tooltip)
