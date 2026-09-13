@@ -485,7 +485,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (189)
+### test_options_widgets.lua (194)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -545,6 +545,7 @@ badge and any count quoted in the docs must agree with it.
 - IdInput: an ambiguous name asks for the id, in the kind's own plural
 - IdInput: the host can reword the button and the messages
 - IdInput: a raising onAdd is reported, and the box keeps its text
+- IdInput: the box and status line are cleared before onAdd, so onAdd may redraw the page
 - IdInput: drawn inside a disabled render, or with spec.disabled, it is disabled
 - IdInput: with no AceGUI it draws nothing
 - IdList: one line per entry -- icon, name and gray id, then Remove or a checkbox
@@ -552,7 +553,11 @@ badge and any count quoted in the docs must agree with it.
 - IdList: an add through its input reaches onAdd and rebuilds the list
 - IdList: with no ctx.rebuild the library's structural refresh redraws it
 - IdList: an empty list shows the host's empty text
-- IdList: an uncached item asks to load once, and the load asks for a rebuild
+- IdList: an uncached item asks to load, and the list redraws once its name lands
+- IdList: an item's name is colored by its quality; a spell's and a currency's are not
+- IdList: an item with no quality yet, or no palette for it, is drawn uncolored
+- IdList: uncached items load as one batch -- one timer and one rebuild, however many
+- IdList: an item not cached by the check is asked for again, a bounded number of times
 - IdList: an entry's label shows the client's own tooltip for it
 - IdList: a raising entries() is reported and still draws the input
 - IdList: drawn disabled, every Remove and checkbox is disabled
@@ -931,7 +936,7 @@ badge and any count quoted in the docs must agree with it.
 - parallel: the split is balanced to within one suite
 - parallel: more shards than suites yields empty shards, not overlapping ones
 
-### test_mock_base.lua (28)
+### test_mock_base.lua (29)
 
 - mock: a frame that was never armed answers zero, dressed or not
 - mock: __setGeom is the opt-in, and the only thing that arms a frame
@@ -959,6 +964,7 @@ badge and any count quoted in the docs must agree with it.
 - mock: installing the id lookups fills only what a harness has not defined
 - mock: a spell record answers by id and by name, the name in any case
 - mock: an uncached item keeps its icon and hides its name until it loads
+- mock: an item record answers its quality by id and by link, and none while uncached
 - mock: a currency record answers by id, and clearIdRecords empties every kind
 - mock: an AceGUI widget answers GetText and records SetType and DisableButton
 
@@ -1074,7 +1080,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 81 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 189 |
+| test_options_widgets.lua | 194 |
 | test_options_compose.lua | 41 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
@@ -1083,7 +1089,7 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 11 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
-| test_mock_base.lua | 28 |
+| test_mock_base.lua | 29 |
 | test_mock_ace.lua | 39 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
@@ -1092,4 +1098,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **966** |
+| **Total** | **972** |
