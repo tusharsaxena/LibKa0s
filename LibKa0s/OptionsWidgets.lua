@@ -836,9 +836,11 @@ local NAME_COLOR = { [ID_KINDS.item] = itemQualityColor }
 -- its own. Never `byName` or the client's enumeration: what a host kind resolves, and the ids it
 -- lists, stay its own. `resolve`, and any field the host sets (false included), win.
 local BASE_FIELDS = { info = true, link = true, tooltip = true, loads = true, noun = true, plural = true }
--- The view idKind hands out for each based host table, and the host table behind each view. Both
--- weak, so a host that builds its kind per render leaks nothing.
-local basedViews = setmetatable({}, { __mode = "k" })
+-- The view idKind hands out for each based host table, and the host table behind each view, so a
+-- host that builds its kind per render leaks nothing. basedViews is weak on its VALUES too: a view
+-- reaches back to its host, and Lua 5.1 has no ephemerons, so a view held strongly under a weak key
+-- would keep that key, and itself, for the session. A view nothing else holds is simply rebuilt.
+local basedViews = setmetatable({}, { __mode = "kv" })
 local viewHost = setmetatable({}, { __mode = "k" })
 
 --- The library kind a host table's `base` names, or nil. Read at call time: a host whose kind

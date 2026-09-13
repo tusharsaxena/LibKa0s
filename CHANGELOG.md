@@ -206,8 +206,10 @@ The widgets never write a path, so the host keeps its stored shape. After an add
 `O.IdList` redraws through `ctx.rebuild` when the host set one, and otherwise through
 `O.RefreshAllPanels()`. The words are a per-call `spec.strings` table, not `lib.STRINGS` keys. Three keys join
 `add`, `remove`, `empty`, `notFound`, `ambiguous` and `unknown`: `looking`, `nameHint` and `more`.
-Thirty-three cases in `tests/test_options_idsuggest.lua` pin the suggestions, three of them a
-based host kind's rows, picks and resolution; two in `tests/test_options_widgets.lua` pin a based
+Thirty-six cases in `tests/test_options_idsuggest.lua` pin the suggestions, six of them a based
+host kind's rows, picks, resolution, the host's own `false` winning over its base, and its view
+being collected with a kind built per render (on WoW's Lua 5.1, which has no ephemerons, the view
+cache is weak on its values as well as its keys); two in `tests/test_options_widgets.lua` pin a based
 kind's entry lines and a host kind without one. What the headless
 suite cannot see, and what a host should know, is in the Options 18.16.5.3 API doc under
 *Suggestions while typing*: the dropdown following a scrolled box past the page's clip edge, the

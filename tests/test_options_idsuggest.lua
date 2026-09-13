@@ -573,12 +573,67 @@ suggestCase("IdInput suggestions: a host kind with base = \"item\" shows each ra
   end
 
   -- red under: a decoration read off every host kind
-  local plain = input(made, { kind = hostKind(O, { info = ownInfo }), candidates = zephyrs }, O)
+  local plain = input(made, { kind = hostKind(O, { info = ownInfo }, { [191396] = true }),
+                              candidates = zephyrs }, O)
   typeText(plain, "hushed")
   assertEqual(shownIds(plain), "191395,191396,191397")
   assertEqual(dropdown(made).rows[1].labelText, rankLabel(1, true), "no base: drawn as before")
   dropdown(made).rows[2]:__fire("OnClick")
-  assertEqual(table.concat(plain.added, ","), "191396", "and a pick goes to onAdd as before")
+  -- red under: every host kind's pick asked of its resolve (only a based kind's is)
+  assertEqual(table.concat(plain.added, ","), "191396",
+    "and a pick goes to onAdd as before, past a resolve that would refuse it")
+end)
+
+suggestCase("IdInput suggestions: a based host kind's own false wins over its base", function(made)
+  -- ConsumableMaster with no active spec sets `info = false, loads = false` on its kind: no list,
+  -- nothing pre-warmed. A base must not fill those back in.
+  for _, id in ipairs(zephyrs()) do mocks.addIdRecord("item", id, ZEPHYR, 4638, true, 1) end
+  local O = Fixture.new()
+  assertEqual(table.concat(O.UnnamedCandidates(hostKind(O, { base = "item" }), zephyrs), ","),
+    "191397,191395,191396", "the base's loads and info, where the host sets none")
+  -- red under: a base field read wherever the host's is falsy (false filled in from the base)
+  assertEqual(table.concat(O.UnnamedCandidates(hostKind(O, { base = "item", loads = false }), zephyrs), ","),
+    "", "the host's loads = false: nothing to pre-warm")
+  seedZephyr()
+  local b = input(made, { kind = hostKind(O, { base = "item", info = false }), candidates = zephyrs }, O)
+  typeText(b, "hushed")
+  assertEqual(shownIds(b), "", "the host's info = false: nothing names a row, so no list")
+end)
+
+suggestCase("IdInput suggestions: the id a based kind's resolve answers for a pick is the one added", function(made)
+  seedZephyr()
+  local O = Fixture.new()
+  local kind = hostKind(O, { base = "item" })
+  local resolve = kind.resolve
+  kind.resolve = function(text, candidates)
+    if text == "191395" then return 191397, ZEPHYR end
+    return resolve(text, candidates)
+  end
+  local b = input(made, { kind = kind, candidates = zephyrs }, O)
+  typeText(b, "hushed")
+  dropdown(made).rows[1]:__fire("OnClick")
+  -- red under: the picked row's id added past the resolver's answer
+  assertEqual(table.concat(b.added, ","), "191397", "the resolver's id, not the row's")
+end)
+
+test("IdInput suggestions: a based kind built per render is collected with its view", function()
+  -- ConsumableMaster builds its kind afresh on every render of Add-by-ID. WoW's Lua 5.1 has no
+  -- ephemerons, so a weak-keyed cache whose value (the view) reaches back to its key (the host)
+  -- keeps both for the session.
+  local O = Fixture.new()
+  local probe = setmetatable({}, { __mode = "k" })
+  for _ = 1, 50 do
+    local host = { base = "item", resolve = function(text) return tonumber(text) end }
+    probe[host] = true
+    O.ResolveId(host, "6948")
+    O.UnnamedCandidates(host, function() return { 6948 } end)
+  end
+  collectgarbage("collect")
+  collectgarbage("collect")
+  local left = 0
+  for _ in pairs(probe) do left = left + 1 end
+  -- red under: basedViews weak on its keys alone (every host and its view kept)
+  assertEqual(left, 0, "no host kind outlives its render")
 end)
 
 suggestCase("IdInput suggestions: a based host kind's resolve still decides what a pick adds", function(made)
