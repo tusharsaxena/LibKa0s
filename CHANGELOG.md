@@ -25,6 +25,15 @@ and so does the kit:
 - `O.ResolveId`, `O.IdInput` and `O.IdList`, which add an id by number, link or name, with
   `O.UnnamedCandidates` and `O.ID_NAME_HINT` beside them.
 
+`O.IdInput` also suggests matching entries as the player types, and lists every rank of a shared
+name as its own row to pick from. That closes
+[#31](https://github.com/tusharsaxena/LibKa0s/issues/31). A typed name resolves only against what
+the client can name, meaning an item the player carries or carried this session or a spell in the
+spellbook, or against the ids the host passes as `candidates`. The client has no item-name search.
+So the input looks up the host's uncached item candidates before it takes a name. A name several
+ranks share is refused as ambiguous ("pick one from the list, or use the id"). It never adds one
+rank the player did not pick, and never adds them all.
+
 Kit revision 20 adds `mock_ids.lua` so a suite can drive the id widgets. All three came out of
 AuraMaster's settings rework (feedback batch 5), and ConsumableMaster, BankLedger and LootHistory
 adopt the id widgets.
@@ -157,7 +166,7 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   item is asked for through `LibKa0s-Item-1.0`'s `LoadItem` when present. The ids one render asks
   for share one check, 0.4 s later, which redraws the list once if any of them is named by then.
   An id still unnamed is asked for again, up to five asks, then stays "Unknown item N".
-- **Suggestions while typing** (issue #31). `O.IdInput`, and so `O.IdList`, lists up to ten
+- **Suggestions while typing** (closes #31). `O.IdInput`, and so `O.IdList`, lists up to ten
   matching entries under the box as the player types, 0.1 s after the last keystroke: icon, name,
   rank and gray id. Digits match ids by prefix. Two or more characters match names in four tiers
   (the whole name, its start, the start of a word inside it, anywhere), then by shorter name, name,

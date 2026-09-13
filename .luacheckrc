@@ -8,7 +8,7 @@ read_globals = {
   "C_AddOns", "GetAddOnMetadata",
   "C_Map",   -- the player's map id, read by LibKa0s-Env-1.0
   "C_Item", "C_Timer", "ITEM_QUALITY_COLORS",   -- read by LibKa0s-Item-1.0
-  -- An id list's name lookups (LibKa0s-Options-1.0's ResolveId / IdInput / IdList, minor 19), each
+  -- An id list's name lookups (LibKa0s-Options-1.0's ResolveId / IdInput / IdList, minor 16), each
   -- read at call time and guarded, so a client without one degrades to id-only input.
   "C_Spell", "C_CurrencyInfo",
   -- IdInput's suggestions (issue #31): the bags and the spellbook it lists, the quality tier it
