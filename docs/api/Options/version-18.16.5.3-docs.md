@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 18.15.5.3
+# `LibKa0s-Options-1.0` — version 18.16.5.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,136 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **18** · `OptionsWidgets.lua` **15** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **18** · `OptionsWidgets.lua` **16** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.34.0 |
-| Status | Superseded |
-| Supersedes | [version 17.15.4.3](./version-17.15.4.3-docs.md) |
-| Superseded by | [version 18.16.5.3](./version-18.16.5.3-docs.md) — `disabledIf` on every maker (a path or a predicate), `RenderRows`' `opts.disabled`, and four new members: `ChoiceGrid`, `ResolveId`, `IdInput` and `IdList` |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 18, OptionsWidgets = 15, OptionsCompose = 5, OptionsScroll = 3 }` |
+| Shipped in | v1.35.0 |
+| Status | **Current** |
+| Supersedes | [version 18.15.5.3](./version-18.15.5.3-docs.md) |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 18, OptionsWidgets = 16, OptionsCompose = 5, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O18`
-for `Options.lua` minor 18, `W15` for `OptionsWidgets.lua` minor 15, `C5` for `OptionsCompose.lua`
+for `Options.lua` minor 18, `W16` for `OptionsWidgets.lua` minor 16, `C5` for `OptionsCompose.lua`
 minor 5, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**One file moves, `OptionsWidgets.lua` 15 → 16.** It adds four instance members, `O.ChoiceGrid`,
+`O.ResolveId`, `O.IdInput` and `O.IdList`, all **W16**. It widens one row field: `disabledIf` is read
+by every maker, and it may be a predicate as well as a path. It adds one `RenderRows` option,
+`opts.disabled`. No member is removed, renamed or resignatured. The member manifest differs from
+18.15.5.3's in the `OptionsWidgets` minor alone, because it lists the library table's members, and
+all four additions hang off the instance `lib:New` returns. `lib.STRINGS` gains no key. The id
+widgets' words are a table of their own, overridable per call (see
+[the id input and the id list](#the-id-input-and-the-id-list)).
+
+**Why.** AuraMaster's settings rework (feedback batch 5, 2026-09-13) asked for three things the
+flow engine could not draw:
+- a Filters page whose rows are spell categories and whose columns are *Default · Whitelist ·
+  Blacklist*, one choice per row;
+- rows that dim when their subject does not apply, and a whole Bars page drawn disabled over an
+  icons container;
+- spell lists a player adds to by id, by a shift-clicked link or by name.
+
+Three more hosts had a hand-written id editor of their own, and they are the adopters:
+ConsumableMaster's add-by-id line, and BankLedger's and LootHistory's black- and whitelists. Each
+had its own edit box, its own Add button, and no name lookup.
+
+### `disabledIf` on every maker, as a path or a predicate
+
+Through W15 only the color picker read `row.disabledIf`, and only as a settings path. From W16 every
+maker reads it: the checkbox, the slider, the dropdown (the LSM media dropdowns and a numeric enum
+included), the edit box and the color picker. It is applied when the widget is built and again by
+the widget's refresher, so a write that changes the answer re-dims or brightens the row on the next
+`RefreshScalars`. AceGUI's own disabled state does the dimming.
+
+| Value | Read as |
+|---|---|
+| a string | A settings path. Truthy means disabled. A row with no `path` reads it through its own `row.get(key)`, as at W15. |
+| a function | `disabledIf(row)`, `pcall`'d. A truthy return means disabled. **A predicate that raises reads as enabled**: a raise at build would otherwise cost the whole row for the sake of its dimming. |
+| `nil` | Nothing. **The widget is never touched.** |
+
+The last row is deliberate. A row without `disabledIf`, drawn outside a disabled render, gets no
+`SetDisabled` call at all, not even `SetDisabled(false)`. Five hosts disable their own widgets
+after drawing them, and a refresher that re-enabled them on the next write anywhere would undo that.
+
+The class-color companion rule does not move: a composed swatch still carries no `disabledIf`
+(`options-ui-§17`, `OptionsCompose.lua`), because its alpha is read under class color.
+
+### `RenderRows(ctx, rows, afterGroup, pairWith, opts)` — `opts.disabled`
+
+`opts = { disabled = true }` draws every widget of the call disabled. That covers the rows, and
+also the buttons an `afterGroup` or `pairWith` hook draws through `O.InlineButtonPair` or
+`O.SessionCheckbox`. It exists for a page whose subject does not apply, such as a Bars page shown
+over an icons container.
+
+- **It rides on `ctx.__renderDisabled` for the call's duration only.** Each maker snapshots the flag
+  when it builds and never re-reads it from the ctx. A refresher that read it live would lift a
+  disabled page's dimming on the first write anywhere, and a later render's flag could reach an
+  earlier page's widgets.
+- **A nested call inherits it.** A `RenderRows` or `O.ChoiceGrid` drawn from inside a disabled call,
+  with no `disabled` of its own, draws disabled too, because its widgets are part of the same page.
+- **The outer value is restored on the way out, including on a raise.** The call's loop now runs
+  inside a `pcall`, and the raise is re-raised unchanged with `error(err, 0)`. A single row was
+  already guarded on its own and still is. What can escape is a raising `afterGroup` hook or a
+  raising heading, as before. The value, a string's `file:line:` prefix included, is the same one.
+  The only difference is the stack: a traceback now shows the re-raise site in `RenderRows`
+  rather than the hook's frame. This is the same trade the 16.15.4.3 bulk bracket made.
+- `opts.disabled` disables a widget inside the call and nothing more. It does not stop a host's
+  own `SetDisabled(false)` from running later.
+
+### `O.ChoiceGrid(ctx, spec)` — a matrix of radio cells
+
+Rows that share one value list are drawn as a grid. A header line carries the column labels. Each
+row then gets one line: a radio cell per column, then the row's label, with its tooltip, across the
+rest of the width. See [the choice grid](#the-choice-grid) for the spec. Each cell reads and writes
+through the same seam every maker uses, so a click runs `RefreshScalars` and every cell on the page
+re-syncs.
+
+- A stored value that no column carries lights **no** cell. Guessing a column would hide a stale
+  value behind a choice.
+- A click on the lit cell writes nothing. AceGUI toggles a radio-typed `CheckBox` off on every
+  click, so the cell re-lights itself rather than writing `false`.
+- Each line is guarded, as `RenderRows` guards each row: a row whose `get` raises costs that line
+  and is reported, and every line after it still draws.
+
+### `O.ResolveId`, `O.IdInput` and `O.IdList` — add by id, link or name
+
+`O.ResolveId(kind, text, candidates)` turns typed text into an id. It is pure and needs no ctx.
+`O.IdInput(ctx, parent, spec)` is one line an id is added through: an edit box, an Add button and
+a status line. `O.IdList(ctx, spec)` is that line plus one line per entry. See
+[the id input and the id list](#the-id-input-and-the-id-list).
+
+- **The host owns storage.** Neither widget writes a path. They call back (`onAdd`, `onRemove`,
+  `onToggle`), and the host keeps whatever stored shape it already has. ConsumableMaster, for
+  example, stores a spell as a negative id.
+- **Input that resolves to nothing, or to more than one id, adds nothing.** The status line says
+  why, in orange, and keeps the text so the player can correct it.
+- **Degraded mode.** The client APIs are read at call time and each one is guarded. With no
+  `C_Spell` or `C_Item`, a number or a link still resolves and a name finds nothing. Nothing raises.
+
+The design (X-1) named the input line `O.IdInput(ctx, spec)`. It shipped as
+`O.IdInput(ctx, parent, spec)`, with `parent` defaulting to the page's scroll, so a host can draw
+the line into a container of its own. ConsumableMaster's priority list does exactly that.
+
+### What the host does
+
+**Nothing, on the re-vendor.** A host that calls none of the four members, passes no
+`opts.disabled`, and carries `disabledIf` only in the color picker's path form, which reads as it
+always did, renders as it did at 18.15.5.3. A row of any other type that already carried a
+`disabledIf` would start dimming, since the field was ignored there until W16. A sweep of the ten
+consumers' own source (their `libs/` and `tests/` excluded) on 2026-09-13 found no row carrying one
+at all, only comments explaining why a color row must not.
+
+Adopting is per host. AuraMaster takes `ChoiceGrid`, `IdList`, `disabledIf` and `opts.disabled`.
+ConsumableMaster takes `O.IdInput` alone and keeps its own rows. BankLedger and LootHistory take
+`O.IdList`, with `kind = "item"`, and LootHistory also with `kind = "currency"`. A suite driving the
+id widgets installs kit revision 20's `mock_ids.lua` (see
+[testkit version 20](../testkit/version-20-docs.md)).
+
+### Previously, at 18.15.5.3
 
 **Two files move, `Options.lua` 17 → 18 and `OptionsCompose.lua` 4 → 5, and the *Reset all
 settings* button's tooltip now says what the reset does.** One descriptor field is added,
@@ -997,7 +1112,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `applyDefault` | function(row) | yes | O1 | Reset one row. Same reasoning. |
 | `rowsForPage` | function(pageKey, filter) | yes | O1 | The rows of one page, in render order. `filter` is `ctx.unit`, passed through untouched — the library never interprets it. |
 | `allRows` | function | yes | O1 | Every row, for `RestoreAllDefaults`. |
-| `resetProfile` | function | no | O9 | Supply it and a global reset becomes a **profile reset**: the `sessionOnly` rows are swept row by row, then this is called, then every panel refreshes. Pass `function() NS.db:ResetProfile() end`. With it supplied the library narrows the row walk itself — see `RestoreAllDefaults` below. **Since O18 / C5** it also picks the wording of `MasterControls`' *Reset all settings* tooltip: see [What changed at this version](#what-changed-at-this-version). |
+| `resetProfile` | function | no | O9 | Supply it and a global reset becomes a **profile reset**: the `sessionOnly` rows are swept row by row, then this is called, then every panel refreshes. Pass `function() NS.db:ResetProfile() end`. With it supplied the library narrows the row walk itself — see `RestoreAllDefaults` below. **Since O18 / C5** it also picks the wording of `MasterControls`' *Reset all settings* tooltip: see [Previously, at 18.15.5.3](#previously-at-1815553). |
 | `profilesPage` | boolean | no | **O18** | `true` when the host ships an AceDBOptions Profiles sub-page (`options-ui-§3`). Read by `MasterControls` alone, and only with `resetProfile` supplied: the *Reset all settings* tooltip then names the equivalence `options-ui-§12` asks for, *"the same thing Profiles → Reset Profile does"*. The library cannot see which pages a host registers, so the host declares it. Ignored without `resetProfile`, and changes nothing but that tooltip. |
 | `skipRestoreAll` | function(row) | no | O1 | Return true to exclude a row from a global reset. With `resetProfile` supplied the profiles-page veto this was invented for is **implied** (an AceDBOptions row is not `sessionOnly`, so it is already outside the narrowed walk); the field is still honored, and is the whole policy for a host that supplies no `resetProfile`. |
 | `afterRestoreAll` | function | no | O1 | Runs after the rows are reset **and after `resetProfile`**, and **before** the panels refresh, for state in neither the schema nor the profile. The order is load-bearing: a refresh first would paint the pre-hook values. A dragged frame's saved position is **not** an example any more — a position lives in the profile and comes back with it. |
@@ -1085,10 +1200,10 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `TextRow(ctx, text, opts)` | **W6** | A full-width Label, left-justified, added to `EnsureScroll(ctx)` and returned. `opts.fontObject` is a `_G` font-object **name**; `opts.justify` defaults to `"LEFT"`. Returns nil when AceGUI or the scroll is absent. Owns the `w.label` / `SetJustifyH` / `SetFontObject` guard pair **once**. |
 | `BuildLandingPage(ctx, spec)` | **W6** | The whole landing body: clear, logo, one-liner, then a heading and its rows per section. See [The landing page](#the-landing-page). |
 | `AttachTooltip(widget, label, tooltip)` | W1 | Works on AceGUI widgets and on plain frames. |
-| `InlineButtonPair(ctx, left, right)` | W1 | Two action buttons (not settings) in one Flow row, each inset to `BUTTON_PAIR_REL`. A **nil** `right` draws the left button alone, at the pair's width, so it still lines up with every other page's — which is the shape a frameless addon's Master controls tab needs. A throwing `onClick` is reported, never propagated into AceGUI's dispatch. A spec carrying **no** `onClick` is reported once at BUILD time (`lib.STRINGS.DEAD_BUTTON`, naming the button's text) and drawn anyway — the composer emits the master group's two resets unconditionally, so a host that never supplied `onResetAll`/`onResetPosition` is told rather than shipping a live-looking button that swallows the click. |
-| `RenderField(ctx, row, parent, relWidth)` | W1 (path-less rows: **W15**) | Dispatch by `row.type` to one of the five makers. Returns nil for an unknown type rather than erroring — a misspelled type costs one row, not the page. A row with no `path` is read and written through its own `get` / `set` from W15 — see [What changed](#what-changed-at-this-version). |
-| `SessionCheckbox(ctx, parent, relWidth, spec)` | W1 | A checkbox wired to caller-supplied `get`/`set` instead of a settings path, for runtime-only toggles that must never persist. |
-| `RenderRows(ctx, rows, afterGroup, pairWith, opts)` | W1 (`opts.noHeadings`: **W9**) | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. `opts = { noHeadings = true }` suppresses the automatic `Section` heading, for a page whose sections are drawn as tabs instead (options-ui-§13); the row-boundary flush and `ctx.lastGroup` advance still happen. Omitted by every untabbed caller. |
+| `InlineButtonPair(ctx, left, right)` | W1 | Two action buttons (not settings) in one Flow row, each inset to `BUTTON_PAIR_REL`. A **nil** `right` draws the left button alone, at the pair's width, so it still lines up with every other page's — which is the shape a frameless addon's Master controls tab needs. A throwing `onClick` is reported, never propagated into AceGUI's dispatch. A spec carrying **no** `onClick` is reported once at BUILD time (`lib.STRINGS.DEAD_BUTTON`, naming the button's text) and drawn anyway — the composer emits the master group's two resets unconditionally, so a host that never supplied `onResetAll`/`onResetPosition` is told rather than shipping a live-looking button that swallows the click. **From W16**, drawn inside a disabled render (`RenderRows`' `opts.disabled`, or a disabled `ChoiceGrid` / `IdInput` / `IdList`), both buttons are drawn disabled. |
+| `RenderField(ctx, row, parent, relWidth)` | W1 (path-less rows: **W15**; `disabledIf` on every maker: **W16**) | Dispatch by `row.type` to one of the five makers. Returns nil for an unknown type rather than erroring — a misspelled type costs one row, not the page. A row with no `path` is read and written through its own `get` / `set` from W15 — see [Previously, at 15.15.4.3](#previously-at-1515543). From W16 every maker honors `row.disabledIf` — see [What changed at this version](#what-changed-at-this-version). |
+| `SessionCheckbox(ctx, parent, relWidth, spec)` | W1 (disabled render: **W16**) | A checkbox wired to caller-supplied `get`/`set` instead of a settings path, for runtime-only toggles that must never persist. From W16 it is drawn disabled when drawn inside a disabled render. |
+| `RenderRows(ctx, rows, afterGroup, pairWith, opts)` | W1 (`opts.noHeadings`: **W9**; `opts.disabled`: **W16**) | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. `opts = { noHeadings = true }` suppresses the automatic `Section` heading, for a page whose sections are drawn as tabs instead (options-ui-§13); the row-boundary flush and `ctx.lastGroup` advance still happen. Omitted by every untabbed caller. **`opts.disabled = true` (W16)** draws every widget of the call disabled, the widgets an `afterGroup` or `pairWith` hook draws included, through `ctx.__renderDisabled` held for the call alone. A nested call inherits it, and the outer value is restored on a raise, which is re-raised unchanged — see [What changed at this version](#what-changed-at-this-version). |
 | `RenderSchema(ctx, pageKey, afterGroup, pairWith)` | W1 | The per-page wrapper. |
 | `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)` | **W9** | Render one page as a tab strip over its own sections. The partition is by `row.group`, in declaration order — one tab is exactly one group, and there is no second field naming a tab (options-ui-§13). **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first group. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order. |
 | `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). **Its geometry is invariant under the selection from W13.** **From W14 the buttons and the content panel are acquired from `LibKa0s-Pool-1.0` pools held on the `ctx` rather than created per click** — see [What changed at this version](#what-changed-at-this-version). Returns the buttons in tab order, or nil having drawn nothing. |
@@ -1115,6 +1230,10 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshPanel(ctx, structural)` | O8 | **One page, either tier.** `structural` true re-runs that ctx's renderer; false runs its refreshers in place. A hidden page is flagged dirty and repaints on its next show, so the caller never has to ask whether it is on screen. For a host whose page repaints off its own message bus rather than off a widget's `set()`. |
 | `__pages()` | O1 | The pages that actually built. A raising builder is reported by key and costs only itself. |
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
+| `ChoiceGrid(ctx, spec)` | **W16** | A matrix of radio cells over rows that share one value list: a header line of column labels, then per row one radio per column and the row's label with its tooltip. Reads and writes through the maker seam and re-syncs on `RefreshScalars`. Returns the row lines. See [The choice grid](#the-choice-grid). |
+| `ResolveId(kind, text, candidates)` | **W16** | Pure. Typed text → `id, name, icon`, or `nil, reason` (`"empty"`, `"notFound"`, `"ambiguous"`): a number, a link of the kind's own type, the client's name lookup, then the host's candidates by name. See [The id input and the id list](#the-id-input-and-the-id-list). |
+| `IdInput(ctx, parent, spec)` | **W16** | One add-by-id line — an edit box, an Add button and a status line — into `parent`, default the page's scroll. Resolves through `ResolveId` and calls `spec.onAdd(id)`; never writes a path and redraws nothing. Returns the group, the edit box, the button and the status label. |
+| `IdList(ctx, spec)` | **W16** | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry — icon, name, gray id, and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns the entry lines. |
 | `ColorPair(spec)` | **C1** (`spec.bind`: **C4**) | A color swatch and its *use class color* companion, as exactly two adjacent rows. See [The schema composers](#the-schema-composers). |
 | `FontGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
 | `BorderGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
@@ -1191,6 +1310,134 @@ value.
 under every heading — `BuildLandingPage` therefore does not draw a second one, and the day the two
 values diverge every landing heading loses its gap. `tests/test_options.lua` pins the equality.
 
+## The choice grid
+
+New at `OptionsWidgets.lua` minor 16.
+
+### `O.ChoiceGrid(ctx, spec)` → lines or `nil`
+
+| `spec` field | Type | Meaning |
+|---|---|---|
+| `rows` | array of schema rows | Each carries `path` (or a path-less `get` / `set`), `label`, the tooltip body (`tooltip` or `desc`), and optionally `disabledIf`. Read and written through the same seam every maker uses. Give them `skipRender = true` so the flow engine leaves them to the grid; the grid draws them regardless, and they stay in the schema for the CLI and the resets. |
+| `columns` | ordered array of `{ value =, label = }` | One radio cell per entry, in this order. A column with no `label` is headed by its `value`. |
+| `heading` | string | Optional. Drawn with `O.Section`, and recorded as `ctx.lastGroup`. |
+| `labelHeader` | string | Optional heading for the label column. `"Category"` when absent: a literal, as `lib.STRINGS`' own are, since the library carries no locale. |
+| `disabled` | boolean | Optional. Draws every cell and label disabled, as `RenderRows`' `opts.disabled` does. A grid drawn inside a disabled render inherits that render's flag either way. |
+
+Each line is a full-width Flow `SimpleGroup`: a `CheckBox` per column, `SetType("radio")` where the
+widget has it, at relative width `0.12`, then an `InteractiveLabel` taking the rest less `0.02`.
+The label gives back `0.02` for the reason `BUTTON_PAIR_REL` sits under half: the widget ending at
+the right edge is clipped by the ScrollFrame (options-ui-§8).
+
+- A cell is lit while `read(row) == column.value`, and each cell's refresher re-lights it. A stored
+  value no column carries lights **none**.
+- A click on an unlit cell writes `column.value` through the row's seam, whose `set` runs
+  `RefreshScalars`, so every cell on the line re-syncs to exactly one lit.
+- A click on the lit cell writes nothing and re-lights it. AceGUI toggles a checkbox on every click,
+  a radio-typed one included.
+- `disabledIf` dims the row's cells **and** its label, and both re-evaluate on refresh.
+- Each line is guarded as a flow row is: a row whose `get` raises is reported through
+  `lib.STRINGS.ROW_FAILED`, costs that line, and is left out of the return.
+
+It returns the row lines in row order, not the header. With no AceGUI or scroll it returns nil and
+draws nothing.
+
+## The id input and the id list
+
+New at `OptionsWidgets.lua` minor 16. The host owns storage. None of these writes a path: the
+widgets call back, and the host keeps whatever stored shape it has.
+
+### `O.ResolveId(kind, text, candidates)` → `id, name, icon` or `nil, reason`
+
+Pure, and needs no ctx. `text` is trimmed first, and a number `text` is taken as its string.
+
+| Step | Resolves | Kinds |
+|---|---|---|
+| 1 | a number, `^(%d+)$` | all |
+| 2 | a link of the kind's own type — `|Hspell:123:…`, `|Hitem:123:…`, `|Hcurrency:123:…` — or the bare `spell:123` / `item:123` / `currency:123`. An item link typed into a spell list is not a spell. | spell, item, currency |
+| 3 | the client's name lookup: `C_Spell.GetSpellInfo(name)` → `spellID`; `C_Item.GetItemInfoInstant(name)` → the first return | spell, item |
+| 4 | a case-insensitive exact name over the ids `candidates()` returns, named through the kind's own id lookup. Two **distinct** ids with the name → `"ambiguous"`; one id listed twice is one. | spell, item, currency |
+
+`reason` is `"empty"`, `"notFound"` or `"ambiguous"`. A number the client cannot name still
+resolves, with no name: that is the degraded mode. Every client API is read at call time and
+guarded, so with no `C_Spell` or `C_Item` a number or a link resolves, a name finds nothing, and
+nothing raises. A raising `candidates()` costs step 4 and is not reported.
+
+`kind`:
+
+| `kind` | Id → name, icon | Tooltip |
+|---|---|---|
+| `"spell"` | `C_Spell.GetSpellInfo(id)` | `GameTooltip:SetSpellByID` |
+| `"item"` | icon from `C_Item.GetItemInfoInstant(id)` (no cache needed), name from `C_Item.GetItemNameByID(id)` (cache needed) | `GameTooltip:SetItemByID` |
+| `"currency"` | `C_CurrencyInfo.GetCurrencyInfo(id)`; an empty name is the client's answer for an id it does not have | `GameTooltip:SetCurrencyByID` |
+| a host table | `{ resolve = function(text, candidates) -> id, name, icon \| nil, reason; info = function(id) -> name, icon; noun; plural; tooltip = function(tooltip, id) or a GameTooltip method name }`. `resolve` replaces all four steps, is handed the trimmed text, and is `pcall`'d — a raise or an unknown reason reads as `"notFound"`. | as given |
+| anything else | numbers only | none |
+
+### `O.IdInput(ctx, parent, spec)` → group, editBox, button, status
+
+One line, into `parent`, which is the page's scroll when nil: an AceGUI `EditBox` at relative width
+`0.78`, with its own Okay button turned off through `DisableButton(true)` where the widget has it,
+an Add `Button` at `0.20`, and a full-width status `Label` under both. The two sum to `0.98` for the
+clip reason above.
+
+| `spec` field | Meaning |
+|---|---|
+| `kind` | As `ResolveId`'s. |
+| `onAdd` | `function(id)`, called once per successful add. A raise is reported through `lib.STRINGS.BUTTON_FAILED` and counts as a failure: the text stays. |
+| `candidates` | Optional `function() -> ids`, searched by name at step 4. |
+| `label`, `tooltip` | The edit box's label, and the tooltip on both widgets. |
+| `strings` | Optional overrides of the words, by key — see below. |
+| `disabled` | Optional; draws both widgets disabled. A disabled render is inherited. |
+
+Enter in the box, or Add, resolves the trimmed text. Success calls `onAdd(id)`, then clears the box
+and the status line. Failure writes the reason on the status line in orange (`1, 0.5, 0`), keeps the
+text, and calls nothing. **It redraws nothing after an add**: a host that draws its own rows redraws
+them itself. It returns nil, drawing nothing, with no AceGUI.
+
+The words, and their defaults. `{name}` tokens rather than format specifiers, so a translation can
+reorder them:
+
+| Key | Default |
+|---|---|
+| `add` | `Add` |
+| `remove` | `Remove` (IdList) |
+| `empty` | `Type an id, a link or a name.` |
+| `notFound` | `No {noun} named '{text}'.` |
+| `ambiguous` | `Several {plural} are named '{text}' — use the id.` |
+| `unknown` | `Unknown {noun} {id}` (IdList) |
+
+`{noun}` / `{plural}` are `spell`/`spells`, `item`/`items`, `currency`/`currencies`, a host
+kind's own `noun` / `plural`, or `entry`/`entries`.
+
+### `O.IdList(ctx, spec)` → lines or `nil`
+
+Everything `IdInput` takes, plus:
+
+| `spec` field | Meaning |
+|---|---|
+| `entries` | `function() -> ordered { { id =, toggle = bool?, on = bool? }, … }`. A raise is reported through `lib.STRINGS.ROW_FAILED` and costs the lines, not the input. |
+| `onRemove` | `function(id)`, from an entry's Remove. |
+| `onToggle` | `function(id, on)`, from a toggle entry's checkbox. |
+| `heading` | Optional section heading, drawn with `O.Section` and recorded as `ctx.lastGroup`. |
+| `emptyText` | Optional line drawn, through `O.TextRow`, when there are no entries. |
+| `toggleLabel` | Optional label beside a toggle entry's checkbox. |
+
+It draws into the page's scroll: the heading, the input line, then one line per entry, guarded per
+line. Each entry line has an `InteractiveLabel` at `0.78` and the action at `0.20`. The label shows
+the entry's icon (16px), its name, and its id in gray, or `Unknown <noun> <id>` when the kind cannot
+name it. Hovering it shows the client's own tooltip for that kind. The action is Remove, or a
+`CheckBox` for a `toggle` entry (a starter the host can switch off without forgetting it), lit by
+`on`.
+
+- **Redraws.** After an add, or a Remove whose `onRemove` returned, the list redraws through
+  `ctx.rebuild` when the host set one, and otherwise through `O.RefreshAllPanels()`, which is
+  structural, because the set of lines changed. A toggle redraws nothing.
+- **Uncached items.** An item the client cannot name yet is asked for once per id per instance,
+  through `LibStub("LibKa0s-Item-1.0", true).LoadItem`, looked up at call time. The list redraws
+  when the load lands. Without the Item major the entry stays unnamed, and nothing raises.
+
+It returns the entry lines in order. It returns nil, drawing nothing, with no AceGUI.
+
 ## Row fields the flow engine reads
 
 Beyond `path`, `type`, `label`, `default` and the tooltip body — `tooltip`, which is what every
@@ -1208,7 +1455,8 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 | `values` on a `number` row | **W5** | Makes it a **dropdown** rather than a slider, matching what `LibKa0s-Slash-1.0`'s parser has always understood the shape to mean. Inferred, not opted into — a `values` list that resolves empty falls back to the slider. |
 | `values` / `sorting` | W1 (ordered-array shape: W3) | Dropdown list, in either shape: an **ordered array** of `{ value =, text = }` (position is the order, and `sorting` is ignored) or a **key map** `{ KEY = "Label" }` (`sorting` keeps a deliberate order instead of alphabetising). A degenerate key *set* `{ KEY = true }` labels each entry with its key. `values` may be a function, evaluated at render and parse time. |
 | `dialogControl` | W1 | An in-tree widget type (`LSM30_*`, `EditBox`). Unregistered types fall back to a plain Dropdown, so an optional media-widget library staying absent costs a swatch, not the option. |
-| `hasAlpha` / `disabledIf` | W1 | Color picker: alpha channel — **default true**, declare `false` to suppress it — and the sibling path whose truth grays the swatch out. **`disabledIf` must not be used for a class-color companion** (options-ui-§17, anti-patterns #74): the swatch is still read, for its alpha, so graying it says something untrue. No composed row carries it. |
+| `hasAlpha` | W1 | Color picker: alpha channel — **default true**, declare `false` to suppress it. |
+| `disabledIf` | W1 (every maker, and the predicate form: **W16**) | Draw the row disabled while it holds. A **settings path** whose truth disables (a path-less row reads it through `row.get(key)`), or **from W16** a predicate `function(row) -> bool`, `pcall`'d, whose raise reads as enabled. Through W15 the color picker alone read it; from W16 the checkbox, slider, dropdown, edit box and color picker all do, at build and on every refresh. A row without it is never touched. **`disabledIf` must not be used for a class-color companion** (options-ui-§17, anti-patterns #74): the swatch is still read, for its alpha, so graying it says something untrue. No composed row carries it. |
 | `classColorSource` / `classColorUnit` | **C1** | `"player"` or `"unit"`, plus the token where it is `"unit"`. Stamped on **both** rows of every composed color pair. The library reads neither — they are the declaration an audit reads, because a path prefix cannot be trusted to say whose class a control means (options-ui-§17). |
 | `commitOn` | W1 | `"change"` makes this slider commit on the drag, throttled; `"release"` opts out of a descriptor-wide `sliderCommit`. Default is release-only. |
 | `isPercent` | W1 | Slider renders a 0–1 ratio as a percentage. |
@@ -1488,14 +1736,21 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
   `resetProfile` it reads *"Restore every setting in this addon to its default."*; with it, that
   the current profile is reset and other profiles are not affected; with `profilesPage` as well,
   that it is the same thing Profiles → Reset Profile does. See
-  [What changed at this version](#what-changed-at-this-version). *Reset position*'s tooltip is
+  [Previously, at 18.15.5.3](#previously-at-1815553). *Reset position*'s tooltip is
   unchanged.
 
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. No
-member is added at this version and nothing is taken away; one descriptor field is added.
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. Four
+instance members are added at this version, one row field widens, and nothing is taken away.
+
+**What is added at 18.16.5.3 is four instance members, `disabledIf` on every maker, and
+`RenderRows`' `opts.disabled`.** A host that calls none of the four, passes no `opts.disabled`, and
+carries `disabledIf` only on color rows (as a path) renders as it did at 18.15.5.3. Two things move
+underneath it. First, `RenderRows` now re-raises an escaping hook error from its own frame, with
+the same value. Second, a hand-written degradation stub of this instance owes four more members:
+`Kit.assertSurfaceParity` names them on the re-vendor, and each consumer adds them in that commit.
 
 **What moves at 18.15.5.3 is one tooltip, and what is added is `profilesPage`.** A host that
 supplies no `resetProfile` renders byte-identically to 17.15.4.3. A host that supplies it sees the
@@ -1568,15 +1823,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 18.16.5.3
-
-One file moves, `OptionsWidgets.lua` 15 → 16. **Four instance members are added, `ChoiceGrid`,
-`ResolveId`, `IdInput` and `IdList`. Nothing is removed, renamed or resignatured.** Every maker
-reads `disabledIf`, where this version's color picker alone did, and it may be a predicate
-`function(row) -> bool` as well as a path. `RenderRows` takes `opts.disabled`, which draws the whole
-call disabled.
-
-**The re-vendor is the whole adoption** for a host that uses none of it. A row with no `disabledIf`
-is never touched, so a widget the host disables itself stays disabled. See
-[version 18.16.5.3](./version-18.16.5.3-docs.md).

@@ -388,7 +388,7 @@ test("widgets: RenderGrid guards each item the way RenderRows guards each row", 
   assertTrue(table.concat(rec.chat, "\n"):find("exploded", 1, true) ~= nil)
 end)
 
--- ── ChoiceGrid (minor 19) ─────────────────────────────────────────────────────────────────
+-- ── ChoiceGrid (minor 16) ─────────────────────────────────────────────────────────────────
 --
 -- A matrix of radio cells over rows that share one value list: a Filters tab's categories, each
 -- one Default / Whitelist / Blacklist. Before this a host either drew three dropdowns' worth of
@@ -655,7 +655,7 @@ test("widgets: ChoiceGrid with no AceGUI draws nothing", function()
   end)
 end)
 
--- ── ResolveId / IdInput / IdList (minor 19) ────────────────────────────────────────────────
+-- ── ResolveId / IdInput / IdList (minor 16) ────────────────────────────────────────────────
 --
 -- An id list a player edits by typing a number, pasting a link or typing a name. Before this each
 -- host drew its own edit box and Add button and accepted a bare number only (BankLedger,
@@ -1119,7 +1119,7 @@ end)
 
 -- ── disabledIf on every maker, and RenderRows' page-level disable ─────────────────────────
 --
--- Until minor 19 only the color picker read `disabledIf`, and only as a settings path. A Layout
+-- Until minor 16 only the color picker read `disabledIf`, and only as a settings path. A Layout
 -- page that dims the rows of an anchor mode not in use needs it on checkboxes, sliders, dropdowns
 -- and edit boxes too, and needs to say it as a predicate: "not in container mode" is not a stored
 -- boolean. One fixture path per maker the dispatch reaches, the LSM media dropdown and the numeric

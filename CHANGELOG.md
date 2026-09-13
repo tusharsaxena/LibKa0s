@@ -10,6 +10,133 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.35.0 — 2026-09-13
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 10**, **Options minor 18**,
+**OptionsWidgets minor 16**, **OptionsCompose minor 5**, **OptionsScroll minor 3**, **Perf minor 11**,
+**PerfPanel minor 5**, **kit revision 20**.
+
+Three additions to the settings panel. One file in `LibKa0s/` moves, `OptionsWidgets.lua` 15 → 16,
+and so does the kit:
+- `disabledIf` on every widget maker, as a settings path or a predicate, plus a `RenderRows`
+  option that draws a whole call disabled;
+- `O.ChoiceGrid`, a matrix of radio cells;
+- `O.ResolveId`, `O.IdInput` and `O.IdList`, which add an id by number, link or name.
+
+Kit revision 20 adds `mock_ids.lua` so a suite can drive the id widgets. All three came out of
+AuraMaster's settings rework (feedback batch 5), and ConsumableMaster, BankLedger and LootHistory
+adopt the id widgets.
+
+No member is removed, renamed or resignatured, and no descriptor field is added. Four **instance**
+members are added: `ChoiceGrid`, `ResolveId`, `IdInput` and `IdList`. The Options member manifest
+lists the library table's members only, so it differs from 18.15.5.3's in the minor alone.
+
+**Re-vendoring moves one case in nine consumers.** With the whole payload in, `LibKa0s/` into
+`libs/LibKa0s/` and `testkit/` into `tests/_kit/`, every consumer's Options degradation-stub parity
+check (`Kit.assertSurfaceParity`) names the four new members as missing from its hand-written stub:
+
+```
+LibKa0s-Options-1.0: the degraded stub diverges from the live surface in 4 place(s) — ChoiceGrid
+is missing (live: function); IdInput is missing (live: function); IdList is missing (live:
+function); ResolveId is missing (live: function)
+```
+
+That is the gate working. A stub owes every instance member, and each consumer adds four inert
+members to its stub in the re-vendor commit. ConsumableMaster's stub check does not move. Measured in
+scratch clones of all ten, each at the branch it had checked out:
+
+| Consumer | Branch | Commit | Before (v1.34.0, kit 19) | After (v1.35.0, kit 20) |
+|---|---|---|---|---|
+| AbsorbTracker | `master` | `9590af5` | 588 / 0 failed / 2 skipped / 590 | 587 / 1 / 2 / 590 |
+| AuraMaster | `feat/2026-09-13-feedback-batch5` | `59fe8cf` | 702 / 0 failed / 2 skipped / 704 | 701 / 1 / 2 / 704 |
+| BankLedger | `master` | `fde0c98` | 869 / 0 failed / 2 skipped / 871 | 868 / 1 / 2 / 871 |
+| ConsumableMaster | `master` | `0d19897` | 873 / 0 failed / 2 skipped / 875 | 873 / 0 / 2 / 875 |
+| KickCD | `master` | `245e851` | 931 / 0 failed / 2 skipped / 933 | 930 / 1 / 2 / 933 |
+| LootHistory | `master` | `3bf24a3` | 736 / 0 failed / 2 skipped / 738 | 735 / 1 / 2 / 738 |
+| MultiMeters | `master` | `82eaa4b` | 1823 / 0 failed / 2 skipped / 1825 | 1822 / 1 / 2 / 1825 |
+| PanelMaster | `master` | `5d35415` | 810 / 0 failed / 2 skipped / 812 | 809 / 1 / 2 / 812 |
+| PrettyChat | `master` | `0b6b9c1` | 349 / 0 failed / 2 skipped / 351 | 348 / 1 / 2 / 351 |
+| WhatGroup | `master` | `391df38` | 606 / 0 failed / 2 skipped / 608 | 605 / 1 / 2 / 608 |
+
+In every row of the After column the one failure is that parity case, checked in AbsorbTracker's
+clone by name. The two skips are the vendored-payload pair cases, because the clones had no sibling
+LibKa0s. Re-vendoring the consumers is a separate step, not taken at this tag. The details are in
+[`docs/api/Options/version-18.16.5.3-docs.md`](docs/api/Options/version-18.16.5.3-docs.md) and
+[`docs/api/testkit/version-20-docs.md`](docs/api/testkit/version-20-docs.md).
+
+### `OptionsWidgets.lua` minor 16 — `disabledIf` everywhere, and a disabled page
+
+Through minor 15 only the color picker read `row.disabledIf`, and only as a settings path. Every
+maker now reads it: checkbox, slider, dropdown (LSM media and numeric enums included), edit box and
+color. It may be a path or a predicate, `function(row) -> bool`. It is applied at build and again by
+the widget's refresher, so it re-evaluates on every `RefreshScalars`. A predicate that raises reads
+as enabled. **A row without `disabledIf` is never touched**, not even with `SetDisabled(false)`,
+because five hosts disable their own widgets after drawing them. The class-color swatch still
+carries no `disabledIf` (`options-ui-§17`).
+
+`RenderRows(ctx, rows, afterGroup, pairWith, opts)` takes `opts.disabled`. Every widget the call
+draws is disabled, including an `afterGroup` hook's `InlineButtonPair` and a `SessionCheckbox`. It
+rides on `ctx.__renderDisabled` for the call alone. Makers snapshot it at build, and a nested call
+inherits it. The loop now runs under a `pcall` so the flag is restored on a raise. The raise is
+re-raised unchanged with `error(err, 0)`, so a traceback shows the re-raise site rather than the
+hook's frame. Seven cases in `tests/test_options_widgets.lua` pin it:
+- the predicate form across every maker, with the refresh flip;
+- the path form;
+- a row with no `disabledIf` left alone;
+- a raising predicate;
+- the page flag;
+- the page flag not leaking into a later render;
+- a nested render inheriting it.
+
+### `OptionsWidgets.lua` minor 16 — `O.ChoiceGrid(ctx, spec)`
+
+This draws rows that share one value list as a grid: a header line of column labels, then per row a
+radio cell for each column and the row's label with its tooltip. It is built for a category that is
+*Default*, *Whitelist* or *Blacklist*. `spec` is `rows`, `columns` (`{ value, label }`), and the
+optional `heading`, `labelHeader` and `disabled`. Cells read and write through the maker seam, so a
+click runs `RefreshScalars`, and a stored value no column carries lights no cell. A click on the lit
+cell writes nothing. Each line is guarded as a flow row is. It returns the row lines.
+
+### `OptionsWidgets.lua` minor 16 — `O.ResolveId`, `O.IdInput`, `O.IdList`
+
+- **`O.ResolveId(kind, text, candidates)`** is pure. It tries, in order:
+  1. a number;
+  2. a link of the kind's own type (`|Hspell:`, `|Hitem:`, `|Hcurrency:`, or the bare
+     `spell:123`);
+  3. the client's name lookup (`C_Spell.GetSpellInfo(name)`, `C_Item.GetItemInfoInstant(name)`);
+  4. a case-insensitive exact name over the host's `candidates()`.
+
+  It returns `id, name, icon`, or `nil, reason` for `empty`, `notFound` or `ambiguous`. `kind` is
+  `"spell"`, `"item"` or `"currency"`, or a host table with its own `resolve`.
+- **`O.IdInput(ctx, parent, spec)`** draws an edit box, an Add button and a status line. Enter or
+  Add resolves the text and calls `spec.onAdd(id)`. On failure it writes the reason in orange and
+  adds nothing.
+- **`O.IdList(ctx, spec)`** draws that input plus one line per entry: icon, name, gray id, then
+  Remove, or a checkbox for a toggle entry. An unknown id reads "Unknown spell 12345". An uncached
+  item is loaded once, through `LibKa0s-Item-1.0`'s `LoadItem` when present, and the list redraws
+  when it lands.
+
+The widgets never write a path, so the host keeps its stored shape. After an add or a remove,
+`O.IdList` redraws through `ctx.rebuild` when the host set one, and otherwise through
+`O.RefreshAllPanels()`. The words are a per-call `spec.strings` table, not `lib.STRINGS` keys.
+
+The design's `O.IdInput(ctx, spec)` shipped as `O.IdInput(ctx, parent, spec)`, with `parent`
+defaulting to the page scroll, so ConsumableMaster can draw the line into its own container.
+
+### Kit revision 20 — `mock_ids.lua`
+
+It is opt-in, and a harness calls it after defining its own `C_Item` and `C_CurrencyInfo`:
+`dofile("tests/_kit/mock_ids.lua")(M)`. It fills only the keys the harness lacks. It provides
+`C_Spell.GetSpellInfo`, `C_Item.GetItemInfoInstant`, `C_Item.GetItemNameByID` and
+`C_CurrencyInfo.GetCurrencyInfo`, looked up by id or by a case-insensitive name. `M.addIdRecord` and
+`M.clearIdRecords` seed the records.
+
+It lives in a file of its own, and the base mock stays clear of these namespaces, for two reasons.
+ConsumableMaster, WhatGroup and MultiMeters reach their Compat fallbacks by clearing `C_Spell` or
+`C_Item`. And `mock_base.lua` is 1487 lines against `layout-§1`'s cap of 1500. The AceGUI fake gains
+`GetText`, `SetType` and `DisableButton`.
+
 ## v1.34.0 — 2026-09-13
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

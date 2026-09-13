@@ -485,7 +485,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (139)
+### test_options_widgets.lua (189)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -515,12 +515,62 @@ badge and any count quoted in the docs must agree with it.
 - widgets: RenderGrid lays arbitrary items out two per row
 - widgets: RenderGrid gives a wide item its own full-width row
 - widgets: RenderGrid guards each item the way RenderRows guards each row
+- widgets: ChoiceGrid draws a heading, a header line and one line per row
+- widgets: ChoiceGrid draws skipRender rows, and a custom label header
+- widgets: ChoiceGrid lights the cell holding the stored value and only that one
+- widgets: a ChoiceGrid click writes the column value and re-syncs the whole line
+- widgets: clicking the lit ChoiceGrid cell keeps it lit and writes nothing
+- widgets: a ChoiceGrid value outside the columns lights no cell
+- widgets: ChoiceGrid radios re-read the store when the refreshers run
+- widgets: ChoiceGrid reads and writes a path-less row through its own get/set
+- widgets: ChoiceGrid radios are radio-typed
+- widgets: ChoiceGrid disables a row's cells by its disabledIf
+- widgets: a ChoiceGrid drawn inside a disabled render is disabled with it
+- widgets: ChoiceGrid spec.disabled disables every cell for the call only
+- widgets: a ChoiceGrid label carries the row's tooltip
+- widgets: a ChoiceGrid row that raises costs its own line, not the grid
+- widgets: ChoiceGrid with no AceGUI draws nothing
+- ResolveId: a number is an id, and a known one carries its name and icon
+- ResolveId: every link form resolves, for its own kind only
+- ResolveId: a spell name the client knows resolves to its id
+- ResolveId: a name the client cannot look up is found among the host's candidates
+- ResolveId: two candidates with the name are ambiguous, one listed twice is not
+- ResolveId: nothing typed is empty, and an unknown name is not found
+- ResolveId: a custom kind's resolver is handed everything typed
+- ResolveId: with no client APIs a number still resolves and a name finds nothing
+- IdInput: an edit box and an Add button share a line, with a status line under them
+- IdInput: Enter with a valid name adds it once and clears the box
+- IdInput: the Add button submits what was typed
+- IdInput: a name that resolves to nothing says so inline and adds nothing
+- IdInput: an ambiguous name asks for the id, in the kind's own plural
+- IdInput: the host can reword the button and the messages
+- IdInput: a raising onAdd is reported, and the box keeps its text
+- IdInput: drawn inside a disabled render, or with spec.disabled, it is disabled
+- IdInput: with no AceGUI it draws nothing
+- IdList: one line per entry -- icon, name and gray id, then Remove or a checkbox
+- IdList: Remove and a toggle call the host back, and Remove asks for a rebuild
+- IdList: an add through its input reaches onAdd and rebuilds the list
+- IdList: with no ctx.rebuild the library's structural refresh redraws it
+- IdList: an empty list shows the host's empty text
+- IdList: an uncached item asks to load once, and the load asks for a rebuild
+- IdList: an entry's label shows the client's own tooltip for it
+- IdList: a raising entries() is reported and still draws the input
+- IdList: drawn disabled, every Remove and checkbox is disabled
+- IdList: with no AceGUI it draws nothing
 - widgets: a string row asking for an EditBox gets one, not a dropdown
 - widgets: an edit box commits on OnEnterPressed and re-reads on refresh
 - widgets: a color row renders a ColorPicker seeded through the descriptor's codec
 - widgets: a color picker substitutes 1s for a missing or corrupt stored colour
 - widgets: the colour codec is the descriptor's, so an array-storing host is not translated
 - widgets: disabledIf greys the swatch out while its sibling toggle is on
+- widgets: a function disabledIf disables every maker and is re-evaluated on refresh
+- widgets: a path disabledIf disables every maker while that setting is on
+- widgets: a row with no disabledIf never has its disabled state touched
+- widgets: a disabledIf predicate that raises leaves the row drawn and enabled
+- widgets: RenderRows opts.disabled disables every widget it draws, after-group ones included
+- widgets: a disabled render's flag never leaks into a later render or into its refresh
+- widgets: a render nested inside a disabled render inherits the disable
+- widgets: an afterGroup hook that raises still propagates, and the flag is cleared
 - widgets: OnValueConfirmed commits immediately — cancel must not wait on the throttle
 - widgets: OnValueChanged throttles a drag to ONE timer and commits the LAST value
 - widgets: a colour drag does NOT refresh every panel
@@ -881,7 +931,7 @@ badge and any count quoted in the docs must agree with it.
 - parallel: the split is balanced to within one suite
 - parallel: more shards than suites yields empty shards, not overlapping ones
 
-### test_mock_base.lua (22)
+### test_mock_base.lua (28)
 
 - mock: a frame that was never armed answers zero, dressed or not
 - mock: __setGeom is the opt-in, and the only thing that arms a frame
@@ -905,6 +955,12 @@ badge and any count quoted in the docs must agree with it.
 - mock: NewAddon clobbers a custom Printf exactly as it clobbers Print
 - mock: the console mixins print as AceConsole's do, bare, as methods and to a given frame
 - mock: a bare Printf with nothing after the format string raises, as format() does
+- mock: the id lookups are absent until a harness installs them
+- mock: installing the id lookups fills only what a harness has not defined
+- mock: a spell record answers by id and by name, the name in any case
+- mock: an uncached item keeps its icon and hides its name until it loads
+- mock: a currency record answers by id, and clearIdRecords empties every kind
+- mock: an AceGUI widget answers GetText and records SetType and DisableButton
 
 ### test_mock_ace.lua (39)
 
@@ -970,10 +1026,11 @@ badge and any count quoted in the docs must agree with it.
 - versioning: every major's live version has its API document on disk
 - versioning: every major's published member manifest matches its live surface
 
-### test_kitsync.lua (10)
+### test_kitsync.lua (11)
 
 - kitsync: Kit.VERSION is a positive integer and reaches the exposed table
 - kitsync: the kit revision has an API document
+- kitsync: the kit revision is indexed in docs/api/README.md as the one Current revision
 - kitsync: the runner is mode 100755 in the git index, in BOTH copies
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
@@ -1017,7 +1074,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 81 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 139 |
+| test_options_widgets.lua | 189 |
 | test_options_compose.lua | 41 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
@@ -1026,13 +1083,13 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 11 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
-| test_mock_base.lua | 22 |
+| test_mock_base.lua | 28 |
 | test_mock_ace.lua | 39 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
-| test_kitsync.lua | 10 |
+| test_kitsync.lua | 11 |
 | test_prose.lua | 2 |
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **909** |
+| **Total** | **966** |

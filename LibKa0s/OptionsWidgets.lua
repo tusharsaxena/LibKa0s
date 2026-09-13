@@ -25,7 +25,7 @@ local Pool = LibStub and LibStub("LibKa0s-Pool-1.0", true)
 local NEEDS_POOL = 1
 if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 
-local WIDGETS_MINOR = 15
+local WIDGETS_MINOR = 16
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__widgetsMinor and lib.__widgetsMinor >= WIDGETS_MINOR
@@ -751,7 +751,7 @@ local function drawChromeDivider(ctx, rawBannerHeight)
   ctx.__chromeKids[#ctx.__chromeKids + 1] = tex
 end
 
--- ── id resolution (minor 19) ──────────────────────────────────────────────────────────────
+-- ── id resolution (minor 16) ──────────────────────────────────────────────────────────────
 --
 -- What O.ResolveId, O.IdInput and O.IdList use to turn typed text into an id. Pure, and at file
 -- scope for that reason: nothing here touches a widget or an instance, so it is built once at load.
@@ -901,7 +901,7 @@ local function customResolve(k, text, candidates)
   return nil, RESOLVE_REASONS[a] and a or "notFound"
 end
 
---- Resolve typed text to an id (minor 19). Pure; published as O.ResolveId.
+--- Resolve typed text to an id (minor 16). Pure; published as O.ResolveId.
 ---
 --- `kind` is "spell", "item" or "currency", or a host table `{ resolve = function(text,
 --- candidates) -> id, name, icon | nil, reason; info = function(id) -> name, icon; noun; plural;
@@ -968,7 +968,7 @@ function lib.__AttachWidgets(O, d)
   -- write anywhere, and a later render's flag could reach an earlier page's widgets.
   --
   -- `disabledIf` is a settings path (read through readKey, so a composed row reads its record) or,
-  -- from minor 19, a predicate `function(row) -> bool`. A predicate that raises reads as enabled:
+  -- from minor 16, a predicate `function(row) -> bool`. A predicate that raises reads as enabled:
   -- the refresher is pcall'd by the sweep anyway, and a raise at build would cost the whole row
   -- for the sake of its dimming.
   local function isDisabled(row, pageDisabled)
@@ -984,7 +984,7 @@ function lib.__AttachWidgets(O, d)
   local function noop() end
 
   --- Apply `row`'s disabled state to `widget` now, and hand back the function its refresher calls
-  --- to re-apply it (minor 19; the color picker's private copy of this was the only one before).
+  --- to re-apply it (minor 16; the color picker's private copy of this was the only one before).
   ---
   --- A row with no `disabledIf`, drawn outside a disabled render, is NEVER touched: it gets a no-op.
   --- Calling SetDisabled(false) on it would re-enable, on the next write anywhere, a widget the
@@ -1700,7 +1700,7 @@ function lib.__AttachWidgets(O, d)
       local btn = O.AceGUI:Create("Button")
       btn:SetText(spec.text or "")
       btn:SetRelativeWidth(L.BUTTON_PAIR_REL)
-      -- Inside a RenderRows call carrying `opts.disabled` (minor 19) -- an afterGroup hook on a
+      -- Inside a RenderRows call carrying `opts.disabled` (minor 16) -- an afterGroup hook on a
       -- page drawn disabled -- the buttons are part of that page and are disabled with it.
       if ctx.__renderDisabled then btn:SetDisabled(true) end
       btn:SetCallback("OnClick", function()
@@ -1996,7 +1996,7 @@ function lib.__AttachWidgets(O, d)
     applyWidth(cb, relativeWidth)
 
     cb:SetValue(spec.get() and true or false)
-    -- Part of a page drawn disabled when drawn from inside it (minor 19), like InlineButtonPair.
+    -- Part of a page drawn disabled when drawn from inside it (minor 16), like InlineButtonPair.
     if ctx.__renderDisabled then cb:SetDisabled(true) end
     local function refresh() cb:SetValue(spec.get() and true or false) end
 
@@ -2047,13 +2047,13 @@ function lib.__AttachWidgets(O, d)
   --               untabbed caller, which is why it is a fifth argument rather than a field on
   --               the ctx: a page's tabbedness is a property of THIS render, and a ctx flag
   --               would leak it into the next one.
-  --               { disabled = true } (minor 19) draws every widget of the call disabled -- the
+  --               { disabled = true } (minor 16) draws every widget of the call disabled -- the
   --               rows, and the buttons an afterGroup or pairWith hook draws -- for a page whose
   --               subject does not apply (a Bars page over an icons container). It rides on
   --               `ctx.__renderDisabled` for the call's duration only, for the reason just given.
-  --   disabledIf  (a row field) a settings path, or from minor 19 a predicate function(row) ->
+  --   disabledIf  (a row field) a settings path, or from minor 16 a predicate function(row) ->
   --               bool, whose truth draws the row disabled. Honored by every maker (only the
-  --               color picker read it before minor 19) and re-evaluated on every refresh.
+  --               color picker read it before minor 16) and re-evaluated on every refresh.
 
   --- Render an EXPLICIT list of rows. Taking a list rather than a page key is what lets a host
   --- render a filtered subset (a mirrored unit's partition) through the same engine.
@@ -2111,7 +2111,7 @@ function lib.__AttachWidgets(O, d)
     flushRow()
   end
 
-  -- ── the choice grid (minor 19) ───────────────────────────────────────────────────────────
+  -- ── the choice grid (minor 16) ───────────────────────────────────────────────────────────
   --
   -- One radio cell per column, then the row's label across what is left of the line. The label
   -- gives back CHOICE_CLIP_INSET for the reason BUTTON_PAIR_REL sits under half: the widget that
@@ -2209,7 +2209,7 @@ function lib.__AttachWidgets(O, d)
     return lines
   end
 
-  --- A matrix of radio cells over rows that share one value list (minor 19): a header line of
+  --- A matrix of radio cells over rows that share one value list (minor 16): a header line of
   --- column labels, then one line per row -- a radio per column, then the row's label with its
   --- tooltip. A category that is Default, Whitelist or Blacklist is the shape it exists for.
   ---
@@ -2241,7 +2241,7 @@ function lib.__AttachWidgets(O, d)
     return res
   end
 
-  -- ── the id input and the id list (minor 19) ─────────────────────────────────────────────
+  -- ── the id input and the id list (minor 16) ─────────────────────────────────────────────
   --
   -- The edit box and the button beside it sum to 0.98, not 1, for the reason BUTTON_PAIR_REL sits
   -- under half: the widget that ends at the right edge is clipped by the ScrollFrame's clip
@@ -2347,7 +2347,7 @@ function lib.__AttachWidgets(O, d)
     return group, eb, add, status
   end
 
-  --- One line an id is added through (minor 19): an edit box taking a number, a shift-clicked link
+  --- One line an id is added through (minor 16): an edit box taking a number, a shift-clicked link
   --- or a name, an Add button beside it, and a status line under both. Enter or Add resolves the
   --- text through O.ResolveId and hands the id to `spec.onAdd`; the widget never writes a path, so
   --- the host owns storage and its shape. It does NOT redraw anything after an add -- a host that
@@ -2484,7 +2484,7 @@ function lib.__AttachWidgets(O, d)
     return lines
   end
 
-  --- An editable id list (minor 19): an optional heading, the O.IdInput line, then one line per
+  --- An editable id list (minor 16): an optional heading, the O.IdInput line, then one line per
   --- entry -- icon, name and id in gray ("Unknown spell 12345" when the client cannot name it),
   --- then Remove, or a checkbox for a toggle entry. An item the client has not cached is asked
   --- for through LibKa0s-Item-1.0's LoadItem, once, and the list is drawn again when it lands.
@@ -2555,7 +2555,7 @@ function lib.__AttachWidgets(O, d)
   function O.RenderRows(ctx, rows, afterGroup, pairWith, opts)
     local scroll = O.EnsureScroll(ctx)
     if not scroll then return end
-    -- `opts.disabled` (minor 19) holds `ctx.__renderDisabled` for exactly this call: every maker
+    -- `opts.disabled` (minor 16) holds `ctx.__renderDisabled` for exactly this call: every maker
     -- snapshots it at build, and InlineButtonPair / SessionCheckbox read it, so a widget an
     -- afterGroup or pairWith hook draws is disabled with the page. A nested call with no opts of
     -- its own INHERITS the outer flag, since its widgets are part of the same disabled page, and
