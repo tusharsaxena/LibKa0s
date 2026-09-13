@@ -1364,7 +1364,7 @@ Pure, and needs no ctx. `text` is trimmed first, and a number `text` is taken as
 |---|---|---|
 | 1 | a number, `^(%d+)$` | all |
 | 2 | a link of the kind's own type — `|Hspell:123:…`, `|Hitem:123:…`, `|Hcurrency:123:…` — or the bare `spell:123` / `item:123` / `currency:123`. An item link typed into a spell list is not a spell. | spell, item, currency |
-| 3 | the client's name lookup: `C_Spell.GetSpellInfo(name)` → `spellID`; `C_Item.GetItemInfoInstant(name)` → the first return. The item lookup answers only for an item the player carries or carried this session, the spell lookup only for a spell in the player's spellbook. A hit a **different** candidate id also carries → `"ambiguous"`. | spell, item |
+| 3 | the client's name lookup: `C_Spell.GetSpellInfo(name)` → `spellID`; `C_Item.GetItemInfoInstant(name)` → the first return. The item lookup answers only for an item the player carries or carried this session, the spell lookup only for a spell in the player's spellbook. A hit that a **different** id also carries → `"ambiguous"`, whether that id is a candidate or one the client enumerates for the kind (an item in the bags, a spell in the spellbook). | spell, item |
 | 4 | a case-insensitive exact name over the ids `candidates()` returns, named through the kind's own id lookup. Two **distinct** ids with the name → `"ambiguous"`; one id listed twice is one. | spell, item, currency |
 
 `reason` is `"empty"`, `"notFound"` or `"ambiguous"`. A number the client cannot name still
@@ -1374,7 +1374,10 @@ nothing raises. A raising `candidates()` costs step 4 and is not reported.
 
 **A shared name is ambiguous at step 3 too.** The client answers one id for a name several share,
 such as an item's crafted-quality ranks. Its hit alone would add a rank the player did not pick, so
-a candidate with a different id and the same name makes it `"ambiguous"`. A candidate the client
+a different id with the same name makes it `"ambiguous"`: a candidate, or an id the client
+enumerates for the kind, which is the same source the suggestions list (every item in the bags for
+`"item"`, the spellbook for `"spell"`). Two quality tiers of one potion in the bags are refused with
+no candidates at all. A candidate the client
 cannot name yet (an uncached item) is not a match here, which is what `O.IdInput`'s lookup is for:
 it names the unnamed candidates before it takes a name's result, the client's hit included.
 
@@ -1515,8 +1518,10 @@ exactly as a typed add does: the box and the status line are cleared, then `onAd
 `IdList`'s rebuild. A pick names one id, so no lookup runs. Up and Down wrap. From no highlight,
 Down takes the first row and Up the last. The `+N more` line is never highlighted. **Enter with no
 row highlighted submits the typed text as it always has**, so a name several ranks share is still
-refused as `"ambiguous"`: never one rank added for the player, and never all of them. Add submits
-the typed text too.
+refused as `"ambiguous"`: never one rank added for the player, and never all of them, whether the
+ranks come from `candidates()`, the bags or the spellbook. Add submits the typed text too. A
+keystroke drops the highlight at once, so Enter inside the 0.1 s pause never takes a row of the old
+text's list that the new text no longer matches.
 
 **A refused shared name lists its ranks.** When a submit, or a lookup's last try, refuses the text
 as `"ambiguous"`, the dropdown opens for that text at once. So the list the refusal points at
@@ -1532,7 +1537,10 @@ also drop an update still waiting on the debounce, whether or not the box shows 
 so a list never goes up under a box the player has left. A hidden box suggests nothing until its
 panel shows again. Focus lost while the pointer is on the dropdown keeps it open, because a click
 on a row is on its way. The box takes the keys back on the next frame unless a pick has closed the
-list, so after a click on the backdrop or the `+N more` line, Escape still reaches it.
+list, so after a click on the backdrop or the `+N more` line, Escape still reaches it. A release
+also lets the render's index and list go, because AceGUI keeps the pooled frame the hooks map to the
+box. A released box never suggests again, even when another instance draws its pooled frame and the
+first instance's hooks still fire on it.
 
 **The frame.** One dropdown per instance, built the first time it shows and shared by every
 `IdInput` the instance draws. Its ten rows and the more line are built with it and reused, so a
@@ -1565,7 +1573,10 @@ such as every consumable a host knows with all its ranks, pass `candidates`.
 panel; the tier atlas renders inline; `OnArrowPressed` reaches AceGUI's EditBox for Up and Down; a
 click on a row picks after the box has lost focus; the box takes focus back after a click on the
 backdrop; `C_SpellBook`'s enumeration lists the spellbook; the width matches the box on a scaled
-panel. Known cosmetic gap: the dropdown is parented to `UIParent` and anchored to the box, so if
+panel; how long *Looking up items…* reads on a session's first Enter of a name for a host with
+thousands of uncached candidates. That wait is bounded at five windows of five 0.4 s asks, about
+10 s, and it holds even for a name that already resolved to one id, until the retired ids are
+marked dead. Known cosmetic gap: the dropdown is parented to `UIParent` and anchored to the box, so if
 the page scrolls while it is open it follows the box past the scroll frame's clip edge.
 
 The words, and their defaults. `{name}` tokens rather than format specifiers, so a translation can

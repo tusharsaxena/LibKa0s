@@ -31,8 +31,9 @@ name as its own row to pick from. That closes
 the client can name, meaning an item the player carries or carried this session or a spell in the
 spellbook, or against the ids the host passes as `candidates`. The client has no item-name search.
 So the input looks up the host's uncached item candidates before it takes a name. A name several
-ranks share is refused as ambiguous ("pick one from the list, or use the id"). It never adds one
-rank the player did not pick, and never adds them all.
+ranks share is refused as ambiguous ("pick one from the list, or use the id"), whether its ranks
+come from the candidates, the bags or the spellbook. It never adds one rank the player did not
+pick, and never adds them all.
 
 Kit revision 20 adds `mock_ids.lua` so a suite can drive the id widgets. All three came out of
 AuraMaster's settings rework (feedback batch 5), and ConsumableMaster, BankLedger and LootHistory
@@ -123,8 +124,9 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   4. a case-insensitive exact name over the host's `candidates()`.
 
   A name two distinct ids carry is `ambiguous`: two candidates, or the client's step-3 hit and a
-  different candidate. The client answers one id for a name several share (an item's
-  crafted-quality ranks), so the hit alone would add a rank the player did not pick.
+  different id that is either a candidate or one the client enumerates for the kind (an item in
+  the bags, a spell in the spellbook). The client answers one id for a name several share (an
+  item's crafted-quality ranks), so the hit alone would add a rank the player did not pick.
 
   It returns `id, name, icon`, or `nil, reason` for `empty`, `notFound` or `ambiguous`. `kind` is
   `"spell"`, `"item"` or `"currency"`, or a host table with its own `resolve`.
@@ -178,7 +180,8 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   and the refusal opens the list for that text at once, so "pick one from the list" has a list to
   pick from, even for Enter inside the debounce or a lookup's last try. Add's refusal hands the box
   the keys first. A second Enter with nothing highlighted refuses again, so no rank is added
-  unpicked. Escape, focus loss, the panel hiding and a redraw close it, and drop an update still
+  unpicked. A keystroke drops the highlight at once, so Enter inside the debounce never takes a
+  row the new text no longer matches. Escape, focus loss, the panel hiding and a redraw close it, and drop an update still
   waiting on the debounce whether or not the box shows the list yet, so no list goes up under a box
   the player has left. Focus lost to a click on the dropdown's backdrop goes back to the box, so
   Escape still reaches it. The list is as wide as the box at the dropdown's own scale. There is one
@@ -191,7 +194,7 @@ The widgets never write a path, so the host keeps its stored shape. After an add
 `O.IdList` redraws through `ctx.rebuild` when the host set one, and otherwise through
 `O.RefreshAllPanels()`. The words are a per-call `spec.strings` table, not `lib.STRINGS` keys. Three keys join
 `add`, `remove`, `empty`, `notFound`, `ambiguous` and `unknown`: `looking`, `nameHint` and `more`.
-Twenty-five cases in `tests/test_options_idsuggest.lua` pin the suggestions. What the headless
+Thirty cases in `tests/test_options_idsuggest.lua` pin the suggestions. What the headless
 suite cannot see, and what a host should know, is in the Options 18.16.5.3 API doc under
 *Suggestions while typing*: the dropdown following a scrolled box past the page's clip edge, the
 200-id pre-warm the suggestions read from, and the index built once per render.
