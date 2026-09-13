@@ -127,19 +127,28 @@ cell writes nothing. Each line is guarded as a flow row is. It returns the row l
   The client has no item-name search. `GetItemInfoInstant(name)` answers only for an item the
   player carries or carried this session, and a candidate the client has not cached has no name to
   match. So an `IdInput` (or `IdList`) drawn with item `candidates` asks the client for up to 200 of
-  the unnamed ones when it is drawn, once a session per instance. A name that still finds nothing
-  while some are unnamed is **looked up**: they are asked for again as one batch, the status line
-  reads *Looking up items…* in a neutral color, and the text is tried once more when they land. The
-  wait is bounded to five asks at 0.4 s. A new submit, a box the player typed over, or a released box
-  drops the lookup. The retry does not add a rank of a shared name while another rank is still
-  loading: it waits for every id it asked for.
+  the unnamed ones when it is drawn. Each id is read once a session per instance, and the next
+  build moves on to the next 200, so a redraw rescans nothing. A typed **name**, whether it found an
+  id or not, is **looked up** while some candidates are unnamed, because a hit may be the one rank
+  in the bags of a name whose other ranks are not cached. The unnamed ones are asked for again, 200
+  a window, the status line reads *Looking up items…* in a neutral color, and the text is tried once
+  more when they land. So a shared name is refused as ambiguous rather than one rank added. Each
+  window waits at most five asks at 0.4 s, for every id it asked for, not the first to land. An id
+  still unnamed after that is skipped from then on, so retired ids cannot hold the window, and a
+  lookup runs at most five windows; the next Enter carries on past them. A number or a link never
+  waits. A new submit, a box the player typed over, or a released box drops the lookup.
+
+  A host kind with its own `resolve` joins in by declaring `loads = true` and an `info`, and by
+  passing on the `candidates` its resolver is handed to `O.ResolveId("item", text, candidates)`.
+  ConsumableMaster's Add-by-ID is that shape.
 - **`O.UnnamedCandidates(kind, candidates)`** is pure: the item candidates the client cannot name
-  yet, each once, in the host's order, at most 200 of them. It returns none for spells, currencies
-  and host kinds, or on a client that cannot load an item.
+  yet, each once, in the host's order, at most 200 of them. It returns none for spells, currencies,
+  a host kind that does not declare `loads` and `info`, or on a client that cannot load an item.
 - **`O.ID_NAME_HINT`** holds the default hints (`item`, `spell`, `currency`), one copy per instance,
   for a host's tooltip. The not-found words now say where a name can come from, for example "No item
-  named '…' that the game can find." followed by the item hint. The ambiguous words say "pick one
-  from the list, or use the id."
+  named '…' that the game can find." followed by the item hint, or "No spell named '…' in your
+  spellbook." (`C_Spell.GetSpellInfo(name)` answers only the player's spellbook). The ambiguous
+  words say "pick one from the list, or use the id."
 - **`O.IdList(ctx, spec)`** draws that input plus one line per entry: icon, name, gray id, then
   Remove, or a checkbox for a toggle entry. An item's name is drawn in its quality color
   (`C_Item.GetItemQualityByID` through `ITEM_QUALITY_COLORS`), as BankLedger's and LootHistory's

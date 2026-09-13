@@ -1357,7 +1357,7 @@ Pure, and needs no ctx. `text` is trimmed first, and a number `text` is taken as
 |---|---|---|
 | 1 | a number, `^(%d+)$` | all |
 | 2 | a link of the kind's own type — `|Hspell:123:…`, `|Hitem:123:…`, `|Hcurrency:123:…` — or the bare `spell:123` / `item:123` / `currency:123`. An item link typed into a spell list is not a spell. | spell, item, currency |
-| 3 | the client's name lookup: `C_Spell.GetSpellInfo(name)` → `spellID`; `C_Item.GetItemInfoInstant(name)` → the first return. The item lookup answers only for an item the player carries or carried this session. A hit a **different** candidate id also carries → `"ambiguous"`. | spell, item |
+| 3 | the client's name lookup: `C_Spell.GetSpellInfo(name)` → `spellID`; `C_Item.GetItemInfoInstant(name)` → the first return. The item lookup answers only for an item the player carries or carried this session, the spell lookup only for a spell in the player's spellbook. A hit a **different** candidate id also carries → `"ambiguous"`. | spell, item |
 | 4 | a case-insensitive exact name over the ids `candidates()` returns, named through the kind's own id lookup. Two **distinct** ids with the name → `"ambiguous"`; one id listed twice is one. | spell, item, currency |
 
 `reason` is `"empty"`, `"notFound"` or `"ambiguous"`. A number the client cannot name still
@@ -1368,7 +1368,8 @@ nothing raises. A raising `candidates()` costs step 4 and is not reported.
 **A shared name is ambiguous at step 3 too.** The client answers one id for a name several share,
 such as an item's crafted-quality ranks. Its hit alone would add a rank the player did not pick, so
 a candidate with a different id and the same name makes it `"ambiguous"`. A candidate the client
-cannot name yet (an uncached item) is not a match, which is what `O.IdInput`'s lookup is for.
+cannot name yet (an uncached item) is not a match here, which is what `O.IdInput`'s lookup is for:
+it names the unnamed candidates before it takes a name's result, the client's hit included.
 
 `kind`:
 
@@ -1377,7 +1378,7 @@ cannot name yet (an uncached item) is not a match, which is what `O.IdInput`'s l
 | `"spell"` | `C_Spell.GetSpellInfo(id)` | `GameTooltip:SetSpellByID` |
 | `"item"` | icon from `C_Item.GetItemInfoInstant(id)` (no cache needed), name from `C_Item.GetItemNameByID(id)` (cache needed) | `GameTooltip:SetItemByID` |
 | `"currency"` | `C_CurrencyInfo.GetCurrencyInfo(id)`; an empty name is the client's answer for an id it does not have | `GameTooltip:SetCurrencyByID` |
-| a host table | `{ resolve = function(text, candidates) -> id, name, icon \| nil, reason; info = function(id) -> name, icon; noun; plural; tooltip = function(tooltip, id) or a GameTooltip method name }`. `resolve` replaces all four steps, is handed the trimmed text, and is `pcall`'d — a raise or an unknown reason reads as `"notFound"`. | as given |
+| a host table | `{ resolve = function(text, candidates) -> id, name, icon \| nil, reason; info = function(id) -> name, icon; noun; plural; tooltip = function(tooltip, id) or a GameTooltip method name; loads = bool }`. `resolve` replaces all four steps, is handed the trimmed text and `candidates`, and is `pcall`'d — a raise or an unknown reason reads as `"notFound"`. `loads = true` with an `info` says its ids are items the client loads: `IdInput` then pre-warms and looks up its candidates as it does `"item"`'s. A resolver that hands a name on to `O.ResolveId("item", text, candidates)` gets the shared-name check too. | as given |
 | anything else | numbers only | none |
 
 ### `O.UnnamedCandidates(kind, candidates)` → ids
@@ -1385,11 +1386,12 @@ cannot name yet (an uncached item) is not a match, which is what `O.IdInput`'s l
 Pure, and needs no ctx. It returns the ids `candidates()` returns that the client cannot name
 yet: numbers only, each once, in the host's order, at most **200** (`ID_LOOKUP_CAP`). The cap
 exists because a host's candidate list can be a whole bag or an expansion's consumables, and asking
-for thousands of items at once floods the client's item-data queue for one typed name. A name among
-candidates past the cap resolves once something else has cached them.
+for thousands of items at once floods the client's item-data queue for one typed name. `IdInput`
+moves past the cap itself: its pre-warm and its lookup work in windows of 200 (below).
 
 It returns an empty table for a kind the client does not load (`"spell"`, `"currency"`, a host
-table, or anything else), for a raising or absent `candidates`, and on a client without
+table without `loads = true` and an `info`, or anything else), for a raising or absent
+`candidates`, and on a client without
 `C_Item.GetItemNameByID` or `C_Item.RequestLoadItemDataByID`. An id whose name lookup raises reads as
 named, so it is not asked for.
 
@@ -1400,7 +1402,7 @@ A table of the default name hints, one per named kind, for a host to reuse in th
 | Key | Default |
 |---|---|
 | `item` | `Names work for items you carry (or carried this session) and ones this list knows; otherwise use the id or shift-click a link.` |
-| `spell` | `Names work for spells the game knows and ones this list knows; otherwise use the id or shift-click a link.` |
+| `spell` | `Names work for spells in your spellbook and ones this list knows; otherwise use the id or shift-click a link.` |
 | `currency` | `Currency names work only for the currencies this list knows; otherwise use the id or shift-click a link.` |
 
 Each instance gets its own copy, so a host that rewrites an entry changes its own table and no other
@@ -1418,7 +1420,7 @@ clip reason above.
 |---|---|
 | `kind` | As `ResolveId`'s. |
 | `onAdd` | `function(id)`, called once per successful add. A raise is reported through `lib.STRINGS.BUTTON_FAILED` and counts as a failure: the text stays. |
-| `candidates` | Optional `function() -> ids`, searched by name at step 4. For `kind = "item"`, the unnamed ones are pre-warmed and looked up (below). |
+| `candidates` | Optional `function() -> ids`, searched by name at step 4 and handed to a host kind's `resolve`. For `kind = "item"`, or a host kind with `loads = true` and an `info`, the unnamed ones are pre-warmed and looked up (below). |
 | `label`, `tooltip` | The edit box's label, and the tooltip on both widgets. |
 | `strings` | Optional overrides of the words, by key — see below. |
 | `disabled` | Optional; draws both widgets disabled. A disabled render is inherited. |
@@ -1432,21 +1434,28 @@ status line go back as they were. Failure writes the reason on the status line i
 draws its own rows redraws them itself. It returns nil, drawing nothing, with no AceGUI.
 
 **Unnamed item candidates.** The client has no item-name search, and a candidate it has not cached
-has no name for step 4 to match. Two things cover that, both only for `kind = "item"` with
-`candidates`, and both inert on a client that cannot load an item:
+has no name for step 4 to match, and the client's own hit at step 3 cannot be checked against
+it. Two things cover that, both only for `kind = "item"` (or a host kind with `loads = true` and
+an `info`) with `candidates`, and both inert on a client that cannot load an item:
 
-- **Pre-warm.** Drawing the input asks the client for `O.UnnamedCandidates(kind, candidates)`, at
-  most 200 a build, and each id once a session per instance, however many renders draw it. Nothing
-  waits on it.
-- **Lookup.** A name that resolves to `"notFound"` while some candidates are still unnamed does not
-  fail yet. Those ids are asked for as one batch, and the status line reads `looking` in a neutral
-  color (`1, 1, 1`). The batch is checked 0.4 s later. While any id it asked for is still unnamed,
-  and fewer than five asks have run, the unnamed ones are asked for again. Then the same text is
-  resolved **once** more: it adds as a normal submit does, or writes the normal reason in orange.
-  It waits for every id rather than retrying when the first lands, because a name several ranks
-  share would otherwise add whichever rank landed first. The asks go through
-  `LibKa0s-Item-1.0`'s `LoadItem` when it is loaded, else `C_Item.RequestLoadItemDataByID` with
-  `C_Timer.After`. `O.ResolveId` itself stays pure and synchronous.
+- **Pre-warm.** Drawing the input asks the client for the unnamed candidates, at most 200 a build.
+  Each id is read once a session per instance, however many renders draw it, and the next build
+  moves on past the ids the last one read, so a redraw rescans nothing. Nothing waits on it.
+- **Lookup.** A typed **name** — one that resolved to an id or to `"notFound"` — while some
+  candidates are still unnamed is not settled yet: the client's hit may be the one rank in the bags
+  of a name whose other ranks are not cached. The unnamed ids are asked for as one window of at
+  most 200, and the status line reads `looking` in a neutral color (`1, 1, 1`). The window is
+  checked 0.4 s later. While any id it asked for is still unnamed, and fewer than five asks have
+  run, the unnamed ones are asked for again. An id still unnamed then is **dead**: this instance
+  skips it from then on, so retired or invalid ids cannot hold the window. The next window takes
+  the unnamed candidates after them, up to five windows a lookup; the next Enter carries on past
+  those. Then the same text is resolved **once** more: it adds as a normal submit does, or writes
+  the normal reason in orange — `"ambiguous"` for a name several ranks share, so one rank is never
+  added silently. It waits for every id rather than retrying when the first lands, because a name
+  several ranks share would otherwise add whichever rank landed first. A number or a link names one
+  id and never waits. The asks go through `LibKa0s-Item-1.0`'s `LoadItem` when it is loaded, else
+  `C_Item.RequestLoadItemDataByID` with `C_Timer.After`. `O.ResolveId` itself stays pure and
+  synchronous.
 - **What drops a lookup.** A second submit replaces it. A box the player has typed over by the check
   drops it and clears the looking line. A released edit box (`OnRelease`) drops it without touching
   either widget, because AceGUI's pool may have handed them to another page.
@@ -1459,7 +1468,7 @@ reorder them:
 | `add` | `Add` |
 | `remove` | `Remove` (IdList) |
 | `empty` | `Type an id, a link or a name.` |
-| `notFound` | item: `No item named '{text}' that the game can find. {hint}`; spell: `No spell named '{text}' that the game knows. {hint}`; currency: `No currency named '{text}' that this list knows. {hint}`; a host kind or none: `No {noun} named '{text}'.` |
+| `notFound` | item: `No item named '{text}' that the game can find. {hint}`; spell: `No spell named '{text}' in your spellbook. {hint}`; currency: `No currency named '{text}' that this list knows. {hint}`; a host kind or none: `No {noun} named '{text}'.` |
 | `ambiguous` | `Several {plural} are named '{text}' — pick one from the list, or use the id.` |
 | `looking` | `Looking up {plural}…` (the lookup's status line) |
 | `nameHint` | The kind's entry in [`O.ID_NAME_HINT`](#oid_name_hint); empty for a host kind. Fills `notFound`'s `{hint}`. |

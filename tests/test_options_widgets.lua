@@ -842,8 +842,9 @@ test("IdInput: a name that resolves to nothing says so inline and adds nothing",
   typeEnter(b.eb, "Shadow Word: Pain")
   -- red under: adding on a failed resolve, or failing silently
   assertEqual(#b.added, 0, "nothing added")
-  assertEqual(b.status.text, "No spell named 'Shadow Word: Pain' that the game knows. " ..
-    "Names work for spells the game knows and ones this list knows; otherwise use the id or " ..
+  -- red under: "that the game knows" (C_Spell.GetSpellInfo(name) answers only the spellbook)
+  assertEqual(b.status.text, "No spell named 'Shadow Word: Pain' in your spellbook. " ..
+    "Names work for spells in your spellbook and ones this list knows; otherwise use the id or " ..
     "shift-click a link.")
   assertTrue(b.status.color ~= nil and b.status.color.r == 1 and b.status.color.b == 0,
     "in orange")
@@ -877,7 +878,7 @@ test("IdInput: a raising onAdd is reported, and the box keeps its text", functio
   -- red under: an unguarded onAdd (a raise inside AceGUI's dispatch takes the frame's clicks down)
   assertTrue(table.concat(b.rec.chat, "\n"):find("store exploded", 1, true) ~= nil)
   assertEqual(b.eb.text, "21562", "the add did not happen, so the input is not cleared")
-  assertEqual(b.status.text, "No spell named 'zzz' that the game knows. " .. b.O.ID_NAME_HINT.spell,
+  assertEqual(b.status.text, "No spell named 'zzz' in your spellbook. " .. b.O.ID_NAME_HINT.spell,
     "and the status line is as it was")
 end)
 
@@ -1363,13 +1364,17 @@ test("IdInput: a name that finds nothing says where names work, per kind; the hi
   -- red under: no exported hint (a host's tooltip would restate the rule, and drift from it)
   assertEqual(O.ID_NAME_HINT.item, ITEM_HINT)
   assertEqual(O.ID_NAME_HINT.spell,
-    "Names work for spells the game knows and ones this list knows; otherwise use the id or " ..
+    "Names work for spells in your spellbook and ones this list knows; otherwise use the id or " ..
     "shift-click a link.")
   assertEqual(O.ID_NAME_HINT.currency,
     "Currency names work only for the currencies this list knows; otherwise use the id or " ..
     "shift-click a link.")
   O.ID_NAME_HINT.item = "changed"
-  assertEqual(Fixture.new().ID_NAME_HINT.item, ITEM_HINT, "each instance has its own copy")
+  local other = Fixture.new()
+  assertEqual(other.ID_NAME_HINT.item, ITEM_HINT, "each instance has its own copy")
+  -- red under: one table shared by every instance (the new one rewrote the first one's change)
+  assertEqual(O.ID_NAME_HINT.item, "changed", "a later instance leaves the first one's alone")
+  assertTrue(not rawequal(O.ID_NAME_HINT, other.ID_NAME_HINT), "two tables, not one")
 
   local item = inputBench({ kind = "item" })
   typeEnter(item.eb, "Nope")
@@ -1395,6 +1400,217 @@ test("IdInput: the looking line can be reworded", function()
     typeEnter(b.eb, ZEPHYR)
     -- red under: a hard-coded looking line (a localized host would show English)
     assertEqual(b.status.text, "Searching items for '" .. ZEPHYR .. "'")
+  end)
+end)
+
+local AMBIGUOUS_ZEPHYR = "Several items are named '" .. ZEPHYR ..
+  "' \226\128\148 pick one from the list, or use the id."
+
+test("IdInput: a client hit on one rank waits for the uncached ranks, then refuses the name", function()
+  countingLoads(function(requests)
+    -- Rank 1 is in the bags (the client's name lookup answers it); ranks 2 and 3 are candidates the
+    -- client has not cached, so nothing can tell yet that they share its name.
+    local b = inputBench({ kind = "item", candidates = zephyrs })
+    seedZephyr({ [191395] = true })
+    typeEnter(b.eb, ZEPHYR)
+    -- red under: adding the client's hit at once (one rank of a shared name, added silently)
+    assertEqual(#b.added, 0, "nothing added while two candidates are unnamed")
+    assertEqual(b.status.text, "Looking up items" .. ELLIPSIS)
+    assertTrue(requests[191396] ~= nil and requests[191397] ~= nil, "the unnamed ranks are asked for")
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    drainTimers(10)
+    assertEqual(#b.added, 0, "neither one rank nor all of them")
+    assertEqual(b.status.text, AMBIGUOUS_ZEPHYR)
+    assertEqual(b.eb.text, ZEPHYR, "the text stays")
+
+    -- The rank in the bags need not be a candidate: the other two still share its name.
+    local c = inputBench({ kind = "item", candidates = function() return { 191396, 191397 } end })
+    seedZephyr({ [191395] = true })
+    typeEnter(c.eb, ZEPHYR)
+    assertEqual(#c.added, 0)
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    drainTimers(10)
+    assertEqual(#c.added, 0)
+    assertEqual(c.status.text, AMBIGUOUS_ZEPHYR)
+  end)
+end)
+
+test("IdInput: a name hit waits on unnamed candidates, then adds; a number or a link never waits", function()
+  countingLoads(function(requests)
+    local b = inputBench({ kind = "item", candidates = function() return { 6948, 2589 } end })
+    typeEnter(b.eb, "Hearthstone")
+    -- red under: no wait (the uncached candidate could have carried the same name)
+    assertEqual(#b.added, 0, "waits while a candidate is unnamed")
+    assertEqual(b.status.text, "Looking up items" .. ELLIPSIS)
+    mocks.addIdRecord("item", 2589, "Linen Cloth", 132889, nil, 1)
+    drainTimers(10)
+    assertEqual(#b.added, 1, "a name no other candidate carries is added once they land")
+    assertEqual(b.added[1], 6948)
+
+    local c = inputBench({ kind = "item", candidates = function() return { 6948, 2589 } end })
+    local before = requests.total
+    typeEnter(c.eb, "6948")
+    assertEqual(c.added[1], 6948, "a number is added at once")
+    typeEnter(c.eb, "|cffffffff|Hitem:19019::::::::|h[Thunderfury]|h|r")
+    assertEqual(c.added[2], 19019, "a link is added at once")
+    assertEqual(#mocks.__timers, 0, "neither waits")
+    assertTrue(requests.total - before <= 1, "at most the pre-warm's one ask")
+  end)
+end)
+
+--- ConsumableMaster's shape: a host kind whose `resolve` takes digits and links itself and hands a
+--- name to O.ResolveId("item", text, candidates), with the item kind's words forwarded through
+--- `__index`. `loads` and `info` are what opt it into the pre-warm and the lookup.
+local function hostItemKind(O)
+  local base = { lookup = "item", noun = "item", plural = "items", loads = true,
+                 info = function(id) return mocks.C_Item.GetItemNameByID(id) end }
+  return setmetatable({
+    resolve = function(text, candidates)
+      local id = tonumber(text:match("^%d+$")) or tonumber(text:match("item:(%d+)"))
+      if id then return id end
+      return O.ResolveId(base.lookup, text, candidates)
+    end,
+  }, { __index = function(_, key) return base[key] end })
+end
+
+test("IdInput: a host kind with resolve, loads and info is looked up, and refuses a shared name", function()
+  countingLoads(function(requests)
+    local O, _, ctx = bench()
+    seedIds()
+    seedZephyr()
+    local added = {}
+    local function onAdd(id) added[#added + 1] = id end
+    local strings = { notFound = "No {noun} named '{text}'. {hint}", nameHint = "Host hint." }
+    local kind = hostItemKind(O)
+    assertEqual(table.concat(O.UnnamedCandidates(kind, zephyrs), ","), "191395,191396,191397")
+    local _, eb, _, status = O.IdInput(ctx, nil, { kind = kind, candidates = zephyrs,
+                                                   strings = strings, onAdd = onAdd })
+    assertEqual(requests[191395], 1, "pre-warmed through the host kind")
+    typeEnter(eb, ZEPHYR)
+    assertEqual(status.text, "Looking up items" .. ELLIPSIS)
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    drainTimers(10)
+    assertEqual(#added, 0, "no rank added")
+    assertEqual(status.text, AMBIGUOUS_ZEPHYR)
+
+    -- One rank in the bags, the others unnamed: the host's own resolver answers the client's hit,
+    -- and the widget still waits.
+    local O2, _, ctx2 = bench()
+    seedIds()
+    seedZephyr({ [191395] = true })
+    local _, eb2, _, status2 = O2.IdInput(ctx2, nil, { kind = hostItemKind(O2), candidates = zephyrs,
+                                                       strings = strings, onAdd = onAdd })
+    typeEnter(eb2, ZEPHYR)
+    -- red under: a host resolver's hit added before the unnamed ranks land
+    assertEqual(#added, 0)
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    drainTimers(10)
+    assertEqual(#added, 0)
+    assertEqual(status2.text, AMBIGUOUS_ZEPHYR)
+
+    local plain = setmetatable({ resolve = hostItemKind(O).resolve },
+      { __index = { noun = "item", plural = "items" } })
+    assertEqual(#O.UnnamedCandidates(plain, zephyrs), 0, "a host kind without loads is not looked up")
+  end)
+end)
+
+test("IdInput: a second submit of the same text replaces the pending lookup", function()
+  countingLoads(function()
+    local calls = 0
+    local b = inputBench({ kind = "item",
+                           candidates = function() calls = calls + 1; return zephyrs() end })
+    seedZephyr()
+    typeEnter(b.eb, ZEPHYR)
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    typeEnter(b.eb, ZEPHYR)
+    assertEqual(b.status.text, AMBIGUOUS_ZEPHYR, "the second submit answers on its own")
+    local before = calls
+    drainTimers(10)
+    -- red under: a submit that leaves the older lookup in place (its check resolves the text again)
+    assertEqual(calls, before, "the first lookup's check does nothing")
+    assertEqual(b.status.text, AMBIGUOUS_ZEPHYR)
+
+    local c = inputBench({ kind = "item", candidates = zephyrs })
+    seedZephyr()
+    typeEnter(c.eb, ZEPHYR)
+    typeEnter(c.eb, "")
+    drainTimers(10)
+    assertEqual(c.status.text, "Type an id, a link or a name.",
+      "an empty submit's message is not wiped by the lookup it replaced")
+  end)
+end)
+
+test("IdInput: ids a lookup could not load are skipped, so later candidates get their turn", function()
+  countingLoads(function(requests)
+    local list = {}
+    for i = 1, 200 do list[i] = 900000 + i end -- never load: retired or invalid ids
+    list[201] = 191396
+    local b = inputBench({ kind = "item", candidates = function() return list end })
+    mocks.addIdRecord("item", 191396, "Rare Draught", 4638, true, 1)
+    typeEnter(b.eb, "Rare Draught")
+    assertNil(requests[191396], "past the cap: neither the pre-warm nor the first window asks")
+    drainTimers(5)
+    -- red under: a lookup that stops at the first 200 (a name among later candidates never resolves)
+    assertEqual(requests[191396], 1, "the first window exhausted, the next one asks for it")
+    assertEqual(b.status.text, "Looking up items" .. ELLIPSIS, "still looking")
+    assertEqual(#b.added, 0)
+    mocks.addIdRecord("item", 191396, "Rare Draught", 4638, nil, 1)
+    drainTimers(10)
+    assertEqual(b.added[1], 191396, "added once the later candidate lands")
+    assertEqual(requests[900001], 6, "a dead id: the pre-warm's ask and the lookup's five")
+    local asked = requests.total
+    typeEnter(b.eb, "Nope")
+    -- red under: re-asking the same dead ids on every Enter for the full wait
+    assertEqual(requests.total, asked, "a later Enter does not ask for the dead ids again")
+    assertEqual(b.status.text, "No item named 'Nope' that the game can find. " .. ITEM_HINT)
+  end)
+end)
+
+test("IdInput: a lookup runs at most five windows of 200; the next Enter carries on past them", function()
+  countingLoads(function(requests)
+    local list = {}
+    for i = 1, 1200 do list[i] = 900000 + i end -- none ever loads
+    local b = inputBench({ kind = "item", candidates = function() return list end })
+    typeEnter(b.eb, "Rare Draught")
+    local rounds = drainTimers(100)
+    assertTrue(rounds < 100, "the lookup ends on its own")
+    assertEqual(requests[901000], 5, "the fifth window's last id was asked for")
+    -- red under: windows without a bound (one typed name asking for every candidate there is)
+    assertNil(requests[901001], "a sixth window is never asked for")
+    assertEqual(b.status.text, "No item named 'Rare Draught' that the game can find. " .. ITEM_HINT)
+    typeEnter(b.eb, "Rare Draught")
+    assertEqual(requests[901001], 1, "the next Enter moves on to the ids after them")
+    assertEqual(requests[900001], 6, "and never back to a dead one: the pre-warm's ask and five")
+  end)
+end)
+
+test("IdInput and IdList: pre-warm moves past the ids it has asked for, and reads each id once", function()
+  countingLoads(function(requests)
+    local O, _, ctx = bench()
+    seedIds()
+    local many = {}
+    for i = 1, 300 do many[i] = 800000 + i end
+    local function draw()
+      O.IdInput(ctx, nil, { kind = "item", candidates = function() return many end,
+                            onAdd = function() end })
+    end
+    draw()
+    assertEqual(requests.total, 200)
+    draw()
+    -- red under: a window that restarts at the first 200 (the last 100 are never warmed)
+    assertEqual(requests.total, 300, "the second build warms the next ones")
+
+    local reads = 0
+    local realName = mocks.C_Item.GetItemNameByID
+    mocks.C_Item.GetItemNameByID = function(id) reads = reads + 1; return realName(id) end
+    local named = function() return { 6948, 19019 } end
+    O.IdInput(ctx, nil, { kind = "item", candidates = named, onAdd = function() end })
+    local first = reads
+    O.IdList(ctx, { kind = "item", candidates = named, entries = function() return {} end })
+    mocks.C_Item.GetItemNameByID = realName
+    assertTrue(first > 0)
+    -- red under: every draw rescanning every candidate's name
+    assertEqual(reads, first, "a redraw does not read the candidates' names again")
   end)
 end)
 

@@ -861,8 +861,8 @@ local ID_TEXT = {
 -- the hint it ends with (`{hint}`, filled from the `nameHint` key, so a host that rewords the hint
 -- rewords both). Keyed by the kind table, as NAME_COLOR is, so a host's own kind never matches.
 -- The client has no item-name search: GetItemInfoInstant(name) answers only for an item the player
--- carries or carried this session, and a spell name only for a spell the client knows. Anything
--- else reaches a name through the host's candidates alone.
+-- carries or carried this session, and C_Spell.GetSpellInfo(name) only for a spell in the player's
+-- own spellbook. Anything else reaches a name through the host's candidates alone.
 local KIND_TEXT = {
   [ID_KINDS.item] = {
     notFound = "No item named '{text}' that the game can find. {hint}",
@@ -870,9 +870,9 @@ local KIND_TEXT = {
       .. "knows; otherwise use the id or shift-click a link.",
   },
   [ID_KINDS.spell] = {
-    notFound = "No spell named '{text}' that the game knows. {hint}",
-    nameHint = "Names work for spells the game knows and ones this list knows; otherwise use the "
-      .. "id or shift-click a link.",
+    notFound = "No spell named '{text}' in your spellbook. {hint}",
+    nameHint = "Names work for spells in your spellbook and ones this list knows; otherwise use "
+      .. "the id or shift-click a link.",
   },
   [ID_KINDS.currency] = {
     notFound = "No currency named '{text}' that this list knows. {hint}",
@@ -904,6 +904,13 @@ end
 local function parseLink(link, text)
   if not link then return nil end
   return tonumber(text:match("|H" .. link .. ":(%d+)") or text:match("^" .. link .. ":(%d+)"))
+end
+
+--- Whether typed text is a name: not a number, and not a link of any type. Only a name can match
+--- an id another candidate shares, so only a name waits on IdInput's lookup; a number or a link
+--- names one id and never waits. Read off the text alone, so it holds for a host kind's resolver.
+local function isNameText(text)
+  return not (parseNumber(text) or text:find("|H%a+:%d") or text:match("^%a+:%d+$"))
 end
 
 local function byClientName(k, text)
@@ -962,7 +969,9 @@ end
 ---
 --- `kind` is "spell", "item" or "currency", or a host table `{ resolve = function(text,
 --- candidates) -> id, name, icon | nil, reason; info = function(id) -> name, icon; noun; plural;
---- tooltip }` whose resolver replaces every step below. The order, for a named kind:
+--- tooltip; loads }` whose resolver replaces every step below. `loads = true` with an `info` says
+--- the kind's ids are items the client loads, so IdInput pre-warms and looks up its candidates as
+--- it does the item kind's. The order, for a named kind:
 ---   1. a number (`21562`);
 ---   2. a link of the kind's own type (`|Hspell:21562:...`, or the bare `spell:21562`);
 ---   3. the client's name lookup (spells and items; currencies have none);
@@ -990,8 +999,8 @@ end
 
 -- The most unnamed candidates one lookup, or one build's pre-warm, asks the client for. A host's
 -- candidate list can be a whole bag or an expansion's consumables; asking for thousands of items
--- at once floods the client's item-data queue for one typed name. Past the cap, a name among the
--- later candidates resolves once something else has cached them.
+-- at once floods the client's item-data queue for one typed name. Past the cap, the widget's next
+-- window (a lookup) or next build (a pre-warm) moves on to the later candidates.
 local ID_LOOKUP_CAP = 200
 
 --- Whether this client can both load an item and name one: without either, an unnamed item stays
@@ -1000,22 +1009,36 @@ local function itemLoadable()
   return C_Item and C_Item.GetItemNameByID and C_Item.RequestLoadItemDataByID and true or false
 end
 
---- The candidates of a kind the client loads (items) that it cannot name yet: numbers, each once,
---- in the host's order, at most ID_LOOKUP_CAP of them. Pure; published as O.UnnamedCandidates.
---- None for a spell, a currency or a host kind, for a raising candidates(), or on a client that
---- cannot load an item. A raising id lookup reads as named, so it is not asked for.
-local function unnamedCandidates(kind, candidates)
+--- Whether the kind cannot name `id` yet. A raising lookup reads as named, so it is not asked for.
+local function unnamedId(k, id)
+  local ok, name = pcall(k.info, id)
+  return ok and (type(name) ~= "string" or name == "")
+end
+
+--- The unnamed candidates, as O.UnnamedCandidates answers them, past every id the set `skip` holds.
+--- Each id it examines goes into the set `mark` when one is given, so a caller passing one table
+--- as both examines each id once, and a later call moves on to the ids after the cap.
+local function unnamedIds(kind, candidates, skip, mark)
   local k, out, seen = idKind(kind), {}, {}
   if not (k.loads and type(k.info) == "function" and itemLoadable()) then return out end
+  skip = skip or {}
   for _, id in ipairs(candidateIds(candidates)) do
-    if type(id) == "number" and not seen[id] then
+    if type(id) == "number" and not seen[id] and not skip[id] then
       seen[id] = true
-      local ok, name = pcall(k.info, id)
-      if ok and (type(name) ~= "string" or name == "") then out[#out + 1] = id end
+      if mark then mark[id] = true end
+      if unnamedId(k, id) then out[#out + 1] = id end
       if #out >= ID_LOOKUP_CAP then break end
     end
   end
   return out
+end
+
+--- The candidates of a kind the client loads (items) that it cannot name yet: numbers, each once,
+--- in the host's order, at most ID_LOOKUP_CAP of them. Pure; published as O.UnnamedCandidates.
+--- A host kind loads when it declares `loads = true` and an `info`. None for a spell, a currency,
+--- any other host kind, a raising candidates(), or a client that cannot load an item.
+local function unnamedCandidates(kind, candidates)
+  return unnamedIds(kind, candidates)
 end
 
 --- Attach the widget makers and the flow engine to one instance. Called at the end of lib:New, so
@@ -2350,15 +2373,21 @@ function lib.__AttachWidgets(O, d)
   O.ID_NAME_HINT = {}
   for name, k in pairs(ID_KINDS) do O.ID_NAME_HINT[name] = KIND_TEXT[k].nameHint end
 
-  -- A typed name that finds nothing, where some item candidates are still unnamed, is looked up:
-  -- those items are asked for and the text tried once more when they land. The wait is bounded as
-  -- IdList's is -- a check 0.4 s after each ask, at most LOOKUP_ROUNDS asks -- and the status line
-  -- reads the neutral `looking` words in the meantime.
+  -- A typed NAME, while some item candidates are still unnamed, is looked up whether or not it
+  -- found an id: a hit may be one rank of a name an unnamed candidate also carries. Those items
+  -- are asked for, a window of at most ID_LOOKUP_CAP at a time, and the text is tried once more
+  -- when they land. Each window's wait is bounded as IdList's is -- a check 0.4 s after each ask,
+  -- at most LOOKUP_ROUNDS asks -- and a lookup runs at most LOOKUP_WINDOWS windows. The status
+  -- line reads the neutral `looking` words in the meantime.
   local LOOKUP_ROUNDS = 5
+  local LOOKUP_WINDOWS = 5
   local ID_NEUTRAL_R, ID_NEUTRAL_G, ID_NEUTRAL_B = 1, 1, 1
-  -- The candidate ids this instance has pre-warmed: each is asked for once a session, however
-  -- many renders draw the input.
+  -- The candidate ids this instance's pre-warm has examined: each is read, and asked for if the
+  -- client cannot name it, once a session, however many renders draw the input.
   local prewarmed = {}
+  -- The ids a lookup asked for LOOKUP_ROUNDS times without their landing: retired or invalid.
+  -- Every later window passes over them, so they cannot hold the cap for good.
+  local deadIds = {}
 
   -- Uncached items. `itemLoads[id]` counts the asks this instance has made for an id, capped at
   -- ITEM_LOAD_TRIES: an id the client does not have never loads, and past five asks (two seconds
@@ -2466,16 +2495,12 @@ function lib.__AttachWidgets(O, d)
   end
 
   --- Ask, once a session per instance, for the item candidates the client cannot name yet, so a
-  --- name among them resolves on the first try. At most ID_LOOKUP_CAP a build; nothing waits.
+  --- name among them resolves on the first try. At most ID_LOOKUP_CAP a build, each build moving on
+  --- past the ids the last one examined, so a redraw reads no candidate twice; nothing waits.
   local function prewarm(spec)
     if type(spec.candidates) ~= "function" then return end
-    local fresh = {}
-    for _, id in ipairs(unnamedCandidates(spec.kind, spec.candidates)) do
-      if not prewarmed[id] then fresh[#fresh + 1] = id end
-    end
-    if #fresh > 0 and requestItems(fresh) then
-      for _, id in ipairs(fresh) do prewarmed[id] = true end
-    end
+    local fresh = unnamedIds(spec.kind, spec.candidates, prewarmed, prewarmed)
+    if #fresh > 0 then requestItems(fresh) end
   end
 
   --- The last try: the same text once more, now its candidates have had their chance to load. No
@@ -2492,11 +2517,30 @@ function lib.__AttachWidgets(O, d)
     return trimmed(parts.edit:GetText()) == typed
   end
 
+  --- The ids of `ids` the kind still cannot name.
+  local function stillUnnamed(k, ids)
+    local out = {}
+    for _, id in ipairs(ids) do
+      if not entryNamed(k, id) then out[#out + 1] = id end
+    end
+    return out
+  end
+
+  --- Ask for the lookup's next window: the unnamed candidates no earlier window gave up on, at most
+  --- ID_LOOKUP_CAP. Answers false, asking nothing, when there are none or the client cannot ask.
+  local function askWindow(spec, lookup)
+    local ids = unnamedIds(spec.kind, spec.candidates, deadIds)
+    if #ids == 0 then return false end
+    lookup.ids, lookup.rounds, lookup.windows = ids, 0, lookup.windows + 1
+    return requestItems(ids, lookup.check)
+  end
+
   --- A lookup's check, 0.4 s after each ask. Nothing for a lookup a newer submit or a release has
   --- dropped; a box the player has typed over drops it and clears the looking line. Otherwise it
-  --- waits while any id it asked for is still unnamed and asks have not run out -- retrying as
-  --- soon as ONE lands could add one rank of a name the next rank to land also carries -- and then
-  --- tries the text once more.
+  --- waits while any id of the window is still unnamed and asks have not run out -- retrying as
+  --- soon as ONE lands could add one rank of a name the next rank to land also carries. An id still
+  --- unnamed when the asks run out is dead, and the next window moves past it. With no window left,
+  --- the text is tried once more.
   local function checkLookup(ctx, spec, parts, lookup)
     if parts.lookup ~= lookup then return end
     if not stillTyped(parts, lookup.sub.typed) then
@@ -2504,27 +2548,24 @@ function lib.__AttachWidgets(O, d)
       return showStatus(parts, "")
     end
     lookup.rounds = lookup.rounds + 1
-    local waiting, k = {}, idKind(spec.kind)
-    for _, id in ipairs(lookup.ids) do
-      if not entryNamed(k, id) then waiting[#waiting + 1] = id end
-    end
+    local waiting = stillUnnamed(idKind(spec.kind), lookup.ids)
     if #waiting > 0 and lookup.rounds < LOOKUP_ROUNDS then
       lookup.ids = waiting
       if requestItems(waiting, lookup.check) then return end
     end
+    for _, id in ipairs(waiting) do deadIds[id] = true end
+    if lookup.windows < LOOKUP_WINDOWS and askWindow(spec, lookup) then return end
     parts.lookup = nil
     finishLookup(ctx, spec, parts, lookup.sub)
   end
 
-  --- Start a lookup for a name that found nothing: answers false, starting none, when no candidate
-  --- is unnamed or the client cannot ask.
+  --- Start a lookup for a typed name: answers false, starting none, when no candidate is unnamed
+  --- (bar the dead) or the client cannot ask.
   local function startLookup(ctx, spec, parts, sub)
-    local ids = unnamedCandidates(spec.kind, spec.candidates)
-    if #ids == 0 then return false end
-    local lookup = { ids = ids, rounds = 0, sub = sub }
+    local lookup = { windows = 0, sub = sub }
     lookup.check = function() checkLookup(ctx, spec, parts, lookup) end
     parts.lookup = lookup
-    if not requestItems(ids, lookup.check) then
+    if not askWindow(spec, lookup) then
       parts.lookup = nil
       return false
     end
@@ -2534,15 +2575,17 @@ function lib.__AttachWidgets(O, d)
     return true
   end
 
-  --- Resolve what was typed and hand the id to the host. A name that finds nothing while some item
-  --- candidates are still unnamed is looked up first (startLookup); any other failure says why on
-  --- the status line. A submit replaces any lookup still pending.
+  --- Resolve what was typed and hand the id to the host. A NAME -- one that found an id or found
+  --- nothing -- while some candidates are still unnamed is looked up first (startLookup): a hit may
+  --- be one rank of a name an unnamed candidate shares. A number or a link never waits. Any other
+  --- failure says why on the status line. A submit replaces any lookup still pending.
   local function submitId(ctx, spec, parts, text, afterAdd)
     parts.lookup = nil
     local sub = { text = text, typed = trimmed(text), afterAdd = afterAdd }
     local id, reason = resolveId(spec.kind, sub.typed, spec.candidates)
+    local byName = (id ~= nil or reason == "notFound") and isNameText(sub.typed)
+    if byName and startLookup(ctx, spec, parts, sub) then return end
     if id ~= nil then return addResolved(ctx, spec, parts, id, sub, parts.shown or "") end
-    if reason == "notFound" and startLookup(ctx, spec, parts, sub) then return end
     reportFailure(spec, parts, reason, sub.typed)
   end
 
@@ -2591,10 +2634,12 @@ function lib.__AttachWidgets(O, d)
   --- is this plus the entry lines, and it does.
   ---
   --- Item candidates the client has not cached have no name to match. Drawing the input asks for up
-  --- to 200 of them (once a session per instance), and a name that still finds nothing while some
-  --- are unnamed is looked up: they are asked for again, the status line reads `looking`, and the
-  --- text is tried once more when they land (a bounded wait, five asks at 0.4 s). A new submit, a
-  --- box the player types over, or a released box drops the lookup.
+  --- to 200 of them (each id read once a session per instance; the next build moves on to the next
+  --- ones), and a typed name -- found or not -- while some are unnamed is looked up: they are asked
+  --- for again, 200 a window, the status line reads `looking`, and the text is tried once more when
+  --- they land (five asks at 0.4 s a window, at most five windows; an id that never lands is
+  --- skipped from then on). A number or a link never waits. A new submit, a box the player types
+  --- over, or a released box drops the lookup.
   ---
   --- spec = {
   ---   kind       = "spell" | "item" | "currency", or a host table (see O.ResolveId);
