@@ -19,9 +19,9 @@
 -- RESULTS.md watch list denied.
 --
 -- A census written once and never re-checked becomes that manifest in turn. The numbers move on
--- their own: `LibKa0s/OptionsWidgets.lua` was 1838 lines at the review and is 1989 now, and the
--- suite beside it went 2287 -> 2398, both while nobody was watching. This is the thing that
--- watches.
+-- their own: `LibKa0s/OptionsWidgets.lua` was 1838 lines at the review, 1989 on 2026-09-08 and
+-- 3645 on 2026-09-14, and the suite beside it went 2287 -> 2398 -> 3828, all while nobody was
+-- watching. This is the thing that watches.
 --
 -- WHAT IT DOES NOT ASSERT: the line figures printed in the census. They are dated measurements, and
 -- pinning them would redden the suite on every ordinary edit to a large file — a gate with a

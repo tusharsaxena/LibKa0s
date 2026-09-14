@@ -383,13 +383,18 @@ files, every one in the table; the one it found missing — ConsumableMaster's `
 the Macro Bar's Buttons drag list — was added to the Widgets row by that sweep. `WhoGotLoots` and
 `BuffTextNotifications` are out of scope until they are on the standard at all.
 
-**Where v1.35.0 stands (2026-09-13).** Steps 1–7 are done, and the tag is local only. It has not
-been pushed. Step 8 is next, for four hosts: AuraMaster, ConsumableMaster, BankLedger and
-LootHistory re-vendor now because they adopt the new widgets. The other six take v1.35.0 at their
-next routine re-vendor. **Each re-vendor adds six members to the host's Options degradation stub**
-(`ChoiceGrid`, `ResolveId`, `UnnamedCandidates`, `IdInput`, `IdList`, and the table `ID_NAME_HINT`), because the payload alone reddens the stub parity
-case in nine of the ten; the v1.35.0 `CHANGELOG.md` entry has the measurement. Move this paragraph
-when step 8 is merged.
+**Where v1.35.0 stands (2026-09-14).** Steps 1–7 are done and merged. `master` carries the release
+at `48c9050`, and the tag `v1.35.0` is pushed, on the record commit `6036c26`. Step 8 is half done.
+Four hosts re-vendored in batch 5 because they adopt the new widgets: AuraMaster, ConsumableMaster,
+BankLedger and LootHistory. Each of their `master`s bundles v1.35.0 and kit revision 20, is pushed,
+and has a `CLAUDE.md` provenance line that says so. The other six (AbsorbTracker, KickCD,
+MultiMeters, PanelMaster, PrettyChat and WhatGroup) still bundle v1.34.0 and kit revision 19 on
+`master`, and re-vendor in a follow-up. **Each of those re-vendors adds six members to the host's
+Options degradation stub** (`ChoiceGrid`, `ResolveId`, `UnnamedCandidates`, `IdInput`, `IdList`,
+and the table `ID_NAME_HINT`), because the payload alone reddens the stub parity case in nine of the
+ten; the v1.35.0 `CHANGELOG.md` entry has the measurement. The next step is to finish step 8 with
+those six. After that comes step 9: re-sweep the Consumers table against the merged `master`s once
+all ten carry v1.35.0. Move this paragraph when step 8 is merged.
 
 WhatGroup has Core, Env, DebugLog, Media, Options and Slash — `core/CoreSetup.lua`,
 `core/EnvSetup.lua`, `core/DebugLogSetup.lua`, `core/MediaSetup.lua`, `settings/OptionsSetup.lua`
