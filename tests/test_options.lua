@@ -100,6 +100,28 @@ test("options: __panelFor finds a registered page by key", function()
   assertNil(O.__panelFor("nosuchpage"))
 end)
 
+-- ── SelectTab ───────────────────────────────────────────────────────────────────────────────
+
+test("options: SelectTab sets a rendered page's active tab and refreshes",
+  function()
+  -- red under: SelectTab absent, or reporting success without moving the tab or refreshing.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelSelTab1", "General", { pageKey = "general" })
+  ctx.activeTab = "Display"
+  local ran = 0
+  ctx.refreshers[1] = function() ran = ran + 1 end
+  assertTrue(O.SelectTab("general", "Spell Categories"))
+  assertEqual(ctx.activeTab, "Spell Categories")
+  assertEqual(ran, 1, "RefreshAllPanels ran so the new tab is actually drawn")
+end)
+
+test("options: SelectTab reports false for a page that has never been rendered", function()
+  -- red under: SelectTab storing an intent, or returning true for an unrendered pageKey.
+  local O = Fixture.new()
+  O.CreatePanel("TestPanelSelTab2", "General", { pageKey = "general" })
+  assertEqual(O.SelectTab("nosuchpage", "Whatever"), false)
+end)
+
 -- ── the lazy Defaults button ───────────────────────────────────────────────────────────────
 
 test("options: CreatePanel only DECLARES the Defaults button, never builds it", function()

@@ -1272,6 +1272,23 @@ function lib:New(d)
     end
   end
 
+  --- Select one tab on an already-rendered page. For a host sending the player somewhere specific
+  --- -- a link on one page that lands on another page's tab -- without reaching into the private
+  --- __panelFor test seam to do it. The page must be rendered: a page the player has never opened
+  --- has no ctx and therefore no tab to hold, and `false` says so rather than storing an intent
+  --- this function has nowhere to keep.
+  ---
+  --- The caller opens the page (a host's own OpenToCategory wrapper, with its own combat gate);
+  --- this only moves the tab.
+  --- @return boolean  whether a rendered panel with that page key was found and its tab set
+  function O.SelectTab(pageKey, tabKey)
+    local ctx = O.__panelFor(pageKey)
+    if not ctx then return false end
+    ctx.activeTab = tabKey
+    O.RefreshAllPanels()
+    return true
+  end
+
   -- The widget makers, the flow engine and the scrollbar patch attach here, so every host gets
   -- them on the same instance the shell lives on. Both are guarded: a file that failed to load
   -- leaves its half absent rather than erroring at :New, which is why the shell's own members
