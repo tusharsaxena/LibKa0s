@@ -25,7 +25,7 @@ local Pool = LibStub and LibStub("LibKa0s-Pool-1.0", true)
 local NEEDS_POOL = 1
 if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 
-local WIDGETS_MINOR = 16
+local WIDGETS_MINOR = 17
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__widgetsMinor and lib.__widgetsMinor >= WIDGETS_MINOR

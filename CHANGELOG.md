@@ -10,6 +10,33 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.36.0 — 2026-09-14
+
+Versions in this release: **Options minor 19**, **OptionsWidgets minor 17**. Every other major is
+unchanged from v1.35.0.
+
+Two files move, `Options.lua` 18 → 19 and `OptionsWidgets.lua` 16 → 17. Four changes to the
+settings panel, all in `O.ChoiceGrid` and `O.IdList`, plus one new instance member:
+
+- `O.ChoiceGrid` cells are now checkboxes with a yellow fill instead of AceGUI radios. The exclusive
+  one-choice-per-row behavior is unchanged — it never lived in the widget, it lives in
+  `choiceCell`, and still does.
+- `O.ChoiceGrid` takes an optional `extraColumn = { header, cell(row) }`, drawn after the label
+  column, for a per-row link a host can supply. Host `cell` code runs `pcall`'d per cell in the
+  extracted `choiceExtraCell`, so a raising cell costs that cell and not the row or the page. The
+  cell's `onClick` handler is checked with `type(cell.onClick) == "function"` rather than
+  truthiness, hardened in the same release so a malformed handler cannot raise at click time.
+- An `O.IdList` entry may carry `note = <string>`, drawn as its own line under the entry's name, in
+  the same gray the id uses. An empty string or a non-string `note` draws nothing.
+- New instance member `O.SelectTab(pageKey, tabKey) -> boolean`. Moves an already-rendered page to
+  one tab and refreshes **that page only**, through `O.RefreshPanel(ctx, true)`. Returns `false` for
+  a page that has not been rendered, and stores no intent for one that is later rendered — the
+  caller still opens the page itself.
+
+No member is removed, renamed or resignatured, and no descriptor field is removed. `ChoiceGrid`'s
+signature is unchanged; `extraColumn` is additive on `spec`. `IdList`'s entry shape gains one
+optional field, `note`. One new instance member, `SelectTab`, is added.
+
 ## v1.35.0 — 2026-09-13
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

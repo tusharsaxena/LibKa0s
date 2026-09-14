@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 18.16.5.3
+# `LibKa0s-Options-1.0` — version 19.17.5.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,21 +8,84 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **18** · `OptionsWidgets.lua` **16** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **19** · `OptionsWidgets.lua` **17** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.35.0 |
-| Status | Superseded |
-| Supersedes | [version 18.15.5.3](./version-18.15.5.3-docs.md) |
-| Superseded by | [version 19.17.5.3](./version-19.17.5.3-docs.md) — `ChoiceGrid` cells are checkboxes with a yellow fill instead of AceGUI radios, `ChoiceGrid` takes an optional `extraColumn`, an `IdList` entry may carry `note`, and one new member: `SelectTab` |
+| Shipped in | v1.36.0 |
+| Status | **Current** |
+| Supersedes | [version 18.16.5.3](./version-18.16.5.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 18, OptionsWidgets = 16, OptionsCompose = 5, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 19, OptionsWidgets = 17, OptionsCompose = 5, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O18`
-for `Options.lua` minor 18, `W16` for `OptionsWidgets.lua` minor 16, `C5` for `OptionsCompose.lua`
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O19`
+for `Options.lua` minor 19, `W17` for `OptionsWidgets.lua` minor 17, `C5` for `OptionsCompose.lua`
 minor 5, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**Two files move, `Options.lua` 18 → 19 and `OptionsWidgets.lua` 16 → 17.** Four changes to the
+settings panel — three in `OptionsWidgets.lua`'s choice grid and id list, one new instance member
+on `Options.lua`'s shell — and no member is removed, renamed or resignatured.
+
+### `O.ChoiceGrid` cells are checkboxes with a yellow fill, not AceGUI radios
+
+Through W16 each cell was an AceGUI `CheckBox` with `SetType("radio")`, drawn with the client's own
+radio dot. From **W17** the cell is an ordinary `CheckBox`: `SetType("radio")` is gone, and the lit
+cell's check region is painted with a solid yellow (`1, 0.82, 0`) swatch instead. **The
+exclusive one-choice-per-row behavior does not move** — it never lived in the widget. It lives in
+`choiceCell`: a click on the lit cell re-lights it and writes nothing, and a click on an unlit cell
+writes that column's value and every cell on the line re-syncs on the row's own refresher. The
+swatch is guarded end to end — a host's AceGUI fake with no check texture draws a plain, unfilled
+cell rather than raising.
+
+### `O.ChoiceGrid` takes an optional `extraColumn`, a per-row link after the label
+
+**New at W17.** `spec.extraColumn = { header = <string>, cell = function(row) -> { text =,
+onClick =, tooltip = } | nil }` draws one more column after the row's label — a host's "See
+spells" jump to another page, say — so a host that wants one no longer writes its own grid layout
+code for it. The label column gives back the extra column's width so the line still fits one Flow
+row; a `spec` with no `extraColumn` draws byte-for-byte what it did at W16.
+
+`extra.cell` is host code and may raise. It runs inside a `pcall`, in the extracted
+`choiceExtraCell`, so a raise costs only that row's cell — drawn as a blank `Label`, the same as a
+`nil` return — and never the row or the grid. **Hardened in the same release:** `cell.onClick` is
+wired only when `type(cell.onClick) == "function"`, checked rather than merely truthy, so a host
+that hands a non-function `onClick` (a string, say) gets a dead but harmless link instead of a
+raise at click time.
+
+### `O.IdList` entries may carry a `note` line
+
+**New at W17.** An entry `{ id =, note = <string>, ... }` draws `note`, when it is a non-empty
+string, as its own line under the entry's name — same gray (`ID_GRAY`) the id already uses, its
+own line rather than a suffix because a note is a sentence and a name is a name. An entry with no
+`note`, or one that is an empty string or not a string, draws nothing extra: byte-for-byte what W16
+drew. It exists for a host that has something to say about why an entry is, or is not, actually in
+effect given the filter rules around it — AuraMaster is the first adopter.
+
+### `O.SelectTab(pageKey, tabKey)` — move a rendered page to one tab
+
+**New instance member at O19.** Moves an already-rendered page to one tab and refreshes **only**
+that page, through `O.RefreshPanel(ctx, true)` — a tab switch is a shape change, so the refresh is
+structural, but scoped to the one `ctx` the page key resolves to, never a sweep. It exists for a
+host sending the player from a link on one page to a specific tab on another, without reaching into
+the private `O.__panelFor` test seam to do it.
+
+- **The page must already be rendered.** A page the player has never opened has no `ctx` and
+  therefore no tab to hold. `O.SelectTab` returns `false` in that case and stores no intent for a
+  later render — there is nowhere for one to live. Opening the page stays the caller's job, through
+  the host's own `OpenToCategory`-shaped wrapper (with its own combat gate); `O.SelectTab` only
+  moves the tab.
+- **The refresh is scoped, not swept.** The first cut called `O.RefreshAllPanels()`, which rebuilds
+  every currently-rendered page — a player with more than one of this library's pages open in a
+  session would have every other page rebuilt by a single tab-switching link, hitching visibly and
+  dropping each other page's transient UI state (an open dropdown, scroll position). Fixed before
+  release to call the already-published `O.RefreshPanel(ctx, true)` instead, which this file
+  publishes for exactly this case.
+- Returns `true` when a rendered panel with that page key was found and its tab set, `false`
+  otherwise.
+
+### Previously, at 18.16.5.3
 
 **One file moves, `OptionsWidgets.lua` 15 → 16.** It adds six instance members, `O.ChoiceGrid`,
 `O.ResolveId`, `O.UnnamedCandidates`, `O.IdInput`, `O.IdList` and the table `O.ID_NAME_HINT`, all **W16**. It widens one row field: `disabledIf` is read
@@ -1235,14 +1298,15 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshAllPanels()` | O1 (two tiers: O3) | **Structural.** Re-run each page's renderer, so rows that appeared or disappeared are drawn. Hidden pages are flagged dirty and re-render on their next show. |
 | `RefreshScalars()` | O3 | **In place.** Refreshers only, no rebuild — what every widget maker's own `set()` calls, since writing a value does not change which rows exist. Each is pcall'd, so one dead widget cannot take the UI with it. |
 | `RefreshPanel(ctx, structural)` | O8 | **One page, either tier.** `structural` true re-runs that ctx's renderer; false runs its refreshers in place. A hidden page is flagged dirty and repaints on its next show, so the caller never has to ask whether it is on screen. For a host whose page repaints off its own message bus rather than off a widget's `set()`. |
+| `SelectTab(pageKey, tabKey)` | **O19** | Move an already-rendered page to one tab and refresh **only** that page, through `RefreshPanel(ctx, true)`. Returns `false`, storing no intent, for a page that has not been rendered — the caller opens the page. See [What changed at this version](#what-changed-at-this-version). |
 | `__pages()` | O1 | The pages that actually built. A raising builder is reported by key and costs only itself. |
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
-| `ChoiceGrid(ctx, spec)` | **W16** | A matrix of radio cells over rows that share one value list: a header line of column labels, then per row one radio per column and the row's label with its tooltip. Reads and writes through the maker seam and re-syncs on `RefreshScalars`. Returns the row lines. See [The choice grid](#the-choice-grid). |
+| `ChoiceGrid(ctx, spec)` | W16 (checkbox cells, `extraColumn`: **W17**) | A matrix of one-choice-per-row cells over rows that share one value list: a header line of column labels, then per row one checkbox per column (a yellow fill, not an AceGUI radio, from **W17**) and the row's label with its tooltip. Reads and writes through the maker seam and re-syncs on `RefreshScalars`. **From W17** an optional `spec.extraColumn` draws a per-row link after the label. Returns the row lines. See [The choice grid](#the-choice-grid). |
 | `ResolveId(kind, text, candidates)` | **W16** | Pure. Typed text → `id, name, icon`, or `nil, reason` (`"empty"`, `"notFound"`, `"ambiguous"`): a number, a link of the kind's own type, the client's name lookup, then the host's candidates by name. A name two distinct ids carry is ambiguous. See [The id input and the id list](#the-id-input-and-the-id-list). |
 | `IdInput(ctx, parent, spec)` | **W16** | One add-by-id line — an edit box, an Add button and a status line — into `parent`, default the page's scroll. Resolves through `ResolveId` and calls `spec.onAdd(id)`; never writes a path and redraws nothing. With item `candidates`, pre-warms the unnamed ones and looks a name up among them before refusing it. While the player types, lists up to ten matching entries under the box, every rank its own row, to pick with a click or the keys. Returns the group, the edit box, the button and the status label. |
 | `UnnamedCandidates(kind, candidates)` | **W16** | Pure. The item candidates the client cannot name yet, each once, at most 200 — what `IdInput` asks the client for. See [`O.UnnamedCandidates`](#ounnamedcandidateskind-candidates--ids). |
 | `ID_NAME_HINT` | **W16** | A table: the default name hint per named kind (`item`, `spell`, `currency`), a copy per instance, for a host's tooltip. See [`O.ID_NAME_HINT`](#oid_name_hint). |
-| `IdList(ctx, spec)` | **W16** | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry — icon, name (an item's in its quality color), gray id, and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns the entry lines. |
+| `IdList(ctx, spec)` | W16 (entry `note`: **W17**) | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry — icon, name (an item's in its quality color), gray id, an optional `note` line under the name (**W17**, drawn only for a non-empty string), and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns the entry lines. |
 | `ColorPair(spec)` | **C1** (`spec.bind`: **C4**) | A color swatch and its *use class color* companion, as exactly two adjacent rows. See [The schema composers](#the-schema-composers). |
 | `FontGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
 | `BorderGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
@@ -1321,30 +1385,38 @@ values diverge every landing heading loses its gap. `tests/test_options.lua` pin
 
 ## The choice grid
 
-New at `OptionsWidgets.lua` minor 16.
+New at `OptionsWidgets.lua` minor 16. **From minor 17**, the cells are checkboxes with a yellow
+fill rather than AceGUI radios, and `spec` takes an optional `extraColumn`.
 
 ### `O.ChoiceGrid(ctx, spec)` → lines or `nil`
 
 | `spec` field | Type | Meaning |
 |---|---|---|
 | `rows` | array of schema rows | Each carries `path` (or a path-less `get` / `set`), `label`, the tooltip body (`tooltip` or `desc`), and optionally `disabledIf`. Read and written through the same seam every maker uses. Give them `skipRender = true` so the flow engine leaves them to the grid; the grid draws them regardless, and they stay in the schema for the CLI and the resets. |
-| `columns` | ordered array of `{ value =, label = }` | One radio cell per entry, in this order. A column with no `label` is headed by its `value`. |
+| `columns` | ordered array of `{ value =, label = }` | One cell per entry, in this order. A column with no `label` is headed by its `value`. |
 | `heading` | string | Optional. Drawn with `O.Section`, and recorded as `ctx.lastGroup`. |
 | `labelHeader` | string | Optional heading for the label column. `"Category"` when absent: a literal, as `lib.STRINGS`' own are, since the library carries no locale. |
 | `disabled` | boolean | Optional. Draws every cell and label disabled, as `RenderRows`' `opts.disabled` does. A grid drawn inside a disabled render inherits that render's flag either way. |
+| `extraColumn` | `{ header =, cell = function(row) -> { text =, onClick =, tooltip = } \| nil }` | Optional, **W17**. A link column drawn after the label column. `cell` is host code, `pcall`'d per row in `choiceExtraCell`; a raise, or a `nil` return, draws a blank `Label` at the same width and costs only that cell. `onClick` is wired only when `type(cell.onClick) == "function"`. The label column gives back this column's width so the line still fits one Flow row; a `spec` with no `extraColumn` is unchanged from W16. |
 
-Each line is a full-width Flow `SimpleGroup`: a `CheckBox` per column, `SetType("radio")` where the
-widget has it, at relative width `0.12`, then an `InteractiveLabel` taking the rest less `0.02`.
-The label gives back `0.02` for the reason `BUTTON_PAIR_REL` sits under half: the widget ending at
-the right edge is clipped by the ScrollFrame (options-ui-§8).
+Each line is a full-width Flow `SimpleGroup`: a `CheckBox` per column at relative width `0.12`,
+then an `InteractiveLabel` taking the rest less `0.02` (less `extraColumn`'s width too, when given),
+then the extra column's cell when `spec.extraColumn` is set. The label gives back `0.02` for the
+reason `BUTTON_PAIR_REL` sits under half: the widget ending at the right edge is clipped by the
+ScrollFrame (options-ui-§8).
 
+- **Through W16** each cell carried `SetType("radio")` and drew the client's own radio dot.
+  **From W17** the cell is an ordinary `CheckBox` and the lit cell's check region is painted with a
+  solid yellow (`1, 0.82, 0`) fill instead, guarded end to end — a host AceGUI fake with no check
+  texture draws a plain, unfilled cell rather than raising. The one-choice-per-row exclusivity below
+  never lived in the widget and does not move with this change.
 - A cell is lit while `read(row) == column.value`, and each cell's refresher re-lights it. A stored
   value no column carries lights **none**.
 - A click on an unlit cell writes `column.value` through the row's seam, whose `set` runs
   `RefreshScalars`, so every cell on the line re-syncs to exactly one lit.
-- A click on the lit cell writes nothing and re-lights it. AceGUI toggles a checkbox on every click,
-  a radio-typed one included.
-- `disabledIf` dims the row's cells **and** its label, and both re-evaluate on refresh.
+- A click on the lit cell writes nothing and re-lights it. AceGUI toggles a checkbox on every click.
+- `disabledIf` dims the row's cells **and** its label, and both re-evaluate on refresh. It does not
+  reach `extraColumn`'s cell, which is host-drawn.
 - Each line is guarded as a flow row is: a row whose `get` raises is reported through
   `lib.STRINGS.ROW_FAILED`, costs that line, and is left out of the return.
 
@@ -1353,7 +1425,7 @@ draws nothing.
 
 ## The id input and the id list
 
-New at `OptionsWidgets.lua` minor 16. The host owns storage. None of these writes a path: the
+New at `OptionsWidgets.lua` minor 16. **From minor 17**, an entry may carry `note = <string>`. The host owns storage. None of these writes a path: the
 widgets call back, and the host keeps whatever stored shape it has.
 
 ### `O.ResolveId(kind, text, candidates)` → `id, name, icon` or `nil, reason`
@@ -1646,7 +1718,7 @@ Everything `IdInput` takes, plus:
 
 | `spec` field | Meaning |
 |---|---|
-| `entries` | `function() -> ordered { { id =, toggle = bool?, on = bool? }, … }`. A raise is reported through `lib.STRINGS.ROW_FAILED` and costs the lines, not the input. |
+| `entries` | `function() -> ordered { { id =, note = string?, toggle = bool?, on = bool? }, … }`. `note`: **W17**, see below. A raise is reported through `lib.STRINGS.ROW_FAILED` and costs the lines, not the input. |
 | `onRemove` | `function(id)`, from an entry's Remove. |
 | `onToggle` | `function(id, on)`, from a toggle entry's checkbox. |
 | `heading` | Optional section heading, drawn with `O.Section` and recorded as `ctx.lastGroup`. |
@@ -1660,9 +1732,16 @@ name it. An **item**'s name is drawn in its quality color: `C_Item.GetItemQualit
 the client's `ITEM_QUALITY_COLORS[quality].hex`, both read at draw time. An item whose quality the
 client does not answer yet, or whose quality has no palette entry, is drawn plain. An uncached item
 has no name to color, and the redraw its load triggers colors it. Spell and currency names, and a
-host kind table's, are drawn plain. Hovering it shows the client's own tooltip for that kind. The action is Remove, or a
-`CheckBox` for a `toggle` entry (a starter the host can switch off without forgetting it), lit by
-`on`.
+host kind table's, are drawn plain. Hovering it shows the client's own tooltip for that kind.
+
+**From W17**, `entry.note`, when it is a non-empty string, draws a second full-width `Label` under
+the name — the same `ID_GRAY` the id already uses, its own line rather than a suffix because a
+note is a sentence and a name is a name — for a host that has something to say about why the entry
+is, or is not, actually in effect (AuraMaster's filter rules, for example). An entry with no
+`note`, or one that is not a string or is empty, draws nothing extra: byte-for-byte what W16 drew.
+
+The action is Remove, or a `CheckBox` for a `toggle` entry (a starter the host can switch off
+without forgetting it), lit by `on`.
 
 - **Redraws.** After an add, or a Remove whose `onRemove` returned, the list redraws through
   `ctx.rebuild` when the host set one, and otherwise through `O.RefreshAllPanels()`, which is
@@ -1983,8 +2062,17 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. Six
-instance members are added at this version, one row field widens, and nothing is taken away.
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. One
+instance member is added at this version, one row field widens (`spec.extraColumn` on `ChoiceGrid`),
+one entry field widens (`note` on an `IdList` entry), and nothing is taken away.
+
+**What is added at 19.17.5.3 is one instance member, `SelectTab`, plus `extraColumn` on
+`ChoiceGrid` and `note` on an `IdList` entry.** A host that calls none of them renders
+byte-identically to 18.16.5.3 in every respect but one: `ChoiceGrid`'s cells are now checkboxes
+with a yellow fill rather than AceGUI radios, cosmetic only — the one-choice-per-row exclusivity is
+unchanged, because it was never the widget's to begin with. A hand-written degradation stub of this
+instance owes one more member, `SelectTab`: `Kit.assertSurfaceParity` names it on the re-vendor, and
+each consumer adds it in that commit.
 
 **What is added at 18.16.5.3 is six instance members, `disabledIf` on every maker, and
 `RenderRows`' `opts.disabled`.** A host that calls none of the six, passes no `opts.disabled`, and
@@ -2064,15 +2152,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 19.17.5.3
-
-Two files move, `Options.lua` 18 → 19 and `OptionsWidgets.lua` 16 → 17. **One instance member is
-added, `SelectTab`. Nothing is removed, renamed or resignatured.** `ChoiceGrid`'s cells are drawn
-as checkboxes with a yellow fill instead of AceGUI radios — cosmetic only, the exclusive
-one-choice-per-row behavior stays in `choiceCell` and does not move. `ChoiceGrid`'s `spec` gains an
-optional `extraColumn` for a per-row link, and an `IdList` entry gains an optional `note` line.
-
-**The re-vendor is the whole adoption** for a host that calls none of it: no `extraColumn`, no
-`note` on an entry, and no call to `SelectTab` renders byte-identically but for the checkbox
-cosmetic. See [version 19.17.5.3](./version-19.17.5.3-docs.md).
