@@ -95,16 +95,16 @@ figure in the `docs/automated-tests/` manifests that no document read, and a RES
 that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
 against a file in it.
 
-Two files, measured 2026-09-08 with
+Two files, measured 2026-09-14 at v1.35.0 (`48c9050`) with
 
 ```sh
 git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 ```
 
-| File | Lines (2026-09-08) | Disposition |
+| File | Lines (2026-09-14) | Disposition |
 |---|---|---|
-| `tests/test_options_widgets.lua` | 2398 | Issue [#8](https://github.com/tusharsaxena/LibKa0s/issues/8) — peels with `LibKa0s/OptionsWidgets.lua`, on that file's seam and in that file's commit |
-| `LibKa0s/OptionsWidgets.lua` | 1989 | Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16) — the tab and page chrome (`:379` art block, `:891`–`:1369` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine |
+| `tests/test_options_widgets.lua` | 3828 | Issue [#8](https://github.com/tusharsaxena/LibKa0s/issues/8) — peels with `LibKa0s/OptionsWidgets.lua`, on that file's seam and in that file's commit |
+| `LibKa0s/OptionsWidgets.lua` | 3645 | Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16) — the tab and page chrome (`:379` art block, `:1510`–`:1988` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine. The id-lookup and suggestion helpers v1.35.0 put between those two ranges (`:765`–`:1325`) are widget code, not chrome, and stay |
 
 **Both are issues, and neither is a register row.** The sibling repository doing this same work gives
 its *mirror suites* register rows rather than issues, on the argument that a suite has no seam of its
@@ -120,8 +120,8 @@ issue is not a deviation from the standard — it is one of the states the stand
 the *membership* of this table, in both directions: a file that crosses 1500 and is not listed here
 turns the suite red, and so does a row for a file that has fallen back under the cap or been deleted,
 so the census cannot become a graveyard. A figure in this column is a measurement, not a claim about
-today — `OptionsWidgets.lua` was 1838 at the 2026-09-07 review and the suite 2287, and both moved
-while nobody was watching, which is the whole argument for having a gate rather than a paragraph.
+today — `OptionsWidgets.lua` was 1838 at the 2026-09-07 review and the suite 2287, then 1989 and
+2398 on 2026-09-08, and both moved while nobody was watching, which is the whole argument for having a gate rather than a paragraph.
 
 **Nothing is peeled this cycle.** The 2026-09-07 remediation plan rules out splitting any file
 (`03_SPEC.md` § C22 non-goals). Here that is more than a scheduling preference: `LibKa0s/` is
