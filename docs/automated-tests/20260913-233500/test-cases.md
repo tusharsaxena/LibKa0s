@@ -485,7 +485,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (212)
+### test_options_widgets.lua (210)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -559,8 +559,6 @@ badge and any count quoted in the docs must agree with it.
 - IdList: uncached items load as one batch -- one timer and one rebuild, however many
 - IdList: an item not cached by the check is asked for again, a bounded number of times
 - IdList: an entry's label shows the client's own tooltip for it
-- IdList: a host kind with base = "item" wears the item kind's color, tooltip and loads
-- IdList: a host kind without base, or with a base no library kind has, is drawn as before
 - IdList: a raising entries() is reported and still draws the input
 - IdList: drawn disabled, every Remove and checkbox is disabled
 - IdList: with no AceGUI it draws nothing
@@ -700,20 +698,17 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
 
-### test_options_idsuggest.lua (36)
+### test_options_idsuggest.lua (25)
 
 - IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
 - IdInput suggestions: one name's rows sort by rank, then by id
 - IdInput suggestions: at most ten rows, then a line saying how many were left out
 - IdInput suggestions: digits match ids by prefix; a name needs two letters
-- IdInput suggestions: two letters means two characters, not two bytes
 - IdInput suggestions: every rank is its own row, labeled, beside the others
 - IdInput suggestions: a spell's rank is the client's subtext
 - IdInput suggestions: a click adds that row's id once, through onAdd, and closes
 - IdInput suggestions: Up and Down move the highlight, and Enter adds it
 - IdInput suggestions: Enter with no row highlighted still refuses a shared name
-- IdInput suggestions: a shared name the bags or the spellbook carry is refused, not one rank added
-- IdInput suggestions: typing drops the highlight, so Enter never takes a row the text left
 - IdInput suggestions: a shared name refused by Add, or before the pause, lists its ranks
 - IdInput suggestions: a shared name refused after a lookup lists its ranks
 - IdList suggestions: a pick reaches onAdd and rebuilds the list
@@ -722,16 +717,8 @@ badge and any count quoted in the docs must agree with it.
 - IdInput suggestions: items in the bags and spells in the spellbook need no candidates
 - IdInput suggestions: a missing source, a raising candidates() or no info costs nothing
 - IdInput suggestions: an uncached candidate joins the list once it is named
-- IdInput suggestions: a host kind with base = "item" shows each rank's tier and color
-- IdInput suggestions: a based host kind's own false wins over its base
-- IdInput suggestions: the id a based kind's resolve answers for a pick is the one added
-- IdInput suggestions: a based kind built per render is collected with its view
-- IdInput suggestions: a based host kind's resolve still decides what a pick adds
-- IdInput suggestions: any library kind can be a base; its ranks and fields come with it
 - IdInput suggestions: one dropdown per instance, whatever the renders
 - IdInput suggestions: a box pooled into a second render is hooked once
-- IdInput suggestions: a box pooled into another instance wakes no list of the first's
-- IdInput suggestions: a released box lets its render's index go
 - IdInput suggestions: Enter in a box that no longer owns the dropdown submits its text
 - IdInput suggestions: a box that left before the pause shows nothing
 - IdInput suggestions: focus lost to the dropdown itself goes back to the box
@@ -1139,8 +1126,8 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 81 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 212 |
-| test_options_idsuggest.lua | 36 |
+| test_options_widgets.lua | 210 |
+| test_options_idsuggest.lua | 25 |
 | test_options_compose.lua | 41 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
@@ -1158,4 +1145,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1028** |
+| **Total** | **1015** |

@@ -10,9 +10,9 @@
 | Version | **19** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.34.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 18](version-18-docs.md) — the AceDB fake's `OnProfileCopied` carries the source profile's key, as AceDB-3.0 fires it |
-| Superseded by | — |
+| Superseded by | [version 20](version-20-docs.md) — opt-in id lookups (`mock_ids.lua`) and three AceGUI fake methods (`GetText`, `SetType`, `DisableButton`) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `19` |
 

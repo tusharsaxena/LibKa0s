@@ -388,6 +388,1282 @@ test("widgets: RenderGrid guards each item the way RenderRows guards each row", 
   assertTrue(table.concat(rec.chat, "\n"):find("exploded", 1, true) ~= nil)
 end)
 
+-- ── ChoiceGrid (minor 16) ─────────────────────────────────────────────────────────────────
+--
+-- A matrix of radio cells over rows that share one value list: a Filters tab's categories, each
+-- one Default / Whitelist / Blacklist. Before this a host either drew three dropdowns' worth of
+-- layout code itself (options-ui-§6 forbids it) or a dropdown per row, which hides the choice
+-- behind a click. The rows are plain path rows in the fixture's store, which takes any key.
+
+local GRID_COLUMNS = {
+  { value = "",     label = "Default" },
+  { value = "show", label = "Whitelist" },
+  { value = "hide", label = "Blacklist" },
+}
+
+local function gridRows()
+  return {
+    { path = "cat.alpha", label = "Alpha", tooltip = "The alpha category.", skipRender = true },
+    { path = "cat.beta",  label = "Beta",  tooltip = "The beta category.",  skipRender = true },
+  }
+end
+
+--- The radio cells of one grid line, in column order.
+local function radiosOf(line)
+  local out = {}
+  for _, w in ipairs(line.children) do
+    if w.type == "CheckBox" then out[#out + 1] = w end
+  end
+  return out
+end
+
+--- How many cells of a line are lit, and the index of the last lit one.
+local function litOf(line)
+  local n, at = 0, nil
+  for i, cb in ipairs(radiosOf(line)) do
+    if cb.value then n, at = n + 1, i end
+  end
+  return n, at
+end
+
+--- Run every refresher the ctx holds, as a RefreshScalars sweep would.
+local function syncAll(ctx)
+  for _, fn in ipairs(ctx.refreshers) do fn() end
+end
+
+local function drawGrid(overrides, spec)
+  local O, rec, ctx = bench(overrides)
+  rec.store["cat.alpha"], rec.store["cat.beta"] = "show", ""
+  spec = spec or {}
+  spec.rows = spec.rows or gridRows()
+  spec.columns = spec.columns or GRID_COLUMNS
+  local lines = O.ChoiceGrid(ctx, spec)
+  return O, rec, ctx, lines, spec.rows
+end
+
+test("widgets: ChoiceGrid draws a heading, a header line and one line per row", function()
+  local O, _, ctx, lines = drawGrid(nil, { heading = "Blizzard Categories" })
+  -- red under: O.ChoiceGrid absent (a host has no grid to draw its categories with)
+  assertEqual(#lines, 2, "one line per row, returned in row order")
+  local flat = Fixture.flatten(O.EnsureScroll(ctx))
+  assertEqual(flat[1].type, "Heading")
+  assertEqual(flat[1].text, "Blizzard Categories", "the heading goes through O.Section")
+  assertEqual(ctx.lastGroup, "Blizzard Categories",
+    "and advances the tracker, so the next section gets its top spacer")
+
+  local rows = Fixture.flowRows(O.EnsureScroll(ctx))
+  assertEqual(#rows, 3, "the header line and the two row lines")
+  local header = {}
+  for i, w in ipairs(rows[1].children) do header[i] = w.text end
+  assertEqual(table.concat(header, "|"), "Default|Whitelist|Blacklist|Category",
+    "the column labels, then the default label header")
+  assertTrue(rows[2] == lines[1] and rows[3] == lines[2], "the returned lines are the drawn ones")
+
+  for _, line in ipairs(lines) do
+    local radios = radiosOf(line)
+    assertEqual(#radios, 3, "one radio cell per column")
+    for _, cb in ipairs(radios) do assertNear(cb.relativeWidth, 0.12, 1e-6) end
+    local label = line.children[#line.children]
+    assertEqual(label.type, "InteractiveLabel", "the row label fills the rest of the line")
+    assertTrue(label.relativeWidth > 0 and label.relativeWidth + 3 * 0.12 <= 1,
+      "and the line fits one Flow row")
+  end
+  assertEqual(lines[1].children[4].text, "Alpha")
+end)
+
+test("widgets: ChoiceGrid draws skipRender rows, and a custom label header", function()
+  local O, _, ctx, lines = drawGrid(nil, { labelHeader = "Spell list" })
+  -- red under: the grid honoring skipRender (the flow engine's flag) and drawing nothing
+  assertEqual(#lines, 2, "skipRender keeps the flow engine off the rows, not the grid")
+  local header = Fixture.flowRows(O.EnsureScroll(ctx))[1]
+  assertEqual(header.children[4].text, "Spell list")
+  assertNil(ctx.lastGroup, "no heading asked for, so the tracker is left alone")
+end)
+
+test("widgets: ChoiceGrid lights the cell holding the stored value and only that one", function()
+  local _, _, _, lines = drawGrid()
+  local n, at = litOf(lines[1])
+  assertEqual(n, 1); assertEqual(at, 2, "alpha holds show: Whitelist is lit")
+  n, at = litOf(lines[2])
+  -- red under: a truthiness test on the value (the empty string still lights, a nil too)
+  assertEqual(n, 1); assertEqual(at, 1, "beta holds the empty string: Default is lit")
+end)
+
+test("widgets: a ChoiceGrid click writes the column value and re-syncs the whole line", function()
+  local _, rec, _, lines = drawGrid()
+  local radios = radiosOf(lines[1])
+  radios[3]:__fire("OnValueChanged", true)
+  -- red under: the click writing the checkbox's boolean instead of the column's value
+  assertEqual(rec.store["cat.alpha"], "hide", "the column value reached the host's store")
+  -- red under: no refresher per radio (the old cell would stay lit beside the new one)
+  local n, at = litOf(lines[1])
+  assertEqual(n, 1, "exactly one cell lit after the click")
+  assertEqual(at, 3)
+  assertEqual(litOf(lines[2]), 1, "the other line is untouched")
+  assertEqual(rec.store["cat.beta"], "")
+end)
+
+test("widgets: clicking the lit ChoiceGrid cell keeps it lit and writes nothing", function()
+  local _, rec, _, lines = drawGrid()
+  local writes = 0
+  local cb = radiosOf(lines[1])[2]
+  local realSet = rec.d.set
+  rec.d.set = function(path, value) writes = writes + 1; return realSet(path, value) end
+  -- AceGUI toggles a CheckBox on every click, a radio-typed one included, so a click on the lit
+  -- cell arrives as `false`. AceGUI's ToggleChecked unchecks the widget before it fires, and the
+  -- kit's __fire only calls the callback, so mirror that toggle here.
+  cb:SetValue(false)
+  cb:__fire("OnValueChanged", false)
+  -- red under: re-syncing only through a write (the lit cell would read unlit until the next one)
+  assertTrue(cb.value, "a radio cannot be clicked off")
+  -- red under: writing unconditionally (a no-op write and a refresh sweep on every stray click)
+  assertEqual(writes, 0, "the value did not change, so nothing was written")
+  assertEqual(rec.store["cat.alpha"], "show")
+end)
+
+test("widgets: a ChoiceGrid value outside the columns lights no cell", function()
+  local O, rec, ctx = bench()
+  rec.store["cat.alpha"], rec.store["cat.beta"] = "stale", nil
+  local lines = O.ChoiceGrid(ctx, { rows = gridRows(), columns = GRID_COLUMNS })
+  -- red under: a fallback to the first column (a stale value would read as Default and hide itself)
+  assertEqual(litOf(lines[1]), 0, "a value no column carries lights none")
+  assertEqual(litOf(lines[2]), 0, "and nil is not the empty string")
+end)
+
+test("widgets: ChoiceGrid radios re-read the store when the refreshers run", function()
+  local _, rec, ctx, lines = drawGrid()
+  rec.store["cat.beta"] = "hide"     -- written behind the grid's back, by a slash command say
+  syncAll(ctx)
+  local n, at = litOf(lines[2])
+  -- red under: seeding the radios at build only
+  assertEqual(n, 1); assertEqual(at, 3)
+end)
+
+test("widgets: ChoiceGrid reads and writes a path-less row through its own get/set", function()
+  local O, _, ctx = bench()
+  local held = "hide"
+  local rows = { { label = "Record", get = function() return held end,
+                   set = function(v) held = v end } }
+  local lines = O.ChoiceGrid(ctx, { rows = rows, columns = GRID_COLUMNS })
+  local _, at = litOf(lines[1])
+  assertEqual(at, 3, "read through row.get")
+  radiosOf(lines[1])[1]:__fire("OnValueChanged", true)
+  -- red under: reading d.get(row.path) directly instead of the file's read/write seam
+  assertEqual(held, "", "written through row.set")
+end)
+
+test("widgets: ChoiceGrid radios are radio-typed", function()
+  local O, _, ctx = bench()
+  local ace = O.AceGUI
+  local realCreate = ace.Create
+  ace.Create = function(self, wtype)
+    local w = realCreate(self, wtype)
+    if wtype == "CheckBox" then function w:SetType(t) self.checkType = t end end
+    return w
+  end
+  local ok, lines = pcall(O.ChoiceGrid, ctx, { rows = gridRows(), columns = GRID_COLUMNS })
+  ace.Create = realCreate
+  assertTrue(ok, tostring(lines))
+  -- red under: dropping SetType("radio") (the cells would draw as square checkboxes)
+  for _, cb in ipairs(radiosOf(lines[1])) do assertEqual(cb.checkType, "radio") end
+end)
+
+test("widgets: ChoiceGrid disables a row's cells by its disabledIf", function()
+  local O, rec, ctx = bench()
+  local off = true
+  local rows = gridRows()
+  rows[1].disabledIf = function() return off end
+  local lines = O.ChoiceGrid(ctx, { rows = rows, columns = GRID_COLUMNS })
+  -- red under: the grid not binding disabledIf per radio
+  for _, cb in ipairs(radiosOf(lines[1])) do assertTrue(cb.disabled, "alpha's cells are disabled") end
+  assertTrue(lines[1].children[4].disabled, "and its label is dimmed with them")
+  for _, cb in ipairs(radiosOf(lines[2])) do
+    assertNil(cb.disabled, "a row with no disabledIf is never touched")
+  end
+  off = false
+  syncAll(ctx)
+  -- red under: evaluating disabledIf at build only
+  for _, cb in ipairs(radiosOf(lines[1])) do assertFalse(cb.disabled, "re-evaluated on refresh") end
+  -- red under: not registering the label's disable refresher (the label stays dimmed once its
+  -- row re-enables)
+  assertFalse(lines[1].children[4].disabled, "the label brightens with its cells")
+  assertTrue(rec ~= nil)
+end)
+
+test("widgets: a ChoiceGrid drawn inside a disabled render is disabled with it", function()
+  local O, rec, ctx = bench()
+  local lines
+  local after = { Master = function(c)
+    lines = O.ChoiceGrid(c, { rows = gridRows(), columns = GRID_COLUMNS })
+  end }
+  O.RenderRows(ctx, { rec.byPath.locked }, after, nil, { disabled = true })
+  -- red under: the radios ignoring the render's flag (a Filters tab on a disabled page stays live)
+  for _, line in ipairs(lines) do
+    for _, cb in ipairs(radiosOf(line)) do assertTrue(cb.disabled) end
+  end
+end)
+
+test("widgets: ChoiceGrid spec.disabled disables every cell for the call only", function()
+  local O, _, ctx = bench()
+  local lines = O.ChoiceGrid(ctx, { rows = gridRows(), columns = GRID_COLUMNS, disabled = true })
+  -- red under: ignoring spec.disabled (a host would have to set the ctx's private flag itself)
+  for _, line in ipairs(lines) do
+    for _, cb in ipairs(radiosOf(line)) do assertTrue(cb.disabled) end
+  end
+  -- red under: leaving the flag on the ctx after the call
+  assertNil(ctx.__renderDisabled, "the flag lives for the call only")
+  syncAll(ctx)
+  assertTrue(radiosOf(lines[1])[1].disabled, "and stays through a refresh")
+end)
+
+test("widgets: a ChoiceGrid label carries the row's tooltip", function()
+  local _, _, _, lines = drawGrid()
+  local label = lines[1].children[4]
+  -- Spied on the mock's own methods: the chunk env reads mocks first, so a _G stand-in is never
+  -- the tooltip the library reaches.
+  local tip, shown = T.mocks.GameTooltip, {}
+  local savedText, savedLine = rawget(tip, "SetText"), rawget(tip, "AddLine")
+  tip.SetText = function(_, text) shown.title = text end
+  tip.AddLine = function(_, text) shown.body = text end
+  local ok, err = pcall(label.__fire, label, "OnEnter")
+  tip.SetText, tip.AddLine = savedText, savedLine
+  assertTrue(ok, tostring(err))
+  -- red under: no AttachTooltip on the label (the category's description is unreachable)
+  assertEqual(shown.title, "Alpha")
+  assertEqual(shown.body, "The alpha category.")
+end)
+
+test("widgets: a ChoiceGrid row that raises costs its own line, not the grid", function()
+  local O, rec, ctx = bench()
+  rec.chat = {}
+  local rows = gridRows()
+  table.insert(rows, 2, { label = "Broken", get = function() error("row exploded") end,
+                          set = function() end })
+  rec.store["cat.alpha"], rec.store["cat.beta"] = "show", "hide"
+  local lines = O.ChoiceGrid(ctx, { rows = rows, columns = GRID_COLUMNS })
+  -- red under: an unguarded line (every row after the broken one would never draw)
+  assertEqual(#lines, 2, "the lines on either side still drew")
+  assertEqual(lines[2].children[4].text, "Beta")
+  assertTrue(table.concat(rec.chat, "\n"):find("row exploded", 1, true) ~= nil, "and it is reported")
+end)
+
+test("widgets: ChoiceGrid with no AceGUI draws nothing", function()
+  withoutAceGUI(function()
+    local O, _, ctx = bench()
+    -- red under: reaching for the scroll without the EnsureScroll guard every maker has
+    assertNil(O.ChoiceGrid(ctx, { rows = gridRows(), columns = GRID_COLUMNS }))
+  end)
+end)
+
+-- ── ResolveId / IdInput / IdList (minor 16) ────────────────────────────────────────────────
+--
+-- An id list a player edits by typing a number, pasting a link or typing a name. Before this each
+-- host drew its own edit box and Add button and accepted a bare number only (BankLedger,
+-- LootHistory, ConsumableMaster), so a player had to look an id up outside the game. The records
+-- below go through the kit's opt-in id lookups, which this repo's tests/wow_mock.lua installs.
+
+local mocks = T.mocks
+
+--- Reset the kit's id records to a known set: two spells, four items (one uncached, one the client
+--- answers no quality for, the others Common and Legendary), and three currencies, two of which
+--- share a name.
+local function seedIds()
+  mocks.clearIdRecords()
+  mocks.addIdRecord("spell", 21562, "Power Word: Fortitude", 135987)
+  mocks.addIdRecord("spell", 774, "Rejuvenation", 136081)
+  mocks.addIdRecord("item", 6948, "Hearthstone", 134414, nil, 1)
+  mocks.addIdRecord("item", 2589, "Linen Cloth", 132889, true, 1)
+  mocks.addIdRecord("item", 19019, "Thunderfury", 135349, nil, 5)
+  mocks.addIdRecord("item", 777001, "Nameless Quality", 1)
+  mocks.addIdRecord("currency", 3008, "Valorstones", 5872049)
+  mocks.addIdRecord("currency", 2914, "Crest", 5872050)
+  mocks.addIdRecord("currency", 2915, "Crest", 5872051)
+end
+
+test("ResolveId: a number is an id, and a known one carries its name and icon", function()
+  local O = Fixture.new()
+  seedIds()
+  local id, name, icon = O.ResolveId("spell", " 21562 ")
+  assertEqual(id, 21562); assertEqual(name, "Power Word: Fortitude"); assertEqual(icon, 135987)
+  -- red under: refusing an id the client cannot name (id-only input is the degraded mode)
+  local unknown, noName = O.ResolveId("spell", "99999")
+  assertEqual(unknown, 99999)
+  assertNil(noName, "an unknown id resolves with no name")
+end)
+
+test("ResolveId: every link form resolves, for its own kind only", function()
+  local O = Fixture.new()
+  seedIds()
+  assertEqual(O.ResolveId("spell", "|cff71d5ff|Hspell:21562:0|h[Power Word: Fortitude]|h|r"), 21562)
+  assertEqual(O.ResolveId("item", "|cffffffff|Hitem:6948::::::::80:::::|h[Hearthstone]|h|r"), 6948)
+  assertEqual(O.ResolveId("currency", "|cffffffff|Hcurrency:3008:0|h[Valorstones]|h|r"), 3008)
+  assertEqual(O.ResolveId("spell", "spell:21562"), 21562)
+  assertEqual(O.ResolveId("item", "item:6948"), 6948)
+  assertEqual(O.ResolveId("currency", "currency:3008"), 3008)
+  -- red under: one link pattern for every kind (an item link would add item 6948 as a spell)
+  local id, reason = O.ResolveId("spell", "|cffffffff|Hitem:6948|h[Hearthstone]|h|r")
+  assertNil(id); assertEqual(reason, "notFound")
+end)
+
+test("ResolveId: a spell name the client knows resolves to its id", function()
+  local O = Fixture.new()
+  seedIds()
+  local id, name, icon = O.ResolveId("spell", "power word: fortitude")
+  -- red under: a case-sensitive lookup (players type names in lower case)
+  assertEqual(id, 21562); assertEqual(name, "Power Word: Fortitude"); assertEqual(icon, 135987)
+  local item, itemName = O.ResolveId("item", "HEARTHSTONE")
+  assertEqual(item, 6948); assertEqual(itemName, "Hearthstone")
+end)
+
+test("ResolveId: a name the client cannot look up is found among the host's candidates", function()
+  local O = Fixture.new()
+  seedIds()
+  local candidates = function() return { 2914, 3008 } end
+  local id, name, icon = O.ResolveId("currency", "valorstones", candidates)
+  -- red under: no candidates step (a currency has no client name lookup at all)
+  assertEqual(id, 3008); assertEqual(name, "Valorstones"); assertEqual(icon, 5872049)
+  local none, reason = O.ResolveId("currency", "valorstones")
+  assertNil(none); assertEqual(reason, "notFound", "with no candidates there is nothing to search")
+end)
+
+test("ResolveId: two candidates with the name are ambiguous, one listed twice is not", function()
+  local O = Fixture.new()
+  seedIds()
+  local id, reason = O.ResolveId("currency", "crest", function() return { 2914, 2915 } end)
+  -- red under: taking the first match (the player would get a currency they did not mean)
+  assertNil(id); assertEqual(reason, "ambiguous")
+  -- red under: counting matches rather than distinct ids
+  assertEqual(O.ResolveId("currency", "crest", function() return { 2914, 2914 } end), 2914)
+end)
+
+test("ResolveId: nothing typed is empty, and an unknown name is not found", function()
+  local O = Fixture.new()
+  seedIds()
+  local id, reason = O.ResolveId("spell", "   ")
+  assertNil(id); assertEqual(reason, "empty")
+  assertEqual(select(2, O.ResolveId("spell", nil)), "empty")
+  id, reason = O.ResolveId("spell", "Shadow Word: Pain")
+  assertNil(id); assertEqual(reason, "notFound")
+  -- A raising candidates() is a host bug, and costs the name step rather than the player's click.
+  id, reason = O.ResolveId("spell", "Shadow Word: Pain", function() error("boom") end)
+  assertNil(id); assertEqual(reason, "notFound")
+end)
+
+test("ResolveId: a custom kind's resolver is handed everything typed", function()
+  local O = Fixture.new()
+  local seen
+  local kind = { noun = "thing", resolve = function(text)
+    seen = text
+    if text == "42" then return -42, "Forty-two", 7 end
+    if text == "twin" then return nil, "ambiguous" end
+    if text == "boom" then error("resolver exploded") end
+    return nil
+  end }
+  local id, name, icon = O.ResolveId(kind, " 42 ")
+  -- red under: parsing a number before the resolver (a host that stores spells as -id could not)
+  assertEqual(id, -42); assertEqual(name, "Forty-two"); assertEqual(icon, 7)
+  assertEqual(seen, "42", "trimmed, and otherwise untouched")
+  assertEqual(select(2, O.ResolveId(kind, "twin")), "ambiguous", "a resolver can say why")
+  assertEqual(select(2, O.ResolveId(kind, "nope")), "notFound")
+  assertEqual(select(2, O.ResolveId(kind, "boom")), "notFound", "a raising resolver finds nothing")
+  assertEqual(select(2, O.ResolveId(kind, "")), "empty", "empty is decided before the resolver")
+end)
+
+test("ResolveId: with no client APIs a number still resolves and a name finds nothing", function()
+  local O = Fixture.new()
+  local savedSpell, savedItem = mocks.C_Spell, mocks.C_Item
+  mocks.C_Spell, mocks.C_Item = nil, nil
+  local ok, err = pcall(function()
+    assertEqual(O.ResolveId("spell", "21562"), 21562)
+    -- red under: an unguarded C_Spell (the whole input raises on a client without it)
+    assertEqual(select(2, O.ResolveId("spell", "Power Word: Fortitude")), "notFound")
+    assertEqual(select(2, O.ResolveId("item", "Hearthstone")), "notFound")
+  end)
+  mocks.C_Spell, mocks.C_Item = savedSpell, savedItem
+  assertTrue(ok, tostring(err))
+end)
+
+--- One IdInput on a throwaway page, recording every onAdd.
+local function inputBench(spec)
+  local O, rec, ctx = bench()
+  seedIds()
+  local added = {}
+  spec = spec or {}
+  spec.kind = spec.kind or "spell"
+  spec.onAdd = spec.onAdd or function(id) added[#added + 1] = id end
+  local group, eb, add, status = O.IdInput(ctx, nil, spec)
+  return { O = O, rec = rec, ctx = ctx, group = group, eb = eb, add = add, status = status,
+           added = added }
+end
+
+--- Type into an edit box the way AceGUI's does, then press Enter.
+local function typeEnter(eb, text)
+  eb:SetText(text)
+  eb:__fire("OnEnterPressed", text)
+end
+
+test("IdInput: an edit box and an Add button share a line, with a status line under them", function()
+  local b = inputBench({ label = "Add spell", tooltip = "An id, a link or a name." })
+  -- red under: O.IdInput absent (every host keeps its own id-only edit box)
+  assertEqual(b.eb.type, "EditBox"); assertEqual(b.add.type, "Button")
+  assertEqual(b.eb.labelText, "Add spell")
+  assertNear(b.eb.relativeWidth, 0.78, 1e-6)
+  assertNear(b.add.relativeWidth, 0.20, 1e-6)
+  assertEqual(b.add.text, "Add")
+  assertTrue(b.eb.buttonDisabled, "the edit box's own Okay button is hidden: Add is the button")
+  assertEqual(b.status.type, "Label"); assertEqual(b.status.text, "")
+  assertTrue(b.group.children[1] == b.eb and b.group.children[2] == b.add
+    and b.group.children[3] == b.status, "all three in one group, in that order")
+  local scroll = b.O.EnsureScroll(b.ctx)
+  assertTrue(scroll.children[#scroll.children] == b.group, "added to the page's scroll")
+  assertTrue(b.eb.callbacks.OnEnter ~= nil, "the tooltip is attached")
+end)
+
+test("IdInput: Enter with a valid name adds it once and clears the box", function()
+  local b = inputBench()
+  typeEnter(b.eb, "power word: fortitude")
+  -- red under: Enter not wired (only the button would submit)
+  assertEqual(#b.added, 1, "onAdd ran once")
+  assertEqual(b.added[1], 21562, "with the resolved id")
+  assertEqual(b.eb.text, "", "the box is cleared for the next one")
+  assertEqual(b.status.text, "")
+end)
+
+test("IdInput: the Add button submits what was typed", function()
+  local b = inputBench()
+  b.eb:SetText("|Hspell:774|h[Rejuvenation]|h")
+  b.add:__fire("OnClick")
+  -- red under: the button resolving nothing (it would need Enter to be pressed first)
+  assertEqual(b.added[1], 774)
+end)
+
+test("IdInput: a name that resolves to nothing says so inline and adds nothing", function()
+  local b = inputBench()
+  typeEnter(b.eb, "Shadow Word: Pain")
+  -- red under: adding on a failed resolve, or failing silently
+  assertEqual(#b.added, 0, "nothing added")
+  -- red under: "that the game knows" (C_Spell.GetSpellInfo(name) answers only the spellbook)
+  assertEqual(b.status.text, "No spell named 'Shadow Word: Pain' in your spellbook. " ..
+    "Names work for spells in your spellbook and ones this list knows; otherwise use the id or " ..
+    "shift-click a link.")
+  assertTrue(b.status.color ~= nil and b.status.color.r == 1 and b.status.color.b == 0,
+    "in orange")
+  assertEqual(b.eb.text, "Shadow Word: Pain", "the text stays, so the player can correct it")
+  typeEnter(b.eb, "21562")
+  assertEqual(b.status.text, "", "a success clears the message")
+end)
+
+test("IdInput: an ambiguous name asks for the id, in the kind's own plural", function()
+  local b = inputBench({ kind = "currency", candidates = function() return { 2914, 2915 } end })
+  typeEnter(b.eb, "Crest")
+  assertEqual(#b.added, 0)
+  -- red under: pluralizing by adding "s" ("currencys")
+  assertEqual(b.status.text,
+    "Several currencies are named 'Crest' \226\128\148 pick one from the list, or use the id.")
+end)
+
+test("IdInput: the host can reword the button and the messages", function()
+  local b = inputBench({ strings = { add = "Include", notFound = "Nope: {text}" } })
+  assertEqual(b.add.text, "Include")
+  typeEnter(b.eb, "zzz")
+  -- red under: ignoring spec.strings (a localized host would show English)
+  assertEqual(b.status.text, "Nope: zzz")
+end)
+
+test("IdInput: a raising onAdd is reported, and the box keeps its text", function()
+  local b = inputBench({ onAdd = function() error("store exploded") end })
+  b.rec.chat = {}
+  typeEnter(b.eb, "zzz")
+  typeEnter(b.eb, "21562")
+  -- red under: an unguarded onAdd (a raise inside AceGUI's dispatch takes the frame's clicks down)
+  assertTrue(table.concat(b.rec.chat, "\n"):find("store exploded", 1, true) ~= nil)
+  assertEqual(b.eb.text, "21562", "the add did not happen, so the input is not cleared")
+  assertEqual(b.status.text, "No spell named 'zzz' in your spellbook. " .. b.O.ID_NAME_HINT.spell,
+    "and the status line is as it was")
+end)
+
+test("IdInput: the box and status line are cleared before onAdd, so onAdd may redraw the page", function()
+  local b
+  local seen = {}
+  b = inputBench({ onAdd = function()
+    seen.text, seen.status = b.eb.text, b.status.text
+    -- What a synchronous redraw does: both widgets go back to AceGUI's pool, and the next render
+    -- may take them. Anything written to them from here on lands on someone else's widget.
+    b.eb.SetText = function() seen.touched = true end
+    b.status.SetText = function() seen.touched = true end
+    b.status.SetColor = function() seen.touched = true end
+  end })
+  typeEnter(b.eb, "zzz")
+  typeEnter(b.eb, "21562")
+  -- red under: clearing after onAdd returns (a host that redraws inside onAdd has its new page's
+  -- widgets blanked -- ConsumableMaster and LootHistory each coded around it)
+  assertEqual(seen.text, "", "the box was cleared before onAdd ran")
+  assertEqual(seen.status, "", "and so was the status line")
+  assertNil(seen.touched, "nothing touches either widget after onAdd returns")
+end)
+
+test("IdInput: drawn inside a disabled render, or with spec.disabled, it is disabled", function()
+  local O, rec, ctx = bench()
+  local eb, add
+  local after = { Master = function(c)
+    local _
+    _, eb, add = O.IdInput(c, nil, { kind = "spell", onAdd = function() end })
+  end }
+  O.RenderRows(ctx, { rec.byPath.locked }, after, nil, { disabled = true })
+  -- red under: the input ignoring the render's flag (a disabled page would still take ids)
+  assertTrue(eb.disabled); assertTrue(add.disabled)
+  local b = inputBench({ disabled = true })
+  assertTrue(b.eb.disabled); assertTrue(b.add.disabled)
+  assertNil(b.ctx.__renderDisabled, "the flag lives for the call only")
+  local live = inputBench()
+  assertNil(live.eb.disabled, "an input drawn normally is never touched")
+end)
+
+test("IdInput: with no AceGUI it draws nothing", function()
+  withoutAceGUI(function()
+    local O, _, ctx = bench()
+    assertNil(O.IdInput(ctx, nil, { kind = "spell", onAdd = function() end }))
+  end)
+end)
+
+--- One IdList on a throwaway page. `entries` is the host's list; every callback is recorded.
+local function listBench(entries, spec)
+  local O, rec, ctx = bench()
+  seedIds()
+  local log = { added = {}, removed = {}, toggled = {}, rebuilt = 0 }
+  ctx.rebuild = function() log.rebuilt = log.rebuilt + 1 end
+  spec = spec or {}
+  spec.kind = spec.kind or "spell"
+  spec.entries = spec.entries or function() return entries end
+  spec.onAdd = function(id) log.added[#log.added + 1] = id end
+  spec.onRemove = function(id) log.removed[#log.removed + 1] = id end
+  spec.onToggle = function(id, on) log.toggled[#log.toggled + 1] = { id, on } end
+  local lines = O.IdList(ctx, spec)
+  return O, rec, ctx, lines, log
+end
+
+--- The input group an IdList drew: the first SimpleGroup in the scroll holding an EditBox.
+local function listInput(O, ctx)
+  for _, w in ipairs(O.EnsureScroll(ctx).children) do
+    if w.children and w.children[1] and w.children[1].type == "EditBox" then
+      return w.children[1], w.children[2], w.children[3]
+    end
+  end
+end
+
+test("IdList: one line per entry -- icon, name and gray id, then Remove or a checkbox", function()
+  local O, _, ctx, lines = listBench({
+    { id = 21562 }, { id = 99999 }, { id = 774, toggle = true, on = true },
+  }, { heading = "Spells" })
+  -- red under: O.IdList absent
+  assertEqual(#lines, 3, "one line per entry, returned in order")
+  local flat = Fixture.flatten(O.EnsureScroll(ctx))
+  assertEqual(flat[1].type, "Heading"); assertEqual(flat[1].text, "Spells")
+  assertTrue(listInput(O, ctx) ~= nil, "the input is drawn above the entries")
+
+  local label, action = lines[1].children[1], lines[1].children[2]
+  assertEqual(label.type, "InteractiveLabel")
+  assertEqual(label.text, "Power Word: Fortitude |cff808080(21562)|r")
+  assertEqual(label.image[1], 135987, "with its icon")
+  assertEqual(action.type, "Button"); assertEqual(action.text, "Remove")
+  -- red under: formatting a nil name (the line would raise, or read "nil")
+  assertEqual(lines[2].children[1].text, "Unknown spell 99999")
+  local toggle = lines[3].children[2]
+  assertEqual(toggle.type, "CheckBox", "a toggle entry gets a checkbox instead of Remove")
+  assertTrue(toggle.value, "seeded from the entry")
+end)
+
+test("IdList: Remove and a toggle call the host back, and Remove asks for a rebuild", function()
+  local _, _, _, lines, log = listBench({ { id = 21562 }, { id = 774, toggle = true, on = true } })
+  lines[1].children[2]:__fire("OnClick")
+  -- red under: Remove not wired to onRemove
+  assertEqual(log.removed[1], 21562)
+  -- red under: no rebuild after a remove (the removed line would stay on screen)
+  assertEqual(log.rebuilt, 1, "the list's shape changed, so the page is rebuilt")
+  lines[2].children[2]:__fire("OnValueChanged", false)
+  assertEqual(log.toggled[1][1], 774)
+  assertEqual(log.toggled[1][2], false)
+end)
+
+test("IdList: an add through its input reaches onAdd and rebuilds the list", function()
+  local O, _, ctx, _, log = listBench({})
+  local eb = listInput(O, ctx)
+  typeEnter(eb, "rejuvenation")
+  assertEqual(log.added[1], 774)
+  -- red under: IdList not rebuilding after an add (the new entry would not appear)
+  assertEqual(log.rebuilt, 1)
+end)
+
+test("IdList: with no ctx.rebuild the library's structural refresh redraws it", function()
+  local O, _, ctx = bench()
+  seedIds()
+  local refreshed = 0
+  local real = O.RefreshAllPanels
+  O.RefreshAllPanels = function() refreshed = refreshed + 1 end
+  local lines = O.IdList(ctx, { kind = "spell", entries = function() return { { id = 21562 } } end,
+                                onRemove = function() end })
+  lines[1].children[2]:__fire("OnClick")
+  O.RefreshAllPanels = real
+  -- red under: no fallback when the host sets no ctx.rebuild
+  assertEqual(refreshed, 1)
+end)
+
+test("IdList: an empty list shows the host's empty text", function()
+  local O, _, ctx, lines = listBench({}, { emptyText = "No spells added." })
+  assertEqual(#lines, 0)
+  -- red under: drawing nothing for an empty list (the page reads as broken)
+  local found = false
+  for _, w in ipairs(Fixture.flatten(O.EnsureScroll(ctx))) do
+    if w.type == "Label" and w.text == "No spells added." then found = true end
+  end
+  assertTrue(found, "the empty text is on the page")
+end)
+
+--- Run `fn(requests)` with every C_Item.RequestLoadItemDataByID counted per id (and in total, as
+--- `requests.total`), on an empty timer queue; the real request is put back however `fn` ends.
+local function countingLoads(fn)
+  local requests = { total = 0 }
+  local realRequest = mocks.C_Item.RequestLoadItemDataByID
+  mocks.C_Item.RequestLoadItemDataByID = function(id)
+    requests.total = requests.total + 1
+    requests[id] = (requests[id] or 0) + 1
+    realRequest(id)
+  end
+  mocks.__timers = {}
+  local ok, err = pcall(fn, requests)
+  mocks.C_Item.RequestLoadItemDataByID = realRequest
+  assertTrue(ok, tostring(err))
+end
+
+test("IdList: an uncached item asks to load, and the list redraws once its name lands", function()
+  countingLoads(function(requests)
+    local O, _, ctx, lines, log = listBench({ { id = 2589 }, { id = 6948 } }, { kind = "item" })
+    assertEqual(lines[1].children[1].text, "Unknown item 2589", "no name until it is cached")
+    -- red under: never asking the client for the item (its name would never arrive)
+    assertEqual(requests.total, 1, "one request, for the uncached item only")
+    mocks.addIdRecord("item", 2589, "Linen Cloth", 132889)
+    mocks.__fireTimers()
+    -- red under: a load callback that redraws nothing
+    assertEqual(log.rebuilt, 1, "the load rebuilt the list")
+    assertEqual(#mocks.__timers, 0, "a landed item is not asked for again")
+    O.IdList(ctx, { kind = "item", entries = function() return { { id = 2589 } } end })
+    assertEqual(requests.total, 1, "a named item needs no request")
+  end)
+end)
+
+test("IdList: an item's name is colored by its quality; a spell's and a currency's are not", function()
+  local O, _, ctx, lines = listBench({ { id = 6948 }, { id = 19019 } }, { kind = "item" })
+  -- red under: an item name drawn plain (BankLedger and LootHistory colored theirs by quality)
+  assertEqual(lines[1].children[1].text, "|cffffffffHearthstone|r |cff808080(6948)|r")
+  assertEqual(lines[2].children[1].text, "|cffff8000Thunderfury|r |cff808080(19019)|r")
+  local spell = O.IdList(ctx, { kind = "spell", entries = function() return { { id = 21562 } } end })
+  assertEqual(spell[1].children[1].text, "Power Word: Fortitude |cff808080(21562)|r")
+  local currency = O.IdList(ctx, { kind = "currency", entries = function() return { { id = 3008 } } end })
+  assertEqual(currency[1].children[1].text, "Valorstones |cff808080(3008)|r")
+end)
+
+test("IdList: an item with no quality yet, or no palette for it, is drawn uncolored", function()
+  local O, _, ctx, lines = listBench({ { id = 2589 }, { id = 777001 } }, { kind = "item" })
+  mocks.__timers = {}
+  assertEqual(lines[1].children[1].text, "Unknown item 2589", "an uncached item is not colored")
+  assertEqual(lines[2].children[1].text, "Nameless Quality |cff808080(777001)|r",
+    "a named item the client answers no quality for is drawn plain")
+  mocks.addIdRecord("item", 2589, "Linen Cloth", 132889, nil, 1)
+  local landed = O.IdList(ctx, { kind = "item", entries = function() return { { id = 2589 } } end })
+  assertEqual(landed[1].children[1].text, "|cffffffffLinen Cloth|r |cff808080(2589)|r",
+    "the redraw after the load colors it")
+  local palette = mocks.ITEM_QUALITY_COLORS
+  mocks.ITEM_QUALITY_COLORS = nil
+  local ok, bare = pcall(O.IdList, ctx, { kind = "item", entries = function() return { { id = 6948 } } end })
+  mocks.ITEM_QUALITY_COLORS = palette
+  assertTrue(ok, tostring(bare))
+  -- red under: indexing a missing palette (the line would be lost to its guard)
+  assertEqual(bare[1].children[1].text, "Hearthstone |cff808080(6948)|r")
+end)
+
+test("IdList: uncached items load as one batch -- one timer and one rebuild, however many", function()
+  countingLoads(function(requests)
+    local entries = {}
+    for i = 1, 20 do entries[i] = { id = 900000 + i } end
+    local _, _, _, _, log = listBench(entries, { kind = "item" })
+    assertEqual(requests.total, 20, "every uncached item is asked for")
+    -- red under: one timer per id (twenty full page renders landing in the same frame)
+    assertEqual(#mocks.__timers, 1, "one check for the whole batch")
+    for i = 1, 20 do mocks.addIdRecord("item", 900000 + i, "Item " .. i, 1) end
+    mocks.__fireTimers()
+    assertEqual(log.rebuilt, 1, "one rebuild draws every name that landed")
+  end)
+end)
+
+test("IdList: an item not cached by the check is asked for again, a bounded number of times", function()
+  countingLoads(function(requests)
+    local _, _, _, _, log = listBench({ { id = 2589 } }, { kind = "item" })
+    mocks.__fireTimers()
+    -- red under: giving up after one fixed delay (a slow load reads "Unknown item" until some
+    -- unrelated redraw)
+    assertEqual(requests[2589], 2, "asked again once the first check found no name")
+    assertEqual(log.rebuilt, 0, "nothing landed, so nothing is redrawn")
+    mocks.addIdRecord("item", 2589, "Linen Cloth", 132889)
+    mocks.__fireTimers()
+    assertEqual(log.rebuilt, 1, "the retry's check redraws the name that landed")
+    assertEqual(#mocks.__timers, 0)
+
+    -- An id the client does not have never loads: the asks stop.
+    local _, _, _, _, never = listBench({ { id = 999001 } }, { kind = "item" })
+    local rounds = 0
+    while #mocks.__timers > 0 and rounds < 50 do
+      mocks.__fireTimers()
+      rounds = rounds + 1
+    end
+    -- red under: re-requesting for ever (an id the client never loads would loop forever)
+    assertTrue(rounds < 50, "the asks stop on their own")
+    assertEqual(requests[999001], 5, "five asks, then the entry stays unnamed")
+    assertEqual(never.rebuilt, 0)
+  end)
+end)
+
+test("IdList: an entry's label shows the client's own tooltip for it", function()
+  local _, _, _, lines = listBench({ { id = 21562 } })
+  local tip, seen = mocks.GameTooltip, {}
+  local saved = rawget(tip, "SetSpellByID")
+  tip.SetSpellByID = function(_, id) seen.id = id end
+  local label = lines[1].children[1]
+  local ok, err = pcall(label.__fire, label, "OnEnter")
+  tip.SetSpellByID = saved
+  assertTrue(ok, tostring(err))
+  -- red under: no tooltip on the entry label
+  assertEqual(seen.id, 21562)
+end)
+
+--- Hover an entry's label with GameTooltip's `method` spied; answers the id it was handed.
+local function hoverWith(label, method)
+  local tip, seen = mocks.GameTooltip, {}
+  local saved = rawget(tip, method)
+  tip[method] = function(_, id) seen.id = id end
+  local ok, err = pcall(label.__fire, label, "OnEnter")
+  tip[method] = saved
+  assertTrue(ok, tostring(err))
+  return seen.id
+end
+
+test("IdList: a host kind with base = \"item\" wears the item kind's color, tooltip and loads", function()
+  -- ConsumableMaster's shape: its own resolve (existence checks the library does not know), and
+  -- ids that are items. Without `base` it gets none of the item kind's decorations.
+  local kind = { noun = "potion", plural = "potions", base = "item",
+                 resolve = function(text) return tonumber(text) end }
+  local O, _, ctx, lines = listBench({ { id = 6948 }, { id = 19019 }, { id = 2589 } }, { kind = kind })
+  mocks.__timers = {}
+  -- red under: NAME_COLOR keyed by the library's kind table alone (a host kind's names drawn plain)
+  assertEqual(lines[1].children[1].text, "|cffffffffHearthstone|r |cff808080(6948)|r",
+    "the item kind's quality color, and its info names the entry")
+  assertEqual(lines[2].children[1].text, "|cffff8000Thunderfury|r |cff808080(19019)|r")
+  assertEqual(lines[3].children[1].text, "Unknown potion 2589", "the host's own noun wins")
+  assertEqual(hoverWith(lines[1].children[1], "SetItemByID"), 6948, "the item kind's tooltip")
+  assertEqual(table.concat(O.UnnamedCandidates(kind, function() return { 2589, 6948 } end), ","),
+    "2589", "the item kind's loads and info: its unnamed candidates are pre-warmed and looked up")
+
+  -- A field the host sets itself wins over the base's.
+  local own
+  own = { noun = "potion", base = "item", resolve = kind.resolve,
+          tooltip = function(_, id) own.shown = id end }
+  local mine = O.IdList(ctx, { kind = own, entries = function() return { { id = 6948 } } end })
+  assertEqual(hoverWith(mine[1].children[1], "SetItemByID"), nil, "not the base's tooltip")
+  assertEqual(own.shown, 6948, "the host's own")
+end)
+
+test("IdList: a host kind without base, or with a base no library kind has, is drawn as before", function()
+  local itemName = function(id) return mocks.C_Item.GetItemNameByID(id) end
+  for _, base in ipairs({ false, "widget" }) do
+    local kind = { noun = "potion", base = base or nil, info = itemName, loads = true,
+                   resolve = function(text) return tonumber(text) end }
+    local O, _, _, lines = listBench({ { id = 6948 } }, { kind = kind })
+    -- red under: a decoration read off every host kind (a host's own ids need not be items)
+    assertEqual(lines[1].children[1].text, "Hearthstone |cff808080(6948)|r", "plain, as today")
+    assertNil(hoverWith(lines[1].children[1], "SetItemByID"), "no tooltip it did not declare")
+    assertEqual(table.concat(O.UnnamedCandidates(kind, function() return { 2589 } end), ","), "2589",
+      "its own loads and info still count")
+  end
+end)
+
+test("IdList: a raising entries() is reported and still draws the input", function()
+  local O, rec, ctx = bench()
+  rec.chat = {}
+  local lines = O.IdList(ctx, { kind = "spell", entries = function() error("list exploded") end })
+  -- red under: an unguarded entries() (the whole page stops at the list)
+  assertEqual(#lines, 0)
+  assertTrue(listInput(O, ctx) ~= nil, "the input is still there to add with")
+  assertTrue(table.concat(rec.chat, "\n"):find("list exploded", 1, true) ~= nil)
+end)
+
+test("IdList: drawn disabled, every Remove and checkbox is disabled", function()
+  local _, _, _, lines = listBench({ { id = 21562 }, { id = 774, toggle = true } }, { disabled = true })
+  -- red under: entries ignoring the disable (a disabled page would still remove ids)
+  assertTrue(lines[1].children[2].disabled)
+  assertTrue(lines[2].children[2].disabled)
+end)
+
+test("IdList: with no AceGUI it draws nothing", function()
+  withoutAceGUI(function()
+    local O, _, ctx = bench()
+    assertNil(O.IdList(ctx, { kind = "spell", entries = function() return {} end }))
+  end)
+end)
+
+-- ── a name among uncached candidates, the name hint, and a shared name ──────────────────────
+--
+-- The client's item-name lookup answers only for an item the player carries, or carried this
+-- session. ConsumableMaster's owner typed "Potion of the Hushed Zephyr" (three crafted-quality ranks
+-- share the name, none in the bags) into Add-by-ID and read "No item matches". There is no client
+-- item-name search: a name reaches an item through that lookup or through the host's candidates,
+-- and a candidate the client has not cached has no name to match until it is loaded.
+
+local ZEPHYR = "Potion of the Hushed Zephyr"
+local ELLIPSIS = "\226\128\166"
+local ITEM_HINT = "Names work for items you carry (or carried this session) and ones this list " ..
+  "knows; otherwise use the id or shift-click a link."
+
+--- The three ranks sharing one name: uncached, unless `cached` names them.
+local function seedZephyr(cached)
+  cached = cached or {}
+  for _, id in ipairs({ 191395, 191396, 191397 }) do
+    mocks.addIdRecord("item", id, ZEPHYR, 4638, not cached[id], 1)
+  end
+end
+local function zephyrs() return { 191395, 191396, 191397 } end
+
+--- Fire the timer queue until it is empty, or `limit` rounds. Answers how many rounds ran.
+local function drainTimers(limit)
+  local rounds = 0
+  while #mocks.__timers > 0 and rounds < limit do
+    mocks.__fireTimers()
+    rounds = rounds + 1
+  end
+  return rounds
+end
+
+test("ResolveId: a client name hit another candidate shares its name with is ambiguous", function()
+  local O = Fixture.new()
+  seedIds()
+  seedZephyr({ [191395] = true, [191396] = true })
+  assertEqual(O.ResolveId("item", ZEPHYR), 191395, "with no candidates the client's answer stands")
+  local id, reason = O.ResolveId("item", ZEPHYR, zephyrs)
+  -- red under: returning the client's hit before reading the candidates (one rank added silently)
+  assertNil(id); assertEqual(reason, "ambiguous")
+  assertEqual(O.ResolveId("item", ZEPHYR, function() return { 191395, 191397 } end), 191395,
+    "a candidate the client cannot name yet is not a second match")
+  assertEqual(O.ResolveId("item", "hearthstone", function() return { 6948, 191396 } end), 6948,
+    "the client's own id among the candidates is one match, not two")
+  mocks.addIdRecord("spell", 900001, "Twin Strike", 1)
+  mocks.addIdRecord("spell", 900002, "Twin Strike", 2)
+  assertEqual(select(2, O.ResolveId("spell", "twin strike", function() return { 900002 } end)),
+    "ambiguous", "a spell the client names and a different candidate spell")
+end)
+
+test("UnnamedCandidates: the item candidates the client cannot name yet, each once, capped", function()
+  local O = Fixture.new()
+  seedIds()
+  seedZephyr({ [191396] = true })
+  -- red under: O.UnnamedCandidates absent (the widget has nothing to ask the client for)
+  local ids = O.UnnamedCandidates("item", function() return { 6948, 191395, 191396, 191397, 191395 } end)
+  assertEqual(table.concat(ids, ","), "191395,191397", "in the host's order, each once")
+  local many = {}
+  for i = 1, 300 do many[i] = 800000 + i end
+  assertEqual(#O.UnnamedCandidates("item", function() return many end), 200, "capped at 200")
+  assertEqual(#O.UnnamedCandidates("spell", function() return { 99999 } end), 0, "only items load")
+  assertEqual(#O.UnnamedCandidates("currency", function() return { 99999 } end), 0)
+  assertEqual(#O.UnnamedCandidates("item", function() error("boom") end), 0)
+  assertEqual(#O.UnnamedCandidates("item"), 0)
+  local real = mocks.C_Item.RequestLoadItemDataByID
+  mocks.C_Item.RequestLoadItemDataByID = nil
+  local ok, n = pcall(function() return #O.UnnamedCandidates("item", zephyrs) end)
+  mocks.C_Item.RequestLoadItemDataByID = real
+  assertTrue(ok, tostring(n))
+  assertEqual(n, 0, "a client that cannot load an item has none to wait for")
+end)
+
+test("IdInput: a name among uncached candidates is looked up, and added once it lands", function()
+  countingLoads(function(requests)
+    local b = inputBench({ kind = "item", candidates = function() return { 6948, 191396 } end })
+    seedZephyr()
+    local before = requests.total
+    typeEnter(b.eb, ZEPHYR)
+    -- red under: no lookup (a candidate the client has not cached can never match a name)
+    assertEqual(#b.added, 0, "nothing added yet")
+    assertEqual(b.status.text, "Looking up items" .. ELLIPSIS)
+    assertTrue(b.status.color.r == 1 and b.status.color.g == 1 and b.status.color.b == 1,
+      "in a neutral color, not the failure orange")
+    assertEqual(requests.total - before, 1, "the one unnamed candidate is asked for")
+    assertEqual(#mocks.__timers, 1, "one check for the whole lookup")
+    assertEqual(b.eb.text, ZEPHYR, "the text stays while it looks")
+    mocks.addIdRecord("item", 191396, ZEPHYR, 4638, nil, 1)
+    mocks.__fireTimers()
+    assertEqual(#b.added, 1, "the retry adds it, once")
+    assertEqual(b.added[1], 191396)
+    assertEqual(b.eb.text, ""); assertEqual(b.status.text, "")
+  end)
+end)
+
+test("IdInput: a lookup waits for every candidate it asked for, then refuses a shared name", function()
+  countingLoads(function(requests)
+    local b = inputBench({ kind = "item", candidates = zephyrs })
+    seedZephyr()
+    typeEnter(b.eb, ZEPHYR)
+    local asked395, asked396 = requests[191395], requests[191396]
+    seedZephyr({ [191395] = true })
+    mocks.__fireTimers()
+    -- red under: retrying as soon as one lands (rank 1 alone would be added, though two more ranks
+    -- share its name)
+    assertEqual(#b.added, 0)
+    assertEqual(b.status.text, "Looking up items" .. ELLIPSIS, "still waiting on two")
+    assertEqual(requests[191396], asked396 + 1, "the ones still unnamed are asked for again")
+    assertEqual(requests[191395], asked395, "a landed one is not")
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    mocks.__fireTimers()
+    -- red under: adding one rank of a shared name (the owner's decision: never silently one rank)
+    assertEqual(#b.added, 0, "neither one rank nor all of them")
+    assertEqual(b.status.text, "Several items are named '" .. ZEPHYR ..
+      "' \226\128\148 pick one from the list, or use the id.")
+    assertTrue(b.status.color.r == 1 and b.status.color.b == 0, "in orange")
+    assertEqual(b.eb.text, ZEPHYR, "the text stays")
+    assertEqual(#mocks.__timers, 0)
+  end)
+end)
+
+test("IdInput: a lookup that never lands gives up after a bounded wait, with the honest reason", function()
+  countingLoads(function(requests)
+    local b = inputBench({ kind = "item", candidates = function() return { 999001 } end })
+    typeEnter(b.eb, ZEPHYR)
+    local asked = requests[999001]
+    local rounds = drainTimers(50)
+    -- red under: re-asking for ever (an id the client does not have never loads)
+    assertTrue(rounds < 50, "the wait ends on its own")
+    assertEqual(requests[999001] - asked, 4, "five asks in all, the submit's included")
+    assertEqual(#b.added, 0)
+    assertEqual(b.status.text, "No item named '" .. ZEPHYR .. "' that the game can find. " .. ITEM_HINT)
+    assertTrue(b.status.color.r == 1 and b.status.color.b == 0, "in orange")
+  end)
+end)
+
+test("IdInput: a second submit, a changed box or a released box drops a pending lookup", function()
+  countingLoads(function()
+    local b = inputBench({ kind = "item", candidates = function() return { 191396 } end })
+    seedZephyr()
+    typeEnter(b.eb, ZEPHYR)
+    typeEnter(b.eb, "6948")
+    assertEqual(b.added[1], 6948)
+    seedZephyr({ [191396] = true })
+    drainTimers(10)
+    -- red under: a stale lookup landing after a newer submit (the old name added behind its back)
+    assertEqual(#b.added, 1, "the replaced lookup adds nothing")
+    assertEqual(b.status.text, "", "and leaves the status line alone")
+
+    local c = inputBench({ kind = "item", candidates = function() return { 191396 } end })
+    seedZephyr()
+    typeEnter(c.eb, ZEPHYR)
+    c.eb:SetText("Hearth")
+    seedZephyr({ [191396] = true })
+    drainTimers(10)
+    assertEqual(#c.added, 0, "a box the player typed over is not submitted for them")
+    assertEqual(c.status.text, "", "the looking line goes")
+    assertEqual(c.eb.text, "Hearth")
+
+    local d = inputBench({ kind = "item", candidates = function() return { 191396 } end })
+    seedZephyr()
+    typeEnter(d.eb, ZEPHYR)
+    local touched
+    d.eb:Release()
+    d.status.SetText = function() touched = true end
+    d.eb.SetText = function() touched = true end
+    seedZephyr({ [191396] = true })
+    drainTimers(10)
+    -- red under: a lookup writing to widgets AceGUI's pool may have handed to another page
+    assertEqual(#d.added, 0)
+    assertNil(touched, "nothing touches a released box or its status line")
+  end)
+end)
+
+test("IdInput and IdList: built with item candidates, they ask for the unnamed ones up front", function()
+  countingLoads(function(requests)
+    local O, _, ctx = bench()
+    seedIds()
+    seedZephyr({ [191396] = true })
+    O.IdInput(ctx, nil, { kind = "item", candidates = zephyrs, onAdd = function() end })
+    -- red under: no pre-warm (a name among the host's candidates misses on the first try)
+    assertEqual(requests[191395], 1); assertEqual(requests[191397], 1)
+    assertNil(requests[191396], "a named candidate is not asked for")
+    assertEqual(#mocks.__timers, 0, "a pre-warm waits for nothing")
+    O.IdList(ctx, { kind = "item", candidates = zephyrs, entries = function() return {} end })
+    assertEqual(requests.total, 2, "once per id per instance, however many renders")
+    O.IdInput(ctx, nil, { kind = "spell", candidates = function() return { 99999 } end,
+                          onAdd = function() end })
+    assertEqual(requests.total, 2, "spells are not loaded")
+    local many = {}
+    for i = 1, 300 do many[i] = 800000 + i end
+    O.IdInput(ctx, nil, { kind = "item", candidates = function() return many end, onAdd = function() end })
+    assertEqual(requests.total, 202, "at most 200 a build")
+    local saved = mocks.C_Item
+    mocks.C_Item = nil
+    local ok, err = pcall(O.IdInput, ctx, nil, { kind = "item", candidates = zephyrs, onAdd = function() end })
+    mocks.C_Item = saved
+    assertTrue(ok, tostring(err))
+  end)
+end)
+
+test("IdInput: a name that finds nothing says where names work, per kind; the hint is exported", function()
+  local O = Fixture.new()
+  -- red under: no exported hint (a host's tooltip would restate the rule, and drift from it)
+  assertEqual(O.ID_NAME_HINT.item, ITEM_HINT)
+  assertEqual(O.ID_NAME_HINT.spell,
+    "Names work for spells in your spellbook and ones this list knows; otherwise use the id or " ..
+    "shift-click a link.")
+  assertEqual(O.ID_NAME_HINT.currency,
+    "Currency names work only for the currencies this list knows; otherwise use the id or " ..
+    "shift-click a link.")
+  O.ID_NAME_HINT.item = "changed"
+  local other = Fixture.new()
+  assertEqual(other.ID_NAME_HINT.item, ITEM_HINT, "each instance has its own copy")
+  -- red under: one table shared by every instance (the new one rewrote the first one's change)
+  assertEqual(O.ID_NAME_HINT.item, "changed", "a later instance leaves the first one's alone")
+  assertTrue(not rawequal(O.ID_NAME_HINT, other.ID_NAME_HINT), "two tables, not one")
+
+  local item = inputBench({ kind = "item" })
+  typeEnter(item.eb, "Nope")
+  -- red under: the old bare "No item named" (it reads as if the item does not exist)
+  assertEqual(item.status.text, "No item named 'Nope' that the game can find. " .. ITEM_HINT)
+  local currency = inputBench({ kind = "currency" })
+  typeEnter(currency.eb, "Nope")
+  assertEqual(currency.status.text, "No currency named 'Nope' that this list knows. " ..
+    currency.O.ID_NAME_HINT.currency)
+  local thing = inputBench({ kind = { noun = "thing" } })
+  typeEnter(thing.eb, "Nope")
+  assertEqual(thing.status.text, "No thing named 'Nope'.", "a host kind keeps the plain words")
+  local custom = inputBench({ kind = "item", strings = { nameHint = "Custom hint." } })
+  typeEnter(custom.eb, "Nope")
+  assertEqual(custom.status.text, "No item named 'Nope' that the game can find. Custom hint.")
+end)
+
+test("IdInput: the looking line can be reworded", function()
+  countingLoads(function()
+    local b = inputBench({ kind = "item", candidates = function() return { 191396 } end,
+                           strings = { looking = "Searching {plural} for '{text}'" } })
+    seedZephyr()
+    typeEnter(b.eb, ZEPHYR)
+    -- red under: a hard-coded looking line (a localized host would show English)
+    assertEqual(b.status.text, "Searching items for '" .. ZEPHYR .. "'")
+  end)
+end)
+
+local AMBIGUOUS_ZEPHYR = "Several items are named '" .. ZEPHYR ..
+  "' \226\128\148 pick one from the list, or use the id."
+
+test("IdInput: a client hit on one rank waits for the uncached ranks, then refuses the name", function()
+  countingLoads(function(requests)
+    -- Rank 1 is in the bags (the client's name lookup answers it); ranks 2 and 3 are candidates the
+    -- client has not cached, so nothing can tell yet that they share its name.
+    local b = inputBench({ kind = "item", candidates = zephyrs })
+    seedZephyr({ [191395] = true })
+    typeEnter(b.eb, ZEPHYR)
+    -- red under: adding the client's hit at once (one rank of a shared name, added silently)
+    assertEqual(#b.added, 0, "nothing added while two candidates are unnamed")
+    assertEqual(b.status.text, "Looking up items" .. ELLIPSIS)
+    assertTrue(requests[191396] ~= nil and requests[191397] ~= nil, "the unnamed ranks are asked for")
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    drainTimers(10)
+    assertEqual(#b.added, 0, "neither one rank nor all of them")
+    assertEqual(b.status.text, AMBIGUOUS_ZEPHYR)
+    assertEqual(b.eb.text, ZEPHYR, "the text stays")
+
+    -- The rank in the bags need not be a candidate: the other two still share its name.
+    local c = inputBench({ kind = "item", candidates = function() return { 191396, 191397 } end })
+    seedZephyr({ [191395] = true })
+    typeEnter(c.eb, ZEPHYR)
+    assertEqual(#c.added, 0)
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    drainTimers(10)
+    assertEqual(#c.added, 0)
+    assertEqual(c.status.text, AMBIGUOUS_ZEPHYR)
+  end)
+end)
+
+test("IdInput: a name hit waits on unnamed candidates, then adds; a number or a link never waits", function()
+  countingLoads(function(requests)
+    local b = inputBench({ kind = "item", candidates = function() return { 6948, 2589 } end })
+    typeEnter(b.eb, "Hearthstone")
+    -- red under: no wait (the uncached candidate could have carried the same name)
+    assertEqual(#b.added, 0, "waits while a candidate is unnamed")
+    assertEqual(b.status.text, "Looking up items" .. ELLIPSIS)
+    mocks.addIdRecord("item", 2589, "Linen Cloth", 132889, nil, 1)
+    drainTimers(10)
+    assertEqual(#b.added, 1, "a name no other candidate carries is added once they land")
+    assertEqual(b.added[1], 6948)
+
+    local c = inputBench({ kind = "item", candidates = function() return { 6948, 2589 } end })
+    local before = requests.total
+    typeEnter(c.eb, "6948")
+    assertEqual(c.added[1], 6948, "a number is added at once")
+    typeEnter(c.eb, "|cffffffff|Hitem:19019::::::::|h[Thunderfury]|h|r")
+    assertEqual(c.added[2], 19019, "a link is added at once")
+    assertEqual(#mocks.__timers, 0, "neither waits")
+    assertTrue(requests.total - before <= 1, "at most the pre-warm's one ask")
+  end)
+end)
+
+--- ConsumableMaster's shape: a host kind whose `resolve` takes digits and links itself and hands a
+--- name to O.ResolveId("item", text, candidates), with the item kind's words forwarded through
+--- `__index`. `loads` and `info` are what opt it into the pre-warm and the lookup.
+local function hostItemKind(O)
+  local base = { lookup = "item", noun = "item", plural = "items", loads = true,
+                 info = function(id) return mocks.C_Item.GetItemNameByID(id) end }
+  return setmetatable({
+    resolve = function(text, candidates)
+      local id = tonumber(text:match("^%d+$")) or tonumber(text:match("item:(%d+)"))
+      if id then return id end
+      return O.ResolveId(base.lookup, text, candidates)
+    end,
+  }, { __index = function(_, key) return base[key] end })
+end
+
+test("IdInput: a host kind with resolve, loads and info is looked up, and refuses a shared name", function()
+  countingLoads(function(requests)
+    local O, _, ctx = bench()
+    seedIds()
+    seedZephyr()
+    local added = {}
+    local function onAdd(id) added[#added + 1] = id end
+    local strings = { notFound = "No {noun} named '{text}'. {hint}", nameHint = "Host hint." }
+    local kind = hostItemKind(O)
+    assertEqual(table.concat(O.UnnamedCandidates(kind, zephyrs), ","), "191395,191396,191397")
+    local _, eb, _, status = O.IdInput(ctx, nil, { kind = kind, candidates = zephyrs,
+                                                   strings = strings, onAdd = onAdd })
+    assertEqual(requests[191395], 1, "pre-warmed through the host kind")
+    typeEnter(eb, ZEPHYR)
+    assertEqual(status.text, "Looking up items" .. ELLIPSIS)
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    drainTimers(10)
+    assertEqual(#added, 0, "no rank added")
+    assertEqual(status.text, AMBIGUOUS_ZEPHYR)
+
+    -- One rank in the bags, the others unnamed: the host's own resolver answers the client's hit,
+    -- and the widget still waits.
+    local O2, _, ctx2 = bench()
+    seedIds()
+    seedZephyr({ [191395] = true })
+    local _, eb2, _, status2 = O2.IdInput(ctx2, nil, { kind = hostItemKind(O2), candidates = zephyrs,
+                                                       strings = strings, onAdd = onAdd })
+    typeEnter(eb2, ZEPHYR)
+    -- red under: a host resolver's hit added before the unnamed ranks land
+    assertEqual(#added, 0)
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    drainTimers(10)
+    assertEqual(#added, 0)
+    assertEqual(status2.text, AMBIGUOUS_ZEPHYR)
+
+    local plain = setmetatable({ resolve = hostItemKind(O).resolve },
+      { __index = { noun = "item", plural = "items" } })
+    assertEqual(#O.UnnamedCandidates(plain, zephyrs), 0, "a host kind without loads is not looked up")
+  end)
+end)
+
+test("IdInput: a second submit of the same text replaces the pending lookup", function()
+  countingLoads(function()
+    local calls = 0
+    local b = inputBench({ kind = "item",
+                           candidates = function() calls = calls + 1; return zephyrs() end })
+    seedZephyr()
+    typeEnter(b.eb, ZEPHYR)
+    seedZephyr({ [191395] = true, [191396] = true, [191397] = true })
+    typeEnter(b.eb, ZEPHYR)
+    assertEqual(b.status.text, AMBIGUOUS_ZEPHYR, "the second submit answers on its own")
+    local before = calls
+    drainTimers(10)
+    -- red under: a submit that leaves the older lookup in place (its check resolves the text again)
+    assertEqual(calls, before, "the first lookup's check does nothing")
+    assertEqual(b.status.text, AMBIGUOUS_ZEPHYR)
+
+    local c = inputBench({ kind = "item", candidates = zephyrs })
+    seedZephyr()
+    typeEnter(c.eb, ZEPHYR)
+    typeEnter(c.eb, "")
+    drainTimers(10)
+    assertEqual(c.status.text, "Type an id, a link or a name.",
+      "an empty submit's message is not wiped by the lookup it replaced")
+  end)
+end)
+
+test("IdInput: ids a lookup could not load are skipped, so later candidates get their turn", function()
+  countingLoads(function(requests)
+    local list = {}
+    for i = 1, 200 do list[i] = 900000 + i end -- never load: retired or invalid ids
+    list[201] = 191396
+    local b = inputBench({ kind = "item", candidates = function() return list end })
+    mocks.addIdRecord("item", 191396, "Rare Draught", 4638, true, 1)
+    typeEnter(b.eb, "Rare Draught")
+    assertNil(requests[191396], "past the cap: neither the pre-warm nor the first window asks")
+    drainTimers(5)
+    -- red under: a lookup that stops at the first 200 (a name among later candidates never resolves)
+    assertEqual(requests[191396], 1, "the first window exhausted, the next one asks for it")
+    assertEqual(b.status.text, "Looking up items" .. ELLIPSIS, "still looking")
+    assertEqual(#b.added, 0)
+    mocks.addIdRecord("item", 191396, "Rare Draught", 4638, nil, 1)
+    drainTimers(10)
+    assertEqual(b.added[1], 191396, "added once the later candidate lands")
+    assertEqual(requests[900001], 6, "a dead id: the pre-warm's ask and the lookup's five")
+    local asked = requests.total
+    typeEnter(b.eb, "Nope")
+    -- red under: re-asking the same dead ids on every Enter for the full wait
+    assertEqual(requests.total, asked, "a later Enter does not ask for the dead ids again")
+    assertEqual(b.status.text, "No item named 'Nope' that the game can find. " .. ITEM_HINT)
+  end)
+end)
+
+test("IdInput: a lookup runs at most five windows of 200; the next Enter carries on past them", function()
+  countingLoads(function(requests)
+    local list = {}
+    for i = 1, 1200 do list[i] = 900000 + i end -- none ever loads
+    local b = inputBench({ kind = "item", candidates = function() return list end })
+    typeEnter(b.eb, "Rare Draught")
+    local rounds = drainTimers(100)
+    assertTrue(rounds < 100, "the lookup ends on its own")
+    assertEqual(requests[901000], 5, "the fifth window's last id was asked for")
+    -- red under: windows without a bound (one typed name asking for every candidate there is)
+    assertNil(requests[901001], "a sixth window is never asked for")
+    assertEqual(b.status.text, "No item named 'Rare Draught' that the game can find. " .. ITEM_HINT)
+    typeEnter(b.eb, "Rare Draught")
+    assertEqual(requests[901001], 1, "the next Enter moves on to the ids after them")
+    assertEqual(requests[900001], 6, "and never back to a dead one: the pre-warm's ask and five")
+  end)
+end)
+
+test("IdInput and IdList: pre-warm moves past the ids it has asked for, and reads each id once", function()
+  countingLoads(function(requests)
+    local O, _, ctx = bench()
+    seedIds()
+    local many = {}
+    for i = 1, 300 do many[i] = 800000 + i end
+    local function draw()
+      O.IdInput(ctx, nil, { kind = "item", candidates = function() return many end,
+                            onAdd = function() end })
+    end
+    draw()
+    assertEqual(requests.total, 200)
+    draw()
+    -- red under: a window that restarts at the first 200 (the last 100 are never warmed)
+    assertEqual(requests.total, 300, "the second build warms the next ones")
+
+    local reads = 0
+    local realName = mocks.C_Item.GetItemNameByID
+    mocks.C_Item.GetItemNameByID = function(id) reads = reads + 1; return realName(id) end
+    local named = function() return { 6948, 19019 } end
+    O.IdInput(ctx, nil, { kind = "item", candidates = named, onAdd = function() end })
+    local first = reads
+    O.IdList(ctx, { kind = "item", candidates = named, entries = function() return {} end })
+    mocks.C_Item.GetItemNameByID = realName
+    assertTrue(first > 0)
+    -- red under: every draw rescanning every candidate's name
+    assertEqual(reads, first, "a redraw does not read the candidates' names again")
+  end)
+end)
+
 -- ── edit box (the fifth widget type) ───────────────────────────────────────────────────────
 
 test("widgets: a string row asking for an EditBox gets one, not a dropdown", function()
@@ -456,6 +1732,160 @@ test("widgets: disabledIf greys the swatch out while its sibling toggle is on", 
   rec.store.useClassColor = false
   for _, fn in ipairs(ctx.refreshers) do fn() end
   assertFalse(cp.disabled, "and the refresher re-evaluates it, so the pair tracks on one frame")
+end)
+
+-- ── disabledIf on every maker, and RenderRows' page-level disable ─────────────────────────
+--
+-- Until minor 16 only the color picker read `disabledIf`, and only as a settings path. A Layout
+-- page that dims the rows of an anchor mode not in use needs it on checkboxes, sliders, dropdowns
+-- and edit boxes too, and needs to say it as a predicate: "not in container mode" is not a stored
+-- boolean. One fixture path per maker the dispatch reaches, the LSM media dropdown and the numeric
+-- enum included, because both arrive at makeDropdown by a different branch of RenderField.
+
+local function runRefreshers(ctx)
+  for _, fn in ipairs(ctx.refreshers) do fn() end
+end
+
+local MAKER_PATHS = {
+  { path = "locked",        widget = "CheckBox" },
+  { path = "barWidth",      widget = "Slider" },
+  { path = "anchor",        widget = "Dropdown" },
+  { path = "retentionDays", widget = "Dropdown" },
+  { path = "barTexture" },                       -- LSM30_Statusbar, or its Dropdown fallback
+  { path = "profileName",   widget = "EditBox" },
+  { path = "borderColor",   widget = "ColorPicker" },
+}
+
+--- The first widget under the ctx's scroll whose label reads `label`.
+local function widgetLabelled(O, ctx, label)
+  for _, w in ipairs(Fixture.flatten(O.EnsureScroll(ctx))) do
+    if w.labelText == label or w.text == label then return w end
+  end
+end
+
+test("widgets: a function disabledIf disables every maker and is re-evaluated on refresh", function()
+  for _, m in ipairs(MAKER_PATHS) do
+    local O, rec, ctx = bench()
+    local mode, handed = "screen", nil
+    local row = rec.byPath[m.path]
+    row.disabledIf = function(r) handed = r; return mode == "screen" end
+    local w = O.RenderField(ctx, row, O.AceGUI:Create("SimpleGroup"), 0.5)
+    if m.widget then assertEqual(w.type, m.widget, m.path .. " reaches its maker") end
+    -- red under: only makeColorPicker reading disabledIf (every other maker ignored it)
+    assertTrue(w.disabled, m.path .. ": the predicate disabled it at build")
+    assertTrue(handed == row, m.path .. ": the predicate is handed its own row")
+
+    mode = "frame"
+    runRefreshers(ctx)
+    -- red under: evaluating disabledIf at build time only (the dimming would never lift)
+    assertFalse(w.disabled, m.path .. ": the refresher re-evaluated the predicate")
+    mode = "screen"
+    runRefreshers(ctx)
+    assertTrue(w.disabled, m.path .. ": and dims it again")
+  end
+end)
+
+test("widgets: a path disabledIf disables every maker while that setting is on", function()
+  for _, m in ipairs(MAKER_PATHS) do
+    local O, rec, ctx = bench()
+    local row = rec.byPath[m.path]
+    row.disabledIf = "useClassColor"
+    rec.store.useClassColor = true
+    local w = O.RenderField(ctx, row, O.AceGUI:Create("SimpleGroup"), 0.5)
+    -- red under: the path form still read by the color picker alone
+    assertTrue(w.disabled, m.path .. ": the setting is on, so the row is disabled")
+    rec.store.useClassColor = false
+    runRefreshers(ctx)
+    assertFalse(w.disabled, m.path .. ": and enabled again once it is off")
+  end
+end)
+
+test("widgets: a row with no disabledIf never has its disabled state touched", function()
+  for _, m in ipairs(MAKER_PATHS) do
+    local O, rec, ctx = bench()
+    local w = O.RenderField(ctx, rec.byPath[m.path], O.AceGUI:Create("SimpleGroup"), 0.5)
+    -- red under: every maker calling SetDisabled(false) unconditionally, which re-enables on the
+    -- next write anywhere a widget the host disabled itself
+    assertNil(w.disabled, m.path .. ": SetDisabled never called")
+    w:SetDisabled(true)
+    runRefreshers(ctx)
+    assertTrue(w.disabled, m.path .. ": a host's own SetDisabled survives a refresh")
+  end
+end)
+
+test("widgets: a disabledIf predicate that raises leaves the row drawn and enabled", function()
+  local O, rec, ctx = bench()
+  local row = rec.byPath.locked
+  row.disabledIf = function() error("predicate bug") end
+  local w = O.RenderField(ctx, row, O.AceGUI:Create("SimpleGroup"), 0.5)
+  -- red under: calling the predicate unguarded (the row fails to draw at all)
+  assertTrue(w ~= nil, "the row still drew")
+  assertFalse(w.disabled, "an unanswerable predicate reads as enabled")
+end)
+
+test("widgets: RenderRows opts.disabled disables every widget it draws, after-group ones included",
+  function()
+  local O, rec, ctx = bench()
+  local after = {
+    Size = function(c)
+      O.InlineButtonPair(c, { text = "Left", onClick = function() end },
+                            { text = "Right", onClick = function() end })
+      O.SessionCheckbox(c, nil, 0.5, { label = "Session box",
+        get = function() return false end, set = function() end })
+    end,
+  }
+  O.RenderRows(ctx, rec.d.rowsForPage("bar"), after, nil, { disabled = true })
+
+  local CONTROL = { CheckBox = true, Slider = true, Dropdown = true, EditBox = true,
+                    ColorPicker = true, Button = true, LSM30_Statusbar = true }
+  local drawn = 0
+  for _, w in ipairs(Fixture.flatten(O.EnsureScroll(ctx))) do
+    if CONTROL[w.type] then
+      drawn = drawn + 1
+      -- red under: RenderRows ignoring opts.disabled, or InlineButtonPair / SessionCheckbox not
+      -- reading the render's flag
+      assertTrue(w.disabled, tostring(w.labelText or w.text) .. " is disabled")
+    end
+  end
+  -- The bar page's ten drawn rows (mirror is skipRender), two buttons and the session box.
+  assertEqual(drawn, 13, "every control on the page was checked")
+  -- red under: leaving the flag on the ctx after the call
+  assertNil(ctx.__renderDisabled, "the flag lives for the call only")
+end)
+
+test("widgets: a disabled render's flag never leaks into a later render or into its refresh",
+  function()
+  local O, rec, ctx = bench()
+  O.RenderRows(ctx, { rec.byPath.locked }, nil, nil, { disabled = true })
+  O.RenderRows(ctx, { rec.byPath.showTooltips })
+  local first = widgetLabelled(O, ctx, "Lock Position")
+  local second = widgetLabelled(O, ctx, "Show tooltips")
+  assertTrue(first.disabled)
+  assertNil(second.disabled, "a later render without opts draws enabled, untouched widgets")
+
+  runRefreshers(ctx)
+  -- red under: the refresher reading ctx.__renderDisabled live instead of the build-time snapshot
+  assertTrue(first.disabled, "the disabled page's widget stays disabled through a refresh")
+  assertNil(second.disabled)
+end)
+
+test("widgets: a render nested inside a disabled render inherits the disable", function()
+  local O, rec, ctx = bench()
+  local after = { Master = function(c) O.RenderRows(c, { rec.byPath.profileName }) end }
+  O.RenderRows(ctx, { rec.byPath.locked }, after, nil, { disabled = true })
+  -- red under: a nested RenderRows resetting the flag to its own (absent) opts
+  assertTrue(widgetLabelled(O, ctx, "Profile label").disabled,
+    "a bespoke block drawn from an afterGroup hook is part of the disabled page")
+  assertNil(ctx.__renderDisabled, "and the outer call still clears it")
+end)
+
+test("widgets: an afterGroup hook that raises still propagates, and the flag is cleared", function()
+  local O, rec, ctx = bench()
+  local after = { Master = function() error("hook bug") end }
+  local ok = pcall(O.RenderRows, ctx, { rec.byPath.locked }, after, nil, { disabled = true })
+  assertFalse(ok, "a raising hook propagates, as it always has")
+  -- red under: clearing the flag only on the normal return path
+  assertNil(ctx.__renderDisabled, "a raise does not strand the flag on the ctx")
 end)
 
 test("widgets: OnValueConfirmed commits immediately — cancel must not wait on the throttle",

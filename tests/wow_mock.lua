@@ -42,8 +42,17 @@ return function()
     RequestLoadItemDataByID = function(id) M.__loadRequests[id] = true end,
   }
 
-  -- The colour table QualityFromLink builds its reverse map out of. Real hex values — the parse is
-  -- the thing under test and a made-up palette would test the parser against itself.
+  -- The kit's opt-in id lookups (revision 20), for LibKa0s-Options-1.0's ResolveId / IdInput /
+  -- IdList. Installed AFTER C_Item above: the install fills only the keys a harness has not
+  -- defined, so the load request above survives and the name lookups join it.
+  dofile("tests/_kit/mock_ids.lua")(M)
+  -- And what IdInput's suggestions read (the same revision's second opt-in): the bags, the
+  -- spellbook, quality tiers, spell subtext, and the EditBox's input frame the keys land on.
+  M.installIdSuggestions()
+
+  -- The colour table QualityFromLink builds its reverse map out of, and O.IdList colors an item's
+  -- name from. Real hex values — the parse is the thing under test and a made-up palette would test
+  -- the parser against itself.
   M.ITEM_QUALITY_COLORS = {
     [0] = { hex = "|cff9d9d9d" }, [1] = { hex = "|cffffffff" }, [2] = { hex = "|cff1eff00" },
     [3] = { hex = "|cff0070dd" }, [4] = { hex = "|cffa335ee" }, [5] = { hex = "|cffff8000" },

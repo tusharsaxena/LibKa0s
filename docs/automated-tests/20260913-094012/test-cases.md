@@ -485,7 +485,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (212)
+### test_options_widgets.lua (189)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -545,7 +545,6 @@ badge and any count quoted in the docs must agree with it.
 - IdInput: an ambiguous name asks for the id, in the kind's own plural
 - IdInput: the host can reword the button and the messages
 - IdInput: a raising onAdd is reported, and the box keeps its text
-- IdInput: the box and status line are cleared before onAdd, so onAdd may redraw the page
 - IdInput: drawn inside a disabled render, or with spec.disabled, it is disabled
 - IdInput: with no AceGUI it draws nothing
 - IdList: one line per entry -- icon, name and gray id, then Remove or a checkbox
@@ -553,33 +552,11 @@ badge and any count quoted in the docs must agree with it.
 - IdList: an add through its input reaches onAdd and rebuilds the list
 - IdList: with no ctx.rebuild the library's structural refresh redraws it
 - IdList: an empty list shows the host's empty text
-- IdList: an uncached item asks to load, and the list redraws once its name lands
-- IdList: an item's name is colored by its quality; a spell's and a currency's are not
-- IdList: an item with no quality yet, or no palette for it, is drawn uncolored
-- IdList: uncached items load as one batch -- one timer and one rebuild, however many
-- IdList: an item not cached by the check is asked for again, a bounded number of times
+- IdList: an uncached item asks to load once, and the load asks for a rebuild
 - IdList: an entry's label shows the client's own tooltip for it
-- IdList: a host kind with base = "item" wears the item kind's color, tooltip and loads
-- IdList: a host kind without base, or with a base no library kind has, is drawn as before
 - IdList: a raising entries() is reported and still draws the input
 - IdList: drawn disabled, every Remove and checkbox is disabled
 - IdList: with no AceGUI it draws nothing
-- ResolveId: a client name hit another candidate shares its name with is ambiguous
-- UnnamedCandidates: the item candidates the client cannot name yet, each once, capped
-- IdInput: a name among uncached candidates is looked up, and added once it lands
-- IdInput: a lookup waits for every candidate it asked for, then refuses a shared name
-- IdInput: a lookup that never lands gives up after a bounded wait, with the honest reason
-- IdInput: a second submit, a changed box or a released box drops a pending lookup
-- IdInput and IdList: built with item candidates, they ask for the unnamed ones up front
-- IdInput: a name that finds nothing says where names work, per kind; the hint is exported
-- IdInput: the looking line can be reworded
-- IdInput: a client hit on one rank waits for the uncached ranks, then refuses the name
-- IdInput: a name hit waits on unnamed candidates, then adds; a number or a link never waits
-- IdInput: a host kind with resolve, loads and info is looked up, and refuses a shared name
-- IdInput: a second submit of the same text replaces the pending lookup
-- IdInput: ids a lookup could not load are skipped, so later candidates get their turn
-- IdInput: a lookup runs at most five windows of 200; the next Enter carries on past them
-- IdInput and IdList: pre-warm moves past the ids it has asked for, and reads each id once
 - widgets: a string row asking for an EditBox gets one, not a dropdown
 - widgets: an edit box commits on OnEnterPressed and re-reads on refresh
 - widgets: a color row renders a ColorPicker seeded through the descriptor's codec
@@ -699,45 +676,6 @@ badge and any count quoted in the docs must agree with it.
 - widgets: ClearScroll drains the sub-tab ledger before AceGUI pools the parent
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
-
-### test_options_idsuggest.lua (36)
-
-- IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
-- IdInput suggestions: one name's rows sort by rank, then by id
-- IdInput suggestions: at most ten rows, then a line saying how many were left out
-- IdInput suggestions: digits match ids by prefix; a name needs two letters
-- IdInput suggestions: two letters means two characters, not two bytes
-- IdInput suggestions: every rank is its own row, labeled, beside the others
-- IdInput suggestions: a spell's rank is the client's subtext
-- IdInput suggestions: a click adds that row's id once, through onAdd, and closes
-- IdInput suggestions: Up and Down move the highlight, and Enter adds it
-- IdInput suggestions: Enter with no row highlighted still refuses a shared name
-- IdInput suggestions: a shared name the bags or the spellbook carry is refused, not one rank added
-- IdInput suggestions: typing drops the highlight, so Enter never takes a row the text left
-- IdInput suggestions: a shared name refused by Add, or before the pause, lists its ranks
-- IdInput suggestions: a shared name refused after a lookup lists its ranks
-- IdList suggestions: a pick reaches onAdd and rebuilds the list
-- IdInput suggestions: Escape, focus loss, a hidden panel and a release close it
-- IdInput suggestions: typing is debounced, and a released box's pending update is dropped
-- IdInput suggestions: items in the bags and spells in the spellbook need no candidates
-- IdInput suggestions: a missing source, a raising candidates() or no info costs nothing
-- IdInput suggestions: an uncached candidate joins the list once it is named
-- IdInput suggestions: a host kind with base = "item" shows each rank's tier and color
-- IdInput suggestions: a based host kind's own false wins over its base
-- IdInput suggestions: the id a based kind's resolve answers for a pick is the one added
-- IdInput suggestions: a based kind built per render is collected with its view
-- IdInput suggestions: a based host kind's resolve still decides what a pick adds
-- IdInput suggestions: any library kind can be a base; its ranks and fields come with it
-- IdInput suggestions: one dropdown per instance, whatever the renders
-- IdInput suggestions: a box pooled into a second render is hooked once
-- IdInput suggestions: a box pooled into another instance wakes no list of the first's
-- IdInput suggestions: a released box lets its render's index go
-- IdInput suggestions: Enter in a box that no longer owns the dropdown submits its text
-- IdInput suggestions: a box that left before the pause shows nothing
-- IdInput suggestions: focus lost to the dropdown itself goes back to the box
-- IdInput suggestions: one render names at most 2000 ids
-- IdInput suggestions: a raising info costs that id's row, not the list
-- IdInput suggestions: the dropdown is as wide as the box looks
 
 ### test_options_compose.lua (41)
 
@@ -993,7 +931,7 @@ badge and any count quoted in the docs must agree with it.
 - parallel: the split is balanced to within one suite
 - parallel: more shards than suites yields empty shards, not overlapping ones
 
-### test_mock_base.lua (31)
+### test_mock_base.lua (28)
 
 - mock: a frame that was never armed answers zero, dressed or not
 - mock: __setGeom is the opt-in, and the only thing that arms a frame
@@ -1021,10 +959,7 @@ badge and any count quoted in the docs must agree with it.
 - mock: installing the id lookups fills only what a harness has not defined
 - mock: a spell record answers by id and by name, the name in any case
 - mock: an uncached item keeps its icon and hides its name until it loads
-- mock: an item record answers its quality by id and by link, and none while uncached
 - mock: a currency record answers by id, and clearIdRecords empties every kind
-- mock: the suggestion sources answer what a suite seeds -- bags, spellbook, tiers, subtext
-- mock: installIdSuggestions gives an AceGUI EditBox its editbox frame, and nothing else
 - mock: an AceGUI widget answers GetText and records SetType and DisableButton
 
 ### test_mock_ace.lua (39)
@@ -1139,8 +1074,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 81 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 212 |
-| test_options_idsuggest.lua | 36 |
+| test_options_widgets.lua | 189 |
 | test_options_compose.lua | 41 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
@@ -1149,7 +1083,7 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 11 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
-| test_mock_base.lua | 31 |
+| test_mock_base.lua | 28 |
 | test_mock_ace.lua | 39 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
@@ -1158,4 +1092,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1028** |
+| **Total** | **966** |

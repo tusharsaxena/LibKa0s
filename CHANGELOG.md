@@ -10,6 +10,236 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.35.0 — 2026-09-13
+
+Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,
+**Media minor 3**, **Widgets minor 9**, **DebugLog minor 12**, **Slash minor 10**, **Options minor 18**,
+**OptionsWidgets minor 16**, **OptionsCompose minor 5**, **OptionsScroll minor 3**, **Perf minor 11**,
+**PerfPanel minor 5**, **kit revision 20**.
+
+Three additions to the settings panel. One file in `LibKa0s/` moves, `OptionsWidgets.lua` 15 → 16,
+and so does the kit:
+- `disabledIf` on every widget maker, as a settings path or a predicate, plus a `RenderRows`
+  option that draws a whole call disabled;
+- `O.ChoiceGrid`, a matrix of radio cells;
+- `O.ResolveId`, `O.IdInput` and `O.IdList`, which add an id by number, link or name, with
+  `O.UnnamedCandidates` and `O.ID_NAME_HINT` beside them.
+
+`O.IdInput` also suggests matching entries as the player types, and lists every rank of a shared
+name as its own row to pick from. That closes
+[#31](https://github.com/tusharsaxena/LibKa0s/issues/31). A typed name resolves only against what
+the client can name, meaning an item the player carries or carried this session or a spell in the
+spellbook, or against the ids the host passes as `candidates`. The client has no item-name search.
+So the input looks up the host's uncached item candidates before it takes a name. A name several
+ranks share is refused as ambiguous ("pick one from the list, or use the id"), whether its ranks
+come from the candidates, the bags or the spellbook. It never adds one rank the player did not
+pick, and never adds them all.
+
+Kit revision 20 adds `mock_ids.lua` so a suite can drive the id widgets. All three came out of
+AuraMaster's settings rework (feedback batch 5), and ConsumableMaster, BankLedger and LootHistory
+adopt the id widgets.
+
+No member is removed, renamed or resignatured, and no descriptor field is added. Six **instance**
+members are added: `ChoiceGrid`, `ResolveId`, `UnnamedCandidates`, `IdInput`, `IdList` and
+the table `ID_NAME_HINT`. The Options member manifest
+lists the library table's members only, so it differs from 18.15.5.3's in the minor alone.
+
+**Re-vendoring moves one case in nine consumers.** With the whole payload in, `LibKa0s/` into
+`libs/LibKa0s/` and `testkit/` into `tests/_kit/`, every consumer's Options degradation-stub parity
+check (`Kit.assertSurfaceParity`) names the six new members as missing from its hand-written stub:
+
+```
+LibKa0s-Options-1.0: the degraded stub diverges from the live surface in 6 place(s) — ChoiceGrid
+is missing (live: function); ID_NAME_HINT is missing (live: table); IdInput is missing (live:
+function); IdList is missing (live: function); ResolveId is missing (live: function);
+UnnamedCandidates is missing (live: function)
+```
+
+That is the gate working. A stub owes every instance member, and each consumer adds six inert
+members to its stub in the re-vendor commit (a table for `ID_NAME_HINT`). The clones below were
+measured when the payload added four; the two added since land in the same single parity case, so
+the failure counts stand. ConsumableMaster's stub check does not move. Measured in
+scratch clones of all ten, each at the branch it had checked out:
+
+| Consumer | Branch | Commit | Before (v1.34.0, kit 19) | After (v1.35.0, kit 20) |
+|---|---|---|---|---|
+| AbsorbTracker | `master` | `9590af5` | 588 / 0 failed / 2 skipped / 590 | 587 / 1 / 2 / 590 |
+| AuraMaster | `feat/2026-09-13-feedback-batch5` | `59fe8cf` | 702 / 0 failed / 2 skipped / 704 | 701 / 1 / 2 / 704 |
+| BankLedger | `master` | `fde0c98` | 869 / 0 failed / 2 skipped / 871 | 868 / 1 / 2 / 871 |
+| ConsumableMaster | `master` | `0d19897` | 873 / 0 failed / 2 skipped / 875 | 873 / 0 / 2 / 875 |
+| KickCD | `master` | `245e851` | 931 / 0 failed / 2 skipped / 933 | 930 / 1 / 2 / 933 |
+| LootHistory | `master` | `3bf24a3` | 736 / 0 failed / 2 skipped / 738 | 735 / 1 / 2 / 738 |
+| MultiMeters | `master` | `82eaa4b` | 1823 / 0 failed / 2 skipped / 1825 | 1822 / 1 / 2 / 1825 |
+| PanelMaster | `master` | `5d35415` | 810 / 0 failed / 2 skipped / 812 | 809 / 1 / 2 / 812 |
+| PrettyChat | `master` | `0b6b9c1` | 349 / 0 failed / 2 skipped / 351 | 348 / 1 / 2 / 351 |
+| WhatGroup | `master` | `391df38` | 606 / 0 failed / 2 skipped / 608 | 605 / 1 / 2 / 608 |
+
+In every row of the After column the one failure is that parity case, checked in AbsorbTracker's
+clone by name. The two skips are the vendored-payload pair cases, because the clones had no sibling
+LibKa0s. Re-vendoring the consumers is a separate step, not taken at this tag. The details are in
+[`docs/api/Options/version-18.16.5.3-docs.md`](docs/api/Options/version-18.16.5.3-docs.md) and
+[`docs/api/testkit/version-20-docs.md`](docs/api/testkit/version-20-docs.md).
+
+### `OptionsWidgets.lua` minor 16 — `disabledIf` everywhere, and a disabled page
+
+Through minor 15 only the color picker read `row.disabledIf`, and only as a settings path. Every
+maker now reads it: checkbox, slider, dropdown (LSM media and numeric enums included), edit box and
+color. It may be a path or a predicate, `function(row) -> bool`. It is applied at build and again by
+the widget's refresher, so it re-evaluates on every `RefreshScalars`. A predicate that raises reads
+as enabled. **A row without `disabledIf` is never touched**, not even with `SetDisabled(false)`,
+because five hosts disable their own widgets after drawing them. The class-color swatch still
+carries no `disabledIf` (`options-ui-§17`).
+
+`RenderRows(ctx, rows, afterGroup, pairWith, opts)` takes `opts.disabled`. Every widget the call
+draws is disabled, including an `afterGroup` hook's `InlineButtonPair` and a `SessionCheckbox`. It
+rides on `ctx.__renderDisabled` for the call alone. Makers snapshot it at build, and a nested call
+inherits it. The loop now runs under a `pcall` so the flag is restored on a raise. The raise is
+re-raised unchanged with `error(err, 0)`, so a traceback shows the re-raise site rather than the
+hook's frame. Eight cases in `tests/test_options_widgets.lua` pin it:
+- the predicate form across every maker, with the refresh flip;
+- the path form;
+- a row with no `disabledIf` left alone;
+- a raising predicate;
+- the page flag;
+- the page flag not leaking into a later render;
+- a nested render inheriting it;
+- an `afterGroup` hook that raises, which still propagates and leaves the flag cleared.
+
+### `OptionsWidgets.lua` minor 16 — `O.ChoiceGrid(ctx, spec)`
+
+This draws rows that share one value list as a grid: a header line of column labels, then per row a
+radio cell for each column and the row's label with its tooltip. It is built for a category that is
+*Default*, *Whitelist* or *Blacklist*. `spec` is `rows`, `columns` (`{ value, label }`), and the
+optional `heading`, `labelHeader` and `disabled`. Cells read and write through the maker seam, so a
+click runs `RefreshScalars`, and a stored value no column carries lights no cell. A click on the lit
+cell writes nothing. Each line is guarded as a flow row is. It returns the row lines.
+
+### `OptionsWidgets.lua` minor 16 — `O.ResolveId`, `O.IdInput`, `O.IdList`
+
+- **`O.ResolveId(kind, text, candidates)`** is pure. It tries, in order:
+  1. a number;
+  2. a link of the kind's own type (`|Hspell:`, `|Hitem:`, `|Hcurrency:`, or the bare
+     `spell:123`);
+  3. the client's name lookup (`C_Spell.GetSpellInfo(name)`, `C_Item.GetItemInfoInstant(name)`);
+  4. a case-insensitive exact name over the host's `candidates()`.
+
+  A name two distinct ids carry is `ambiguous`: two candidates, or the client's step-3 hit and a
+  different id that is either a candidate or one the client enumerates for the kind (an item in
+  the bags, a spell in the spellbook). The client answers one id for a name several share (an
+  item's crafted-quality ranks), so the hit alone would add a rank the player did not pick.
+
+  It returns `id, name, icon`, or `nil, reason` for `empty`, `notFound` or `ambiguous`. `kind` is
+  `"spell"`, `"item"` or `"currency"`, or a host table with its own `resolve`.
+- **`O.IdInput(ctx, parent, spec)`** draws an edit box, an Add button and a status line. Enter or
+  Add resolves the text, clears the box and the status line, then calls `spec.onAdd(id)`, so
+  `onAdd` may redraw the page synchronously. A raising `onAdd` gets both back. On failure it writes
+  the reason in orange and adds nothing.
+
+  The client has no item-name search. `GetItemInfoInstant(name)` answers only for an item the
+  player carries or carried this session, and a candidate the client has not cached has no name to
+  match. So an `IdInput` (or `IdList`) drawn with item `candidates` asks the client for up to 200 of
+  the unnamed ones when it is drawn. Each id is read once a session per instance, and the next
+  build moves on to the next 200, so a redraw rescans nothing. A typed **name**, whether it found an
+  id or not, is **looked up** while some candidates are unnamed, because a hit may be the one rank
+  in the bags of a name whose other ranks are not cached. The unnamed ones are asked for again, 200
+  a window, the status line reads *Looking up items…* in a neutral color, and the text is tried once
+  more when they land. So a shared name is refused as ambiguous rather than one rank added. Each
+  window waits at most five asks at 0.4 s, for every id it asked for, not the first to land. An id
+  still unnamed after that is skipped from then on, so retired ids cannot hold the window, and a
+  lookup runs at most five windows; the next Enter carries on past them. A number or a link never
+  waits. A new submit, a box the player typed over, or a released box drops the lookup.
+
+  A host kind with its own `resolve` joins in by declaring `loads = true` and an `info`, and by
+  passing on the `candidates` its resolver is handed to `O.ResolveId("item", text, candidates)`.
+  ConsumableMaster's Add-by-ID is that shape.
+- **A host kind's `base`.** A host kind whose ids are one library kind's says so with
+  `base = "item"` (or `"spell"`, `"currency"`). It takes `info`, `link`, `tooltip`, `loads`,
+  `noun` and `plural` from the base where it sets none of its own, and wears the base's
+  decorations: an item's quality color on suggestion rows and `IdList` names, the tier icon (or a
+  spell's subtext) on suggestion rows, and the item's tooltip on entries. Its own `resolve`, and any
+  field it sets, `false` included, win. It never takes the base's client name lookup or its bags or
+  spellbook: what it resolves and suggests stay its own. A pick from a based kind's list is handed
+  to its `resolve` first, as the id's digits, and a refusal adds nothing and says why. Without
+  `base`, or with a value no library kind has, a host kind is drawn exactly as before, and its pick
+  still goes straight to `onAdd`. ConsumableMaster's kind, which keeps its own existence checks and
+  its no-active-spec refusal, sets `base` to list *Potion of the Hushed Zephyr*'s three ranks with
+  their tier icons rather than by id alone.
+- **`O.UnnamedCandidates(kind, candidates)`** is pure: the item candidates the client cannot name
+  yet, each once, in the host's order, at most 200 of them. It returns none for spells, currencies,
+  a host kind that does not declare `loads` and `info`, or on a client that cannot load an item.
+- **`O.ID_NAME_HINT`** holds the default hints (`item`, `spell`, `currency`), one copy per instance,
+  for a host's tooltip. The not-found words now say where a name can come from, for example "No item
+  named '…' that the game can find." followed by the item hint, or "No spell named '…' in your
+  spellbook." (`C_Spell.GetSpellInfo(name)` answers only the player's spellbook). The ambiguous
+  words say "pick one from the list, or use the id."
+- **`O.IdList(ctx, spec)`** draws that input plus one line per entry: icon, name, gray id, then
+  Remove, or a checkbox for a toggle entry. An item's name is drawn in its quality color
+  (`C_Item.GetItemQualityByID` through `ITEM_QUALITY_COLORS`), as BankLedger's and LootHistory's
+  own lists drew it. It is drawn plain until the client answers a quality. Spell and currency names
+  are plain. An unknown id reads "Unknown spell 12345". An uncached
+  item is asked for through `LibKa0s-Item-1.0`'s `LoadItem` when present. The ids one render asks
+  for share one check, 0.4 s later, which redraws the list once if any of them is named by then.
+  An id still unnamed is asked for again, up to five asks, then stays "Unknown item N".
+- **Suggestions while typing** (closes #31). `O.IdInput`, and so `O.IdList`, lists up to ten
+  matching entries under the box as the player types, 0.1 s after the last keystroke: icon, name,
+  rank and gray id. Digits match ids by prefix. Two or more characters match names in four tiers
+  (the whole name, its start, the start of a word inside it, anywhere), then by shorter name, name,
+  rank and id. Every rank is its own row, kept together and labeled: an item's crafted or reagent
+  quality tier as the client's tier icon, a spell's subtext. More than ten ends in "+N more". The
+  rows come from `candidates()`, plus the bags for items and the spellbook for spells; a currency
+  has the candidates alone. A click, or Up/Down and Enter, adds that id through `onAdd`. Enter with
+  nothing highlighted still submits the typed text, so a shared name is still refused as ambiguous,
+  and the refusal opens the list for that text at once, so "pick one from the list" has a list to
+  pick from, even for Enter inside the debounce or a lookup's last try. Add's refusal hands the box
+  the keys first. A second Enter with nothing highlighted refuses again, so no rank is added
+  unpicked. A keystroke drops the highlight at once, so Enter inside the debounce never takes a
+  row the new text no longer matches. Escape, focus loss, the panel hiding and a redraw close it, and drop an update still
+  waiting on the debounce whether or not the box shows the list yet, so no list goes up under a box
+  the player has left. Focus lost to a click on the dropdown's backdrop goes back to the box, so
+  Escape still reaches it. The list is as wide as the box at the dropdown's own scale. There is one
+  dropdown frame per instance, its rows built once, at `FULLSCREEN_DIALOG` strata over the panel.
+  One render names at most 2000 ids, once, and each keystroke scans those names and re-reads at most
+  200 unnamed ones.
+  No member is added. ConsumableMaster lists every rank by passing `candidates`.
+
+The widgets never write a path, so the host keeps its stored shape. After an add or a remove,
+`O.IdList` redraws through `ctx.rebuild` when the host set one, and otherwise through
+`O.RefreshAllPanels()`. The words are a per-call `spec.strings` table, not `lib.STRINGS` keys. Three keys join
+`add`, `remove`, `empty`, `notFound`, `ambiguous` and `unknown`: `looking`, `nameHint` and `more`.
+Thirty-six cases in `tests/test_options_idsuggest.lua` pin the suggestions, six of them a based
+host kind's rows, picks, resolution, the host's own `false` winning over its base, and its view
+being collected with a kind built per render (on WoW's Lua 5.1, which has no ephemerons, the view
+cache is weak on its values as well as its keys); two in `tests/test_options_widgets.lua` pin a based
+kind's entry lines and a host kind without one. What the headless
+suite cannot see, and what a host should know, is in the Options 18.16.5.3 API doc under
+*Suggestions while typing*: the dropdown following a scrolled box past the page's clip edge, the
+200-id pre-warm the suggestions read from, and the index built once per render.
+
+The design's `O.IdInput(ctx, spec)` shipped as `O.IdInput(ctx, parent, spec)`, with `parent`
+defaulting to the page scroll, so ConsumableMaster can draw the line into its own container.
+
+### Kit revision 20 — `mock_ids.lua`
+
+It is opt-in, and a harness calls it after defining its own `C_Item` and `C_CurrencyInfo`:
+`dofile("tests/_kit/mock_ids.lua")(M)`. It fills only the keys the harness lacks. It provides
+`C_Spell.GetSpellInfo`, `C_Item.GetItemInfoInstant`, `C_Item.GetItemNameByID`,
+`C_Item.GetItemQualityByID` and `C_CurrencyInfo.GetCurrencyInfo`, looked up by id or by a
+case-insensitive name. `M.addIdRecord` and `M.clearIdRecords` seed the records. An item record's
+optional sixth argument is its quality, which is nil while the item is uncached.
+
+It lives in a file of its own, and the base mock stays clear of these namespaces, for two reasons.
+ConsumableMaster, WhatGroup and MultiMeters reach their Compat fallbacks by clearing `C_Spell` or
+`C_Item`. And `mock_base.lua` is 1487 lines against `layout-§1`'s cap of 1500. The AceGUI fake gains
+`GetText`, `SetType` and `DisableButton`.
+
+What `O.IdInput`'s suggestions read is a second opt-in, `M.installIdSuggestions()`. It fills, only
+where missing, `C_Container`'s bag walk, `C_SpellBook`'s enumeration, `C_TradeSkillUI`'s two
+quality-tier lookups and `C_Spell.GetSpellSubtext`, seeded with `M.setBagItems`, `M.setSpellBook`,
+`M.setCraftedQuality`, `M.setReagentQuality` and `M.setSpellSubtext`. It also gives the AceGUI
+fake's EditBox the `editbox` input frame the keys land on. It is not part of the plain install or
+the base, because ConsumableMaster walks its bags through `_G.C_Container`, which a mock-level
+namespace would shadow, and PanelMaster's harness adds its own `editbox` only when there is none.
+
 ## v1.34.0 — 2026-09-13
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

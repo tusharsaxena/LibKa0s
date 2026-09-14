@@ -18,8 +18,8 @@ What that leaves, concretely:
   `versioning-git`; `line-endings` (the library ships Lua into every consumer's client-bound
   `libs/`, so it takes the CRLF pin — named explicitly upstream because a library repo has no `.toc`
   and `line-endings-§2`'s discriminator would otherwise read it as non-client); `localization-§5`
-  (US English in authored text — a British spelling here is vendored into eight consumers and
-  becomes eight findings); `documentation-§5`; `documentation-§7`.
+  (US English in authored text — a British spelling here is vendored into ten consumers and
+  becomes ten findings); `documentation-§5`; `documentation-§7`.
 - **Does not apply:** `documentation-§1`'s player-facing README structure and badge row;
   `documentation-§2`'s addon `CLAUDE.md` stub as written (this file is the substitute);
   `documentation-§3`'s `docs/` trio, its five verification-and-record docs **and its whole
@@ -56,7 +56,7 @@ two things it is:
 
 When in doubt, treat standard conformance as a hard requirement and ask.
 
-**One extra rule this repo carries, because it is upstream of eight others.** Everything in
+**One extra rule this repo carries, because it is upstream of ten others.** Everything in
 `LibKa0s/` and `testkit/` is **vendored** — into `<Addon>/libs/LibKa0s/` and `<Addon>/tests/_kit/`
 respectively. A defect shipped from here reappears in every consumer, and a fix is only real once it
 is re-vendored. Never patch a vendored copy downstream; fix it here and copy across.
@@ -66,7 +66,7 @@ is re-vendored. Never patch a vendored copy downstream; fix it here and copy acr
 | Rule | What differs | Why | Decided | Re-check trigger |
 |---|---|---|---|---|
 | `localization-§5` | `testkit/mock_base.lua` reproduces AceTimer-3.0's handle field `cancelled` (as a member access, `.cancelled`) and the `IsCancelled` method of Blizzard's `C_Timer` handles, verbatim | Third-party API identifiers, not prose. The kit's AceTimer fake hands out AceTimer's own handle table, and a suite written against the real field reads `handle.cancelled`; a kit that renamed it would answer nil there and pass, which is fidelity rule 1's failure (`testkit/mock_base.lua`'s header). The same for `IsCancelled`, which a `C_Timer.NewTimer` handle answers in the client. `tests/test_prose.lua`'s `RATIFIED` carries exactly these two spellings for exactly this file, matched as `.cancelled` and `iscancelled`, so prose in the same file is still held to US English. Filed by the v1.31.0 review. | 2026-09-12, owner decision on the v1.31.0 review | AceTimer renames the field, or the kit stops modeling the handle (and `C_Timer` renames `IsCancelled`, or the kit stops modeling `NewTimer` handles). `tests/test_prose.lua` reddens on its own if either exemption stops matching. |
-| `localization-§5` | `lib.ICONS` keeps `minimise`, the one British spelling left in the shipped payload | The key is not prose. `lib.Icon` (`LibKa0s/Media.lua:202`) builds the texture path **from** the key — `base .. ICON_DIR .. "\\" .. name` — and the file on disk is `minimise.tga`, vendored into every consumer's `libs/LibKa0s/media/icons/`. Renaming the key alone points at a texture that does not exist, and `Media.lua:190-196` records what that costs: a texture that fails to load draws nothing and raises nothing, so the icon simply disappears from every consumer's title bar with no error anywhere. Renaming it safely needs a second `.tga` or an alias map, which is a change to `Media.lua`'s surface, not a spelling fix. Filed as `LK-06` in `docs/audits/2026-09-07/`, which names the key as "a key consumers bind against" and asks for an alias rather than a rename. | 2026-09-07, executing `M1-LK-11` | A `minimize.tga` shipped beside the current file, or an alias map in `lib.Icon` — either ends this row, and the key moves in the same change as the eight consumers' re-vendor. `tests/test_prose.lua` reddens on its own if the exemption ever stops matching, so a dead row cannot sit here unnoticed. |
+| `localization-§5` | `lib.ICONS` keeps `minimise`, the one British spelling left in the shipped payload | The key is not prose. `lib.Icon` (`LibKa0s/Media.lua:202`) builds the texture path **from** the key — `base .. ICON_DIR .. "\\" .. name` — and the file on disk is `minimise.tga`, vendored into every consumer's `libs/LibKa0s/media/icons/`. Renaming the key alone points at a texture that does not exist, and `Media.lua:190-196` records what that costs: a texture that fails to load draws nothing and raises nothing, so the icon simply disappears from every consumer's title bar with no error anywhere. Renaming it safely needs a second `.tga` or an alias map, which is a change to `Media.lua`'s surface, not a spelling fix. Filed as `LK-06` in `docs/audits/2026-09-07/`, which names the key as "a key consumers bind against" and asks for an alias rather than a rename. | 2026-09-07, executing `M1-LK-11` | A `minimize.tga` shipped beside the current file, or an alias map in `lib.Icon` — either ends this row, and the key moves in the same change as the ten consumers' re-vendor. `tests/test_prose.lua` reddens on its own if the exemption ever stops matching, so a dead row cannot sit here unnoticed. |
 
 **Two rows, and neither is prose**: a path fragment, and two third-party API identifiers. The table
 is otherwise empty on purpose:
@@ -132,7 +132,7 @@ deliverable was the disposition, and the disposition is this table.
 
 **The 1000–1500 band is on notice, not in breach**: `tests/test_widgets.lua` (1493),
 `tests/test_options.lua` (1266), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1231 at v1.34.0, tracked as
-[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1284 at v1.34.0), since kit revision 17 `testkit/mock_base.lua` (1482 at kit revision 19, eighteen lines from the cap) and, since v1.34.0, `tests/test_slash.lua` (1034). They are
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1284 at v1.34.0), since kit revision 17 `testkit/mock_base.lua` (1487 at kit revision 20, thirteen lines from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that reason) and, since v1.34.0, `tests/test_slash.lua` (1034). They are
 named so a later reader can tell the band was looked at rather than missed; none needs a disposition
 until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
@@ -179,6 +179,6 @@ lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for w
 luacheck .          # 0 warnings / 0 errors
 ```
 
-That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — fifty-five
-files at v1.34.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
+That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — fifty-seven
+files at v1.35.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
 only means something if the files carrying the change are inside the checked set.
