@@ -57,7 +57,7 @@ ignore = { "212/self", "212/event", "432/self" }
 -- would let the copy drift green while the original went red.
 --
 -- The kit publishes its exposed table under a per-repo global -- `LK_TEST` here, written at
--- tests/run.lua:95 and read by every suite file. It is declared in this stanza rather than in the
+-- tests/run.lua:37 and read by every suite file. It is declared in this stanza rather than in the
 -- top-level `read_globals` on purpose: a name declared at the top level is a name `LibKa0s/*.lua`
 -- may then read unchallenged, and no shipped library file may ever reach for the harness.
 -- `globals` rather than `read_globals` because tests/run.lua is the writer.
