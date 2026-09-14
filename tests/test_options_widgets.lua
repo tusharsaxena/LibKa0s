@@ -390,10 +390,11 @@ end)
 
 -- ── ChoiceGrid (minor 16) ─────────────────────────────────────────────────────────────────
 --
--- A matrix of radio cells over rows that share one value list: a Filters tab's categories, each
--- one Default / Whitelist / Blacklist. Before this a host either drew three dropdowns' worth of
--- layout code itself (options-ui-§6 forbids it) or a dropdown per row, which hides the choice
--- behind a click. The rows are plain path rows in the fixture's store, which takes any key.
+-- A matrix of one-choice-per-row checkbox cells over rows that share one value list: a Filters
+-- tab's categories, each one Default / Whitelist / Blacklist. Before this a host either drew
+-- three dropdowns' worth of layout code itself (options-ui-§6 forbids it) or a dropdown per row,
+-- which hides the choice behind a click. The rows are plain path rows in the fixture's store,
+-- which takes any key.
 
 local GRID_COLUMNS = {
   { value = "",     label = "Default" },
@@ -408,7 +409,8 @@ local function gridRows()
   }
 end
 
---- The radio cells of one grid line, in column order.
+--- The choice cells of one grid line, in column order. Named `radiosOf` for the exclusive,
+--- radio-like BEHAVIOR the cells hold, not their widget type -- they are plain CheckBoxes.
 local function radiosOf(line)
   local out = {}
   for _, w in ipairs(line.children) do
@@ -552,20 +554,59 @@ test("widgets: ChoiceGrid reads and writes a path-less row through its own get/s
   assertEqual(held, "", "written through row.set")
 end)
 
-test("widgets: ChoiceGrid radios are radio-typed", function()
+--- A fake check texture: records what choiceFill paints on it, the same three calls a real
+--- Texture answers (SetTexture / SetVertexColor / SetTexCoord), plus SetSize.
+local function fakeCheckTexture()
+  local tex = { calls = {} }
+  function tex:SetTexture(path) self.texturePath = path end
+  function tex:SetVertexColor(r, g, b) self.vertexColor = { r, g, b } end
+  function tex:SetTexCoord(...) self.texCoord = { ... } end
+  function tex:SetSize(w, h) self.size = { w, h } end
+  return tex
+end
+
+test("widgets: ChoiceGrid cells are checkboxes, never radios, and the lit one carries the fill", function()
   local O, _, ctx = bench()
   local ace = O.AceGUI
   local realCreate = ace.Create
+  local checkBoxes = {}
   ace.Create = function(self, wtype)
     local w = realCreate(self, wtype)
-    if wtype == "CheckBox" then function w:SetType(t) self.checkType = t end end
+    if wtype == "CheckBox" then
+      -- red under: choiceCell calling SetType("radio") again
+      function w:SetType(t) self.checkType = t end
+      w.check = fakeCheckTexture()
+      checkBoxes[#checkBoxes + 1] = w
+    end
     return w
   end
   local ok, lines = pcall(O.ChoiceGrid, ctx, { rows = gridRows(), columns = GRID_COLUMNS })
   ace.Create = realCreate
   assertTrue(ok, tostring(lines))
-  -- red under: dropping SetType("radio") (the cells would draw as square checkboxes)
-  for _, cb in ipairs(radiosOf(lines[1])) do assertEqual(cb.checkType, "radio") end
+
+  for _, cb in ipairs(checkBoxes) do
+    assertNil(cb.checkType, "SetType was never called: the cell stays an ordinary checkbox")
+  end
+
+  -- alpha holds "show" (Whitelist, column 2 of GRID_COLUMNS)
+  local radios = radiosOf(lines[1])
+  local lit, unlit = radios[2], radios[1]
+  -- red under: the lit cell losing its fill texture
+  assertEqual(lit.__checkTexture.texturePath, "Interface\\Buttons\\WHITE8X8",
+    "the lit cell's check region is painted with the solid fill")
+  assertTrue(lit.__checkTexture.vertexColor ~= nil, "and tinted")
+  -- choiceFill runs unconditionally per cell, lit or not: it paints the check REGION, not the
+  -- lit state, which SetValue still carries.
+  assertTrue(unlit.__checkTexture ~= nil, "every cell's check region is painted the same way")
+end)
+
+test("widgets: choiceFill is guarded when a host's AceGUI fake carries no check texture", function()
+  local O, _, ctx = bench()
+  -- The stock fixture's CheckBox carries no .check and no .frame.check (see mock_base.lua), so
+  -- this exercises the real, unmodified O.AceGUI:Create("CheckBox") fake.
+  local lines = O.ChoiceGrid(ctx, { rows = gridRows(), columns = GRID_COLUMNS })
+  -- red under: choiceFill raising instead of returning nil when no paintable texture exists
+  for _, cb in ipairs(radiosOf(lines[1])) do assertNil(cb.__checkTexture) end
 end)
 
 test("widgets: ChoiceGrid disables a row's cells by its disabledIf", function()
