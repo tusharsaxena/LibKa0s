@@ -760,6 +760,25 @@ test("widgets: an extraColumn cell that raises costs only that cell, not the lin
   assertEqual(lines[2].children[5].text, "See spells", "the row after it drew normally")
 end)
 
+test("widgets: an extraColumn cell with a non-function onClick draws without wiring a handler", function()
+  -- red under: `if cell.onClick then` treating a truthy non-function as callable, raising at
+  -- click-time inside a settings page render (checked with `type(cell.onClick) == "function"`)
+  local _, _, _, lines = drawGrid(nil, {
+    extraColumn = {
+      header = "Spells",
+      cell = function(row)
+        if row.label ~= "Alpha" then return nil end
+        return { text = "See spells", onClick = "not-a-function" }
+      end,
+    },
+  })
+  local link = lines[1].children[5]
+  assertEqual(link.type, "InteractiveLabel")
+  assertEqual(link.text, "See spells")
+  -- firing OnClick must not raise, and must not call the malformed value
+  link:__fire("OnClick")
+end)
+
 test("widgets: an extraColumn narrows the label column, and the line still fits one Flow row", function()
   local _, _, _, lines = drawGrid(nil, {
     extraColumn = { header = "Spells", cell = function() return nil end },

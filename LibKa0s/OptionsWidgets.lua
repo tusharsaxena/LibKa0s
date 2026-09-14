@@ -2621,7 +2621,9 @@ function lib.__AttachWidgets(O, d)
     x:SetRelativeWidth(CHOICE_EXTRA_REL)
     if ok and cell then
       x:SetText(cell.text or "")
-      if cell.onClick then x:SetCallback("OnClick", function() cell.onClick() end) end
+      if type(cell.onClick) == "function" then
+        x:SetCallback("OnClick", function() cell.onClick() end)
+      end
       if cell.tooltip then O.AttachTooltip(x, cell.text or "", cell.tooltip) end
     else
       x:SetText("")
