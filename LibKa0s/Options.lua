@@ -1280,12 +1280,17 @@ function lib:New(d)
   ---
   --- The caller opens the page (a host's own OpenToCategory wrapper, with its own combat gate);
   --- this only moves the tab.
+  ---
+  --- Refreshes ONLY the target page (`O.RefreshPanel(ctx, true)` -- a tab switch is a shape
+  --- change), never a sweep. A player with more than one of this library's pages rendered in a
+  --- session must not have every other one rebuilt -- and its transient UI state (an open
+  --- dropdown, scroll position) dropped -- by a link that only meant to move one page's tab.
   --- @return boolean  whether a rendered panel with that page key was found and its tab set
   function O.SelectTab(pageKey, tabKey)
     local ctx = O.__panelFor(pageKey)
     if not ctx then return false end
     ctx.activeTab = tabKey
-    O.RefreshAllPanels()
+    O.RefreshPanel(ctx, true)
     return true
   end
 
