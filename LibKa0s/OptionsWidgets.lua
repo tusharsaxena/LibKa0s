@@ -3490,6 +3490,15 @@ function lib.__AttachWidgets(O, d)
     lbl:SetRelativeWidth(ID_MAIN_REL)
     entryTooltip(lbl, k, entry.id)
     line:AddChild(lbl)
+    -- The note: a second line under the name, in the gray the id already uses, for a host that has
+    -- something to say about this entry (why it is or is not drawn, say). Its own line rather than
+    -- a suffix, because a note is a sentence and a name is a name.
+    if type(entry.note) == "string" and entry.note ~= "" then
+      local n = O.AceGUI:Create("Label")
+      n:SetText(ID_GRAY .. entry.note .. "|r")
+      n:SetRelativeWidth(ID_MAIN_REL)
+      line:AddChild(n)
+    end
     entryAction(ctx, spec, entry, line)
   end
 
@@ -3534,14 +3543,16 @@ function lib.__AttachWidgets(O, d)
 
   --- An editable id list (minor 16): an optional heading, the O.IdInput line, then one line per
   --- entry -- icon, name and id in gray ("Unknown spell 12345" when the client cannot name it),
-  --- then Remove, or a checkbox for a toggle entry. An item's name is drawn in its quality color
+  --- optionally a note line under the name in the same gray (K-3, drawn only when the entry
+  --- carries one), then Remove, or a checkbox for a toggle entry. An item's name is drawn in its quality color
   --- once the client answers one; spell and currency names are plain. An item the client has not cached is asked
   --- for through LibKa0s-Item-1.0's LoadItem. Every id a render asks for joins one batch, checked
   --- once 0.4 s later: the list is drawn again once if any of them is named by then, and an id
   --- still unnamed is asked for again, up to five asks in all.
   ---
   --- spec = everything O.IdInput takes, plus:
-  ---   entries     = function() -> ordered { { id =, toggle = bool?, on = bool? }, ... };
+  ---   entries     = function() -> ordered { { id =, toggle = bool?, on = bool?, note = string? },
+  ---                 ... };
   ---   onRemove    = function(id), from an entry's Remove;
   ---   onToggle    = function(id, on), from a toggle entry's checkbox;
   ---   heading     = optional section heading, drawn with O.Section;

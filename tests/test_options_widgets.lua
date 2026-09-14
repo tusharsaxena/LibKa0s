@@ -1119,6 +1119,30 @@ test("IdList: one line per entry -- icon, name and gray id, then Remove or a che
   assertTrue(toggle.value, "seeded from the entry")
 end)
 
+test("IdList: an entry's note is drawn under its name, and only when it has one", function()
+  local _, _, _, lines = listBench({
+    { id = 21562, note = "also in Defensives (Hide) - hidden by rule 3" }, { id = 774, toggle = true },
+  })
+  -- red under: `note` ignored, or drawn for an entry that carries none
+  local noted = lines[1].children[2]
+  assertEqual(noted.type, "Label")
+  assertEqual(noted.text, "|cff808080also in Defensives (Hide) - hidden by rule 3|r")
+  -- with a note present the note line sits between the name and the action widget
+  assertEqual(lines[1].children[3].type, "Button")
+  -- an entry with no note draws only the name and the action widget, unchanged
+  assertEqual(#lines[2].children, 2, "no note line inserted for an entry without one")
+  assertEqual(lines[2].children[2].type, "CheckBox")
+end)
+
+test("IdList: an empty-string or non-string note draws nothing", function()
+  local _, _, _, lines = listBench({
+    { id = 21562, note = "" }, { id = 774, toggle = true, note = 42 },
+  })
+  -- red under: an empty or non-string note drawing a blank/garbage line anyway
+  assertEqual(#lines[1].children, 2, "an empty note draws no line")
+  assertEqual(#lines[2].children, 2, "a non-string note draws no line")
+end)
+
 test("IdList: Remove and a toggle call the host back, and Remove asks for a rebuild", function()
   local _, _, _, lines, log = listBench({ { id = 21562 }, { id = 774, toggle = true, on = true } })
   lines[1].children[2]:__fire("OnClick")
