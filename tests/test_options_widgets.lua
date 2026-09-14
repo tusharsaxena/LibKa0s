@@ -696,6 +696,92 @@ test("widgets: ChoiceGrid with no AceGUI draws nothing", function()
   end)
 end)
 
+-- ── ChoiceGrid extraColumn (minor 17) ──────────────────────────────────────────────────────
+--
+-- A per-row link after the label, so a host (Aura Master's Spell Categories tab) can send the
+-- player from a category's grid line to that category's own spell list without drawing any
+-- layout code of its own.
+
+test("widgets: an extraColumn draws a header cell and a clickable per-row link, wired to onClick", function()
+  -- red under: extraColumn absent from the header or the line (the host has nowhere to draw its link)
+  local clicked
+  local O, _, ctx, lines, rows = drawGrid(nil, {
+    extraColumn = {
+      header = "Spells",
+      cell = function(row)
+        if row.label ~= "Alpha" then return nil end
+        return { text = "See spells", onClick = function() clicked = row.label end }
+      end,
+    },
+  })
+  local header = Fixture.flowRows(O.EnsureScroll(ctx))[1]
+  assertEqual(header.children[5].text, "Spells", "the extra header lands after the label heading")
+
+  local link = lines[1].children[5]
+  assertEqual(link.type, "InteractiveLabel", "a live cell renders as a clickable label")
+  assertEqual(link.text, "See spells")
+  link:__fire("OnClick")
+  assertEqual(clicked, rows[1].label, "the row's own onClick fired")
+end)
+
+test("widgets: an extraColumn's nil cell draws a blank of the same width, so rows stay aligned", function()
+  local _, _, _, lines = drawGrid(nil, {
+    extraColumn = {
+      header = "Spells",
+      cell = function(row)
+        if row.label ~= "Alpha" then return nil end
+        return { text = "See spells", onClick = function() end }
+      end,
+    },
+  })
+  local blank = lines[2].children[5]
+  -- red under: a nil cell collapsing the line instead of drawing a same-width placeholder
+  assertEqual(blank.type, "Label")
+  assertEqual(blank.text, "")
+  assertNear(blank.relativeWidth, lines[1].children[5].relativeWidth, 1e-6,
+    "the blank matches the live cell's width")
+end)
+
+test("widgets: an extraColumn cell that raises costs only that cell, not the line or the grid", function()
+  local _, _, _, lines = drawGrid(nil, {
+    extraColumn = {
+      header = "Spells",
+      cell = function(row)
+        if row.label == "Alpha" then error("host cell exploded") end
+        return { text = "See spells", onClick = function() end }
+      end,
+    },
+  })
+  -- red under: extra.cell called unguarded (a raising host cell would take the whole line down)
+  assertEqual(#lines, 2, "both lines still drew")
+  assertEqual(lines[1].children[4].text, "Alpha", "the row's own label still drew")
+  assertEqual(lines[1].children[5].type, "Label", "the raised cell fell back to a blank")
+  assertEqual(lines[1].children[5].text, "")
+  assertEqual(lines[2].children[5].text, "See spells", "the row after it drew normally")
+end)
+
+test("widgets: an extraColumn narrows the label column, and the line still fits one Flow row", function()
+  local _, _, _, lines = drawGrid(nil, {
+    extraColumn = { header = "Spells", cell = function() return nil end },
+  })
+  for _, line in ipairs(lines) do
+    local label = line.children[4]
+    local extra = line.children[5]
+    assertTrue(label.relativeWidth > 0 and label.relativeWidth + 3 * 0.12 + extra.relativeWidth <= 1,
+      "the label gave back the extra column's width, and the line still fits")
+  end
+end)
+
+test("widgets: with no extraColumn, ChoiceGrid's line shape is unchanged", function()
+  -- red under: choiceLabelRel counting a nil extraColumn as present and shrinking the label anyway
+  local _, _, _, lines = drawGrid()
+  for _, line in ipairs(lines) do
+    assertEqual(#line.children, 4, "three cells and the label, nothing more")
+    local label = line.children[4]
+    assertTrue(label.relativeWidth > 0 and label.relativeWidth + 3 * 0.12 <= 1)
+  end
+end)
+
 -- ── ResolveId / IdInput / IdList (minor 16) ────────────────────────────────────────────────
 --
 -- An id list a player edits by typing a number, pasting a link or typing a name. Before this each

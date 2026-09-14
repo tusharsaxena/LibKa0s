@@ -2524,6 +2524,10 @@ function lib.__AttachWidgets(O, d)
   -- line summing to exactly 1 can wrap its last cell on a float rounding.
   local CHOICE_CELL_REL   = 0.12
   local CHOICE_CLIP_INSET = 0.02
+  -- The optional extra link column's width (K-2): a host's "See spells" after the row's label,
+  -- opening another settings page at that row's list. The label column gives this back, the same
+  -- way it gives back CHOICE_CLIP_INSET, so the line still fits one Flow row.
+  local CHOICE_EXTRA_REL  = 0.18
   -- The label column's heading when the host names none. A literal, as lib.STRINGS' own are: the
   -- library carries no locale, and a host that has one passes `labelHeader`.
   local CHOICE_LABEL_HEADER = "Category"
@@ -2533,12 +2537,17 @@ function lib.__AttachWidgets(O, d)
   -- widget is left an ordinary CheckBox and the check glyph is replaced by a solid swatch.
   local CHOICE_FILL_R, CHOICE_FILL_G, CHOICE_FILL_B = 1, 0.82, 0
 
-  local function choiceLabelRel(columnCount)
-    return math.max(1 - columnCount * CHOICE_CELL_REL - CHOICE_CLIP_INSET, CHOICE_CELL_REL)
+  -- `hasExtra` is a boolean, not the extraColumn table itself: callers pass `extra ~= nil` so a
+  -- spec with no extraColumn takes exactly the path it always did, and the label column's width is
+  -- byte-for-byte what it was before K-2.
+  local function choiceLabelRel(columnCount, hasExtra)
+    local taken = columnCount * CHOICE_CELL_REL + (hasExtra and CHOICE_EXTRA_REL or 0)
+    return math.max(1 - taken - CHOICE_CLIP_INSET, CHOICE_CELL_REL)
   end
 
-  --- The header line: each column's label over its cells, then the label column's heading.
-  local function choiceHeader(scroll, columns, labelHeader)
+  --- The header line: each column's label over its cells, then the label column's heading, then
+  --- `extra.header` when the host asked for a link column (K-2).
+  local function choiceHeader(scroll, columns, labelHeader, extra)
     local line = startRow(O)
     for _, col in ipairs(columns) do
       local lbl = O.AceGUI:Create("Label")
@@ -2548,8 +2557,14 @@ function lib.__AttachWidgets(O, d)
     end
     local lbl = O.AceGUI:Create("Label")
     lbl:SetText(labelHeader or CHOICE_LABEL_HEADER)
-    lbl:SetRelativeWidth(choiceLabelRel(#columns))
+    lbl:SetRelativeWidth(choiceLabelRel(#columns, extra ~= nil))
     line:AddChild(lbl)
+    if extra then
+      local x = O.AceGUI:Create("Label")
+      x:SetText(extra.header or "")
+      x:SetRelativeWidth(CHOICE_EXTRA_REL)
+      line:AddChild(x)
+    end
     scroll:AddChild(line)
   end
 
@@ -2597,34 +2612,54 @@ function lib.__AttachWidgets(O, d)
     line:AddChild(cb)
   end
 
-  --- Fill one row's line: its cells, then its label carrying the row's tooltip. The label dims
-  --- with the cells, so a disabled row reads as disabled across the whole line.
-  local function choiceLine(ctx, row, columns, line)
+  --- Draw the extra link column's cell for `row`, blank when `extra.cell` returns nil. Guarded on
+  --- its own -- `extra.cell` is host code and may raise -- so a raise costs this one cell, not the
+  --- line and not the grid, the same shape renderRowGuarded holds for a whole row.
+  local function choiceExtraCell(extra, row, line)
+    local ok, cell = pcall(extra.cell, row)
+    local x = O.AceGUI:Create((ok and cell) and "InteractiveLabel" or "Label")
+    x:SetRelativeWidth(CHOICE_EXTRA_REL)
+    if ok and cell then
+      x:SetText(cell.text or "")
+      if cell.onClick then x:SetCallback("OnClick", function() cell.onClick() end) end
+      if cell.tooltip then O.AttachTooltip(x, cell.text or "", cell.tooltip) end
+    else
+      x:SetText("")
+    end
+    line:AddChild(x)
+  end
+
+  --- Fill one row's line: its cells, then its label carrying the row's tooltip, then the extra
+  --- link column's cell when the host asked for one (K-2). The label dims with the cells, so a
+  --- disabled row reads as disabled across the whole line.
+  local function choiceLine(ctx, row, columns, line, extra)
     for _, col in ipairs(columns) do choiceCell(ctx, row, col, line) end
     local lbl = O.AceGUI:Create("InteractiveLabel")
     lbl:SetText(row.label or row.path)
-    lbl:SetRelativeWidth(choiceLabelRel(#columns))
+    lbl:SetRelativeWidth(choiceLabelRel(#columns, extra ~= nil))
     local applyDisabled = bindDisabled(ctx, row, lbl)
     if applyDisabled ~= noop then ctx.refreshers[#ctx.refreshers + 1] = applyDisabled end
     O.AttachTooltip(lbl, row.label, tooltipBody(row))
     line:AddChild(lbl)
+    if extra then choiceExtraCell(extra, row, line) end
   end
 
   --- The grid's body, under the disable flag O.ChoiceGrid holds for it.
   local function drawChoiceGrid(ctx, scroll, spec)
     local columns = spec.columns or {}
+    local extra = spec.extraColumn
     if spec.heading then
       O.Section(ctx, spec.heading)
       ctx.lastGroup = spec.heading
     end
-    choiceHeader(scroll, columns, spec.labelHeader)
+    choiceHeader(scroll, columns, spec.labelHeader, extra)
 
     -- Guarded per line, as RenderRows guards per row: a row whose `get` raises costs that line
     -- and is reported, and every line after it still draws. A half-built line is not added.
     local lines = {}
     for _, row in ipairs(spec.rows or {}) do
       local line = startRow(O)
-      if renderRowGuarded(print, row.path or row.label, choiceLine, ctx, row, columns, line) then
+      if renderRowGuarded(print, row.path or row.label, choiceLine, ctx, row, columns, line, extra) then
         scroll:AddChild(line)
         lines[#lines + 1] = line
       end
@@ -2651,6 +2686,11 @@ function lib.__AttachWidgets(O, d)
   ---   labelHeader = optional heading for the label column ("Category" when absent).
   ---   disabled    = optional; draws every cell disabled, as RenderRows' `opts.disabled` does. A
   ---                 grid drawn inside a disabled render inherits that render's flag either way.
+  ---   extraColumn = optional (K-2), a link column after the row label: { header = <string>,
+  ---                 cell = function(row) -> { text =, onClick =, tooltip = } | nil }. The label
+  ---                 column gives back this column's width, so the line still fits one Flow row.
+  ---                 `cell` is host code and may raise; a raise costs only that row's cell, drawn
+  ---                 as a blank Label, same as a `nil` return -- rows stay aligned either way.
   --- }
   ---
   --- Returns the row lines (full-width Flow SimpleGroups) in row order; a row that failed to draw
