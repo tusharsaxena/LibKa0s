@@ -278,10 +278,12 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the copy window still shows the whole buffer, in order
 - dbg: the copy window re-anchors to the console instead of a fixed centre
 
-### test_slash.lua (92)
+### test_slash.lua (94)
 
-- sl: an empty message prints the help index
+- sl: an empty message runs the host's config verb (minor 11), printing no help
 - sl: whitespace-only input is treated as empty
+- sl: a host with no config verb still gets the help index for an empty message
+- sl: `help` prints the help index
 - sl: an unknown verb names it, then prints the help index
 - sl: the verb is lowercased but the argument keeps its case
 - sl: an alias is rewritten to its target verb
@@ -1149,7 +1151,7 @@ badge and any count quoted in the docs must agree with it.
 | test_media.lua | 15 |
 | test_widgets.lua | 81 |
 | test_debuglog.lua | 67 |
-| test_slash.lua | 92 |
+| test_slash.lua | 94 |
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
@@ -1172,4 +1174,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1042** |
+| **Total** | **1044** |

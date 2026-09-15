@@ -10,6 +10,18 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.38.0 — 2026-09-16
+
+Versions in this release: **Slash minor 11**. Every other major is unchanged from v1.37.0.
+
+**Bare `/<slash>` runs the host's `config` verb; `help` prints the index** (Ka0s WoW Addon Standard
+v2.50.0, `slash-commands-§4`). Through minor 10 an empty line printed the help index. The collection
+owner changed that for every addon: bare `/<slash>` now opens the settings panel on its landing page,
+which renders the same `COMMANDS` table, and the list is one word away at `/<slash> help`. The
+dispatcher finds the host's `config` entry (a reserved verb every Ka0s addon carries) and calls it
+with an empty remainder, so the panel's own combat refusal is what a player in a fight sees. A host
+with no `config` verb still gets the index. No member or descriptor field is added.
+
 ## v1.37.0 — 2026-09-16
 
 Versions in this release: **OptionsCompose minor 6**. Every other major is unchanged from v1.36.2.

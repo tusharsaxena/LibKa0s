@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 10
+# `LibKa0s-Slash-1.0` — version 11
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **10** |
-| Shipped in | v1.34.0 |
-| Status | Superseded |
-| Supersedes | [version 9](./version-9-docs.md) |
-| Superseded by | [version 11](./version-11-docs.md) |
+| Files and minors | `Slash.lua` minor **11** |
+| Shipped in | v1.38.0 |
+| Status | **Current** |
+| Supersedes | [version 10](./version-10-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 10 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 11 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -35,6 +35,28 @@ Like DebugLog, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon fram
 returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
+
+**One behavior moves: an empty line runs the host's `config` verb instead of printing the help
+index.** No member is added, removed, renamed or resignatured, and no descriptor field is added. The
+member manifest differs from version 10's in the minor alone.
+
+The Ka0s WoW Addon Standard v2.50.0 (`slash-commands-§4`) made bare `/<slash>` open the settings
+panel on its landing page, and `/<slash> help` the command list. `OnSlash("")` (and whitespace-only
+input) now finds the host's `config` entry in `commands` and calls its handler with `""`. The panel's
+own combat refusal, if it has one, is therefore what a player in a fight sees. A host with no
+`config` entry gets the help index, exactly as through version 10. `help`, an unknown verb (which
+still names it and prints the index), aliases and every other verb are unchanged.
+
+### What the host does
+
+- **Nothing in code**, if its `config` verb opens the settings panel on its landing page: bare
+  `/<slash>` does that from the re-vendor on.
+- **Its library-absent Slash stub**, if it mirrors the dispatcher (an `if raw == "" then PrintHelp`
+  branch), should mirror the new behavior so a degraded install answers the same way.
+- **Its tests and docs** that describe bare `/<slash>` as the help index move to `/<slash> help`.
+
+### Previously, at version 10
+
 
 **One behavior moves: a `string` row's value is the whole remainder, trimmed at both ends, not its
 first token.** No member is added, removed, renamed or resignatured, and no descriptor field is
@@ -73,7 +95,7 @@ after the path, so nothing changed there: the change is in how `lib.ParseValue` 
 handed. A path with no value still reaches the parser as `""`, and still prints
 `Invalid value for <path>` and `  expected a value`, writing nothing.
 
-### What the host does
+#### What the host did
 
 - **No descriptor `parse`:** nothing. A free-text row accepts several words and an enum entry with a
   space is settable, from the re-vendor on.
@@ -384,7 +406,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `OnSlash(msg)` | 1 | The entry point. An empty line prints help; otherwise the first token is lowercased, mapped through `aliases`, and dispatched. Only the verb is lowercased — `rest` keeps its case, because schema paths are case-sensitive, and its internal spacing, because a colour is several tokens. An unknown verb says so and then prints help. |
+| `OnSlash(msg)` | 1 | The entry point. An empty line runs the host's `config` verb, or prints help when the host has none (**11**; through 10 it always printed help); otherwise the first token is lowercased, mapped through `aliases`, and dispatched. Only the verb is lowercased — `rest` keeps its case, because schema paths are case-sensitive, and its internal spacing, because a colour is several tokens. An unknown verb says so and then prints help. |
 | `PrintHelp()` | 1 | The header, then `HelpRows()`, through the descriptor's `print`. |
 | `HelpHeader()` | 1 | `v<version> — slash commands`, plus the alias note when `slashAliases` has one. |
 | `HelpRows()` | 1 | The command rows, indented two spaces, because each sits under a header in chat. |
@@ -413,7 +435,12 @@ correct on every minor.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
-**What moves at version 10 is behavior, in the direction of working.** A `string` row stores the
+**What moves at version 11 is behavior, by the standard's decision (v2.50.0).** An empty line runs the
+host's `config` verb instead of printing the help index; `help` is unchanged, and a host with no
+`config` verb sees no change. Every Ka0s consumer carries `config` (a reserved verb), so every one
+of them changes on re-vendor, which is the point.
+
+**What moved at version 10 is behavior, in the direction of working.** A `string` row stores the
 whole trimmed value where it stored the first word. Every input version 9 accepted is still
 accepted, with one exception: a constrained string with trailing words is refused instead of cut
 short. No consumer test in the collection pinned the old truncation when this was measured.
@@ -423,11 +450,3 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
-
-## Moving to version 11
-
-One behavior moves: an empty line runs the host's `config` verb instead of printing the help index,
-per the Ka0s WoW Addon Standard v2.50.0 (`slash-commands-§4`). No code change is needed in a host
-whose `config` verb opens its settings panel; mirror it in a library-absent Slash stub, and move
-tests and docs that describe bare `/<slash>` as the index to `/<slash> help`. See
-[version 11](./version-11-docs.md).

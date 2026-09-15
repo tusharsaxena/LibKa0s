@@ -9,17 +9,37 @@ local plain = F.plain
 
 -- ── dispatch ───────────────────────────────────────────────────────────────────────────────
 
-test("sl: an empty message prints the help index", function()
+test("sl: an empty message runs the host's config verb (minor 11), printing no help", function()
+  -- slash-commands-§4 (standard v2.50.0): bare /<slash> opens the settings panel on its landing
+  -- page; `help` prints the list. red under: the old empty-line -> PrintHelp branch.
   local Sl, rec = F.new()
   Sl:OnSlash("")
-  assertEqual(#rec.chat, #rec.commands + 1, "a header plus one row per command")
-  T.assertTrue(plain(rec.chat[1]):find("slash commands", 1, true) ~= nil, "the header comes first")
+  assertEqual(#rec.chat, 1, "one line: the config verb's own")
+  assertEqual(rec.chat[1], "opened")
 end)
 
 test("sl: whitespace-only input is treated as empty", function()
   local Sl, rec = F.new()
   Sl:OnSlash("   ")
-  assertEqual(#rec.chat, #rec.commands + 1)
+  assertEqual(#rec.chat, 1)
+  assertEqual(rec.chat[1], "opened")
+end)
+
+test("sl: a host with no config verb still gets the help index for an empty message", function()
+  local Sl, rec = F.new()
+  for i = #rec.commands, 1, -1 do
+    if rec.commands[i][1] == "config" then table.remove(rec.commands, i) end
+  end
+  Sl:OnSlash("")
+  assertEqual(#rec.chat, #rec.commands + 1, "a header plus one row per command")
+  T.assertTrue(plain(rec.chat[1]):find("slash commands", 1, true) ~= nil, "the header comes first")
+end)
+
+test("sl: `help` prints the help index", function()
+  local Sl, rec = F.new()
+  Sl:OnSlash("help")
+  assertEqual(#rec.chat, #rec.commands + 1, "a header plus one row per command")
+  T.assertTrue(plain(rec.chat[1]):find("slash commands", 1, true) ~= nil, "the header comes first")
 end)
 
 test("sl: an unknown verb names it, then prints the help index", function()

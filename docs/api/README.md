@@ -151,7 +151,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [10](./Slash/version-10-docs.md) | `Slash.lua` 10 | v1.34.0 | **Current** |
+| [11](./Slash/version-11-docs.md) | `Slash.lua` 11 | v1.38.0 | **Current** |
+| [10](./Slash/version-10-docs.md) | `Slash.lua` 10 | v1.34.0 – v1.37.0 | Superseded |
 | [9](./Slash/version-9-docs.md) | `Slash.lua` 9 | v1.33.0 | Superseded |
 | [8](./Slash/version-8-docs.md) | `Slash.lua` 8 | v1.32.0 | Superseded |
 | [7](./Slash/version-7-docs.md) | `Slash.lua` 7 | v1.8.0 – v1.31.0 | Superseded |
