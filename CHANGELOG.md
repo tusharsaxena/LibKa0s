@@ -10,6 +10,20 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.37.0 — 2026-09-16
+
+Versions in this release: **OptionsCompose minor 6**. Every other major is unchanged from v1.36.2.
+
+**`MasterControls` composes the Test mode row** (Ka0s WoW Addon Standard v2.46.0, `options-ui-§15`).
+A new spec field, `testModePath`, emits a session-only *Test mode* checkbox on its own line below
+*Lock frame* / *Debug console*, its path taken verbatim like the console's. It is opt-in: an addon
+passes it exactly when its preview has a switch of its own (a test mode that stays on until turned
+off), and a call without it emits the six rows it always did, which the frozen golden fixture still
+confirms. `frameless` keeps it, since it drops only the frame rows. Raised by the collection owner
+after the first in-game walk of Ka0s Party Frame Enhanced's `/pfe test`, whose switch had been drawn
+as the composer's `leadButton`: a button cannot show whether the mode is on. **Adopters:** Ka0s Party
+Frame Enhanced and Ka0s Aura Master; every other consumer re-vendors with no change.
+
 ## v1.36.2 — 2026-09-15
 
 Versions in this release: **Options minor 20**, **OptionsWidgets minor 19**. Every other major is

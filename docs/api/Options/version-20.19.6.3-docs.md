@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 20.19.5.3
+# `LibKa0s-Options-1.0` — version 20.19.6.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,103 +8,35 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **20** · `OptionsWidgets.lua` **19** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **20** · `OptionsWidgets.lua` **19** · `OptionsCompose.lua` **6** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.36.2 |
-| Status | Superseded |
-| Supersedes | [version 19.19.5.3](./version-19.19.5.3-docs.md) |
-| Superseded by | [version 20.19.6.3](./version-20.19.6.3-docs.md) |
+| Shipped in | v1.37.0 |
+| Status | **Current** |
+| Supersedes | [version 20.19.5.3](./version-20.19.5.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 20, OptionsWidgets = 19, OptionsCompose = 5, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 20, OptionsWidgets = 19, OptionsCompose = 6, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O20`
-for `Options.lua` minor 20, `W19` for `OptionsWidgets.lua` minor 19, `C5` for `OptionsCompose.lua`
-minor 5, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
+for `Options.lua` minor 20, `W19` for `OptionsWidgets.lua` minor 19, `C6` for `OptionsCompose.lua`
+minor 6, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
 
-**Two files move, `Options.lua` 19 → 20 and `OptionsWidgets.lua` 18 → 19.** Both are prose/appearance
-reversals, not defect fixes: no member added, removed, renamed or resignatured, and no descriptor
-field touched.
+**One file moves, `OptionsCompose.lua` 5 → 6, and it adds one spec field.** `MasterControls` takes
+`testModePath` (**C6**): the path of the addon's test mode, emitted as a session-only **Test mode**
+checkbox on its own line below *Lock frame* / *Debug console*. It is the Ka0s WoW Addon Standard
+v2.46.0's `options-ui-§15` row, required of an addon whose preview has a switch of its own, and
+composed so that no host hand-writes it or draws it as a button. Omitted, nothing changes: a host that
+does not pass `testModePath` gets exactly the rows it got at 20.19.5.3.
 
-### `Options.lua`'s Reset-all tooltip drops its arrow for plain ASCII (localization-§5)
+The row carries `path` verbatim (session state lives outside the block's prefix, as the console's
+does), `type = "bool"`, `label = "Test mode"`, a tooltip, `sessionOnly = true` and
+`startsLine = true`. It survives `frameless`, which drops only the frame rows. The host binds its
+`get`/`set` to its test mode, exactly as it binds the console row's to the console window.
 
-The owner's font draws most non-ASCII glyphs as an empty box (screenshot: a settings panel reading
-`General [box] Spell Categories`). `RESET_ALL_TIP_PROFILES_PAGE` named `Profiles → Reset Profile`
-with a real arrow glyph (`\226\134\146`, U+2192, hand-escaped rather than written literally — see
-the string's own doc comment); it now reads `Profiles -> Reset Profile`, plain ASCII. The em dash
-in the same string (`\226\128\148`, U+2014) is kept — it renders correctly in the owner's own
-screenshots. **`Options.lua` 19 → 20 rather than an in-place edit under 19**, because minor 19's
-content — arrow included — is already vendored into at least one consumer; LibStub's mechanism
-needs a strictly higher minor to win a re-vendor, the same rule that governs every other released
-change to this file. No member, descriptor field or tooltip *wording* beyond the one glyph moved.
-
-### `O.ChoiceGrid`'s gold cell fill is withdrawn; a lit cell is an ordinary AceGUI checkbox check
-
-The owner saw W17's yellow-filled cell in-game and asked for it gone: *"The yellow filled square
-looks awkward, just make it a checkbox like 'only these categories'"* — i.e. the same plain AceGUI
-checkbox check as the `Only these categories` checkbox that sits above the grid on the same panel.
-**From W19**, `choiceCell` no longer calls a fill function at all: `choiceFill` and its color
-constants (`CHOICE_FILL_R`/`G`/`B`, `1, 0.82, 0`) are deleted outright, not merely disabled. A lit
-cell is `AceGUI`'s own default checkmark, exactly as an unlit cell was before W17. The cells stay
-plain `CheckBox` widgets rather than reverting to `SetType("radio")` — the owner wants a checkbox
-that *behaves* like a radio, which is what `choiceCell`'s callback already gives it, not the widget
-turned into one.
-
-`choiceCell`'s exclusive one-choice-per-row behavior is completely unchanged: it always lived in
-this function's `OnValueChanged` callback, never in the widget's appearance, and W19 touches nothing
-in that callback. `O.ChoiceGrid`'s own signature, every descriptor field, and every other maker are
-unchanged.
-
-### W18's `OnRelease` vertex-color restore is removed as dead code
-
-W18 added an `OnRelease` callback on each cell that reset the pooled check texture's vertex color to
-`(1, 1, 1)`, to undo `choiceFill`'s gold tint before the frame went back to AceGUI's pool. With the
-tint gone, that restore has nothing left to undo — it is deleted along with `choiceFill`, not left
-behind as an inert no-op. No other `OnRelease` wiring on these cells is touched.
-
-### The v1.36.1 pooling fix is moot, and its test is re-pointed rather than dropped
-
-`testkit` revision 21's **pooled `CheckBox` check texture, and the regression test built on it,
-stay** — nothing here reverts either. The leak that texture caught (a recycled `CheckBox` coming
-back tinted gold) cannot recur with no write to leak, but the coverage is what makes a future fill
-attempt safe to try again: `tests/test_options_widgets.lua`'s *"a CheckBox recycled after a
-ChoiceGrid comes back with an untinted check (G-2)"* keeps the same shape as W18's regression test —
-draw a grid, release its cells, acquire another `CheckBox`, check its texture is untinted — with its
-comment updated to say plainly that it no longer exercises a live write, and that a future fill MUST
-restore the `OnRelease` handler or this regression returns silently. See
-[`docs/api/testkit/version-21-docs.md`](../testkit/version-21-docs.md) for the kit side, which is
-unchanged at this version.
-
-### `OptionsWidgets.lua`'s `O.IdInput` "looking up" status text drops its ellipsis (localization-§5)
-
-Same finding, same fix as `Options.lua`'s above: `ID_TEXT.looking` read `Looking up {plural}…` with
-a real ellipsis glyph (`\226\128\166`, U+2026); it now reads `Looking up {plural}...`, plain ASCII.
-This lands in the same **W19** as the fill withdrawal above rather than a further bump, because
-minor 19 was cut and amended within this one release and was never externally consumed at any
-point along the way — unlike `Options.lua` 19, no host has a copy of `OptionsWidgets.lua` 19 that
-predates this fix.
-
-### A guard: no non-ASCII byte reaches a player, the em dash excepted — decoded, not text-matched
-
-`tests/test_prose.lua` gains a third shipped-payload gate, beside the British-spelling and
-retired-§N.M gates it already carries. **Its first cut matched the literal source TEXT of a decimal
-escape and could not catch the mistake it existed to prevent**: a contributor who pastes a literal
-`→` straight into a string writes raw UTF-8 bytes, no backslash anywhere, and a text-pattern scan
-for `\ddd` passes that line in silence — precisely how the arrow this version fixes got in. The
-gate now DECODES each `.lua` line (stripping its `--` comment quote-aware first, so player strings
-and comments stay distinguishable — a comment is free to use real UTF-8 because none of it reaches
-a tooltip) and scans the DECODED bytes for anything ≥ 128, the same shape AuraMaster's own
-`tests/test_locale.lua` scans its loaded locale values with; this library has no single loaded
-locale table to walk the way that gate does, so the decode step runs over shipped source instead of
-a runtime table. One blanket exemption (the decoded em dash, matching AuraMaster's own gate for the
-same owner finding) and one ratified, path-scoped exemption (`Core.lua`'s close-control fallback
-glyph, the decoded multiplication sign — predates this gate, sits in Latin-1 Supplement rather than
-the Arrows/General-Punctuation blocks the owner's screenshot actually broke on, and is defended at
-length by `Core.lua`'s own doc comment; flagged rather than silently exempted forever, as a row to
-drop first if the owner confirms it boxes too). Proved by pasting a literal `→` into
-`OptionsWidgets.lua`'s `ID_TEXT.looking` and confirming the suite failed naming that exact line.
+The changes at 20.19.5.3 are in [that version's document](./version-20.19.5.3-docs.md#what-changed-at-this-version).
 
 ## Previously, at 13.12.3
 
@@ -427,7 +359,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `FontGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
 | `BorderGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
 | `BarGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four bar rows, for a surface with a **fill texture**. Its `barTexture` row's `values` is `O.LSMValues("statusbar")` itself (**C3**). |
-| `MasterControls(spec)` | **C1** (`spec.bind`: **C4**) | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2**. Its *Reset all settings* tooltip follows the descriptor's `resetProfile` and `profilesPage` since **C5**. |
+| `MasterControls(spec)` | **C1** (`spec.bind`: **C4**) | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2** and `testModePath` since **C6**. Its *Reset all settings* tooltip follows the descriptor's `resetProfile` and `profilesPage` since **C5**. |
 | `FONT_FLAGS` / `FONT_FLAGS_SORT` | **C1** | The font-flag key map and its declared order. |
 | `VISIBILITY_VALUES` / `VISIBILITY_SORT` | **C1** | The four general-visibility values and their declared order. General visibility is a dropdown, not a boolean: a boolean can only ever answer two of the four. |
 | `MASTER_GROUP` | **C1** | The literal `"Master controls"` — the group name, the tab label and the `afterGroup` key are one string, because the group name **is** the hook key. |
@@ -1143,13 +1075,14 @@ a control wired to nothing.
 
 The canonical General-page tab (options-ui-§15). Additionally takes `addonName` (for the *Enable*
 label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onResetPosition`,
-`onResetAll` and — since **C2** — `leadButton`.
+`onResetAll`, — since **C2** — `leadButton` and — since **C6** — `testModePath`.
 
 | | |
 |---|---|
 | `enabled` — *Enable `<AddonName>`* | `visibility` — *General visibility* |
 | `scale` — *Master scale* | `alpha` — *Master alpha* |
 | `locked` — *Lock frame* | `debugConsole` — *Debug console* |
+| `testMode` — *Test mode* (only with `testModePath`, **C6**) | |
 | *Reset position* (button) | *Reset all settings* (button) |
 
 - **The set is canonical, not a menu.** An addon includes every row that applies to it and must not
@@ -1163,6 +1096,9 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
   a boolean can only ever answer two of the four.
 - **`debugConsole` is `sessionOnly`**, and its path is taken **verbatim** rather than prefixed:
   session state lives outside the block's own prefix.
+- **`testModePath`** (**C6**) adds the *Test mode* row: `sessionOnly`, on its own line, its path
+  taken verbatim like the console's. Pass it exactly when the addon has a test mode that stays on
+  until turned off (options-ui-§15); a one-shot test action is not one, and may take `leadButton`.
 - **`leadButton` = `{ text, tooltip, onClick }`** (**C2**) is ONE act of the host's own, closing the
   tab beside the resets. On a **frameless** addon it takes the pair's empty right half, so the row
   reads `[<verb>] [Reset all settings]`; on a **framed** addon, whose pair is already full and may
@@ -1183,110 +1119,6 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here.
-Nothing is added or removed from the public surface at this version. `OptionsWidgets.lua` 18 → 19
-is entirely a cosmetic reversal inside `choiceCell`, a local, unexported function, plus one
-character in a local text table (`ID_TEXT.looking`'s ellipsis). `Options.lua` 19 → 20 changes one
-character in one tooltip string (`RESET_ALL_TIP_PROFILES_PAGE`'s arrow); no member, descriptor
-field or row field moves. A host renders byte-identically to 19.19.5.3 in every respect but two:
-`ChoiceGrid`'s lit cell is once again an ordinary AceGUI checkbox check rather than a yellow-filled
-swatch — the appearance W16 shipped before W17 introduced the fill — and the *Reset all settings*
-tooltip's arrow and the `IdInput` "looking up" ellipsis are now plain ASCII rather than the U+2192
-and U+2026 glyphs a font without those Unicode blocks draws as an empty box. The one-choice-per-row
-exclusivity is unchanged across every version from W16 on, because it was never the widget's to
-begin with.
-
-**What is added at 19.17.5.3 is one instance member, `SelectTab`, plus `extraColumn` on
-`ChoiceGrid` and `note` on an `IdList` entry.** A host that calls none of them renders
-byte-identically to 18.16.5.3 in every respect but one: `ChoiceGrid`'s cells were checkboxes with a
-yellow fill rather than AceGUI radios at that version (withdrawn at 19.19.5.3, see above), cosmetic
-only — the one-choice-per-row exclusivity is unchanged, because it was never the widget's to begin
-with. A hand-written degradation stub of this instance owes one more member, `SelectTab`:
-`Kit.assertSurfaceParity` names it on the re-vendor, and each consumer adds it in that commit.
-
-**What is added at 18.16.5.3 is six instance members, `disabledIf` on every maker, and
-`RenderRows`' `opts.disabled`.** A host that calls none of the six, passes no `opts.disabled`, and
-carries `disabledIf` only on color rows (as a path) renders as it did at 18.15.5.3. Two things move
-underneath it. First, `RenderRows` now re-raises an escaping hook error from its own frame, with
-the same value. Second, a hand-written degradation stub of this instance owes six more members:
-`Kit.assertSurfaceParity` names them on the re-vendor, and each consumer adds them in that commit.
-
-**What moves at 18.15.5.3 is one tooltip, and what is added is `profilesPage`.** A host that
-supplies no `resetProfile` renders byte-identically to 17.15.4.3. A host that supplies it sees the
-*Reset all settings* tooltip say "current profile", and nothing else moves. Adopting the field is
-one line on the descriptor, for a host that ships a Profiles page.
-
-**What is added at 16.15.4.3 is `bulkBegin` / `bulkEnd` on the descriptor, and nothing else.** A host
-that supplies neither runs `RestoreDefaults` and `RestoreAllDefaults` exactly as 15.15.4.3 did — the
-same `applyDefault` calls in the same order, the same refresh, and no `pcall` on the path, so a
-raising row still escapes with its own stack. That is pinned in `tests/test_options_bulk.lua` and was
-measured on all ten consumers with the payload dropped in: nothing moves on re-vendor. Adopting it is
-two descriptor fields and a mute in the host's write seam, per [the worked
-example](#worked-example-mute-the-seam-emit-one-line).
-
-**What is added at 15.15.4.3 is `spec.bind` on every composer, and `get` / `set` / `field` on a row
-with no path.** A host that passes no `bind` and renders no path-less row renders byte-identically to
-15.14.3.3: the composers' path-keyed output is pinned against a record taken from compose minor 3, and
-the flow engine's record branch opens only for a row whose `path` is nil. The re-vendor is the whole
-adoption for every consumer but PanelMaster, whose adoption is the worked example above.
-
-**What is added at 15.14.3.3 is `lib.__PatchLSM30Border()`, and nothing in this library calls it.** A
-host that ignores it renders byte-identically to 14.14.3.3, so the re-vendor on its own is a no-op —
-which is deliberate, because the addons this member is for have five private copies of the same patch
-to retire and that retirement cannot be proved out of game. The order is: re-vendor and add the call
-with every local copy still in place, confirm in the client with all five addons loaded that no
-Border dropdown depends on load order, then delete the copies one repository per commit. See
-[What changed at this version](#what-changed-at-this-version).
-
-**What moved at 14.14.3.3 is a lifetime, and nothing else.** The tab strip's buttons and the page's
-content panel are recycled rather than rebuilt on every click, so an options panel stops leaking one
-set per click. Every published member, signature and return value is identical to 14.13.3.3, the
-strip renders the same pixels, and **the adoption step is the re-vendor and nothing more**. The one
-thing to know is the new hard floor: `OptionsWidgets.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1, which
-ships in the same payload and loads before it, so whole-folder re-vendoring satisfies it by
-construction.
-
-**What moved at 14.13.3.3 is behaviour, and it moved in the direction of working.** The three
-composed media dropdowns populate. A consumer that worked around the empty lists — by overriding a
-composed row's `values`, or by patching `fixMediaValues`-style over the block — keeps working, and
-its workaround is now dead code it can delete on its own schedule.
-
-**The single incompatibility on this path is a host-supplied `O.LSMValues` that returns a table.** It
-must return a function; see [The schema composers](#the-schema-composers). This was the only adoption
-step 14.13.3.3 asked of anybody, it cannot be detected at runtime, and it fails silently, so a host
-coming from 14.13.2.3 or earlier checks it before re-vendoring rather than after.
-
-**One behavior change is visible without a code change**, and it is deliberate: a page rendered
-through `RenderTabbedSchema` whose rows declare exactly **one** group now draws a one-tab strip and
-its content moves down by the band. A page with two or more groups is byte-identical, and a page that
-never called `RenderTabbedSchema` is untouched.
-
-**`ctx.__tabArtH` is gone.** It was a `__`-prefixed internal read by nothing outside
-`OptionsWidgets.lua` — grepped across `tests/` and all nine consumers — and it is named here only
-because a host that reached for it anyway would find nothing.
-
-A consumer that calls none of the chrome surface still renders byte-identically to 9.8.3, for the
-reason it always did: `ctx.chromeHeight` starts at `0`, so `EnsureScroll`'s anchor computes to the
-same `CHROME_GAP` (`8`). A consumer that draws a banner but no strip gets no content panel, because
-`TabStrip` is the only thing that draws one.
-
-**A vendored folder holding `Options.lua` 14 but no `OptionsCompose.lua`** degrades to no composers
-rather than erroring at `:New` — the attach call is guarded exactly as the other two are. The
-re-vendor is whole-folder, so that state should never ship.
-
-**`lib.LAYOUT` is not itself part of the instance surface, and will not become so.** The keys a host
-may read are the individual scalars listed above. The rest are internal, each annotated in the source
-with why, and each is published — as its own scalar — the day a host demonstrates it needs it.
-Publishing the table would hand every host a mutable handle on every other host's spacing.
-
-The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
-`OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
-why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 20.19.6.3
-
-One file moves, `OptionsCompose.lua` 5 → 6, adding one optional `MasterControls` spec field,
-`testModePath`; every existing call renders identically, so a host with no test mode changes nothing.
-A host whose preview has a switch of its own passes `testModePath` and binds the row's get/set,
-replacing any hand-written row or `leadButton` that stood in for it (`options-ui-§15` at standard
-v2.46.0). See [version 20.19.6.3](./version-20.19.6.3-docs.md).
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. This
+version adds one `MasterControls` spec field, `testModePath` (**C6**), and no member: a host that does
+not pass it renders byte-identically to 20.19.5.3.

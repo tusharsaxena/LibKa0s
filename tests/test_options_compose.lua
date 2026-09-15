@@ -369,6 +369,27 @@ test("compose: MasterControls emits the six canonical rows and defaults its own 
   assertTrue(rows[6].sessionOnly, "a console left open is not a setting the next character inherits")
 end)
 
+test("compose: testModePath adds one session-only Test mode row, on its own line after the console", function()
+  -- options-ui-§15 (v2.46.0): an addon whose preview has a switch of its own carries it here, as a
+  -- checkbox that shows whether it is on. Opt-in, because most addons have no test mode.
+  -- red under: no such row, which leaves a host to hand-write it or draw a button (anti-pattern #80).
+  local rows = O.MasterControls{ page = "general", addonName = "X", testModePath = "state.test" }
+  assertEqual(paths(rows), "enabled|visibility|scale|alpha|locked|state.debugConsole|state.test")
+  local row = rowAt(rows, "state.test")
+  assertEqual(row.type, "bool")
+  assertEqual(row.label, "Test mode")
+  assertTrue(row.sessionOnly, "a test mode left on is not a setting the next session inherits")
+  assertTrue(row.startsLine, "its own line, below Lock frame / Debug console")
+  assertEqual(row.group, "Master controls")
+  -- Verbatim, like the console path: session state lives outside the block's prefix.
+  local pre = O.MasterControls{ page = "general", addonName = "X", prefix = "s.", testModePath = "state.test" }
+  assertTrue(rowAt(pre, "state.test") ~= nil)
+  -- Frameless drops only the frame rows; a test mode is not one of them.
+  local fl = O.MasterControls{ page = "general", addonName = "X", frameless = true,
+    testModePath = "state.test", onResetAll = function() end }
+  assertEqual(paths(fl), "enabled|visibility|state.debugConsole|state.test")
+end)
+
 test("compose: the debug console's path is verbatim and outside the block's prefix", function()
   -- Session state lives outside the settings prefix, which is why this one row takes a whole path
   -- rather than a leaf.

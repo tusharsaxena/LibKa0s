@@ -751,7 +751,7 @@ badge and any count quoted in the docs must agree with it.
 - IdInput suggestions: a raising info costs that id's row, not the list
 - IdInput suggestions: the dropdown is as wide as the box looks
 
-### test_options_compose.lua (41)
+### test_options_compose.lua (42)
 
 - compose: the instance carries every composer and every published constant
 - compose: FontGroup emits the six canonical leaves in the canonical order
@@ -772,6 +772,7 @@ badge and any count quoted in the docs must agree with it.
 - compose: extra rows are appended AFTER the mandated block, never interleaved
 - compose: a composer never writes to the spec it was handed
 - compose: MasterControls emits the six canonical rows and defaults its own group
+- compose: testModePath adds one session-only Test mode row, on its own line after the console
 - compose: the debug console's path is verbatim and outside the block's prefix
 - compose: frameless drops EXACTLY the four frame-only controls and nothing else
 - compose: a frameless addon's lead button shares the pair with Reset all settings
@@ -1154,7 +1155,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 221 |
 | test_options_idsuggest.lua | 36 |
-| test_options_compose.lua | 41 |
+| test_options_compose.lua | 42 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 45 |
@@ -1171,4 +1172,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1041** |
+| **Total** | **1042** |
