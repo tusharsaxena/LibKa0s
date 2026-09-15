@@ -23,6 +23,7 @@ The **Tests** cell reads `passed/skipped/total`.
 
 | Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260915-135323`](20260915-135323/) | 1.36.2 → 1.36.2 | 0/0 | 57 | 1041/0/1041 | skip | 20585 | 2922 | 6.5 | 2.0 | 14 | 0 | **green** |
 | [`20260915-133630`](20260915-133630/) | 1.36.1 → 1.36.2 | 0/0 | 57 | 1040/0/1040 | skip | 20552 | 2920 | 6.5 | 2.0 | 14 | 0 | **green** |
 | [`20260914-010923`](20260914-010923/) | 1.35.0 → 1.35.0 | 0/0 | 57 | 1028/0/1028 | skip | 20354 | 2891 | 6.5 | 2.0 | 14 | 0 | **green** |
 | [`20260914-001514`](20260914-001514/) | 1.35.0 → 1.35.0 | 0/0 | 57 | 1020/0/1020 | skip | 20148 | 2857 | 6.5 | 2.0 | 14 | 0 | **green** |
@@ -74,11 +75,11 @@ The **Tests** cell reads `passed/skipped/total`.
 
 ## Test suite
 
-**1040 cases** — 1040 passed, 0 failed, 0 skipped. The generated inventory
-[`20260915-133630/test-cases.md`](20260915-133630/test-cases.md) is the authority on which cases existed at this run;
+**1041 cases** — 1041 passed, 0 failed, 0 skipped. The generated inventory
+[`20260915-135323/test-cases.md`](20260915-135323/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1028 → 1040** since the previous run.
+Moved **1040 → 1041** since the previous run.
 
 No case reported a `skip`, so passed and total agree and nothing in this row claims coverage
 that was not exercised.
@@ -101,7 +102,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20260915-133630`](20260915-133630/) — **this run's measurement, not its diff.** Max CCN **14** across 2920
+Current as of [`20260915-135323`](20260915-135323/) — **this run's measurement, not its diff.** Max CCN **14** across 2922
 functions, **0** of them warned on; 7 file(s) in the 1000–1500 band and 2 over the 1500 cap
 (`layout-§1`).
 
@@ -118,7 +119,7 @@ None.
 
 | Band | File | LOC | Disposition |
 |---|---|---|---|
-| 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1306 | **Accepted, re-ruled at v1.33.0 after crossing its re-check at 1200.** It went 1114 → 1260 for the font preload (Options minor 17): a self-contained library-level block, `preloadState` through `lib.__PreloadFonts`, and its two trigger sites in `lib:New`, most of it the reasoning comments. The corrected `count` docstrings added a few lines more. It sits 240 lines clear of the cap, and no function in the file warns on CCN. It is still the panel builder every host addon enters the library through, so a split would be a published surface change rather than an internal tidy. If it needs a seam, the preload block is the first one, at the cost of a new file, a new minor and a pairing guard. It went 1260 → 1284 at v1.34.0 (Options minor 18), all of it comments: the `profilesPage` descriptor entry and the three Reset-all tooltip strings in `lib.STRINGS`, plus one argument on the `__AttachCompose` call. Re-check at 1350. |
+| 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1307 | **Accepted, re-ruled at v1.33.0 after crossing its re-check at 1200.** It went 1114 → 1260 for the font preload (Options minor 17): a self-contained library-level block, `preloadState` through `lib.__PreloadFonts`, and its two trigger sites in `lib:New`, most of it the reasoning comments. The corrected `count` docstrings added a few lines more. It sits 240 lines clear of the cap, and no function in the file warns on CCN. It is still the panel builder every host addon enters the library through, so a split would be a published surface change rather than an internal tidy. If it needs a seam, the preload block is the first one, at the cost of a new file, a new minor and a pairing guard. It went 1260 → 1284 at v1.34.0 (Options minor 18), all of it comments: the `profilesPage` descriptor entry and the three Reset-all tooltip strings in `lib.STRINGS`, plus one argument on the `__AttachCompose` call. Re-check at 1350. |
 | 1000–1500 (on notice) | `LibKa0s/Perf.lua` | 1231 | **Already tracked as [`#7`](https://github.com/tusharsaxena/LibKa0s/issues/7)** (owner: @tusharsaxena). Not a violation — the file is under `layout-§1`'s 1500 cap; the issue records the decision and its trigger so it is not re-argued each run. Was 1052; it grew for the observed-containment record and the keyed `Open`/`Close` bracket. Still the only shipped file in the band and the widest surface the consumers bind against. Worst function in the file is `groupContext` at CCN 11 and the file's avg CCN is 3.4, so this is breadth, not knots; the sampler and the group/scenario bookkeeping are the peel seam if it crosses 1500. |
 | 1000–1500 (on notice) | `LibKa0s/Widgets.lua` | 1232 | **Accepted.** Unchanged since the v1.27.0 release run. It holds two of the library's three highest-CCN functions — `list@1178-1219` and `paintMenuRow@126-159`, both at 13 — so density and size want reading together here. Per-widget files are the seam if it needs one; each widget is already a self-contained constructor. Re-check at 1350. |
 | 1000–1500 (on notice) | `testkit/mock_base.lua` | 1499 | **On notice, and eighteen lines from breach.** It was 1471 at the v1.32.0 run, gained 7 at kit revision 18 for AceDB's per-event callback key, and 4 at kit revision 19 for the keyless `OnProfileReset`, all comment. It is a flat builder of independent fakes, so its length is breadth, not tangle. The peel seam is the Ace fakes, the CallbackHandler registry through AceGUI, which could move to a kit file the builder loads. That is a kit revision of its own, and every consumer would re-vendor it. **The next kit change that adds more than eighteen lines peels first, or opens an issue naming that seam before it crosses.** Re-check at 1490. |
