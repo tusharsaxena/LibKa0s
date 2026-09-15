@@ -488,7 +488,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (222)
+### test_options_widgets.lua (221)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -526,9 +526,8 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a ChoiceGrid value outside the columns lights no cell
 - widgets: ChoiceGrid radios re-read the store when the refreshers run
 - widgets: ChoiceGrid reads and writes a path-less row through its own get/set
-- widgets: ChoiceGrid cells are checkboxes, never radios, and the lit one carries the fill
-- widgets: choiceFill is guarded when a check texture is missing the paint methods
-- widgets: a CheckBox recycled after a ChoiceGrid comes back white, not the grid's gold
+- widgets: ChoiceGrid cells are ordinary checkboxes, never radios and never painted
+- widgets: a CheckBox recycled after a ChoiceGrid comes back with an untinted check (G-2)
 - widgets: ChoiceGrid disables a row's cells by its disabledIf
 - widgets: a ChoiceGrid drawn inside a disabled render is disabled with it
 - widgets: ChoiceGrid spec.disabled disables every cell for the call only
@@ -1152,7 +1151,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 222 |
+| test_options_widgets.lua | 221 |
 | test_options_idsuggest.lua | 36 |
 | test_options_compose.lua | 41 |
 | test_perf_core.lua | 70 |
@@ -1171,4 +1170,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1041** |
+| **Total** | **1040** |

@@ -554,28 +554,18 @@ test("widgets: ChoiceGrid reads and writes a path-less row through its own get/s
   assertEqual(held, "", "written through row.set")
 end)
 
---- A fake check texture: records what choiceFill paints on it, the same three calls a real
---- Texture answers (SetTexture / SetVertexColor / SetTexCoord), plus SetSize.
-local function fakeCheckTexture()
-  local tex = { calls = {} }
-  function tex:SetTexture(path) self.texturePath = path end
-  function tex:SetVertexColor(r, g, b) self.vertexColor = { r, g, b } end
-  function tex:SetTexCoord(...) self.texCoord = { ... } end
-  function tex:SetSize(w, h) self.size = { w, h } end
-  return tex
-end
-
-test("widgets: ChoiceGrid cells are checkboxes, never radios, and the lit one carries the fill", function()
-  local O, _, ctx = bench()
+test("widgets: ChoiceGrid cells are ordinary checkboxes, never radios and never painted", function()
+  local O, rec, ctx = bench()
+  rec.store["cat.alpha"] = "show"
   local ace = O.AceGUI
   local realCreate = ace.Create
   local checkBoxes = {}
   ace.Create = function(self, wtype)
     local w = realCreate(self, wtype)
     if wtype == "CheckBox" then
-      -- red under: choiceCell calling SetType("radio") again
+      -- red under: choiceCell calling SetType("radio") again -- the owner wants a checkbox that
+      -- BEHAVES like a radio (one choice per row), not the widget itself turned into one (G-1)
       function w:SetType(t) self.checkType = t end
-      w.check = fakeCheckTexture()
       checkBoxes[#checkBoxes + 1] = w
     end
     return w
@@ -586,54 +576,36 @@ test("widgets: ChoiceGrid cells are checkboxes, never radios, and the lit one ca
 
   for _, cb in ipairs(checkBoxes) do
     assertNil(cb.checkType, "SetType was never called: the cell stays an ordinary checkbox")
+    -- red under: choiceFill (or any successor) reintroduced without an owner decision -- the lit
+    -- cell reads with AceGUI's own check glyph, never a painted texture (G-1)
+    assertNil(cb.__checkTexture, "no cell carries a paint of its own; the check glyph is stock AceGUI")
   end
 
-  -- alpha holds "show" (Whitelist, column 2 of GRID_COLUMNS)
+  -- alpha holds "show" (Whitelist, column 2 of GRID_COLUMNS); the exclusive one-choice-per-row
+  -- behavior is choiceCell's callback, not the widget's appearance, and is unchanged by G-1
   local radios = radiosOf(lines[1])
-  local lit, unlit = radios[2], radios[1]
-  -- red under: the lit cell losing its fill texture
-  assertEqual(lit.__checkTexture.texturePath, "Interface\\Buttons\\WHITE8X8",
-    "the lit cell's check region is painted with the solid fill")
-  assertTrue(lit.__checkTexture.vertexColor ~= nil, "and tinted")
-  -- choiceFill runs unconditionally per cell, lit or not: it paints the check REGION, not the
-  -- lit state, which SetValue still carries.
-  assertTrue(unlit.__checkTexture ~= nil, "every cell's check region is painted the same way")
+  assertFalse(radios[1]:GetValue(), "the unchosen column reads false")
+  assertTrue(radios[2]:GetValue(), "the chosen column reads true")
 end)
 
-test("widgets: choiceFill is guarded when a check texture is missing the paint methods", function()
+test("widgets: a CheckBox recycled after a ChoiceGrid comes back with an untinted check (G-2)", function()
+  -- Retained from v1.36.1 on purpose (G-2): this used to be the only thing that caught choiceFill
+  -- painting the pooled check texture gold and never restoring it on Release, which leaked into
+  -- every checkbox recycled afterward -- this addon's or another's sharing the same AceGUI
+  -- instance. G-1 withdraws the fill and the OnRelease restore it required, so this test no longer
+  -- exercises a live write; it is re-pointed at what still holds -- a checkbox recycled after a
+  -- ChoiceGrid comes back with the same untinted check any other recycled CheckBox has. Keep this
+  -- test alive: a future fill attempt (LibKa0s/OptionsWidgets.lua) MUST restore the pooled check
+  -- texture's vertex color on OnRelease, or this regression returns silently.
   local O, _, ctx = bench()
-  -- Since v1.36.1 the stock CheckBox fake carries a real check texture (see newCheckTexture in
-  -- mock_base.lua), so the guard is exercised here by handing back one with neither SetTexture
-  -- nor SetVertexColor -- the shape a host's own thinner AceGUI fake can take.
-  local ace = O.AceGUI
-  local realCreate = ace.Create
-  ace.Create = function(self, wtype)
-    local w = realCreate(self, wtype)
-    if wtype == "CheckBox" then w.check = {} end
-    return w
-  end
-  local ok, lines = pcall(O.ChoiceGrid, ctx, { rows = gridRows(), columns = GRID_COLUMNS })
-  ace.Create = realCreate
-  assertTrue(ok, tostring(lines))
-  -- red under: choiceFill raising instead of returning nil when no paintable texture exists
-  for _, cb in ipairs(radiosOf(lines[1])) do assertNil(cb.__checkTexture) end
-end)
-
-test("widgets: a CheckBox recycled after a ChoiceGrid comes back white, not the grid's gold", function()
-  local O, _, ctx = bench()
-  -- AceGUI pools the CheckBox's FRAME, not the widget table: mock_base.lua's checkTexturePool
-  -- models exactly that one piece of frame state, so a Release here hands the SAME check texture
-  -- to the very next CheckBox any host -- this addon's or another's sharing the AceGUI instance --
-  -- acquires. red under: choiceFill painting the tint but never restoring it on OnRelease, which
-  -- leaves every checkbox recycled after a grid gold for the rest of the session.
   local lines = O.ChoiceGrid(ctx, { rows = gridRows(), columns = GRID_COLUMNS })
   for _, cb in ipairs(radiosOf(lines[1])) do cb:Release() end
 
   local recycled = O.AceGUI:Create("CheckBox")
   local r, g, b = recycled.check:GetVertexColor()
-  assertEqual(r, 1, "a checkbox recycled after a grid is not tinted gold (red)")
-  assertEqual(g, 1, "a checkbox recycled after a grid is not tinted gold (green)")
-  assertEqual(b, 1, "a checkbox recycled after a grid is not tinted gold (blue)")
+  assertEqual(r, 1, "a checkbox recycled after a grid is not tinted (red)")
+  assertEqual(g, 1, "a checkbox recycled after a grid is not tinted (green)")
+  assertEqual(b, 1, "a checkbox recycled after a grid is not tinted (blue)")
 end)
 
 test("widgets: ChoiceGrid disables a row's cells by its disabledIf", function()

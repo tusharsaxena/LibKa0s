@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 19.18.5.3
+# `LibKa0s-Options-1.0` — version 19.19.5.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,53 +8,61 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **19** · `OptionsWidgets.lua` **18** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **19** · `OptionsWidgets.lua` **19** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.36.1 |
-| Status | Superseded |
-| Supersedes | [version 19.17.5.3](./version-19.17.5.3-docs.md) |
-| Superseded by | [version 19.19.5.3](./version-19.19.5.3-docs.md) |
+| Shipped in | v1.36.2 |
+| Status | **Current** |
+| Supersedes | [version 19.18.5.3](./version-19.18.5.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 19, OptionsWidgets = 18, OptionsCompose = 5, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 19, OptionsWidgets = 19, OptionsCompose = 5, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O19`
-for `Options.lua` minor 19, `W17` for `OptionsWidgets.lua` minor 17, `C5` for `OptionsCompose.lua`
+for `Options.lua` minor 19, `W19` for `OptionsWidgets.lua` minor 19, `C5` for `OptionsCompose.lua`
 minor 5, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
 
-**One file moves, `OptionsWidgets.lua` 17 → 18.** A defect fix, no member added, removed, renamed
-or resignatured, and no descriptor field touched.
+**One file moves, `OptionsWidgets.lua` 18 → 19.** A reversal of a shipped decision, not a defect
+fix: no member added, removed, renamed or resignatured, and no descriptor field touched.
 
-### `O.ChoiceGrid`'s gold cell fill no longer leaks into the next CheckBox AceGUI hands out
+### `O.ChoiceGrid`'s gold cell fill is withdrawn; a lit cell is an ordinary AceGUI checkbox check
 
-`choiceCell`'s local `choiceFill` paints a lit grid cell by repainting AceGUI's own `check` texture
-gold (`SetVertexColor(1, 0.82, 0)`) rather than drawing a texture of its own — there is nowhere else
-to paint a checkbox's tick. **AceGUI pools the CheckBox's underlying frame**, and that frame's
-`OnAcquire` resets the check texture's texture, texcoord and blend mode for whichever widget the
-pool hands out next, but never its vertex color. Through W17, nothing in `choiceCell` undid the
-tint either, so the very next `CheckBox` any host acquired from the same AceGUI instance — this
-addon's own, or another addon sharing the shared Ace3 embed — drew a gold checkmark it never asked
-for, for the rest of the session. From **W18**, `choiceFill` registers an `OnRelease` callback on
-the cell that restores the texture to its un-painted color (`1, 1, 1`, a fresh texture's own
-default) before the frame goes back to the pool, the same shape of fix `landingLogo`'s callback
-already uses for a texture it owns outright ([The choice grid](#the-choice-grid)).
+The owner saw W17's yellow-filled cell in-game and asked for it gone: *"The yellow filled square
+looks awkward, just make it a checkbox like 'only these categories'"* — i.e. the same plain AceGUI
+checkbox check as the `Only these categories` checkbox that sits above the grid on the same panel.
+**From W19**, `choiceCell` no longer calls a fill function at all: `choiceFill` and its color
+constants (`CHOICE_FILL_R`/`G`/`B`, `1, 0.82, 0`) are deleted outright, not merely disabled. A lit
+cell is `AceGUI`'s own default checkmark, exactly as an unlit cell was before W17. The cells stay
+plain `CheckBox` widgets rather than reverting to `SetType("radio")` — the owner wants a checkbox
+that *behaves* like a radio, which is what `choiceCell`'s callback already gives it, not the widget
+turned into one.
 
-`O.ChoiceGrid`'s own signature, `choiceCell`'s exclusive one-choice-per-row behavior and every other
-descriptor field are unchanged. The fix is entirely inside `choiceFill`, a local, unexported
-function; nothing in the public surface below moved because of it.
+`choiceCell`'s exclusive one-choice-per-row behavior is completely unchanged: it always lived in
+this function's `OnValueChanged` callback, never in the widget's appearance, and W19 touches nothing
+in that callback. `O.ChoiceGrid`'s own signature, every descriptor field, and every other maker are
+unchanged.
 
-### The test gap this closed
+### W18's `OnRelease` vertex-color restore is removed as dead code
 
-No suite caught this at W17 because the kit's `CheckBox` fake carried no `.check` at all, so
-`choiceFill`'s guard (`if not (tex and tex.SetTexture and tex.SetVertexColor) then return end`)
-always took the early return and the paint — and the leak — went unexercised. `testkit`
-revision 21 gives the stock `CheckBox` fake a real, **pooled** `check` texture (mirroring the one
-piece of frame state a real AceGUI CheckBox actually recycles), so `tests/test_options_widgets.lua`
-now pins both the paint and its restoration directly, with no per-test monkeypatch: draw a grid,
-release its cells, acquire another CheckBox, and its check texture is white, not the grid's gold.
-See [`docs/api/testkit/version-21-docs.md`](../testkit/version-21-docs.md).
+W18 added an `OnRelease` callback on each cell that reset the pooled check texture's vertex color to
+`(1, 1, 1)`, to undo `choiceFill`'s gold tint before the frame went back to AceGUI's pool. With the
+tint gone, that restore has nothing left to undo — it is deleted along with `choiceFill`, not left
+behind as an inert no-op. No other `OnRelease` wiring on these cells is touched.
+
+### The v1.36.1 pooling fix is moot, and its test is re-pointed rather than dropped
+
+`testkit` revision 21's **pooled `CheckBox` check texture, and the regression test built on it,
+stay** — nothing here reverts either. The leak that texture caught (a recycled `CheckBox` coming
+back tinted gold) cannot recur with no write to leak, but the coverage is what makes a future fill
+attempt safe to try again: `tests/test_options_widgets.lua`'s *"a CheckBox recycled after a
+ChoiceGrid comes back with an untinted check (G-2)"* keeps the same shape as W18's regression test —
+draw a grid, release its cells, acquire another `CheckBox`, check its texture is untinted — with its
+comment updated to say plainly that it no longer exercises a live write, and that a future fill MUST
+restore the `OnRelease` handler or this regression returns silently. See
+[`docs/api/testkit/version-21-docs.md`](../testkit/version-21-docs.md) for the kit side, which is
+unchanged at this version.
 
 ## Previously, at 13.12.3
 
@@ -451,8 +459,9 @@ values diverge every landing heading loses its gap. `tests/test_options.lua` pin
 
 ## The choice grid
 
-New at `OptionsWidgets.lua` minor 16. **From minor 17**, the cells are checkboxes with a yellow
-fill rather than AceGUI radios, and `spec` takes an optional `extraColumn`.
+New at `OptionsWidgets.lua` minor 16. `spec` takes an optional `extraColumn`, since minor 17.
+Minors 17–18 painted the lit cell's check region with a solid yellow fill; **from minor 19** that
+fill is withdrawn on owner feedback and the cells are ordinary AceGUI checkboxes throughout.
 
 ### `O.ChoiceGrid(ctx, spec)` → lines or `nil`
 
@@ -472,14 +481,14 @@ reason `BUTTON_PAIR_REL` sits under half: the widget ending at the right edge is
 ScrollFrame (options-ui-§8).
 
 - **Through W16** each cell carried `SetType("radio")` and drew the client's own radio dot.
-  **From W17** the cell is an ordinary `CheckBox` and the lit cell's check region is painted with a
-  solid yellow (`1, 0.82, 0`) fill instead, guarded end to end — a host AceGUI fake with no check
-  texture draws a plain, unfilled cell rather than raising. The one-choice-per-row exclusivity below
-  never lived in the widget and does not move with this change. **From W18**, the paint is undone
-  on `OnRelease`: AceGUI pools the CheckBox's frame, and its check texture is the one thing that
-  survives a `Release` (see [What changed at this version](#what-changed-at-this-version)) — so
-  without the W18 fix, the very next `CheckBox` any host acquired from the pool drew this yellow
-  fill instead of its own white one, for the rest of the session.
+  **From W17 through W18** the cell was an ordinary `CheckBox` whose check region was painted with
+  a solid yellow (`1, 0.82, 0`) fill instead, with a W18 `OnRelease` restore to keep the paint from
+  leaking into the next `CheckBox` AceGUI's pool handed out (see the W18 entry of
+  [What changed at this version](#what-changed-at-this-version) for the leak it fixed). **From
+  W19**, the fill and its restore are both gone — a lit cell is AceGUI's own default checkmark, no
+  different from any other checked `CheckBox` in a host's panel. The cell stays an ordinary
+  `CheckBox` rather than reverting to `SetType("radio")`. The one-choice-per-row exclusivity below
+  never lived in the widget and has not moved at any point across W16–W19.
 - A cell is lit while `read(row) == column.value`, and each cell's refresher re-lights it. A stored
   value no column carries lights **none**.
 - A click on an unlit cell writes `column.value` through the row's seam, whose `set` runs
@@ -1132,17 +1141,21 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. One
-instance member is added at this version, one row field widens (`spec.extraColumn` on `ChoiceGrid`),
-one entry field widens (`note` on an `IdList` entry), and nothing is taken away.
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here.
+Nothing is added or removed from the public surface at this version — `OptionsWidgets.lua` 18 → 19
+is entirely a cosmetic reversal inside `choiceCell`, a local, unexported function. A host renders
+byte-identically to 19.18.5.3 in every respect but one: `ChoiceGrid`'s lit cell is once again an
+ordinary AceGUI checkbox check rather than a yellow-filled swatch — the appearance W16 shipped
+before W17 introduced the fill. The one-choice-per-row exclusivity is unchanged across every version
+from W16 on, because it was never the widget's to begin with.
 
 **What is added at 19.17.5.3 is one instance member, `SelectTab`, plus `extraColumn` on
 `ChoiceGrid` and `note` on an `IdList` entry.** A host that calls none of them renders
-byte-identically to 18.16.5.3 in every respect but one: `ChoiceGrid`'s cells are now checkboxes
-with a yellow fill rather than AceGUI radios, cosmetic only — the one-choice-per-row exclusivity is
-unchanged, because it was never the widget's to begin with. A hand-written degradation stub of this
-instance owes one more member, `SelectTab`: `Kit.assertSurfaceParity` names it on the re-vendor, and
-each consumer adds it in that commit.
+byte-identically to 18.16.5.3 in every respect but one: `ChoiceGrid`'s cells were checkboxes with a
+yellow fill rather than AceGUI radios at that version (withdrawn at 19.19.5.3, see above), cosmetic
+only — the one-choice-per-row exclusivity is unchanged, because it was never the widget's to begin
+with. A hand-written degradation stub of this instance owes one more member, `SelectTab`:
+`Kit.assertSurfaceParity` names it on the re-vendor, and each consumer adds it in that commit.
 
 **What is added at 18.16.5.3 is six instance members, `disabledIf` on every maker, and
 `RenderRows`' `opts.disabled`.** A host that calls none of the six, passes no `opts.disabled`, and
@@ -1222,13 +1235,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 19.19.5.3
-
-One file moves, `OptionsWidgets.lua` 18 → 19: a reversal of a shipped decision, not a defect fix.
-The owner saw `O.ChoiceGrid`'s yellow-filled lit cell in-game and asked for it gone; from 19 the
-fill and its W18 `OnRelease` restore are both deleted, and a lit cell is once again an ordinary
-AceGUI checkbox check, as it was through 16. The one-choice-per-row exclusivity, which was always
-`choiceCell`'s callback and never the widget's appearance, is unchanged. Every host that draws a
-`ChoiceGrid` is affected whether or not it uses `extraColumn` or `note` — the re-vendor is the whole
-change. See [version 19.19.5.3](./version-19.19.5.3-docs.md).

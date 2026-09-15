@@ -10,6 +10,43 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.36.2 — 2026-09-15
+
+Versions in this release: **OptionsWidgets minor 19**. Every other major, and `Options.lua` itself,
+is unchanged from v1.36.1.
+
+**Withdrawal of a shipped decision, on the owner's in-game feedback, not a defect fix.** v1.36.0
+gave `O.ChoiceGrid`'s lit cell a solid yellow fill in place of AceGUI's own checkmark; the owner
+has now seen it in-game and asked for it gone: *"The yellow filled square looks awkward, just make
+it a checkbox like 'only these categories'"* — the same plain AceGUI checkbox check as the
+`Only these categories` checkbox that sits above the grid on the same panel. `OptionsWidgets.lua`
+18 → 19 does exactly that: `choiceFill` and its color constants (`CHOICE_FILL_R`/`G`/`B`) are
+deleted outright, and `choiceCell` no longer paints the check texture at all. The cells stay
+ordinary `CheckBox` widgets rather than reverting to `SetType("radio")` — the owner wants a
+checkbox that *behaves* like a radio, which is `choiceCell`'s callback, not a change to the widget.
+**The exclusive one-choice-per-row behavior is completely untouched**: it has always lived in that
+callback, never in the widget's appearance, across every version from W16 on.
+
+**v1.36.1's pooled-`CheckBox` fix is moot, and is removed as dead code, not left inert.** That
+release added an `OnRelease` callback restoring the check texture's vertex color to `(1, 1, 1)`,
+to undo the fill's gold tint before AceGUI's pool handed the frame to its next tenant. With no
+fill writing a tint, there is nothing left for that callback to undo, so it is deleted along with
+`choiceFill`. No other `OnRelease` wiring on these cells is touched.
+
+**The v1.36.1 test kit stays, and its regression test is re-pointed rather than dropped.**
+`testkit` revision 21's pooled `CheckBox` check texture — and the coverage built on it — closed a
+real Critical (a gold tint leaking into every recycled checkbox, this addon's or another's sharing
+the same AceGUI instance) that was invisible before it existed. The leak this version's write
+enabled cannot recur with no write to leak, but the coverage is exactly what will make a future
+fill attempt safe to try: `tests/test_options_widgets.lua`'s regression test keeps the same shape
+(draw a grid, release its cells, acquire another `CheckBox`, its check comes back untinted), with
+its comment rewritten to say it no longer exercises a live write and that a future fill MUST
+restore the `OnRelease` handler or this regression returns silently.
+
+No member is added, removed, renamed or resignatured, and no descriptor field changes. Every host
+that draws a `ChoiceGrid` is affected whether or not it uses `extraColumn` or an `IdList` `note` —
+the re-vendor of `LibKa0s/` is the whole change; `tests/_kit/` is unchanged at this version.
+
 ## v1.36.1 — 2026-09-15
 
 Versions in this release: **OptionsWidgets minor 18**, **testkit revision 21**. Every other major,

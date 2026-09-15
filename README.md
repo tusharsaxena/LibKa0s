@@ -191,10 +191,10 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.36.1**: `Core = { Core = 7 }`,
+different vendored copy of each. As of **v1.36.2**: `Core = { Core = 7 }`,
 `Env = { Env = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`, `Media = { Media = 3 }`,
 `Widgets = { Widgets = 9 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 10 }`,
-`Options = { Options = 19, OptionsWidgets = 18, OptionsCompose = 5, OptionsScroll = 3 }`,
+`Options = { Options = 19, OptionsWidgets = 19, OptionsCompose = 5, OptionsScroll = 3 }`,
 `Perf = { Perf = 11, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
