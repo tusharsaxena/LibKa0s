@@ -100,6 +100,43 @@ test("options: __panelFor finds a registered page by key", function()
   assertNil(O.__panelFor("nosuchpage"))
 end)
 
+-- ── SelectTab ───────────────────────────────────────────────────────────────────────────────
+
+test("options: SelectTab sets a rendered page's active tab and refreshes",
+  function()
+  -- red under: SelectTab absent, or reporting success without moving the tab or refreshing.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("TestPanelSelTab1", "General", { pageKey = "general" })
+  ctx.activeTab = "Display"
+  local ran = 0
+  ctx.refreshers[1] = function() ran = ran + 1 end
+  assertTrue(O.SelectTab("general", "Spell Categories"))
+  assertEqual(ctx.activeTab, "Spell Categories")
+  assertEqual(ran, 1, "the target page's own refresh ran so the new tab is actually drawn")
+end)
+
+test("options: SelectTab refreshes only the target page, not every rendered page", function()
+  -- red under: SelectTab calling O.RefreshAllPanels (a blanket sweep) instead of the scoped
+  -- O.RefreshPanel(ctx, true) -- would rebuild page B's refreshers too, hitching it and dropping
+  -- its transient UI state for a link that only meant to move page A's tab.
+  local O = Fixture.new()
+  local a = O.CreatePanel("TestPanelSelTab3", "General", { pageKey = "general" })
+  local b = O.CreatePanel("TestPanelSelTab4", "Bar", { pageKey = "bar" })
+  local ranA, ranB = 0, 0
+  a.refreshers[1] = function() ranA = ranA + 1 end
+  b.refreshers[1] = function() ranB = ranB + 1 end
+  assertTrue(O.SelectTab("general", "Spell Categories"))
+  assertEqual(ranA, 1, "the target page refreshed")
+  assertEqual(ranB, 0, "an untouched, separately rendered page must not be rebuilt")
+end)
+
+test("options: SelectTab reports false for a page that has never been rendered", function()
+  -- red under: SelectTab storing an intent, or returning true for an unrendered pageKey.
+  local O = Fixture.new()
+  O.CreatePanel("TestPanelSelTab2", "General", { pageKey = "general" })
+  assertEqual(O.SelectTab("nosuchpage", "Whatever"), false)
+end)
+
 -- ── the lazy Defaults button ───────────────────────────────────────────────────────────────
 
 test("options: CreatePanel only DECLARES the Defaults button, never builds it", function()

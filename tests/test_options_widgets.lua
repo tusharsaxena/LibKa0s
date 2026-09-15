@@ -390,10 +390,11 @@ end)
 
 -- ── ChoiceGrid (minor 16) ─────────────────────────────────────────────────────────────────
 --
--- A matrix of radio cells over rows that share one value list: a Filters tab's categories, each
--- one Default / Whitelist / Blacklist. Before this a host either drew three dropdowns' worth of
--- layout code itself (options-ui-§6 forbids it) or a dropdown per row, which hides the choice
--- behind a click. The rows are plain path rows in the fixture's store, which takes any key.
+-- A matrix of one-choice-per-row checkbox cells over rows that share one value list: a Filters
+-- tab's categories, each one Default / Whitelist / Blacklist. Before this a host either drew
+-- three dropdowns' worth of layout code itself (options-ui-§6 forbids it) or a dropdown per row,
+-- which hides the choice behind a click. The rows are plain path rows in the fixture's store,
+-- which takes any key.
 
 local GRID_COLUMNS = {
   { value = "",     label = "Default" },
@@ -408,7 +409,8 @@ local function gridRows()
   }
 end
 
---- The radio cells of one grid line, in column order.
+--- The choice cells of one grid line, in column order. Named `radiosOf` for the exclusive,
+--- radio-like BEHAVIOR the cells hold, not their widget type -- they are plain CheckBoxes.
 local function radiosOf(line)
   local out = {}
   for _, w in ipairs(line.children) do
@@ -552,20 +554,58 @@ test("widgets: ChoiceGrid reads and writes a path-less row through its own get/s
   assertEqual(held, "", "written through row.set")
 end)
 
-test("widgets: ChoiceGrid radios are radio-typed", function()
-  local O, _, ctx = bench()
+test("widgets: ChoiceGrid cells are ordinary checkboxes, never radios and never painted", function()
+  local O, rec, ctx = bench()
+  rec.store["cat.alpha"] = "show"
   local ace = O.AceGUI
   local realCreate = ace.Create
+  local checkBoxes = {}
   ace.Create = function(self, wtype)
     local w = realCreate(self, wtype)
-    if wtype == "CheckBox" then function w:SetType(t) self.checkType = t end end
+    if wtype == "CheckBox" then
+      -- red under: choiceCell calling SetType("radio") again -- the owner wants a checkbox that
+      -- BEHAVES like a radio (one choice per row), not the widget itself turned into one (G-1)
+      function w:SetType(t) self.checkType = t end
+      checkBoxes[#checkBoxes + 1] = w
+    end
     return w
   end
   local ok, lines = pcall(O.ChoiceGrid, ctx, { rows = gridRows(), columns = GRID_COLUMNS })
   ace.Create = realCreate
   assertTrue(ok, tostring(lines))
-  -- red under: dropping SetType("radio") (the cells would draw as square checkboxes)
-  for _, cb in ipairs(radiosOf(lines[1])) do assertEqual(cb.checkType, "radio") end
+
+  for _, cb in ipairs(checkBoxes) do
+    assertNil(cb.checkType, "SetType was never called: the cell stays an ordinary checkbox")
+    -- red under: choiceFill (or any successor) reintroduced without an owner decision -- the lit
+    -- cell reads with AceGUI's own check glyph, never a painted texture (G-1)
+    assertNil(cb.__checkTexture, "no cell carries a paint of its own; the check glyph is stock AceGUI")
+  end
+
+  -- alpha holds "show" (Whitelist, column 2 of GRID_COLUMNS); the exclusive one-choice-per-row
+  -- behavior is choiceCell's callback, not the widget's appearance, and is unchanged by G-1
+  local radios = radiosOf(lines[1])
+  assertFalse(radios[1]:GetValue(), "the unchosen column reads false")
+  assertTrue(radios[2]:GetValue(), "the chosen column reads true")
+end)
+
+test("widgets: a CheckBox recycled after a ChoiceGrid comes back with an untinted check (G-2)", function()
+  -- Retained from v1.36.1 on purpose (G-2): this used to be the only thing that caught choiceFill
+  -- painting the pooled check texture gold and never restoring it on Release, which leaked into
+  -- every checkbox recycled afterward -- this addon's or another's sharing the same AceGUI
+  -- instance. G-1 withdraws the fill and the OnRelease restore it required, so this test no longer
+  -- exercises a live write; it is re-pointed at what still holds -- a checkbox recycled after a
+  -- ChoiceGrid comes back with the same untinted check any other recycled CheckBox has. Keep this
+  -- test alive: a future fill attempt (LibKa0s/OptionsWidgets.lua) MUST restore the pooled check
+  -- texture's vertex color on OnRelease, or this regression returns silently.
+  local O, _, ctx = bench()
+  local lines = O.ChoiceGrid(ctx, { rows = gridRows(), columns = GRID_COLUMNS })
+  for _, cb in ipairs(radiosOf(lines[1])) do cb:Release() end
+
+  local recycled = O.AceGUI:Create("CheckBox")
+  local r, g, b = recycled.check:GetVertexColor()
+  assertEqual(r, 1, "a checkbox recycled after a grid is not tinted (red)")
+  assertEqual(g, 1, "a checkbox recycled after a grid is not tinted (green)")
+  assertEqual(b, 1, "a checkbox recycled after a grid is not tinted (blue)")
 end)
 
 test("widgets: ChoiceGrid disables a row's cells by its disabledIf", function()
@@ -653,6 +693,111 @@ test("widgets: ChoiceGrid with no AceGUI draws nothing", function()
     -- red under: reaching for the scroll without the EnsureScroll guard every maker has
     assertNil(O.ChoiceGrid(ctx, { rows = gridRows(), columns = GRID_COLUMNS }))
   end)
+end)
+
+-- ── ChoiceGrid extraColumn (minor 17) ──────────────────────────────────────────────────────
+--
+-- A per-row link after the label, so a host (Aura Master's Spell Categories tab) can send the
+-- player from a category's grid line to that category's own spell list without drawing any
+-- layout code of its own.
+
+test("widgets: an extraColumn draws a header cell and a clickable per-row link, wired to onClick", function()
+  -- red under: extraColumn absent from the header or the line (the host has nowhere to draw its link)
+  local clicked
+  local O, _, ctx, lines, rows = drawGrid(nil, {
+    extraColumn = {
+      header = "Spells",
+      cell = function(row)
+        if row.label ~= "Alpha" then return nil end
+        return { text = "See spells", onClick = function() clicked = row.label end }
+      end,
+    },
+  })
+  local header = Fixture.flowRows(O.EnsureScroll(ctx))[1]
+  assertEqual(header.children[5].text, "Spells", "the extra header lands after the label heading")
+
+  local link = lines[1].children[5]
+  assertEqual(link.type, "InteractiveLabel", "a live cell renders as a clickable label")
+  assertEqual(link.text, "See spells")
+  link:__fire("OnClick")
+  assertEqual(clicked, rows[1].label, "the row's own onClick fired")
+end)
+
+test("widgets: an extraColumn's nil cell draws a blank of the same width, so rows stay aligned", function()
+  local _, _, _, lines = drawGrid(nil, {
+    extraColumn = {
+      header = "Spells",
+      cell = function(row)
+        if row.label ~= "Alpha" then return nil end
+        return { text = "See spells", onClick = function() end }
+      end,
+    },
+  })
+  local blank = lines[2].children[5]
+  -- red under: a nil cell collapsing the line instead of drawing a same-width placeholder
+  assertEqual(blank.type, "Label")
+  assertEqual(blank.text, "")
+  assertNear(blank.relativeWidth, lines[1].children[5].relativeWidth, 1e-6,
+    "the blank matches the live cell's width")
+end)
+
+test("widgets: an extraColumn cell that raises costs only that cell, not the line or the grid", function()
+  local _, _, _, lines = drawGrid(nil, {
+    extraColumn = {
+      header = "Spells",
+      cell = function(row)
+        if row.label == "Alpha" then error("host cell exploded") end
+        return { text = "See spells", onClick = function() end }
+      end,
+    },
+  })
+  -- red under: extra.cell called unguarded (a raising host cell would take the whole line down)
+  assertEqual(#lines, 2, "both lines still drew")
+  assertEqual(lines[1].children[4].text, "Alpha", "the row's own label still drew")
+  assertEqual(lines[1].children[5].type, "Label", "the raised cell fell back to a blank")
+  assertEqual(lines[1].children[5].text, "")
+  assertEqual(lines[2].children[5].text, "See spells", "the row after it drew normally")
+end)
+
+test("widgets: an extraColumn cell with a non-function onClick draws without wiring a handler", function()
+  -- red under: `if cell.onClick then` treating a truthy non-function as callable, raising at
+  -- click-time inside a settings page render (checked with `type(cell.onClick) == "function"`)
+  local _, _, _, lines = drawGrid(nil, {
+    extraColumn = {
+      header = "Spells",
+      cell = function(row)
+        if row.label ~= "Alpha" then return nil end
+        return { text = "See spells", onClick = "not-a-function" }
+      end,
+    },
+  })
+  local link = lines[1].children[5]
+  assertEqual(link.type, "InteractiveLabel")
+  assertEqual(link.text, "See spells")
+  -- firing OnClick must not raise, and must not call the malformed value
+  link:__fire("OnClick")
+end)
+
+test("widgets: an extraColumn narrows the label column, and the line still fits one Flow row", function()
+  local _, _, _, lines = drawGrid(nil, {
+    extraColumn = { header = "Spells", cell = function() return nil end },
+  })
+  for _, line in ipairs(lines) do
+    local label = line.children[4]
+    local extra = line.children[5]
+    assertTrue(label.relativeWidth > 0 and label.relativeWidth + 3 * 0.12 + extra.relativeWidth <= 1,
+      "the label gave back the extra column's width, and the line still fits")
+  end
+end)
+
+test("widgets: with no extraColumn, ChoiceGrid's line shape is unchanged", function()
+  -- red under: choiceLabelRel counting a nil extraColumn as present and shrinking the label anyway
+  local _, _, _, lines = drawGrid()
+  for _, line in ipairs(lines) do
+    assertEqual(#line.children, 4, "three cells and the label, nothing more")
+    local label = line.children[4]
+    assertTrue(label.relativeWidth > 0 and label.relativeWidth + 3 * 0.12 <= 1)
+  end
 end)
 
 -- ── ResolveId / IdInput / IdList (minor 16) ────────────────────────────────────────────────
@@ -973,6 +1118,30 @@ test("IdList: one line per entry -- icon, name and gray id, then Remove or a che
   assertTrue(toggle.value, "seeded from the entry")
 end)
 
+test("IdList: an entry's note is drawn under its name, and only when it has one", function()
+  local _, _, _, lines = listBench({
+    { id = 21562, note = "also in Defensives (Hide) - hidden by rule 3" }, { id = 774, toggle = true },
+  })
+  -- red under: `note` ignored, or drawn for an entry that carries none
+  local noted = lines[1].children[2]
+  assertEqual(noted.type, "Label")
+  assertEqual(noted.text, "|cff808080also in Defensives (Hide) - hidden by rule 3|r")
+  -- with a note present the note line sits between the name and the action widget
+  assertEqual(lines[1].children[3].type, "Button")
+  -- an entry with no note draws only the name and the action widget, unchanged
+  assertEqual(#lines[2].children, 2, "no note line inserted for an entry without one")
+  assertEqual(lines[2].children[2].type, "CheckBox")
+end)
+
+test("IdList: an empty-string or non-string note draws nothing", function()
+  local _, _, _, lines = listBench({
+    { id = 21562, note = "" }, { id = 774, toggle = true, note = 42 },
+  })
+  -- red under: an empty or non-string note drawing a blank/garbage line anyway
+  assertEqual(#lines[1].children, 2, "an empty note draws no line")
+  assertEqual(#lines[2].children, 2, "a non-string note draws no line")
+end)
+
 test("IdList: Remove and a toggle call the host back, and Remove asks for a rebuild", function()
   local _, _, _, lines, log = listBench({ { id = 21562 }, { id = 774, toggle = true, on = true } })
   lines[1].children[2]:__fire("OnClick")
@@ -1218,7 +1387,7 @@ end)
 -- and a candidate the client has not cached has no name to match until it is loaded.
 
 local ZEPHYR = "Potion of the Hushed Zephyr"
-local ELLIPSIS = "\226\128\166"
+local ELLIPSIS = "..."  -- G-1: plain ASCII, the owner's font draws U+2026 as an empty box
 local ITEM_HINT = "Names work for items you carry (or carried this session) and ones this list " ..
   "knows; otherwise use the id or shift-click a link."
 

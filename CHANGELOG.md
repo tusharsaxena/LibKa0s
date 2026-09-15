@@ -10,6 +10,137 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.36.2 — 2026-09-15
+
+Versions in this release: **Options minor 20**, **OptionsWidgets minor 19**. Every other major is
+unchanged from v1.36.1.
+
+**Withdrawal of a shipped decision, on the owner's in-game feedback, not a defect fix.** v1.36.0
+gave `O.ChoiceGrid`'s lit cell a solid yellow fill in place of AceGUI's own checkmark; the owner
+has now seen it in-game and asked for it gone: *"The yellow filled square looks awkward, just make
+it a checkbox like 'only these categories'"* — the same plain AceGUI checkbox check as the
+`Only these categories` checkbox that sits above the grid on the same panel. `OptionsWidgets.lua`
+18 → 19 does exactly that: `choiceFill` and its color constants (`CHOICE_FILL_R`/`G`/`B`) are
+deleted outright, and `choiceCell` no longer paints the check texture at all. The cells stay
+ordinary `CheckBox` widgets rather than reverting to `SetType("radio")` — the owner wants a
+checkbox that *behaves* like a radio, which is `choiceCell`'s callback, not a change to the widget.
+**The exclusive one-choice-per-row behavior is completely untouched**: it has always lived in that
+callback, never in the widget's appearance, across every version from W16 on.
+
+**v1.36.1's pooled-`CheckBox` fix is moot, and is removed as dead code, not left inert.** That
+release added an `OnRelease` callback restoring the check texture's vertex color to `(1, 1, 1)`,
+to undo the fill's gold tint before AceGUI's pool handed the frame to its next tenant. With no
+fill writing a tint, there is nothing left for that callback to undo, so it is deleted along with
+`choiceFill`. No other `OnRelease` wiring on these cells is touched.
+
+**The v1.36.1 test kit stays, and its regression test is re-pointed rather than dropped.**
+`testkit` revision 21's pooled `CheckBox` check texture — and the coverage built on it — closed a
+real Critical (a gold tint leaking into every recycled checkbox, this addon's or another's sharing
+the same AceGUI instance) that was invisible before it existed. The leak this version's write
+enabled cannot recur with no write to leak, but the coverage is exactly what will make a future
+fill attempt safe to try: `tests/test_options_widgets.lua`'s regression test keeps the same shape
+(draw a grid, release its cells, acquire another `CheckBox`, its check comes back untinted), with
+its comment rewritten to say it no longer exercises a live write and that a future fill MUST
+restore the `OnRelease` handler or this regression returns silently.
+
+**A player-facing non-ASCII byte, found by AuraMaster's own T-1 sweep, is fixed here at the
+source.** The owner's font draws most non-ASCII glyphs as an empty box (screenshot: a settings
+panel reading `General [box] Spell Categories`). AuraMaster's own locale strings were swept for
+this in the addon repo, but one instance reaches a player from THIS library and could not be fixed
+downstream: `Options.lua`'s Reset-all tooltip (`RESET_ALL_TIP_PROFILES_PAGE`) named `Profiles → Reset
+Profile` with a real arrow glyph (`\226\134\146`, U+2192). It now reads `Profiles -> Reset Profile`,
+plain ASCII. `OptionsWidgets.lua`'s `O.IdInput` "looking up" status text
+(`ID_TEXT.looking`) carried the same problem with an ellipsis (`\226\128\166`, U+2026) rather than
+`...`; both are now plain ASCII. The em dash (`\226\128\148`, U+2014) is kept everywhere it already
+appears — it renders correctly in the owner's own screenshots, and AuraMaster's parallel sweep kept
+its 100 uses on the same basis, so the two repos do not disagree about what is safe. `Options.lua`
+19 → 20 for this fix — the string is not a member of the public surface, but its content changed
+and minor 19 is already vendored into at least one consumer, so LibStub's mechanism needs a
+strictly higher number to win a re-vendor. `OptionsWidgets.lua` needed no second bump: its 18 → 19
+bump above was never externally consumed, so the `looking` fix lands in the same released minor 19.
+
+**A guard added so this cannot come back — DECODED, not text-matched, after a fix-round finding
+that the first cut of it could not catch the mistake it existed to prevent.** A first version of
+`tests/test_prose.lua`'s guard matched the literal source TEXT of a decimal escape (`\226`, the six
+characters backslash-2-2-6) and so caught only a hand-written escape; a contributor who pastes a
+literal `→` straight into a string — raw UTF-8 bytes, no backslash anywhere — produced a line that
+version could not match, and it passed in silence: precisely how the arrow this release removes got
+in in the first place. The gate now DECODES each `.lua` line (`decodeLuaEscapes`: only `\ddd` can
+decode to a byte ≥ 128, every other Lua 5.1 escape decodes under 128) after stripping its `--`
+comment quote-aware (`stripLineComment`, so a `--` or a quote inside a string literal cannot
+false-trigger it), then scans the DECODED bytes for anything ≥ 128 — the same shape AuraMaster's
+own `tests/test_locale.lua` scans its loaded locale values with, adapted to source text because
+this library has no single loaded locale table to walk the way that gate does. Scoped to `.lua`
+files only, and to strings rather than comments — this file's own box-drawing rules and 480-odd
+literal em dashes among them are free to use real UTF-8 because none of it ships to a tooltip. One
+blanket exemption, matching AuraMaster's own gate: the decoded em dash. One ratified, path-scoped
+exemption beyond that: `Core.lua`'s close-control fallback glyph, the multiplication sign (decoded
+`\195\151`, U+00D7) — predates this gate, sits in Latin-1 Supplement rather than the Arrows block
+the owner's screenshot actually broke on, and `Core.lua`'s own doc comment already argues for
+keeping it. Not silently exempted forever: flagged in the test's own comment as a row to drop first
+if the owner confirms it boxes too. Proved by pasting a literal `→` into `OptionsWidgets.lua`'s
+`ID_TEXT.looking` and confirming the suite turned red naming that exact line, then reverting it.
+
+No member is added, removed, renamed or resignatured, and no descriptor field changes. Every host
+that draws a `ChoiceGrid` is affected whether or not it uses `extraColumn` or an `IdList` `note` —
+the re-vendor of `LibKa0s/` is the whole change; `tests/_kit/` is unchanged at this version.
+
+## v1.36.1 — 2026-09-15
+
+Versions in this release: **OptionsWidgets minor 18**, **testkit revision 21**. Every other major,
+and `Options.lua` itself, is unchanged from v1.36.0.
+
+**Critical defect fix, found by a whole-branch review of v1.36.0 before it shipped further.**
+`OptionsWidgets.lua`'s `choiceCell` (`O.ChoiceGrid`) paints a lit cell by repainting AceGUI's own
+`check` texture gold — there is nowhere else to draw a checkbox's tick. AceGUI **pools** the
+CheckBox's underlying frame: a widget's `OnAcquire` resets that texture's texture, texcoord and
+blend mode for whoever the pool hands it to next, but never its vertex color, and nothing in
+`choiceCell` restored it either. **Consequence: once any host drew a `ChoiceGrid`, every CheckBox
+later recycled from that AceGUI instance's pool — not only in the addon that drew the grid, but in
+any other addon sharing the same Ace3 embed — drew a gold checkmark instead of a white one, for the
+rest of the session.** `OptionsWidgets.lua` 17 → 18 fixes it: `choiceFill` now restores the check
+texture's color to its un-painted default (`1, 1, 1`) from an `OnRelease` callback, the same pattern
+this file already uses for the landing page's logo texture.
+
+No suite caught this at v1.36.0 because the test kit's `CheckBox` fake carried no `.check` texture
+at all, so `choiceFill` always took its early guard and the paint was never exercised — a gap flagged
+and accepted as a deferred minor when the feature landed, which is exactly why it reached a release.
+`testkit` revision 21 closes it: the stock `CheckBox` fake now carries a real `check` texture,
+**pooled across Create/Release** the one way a real one is, so `tests/test_options_widgets.lua` can
+pin both the paint and its restoration directly — draw a grid, release its cells, acquire another
+CheckBox, and its check texture is white, not the grid's gold.
+
+No member is added, removed, renamed or resignatured, and no descriptor field changes. Every host
+that draws a `ChoiceGrid` is affected regardless of whether it uses `extraColumn` or an `IdList`
+`note` — the re-vendor of `LibKa0s/` and `tests/_kit/` together is the whole fix.
+
+## v1.36.0 — 2026-09-14
+
+Versions in this release: **Options minor 19**, **OptionsWidgets minor 17**. Every other major is
+unchanged from v1.35.0.
+
+Two files move, `Options.lua` 18 → 19 and `OptionsWidgets.lua` 16 → 17. Four changes to the
+settings panel, all in `O.ChoiceGrid` and `O.IdList`, plus one new instance member:
+
+- `O.ChoiceGrid` cells are now checkboxes with a yellow fill instead of AceGUI radios. The exclusive
+  one-choice-per-row behavior is unchanged — it never lived in the widget, it lives in
+  `choiceCell`, and still does.
+- `O.ChoiceGrid` takes an optional `extraColumn = { header, cell(row) }`, drawn after the label
+  column, for a per-row link a host can supply. Host `cell` code runs `pcall`'d per cell in the
+  extracted `choiceExtraCell`, so a raising cell costs that cell and not the row or the page. The
+  cell's `onClick` handler is checked with `type(cell.onClick) == "function"` rather than
+  truthiness, hardened in the same release so a malformed handler cannot raise at click time.
+- An `O.IdList` entry may carry `note = <string>`, drawn as its own line under the entry's name, in
+  the same gray the id uses. An empty string or a non-string `note` draws nothing.
+- New instance member `O.SelectTab(pageKey, tabKey) -> boolean`. Moves an already-rendered page to
+  one tab and refreshes **that page only**, through `O.RefreshPanel(ctx, true)`. Returns `false` for
+  a page that has not been rendered, and stores no intent for one that is later rendered — the
+  caller still opens the page itself.
+
+No member is removed, renamed or resignatured, and no descriptor field is removed. `ChoiceGrid`'s
+signature is unchanged; `extraColumn` is additive on `spec`. `IdList`'s entry shape gains one
+optional field, `note`. One new instance member, `SelectTab`, is added.
+
 ## v1.35.0 — 2026-09-13
 
 Versions in this release: **Core minor 7**, **Env minor 1**, **Pool minor 3**, **Item minor 1**,

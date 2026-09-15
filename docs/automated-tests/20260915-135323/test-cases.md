@@ -1120,7 +1120,7 @@ badge and any count quoted in the docs must agree with it.
 ### test_prose.lua (3)
 
 - prose: no British spelling in the shipped library or the shipped kit
-- prose: no non-ASCII byte reaches a player, the em dash excepted
+- prose: no non-ASCII byte escape reaches a player, the em dash excepted
 - prose: no retired §N.M section reference in the shipped library or the shipped kit
 
 ### test_layout_cap.lua (3)

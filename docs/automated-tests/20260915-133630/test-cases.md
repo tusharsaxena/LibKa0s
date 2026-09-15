@@ -1117,10 +1117,9 @@ badge and any count quoted in the docs must agree with it.
 - kitsync: the runner-mode case skips, with a reason, where there is no work tree
 - kitsync: the runner-mode case skips, with a reason, where io.popen is unavailable
 
-### test_prose.lua (3)
+### test_prose.lua (2)
 
 - prose: no British spelling in the shipped library or the shipped kit
-- prose: no non-ASCII byte reaches a player, the em dash excepted
 - prose: no retired §N.M section reference in the shipped library or the shipped kit
 
 ### test_layout_cap.lua (3)
@@ -1167,8 +1166,8 @@ badge and any count quoted in the docs must agree with it.
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 11 |
-| test_prose.lua | 3 |
+| test_prose.lua | 2 |
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1041** |
+| **Total** | **1040** |

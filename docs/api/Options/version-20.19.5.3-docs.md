@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 18.16.5.3
+# `LibKa0s-Options-1.0` — version 20.19.5.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,924 +8,103 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **18** · `OptionsWidgets.lua` **16** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **20** · `OptionsWidgets.lua` **19** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.35.0 |
-| Status | Superseded |
-| Supersedes | [version 18.15.5.3](./version-18.15.5.3-docs.md) |
-| Superseded by | [version 19.17.5.3](./version-19.17.5.3-docs.md) — `ChoiceGrid` cells are checkboxes with a yellow fill instead of AceGUI radios, `ChoiceGrid` takes an optional `extraColumn`, an `IdList` entry may carry `note`, and one new member: `SelectTab` |
+| Shipped in | v1.36.2 |
+| Status | **Current** |
+| Supersedes | [version 19.19.5.3](./version-19.19.5.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 18, OptionsWidgets = 16, OptionsCompose = 5, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 20, OptionsWidgets = 19, OptionsCompose = 5, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O18`
-for `Options.lua` minor 18, `W16` for `OptionsWidgets.lua` minor 16, `C5` for `OptionsCompose.lua`
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O20`
+for `Options.lua` minor 20, `W19` for `OptionsWidgets.lua` minor 19, `C5` for `OptionsCompose.lua`
 minor 5, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
 
-**One file moves, `OptionsWidgets.lua` 15 → 16.** It adds six instance members, `O.ChoiceGrid`,
-`O.ResolveId`, `O.UnnamedCandidates`, `O.IdInput`, `O.IdList` and the table `O.ID_NAME_HINT`, all **W16**. It widens one row field: `disabledIf` is read
-by every maker, and it may be a predicate as well as a path. It adds one `RenderRows` option,
-`opts.disabled`. No member is removed, renamed or resignatured. The member manifest differs from
-18.15.5.3's in the `OptionsWidgets` minor alone, because it lists the library table's members, and
-all six additions hang off the instance `lib:New` returns. `lib.STRINGS` gains no key. The id
-widgets' words are a table of their own, overridable per call (see
-[the id input and the id list](#the-id-input-and-the-id-list)).
-
-**Why.** AuraMaster's settings rework (feedback batch 5, 2026-09-13) asked for three things the
-flow engine could not draw:
-- a Filters page whose rows are spell categories and whose columns are *Default · Whitelist ·
-  Blacklist*, one choice per row;
-- rows that dim when their subject does not apply, and a whole Bars page drawn disabled over an
-  icons container;
-- spell lists a player adds to by id, by a shift-clicked link or by name.
-
-Three more hosts had a hand-written id editor of their own, and they are the adopters:
-ConsumableMaster's add-by-id line, and BankLedger's and LootHistory's black- and whitelists. Each
-had its own edit box, its own Add button, and no name lookup.
-
-### `disabledIf` on every maker, as a path or a predicate
-
-Through W15 only the color picker read `row.disabledIf`, and only as a settings path. From W16 every
-maker reads it: the checkbox, the slider, the dropdown (the LSM media dropdowns and a numeric enum
-included), the edit box and the color picker. It is applied when the widget is built and again by
-the widget's refresher, so a write that changes the answer re-dims or brightens the row on the next
-`RefreshScalars`. AceGUI's own disabled state does the dimming.
-
-| Value | Read as |
-|---|---|
-| a string | A settings path. Truthy means disabled. A row with no `path` reads it through its own `row.get(key)`, as at W15. |
-| a function | `disabledIf(row)`, `pcall`'d. A truthy return means disabled. **A predicate that raises reads as enabled**: a raise at build would otherwise cost the whole row for the sake of its dimming. |
-| `nil` | Nothing. **The widget is never touched.** |
-
-The last row is deliberate. A row without `disabledIf`, drawn outside a disabled render, gets no
-`SetDisabled` call at all, not even `SetDisabled(false)`. Five hosts disable their own widgets
-after drawing them, and a refresher that re-enabled them on the next write anywhere would undo that.
-
-The class-color companion rule does not move: a composed swatch still carries no `disabledIf`
-(`options-ui-§17`, `OptionsCompose.lua`), because its alpha is read under class color.
-
-### `RenderRows(ctx, rows, afterGroup, pairWith, opts)` — `opts.disabled`
-
-`opts = { disabled = true }` draws every widget of the call disabled. That covers the rows, and
-also the buttons an `afterGroup` or `pairWith` hook draws through `O.InlineButtonPair` or
-`O.SessionCheckbox`. It exists for a page whose subject does not apply, such as a Bars page shown
-over an icons container.
-
-- **It rides on `ctx.__renderDisabled` for the call's duration only.** Each maker snapshots the flag
-  when it builds and never re-reads it from the ctx. A refresher that read it live would lift a
-  disabled page's dimming on the first write anywhere, and a later render's flag could reach an
-  earlier page's widgets.
-- **A nested call inherits it.** A `RenderRows` or `O.ChoiceGrid` drawn from inside a disabled call,
-  with no `disabled` of its own, draws disabled too, because its widgets are part of the same page.
-- **The outer value is restored on the way out, including on a raise.** The call's loop now runs
-  inside a `pcall`, and the raise is re-raised unchanged with `error(err, 0)`. A single row was
-  already guarded on its own and still is. What can escape is a raising `afterGroup` hook or a
-  raising heading, as before. The value, a string's `file:line:` prefix included, is the same one.
-  The only difference is the stack: a traceback now shows the re-raise site in `RenderRows`
-  rather than the hook's frame. This is the same trade the 16.15.4.3 bulk bracket made.
-- `opts.disabled` disables a widget inside the call and nothing more. It does not stop a host's
-  own `SetDisabled(false)` from running later.
-
-### `O.ChoiceGrid(ctx, spec)` — a matrix of radio cells
-
-Rows that share one value list are drawn as a grid. A header line carries the column labels. Each
-row then gets one line: a radio cell per column, then the row's label, with its tooltip, across the
-rest of the width. See [the choice grid](#the-choice-grid) for the spec. Each cell reads and writes
-through the same seam every maker uses, so a click runs `RefreshScalars` and every cell on the page
-re-syncs.
-
-- A stored value that no column carries lights **no** cell. Guessing a column would hide a stale
-  value behind a choice.
-- A click on the lit cell writes nothing. AceGUI toggles a radio-typed `CheckBox` off on every
-  click, so the cell re-lights itself rather than writing `false`.
-- Each line is guarded, as `RenderRows` guards each row: a row whose `get` raises costs that line
-  and is reported, and every line after it still draws.
-
-### `O.ResolveId`, `O.IdInput` and `O.IdList` — add by id, link or name
-
-`O.ResolveId(kind, text, candidates)` turns typed text into an id. It is pure and needs no ctx.
-`O.IdInput(ctx, parent, spec)` is one line an id is added through: an edit box, an Add button and
-a status line. `O.IdList(ctx, spec)` is that line plus one line per entry. See
-[the id input and the id list](#the-id-input-and-the-id-list).
-
-- **The host owns storage.** Neither widget writes a path. They call back (`onAdd`, `onRemove`,
-  `onToggle`), and the host keeps whatever stored shape it already has. ConsumableMaster, for
-  example, stores a spell as a negative id.
-- **Input that resolves to nothing, or to more than one id, adds nothing.** The status line says
-  why, in orange, and keeps the text so the player can correct it.
-- **Degraded mode.** The client APIs are read at call time and each one is guarded. With no
-  `C_Spell` or `C_Item`, a number or a link still resolves and a name finds nothing. Nothing raises.
-- **Suggestions while typing** (issue #31). As the player types, `IdInput` (and so `IdList`) lists
-  up to ten matching entries under the box, every rank of a shared name as its own labeled row. A
-  click, or Up/Down and Enter, adds that id through `onAdd`. Enter with nothing highlighted still
-  submits the typed text, so a shared name is still refused. See
-  [suggestions while typing](#suggestions-while-typing).
-
-The design (X-1) named the input line `O.IdInput(ctx, spec)`. It shipped as
-`O.IdInput(ctx, parent, spec)`, with `parent` defaulting to the page's scroll, so a host can draw
-the line into a container of its own. ConsumableMaster's priority list does exactly that.
-
-### What the host does
-
-**Nothing, on the re-vendor.** A host that calls none of the six members, passes no
-`opts.disabled`, and carries `disabledIf` only in the color picker's path form, which reads as it
-always did, renders as it did at 18.15.5.3. A row of any other type that already carried a
-`disabledIf` would start dimming, since the field was ignored there until W16. A sweep of the ten
-consumers' own source (their `libs/` and `tests/` excluded) on 2026-09-13 found no row carrying one
-at all, only comments explaining why a color row must not.
-
-Adopting is per host. AuraMaster takes `ChoiceGrid`, `IdList`, `disabledIf` and `opts.disabled`.
-ConsumableMaster takes `O.IdInput` alone and keeps its own rows. BankLedger and LootHistory take
-`O.IdList`, with `kind = "item"`, and LootHistory also with `kind = "currency"`. A suite driving the
-id widgets installs kit revision 20's `mock_ids.lua`, and a suite driving the suggestions also calls
-its `M.installIdSuggestions()` (see [testkit version 20](../testkit/version-20-docs.md)).
-ConsumableMaster lists every rank of its consumables by passing `candidates` that returns every
-consumable id it knows, all ranks included.
-
-### Previously, at 18.15.5.3
-
-**Two files move, `Options.lua` 17 → 18 and `OptionsCompose.lua` 4 → 5, and the *Reset all
-settings* button's tooltip now says what the reset does.** One descriptor field is added,
-`profilesPage` (**O18**). No member is added, removed, renamed or resignatured: the member manifest
-differs from 17.15.4.3's in the minors alone. Three strings are added to `lib.STRINGS`.
-
-**Why.** `options-ui-§12` makes the global reset a **profile reset** on an AceDB host, and a host says
-it is one by supplying `resetProfile`. The reset puts the current profile back to its defaults and
-leaves every other profile alone. The control's tooltip was one literal in `OptionsCompose.lua`,
-*"Restore every setting in this addon to its default."*, whatever the reset did. For a profile
-reset that overstates the blast radius, and §12 says the tooltip **SHOULD** name the equivalence
-instead: *"the same thing Profiles → Reset Profile does"*. A host could not fix it, because the
-composer is the only writer of the reset's text (`options-ui-§15`), which is the reason
-`leadButton` exists.
-
-The wording now follows the descriptor:
-
-| Descriptor | Tooltip | `lib.STRINGS` key |
-|---|---|---|
-| no `resetProfile` (`profilesPage` ignored) | Restore every setting in this addon to its default. | `RESET_ALL_TIP` |
-| `resetProfile` | Reset the current profile to its defaults. Your other profiles are not affected. | `RESET_ALL_TIP_PROFILE` |
-| `resetProfile` and `profilesPage = true` | Reset the current profile to its defaults — the same thing Profiles → Reset Profile does. Your other profiles are not affected. | `RESET_ALL_TIP_PROFILES_PAGE` |
-
-The first row is 17.15.4.3's text, byte for byte. "Supplied" means `type(d.resetProfile) ==
-"function"`, the same test `RestoreAllDefaults` uses to decide it is doing a profile reset, so the
-tooltip and the act cannot disagree about which kind of reset this is.
-
-**Why a field.** The library cannot see which pages a host registers: a Profiles page is AceConfig's
-`AceDBOptions-3.0` table in a host's own file, not something built through this major. So the host
-declares it. `profilesPage` is read by `MasterControls` alone, and changes nothing but that tooltip.
-
-**How.** `lib:New` hands its descriptor to `lib.__AttachCompose(O, d)`, where 17.15.4.3 passed `O`
-alone. `MasterControls` reads `resetProfile` and `profilesPage` when it is called, which is when a
-host's page file declares its General page: after `lib:New`. The rows, the buttons, their order and
-their handlers do not move, and `tests/test_options_compose.lua` pins that across all three
-descriptor shapes. A shell older than O18 passes no descriptor; the composer reads that as no
-`resetProfile` and keeps the first row's text.
-
-The strings live in `lib.STRINGS` beside the shell's other user-visible text. The em dash and the
-arrow are byte escapes in the source, for the reason `COMBAT_REFUSED`'s em dash is.
-
-### What the host does
-
-- **A Profiles page and `resetProfile`:** add `profilesPage = true` to the `lib:New` descriptor.
-  Without it the tooltip takes the second row, which is correct but does not point at the page.
-- **`resetProfile` and no Profiles page:** nothing. The tooltip moves to the second row on the
-  re-vendor.
-- **No `resetProfile`:** nothing changes, whether or not a Profiles page exists. Such a host's reset
-  is its own act or a walk of every row, and the library cannot tell which. A host that ships a
-  Profiles page and resets through its own handler is a candidate for `resetProfile` first
-  (`options-ui-§12`); the tooltip follows from that.
-- **A host that attaches the composers itself**, calling `lib.__AttachCompose(C)` onto a table of
-  its own rather than composing on the instance `lib:New` returns: the `lib:New` descriptor never
-  reaches that table, so the tooltip keeps the first row whatever it says. Pass a compose
-  descriptor as the second argument instead. The composer reads nothing off it but `resetProfile`
-  and `profilesPage`, and only for this tooltip, so `{ profilesPage = true, resetProfile =
-  <forwarder> }` is enough, with the forwarder calling the real descriptor's `resetProfile` at call
-  time rather than restating it. MultiMeters is that host (`settings/Schema_Compose.lua`). *Added
-  after the tag, 2026-09-13; no code changed.*
-
-### Previously, at 17.15.4.3
-
-**One file moves, `Options.lua` 16 → 17, and it loads every LibSharedMedia font the first time a
-Ka0s settings panel is shown.** No member is added, removed, renamed or resignatured, and no
-descriptor field is added: the member manifest differs from 16.15.4.3's in the `Options` minor
-alone, and the preload reads the `getLSM` the descriptor already carries. One library-level member
-arrives, `lib.__PreloadFonts(LSM)`. It is `__`-prefixed, so it is outside the manifest, and no host
-calls it; see [The library surface](#the-library-surface). The same minor corrects three source
-docstrings on the bulk bracket's `count`. That is a comment change, and the contract below already
-said it.
-
-**Why.** Reported by the owner against every Ka0s addon: the first time a font dropdown opens in a
-session, many of its rows are blank, and the second time every row draws. The dropdown is
-AceGUI-3.0-SharedMediaWidgets' `LSM30_Font`, the `dialogControl` `O.FontGroup` writes. It builds its
-pull-out list when it opens, running `f.text:SetFont(font, size, outline); f.text:SetText(k)` for
-every registered face (`FontWidget.lua`, `ToggleDrop`). The client loads a font file the first time
-something references it, and text set with a face that is not loaded yet draws blank until
-something sets it again. The blank rows are exactly the faces nothing had used yet that session,
-which in practice means third-party LSM faces; the ones the client had already loaded (Blizzard's
-2002, AR Hei and the like) drew fine. The widget is an upstream vendored library and is not edited.
-What the library can do is make sure every face is loaded before a dropdown can be opened, and a
-dropdown can only be opened from a panel that has been shown.
-
-#### When it runs
-
-| Trigger | Covers | In combat |
-|---|---|---|
-| `O.SetRenderer`'s OnShow, after the combat refusal and before the render check | Every page with a renderer, and the main page when `buildMain` is set | Skipped. The refusal has just closed the window, so no dropdown can open on that show. |
-| An OnShow hook `O.CreatePanel` installs on every panel | A page that never goes through `SetRenderer`, including the main page without `buildMain` | Runs. That page has no refusal, so if it is on screen its dropdowns can be opened. |
-
-**Never at load or at `PLAYER_LOGIN`.** Loading every face costs memory, and some of Blizzard's CJK
-faces are large. A player who never opens settings must not pay for it. Opening a font dropdown
-loads every face anyway, so a player who does open settings pays nothing extra, only earlier.
-
-**Why the two triggers.** `SetRenderer` is the seam every page in the collection draws through, and
-the main page takes it when `buildMain` is set. A page without a renderer is still supported: the
-refresh tiers keep a migration seam for it, and `RenderRows` / `RenderField` are public, so such a
-page can hold an `LSM30_Font` row the library never sees drawn. `CreatePanel` is the one call every
-page passes through, so the hook goes there. `SetRenderer`'s `SetScript` replaces that hook, which
-is why its own handler calls the preload itself. A host that `SetScript`s its own OnShow onto a
-renderer-less page replaces the hook as well. No consumer did, in the sweep taken for this release.
-
-**Why skip it in combat on the renderer path.** Creating FontStrings is not protected, so this is a
-cost decision rather than a taint one. Loading every face is a disk hitch, the middle of a fight is
-the worst time for one, and the show being refused cannot open a dropdown. The next show outside
-combat is the first one on which a dropdown can be opened, and it preloads before anything is drawn.
-
-**On every show, not only the first.** After the first, the call walks LSM's font table and loads
-nothing. It also retries a show that found no LSM or no `CreateFrame`.
-
-#### What it does
-
-- **One frame for the whole session**, parented to `UIParent`, shown, at full alpha, 1x1 and parked
-  off the left edge of the screen. It is not hidden and not alpha 0, because the client may skip work
-  for a region it will not draw. It is not parented to a page, because a page's hide would hide it.
-- **One FontString per distinct font path**, not per LSM key, since several keys can name one file:
-  `fs:SetFont(path, 12, "")` then `fs:SetText("Aa")`, `pcall`'d together. A `SetFont` that fails
-  without raising leaves a string whose `SetText` raises instead.
-- **A path is marked before it is tried**, so a face the client refuses is tried once rather than on
-  every show, and costs that face alone.
-- **Faces registered later are loaded as they register.** After the first preload the library
-  subscribes once to LSM's `LibSharedMedia_Registered` callback, and a `font` registration re-runs
-  the preload, which loads only the new path. A player who never opens settings is never
-  subscribed.
-- **Nothing is reported.** No LSM, an LSM without `HashTable`, a `getLSM` that raises, no
-  `CreateFrame`, a face the client refuses: each costs the preload and never the page, and none of
-  them is the page's fault. With no `CreateFrame`, nothing is marked, and the next show tries again.
-
-**The state is library-level**, on `lib.__fontPreload`, and so is the subscription. Every host's
-`lib:New` shares it, and a LibStub minor upgrade keeps it, because every vendored copy in the
-session is handed the same `lib`. A client running several Ka0s addons loads each face once.
-Both callers, an instance's trigger and the LSM callback, look `lib.__PreloadFonts` up on `lib`
-at call time, so after an upgrade the newest copy's code is what runs.
-
-#### What the host does
-
-**Nothing.** A host that passes `getLSM` gets the preload on re-vendor. A host that does not pass it
-gets none, and it has no LSM-backed values either, because `O.LSMValues` reads the same field.
-
-**WhatGroup** wraps `SetRenderer` and `EnsureDefaultsButton` so that the page body and the Defaults
-button build one frame after OnShow rather than inside it. The preload runs in the library's own
-OnShow, so under that wrapper it still runs synchronously, on the first show. It creates one plain
-frame and its FontStrings and no AceGUI widget. WhatGroup's `tests/test_panel.lua` pins that no AceGUI
-widget is created synchronously on OnShow, and that stays true. Its GameMenu Logout taint smoke test
-is still the check to run after the re-vendor.
-
-#### The `count` docstrings
-
-Three source docstrings in `Options.lua`, all on the bulk bracket, still described `count` as "the
-rows actually written". They were the descriptor's `bulkEnd` entry, `runBulk`'s, and
-`RestoreAllDefaults`'. The descriptor entry also told the host to emit its line with "N = count".
-This document and 16.15.4.3's were corrected after the v1.32.0 tag. The source now says the same:
-`count` is the number of rows the walk called `applyDefault` for and that returned, including a row
-already at its default. It is therefore **not** `debug-logging-§10`'s N, which the host tallies
-itself. No behavior changed.
-
-### Previously, at 16.15.4.3
-
-**One file moves, `Options.lua` 15 → 16, and it gives the two reset walks an optional bulk
-bracket.** No member is added, removed, renamed or resignatured — the member manifest differs from
-15.15.4.3's in the `Options` minor alone. What is added is two optional descriptor fields,
-`bulkBegin` and `bulkEnd`, which `RestoreDefaults` and `RestoreAllDefaults` call around their walks.
-A host that supplies neither runs exactly minor 15's walk: the same calls in the same order, and no
-`pcall` anywhere on the path.
-
-**Why.** On 2026-09-12 the owner ruled, and the standard codified at v2.44.0 in
-`debug-logging-§10`, that a **bulk copy or reset through the settings helper is logged as ONE
-`debug-logging-§8` flow line** naming the act, its scope and the row count — for example
-`[Set] reset General page: 14 rows` — and **MUST NOT** emit a per-row `[Set]` line. Validation and
-each row's `onChange` still run per row. Most Ka0s addons' Defaults buttons go through
-`RestoreDefaults`, and their global reset through `RestoreAllDefaults`. Both walk rows and call the
-descriptor's `applyDefault` per row, and the host's write seam logs one `[Set]` per call, so until
-this minor every Defaults press was N lines and the host had no way to tell a reset from N single
-writes. The library knows when the act starts and ends; the bracket tells the host.
-
-#### The two fields
-
-| Field | Signature | Called |
-|---|---|---|
-| `bulkBegin` | `function(act, scope)` | Once, before the act writes its first row. |
-| `bulkEnd` | `function(act, scope, count, err, info)` | Once, after the act — **always**, whenever the bracket was begun. |
-
-`info` is a table, `{ profileReset = <boolean> }`, and it is never `nil` when `bulkEnd` is called.
-
-| Walk | `act` | `scope` | What the bracket spans | `count` | `info.profileReset` |
-|---|---|---|---|---|---|
-| `O.RestoreDefaults(pageKey, ctx)` | `"reset"` | `pageKey`, as passed | the page's row walk | rows whose `applyDefault` returned | always `false` |
-| `O.RestoreAllDefaults()` | `"reset"` | `"all"` | the row walk, then `resetProfile`, then `afterRestoreAll` | rows whose `applyDefault` returned — with `resetProfile` supplied, the `sessionOnly` rows alone, because the profile is reset whole | `true` when `resetProfile` was called **and returned**; otherwise `false` |
-
-**`count` is not the N a host logs.** It counts the rows the library handed to `applyDefault` and
-that returned. That includes a row whose value was **already at its default**, which the host
-stored again, unchanged. `debug-logging-§10` (standard v2.44.0, 7883278) makes N "the number of
-rows the act actually wrote", and a row already at its default is not one. The library cannot
-tell the difference, because only the host's write seam sees the old value. The host computes N
-itself, as the worked example below does: while the bracket is open, its muted seam tallies the
-writes that change a stored value. `count` is an upper bound on that tally and is useful for
-diagnostics, but it is not the logged figure.
-
-The refresh (`ctx.refreshers` for a page, `RefreshAllPanels` for all) runs **after** `bulkEnd`,
-outside the bracket: it writes nothing. `resetProfile` and `afterRestoreAll` run **inside** it, so
-the `sessionOnly` rows the library writes one by one before the profile reset, and any write a
-hook makes through the host's seam, stay under the mute.
-
-**The fields are independently optional, but a mute needs both.** A host may supply `bulkEnd`
-alone, to observe acts without muting anything. **A host that mutes its seam in `bulkBegin` MUST
-also supply `bulkEnd`.** `bulkEnd` is the only place the mute is released. A `bulkBegin` with no
-`bulkEnd` leaves the seam silent for the rest of the session, and the library cannot detect that.
-
-#### What the host logs — the contract
-
-`debug-logging-§10` (standard v2.44.0, the owner's final ruling) fixes the line, and `info` is how
-the host knows which case it is in:
-
-- **`info.profileReset` is `true`: the host MUST NOT emit a bulk line.** The act included a
-  whole-profile reset. AceDB replaced the profile (`db:ResetProfile()`), and §10 logs that
-  **once**, by the host's profile-event handler — `[Set] reset profile 'Default' to defaults
-  (N rows)` — and forbids any bulk bracket from adding a second line. The host still releases its
-  mute. Because the session rows were written under that mute, a Restore All on a profile-reset
-  host reads as exactly one line, the handler's.
-- **Otherwise the host emits exactly one line, `[Set] reset <scope>: N rows`**, once, when the
-  outermost bracket closes (see [the nesting rule](#brackets-nest-and-the-host-logs-once-for-the-outermost)).
-  The tag **MUST** be `[Set]`. `N` is the rows the act **actually wrote** — the host's own tally of
-  writes that changed a stored value — never the rows in its scope and never `count`. A page reset
-  that walked 14 rows, 9 of them off their default, reads `[Set] reset general: 9 rows`.
-- **A `resetProfile` that raised leaves `profileReset` false.** The reset may never have reached the
-  profile-event handler, so the host logs its line and `err` says why.
-
-#### Call order and error semantics
-
-```
-bulkBegin(act, scope)        -- inside the protected region
-  applyDefault(row) × N      -- stops at the first row that raises, exactly as unbracketed
-  resetProfile()             -- RestoreAllDefaults only, when supplied;
-                             --   info.profileReset = true once it returns
-  afterRestoreAll()          -- RestoreAllDefaults only, when supplied
-bulkEnd(act, scope, count, err, info)   -- ALWAYS, once; err is nil unless something above raised
-error(err, 0)                -- only if something raised: the same value, re-raised unchanged
-refresh                      -- only if nothing raised, as before
-```
-
-- **A begun bracket always closes, so a host's mute cannot stick.** `bulkBegin` and the whole act
-  run inside one `pcall`. Whatever raises — a row, `resetProfile`, `afterRestoreAll`, or
-  `bulkBegin` itself after setting its mute flag — `bulkEnd` still runs, once.
-- **A raise of `nil` or `false` reaches `bulkEnd` as `err = nil`.** A known limitation. `pcall`
-  returns the raised value itself, so `error(nil)` or `error(false)` inside the bracket arrives
-  looking like success. `bulkEnd` still runs once, and the library still re-raises the same value
-  afterwards, so the act still fails for its caller. But a host that decides from `err` alone
-  cannot tell, and `count` is then a partial figure. Nothing in this library or the collection
-  raises either value. A host that must know should not raise them.
-- **`count` is rows whose `applyDefault` returned** — including a row already at its default, which
-  is why it is not §10's N (see [the two fields](#the-two-fields)). A vetoed
-  row, a row the `resetProfile` narrowing skips and the row that raised are not counted.
-- **The error is not swallowed and not re-wrapped.** `bulkEnd` receives the raised value as `err`,
-  then the library re-raises that same value with `error(err, 0)`, so a string keeps its original
-  `file:line:` prefix and a table error is the same table. The refresh does not run, which is what
-  a raising row has always meant. What changes under a bracket is the stack: the error is re-raised
-  from the library, so a traceback shows the re-raise site rather than the row's frame.
-- **A `bulkEnd` that raises propagates its own error.** It was handed the original first, as `err`.
-- **Unbracketed — neither field a function — nothing above applies.** The walk runs bare, a raising
-  row escapes with its own stack, and the call sequence is minor 15's. Pinned by
-  `tests/test_options_bulk.lua`, which compares the call sequence and checks the traceback still
-  holds the row's frame.
-
-#### Brackets nest, and the host logs once, for the outermost
-
-A bracket can open inside another one, and each level calls `bulkEnd`:
-
-- a host's `afterRestoreAll` that calls `RestoreDefaults` for a page — an Options bracket inside an
-  Options bracket;
-- a profile-event handler that calls `RestoreDefaults` while `resetProfile` is running;
-- a Slash `CliResetAll` reached from inside an Options bracket, or a host's own bulk act that calls
-  either.
-
-A host that logged from every `bulkEnd` would log each of those twice or more. A depth counter on
-its own does not prevent that: it unmutes at the right time, but each level still emits its line.
-So the host keeps **one** record per outermost act. It sums the changed-write tally across every
-level, logs **only when the depth returns to 0**, and stays **silent if any level reported
-`info.profileReset`**. The outermost act's `act` and `scope` name the line. A host that brackets
-an act of its own calls the same two functions itself, so its act is the outer one.
-
-#### Worked example: tally the writes, log once — or not at all
-
-The shape `debug-logging-§10` asks for, on a host whose single write seam logs every write and whose
-`NS.Debug(tag, fmt, …)` prints `[tag] …`. The pair is built once, because the Slash descriptor takes
-the same two fields.
-
-```lua
--- settings/Schema.lua — the host's single write seam, and the host half of the bulk bracket
-local bulk = { depth = 0, changed = 0, profileReset = false }
-
-function NS.Set(path, value)
-  local old = NS.GetStored(path)
-  -- … validate, store, fire the row's onChange — all still per row …
-  if bulk.depth > 0 then
-    -- Muted. Tally only a write that CHANGED the stored value: a row already at its default
-    -- was not written in §10's sense and is not counted. (Compare colors by channel.)
-    if not NS.ValuesEqual(old, value) then bulk.changed = bulk.changed + 1 end
-  else
-    NS.Debug("Set", "%s = %s", path, NS.FormatSchemaValue(path, value))
-  end
-end
-
-NS.Bulk = {
-  begin = function(act, scope)
-    if bulk.depth == 0 then                         -- the OUTERMOST act opens the record
-      bulk.act, bulk.scope, bulk.changed, bulk.profileReset = act, scope, 0, false
-    end
-    bulk.depth = bulk.depth + 1                     -- the mute: NS.Set checks depth > 0
-  end,
-  finish = function(act, scope, count, err, info)  -- count is NOT N: see the table above
-    if info.profileReset then bulk.profileReset = true end   -- sticky across levels
-    bulk.depth = bulk.depth - 1
-    if bulk.depth > 0 then return end               -- an inner level: the outermost logs
-    -- A whole-profile reset anywhere in the act is logged once, by OnProfileReset. Add nothing.
-    if bulk.profileReset then return end
-    NS.Debug("Set", "%s %s: %d rows", bulk.act, tostring(bulk.scope), bulk.changed)
-  end,
-}
-
--- core/Database.lua — the profile-event handler: a profile reset's one line
-function NS:OnProfileReset(_, db)
-  NS.Debug("Set", "reset profile '%s' to defaults (%d rows)", db:GetCurrentProfile(), NS.SchemaRowCount())
-end
-
--- settings/OptionsSetup.lua — the Options descriptor
-NS.Helpers = O:New({
-  -- … parentTitle, mainPanelName, get, set, applyDefault, rowsForPage, allRows …
-  resetProfile = function() NS.db:ResetProfile() end,
-  bulkBegin    = NS.Bulk.begin,
-  bulkEnd      = NS.Bulk.finish,
-})
-```
-
-What the console shows, case by case:
-
-| Act | Lines logged |
-|---|---|
-| The General page's Defaults button — `RestoreDefaults("general", ctx)` walks 14 rows (`count` 14), 9 of them off their default | `[Set] reset general: 9 rows` |
-| Restore All on this host — `resetProfile` supplied, so `info.profileReset` is `true` | `[Set] reset profile 'Default' to defaults (31 rows)`, from `OnProfileReset`, and **nothing** from `bulkEnd`. The two `sessionOnly` rows written first were muted. |
-| Restore All on a host with **no** `resetProfile` — 31 unvetoed rows walked (`count` 31), 12 of them off their default | `[Set] reset all: 12 rows` |
-| `/<slash> resetall` through Slash minor 8, handed the same pair | `[Set] reset all: <rows changed>` — `info.profileReset` is always `false` there |
-| Restore All whose `afterRestoreAll` calls `RestoreDefaults("bars", ctx)` — a bracket inside a bracket | One line, when the outer bracket closes. The inner level's changed writes add to the same tally, and its `bulkEnd` returns at depth 1. With `resetProfile` supplied, no line at all: the outer level's `profileReset` makes the whole act silent. |
-
-Before this minor each of those was one `[Set]` line per row.
-
-**What the tests pin, and what they do not.** `tests/test_options_bulk.lua` pins the library's
-half of the contract: the call order, `count`, `info.profileReset` in each case, the error paths,
-and the unbracketed walk. It also runs a simplified host, a per-write mute and a `bulkEnd` that
-is silent on `profileReset`, to show the two logging cases end to end. It does **not** run the
-changed-write tally or the nesting rule above. Those live in the host, and each adopting host
-tests them in its own suite.
-
-#### What the bracket does not do
-
-- It does not batch the writes or defer `onChange`. Every row is still written through
-  `applyDefault`, one at a time, in the same order. Only the host's log collapses.
-- It does not bracket a host's own bulk acts (a copy from one unit to another, a section reset the
-  host writes itself). Those are the host's to bracket in its own seam; `debug-logging-§10` binds
-  them the same way.
-- No other loop in this library resets or copies rows through the descriptor. `OptionsCompose.lua`
-  composes rows and writes none; `MasterControls`' two reset buttons call the host's own
-  `onResetAll` / `onResetPosition`; `PerfPanel.lua` and `OptionsWidgets.lua` write one row per user
-  gesture.
-
-### Previously, at 15.15.4.3
-
-**Two files move, `OptionsWidgets.lua` 14 → 15 and `OptionsCompose.lua` 3 → 4, and together they add
-a record-backed arm to the composers.** No member is added, removed, renamed or resignatured — the
-member manifest differs from 15.14.3.3's in its version key alone. What is added is one spec field,
-`bind`, on every composer, and two row fields the flow engine reads, `get` and `set`, on a row with
-no `path`. A host that passes neither renders byte-identically to 15.14.3.3.
-
-It exists for [PanelMaster#48](https://github.com/tusharsaxena/PanelMaster/issues/48), finding
-`PANELMASTER-A-03` under `options-ui-§16`. `O.BorderGroup` and `O.BarGroup` emitted **path-keyed**
-schema rows, and PanelMaster's panel editor edits **registry records** — a panel is a record with an
-id, not a settings path — so its three canonical groups (the panel's border, the accent bar, and the
-accent bar's own border) were typed out by hand in `settings/PanelEditor.lua` and ratified as three
-register rows whose re-check trigger was exactly this arm. The rows, their order and their shapes are
-still the composer's; the arm changes only where a value is read from and written to.
-
-#### `OptionsCompose.lua` minor 4 — `spec.bind`
-
-```lua
-spec.bind = {
-  set    = function(field, value, row) end,   -- required: the record's single write seam
-  get    = function(field, row) return v end, -- read the LIVE record
-  record = function() return rec end,         -- or this instead of get: get becomes record()[field]
-}
-```
-
-Under `spec.bind` every composed row carries **no `path`**. It carries `field` — the record key,
-computed exactly as its path would have been, so `prefix` and `keys` rename a record field the way
-they rename a leaf — and `get()` / `set(value)` closures over the bind. Everything else on the row is
-unchanged: the leaves, their order, the labels and defaults, `startsLine`, the class-color stamps, the
-media rows' `values`. `extra` rows follow the same rule: under `bind`, an extra declares its record
-`field` in full and is bound like a canonical row; an extra that declares a `path`, or brings its own
-`get`/`set`, is left exactly as given.
-
-A bind that cannot both read and write is **refused when the block is composed** — no `set`, or
-neither `get` nor `record` — because a bound control with nowhere to write is a dead control that
-looks alive.
-
-**Bound rows are not settings.** They have no path, so the CLI cannot address them and
-`RestoreDefaults` cannot reset them, and they must never be put in the host's schema. Render them
-directly: `O.RenderField(ctx, row, parent, relWidth)` into the host's own container, or
-`O.RenderRows(ctx, rows)` over the returned list. Resetting a record stays the host's operation, as
-it always was.
-
-#### `OptionsWidgets.lua` minor 15 — a row with no path reads and writes through its own `get` / `set`
-
-Every maker used to read `d.get(row.path)` and write `d.set(row.path, value)`. From W15 a row whose
-`path` is nil and which carries a `get` function is read with `row.get()`, and one carrying a `set`
-function is written with `row.set(value)` — the checkbox, slider, dropdown, edit box and color picker
-alike, the color picker's throttled and confirmed commits included. The refreshers read the same way,
-so a write that lands on the record from anywhere else repaints the control on the next
-`RefreshScalars`, exactly as a settings row repaints.
-
-**The gate is `path == nil`, not "has a get".** A row that has a path goes through the descriptor
-exactly as before, whatever other fields a host's schema happens to give it, so no path-keyed row
-anywhere in the collection can change behavior because of this minor. The color codec is still the
-descriptor's (`colorDecode` / `colorEncode`): a bind over a record that stores colors in another
-shape converts in its own `get` and `set`, which receive the row and can test `row.type`.
-
-`lib.STRINGS.EMPTY_DROPDOWN` names a bound row by its `field`; for a path row it names the path, as
-before. Two other path-keyed lookups follow the row: `RenderRows`' `pairWith` is keyed by
-`row.path or row.field`, so a bound row takes its partner under its field, and a path-less row's
-`disabledIf` is read with `row.get(key)` — for a composed row, that field of the same record — rather
-than as a settings path. A composed row's `get` takes that optional key for exactly this reason.
-
-#### What the arm does not change
-
-- **Path-keyed output is byte-for-byte what compose minor 3 emitted.** `tests/fixture_compose_golden.lua`
-  holds ten composer calls serialized from OptionsCompose.lua minor 3 — every spec field the common
-  spec documents and every composer-specific one — and `tests/test_options_compose.lua` compares the
-  current output against it on every run.
-- **Nothing reads `bind` outside `emit` and `appendExtra`.** `MasterControls` takes it like any other
-  composer (its `debugConsole` row's verbatim path becomes that row's `field`), but its closing button
-  pair is not a row and is not bound.
-- **The composers still create no widget and touch no AceGUI.** A bound row's closures read state only
-  when the flow engine calls them.
-
-#### Adopting it
-
-Re-vendoring changes nothing for a host that passes no `bind`. PanelMaster adopts by composing its
-three blocks with a bind over `NS.Registry` — see [the worked example](#worked-example-panelmasters-three-groups)
-— and retiring the three `options-ui-§16` register rows in its `docs/ARCHITECTURE.md` in the same
-change. That adoption is PanelMaster's step; nothing in this release makes it.
-
-### Previously, at 15.14.3.3
-
-**`Options.lua` minor 15 — the library registers the `LSM30_Border` fixup, because AceGUI's widget
-registry belongs to the process and not to any one addon.** One file moved; everything else in this
-major is unchanged from 14.14.3.3. **One member is added and nothing is removed, renamed or
-resignatured** — but unlike the last two versions this one is not adopted by re-vendoring alone: the
-five addons that carry a private copy of this patch have a call site to add and a file to delete.
-
-`AceGUI:RegisterWidgetType(name, ctor, version)` writes into `AceGUI.WidgetRegistry`, which is **one
-table shared by every addon loaded in the client**, Ka0s or not, and the highest version registered
-for a name wins for the rest of the session. Five addons in this collection each shipped a private
-`core/LSMPatch.lua` doing exactly that to `LSM30_Border` — AbsorbTracker, ConsumableMaster, KickCD,
-MultiMeters and PanelMaster, five distinct files with one intent — to collapse the 42x42
-`displayButton` preview tile that upstream AceGUI-3.0-SharedMediaWidgets pins to the widget's
-TOPLEFT, and which leaves the closed dropdown sitting 42px right of every slider and checkbox stacked
-with it on a canvas-layout settings page.
-
-Read one at a time each of those is defensible. Read together they are a different object: every
-wrapper closes over whatever the registry held when its `PLAYER_LOGIN` fired, so with all five loaded
-the last addon to log in wraps the fourth, which wraps the third — the same work done five times,
-five constructors deep, with the outermost one belonging to **whichever addon the client happened to
-load last**. And the registration is the *session's*: the next Border dropdown anything opens is
-drawn by a Ka0s wrapper it never asked for. No addon's own suite could see any of it, because each
-one loads a single copy, registers once and passes.
-
-`library-stack-§9` now states the rule — a re-registration of a widget type the addon did not itself
-define is `LibKa0s`'s, published as a member of the owning major, and never done from an addon's
-`core/`, `modules/` or `settings/` — and anti-pattern #76 names the tell. This version is the surface
-that rule points at. It belongs to the Options major on the evidence: `OptionsCompose.lua` is what
-writes `dialogControl = "LSM30_Border"` in the first place, and the panel descriptor already takes
-`getLSM()`.
-
-#### `lib.__PatchLSM30Border()` — library-level, and idempotent behind a sentinel
-
-It is on **`lib`**, not on the instance, and that placement is the contract rather than a convenience.
-A per-instance member would be called once per host, so five hosts in one client would be five
-registrations deep again — a smaller version of the defect is still the defect — and a sentinel on
-`O` could not stop it either, because every host has its own `O`.
-
-`lib.__lsmBorderPatched` is that sentinel, and it lives on the library table because LibStub hands
-**every vendored copy in the session the same `lib`**. N copies calling this therefore produce
-exactly one registration, and the count is independent of how many Ka0s addons are installed and in
-what order they load. That is the property `library-stack-§9` asks for by name.
-
-The sentinel records that a registration **happened**, not that the function was called. AGSMW is a
-separate addon, so a host calling this before that library has run finds nothing to wrap, registers
-nothing and leaves the surface armed for the next call. Setting the flag on either early return would
-disarm the patch for the whole session, silently, in exactly the load order it exists to survive.
-
-The per-instance work inside the wrapper is unchanged from what the five private copies did: hide
-`frame.displayButton`, re-anchor `frame.label` to the frame's own two top corners, and put
-`frame.DLeft` — the left cap of the dropdown bar, which upstream moves to the tile's BOTTOMRIGHT —
-back on `GetBaseFrame`'s own numbers. `LSM30_Font` and `LSM30_Statusbar` take `AGSMW:GetBaseFrame`,
-which has no `displayButton`, so this is Border-specific, and the popup's per-row hover preview is
-untouched.
-
-#### Adopting it
-
-**The re-vendor alone changes nothing.** Nothing in this library calls the new member; a host that
-never calls it is byte-identical in behavior to 14.14.3.3.
-
-For the five addons carrying a private copy the sequence matters, because the failure mode is a
-function of load order and no headless suite can see it. Re-vendor and add the call from the live arm
-of `settings/OptionsSetup.lua`, **leaving every local `core/LSMPatch.lua` in place**; confirm in the
-client with all five loaded together that each addon's Border dropdown draws the same styled control
-whatever the load order; and only then delete the five copies, **one repository per commit**, testing
-again after the first. Deleting them together leaves no bisect point if the sentinel is wrong.
-AbsorbTracker's copy goes last: it is the one real divergence, exposing a callable
-`NS.ApplyLSMBorderPatch()` invoked from its own core file rather than installing a `PLAYER_LOGIN`
-frame.
-
-**Registering a NEW widget type an addon defines for itself is untouched by any of this.** A name
-nothing else in the process claims collides with nobody, and `library-stack-§5`'s extend-don't-fork
-sanction applies to it unchanged. And where the wanted change is genuinely per-instance, an addon may
-still make it at its own creation site on the widget it just acquired, and leave the registry alone.
-
-### Previously, at 14.14.3.3
-
-**`OptionsWidgets.lua` minor 14 — the tab strip borrows its frames from `LibKa0s-Pool-1.0` instead
-of building them on every click.** One file moved; everything else in this major is unchanged from
-14.13.3.3. **No member is added, removed or renamed, and no signature moves** — this is a change of
-lifetime, not of behaviour, and a host adopting it changes nothing.
-
-`TabStrip` releases the strip and redraws it on **every** click of it. Through 14.13.3.3 that redraw
-called `CreateFrame` once per tab plus once for the content panel, while the release only `Hide()`d
-and `SetParent(nil)`d. WoW never destroys a frame, so an options panel left open leaked one full set
-of tab buttons plus one content panel per click, for the life of the session. Nothing reported it and
-nothing looked wrong: the panel drew correctly every time, and the only symptom was a client that got
-heavier the longer settings stayed open — the same shape as the pool leak `LibKa0s-Pool-1.0`'s own
-header describes, in the one repository that publishes that pool and had not used it.
-
-At this version each `ctx` carries two pools of its own and the strip acquires from them:
-
-```lua
-ctx.__tabPool    -- the tab buttons,   Pool.New()
-ctx.__panelPool  -- the content panel, Pool.New()
-```
-
-`makeTab` splits in two. `newTabButton(parent)` is the pool's factory and builds only what a
-selection cannot change — the `Button`, its six textures and its `FontString`. `dressTab(b, tab,
-active, onSelect)` applies everything that *is* per-tab: the label and its measured width, the atlas
-family, the backing height, which glow is lit, the enabled state, the tooltip strings, and
-**`OnClick`, re-set on every dress**, because the handler closes over that dress's `active` and
-`tab.key` and a button carrying the previous dress's closure would select the wrong tab.
-
-The tooltip moved off `O.AttachTooltip` for this widget alone, and for one reason: a raw `Button` has
-no AceGUI `SetCallback`, so it takes that function's `HookScript` arm — and `HookScript` accumulates.
-A pooled button re-dressed per click would grow a pair of handlers per click, which is the same
-unbounded growth in scripts that this minor removes in frames. The strip now sets one `SetScript`
-pair at construction that reads the current tab's strings off the button, so a tab re-dressed as one
-that has **no** tooltip actually loses the one it had. `O.AttachTooltip` itself is unchanged and every
-other widget in the file still uses it.
-
-**`SubTabStrip` is deliberately not pooled**, and the asymmetry is the parent. A secondary strip hangs
-off a frame the *host* added as an AceGUI child, and `ClearScroll`'s `ReleaseChildren` gives that
-frame back to AceGUI's own pool — so its buttons must be unparented on release, and an unparented
-button coming back off a free list is a button drawn onto nothing. It calls `newTabButton` +
-`dressTab` in sequence, which is exactly what `makeTab` did, and keeps its own `ctx.__subTabKids`
-ledger released the way it always was.
-
-#### `ctx.__tabKids` is still the ledger, and no longer the release
-
-`__tabKids` continues to hold this render's furniture in draw order — every tab button, then the
-content panel — and `__releaseChrome` still empties it. What changed is that emptying it no longer
-*is* the release: the pools hand the frames back, hidden and still parented to `ctx.chrome`, and the
-ledger is rebuilt from scratch by the next render. A suite reading `#ctx.__tabKids` or
-`ctx.__tabKids[n]` reads exactly what it read at 14.13.3.3.
-
-#### `OptionsWidgets.lua` now has a hard floor on `LibKa0s-Pool-1.0`
-
-The file refuses to attach — no `lib.MODULES.OptionsWidgets`, no widget makers — when
-`LibKa0s-Pool-1.0` is absent or below minor 1, the same way `DebugLog.lua` refuses without
-`LibKa0s-Widgets-1.0`. Degrading instead would mean falling back to allocating per click, in silence,
-which is the defect this minor exists to end.
-
-**In a well-formed payload the floor is unreachable.** `Pool.lua` and `Options.lua` both gate on
-`LibKa0s-Core-1.0`, and `Pool.lua` loads first in `LibKa0s.xml`, so a tree with no pool has no Options
-major for this file to attach to either. Whole-folder re-vendoring is mandatory (`docs/releasing.md`),
-so a host that trips this has a broken copy rather than an unlucky one.
-
-### Previously, at 14.13.3.3
-
-**`OptionsCompose.lua` minor 3 — the three media rows hand the flow engine the deferred reader
-itself, not a closure wrapped around it.** This was a **fix to shipped, player-facing behaviour**:
-every dropdown `FontGroup`, `BorderGroup` and `BarGroup` composed was empty in the client, in every
-consumer, from 14.13.1.3 onward.
-
-`O.LSMValues(mediaType)` already returns the deferred closure the engine wants. The three group
-composers wrapped it a second time:
-
-```lua
-values = function() return O.LSMValues("font") end,   -- 14.13.1.3 and 14.13.2.3
-values = O.LSMValues("font"),                         -- 14.13.3.3
-```
-
-`enumList` unwraps a row's `values` **exactly once**. Handed a closure around a closure it got a
-function where it expected a table and returned `{}` — and nothing said so, because the *"no
-options"* report is gated on `row.values == nil` and a doubly-wrapped row is not nil, merely useless.
-That gate is correct and stays: it is what keeps a legitimately-empty deferred media list quiet while
-the addons that register fonts are still loading. What it cannot do is tell an empty list from a
-wrapper, which is why this shipped green.
-
-#### The one contract that tightened, for a host that supplies its own `LSMValues`
-
-`lib.__AttachCompose(O)` lets a host hand in its own `O.LSMValues`, and **that member must return a
-function**. It always had to; until 14.13.3.3 the composer read it inside a closure, at
-dropdown-render time, so a host whose `LSMValues` returned a *table* worked by accident — late
-evaluation covered for it.
-
-The composer now reads that member **once, at row-declaration time**, and assigns the result
-straight into `values`. A table-returning host therefore lands a literal table frozen at file load:
-no error, no warning, and precisely the failure the deferral exists to prevent — the addons that
-register media have not run when a schema-row literal is evaluated.
-
-**This is the one thing to check before adopting 14.13.3.3 or anything after it.** A host that never
-touches `O.LSMValues` is unaffected; so is one that overrides a composed row's `values` afterwards. A
-host that assigns `C.LSMValues = function(t) return lsmValues(t)() end` must pass the reader itself
-instead — `C.LSMValues = lsmValues` — in the same change as the re-vendor.
-
-### Previously, at 14.13.2.3
-
-**`OptionsCompose.lua` minor 2 — `MasterControls` takes a `leadButton`.** One file moved; everything
-else in this major is unchanged from 14.13.1.3.
-
-`§15` fixes the wording of the two reset buttons, and the composer is the only thing that writes it.
-An addon with a verb of its own to put beside them — PrettyChat's *Test*, which prints a sample of
-every active format string — therefore had nowhere to put it: drawing the pair itself means keeping a
-second copy of *"Reset all settings"* and its tooltip in the addon, which is the drift this composer
-exists to end. So the verb is handed **in**:
-
-```lua
-local rows, tail = O.MasterControls{
-  page = "General", addonName = "PrettyChat", frameless = true,
-  leadButton = { text = "Test", tooltip = "…", onClick = runTest },
-  onResetAll = function() … end,
-}
-```
-
-**Where it lands is not a preference.** A **frameless** addon's pair has exactly one empty cell — the
-right half `§15` leaves when there is no *Reset position* — so the verb leads and the reset still
-closes the tab: `[Test] [Reset all settings]`. A **framed** addon's pair is already full, and `§15`
-forbids splitting or reordering the canonical two, so there the verb takes its **own row above** the
-pair rather than displacing a reset. Nothing draws three buttons on one line.
-
-It is **one** button, not a list. The tab closes with the resets; a row of host verbs before them is a
-different design, and `§15` does not describe one.
-
-A host written against 14.13.1.3 is correct here unmodified — the field is additive and its absence
-is the old behaviour exactly.
-
-### Previously, at 14.13.1.3
-
-**`Options.lua` minor 14 / `OptionsWidgets.lua` minor 13 / `OptionsCompose.lua` minor 1 — the tab
-strip becomes mandatory and selection-invariant, and the canonical control blocks become composers**
-(options-ui-§13, §15, §16, §17).
-
-The largest single move this major has made. Four things, and one of them is a shipped defect.
-
-### The strip's geometry no longer depends on which tab is selected
-
-The selected tab is cut from `Options_Tab_Active_*` and every other tab from `Options_Tab_*`, and the
-client does not draw the two families at the same height. `TabStrip` seeded the wrap pitch from the
-**first** tab it built — `ctx.__tabArtH = ctx.__tabArtH or artH` — so on a page whose strip **wraps**,
-selecting tab 1 packed the rows by the active art and selecting any other packed them by the
-inactive art. That pitch feeds both `__tabPlacement`'s row offsets and `__tabBand`'s reserved band,
-and `SetChromeHeight` re-anchors the scroll **and** the content panel off the band. So clicking one
-particular tab opened a gap between the wrapped rows and moved and resized the whole page under
-them, and clicking any other healed it — which is what made it read as a rendering glitch rather
-than as arithmetic. It is invisible on an unwrapped strip, because the pitch is multiplied by
-(rowCount − 1) = 0.
-
-The pitch is now measured **once**, from the **inactive** cap atlas, on a throwaway texture — never
-read back off a tab that was just drawn in whichever state it happened to be in — and cached on
-**success only**, so a call made before the client can answer does not pin the fallback for the
-session. `ctx.__tabArtH` and the internal `rowPitch(ctx)` are gone; `drawTabSlices` measures nothing.
-
-Two consequences. Every button's `SetHitRectInsets` now takes the **same** number the rows are
-packed by, so the invariant it exists for holds for the selected tab too rather than for all but one
-button per strip. And `setTabLabel` no longer applies the selected font: a tab's width is measured
-off its FontString, and a measurement taken under a selection-dependent font is a wrap index that
-moves with the selection. The two fonts are the same size today, so no wrap index moves; pinning the
-order is what keeps that true rather than lucky.
-
-`O.__tabArtHeight()` and `O.__resetTabArtHeight()` are published as test seams, because the invariant
-a suite has to pin — *the band and every row offset are identical for every value of the selection* —
-is unassertable without the one number both are built from. **A harness that answers one height for
-every atlas cannot fail that case**, which is exactly how the defect shipped green.
-
-*The direction of the residual is worth measuring in a live client once.* Packing by the inactive
-height leaves the selected tab's art standing a pixel or two proud into the row above, which is the
-direction `TAB_BG_TOP` and `TAB_LABEL_Y` already lift it deliberately. If the active art turns out to
-be the shorter of the two, the residual disappears entirely and nothing else changes.
-
-### Every page draws a strip, including a page with one section
-
-`RenderTabbedSchema`'s `#groups < 2` fallback to `RenderSchema` is **deleted**. "A single tab is
-chrome for its own sake" is a true sentence about one page and the wrong rule for a panel: a player
-moving between pages meets a strip on most of them and bare rows on the rest, and the page that lost
-its strip is the one that looks broken. The tab is also the only thing naming the group once
-`noHeadings` has suppressed the heading, so the fallback took the section's name off the page as
-well.
-
-The one exemption is **a page the host does not render through this engine at all** — today the
-AceConfig-drawn Profiles page, which never reaches this function. The exemption is a property of the
-call graph rather than of a page's name, because a name-match stops being true the first time a page
-is renamed and says nothing when it does. **No opt-out flag is offered**: a flag is a thing an addon
-can set for the wrong reason, and there would be no way to see it in a test.
-
-A page with **no** groups is a different decision. There is nothing to name a tab with, so it is
-reported by page key through the descriptor's `print` and then rendered untabbed — a blank page under
-an empty strip is a worse failure than a strip-less one. The missing `group` is the defect to fix.
-
-**Visible change** for any page that today has exactly one group: it gains a strip and its content
-moves down by the band. Every page with two or more groups is byte-identical.
-
-### Three new row fields, and two new members
-
-`subgroup` draws a heading **inside** a tab and is *not* suppressed by `noHeadings` — a tab mixing
-bar rows, background rows and border rows has to say where one stops and the next starts, and there
-is no tab left to name them with (options-ui-§7). It draws through `O.Section`, the same AceGUI
-Heading every other header uses; two heading looks on one canvas is the drift the shared library
-exists to end. One tab is still exactly one `group`, so the tab list stays derivable from `group`
-alone.
-
-`wide` renders a row alone at **full** width. `solo` does not do this — it renders alone in the
-**left half** — and `wide` takes `RenderGrid`'s existing name rather than redefining `solo`, which
-would silently widen every solo row in nine shipped addons.
-
-`startsLine` flushes the pending line **before** a row, so a declared pair — a color swatch and its
-class-color companion — can never be split across two lines by an odd number of widgets above it.
-That parity was a property of how many rows happened to precede the pair, which every author was
-counting by hand.
-
-`O.PageHeader(ctx, spec)` pins a host-drawn block in the band the page banner occupies, for controls
-that apply to **every** tab: drawn under one tab they read as belonging to it, and they vanish the
-moment the player clicks another (options-ui-§14). It generalises the **band**, not the banner —
-`O.PageBanner` draws exactly one Dropdown and is documented as the page's only picker. The two
-release the same ledger and write the same `ctx.__bannerHeight`, so a page gets **at most one**
-chrome block and the second call replaces the first; a page needing both a picker and other
-page-wide controls puts the picker inside the block.
-
-`O.SubTabStrip(ctx, parent, spec)` draws a **secondary** strip inside the scroll as ordinary page
-content. The primary strip is pinned and does not scroll; a secondary division belongs to the content
-it divides, and pinning a second band would double the chrome and push the page down twice. It has
-its own ledger (`ctx.__subTabKids`), packs by the same selection-invariant pitch, and its selection is
-the **host's** state — `spec.value` and `spec.onSelect` are the whole contract.
-
-### An empty dropdown reports itself
-
-A `type = "string"` row with neither `values` nor `dialogControl` is a free-text field that forgot to
-say so: the dispatch sends it to `makeDropdown` and the player gets a control that opens on nothing.
-The opt-in stays — inference would silently turn a row whose `values` function answers empty into a
-free-text field, which is the deferred-media case the opt-in exists for — so the warning is keyed on
-`row.values` being **nil**, and an LSM-backed closure that is momentarily empty stays quiet.
-
-### `OptionsCompose.lua` — the schema composers
-
-**A schema generator, not a renderer.** `O.ColorPair`, `O.FontGroup`, `O.BorderGroup`, `O.BarGroup`
-and `O.MasterControls` each expand one declaration into the canonical block of **ordinary schema
-rows** (options-ui-§15, §16, §17). Every composer is a pure function: it creates no widget, touches
-no AceGUI, reads no state and never writes to the spec it was handed. That is the whole design —
-what comes out is indistinguishable from hand-written rows, so `rowsForPage`, `applyDefault`,
-`RestoreDefaults`, the CLI and the reset sweep all keep working with nothing added to them, and the
-composers are testable with no mock at all. A composer that *rendered* would have needed a `ctx`, and
-every one of those seams would have needed a second implementation.
-
-Nine hand-written copies of the same six font rows is exactly the drift this library was extracted to
-end, and the day the block grows a row it grows in one addon. See
-[The schema composers](#the-schema-composers).
-
-`Options.lua` gains the `lib.__AttachCompose` call, guarded like the other two so a copy vendored
-without the file degrades to no composers rather than erroring at `:New`, and `O.ClearScroll` now
-resets `ctx.lastSubgroup` alongside `ctx.lastGroup`.
+**Two files move, `Options.lua` 19 → 20 and `OptionsWidgets.lua` 18 → 19.** Both are prose/appearance
+reversals, not defect fixes: no member added, removed, renamed or resignatured, and no descriptor
+field touched.
+
+### `Options.lua`'s Reset-all tooltip drops its arrow for plain ASCII (localization-§5)
+
+The owner's font draws most non-ASCII glyphs as an empty box (screenshot: a settings panel reading
+`General [box] Spell Categories`). `RESET_ALL_TIP_PROFILES_PAGE` named `Profiles → Reset Profile`
+with a real arrow glyph (`\226\134\146`, U+2192, hand-escaped rather than written literally — see
+the string's own doc comment); it now reads `Profiles -> Reset Profile`, plain ASCII. The em dash
+in the same string (`\226\128\148`, U+2014) is kept — it renders correctly in the owner's own
+screenshots. **`Options.lua` 19 → 20 rather than an in-place edit under 19**, because minor 19's
+content — arrow included — is already vendored into at least one consumer; LibStub's mechanism
+needs a strictly higher minor to win a re-vendor, the same rule that governs every other released
+change to this file. No member, descriptor field or tooltip *wording* beyond the one glyph moved.
+
+### `O.ChoiceGrid`'s gold cell fill is withdrawn; a lit cell is an ordinary AceGUI checkbox check
+
+The owner saw W17's yellow-filled cell in-game and asked for it gone: *"The yellow filled square
+looks awkward, just make it a checkbox like 'only these categories'"* — i.e. the same plain AceGUI
+checkbox check as the `Only these categories` checkbox that sits above the grid on the same panel.
+**From W19**, `choiceCell` no longer calls a fill function at all: `choiceFill` and its color
+constants (`CHOICE_FILL_R`/`G`/`B`, `1, 0.82, 0`) are deleted outright, not merely disabled. A lit
+cell is `AceGUI`'s own default checkmark, exactly as an unlit cell was before W17. The cells stay
+plain `CheckBox` widgets rather than reverting to `SetType("radio")` — the owner wants a checkbox
+that *behaves* like a radio, which is what `choiceCell`'s callback already gives it, not the widget
+turned into one.
+
+`choiceCell`'s exclusive one-choice-per-row behavior is completely unchanged: it always lived in
+this function's `OnValueChanged` callback, never in the widget's appearance, and W19 touches nothing
+in that callback. `O.ChoiceGrid`'s own signature, every descriptor field, and every other maker are
+unchanged.
+
+### W18's `OnRelease` vertex-color restore is removed as dead code
+
+W18 added an `OnRelease` callback on each cell that reset the pooled check texture's vertex color to
+`(1, 1, 1)`, to undo `choiceFill`'s gold tint before the frame went back to AceGUI's pool. With the
+tint gone, that restore has nothing left to undo — it is deleted along with `choiceFill`, not left
+behind as an inert no-op. No other `OnRelease` wiring on these cells is touched.
+
+### The v1.36.1 pooling fix is moot, and its test is re-pointed rather than dropped
+
+`testkit` revision 21's **pooled `CheckBox` check texture, and the regression test built on it,
+stay** — nothing here reverts either. The leak that texture caught (a recycled `CheckBox` coming
+back tinted gold) cannot recur with no write to leak, but the coverage is what makes a future fill
+attempt safe to try again: `tests/test_options_widgets.lua`'s *"a CheckBox recycled after a
+ChoiceGrid comes back with an untinted check (G-2)"* keeps the same shape as W18's regression test —
+draw a grid, release its cells, acquire another `CheckBox`, check its texture is untinted — with its
+comment updated to say plainly that it no longer exercises a live write, and that a future fill MUST
+restore the `OnRelease` handler or this regression returns silently. See
+[`docs/api/testkit/version-21-docs.md`](../testkit/version-21-docs.md) for the kit side, which is
+unchanged at this version.
+
+### `OptionsWidgets.lua`'s `O.IdInput` "looking up" status text drops its ellipsis (localization-§5)
+
+Same finding, same fix as `Options.lua`'s above: `ID_TEXT.looking` read `Looking up {plural}…` with
+a real ellipsis glyph (`\226\128\166`, U+2026); it now reads `Looking up {plural}...`, plain ASCII.
+This lands in the same **W19** as the fill withdrawal above rather than a further bump, because
+minor 19 was cut and amended within this one release and was never externally consumed at any
+point along the way — unlike `Options.lua` 19, no host has a copy of `OptionsWidgets.lua` 19 that
+predates this fix.
+
+### A guard: no non-ASCII byte reaches a player, the em dash excepted — decoded, not text-matched
+
+`tests/test_prose.lua` gains a third shipped-payload gate, beside the British-spelling and
+retired-§N.M gates it already carries. **Its first cut matched the literal source TEXT of a decimal
+escape and could not catch the mistake it existed to prevent**: a contributor who pastes a literal
+`→` straight into a string writes raw UTF-8 bytes, no backslash anywhere, and a text-pattern scan
+for `\ddd` passes that line in silence — precisely how the arrow this version fixes got in. The
+gate now DECODES each `.lua` line (stripping its `--` comment quote-aware first, so player strings
+and comments stay distinguishable — a comment is free to use real UTF-8 because none of it reaches
+a tooltip) and scans the DECODED bytes for anything ≥ 128, the same shape AuraMaster's own
+`tests/test_locale.lua` scans its loaded locale values with; this library has no single loaded
+locale table to walk the way that gate does, so the decode step runs over shipped source instead of
+a runtime table. One blanket exemption (the decoded em dash, matching AuraMaster's own gate for the
+same owner finding) and one ratified, path-scoped exemption (`Core.lua`'s close-control fallback
+glyph, the decoded multiplication sign — predates this gate, sits in Latin-1 Supplement rather than
+the Arrows/General-Punctuation blocks the owner's screenshot actually broke on, and is defended at
+length by `Core.lua`'s own doc comment; flagged rather than silently exempted forever, as a row to
+drop first if the owner confirms it boxes too). Proved by pasting a literal `→` into
+`OptionsWidgets.lua`'s `ID_TEXT.looking` and confirming the suite failed naming that exact line.
 
 ## Previously, at 13.12.3
 
@@ -1120,7 +299,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `rowsForPage` | function(pageKey, filter) | yes | O1 | The rows of one page, in render order. `filter` is `ctx.unit`, passed through untouched — the library never interprets it. |
 | `allRows` | function | yes | O1 | Every row, for `RestoreAllDefaults`. |
 | `resetProfile` | function | no | O9 | Supply it and a global reset becomes a **profile reset**: the `sessionOnly` rows are swept row by row, then this is called, then every panel refreshes. Pass `function() NS.db:ResetProfile() end`. With it supplied the library narrows the row walk itself — see `RestoreAllDefaults` below. **Since O18 / C5** it also picks the wording of `MasterControls`' *Reset all settings* tooltip: see [Previously, at 18.15.5.3](#previously-at-1815553). |
-| `profilesPage` | boolean | no | **O18** | `true` when the host ships an AceDBOptions Profiles sub-page (`options-ui-§3`). Read by `MasterControls` alone, and only with `resetProfile` supplied: the *Reset all settings* tooltip then names the equivalence `options-ui-§12` asks for, *"the same thing Profiles → Reset Profile does"*. The library cannot see which pages a host registers, so the host declares it. Ignored without `resetProfile`, and changes nothing but that tooltip. |
+| `profilesPage` | boolean | no | **O18** | `true` when the host ships an AceDBOptions Profiles sub-page (`options-ui-§3`). Read by `MasterControls` alone, and only with `resetProfile` supplied: the *Reset all settings* tooltip then names the equivalence `options-ui-§12` asks for, *"the same thing Profiles -> Reset Profile does"* (**O20**: plain ASCII arrow, `localization-§5`). The library cannot see which pages a host registers, so the host declares it. Ignored without `resetProfile`, and changes nothing but that tooltip. |
 | `skipRestoreAll` | function(row) | no | O1 | Return true to exclude a row from a global reset. With `resetProfile` supplied the profiles-page veto this was invented for is **implied** (an AceDBOptions row is not `sessionOnly`, so it is already outside the narrowed walk); the field is still honored, and is the whole policy for a host that supplies no `resetProfile`. |
 | `afterRestoreAll` | function | no | O1 | Runs after the rows are reset **and after `resetProfile`**, and **before** the panels refresh, for state in neither the schema nor the profile. The order is load-bearing: a refresh first would paint the pre-hook values. A dragged frame's saved position is **not** an example any more — a position lives in the profile and comes back with it. |
 | `bulkBegin` | function(act, scope) | no | **O16** | Called once before `RestoreDefaults` (act `"reset"`, scope the `pageKey`) or `RestoreAllDefaults` (act `"reset"`, scope `"all"`) writes its first row. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. See [The two fields](#the-two-fields). |
@@ -1235,14 +414,15 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshAllPanels()` | O1 (two tiers: O3) | **Structural.** Re-run each page's renderer, so rows that appeared or disappeared are drawn. Hidden pages are flagged dirty and re-render on their next show. |
 | `RefreshScalars()` | O3 | **In place.** Refreshers only, no rebuild — what every widget maker's own `set()` calls, since writing a value does not change which rows exist. Each is pcall'd, so one dead widget cannot take the UI with it. |
 | `RefreshPanel(ctx, structural)` | O8 | **One page, either tier.** `structural` true re-runs that ctx's renderer; false runs its refreshers in place. A hidden page is flagged dirty and repaints on its next show, so the caller never has to ask whether it is on screen. For a host whose page repaints off its own message bus rather than off a widget's `set()`. |
+| `SelectTab(pageKey, tabKey)` | **O19** | Move an already-rendered page to one tab and refresh **only** that page, through `RefreshPanel(ctx, true)`. Returns `false`, storing no intent, for a page that has not been rendered — the caller opens the page. See [What changed at this version](#what-changed-at-this-version). |
 | `__pages()` | O1 | The pages that actually built. A raising builder is reported by key and costs only itself. |
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
-| `ChoiceGrid(ctx, spec)` | **W16** | A matrix of radio cells over rows that share one value list: a header line of column labels, then per row one radio per column and the row's label with its tooltip. Reads and writes through the maker seam and re-syncs on `RefreshScalars`. Returns the row lines. See [The choice grid](#the-choice-grid). |
+| `ChoiceGrid(ctx, spec)` | W16 (checkbox cells, `extraColumn`: **W17**) | A matrix of one-choice-per-row cells over rows that share one value list: a header line of column labels, then per row one checkbox per column (a yellow fill, not an AceGUI radio, from **W17**) and the row's label with its tooltip. Reads and writes through the maker seam and re-syncs on `RefreshScalars`. **From W17** an optional `spec.extraColumn` draws a per-row link after the label. Returns the row lines. See [The choice grid](#the-choice-grid). |
 | `ResolveId(kind, text, candidates)` | **W16** | Pure. Typed text → `id, name, icon`, or `nil, reason` (`"empty"`, `"notFound"`, `"ambiguous"`): a number, a link of the kind's own type, the client's name lookup, then the host's candidates by name. A name two distinct ids carry is ambiguous. See [The id input and the id list](#the-id-input-and-the-id-list). |
 | `IdInput(ctx, parent, spec)` | **W16** | One add-by-id line — an edit box, an Add button and a status line — into `parent`, default the page's scroll. Resolves through `ResolveId` and calls `spec.onAdd(id)`; never writes a path and redraws nothing. With item `candidates`, pre-warms the unnamed ones and looks a name up among them before refusing it. While the player types, lists up to ten matching entries under the box, every rank its own row, to pick with a click or the keys. Returns the group, the edit box, the button and the status label. |
 | `UnnamedCandidates(kind, candidates)` | **W16** | Pure. The item candidates the client cannot name yet, each once, at most 200 — what `IdInput` asks the client for. See [`O.UnnamedCandidates`](#ounnamedcandidateskind-candidates--ids). |
 | `ID_NAME_HINT` | **W16** | A table: the default name hint per named kind (`item`, `spell`, `currency`), a copy per instance, for a host's tooltip. See [`O.ID_NAME_HINT`](#oid_name_hint). |
-| `IdList(ctx, spec)` | **W16** | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry — icon, name (an item's in its quality color), gray id, and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns the entry lines. |
+| `IdList(ctx, spec)` | W16 (entry `note`: **W17**) | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry — icon, name (an item's in its quality color), gray id, an optional `note` line under the name (**W17**, drawn only for a non-empty string), and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns the entry lines. |
 | `ColorPair(spec)` | **C1** (`spec.bind`: **C4**) | A color swatch and its *use class color* companion, as exactly two adjacent rows. See [The schema composers](#the-schema-composers). |
 | `FontGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
 | `BorderGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
@@ -1321,30 +501,43 @@ values diverge every landing heading loses its gap. `tests/test_options.lua` pin
 
 ## The choice grid
 
-New at `OptionsWidgets.lua` minor 16.
+New at `OptionsWidgets.lua` minor 16. `spec` takes an optional `extraColumn`, since minor 17.
+Minors 17–18 painted the lit cell's check region with a solid yellow fill; **from minor 19** that
+fill is withdrawn on owner feedback and the cells are ordinary AceGUI checkboxes throughout.
 
 ### `O.ChoiceGrid(ctx, spec)` → lines or `nil`
 
 | `spec` field | Type | Meaning |
 |---|---|---|
 | `rows` | array of schema rows | Each carries `path` (or a path-less `get` / `set`), `label`, the tooltip body (`tooltip` or `desc`), and optionally `disabledIf`. Read and written through the same seam every maker uses. Give them `skipRender = true` so the flow engine leaves them to the grid; the grid draws them regardless, and they stay in the schema for the CLI and the resets. |
-| `columns` | ordered array of `{ value =, label = }` | One radio cell per entry, in this order. A column with no `label` is headed by its `value`. |
+| `columns` | ordered array of `{ value =, label = }` | One cell per entry, in this order. A column with no `label` is headed by its `value`. |
 | `heading` | string | Optional. Drawn with `O.Section`, and recorded as `ctx.lastGroup`. |
 | `labelHeader` | string | Optional heading for the label column. `"Category"` when absent: a literal, as `lib.STRINGS`' own are, since the library carries no locale. |
 | `disabled` | boolean | Optional. Draws every cell and label disabled, as `RenderRows`' `opts.disabled` does. A grid drawn inside a disabled render inherits that render's flag either way. |
+| `extraColumn` | `{ header =, cell = function(row) -> { text =, onClick =, tooltip = } \| nil }` | Optional, **W17**. A link column drawn after the label column. `cell` is host code, `pcall`'d per row in `choiceExtraCell`; a raise, or a `nil` return, draws a blank `Label` at the same width and costs only that cell. `onClick` is wired only when `type(cell.onClick) == "function"`. The label column gives back this column's width so the line still fits one Flow row; a `spec` with no `extraColumn` is unchanged from W16. |
 
-Each line is a full-width Flow `SimpleGroup`: a `CheckBox` per column, `SetType("radio")` where the
-widget has it, at relative width `0.12`, then an `InteractiveLabel` taking the rest less `0.02`.
-The label gives back `0.02` for the reason `BUTTON_PAIR_REL` sits under half: the widget ending at
-the right edge is clipped by the ScrollFrame (options-ui-§8).
+Each line is a full-width Flow `SimpleGroup`: a `CheckBox` per column at relative width `0.12`,
+then an `InteractiveLabel` taking the rest less `0.02` (less `extraColumn`'s width too, when given),
+then the extra column's cell when `spec.extraColumn` is set. The label gives back `0.02` for the
+reason `BUTTON_PAIR_REL` sits under half: the widget ending at the right edge is clipped by the
+ScrollFrame (options-ui-§8).
 
+- **Through W16** each cell carried `SetType("radio")` and drew the client's own radio dot.
+  **From W17 through W18** the cell was an ordinary `CheckBox` whose check region was painted with
+  a solid yellow (`1, 0.82, 0`) fill instead, with a W18 `OnRelease` restore to keep the paint from
+  leaking into the next `CheckBox` AceGUI's pool handed out (see the W18 entry of
+  [What changed at this version](#what-changed-at-this-version) for the leak it fixed). **From
+  W19**, the fill and its restore are both gone — a lit cell is AceGUI's own default checkmark, no
+  different from any other checked `CheckBox` in a host's panel. The cell stays an ordinary
+  `CheckBox` rather than reverting to `SetType("radio")`. The one-choice-per-row exclusivity below
+  never lived in the widget and has not moved at any point across W16–W19.
 - A cell is lit while `read(row) == column.value`, and each cell's refresher re-lights it. A stored
   value no column carries lights **none**.
 - A click on an unlit cell writes `column.value` through the row's seam, whose `set` runs
   `RefreshScalars`, so every cell on the line re-syncs to exactly one lit.
-- A click on the lit cell writes nothing and re-lights it. AceGUI toggles a checkbox on every click,
-  a radio-typed one included.
-- `disabledIf` dims the row's cells **and** its label, and both re-evaluate on refresh.
+- A click on the lit cell writes nothing and re-lights it. AceGUI toggles a checkbox on every click.
+- `disabledIf` dims the row's cells **and** its label, and both re-evaluate on refresh. It does not
+  reach `extraColumn`'s cell, which is host-drawn.
 - Each line is guarded as a flow row is: a row whose `get` raises is reported through
   `lib.STRINGS.ROW_FAILED`, costs that line, and is left out of the return.
 
@@ -1353,7 +546,7 @@ draws nothing.
 
 ## The id input and the id list
 
-New at `OptionsWidgets.lua` minor 16. The host owns storage. None of these writes a path: the
+New at `OptionsWidgets.lua` minor 16. **From minor 17**, an entry may carry `note = <string>`. The host owns storage. None of these writes a path: the
 widgets call back, and the host keeps whatever stored shape it has.
 
 ### `O.ResolveId(kind, text, candidates)` → `id, name, icon` or `nil, reason`
@@ -1614,7 +807,7 @@ such as every consumable a host knows with all its ranks, pass `candidates`.
 panel; the tier atlas renders inline; `OnArrowPressed` reaches AceGUI's EditBox for Up and Down; a
 click on a row picks after the box has lost focus; the box takes focus back after a click on the
 backdrop; `C_SpellBook`'s enumeration lists the spellbook; the width matches the box on a scaled
-panel; how long *Looking up items…* reads on a session's first Enter of a name for a host with
+panel; how long *Looking up items...* reads on a session's first Enter of a name for a host with
 thousands of uncached candidates. That wait is bounded at five windows of five 0.4 s asks, about
 10 s, and it holds even for a name that already resolved to one id, until the retired ids are
 marked dead. Known cosmetic gap: the dropdown is parented to `UIParent` and anchored to the box, so if
@@ -1630,7 +823,7 @@ reorder them:
 | `empty` | `Type an id, a link or a name.` |
 | `notFound` | item: `No item named '{text}' that the game can find. {hint}`; spell: `No spell named '{text}' in your spellbook. {hint}`; currency: `No currency named '{text}' that this list knows. {hint}`; a host kind (with a `base` or without) or none: `No {noun} named '{text}'.` |
 | `ambiguous` | `Several {plural} are named '{text}' — pick one from the list, or use the id.` |
-| `looking` | `Looking up {plural}…` (the lookup's status line) |
+| `looking` | `Looking up {plural}...` (the lookup's status line; **W19**: plain ASCII ellipsis, `localization-§5`) |
 | `nameHint` | The kind's entry in [`O.ID_NAME_HINT`](#oid_name_hint); empty for a host kind. Fills `notFound`'s `{hint}`. |
 | `unknown` | `Unknown {noun} {id}` (IdList) |
 | `more` | `+{count} more` (the suggestions' last line; `{count}` is how many were left out) |
@@ -1646,7 +839,7 @@ Everything `IdInput` takes, plus:
 
 | `spec` field | Meaning |
 |---|---|
-| `entries` | `function() -> ordered { { id =, toggle = bool?, on = bool? }, … }`. A raise is reported through `lib.STRINGS.ROW_FAILED` and costs the lines, not the input. |
+| `entries` | `function() -> ordered { { id =, note = string?, toggle = bool?, on = bool? }, … }`. `note`: **W17**, see below. A raise is reported through `lib.STRINGS.ROW_FAILED` and costs the lines, not the input. |
 | `onRemove` | `function(id)`, from an entry's Remove. |
 | `onToggle` | `function(id, on)`, from a toggle entry's checkbox. |
 | `heading` | Optional section heading, drawn with `O.Section` and recorded as `ctx.lastGroup`. |
@@ -1660,9 +853,16 @@ name it. An **item**'s name is drawn in its quality color: `C_Item.GetItemQualit
 the client's `ITEM_QUALITY_COLORS[quality].hex`, both read at draw time. An item whose quality the
 client does not answer yet, or whose quality has no palette entry, is drawn plain. An uncached item
 has no name to color, and the redraw its load triggers colors it. Spell and currency names, and a
-host kind table's, are drawn plain. Hovering it shows the client's own tooltip for that kind. The action is Remove, or a
-`CheckBox` for a `toggle` entry (a starter the host can switch off without forgetting it), lit by
-`on`.
+host kind table's, are drawn plain. Hovering it shows the client's own tooltip for that kind.
+
+**From W17**, `entry.note`, when it is a non-empty string, draws a second full-width `Label` under
+the name — the same `ID_GRAY` the id already uses, its own line rather than a suffix because a
+note is a sentence and a name is a name — for a host that has something to say about why the entry
+is, or is not, actually in effect (AuraMaster's filter rules, for example). An entry with no
+`note`, or one that is not a string or is empty, draws nothing extra: byte-for-byte what W16 drew.
+
+The action is Remove, or a `CheckBox` for a `toggle` entry (a starter the host can switch off
+without forgetting it), lit by `on`.
 
 - **Redraws.** After an add, or a Remove whose `onRemove` returned, the list redraws through
   `ctx.rebuild` when the host set one, and otherwise through `O.RefreshAllPanels()`, which is
@@ -1976,15 +1176,33 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 - **The *Reset all settings* tooltip comes from the descriptor, not the spec** (**C5**). Without
   `resetProfile` it reads *"Restore every setting in this addon to its default."*; with it, that
   the current profile is reset and other profiles are not affected; with `profilesPage` as well,
-  that it is the same thing Profiles → Reset Profile does. See
+  that it is the same thing Profiles -> Reset Profile does (**O20**: plain ASCII arrow). See
   [Previously, at 18.15.5.3](#previously-at-1815553). *Reset position*'s tooltip is
   unchanged.
 
 ## Compatibility
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
-never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. Six
-instance members are added at this version, one row field widens, and nothing is taken away.
+never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here.
+Nothing is added or removed from the public surface at this version. `OptionsWidgets.lua` 18 → 19
+is entirely a cosmetic reversal inside `choiceCell`, a local, unexported function, plus one
+character in a local text table (`ID_TEXT.looking`'s ellipsis). `Options.lua` 19 → 20 changes one
+character in one tooltip string (`RESET_ALL_TIP_PROFILES_PAGE`'s arrow); no member, descriptor
+field or row field moves. A host renders byte-identically to 19.19.5.3 in every respect but two:
+`ChoiceGrid`'s lit cell is once again an ordinary AceGUI checkbox check rather than a yellow-filled
+swatch — the appearance W16 shipped before W17 introduced the fill — and the *Reset all settings*
+tooltip's arrow and the `IdInput` "looking up" ellipsis are now plain ASCII rather than the U+2192
+and U+2026 glyphs a font without those Unicode blocks draws as an empty box. The one-choice-per-row
+exclusivity is unchanged across every version from W16 on, because it was never the widget's to
+begin with.
+
+**What is added at 19.17.5.3 is one instance member, `SelectTab`, plus `extraColumn` on
+`ChoiceGrid` and `note` on an `IdList` entry.** A host that calls none of them renders
+byte-identically to 18.16.5.3 in every respect but one: `ChoiceGrid`'s cells were checkboxes with a
+yellow fill rather than AceGUI radios at that version (withdrawn at 19.19.5.3, see above), cosmetic
+only — the one-choice-per-row exclusivity is unchanged, because it was never the widget's to begin
+with. A hand-written degradation stub of this instance owes one more member, `SelectTab`:
+`Kit.assertSurfaceParity` names it on the re-vendor, and each consumer adds it in that commit.
 
 **What is added at 18.16.5.3 is six instance members, `disabledIf` on every maker, and
 `RenderRows`' `opts.disabled`.** A host that calls none of the six, passes no `opts.disabled`, and
@@ -2064,15 +1282,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 19.17.5.3
-
-Two files move, `Options.lua` 18 → 19 and `OptionsWidgets.lua` 16 → 17. **One instance member is
-added, `SelectTab`. Nothing is removed, renamed or resignatured.** `ChoiceGrid`'s cells are drawn
-as checkboxes with a yellow fill instead of AceGUI radios — cosmetic only, the exclusive
-one-choice-per-row behavior stays in `choiceCell` and does not move. `ChoiceGrid`'s `spec` gains an
-optional `extraColumn` for a per-row link, and an `IdList` entry gains an optional `note` line.
-
-**The re-vendor is the whole adoption** for a host that calls none of it: no `extraColumn`, no
-`note` on an entry, and no call to `SelectTab` renders byte-identically but for the checkbox
-cosmetic. See [version 19.17.5.3](./version-19.17.5.3-docs.md).
