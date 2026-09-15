@@ -10,6 +10,35 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.36.1 — 2026-09-15
+
+Versions in this release: **OptionsWidgets minor 18**, **testkit revision 21**. Every other major,
+and `Options.lua` itself, is unchanged from v1.36.0.
+
+**Critical defect fix, found by a whole-branch review of v1.36.0 before it shipped further.**
+`OptionsWidgets.lua`'s `choiceCell` (`O.ChoiceGrid`) paints a lit cell by repainting AceGUI's own
+`check` texture gold — there is nowhere else to draw a checkbox's tick. AceGUI **pools** the
+CheckBox's underlying frame: a widget's `OnAcquire` resets that texture's texture, texcoord and
+blend mode for whoever the pool hands it to next, but never its vertex color, and nothing in
+`choiceCell` restored it either. **Consequence: once any host drew a `ChoiceGrid`, every CheckBox
+later recycled from that AceGUI instance's pool — not only in the addon that drew the grid, but in
+any other addon sharing the same Ace3 embed — drew a gold checkmark instead of a white one, for the
+rest of the session.** `OptionsWidgets.lua` 17 → 18 fixes it: `choiceFill` now restores the check
+texture's color to its un-painted default (`1, 1, 1`) from an `OnRelease` callback, the same pattern
+this file already uses for the landing page's logo texture.
+
+No suite caught this at v1.36.0 because the test kit's `CheckBox` fake carried no `.check` texture
+at all, so `choiceFill` always took its early guard and the paint was never exercised — a gap flagged
+and accepted as a deferred minor when the feature landed, which is exactly why it reached a release.
+`testkit` revision 21 closes it: the stock `CheckBox` fake now carries a real `check` texture,
+**pooled across Create/Release** the one way a real one is, so `tests/test_options_widgets.lua` can
+pin both the paint and its restoration directly — draw a grid, release its cells, acquire another
+CheckBox, and its check texture is white, not the grid's gold.
+
+No member is added, removed, renamed or resignatured, and no descriptor field changes. Every host
+that draws a `ChoiceGrid` is affected regardless of whether it uses `extraColumn` or an `IdList`
+`note` — the re-vendor of `LibKa0s/` and `tests/_kit/` together is the whole fix.
+
 ## v1.36.0 — 2026-09-14
 
 Versions in this release: **Options minor 19**, **OptionsWidgets minor 17**. Every other major is

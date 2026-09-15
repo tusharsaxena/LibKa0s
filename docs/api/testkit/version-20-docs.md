@@ -10,9 +10,9 @@
 | Version | **20** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.35.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 19](version-19-docs.md) — the AceDB fake's `OnProfileReset` carries no profile key, as AceDB-3.0 fires it |
-| Superseded by | — |
+| Superseded by | [version 21](version-21-docs.md) — the AceGUI fake's `CheckBox` gains a pooled `check` texture |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `20` |
 

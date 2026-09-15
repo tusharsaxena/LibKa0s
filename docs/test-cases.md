@@ -373,7 +373,7 @@ badge and any count quoted in the docs must agree with it.
 - slash: the format hook takes precedence over the colour codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
 
-### test_options.lua (81)
+### test_options.lua (84)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -383,6 +383,9 @@ badge and any count quoted in the docs must agree with it.
 - options: CreatePanel starts the panel hidden and registers it
 - options: the header title takes the parent breadcrumb, and isMain opts out
 - options: __panelFor finds a registered page by key
+- options: SelectTab sets a rendered page's active tab and refreshes
+- options: SelectTab refreshes only the target page, not every rendered page
+- options: SelectTab reports false for a page that has never been rendered
 - options: CreatePanel only DECLARES the Defaults button, never builds it
 - options: CreatePanel records no Defaults intent when the page did not ask
 - options: EnsureDefaultsButton builds it once, wires the parked handler, then no-ops
@@ -485,7 +488,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (212)
+### test_options_widgets.lua (222)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -523,13 +526,21 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a ChoiceGrid value outside the columns lights no cell
 - widgets: ChoiceGrid radios re-read the store when the refreshers run
 - widgets: ChoiceGrid reads and writes a path-less row through its own get/set
-- widgets: ChoiceGrid radios are radio-typed
+- widgets: ChoiceGrid cells are checkboxes, never radios, and the lit one carries the fill
+- widgets: choiceFill is guarded when a check texture is missing the paint methods
+- widgets: a CheckBox recycled after a ChoiceGrid comes back white, not the grid's gold
 - widgets: ChoiceGrid disables a row's cells by its disabledIf
 - widgets: a ChoiceGrid drawn inside a disabled render is disabled with it
 - widgets: ChoiceGrid spec.disabled disables every cell for the call only
 - widgets: a ChoiceGrid label carries the row's tooltip
 - widgets: a ChoiceGrid row that raises costs its own line, not the grid
 - widgets: ChoiceGrid with no AceGUI draws nothing
+- widgets: an extraColumn draws a header cell and a clickable per-row link, wired to onClick
+- widgets: an extraColumn's nil cell draws a blank of the same width, so rows stay aligned
+- widgets: an extraColumn cell that raises costs only that cell, not the line or the grid
+- widgets: an extraColumn cell with a non-function onClick draws without wiring a handler
+- widgets: an extraColumn narrows the label column, and the line still fits one Flow row
+- widgets: with no extraColumn, ChoiceGrid's line shape is unchanged
 - ResolveId: a number is an id, and a known one carries its name and icon
 - ResolveId: every link form resolves, for its own kind only
 - ResolveId: a spell name the client knows resolves to its id
@@ -549,6 +560,8 @@ badge and any count quoted in the docs must agree with it.
 - IdInput: drawn inside a disabled render, or with spec.disabled, it is disabled
 - IdInput: with no AceGUI it draws nothing
 - IdList: one line per entry -- icon, name and gray id, then Remove or a checkbox
+- IdList: an entry's note is drawn under its name, and only when it has one
+- IdList: an empty-string or non-string note draws nothing
 - IdList: Remove and a toggle call the host back, and Remove asks for a rebuild
 - IdList: an add through its input reaches onAdd and rebuilds the list
 - IdList: with no ctx.rebuild the library's structural refresh redraws it
@@ -1136,10 +1149,10 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets.lua | 81 |
 | test_debuglog.lua | 67 |
 | test_slash.lua | 92 |
-| test_options.lua | 81 |
+| test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 212 |
+| test_options_widgets.lua | 222 |
 | test_options_idsuggest.lua | 36 |
 | test_options_compose.lua | 41 |
 | test_perf_core.lua | 70 |
@@ -1158,4 +1171,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1028** |
+| **Total** | **1041** |

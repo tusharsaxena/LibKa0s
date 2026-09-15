@@ -163,7 +163,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [19.17.5.3](./Options/version-19.17.5.3-docs.md) | `Options.lua` 19 · `OptionsWidgets.lua` 17 · `OptionsCompose.lua` 5 · `OptionsScroll.lua` 3 | v1.36.0 | **Current** |
+| [19.18.5.3](./Options/version-19.18.5.3-docs.md) | `Options.lua` 19 · `OptionsWidgets.lua` 18 · `OptionsCompose.lua` 5 · `OptionsScroll.lua` 3 | v1.36.1 | **Current** |
+| [19.17.5.3](./Options/version-19.17.5.3-docs.md) | `Options.lua` 19 · `OptionsWidgets.lua` 17 · `OptionsCompose.lua` 5 · `OptionsScroll.lua` 3 | v1.36.0 | Superseded |
 | [18.16.5.3](./Options/version-18.16.5.3-docs.md) | `Options.lua` 18 · `OptionsWidgets.lua` 16 · `OptionsCompose.lua` 5 · `OptionsScroll.lua` 3 | v1.35.0 | Superseded |
 | [18.15.5.3](./Options/version-18.15.5.3-docs.md) | `Options.lua` 18 · `OptionsWidgets.lua` 15 · `OptionsCompose.lua` 5 · `OptionsScroll.lua` 3 | v1.34.0 | Superseded |
 | [17.15.4.3](./Options/version-17.15.4.3-docs.md) | `Options.lua` 17 · `OptionsWidgets.lua` 15 · `OptionsCompose.lua` 4 · `OptionsScroll.lua` 3 | v1.33.0 | Superseded |
@@ -210,6 +211,7 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
+| [21](./testkit/version-21-docs.md) | same files; the AceGUI fake's `CheckBox` gains a pooled `check` texture (`SetTexture`, `SetVertexColor`, `GetVertexColor`), so a suite can observe `O.ChoiceGrid`'s gold-fill paint and its restoration on `Release` against the stock fixture, with no per-test monkeypatch needed | v1.36.1 | **Current** |
 | [1](./testkit/version-1-docs.md) | `framework.lua` · `loader.lua` · `mock_base.lua` · `README.md` | v1.4.0 | Superseded |
 | [2](./testkit/version-2-docs.md) | + `run-automated-tests.sh` | v1.6.0 | Superseded |
 | [3](./testkit/version-3-docs.md) | same files; runner fixes | v1.6.1 | Superseded |
@@ -219,7 +221,7 @@ are never adopted separately. It is indexed here because the question it answers
 | [7](./testkit/version-7-docs.md) | same files; runs in a repo with no `.toc`; corrected luacheck install hint | unreleased | Superseded |
 | [8](./testkit/version-8-docs.md) | + `vendor_sync.lua`; the skip status, `Loader.xmlFiles`, the suite-inventory gate, `Kit.assertSurfaceParity` | v1.8.0 | Superseded |
 | [9](./testkit/version-9-docs.md) | same files; `vendor_sync.lua` reads the provenance line from `CLAUDE.md`, via the new `provenanceFile` opt | v1.8.1 | Superseded |
-| [20](./testkit/version-20-docs.md) | + `mock_ids.lua`: opt-in id lookups (`C_Spell`, `C_Item` and `C_CurrencyInfo` by id or name) for `O.ResolveId`, `O.IdInput` and `O.IdList`, installed by a harness rather than the base; the AceGUI fake gains `GetText`, `SetType` and `DisableButton`. Not the geometry flip | v1.35.0 | **Current** |
+| [20](./testkit/version-20-docs.md) | + `mock_ids.lua`: opt-in id lookups (`C_Spell`, `C_Item` and `C_CurrencyInfo` by id or name) for `O.ResolveId`, `O.IdInput` and `O.IdList`, installed by a harness rather than the base; the AceGUI fake gains `GetText`, `SetType` and `DisableButton`. Not the geometry flip | v1.35.0 | Superseded |
 | [19](./testkit/version-19-docs.md) | same files; the AceDB fake's `ResetProfile` fires `OnProfileReset` with the database **alone**, as AceDB-3.0 does, where revision 18 passed the active profile as a third argument. Not the geometry flip, which moves to 20 at the earliest | v1.34.0 | Superseded |
 | [18](./testkit/version-18-docs.md) | same files; the AceDB fake's `CopyProfile` fires `OnProfileCopied` with the **source** profile's key as its third argument, as AceDB-3.0 does, where revision 17 passed the active profile. `OnProfileChanged` and `OnProfileReset` keep theirs. Not the geometry flip, which moves to 19 at the earliest | v1.33.0 | Superseded |
 | [17](./testkit/version-17-docs.md) | same files; `mock_base.lua` gains the Ace surfaces six consumer harnesses migrate onto — `NewAddon` honoring its mixin list, `GetAddon`, `NewModule` and the lifecycle driven through `AceAddon.frame`; AceEvent on two CallbackHandler registries (string methods, `arg`, `UnregisterAllMessages`, mid-dispatch queueing, `M.__msgRegistry`, `M.__fireEvent`, `M.__badEvents`); the message registration API on the AceEvent library object (`RegisterMessage`, `UnregisterMessage`, a multi-target `UnregisterAllMessages`); a real AceTimer whose cancellation `__fireTimers` honors and counts, with `C_Timer.NewTimer` handles answering `IsCancelled()`; AceConsole's chat commands; AceGUI's layout registry. `NewAddon(target)` with exactly one table argument keeps revision 16's behavior; any other nameless call raises. Not the geometry flip | v1.31.0 | Superseded |
