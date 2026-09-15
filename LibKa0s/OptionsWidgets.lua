@@ -906,7 +906,7 @@ local ID_TEXT = {
   notFound  = "No {noun} named '{text}'.",
   ambiguous = "Several {plural} are named '{text}' \226\128\148 pick one from the list, or use the id.",
   unknown   = "Unknown {noun} {id}",
-  looking   = "Looking up {plural}\226\128\166",
+  looking   = "Looking up {plural}...",
   nameHint  = "",
   more      = "+{count} more",
 }

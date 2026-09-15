@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 19.19.5.3
+# `LibKa0s-Options-1.0` — version 20.19.5.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,24 +8,37 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **19** · `OptionsWidgets.lua` **19** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **20** · `OptionsWidgets.lua` **19** · `OptionsCompose.lua` **5** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
 | Shipped in | v1.36.2 |
-| Status | Superseded |
-| Supersedes | [version 19.18.5.3](./version-19.18.5.3-docs.md) |
-| Superseded by | [version 20.19.5.3](./version-20.19.5.3-docs.md) |
+| Status | **Current** |
+| Supersedes | [version 19.19.5.3](./version-19.19.5.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 19, OptionsWidgets = 19, OptionsCompose = 5, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 20, OptionsWidgets = 19, OptionsCompose = 5, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O19`
-for `Options.lua` minor 19, `W19` for `OptionsWidgets.lua` minor 19, `C5` for `OptionsCompose.lua`
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O20`
+for `Options.lua` minor 20, `W19` for `OptionsWidgets.lua` minor 19, `C5` for `OptionsCompose.lua`
 minor 5, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
 
-**One file moves, `OptionsWidgets.lua` 18 → 19.** A reversal of a shipped decision, not a defect
-fix: no member added, removed, renamed or resignatured, and no descriptor field touched.
+**Two files move, `Options.lua` 19 → 20 and `OptionsWidgets.lua` 18 → 19.** Both are prose/appearance
+reversals, not defect fixes: no member added, removed, renamed or resignatured, and no descriptor
+field touched.
+
+### `Options.lua`'s Reset-all tooltip drops its arrow for plain ASCII (localization-§5)
+
+The owner's font draws most non-ASCII glyphs as an empty box (screenshot: a settings panel reading
+`General [box] Spell Categories`). `RESET_ALL_TIP_PROFILES_PAGE` named `Profiles → Reset Profile`
+with a real arrow glyph (`\226\134\146`, U+2192, hand-escaped rather than written literally — see
+the string's own doc comment); it now reads `Profiles -> Reset Profile`, plain ASCII. The em dash
+in the same string (`\226\128\148`, U+2014) is kept — it renders correctly in the owner's own
+screenshots. **`Options.lua` 19 → 20 rather than an in-place edit under 19**, because minor 19's
+content — arrow included — is already vendored into at least one consumer; LibStub's mechanism
+needs a strictly higher minor to win a re-vendor, the same rule that governs every other released
+change to this file. No member, descriptor field or tooltip *wording* beyond the one glyph moved.
 
 ### `O.ChoiceGrid`'s gold cell fill is withdrawn; a lit cell is an ordinary AceGUI checkbox check
 
@@ -63,6 +76,30 @@ comment updated to say plainly that it no longer exercises a live write, and tha
 restore the `OnRelease` handler or this regression returns silently. See
 [`docs/api/testkit/version-21-docs.md`](../testkit/version-21-docs.md) for the kit side, which is
 unchanged at this version.
+
+### `OptionsWidgets.lua`'s `O.IdInput` "looking up" status text drops its ellipsis (localization-§5)
+
+Same finding, same fix as `Options.lua`'s above: `ID_TEXT.looking` read `Looking up {plural}…` with
+a real ellipsis glyph (`\226\128\166`, U+2026); it now reads `Looking up {plural}...`, plain ASCII.
+This lands in the same **W19** as the fill withdrawal above rather than a further bump, because
+minor 19 was cut and amended within this one release and was never externally consumed at any
+point along the way — unlike `Options.lua` 19, no host has a copy of `OptionsWidgets.lua` 19 that
+predates this fix.
+
+### A guard: no non-ASCII byte escape reaches a player, the em dash excepted
+
+`tests/test_prose.lua` gains a third shipped-payload gate, beside the British-spelling and
+retired-§N.M gates it already carries: every player-facing non-ASCII character in this library is
+already hand-written as a decimal byte escape (`"\226\128\148"`, never a literal em dash character)
+specifically so a string a player can see and a comment nobody but a reader ever sees differ in
+SHAPE, not just policy — a comment is free to use real UTF-8 (this file's box-drawing rule, an
+actual em dash) because none of those bytes reach a tooltip. The new test flags any decimal escape
+≥ 128 in the shipped payload, with one blanket exemption (the em dash, matching AuraMaster's own
+gate for the same owner finding) and one ratified, path-scoped exemption (`Core.lua`'s
+close-control fallback glyph, the multiplication sign `\195\151` — predates this gate, sits in
+Latin-1 Supplement rather than the Arrows/General-Punctuation blocks the owner's screenshot actually
+broke on, and is defended at length by `Core.lua`'s own doc comment; flagged rather than silently
+exempted forever, as a row to drop first if the owner confirms it boxes too).
 
 ## Previously, at 13.12.3
 
@@ -257,7 +294,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `rowsForPage` | function(pageKey, filter) | yes | O1 | The rows of one page, in render order. `filter` is `ctx.unit`, passed through untouched — the library never interprets it. |
 | `allRows` | function | yes | O1 | Every row, for `RestoreAllDefaults`. |
 | `resetProfile` | function | no | O9 | Supply it and a global reset becomes a **profile reset**: the `sessionOnly` rows are swept row by row, then this is called, then every panel refreshes. Pass `function() NS.db:ResetProfile() end`. With it supplied the library narrows the row walk itself — see `RestoreAllDefaults` below. **Since O18 / C5** it also picks the wording of `MasterControls`' *Reset all settings* tooltip: see [Previously, at 18.15.5.3](#previously-at-1815553). |
-| `profilesPage` | boolean | no | **O18** | `true` when the host ships an AceDBOptions Profiles sub-page (`options-ui-§3`). Read by `MasterControls` alone, and only with `resetProfile` supplied: the *Reset all settings* tooltip then names the equivalence `options-ui-§12` asks for, *"the same thing Profiles → Reset Profile does"*. The library cannot see which pages a host registers, so the host declares it. Ignored without `resetProfile`, and changes nothing but that tooltip. |
+| `profilesPage` | boolean | no | **O18** | `true` when the host ships an AceDBOptions Profiles sub-page (`options-ui-§3`). Read by `MasterControls` alone, and only with `resetProfile` supplied: the *Reset all settings* tooltip then names the equivalence `options-ui-§12` asks for, *"the same thing Profiles -> Reset Profile does"* (**O20**: plain ASCII arrow, `localization-§5`). The library cannot see which pages a host registers, so the host declares it. Ignored without `resetProfile`, and changes nothing but that tooltip. |
 | `skipRestoreAll` | function(row) | no | O1 | Return true to exclude a row from a global reset. With `resetProfile` supplied the profiles-page veto this was invented for is **implied** (an AceDBOptions row is not `sessionOnly`, so it is already outside the narrowed walk); the field is still honored, and is the whole policy for a host that supplies no `resetProfile`. |
 | `afterRestoreAll` | function | no | O1 | Runs after the rows are reset **and after `resetProfile`**, and **before** the panels refresh, for state in neither the schema nor the profile. The order is load-bearing: a refresh first would paint the pre-hook values. A dragged frame's saved position is **not** an example any more — a position lives in the profile and comes back with it. |
 | `bulkBegin` | function(act, scope) | no | **O16** | Called once before `RestoreDefaults` (act `"reset"`, scope the `pageKey`) or `RestoreAllDefaults` (act `"reset"`, scope `"all"`) writes its first row. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. See [The two fields](#the-two-fields). |
@@ -765,7 +802,7 @@ such as every consumable a host knows with all its ranks, pass `candidates`.
 panel; the tier atlas renders inline; `OnArrowPressed` reaches AceGUI's EditBox for Up and Down; a
 click on a row picks after the box has lost focus; the box takes focus back after a click on the
 backdrop; `C_SpellBook`'s enumeration lists the spellbook; the width matches the box on a scaled
-panel; how long *Looking up items…* reads on a session's first Enter of a name for a host with
+panel; how long *Looking up items...* reads on a session's first Enter of a name for a host with
 thousands of uncached candidates. That wait is bounded at five windows of five 0.4 s asks, about
 10 s, and it holds even for a name that already resolved to one id, until the retired ids are
 marked dead. Known cosmetic gap: the dropdown is parented to `UIParent` and anchored to the box, so if
@@ -781,7 +818,7 @@ reorder them:
 | `empty` | `Type an id, a link or a name.` |
 | `notFound` | item: `No item named '{text}' that the game can find. {hint}`; spell: `No spell named '{text}' in your spellbook. {hint}`; currency: `No currency named '{text}' that this list knows. {hint}`; a host kind (with a `base` or without) or none: `No {noun} named '{text}'.` |
 | `ambiguous` | `Several {plural} are named '{text}' — pick one from the list, or use the id.` |
-| `looking` | `Looking up {plural}…` (the lookup's status line) |
+| `looking` | `Looking up {plural}...` (the lookup's status line; **W19**: plain ASCII ellipsis, `localization-§5`) |
 | `nameHint` | The kind's entry in [`O.ID_NAME_HINT`](#oid_name_hint); empty for a host kind. Fills `notFound`'s `{hint}`. |
 | `unknown` | `Unknown {noun} {id}` (IdList) |
 | `more` | `+{count} more` (the suggestions' last line; `{count}` is how many were left out) |
@@ -1134,7 +1171,7 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 - **The *Reset all settings* tooltip comes from the descriptor, not the spec** (**C5**). Without
   `resetProfile` it reads *"Restore every setting in this addon to its default."*; with it, that
   the current profile is reset and other profiles are not affected; with `profilesPage` as well,
-  that it is the same thing Profiles → Reset Profile does. See
+  that it is the same thing Profiles -> Reset Profile does (**O20**: plain ASCII arrow). See
   [Previously, at 18.15.5.3](#previously-at-1815553). *Reset position*'s tooltip is
   unchanged.
 
@@ -1142,12 +1179,17 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
 never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here.
-Nothing is added or removed from the public surface at this version — `OptionsWidgets.lua` 18 → 19
-is entirely a cosmetic reversal inside `choiceCell`, a local, unexported function. A host renders
-byte-identically to 19.18.5.3 in every respect but one: `ChoiceGrid`'s lit cell is once again an
-ordinary AceGUI checkbox check rather than a yellow-filled swatch — the appearance W16 shipped
-before W17 introduced the fill. The one-choice-per-row exclusivity is unchanged across every version
-from W16 on, because it was never the widget's to begin with.
+Nothing is added or removed from the public surface at this version. `OptionsWidgets.lua` 18 → 19
+is entirely a cosmetic reversal inside `choiceCell`, a local, unexported function, plus one
+character in a local text table (`ID_TEXT.looking`'s ellipsis). `Options.lua` 19 → 20 changes one
+character in one tooltip string (`RESET_ALL_TIP_PROFILES_PAGE`'s arrow); no member, descriptor
+field or row field moves. A host renders byte-identically to 19.19.5.3 in every respect but two:
+`ChoiceGrid`'s lit cell is once again an ordinary AceGUI checkbox check rather than a yellow-filled
+swatch — the appearance W16 shipped before W17 introduced the fill — and the *Reset all settings*
+tooltip's arrow and the `IdInput` "looking up" ellipsis are now plain ASCII rather than the U+2192
+and U+2026 glyphs a font without those Unicode blocks draws as an empty box. The one-choice-per-row
+exclusivity is unchanged across every version from W16 on, because it was never the widget's to
+begin with.
 
 **What is added at 19.17.5.3 is one instance member, `SelectTab`, plus `extraColumn` on
 `ChoiceGrid` and `note` on an `IdList` entry.** A host that calls none of them renders
@@ -1235,14 +1277,3 @@ Publishing the table would hand every host a mutable handle on every other host'
 The **four** files move as one. A consumer holding `Options.lua` from one vendored copy and
 `OptionsWidgets.lua` from another is not a supported state and LibStub cannot detect it — which is
 why `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 20.19.5.3
-
-One file moves, `Options.lua` 19 → 20: not a defect fix, a follow-up finding on the same release.
-AuraMaster's own font-rendering sweep (batch 7, T-1) found the one player-facing non-ASCII byte
-this repo could not fix downstream: the *Reset all settings* tooltip's `Profiles → Reset Profile`
-arrow, which the owner's font draws as an empty box. From 20 it reads `Profiles -> Reset Profile`,
-plain ASCII; the em dash in the same tooltip is unchanged. `OptionsWidgets.lua` needed no further
-bump — its `ID_TEXT.looking` ellipsis got the same fix, but minor 19 (cut earlier in this same
-release) had not reached any consumer yet, so the fix lands inside it rather than forcing a second
-bump. See [version 20.19.5.3](./version-20.19.5.3-docs.md).

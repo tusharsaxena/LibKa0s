@@ -1387,7 +1387,7 @@ end)
 -- and a candidate the client has not cached has no name to match until it is loaded.
 
 local ZEPHYR = "Potion of the Hushed Zephyr"
-local ELLIPSIS = "\226\128\166"
+local ELLIPSIS = "..."  -- G-1: plain ASCII, the owner's font draws U+2026 as an empty box
 local ITEM_HINT = "Names work for items you carry (or carried this session) and ones this list " ..
   "knows; otherwise use the id or shift-click a link."
 

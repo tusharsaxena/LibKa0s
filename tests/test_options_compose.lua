@@ -817,10 +817,11 @@ test("compose: with resetProfile the Reset all tooltip says it resets the curren
 end)
 
 test("compose: with resetProfile and profilesPage the tooltip names Profiles -> Reset Profile", function()
-  -- options-ui-§12: "the same thing Profiles → Reset Profile does".
+  -- options-ui-§12: "the same thing Profiles -> Reset Profile does" (G-1: plain ASCII arrow, the
+  -- owner's font draws U+2192 as an empty box).
   local tip = resetAllTip{ resetProfile = resetProfile, profilesPage = true }
   assertEqual(tip, "Reset the current profile to its defaults \226\128\148 the same thing Profiles " ..
-    "\226\134\146 Reset Profile does. Your other profiles are not affected.")
+    "-> Reset Profile does. Your other profiles are not affected.")
   assertEqual(tip, S.RESET_ALL_TIP_PROFILES_PAGE)
 end)
 

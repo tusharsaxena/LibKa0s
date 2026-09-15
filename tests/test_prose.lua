@@ -241,6 +241,77 @@ test("prose: no British spelling in the shipped library or the shipped kit", fun
     .. "spellings ship to every consumer and no consumer can fix them")
 end)
 
+-- ── ASCII-only player-facing text (localization-§5, batch 7 G-1's font finding) ─────────────
+--
+-- The owner's font draws most non-ASCII glyphs as an empty box (screenshot, AuraMaster batch 7
+-- T-1): a rightward arrow in a settings tooltip read as "General [box] Spell Categories". This
+-- library already writes every player-facing non-ASCII character as a hand-written DECIMAL BYTE
+-- ESCAPE — `"\226\128\148"` for an em dash, never the literal character — precisely so a string a
+-- player can see and a comment nobody but a reader ever sees are different in SHAPE, not just in
+-- policy: a comment is free to use a real UTF-8 glyph (§, an em dash, the box-drawing rule above)
+-- because none of those bytes ship to a tooltip, and this repo's whole payload is full of exactly
+-- that. This gate leans on the existing discipline rather than re-deriving it: it flags a decimal
+-- escape ≥ 128 in the shipped library, the same shape a literal non-ASCII character in a NEW string
+-- would have to take to get past a reviewer skimming for the raw byte.
+--
+-- ONE blanket exemption, chosen to agree with AuraMaster's own gate for the same finding rather
+-- than disagree about what is safe: the em dash, `\226\128\148` (U+2014). It renders correctly in
+-- the owner's own screenshots and both repos keep it on that basis.
+--
+-- ONE ratified, path-scoped exemption beyond that, in the same shape RATIFIED above uses:
+-- `LibKa0s/Core.lua`'s close-control fallback glyph, `\195\151` (the multiplication sign, U+00D7).
+-- It predates this gate, sits in Latin-1 Supplement rather than the Arrows block the owner's
+-- screenshot actually broke on, and `Core.lua`'s own doc comment already argues at length for
+-- keeping it ("not a legacy spelling to be migrated away from" — see `Core.lua` around the close
+-- control). It is exempted rather than changed because G-1 never asked about it and Core.lua's own
+-- comment is a real prior decision, not silently overridden here — flagged instead, the same way a
+-- deviation is: confirm in-game whether it boxes too, and if it does this exemption is the row to
+-- drop first.
+-- Both held as the literal SOURCE TEXT of the escape -- backslash-digit ASCII characters, the same
+-- shape `scan` reads off disk -- not as the decoded glyph a bare Lua string literal would give:
+-- `"\226\128\148"` in THIS file's own source would decode to the actual em dash at load time and
+-- never match anything in a scanned line, which reads the raw, un-evaluated file text.
+local ASCII_EM_DASH = "\\226\\128\\148"
+local ASCII_RATIFIED = {
+  ["LibKa0s/Core.lua"] = { "\\195\\151" },
+}
+
+test("prose: no non-ASCII byte escape reaches a player, the em dash excepted", function()
+  local used = {}
+  local hits = scan(function(line, path)
+    local scrubbed = stripPlain(line, ASCII_EM_DASH)
+    for _, esc in ipairs(ASCII_RATIFIED[path] or NO_EXEMPTIONS) do
+      local stripped, n = stripPlain(scrubbed, esc)
+      if n > 0 then scrubbed, used[path .. " " .. esc] = stripped, true end
+    end
+    -- A Lua BYTE-RANGE PATTERN, `"[\128-\191]"` (this file's own charCount helper matches
+    -- continuation bytes to count UTF-8 characters, not bytes), reads as a decimal escape by the
+    -- same shape a player-facing one does. It is code, not text a player ever sees, so a decimal
+    -- escape immediately inside `[...]` -- preceded by `[` or `-`, or immediately followed by `-`
+    -- -- is a pattern boundary, not a string byte, and is excluded on that shape alone rather than
+    -- by naming the one file that has it today.
+    for from, code, upto in scrubbed:gmatch("()\\(%d%d?%d?)()") do
+      local before, after = scrubbed:sub(from - 1, from - 1), scrubbed:sub(upto, upto)
+      local inCharClass = before == "[" or before == "-" or after == "-"
+      if tonumber(code) >= 128 and not inCharClass then
+        return ("byte escape \\%s decodes above ASCII"):format(code)
+      end
+    end
+    return nil
+  end)
+  for path, escs in pairs(ASCII_RATIFIED) do
+    for _, esc in ipairs(escs) do
+      if not used[path .. " " .. esc] then
+        hits[#hits + 1] = ("%s — ratified ASCII exemption `%s` matches nothing; drop it"):format(path, esc)
+      end
+    end
+  end
+  table.sort(hits)
+  assertEqual(table.concat(hits, "\n          "), "",
+    "a player-facing string carries a non-ASCII byte escape outside the em dash; the owner's font "
+    .. "draws it as an empty box")
+end)
+
 -- ── section references (§N.M is a retired notation) ─────────────────────────────────────────
 --
 -- The standard is filename-scoped now — `library-stack-§4`, `options-ui-§8` — and a bare dotted

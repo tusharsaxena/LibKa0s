@@ -366,7 +366,7 @@ suggestCase("IdInput suggestions: a shared name refused after a lookup lists its
   local b = input(made, { kind = "item", candidates = zephyrs })
   typeText(b, ZEPHYR)
   b.eb:__fire("OnEnterPressed", ZEPHYR)
-  assertEqual(b.status.text, "Looking up items\226\128\166")
+  assertEqual(b.status.text, "Looking up items...")
   seedZephyr()
   mocks.__fireTimers()
   assertEqual(#b.added, 0)

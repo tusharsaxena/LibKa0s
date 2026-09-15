@@ -12,8 +12,8 @@ cannot drift. Release order is in
 
 ## v1.36.2 — 2026-09-15
 
-Versions in this release: **OptionsWidgets minor 19**. Every other major, and `Options.lua` itself,
-is unchanged from v1.36.1.
+Versions in this release: **Options minor 20**, **OptionsWidgets minor 19**. Every other major is
+unchanged from v1.36.1.
 
 **Withdrawal of a shipped decision, on the owner's in-game feedback, not a defect fix.** v1.36.0
 gave `O.ChoiceGrid`'s lit cell a solid yellow fill in place of AceGUI's own checkmark; the owner
@@ -42,6 +42,35 @@ fill attempt safe to try: `tests/test_options_widgets.lua`'s regression test kee
 (draw a grid, release its cells, acquire another `CheckBox`, its check comes back untinted), with
 its comment rewritten to say it no longer exercises a live write and that a future fill MUST
 restore the `OnRelease` handler or this regression returns silently.
+
+**A player-facing non-ASCII byte, found by AuraMaster's own T-1 sweep, is fixed here at the
+source.** The owner's font draws most non-ASCII glyphs as an empty box (screenshot: a settings
+panel reading `General [box] Spell Categories`). AuraMaster's own locale strings were swept for
+this in the addon repo, but one instance reaches a player from THIS library and could not be fixed
+downstream: `Options.lua`'s Reset-all tooltip (`RESET_ALL_TIP_PROFILES_PAGE`) named `Profiles → Reset
+Profile` with a real arrow glyph (`\226\134\146`, U+2192). It now reads `Profiles -> Reset Profile`,
+plain ASCII. `OptionsWidgets.lua`'s `O.IdInput` "looking up" status text
+(`ID_TEXT.looking`) carried the same problem with an ellipsis (`\226\128\166`, U+2026) rather than
+`...`; both are now plain ASCII. The em dash (`\226\128\148`, U+2014) is kept everywhere it already
+appears — it renders correctly in the owner's own screenshots, and AuraMaster's parallel sweep kept
+its 100 uses on the same basis, so the two repos do not disagree about what is safe. `Options.lua`
+19 → 20 for this fix — the string is not a member of the public surface, but its content changed
+and minor 19 is already vendored into at least one consumer, so LibStub's mechanism needs a
+strictly higher number to win a re-vendor. `OptionsWidgets.lua` needed no second bump: its 18 → 19
+bump above was never externally consumed, so the `looking` fix lands in the same released minor 19.
+
+**A guard added so this cannot come back**: `tests/test_prose.lua`'s new
+*"prose: no non-ASCII byte escape reaches a player, the em dash excepted"* scans the same shipped
+payload (`LibKa0s/`, `testkit/`) the British-spelling and retired-section-reference gates already
+scan, for a decimal byte escape ≥ 128 — the shape every player-facing non-ASCII character in this
+library is already hand-written in, to keep it distinguishable from a comment's own free use of
+real UTF-8 glyphs (this file's box-drawing rules and 480-odd literal em dashes among them). One
+blanket exemption, matching AuraMaster's own gate: the em dash. One ratified, path-scoped exemption
+beyond that: `Core.lua`'s close-control fallback glyph, the multiplication sign (`\195\151`,
+U+00D7) — predates this gate, sits in Latin-1 Supplement rather than the Arrows block the owner's
+screenshot actually broke on, and `Core.lua`'s own doc comment already argues for keeping it. Not
+silently exempted forever: flagged in the test's own comment as a row to drop first if the owner
+confirms it boxes too.
 
 No member is added, removed, renamed or resignatured, and no descriptor field changes. Every host
 that draws a `ChoiceGrid` is affected whether or not it uses `extraColumn` or an `IdList` `note` —
