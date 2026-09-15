@@ -244,72 +244,152 @@ end)
 -- ── ASCII-only player-facing text (localization-§5, batch 7 G-1's font finding) ─────────────
 --
 -- The owner's font draws most non-ASCII glyphs as an empty box (screenshot, AuraMaster batch 7
--- T-1): a rightward arrow in a settings tooltip read as "General [box] Spell Categories". This
--- library already writes every player-facing non-ASCII character as a hand-written DECIMAL BYTE
--- ESCAPE — `"\226\128\148"` for an em dash, never the literal character — precisely so a string a
--- player can see and a comment nobody but a reader ever sees are different in SHAPE, not just in
--- policy: a comment is free to use a real UTF-8 glyph (§, an em dash, the box-drawing rule above)
--- because none of those bytes ship to a tooltip, and this repo's whole payload is full of exactly
--- that. This gate leans on the existing discipline rather than re-deriving it: it flags a decimal
--- escape ≥ 128 in the shipped library, the same shape a literal non-ASCII character in a NEW string
--- would have to take to get past a reviewer skimming for the raw byte.
+-- T-1): a rightward arrow in a settings tooltip read as "General [box] Spell Categories".
+--
+-- THIS GATE OPERATES ON DECODED BYTES, NOT SOURCE TEXT, DELIBERATELY. A first version of this
+-- gate matched the literal ASCII text of a decimal escape (`\226`, the six characters
+-- backslash-2-2-6) and missed the exact mistake it existed to catch: a contributor who pastes a
+-- literal `→` straight into a string writes raw UTF-8 bytes, no backslash anywhere, and that
+-- version's text-pattern scan passed it in silence -- precisely how the arrow this batch removed
+-- got in. A pasted glyph and a hand-written `\226\128\148` escape must fail identically, because
+-- both decode to the same bytes a player's client actually draws -- so this gate DECODES each
+-- line's escapes first (`decodeLuaEscapes`, below: only `\ddd` can produce a byte ≥ 128, every
+-- other Lua 5.1 escape decodes under 128, so nothing else needs modeling) and scans the result,
+-- the same shape AuraMaster's own `tests/test_locale.lua` (~line 139) scans its LOADED locale
+-- VALUES for a byte in `[\128-\255]`. There is no single loaded "locale table" to walk here the
+-- way that gate walks one -- this library carries no locale, and its player-facing text is
+-- scattered across half a dozen files' local STRINGS-shaped tables and inline literals rather than
+-- centralized -- so this gate reads the same decoded-byte shape off the shipped payload's SOURCE
+-- instead of off a runtime table, which is the adaptation the difference in file layout actually
+-- asks for.
+--
+-- SCOPED TO STRINGS, NOT COMMENTS, deliberately: `stripLineComment` below cuts each line's `--`
+-- comment (quote-aware, so a `--` or a quote mark INSIDE a string literal cannot false-trigger it)
+-- before decoding, because a comment is free to use a real UTF-8 glyph -- this file's own 480-odd
+-- literal em dashes and 7000-odd box-drawing rules among them -- and none of those bytes ever
+-- reach a tooltip. Catching them here would not make a player's screen any safer and would make
+-- this gate impossible to keep green.
 --
 -- ONE blanket exemption, chosen to agree with AuraMaster's own gate for the same finding rather
--- than disagree about what is safe: the em dash, `\226\128\148` (U+2014). It renders correctly in
--- the owner's own screenshots and both repos keep it on that basis.
+-- than disagree about what is safe: the decoded em dash, bytes 226/128/148 (U+2014). It renders
+-- correctly in the owner's own screenshots and both repos keep it on that basis.
 --
 -- ONE ratified, path-scoped exemption beyond that, in the same shape RATIFIED above uses:
--- `LibKa0s/Core.lua`'s close-control fallback glyph, `\195\151` (the multiplication sign, U+00D7).
--- It predates this gate, sits in Latin-1 Supplement rather than the Arrows block the owner's
--- screenshot actually broke on, and `Core.lua`'s own doc comment already argues at length for
--- keeping it ("not a legacy spelling to be migrated away from" — see `Core.lua` around the close
--- control). It is exempted rather than changed because G-1 never asked about it and Core.lua's own
--- comment is a real prior decision, not silently overridden here — flagged instead, the same way a
--- deviation is: confirm in-game whether it boxes too, and if it does this exemption is the row to
--- drop first.
--- Both held as the literal SOURCE TEXT of the escape -- backslash-digit ASCII characters, the same
--- shape `scan` reads off disk -- not as the decoded glyph a bare Lua string literal would give:
--- `"\226\128\148"` in THIS file's own source would decode to the actual em dash at load time and
--- never match anything in a scanned line, which reads the raw, un-evaluated file text.
-local ASCII_EM_DASH = "\\226\\128\\148"
+-- `LibKa0s/Core.lua`'s close-control fallback glyph, decoded bytes 195/151 (the multiplication
+-- sign, U+00D7). It predates this gate, sits in Latin-1 Supplement rather than the Arrows block
+-- the owner's screenshot actually broke on, and `Core.lua`'s own doc comment already argues at
+-- length for keeping it ("not a legacy spelling to be migrated away from" — see `Core.lua` around
+-- the close control). It is exempted rather than changed because G-1 never asked about it and
+-- Core.lua's own comment is a real prior decision, not silently overridden here — flagged instead,
+-- the same way a deviation is: confirm in-game whether it boxes too, and if it does this exemption
+-- is the row to drop first.
+local ASCII_EM_DASH = string.char(226, 128, 148)   -- U+2014, decoded
 local ASCII_RATIFIED = {
-  ["LibKa0s/Core.lua"] = { "\\195\\151" },
+  ["LibKa0s/Core.lua"] = { string.char(195, 151) },  -- U+00D7 (×), decoded
 }
 
-test("prose: no non-ASCII byte escape reaches a player, the em dash excepted", function()
+--- Strip a `--` line comment, quote-aware: a `--` or a quote mark INSIDE a `"…"`/`'…'` string
+--- literal does not end the string early or false-start a comment. Lua 5.1's long-bracket strings
+--- and comments (`[[ ]]`, `--[[ ]]`) are not modeled -- the shipped payload has exactly one
+--- long-bracket STRING (`testkit/mock_base.lua`'s usage-error text) and it carries no `--` and
+--- balanced ordinary quotes inside it, so it survives this scan unharmed without special-casing.
+local function stripLineComment(line)
+  local out, i, n, quote = {}, 1, #line, nil
+  while i <= n do
+    local c = line:sub(i, i)
+    if quote then
+      out[#out + 1] = c
+      if c == "\\" and i < n then
+        i = i + 1
+        out[#out + 1] = line:sub(i, i)
+      elseif c == quote then
+        quote = nil
+      end
+    elseif c == '"' or c == "'" then
+      quote = c
+      out[#out + 1] = c
+    elseif c == "-" and line:sub(i + 1, i + 1) == "-" then
+      break
+    else
+      out[#out + 1] = c
+    end
+    i = i + 1
+  end
+  return table.concat(out)
+end
+
+--- Decode Lua's decimal byte escape (`\ddd`, 1-3 digits) to the real byte it names. Every OTHER
+--- Lua 5.1 backslash escape (`\n`, `\"`, `\\`, a line continuation, ...) decodes to a byte under
+--- 128, so passing an unrecognized escape's character through unchanged, rather than modeling each
+--- one by name, cannot create or hide a byte ≥ 128 -- only `\ddd` can, and that is the one form
+--- this decodes.
+local function decodeLuaEscapes(text)
+  local out, i, n = {}, 1, #text
+  while i <= n do
+    local c = text:sub(i, i)
+    if c == "\\" then
+      local digits = text:match("^%d%d?%d?", i + 1)
+      if digits then
+        out[#out + 1] = string.char(tonumber(digits) % 256)
+        i = i + 1 + #digits
+      elseif i < n then
+        out[#out + 1] = text:sub(i + 1, i + 1)
+        i = i + 2
+      else
+        i = i + 1
+      end
+    else
+      out[#out + 1] = c
+      i = i + 1
+    end
+  end
+  return table.concat(out)
+end
+
+test("prose: no non-ASCII byte reaches a player, the em dash excepted", function()
   local used = {}
   local hits = scan(function(line, path)
-    local scrubbed = stripPlain(line, ASCII_EM_DASH)
-    for _, esc in ipairs(ASCII_RATIFIED[path] or NO_EXEMPTIONS) do
-      local stripped, n = stripPlain(scrubbed, esc)
-      if n > 0 then scrubbed, used[path .. " " .. esc] = stripped, true end
+    -- `scan`'s SHIPPED walk includes every plain file under `LibKa0s/` and `testkit/`, not only
+    -- `.lua` -- `testkit/README.md`, `testkit/run-automated-tests.sh`. Comment-stripping and
+    -- escape-decoding are Lua syntax (`--` comments, `\ddd` escapes); a `#` shell comment or a
+    -- README's own prose is neither, and player-facing text lives only in Lua source, so this gate
+    -- -- unlike the British-spelling and §N.M gates, which are about prose consistency everywhere
+    -- vendored -- is scoped to `.lua` files.
+    if not path:match("%.lua$") then return nil end
+    local decoded = decodeLuaEscapes(stripLineComment(line))
+    local scrubbed = stripPlain(decoded, ASCII_EM_DASH)
+    for _, glyph in ipairs(ASCII_RATIFIED[path] or NO_EXEMPTIONS) do
+      local stripped, n = stripPlain(scrubbed, glyph)
+      if n > 0 then scrubbed, used[path .. " " .. glyph] = stripped, true end
     end
-    -- A Lua BYTE-RANGE PATTERN, `"[\128-\191]"` (this file's own charCount helper matches
-    -- continuation bytes to count UTF-8 characters, not bytes), reads as a decimal escape by the
-    -- same shape a player-facing one does. It is code, not text a player ever sees, so a decimal
-    -- escape immediately inside `[...]` -- preceded by `[` or `-`, or immediately followed by `-`
-    -- -- is a pattern boundary, not a string byte, and is excluded on that shape alone rather than
-    -- by naming the one file that has it today.
-    for from, code, upto in scrubbed:gmatch("()\\(%d%d?%d?)()") do
-      local before, after = scrubbed:sub(from - 1, from - 1), scrubbed:sub(upto, upto)
-      local inCharClass = before == "[" or before == "-" or after == "-"
-      if tonumber(code) >= 128 and not inCharClass then
-        return ("byte escape \\%s decodes above ASCII"):format(code)
+    -- A Lua BYTE-RANGE PATTERN, `"[\128-\191]"` (this file's own `charCount` helper matches
+    -- continuation bytes to count UTF-8 characters, not bytes), decodes to real bytes ≥ 128 same
+    -- as a player-facing glyph would -- it is code, not text a player ever sees, so a high byte
+    -- immediately inside `[...]` -- preceded by `[` or `-`, or immediately followed by `-` -- is a
+    -- pattern boundary, not a string byte, and is excluded on that shape alone, general to any such
+    -- pattern rather than naming the one file that has one today.
+    for i = 1, #scrubbed do
+      if scrubbed:byte(i) >= 128 then
+        local before, after = scrubbed:sub(i - 1, i - 1), scrubbed:sub(i + 1, i + 1)
+        local inCharClass = before == "[" or before == "-" or after == "-"
+        if not inCharClass then
+          return ("byte 0x%02X reaches a player"):format(scrubbed:byte(i))
+        end
       end
     end
     return nil
   end)
-  for path, escs in pairs(ASCII_RATIFIED) do
-    for _, esc in ipairs(escs) do
-      if not used[path .. " " .. esc] then
-        hits[#hits + 1] = ("%s — ratified ASCII exemption `%s` matches nothing; drop it"):format(path, esc)
+  for path, glyphs in pairs(ASCII_RATIFIED) do
+    for _, glyph in ipairs(glyphs) do
+      if not used[path .. " " .. glyph] then
+        hits[#hits + 1] = ("%s — ratified ASCII exemption matches nothing; drop it"):format(path)
       end
     end
   end
   table.sort(hits)
   assertEqual(table.concat(hits, "\n          "), "",
-    "a player-facing string carries a non-ASCII byte escape outside the em dash; the owner's font "
-    .. "draws it as an empty box")
+    "a player-facing string carries a non-ASCII byte outside the em dash; the owner's font draws "
+    .. "it as an empty box")
 end)
 
 -- ── section references (§N.M is a retired notation) ─────────────────────────────────────────

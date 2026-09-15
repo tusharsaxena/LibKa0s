@@ -59,18 +59,27 @@ and minor 19 is already vendored into at least one consumer, so LibStub's mechan
 strictly higher number to win a re-vendor. `OptionsWidgets.lua` needed no second bump: its 18 → 19
 bump above was never externally consumed, so the `looking` fix lands in the same released minor 19.
 
-**A guard added so this cannot come back**: `tests/test_prose.lua`'s new
-*"prose: no non-ASCII byte escape reaches a player, the em dash excepted"* scans the same shipped
-payload (`LibKa0s/`, `testkit/`) the British-spelling and retired-section-reference gates already
-scan, for a decimal byte escape ≥ 128 — the shape every player-facing non-ASCII character in this
-library is already hand-written in, to keep it distinguishable from a comment's own free use of
-real UTF-8 glyphs (this file's box-drawing rules and 480-odd literal em dashes among them). One
-blanket exemption, matching AuraMaster's own gate: the em dash. One ratified, path-scoped exemption
-beyond that: `Core.lua`'s close-control fallback glyph, the multiplication sign (`\195\151`,
-U+00D7) — predates this gate, sits in Latin-1 Supplement rather than the Arrows block the owner's
-screenshot actually broke on, and `Core.lua`'s own doc comment already argues for keeping it. Not
-silently exempted forever: flagged in the test's own comment as a row to drop first if the owner
-confirms it boxes too.
+**A guard added so this cannot come back — DECODED, not text-matched, after a fix-round finding
+that the first cut of it could not catch the mistake it existed to prevent.** A first version of
+`tests/test_prose.lua`'s guard matched the literal source TEXT of a decimal escape (`\226`, the six
+characters backslash-2-2-6) and so caught only a hand-written escape; a contributor who pastes a
+literal `→` straight into a string — raw UTF-8 bytes, no backslash anywhere — produced a line that
+version could not match, and it passed in silence: precisely how the arrow this release removes got
+in in the first place. The gate now DECODES each `.lua` line (`decodeLuaEscapes`: only `\ddd` can
+decode to a byte ≥ 128, every other Lua 5.1 escape decodes under 128) after stripping its `--`
+comment quote-aware (`stripLineComment`, so a `--` or a quote inside a string literal cannot
+false-trigger it), then scans the DECODED bytes for anything ≥ 128 — the same shape AuraMaster's
+own `tests/test_locale.lua` scans its loaded locale values with, adapted to source text because
+this library has no single loaded locale table to walk the way that gate does. Scoped to `.lua`
+files only, and to strings rather than comments — this file's own box-drawing rules and 480-odd
+literal em dashes among them are free to use real UTF-8 because none of it ships to a tooltip. One
+blanket exemption, matching AuraMaster's own gate: the decoded em dash. One ratified, path-scoped
+exemption beyond that: `Core.lua`'s close-control fallback glyph, the multiplication sign (decoded
+`\195\151`, U+00D7) — predates this gate, sits in Latin-1 Supplement rather than the Arrows block
+the owner's screenshot actually broke on, and `Core.lua`'s own doc comment already argues for
+keeping it. Not silently exempted forever: flagged in the test's own comment as a row to drop first
+if the owner confirms it boxes too. Proved by pasting a literal `→` into `OptionsWidgets.lua`'s
+`ID_TEXT.looking` and confirming the suite turned red naming that exact line, then reverting it.
 
 No member is added, removed, renamed or resignatured, and no descriptor field changes. Every host
 that draws a `ChoiceGrid` is affected whether or not it uses `extraColumn` or an `IdList` `note` —
