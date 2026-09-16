@@ -375,6 +375,31 @@ badge and any count quoted in the docs must agree with it.
 - slash: the format hook takes precedence over the colour codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
 
+### test_launcher.lua (22)
+
+- launcher: New refuses a descriptor missing name, icon or openSettings
+- launcher: ONE object, of type 'launcher', carrying the host's own icon
+- launcher: both registrations use the addon's folder name, and a host may relabel
+- launcher: Register is idempotent, so a second call builds no second button
+- launcher: IsRegistered is false until BOTH halves are wired
+- launcher: OnTooltipShow is passed through, and only when it is a function
+- launcher: right-click ALWAYS opens the settings panel, on every rung
+- launcher: left-click runs the host's action on rungs (a) and (b)
+- launcher: with no onClick, left-click opens the panel too — that is rung (c)
+- launcher: a raising click is reported and never escapes into the client
+- launcher: the host's OWN minimap table is handed to LibDBIcon, never a copy
+- launcher: the minimap table is resolved at REGISTER time, not at New
+- launcher: IsShown reads LibDBIcon's own `hide` key and inverts it
+- launcher: SetShown writes `hide` and drives LibDBIcon's Show / Hide
+- launcher: the debug seam reports under the Launcher tag
+- launcher: with no LibDataBroker there is no object, and nothing raises
+- launcher: with no LibDBIcon the broker plugin still registers; the button does not
+- launcher: SetShown still records the player's choice where LibDBIcon is absent
+- launcher: a descriptor whose minimap answers no table refuses the button and says why
+- launcher: a name LibDataBroker already holds takes that object rather than none
+- launcher: a host locale overrides a report, and a key-echoing fallback does not
+- launcher: with no descriptor print, a report reaches the chat frame
+
 ### test_options.lua (84)
 
 - options: the major registers all three of its files
@@ -490,7 +515,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (221)
+### test_options_widgets.lua (185)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -658,6 +683,28 @@ badge and any count quoted in the docs must agree with it.
 - widgets: the gap under a landing heading is emitted once, by Section
 - widgets: BuildLandingPage tolerates a nil spec and an empty one
 - widgets: the landing page's text rows carry the same justify guard TextRow owns
+- widgets: a tabbed page draws ONLY the active group's rows
+- widgets: a tabbed page draws no section heading -- the tab IS the heading
+- widgets: an UNtabbed page still draws its headings
+- widgets: clicking a tab clears the scroll and renders the new group
+- widgets: the active tab survives a re-render, and heals when its group disappears
+- widgets: a one-group page draws a ONE-TAB strip
+- widgets: a page whose rows carry no group renders untabbed AND says so
+- widgets: a host that omits print still sees NO_GROUPS in the chat frame
+- widgets: with no AceGUI a tabbed page reports no tabs and draws nothing
+- widgets: a subgroup draws a heading INSIDE a tab, where the group's own is suppressed
+- widgets: a subgroup repeated under a SECOND group draws again
+- widgets: the pending line is flushed before a subsection heading
+- widgets: an UNTABBED page draws its group heading AND its subgroup headings
+- widgets: a `wide` row renders at FULL width, alone, with the lines around it flushed
+- widgets: `startsLine` flushes a half-full line so a declared pair cannot be split
+- widgets: `startsLine` on a line that is already empty costs nothing
+- widgets: InlineButtonPair with no right-hand button draws one, at the pair's width
+- widgets: a string row with no values and no dialogControl prints once and still renders
+- widgets: a values-backed row that is momentarily empty does NOT warn
+
+### test_options_tabs.lua (36)
+
 - widgets: tab packing fills a row and wraps to the next
 - widgets: a tab wider than the strip gets its own row rather than vanishing
 - widgets: an empty tab list lays out as no rows at all
@@ -681,28 +728,9 @@ badge and any count quoted in the docs must agree with it.
 - widgets: banner then strip leave no overlap in the reserved band
 - widgets: PageBanner refuses politely with no AceGUI and with no spec
 - widgets: repeated strip renders do not grow the page-wide chrome ledger
-- widgets: a tabbed page draws ONLY the active group's rows
-- widgets: a tabbed page draws no section heading -- the tab IS the heading
-- widgets: an UNtabbed page still draws its headings
-- widgets: clicking a tab clears the scroll and renders the new group
-- widgets: the active tab survives a re-render, and heals when its group disappears
-- widgets: a one-group page draws a ONE-TAB strip
-- widgets: a page whose rows carry no group renders untabbed AND says so
-- widgets: a host that omits print still sees NO_GROUPS in the chat frame
-- widgets: with no AceGUI a tabbed page reports no tabs and draws nothing
 - widgets: a wrapped strip's geometry is IDENTICAL for every value of the selection
 - widgets: every tab's hit rect is inset by the same number the rows are packed by
 - widgets: the pitch is measured once, off the INACTIVE family, and cached on success only
-- widgets: a subgroup draws a heading INSIDE a tab, where the group's own is suppressed
-- widgets: a subgroup repeated under a SECOND group draws again
-- widgets: the pending line is flushed before a subsection heading
-- widgets: an UNTABBED page draws its group heading AND its subgroup headings
-- widgets: a `wide` row renders at FULL width, alone, with the lines around it flushed
-- widgets: `startsLine` flushes a half-full line so a declared pair cannot be split
-- widgets: `startsLine` on a line that is already empty costs nothing
-- widgets: InlineButtonPair with no right-hand button draws one, at the pair's width
-- widgets: a string row with no values and no dialogControl prints once and still renders
-- widgets: a values-backed row that is momentarily empty does NOT warn
 - widgets: PageHeader reserves the band, and the strip lands beneath it
 - widgets: a page draws at most ONE chrome block -- the second replaces the first
 - widgets: PageHeader without a divider draws the block and no rule
@@ -753,7 +781,7 @@ badge and any count quoted in the docs must agree with it.
 - IdInput suggestions: a raising info costs that id's row, not the list
 - IdInput suggestions: the dropdown is as wide as the box looks
 
-### test_options_compose.lua (42)
+### test_options_compose.lua (45)
 
 - compose: the instance carries every composer and every published constant
 - compose: FontGroup emits the six canonical leaves in the canonical order
@@ -775,6 +803,9 @@ badge and any count quoted in the docs must agree with it.
 - compose: a composer never writes to the spec it was handed
 - compose: MasterControls emits the six canonical rows and defaults its own group
 - compose: testModePath adds one session-only Test mode row, on its own line after the console
+- compose: minimapPath adds a stored Minimap button row, opening the line Test mode pairs on
+- compose: Minimap button and Test mode render as ONE line, minimap first
+- compose: either row alone still opens its own line
 - compose: the debug console's path is verbatim and outside the block's prefix
 - compose: frameless drops EXACTLY the four frame-only controls and nothing else
 - compose: a frameless addon's lead button shares the pair with Reset all settings
@@ -1152,12 +1183,14 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets.lua | 81 |
 | test_debuglog.lua | 67 |
 | test_slash.lua | 94 |
+| test_launcher.lua | 22 |
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 221 |
+| test_options_widgets.lua | 185 |
+| test_options_tabs.lua | 36 |
 | test_options_idsuggest.lua | 36 |
-| test_options_compose.lua | 42 |
+| test_options_compose.lua | 45 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 33 |
 | test_perf_panel.lua | 45 |
@@ -1174,4 +1207,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1044** |
+| **Total** | **1069** |

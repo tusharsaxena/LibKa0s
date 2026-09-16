@@ -4,8 +4,8 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.38.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
-| File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `SCROLL_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
+| Repo semver (`v1.39.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
 is offered for a major and discards the rest, so of the copies vendored across every installed addon,
@@ -16,16 +16,17 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
    That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
-   is fifty-seven files at v1.35.0: everything but `tests/_kit/`, which is excluded only because
+   is sixty-one files at v1.39.0: everything but `tests/_kit/`, which is excluded only because
    it is a byte copy of `testkit/` and would report every finding twice. A consumer's is scoped too,
    and usually excludes `libs/` and `tests/`. 0/0
    only means something if the files carrying the seam are inside the checked set, so confirm that
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   fourteen, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   sixteen, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Media.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
-   `Slash.lua`, `MINOR` in `Options.lua`, `WIDGETS_MINOR` in `OptionsWidgets.lua`, `SCROLL_MINOR`
+   `Slash.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `WIDGETS_MINOR` in
+   `OptionsWidgets.lua`, `TABS_MINOR` in `OptionsTabs.lua`, `SCROLL_MINOR`
    in `OptionsScroll.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
    `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
@@ -34,13 +35,14 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 3. **A new module is also a new row in `tests/run.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
    that table rather than naming files inline, so a module missing from it is a module nothing
-   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of four and a
-   `paired` array of three (`{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
+   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of five and a
+   `paired` array of four (`{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
+   `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`,
    `{ OptionsCompose, __composeMinor, __composeShellMinor }`,
    `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`). **A file added to an existing major moves
    that major's version key**, because the key is every file's minor in load order — the Options key
-   ran three numbers through 13.12.3 and runs four from 14.13.1.3. The table carries one row per
-   shipped major — ten today.
+   ran three numbers through 13.12.3, four from 14.13.1.3 and five from 21.20.1.7.3. The table
+   carries one row per shipped major — eleven today, since `LibKa0s-Launcher-1.0` at v1.39.0.
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
    say what changed. `tests/test_versioning.lua` fails if the block and any major's `lib.MODULES`
    disagree, so this is enforced rather than remembered.
@@ -172,7 +174,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the fourteen `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the sixteen `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -196,7 +198,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.38.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.39.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -276,24 +278,29 @@ Rules, and the reason each exists:
   up carrying a new `Perf.lua` over an old `Core.lua`, or a `Core.lua` that never arrived at all.
   The only negotiation between majors is a floor — a dependent file names the minimum minor it needs
   (`NEEDS_CORE`, at the top of every major's primary file but Core's — `Env.lua`, `Pool.lua`,
-  `Item.lua`, `Media.lua`, `Widgets.lua`, `DebugLog.lua`, `Slash.lua`, `Options.lua` and `Perf.lua`)
+  `Item.lua`, `Media.lua`, `Widgets.lua`, `DebugLog.lua`, `Slash.lua`, `Launcher.lua`,
+  `Options.lua` and `Perf.lua`)
   and returns
   before `NewLibrary` if the dependency is missing or older, so the module is **absent** rather than
   half-wired. That is the honest failure, not a working one: the host's setup file reports the
   library as missing and falls back. Nothing negotiates the other direction, and the four
   paired-minor guards that protect a secondary file within a major (`OptionsWidgets`,
-  `OptionsCompose`, `OptionsScroll`, `PerfPanel`) do not generalise across them. Whole-folder copying is the
+  `OptionsTabs`, `OptionsCompose`, `OptionsScroll`, `PerfPanel`) do not generalise across them. Whole-folder copying is the
   mitigation.
-- **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** The other majors
+- **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** FIVE files since
+  v1.39.0. The other majors
   fail loudly and early; this one does not. If `Options.lua` itself is missing or refused, all three
   attach files bail on their own `LibStub("LibKa0s-Options-1.0", true)` lookup and the module is
-  cleanly absent. But if only one of `OptionsWidgets.lua` / `OptionsCompose.lua` /
-  `OptionsScroll.lua` fails to arrive, `lib:New` still succeeds — the shell guards each attach step
-  with `if lib.__AttachWidgets then … end`, `if lib.__AttachCompose then … end` and
-  `if lib.__AttachScroll then … end` (`LibKa0s/Options.lua:1279-1281`) — and the host holds an
-  instance that looks whole until something calls `O.AttachTooltip`, a composer such as
-  `O.MasterControls`, or `O.PatchAlwaysShowScrollbar`, which may be a panel build away.
-  Four files, one major, one copy.
+  cleanly absent. But if only one of `OptionsWidgets.lua` / `OptionsTabs.lua` /
+  `OptionsCompose.lua` / `OptionsScroll.lua` fails to arrive, `lib:New` still succeeds — the shell
+  guards each attach step with `if lib.__AttachWidgets then … end`, `if lib.__AttachTabs then … end`,
+  `if lib.__AttachCompose then … end` and `if lib.__AttachScroll then … end` — and the host holds an
+  instance that looks whole until something calls `O.AttachTooltip`, `O.TabStrip`, a composer such as
+  `O.MasterControls`, or `O.PatchAlwaysShowScrollbar`, which may be a panel build away. The two
+  cross-file calls between `OptionsWidgets.lua` and `OptionsTabs.lua` are themselves guarded and
+  degrade rather than raise (a tabbed page renders untabbed; a banner loses its tooltip), which
+  narrows that window without closing it.
+  Five files, one major, one copy.
 - **Raising a dependency floor is a breaking change to the vendoring, not to the API.** If a change
   to `Perf.lua` needs something Core only gained this release, `NEEDS_CORE` moves with it — and every
   consumer whose `libs/` still holds the older `Core.lua` loses the whole module until it is
@@ -327,6 +334,7 @@ which hosts' descriptors a change to one module can reach.
 | `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | `core/DebugLogSetup.lua` (all eleven) — ConsumableMaster's was at `modules/DebugLog.lua` when this table was written and is not there now; that file no longer exists, and the lookup is at `core/DebugLogSetup.lua:59` with everyone else's. PrettyChat passes **none** of `skin` / `applySkin` / `makeCloseButton` and deleted a 424-line hand-written console to take the library's edge as-is — the first adoption where the Core-minor-3 default *was* the answer rather than something to override. **LootHistory is the second host on minor 4's `applySkin` — and both it and BankLedger have since
 dropped `makeCloseButton`, which as of v1.5.0 has no consumer at all** — it asserts the derived title-bar offsets rather than assuming them |
 | `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | PrettyChat: `settings/Slash.lua`, **plus a second lookup at `settings/Schema.lua`** — the same shape as AbsorbTracker's and found the same way, by the sweep above. `Schema.FormatValue` is the addon's ONE value renderer, and it has two consumers that are not both CLI surfaces: the descriptor's `format` hook and the `[Set]` debug trace at the write seam, so it lives beside the rows rather than in the slash file. PrettyChat is also the **second host on minor 5's `format` hook and the first to use it on a row type the library can already render** — the case this doc listed as untried: it doubles `\|` to `\|\|` so a Blizzard format string's colour escapes read as text instead of colouring the chat line, delegating to `lib.FormatValue` first so the empty-string `(none)` stays the library's. Its `parse` adapter exists for a **gap**, not an exotic type — see the note under the table. `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory, MultiMeters, WhatGroup, AuraMaster) — LootHistory is the **second host on minor 5's `format` hook**, for the same set-valued row shape BankLedger drove it for; ConsumableMaster: `settings/Slash.lua` — moved there from `core/SlashCommands.lua` (CM-47/CM-54); this table said the old path until the v1.7.0 sweep, which is what the step-9 re-sweep is for. PanelMaster: `settings/Slash.lua`, and it is the **first host to pass a descriptor `L`** — a plain one-key table (`RESET_ALL`), so the override path is now exercised as well as the fallback; it also carries a `parse` adapter that up-cases enum input before delegating to `lib.ParseValue`. AbsorbTracker has a **second** lookup at `settings/Schema.lua`, stashed at file load so `NS.FormatSchemaValue` can call `lib.FormatValue(row, v)` — the seam every panel widget and every `/at set` renders through PartyFrameEnhanced: `settings/Slash.lua`, **plus a second lookup at `settings/Schema.lua:254`**, found by the v1.37.0 sweep. |
+| `LibKa0s-Launcher-1.0` | **none yet** — the major ships at v1.39.0 and every consumer's adoption is `launcher-§5`'s changeset, not this release's. The eleven are AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat and WhatGroup, and every one of them is non-compliant with `launcher` until it adopts, which is normal and expected because the section is new. **Do not let this cell read "none yet" a release after the first host wires it** — the Media and Env rows both did exactly that, for the same reason: a major that lands everywhere at once has no first host to prompt a revisit. The wiring will live in `core/LauncherSetup.lua`. | 
 | `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | AuraMaster: `settings/OptionsSetup.lua`, decorated by its page files under `settings/`, which call the composers at file load; it passes `skipRestoreAll` to veto the Profiles page and every profile-backed row. PrettyChat: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. It **declines `RestoreDefaults` / `RestoreAllDefaults`** — both are row-by-row over ~171 rows, which would run its `ApplyStrings` once per row and emit one `[Set]` line per row into a 500-line console buffer; its own batch resets stay, reached through `defaultsOnClick` so `CreatePanel`'s `OnDefault` forwarding still makes the footer control and the header button one body. Its per-string editor is an AceGUI `TreeGroup` — a 200px list of the category's format strings beside one full-width editor — that `RenderGrid` cannot express either (HALF or full width, no third ratio). LootHistory: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. BankLedger: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/OptionsSetup.lua`, the only place the instance is built, with the addon's own half in `settings/Panel.lua` — this cell named `settings/Panel.lua` alone until the v1.30.0 sweep. MultiMeters: `settings/OptionsSetup.lua`, decorated by fourteen page files under `settings/` (`Bars`, `Columns`, `Data`, `Frame`, `General`, `Header`, `Icons`, `Profiles`, `Rows`, `Text`, `Tooltip`, `Visibility`, `Windows`, `Schema`) — the widest decoration surface of any host, and the reason its descriptor reaches the instance through a `helpers()` accessor at call time (`settings/OptionsSetup.lua:36`) rather than capturing a member: every one of those files runs after the seam. It has a **second lookup at `settings/Schema_Compose.lua:476`**, guarded on `__AttachCompose`, for the composer products that forward to `NS.Helpers` at call time. It passes `skipRestoreAll`, vetoing the Profiles page from Restore All because those rows are AceDBOptions' and resetting them deletes profiles — this cell called it the only host to do so, but AbsorbTracker, KickCD and AuraMaster pass it too. PanelMaster: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, which **wraps `RenderField` and `EnsureScroll` on the instance** for its own open-dropdown registry — the first host to need either. WhatGroup: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, and it is the **second host to wrap instance members** — `SetRenderer` and `EnsureDefaultsButton`, so both the page body and the Defaults button build on the NEXT frame rather than synchronously inside `OnShow`. It is a taint fix that addon had already shipped: Blizzard's GameMenu / Logout flows can dispatch a settings canvas's `OnShow` inside a secure-execute chain. Wrapping on the instance is load-bearing for the same reason it was for PanelMaster — `SetRenderer`'s handler resolves `EnsureDefaultsButton` from the instance at call time PartyFrameEnhanced: `settings/OptionsSetup.lua`. **The two `testModePath` adopters (compose minor 6, v1.37.0)** are PartyFrameEnhanced (`state.testMode`, replacing a `leadButton`) and AuraMaster (`state.preview`, moved from a hand-written Display-tab row, its degradation stub mirroring the row). AuraMaster dropped the row again under the standard's v2.49.0 exemption (an addon whose unlocked view is its preview omits Test mode), as did PanelMaster, KickCD and ConsumableMaster. |
 | `LibKa0s-Media-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | `core/MediaSetup.lua` (all eleven; AuraMaster's came with the addon, not with the v1.9.0 pass). **This row did not exist until the v1.15.0 sweep** — the major shipped at v1.9.0, went into every consumer in the same pass, and was never added here, which is precisely the failure the re-sweep exists to catch: nine wiring sites the table pointed a reviewer at zero of. There is no first host and no second host to name, because it landed everywhere at once. Two hosts reach it for more than the font: MultiMeters resolves an icon per call site rather than caching one (`modules/Export.lua:1323`), and it is `core/LSMPatch.lua`'s reason for existing — the bar textures the library owns are registered into LibSharedMedia by the library, not by the addon. LibSharedMedia itself is OPTIONAL to the major (`LibKa0s/Media.lua:48`), so a host that has it gets the registrations and a host that does not still gets the paths |
 | `LibKa0s-Widgets-1.0` | BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters | **KickCD was missing from this row until the v1.30.0 sweep**: `settings/Spells.lua` looks the major up twice, at `:796` to read the handle gutter off `ROW_BOX.HANDLE_W` rather than restating it, and at `:1057` for `ReorderList`. **ConsumableMaster joined at v1.19.0**, on `ReorderList`: `settings/Category.lua`, which drags a priority row to a new position, **plus a second lookup at `settings/StatPriority.lua:122`** for the same member, which reads its handle width the same way Category does, **and a third at `settings/MacroBar.lua:723`** for the Macro Bar's Buttons tab, which drags the bar's slots with the shown ones ahead of a dimmed hidden group (added by the v1.34.0 sweep). It is the second consumer that minor 8 waited for — MultiMeters had recorded the deviation of keeping the widget local, with "a second addon wants an orderable list" written in as the condition that ends it. MultiMeters has a **second lookup at `settings/ColumnBlocks.lua`** for the same member, and the two adopt it from opposite directions: MultiMeters' list has two groups and a clamp at the divide, ConsumableMaster's is flat. Between them they are why the member owns the gesture and no row content — their rows have nothing in common. BankLedger: `modules/Browser.lua`, which is where this widget was lifted FROM — its adoption at v1.11.1 is what found `CloseMenu()`, **plus a second lookup at `modules/Export.lua:14`** for `CloseMenu()` alone: the popup is a process-wide singleton parented to UIParent, so the export modal's own `Hide()` does not reach it. LootHistory: `core/WidgetsSetup.lua:85`, the only host to put the lookup behind a NAMED seam file rather than in the surface that draws — `NS.MakeDropdown`, `NS.HasWidgets` and `NS.CloseMenu`, with `HasWidgets` existing so a surface whose only control is a dropdown can learn of a degraded install BEFORE it builds a globally-named frame it would then have to leak. MultiMeters: `modules/Export_Modal.lua` (the lookup moved there from `modules/Export.lua`), the second adopter and the reason the widget was lifted at all; it drives two dropdowns from one export modal and calls `CloseMenu()` on that modal's hide. All of them look the major up once at file load and refuse to draw the surface at all when it answers `nil`. **None passes `glyphFont`** — the glyph column is BankLedger's store-direction case and nothing in either shipped host uses it today, which is why v1.11.0's and v1.11.1's crash on the first click reached both of them and was found by neither's suite |
@@ -383,16 +391,25 @@ files, every one in the table; the one it found missing — ConsumableMaster's `
 the Macro Bar's Buttons drag list — was added to the Widgets row by that sweep. `WhoGotLoots` and
 `BuffTextNotifications` are out of scope until they are on the standard at all.
 
-**Where v1.38.0 stands (2026-09-16).** Steps 1–9 are done. `master` carries the release at
-`3475a4a`, and the tag `v1.38.0` is pushed on the record commit `efcb4ba`. (The release commit's
-message is garbled: a shell slip put the manifest check's Python source in front of the title. The
-tree and the record are sound, and the history was left as pushed.) Step 8 is done: all eleven
-consumers bundle v1.38.0 and kit revision 21 (the kit did not change) on `master`, each pushed with
-its `CLAUDE.md` provenance line moved in the same commit. The release's one change is behavioural,
-Slash minor 11 sending a bare `/<slash>` to the host's `config` verb (the standard's v2.50.0
-slash-commands-§4), so every consumer adopted it in the same commit: its library-absent Slash stub
-mirrors the rule, and its tests and docs stop saying a bare command prints help. LootHistory's stub
-alone keeps help on a bare line, because its `config` cannot open anything without the library.
+**Where v1.39.0 stands (2026-09-16).** Steps 1–7 are done in this repository; **step 8 is not**.
+`master` carries the release, and the tag is on the record commit. The release is three things in one
+payload, deliberately — each consumer re-vendors the whole folder, so two releases would mean eleven
+repos re-vendoring twice and eleven chances to end up on a mismatched pair:
+
+- a new major, `LibKa0s-Launcher-1.0` (Launcher minor 1);
+- `MasterControls`' `minimapPath` seam (OptionsCompose minor 7), which is what `launcher-§5` names as
+  the thing blocking all eleven adoptions;
+- the chrome peel to `OptionsTabs.lua` (Options 21, OptionsWidgets 20, OptionsTabs 1), which closes
+  #16 and #8 and changes nothing a host calls.
+
+**Step 8 is the eleven consumers' own changeset and it is larger than a re-vendor.** Adopting the
+launcher is `launcher-§5`'s five steps — vendor LibDataBroker-1.1 and LibDBIcon-1.0, generate the
+128×128 logo, build the object, take this release and declare `minimapPath`, record the rung in
+`ADDONS.md` — and Multi Meters additionally owes a `db.profile.minimap` → `db.global.minimap`
+migration. An addon that adopts the launcher without the logo ships a button that draws **nothing**,
+which is worse than the state before it adopted. Until a consumer carries this tag its adoption is
+**blocked rather than overdue**, and an audit records it as blocked.
+
 Move this paragraph at the next release.
 
 WhatGroup has Core, Env, DebugLog, Media, Options and Slash — `core/CoreSetup.lua`,
