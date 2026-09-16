@@ -10,6 +10,7 @@
 	<Script file="Launcher.lua"/>
 	<Script file="Options.lua"/>
 	<Script file="OptionsWidgets.lua"/>
+	<Script file="OptionsTabs.lua"/>
 	<Script file="OptionsCompose.lua"/>
 	<Script file="OptionsScroll.lua"/>
 	<Script file="Perf.lua"/>

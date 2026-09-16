@@ -13,7 +13,7 @@
 | Shipped in | v1.37.0 – v1.38.0 |
 | Status | Superseded |
 | Supersedes | [version 20.19.5.3](./version-20.19.5.3-docs.md) |
-| Superseded by | [version 20.19.7.3](./version-20.19.7.3-docs.md) |
+| Superseded by | [version 21.20.1.7.3](./version-21.20.1.7.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 20, OptionsWidgets = 19, OptionsCompose = 6, OptionsScroll = 3 }` |
 
@@ -1123,10 +1123,13 @@ never removed or repurposed, so a host written against `1.1.1` keeps working unm
 version adds one `MasterControls` spec field, `testModePath` (**C6**), and no member: a host that does
 not pass it renders byte-identically to 20.19.5.3.
 
-## Moving to version 20.19.7.3
+## Moving to version 21.20.1.7.3
 
-One file moves, `OptionsCompose.lua` 6 → 7, adding one optional `MasterControls` spec field,
-`minimapPath`, which emits the **Minimap button** row `options-ui-§15` and `launcher-§3` require of
-every addon. *Test mode* stops opening a line of its own when that row is present and pairs beside
-it instead, as `[Minimap button] [Test mode]`; a host passing `testModePath` alone sees no change at
-all. See [version 20.19.7.3](./version-20.19.7.3-docs.md).
+Two things land together, in LibKa0s v1.39.0. The page's chrome — the tab strip, the page banner,
+the header block and the secondary strip — moves into a fifth file, `OptionsTabs.lua`, which changes
+the version key and nothing a host calls. And `OptionsCompose.lua` 6 → 7 adds one optional
+`MasterControls` spec field, `minimapPath`, which emits the **Minimap button** row `options-ui-§15`
+and `launcher-§3` require of every addon; *Test mode* stops opening a line of its own when that row
+is present and pairs beside it instead, as `[Minimap button] [Test mode]`. A host passing
+`testModePath` alone sees no change at all. See
+[version 21.20.1.7.3](./version-21.20.1.7.3-docs.md).

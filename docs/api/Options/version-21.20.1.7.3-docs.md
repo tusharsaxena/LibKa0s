@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 20.19.7.3
+# `LibKa0s-Options-1.0` — version 21.20.1.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,29 +8,70 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **20** · `OptionsWidgets.lua` **19** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
-| Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
+| Files and minors | `Options.lua` **21** · `OptionsWidgets.lua` **20** · `OptionsTabs.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. **The key gained a component at this version**, because the major gained a file. |
 | Shipped in | v1.39.0 |
 | Status | **Current** |
 | Supersedes | [version 20.19.6.3](./version-20.19.6.3-docs.md) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 20, OptionsWidgets = 19, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 21, OptionsWidgets = 20, OptionsTabs = 1, OptionsCompose = 7, OptionsScroll = 3 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O20`
-for `Options.lua` minor 20, `W19` for `OptionsWidgets.lua` minor 19, `C7` for `OptionsCompose.lua`
-minor 7, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
+`Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
+for `Options.lua` minor 21, `W20` for `OptionsWidgets.lua` minor 20, `T1` for `OptionsTabs.lua`
+minor 1, `C7` for `OptionsCompose.lua` minor 7, `S1` for `OptionsScroll.lua` minor 1. **A `W`
+citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
+`O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until this version and are
+`OptionsTabs.lua`'s from it, with no change to what any of them does. The minor that introduced a
+member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
 
-**One file moves, `OptionsCompose.lua` 6 → 7, and it adds one spec field and moves one row's
-column.** `MasterControls` takes `minimapPath` (**C7**): the path of the minimap button's
-visibility, emitted as a **Minimap button** checkbox in the **first** column of the line below
-*Lock frame* / *Debug console*. It is the Ka0s WoW Addon Standard v2.52.0's `options-ui-§15` row and
-`launcher-§3`'s one visibility control, and it is what unblocks the whole collection's launcher
-adoption: `launcher-§5` records that no addon could adopt before this seam existed, because §15
-forbids hand-writing the row and the composer had nowhere to emit it from.
+**The major gains a FIFTH file and no member.** `LibKa0s/OptionsTabs.lua` (**T1**) carries the
+page's chrome — the tab strip, the page banner, the host's header block, the secondary strip, the
+four geometry seams and the client art all four are drawn from. Every one of them was
+`OptionsWidgets.lua`'s at 20.19.7.3 and behaves identically here; `Options.lua` 20 → **21** gains
+one guarded attach call, `OptionsWidgets.lua` 19 → **20** loses the moved code and one guard.
+
+**Nothing a host calls changes.** The members attach to the same instance `O`, in the same
+`lib:New` return, under the same names. A host that never opens this document is unaffected, and
+that is the point of doing it as a move rather than as a redesign.
+
+**Why the file exists at all:** `layout-§1` caps an authored `.lua` at 1500 lines, and
+`OptionsWidgets.lua` was 3700 (issue **#16**). The cut follows the seam that file was already built
+along rather than a new one — the chrome half and the widget half never reached into each other's
+module-scope locals, which is what made a 900-line move a move rather than a rewrite. The file is
+**still over the cap** after it, at 2795, and its remaining seam (the id-resolution and suggestion
+half) is tracked in the repo's census.
+
+**It takes the same paired-minor guard the major's other secondary files take**, on its own
+`__tabsMinor` plus the shell's `__tabsShellMinor`, and the same `LibKa0s-Pool-1.0` floor
+(`NEEDS_POOL = 1`) `OptionsWidgets.lua` declares — the strip's buttons and the content panel come
+from the pool rather than being built on every click, and falling back to allocating per click is
+the leak Options minor 14 ended. A payload holding four of the five files is not a supported state
+and LibStub cannot detect it, which is why whole-folder vendoring is mandatory.
+
+**Two cross-file calls are now guarded, and both are honest degradations rather than defensiveness.**
+`O.RenderTabbedSchema` (in `OptionsWidgets.lua`) falls back to the untabbed render when `O.TabStrip`
+is absent — every row with its section headings, exactly what its no-groups branch already does —
+and `O.PageBanner` (in `OptionsTabs.lua`) skips its tooltip when `O.AttachTooltip` is absent. The
+two files are paired on the **shell's** minor rather than on each other's, so a copy carrying one
+and not the other is a state LibStub cannot see; a page that still draws is a smaller failure than
+a page that raises.
+
+**`OptionsTabs.lua` takes no descriptor.** `lib.__AttachTabs(O)` is called with the instance alone,
+unlike the three attach calls around it. The chrome is geometry and art: it reads no setting, writes
+none, and calls no host callback other than the `onSelect` its own spec carries. The signature says
+so, so a reader can tell which half of the old file could reach the host's data.
+
+**`OptionsCompose.lua` 6 → 7 lands in the same release, and it adds one spec field.**
+`MasterControls` takes `minimapPath` (**C7**): the path of the minimap button's visibility, emitted
+as a **Minimap button** checkbox in the **first** column of the line below *Lock frame* / *Debug
+console*. It is the Ka0s WoW Addon Standard v2.52.0's `options-ui-§15` row and `launcher-§3`'s one
+visibility control, and it is what unblocks the whole collection's launcher adoption: `launcher-§5`
+records that no addon could adopt before this seam existed, because §15 forbids hand-writing the row
+and the composer had nowhere to emit it from.
 
 **`Test mode` loses its `startsLine` when it pairs.** At **C6** the *Test mode* row opened a line of
 its own and left the right half of it empty. It now pairs beside *Minimap button* as
@@ -55,7 +96,8 @@ taken **verbatim**, like the console's, because it lives outside the block's pro
 visible. LibDBIcon's own key says *hidden* (`minimap.hide`), so the host's `get`/`set` invert at its
 single write seam and call LibDBIcon's `Show` / `Hide` there, exactly as the console row's `set`
 opens and closes the console window. The library owns the row; it does not own the inversion, the
-table or the registration — those are `LibKa0s-Launcher-1.0`'s and the host's.
+table or the registration — those are `LibKa0s-Launcher-1.0`'s (new in this release) and the
+host's.
 
 The changes at 20.19.6.3 are in [that version's document](./version-20.19.6.3-docs.md#what-changed-at-this-version).
 
@@ -1150,8 +1192,16 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
 never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. This
-version adds one `MasterControls` spec field, `minimapPath` (**C7**), and no member: a host that does
-not pass it renders byte-identically to 20.19.6.3.
+version adds **no member**. It moves the page's chrome into a fifth file, which changes the version
+key and nothing a host calls, and it adds one `MasterControls` spec field, `minimapPath` (**C7**).
+A host that passes neither `minimapPath` nor `testModePath` renders byte-identically to 20.19.6.3.
+
+The one field that is **not** additive in the strictest reading is `startsLine` on the *Test mode*
+row, which C6 always set and C7 sets only when no *Minimap button* row was emitted. It is a layout
+hint on a composed row rather than a member, a descriptor field or a stored value, and the only host
+that can observe the difference is one passing **both** paths — which no host could do before this
+version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
+it got.
 
 The one field that is **not** additive in the strictest reading is `startsLine` on the *Test mode*
 row, which C6 always set and C7 sets only when no *Minimap button* row was emitted. It is a layout

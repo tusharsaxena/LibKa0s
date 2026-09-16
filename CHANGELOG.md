@@ -12,8 +12,51 @@ cannot drift. Release order is in
 
 ## v1.39.0 — 2026-09-16
 
-Versions in this release: **Launcher minor 1** (a new major), **OptionsCompose minor 7**.
-Every other major is unchanged from v1.38.0.
+Versions in this release: **Launcher minor 1** (a new major), **Options minor 21**,
+**OptionsWidgets minor 20**, **OptionsTabs minor 1** (a new file in the Options major) and
+**OptionsCompose minor 7**. Every other major is unchanged from v1.38.0.
+
+**`LibKa0s-Options-1.0` gains a fifth file: `OptionsTabs.lua`** (issue
+[#16](https://github.com/tusharsaxena/LibKa0s/issues/16) and its suite,
+[#8](https://github.com/tusharsaxena/LibKa0s/issues/8)). The page's chrome — the tab strip, the
+page banner, the host's header block, the secondary strip, the four geometry seams and the client
+art all four are drawn from — moves out of `OptionsWidgets.lua`, which was 3700 lines against
+`layout-§1`'s 1500-line cap. **No member is added, removed or renamed**, and nothing a host calls
+changes: the members attach to the same instance under the same names.
+
+**The cut follows the seam the file was already built along.** The chrome half and the widget half
+never reached into each other's module-scope locals — every art local the tab members use lives in
+the art block, and none of them was referenced from the makers, the id surface or the flow engine —
+which is what made 900 lines a move rather than a rewrite. `Options.lua` 20 → 21 gains one guarded
+attach call; `OptionsWidgets.lua` 19 → 20 loses the moved code.
+
+`OptionsTabs.lua` takes the same paired-minor guard the major's other secondary files take
+(`__tabsMinor` plus the shell's `__tabsShellMinor`) and the same `LibKa0s-Pool-1.0` floor
+`OptionsWidgets.lua` declares. **A file added to a major moves that major's version key**: Options
+ran four numbers through `20.19.6.3` and runs five from `21.20.1.7.3`.
+
+**Two cross-file calls are now guarded, and both are honest degradations.** `O.RenderTabbedSchema`
+falls back to the untabbed render when `O.TabStrip` is absent — every row with its section
+headings, exactly what its no-groups branch already does — and `O.PageBanner` skips its tooltip
+when `O.AttachTooltip` is absent. The two files are paired on the **shell's** minor rather than on
+each other's, so a copy carrying one and not the other is a state LibStub cannot see; a page that
+still draws is a smaller failure than a page that raises.
+
+`lib.__AttachTabs(O)` takes **no descriptor**, unlike the three attach calls around it. The chrome
+is geometry and art: it reads no setting, writes none, and calls no host callback but the
+`onSelect` its own spec carries. The signature says so.
+
+**The suite peels with it and in the same commit** (`testing-§1`, one suite per module): thirty-six
+cases move to `tests/test_options_tabs.lua`, whole, and the repository's total is 1069 before and
+1069 after. The cases under *the tabbed page* stayed with `O.RenderTabbedSchema` in
+`tests/test_options_widgets.lua`, which is the one place the cut differs from the banner list #8
+wrote down: they read a strip because that is what the entry point draws, but what they assert is
+which rows a tab shows.
+
+**Neither file is under the cap yet, and the census says so rather than being emptied.**
+`OptionsWidgets.lua` is 2795 and its suite 3208, so both keep a row in `CLAUDE.md`'s
+*Files over the 1500-line cap*, retargeted at the seam that is left — the id-resolution and
+suggestion half, which is widget code and did not move.
 
 **A new major, `LibKa0s-Launcher-1.0`** (Ka0s WoW Addon Standard v2.52.0, `launcher`). Every Ka0s
 addon must ship a launcher — a minimap button, and the same addon shown in a broker display — and

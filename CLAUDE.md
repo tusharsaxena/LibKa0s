@@ -95,7 +95,7 @@ figure in the `docs/automated-tests/` manifests that no document read, and a RES
 that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
 against a file in it.
 
-Two files, measured 2026-09-16 at v1.38.0 (`5fceda5`) with
+Two files, measured 2026-09-16 at v1.39.0 with
 
 ```sh
 git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
@@ -103,8 +103,17 @@ git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 
 | File | Lines (2026-09-16) | Disposition |
 |---|---|---|
-| `tests/test_options_widgets.lua` | 3997 | Issue [#8](https://github.com/tusharsaxena/LibKa0s/issues/8) — peels with `LibKa0s/OptionsWidgets.lua`, on that file's seam and in that file's commit |
-| `LibKa0s/OptionsWidgets.lua` | 3700 | Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16) — the tab and page chrome (`:378` art block, `:1510`–`:1988` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine. The id-lookup and suggestion helpers v1.35.0 put between those two ranges (`:754`–`:1350`) are widget code, not chrome, and stay |
+| `tests/test_options_widgets.lua` | 3208 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (~1030) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
+| `LibKa0s/OptionsWidgets.lua` | 2795 | Issue [#32](https://github.com/tusharsaxena/LibKa0s/issues/32) — the id surface out to `OptionsIds.lua`: the module-scope `id resolution` and `suggestions while typing` blocks (~585) plus the lookup, dropdown and list members inside `lib.__AttachWidgets` (~765). Leaves the makers and the flow engine at ~1445 |
+
+**v1.39.0 peeled the chrome, and both rows survived it.** Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16)
+named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua` (965
+lines), with its thirty-six cases in `tests/test_options_tabs.lua` (842). Both issues are closed and
+both peels are done. What they did not do is clear the cap, and the arithmetic says why rather than
+the effort: `OptionsWidgets.lua` was **1989** lines when #16 was written and **3700** when it was
+executed, because Options minor 16's id surface landed in between. A peel sized against the file of
+2026-09-08 was never going to fit the file of 2026-09-16. The rows above are retargeted at what is
+left rather than deleted, which is the whole point of a census that a gate reads.
 
 **Both are issues, and neither is a register row.** The sibling repository doing this same work gives
 its *mirror suites* register rows rather than issues, on the argument that a suite has no seam of its
@@ -123,19 +132,24 @@ so the census cannot become a graveyard. A figure in this column is a measuremen
 today — `OptionsWidgets.lua` was 1838 at the 2026-09-07 review and the suite 2287, then 1989 and
 2398 on 2026-09-08, and both moved while nobody was watching, which is the whole argument for having a gate rather than a paragraph.
 
-**Nothing is peeled this cycle.** The 2026-09-07 remediation plan rules out splitting any file
-(`03_SPEC.md` § C22 non-goals). Here that is more than a scheduling preference: `LibKa0s/` is
-re-vendored whole-folder into eleven consumers and every file in it carries its own LibStub minor, so a
-peel adds a payload file, a `LibKa0s.xml` row, a minor and the multi-file pairing guard
-(`__widgetsShellMinor`, `LibKa0s/OptionsWidgets.lua:33`) — a deliberate release, not a tidy-up. The
-deliverable was the disposition, and the disposition is this table.
+**A peel here is a release, and v1.39.0 is the worked example.** `LibKa0s/` is re-vendored
+whole-folder into eleven consumers and every file in it carries its own LibStub minor, so a peel adds
+a payload file, a `LibKa0s.xml` row, a minor, a row in `tests/majors.lua`, the multi-file pairing
+guard on its own minor **and** the shell's (`__tabsMinor` / `__tabsShellMinor`,
+`LibKa0s/OptionsTabs.lua:39`, following `__widgetsShellMinor`), **a component on the major's version
+key**, an API document and a regenerated manifest — a deliberate release, not a tidy-up. The
+2026-09-07 remediation plan ruled out splitting any file (`03_SPEC.md` § C22 non-goals) and that
+cycle's deliverable was the disposition; this cycle executed it.
 
 **The 1000–1500 band is on notice, not in breach**, measured with the same command on 2026-09-16 at
-v1.38.0: `tests/test_widgets.lua` (1493),
+v1.39.0: `tests/test_widgets.lua` (1493),
 `tests/test_options.lua` (1303), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1231, tracked as
 [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1307), since kit revision 17 `testkit/mock_base.lua` (1499 at kit revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that reason) and, since v1.34.0, `tests/test_slash.lua` (1054). They are
 named so a later reader can tell the band was looked at rather than missed; none needs a disposition
-until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. v1.32.0's
+until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. **v1.39.0's
+two new files are not even in the band** — `LibKa0s/OptionsTabs.lua` at 965 and
+`tests/test_options_tabs.lua` at 842 — and they are named here only so a reader can see that the
+peel landed clear of it rather than one edit from needing its own disposition. v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
 `tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own. v1.33.0's
 font-preload cases did the same, into `tests/test_options_fontpreload.lua`.

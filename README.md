@@ -32,8 +32,9 @@ modules ship today:
 - **`LibKa0s-Launcher-1.0`** — the minimap button and the broker plugin, as ONE LibDataBroker
   object registered twice. Neither broker library is a dependency.
 - **`LibKa0s-Options-1.0`** — the Blizzard settings-canvas shell, the schema-row to AceGUI widget
-  translation, the two-column flow engine that lays a page out, and the schema composers that expand
-  one declaration into a canonical block. Four files, one major.
+  translation, the page's chrome (the tab strip, the banner, the header block and the secondary
+  strip), the two-column flow engine that lays a page out, and the schema composers that expand one
+  declaration into a canonical block. Five files, one major.
 - **`LibKa0s-Perf-1.0`** — a repeatable A/B performance capture for one host addon.
 
 Every module but Core requires Core, and refuses to register without it.
@@ -74,7 +75,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [11](docs/api/Slash/version-11-docs.md) |
 | `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice — with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. One `OnClick`, implementing launcher-§2's three left-click rungs plus right-click-always-opens-the-panel; LibDBIcon's own `minimap` table taken from the host. Neither broker library is a dependency: both are resolved with `LibStub(…, true)` at register time and every degradation is named rather than raised. | `Launcher.lua` | [1](docs/api/Launcher/version-1-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [20.19.7.3](docs/api/Options/version-20.19.7.3-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [21.20.1.7.3](docs/api/Options/version-21.20.1.7.3-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [11.5](docs/api/Perf/version-11.5-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
@@ -241,6 +242,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Launcher.lua       -- LibKa0s-Launcher-1.0, MINOR at the top of the file; needs Core
   Options.lua        -- LibKa0s-Options-1.0, MINOR at the top of the file; needs Core
   OptionsWidgets.lua -- the makers + the flow engine, same module, WIDGETS_MINOR of its own
+  OptionsTabs.lua    -- the page's chrome: strip, banner, header block, sub-strip, TABS_MINOR
   OptionsCompose.lua -- the schema composers, same module, COMPOSE_MINOR of its own
   OptionsScroll.lua  -- the always-shown scrollbar patch, same module, SCROLL_MINOR of its own
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
