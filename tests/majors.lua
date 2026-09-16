@@ -55,6 +55,11 @@ local MAJORS = {
     primary = "Slash",
   },
   {
+    major = "LibKa0s-Launcher-1.0",
+    files = { "Launcher" },
+    primary = "Launcher",
+  },
+  {
     major = "LibKa0s-Options-1.0",
     files = { "Options", "OptionsWidgets", "OptionsCompose", "OptionsScroll" },
     primary = "Options",

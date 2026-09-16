@@ -29,6 +29,8 @@ modules ship today:
   formatters, the buffer, and the seam that turns logging on and off.
 - **`LibKa0s-Slash-1.0`** — the slash dispatcher, the help renderer, the schema CLI
   (`list`/`get`/`set`/`reset`/`resetall`/`version`) and the type-aware value parser.
+- **`LibKa0s-Launcher-1.0`** — the minimap button and the broker plugin, as ONE LibDataBroker
+  object registered twice. Neither broker library is a dependency.
 - **`LibKa0s-Options-1.0`** — the Blizzard settings-canvas shell, the schema-row to AceGUI widget
   translation, the two-column flow engine that lays a page out, and the schema composers that expand
   one declaration into a canonical block. Four files, one major.
@@ -71,7 +73,8 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [9](docs/api/Widgets/version-9-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [11](docs/api/Slash/version-11-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [20.19.6.3](docs/api/Options/version-20.19.6.3-docs.md) |
+| `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice — with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. One `OnClick`, implementing launcher-§2's three left-click rungs plus right-click-always-opens-the-panel; LibDBIcon's own `minimap` table taken from the host. Neither broker library is a dependency: both are resolved with `LibStub(…, true)` at register time and every degradation is named rather than raised. | `Launcher.lua` | [1](docs/api/Launcher/version-1-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [20.19.7.3](docs/api/Options/version-20.19.7.3-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [11.5](docs/api/Perf/version-11.5-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
@@ -235,6 +238,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Widgets.lua        -- LibKa0s-Widgets-1.0, MINOR at the top of the file; needs Core
   DebugLog.lua       -- LibKa0s-DebugLog-1.0, MINOR at the top of the file; needs Core
   Slash.lua          -- LibKa0s-Slash-1.0, MINOR at the top of the file; needs Core
+  Launcher.lua       -- LibKa0s-Launcher-1.0, MINOR at the top of the file; needs Core
   Options.lua        -- LibKa0s-Options-1.0, MINOR at the top of the file; needs Core
   OptionsWidgets.lua -- the makers + the flow engine, same module, WIDGETS_MINOR of its own
   OptionsCompose.lua -- the schema composers, same module, COMPOSE_MINOR of its own

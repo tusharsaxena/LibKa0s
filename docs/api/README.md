@@ -60,6 +60,7 @@ the file you need:
 | `LibKa0s-Widgets-1.0` | `<Widgets>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
+| `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
 | `LibKa0s-Perf-1.0` | `<Perf>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
 
@@ -159,6 +160,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [6](./Slash/version-6-docs.md) | `Slash.lua` 6 | v1.7.0 | Superseded |
 | [5](./Slash/version-5-docs.md) | `Slash.lua` 5 | v1.2.0 – v1.6.3 | Superseded |
 | [4](./Slash/version-4-docs.md) | `Slash.lua` 4 | v1.0.0, v1.1.0, v1.1.1 | Superseded |
+
+### `LibKa0s-Launcher-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Launcher/version-1-docs.md) | `Launcher.lua` 1 | v1.39.0 | **Current** |
 
 ### `LibKa0s-Options-1.0`
 

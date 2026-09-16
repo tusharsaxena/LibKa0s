@@ -1,0 +1,12 @@
+{
+  "major": "LibKa0s-Launcher-1.0",
+  "versionKey": "1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Launcher", "minor": 1 }
+  ],
+  "members": [
+    { "name": "New", "kind": "function" },
+    { "name": "STRINGS", "kind": "table" }
+  ]
+}

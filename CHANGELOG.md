@@ -12,7 +12,37 @@ cannot drift. Release order is in
 
 ## v1.39.0 — 2026-09-16
 
-Versions in this release: **OptionsCompose minor 7**. Every other major is unchanged from v1.38.0.
+Versions in this release: **Launcher minor 1** (a new major), **OptionsCompose minor 7**.
+Every other major is unchanged from v1.38.0.
+
+**A new major, `LibKa0s-Launcher-1.0`** (Ka0s WoW Addon Standard v2.52.0, `launcher`). Every Ka0s
+addon must ship a launcher — a minimap button, and the same addon shown in a broker display — and
+`launcher-§1` makes it ONE object registered twice, never two features: a single LibDataBroker-1.1
+object of `type = "launcher"`, handed to LibDBIcon-1.0, so one `OnClick`, one icon and one identity
+reach both surfaces. Eleven addons were about to write that wiring eleven times, and the second
+behavior change is where eleven copies drift (anti-pattern #81).
+
+`lib:New(d)` takes `name` (the FOLDER name, which keys LibDBIcon's saved position and so is not
+cosmetic), `icon` (the addon's own logo, the file `## IconTexture` names), `minimap` (LibDBIcon's own
+`db.global.minimap` table, or a function answering it — the usual shape, because that table does not
+exist when a host builds its descriptor at file load), `openSettings` and, where the addon is on rung
+(a) or (b), `onClick`. The instance carries `Register`, `IsRegistered`, `Object`, `IsShown` and
+`SetShown`. **The rung is expressed by the PRESENCE of `onClick`** rather than by a flag, so a host
+cannot declare a rung it did not implement; right-click always opens the settings panel, on every
+addon, which is what lets the left button be spent on something better.
+
+**Neither broker library is a dependency.** LibDataBroker-1.1 and LibDBIcon-1.0 are resolved with
+`LibStub(..., true)` at `Register` time — call time rather than load time, because nothing fixes the
+order of two `# Libraries` entries — and each degradation is named rather than raised: no
+LibDataBroker and there is no object at all; no LibDBIcon and the broker plugin still registers while
+the button does not; a `minimap` that answers no table refuses the button and says why. `SetShown`
+records the player's choice in every one of those states, so a degraded install still remembers it
+and the Master-controls checkbox still reads back correctly.
+
+**What it deliberately does not own:** the settings row (composed by `MasterControls`, below), the
+inversion between the row's *shown* and LibDBIcon's `hide` (the host's single write seam, options-ui-§1),
+the global scope of the table (launcher-§3), and the icon file itself (layout-§4). Twenty-two cases,
+and `docs/api/Launcher/version-1-docs.md`.
 
 **`MasterControls` composes the Minimap button row, and it takes the first column** (Ka0s WoW Addon
 Standard v2.52.0, `options-ui-§15` and `launcher-§3`). A new spec field, `minimapPath`, emits an

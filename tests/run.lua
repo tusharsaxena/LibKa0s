@@ -46,6 +46,7 @@ _G.LK_TEST = Kit.expose{
   debuglog = mocks.LibStub("LibKa0s-DebugLog-1.0"),
   slash = mocks.LibStub("LibKa0s-Slash-1.0"),
   options = mocks.LibStub("LibKa0s-Options-1.0"),
+  launcher = mocks.LibStub("LibKa0s-Launcher-1.0"),
   majors = MAJORS,
 }
 
@@ -60,6 +61,7 @@ Kit.run{
   dir = "tests/",
   suites = {
     "test_core", "test_env", "test_pool", "test_item", "test_media", "test_widgets", "test_debuglog", "test_slash",
+    "test_launcher",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_idsuggest", "test_options_compose",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
