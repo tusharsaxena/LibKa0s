@@ -1,6 +1,6 @@
 # CLAUDE.md — LibKa0s
 
-LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.53.0) —
+LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.56.0) —
 <https://github.com/tusharsaxena/WowAddonStandards>.
 
 **Read this first: LibKa0s is a library repo, not an addon.** It is in scope for the standard and it
@@ -95,7 +95,7 @@ figure in the `docs/automated-tests/` manifests that no document read, and a RES
 that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
 against a file in it.
 
-Two files, measured 2026-09-16 at v1.39.0 with
+Two files, measured 2026-09-16 at v1.40.0 with
 
 ```sh
 git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
@@ -103,7 +103,7 @@ git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 
 | File | Lines (2026-09-16) | Disposition |
 |---|---|---|
-| `tests/test_options_widgets.lua` | 3219 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (~1030) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
+| `tests/test_options_widgets.lua` | 3285 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (~1030) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
 | `LibKa0s/OptionsWidgets.lua` | 2812 | Issue [#32](https://github.com/tusharsaxena/LibKa0s/issues/32) — the id surface out to `OptionsIds.lua`: the module-scope `id resolution` and `suggestions while typing` blocks (~585) plus the lookup, dropdown and list members inside `lib.__AttachWidgets` (~765). Leaves the makers and the flow engine at ~1460 |
 
 **v1.39.0 peeled the chrome, and both rows survived it.** Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16)
@@ -142,9 +142,9 @@ key**, an API document and a regenerated manifest — a deliberate release, not 
 cycle's deliverable was the disposition; this cycle executed it.
 
 **The 1000–1500 band is on notice, not in breach**, measured with the same command on 2026-09-16 at
-v1.39.0: `tests/test_widgets.lua` (1493),
-`tests/test_options.lua` (1303), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1231 at v1.39.0, tracked as
-[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1312), since kit revision 17 `testkit/mock_base.lua` (1499 at kit revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that reason, and kit 22's recording surveys to `testkit/mock_record.lua` for the same one, which took the file back to 1437) and, since v1.34.0, `tests/test_slash.lua` (1265 with Slash minor 12's disabled-gate cases, 1054 before them), and `LibKa0s/Perf.lua` again at 1308 with minor 12's latch. They are
+v1.40.0: `tests/test_widgets.lua` (1493), since kit revision 17
+`testkit/mock_base.lua` (1437 — it was 1499 at kit revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that reason, and kit 22's recording surveys to `testkit/mock_record.lua` for the same one, which is what took it back down), `LibKa0s/Options.lua` (1312), `LibKa0s/Perf.lua` (1308 with minor 12's latch, 1231 at v1.39.0, tracked as
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `tests/test_options.lua` (1303), and, since v1.34.0, `tests/test_slash.lua` (1265 with Slash minor 12's disabled-gate cases, 1054 before them), and `LibKa0s/Widgets.lua` (1232). They are
 named so a later reader can tell the band was looked at rather than missed; none needs a disposition
 until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. **v1.39.0's
 two new files are not even in the band** — `LibKa0s/OptionsTabs.lua` at 973 and
@@ -194,6 +194,6 @@ lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for w
 luacheck .          # 0 warnings / 0 errors
 ```
 
-That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — sixty-one
-files at v1.39.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
+That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — sixty-five
+files at v1.40.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
 only means something if the files carrying the change are inside the checked set.

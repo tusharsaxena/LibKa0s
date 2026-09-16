@@ -9,7 +9,7 @@
 | Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, **`mock_record.lua`**, `mock_ids.lua`, `vendor_sync.lua`, `test_eol.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **22** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | unreleased |
+| First released in | v1.40.0 |
 | Status | **Current** |
 | Supersedes | [version 21](version-21-docs.md) — the pooled CheckBox `check` texture |
 | Superseded by | — |

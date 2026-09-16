@@ -10,14 +10,14 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## Unreleased
+## v1.40.0 — 2026-09-16
 
-Versions in this section: **Lifecycle minor 1** (a new major), **Perf minor 12**, **Slash minor 12**
-and **kit revision 22**. Every other major is unchanged from v1.39.0. **Nothing here is tagged yet**
-— the tag that ships it is what the Ka0s WoW Addon Standard's `slash-commands-§7` and
-`library-stack-§7` then cite, and no version is named in the standard in advance, because a number
-invented ahead of the release is a citation that does not resolve. Until that tag exists, every
-addon's adoption of the stand-down seam is **blocked** rather than overdue.
+Versions in this release: **Lifecycle minor 1** (a new major), **Perf minor 12**, **Slash minor 12**
+and **kit revision 22**. Every other major is unchanged from v1.39.0. **v1.40.0 is the tag the Ka0s
+WoW Addon Standard's `slash-commands-§7` and `library-stack-§7` cite**, and no version was named
+in the standard in advance, because a number invented ahead of the release is a citation that does
+not resolve. With this tag, every addon's adoption of the stand-down seam is **overdue** rather than
+blocked.
 
 **`LibKa0s-Lifecycle-1.0` is a new major: the stand-down latch.** One addon, many reasons to be
 inert, one way down and one way back up. `Lifecycle:New(descriptor)` takes a `standDown` and a

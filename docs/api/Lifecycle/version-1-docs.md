@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Lifecycle-1.0` |
 | Files and minors | `Lifecycle.lua` minor **1** |
-| Shipped in | unreleased |
+| Shipped in | v1.40.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |

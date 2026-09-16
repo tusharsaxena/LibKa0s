@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
 | Files and minors | `Slash.lua` minor **12** |
-| Shipped in | unreleased |
+| Shipped in | v1.40.0 |
 | Status | **Current** |
 | Supersedes | [version 11](./version-11-docs.md) |
 | Superseded by | — |
