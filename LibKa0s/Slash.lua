@@ -18,7 +18,7 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Slash-1.0", 11
+local MAJOR, MINOR = "LibKa0s-Slash-1.0", 12
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -56,6 +56,50 @@ lib.STRINGS = {
   ERR_COLOR        = "expected: r g b [a] (each 0-1 or 0-255)",
   ERR_TYPE         = "unknown setting type '%s'",
 }
+
+-- ── the disabled gate ──────────────────────────────────────────────────────────────────────
+--
+-- Disabled means the addon is NOT RUNNING, so a dispatcher that kept answering `get`, `set`,
+-- `lock` and every host feature verb would be the slash half of the draw gate: the player has
+-- switched the addon off and it still talks back as though it were working. Exactly three verbs
+-- answer normally, every other input answers ONE line, and the line is the collection's rather
+-- than the addon's.
+--
+-- THE WORDING LIVES HERE AND NOWHERE ELSE. It is one sentence, so re-spelling it per addon costs
+-- nothing and is exactly why eleven addons would each end up with their own — one saying "disabled",
+-- one "turned off", one adding a second line about the settings panel — and a player who uses four
+-- of them reads four different answers to the same question. The launcher's left-click prints this
+-- same line from this same member; it MUST NOT be re-spelled host-side.
+--
+-- The format is exported beside the builder so a conformance suite can match against the SHAPE
+-- rather than hard-code the words, which is the difference between a suite that pins the wording
+-- and a suite that has to be edited every time the wording is improved.
+--
+-- Gold FFFFFF00 on the command, which is the same gold lib.FormatRow gives a command in the help
+-- index — a player scanning the index and a player reading this line are being shown the same kind
+-- of thing, so they are shown the same color. The command carries its leading slash, the rest of
+-- the line is default-colored, the dash is an em dash with a single space either side to match the
+-- row formatter, and there is no trailing colon (house style) and no trailing period.
+lib.DISABLED_LINE_FORMAT = "%s is disabled \226\128\148 enable it with |cFFFFFF00%s|r"
+
+-- The verbs that still answer while disabled, and the set is DATA rather than a branch buried in
+-- dispatch so that a reader can see the whole of it at once and a suite can assert on it.
+--
+--   * `enable`  — the way back. Refusing it would leave a player who disabled the addon with no
+--                 typed route to re-enabling it.
+--   * `help`    — the index, in full, because the player has to be able to SEE `enable` in the
+--                 list. It prints the refusal line immediately under its header so twelve rows do
+--                 not read as twelve working commands.
+--   * `disable` — NOT refused and NOT silent. It is not a feature verb; it is an alias onto a
+--                 schema write, so writing false over false is an idempotent no-op write whose
+--                 honest answer is the `<enablePath> = false` echo every other write gets.
+--                 Refusing it would answer `/<slash> disable` with a line telling the player to
+--                 type `/<slash> enable`, which reads as the addon having misunderstood the
+--                 request.
+--
+-- A host MUST NOT widen this, and this library MUST NOT ship a different default. It is exported
+-- so a host that must name the set names THIS one rather than a copy of it.
+lib.LIVE_VERBS = { "enable", "help", "disable" }
 
 -- ── the formatters ─────────────────────────────────────────────────────────────────────────
 --
@@ -398,7 +442,23 @@ end
 ---                          form, then the positional one. Same field name as the Options
 ---                          descriptor's, so a host passes one pair to both majors.
 ---   colorEncode  function  optional. r, g, b, a -> stored. Defaults to { r =, g =, b =, a = }.
----   L            table     optional. Locale override, keyed to lib.STRINGS.
+---   L            table     optional. Locale override, keyed to lib.STRINGS. It does NOT reach the
+---                          disabled refusal line: that wording is the collection's rather than the
+---                          addon's, and a locale table is the obvious place for eleven addons to
+---                          each grow their own version of it.
+---   isEnabled    function  optional, minor 12. -> boolean. ABSENT means the gate is OFF and this
+---                          dispatcher behaves exactly as it did at minor 11, so an un-adopted host
+---                          is unaffected. Present and answering false, exactly the verbs in
+---                          `liveVerbs` dispatch and every other input prints the one refusal line.
+---                          Asked at dispatch time, never cached.
+---   brandName    string    required WHEN `isEnabled` is given, minor 12. The addon's brand name in
+---                          plain text, `Ka0s <Name>` — the same string the LDB object takes as its
+---                          `label`. MUST NOT be derived from the TOC Title, which may carry color
+---                          escapes.
+---   liveVerbs    table     optional, minor 12. Array of the verbs that still answer while
+---                          disabled, defaulting to lib.LIVE_VERBS — { "enable", "help", "disable" }.
+---                          Present so the set is data rather than a hard-coded branch; a host MUST
+---                          NOT widen it.
 function lib:New(d)
   d = type(d) == "table" and d or {}
   if type(d.slash) ~= "string" or d.slash == "" then
@@ -406,6 +466,25 @@ function lib:New(d)
   end
   if type(d.commands) ~= "table" then
     error(MAJOR .. ":New requires descriptor.commands — the host's own verb table", 2)
+  end
+
+  -- The gate is OFF when `isEnabled` is absent, and that is the whole of the migration story: a
+  -- host that has not adopted the stand-down latch yet passes no `isEnabled`, and its dispatcher
+  -- behaves byte for byte as it did at minor 11. There is no half-adopted state to reason about.
+  local isEnabled = type(d.isEnabled) == "function" and d.isEnabled or nil
+  if isEnabled and (type(d.brandName) ~= "string" or d.brandName == "") then
+    -- Refused at construction rather than rendered as "nil is disabled" at the one moment a
+    -- confused player is reading the line. `brandName` is the plain-text `Ka0s <Name>` a host
+    -- already MUSTs as its LDB object's label, and the reuse is load-bearing rather than tidy:
+    -- that field already forbids escape sequences, which is what makes it safe to drop into a
+    -- colored line, and it means an addon has ONE brand spelling rather than a second one invented
+    -- for this message. It MUST NOT be derived from the TOC Title, which may carry color escapes.
+    error(MAJOR .. ":New requires descriptor.brandName alongside isEnabled — the plain-text "
+      .. "`Ka0s <Name>`, the same string the LDB object takes as its label", 2)
+  end
+  local liveVerbs = {}
+  for _, verb in ipairs(type(d.liveVerbs) == "table" and d.liveVerbs or lib.LIVE_VERBS) do
+    liveVerbs[tostring(verb):lower()] = true
   end
 
   local strings = type(d.L) == "table" and d.L or nil
@@ -494,8 +573,31 @@ function lib:New(d)
     return header
   end
 
+  --- The one refusal line, built in the one place. Every call site — the dispatcher's own gate,
+  --- the help header, and the launcher's left-click handler — calls THIS, and a host that spells it
+  --- again has created the second wording this member exists to prevent.
+  ---
+  --- The host's own `print` adds NS.PREFIX exactly as it does for every other line, so the tag is
+  --- not built in here: a line that carried its own tag would double it in every host that prints
+  --- it correctly.
+  function Sl:DisabledLine()
+    return lib.DISABLED_LINE_FORMAT:format(tostring(d.brandName or d.slash), d.slash .. " enable")
+  end
+
+  --- Is the gate closed right now? `isEnabled` is asked at DISPATCH TIME, never cached: the value
+  --- can change between two commands, and a cached answer would refuse the command that follows
+  --- the `enable` that just worked.
+  local function disabled()
+    return isEnabled ~= nil and not isEnabled()
+  end
+
   function Sl:PrintHelp()
     emit(self:HelpHeader())
+    -- IMMEDIATELY AFTER THE HEADER, AND UNINDENTED. Under the header it is a statement about the
+    -- whole index; below the rows it would be a footnote to the last command, and the twelve rows
+    -- above it would have already read as twelve working commands. Unindented for the same reason:
+    -- the indent is what marks a line as belonging to the list.
+    if disabled() then emit(self:DisabledLine()) end
     for _, line in ipairs(self:HelpRows()) do emit(line) end
   end
 
@@ -650,25 +752,54 @@ function lib:New(d)
 
   function Sl:OnSlash(msg)
     local raw = (msg or ""):match("^%s*(.-)%s*$") or ""
+    -- Asked ONCE per dispatch rather than at each of the three exits below, so a host whose
+    -- `isEnabled` reads a database cannot have the answer change halfway through one command.
+    local isDown = disabled()
+
     -- Bare /slash runs the host's `config` verb (minor 11, slash-commands-§4): the settings panel on
     -- its landing page, whose own combat refusal is what a player in a fight sees. `help` is the
     -- index. A host with no `config` verb falls back to the index, as every minor before 11 did.
+    --
+    -- Disabled, the bare form is refused like every other non-live input (minor 12). Opening the
+    -- panel would be the draw gate in another costume: a full settings surface for an addon that is
+    -- not running, every control of which writes a setting nothing is reading.
     if raw == "" then
+      if isDown then return emit(self:DisabledLine()) end
       local config = findCommand("config")
       if config then return config[3]("") end
       return self:PrintHelp()
     end
 
     -- Only the verb is lowercased. `rest` keeps its case because schema paths are case-sensitive,
-    -- and its internal spacing because a color is several tokens.
+    -- and its internal spacing because a color is several tokens. Unchanged by the gate: an input
+    -- is parsed identically whether or not it will be answered, because a gate that parsed
+    -- differently would be a second parser.
     local cmd, rest = raw:match("^(%S+)%s*(.*)$")
     cmd  = (cmd or ""):lower()
     rest = rest or ""
 
+    -- Aliases resolve BEFORE the gate, so a host's `on` -> `enable` alias still reaches `enable`
+    -- while disabled. Gating the raw word would refuse the alias and honor the verb it names, which
+    -- is one surface answering two ways.
     if aliases[cmd] then cmd = aliases[cmd] end
+
+    -- THE GATE. Every other input — a known verb that is not live, an unknown verb, and the bare
+    -- command handled above — gets the one line and nothing else. Not `unknown command '<verb>'`,
+    -- and not the help index: both of those answer "I did not understand you", and the addon
+    -- understood perfectly well. It is off.
+    --
+    -- The schema CLI entry points (CliGet, CliSet, CliList, CliReset, the resetall path,
+    -- CliVersion) are reached only through this dispatch, so they are gated here and need no check
+    -- of their own — one gate is a gate, six gates are five places for one of them to be missed.
+    if isDown and not liveVerbs[cmd] then return emit(self:DisabledLine()) end
 
     local entry = findCommand(cmd)
     if entry then return entry[3](rest) end
+
+    -- A live verb with no COMMANDS entry behind it: the host declared `disable` live and does not
+    -- ship it, say. Still one line, never the index — the index is what the enabled surface answers
+    -- with, and printing it here would list eleven verbs that are all refused.
+    if isDown then return emit(self:DisabledLine()) end
 
     emit(self:Text("UNKNOWN_COMMAND"):format(cmd))
     self:PrintHelp()

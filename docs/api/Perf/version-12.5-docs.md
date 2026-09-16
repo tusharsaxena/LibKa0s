@@ -1,4 +1,4 @@
-# `LibKa0s-Perf-1.0` — version 11.5
+# `LibKa0s-Perf-1.0` — version 12.5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Perf surface points here rather than restating it. It describes the
@@ -8,15 +8,15 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **11** · `PerfPanel.lua` **5** |
+| Files and minors | `Perf.lua` **12** · `PerfPanel.lua` **5** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.31.0 |
-| Status | Superseded |
-| Supersedes | [version 10.5](./version-10.5-docs.md) |
-| Superseded by | [version 12.5](./version-12.5-docs.md) |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
+| Shipped in | unreleased |
+| Status | **Current** |
+| Supersedes | [version 11.5](./version-11.5-docs.md) |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) **and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`)** |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 11, PerfPanel = 5 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 12, PerfPanel = 5 }` |
 
 `Since` names the file and minor a member first appeared in — `P11` for `Perf.lua` minor 11, `PP5`
 for `PerfPanel.lua` minor 5. It is `1` for nearly everything: this major did not move at all between
@@ -36,7 +36,70 @@ a state LibStub can detect. **This is why the version key above is a pair.**
 
 ## What changed at this version
 
-**`Perf.lua` minor 11 — `Save` traces its retention prune.** One file moves, 10 → 11, and nothing is
+**`Perf.lua` minor 12 — suspend and resume become two holds on one latch, and the floor rises.**
+
+### The floor is a re-vendor trigger
+
+This file now returns before `NewLibrary` unless `LibKa0s-Lifecycle-1.0` is present at minor 1 or
+newer, exactly as it already did for Core. **A floor bump is a re-vendor trigger**: a vendored copy
+of `Perf.lua` that arrives beside a payload with no `Lifecycle.lua` in it does not register at all,
+so a host that copied half the folder loses its perf probe outright rather than finding out mid-run.
+Re-vendoring is whole-folder, so this is a loud failure in the one case it can happen — a partial
+copy — and no failure at all otherwise.
+
+### `descriptor.lifecycle`, and what it replaces
+
+`lifecycle` is **required**. `suspend` and `resume` are no longer required and are **no longer
+called**; a host that has adopted the latch passes the very same two functions to
+`LibKa0s-Lifecycle-1.0` as `standDown` and `standUp`, where the *disabled* arm reaches them too.
+Leaving them on this descriptor as well is harmless and is what an un-migrated host will do, but
+nothing here reads them.
+
+Keeping them required would have forced every host to carry two live copies of its own teardown, and
+two copies is exactly how the perf arm and the disable arm drift apart — which is the state this
+change exists to make unreachable. An instance with no latch has no way to make the host inert at
+all, so Experiment B would measure a fully live addon and report a delta of about zero: a wrong
+answer that looks exactly like a good one.
+
+### `P.Suspend()` takes a named hold; `P.Resume()` gives it back
+
+`P.Suspend()` takes `lifecycle.HOLD_PERF` (`"perf"`), and it is the latch that runs the host's
+teardown — and only if this is the first hold. An addon the player has already disabled is already
+inert, so Experiment B measures exactly what it means to measure and nothing is torn down twice.
+
+`P.Resume()` **releases that one hold and nothing else**. Whether the addon actually comes back is
+the latch's decision, not this module's, and the latch says no while `disabled` is still taken.
+**Releasing one hold must not resurrect an addon the other is still holding down** — with a boolean,
+a perf run that finished after the player disabled the addon mid-capture brought it back to life.
+
+The log line follows the answer rather than announcing a restore that did not happen: a player
+reading "events and frames restored" over an addon that is still off has been told the opposite of
+what occurred and will go looking for the bug in the wrong addon.
+
+### `P.suspended` is now a view, not a copy
+
+The field keeps its name and its meaning — it is still what the host contract tells a show-decision
+to consult — but it **reads the latch** rather than holding a second boolean beside it. This module
+keeps no `suspended` state of its own; `lifecycle:IsHeld("perf")` is the answer.
+
+**Assigning to `P.suspended` raises.** A raw write would create a shadowing field that wins forever
+after, and from that moment the module would have two answers to "is this addon inert" — which is
+the exact bug this change removes, arriving silently through the back door.
+
+### "Resume before saving or reporting" becomes "release the hold before saving or reporting"
+
+`perf finish` still releases before `Save` and `FormatReport`, and the guarantee is unchanged in
+substance: a raise inside persistence or formatting **must not** be able to strand the hold for the
+rest of the session. Ordering is what delivers that, not a `pcall` — by the time anything below can
+fail, the hold is already gone and the latch has already decided whether the addon stands up. The
+line `finish` prints now says which of the two happened.
+
+`performance-§6`'s restore-from-current-state rule applies in full: standing up rebuilds
+registrations from the enabled set **as it is now**, not from a snapshot taken on the way down.
+
+### Previously, at 11.5
+
+**`Save` traces its retention prune.** One file moves, 10 → 11, and nothing is
 added, removed, renamed or resignatured; the member manifest differs from 10.5's in its version key
 alone.
 
@@ -126,8 +189,9 @@ written against minor 1 keeps working unmodified against any later minor.
 | `name` | string | yes | 1 | Host identifier. Seeds the default `slash`, the sampler and panel frame names, and `BuildRecord`'s `addon` field. |
 | `addonName` | string | no | PP4 | The host's own addon **folder** name, from its first vararg — what `Core.MakeCloseButton` builds the `close` icon's texture path from on the no-`decorate` path. Defaults to `name`, which is what every host in the collection already passes, so this is an escape hatch rather than a step. The library is vendored and cannot infer a folder, which is why it has to be told. |
 | `sv` | string | yes | 1 | The global SavedVariables table name the capture ring is persisted to. Must be declared in the host's TOC. |
-| `suspend` | function | yes | 1 | Makes the host inert without a `/reload`. See [the host contract](#the-host-contract-for-suspendresume). |
-| `resume` | function | yes | 1 | Restores everything `suspend` took away. See [the host contract](#the-host-contract-for-suspendresume). |
+| `lifecycle` | instance | yes | **12** | The host's `LibKa0s-Lifecycle-1.0` latch. `Suspend`/`Resume` take and release the `perf` hold on it; the host's teardown and rebuild are the latch's `standDown` and `standUp`. |
+| `suspend` | function | no | 1, **ignored from 12** | Made the host inert without a `/reload`. Accepted and unread from minor 12: it moves to the latch's `standDown`. See [the host contract](#the-host-contract-for-suspendresume). |
+| `resume` | function | no | 1, **ignored from 12** | Restored everything `suspend` took away. Accepted and unread from minor 12: it moves to the latch's `standUp`. |
 | `log` | function(line) | no | 1 | Console-only sink. Defaults to `print`. |
 | `print` | function(line) | no | 1 | Chat-and-console sink, for what the user must see while looking at the game. Defaults to `print`. |
 | `showLog` | function | no | 1 | Reveals the host's own log/console window. Defaults to a no-op. The lib owns no console frame of its own, so this is how `start`, `report` and `dump` bring the log into view. |
@@ -289,8 +353,11 @@ if t0 then NS.Perf.Note("paintBar", debugprofilestop() - t0) end
 
 ## The host contract for `suspend`/`resume`
 
-The lib owns only the `suspended` state and the announcement; the host owns what "inert" means. Get
-either of these wrong and a capture doesn't error — it silently lies:
+**From minor 12 these two are the LATCH's `standDown` and `standUp`**, and this module reaches them
+only by taking and releasing the `perf` hold. The contract is otherwise word for word what it was,
+because it was never about who calls the function — it was about what the function has to do. The lib
+owns only when the hold is taken; the host owns what "inert" means. Get either of these wrong and a
+capture doesn't error — it silently lies:
 
 1. **`suspend` MUST make the host inert without a `/reload`.** Reloading, or disabling the addon
    through the AddOns list, shifts shared-frame ownership — which is the exact confound that makes
@@ -326,8 +393,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `Measure(token)` | 1 | Arm window `"a"` or `"b"`; sets suspend state as the independent variable. |
 | `Stop()` | 1 | End the experiment, detach the sampler, return the record. **Does not resume.** If Experiment B ran, the host is still inert when `Stop()` returns and stays that way until something calls `Resume()` — a host driving this API directly owns that call. The asymmetry is deliberate: `OnCommand("finish")` resumes *before* it saves, so that an error in `Save` or `FormatReport` cannot strand the addon dead for the session, and it can only order it that way because `Stop()` leaves the suspend state alone. |
 | `Cancel()` | 1 | Abandon a run in flight; discards everything, restores the host if suspended. |
-| `Suspend()` | 1 | Make the host inert; calls the descriptor's `suspend`. |
-| `Resume()` | 1 | Restore the host; calls the descriptor's `resume`. |
+| `Suspend()` | 1 · **12** | Take the `perf` hold. From 12 the host's teardown runs through the latch, and only if this is the first hold taken. Answers `false` when the hold is already held. |
+| `Resume()` | 1 · **12** | Release the `perf` hold. From 12 that is all it does: the latch decides whether the addon stands up, and says no while another hold is still taken. Answers `false` when the hold is not held. |
 | `Usage()` | 1 | Help text lines for the host to print. |
 | `OnCommand(args)` | 1 | Run one perf sub-command; returns the chat lines to print. |
 | `StatusLines()` | 1 | Phase summary plus `Usage()`, for a bare `perf` with no sub-verb. |
@@ -340,7 +407,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `EncodeJSON(value)` | 1 | The lib's hand-rolled JSON encoder, mirrored onto every instance. |
 | `SCHEMA` | 1 | The record schema version this build of the lib emits. |
 | `on` | 1 | Plain boolean field — read directly by every hot-path bracket. |
-| `suspended` | 1 | Plain boolean field, the one the host contract above tells a show-decision to consult. Set by `Suspend()`/`Resume()`; `Stop()` leaves it alone. |
+| `suspended` | 1 · **12** | The one the host contract above tells a show-decision to consult. **From 12 it is a VIEW of the latch** (`lifecycle:IsHeld("perf")`), not a stored boolean, and **assigning to it raises** — take or release the hold instead. `Stop()` still leaves the hold alone. |
 | `__buckets()` / `__fpsArms()` / `__completed()` / `__reviewed()` / `__sampler()` / `__panel()` | 1 | Test seams over state that is otherwise private. A host suite asserting that a declared bucket was actually reached has no other handle on it. |
 
 ## Verifiable containment

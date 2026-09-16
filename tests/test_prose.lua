@@ -185,9 +185,16 @@ for _, word in ipairs(ALLOWED) do ALLOWED_WORDS[word] = true end
 -- `IsCancelled` method Blizzard's C_Timer handles carry. Renaming either in the fake is fidelity
 -- rule 1's failure: a suite written against the real field would read nil and pass. Owner decision
 -- 2026-09-12, recorded beside the first in CLAUDE.md's `## Documented deviations`.
+--
+-- Both spellings travel with the code that carries them: kit revision 22 peeled the timer queue and
+-- the two handle kinds out to `testkit/mock_record.lua`, so `IsCancelled` moved with them and
+-- `.cancelled` is now present in both files -- AceTimer's handle field is read in `mock_base.lua`'s
+-- AceTimer fake and in the queue that drains it. A path-scoped exemption that follows the code is
+-- the point of scoping it by path: the row expires the moment nothing matches it.
 local RATIFIED = {
   ["LibKa0s/Media.lua"] = { "minimise" },
-  ["testkit/mock_base.lua"] = { ".cancelled", "iscancelled" },
+  ["testkit/mock_base.lua"] = { ".cancelled" },
+  ["testkit/mock_record.lua"] = { ".cancelled", "iscancelled" },
 }
 local NO_EXEMPTIONS = {}
 

@@ -64,6 +64,30 @@ badge and any count quoted in the docs must agree with it.
 - env: GetZone answers zone and subzone
 - env: GetZone answers empty strings, never nil, when the readers are absent
 
+### test_lifecycle.lua (21)
+
+- lifecycle: the major is registered and floors on Core
+- lifecycle: the reserved hold keys are exported rather than spelled per host
+- lifecycle: New refuses a descriptor missing any required field
+- lifecycle: a fresh latch is up, holds nothing, and has fired nothing
+- lifecycle: the first hold stands down, and the callbacks take no arguments
+- lifecycle: holding a key already held is a no-op and does NOT stand down again
+- lifecycle: releasing a key that is not held is a no-op and does NOT stand up
+- lifecycle: Hold(a); Hold(b); Release(a) stands down ONCE and never stands up
+- lifecycle: Hold; Release; Hold fires down, up, down — in that order, once each
+- lifecycle: hold order is irrelevant to the edge count, in both directions
+- lifecycle: the perf hold released under a live disabled hold leaves the addon down
+- lifecycle: Set(key, truthy) holds and Set(key, falsy) releases
+- lifecycle: Set is idempotent in both directions
+- lifecycle: Reevaluate fires nothing when the set has not crossed
+- lifecycle: Holds answers a FRESH sorted array, not the internal table
+- lifecycle: the library prints nothing unless a line is asked for
+- lifecycle: PrintHolds with no host printer answers false rather than raising
+- lifecycle: a raising standUp still leaves the hold set empty and the latch up
+- lifecycle: a raising standDown leaves the hold taken, so the release path still works
+- lifecycle: Hold and Release refuse a key that is not a non-empty string
+- lifecycle: two latches share nothing
+
 ### test_pool.lua (23)
 
 - pool: New hands back an empty pool
@@ -278,7 +302,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the copy window still shows the whole buffer, in order
 - dbg: the copy window re-anchors to the console instead of a fixed centre
 
-### test_slash.lua (94)
+### test_slash.lua (108)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
 - sl: whitespace-only input is treated as empty
@@ -374,6 +398,20 @@ badge and any count quoted in the docs must agree with it.
 - slash: a host with no format hook renders exactly as it always did
 - slash: the format hook takes precedence over the colour codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
+- sl: the refusal line's shape is the collection's, down to the color and the dash
+- sl: an absent isEnabled leaves the dispatcher behaving exactly as it did at minor 11
+- sl: isEnabled without brandName is refused at New, not rendered as 'nil is disabled'
+- sl: every non-live verb answers EXACTLY one refusal line and nothing else
+- sl: a bare command and an unknown verb answer the same single line
+- sl: an alias onto a gated verb is refused, and an alias onto a live one is honored
+- sl: enable answers normally and is the way back
+- sl: disable ECHOES the write rather than refusing, and is idempotent
+- sl: help prints the full index with the refusal line under its header, unindented
+- sl: help enabled prints no refusal line at all
+- sl: liveVerbs defaults to the collection's three and is overridable as DATA
+- sl: a live verb the host does not ship still answers one line, never the index
+- sl: the gate is asked per dispatch, so a value that changes mid-session is honored
+- sl: the refusal wording is NOT reachable through the locale override
 
 ### test_launcher.lua (22)
 
@@ -834,7 +872,7 @@ badge and any count quoted in the docs must agree with it.
 ### test_perf_core.lua (70)
 
 - lib: registers under its major with a schema and a default ring
-- lib: New requires a name, an sv global and a suspend/resume pair
+- lib: New requires a name, an sv global and a lifecycle latch
 - lib: New rejects a bucket entry with no key, in the library's own words
 - lib: a ring of zero is clamped to one, not left to empty itself
 - lib: a negative ring is clamped too
@@ -899,12 +937,12 @@ badge and any count quoted in the docs must agree with it.
 - lib: ContextLines folds the sub-zone into the location
 - lib: ContextLines omits an empty sub-zone cleanly
 - lib: ContextLines tolerates a record with no context
-- lib: a host passing only the four required fields gets working defaults
+- lib: a host passing only the three required fields gets working defaults
 - perf: an L whose metatable synthesises every key does NOT mask the module's strings
 - perf: a step label is never its own SCREAMING_SNAKE_CASE key
 - perf: a REAL entry in an L that also has a fallback still overrides
 
-### test_perf_run.lua (33)
+### test_perf_run.lua (40)
 
 - lib: suspend returns false when already suspended
 - lib: resume returns false when not suspended
@@ -939,6 +977,13 @@ badge and any count quoted in the docs must agree with it.
 - lib: measure b calls the host's suspend, measure a its resume
 - lib: cancelling a suspended run restores the host
 - lib: the stopwatch is driven per window
+- latch: Suspend takes the 'perf' hold and Resume gives it back
+- latch: p.suspended reads the latch rather than a copy of it
+- latch: assigning p.suspended raises rather than shadowing the latch
+- latch: releasing the perf hold does NOT resurrect an addon `disabled` still holds down
+- latch: the resume log line follows what actually happened
+- latch: finish releases the hold before saving, and says which of the two happened
+- latch: the perf hold is session-only and reaches no SavedVariables
 
 ### test_perf_panel.lua (45)
 
@@ -1117,6 +1162,36 @@ badge and any count quoted in the docs must agree with it.
 - ace: AceDB's OnProfileCopied carries the SOURCE profile's key, as AceDB-3.0 fires it
 - mock_ace: AceDB's ResetProfile fires OnProfileReset with the database alone
 
+### test_mock_record.lua (27)
+
+- record: a fresh build has registered nothing
+- record: a raw frame:RegisterEvent is recorded, by frame and by name
+- record: entries are REMOVED on unregister and on UnregisterAllEvents
+- record: a per-unit registration is one row PER UNIT TOKEN
+- record: AceEvent events and messages are recorded under their own kinds
+- record: an embedded FRAME loses its raw and per-unit rows to UnregisterAllEvents too
+- record: the survey comes back in the same order twice
+- record: a bucket registration is a registration, and it is removable
+- record: a bucket fires on its interval, through the one timer queue
+- record: a bucket unregistered before its tick does NOT call back
+- record: __fire reaches the LIVE set only
+- record: __fireUnconditional reaches a target whose registration is gone
+- record: __fireUnconditional drives an AceEvent handler too
+- record: the timer queue is both the pending array and the live set
+- record: a canceled ticker leaves the live set
+- record: a repeating AceTimer stays live across a tick, and leaves on cancel
+- record: a frame carrying an OnUpdate is live until the script is cleared
+- record: __shownFrames answers what is on screen, in creation order
+- record: a frame an addon's own mock built with __stubFrame is surveyed too
+- record: every line that reached the chat frame is recorded, and resettable
+- record: __printed hands back a copy, not the live log
+- record: a host printer that bypasses the chat frame can still be recorded
+- record: a write to the profile is reported by path and value
+- record: an addon that writes nothing reports zero writes
+- record: clearing a key counts as a write
+- record: a global SavedVariables table can be watched explicitly
+- record: two databases are told apart in the report
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -1179,12 +1254,13 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | test_core.lua | 42 |
 | test_env.lua | 10 |
+| test_lifecycle.lua | 21 |
 | test_pool.lua | 23 |
 | test_item.lua | 13 |
 | test_media.lua | 15 |
 | test_widgets.lua | 81 |
 | test_debuglog.lua | 67 |
-| test_slash.lua | 94 |
+| test_slash.lua | 108 |
 | test_launcher.lua | 22 |
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
@@ -1194,7 +1270,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_idsuggest.lua | 36 |
 | test_options_compose.lua | 45 |
 | test_perf_core.lua | 70 |
-| test_perf_run.lua | 33 |
+| test_perf_run.lua | 40 |
 | test_perf_panel.lua | 45 |
 | test_perf_command.lua | 20 |
 | test_perf_isolation.lua | 11 |
@@ -1202,6 +1278,7 @@ badge and any count quoted in the docs must agree with it.
 | test_parallel.lua | 4 |
 | test_mock_base.lua | 31 |
 | test_mock_ace.lua | 39 |
+| test_mock_record.lua | 27 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 11 |
@@ -1209,4 +1286,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1071** |
+| **Total** | **1140** |

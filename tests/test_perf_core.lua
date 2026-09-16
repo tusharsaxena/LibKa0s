@@ -12,13 +12,22 @@ end)
 
 local Fixture = dofile("tests/fixture.lua")
 
-test("lib: New requires a name, an sv global and a suspend/resume pair", function()
+--- A throwaway latch. Since Perf minor 12 the probe reaches the host's inert state through
+--- LibKa0s-Lifecycle-1.0 rather than through a `suspend`/`resume` pair on its own descriptor, so
+--- every descriptor below carries one of these where it used to carry two closures.
+local function latch()
+  return T.lifecycle:New{ name = "X", standDown = function() end, standUp = function() end }
+end
+
+test("lib: New requires a name, an sv global and a lifecycle latch", function()
   -- Each arm asserts the library's own words, not merely that something raised. `New` goes on to
   -- use every one of these fields, so a descriptor short of one raises again further down whether
   -- or not the guard is there — the `name` arm most of all. A bare assertFalse therefore passes on
   -- the strength of that later raise, and would keep passing if the guard were deleted, which is no
   -- gate at all. The adjacent bucket-key case already asserts on the message; these now match it.
-  -- The `resume` arm is not a formality either: the way back is not optional.
+  -- The `lifecycle` arm is not a formality either: an instance with no latch has no way to make
+  -- the host inert, so Experiment B would measure a fully live addon and report a delta of about
+  -- zero — a wrong answer that looks exactly like a good one.
   local function missing(field, wanted, descriptor)
     local ok, err = pcall(function() lib:New(descriptor) end)
     T.assertFalse(ok, "missing " .. field .. " must error")
@@ -26,10 +35,9 @@ test("lib: New requires a name, an sv global and a suspend/resume pair", functio
     T.assertTrue(tostring(err):find(want, 1, true) ~= nil,
       "missing " .. field .. " must be refused as \"" .. want .. "\", got: " .. tostring(err))
   end
-  missing("name",    "string",   { sv = "X", suspend = function() end, resume = function() end })
-  missing("sv",      "string",   { name = "X", suspend = function() end, resume = function() end })
-  missing("suspend", "function", { name = "X", sv = "XDB", resume = function() end })
-  missing("resume",  "function", { name = "X", sv = "XDB", suspend = function() end })
+  missing("name",      "string", { sv = "X", lifecycle = latch() })
+  missing("sv",        "string", { name = "X", lifecycle = latch() })
+  missing("lifecycle", "table",  { name = "X", sv = "XDB" })
 end)
 
 test("lib: New rejects a bucket entry with no key, in the library's own words", function()
@@ -38,7 +46,7 @@ test("lib: New rejects a bucket entry with no key, in the library's own words", 
   local function withBuckets(buckets)
     return function()
       lib:New({ name = "X", sv = "XDB", buckets = buckets,
-        suspend = function() end, resume = function() end })
+        lifecycle = latch() })
     end
   end
   local ok, err = pcall(withBuckets({ { within = "outer" } }))
@@ -685,7 +693,7 @@ end)
 -- degrades rather than errors. Nothing pinned that: every other fixture passes a full descriptor,
 -- so an accidental dereference of an optional field would have sailed through the whole suite.
 
-test("lib: a host passing only the four required fields gets working defaults", function()
+test("lib: a host passing only the three required fields gets working defaults", function()
   local printed = {}
   local realPrint = _G.print
   _G.print = function(line) printed[#printed + 1] = line end
@@ -694,7 +702,7 @@ test("lib: a host passing only the four required fields gets working defaults", 
   local ok, err = pcall(function()
     local p = lib:New({
       name = "Min", sv = "MinPerfDB",
-      suspend = function() end, resume = function() end,
+      lifecycle = latch(),
     })
 
     assertEqual(p.slash, "/min", "slash defaults to the lowercased name")

@@ -10,9 +10,9 @@
 | Version | **21** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.36.1 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 20](version-20-docs.md) — `mock_ids.lua` and its two opt-ins |
-| Superseded by | — |
+| Superseded by | [revision 22](./version-22-docs.md) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `21` |
 

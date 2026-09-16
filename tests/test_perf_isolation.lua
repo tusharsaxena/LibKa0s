@@ -214,6 +214,10 @@ local function loadCopies(env, ...)
   -- copy, because each copy's probe refuses to register without it. Skew between Core copies is a
   -- separate question from skew between a probe and its panel, which is what this file is about.
   Loader.load("LibKa0s/Core.lua", nil, env)
+  -- Lifecycle likewise: one copy per env, ahead of every probe copy. It is the probe's second
+  -- floor since minor 12, and skew between latch copies is a separate question from skew between a
+  -- probe and its panel.
+  Loader.load("LibKa0s/Lifecycle.lua", nil, env)
   for _, copy in ipairs({ ... }) do
     Loader.loadSource(copy.perf, copy.tag .. "/Perf.lua", nil, env)
     Loader.loadSource(copy.panel, copy.tag .. "/PerfPanel.lua", nil, env)

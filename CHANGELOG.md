@@ -10,6 +10,95 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## Unreleased
+
+Versions in this section: **Lifecycle minor 1** (a new major), **Perf minor 12**, **Slash minor 12**
+and **kit revision 22**. Every other major is unchanged from v1.39.0. **Nothing here is tagged yet**
+— the tag that ships it is what the Ka0s WoW Addon Standard's `slash-commands-§7` and
+`library-stack-§7` then cite, and no version is named in the standard in advance, because a number
+invented ahead of the release is a citation that does not resolve. Until that tag exists, every
+addon's adoption of the stand-down seam is **blocked** rather than overdue.
+
+**`LibKa0s-Lifecycle-1.0` is a new major: the stand-down latch.** One addon, many reasons to be
+inert, one way down and one way back up. `Lifecycle:New(descriptor)` takes a `standDown` and a
+`standUp`, and the instance owns a HOLD SET: `:Hold(key)` calls `standDown` only when the set goes
+from empty to non-empty, `:Release(key)` calls `standUp` only when it goes back to empty, and
+`:Set(key, held)` is the shape a settings `onChange` actually has. There is deliberately **no
+`:StandUp()` member** — a bare stand-up is the bug the latch exists to prevent, so the only route out
+is releasing the hold that put the addon down.
+
+**Why a latch and not a boolean, which is the whole of it.** Two independent reasons to be inert
+means four states, and the interesting one is the state a boolean cannot represent: the addon is
+perf-suspended AND the player has disabled it, the run finishes, and `resume` runs. With a boolean,
+resume writes `false` and the addon comes back to life under a player who switched it off. With a
+hold set, releasing `perf` leaves `disabled` taken and nothing is rebuilt. **Releasing one hold must
+not resurrect an addon the other is still holding down.**
+
+`disabled` and `perf` are exported as `lib.HOLD_DISABLED` and `lib.HOLD_PERF` rather than left as
+literals, because two majors and every host in the collection have to spell them the same way or the
+latch holds a key nothing releases. The key space is otherwise the host's. The latch persists
+nothing: `disabled` survives a reload by being re-taken at load from the stored path, and `perf` is
+session-only. It floors on `LibKa0s-Core-1.0` and returns before `NewLibrary` when Core is missing,
+**even though it calls no Core member**, so a host holding a partial payload gets every module absent
+rather than a mixed set (`library-stack-§7`).
+
+**`LibKa0s-Perf-1.0` minor 12 — the suspend arm moves onto the latch, and the floor rises. THIS IS A
+RE-VENDOR TRIGGER.** `Perf.lua` now returns before `NewLibrary` unless `LibKa0s-Lifecycle-1.0` is
+present at minor 1 or newer, so a vendored copy that arrives beside a payload with no `Lifecycle.lua`
+in it loses its perf probe outright rather than finding out mid-run. Re-vendoring is whole-folder, so
+this is loud in the one case it can happen and silent otherwise.
+
+`descriptor.lifecycle` is **required**; `suspend` and `resume` are no longer required and are no
+longer called. A host passes the same two functions to the latch as `standDown` and `standUp`, where
+the *disabled* arm reaches them too. Keeping them required would have forced every host to carry two
+live copies of its own teardown, and two copies is exactly how the perf arm and the disable arm drift
+apart. `P.Suspend()` takes the `perf` hold and `P.Resume()` releases it and nothing else — whether
+the addon comes back is the latch's decision, and it says no while `disabled` is still taken.
+`P.suspended` keeps its name and its meaning and is now a VIEW of the latch rather than a second
+boolean; assigning to it raises, because a raw write would create a shadowing field that wins forever
+after and hand the module two answers to "is this addon inert". `perf finish` still releases before
+`Save` and `FormatReport`, and its line now says which of the two actually happened.
+
+**`LibKa0s-Slash-1.0` minor 12 — the disabled gate.** Three descriptor fields (`isEnabled`,
+`brandName`, `liveVerbs`), two exports (`lib.DISABLED_LINE_FORMAT`, `lib.LIVE_VERBS`) and one
+instance member (`cli:DisabledLine()`). **Absent `isEnabled`, the gate is off and the dispatcher
+behaves exactly as at minor 11**, so an un-adopted host is unaffected and there is no half-adopted
+state to reason about.
+
+Gated, exactly three verbs answer: `enable`, because refusing it would leave a player with no typed
+route back; `help`, in full, because the player has to be able to SEE `enable` in the list — with the
+refusal line immediately after the header, unindented, so twelve rows do not read as twelve working
+commands; and `disable`, which is not a feature verb but an alias onto a schema write, so writing
+false over false is an idempotent no-op whose honest answer is the `<enablePath> = false` echo.
+Refusing `disable` would answer `/at disable` with a line telling the player to type `/at enable`,
+which reads as the addon having misunderstood the request. Everything else — a known verb outside the
+set, the bare `/<slash>` and an unknown verb — prints the one line and does nothing else: never
+`unknown command '<verb>'` and never the index, because both answer "I did not understand you" and
+the addon understood perfectly well. It is off.
+
+The wording lives in exactly one place. It is one sentence, so re-spelling it per addon costs nothing
+— which is precisely why eleven addons would each end up with their own, and a player who uses four
+of them would read four different answers to the same question. `brandName` is the plain-text
+`Ka0s <Name>` the LDB object already takes as its `label`, and the reuse is load-bearing:
+`launcher-§1` already forbids escape sequences there, which is what makes it safe to drop into a
+colored line. The `L` override deliberately does not reach this wording.
+
+**Kit revision 22 — the recording fidelity a stand-down conformance suite needs.** `mock_record.lua`
+is a new kit file carrying five surveys (`__registrations()`, `__timers()`, `__shownFrames()`,
+`__svWrites()`, `__printed()`), the two drivers (`__fire` to the live set only,
+`__fireUnconditional` at a target whose registration is gone), and an `AceBucket-3.0` fake. The frame
+stub records raw `frame:RegisterEvent` for the first time — through revision 21 the metatable
+answered it and remembered nothing, so an addon whose events sit on a plain `CreateFrame` had a
+registration set no suite could see. Entries are REMOVED on unregister, which is the half that makes
+the assertion falsifiable in the useful direction: a registry that only grew would report a perfectly
+torn-down addon as still watching everything.
+
+The same revision fixes two RESULTS.md standing sections that had thinned: **Lint** now names the
+`exclude_files` entries it read rather than pointing at `.luacheckrc`, and **Perf** names the
+scenarios as a table re-rendered from the run's own output. Consumers noticed the thinning and one
+hand-patched its own `RESULTS.md` to compensate, which `automated-tests-§4` forbids and the next
+re-vendor reverts; both are fixed at source, and nothing in either section is hand-written.
+
 ## v1.39.0 — 2026-09-16
 
 Versions in this release: **Launcher minor 1** (a new major), **Options minor 21**,

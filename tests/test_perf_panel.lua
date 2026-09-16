@@ -618,11 +618,15 @@ test("lib: a panel-less instance answers STEPS, PanelStateOf and PanelIsActionab
   -- Core first: the probe refuses to register without it, so a fresh env has to carry the same
   -- load order the client does.
   Loader.load("LibKa0s/Core.lua", nil, noPanelMocks)
+  -- And Lifecycle, for the same reason: since minor 12 the probe floors on it too, and a fresh env
+  -- missing it produces a probe that never registers rather than one without a panel.
+  Loader.load("LibKa0s/Lifecycle.lua", nil, noPanelMocks)
   Loader.load("LibKa0s/Perf.lua", nil, noPanelMocks)
   local lib = noPanelMocks.LibStub("LibKa0s-Perf-1.0")
   local p = lib:New({
     name = "NoPanel", sv = "NoPanelPerfDB",
-    suspend = function() end, resume = function() end,
+    lifecycle = noPanelMocks.LibStub("LibKa0s-Lifecycle-1.0"):New{
+      name = "NoPanel", standDown = function() end, standUp = function() end },
   })
   assertEqual(#p.STEPS, 0, "no panel means no rows to draw")
   assertEqual(p.PanelStateOf("start"), "locked", "same nil-safe default the panel itself uses")

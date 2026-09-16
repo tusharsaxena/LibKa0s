@@ -54,6 +54,7 @@ the file you need:
 |---|---|---|
 | `LibKa0s-Core-1.0` | `<Core>` | `LibStub("LibKa0s-Core-1.0").MODULES` |
 | `LibKa0s-Env-1.0` | `<Env>` | `LibStub("LibKa0s-Env-1.0").MODULES` |
+| `LibKa0s-Lifecycle-1.0` | `<Lifecycle>` | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` |
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
@@ -97,6 +98,12 @@ answers both "what does this version have?" and "when did I get it?".
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
 | [1](./Env/version-1-docs.md) | `Env.lua` 1 | v1.15.0 | **Current** |
+
+### `LibKa0s-Lifecycle-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Lifecycle/version-1-docs.md) | `Lifecycle.lua` 1 | unreleased | **Current** |
 
 ### `LibKa0s-Pool-1.0`
 
@@ -153,7 +160,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [11](./Slash/version-11-docs.md) | `Slash.lua` 11 | v1.38.0 | **Current** |
+| [12](./Slash/version-12-docs.md) | `Slash.lua` 12 | unreleased | **Current** |
+| [11](./Slash/version-11-docs.md) | `Slash.lua` 11 | v1.38.0 | Superseded |
 | [10](./Slash/version-10-docs.md) | `Slash.lua` 10 | v1.34.0 – v1.37.0 | Superseded |
 | [9](./Slash/version-9-docs.md) | `Slash.lua` 9 | v1.33.0 | Superseded |
 | [8](./Slash/version-8-docs.md) | `Slash.lua` 8 | v1.32.0 | Superseded |
@@ -206,7 +214,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [11.5](./Perf/version-11.5-docs.md) | `Perf.lua` 11 · `PerfPanel.lua` 5 | v1.31.0 | **Current** |
+| [12.5](./Perf/version-12.5-docs.md) | `Perf.lua` 12 · `PerfPanel.lua` 5 | unreleased | **Current** |
+| [11.5](./Perf/version-11.5-docs.md) | `Perf.lua` 11 · `PerfPanel.lua` 5 | v1.31.0 | Superseded |
 | [10.5](./Perf/version-10.5-docs.md) | `Perf.lua` 10 · `PerfPanel.lua` 5 | v1.29.0 – v1.30.0 | Superseded |
 | [9.4](./Perf/version-9.4-docs.md) | `Perf.lua` 9 · `PerfPanel.lua` 4 | v1.28.0 | Superseded |
 | [8.4](./Perf/version-8.4-docs.md) | `Perf.lua` 8 · `PerfPanel.lua` 4 | v1.27.0 | Superseded |
@@ -224,7 +233,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [21](./testkit/version-21-docs.md) | same files; the AceGUI fake's `CheckBox` gains a pooled `check` texture (`SetTexture`, `SetVertexColor`, `GetVertexColor`), so a suite can observe `O.ChoiceGrid`'s gold-fill paint and its restoration on `Release` against the stock fixture, with no per-test monkeypatch needed | v1.36.1 | **Current** |
+| [22](./testkit/version-22-docs.md) | + `mock_record.lua` — the five recording surveys (`__registrations`, `__timers()`, `__shownFrames`, `__svWrites`, `__printed`), `__fire` / `__fireUnconditional`, an `AceBucket-3.0` fake, and the raw `frame:RegisterEvent` the frame stub used to forget; the timer queue and the `AceDB-3.0` fake move there with them | unreleased | **Current** |
+| [21](./testkit/version-21-docs.md) | same files; the AceGUI fake's `CheckBox` gains a pooled `check` texture (`SetTexture`, `SetVertexColor`, `GetVertexColor`), so a suite can observe `O.ChoiceGrid`'s gold-fill paint and its restoration on `Release` against the stock fixture, with no per-test monkeypatch needed | v1.36.1 | Superseded |
 | [1](./testkit/version-1-docs.md) | `framework.lua` · `loader.lua` · `mock_base.lua` · `README.md` | v1.4.0 | Superseded |
 | [2](./testkit/version-2-docs.md) | + `run-automated-tests.sh` | v1.6.0 | Superseded |
 | [3](./testkit/version-3-docs.md) | same files; runner fixes | v1.6.1 | Superseded |

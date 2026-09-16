@@ -1,0 +1,13 @@
+{
+  "major": "LibKa0s-Lifecycle-1.0",
+  "versionKey": "1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Lifecycle", "minor": 1 }
+  ],
+  "members": [
+    { "name": "HOLD_DISABLED", "kind": "string" },
+    { "name": "HOLD_PERF", "kind": "string" },
+    { "name": "New", "kind": "function" }
+  ]
+}

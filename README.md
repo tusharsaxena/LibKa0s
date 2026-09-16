@@ -17,6 +17,9 @@ modules ship today:
   stringification, the window skin and its close button, and a prefixed chat printer.
 - **`LibKa0s-Env-1.0`** — the handful of client facts every addon reads, read one way: the TOC
   manifest, the player's map id and the player's zone labels.
+- **`LibKa0s-Lifecycle-1.0`** — the stand-down latch: one addon, many reasons to be inert, one way
+  down and one way back up. `disabled` and `perf` are two named holds on one set, and releasing one
+  never resurrects an addon the other is still holding down.
 - **`LibKa0s-Pool-1.0`** — the free/active widget pool this collection kept rewriting, keyed and
   unkeyed, with the acquire order preserved across a release.
 - **`LibKa0s-Item-1.0`** — item identity as four primitives and no policy: read a link, name a
@@ -68,6 +71,7 @@ signature, because a second copy of a contract is a contract that drifts.
 |---|---|---|---|
 | `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [7](docs/api/Core/version-7-docs.md) |
 | `LibKa0s-Env-1.0` | The handful of client facts every Ka0s addon reads, read one way: the TOC manifest, the player's map id and the player's zone labels. No state, no frames, no events. | `Env.lua` | [1](docs/api/Env/version-1-docs.md) |
+| `LibKa0s-Lifecycle-1.0` | The stand-down latch. A hold set, an edge, and two host callbacks: `standDown` fires only when the set goes from empty to non-empty and `standUp` only when it goes back to empty, so a perf run that ends under a `disabled` hold does not bring the addon back. There is deliberately no `StandUp()` member — a bare stand-up is the bug the latch exists to prevent. Persists nothing. | `Lifecycle.lua` | [1](docs/api/Lifecycle/version-1-docs.md) |
 | `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass; the keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
 | `LibKa0s-Item-1.0` | Item identity as four primitives and no policy — read an item link, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree in writing. | `Item.lua` | [1](docs/api/Item/version-1-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [3](docs/api/Media/version-3-docs.md) |
@@ -231,6 +235,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block; Core first
   Core.lua           -- LibKa0s-Core-1.0, MINOR at the top of the file
   Env.lua            -- LibKa0s-Env-1.0, MINOR at the top of the file; needs Core
+  Lifecycle.lua      -- LibKa0s-Lifecycle-1.0, MINOR at the top of the file; needs Core
   Pool.lua           -- LibKa0s-Pool-1.0, MINOR at the top of the file; needs Core
   Item.lua           -- LibKa0s-Item-1.0, MINOR at the top of the file; needs Core
   Media.lua          -- LibKa0s-Media-1.0, MINOR at the top of the file; needs Core

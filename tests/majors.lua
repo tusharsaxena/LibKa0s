@@ -25,6 +25,11 @@ local MAJORS = {
     primary = "Env",
   },
   {
+    major = "LibKa0s-Lifecycle-1.0",
+    files = { "Lifecycle" },
+    primary = "Lifecycle",
+  },
+  {
     major = "LibKa0s-Pool-1.0",
     files = { "Pool" },
     primary = "Pool",

@@ -410,3 +410,93 @@ test("lib: the stopwatch is driven per window", function()
   tick(p, 0.1, false)
   assertEqual(mocks.__stopwatch[3], "pause", "the window closing pauses it")
 end)
+
+-- ── the latch (Perf minor 12) ───────────────────────────────────────────────────────────────
+--
+-- Suspend and resume are now a NAMED HOLD on the host's LibKa0s-Lifecycle-1.0 latch rather than two
+-- direct calls into the host, and this module keeps no `suspended` boolean of its own. The cases
+-- below are about the state a second boolean cannot represent: the player disables the addon
+-- halfway through a capture, the run finishes, and `resume` runs.
+
+test("latch: Suspend takes the 'perf' hold and Resume gives it back", function()
+  local p, rec = Fixture.new()
+  local lc = rec.lifecycle
+  p.Suspend()
+  assertTrue(lc:IsHeld("perf"), "the hold this module is allowed to take, by its published name")
+  assertEqual(table.concat(lc:Holds(), ","), "perf", "and no other")
+  assertEqual(table.concat(rec.calls, ","), "suspend", "the host's teardown ran, once")
+  p.Resume()
+  assertFalse(lc:IsHeld("perf"))
+  assertEqual(table.concat(rec.calls, ","), "suspend,resume")
+end)
+
+test("latch: p.suspended reads the latch rather than a copy of it", function()
+  local p, rec = Fixture.new()
+  rec.lifecycle:Hold("perf")
+  assertTrue(p.suspended, "held elsewhere, and this module already agrees")
+  rec.lifecycle:Release("perf")
+  assertFalse(p.suspended)
+end)
+
+test("latch: assigning p.suspended raises rather than shadowing the latch", function()
+  -- red under: drop the __newindex guard on the instance
+  --
+  -- A rawset `suspended` wins over __index forever after, and from that moment the module has a
+  -- second answer to "is this addon inert" — which is the exact bug the latch removed. It has to
+  -- raise where it is written, not go quiet and reappear as an addon that came back to life.
+  local p = Fixture.new()
+  local ok, err = pcall(function() p.suspended = true end)
+  assertFalse(ok, "the write is refused")
+  assertTrue(tostring(err):find("cannot be assigned", 1, true) ~= nil, "in the library's own words")
+end)
+
+test("latch: releasing the perf hold does NOT resurrect an addon `disabled` still holds down", function()
+  -- red under: make P.Resume call the host's resume directly instead of releasing the hold
+  --
+  -- This is the whole reason the latch exists, driven through this module's own API: the player
+  -- disables the addon mid-capture, the run ends, and `resume` must give back ITS hold and nothing
+  -- else. A bare stand-up here brings back an addon somebody switched off.
+  local p, rec = Fixture.new()
+  local lc = rec.lifecycle
+  p.Suspend()
+  lc:Set("disabled", true)
+  assertEqual(table.concat(rec.calls, ","), "suspend", "already down; the second hold tore nothing down")
+  assertTrue(p.Resume(), "the perf hold was given back")
+  assertEqual(table.concat(rec.calls, ","), "suspend", "and the host was NOT rebuilt")
+  assertTrue(lc:IsDown(), "still down, because `disabled` is still held")
+  assertFalse(p.suspended, "but not by this module")
+  lc:Set("disabled", false)
+  assertEqual(table.concat(rec.calls, ","), "suspend,resume", "the last hold out is what rebuilds")
+end)
+
+test("latch: the resume log line follows what actually happened", function()
+  -- A player told "events and frames restored" over an addon that is still off has been told the
+  -- opposite of what occurred, and goes looking for the bug in the wrong addon.
+  local p, rec = Fixture.new()
+  p.Suspend()
+  rec.lifecycle:Set("disabled", true)
+  local before = #rec.log
+  p.Resume()
+  local line = rec.log[before + 1]
+  assertTrue(line:find("stays down", 1, true) ~= nil, "not 'restored': " .. tostring(line))
+end)
+
+test("latch: finish releases the hold before saving, and says which of the two happened", function()
+  local p, rec = Fixture.new()
+  p.OnCommand("perf start")
+  p.Suspend()
+  rec.lifecycle:Set("disabled", true)
+  local out = p.OnCommand("perf finish")
+  local text = table.concat(out, "\n")
+  assertFalse(p.suspended, "the hold is gone before anything could raise inside Save")
+  assertTrue(text:find("stays down", 1, true) ~= nil, "and the report line is honest about it")
+  rec.lifecycle:Set("disabled", false)
+end)
+
+test("latch: the perf hold is session-only and reaches no SavedVariables", function()
+  local p, rec = Fixture.new()
+  p.Suspend()
+  assertEqual(_G.TestHostPerfDB, nil, "nothing persisted")
+  assertEqual(table.concat(rec.lifecycle:Holds(), ","), "perf")
+  p.Resume()
+end)
