@@ -54,7 +54,7 @@ wrote down: they read a strip because that is what the entry point draws, but wh
 which rows a tab shows.
 
 **Neither file is under the cap yet, and the census says so rather than being emptied.**
-`OptionsWidgets.lua` is 2795 and its suite 3208, so both keep a row in `CLAUDE.md`'s
+`OptionsWidgets.lua` is 2812 and its suite 3219, so both keep a row in `CLAUDE.md`'s
 *Files over the 1500-line cap*, retargeted at the seam that is left — the id-resolution and
 suggestion half, which is widget code and did not move.
 

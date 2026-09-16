@@ -103,17 +103,17 @@ git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 
 | File | Lines (2026-09-16) | Disposition |
 |---|---|---|
-| `tests/test_options_widgets.lua` | 3208 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (~1030) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
-| `LibKa0s/OptionsWidgets.lua` | 2795 | Issue [#32](https://github.com/tusharsaxena/LibKa0s/issues/32) — the id surface out to `OptionsIds.lua`: the module-scope `id resolution` and `suggestions while typing` blocks (~585) plus the lookup, dropdown and list members inside `lib.__AttachWidgets` (~765). Leaves the makers and the flow engine at ~1445 |
+| `tests/test_options_widgets.lua` | 3219 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (~1030) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
+| `LibKa0s/OptionsWidgets.lua` | 2812 | Issue [#32](https://github.com/tusharsaxena/LibKa0s/issues/32) — the id surface out to `OptionsIds.lua`: the module-scope `id resolution` and `suggestions while typing` blocks (~585) plus the lookup, dropdown and list members inside `lib.__AttachWidgets` (~765). Leaves the makers and the flow engine at ~1460 |
 
 **v1.39.0 peeled the chrome, and both rows survived it.** Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16)
-named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua` (965
+named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua` (973
 lines), with its thirty-six cases in `tests/test_options_tabs.lua` (842). Both issues are closed and
 both peels are done. What they did not do is clear the cap, and the arithmetic says why rather than
 the effort: `OptionsWidgets.lua` was **1989** lines when #16 was written and **3700** when it was
-executed, because Options minor 16's id surface landed in between. A peel sized against the file of
-2026-09-08 was never going to fit the file of 2026-09-16. The rows above are retargeted at what is
-left rather than deleted, which is the whole point of a census that a gate reads.
+executed, because Options minor 16's id surface landed in between; it is 2812 now. A peel sized
+against the file of 2026-09-08 was never going to fit the file of 2026-09-16. The rows above are
+retargeted at what is left rather than deleted, which is the whole point of a census a gate reads.
 
 **Both are issues, and neither is a register row.** The sibling repository doing this same work gives
 its *mirror suites* register rows rather than issues, on the argument that a suite has no seam of its
@@ -147,7 +147,7 @@ v1.39.0: `tests/test_widgets.lua` (1493),
 [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1307), since kit revision 17 `testkit/mock_base.lua` (1499 at kit revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that reason) and, since v1.34.0, `tests/test_slash.lua` (1054). They are
 named so a later reader can tell the band was looked at rather than missed; none needs a disposition
 until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. **v1.39.0's
-two new files are not even in the band** — `LibKa0s/OptionsTabs.lua` at 965 and
+two new files are not even in the band** — `LibKa0s/OptionsTabs.lua` at 973 and
 `tests/test_options_tabs.lua` at 842 — and they are named here only so a reader can see that the
 peel landed clear of it rather than one edit from needing its own disposition. v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into

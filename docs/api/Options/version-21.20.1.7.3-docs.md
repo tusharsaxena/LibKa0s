@@ -42,7 +42,7 @@ that is the point of doing it as a move rather than as a redesign.
 `OptionsWidgets.lua` was 3700 (issue **#16**). The cut follows the seam that file was already built
 along rather than a new one — the chrome half and the widget half never reached into each other's
 module-scope locals, which is what made a 900-line move a move rather than a rewrite. The file is
-**still over the cap** after it, at 2795, and its remaining seam (the id-resolution and suggestion
+**still over the cap** after it, at 2812, and its remaining seam (the id-resolution and suggestion
 half) is tracked in the repo's census.
 
 **It takes the same paired-minor guard the major's other secondary files take**, on its own
