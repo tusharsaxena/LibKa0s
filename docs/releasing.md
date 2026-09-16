@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.40.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.41.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -198,7 +198,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.40.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.41.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -392,10 +392,24 @@ files, every one in the table; the one it found missing — ConsumableMaster's `
 the Macro Bar's Buttons drag list — was added to the Widgets row by that sweep. `WhoGotLoots` and
 `BuffTextNotifications` are out of scope until they are on the standard at all.
 
-**Where v1.40.0 stands (2026-09-16).** Steps 1–7 are done in this repository; **step 8 is not**.
-The release is three things in one payload, deliberately — each consumer re-vendors the whole folder,
-so three releases would mean eleven repos re-vendoring three times and eleven chances to end up on a
-mismatched pair:
+**Where v1.41.0 stands (2026-09-16).** Steps 1–7 are done in this repository; **step 8 is not, and
+neither is v1.40.0's** — all eleven consumers' `CLAUDE.md` provenance lines still read v1.39.0. The
+two releases are hours apart and there is no reason to re-vendor twice: a consumer goes from v1.39.0
+straight to **v1.41.0**, taking Lifecycle minor 1, Perf minor 12, Slash minor **13** and kit revision
+22 in one copy.
+
+v1.41.0 is one change, and it undoes half of one of v1.40.0's:
+
+- `LibKa0s-Slash-1.0` minor 13 restores the **disabled slash surface**. `lib.LIVE_VERBS` is the
+  standard's twelve reserved verbs again — `help`, `config`, `version`, `enable`, `disable`, `debug`,
+  `perf`, `get`, `set`, `list`, `reset`, `resetall` — and the bare `/<slash>` opens the settings panel
+  while disabled. The standard narrowed that surface at **v2.56.0**, which is what minor 12 shipped,
+  and **reversed it at v2.57.0** the same day: `/<slash>` on a disabled addon answered with a refusal
+  instead of the one surface a player switches it back on from. No member and no descriptor field
+  moves, so a host already on 12 owes a re-vendor and the deletion of any `liveVerbs` array it passed
+  to reproduce the narrowing.
+
+What v1.40.0 shipped is otherwise untouched and still what a consumer is taking:
 
 - a new major, `LibKa0s-Lifecycle-1.0` (Lifecycle minor 1), the stand-down latch that
   `slash-commands-§7` is built on;
@@ -403,9 +417,10 @@ mismatched pair:
   `LibKa0s-Lifecycle-1.0`. **This one is a re-vendor trigger**: a `Perf.lua` that arrives beside a
   payload with no `Lifecycle.lua` in it returns before `NewLibrary` and the host loses its probe
   outright, which is the one case whole-folder copying makes loud rather than silent;
-- `LibKa0s-Slash-1.0` minor 12, the disabled gate — `isEnabled`, `brandName`, `liveVerbs`,
-  `lib.DISABLED_LINE_FORMAT`, `lib.LIVE_VERBS` and `cli:DisabledLine()`. Absent `isEnabled` the gate
-  is off and the dispatcher behaves exactly as at minor 11, so there is no half-adopted state.
+- `LibKa0s-Slash-1.0`'s disabled gate itself — `isEnabled`, `brandName`, `liveVerbs`,
+  `lib.DISABLED_LINE_FORMAT`, `lib.LIVE_VERBS` and `cli:DisabledLine()`, all of which stand. Absent
+  `isEnabled` the gate is off and the dispatcher behaves exactly as at minor 11, so there is no
+  half-adopted state.
 
 Kit revision 22 ships in the same copy, and `tests/test_vendor_sync.lua` pairs the two — a consumer
 takes the library payload and the kit payload from the same tag or its own suite says so.
@@ -419,11 +434,14 @@ migration. An addon that adopts the launcher without the logo ships a button tha
 which is worse than the state before it adopted.
 
 **Step 8 is the eleven consumers' own changeset and it is larger than a re-vendor.** On top of the
-launcher adoption each now owes `slash-commands-§7`'s: route its stand-down through the latch, narrow
-its slash surface to `enable` and `help`, gate its launcher click, and ship `tests/test_disabled.lua`
-inside its green gate. Both adoptions were **blocked** while no tag carried the majors the standard
-cites; with v1.40.0 tagged they are **overdue**, and an audit records them as overdue rather than
-blocked.
+launcher adoption each now owes `slash-commands-§7`'s: route its stand-down through the latch, gate
+its launcher click, and ship `tests/test_disabled.lua` inside its green gate. **What it no longer
+owes is a narrowed slash surface** — the predecessor of this paragraph said "narrow its slash surface
+to `enable` and `help`", which v2.57.0 reversed. A disabled addon answers every reserved verb and
+opens its panel from the bare `/<slash>`; the one refusal it owes is §2's SHOULD on its own feature
+verbs, and step 7 of its `tests/test_disabled.lua` pins whichever way it answered that SHOULD. Both
+adoptions were **blocked** while no tag carried the majors the standard cites; with v1.40.0 tagged
+they are **overdue**, and an audit records them as overdue rather than blocked.
 
 Move this paragraph at the next release.
 

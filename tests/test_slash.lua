@@ -1061,8 +1061,8 @@ test("slash: format beats colorDecode at the get, set and reset echoes, and colo
 -- pass just as well over a dispatcher that printed the line AND ran the verb, which is the draw
 -- gate wearing a refusal.
 
---- A host whose enable path starts FALSE, carrying the three verbs the gate lets through plus one
---- feature verb to prove the gate closes on it. `rec.enabled.value` is the stored path, and the
+--- A host whose enable path starts FALSE, carrying `enable` and `disable` plus one FEATURE verb
+--- (`lock`) to prove the gate closes on that and only on that. `rec.enabled.value` is the stored path, and the
 --- `enable` / `disable` verbs write it exactly as a schema write would — the test drives the route
 --- the checkbox and the verb take rather than calling a teardown directly.
 local function disabledHost(overrides)
@@ -1128,46 +1128,91 @@ test("sl: isEnabled without brandName is refused at New, not rendered as 'nil is
   assertEqual(tostring(err):find("brandName", 1, true) ~= nil, true, "named in the library's words")
 end)
 
-test("sl: every non-live verb answers EXACTLY one refusal line and nothing else", function()
+test("sl: a FEATURE verb answers exactly one refusal line and reaches no write seam", function()
   -- red under: drop the `if isDown and not liveVerbs[cmd]` gate from OnSlash
   --
-  -- `lock` is the host feature verb, `get`/`set`/`list`/`reset`/`version` are the schema CLI, and
-  -- `config` is the panel. None of them is reachable on an addon that is not running, and the
-  -- schema entry points are gated HERE rather than each carrying a check of its own — one gate is
-  -- a gate, six gates are five places for one of them to be missed.
+  -- `lock` is the host's own feature verb, and slash-commands-§2's SHOULD is that a disabled addon
+  -- refuses one rather than acting on it: the player asked for something the addon is standing down
+  -- from doing, and a silent no-op leaves them with no clue why nothing happened. One line is the
+  -- whole courtesy — no partial work, no side effect, no second line, and never the help index.
   local Sl, rec = disabledHost()
-  for _, input in ipairs({ "lock", "config", "version", "list", "get showOnlyInCombat",
-                           "set showOnlyInCombat true", "reset showOnlyInCombat", "resetall" }) do
-    rec.chat = {}
-    Sl:OnSlash(input)
-    assertEqual(#rec.chat, 1, "'" .. input .. "' printed one line")
-    assertEqual(rec.chat[1], REFUSAL, "'" .. input .. "' printed THE line")
-  end
-  assertEqual(rec.store["showOnlyInCombat"], false, "and the set never reached the store")
+  Sl:OnSlash("lock")
+  assertEqual(#rec.chat, 1, "exactly one line")
+  assertEqual(rec.chat[1], REFUSAL, "and THE line")
+  assertEqual(rec.refreshed, 0, "and it reached no write seam")
 end)
 
-test("sl: a bare command and an unknown verb answer the same single line", function()
-  -- red under: let the bare-command branch fall through to the host's config verb while disabled
+test("sl: the reserved verbs and the whole schema CLI answer NORMALLY while disabled", function()
+  -- red under: narrow lib.LIVE_VERBS back to { "enable", "help", "disable" } (minor 12)
   --
-  -- Opening the panel for an addon that is not running is the draw gate in another costume: a full
-  -- settings surface every control of which writes a setting nothing is reading. And an unknown
-  -- verb must NOT answer `unknown command '<verb>'` followed by the index — that pair says "I did
-  -- not understand you", and the addon understood perfectly well. It is off.
+  -- Restored at minor 13 under the standard's v2.57.0. None of these is a feature verb, so the
+  -- refusal is never turned on them: a player must be able to READ AND REPAIR SETTINGS and to
+  -- REACH THE PANEL while the addon is off, which is precisely when they are most likely to need
+  -- to — and `enable` above all, or the switch only goes one way.
+  local Sl, rec = disabledHost()
+
+  Sl:OnSlash("config")
+  assertEqual(rec.chat[1], "opened", "config opens the panel")
+
+  rec.chat = {}
+  Sl:OnSlash("version")
+  assertEqual(plain(rec.chat[1]), "v1.2.3", "version prints")
+
+  rec.chat = {}
+  Sl:OnSlash("list")
+  T.assertTrue(#rec.chat > 1, "list prints its header and its rows")
+
+  rec.chat = {}
+  Sl:OnSlash("get showOnlyInCombat")
+  assertEqual(rec.chat[1], slash.FormatKV("showOnlyInCombat", "false"), "get reads the stored value")
+
+  rec.chat = {}
+  Sl:OnSlash("set showOnlyInCombat true")
+  assertEqual(rec.store["showOnlyInCombat"], true, "set repairs a setting on an addon that is off")
+  assertEqual(rec.chat[1], slash.FormatKV("showOnlyInCombat", "true"), "and echoes what was stored")
+
+  rec.chat = {}
+  Sl:OnSlash("reset showOnlyInCombat")
+  assertEqual(rec.store["showOnlyInCombat"], false, "reset puts it back")
+
+  for _, line in ipairs(rec.chat) do
+    assertEqual(line ~= REFUSAL, true, "and not one of them printed the refusal line")
+  end
+end)
+
+test("sl: the bare command opens the panel, and a TYPO gets the unknown-command line", function()
+  -- red under: refuse the bare-command branch while disabled (what minor 12 did), or put the gate
+  -- back BEFORE findCommand, which answered a misspelling with "the addon is disabled".
+  --
+  -- The panel is the one surface from which a disabled addon gets switched back on by hand, and
+  -- the settings registration and the panel body are SETUP rather than features (slash-commands-§7).
+  --
+  -- THE TYPO IS THE OPPOSITE CASE FROM A REFUSED VERB, and the gate's position is what tells them
+  -- apart. A feature verb this addon ships gets the one refusal line, because the addon understood
+  -- and is off. A word it does not ship gets slash-commands-§3's `unknown command '<verb>'` and the
+  -- index, because the addon did not understand and §3 does not carve the disabled state out of
+  -- that MUST. Answering a typo with "the addon is disabled" tells a player who mistyped that their
+  -- spelling was fine.
   local Sl, rec = disabledHost()
   Sl:OnSlash("")
-  assertEqual(#rec.chat, 1); assertEqual(rec.chat[1], REFUSAL)
+  assertEqual(#rec.chat, 1); assertEqual(rec.chat[1], "opened", "the host's config verb ran")
   rec.chat = {}
   Sl:OnSlash("nosuchverb")
-  assertEqual(#rec.chat, 1); assertEqual(rec.chat[1], REFUSAL)
-  assertEqual(plain(rec.chat[1]):find("unknown command", 1, true), nil, "never the unknown-command line")
+  assertEqual(#rec.chat > 1, true, "a typo gets the unknown-command line AND the index, not one line")
+  assertEqual(plain(rec.chat[1]):find("unknown command", 1, true) ~= nil, true,
+    "the first line names the word that was not understood")
+  -- NOT asserted: that the refusal line is absent from the burst. `help` carries it under its
+  -- header as a STATUS note -- the addon really is off -- and the index is what a typo prints.
+  -- What matters is that the FIRST line named the word, so the player is told they mistyped
+  -- rather than told their spelling was fine.
 end)
 
 test("sl: an alias onto a gated verb is refused, and an alias onto a live one is honored", function()
-  -- Aliases resolve BEFORE the gate. Gating the raw word would refuse `/th options` and honor
-  -- `/th config`, which is one surface answering two ways.
-  local Sl, rec = disabledHost({ aliases = { options = "config", on = "enable" } })
-  Sl:OnSlash("options")
-  assertEqual(rec.chat[1], REFUSAL, "an alias onto config is still config")
+  -- Aliases resolve BEFORE the gate. Gating the raw word would refuse `/th hold` and honor
+  -- `/th lock`, which is one surface answering two ways.
+  local Sl, rec = disabledHost({ aliases = { hold = "lock", on = "enable" } })
+  Sl:OnSlash("hold")
+  assertEqual(rec.chat[1], REFUSAL, "an alias onto a feature verb is still that feature verb")
   rec.chat = {}
   Sl:OnSlash("on")
   assertEqual(rec.chat[1], slash.FormatKV("enabled", "true"), "an alias onto enable still enables")
@@ -1199,10 +1244,10 @@ end)
 test("sl: help prints the full index with the refusal line under its header, unindented", function()
   -- red under: move the refusal emit below the rows in PrintHelp
   --
-  -- The player has to be able to SEE `enable` in the list, so the index is printed in full — and
-  -- the refusal sits immediately under the header so twelve rows do not read as twelve working
-  -- commands. Under the header it is a statement about the whole index; below the rows it is a
-  -- footnote to the last one.
+  -- `help` is not refused: the index prints in full, because the player has to be able to SEE
+  -- `enable` in the list. The line under the header is a statement about the whole index — some of
+  -- the rows below it are the host's feature verbs, which are the one thing still refused — and
+  -- below the rows it would be a footnote to the last one.
   local Sl, rec = disabledHost()
   Sl:OnSlash("help")
   assertEqual(rec.chat[1], Sl:HelpHeader(), "the header first")
@@ -1224,19 +1269,21 @@ test("sl: help enabled prints no refusal line at all", function()
   assertEqual(rec.chat[2], Sl:HelpRows()[1], "the first row follows the header directly")
 end)
 
-test("sl: liveVerbs defaults to the collection's three and is overridable as DATA", function()
-  assertEqual(table.concat(slash.LIVE_VERBS, ","), "enable,help,disable",
+test("sl: liveVerbs defaults to the standard's twelve reserved verbs and is overridable as DATA", function()
+  assertEqual(table.concat(slash.LIVE_VERBS, ","),
+    "help,config,version,enable,disable,debug,perf,get,set,list,reset,resetall",
     "the library ships one default and a host reads THIS rather than copying it")
-  -- Narrowed rather than widened, which is the direction a host may legitimately need: an addon
-  -- with no `disable` verb declares the two it has.
+  -- Narrowed rather than widened, which is the direction a host most often needs: an addon that
+  -- registers no `perf` verb names the ones it has.
   local Sl, rec = disabledHost({ liveVerbs = { "enable", "help" } })
   Sl:OnSlash("disable")
   assertEqual(rec.chat[1], REFUSAL, "a verb outside the declared set is gated like any other")
 end)
 
 test("sl: a live verb the host does not ship still answers one line, never the index", function()
-  -- The host declared `disable` live and ships no such command. One line, and not the index: the
-  -- index is the enabled surface's answer, and printing it here would list eleven refused verbs.
+  -- A verb is reserved always and registered when wired, so a live verb with no COMMANDS entry is
+  -- ordinary — an addon holding a no-combat-path exemption never ships `perf`. One line, and not
+  -- the index: the index is what a RUNNING addon answers a typo with, and this was not a typo.
   local Sl, rec = F.new({
     isEnabled = function() return false end,
     brandName = "Ka0s Test Host",
@@ -1247,13 +1294,14 @@ test("sl: a live verb the host does not ship still answers one line, never the i
 end)
 
 test("sl: the gate is asked per dispatch, so a value that changes mid-session is honored", function()
-  local flag = { on = true }
-  local Sl, rec = F.new({ isEnabled = function() return flag.on end, brandName = "Ka0s Test Host" })
-  Sl:OnSlash("version")
-  assertEqual(plain(rec.chat[1]), "v1.2.3", "enabled: the verb answers")
-  flag.on = false
+  -- A feature verb, because the reserved ones answer in either state and would pin nothing here.
+  local Sl, rec = disabledHost()
+  rec.enabled.value = true
+  Sl:OnSlash("lock")
+  assertEqual(rec.chat[1], "locked", "enabled: the feature verb acts")
+  rec.enabled.value = false
   rec.chat = {}
-  Sl:OnSlash("version")
+  Sl:OnSlash("lock")
   assertEqual(rec.chat[1], REFUSAL, "disabled: the same verb, the one line")
 end)
 

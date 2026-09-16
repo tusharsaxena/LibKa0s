@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 12
+# `LibKa0s-Slash-1.0` — version 13
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **12** |
-| Shipped in | v1.40.0 |
-| Status | Superseded |
-| Supersedes | [version 11](./version-11-docs.md) |
-| Superseded by | [version 13](./version-13-docs.md) |
+| Files and minors | `Slash.lua` minor **13** |
+| Shipped in | v1.41.0 |
+| Status | **Current** |
+| Supersedes | [version 12](./version-12-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 12 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 13 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -36,82 +36,130 @@ returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
 
-**The disabled gate.** Three descriptor fields, two exported constants and one new instance member,
-all additive: a host that passes no `isEnabled` gets version 11's dispatcher, byte for byte. There is
-no half-adopted state to reason about.
+**The disabled slash surface is restored to what version 11 answered, and the only thing that moves
+is `lib.LIVE_VERBS`.** No member is added, removed, renamed or resignatured and no descriptor field
+is added, so the member manifest differs from version 12's in the minor alone. `isEnabled`,
+`brandName`, `liveVerbs`, `lib.DISABLED_LINE_FORMAT` and `cli:DisabledLine()` are all still here and
+all still mean what they meant.
 
-### Why the dispatcher has to change at all
+The Ka0s WoW Addon Standard narrowed the disabled slash surface to `enable` and `help` at v2.56.0,
+which is what version 12 implements, and **reversed it at v2.57.0** the same day. It failed at the
+first thing anyone tried: `/<slash>` on a disabled addon answered with a refusal instead of opening
+the settings panel, which is the one surface a player uses to switch the addon back on by hand. A
+rule that hides the off switch has mistaken which half of the pair it protects.
 
-**Disabled means the addon is NOT RUNNING.** A dispatcher that went on answering `get`, `set`,
-`lock` and every host feature verb would be the slash half of the draw gate: the player has switched
-the addon off and it still talks back as though it were working. Eleven addons in this collection
-implement disable as a visibility gate, and their slash surfaces are part of why nobody noticed —
-`/at get barWidth` answers a number, so the addon looks alive, because it is.
+### The live set is now the standard's twelve reserved verbs
 
-### The three verbs that still answer
+```lua
+lib.LIVE_VERBS = {
+  "help", "config", "version", "enable", "disable", "debug",
+  "perf", "get", "set", "list", "reset", "resetall",
+}
+```
 
-`enable`, `help` and `disable`, and no others. The set is `lib.LIVE_VERBS`, **data rather than a
-branch**, so a reader can see the whole of it at once and a conformance suite can assert on it.
+They all answer while disabled, and the bare `/<slash>` opens the panel exactly as it does when the
+addon is running (`slash-commands-§2`, `§7`). The reasoning is that a player must be able to **read
+and repair settings** and to **reach the panel** while the addon is off — which is precisely when
+they are most likely to need to — and **`enable` above all**, or the switch only goes one way.
+`debug` and `perf` are diagnostics rather than features: the usual reason to reach for either is
+that the addon is misbehaving.
 
-- **`enable`** is the way back. Refusing it would leave a player who disabled the addon with no
-  typed route to re-enabling it.
-- **`help`** prints the full index generated from `COMMANDS`, exactly as when enabled, because the
-  player has to be able to SEE `enable` in the list — and it prints the refusal line **immediately
-  after the header, unindented**, so twelve rows do not read as twelve working commands. Under the
-  header the line is a statement about the whole index; below the rows it would be a footnote to the
-  last command.
-- **`disable`** is neither refused nor silent. It is not a feature verb; it is an alias onto a schema
-  write, so writing `false` over `false` is an idempotent no-op write whose honest answer is the
-  `<enablePath> = false` echo every other write gets. Refusing it would answer `/at disable` with a
-  line telling the player to type `/at enable`, which reads as the addon having misunderstood the
-  request. It does **not** re-run the stand-down work — the latch already makes the transition
-  idempotent.
+### So the gate refuses exactly the host's own FEATURE verbs
 
-**Everything else** — a known verb outside the live set, the bare `/<slash>`, and an unknown verb —
-prints the one refusal line and does nothing else. Not `unknown command '<verb>'`, and not the help
-index: both of those answer "I did not understand you", and the addon understood perfectly well. It
-is off.
+A verb that **drives the addon's features** — anything that draws, shows, hides, tracks, records,
+tests, clears or exports the thing the addon exists to do, `lock` and `unlock` among them — answers
+on **one** tagged line naming `/<slash> enable`, and does nothing else. No partial work, no side
+effect, no second line, and never the help index. That is `slash-commands-§2`'s **SHOULD**, it
+survived the reversal unchanged, and it is the only refusal in the disabled state.
 
-The bare form is refused rather than opening the panel, which is what version 11 made it do. A full
-settings surface for an addon that is not running is the draw gate in another costume: every control
-in it writes a setting nothing is reading.
+It is a SHOULD rather than a MUST, deliberately: nothing breaks when a disabled addon's one feature
+verb quietly does nothing, and a host that would rather let its feature verbs act declares them in
+`liveVerbs`. That is a conformant choice and owes no deviation row — what a host **MUST NOT** do is
+refuse anything on the live set above.
 
-The schema CLI entry points — `CliGet`, `CliSet`, `CliList`, `CliReset`, the resetall path and
-`CliVersion` — are reached only through `OnSlash`, so they are gated there and carry no check of
-their own. One gate is a gate; six gates are five places for one of them to be missed.
+### What a disabled addon answers, version 12 against version 13
 
-### The wording lives in exactly one place
+| Input while disabled | Version 12 | Version 13 |
+|---|---|---|
+| `/<slash>` (bare) | the refusal line | **opens the panel**, via the host's `config` verb |
+| `config` | the refusal line | **opens the panel** |
+| `version` | the refusal line | **prints the version** |
+| `get` / `set` / `list` / `reset` / `resetall` | the refusal line | **reads and repairs settings** |
+| `debug` / `perf` | the refusal line | **runs**, as the diagnostics they are |
+| `enable` / `disable` | dispatched | unchanged — dispatched |
+| `help` | the full index, refusal line under the header | unchanged — the full index, refusal line under the header |
+| a host FEATURE verb (`lock`, `show`, `export`, …) | the refusal line | unchanged — the refusal line |
+| a typo (no COMMANDS entry) | the refusal line | `unknown command '<verb>'` + the index |
 
-`lib.DISABLED_LINE_FORMAT` is the format string and `cli:DisabledLine()` builds the line. It is one
-sentence, so re-spelling it per addon costs nothing — which is exactly why eleven addons would each
-end up with their own, one saying "disabled", one "turned off", one adding a second line about the
-settings panel, and a player who uses four of them reading four different answers to the same
-question. **The launcher's left-click handler calls this same member**; it MUST NOT be re-spelled
-host-side.
+Two of those rows are worth their own sentence.
+
+- **`help` still prints the refusal line immediately after its header, unindented.** It is not a
+  refusal *of* `help` — the index prints in full, because the player has to be able to SEE `enable`
+  in the list. It is a statement about the whole index: some of the rows below it are the host's own
+  feature verbs, and those are the one thing still refused. Below the rows it would read as a
+  footnote to the last command.
+- **A TYPO gets `unknown command '<verb>'` and the index; a FEATURE verb gets the one line.**
+  The gate sits AFTER the COMMANDS lookup, and the order is the whole of it. A verb the addon
+  ships and is standing down from is refused, because the addon understood perfectly well and is
+  off. A word it does not ship is a different case: nothing was refused, the addon genuinely did
+  not understand, and slash-commands-§3's unknown-verb MUST is unqualified — the disabled state
+  does not carve it out. Gating before the lookup conflated the two and answered a misspelling
+  with "the addon is disabled", which is a true sentence and the wrong answer: it tells a player
+  who mistyped that their spelling was fine. A live verb the host never registered (an addon with
+  a no-combat-path exemption and no `perf`) still gets the one line — a real verb, not a typo.
+
+### None of this weakens the stand-down
+
+`slash-commands-§7`'s *What MUST stand down* is untouched, and it is the substance. A disabled addon
+registers nothing, runs no timer, draws nothing and writes nothing from a game event. The dispatcher
+and the settings registration are **setup, not features** — they come up on load in either state — so
+keeping them live costs nothing the stand-down was trying to reclaim. The addon is inert; its command
+surface is not the addon.
+
+### The wording still lives in exactly one place
+
+`lib.DISABLED_LINE_FORMAT` is the format string and `cli:DisabledLine()` builds the line, unchanged
+from version 12. It is one sentence, so re-spelling it per addon costs nothing — which is exactly
+why eleven addons would each end up with their own, one saying "disabled", one "turned off", one
+adding a second line about the settings panel, and a player who uses four of them reading four
+different answers to the same question. **The launcher's left-click handler calls this same member**;
+it MUST NOT be re-spelled host-side.
 
 The format is exported beside the builder so a conformance suite matches the SHAPE rather than
-hard-coding the words — the difference between a suite that pins the wording and a suite that has to
-be edited every time the wording improves.
-
-`brandName` is the plain-text `Ka0s <Name>` a host already gives its LDB object as `label`, and the
-reuse is load-bearing rather than tidy: `launcher-§1` already forbids escape sequences in that field,
-which is what makes it safe to drop into a colored line, and it means an addon has one brand
-spelling rather than a second one invented for this message. It **MUST NOT** be derived from the TOC
-`Title`, which may carry color escapes. A gated host with no `brandName` is refused at `New` rather
-than rendering `nil is disabled` at the one moment a confused player is reading the line.
-
-The `L` override deliberately does **not** reach this wording. The line is the collection's, not the
-addon's, and a locale table is the obvious place for eleven addons to each grow their own version of
-it.
+hard-coding the words. `brandName` is the plain-text `Ka0s <Name>` a host already gives its LDB
+object as `label`; `launcher-§1` forbids escape sequences in that field, which is what makes it safe
+to drop into a colored line. A gated host with no `brandName` is still refused at `New` rather than
+rendering `nil is disabled` at the one moment a confused player is reading the line. The `L`
+override still does not reach this wording: the line is the collection's, not the addon's.
 
 ### What the host does
 
-- **Wire `isEnabled` and `brandName`** onto the descriptor. `isEnabled` is asked at dispatch time,
-  never cached, so the command after an `enable` works.
-- **Ship `enable` and `disable` verbs** in `COMMANDS` if it has not already: both are aliases onto
-  the same schema write the checkbox makes, so neither is new machinery.
+- **A host already on version 12:** re-vendor, and delete any `liveVerbs` it passed to *narrow* the
+  surface to `enable` and `help` — that is now the library's job, in the other direction. Its
+  `tests/test_disabled.lua` step 7 inverts with it: the reserved verbs and the bare `/<slash>`
+  assert their **normal** output, and only the addon's feature verbs assert the one line.
+- **A host not yet gated:** wire `isEnabled` and `brandName` onto the descriptor and nothing else.
+  `isEnabled` is asked at dispatch time, never cached, so the command after an `enable` works.
 - **Call `cli:DisabledLine()` from the launcher's left-click**, rather than writing the line again.
-- **Nothing else.** A host that passes no `isEnabled` is unaffected and can adopt later.
+- **A host that passes no `isEnabled` is unaffected** and can adopt later.
+
+### Previously, at version 12
+
+**The disabled gate arrived: three descriptor fields, two exported constants and one instance
+member, all additive.** `isEnabled`, `brandName` and `liveVerbs` on the descriptor;
+`lib.DISABLED_LINE_FORMAT` and `lib.LIVE_VERBS` at lib level; `cli:DisabledLine()` on the instance.
+A host that passed no `isEnabled` got version 11's dispatcher byte for byte, and that is still true
+here — there was never a half-adopted state to reason about.
+
+Where version 12 differs from this version is `lib.LIVE_VERBS` alone. At version 12 it read
+`{ "enable", "help", "disable" }`, and **every other input** — `config`, `version`, the whole schema
+CLI, `debug`, `perf`, the bare `/<slash>` and an unknown verb — printed the refusal line and did
+nothing else. That was the standard's v2.56.0 narrowing, and v2.57.0 reversed it. The table above
+says input by input what moved.
+
+A host that vendored version 12 is not broken: it refuses more than it needs to, and a player has to
+reach the settings panel through Blizzard's AddOns tree or the launcher's right-click instead of
+typing `/<slash>`. The fix is a re-vendor.
 
 ### Previously, at version 11
 
@@ -373,7 +421,7 @@ rendered row depends on which instance rendered it.
 | `lib.CommandRows(prefix, commands, indent)` | **6** | → an array of rendered rows, one per entry: `indent .. lib.FormatRow(prefix .. " " .. entry[1], entry[2])`. `indent` defaults to `""`. |
 | `lib.ParseBool(word)` | **6** | → `true`, `false`, or **`nil` meaning "not a boolean word"** — never "false". Case-insensitive over the exact eight-word set `lib.STRINGS.ERR_BOOL` advertises. |
 | `lib.DISABLED_LINE_FORMAT` | **12** | `"%s is disabled \226\128\148 enable it with \|cFFFFFF00%s\|r"`. Two substitutions: the brand name, and the command **with its leading slash**. Gold `FFFFFF00` on the command — the same gold `lib.FormatRow` gives a command in the help index — an em dash with a single space either side, no trailing colon and no trailing period. |
-| `lib.LIVE_VERBS` | **12** | `{ "enable", "help", "disable" }` — the verbs that still answer while disabled. A host MUST NOT widen it; the library ships no other default. |
+| `lib.LIVE_VERBS` | **12** | The verbs that still answer while disabled. **At 13 it is the standard's twelve reserved verbs** — `help`, `config`, `version`, `enable`, `disable`, `debug`, `perf`, `get`, `set`, `list`, `reset`, `resetall` — where at 12 it read `{ "enable", "help", "disable" }`. A host MAY narrow it to the verbs it ships. The library ships exactly one default, exported so a host that must name the set names THIS one rather than a copy of it. |
 | `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. |
 | `lib.MODULES` | 1 | `{ Slash = <minor> }` — the live minor of every file in this major. |
 | `lib:New(descriptor)` | 1 | Build a dispatcher for one host. |
@@ -464,9 +512,9 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `groupKey` | function(row) | no | 1 | Row → the heading it lists under. Defaults to `row.page or "settings"` — a row with no page still lists somewhere. |
 | `colorDecode` | function(stored) | no | 4 | → `r, g, b, a`. Same field name as the Options descriptor's, so a host passes one pair to both majors. Defaults to reading the named-key form, then the positional one. |
 | `colorEncode` | function(r,g,b,a) | no | 4 | → stored. Defaults to `{r=,g=,b=,a=}`. |
-| `isEnabled` | function | no | **12** | → boolean. **Absent, the gate is off** and the dispatcher behaves exactly as at version 11. Present and answering false, exactly the verbs in `liveVerbs` dispatch and every other input prints the refusal line. Asked at dispatch time, never cached. |
+| `isEnabled` | function | no | **12** | → boolean. **Absent, the gate is off** and the dispatcher behaves exactly as at version 11. Present and answering false, the verbs in `liveVerbs` dispatch as usual — as does the bare command, which opens the panel (**13**) — and every other verb prints the refusal line. Asked at dispatch time, never cached. |
 | `brandName` | string | **when `isEnabled` is given** | **12** | The addon's brand name in plain text, `Ka0s <Name>` — the same string the LDB object takes as its `label`. Never derived from the TOC `Title`, which may carry color escapes. Missing it alongside `isEnabled` raises at `New`. |
-| `liveVerbs` | table | no | **12** | Array of the verbs that still answer while disabled. Defaults to `lib.LIVE_VERBS`. Present so the set is data rather than a hard-coded branch. |
+| `liveVerbs` | table | no | **12** | Array of the verbs that still answer while disabled. Defaults to `lib.LIVE_VERBS`, which is the standard's twelve reserved verbs from **13**. Present so the set is data rather than a hard-coded branch; a host MAY narrow it to the verbs it actually ships. |
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **It does not reach the disabled refusal line** (**12**): that wording is the collection's rather than the addon's. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 
 Only `slash` and `commands` are required, and both raise rather than defaulting: a dispatcher with
@@ -480,7 +528,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `OnSlash(msg)` | 1 | The entry point. **From 12**, when `isEnabled` answers false: the verb is lower-cased and aliases resolve as always, `enable` / `help` / `disable` dispatch normally, and every other input — including the bare command and an unknown verb — prints `DisabledLine()` and returns. Enabled, or with no `isEnabled` at all: an empty line runs the host's `config` verb, or prints help when the host has none (**11**; through 10 it always printed help); otherwise the first token is lowercased, mapped through `aliases`, and dispatched. Only the verb is lowercased — `rest` keeps its case, because schema paths are case-sensitive, and its internal spacing, because a colour is several tokens. An unknown verb says so and then prints help. |
+| `OnSlash(msg)` | 1 | The entry point. **From 12**, when `isEnabled` answers false: the verb is lower-cased and aliases resolve as always, every verb in `liveVerbs` dispatches normally, and anything else prints `DisabledLine()` and returns. **From 13** the gate moved AFTER the COMMANDS lookup, so only a verb the host SHIPS is refused; a typo falls through to `unknown command` and the index, per slash-commands-§3. **From 13** the live set is the standard's twelve reserved verbs and the bare command runs the host's `config` verb in either state, where at 12 the bare command was refused. Enabled, or with no `isEnabled` at all: an empty line runs the host's `config` verb, or prints help when the host has none (**11**; through 10 it always printed help); otherwise the first token is lowercased, mapped through `aliases`, and dispatched. Only the verb is lowercased — `rest` keeps its case, because schema paths are case-sensitive, and its internal spacing, because a colour is several tokens. An unknown verb says so and then prints help. |
 | `DisabledLine()` | **12** | The one refusal line, built from `lib.DISABLED_LINE_FORMAT` and the descriptor's `brandName` and `slash`. Every call site — the dispatcher's gate, the help header, the launcher's left-click — calls THIS. The host's own `print` adds `NS.PREFIX` as it does for every other line, so the tag is not built in. |
 | `PrintHelp()` | 1 | The header, then `HelpRows()`, through the descriptor's `print`. **From 12**, when the gate is closed, the refusal line is emitted immediately after the header and before the first row, unindented. |
 | `HelpHeader()` | 1 | `v<version> — slash commands`, plus the alias note when `slashAliases` has one. |
@@ -510,6 +558,13 @@ correct on every minor.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+**What moves at version 13 is behavior, by the standard's reversal (v2.57.0), and it moves in the
+direction of answering.** Every input version 12 answered, version 13 answers the same way; nine
+kinds of input version 12 refused are answered now — the bare `/<slash>`, `config`, `version`,
+`debug`, `perf` and the five schema verbs. Nothing a host wrote against version 12 needs to change,
+except a `liveVerbs` array passed to reproduce version 12's narrowing, which now narrows the restored
+set instead. A host with no `isEnabled` is unaffected, as it was at 12.
+
 **What moves at version 11 is behavior, by the standard's decision (v2.50.0).** An empty line runs the
 host's `config` verb instead of printing the help index; `help` is unchanged, and a host with no
 `config` verb sees no change. Every Ka0s consumer carries `config` (a reserved verb), so every one
@@ -525,29 +580,3 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
-
-## Moving to version 13
-
-**Take it, and only one thing about your addon changes: a disabled addon answers more.** Version 13
-adds no member and no descriptor field — the member manifest differs from this one in the minor
-alone — and it moves `lib.LIVE_VERBS` from `{ "enable", "help", "disable" }` to the Ka0s WoW Addon
-Standard's twelve reserved verbs: `help`, `config`, `version`, `enable`, `disable`, `debug`, `perf`,
-`get`, `set`, `list`, `reset` and `resetall`. The bare `/<slash>` opens the settings panel again
-rather than being refused.
-
-The standard narrowed the disabled surface at v2.56.0, which is what this version implements, and
-**reversed it at v2.57.0**. `/<slash>` on a disabled addon answering with a refusal instead of the
-panel — the one surface from which it gets switched back on by hand — is what settled it.
-`slash-commands-§7`'s stand-down is untouched by the reversal and is the substance: a disabled addon
-still registers nothing, runs no timer, draws nothing and writes nothing from a game event.
-
-What a host owes on the re-vendor:
-
-- **Nothing, if it passes no `isEnabled`.** The gate is off and both versions behave as version 11.
-- **Delete a `liveVerbs` array passed to reproduce this version's narrowing.** It still works and
-  still narrows, so a host that keeps one keeps refusing `config` and the schema CLI.
-- **Invert step 7 of its `tests/test_disabled.lua`.** The reserved verbs and the bare `/<slash>`
-  assert their normal output; only the addon's own feature verbs assert the one refusal line.
-
-Everything else in this document — the refusal line's shape, `brandName`, `DisabledLine()`, the `L`
-carve-out, the formatters, the parser and the whole schema CLI — is unchanged at version 13.

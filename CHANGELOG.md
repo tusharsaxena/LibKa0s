@@ -10,6 +10,48 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.41.0 — 2026-09-16
+
+Versions in this release: **Slash minor 13**. Every other major is unchanged from v1.40.0, and the
+kit stays at revision 22.
+
+**The disabled slash surface is restored, and it is the only thing that moves.** `lib.LIVE_VERBS`
+goes from `{ "enable", "help", "disable" }` to the Ka0s WoW Addon Standard's twelve reserved verbs —
+`help`, `config`, `version`, `enable`, `disable`, `debug`, `perf`, `get`, `set`, `list`, `reset`,
+`resetall` — and the bare `/<slash>` opens the settings panel while disabled instead of being
+refused. No member is added, removed, renamed or resignatured and no descriptor field is added, so
+`docs/api/Slash/members-13.json` differs from `members-12.json` in nothing at all but the file it is
+named for.
+
+**Why, and it is one sentence of testing rather than one of reasoning.** v1.40.0's Slash minor 12
+implemented the standard's v2.56.0, which narrowed a disabled addon's slash surface to `enable` and
+`help`. **The standard reversed that at v2.57.0** the same day, because `/<slash>` on a disabled
+addon answered with a refusal instead of opening the settings panel — the one surface from which a
+player switches the addon back on by hand. A rule that hides the off switch has mistaken which half
+of the pair it protects, and v2.56.0's own *What the refusals cost* passage had already conceded that
+taking the schema CLI away was the largest thing it gave up. `slash-commands-§2` is restored verbatim
+from v2.55.0.
+
+**What the gate is left refusing is exactly the host's own FEATURE verbs** — the ones that draw,
+show, hide, track, record, test, clear or export the thing the addon exists to do, `lock` and
+`unlock` among them. They answer on one tagged line naming `/<slash> enable` and do nothing else.
+That is `slash-commands-§2`'s SHOULD, it survived the reversal unchanged, and it is now the only
+refusal in the disabled state. `DISABLED_LINE_FORMAT`, `DisabledLine()` and the `liveVerbs`
+descriptor field all stay: the refusal still prints exactly that line, and a host may still name its
+own live set — narrowing it to the verbs it ships, or widening it if it declines the SHOULD.
+
+**Nothing here weakens the stand-down, which was always the substance.** `slash-commands-§7`'s
+*What MUST stand down*, `LibKa0s-Lifecycle-1.0`'s one-latch-two-holds rule and the conformance suite
+are untouched. A disabled addon registers nothing, runs no timer, draws nothing and writes nothing
+from a game event — and it answers every reserved verb you type at it. The dispatcher and the
+settings registration are setup rather than features, so keeping them live costs nothing the
+stand-down was trying to reclaim. Only step 7 of every addon's `tests/test_disabled.lua` inverts,
+and it now pins whichever way the addon answered the SHOULD so the choice cannot drift silently.
+
+**For a consumer:** re-vendor. A host that passes no `isEnabled` is unaffected, exactly as at minor
+12. A host that passed a `liveVerbs` array to reproduce the narrowing should delete it, or it keeps
+refusing `config` and the schema CLI on its own account.
+
 ## v1.40.0 — 2026-09-16
 
 Versions in this release: **Lifecycle minor 1** (a new major), **Perf minor 12**, **Slash minor 12**

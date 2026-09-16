@@ -302,7 +302,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the copy window still shows the whole buffer, in order
 - dbg: the copy window re-anchors to the console instead of a fixed centre
 
-### test_slash.lua (108)
+### test_slash.lua (109)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
 - sl: whitespace-only input is treated as empty
@@ -401,14 +401,15 @@ badge and any count quoted in the docs must agree with it.
 - sl: the refusal line's shape is the collection's, down to the color and the dash
 - sl: an absent isEnabled leaves the dispatcher behaving exactly as it did at minor 11
 - sl: isEnabled without brandName is refused at New, not rendered as 'nil is disabled'
-- sl: every non-live verb answers EXACTLY one refusal line and nothing else
-- sl: a bare command and an unknown verb answer the same single line
+- sl: a FEATURE verb answers exactly one refusal line and reaches no write seam
+- sl: the reserved verbs and the whole schema CLI answer NORMALLY while disabled
+- sl: the bare command opens the panel, and an unknown verb answers the one line
 - sl: an alias onto a gated verb is refused, and an alias onto a live one is honored
 - sl: enable answers normally and is the way back
 - sl: disable ECHOES the write rather than refusing, and is idempotent
 - sl: help prints the full index with the refusal line under its header, unindented
 - sl: help enabled prints no refusal line at all
-- sl: liveVerbs defaults to the collection's three and is overridable as DATA
+- sl: liveVerbs defaults to the standard's twelve reserved verbs and is overridable as DATA
 - sl: a live verb the host does not ship still answers one line, never the index
 - sl: the gate is asked per dispatch, so a value that changes mid-session is honored
 - sl: the refusal wording is NOT reachable through the locale override
@@ -1260,7 +1261,7 @@ badge and any count quoted in the docs must agree with it.
 | test_media.lua | 15 |
 | test_widgets.lua | 81 |
 | test_debuglog.lua | 67 |
-| test_slash.lua | 108 |
+| test_slash.lua | 109 |
 | test_launcher.lua | 22 |
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
@@ -1286,4 +1287,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1140** |
+| **Total** | **1141** |
