@@ -95,16 +95,16 @@ figure in the `docs/automated-tests/` manifests that no document read, and a RES
 that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
 against a file in it.
 
-Two files, measured 2026-09-14 at v1.35.0 (`48c9050`) with
+Two files, measured 2026-09-16 at v1.38.0 (`5fceda5`) with
 
 ```sh
 git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 ```
 
-| File | Lines (2026-09-14) | Disposition |
+| File | Lines (2026-09-16) | Disposition |
 |---|---|---|
-| `tests/test_options_widgets.lua` | 3828 | Issue [#8](https://github.com/tusharsaxena/LibKa0s/issues/8) — peels with `LibKa0s/OptionsWidgets.lua`, on that file's seam and in that file's commit |
-| `LibKa0s/OptionsWidgets.lua` | 3645 | Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16) — the tab and page chrome (`:379` art block, `:1510`–`:1988` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine. The id-lookup and suggestion helpers v1.35.0 put between those two ranges (`:765`–`:1325`) are widget code, not chrome, and stay |
+| `tests/test_options_widgets.lua` | 3997 | Issue [#8](https://github.com/tusharsaxena/LibKa0s/issues/8) — peels with `LibKa0s/OptionsWidgets.lua`, on that file's seam and in that file's commit |
+| `LibKa0s/OptionsWidgets.lua` | 3700 | Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16) — the tab and page chrome (`:378` art block, `:1510`–`:1988` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine. The id-lookup and suggestion helpers v1.35.0 put between those two ranges (`:754`–`:1350`) are widget code, not chrome, and stay |
 
 **Both are issues, and neither is a register row.** The sibling repository doing this same work gives
 its *mirror suites* register rows rather than issues, on the argument that a suite has no seam of its
@@ -127,12 +127,13 @@ today — `OptionsWidgets.lua` was 1838 at the 2026-09-07 review and the suite 2
 (`03_SPEC.md` § C22 non-goals). Here that is more than a scheduling preference: `LibKa0s/` is
 re-vendored whole-folder into ten consumers and every file in it carries its own LibStub minor, so a
 peel adds a payload file, a `LibKa0s.xml` row, a minor and the multi-file pairing guard
-(`__widgetsShellMinor`, `LibKa0s/OptionsWidgets.lua:32`) — a deliberate release, not a tidy-up. The
+(`__widgetsShellMinor`, `LibKa0s/OptionsWidgets.lua:33`) — a deliberate release, not a tidy-up. The
 deliverable was the disposition, and the disposition is this table.
 
-**The 1000–1500 band is on notice, not in breach**: `tests/test_widgets.lua` (1493),
-`tests/test_options.lua` (1266), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1231 at v1.34.0, tracked as
-[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1284 at v1.34.0), since kit revision 17 `testkit/mock_base.lua` (1487 at kit revision 20, thirteen lines from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that reason) and, since v1.34.0, `tests/test_slash.lua` (1034). They are
+**The 1000–1500 band is on notice, not in breach**, measured with the same command on 2026-09-16 at
+v1.38.0: `tests/test_widgets.lua` (1493),
+`tests/test_options.lua` (1303), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1231, tracked as
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1307), since kit revision 17 `testkit/mock_base.lua` (1499 at kit revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that reason) and, since v1.34.0, `tests/test_slash.lua` (1054). They are
 named so a later reader can tell the band was looked at rather than missed; none needs a disposition
 until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
@@ -180,5 +181,5 @@ luacheck .          # 0 warnings / 0 errors
 ```
 
 That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — fifty-seven
-files at v1.35.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
+files at v1.38.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
 only means something if the files carrying the change are inside the checked set.
