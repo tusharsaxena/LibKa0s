@@ -28,7 +28,7 @@ version publishes, with its type — generated from the live module by `tools/ge
 never hand-edited, and regenerated and compared on every run by
 `tests/test_versioning.lua`.
 
-It exists because nine addons in this collection hand-write a degradation stub of a LibKa0s surface,
+It exists because eleven addons in this collection hand-write a degradation stub of a LibKa0s surface,
 and until now the only way a stub author could answer "what am I obliged to carry?" was to read the
 library's source at whatever moment they read it. That is how AbsorbTracker's Options stub came to
 omit `SetRenderer` with every suite in that repository green. The kit's

@@ -3055,7 +3055,7 @@ function()
   -- read as attached to the page. Two halves, because the atlas has one good corner and the left
   -- one is a mirrored copy of it.
   -- red under: drawing the panel once and stretching a corner across the width, or -- the real
-  -- regression risk -- drawing it on an UNTABBED page, where eight of the nine consumers live.
+  -- regression risk -- drawing it on an UNTABBED page, which most consumers still have.
   local O, _, ctx = bench()
   local _, frames = tabAtlases(O, ctx, threeTabs("a"))
 

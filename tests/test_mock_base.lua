@@ -18,7 +18,7 @@
 -- red inside a minute; that is the evidence the arming exists on.
 --
 -- The first two cases below are the ones that matter. They pin the default and they pin what moves
--- it, which together are the entire claim that nine consumers can take this and count nothing.
+-- it, which together are the entire claim that eleven consumers can take this and count nothing.
 --
 -- These cases drive the mock through `T.mocks`, the built environment this repo's own suites use,
 -- rather than dofile'ing the kit directly: the published atlas table has to be reachable from a

@@ -674,7 +674,7 @@ end
 --- reason a row of buttons reads as tabs attached to a page rather than as chrome floating above
 --- one. A 1px line cannot do that job; it was tried, and it read as disconnected.
 ---
---- Drawn only by TabStrip, so an UNTABBED page — every page in eight of the nine consumers — is
+--- Drawn only by TabStrip, so an UNTABBED page is
 --- untouched and keeps rendering exactly as it always has.
 ---
 --- The frame is parented to `ctx.body` and anchored to `ctx.chrome`'s bottom, so it follows the

@@ -71,7 +71,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    ```
 
    That writes `docs/api/<Major>/members-<version-key>.json` for every major — the public surface as
-   data, which is what the ten addons' degradation stubs are checked against by
+   data, which is what the eleven addons' degradation stubs are checked against by
    `Kit.assertSurfaceParity(stub, majorName)`. It is a generated file and never hand-edited, and
    `tests/test_versioning.lua` regenerates and compares it on every run, so a bumped minor whose
    manifest has not been written is red for the same reason a bumped minor with no document is.

@@ -401,7 +401,7 @@ end)
 -- spelling out the form it forbids would redden a file describing the rule.)
 --
 -- Scoped to the shipped payload for a reason: `LibKa0s/Options.lua` is vendored BYTE-FOR-BYTE into
--- eight addons, so a §N.M left here (or reintroduced later) can only be corrected by a re-vendor
+-- eleven addons, so a §N.M left here (or reintroduced later) can only be corrected by a re-vendor
 -- that reddens every consumer's tests/test_vendor_sync.lua until they take it. The same notation in
 -- this repo's own docs/ or tests/ costs nobody anything and is swept separately.
 test("prose: no retired §N.M section reference in the shipped library or the shipped kit", function()
