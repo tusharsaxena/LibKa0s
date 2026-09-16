@@ -144,7 +144,7 @@ cycle's deliverable was the disposition; this cycle executed it.
 **The 1000–1500 band is on notice, not in breach**, measured with the same command on 2026-09-16 at
 v1.39.0: `tests/test_widgets.lua` (1493),
 `tests/test_options.lua` (1303), `LibKa0s/Widgets.lua` (1232), `LibKa0s/Perf.lua` (1231, tracked as
-[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1307), since kit revision 17 `testkit/mock_base.lua` (1499 at kit revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that reason) and, since v1.34.0, `tests/test_slash.lua` (1054). They are
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `LibKa0s/Options.lua` (1312), since kit revision 17 `testkit/mock_base.lua` (1499 at kit revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that reason) and, since v1.34.0, `tests/test_slash.lua` (1054). They are
 named so a later reader can tell the band was looked at rather than missed; none needs a disposition
 until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. **v1.39.0's
 two new files are not even in the band** — `LibKa0s/OptionsTabs.lua` at 973 and

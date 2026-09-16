@@ -515,7 +515,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (185)
+### test_options_widgets.lua (187)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -685,6 +685,8 @@ badge and any count quoted in the docs must agree with it.
 - widgets: the landing page's text rows carry the same justify guard TextRow owns
 - widgets: a tabbed page draws ONLY the active group's rows
 - widgets: a tabbed page draws no section heading -- the tab IS the heading
+- widgets: a tabbed page falls back to the untabbed render when OptionsTabs.lua is absent
+- widgets: the tab half draws its banner without the widget half's tooltip attacher
 - widgets: an UNtabbed page still draws its headings
 - widgets: clicking a tab clears the scroll and renders the new group
 - widgets: the active tab survives a re-render, and heals when its group disappears
@@ -1187,7 +1189,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 185 |
+| test_options_widgets.lua | 187 |
 | test_options_tabs.lua | 36 |
 | test_options_idsuggest.lua | 36 |
 | test_options_compose.lua | 45 |
@@ -1207,4 +1209,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1069** |
+| **Total** | **1071** |

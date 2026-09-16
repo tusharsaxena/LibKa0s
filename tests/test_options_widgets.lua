@@ -2897,6 +2897,72 @@ test("widgets: a tabbed page draws no section heading -- the tab IS the heading"
   end
 end)
 
+-- ── the half-vendored pair (layout-§1's peel, #16) ───────────────────────────────
+--
+-- OptionsWidgets.lua and OptionsTabs.lua are two files of ONE major, paired on the shell's minor
+-- rather than on each other's, so a consumer whose vendored copy carries one and not the other is
+-- a state LibStub cannot detect. The whole argument for cutting the file in two is that this state
+-- degrades instead of raising -- and until these two cases existed, that argument was asserted and
+-- never exercised. Eleven addons vendor this payload byte-for-byte.
+--
+-- The shape is tests/test_options.lua's 'survives a vendored copy whose widget makers never
+-- attached': nil the attach hook BEFORE Fixture.new, because lib:New reaches for it once at build
+-- time, so flipping it afterwards leaves the instance holding what it already resolved.
+
+test("widgets: a tabbed page falls back to the untabbed render when OptionsTabs.lua is absent",
+  function()
+  -- red under: dropping the `if not O.TabStrip` guard at the head of RenderTabbedSchema. The page
+  -- would raise on the first OnShow, from inside the library, on a consumer that had done nothing
+  -- wrong except vendor a partial folder.
+  local savedTabs = lib.__AttachTabs
+  lib.__AttachTabs = nil
+  local O, _, ctx = bench()
+  lib.__AttachTabs = savedTabs
+
+  assertNil(O.TabStrip, "the tab half really is absent from this instance")
+
+  local ok, groups = pcall(O.RenderTabbedSchema, ctx, "tabbed")
+  assertTrue(ok, "a half-vendored copy must not raise while drawing: " .. tostring(groups))
+  assertEqual(table.concat(groups or {}, "|"), "Alpha|Beta|Gamma|Delta",
+    "the groups are still reported, so a caller reading them is unaffected")
+
+  -- The fallback is the UNTABBED render: every row, with its section headings -- the page a player
+  -- can still use. Not the tabbed partition, which would show one group and no way to reach the
+  -- others.
+  local labels = table.concat(scrollLabels(ctx), "|")
+  assertTrue(labels:find("Alpha one", 1, true) ~= nil, "the first group is drawn")
+  assertTrue(labels:find("Beta one", 1, true) ~= nil,
+    "and so is a group that would have been behind a tab -- otherwise it is unreachable")
+  assertTrue(labels:find("Gamma one", 1, true) ~= nil)
+end)
+
+test("widgets: the tab half draws its banner without the widget half's tooltip attacher",
+  function()
+  -- The mirror of the case above, and the one line of moved module code the peel changed:
+  -- OptionsTabs.lua's banner reaches O.AttachTooltip, which lives in the widget half. Bare, it
+  -- raises; guarded, the banner simply carries no tooltip.
+  --
+  -- O.PageBanner is the entry point, NOT RenderTabbedSchema: the flow engine lives in the widget
+  -- half, so with that half absent there is no RenderTabbedSchema to call and this case would be
+  -- testing its own setup. The tab half's own exported surface is what survives, and it is what a
+  -- host on a half-vendored copy still reaches.
+  -- red under: making that reach bare again.
+  local savedWidgets = lib.__AttachWidgets
+  lib.__AttachWidgets = nil
+  local O, _, ctx = bench()
+  lib.__AttachWidgets = savedWidgets
+
+  assertNil(O.AttachTooltip, "the widget makers really are absent from this instance")
+  assertTrue(O.PageBanner ~= nil, "but the tab half is present -- that is the state under test")
+
+  local ok, dd = pcall(O.PageBanner, ctx, {
+    label = "Window", list = { [1] = "One" }, order = { 1 }, value = 1,
+    tooltip = "a tooltip nothing can attach", onSelect = function() end,
+  })
+  assertTrue(ok, "the tab half must not raise reaching across the seam: " .. tostring(dd))
+  assertEqual(dd.type, "Dropdown", "and the banner is still drawn, just without its tooltip")
+end)
+
 test("widgets: an UNtabbed page still draws its headings", function()
   -- The amendment to RenderRows is opt-in through a fifth argument, so every existing caller
   -- must behave exactly as it did. This is the case that pins that.
