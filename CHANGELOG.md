@@ -10,6 +10,35 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.39.0 — 2026-09-16
+
+Versions in this release: **OptionsCompose minor 7**. Every other major is unchanged from v1.38.0.
+
+**`MasterControls` composes the Minimap button row, and it takes the first column** (Ka0s WoW Addon
+Standard v2.52.0, `options-ui-§15` and `launcher-§3`). A new spec field, `minimapPath`, emits an
+unconditional *Minimap button* checkbox, its path taken verbatim like the console's because
+`launcher-§3` keeps LibDBIcon's `minimap` table in the **global** store rather than under a profile.
+It is stored state and carries no `sessionOnly`: a button the player hid stays hidden across a
+reload, and across a profile switch and a *Reset all settings*, which is the whole reason the
+standard puts the table where it does. The row's boolean says **shown** while LibDBIcon's key says
+hidden, so the host's get/set invert at its single write seam and call `Show` / `Hide` there — the
+library owns the row, not the inversion.
+
+**`Test mode` moves off `startsLine` and pairs beside it**, so the line reads
+`[Minimap button] [Test mode]`. The column order is the standard's and so is its reason: every Ka0s
+addon has a minimap button and only some have a test mode, so the always-present row opens the line
+and an addon with no test mode draws a tidy single row instead of a hole in the first column with a
+lone control to its right. Either row alone still opens its own line — `startsLine` is computed from
+what was **emitted**, so `omit = { minimap = true }` reads exactly like a spec that never named the
+path — and a call that passes neither renders byte-identically to compose minor 6, which the frozen
+golden fixture still confirms.
+
+**This is the seam `launcher-§5` names, and it is what unblocks eleven adoptions.** The standard
+requires the Master-controls set to be composed and never hand-written, and until this minor there
+was no spec key for the row: an addon adopting the launcher could satisfy `launcher-§3` only by
+hand-writing it, which `options-ui-§15`/`§16` forbid. Every consumer's adoption was blocked upstream
+rather than overdue, and this release is what ends that.
+
 ## v1.38.0 — 2026-09-16
 
 Versions in this release: **Slash minor 11**. Every other major is unchanged from v1.37.0.

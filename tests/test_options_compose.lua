@@ -390,6 +390,66 @@ test("compose: testModePath adds one session-only Test mode row, on its own line
   assertEqual(paths(fl), "enabled|visibility|state.debugConsole|state.test")
 end)
 
+test("compose: minimapPath adds a stored Minimap button row, opening the line Test mode pairs on", function()
+  -- options-ui-§15 (v2.52.0) plus launcher-§3: every Ka0s addon ships a launcher, so the row is
+  -- unconditional in the standard and opt-in here only until every host has adopted (launcher-§5).
+  -- red under: no such row, which leaves eleven hosts to hand-write it -- the one thing §15 forbids.
+  local rows = O.MasterControls{ page = "general", addonName = "X",
+    minimapPath = "global.minimap.hide" }
+  assertEqual(paths(rows),
+    "enabled|visibility|scale|alpha|locked|state.debugConsole|global.minimap.hide")
+  local row = rowAt(rows, "global.minimap.hide")
+  assertEqual(row.type, "bool")
+  assertEqual(row.label, "Minimap button")
+  assertTrue(row.startsLine, "it takes the FIRST column of its line")
+  assertFalse(row.sessionOnly == true,
+    "stored state: a button the player hid stays hidden across a reload")
+  assertEqual(row.default, true, "the row's sense is SHOWN; the host inverts onto LibDBIcon's hide")
+  assertEqual(row.group, "Master controls")
+  -- Verbatim, like the console path: LibDBIcon's table lives in the GLOBAL store, outside the
+  -- block's profile prefix.
+  local pre = O.MasterControls{ page = "general", addonName = "X", prefix = "s.",
+    minimapPath = "global.minimap.hide" }
+  assertTrue(rowAt(pre, "global.minimap.hide") ~= nil)
+  -- Frameless drops only the frame rows; a minimap button is not one of them.
+  local fl = O.MasterControls{ page = "general", addonName = "X", frameless = true,
+    minimapPath = "global.minimap.hide", onResetAll = function() end }
+  assertEqual(paths(fl), "enabled|visibility|state.debugConsole|global.minimap.hide")
+end)
+
+test("compose: Minimap button and Test mode render as ONE line, minimap first", function()
+  -- The column assignment options-ui-§15 fixes: the always-present row opens the line and the
+  -- optional one pairs beside it.
+  -- red under: Test mode keeping the `startsLine` it carried at compose minor 6, which would push
+  -- the pair onto two lines and leave the second column of the first one empty.
+  local rows = O.MasterControls{ page = "general", addonName = "X",
+    minimapPath = "global.minimap.hide", testModePath = "state.test" }
+  assertEqual(paths(rows),
+    "enabled|visibility|scale|alpha|locked|state.debugConsole|global.minimap.hide|state.test")
+  assertTrue(rowAt(rows, "global.minimap.hide").startsLine, "minimap opens the line")
+  assertNil(rowAt(rows, "state.test").startsLine,
+    "Test mode pairs beside it, carrying no startsLine key at all")
+end)
+
+test("compose: either row alone still opens its own line", function()
+  -- The two are independent opt-ins, and an addon that passes one of them must not get a control
+  -- stranded in the second column of a line whose first half was never emitted.
+  -- red under: hard-coding startsLine on one row and not computing the other's from it.
+  local minimapOnly = O.MasterControls{ page = "general", addonName = "X",
+    minimapPath = "global.minimap.hide" }
+  assertTrue(rowAt(minimapOnly, "global.minimap.hide").startsLine)
+  local testOnly = O.MasterControls{ page = "general", addonName = "X", testModePath = "state.test" }
+  assertTrue(rowAt(testOnly, "state.test").startsLine,
+    "no minimap row to pair with, so Test mode opens the line itself")
+  -- And a host that omits the minimap leaf through `omit` is in exactly the same position as one
+  -- that never named the path: the pairing is computed from what was EMITTED, not from the spec.
+  local omitted = O.MasterControls{ page = "general", addonName = "X",
+    minimapPath = "global.minimap.hide", testModePath = "state.test",
+    omit = { minimap = true } }
+  assertEqual(paths(omitted), "enabled|visibility|scale|alpha|locked|state.debugConsole|state.test")
+  assertTrue(rowAt(omitted, "state.test").startsLine)
+end)
+
 test("compose: the debug console's path is verbatim and outside the block's prefix", function()
   -- Session state lives outside the settings prefix, which is why this one row takes a whole path
   -- rather than a leaf.

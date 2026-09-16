@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 20.19.6.3
+# `LibKa0s-Options-1.0` — version 20.19.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,35 +8,56 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **20** · `OptionsWidgets.lua` **19** · `OptionsCompose.lua` **6** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **20** · `OptionsWidgets.lua` **19** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsCompose>.<OptionsScroll>`, in load order — the same four numbers `lib.MODULES` reports. |
-| Shipped in | v1.37.0 – v1.38.0 |
-| Status | Superseded |
-| Supersedes | [version 20.19.5.3](./version-20.19.5.3-docs.md) |
-| Superseded by | [version 20.19.7.3](./version-20.19.7.3-docs.md) |
+| Shipped in | v1.39.0 |
+| Status | **Current** |
+| Supersedes | [version 20.19.6.3](./version-20.19.6.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 20, OptionsWidgets = 19, OptionsCompose = 6, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 20, OptionsWidgets = 19, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O20`
-for `Options.lua` minor 20, `W19` for `OptionsWidgets.lua` minor 19, `C6` for `OptionsCompose.lua`
-minor 6, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
+for `Options.lua` minor 20, `W19` for `OptionsWidgets.lua` minor 19, `C7` for `OptionsCompose.lua`
+minor 7, `S1` for `OptionsScroll.lua` minor 1. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
 
-**One file moves, `OptionsCompose.lua` 5 → 6, and it adds one spec field.** `MasterControls` takes
-`testModePath` (**C6**): the path of the addon's test mode, emitted as a session-only **Test mode**
-checkbox on its own line below *Lock frame* / *Debug console*. It is the Ka0s WoW Addon Standard
-v2.46.0's `options-ui-§15` row, required of an addon whose preview has a switch of its own, and
-composed so that no host hand-writes it or draws it as a button. Omitted, nothing changes: a host that
-does not pass `testModePath` gets exactly the rows it got at 20.19.5.3.
+**One file moves, `OptionsCompose.lua` 6 → 7, and it adds one spec field and moves one row's
+column.** `MasterControls` takes `minimapPath` (**C7**): the path of the minimap button's
+visibility, emitted as a **Minimap button** checkbox in the **first** column of the line below
+*Lock frame* / *Debug console*. It is the Ka0s WoW Addon Standard v2.52.0's `options-ui-§15` row and
+`launcher-§3`'s one visibility control, and it is what unblocks the whole collection's launcher
+adoption: `launcher-§5` records that no addon could adopt before this seam existed, because §15
+forbids hand-writing the row and the composer had nowhere to emit it from.
 
-The row carries `path` verbatim (session state lives outside the block's prefix, as the console's
-does), `type = "bool"`, `label = "Test mode"`, a tooltip, `sessionOnly = true` and
-`startsLine = true`. It survives `frameless`, which drops only the frame rows. The host binds its
-`get`/`set` to its test mode, exactly as it binds the console row's to the console window.
+**`Test mode` loses its `startsLine` when it pairs.** At **C6** the *Test mode* row opened a line of
+its own and left the right half of it empty. It now pairs beside *Minimap button* as
+`[Minimap button] [Test mode]`, which is the column order `options-ui-§15` states and states a
+reason for: **every** addon has a minimap button and only **some** have a test mode, so the
+always-present row takes column 1 and an addon without a test mode draws a tidy single row rather
+than a hole in the first column with a lone control to its right.
 
-The changes at 20.19.5.3 are in [that version's document](./version-20.19.5.3-docs.md#what-changed-at-this-version).
+Both rows stay opt-in, and either alone still opens its own line — `startsLine` is computed from
+what was **emitted**, not from what the spec named, so a host that omits the `minimap` leaf through
+`omit` is in exactly the same position as one that never passed `minimapPath`. A call that passes
+neither renders byte-identically to 20.19.6.3.
+
+**The minimap row is STORED state, and `sessionOnly` is deliberately absent from it.** The console
+and the test mode are both things a reload ends. A hidden minimap button is furniture the player
+arranged, and `launcher-§3` puts it in the **global** store for two stated reasons: switching
+profiles must not move a player's buttons, and `options-ui-§12`'s *Reset all settings* — a profile
+reset by definition — must not un-hide a button the player deliberately hid. Its path is therefore
+taken **verbatim**, like the console's, because it lives outside the block's profile prefix.
+
+**The row's sense is SHOWN; the inversion is the host's.** `default = true` means the button is
+visible. LibDBIcon's own key says *hidden* (`minimap.hide`), so the host's `get`/`set` invert at its
+single write seam and call LibDBIcon's `Show` / `Hide` there, exactly as the console row's `set`
+opens and closes the console window. The library owns the row; it does not own the inversion, the
+table or the registration — those are `LibKa0s-Launcher-1.0`'s and the host's.
+
+The changes at 20.19.6.3 are in [that version's document](./version-20.19.6.3-docs.md#what-changed-at-this-version).
 
 ## Previously, at 13.12.3
 
@@ -359,7 +380,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `FontGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
 | `BorderGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
 | `BarGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four bar rows, for a surface with a **fill texture**. Its `barTexture` row's `values` is `O.LSMValues("statusbar")` itself (**C3**). |
-| `MasterControls(spec)` | **C1** (`spec.bind`: **C4**) | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2** and `testModePath` since **C6**. Its *Reset all settings* tooltip follows the descriptor's `resetProfile` and `profilesPage` since **C5**. |
+| `MasterControls(spec)` | **C1** (`spec.bind`: **C4**) | The canonical Master controls rows **and** the `afterGroup` hook that draws the tab's closing button pair. Returns two values. Takes `leadButton` since **C2**, `testModePath` since **C6** and `minimapPath` since **C7**. Its *Reset all settings* tooltip follows the descriptor's `resetProfile` and `profilesPage` since **C5**. |
 | `FONT_FLAGS` / `FONT_FLAGS_SORT` | **C1** | The font-flag key map and its declared order. |
 | `VISIBILITY_VALUES` / `VISIBILITY_SORT` | **C1** | The four general-visibility values and their declared order. General visibility is a dropdown, not a boolean: a boolean can only ever answer two of the four. |
 | `MASTER_GROUP` | **C1** | The literal `"Master controls"` — the group name, the tab label and the `afterGroup` key are one string, because the group name **is** the hook key. |
@@ -1075,14 +1096,15 @@ a control wired to nothing.
 
 The canonical General-page tab (options-ui-§15). Additionally takes `addonName` (for the *Enable*
 label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onResetPosition`,
-`onResetAll`, — since **C2** — `leadButton` and — since **C6** — `testModePath`.
+`onResetAll`, — since **C2** — `leadButton`, — since **C6** — `testModePath` and — since **C7**
+— `minimapPath`.
 
 | | |
 |---|---|
 | `enabled` — *Enable `<AddonName>`* | `visibility` — *General visibility* |
 | `scale` — *Master scale* | `alpha` — *Master alpha* |
 | `locked` — *Lock frame* | `debugConsole` — *Debug console* |
-| `testMode` — *Test mode* (only with `testModePath`, **C6**) | |
+| `minimap` — *Minimap button* (only with `minimapPath`, **C7**) | `testMode` — *Test mode* (only with `testModePath`, **C6**) |
 | *Reset position* (button) | *Reset all settings* (button) |
 
 - **The set is canonical, not a menu.** An addon includes every row that applies to it and must not
@@ -1096,9 +1118,17 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
   a boolean can only ever answer two of the four.
 - **`debugConsole` is `sessionOnly`**, and its path is taken **verbatim** rather than prefixed:
   session state lives outside the block's own prefix.
-- **`testModePath`** (**C6**) adds the *Test mode* row: `sessionOnly`, on its own line, its path
-  taken verbatim like the console's. Pass it exactly when the addon has a test mode that stays on
-  until turned off (options-ui-§15); a one-shot test action is not one, and may take `leadButton`.
+- **`minimapPath`** (**C7**) adds the *Minimap button* row: a plain **stored** bool (no
+  `sessionOnly`), `default = true`, `startsLine = true`, its path taken verbatim like the console's
+  because `launcher-§3` keeps LibDBIcon's `minimap` table in the **global** store. The row says
+  *shown* and LibDBIcon's key says *hidden*, so the host's get/set invert and call `Show` / `Hide`
+  at its single write seam. Every Ka0s addon ships a launcher, so pass it — it is opt-in here only
+  until the collection has finished adopting (`launcher-§5`).
+- **`testModePath`** (**C6**) adds the *Test mode* row: `sessionOnly`, its path taken verbatim like
+  the console's. Pass it exactly when the addon has a test mode that stays on until turned off
+  (options-ui-§15); a one-shot test action is not one, and may take `leadButton`. Since **C7** it
+  pairs in the **second** column beside *Minimap button*, and opens a line of its own only where the
+  host passed no `minimapPath` (or omitted the `minimap` leaf).
 - **`leadButton` = `{ text, tooltip, onClick }`** (**C2**) is ONE act of the host's own, closing the
   tab beside the resets. On a **frameless** addon it takes the pair's empty right half, so the row
   reads `[<verb>] [Reset all settings]`; on a **framed** addon, whose pair is already full and may
@@ -1120,13 +1150,12 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
 never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. This
-version adds one `MasterControls` spec field, `testModePath` (**C6**), and no member: a host that does
-not pass it renders byte-identically to 20.19.5.3.
+version adds one `MasterControls` spec field, `minimapPath` (**C7**), and no member: a host that does
+not pass it renders byte-identically to 20.19.6.3.
 
-## Moving to version 20.19.7.3
-
-One file moves, `OptionsCompose.lua` 6 → 7, adding one optional `MasterControls` spec field,
-`minimapPath`, which emits the **Minimap button** row `options-ui-§15` and `launcher-§3` require of
-every addon. *Test mode* stops opening a line of its own when that row is present and pairs beside
-it instead, as `[Minimap button] [Test mode]`; a host passing `testModePath` alone sees no change at
-all. See [version 20.19.7.3](./version-20.19.7.3-docs.md).
+The one field that is **not** additive in the strictest reading is `startsLine` on the *Test mode*
+row, which C6 always set and C7 sets only when no *Minimap button* row was emitted. It is a layout
+hint on a composed row rather than a member, a descriptor field or a stored value, and the only host
+that can observe the difference is one passing **both** paths — which no host could do before this
+version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
+it got.
