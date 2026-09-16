@@ -403,14 +403,14 @@ badge and any count quoted in the docs must agree with it.
 - sl: isEnabled without brandName is refused at New, not rendered as 'nil is disabled'
 - sl: a FEATURE verb answers exactly one refusal line and reaches no write seam
 - sl: the reserved verbs and the whole schema CLI answer NORMALLY while disabled
-- sl: the bare command opens the panel, and an unknown verb answers the one line
+- sl: the bare command opens the panel, and a TYPO gets the unknown-command line
 - sl: an alias onto a gated verb is refused, and an alias onto a live one is honored
 - sl: enable answers normally and is the way back
 - sl: disable ECHOES the write rather than refusing, and is idempotent
 - sl: help prints the full index with the refusal line under its header, unindented
 - sl: help enabled prints no refusal line at all
 - sl: liveVerbs defaults to the standard's twelve reserved verbs and is overridable as DATA
-- sl: a live verb the host does not ship still answers one line, never the index
+- sl: a reserved verb the host never shipped is not refused, in either state
 - sl: the gate is asked per dispatch, so a value that changes mid-session is honored
 - sl: the refusal wording is NOT reachable through the locale override
 

@@ -10,6 +10,43 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.42.0 — 2026-09-17
+
+Versions in this release: **Slash minor 14**. Every other major is unchanged from v1.41.0, and the
+kit stays at revision 22.
+
+**A reserved verb the host never registered is no longer refused while disabled.** It answers
+`unknown command '<verb>'` and the help index, which is exactly what it already answered while the
+addon was running. No member is added, removed, renamed or resignatured, no descriptor field is
+added and `lib.LIVE_VERBS` does not move, so `docs/api/Slash/members-14.json` differs from
+`members-13.json` in nothing but the file it is named for. One branch of the dispatcher is deleted
+and nothing else in the file changes.
+
+**Why.** Minor 13 answered such a verb with the stand-down refusal line while disabled and with
+`unknown command` while enabled. The usual case is `perf`: a verb is reserved always but
+**registered when wired**, so an addon holding a performance no-combat-path exemption ships no
+`perf` entry at all and `perf` is simply not one of that addon's commands. The asymmetry made the
+disabled state look as though it had swallowed a command the addon never had — **five of the eleven
+consuming addons reported exactly that for `/<slash> perf` within a day of adopting minor 13**.
+Nothing was refused, so nothing says it was.
+
+The rule the gate now applies has no exception inside it: **it refuses a verb the host SHIPS, and
+nothing else.** A word with no `commands` entry behind it — a misspelling, or a reserved verb this
+addon never wired — takes `slash-commands-§3`'s unknown-verb path in both states. Minor 13 had
+already moved the gate after the COMMANDS lookup so a typo stopped being answered with "the addon is
+disabled"; this removes the one case it carved back out.
+
+`tests/test_slash.lua`'s *a reserved verb the host never shipped is not refused, in either state*
+pins it, and the verb it drives is load-bearing: only a verb that is in `lib.LIVE_VERBS` **and**
+absent from the host's `commands` reaches the deleted branch, so a made-up word passes against the
+bug and proves nothing.
+
+**For a consumer:** re-vendor, and change nothing in its own code. The one thing to look at is
+`tests/test_disabled.lua` — a host that pinned the refusal line for a reserved verb it does not ship
+(the exempt addons pinning it for `perf`) inverts that one expectation to the unknown-command line.
+A host that only pinned its own feature verbs has nothing to change; those are still refused, and
+they are now the whole of what the disabled gate refuses.
+
 ## v1.41.0 — 2026-09-16
 
 Versions in this release: **Slash minor 13**. Every other major is unchanged from v1.40.0, and the

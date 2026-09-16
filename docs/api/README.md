@@ -160,7 +160,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [13](./Slash/version-13-docs.md) | `Slash.lua` 13 | v1.41.0 | **Current** |
+| [14](./Slash/version-14-docs.md) | `Slash.lua` 14 | v1.42.0 | **Current** |
+| [13](./Slash/version-13-docs.md) | `Slash.lua` 13 | v1.41.0 | Superseded |
 | [12](./Slash/version-12-docs.md) | `Slash.lua` 12 | v1.40.0 | Superseded |
 | [11](./Slash/version-11-docs.md) | `Slash.lua` 11 | v1.38.0 | Superseded |
 | [10](./Slash/version-10-docs.md) | `Slash.lua` 10 | v1.34.0 – v1.37.0 | Superseded |

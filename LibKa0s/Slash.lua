@@ -18,7 +18,7 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Slash-1.0", 13
+local MAJOR, MINOR = "LibKa0s-Slash-1.0", 14
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -820,10 +820,14 @@ function lib:New(d)
 
     if entry then return entry[3](rest) end
 
-    -- A live verb with no COMMANDS entry behind it: a verb is reserved always and registered when
-    -- wired, so an addon holding a no-combat-path exemption never ships `perf`. Still one line,
-    -- never the index — the player named a real verb, so this is not a typo either.
-    if isDown and liveVerbs[cmd] then return emit(self:DisabledLine()) end
+    -- A RESERVED VERB THE HOST NEVER REGISTERED answers exactly as it does when ENABLED, which is
+    -- `unknown command` and the index. Minor 13 printed the refusal line here instead, on the
+    -- reasoning that the player had named a real verb rather than mistyped. That reasoning was
+    -- wrong in the way that matters: a verb is reserved always but REGISTERED WHEN WIRED, so an
+    -- addon with a no-combat-path exemption ships no `perf` and `perf` is simply not one of its
+    -- commands. Answering it one way while off and another way while on makes the disabled state
+    -- look like it swallowed a command the addon never had — five of the eleven consumers reported
+    -- exactly that for `/<slash> perf`. Nothing was refused, so nothing says it was.
 
     emit(self:Text("UNKNOWN_COMMAND"):format(cmd))
     self:PrintHelp()

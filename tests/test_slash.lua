@@ -1280,17 +1280,31 @@ test("sl: liveVerbs defaults to the standard's twelve reserved verbs and is over
   assertEqual(rec.chat[1], REFUSAL, "a verb outside the declared set is gated like any other")
 end)
 
-test("sl: a live verb the host does not ship still answers one line, never the index", function()
-  -- A verb is reserved always and registered when wired, so a live verb with no COMMANDS entry is
-  -- ordinary — an addon holding a no-combat-path exemption never ships `perf`. One line, and not
-  -- the index: the index is what a RUNNING addon answers a typo with, and this was not a typo.
-  local Sl, rec = F.new({
-    isEnabled = function() return false end,
-    brandName = "Ka0s Test Host",
-  })
-  Sl:OnSlash("disable")
-  assertEqual(#rec.chat, 1)
-  assertEqual(rec.chat[1], REFUSAL)
+test("sl: a reserved verb the host never shipped is not refused, in either state", function()
+  -- A verb is reserved always but REGISTERED WHEN WIRED, so an addon with a no-combat-path
+  -- exemption ships no `perf` and `perf` is simply not one of its commands. Minor 13 answered it
+  -- with the refusal line while disabled and with `unknown command` while enabled, which made the
+  -- disabled state look like it had swallowed a command the addon never had -- five of the eleven
+  -- consumers reported exactly that for `/<slash> perf` within a day of adopting it.
+  -- Nothing was refused, so nothing says it was.
+  --
+  -- The LINE COUNT is deliberately not asserted equal: `help` prints its status line under the
+  -- index while disabled, so the burst is one longer. What must match is the ANSWER.
+  -- Driven with `perf` SPECIFICALLY, and that matters: the bug only reaches a verb that is in
+  -- LIVE_VERBS yet absent from COMMANDS. A made-up word misses liveVerbs entirely and would
+  -- pass against the broken branch, which is how a first draft of this case proved nothing.
+  -- red under: restoring `if isDown and liveVerbs[cmd] then return emit(self:DisabledLine()) end`
+  -- ahead of the unknown-command path.
+  local SlDown, recDown = F.new({ isEnabled = function() return false end, brandName = "Ka0s Test Host" })
+  SlDown:OnSlash("perf")
+  assertEqual(plain(recDown.chat[1]):find("unknown command", 1, true) ~= nil, true,
+    "disabled: an unshipped verb is not a command here, so it gets the unknown-command line")
+  assertEqual(recDown.chat[1] == REFUSAL, false, "nothing was refused, so nothing says it was")
+
+  local SlUp, recUp = F.new()
+  SlUp:OnSlash("perf")
+  assertEqual(plain(recUp.chat[1]):find("unknown command", 1, true) ~= nil, true,
+    "enabled: the same answer, which is the whole point")
 end)
 
 test("sl: the gate is asked per dispatch, so a value that changes mid-session is honored", function()
