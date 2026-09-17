@@ -42,7 +42,7 @@ Also assumed present, and not installed separately on any normal WSL2 / Ubuntu b
 | Tool | Why it is needed |
 |---|---|
 | `git` | `tests/test_kitsync.lua` shells out to `git ls-files -s` to assert the runner's `100755` mode in **both** kit copies. The exec bit is not in a file's bytes, so no byte-identity check can ever see it. |
-| POSIX `ls` | `Kit.assertSuiteInventory` lists `tests/` with `ls -A` via `io.popen` (`testkit/framework.lua:357`), falling back to `dir /b` under cmd.exe. When neither is available the gate **fails** rather than reporting a pass — an empty listing means "could not look", never "empty directory". |
+| POSIX `ls` | `Kit.assertSuiteInventory` lists `tests/` with `ls -A` via `io.popen` (`testkit/framework.lua:515`), falling back to `dir /b` under cmd.exe. When neither is available the gate **fails** rather than reporting a pass — an empty listing means "could not look", never "empty directory". |
 | `bash` | `testkit/run-automated-tests.sh` is `#!/usr/bin/env bash` and uses `set -uo pipefail` and arrays. |
 
 ### Install
