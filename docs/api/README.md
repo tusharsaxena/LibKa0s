@@ -235,7 +235,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [22](./testkit/version-22-docs.md) | + `mock_record.lua` — the five recording surveys (`__registrations`, `__timers()`, `__shownFrames`, `__svWrites`, `__printed`), `__fire` / `__fireUnconditional`, an `AceBucket-3.0` fake, and the raw `frame:RegisterEvent` the frame stub used to forget; the timer queue and the `AceDB-3.0` fake move there with them | v1.40.0 | **Current** |
+| [23](./testkit/version-23-docs.md) | same files; the resource guard on load (re-launch depth, process-tree cgroup, `ulimit -v`, timeout), the runner's heap budget, leak gate, CPU ceiling, host-path gate and memory-aware `--jobs`, every suite in `run-automated-tests.sh` bounded, and the `mock_base.lua` build lookup that kept every instance alive | v1.43.0 | **Current** |
+| [22](./testkit/version-22-docs.md) | + `mock_record.lua` — the five recording surveys (`__registrations`, `__timers()`, `__shownFrames`, `__svWrites`, `__printed`), `__fire` / `__fireUnconditional`, an `AceBucket-3.0` fake, and the raw `frame:RegisterEvent` the frame stub used to forget; the timer queue and the `AceDB-3.0` fake move there with them | v1.40.0 | Superseded |
 | [21](./testkit/version-21-docs.md) | same files; the AceGUI fake's `CheckBox` gains a pooled `check` texture (`SetTexture`, `SetVertexColor`, `GetVertexColor`), so a suite can observe `O.ChoiceGrid`'s gold-fill paint and its restoration on `Release` against the stock fixture, with no per-test monkeypatch needed | v1.36.1 | Superseded |
 | [1](./testkit/version-1-docs.md) | `framework.lua` · `loader.lua` · `mock_base.lua` · `README.md` | v1.4.0 | Superseded |
 | [2](./testkit/version-2-docs.md) | + `run-automated-tests.sh` | v1.6.0 | Superseded |

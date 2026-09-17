@@ -10,9 +10,9 @@
 | Version | **22** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.40.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 21](version-21-docs.md) — the pooled CheckBox `check` texture |
-| Superseded by | — |
+| Superseded by | [version 23](version-23-docs.md) — the resource guard and the runner's gates |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `22` |
 

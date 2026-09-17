@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.42.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.43.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -198,7 +198,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.42.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.43.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -392,7 +392,16 @@ files, every one in the table; the one it found missing — ConsumableMaster's `
 the Macro Bar's Buttons drag list — was added to the Widgets row by that sweep. `WhoGotLoots` and
 `BuffTextNotifications` are out of scope until they are on the standard at all.
 
-**Where v1.42.0 stands (2026-09-17).** Steps 1–7 are done in this repository; **step 8 is not**, and
+**Where v1.43.0 stands (2026-09-17).** A kit-only release: **kit revision 23**, and no LibStub
+minor moves, so every consumer's `libs/LibKa0s/` is byte-identical before and after. Step 8 copies
+both payloads anyway, because `tests/test_vendor_sync.lua` resolves both from the tag the provenance
+line names. What a consumer owes: the copy, the provenance line, and — only where its docs cite
+`tests/_kit/framework.lua` by line number — re-pointed citations, since the load-time guard moves
+every line below it. No suite in the eleven trips the new heap, leak, CPU or host-path gates at their
+defaults (measured with revision 23 swapped into all eleven, run in parallel), so no runner raises a
+budget. v1.42.0's step 8, below, is done: all eleven carried v1.42.0 before this release.
+
+**Where v1.42.0 stood (2026-09-17).** Steps 1–7 are done in this repository; **step 8 is not**, and
 it is the smallest step 8 this library has had. All eleven consumers are otherwise **current**: each
 one's `CLAUDE.md` provenance line reads v1.41.0, each carries `core/LauncherSetup.lua` and
 `tests/test_disabled.lua`, and each looks up `LibKa0s-Lifecycle-1.0` in its own setup file. So the

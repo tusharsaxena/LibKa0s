@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.57.0
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.59.0
 — as a **library repo**, which is a scope of its own: `library-stack-§7`'s applicability list is what
 binds here, not the addon rule set, because there is no TOC, no player-facing README, no settings
 canvas and no install. [`CLAUDE.md`](CLAUDE.md) spells out which sections apply and which do not, and
@@ -199,7 +199,7 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.42.0**: `Core = { Core = 7 }`,
+different vendored copy of each. As of **v1.43.0**: `Core = { Core = 7 }`,
 `Env = { Env = 1 }`, `Lifecycle = { Lifecycle = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`,
 `Media = { Media = 3 }`,
 `Widgets = { Widgets = 9 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 14 }`,

@@ -10,6 +10,44 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.43.0 — 2026-09-17
+
+Versions in this release: **kit revision 23**. Every LibStub major is unchanged from v1.42.0 — no
+file under `LibKa0s/` changes, so every consumer's `libs/LibKa0s/` copy is byte-identical to the one
+it already carries.
+
+**A headless run can no longer take the machine with it, and the kit stops holding every instance a
+suite builds.** Two incidents on 2026-09-16/17, neither visible as a test failure:
+
+- **A runner that started itself.** An uncommitted probe in one consumer's `tests/`, registered in its
+  runner, made the `lua tests/run.lua --list` child a suite starts start another, forever — a chain of
+  ~700 MB processes that OOM-killed the WSL2 VM. A per-process cap would not have stopped it.
+- **A harness that kept everything.** `testkit/mock_base.lua` found a target's build through a
+  process-wide weak-keyed table whose value reached its own key through AceEvent's `embeds`. Lua 5.1
+  has no ephemerons, so no build and no instance embedded in one was ever collected. Multi Meters'
+  suite peaked at 1.75 GB; with the build moved onto the `__events` table's metatable it peaks at
+  41 MB (Kick CD 771 → 80 MB, ConsumableMaster 442 → 24 MB, WhatGroup 328 → 18 MB).
+
+What revision 23 adds, all of it adopted by re-vendoring with no change to a consumer's runner:
+
+- **A load-time guard in `framework.lua`**: the process re-launches itself once under a re-launch
+  depth limit (4), a process-tree `systemd-run --user --scope` memory and task cap where systemd
+  exists, a per-process `ulimit -v` (2048 MB) and a wall-clock `timeout` (900 s). Every limit is a
+  `KA0S_KIT_*` environment variable.
+- **Runner gates**: a live-heap budget per case (1024 MB), a cumulative leak gate (256 MB), a CPU
+  ceiling per case and per suite-file load (120 s) that a swallowing `pcall` cannot outrun, a refusal
+  to load a suite naming a host path, and a memory-capped `--jobs`. Budgets are `Kit.run` options.
+- **`run-automated-tests.sh`** runs `luacheck`, the headless suite, `tests/perf.lua` and `lizard`
+  under the same memory and time bounds.
+
+`docs/api/testkit/version-23-docs.md` is the contract; `tests/test_kit_limits.lua` pins the guard
+across real child processes and every gate; `tests/test_mock_base.lua` pins the leak. The Ka0s WoW
+Addon Standard v2.59.0 makes all of it `testing-§15`.
+
+**For a consumer:** re-vendor both payloads from this tag and move the provenance line. A repo whose
+docs cite `tests/_kit/framework.lua` by line number re-points those citations, since the guard moves
+every line below it.
+
 ## v1.42.0 — 2026-09-17
 
 Versions in this release: **Slash minor 14**. Every other major is unchanged from v1.41.0, and the

@@ -67,7 +67,7 @@ Kit.run{
     "test_options_tabs",
     "test_options_idsuggest", "test_options_compose",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
-    "test_loader", "test_parallel",
+    "test_loader", "test_parallel", "test_kit_limits",
     "test_mock_base", "test_mock_ace", "test_mock_record",
     "test_surface_parity",
     "test_versioning", "test_kitsync", "test_prose", "test_layout_cap",

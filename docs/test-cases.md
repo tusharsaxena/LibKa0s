@@ -1087,7 +1087,22 @@ badge and any count quoted in the docs must agree with it.
 - parallel: the split is balanced to within one suite
 - parallel: more shards than suites yields empty shards, not overlapping ones
 
-### test_mock_base.lua (31)
+### test_kit_limits.lua (12)
+
+- kit guard: a guarded process sees its depth one deeper and its own arguments unchanged
+- kit guard: a runner that starts itself stops at the depth limit instead of forking forever
+- kit guard: the guarded child's exit code is the run's exit code
+- kit guard: a run past its wall-clock limit is stopped with 124 and says so
+- kit guard: KA0S_KIT_GUARD=off runs the process as it was started
+- kit guard: exit statuses normalize across Lua 5.1 and 5.2+
+- kit limits: a case's CPU ceiling stops a loop, even one that swallows the first error
+- kit limits: a bounded call hands back every result, nils included
+- kit limits: --jobs is capped by memory, never below one, and unchanged when memory is unknown
+- kit limits: a host path in a suite is caught, and a WoW path is not
+- kit limits: the heap budget names the case that crossed it
+- kit limits: the leak gate counts what is still held, not garbage waiting to be swept
+
+### test_mock_base.lua (32)
 
 - mock: a frame that was never armed answers zero, dressed or not
 - mock: __setGeom is the opt-in, and the only thing that arms a frame
@@ -1107,6 +1122,7 @@ badge and any count quoted in the docs must agree with it.
 - mock: UnregisterAllEvents leaves an embed's message registrations alone
 - mock: embedding a target a second time keeps what it had registered
 - mock: a target reused by a later mock build starts with nothing registered
+- mock: a dropped mock build takes every target embedded in it with it
 - mock: RegisterEvent refuses what CallbackHandler refuses
 - mock: NewAddon clobbers a custom Printf exactly as it clobbers Print
 - mock: the console mixins print as AceConsole's do, bare, as methods and to a given frame
@@ -1277,7 +1293,8 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_isolation.lua | 11 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
-| test_mock_base.lua | 31 |
+| test_kit_limits.lua | 12 |
+| test_mock_base.lua | 32 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 27 |
 | test_surface_parity.lua | 7 |
@@ -1287,4 +1304,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1141** |
+| **Total** | **1154** |

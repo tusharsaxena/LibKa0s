@@ -290,6 +290,27 @@ test("mock: a target reused by a later mock build starts with nothing registered
   assertNil(ns.__events.PLAYER_LOGIN, "and so did a NewAddon in a new build")
 end)
 
+test("mock: a dropped mock build takes every target embedded in it with it", function()
+  -- A harness that builds a fresh instance per case (`T.load()`) drops each build when the case
+  -- ends, and must get the memory back. Through kit revision 22 it never did: the build lookup was a
+  -- process-wide weak-KEYED table whose VALUE reached its own key again (build -> events -> AceEvent
+  -- -> embeds -> target -> __events), and Lua 5.1 has no ephemerons, so no entry was ever collected.
+  -- One consumer's 1,678 instances were all still alive at exit, 685 MB of them.
+  local alive = setmetatable({}, { __mode = "k" })
+  for _ = 1, 3 do
+    local M = buildMocks()
+    local t = M.LibStub("AceEvent-3.0"):Embed({ PLAYER_LOGIN = function() end })
+    t:RegisterEvent("PLAYER_LOGIN")
+    local ns = { PLAYER_LOGIN = function() end }
+    M.LibStub("AceAddon-3.0"):NewAddon(ns, "Host", "AceEvent-3.0")
+    ns:RegisterEvent("PLAYER_LOGIN")
+    alive[t], alive[ns] = true, true
+  end
+  collectgarbage("collect")
+  collectgarbage("collect")
+  assertNil(next(alive), "a target embedded in a dropped build is still reachable")
+end)
+
 test("mock: RegisterEvent refuses what CallbackHandler refuses", function()
   -- A registration the client raises on must not pass headlessly (fidelity rule 1).
   local t = buildMocks().LibStub("AceEvent-3.0"):Embed({ OnLogin = function() end })
