@@ -10,6 +10,35 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.46.1 — 2026-09-19
+
+Versions in this release: **Options minor 23** and **OptionsTabs minor 3** (`LibKa0s-Options-1.0`
+23.23.3.7.3). Every other file is unchanged from v1.46.0, and the kit stays at revision 23.
+
+**The combat lock stops standing up with a stood-down addon.** v1.46.0 broke the stand-down suites
+(`slash-commands-§7`) of seven consumers, for three reasons, all fixed here:
+
+- **A permanent registration.** `lib.__combatFrame` registered `PLAYER_REGEN_DISABLED` / `_ENABLED`
+  at load, for the life of the process, so every host — a stood-down one with no settings page open
+  included — owned two live registrations and a second REGEN dispatcher beside its own. Now the frame
+  registers both events only while one of the library's pages is on screen: a page's show registers
+  (`lib.__pageShown`), a page's hide lets go when it was the last (`lib.__pageHidden`, from a new
+  `OnHide` hook `CreatePanel` installs), and the dispatcher re-syncs first — pruning pages no longer
+  on screen — and does nothing at all when none is left. A page shown mid-combat is locked off
+  `InCombatLockdown()` alone, and its registration is what hears the end of that combat. Letting go
+  also drops `lib.__combatLocked`, which nothing would clear once unregistered. A newer copy lets go
+  of the registration an older v1.46.0 copy made at load.
+- **Covers under hidden pages.** `PLAYER_REGEN_DISABLED` put the cover up over EVERY registered page,
+  hidden ones included, so a baseline combat event left frames "on screen" under pages nobody had
+  open. Now only a page on screen is covered; a hidden page is covered by its own next show, and a
+  page that hides takes its cover down with it.
+- **Unheld regions.** The cover's dim and line were locals, so a harness that tracks textures and
+  font strings as frames saw two garbage objects per page. The cover now holds both.
+
+A page on screen is still watched, on purpose: a stood-down addon's settings window stays usable, and
+its lock with it. A consumer's stand-down suite that runs after other suites left a settings page
+shown closes that page first. Cases: `tests/test_options_combat.lua` (six more).
+
 ## v1.46.0 — 2026-09-19
 
 Versions in this release: **Options minor 22**, **OptionsWidgets minor 23** and

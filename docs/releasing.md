@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.46.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.46.1`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -198,7 +198,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.46.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.46.1 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -392,7 +392,18 @@ files, every one in the table; the one it found missing — ConsumableMaster's `
 the Macro Bar's Buttons drag list — was added to the Widgets row by that sweep. `WhoGotLoots` and
 `BuffTextNotifications` are out of scope until they are on the standard at all.
 
-**Where v1.46.0 stands (2026-09-19).** Three LibStub minors move — `Options.lua` 22,
+**Where v1.46.1 stands (2026-09-19).** A patch to v1.46.0's combat lock: `Options.lua` 23 and
+`OptionsTabs.lua` 3 (`LibKa0s-Options-1.0` 23.23.3.7.3); the kit stays at revision 23. v1.46.0
+registered `PLAYER_REGEN_DISABLED` / `_ENABLED` for the life of the process and covered hidden pages
+at combat start, so seven consumers' stand-down suites counted a live registration, a REGEN handler
+and shown frames on a stood-down addon. Now the library registers only while one of its pages is on
+screen and covers only pages on screen. What a consumer owes beyond the copy and the provenance line:
+a stand-down suite that runs after other suites left a settings page shown closes that page first
+(`panel:Hide()` and, in the kit's mock, `panel:__fire("OnHide")`) — a page on screen is watched on
+purpose — and a host test that pinned v1.45.0's close-the-window refusal is inverted. Steps 1–7 are
+done; the tag and step 8 wait.
+
+**Where v1.46.0 stood (2026-09-19).** Three LibStub minors move — `Options.lua` 22,
 `OptionsWidgets.lua` 23 and `OptionsTabs.lua` 2 (`LibKa0s-Options-1.0` 22.23.2.7.3) — and the kit
 stays at revision 23. It is the combat lock the Ka0s WoW Addon Standard v2.60.0 asks for
 (options-ui-§2, §13; anti-pattern #88), and it is a fix to every consumer's settings window rather
@@ -400,7 +411,7 @@ than an opt-in: a page shown in combat is covered instead of closing Blizzard's 
 consumer owes: the copy of both payloads and the provenance line — and the removal of any
 hand-rolled combat guard of its own on a settings page or a tab strip, which the standard now
 forbids beside the library's. No member, descriptor field or row field is added, so no degradation
-stub moves. Steps 1–7 are done; the tag and step 8 wait.
+stub moves. Tagged; step 8 was taken on branches, and the stand-down failures it found are v1.46.1.
 
 **Where v1.45.0 stood (2026-09-19).** One LibStub minor moves — `OptionsWidgets.lua` 22
 (`LibKa0s-Options-1.0` 21.22.1.7.3) — and the kit stays at revision 23. What a consumer owes: the

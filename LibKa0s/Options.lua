@@ -23,7 +23,7 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Options-1.0", 22
+local MAJOR, MINOR = "LibKa0s-Options-1.0", 23
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -447,8 +447,8 @@ end
 -- LIBRARY-LEVEL, because every vendored copy in the session is handed the same `lib`. Each
 -- instance registers one `hook(locked)` in a weak-keyed set and holds it itself (`O.__combatHook`);
 -- the signature is part of the upgrade contract, since a later minor calls hooks an older one
--- registered. The one event frame and the cover's geometry are OptionsTabs.lua's (the cover is
--- page chrome); the dispatcher is here, looked up on `lib` when the event arrives.
+-- registered. The one event frame, its dispatcher and the cover's geometry are OptionsTabs.lua's
+-- (the cover is page chrome).
 
 lib.__combatHooks = lib.__combatHooks or setmetatable({}, { __mode = "k" })
 lib.__combatLocked = lib.__combatLocked and true or false
@@ -460,19 +460,8 @@ function lib.__IsCombatLocked()
   return (InCombatLockdown ~= nil and InCombatLockdown()) and true or false
 end
 
---- PLAYER_REGEN_DISABLED locks, PLAYER_REGEN_ENABLED unlocks; either way every host's hook runs,
---- each pcall'd so one host's page cannot keep another's cover up.
-function lib.__OnCombatEvent(event)
-  if event == "PLAYER_REGEN_DISABLED" then
-    lib.__combatLocked = true
-  elseif event == "PLAYER_REGEN_ENABLED" then
-    lib.__combatLocked = false
-  else
-    return
-  end
-  local locked = lib.__combatLocked
-  for hook in pairs(lib.__combatHooks) do pcall(hook, locked) end
-end
+-- The dispatcher, lib.__OnCombatEvent, is OptionsTabs.lua's from minor 23, beside the page-scoped
+-- registration it depends on.
 
 -- ── the instance ───────────────────────────────────────────────────────────────────────────
 
@@ -665,6 +654,9 @@ function lib:New(d)
   --- notice is printed once, and the caller draws nothing. Unlocked, a cover left up is taken down.
   --- @return boolean  true when the show was locked
   local function coverOnShow(ctx)
+    -- A shown page is what the library watches combat for (minor 23): registered from here, let
+    -- go of when the last page hides (OptionsTabs.lua's lib.__pageShown / __pageHidden).
+    if lib.__pageShown then lib.__pageShown(ctx) end
     if not lib.__IsCombatLocked() then
       uncoverPage(ctx)
       return false
@@ -798,6 +790,13 @@ function lib:New(d)
     panel:HookScript("OnShow", function()
       if coverOnShow(ctx) then return end
       preloadFonts()
+    end)
+    -- Off screen (minor 23): the cover comes down with the page -- a cover left up under a hidden
+    -- page is a frame "on screen" to every caller that asks -- and the last page off screen lets
+    -- go of the combat events. SetRenderer replaces OnShow only, so this hook stays.
+    panel:HookScript("OnHide", function()
+      uncoverPage(ctx)
+      if lib.__pageHidden then lib.__pageHidden(ctx) end
     end)
     return ctx
   end
@@ -1244,7 +1243,13 @@ function lib:New(d)
     combatNoticed = false
     if locked and O.__releaseOwnedFocus then O.__releaseOwnedFocus(renderedPanels) end
     for _, ctx in ipairs(renderedPanels) do
-      if locked then coverPage(ctx, isShown(ctx)) else unlockPage(ctx) end
+      -- Only a page on screen is covered (minor 23): v1.46.0 covered every registered page, so a
+      -- hidden page carried a shown cover; a hidden page is covered by its own next show instead.
+      if not locked then
+        unlockPage(ctx)
+      elseif isShown(ctx) then
+        coverPage(ctx, true)
+      end
     end
   end
   -- Held by the instance, so the weak-keyed set lets it go with the instance.

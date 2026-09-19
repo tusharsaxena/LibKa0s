@@ -37,7 +37,7 @@ local Pool = LibStub and LibStub("LibKa0s-Pool-1.0", true)
 local NEEDS_POOL = 1
 if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 
-local TABS_MINOR = 2
+local TABS_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__tabsMinor and lib.__tabsMinor >= TABS_MINOR
@@ -56,20 +56,95 @@ local L = lib.LAYOUT
 -- (minor 22; read its note first). What lives here is the page chrome it draws with: the ONE event
 -- frame the library listens on, and the arithmetic that puts a cover above everything a page draws.
 --
--- The frame is created once for the process and kept across a LibStub upgrade (`lib.__combatFrame`),
--- and its handler looks `lib.__OnCombatEvent` up when the event arrives, so the newest copy's
--- dispatcher is the one that runs. The handler is re-set on every load that gets this far, so an
--- upgrade replaces an older copy's closure as well.
+-- The frame is created once for the process, hidden, and kept across a LibStub upgrade
+-- (`lib.__combatFrame`); its handler looks `lib.__OnCombatEvent` up when the event arrives, so the
+-- newest copy's dispatcher is the one that runs. The handler is re-set on every load that gets this
+-- far, so an upgrade replaces an older copy's closure as well.
+--
+-- REGISTERED ONLY WHILE A PAGE IS SHOWN (minor 3). v1.46.0 registered PLAYER_REGEN_* at load, for
+-- the life of the process: every host -- a stood-down one included, with no settings page open --
+-- then owned two live registrations and a second REGEN dispatcher beside its own, which is what
+-- each consumer's stand-down suite counts. Now a page's show registers both events and the last
+-- page's hide lets go of them. A page shown mid-combat is locked off InCombatLockdown(), which is
+-- all the predicate needs; the registration it makes is what hears the end of that combat.
 
 local function combatEventFrame()
   if lib.__combatFrame then return lib.__combatFrame end
   if type(CreateFrame) ~= "function" then return nil end
   local f = CreateFrame("Frame")
   if not f then return nil end
-  f:RegisterEvent("PLAYER_REGEN_DISABLED")
-  f:RegisterEvent("PLAYER_REGEN_ENABLED")
+  f:Hide()
   lib.__combatFrame = f
   return f
+end
+
+-- Every ctx whose page is on screen, across every host. Weak-keyed: a ctx nobody holds is gone.
+lib.__shownPages = lib.__shownPages or setmetatable({}, { __mode = "k" })
+
+local function onScreen(ctx)
+  local panel = ctx.panel
+  if not panel then return false end
+  local probe = panel.IsVisible or panel.IsShown
+  return probe == nil or probe(panel) and true or false
+end
+
+--- Drop every page no longer on screen, then register the two events if any page is left, or let
+--- go of them -- and of PLAYER_REGEN_DISABLED's flag, which nothing will clear once unregistered --
+--- if none is. The predicate still answers InCombatLockdown() for a page shown later.
+function lib.__syncCombatEvents()
+  local f = lib.__combatFrame
+  for ctx in pairs(lib.__shownPages) do
+    if not onScreen(ctx) then lib.__shownPages[ctx] = nil end
+  end
+  local any = next(lib.__shownPages) ~= nil
+  if f then
+    if any then
+      f:RegisterEvent("PLAYER_REGEN_DISABLED")
+      f:RegisterEvent("PLAYER_REGEN_ENABLED")
+    else
+      f:UnregisterEvent("PLAYER_REGEN_DISABLED")
+      f:UnregisterEvent("PLAYER_REGEN_ENABLED")
+    end
+  end
+  if not any then lib.__combatLocked = false end
+end
+
+--- The dispatcher (Options minor 22; here, beside the registration, from minor 3). The events are
+--- first re-synced to the pages on screen: with none left the library lets go of them and of the
+--- flag and does nothing else, so an event that reaches it anyway -- a stand-down suite fires every
+--- event at every frame that ever owned one -- draws, renders and prints nothing. Otherwise
+--- PLAYER_REGEN_DISABLED locks, PLAYER_REGEN_ENABLED unlocks, and every host's hook runs, each
+--- pcall'd so one host's page cannot keep another's cover up.
+function lib.__OnCombatEvent(event)
+  lib.__syncCombatEvents()
+  if next(lib.__shownPages) == nil then return end
+  if event == "PLAYER_REGEN_DISABLED" then
+    lib.__combatLocked = true
+  elseif event == "PLAYER_REGEN_ENABLED" then
+    lib.__combatLocked = false
+  else
+    return
+  end
+  local locked = lib.__combatLocked
+  for hook in pairs(lib.__combatHooks) do pcall(hook, locked) end
+end
+
+--- A page came on screen: watch combat. Asked of the page rather than taken from the OnShow that
+--- called this, so a show that did not leave the page on screen registers nothing.
+function lib.__pageShown(ctx)
+  if not onScreen(ctx) then return end
+  lib.__shownPages[ctx] = true
+  local f = lib.__combatFrame
+  if f then
+    f:RegisterEvent("PLAYER_REGEN_DISABLED")
+    f:RegisterEvent("PLAYER_REGEN_ENABLED")
+  end
+end
+
+--- A page went off screen: let go of combat if it was the last.
+function lib.__pageHidden(ctx)
+  lib.__shownPages[ctx] = nil
+  lib.__syncCombatEvents()
 end
 
 do
@@ -80,6 +155,8 @@ do
       if type(dispatch) == "function" then dispatch(event) end
     end)
   end
+  -- An older copy (v1.46.0) registered for good at load; this lets go unless a page is shown.
+  lib.__syncCombatEvents()
 end
 
 -- The cover's frame level: the deepest level under the page, plus one, and never less than
@@ -543,6 +620,11 @@ function lib.__AttachTabs(O)
     line:SetText(lib.STRINGS.COMBAT_LOCKED)
     -- Recorded as a plain field too, as panel.titleText is: a headless FontString cannot be read.
     cover.__text = lib.STRINGS.COMBAT_LOCKED
+    -- HELD by the cover (minor 3), not left to locals. The client keeps a region alive through its
+    -- parent, but a harness whose CreateTexture / CreateFontString hand back tracked objects does
+    -- not: two unreferenced regions per page were garbage that a collection could take between two
+    -- counts of what is on screen, and a stand-down suite read that as a frame appearing or going.
+    cover.__dim, cover.__line = dim, line
     cover:Hide()
     return cover
   end

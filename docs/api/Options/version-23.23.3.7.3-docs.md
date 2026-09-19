@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 22.23.2.7.3
+# `LibKa0s-Options-1.0` — version 23.23.3.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **22** · `OptionsWidgets.lua` **23** · `OptionsTabs.lua` **2** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **23** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.46.0 |
-| Status | Superseded |
-| Supersedes | [version 21.22.1.7.3](./version-21.22.1.7.3-docs.md) |
-| Superseded by | [version 23.23.3.7.3](./version-23.23.3.7.3-docs.md) |
+| Shipped in | v1.46.1 |
+| Status | **Current** |
+| Supersedes | [version 22.23.2.7.3](./version-22.23.2.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 22, OptionsWidgets = 23, OptionsTabs = 2, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 23, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
-for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -28,6 +28,41 @@ member is a fact about when a consumer got it, not about which file holds it tod
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**A patch to the combat lock (O23, T3): its footprint is zero while none of the library's pages is on
+screen.** `Options.lua` 22 → **23**, `OptionsTabs.lua` 2 → **3**; nothing else moves, and no member,
+descriptor field or row field is added. 22.23.2.7.3 broke seven consumers' stand-down suites
+(`slash-commands-§7`), each of which counts what a stood-down addon still owns.
+
+- **Registered only while a page is on screen.** At 22.23.2.7.3 `lib.__combatFrame` registered
+  `PLAYER_REGEN_DISABLED` / `_ENABLED` at load, for good. Now the frame is created hidden and
+  unregistered; a page's show registers both events (`lib.__pageShown(ctx)`, asked of the page — a
+  show that did not leave the panel on screen registers nothing), and a page's hide lets go of them
+  when it was the last page on screen (`lib.__pageHidden(ctx)`, from an `OnHide` hook `CreatePanel`
+  now installs; `SetRenderer` replaces `OnShow` only). `lib.__syncCombatEvents()` prunes pages no
+  longer on screen (`IsVisible`, else `IsShown`), registers or unregisters to match, and with none
+  left clears `lib.__combatLocked`. A newer copy runs it at load, so the permanent registration a
+  22.23.2.7.3 copy made is let go of.
+- **The dispatcher does nothing with no page on screen.** `lib.__OnCombatEvent` (now OptionsTabs.lua's,
+  beside the registration) re-syncs first and returns when no page is left, so an event fired at the
+  frame anyway renders, covers and prints nothing.
+- **A page shown mid-combat** — nothing was registered when combat started — is locked off
+  `InCombatLockdown()`, which the predicate already asked; the registration its show makes is what
+  hears `PLAYER_REGEN_ENABLED`.
+- **Only a page on screen is covered.** `PLAYER_REGEN_DISABLED` covered every registered page at
+  22.23.2.7.3, hidden ones included. Now a hidden page is covered by its own next show, and a page's
+  hide takes its cover down.
+- **The cover holds its regions** (`cover.__dim`, `cover.__line`), which were locals.
+
+**What a host owes.** Nothing in its own code. A page on screen is watched on purpose — a stood-down
+addon's settings window stays usable and locked in combat — so a stand-down suite that runs after
+other suites left a settings page shown closes it first (`panel:Hide()`, and in the kit's mock, whose
+`Hide` fires no script, `panel:__fire("OnHide")`).
+
+The previous version's "What changed" section follows unchanged under
+[Previously, at 22.23.2.7.3](#previously-at-2223273).
+
+## Previously, at 22.23.2.7.3
 
 **The combat lock (O22, W23, T2).** `Options.lua` 21 → **22**, `OptionsWidgets.lua` 22 → **23**,
 `OptionsTabs.lua` 1 → **2**; `OptionsCompose.lua` and `OptionsScroll.lua` do not move. It is the Ka0s
@@ -111,8 +146,7 @@ signature does not change.
 that wraps `SetRenderer` (WhatGroup defers the body a frame) keeps working: the wrapped `OnShow` is
 still the library's, and the lock is asked first inside it.
 
-The previous version's "What changed" section follows unchanged under
-[Previously, at 21.22.1.7.3](#previously-at-21221173).
+The version before that is under [Previously, at 21.22.1.7.3](#previously-at-21221173).
 
 ## Previously, at 21.22.1.7.3
 
@@ -511,10 +545,13 @@ lock for the whole process, whichever vendored copy won. A host calls none of th
 | Name | Since | Meaning |
 |---|---|---|
 | `lib.__IsCombatLocked()` → boolean | O22 | `lib.__combatLocked` or `InCombatLockdown()`. The one predicate every refusal asks. |
-| `lib.__combatLocked` | O22 | `true` from `PLAYER_REGEN_DISABLED` to `PLAYER_REGEN_ENABLED`. Kept across an upgrade. |
-| `lib.__OnCombatEvent(event)` | O22 | The dispatcher: sets or clears the flag, then calls every registered hook with `locked`, each pcall'd. |
+| `lib.__combatLocked` | O22 | `true` from `PLAYER_REGEN_DISABLED` to `PLAYER_REGEN_ENABLED`. Kept across an upgrade; from **T3** cleared too when the last page leaves the screen. |
+| `lib.__OnCombatEvent(event)` | O22 (in OptionsTabs.lua and page-scoped: **T3**) | The dispatcher: re-syncs the registration and returns if no page is on screen; else sets or clears the flag, then calls every registered hook with `locked`, each pcall'd. |
 | `lib.__combatHooks` | O22 | Weak-keyed set of `hook(locked)`, one per instance, each held by its instance as `O.__combatHook`. |
-| `lib.__combatFrame` | T2 | The one frame registered for both events. Created once, kept across an upgrade; its `OnEvent` resolves `lib.__OnCombatEvent` at call time and is re-set by each newer copy. |
+| `lib.__combatFrame` | T2 (page-scoped: **T3**) | The one frame for both events. Created once, hidden, kept across an upgrade; registered only while a page is on screen (T3). Its `OnEvent` resolves `lib.__OnCombatEvent` at call time and is re-set by each newer copy. |
+| `lib.__shownPages` | **T3** | Weak-keyed set of every ctx on screen, across hosts. |
+| `lib.__pageShown(ctx)` / `lib.__pageHidden(ctx)` | **T3** | Called from a page's show and hide: add (if the panel is on screen) and register, or remove and re-sync. |
+| `lib.__syncCombatEvents()` | **T3** | Prune pages off screen, register or unregister to match, and clear `lib.__combatLocked` when none is left. |
 | `lib.__coverLevel(panel, cover)` → number | T2 | The level a cover takes over a page on screen: `max(panel + 100, deepest descendant + 1)`, at most 10000. |
 | `lib.__descendsFrom(frame, ancestor)` → boolean | T2 | A bounded `GetParent` walk; picks the AceGUI pullout that is the host's to close. |
 | `lib.STRINGS.COMBAT_LOCKED` | O22 | *Settings are locked during combat.* — the cover's line, the standard's words. |
@@ -1352,7 +1389,7 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
-**At 22.23.2.7.3 no member, descriptor field or row field is added**, so a host written against
+**At 23.23.3.7.3 nothing is added either** — it narrows when the lock listens, and out of combat and with no page on screen it now does nothing at all. **At 22.23.2.7.3 no member, descriptor field or row field is added**, so a host written against
 21.22.1.7.3 needs no change. What changes is behavior in combat, and only there: a page shown in
 combat is covered instead of closing the settings window, and the refusals in
 [What changed at this version](#what-changed-at-this-version) apply. Out of combat every page draws
@@ -1377,10 +1414,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 23.23.3.7.3
-
-A patch in LibKa0s v1.46.1 (**O23**, **T3**): the combat lock registers `PLAYER_REGEN_*` only while one
-of the library's pages is on screen and covers only pages on screen, so a stood-down addon with no
-settings page open owns no registration and shows no frame of the library's. No member is added. See
-[version 23.23.3.7.3](./version-23.23.3.7.3-docs.md).

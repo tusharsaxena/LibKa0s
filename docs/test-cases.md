@@ -842,7 +842,7 @@ badge and any count quoted in the docs must agree with it.
 - switched: a bound (path-less) selector reads and is watched through its record
 - switched: two selectors changing in one frame cost one re-render
 
-### test_options_combat.lua (21)
+### test_options_combat.lua (27)
 
 - combat: a page shown in combat is covered and not drawn, and the window is left alone
 - combat: the cover is built out of combat, hidden, and takes the mouse and the wheel
@@ -865,6 +865,12 @@ badge and any count quoted in the docs must agree with it.
 - combat: out of combat nothing changes
 - combat: one event frame for the library, dispatching through lib at call time
 - combat: the lock predicate is the flag or the client's lockdown
+- combat: with no page shown the library holds no registration and shows no frame
+- combat: a page's show registers the events and the last hide unregisters them
+- combat: a page hidden in combat drops its cover and lets go of the events
+- combat: a page shown mid-combat is locked off InCombatLockdown alone
+- combat: a page hidden without OnHide is let go at the next combat edge
+- combat: a registration an older copy left is dropped when nothing is shown
 
 ### test_options_compose.lua (45)
 
@@ -1331,7 +1337,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_idsuggest.lua | 36 |
 | test_options_idlist_remove.lua | 5 |
 | test_options_switched.lua | 9 |
-| test_options_combat.lua | 21 |
+| test_options_combat.lua | 27 |
 | test_options_compose.lua | 45 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 40 |
@@ -1351,4 +1357,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1189** |
+| **Total** | **1195** |

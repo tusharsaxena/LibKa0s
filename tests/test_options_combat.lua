@@ -146,6 +146,25 @@ local function show(ctx)
   ctx.panel:__fire("OnShow")
 end
 
+--- The client fires OnHide on a Hide; the kit's frames do not, so a case says so itself.
+local function hide(ctx)
+  ctx.panel:Hide()
+  ctx.panel:__fire("OnHide")
+end
+
+--- Forget every page other suites left shown, so a case about registration starts from none.
+local function noPagesShown()
+  for k in pairs(lib.__shownPages) do lib.__shownPages[k] = nil end
+  lib.__syncCombatEvents()
+end
+
+local function registered()
+  local f = lib.__combatFrame
+  local d, e = f:IsEventRegistered("PLAYER_REGEN_DISABLED"), f:IsEventRegistered("PLAYER_REGEN_ENABLED")
+  assertEqual(d, e, "the two events are registered together")
+  return d
+end
+
 local function widget(ctx, label)
   for _, w in ipairs(Fixture.flatten(ctx.scroll)) do
     if w.labelText == label then return w end
@@ -394,7 +413,7 @@ end)
 combatCase("combat: a hidden page is left for its next show", function()
   local _, rec, ctx = host("general")
   show(ctx)
-  ctx.panel:Hide()
+  hide(ctx)
   enterCombat()
   leaveCombat()
   assertEqual(rec.drawn, 1, "a hidden page is not rendered at the end of combat")
@@ -455,8 +474,6 @@ combatCase("combat: one event frame for the library, dispatching through lib at 
   -- kept across a LibStub upgrade, and its handler looks the dispatcher up on `lib` when the event
   -- arrives, so the newest copy's code is what runs.
   local f = lib.__combatFrame
-  assertTrue(f:IsEventRegistered("PLAYER_REGEN_DISABLED"))
-  assertTrue(f:IsEventRegistered("PLAYER_REGEN_ENABLED"))
   local saved, seen = lib.__OnCombatEvent, {}
   lib.__OnCombatEvent = function(event) seen[#seen + 1] = event end
   local ok, err = pcall(f.__fire, f, "OnEvent", "PLAYER_REGEN_DISABLED")
@@ -473,4 +490,89 @@ combatCase("combat: the lock predicate is the flag or the client's lockdown", fu
   lib.__combatLocked = false
   mocks.InCombatLockdown = function() return true end
   assertTrue(lib.__IsCombatLocked(), "or InCombatLockdown(), for a page shown after a /reload in combat")
+end)
+
+-- ── registration only while a page is shown (Options minor 23, OptionsTabs minor 3) ──────────
+--
+-- v1.46.0 registered PLAYER_REGEN_* for the life of the process, and covered EVERY page at
+-- PLAYER_REGEN_DISABLED -- hidden ones included. A consumer's stand-down suite counts both: a
+-- stood-down addon with no settings page open still owned two live registrations, a baseline
+-- REGEN_DISABLED put a cover "on screen" under every hidden page, and a host's own REGEN frame had
+-- a second dispatcher beside it. The library's footprint is now zero while no page is shown.
+
+combatCase("combat: with no page shown the library holds no registration and shows no frame",
+  function()
+  noPagesShown()
+  local _, _, ctx = host("general")
+  assertFalse(registered(), "no page shown, no REGEN registration")
+  assertFalse(lib.__combatFrame:IsShown(), "the event frame is never on screen")
+  lib.__OnCombatEvent("PLAYER_REGEN_DISABLED")
+  assertFalse(coverShown(ctx), "a hidden page's cover stays down through a combat edge")
+  assertFalse(lib.__combatLocked, "and the flag is not held with nothing registered")
+end)
+
+combatCase("combat: a page's show registers the events and the last hide unregisters them",
+  function()
+  noPagesShown()
+  local _, _, a = host("general")
+  local _, _, b = host("bar")
+  show(a)
+  assertTrue(registered(), "a shown page is watched")
+  show(b)
+  hide(a)
+  assertTrue(registered(), "one page still shown")
+  hide(b)
+  assertFalse(registered(), "the last hide lets go")
+end)
+
+combatCase("combat: a page hidden in combat drops its cover and lets go of the events", function()
+  noPagesShown()
+  local _, rec, ctx = host("general")
+  show(ctx)
+  enterCombat()
+  assertTrue(coverShown(ctx))
+  hide(ctx)
+  assertFalse(coverShown(ctx), "no cover left on screen under a hidden page")
+  assertFalse(registered(), "nothing registered")
+  assertFalse(lib.__combatLocked, "and the flag is dropped with the registration")
+  mocks.InCombatLockdown = function() return false end
+  show(ctx)
+  assertEqual(rec.drawn, 1, "the next show out of combat draws the page")
+  assertFalse(coverShown(ctx))
+end)
+
+combatCase("combat: a page shown mid-combat is locked off InCombatLockdown alone", function()
+  -- Nothing was registered when combat started, so no REGEN_DISABLED reached the library.
+  noPagesShown()
+  local _, rec, ctx = host("general")
+  mocks.InCombatLockdown = function() return true end
+  show(ctx)
+  assertTrue(coverShown(ctx))
+  assertEqual(rec.drawn, 0)
+  assertTrue(registered(), "and from here the end of combat will be heard")
+  leaveCombat()
+  assertEqual(rec.drawn, 1, "REGEN_ENABLED draws it")
+  assertFalse(coverShown(ctx))
+end)
+
+combatCase("combat: a page hidden without OnHide is let go at the next combat edge", function()
+  -- A host's stand-down that hides a canvas in a harness whose Hide fires no script, or a
+  -- canvas whose parent hid it: the next event prunes what is no longer on screen.
+  noPagesShown()
+  local _, _, ctx = host("general")
+  show(ctx)
+  ctx.panel:Hide()
+  lib.__OnCombatEvent("PLAYER_REGEN_DISABLED")
+  assertFalse(registered())
+  assertFalse(coverShown(ctx))
+end)
+
+combatCase("combat: a registration an older copy left is dropped when nothing is shown", function()
+  -- v1.46.0 registered at load, for good. A newer copy syncs the shared frame on load.
+  noPagesShown()
+  local f = lib.__combatFrame
+  f:RegisterEvent("PLAYER_REGEN_DISABLED")
+  f:RegisterEvent("PLAYER_REGEN_ENABLED")
+  lib.__syncCombatEvents()
+  assertFalse(registered())
 end)
