@@ -65,7 +65,7 @@ Kit.run{
     "test_launcher",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_tabs",
-    "test_options_idsuggest", "test_options_idlist_remove", "test_options_compose",
+    "test_options_idsuggest", "test_options_idlist_remove", "test_options_switched", "test_options_compose",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
     "test_loader", "test_parallel", "test_kit_limits",
     "test_mock_base", "test_mock_ace", "test_mock_record",

@@ -822,12 +822,25 @@ badge and any count quoted in the docs must agree with it.
 - IdInput suggestions: a raising info costs that id's row, not the list
 - IdInput suggestions: the dropdown is as wide as the box looks
 
-### test_options_idlist_remove.lua (4)
+### test_options_idlist_remove.lua (5)
 
 - IdList removeStyle icon: an X leads every line, then the name; no Remove button and no checkbox
 - IdList removeStyle icon: a click on the X calls onRemove and rebuilds the list
 - IdList removeStyle icon: the X's tooltip is the remove string, a host's override honored
 - IdList without removeStyle draws exactly as before: the name, then Remove or a checkbox
+- IdList removeStyle icon: drawn disabled, the X is disabled
+
+### test_options_switched.lua (9)
+
+- switched: only the subsection the selector names is drawn, its heading with it
+- switched: equals may list several values; the row shows for any of them
+- switched: a group's afterGroup hook fires after its last DRAWN row, once
+- switched: changing the selector re-renders the page once, on the next frame
+- switched: a write from anywhere (a slash set, a reset) re-renders too, once per change
+- switched: a selector that cannot be read shows its rows rather than losing them
+- switched: rows without shownWhen render as before, and no selector watcher is added
+- switched: a bound (path-less) selector reads and is watched through its record
+- switched: two selectors changing in one frame cost one re-render
 
 ### test_options_compose.lua (45)
 
@@ -1292,7 +1305,8 @@ badge and any count quoted in the docs must agree with it.
 | test_options_widgets.lua | 187 |
 | test_options_tabs.lua | 36 |
 | test_options_idsuggest.lua | 36 |
-| test_options_idlist_remove.lua | 4 |
+| test_options_idlist_remove.lua | 5 |
+| test_options_switched.lua | 9 |
 | test_options_compose.lua | 45 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 40 |
@@ -1312,4 +1326,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1158** |
+| **Total** | **1168** |

@@ -10,6 +10,23 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.45.0 — 2026-09-19
+
+Versions in this release: **OptionsWidgets minor 22** (`LibKa0s-Options-1.0` 21.22.1.7.3). Every
+other major is unchanged from v1.44.0, and the kit stays at revision 23.
+
+**Switched sections: a row can be shown only while a dropdown says so.** A new optional row field,
+`shownWhen = { path = <selector path>, equals = <value> | { <value>, … } }`, makes the flow engine
+draw the row only while the selector holds that value — a subsection whose rows are all dropped draws
+no heading and takes no space — and re-render the page once, on the next frame, when the selector
+changes (its own dropdown, a `/<slash> set`, a Defaults press). It is a tab strip whose selector is a
+stored setting: the three placement subsections under an *Attach to* or *Anchor mode* dropdown, of
+which only the chosen one applies. The rows stay in the schema, so the CLI and the resets still reach
+them. Opt-in: a row list without the field renders exactly as at v1.44.0. Aura Master (Layout →
+Anchor) and Party Frame Enhanced (Size & Position) are the first adopters. Cases:
+`tests/test_options_switched.lua` (its own suite: `tests/test_options_widgets.lua` is over the
+layout-§1 cap, issue #33).
+
 ## v1.44.0 — 2026-09-19
 
 Versions in this release: **OptionsWidgets minor 21** (`LibKa0s-Options-1.0` 21.21.1.7.3). Every

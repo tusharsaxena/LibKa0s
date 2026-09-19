@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 21.21.1.7.3
+# `LibKa0s-Options-1.0` — version 21.22.1.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **21** · `OptionsWidgets.lua` **21** · `OptionsTabs.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **21** · `OptionsWidgets.lua` **22** · `OptionsTabs.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.44.0 |
-| Status | Superseded |
-| Supersedes | [version 21.20.1.7.3](./version-21.20.1.7.3-docs.md) |
-| Superseded by | [version 21.22.1.7.3](./version-21.22.1.7.3-docs.md) |
+| Shipped in | v1.45.0 |
+| Status | **Current** |
+| Supersedes | [version 21.21.1.7.3](./version-21.21.1.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 21, OptionsWidgets = 21, OptionsTabs = 1, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 21, OptionsWidgets = 22, OptionsTabs = 1, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `T1` for `OptionsTabs.lua` minor 1, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `T1` for `OptionsTabs.lua` minor 1, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -28,6 +28,38 @@ member is a fact about when a consumer got it, not about which file holds it tod
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**The flow engine gains one optional row field, `shownWhen` (switched sections), and nothing else
+moves.** `OptionsWidgets.lua` 21 → **22**; every other file of the major is unchanged.
+
+- **`shownWhen = { path = <selector path>, equals = <value> | { <value>, … } }` (W22)** on a row
+  draws it only while the selector holds `equals` (or any value of an `equals` list). `RenderRows`
+  drops every row whose selector says otherwise **before** its group/subgroup pass, so a subsection
+  whose rows are all dropped draws no heading and takes no space, and an `afterGroup` hook fires after
+  its group's last **drawn** row. The selector is read the way `disabledIf` reads a path (a path-less
+  row reads its own record); a read that raises reads as shown. The row stays in the schema — the
+  CLI, the resets and Defaults still reach it — only the flow engine skips it.
+- **The page re-renders when the selector changes.** For every row of the call whose `path` (for a
+  path-less, record-backed row, its `field`) is some row's selector, `RenderRows` adds a refresher that compares the selector's value with the one the
+  render drew with and, on a change, asks for **one** structural re-render of the page on the next
+  frame (`C_Timer.After(0)`, coalesced per ctx, through `O.RefreshPanel(ctx, true)`, so a hidden page
+  is marked dirty instead). The widget's own change, a `/<slash> set` and a Defaults press all run the
+  refreshers, so all three re-render. The re-render never runs inside the changing widget's callback.
+  Two selectors that change in the same frame still cost one re-render.
+- **The page must declare a renderer (`O.SetRenderer`).** The re-render is the page's renderer run
+  again; a page without one is refreshed by its refreshers alone, so it keeps the section it first
+  drew until something renders it anew.
+- **It switches subgroups, not a tabbed page's groups.** `RenderTabbedSchema` builds its tabs from
+  the page's unfiltered rows, so a group every row of which is dropped still gets a tab, and that
+  tab opens onto an empty page. Put the switched rows in subgroups of one group.
+- **Absent, the render is byte-for-byte what 21.21.1.7.3 drew**: the row list is not copied and no
+  refresher is added. A selector must be drawn in the same `RenderRows` call to be watched; a host
+  that draws it elsewhere re-renders the page itself.
+
+The previous version's "What changed" section follows unchanged under
+[Previously, at 21.21.1.7.3](#previously-at-21211173).
+
+## Previously, at 21.21.1.7.3
 
 **`O.IdList` gains one optional spec field, `removeStyle`, and nothing else moves.**
 `OptionsWidgets.lua` 20 → **21**; every other file of the major is unchanged.
@@ -402,7 +434,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `InlineButtonPair(ctx, left, right)` | W1 | Two action buttons (not settings) in one Flow row, each inset to `BUTTON_PAIR_REL`. A **nil** `right` draws the left button alone, at the pair's width, so it still lines up with every other page's — which is the shape a frameless addon's Master controls tab needs. A throwing `onClick` is reported, never propagated into AceGUI's dispatch. A spec carrying **no** `onClick` is reported once at BUILD time (`lib.STRINGS.DEAD_BUTTON`, naming the button's text) and drawn anyway — the composer emits the master group's two resets unconditionally, so a host that never supplied `onResetAll`/`onResetPosition` is told rather than shipping a live-looking button that swallows the click. **From W16**, drawn inside a disabled render (`RenderRows`' `opts.disabled`, or a disabled `ChoiceGrid` / `IdInput` / `IdList`), both buttons are drawn disabled. |
 | `RenderField(ctx, row, parent, relWidth)` | W1 (path-less rows: **W15**; `disabledIf` on every maker: **W16**) | Dispatch by `row.type` to one of the five makers. Returns nil for an unknown type rather than erroring — a misspelled type costs one row, not the page. A row with no `path` is read and written through its own `get` / `set` from W15 — see [Previously, at 15.15.4.3](#previously-at-1515543). From W16 every maker honors `row.disabledIf` — see [What changed at this version](#what-changed-at-this-version). |
 | `SessionCheckbox(ctx, parent, relWidth, spec)` | W1 (disabled render: **W16**) | A checkbox wired to caller-supplied `get`/`set` instead of a settings path, for runtime-only toggles that must never persist. From W16 it is drawn disabled when drawn inside a disabled render. |
-| `RenderRows(ctx, rows, afterGroup, pairWith, opts)` | W1 (`opts.noHeadings`: **W9**; `opts.disabled`: **W16**) | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. `opts = { noHeadings = true }` suppresses the automatic `Section` heading, for a page whose sections are drawn as tabs instead (options-ui-§13); the row-boundary flush and `ctx.lastGroup` advance still happen. Omitted by every untabbed caller. **`opts.disabled = true` (W16)** draws every widget of the call disabled, the widgets an `afterGroup` or `pairWith` hook draws included, through `ctx.__renderDisabled` held for the call alone. A nested call inherits it, and the outer value is restored on a raise, which is re-raised unchanged — see [What changed at this version](#what-changed-at-this-version). |
+| `RenderRows(ctx, rows, afterGroup, pairWith, opts)` | W1 (`opts.noHeadings`: **W9**; `opts.disabled`: **W16**; `shownWhen`: **W22**) | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. `opts = { noHeadings = true }` suppresses the automatic `Section` heading, for a page whose sections are drawn as tabs instead (options-ui-§13); the row-boundary flush and `ctx.lastGroup` advance still happen. Omitted by every untabbed caller. **`opts.disabled = true` (W16)** draws every widget of the call disabled, the widgets an `afterGroup` or `pairWith` hook draws included, through `ctx.__renderDisabled` held for the call alone. A nested call inherits it, and the outer value is restored on a raise, which is re-raised unchanged — see [What changed at this version](#what-changed-at-this-version). |
 | `RenderSchema(ctx, pageKey, afterGroup, pairWith)` | W1 | The per-page wrapper. |
 | `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)` | **W9** | Render one page as a tab strip over its own sections. The partition is by `row.group`, in declaration order — one tab is exactly one group, and there is no second field naming a tab (options-ui-§13). **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first group. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order. |
 | `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). **Its geometry is invariant under the selection from W13.** **From W14 the buttons and the content panel are acquired from `LibKa0s-Pool-1.0` pools held on the `ctx` rather than created per click** — see [What changed at this version](#what-changed-at-this-version). Returns the buttons in tab order, or nil having drawn nothing. |
@@ -908,6 +940,7 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 | `wide` | **W13** | Render alone at **full** width, spanning both columns. Not what `solo` does — `solo` renders alone in the left half — and it shares `RenderGrid`'s field name and meaning rather than redefining `solo`. |
 | `startsLine` | **W13** | Flush the pending line **before** this row, so a declared two-row pair lands as `[left][right]` and can never be split by an odd number of preceding widgets. |
 | `skipRender` | W1 | Keep the row in the schema — so resets and the CLI still see it — but let the host draw it bespoke. |
+| `shownWhen` | **W22** | `{ path = <selector path>, equals = <value> \| { <value>, … } }`. Draw the row only while the selector (read like a `disabledIf` path) holds `equals`, or any value of an `equals` list; otherwise it is dropped from the render, its heading with it when its whole subsection is dropped. A raising read reads as shown. A selector drawn in the same `RenderRows` call is watched (by its `path`, or a bound row by its `field`), and a change re-renders the page once on the next frame — see [What changed at this version](#what-changed-at-this-version). **The page must declare a renderer (`O.SetRenderer`)**: without one the page keeps the section it first drew. **Switch subgroups, not a tabbed page's groups**: `RenderTabbedSchema` builds its tabs from the unfiltered rows, so a group dropped whole still gets a tab. The row stays in the schema. For a subsection a **dropdown** chooses; a single row a checkbox dims keeps `disabledIf`. |
 | `min` / `max` / `step` | W1 | Slider range. Snapping is relative to `min`, not to zero. |
 | `values` on a `number` row | **W5** | Makes it a **dropdown** rather than a slider, matching what `LibKa0s-Slash-1.0`'s parser has always understood the shape to mean. Inferred, not opted into — a `values` list that resolves empty falls back to the slider. |
 | `values` / `sorting` | W1 (ordered-array shape: W3) | Dropdown list, in either shape: an **ordered array** of `{ value =, text = }` (position is the order, and `sorting` is ignored) or a **key map** `{ KEY = "Label" }` (`sorting` keeps a deliberate order instead of alphabetising). A degenerate key *set* `{ KEY = true }` labels each entry with its key. `values` may be a function, evaluated at render and parse time. |
@@ -1230,10 +1263,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 21.22.1.7.3
-
-One optional row field, `shownWhen` (**W22**), in LibKa0s v1.45.0: a row carrying
-`{ path, equals }` is drawn only while its selector holds that value, and the page re-renders when
-the selector changes. A host that does not use it renders exactly what it rendered here. See
-[version 21.22.1.7.3](./version-21.22.1.7.3-docs.md).
