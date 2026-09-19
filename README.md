@@ -10,7 +10,7 @@ install first.
 ## What it is
 
 A Ka0s-owned shared library, vendored into Ka0s WoW addons the way Ace3 is — copied into each
-addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Ten
+addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Twelve
 modules ship today:
 
 - **`LibKa0s-Core-1.0`** — the small stateless seams every other module sits on: secret-safe
@@ -50,9 +50,10 @@ modules and points there; it does not restate them.
 
 1. Copy `LibKa0s/` into `<Addon>/libs/LibKa0s/` — the whole folder, every time. The modules are
    siblings that ship as one released copy, and every file but `Core.lua` returns without
-   registering at all when `Core.lua` is missing or older than the minor it needs. When `Options.lua` bails that way, `OptionsWidgets.lua`, `OptionsCompose.lua` and
-   `OptionsScroll.lua` bail too on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the
-   whole four-file module is absent rather than half-attached.
+   registering at all when `Core.lua` is missing or older than the minor it needs. When `Options.lua` bails that way, `OptionsWidgets.lua`, `OptionsTabs.lua`,
+   `OptionsCompose.lua` and `OptionsScroll.lua` bail too on their own
+   `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole five-file module is absent rather
+   than half-attached.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
 3. If you adopt Perf, declare `## SavedVariables: <Addon>PerfDB` in the TOC (the global name you'll
    pass as the descriptor's `sv`). Core and DebugLog persist nothing.
@@ -62,7 +63,7 @@ addon must work with no other addon installed.
 
 ## The modules
 
-Ten LibStub majors, adopted independently. **The full contract for each — the descriptor, every
+Twelve LibStub majors, adopted independently. **The full contract for each — the descriptor, every
 public member, every row field — lives in [`docs/api/`](docs/api/), one document per shipped
 version.** This section is the map; that directory is the reference. Nothing here restates a
 signature, because a second copy of a contract is a contract that drifts.
@@ -77,10 +78,10 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [3](docs/api/Media/version-3-docs.md) |
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [9](docs/api/Widgets/version-9-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
-| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [11](docs/api/Slash/version-11-docs.md) |
+| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [14](docs/api/Slash/version-14-docs.md) |
 | `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice — with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. One `OnClick`, implementing launcher-§2's three left-click rungs plus right-click-always-opens-the-panel; LibDBIcon's own `minimap` table taken from the host. Neither broker library is a dependency: both are resolved with `LibStub(…, true)` at register time and every degradation is named rather than raised. | `Launcher.lua` | [1](docs/api/Launcher/version-1-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [21.20.1.7.3](docs/api/Options/version-21.20.1.7.3-docs.md) |
-| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [11.5](docs/api/Perf/version-11.5-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [23.23.3.7.3](docs/api/Options/version-23.23.3.7.3-docs.md) |
+| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [12.5](docs/api/Perf/version-12.5-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
 returns before `NewLibrary` if Core is missing or below the minor it needs — so a consumer that
@@ -221,8 +222,8 @@ Full release order — bump, changelog, regenerate, tag, then **re-vendor every 
 [docs/releasing.md](docs/releasing.md). That last step is the one that gets forgotten: it already
 happened once, with both repos' suites green throughout.
 
-Re-vendoring is **whole-folder**, never file by file. Every major but Core — Env, Pool, Item,
-Media, Widgets, DebugLog, Slash, Options and Perf — resolves `LibKa0s-Core-1.0` before it calls
+Re-vendoring is **whole-folder**, never file by file. Every major but Core — Env, Lifecycle, Pool,
+Item, Media, Widgets, DebugLog, Slash, Launcher, Options and Perf — resolves `LibKa0s-Core-1.0` before it calls
 `NewLibrary` and returns outright if
 Core is missing or below the minor it needs, so a consumer that copied a new `Perf.lua` over an old
 `Core.lua` gets no probe at all rather than a half-updated one — the host's setup stub then says

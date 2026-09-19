@@ -96,12 +96,14 @@ Pillow and NumPy only.
 | Tool | Why | Install |
 |---|---|---|
 | Python 3 | Both tools are Python scripts (`tools/artwork/icon_cleaner.py`, `tools/artwork/bar_textures.py`) | `sudo apt install python3` |
-| Pillow | Reads the source PNGs and writes the RLE TGAs (`from PIL import Image`, in both scripts) | `pipx install pillow` — or `sudo apt install python3-pil` |
-| NumPy | The recolour, solidify and normalize stages, and the bar gradients, are array work (`import numpy as np`, in both scripts) | `pipx install numpy` — or `sudo apt install python3-numpy` |
+| Pillow | Reads the source PNGs and writes the RLE TGAs (`from PIL import Image`, in both scripts) | `sudo apt install python3-pil` |
+| NumPy | The recolour, solidify and normalize stages, and the bar gradients, are array work (`import numpy as np`, in both scripts) | `sudo apt install python3-numpy` |
 | GitHub CLI | Fetches the upstream PNGs through `gh api`, which the script uses in place of raw.githubusercontent.com because that host times out from here often enough to be useless in a script | `sudo apt install gh && gh auth login` |
 
-**Ubuntu 24.04 trap:** `pip install pillow` fails on PEP 668's `EXTERNALLY-MANAGED` marker. Use
-`pipx`, or the distro packages above.
+**Ubuntu 24.04 trap:** `pip install pillow` fails on PEP 668's `EXTERNALLY-MANAGED` marker, and
+`pipx` is no way round it here: Pillow and NumPy are libraries with no command to expose, so `pipx`
+refuses them, and even forced in they land in a venv the system `python3` running these scripts never
+sees. Use the distro packages above.
 
 Verify:
 
