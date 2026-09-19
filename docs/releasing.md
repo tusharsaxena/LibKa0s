@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.43.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.44.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -198,7 +198,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.43.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.44.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -392,7 +392,12 @@ files, every one in the table; the one it found missing — ConsumableMaster's `
 the Macro Bar's Buttons drag list — was added to the Widgets row by that sweep. `WhoGotLoots` and
 `BuffTextNotifications` are out of scope until they are on the standard at all.
 
-**Where v1.43.0 stands (2026-09-17).** A kit-only release: **kit revision 23**, and no LibStub
+**Where v1.44.0 stands (2026-09-19).** One LibStub minor moves — `OptionsWidgets.lua` 21
+(`LibKa0s-Options-1.0` 21.21.1.7.3) — and the kit stays at revision 23. What a consumer owes: the
+copy of both payloads and the provenance line; nothing more unless it adopts `removeStyle`, which
+Aura Master does on its spell lists.
+
+**Where v1.43.0 stood (2026-09-17).** A kit-only release: **kit revision 23**, and no LibStub
 minor moves, so every consumer's `libs/LibKa0s/` is byte-identical before and after. Step 8 copies
 both payloads anyway, because `tests/test_vendor_sync.lua` resolves both from the tag the provenance
 line names. What a consumer owes: the copy, the provenance line, and — only where its docs cite

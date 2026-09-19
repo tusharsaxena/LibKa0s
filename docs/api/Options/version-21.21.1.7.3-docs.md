@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 21.20.1.7.3
+# `LibKa0s-Options-1.0` — version 21.21.1.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,25 +8,43 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **21** · `OptionsWidgets.lua` **20** · `OptionsTabs.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
-| Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. **The key gained a component at this version**, because the major gained a file. |
-| Shipped in | v1.39.0 |
-| Status | Superseded |
-| Supersedes | [version 20.19.6.3](./version-20.19.6.3-docs.md) |
-| Superseded by | [version 21.21.1.7.3](./version-21.21.1.7.3-docs.md) |
+| Files and minors | `Options.lua` **21** · `OptionsWidgets.lua` **21** · `OptionsTabs.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
+| Shipped in | v1.44.0 |
+| Status | **Current** |
+| Supersedes | [version 21.20.1.7.3](./version-21.20.1.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 21, OptionsWidgets = 20, OptionsTabs = 1, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 21, OptionsWidgets = 21, OptionsTabs = 1, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
-for `Options.lua` minor 21, `W20` for `OptionsWidgets.lua` minor 20, `T1` for `OptionsTabs.lua`
-minor 1, `C7` for `OptionsCompose.lua` minor 7, `S1` for `OptionsScroll.lua` minor 1. **A `W`
+for `Options.lua` minor 21, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
+minor 21, `T1` for `OptionsTabs.lua` minor 1, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+`OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
-`O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until this version and are
+`O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
 `OptionsTabs.lua`'s from it, with no change to what any of them does. The minor that introduced a
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**`O.IdList` gains one optional spec field, `removeStyle`, and nothing else moves.**
+`OptionsWidgets.lua` 20 → **21**; every other file of the major is unchanged.
+
+- **`removeStyle = "icon"` (W21)** draws a small **X** at the LEFT of every entry, before the entry's
+  icon and name, in place of the right-hand *Remove* button or toggle checkbox. The X is an AceGUI
+  `Icon` widget at `0.06` of the line wearing the client atlas `transmog-icon-remove` at 16px;
+  the name takes `0.92`. A click calls `spec.onRemove(id)` and redraws the list exactly as *Remove*
+  does. Its tooltip is the `remove` string, so a host's `strings.remove` names it. A toggle entry is
+  drawn no differently under this style: a host that opts in sends no toggle entries.
+- **Absent, the list is byte-for-byte what 21.20.1.7.3 drew**: the name at `0.78`, then *Remove* or
+  a checkbox at `0.20`. No host sees a change until it opts in.
+
+The previous version's "What changed" section follows unchanged under
+[Previously, at 21.20.1.7.3](#previously-at-21201173).
+
+## Previously, at 21.20.1.7.3
 
 **The major gains a FIFTH file and no member.** `LibKa0s/OptionsTabs.lua` (**T1**) carries the
 page's chrome — the tab strip, the page banner, the host's header block, the secondary strip, the
@@ -835,14 +853,17 @@ Everything `IdInput` takes, plus:
 | `spec` field | Meaning |
 |---|---|
 | `entries` | `function() -> ordered { { id =, note = string?, toggle = bool?, on = bool? }, … }`. `note`: **W17**, see below. A raise is reported through `lib.STRINGS.ROW_FAILED` and costs the lines, not the input. |
-| `onRemove` | `function(id)`, from an entry's Remove. |
+| `onRemove` | `function(id)`, from an entry's Remove or X. |
 | `onToggle` | `function(id, on)`, from a toggle entry's checkbox. |
 | `heading` | Optional section heading, drawn with `O.Section` and recorded as `ctx.lastGroup`. |
 | `emptyText` | Optional line drawn, through `O.TextRow`, when there are no entries. |
 | `toggleLabel` | Optional label beside a toggle entry's checkbox. |
+| `removeStyle` | **W21**. Optional. `"icon"` draws a 16px X (`transmog-icon-remove`) at the LEFT of every entry in place of the right-hand Remove button or checkbox; a click calls `onRemove` and rebuilds; its tooltip is the `remove` string. Absent, the list is drawn as before. |
 
 It draws into the page's scroll: the heading, the input line, then one line per entry, guarded per
-line. Each entry line has an `InteractiveLabel` at `0.78` and the action at `0.20`. The label shows
+line. Each entry line has an `InteractiveLabel` at `0.78` and the action at `0.20`. **From W21**,
+`removeStyle = "icon"` draws an `Icon` X at `0.06` first, then the `InteractiveLabel` at `0.92`, and
+no action. The label shows
 the entry's icon (16px), its name, and its id in gray, or `Unknown <noun> <id>` when the kind cannot
 name it. An **item**'s name is drawn in its quality color: `C_Item.GetItemQualityByID(id)` through
 the client's `ITEM_QUALITY_COLORS[quality].hex`, both read at draw time. An item whose quality the
@@ -1209,10 +1230,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 21.21.1.7.3
-
-One optional `O.IdList` spec field, `removeStyle` (**W21**), in LibKa0s v1.44.0: `"icon"` draws a
-small X at the left of each entry in place of the right-hand Remove button or checkbox. A host that
-does not pass it draws exactly what it drew here. See
-[version 21.21.1.7.3](./version-21.21.1.7.3-docs.md).

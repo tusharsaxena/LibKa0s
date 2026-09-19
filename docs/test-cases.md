@@ -822,6 +822,13 @@ badge and any count quoted in the docs must agree with it.
 - IdInput suggestions: a raising info costs that id's row, not the list
 - IdInput suggestions: the dropdown is as wide as the box looks
 
+### test_options_idlist_remove.lua (4)
+
+- IdList removeStyle icon: an X leads every line, then the name; no Remove button and no checkbox
+- IdList removeStyle icon: a click on the X calls onRemove and rebuilds the list
+- IdList removeStyle icon: the X's tooltip is the remove string, a host's override honored
+- IdList without removeStyle draws exactly as before: the name, then Remove or a checkbox
+
 ### test_options_compose.lua (45)
 
 - compose: the instance carries every composer and every published constant
@@ -1285,6 +1292,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_widgets.lua | 187 |
 | test_options_tabs.lua | 36 |
 | test_options_idsuggest.lua | 36 |
+| test_options_idlist_remove.lua | 4 |
 | test_options_compose.lua | 45 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 40 |
@@ -1304,4 +1312,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1154** |
+| **Total** | **1158** |

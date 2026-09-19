@@ -10,6 +10,20 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.44.0 — 2026-09-19
+
+Versions in this release: **OptionsWidgets minor 21** (`LibKa0s-Options-1.0` 21.21.1.7.3). Every
+other major is unchanged from v1.43.0, and the kit stays at revision 23.
+
+**`O.IdList` can draw its remove control as an X on the left.** A new optional spec field,
+`removeStyle = "icon"`, draws a small X (the client's `transmog-icon-remove` atlas, 16px) at the LEFT
+of every entry, before its icon and name, in place of the right-hand *Remove* button or toggle
+checkbox. A click calls `onRemove` and redraws the list; the tooltip is the `remove` string, so a
+host's `strings.remove` names it. Opt-in: a list that does not pass the field is drawn exactly as at
+v1.43.0, so no consumer's look changes until it adopts. Aura Master's spell lists are the first
+adopter. Cases: `tests/test_options_idlist_remove.lua` (its own suite: `tests/test_options_widgets.lua`
+is over the layout-§1 cap, issue #33).
+
 ## v1.43.0 — 2026-09-17
 
 Versions in this release: **kit revision 23**. Every LibStub major is unchanged from v1.42.0 — no
