@@ -1,6 +1,6 @@
 -- tests/test_options.lua — LibKa0s-Options-1.0's panel shell: the ctx factory, the panel registry,
 -- the lazy Defaults button, the reset/refresh trio, the page registry with its combat-refusing
--- open, the LSM values factory and the always-shown scrollbar patch.
+-- open (the combat lock on a page itself is tests/test_options_combat.lua), the LSM values factory and the always-shown scrollbar patch.
 --
 -- The widget makers and the two-column flow engine are next door in tests/test_options_widgets.lua.
 -- The split follows the files: this suite is Options.lua and OptionsScroll.lua, that one is
@@ -476,9 +476,12 @@ test("options: SetRenderer draws on first show, and not again", function()
   assertEqual(drawn, 1, "a second show must not stack a second copy of the body")
 end)
 
-test("options: a panel shown during combat closes the window and does not render", function()
+test("options: a panel shown during combat is covered, not drawn, and the window is NOT closed",
+  function()
   -- The Blizzard AddOns sidebar reaches a panel without going through OpenOptionsPanel, so this
-  -- is the path a user is most likely to take mid-fight and the one that had no guard at all.
+  -- is the path a user is most likely to take mid-fight. Through minor 21 the OnShow closed the
+  -- settings window, which ran Blizzard's close-and-commit path tainted (anti-pattern #88); from
+  -- minor 22 the page is covered instead. tests/test_options_combat.lua has the whole lock.
   local O, rec = Fixture.new()
   local ctx = O.CreatePanel("CombatP", "Combat", { pageKey = "combat" })
   local drawn = 0
@@ -490,9 +493,10 @@ test("options: a panel shown during combat closes the window and does not render
   mocks.InCombatLockdown = function() return false end
 
   assertEqual(drawn, 0, "the body is not drawn under lockdown")
-  assertEqual(mocks.__settingsClosed, before + 1, "and the settings window is closed")
+  assertEqual(mocks.__settingsClosed, before, "and the settings window is left alone")
+  assertTrue(ctx.__combatCover:IsShown(), "the page is covered instead")
   local text = table.concat(rec.chat, "\n")
-  assertTrue(text:lower():find("combat", 1, true) ~= nil, "the refusal says why: " .. text)
+  assertTrue(text:lower():find("combat", 1, true) ~= nil, "the notice says why: " .. text)
 end)
 
 test("options: a raising renderer is reported, not propagated", function()

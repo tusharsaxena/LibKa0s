@@ -10,6 +10,50 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.46.0 — 2026-09-19
+
+Versions in this release: **Options minor 22**, **OptionsWidgets minor 23** and
+**OptionsTabs minor 2** (`LibKa0s-Options-1.0` 22.23.2.7.3). Every other major is unchanged from
+v1.45.0, and the kit stays at revision 23.
+
+**A settings page shown in combat is locked, and the library no longer closes Blizzard's settings
+window.** The Ka0s WoW Addon Standard v2.60.0 (options-ui-§2, options-ui-§13, anti-pattern #88).
+Through Options minor 21, `O.SetRenderer`'s `OnShow` called `SettingsPanel:Close()` (or
+`HideUIPanel(SettingsPanel)`) when a page was shown in combat. The AddOns sidebar reaches that
+`OnShow` from inside Blizzard's own `DisplayCategory → DisplayLayout → Show`, so the close ran from
+addon code and Blizzard's close-and-commit path ran tainted: `SaveBindings()` blocked
+(`ADDON_ACTION_BLOCKED`), then `ToggleGameMenu` re-entering the half-shown panel until `C stack
+overflow`, leaving the window broken (Aura Master's smoke test). And a page left open in combat
+still took writes, which applied as if nothing had refused them. Now:
+
+- **Nothing touches the settings window in combat** — no `SettingsPanel` method or field,
+  `HideUIPanel`, `ToggleGameMenu` or `Settings.OpenToCategory`. `O.OpenOptionsPanel`'s gate and its
+  gray refusal are unchanged.
+- **A cover per page.** `O.CreatePanel` builds, out of combat, a plain non-secure frame over the whole
+  canvas — header band, chrome and tab strip included — that takes the mouse and the wheel and says
+  *Settings are locked during combat.* in gray (`lib.STRINGS.COMBAT_LOCKED`). It goes up on a page
+  shown in combat (nothing is rendered and no font is preloaded; an unrendered page is marked owed a
+  render) and on every open page at `PLAYER_REGEN_DISABLED`, at a frame level above the deepest frame
+  the page draws. It never touches keyboard propagation, and no Blizzard frame is hooked.
+- **Every write through the options surface is refused while locked**: widget writes, color commits,
+  session toggles, library-drawn buttons (*Reset all settings* among them), id-list adds, removes and
+  toggles, the page's Defaults (header button, footer control and `O.RestoreDefaults`), structural
+  re-renders (`RefreshAllPanels`, `RefreshPanel`, a switched section), tab clicks, a page banner's
+  selection and `O.SelectTab`. A refused control is put back. The host hears one gray chat line per
+  combat (`lib.STRINGS.COMBAT_LOCKED_NOTICE`). `O.RestoreAllDefaults` is not refused in itself: a
+  host's slash reset verb calls it, and the lock covers the settings window only.
+- **`PLAYER_REGEN_ENABLED` lifts the covers**; a page on screen that is owed a render renders, a
+  clean one runs its refreshers, so a value a slash verb or a profile switch changed shows up. A
+  hidden page is drawn on its next show. Nothing is re-opened (options-ui-§2's no defer-and-replay).
+- **One event frame for the process** (`lib.__combatFrame`), kept across a LibStub upgrade and
+  dispatching through `lib.__OnCombatEvent` at call time; each instance registers a weak-keyed hook.
+
+No member, descriptor field or row field is added — the new state is `__`-prefixed — so no
+degradation stub moves. A host MUST NOT keep a combat guard of its own on a settings page or a tab
+strip beside this one (options-ui-§2, §13). Cases: `tests/test_options_combat.lua`, run under a
+`SettingsPanel` recorder that fails any case touching the window in combat; the old
+closes-the-window case in `tests/test_options.lua` is inverted.
+
 ## v1.45.0 — 2026-09-19
 
 Versions in this release: **OptionsWidgets minor 22** (`LibKa0s-Options-1.0` 21.22.1.7.3). Every

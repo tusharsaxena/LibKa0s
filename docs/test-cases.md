@@ -478,7 +478,7 @@ badge and any count quoted in the docs must agree with it.
 - options: a raising page builder costs that page and no other
 - options: a page registered after the build is built immediately
 - options: SetRenderer draws on first show, and not again
-- options: a panel shown during combat closes the window and does not render
+- options: a panel shown during combat is covered, not drawn, and the window is NOT closed
 - options: a raising renderer is reported, not propagated
 - options: RefreshScalars re-syncs a shown page and flags a hidden one dirty
 - options: a dirty hidden page re-renders on its next show
@@ -550,7 +550,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: no LibSharedMedia is no error and creates nothing
 - fontpreload: no CreateFrame is no error, and the next show can still load
 - fontpreload: a SetFont that raises costs that face and nothing else
-- fontpreload: a show refused for combat loads nothing; the next show does
+- fontpreload: a show locked for combat loads nothing; the next show does
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
@@ -841,6 +841,30 @@ badge and any count quoted in the docs must agree with it.
 - switched: rows without shownWhen render as before, and no selector watcher is added
 - switched: a bound (path-less) selector reads and is watched through its record
 - switched: two selectors changing in one frame cost one re-render
+
+### test_options_combat.lua (21)
+
+- combat: a page shown in combat is covered and not drawn, and the window is left alone
+- combat: the cover is built out of combat, hidden, and takes the mouse and the wheel
+- combat: REGEN_DISABLED covers an open tabbed page above its tab strip
+- combat: a widget write is refused and the widget put back
+- combat: the notice comes back once per combat, not once per session
+- combat: the page's Defaults — header button and footer control — are refused
+- combat: a library button's click is refused
+- combat: a session checkbox is refused and put back
+- combat: a color commit is refused and the swatch put back
+- combat: a page banner's selection is refused and the dropdown put back
+- combat: a tab click is refused and the page stays on its tab
+- combat: SelectTab refuses in combat
+- combat: a structural refresh in combat waits; the page renders when combat ends
+- combat: a page first shown in combat renders when combat ends, and is never re-opened
+- combat: a clean open page runs its refreshers when combat ends, not its renderer
+- combat: a hidden page is left for its next show
+- combat: REGEN_DISABLED closes the library's own dropdown pullout on an open page
+- combat: another addon's focused widget is left alone
+- combat: out of combat nothing changes
+- combat: one event frame for the library, dispatching through lib at call time
+- combat: the lock predicate is the flag or the client's lockdown
 
 ### test_options_compose.lua (45)
 
@@ -1307,6 +1331,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_idsuggest.lua | 36 |
 | test_options_idlist_remove.lua | 5 |
 | test_options_switched.lua | 9 |
+| test_options_combat.lua | 21 |
 | test_options_compose.lua | 45 |
 | test_perf_core.lua | 70 |
 | test_perf_run.lua | 40 |
@@ -1326,4 +1351,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1168** |
+| **Total** | **1189** |

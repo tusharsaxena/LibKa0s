@@ -275,8 +275,8 @@ test("fontpreload: a SetFont that raises costs that face and nothing else", func
   end)
 end)
 
-test("fontpreload: a show refused for combat loads nothing; the next show does", function()
-  -- The refusal closes the settings window, so no dropdown can open on this show, and loading
+test("fontpreload: a show locked for combat loads nothing; the next show does", function()
+  -- The page is covered (Options minor 22), so no dropdown can open on this show, and loading
   -- every face is a disk hitch the middle of a fight should not pay for.
   withSpy(function(log)
     local _, rec, ctx = hostWithPage(fakeLSM(FONTS))

@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 21.22.1.7.3
+# `LibKa0s-Options-1.0` — version 22.23.2.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **21** · `OptionsWidgets.lua` **22** · `OptionsTabs.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **22** · `OptionsWidgets.lua` **23** · `OptionsTabs.lua` **2** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.45.0 |
-| Status | Superseded |
-| Supersedes | [version 21.21.1.7.3](./version-21.21.1.7.3-docs.md) |
-| Superseded by | [version 22.23.2.7.3](./version-22.23.2.7.3-docs.md) |
+| Shipped in | v1.46.0 |
+| Status | **Current** |
+| Supersedes | [version 21.22.1.7.3](./version-21.22.1.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 21, OptionsWidgets = 22, OptionsTabs = 1, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 22, OptionsWidgets = 23, OptionsTabs = 2, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
-for `Options.lua` minor 21, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `T1` for `OptionsTabs.lua` minor 1, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -28,6 +28,93 @@ member is a fact about when a consumer got it, not about which file holds it tod
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**The combat lock (O22, W23, T2).** `Options.lua` 21 → **22**, `OptionsWidgets.lua` 22 → **23**,
+`OptionsTabs.lua` 1 → **2**; `OptionsCompose.lua` and `OptionsScroll.lua` do not move. It is the Ka0s
+WoW Addon Standard v2.60.0's options-ui-§2 and options-ui-§13, and the fix anti-pattern #88 records.
+**No member, descriptor field or row field is added**: every new name is `__`-prefixed, so a
+degradation stub carries nothing new. It is not opt-in — every host on this copy gets it.
+
+**What 21.22.1.7.3 did, and why it had to go.** `SetRenderer`'s `OnShow`, on a page shown under
+`InCombatLockdown()`, called `SettingsPanel:Close()` (else `HideUIPanel(SettingsPanel)`) and printed
+`COMBAT_REFUSED`. Blizzard's AddOns sidebar reaches that `OnShow` from inside its own
+`DisplayCategory → DisplayLayout → Show`, so the close ran from addon code, and Blizzard's
+close-and-commit path ran tainted: `Close → ExitWithCommit → Commit → CommitBindings → SaveBindings()`
+is protected (`ADDON_ACTION_BLOCKED`), then `TransitionBackOpeningPanel → ToggleGameMenu` re-entered
+the half-shown panel's close until `C stack overflow`. A page already open when combat started was
+never refused at all, and its writes applied.
+
+**Nothing of Blizzard's is touched in combat.** No `SettingsPanel` method call or field read or
+write, no `HideUIPanel`, `ToggleGameMenu` or `Settings.OpenToCategory`, and no hook on any of them.
+`OpenOptionsPanel` keeps its own gate and its gray `COMBAT_REFUSED` line (options-ui-§2), unchanged.
+
+**The cover.** `CreatePanel` builds one per page (`ctx.__combatCover`, T2's `O.__buildCover`), out of
+combat, hidden: a plain non-secure `Frame` parented to `ctx.panel` with `SetAllPoints` — so the header
+band, the chrome block and the tab strip are under it — `EnableMouse(true)`,
+`EnableMouseWheel(true)` with an empty `OnMouseWheel`, a 60 % black dim and one centered gray line,
+`lib.STRINGS.COMBAT_LOCKED` = *Settings are locked during combat.* It never calls
+`SetPropagateKeyboardInput`. When it goes up over a page on screen its frame level is set by
+`lib.__coverLevel(panel, cover)`: one above the deepest frame level under the panel (a walk of
+`GetChildren`), never less than the panel's level + 100, capped at 10000. The tab buttons sit two
+levels over the chrome frame they hang off, and AceGUI nests a scroll's rows several deep, so no
+small fixed offset is safe.
+
+**When it goes up.** On a page's show while locked — `SetRenderer`'s `OnShow`, and `CreatePanel`'s
+own show hook for a page with no renderer — the page is covered, **not rendered**, no font is
+preloaded, and a page never rendered is marked owed a render (`ctx._dirty`). At
+`PLAYER_REGEN_DISABLED`, over every registered page (raised to the level above only where the page is
+on screen; a hidden page raises its own when it is shown). At the same edge an AceGUI pullout left
+open on one of the host's own pages is closed through `AceGUI:ClearFocus()` — only when AceGUI's
+focused widget sits under one of that host's panels. A color picker is Blizzard's frame and is left
+alone; its commits are refused.
+
+**What is refused while locked.** The predicate is `lib.__IsCombatLocked()` —
+`lib.__combatLocked` (set by `PLAYER_REGEN_DISABLED`, cleared by `PLAYER_REGEN_ENABLED`) or
+`InCombatLockdown()`, the second covering a page shown after a `/reload` in combat. The refusal is
+`O.__combatRefused()`, which answers true and prints `lib.STRINGS.COMBAT_LOCKED_NOTICE` (gray)
+through the host's printer **at most once per combat per host**, the first time a locked page is
+shown or refuses something.
+
+| Refused | Where | Put back |
+|---|---|---|
+| A widget write (every maker, `ChoiceGrid`, a path-less row's `set`) | W23, the maker seam `write` | the `RefreshScalars` its caller already runs |
+| A color commit, drag or confirm | W23 | the swatch's own refresher |
+| A `SessionCheckbox` toggle | W23 | the box re-reads `spec.get()` |
+| A library-drawn button (`InlineButtonPair`, so *Reset all settings*), a choice grid's link cell | W23 | — |
+| An id list's add, remove or toggle | W23 (`onAdd` / `onRemove` / `onToggle`) | an add keeps its text; a toggle is reset |
+| The page's Defaults — header button, the window's footer control (`panel.OnDefault`), `RestoreDefaults` | O22 | — |
+| A structural re-render — `RefreshAllPanels`, `RefreshPanel(ctx, true)`, a switched section, an id list's rebuild | O22 (`renderCtx`) | the page is marked owed a render |
+| A tab click, a secondary tab click | T2 (`dressTab`) | — |
+| A page banner's selection | T2 | the dropdown is set back to `spec.value` |
+| `SelectTab` | O22 | answers `false` |
+
+**Not refused:** `RefreshScalars` and `RefreshPanel(ctx, false)` — refreshers only put widgets back
+to stored values, which is what a refused write needs — and `RestoreAllDefaults` itself, because a
+host's slash reset verb calls it and the lock covers the settings window only (options-ui-§2). Its
+button on the Master controls tab is refused at the button, like every library-drawn button.
+
+**`PLAYER_REGEN_ENABLED`.** Every cover comes down. A page on screen that is owed a render (first
+shown in combat, or a structural refresh waited) renders — its Defaults button is ensured and the
+font preload runs first, as on a show; a clean one runs its refreshers, so a value a slash verb or a
+profile switch changed during the fight shows up. A hidden page renders on its next show. Nothing is
+re-opened and nothing is replayed (options-ui-§2).
+
+**One event frame for the process.** `lib.__combatFrame` (T2) is created once and kept across a
+LibStub upgrade; it registers `PLAYER_REGEN_DISABLED` and `PLAYER_REGEN_ENABLED`, and its `OnEvent`
+looks `lib.__OnCombatEvent` (O22) up on `lib` when the event arrives, so the newest copy's dispatcher
+runs. Each instance registers one hook, `hook(locked)`, in the weak-keyed `lib.__combatHooks` and
+holds it as `O.__combatHook`; a later minor keeps calling hooks an older one registered, so that
+signature does not change.
+
+**A host adds no combat guard of its own** on a settings page or a tab strip beside this one
+(options-ui-§2, §13): a second guard is a second place for the lock to disagree with itself. A host
+that wraps `SetRenderer` (WhatGroup defers the body a frame) keeps working: the wrapped `OnShow` is
+still the library's, and the lock is asked first inside it.
+
+The previous version's "What changed" section follows unchanged under
+[Previously, at 21.22.1.7.3](#previously-at-21221173).
+
+## Previously, at 21.22.1.7.3
 
 **The flow engine gains one optional row field, `shownWhen` (switched sections), and nothing else
 moves.** `OptionsWidgets.lua` 21 → **22**; every other file of the major is unchanged.
@@ -56,8 +143,7 @@ moves.** `OptionsWidgets.lua` 21 → **22**; every other file of the major is un
   refresher is added. A selector must be drawn in the same `RenderRows` call to be watched; a host
   that draws it elsewhere re-renders the page itself.
 
-The previous version's "What changed" section follows unchanged under
-[Previously, at 21.21.1.7.3](#previously-at-21211173).
+The version before that is under [Previously, at 21.21.1.7.3](#previously-at-21211173).
 
 ## Previously, at 21.21.1.7.3
 
@@ -416,13 +502,35 @@ registered later. Returns how many faces this call loaded. See
 **`lib.__fontPreload` is readable but is not a supported write.** The suite resets it between cases.
 A host that clears it loads every face a second time, into a second frame, for nothing.
 
+### The combat lock's library-level names (O22, T2)
+
+**Since O22 / T2.** Internal — `__`-prefixed, so no manifest lists them and no degradation stub
+carries them — but library-level for the reason the two members above are: one event frame and one
+lock for the whole process, whichever vendored copy won. A host calls none of them.
+
+| Name | Since | Meaning |
+|---|---|---|
+| `lib.__IsCombatLocked()` → boolean | O22 | `lib.__combatLocked` or `InCombatLockdown()`. The one predicate every refusal asks. |
+| `lib.__combatLocked` | O22 | `true` from `PLAYER_REGEN_DISABLED` to `PLAYER_REGEN_ENABLED`. Kept across an upgrade. |
+| `lib.__OnCombatEvent(event)` | O22 | The dispatcher: sets or clears the flag, then calls every registered hook with `locked`, each pcall'd. |
+| `lib.__combatHooks` | O22 | Weak-keyed set of `hook(locked)`, one per instance, each held by its instance as `O.__combatHook`. |
+| `lib.__combatFrame` | T2 | The one frame registered for both events. Created once, kept across an upgrade; its `OnEvent` resolves `lib.__OnCombatEvent` at call time and is re-set by each newer copy. |
+| `lib.__coverLevel(panel, cover)` → number | T2 | The level a cover takes over a page on screen: `max(panel + 100, deepest descendant + 1)`, at most 10000. |
+| `lib.__descendsFrom(frame, ancestor)` → boolean | T2 | A bounded `GetParent` walk; picks the AceGUI pullout that is the host's to close. |
+| `lib.STRINGS.COMBAT_LOCKED` | O22 | *Settings are locked during combat.* — the cover's line, the standard's words. |
+| `lib.STRINGS.COMBAT_LOCKED_NOTICE` | O22 | The gray chat line, at most once per combat per host. |
+
+On the instance, equally internal: `O.__combatRefused()` (O22, the refusal every file asks),
+`O.__buildCover(panel)` (T2) and `O.__releaseOwnedFocus(panels)` (T2), and `ctx.__combatCover` on
+every ctx `CreatePanel` returns.
+
 ## The instance surface
 
 Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `CreatePanel(name, title, opts)` | O1 (canvas contract: **O5**; chrome slot: **O10**) | A canvas Frame with the unified header stamped on top, returning the `ctx` every render call threads through. `opts` = `{ pageKey, isMain, defaultsButton, defaultsTooltip }`. Registers the ctx so the refresh fan-out reaches it. Also stamps the **Blizzard canvas contract** — `OnCommit` and `OnRefresh` inert (writes land immediately through the host's write seam, and `SetRenderer` already owns re-show), and `OnDefault` **forwarding** to the panel's `defaultsOnClick` so the Settings window's footer control and the header Defaults button stay one implementation. A forwarder rather than an assignment because hosts park `defaultsOnClick` *after* this returns. The returned `ctx` now also carries `chrome` (a pinned `Frame` between the header and the scroll) and `chromeHeight` (starting at `0`) — see [What changed at this version](#what-changed-at-this-version). |
+| `CreatePanel(name, title, opts)` | O1 (canvas contract: **O5**; chrome slot: **O10**; combat cover: **O22**) | A canvas Frame with the unified header stamped on top, returning the `ctx` every render call threads through. `opts` = `{ pageKey, isMain, defaultsButton, defaultsTooltip }`. Registers the ctx so the refresh fan-out reaches it. Also stamps the **Blizzard canvas contract** — `OnCommit` and `OnRefresh` inert (writes land immediately through the host's write seam, and `SetRenderer` already owns re-show), and `OnDefault` **forwarding** to the panel's `defaultsOnClick` so the Settings window's footer control and the header Defaults button stay one implementation. A forwarder rather than an assignment because hosts park `defaultsOnClick` *after* this returns. The returned `ctx` now also carries `chrome` (a pinned `Frame` between the header and the scroll) and `chromeHeight` (starting at `0`) — see [What changed at this version](#what-changed-at-this-version). From **O22** it also builds the page's combat cover (`ctx.__combatCover`), hidden, and the canvas contract's `OnDefault` is refused in combat. |
 | `EnsureDefaultsButton(panel)` | O1 | Builds the header's Defaults button on the panel's **first OnShow**, never at build time. Idempotent, and a no-op on a panel that did not ask. |
 | `EnsureScroll(ctx)` | O1 | The lazy AceGUI ScrollFrame, patched for an always-visible scrollbar. |
 | `ClearScroll(ctx)` | O1 (`lastSubgroup`: **O14**) | Release the children, reset **both** heading trackers (`ctx.lastGroup` and `ctx.lastSubgroup`), and **reassign** `ctx.refreshers`. |
@@ -452,14 +560,14 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `__resetTabArtHeight()` | **W13** | Forget that measurement. A harness seam; an atlas does not change size mid-session. |
 | `RegisterOptionsPage(key, name, builder)` | O1 | Queue a page. Builders run once, in order, at `CreateOptionsPanel`. |
 | `CreateOptionsPanel()` | O1 | Resolve AceGUI, hand it to the host, validate, register the main canvas, run every builder. |
-| `OpenOptionsPanel()` | O1 (combat refusal: O3) | Open the category. **Refuses** under combat and never defers-and-replays. |
-| `RestoreDefaults(pageKey, ctx)` | O1 | The per-page Defaults button. Refreshes only the ctx it was given. **From O16** the page walk runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `pageKey`); the refresh runs after it closes. |
+| `OpenOptionsPanel()` | O1 (combat refusal: O3) | Open the category. **Refuses** under combat and never defers-and-replays. The gate for a page **shown** in combat another way is the lock (**O22**). |
+| `RestoreDefaults(pageKey, ctx)` | O1 | The per-page Defaults button. Refreshes only the ctx it was given. **From O16** the page walk runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `pageKey`); the refresh runs after it closes. **From O22** refused in combat (nothing is reset); `RestoreAllDefaults` is not, because a slash reset verb calls it. |
 | `RestoreAllDefaults()` | O1 | Without `resetProfile`: every non-vetoed row, then `afterRestoreAll`, then a full refresh — unchanged. **With `resetProfile` (O9):** only the `sessionOnly` rows, then `resetProfile()`, then `afterRestoreAll`, then a full refresh. **From O16** everything before the refresh — the row walk, `resetProfile` and `afterRestoreAll` — runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `"all"`). |
-| `SetRenderer(ctx, fn)` | O1 | Declare how a page draws itself. The library owns *when*: first show, and again after a refresh marked it dirty while hidden. Also builds the Defaults button and refuses to render under combat. |
+| `SetRenderer(ctx, fn)` | O1 (combat lock: **O22**) | Declare how a page draws itself. The library owns *when*: first show, again after a refresh marked it dirty while hidden, and — from O22 — at `PLAYER_REGEN_ENABLED` for a page on screen that combat left owed a render. Also builds the Defaults button. Under combat it **covers** the page and draws nothing; through O21 it closed the settings window instead (anti-pattern #88). |
 | `RefreshAllPanels()` | O1 (two tiers: O3) | **Structural.** Re-run each page's renderer, so rows that appeared or disappeared are drawn. Hidden pages are flagged dirty and re-render on their next show. |
 | `RefreshScalars()` | O3 | **In place.** Refreshers only, no rebuild — what every widget maker's own `set()` calls, since writing a value does not change which rows exist. Each is pcall'd, so one dead widget cannot take the UI with it. |
 | `RefreshPanel(ctx, structural)` | O8 | **One page, either tier.** `structural` true re-runs that ctx's renderer; false runs its refreshers in place. A hidden page is flagged dirty and repaints on its next show, so the caller never has to ask whether it is on screen. For a host whose page repaints off its own message bus rather than off a widget's `set()`. |
-| `SelectTab(pageKey, tabKey)` | **O19** | Move an already-rendered page to one tab and refresh **only** that page, through `RefreshPanel(ctx, true)`. Returns `false`, storing no intent, for a page that has not been rendered — the caller opens the page. See [What changed at this version](#what-changed-at-this-version). |
+| `SelectTab(pageKey, tabKey)` | **O19** | Move an already-rendered page to one tab and refresh **only** that page, through `RefreshPanel(ctx, true)`. Returns `false`, storing no intent, for a page that has not been rendered — the caller opens the page. See [What changed at this version](#what-changed-at-this-version). **From O22** answers `false` in combat and moves nothing. |
 | `__pages()` | O1 | The pages that actually built. A raising builder is reported by key and costs only itself. |
 | `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
 | `ChoiceGrid(ctx, spec)` | W16 (checkbox cells, `extraColumn`: **W17**) | A matrix of one-choice-per-row cells over rows that share one value list: a header line of column labels, then per row one checkbox per column (a yellow fill, not an AceGUI radio, from **W17**) and the row's label with its tooltip. Reads and writes through the maker seam and re-syncs on `RefreshScalars`. **From W17** an optional `spec.extraColumn` draws a per-row link after the label. Returns the row lines. See [The choice grid](#the-choice-grid). |
@@ -1244,6 +1352,12 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
+**At 22.23.2.7.3 no member, descriptor field or row field is added**, so a host written against
+21.22.1.7.3 needs no change. What changes is behavior in combat, and only there: a page shown in
+combat is covered instead of closing the settings window, and the refusals in
+[What changed at this version](#what-changed-at-this-version) apply. Out of combat every page draws
+and behaves exactly as at 21.22.1.7.3. The paragraphs below are the history as written at 21.20.1.7.3.
+
 The API is **additive-only**: a member, descriptor field or row field may be added in a later minor,
 never removed or repurposed, so a host written against `1.1.1` keeps working unmodified here. This
 version adds **no member**. It moves the page's chrome into a fifth file, which changes the version
@@ -1263,12 +1377,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 22.23.2.7.3
-
-The combat lock (**O22**, **W23**, **T2**), in LibKa0s v1.46.0: a page shown in combat is covered
-rather than closing Blizzard's settings window, every write through the options surface is refused
-until `PLAYER_REGEN_ENABLED`, and the page on screen is drawn from current state when combat ends. No
-member is added and a host changes nothing — except to remove a combat guard of its own on a
-settings page or a tab strip, which the Ka0s WoW Addon Standard v2.60.0 forbids beside the library's.
-See [version 22.23.2.7.3](./version-22.23.2.7.3-docs.md).
