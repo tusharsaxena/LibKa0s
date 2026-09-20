@@ -23,6 +23,7 @@ The **Tests** cell reads `passed/skipped/total`.
 
 | Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260920-194447`](20260920-194447/) | 1.46.1 → 1.47.0 | 0/0 | 70 | 1211/0/1211 | skip | 24089 | 3401 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260919-214428`](20260919-214428/) | 1.46.0 → 1.46.1 | 0/0 | 70 | 1195/0/1195 | skip | 23727 | 3351 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260919-211837`](20260919-211837/) | 1.45.0 → 1.46.0 | 0/0 | 70 | 1189/0/1189 | skip | 23599 | 3335 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260919-162209`](20260919-162209/) | 1.44.0 → 1.45.0 | 0/0 | 69 | 1168/0/1168 | skip | 23027 | 3250 | 6.6 | 2.0 | 15 | 0 | **green** |
@@ -89,11 +90,11 @@ The **Tests** cell reads `passed/skipped/total`.
 
 ## Test suite
 
-**1195 cases** — 1195 passed, 0 failed, 0 skipped. The generated inventory
-[`20260919-214428/test-cases.md`](20260919-214428/test-cases.md) is the authority on which cases existed at this run;
+**1211 cases** — 1211 passed, 0 failed, 0 skipped. The generated inventory
+[`20260920-194447/test-cases.md`](20260920-194447/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1189 → 1195** since the previous run.
+Moved **1195 → 1211** since the previous run.
 
 No case reported a `skip`, so passed and total agree and nothing in this row claims coverage
 that was not exercised.
@@ -117,7 +118,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20260919-214428`](20260919-214428/) — **this run's measurement, not its diff.** Max CCN **15** across 3351
+Current as of [`20260920-194447`](20260920-194447/) — **this run's measurement, not its diff.** Max CCN **15** across 3401
 functions, **0** of them warned on; 9 file(s) in the 1000–1500 band and 2 over the 1500 cap
 (`layout-§1`).
 
@@ -143,8 +144,8 @@ None.
 | 1000–1500 (on notice) | `tests/test_options.lua` | 1307 | **NEWLY CROSSED at `20260807-151331` (v1.8.3), by one line — owed a tracked ID.** 968 → 1001, from the three cases covering `O.RefreshPanel`. Same shape as the row above: a flat list of independent cases, so length is case count, not tangle, and nothing in the file warns on CCN. Under the 1500 cap, so a split is declined today; the peel seam is the render/refresh block, large enough to stand alone as `tests/test_options_render.lua`. Its `automated-tests-§4` clock starts at v1.8.3. **That clock expired long ago** — re-read at `20260916-093057`, the row has said *owed a tracked ID* across eleven minor versions and no ID exists. Either file it or peel it; do not re-accept it a twelfth time. |
 | 1000–1500 (on notice) | `tests/test_slash.lua` | 1327 | **NEWLY CROSSED at `20260913-002423` (v1.34.0).** 968 → 1034, from the six cases pinning Slash minor 10's whole-remainder string parse. A flat list of independent cases, so length is case count, not tangle, and nothing in the file warns on CCN; 466 lines clear of the cap. It mirrors `LibKa0s/Slash.lua` (670), so it has no seam of its own before the module has one; the parser block (`ParseBool` through `ParseValue`) is the natural peel, as `tests/test_slash_parse.lua`. Re-check at 1350. |
 | 1000–1500 (on notice) | `tests/test_widgets.lua` | 1493 | **Accepted, and it is seven lines from breach.** The closest any file in this collection sits to `layout-§1`'s 1500 cap. It grew 951 → 1209 → 1296 → 1350 → 1493 across the ReorderList and settings-revamp-v2 work and has been flat since the v1.27.0 release run. It mirrors `LibKa0s/Widgets.lua`, so it has no seam of its own — a suite that peels before its module commits to a partition the module has not chosen. **The next case added to it puts this library in breach**, which is a harder problem than the two already tracked, and it wants an issue before it crosses rather than after. Split by widget family the moment `Widgets.lua` is split, and not later. **Re-read at `20260916-093057`:** still 1493, still seven lines clear, and also now past the three-release shelf life on a bare *Accepted*. The issue this row has been asking for is the action item of this run. |
-| > 1500 (over cap) | `LibKa0s/OptionsWidgets.lua` | 2955 | **Ruled on 2026-09-08 (`M4-14`), tracked as [`#16`](https://github.com/tusharsaxena/LibKa0s/issues/16)** (owner: @tusharsaxena). A breach, not a band entry: `layout-§1` was revised this cycle to say the cap binds a library's own payload folder, which is the question the 2026-09-07 audit graded Low for want of an answer. The issue names the seam — the tab and page chrome (`:378` art block, `:871`-`:1349` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine; the two halves share no local in either direction. Not peeled this cycle: the remediation plan forbids splitting, and a payload peel here costs an `LibKa0s.xml` row, a LibStub minor and the pairing guard. `CLAUDE.md` § *Files over the 1500-line cap* is the census and `tests/test_layout_cap.lua` reddens if this file ever drops off it. |
-| > 1500 (over cap) | `tests/test_options_widgets.lua` | 3285 | **Ruled on 2026-09-08 (`M4-14`), tracked as [`#8`](https://github.com/tusharsaxena/LibKa0s/issues/8)** (owner: @tusharsaxena). That issue's own hard trigger — *crosses 1500 → split* — has fired; it was rewritten from an on-notice record (1114) into the breach record it now is. The seam changed with it: **not** by widget family, but along whatever seam `LibKa0s/OptionsWidgets.lua` peels on ([`#16`](https://github.com/tusharsaxena/LibKa0s/issues/16)), in that file's own commit — `testing-§1` pairs one suite with one module, and a suite peeled on a partition the module has not chosen leaves two files that no longer pair. |
+| > 1500 (over cap) | `LibKa0s/OptionsWidgets.lua` | 3262 | **Ruled on 2026-09-08 (`M4-14`), tracked as [`#16`](https://github.com/tusharsaxena/LibKa0s/issues/16)** (owner: @tusharsaxena). A breach, not a band entry: `layout-§1` was revised this cycle to say the cap binds a library's own payload folder, which is the question the 2026-09-07 audit graded Low for want of an answer. The issue names the seam — the tab and page chrome (`:378` art block, `:871`-`:1349` members) out to `OptionsTabs.lua`, leaving the widgets and the flow engine; the two halves share no local in either direction. Not peeled this cycle: the remediation plan forbids splitting, and a payload peel here costs an `LibKa0s.xml` row, a LibStub minor and the pairing guard. `CLAUDE.md` § *Files over the 1500-line cap* is the census and `tests/test_layout_cap.lua` reddens if this file ever drops off it. |
+| > 1500 (over cap) | `tests/test_options_widgets.lua` | 3664 | **Ruled on 2026-09-08 (`M4-14`), tracked as [`#8`](https://github.com/tusharsaxena/LibKa0s/issues/8)** (owner: @tusharsaxena). That issue's own hard trigger — *crosses 1500 → split* — has fired; it was rewritten from an on-notice record (1114) into the breach record it now is. The seam changed with it: **not** by widget family, but along whatever seam `LibKa0s/OptionsWidgets.lua` peels on ([`#16`](https://github.com/tusharsaxena/LibKa0s/issues/16)), in that file's own commit — `testing-§1` pairs one suite with one module, and a suite peeled on a partition the module has not chosen leaves two files that no longer pair. |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of
 `t.k = rec.k or D.k` defaulting lines scores high with no visible branching at all: a large CCN
