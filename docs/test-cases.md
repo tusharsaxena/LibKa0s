@@ -554,7 +554,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (187)
+### test_options_widgets.lua (203)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -627,6 +627,22 @@ badge and any count quoted in the docs must agree with it.
 - IdList: one line per entry -- icon, name and gray id, then Remove or a checkbox
 - IdList: an entry's note is drawn under its name, and only when it has one
 - IdList: an empty-string or non-string note draws nothing
+- IdList: with no columns option each entry has its line to itself, at minor 23's widths
+- IdList: columns = 2 packs entries two to a line, row-major, at half the widths
+- IdList: columns = 2 in the icon style halves the name and leaves the X alone
+- IdList: an odd entry count leaves the last line half filled, not stretched
+- IdList: inside a two-column list a noted entry takes a full-width line of its own
+- IdList: a columns value that is not a usable count is floored, clamped, or read as 1
+- IdList: at two columns a failing entry costs itself, not the entry beside it
+- IdList: at two columns the FIRST entry of a row fails without stranding the row
+- IdList: columns is capped at two, and the cap's arithmetic is the label's and the X's
+- IdList: the X's frame is wider than its art, absolute, at every column count
+- IdList: a gutter separates each entry from the next, and only at more than one column
+- IdList: at more than one column an entry name is one line tall, never wrapped
+- IdList: a one-column list wraps exactly as it did, and lights nothing
+- IdList: the no-wrap FontString is put back when AceGUI takes the widget back
+- IdList: at more than one column the hovered entry is lit, so the tooltip has an owner
+- IdList: a multi-column tooltip hangs off the row, not over the column beside it
 - IdList: Remove and a toggle call the host back, and Remove asks for a rebuild
 - IdList: an add through its input reaches onAdd and rebuilds the list
 - IdList: with no ctx.rebuild the library's structural refresh redraws it
@@ -1332,7 +1348,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 187 |
+| test_options_widgets.lua | 203 |
 | test_options_tabs.lua | 36 |
 | test_options_idsuggest.lua | 36 |
 | test_options_idlist_remove.lua | 5 |
@@ -1357,4 +1373,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1195** |
+| **Total** | **1211** |

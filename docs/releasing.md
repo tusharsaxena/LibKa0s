@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.46.1`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.47.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -198,7 +198,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.46.1 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.47.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -392,6 +392,22 @@ files, every one in the table; the one it found missing — ConsumableMaster's `
 the Macro Bar's Buttons drag list — was added to the Widgets row by that sweep. `WhoGotLoots` and
 `BuffTextNotifications` are out of scope until they are on the standard at all.
 
+**Where v1.47.0 stands (2026-09-20).** One LibStub minor moves — `OptionsWidgets.lua` 24
+(`LibKa0s-Options-1.0` 23.24.3.7.3) — and the kit stays at revision 23. It is `O.IdList`'s
+`columns`: a list that asks for it packs that many entries into each Flow row, and two is the cap.
+What a consumer owes: the copy of both payloads and the provenance line, and nothing more unless it
+adopts `columns`. Two things arrive **without** being asked for, and only in the icon style: the X's
+frame is an absolute 26px around its 16px art rather than `0.06` of the row, so the delete control
+is no longer flush against the entry's own icon and its click target is 26x26 rather than 16 wide,
+and the name beside it takes `0.90` rather than `0.92`. No member, descriptor field or row field is
+added, so no degradation stub moves. Steps 1–7 are done in this repository — the gates are green
+(1211 cases, `luacheck` 0/0, nothing above CCN 15) and both standards pointers were checked
+against `../WowAddonStandards/standards/STANDARDS.md` and rolled to v2.61.0 by this step; **the
+release-mode automated-test bundle, the tag and step 8 are not**. Ten of the eleven consumers bundle
+v1.46.1 on `master`. Aura Master is the host this release was written for — its Hard CC and Soft CC
+spell lists are what a one-entry-per-line list made unreadable — and it carries a v1.47.0 provenance
+line on its own feature branch ahead of the tag.
+
 **Where v1.46.1 stands (2026-09-19).** A patch to v1.46.0's combat lock: `Options.lua` 23 and
 `OptionsTabs.lua` 3 (`LibKa0s-Options-1.0` 23.23.3.7.3); the kit stays at revision 23. v1.46.0
 registered `PLAYER_REGEN_DISABLED` / `_ENABLED` for the life of the process and covered hidden pages
@@ -464,16 +480,18 @@ The kit stays at **revision 22**, so `tests/test_vendor_sync.lua` pairs the two 
 v1.42.0 tag exactly as it did at v1.41.0 — the kit bytes are identical, but both are resolved from
 the tag the provenance line names, so both are copied.
 
-**v1.40.0's and v1.41.0's step 8 are done**, and so are the two adoption changesets that outlived
-them. All eleven consumers bundle v1.41.0 on `master`; all eleven wire `slash-commands-§7`'s
-stand-down through `LibKa0s-Lifecycle-1.0` and ship `tests/test_disabled.lua` inside their green
-gate; and all eleven carry `launcher-§5`'s `core/LauncherSetup.lua`, which was v1.39.0's outstanding
-item through three releases. The Launcher and Lifecycle rows of the Consumers table above were
-updated by this release's sweep, because both still read **"none yet"** a release after every host
-had wired them — the exact failure their own cells warn about, and the third and fourth time this
-table has carried it.
+**Every step 8 through v1.46.1 is done**, and so are the adoption changesets that outlived them.
+All eleven consumers bundle **v1.46.1** on `master` and each `CLAUDE.md` provenance line says so, so
+v1.42.0's one-file Slash fix, v1.43.0's kit-only revision 23, v1.44.0's `removeStyle` and v1.45.0's
+`shownWhen` have all landed downstream along with the combat lock and its patch. The two hosts that
+took the opt-ins are Aura Master (both) and Party Frame Enhanced (`shownWhen`). What is **not** done
+is this release's own step 8, which cannot begin before the tag.
 
-Move this paragraph at the next release.
+This paragraph says where the consumers stand as of the release being prepared, so it is stale the
+moment it is not rewritten. **Rewrite it at the next release**, in the same commit as step 7's other
+version-bearing lines. It was carried unchanged from v1.42.0 through v1.46.1 — four releases — on
+the strength of the one-line instruction that used to sit here, which is the remembering step 7
+exists to replace.
 
 WhatGroup has Core, Env, DebugLog, Media, Options and Slash — `core/CoreSetup.lua`,
 `core/EnvSetup.lua`, `core/DebugLogSetup.lua`, `core/MediaSetup.lua`, `settings/OptionsSetup.lua`

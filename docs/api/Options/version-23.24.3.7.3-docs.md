@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 23.23.3.7.3
+# `LibKa0s-Options-1.0` — version 23.24.3.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **23** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **24** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.46.1 |
-| Status | Superseded |
-| Supersedes | [version 22.23.2.7.3](./version-22.23.2.7.3-docs.md) |
-| Superseded by | [version 23.24.3.7.3](./version-23.24.3.7.3-docs.md) |
+| Shipped in | v1.47.0 |
+| Status | **Current** |
+| Supersedes | [version 23.23.3.7.3](./version-23.23.3.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 23, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 24, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -27,21 +27,149 @@ citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.Pag
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
-## Moving to version 23.24.3.7.3
-
-A feature in LibKa0s v1.47.0 (**W24**): `O.IdList` takes an optional `columns`, which packs that
-many entries into each line, row-major, dividing every relative width by the count. Default `1`,
-which is exactly what this version draws. A noted entry keeps a full-width line of its own, an odd
-count leaves the last line half filled, and the per-entry guard now rolls a shared line back rather
-than drawing half an entry beside a whole one. At more than one column a name does not wrap — it is
-truncated, tail first, which costs the gray `(id)` — and the hovered entry is lit. No member is
-removed or repurposed. **Two things a list that passes no `columns` still sees**, and only in the
-icon style: the X sits in an absolute `26px` frame rather than `0.06` of the row, so it is no longer
-flush against the entry's own icon and its click target is `26x26`, and the name beside it takes
-`0.90` rather than `0.92`. See
-[version 23.24.3.7.3](./version-23.24.3.7.3-docs.md).
-
 ## What changed at this version
+
+**`O.IdList` draws in columns (W24), and one at a time is still the default.**
+`OptionsWidgets.lua` 23 → **24**; every other file of the major is unchanged. One optional spec
+field is added and nothing is removed or repurposed.
+
+- **`columns` (W24)**, a whole number, packs that many entries into each Flow row, **row-major** —
+  `1 2` / `3 4` / `5 6`, left to right and then wrap. It is the same full-width Flow row the
+  two-column engine packs a pair of widgets into; the entries in it are ordinary entries.
+- **Every relative width an entry claims is divided by the column count**, and nothing else about
+  the entry changes. At two columns the name is `0.37`, the action `0.20 / 2 = 0.10` and the gutter
+  after them `0.02`; in the icon style the name is `0.43`. Each entry is `0.49` of the row, so the
+  pair sums to the same `0.98` a single entry held, which is the clip inset `options-ui-§8` asks
+  for. The icon, the name and the gray id are laid out by the same code at every column count, so
+  they line up across columns for the same reason they line up down one.
+- **A gutter separates each entry from the next**, drawn at the END of every entry at more than one
+  column and not at all at one. AceGUI's Flow butts its children edge to edge — a child is anchored
+  `TOPLEFT` to the previous child's `TOPRIGHT` with no x offset — so without a widget in between,
+  the default style reads `[name][Remove][name][Remove]` with the first *Remove* flush against the
+  name it does **not** belong to. The gutter comes out of the entry's own share rather than out of
+  the line, which is why each entry is still exactly `0.98 / cols`; the trailing entry's gutter is
+  dead space inside the clip inset the `0.98` already leaves.
+- **The icon style's X is the one width here that is not a fraction, and its frame is wider than
+  its art.** The art stays `16px` of `transmog-icon-remove`; the frame is an absolute **`26px`** at
+  every column count, W24 included. Absolute, because `SetRelativeWidth` is multiplied by the row
+  at layout time and an AceGUI `Icon` anchors its texture TOP-centered rather than clipping it, so
+  a fraction that falls under the texture does not shrink the X — it spills it over whatever is
+  beside it. Wider than the art, because the entry's own spell icon is also `16px`: a frame the
+  size of its art left two adjacent `16x16` textures, one of which deletes the row, and a `16px`
+  click target where W23's fraction gave about `41px`. At `26` the `Icon`'s own geometry (art
+  centered horizontally, hung `5px` below the frame's top, frame sized to the art plus `10`) puts
+  `5px` of padding on all four sides, so **the hit area is `26x26`** and it does not move with
+  `cols`. The name gives up `ID_REMOVE_REL`, now `0.08` rather than W23's `0.06`, so that reserve
+  still covers the frame at two columns. **A single-column icon-style list therefore draws its X
+  in a wider frame and its name at `0.90` rather than `0.92`** — the one place in W24 where a list
+  that passes no `columns` is not byte-identical to W23.
+- **An entry's tooltip is anchored to the ROW at more than one column.** `GameTooltip:SetOwner` is
+  still called with `ANCHOR_RIGHT`; what moves is the owner. At one column the label's right edge
+  *is* the list's right edge, so the tooltip lands outside the list; at two, a column-one label's
+  right edge is the middle of the list and the same anchor drops the tooltip squarely over column
+  two — over the entries the reader is on their way to. The row spans the full width whatever the
+  count, so handing it the row is the same rule applied to the widget that still reaches the edge.
+  A single-column list is anchored to the label exactly as before.
+- **An odd count leaves the last row half filled.** The trailing entry sits in the left column at a
+  column's width — it is not widened to fill the row, because no width here fills a row.
+- **A noted entry takes a full-width row of its own** whatever the column count, drawn at the
+  one-column widths. `entry.note` (W17) is a SECOND line under the name, and a Flow row cannot hold
+  a wrapped second line in one column and a neighbor beside it. Anything half-packed is flushed
+  ahead of it, so a noted entry never splits a pair. The note's own contract is exactly what W17
+  wrote.
+- **The guard still costs one ENTRY.** The per-entry `pcall` (`lib.STRINGS.ROW_FAILED`, reported
+  against the entry's id) now also rolls the shared row back to the children it held before that
+  entry started, so an entry that raises half-drawn takes its own widgets out with it and the entry
+  beside it is untouched. With nothing else in the row, the row is dropped — which is what W16 did
+  with the one line an entry had to itself — and it is `Release`d rather than simply forgotten,
+  because a row the scroll never took is a row no `ReleaseChildren` will ever reach. The entries
+  after a failure keep packing, so a free column is taken by the next entry that draws.
+- **Out of range reads as usable, not as an error.** The value is floored and clamped into `1..2`;
+  anything that is not a number reads as `1`, and a host that passes `40` by mistake gets two
+  columns rather than a page of slivers.
+
+  **Two is arithmetic, measured against a width that is a conservative choice.** Two floors bind
+  the count, and it is worth being exact about which part is which.
+
+  The **label floor is AceGUI's**. A `Label` that has been given an image moves the image ON TOP of
+  the name, centered, with the name wrapped underneath, whenever the frame leaves it under 200px
+  beside that image — `if (width - imagewidth) < 200`, AceGUI-3.0's `UpdateImageAnchor` in
+  `widgets/AceGUIWidget-Label.lua`, which the `InteractiveLabel` an entry is drawn with hijacks
+  whole. An entry's icon is 16px, so its name needs `16 + 200 = 216px` of label.
+
+  The **X floor is this library's**. The delete control's frame is an absolute `26px`, so the names
+  have to leave `cols * 26` behind after taking their `0.90` of the row — `content >= 260 * cols`.
+
+  Both are measured against the **content** width, and that number the library does know about
+  itself: a page's widgets are laid out inside the AceGUI `ScrollFrame` that `anchorScroll` anchors
+  (`LibKa0s/Options.lua:877-883`), which insets it from the panel body by `L.CONTENT_LEFT` and
+  `L.CONTENT_RIGHT` — `12` and `28`, declared as `PADDING_X - 4` and `PADDING_X + 12` at
+  `LibKa0s/Options.lua:187-188` — and `OptionsScroll.lua`'s always-shown-scrollbar patch then takes
+  a further `GUTTER` of `20` off the content width (`LibKa0s/OptionsScroll.lua:34`, forced on every
+  one of these scrolls at `LibKa0s/Options.lua:929`). **Content is the panel's width less 60**, and
+  the `0.98` these widths sum to is the clip inset on top of that.
+
+  | Columns | Minimum content, default style | Minimum content, icon style | Panel it implies (default) |
+  |---|---|---|---|
+  | 1 | ~277px | 260px | ~337px |
+  | 2 | ~584px | 520px | ~644px |
+  | 3 | ~876px | 780px | ~936px |
+  | 4 | ~1168px | 1040px | ~1228px |
+
+  What is **not** derived is the panel's own width. It is whatever Blizzard's settings canvas gives
+  a registered category at the player's resolution and UI scale; nothing in this library measures
+  it at file scope and no figure for it appears anywhere in this repository. So the cap is a
+  **conservative choice**, not a measurement: two columns want a ~644px panel, which is comfortably
+  inside every canvas this collection draws a page into, and three want ~936px, which is past a
+  settings canvas rather than near it. A count the width cannot pay for is not a narrower list — it
+  is a column of icons stacked over wrapped names, and that is the one failure mode nothing
+  reports. Two is the last count that is safe without knowing the number.
+
+  The cap is flat rather than style-aware because `removeStyle` is the host's choice about a delete
+  control, and a cap that moved with it would hand two lists of the same width two different maxima
+  over a difference no player can see.
+- **At more than one column a name DOES NOT wrap.** Word wrap is turned off on the name's
+  `FontString`, so every entry is exactly one line tall and the two columns stay a grid. This is
+  not cosmetic: AceGUI's Flow centers a row's widgets on each other by `alignoffset` —
+  `frameoffset = child.alignoffset or (frameheight / 2)`, and the next child is anchored
+  `frameoffset - lastframeoffset` off its neighbor's `TOPRIGHT` — so **one** name that wrapped to
+  two lines in column one would push the name *and* the delete control in column two down with it.
+  That is a broken grid, not an uneven row.
+
+  **What a too-long name looks like.** The client truncates it, and truncation cuts the **tail**.
+  The tail is the gray `(id)` suffix, so a name too long for its column shows part of the name and
+  **no id at all**. The id is not recoverable from the row; hovering still names the spell or item
+  through the kind's own tooltip, and the host still has the id in its own store. A host that would
+  rather wrap than lose the id asks for one column.
+
+  **A single-column list wraps exactly as W23 wrapped**, byte for byte: the entry has the whole
+  row, a wrapped name pushes nothing sideways, and there is nothing to be gained by truncating it.
+  The `FontString` is put back on release, because AceGUI pools the widget across every addon in
+  the session and `Label`'s `OnAcquire` does not reset word wrap.
+- **At more than one column the entry under the cursor is lit.** The tooltip hangs off the whole
+  row there (see above), which means it can open a long way from the name the cursor is on with
+  nothing saying which of the two entries in the row it describes. `InteractiveLabel` ships a
+  `HIGHLIGHT`-layer texture over its own frame and draws nothing in it until a caller names one, so
+  naming one — `Interface\QuestFrame\UI-QuestTitleHighlight`, the same art the id suggestion
+  lines use — is the whole change. Nothing to restore on release: `InteractiveLabel`'s `OnAcquire`
+  clears it. A single-column list lights nothing, as before; its tooltip is already beside the
+  name.
+
+**What the returned `lines` table means now.** It still has **one element per entry drawn**, in
+entry order, and an entry that failed to draw still has none. At more than one column the same row
+object is returned once per entry packed into it, so `lines[i]` is the row carrying the i-th drawn
+entry — `#lines` counts entries, not rows, and `lines[1] == lines[2]` at two columns.
+
+**Absent, the render is what 23.23.3.7.3 drew**: one entry per full-width row, the name at `0.78`
+and the action at `0.20`, with no gutter, a wrapping name, no highlight, and the tooltip anchored
+to the label as before. The one exception is the icon style, where the X's frame is now an absolute
+`26px` rather than `0.06` of the row and the name takes `0.90` rather than `0.92` — see the bullet
+above. No host sees anything else change until it passes `columns`.
+
+The previous version's "What changed" section follows unchanged under
+[Previously, at 23.23.3.7.3](#previously-at-2323373).
+
+## Previously, at 23.23.3.7.3
 
 **A patch to the combat lock (O23, T3): its footprint is zero while none of the library's pages is on
 screen.** `Options.lua` 22 → **23**, `OptionsTabs.lua` 2 → **3**; nothing else moves, and no member,
@@ -626,7 +754,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `IdInput(ctx, parent, spec)` | **W16** | One add-by-id line — an edit box, an Add button and a status line — into `parent`, default the page's scroll. Resolves through `ResolveId` and calls `spec.onAdd(id)`; never writes a path and redraws nothing. With item `candidates`, pre-warms the unnamed ones and looks a name up among them before refusing it. While the player types, lists up to ten matching entries under the box, every rank its own row, to pick with a click or the keys. Returns the group, the edit box, the button and the status label. |
 | `UnnamedCandidates(kind, candidates)` | **W16** | Pure. The item candidates the client cannot name yet, each once, at most 200 — what `IdInput` asks the client for. See [`O.UnnamedCandidates`](#ounnamedcandidateskind-candidates--ids). |
 | `ID_NAME_HINT` | **W16** | A table: the default name hint per named kind (`item`, `spell`, `currency`), a copy per instance, for a host's tooltip. See [`O.ID_NAME_HINT`](#oid_name_hint). |
-| `IdList(ctx, spec)` | W16 (entry `note`: **W17**) | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry — icon, name (an item's in its quality color), gray id, an optional `note` line under the name (**W17**, drawn only for a non-empty string), and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns the entry lines. |
+| `IdList(ctx, spec)` | W16 (entry `note`: **W17**; `columns`: **W24**) | An optional heading, the `IdInput` line, then one line per `spec.entries()` entry, or `columns` entries to a line from **W24** (at most two — AceGUI's label arithmetic, not a taste) — icon, name (an item's in its quality color), gray id, an optional `note` line under the name (**W17**, drawn only for a non-empty string), and Remove or a toggle checkbox. Redraws after an add or a remove through `ctx.rebuild`, else `RefreshAllPanels()`. Returns one line per entry drawn. |
 | `ColorPair(spec)` | **C1** (`spec.bind`: **C4**) | A color swatch and its *use class color* companion, as exactly two adjacent rows. See [The schema composers](#the-schema-composers). |
 | `FontGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical six font rows, in the canonical order. Its `font` row's `values` is `O.LSMValues("font")` itself (**C3**). |
 | `BorderGroup(spec)` | **C1** (`spec.bind`: **C4**) | The canonical four border rows, optionally preceded by a *Show border* toggle. Its `borderStyle` row's `values` is `O.LSMValues("border")` itself (**C3**). |
@@ -1050,11 +1178,17 @@ Everything `IdInput` takes, plus:
 | `emptyText` | Optional line drawn, through `O.TextRow`, when there are no entries. |
 | `toggleLabel` | Optional label beside a toggle entry's checkbox. |
 | `removeStyle` | **W21**. Optional. `"icon"` draws a 16px X (`transmog-icon-remove`) at the LEFT of every entry in place of the right-hand Remove button or checkbox; a click calls `onRemove` and rebuilds; its tooltip is the `remove` string. Absent, the list is drawn as before. |
+| `columns` | **W24**. Optional, default `1`. Entries per line, packed row-major — `1 2` / `3 4` / `5 6`. Every relative width is divided by it and a gutter separates each entry from the next, so the line still sums to `0.98`. Floored and clamped into `1..2` — see [What changed at this version](#what-changed-at-this-version) for the arithmetic and for what is and is not known about the width it is measured against; a non-number reads as `1`. An entry with a `note` takes a full-width line of its own whatever the count. At more than one column a name **does not wrap**: every entry is one line tall, and a name too long for its column is truncated by the client, which cuts the tail — and the tail is the gray `(id)`, so a truncated entry shows no id. The hovered entry is lit, so the row's tooltip has a visible owner. At one column the name wraps exactly as at W23. |
 
 It draws into the page's scroll: the heading, the input line, then one line per entry, guarded per
-line. Each entry line has an `InteractiveLabel` at `0.78` and the action at `0.20`. **From W21**,
-`removeStyle = "icon"` draws an `Icon` X at `0.06` first, then the `InteractiveLabel` at `0.92`, and
-no action. The label shows
+entry. Each entry line has an `InteractiveLabel` at `0.78` and the action at `0.20`. **From W21**,
+`removeStyle = "icon"` draws an `Icon` X first — in an absolute `26px` frame around its `16px` art,
+so the frame can never be narrower than the texture it carries and the art is not flush against the
+entry's own icon — then the `InteractiveLabel` at `0.90`, and no
+action. **From W24**, `columns` puts that many entries in one line and divides each of those
+relative widths by it — `0.37`, `0.10` and a `0.02` gutter at two columns, `0.43` for the name in
+the icon style —
+and the last line of an odd count is left half filled rather than stretched. The label shows
 the entry's icon (16px), its name, and its id in gray, or `Unknown <noun> <id>` when the kind cannot
 name it. An **item**'s name is drawn in its quality color: `C_Item.GetItemQualityByID(id)` through
 the client's `ITEM_QUALITY_COLORS[quality].hex`, both read at draw time. An item whose quality the
@@ -1067,6 +1201,9 @@ the name — the same `ID_GRAY` the id already uses, its own line rather than a 
 note is a sentence and a name is a name — for a host that has something to say about why the entry
 is, or is not, actually in effect (AuraMaster's filter rules, for example). An entry with no
 `note`, or one that is not a string or is empty, draws nothing extra: byte-for-byte what W16 drew.
+**From W24** a noted entry takes a full-width line of its own inside a multi-column list, at the
+one-column widths, and anything half-packed is flushed ahead of it: a second line under a name
+cannot share a Flow row with a neighbor, and the note's own contract is worth more than the pairing.
 
 The action is Remove, or a `CheckBox` for a `toggle` entry (a starter the host can switch off
 without forgetting it), lit by `on`.
@@ -1084,7 +1221,12 @@ without forgetting it), lit by `on`.
   `Unknown item <id>` until some other redraw finds it named. Without the Item major the entry
   stays unnamed, and nothing raises.
 
-It returns the entry lines in order. It returns nil, drawing nothing, with no AceGUI.
+It returns one line per entry **drawn**, in entry order; an entry that failed to draw has none.
+**From W24**, where entries share a line the same row object is returned once per entry in it, so
+`lines[i]` is still the row carrying the i-th drawn entry. A raise inside one entry is reported
+through `lib.STRINGS.ROW_FAILED` against that entry's id and costs that entry alone: the shared row
+is rolled back to what it held before, and the entries after it keep packing. It returns nil,
+drawing nothing, with no AceGUI.
 
 ## Row fields the flow engine reads
 
@@ -1403,7 +1545,12 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
-**At 23.23.3.7.3 nothing is added either** — it narrows when the lock listens, and out of combat and with no page on screen it now does nothing at all. **At 22.23.2.7.3 no member, descriptor field or row field is added**, so a host written against
+**At 23.24.3.7.3 one optional spec field is added** — `O.IdList`'s `columns` — and nothing is
+removed or repurposed. A list that does not pass it draws what 23.23.3.7.3 drew, with one deliberate
+exception a host can see: an icon-style list's X now sits in an absolute `26px` frame instead of
+`0.06` of the row, and its name takes `0.90` instead of `0.92`, so that the frame can never be
+narrower than the texture it carries at any column count and the delete control is not flush against
+the entry's own icon. **At 23.23.3.7.3 nothing is added either** — it narrows when the lock listens, and out of combat and with no page on screen it now does nothing at all. **At 22.23.2.7.3 no member, descriptor field or row field is added**, so a host written against
 21.22.1.7.3 needs no change. What changes is behavior in combat, and only there: a page shown in
 combat is covered instead of closing the settings window, and the refusals in
 [What changed at this version](#what-changed-at-this-version) apply. Out of combat every page draws

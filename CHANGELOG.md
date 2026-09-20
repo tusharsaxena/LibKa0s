@@ -10,6 +10,88 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.47.0 — 2026-09-20
+
+Versions in this release: **OptionsWidgets minor 24** (`LibKa0s-Options-1.0` 23.24.3.7.3). Every
+other file is unchanged from v1.46.1, and the kit stays at revision 23.
+
+**`O.IdList` draws in columns.** A new optional spec field, `columns`, packs that many entries into
+each Flow row, filled row-major — `1 2` / `3 4` / `5 6` — into the same full-width row the
+two-column flow engine has always packed a pair of widgets into. Default `1`, which is what every
+list drew before and what every list that does not ask still draws, to the width.
+
+- **The widths are divided, not redesigned.** Every relative width an entry claims is divided by the
+  column count, so at two columns the name is `0.37`, the action `0.10` and the gutter after them
+  `0.02`, the icon style's name is `0.43`, and each entry is `0.49` of the row — the pair sums to
+  the same `0.98` one entry held alone, which is the clip inset `options-ui-§8` asks for. The X, the
+  icon, the name and the gray id are laid out by the same code at every count, so they line up
+  across columns too.
+- **A gutter separates each entry from the next.** AceGUI's Flow butts its children edge to edge, so
+  a gap has to be a widget; without one the default style reads `[name][Remove][name][Remove]` with
+  the first Remove flush against the name it does not belong to. It is drawn at the end of every
+  entry at more than one column and not at all at one, and it comes out of the entry's own share
+  rather than out of the line, so each entry is still exactly `0.98 / cols`.
+- **The icon style's X now takes an absolute frame WIDER than its art — 26px around 16px of atlas —
+  at every column count.** Absolute, because a relative width is multiplied by the row at layout
+  time and an AceGUI `Icon` anchors its texture TOP-centered rather than clipping it: a frame
+  narrower than the art spills the art over its neighbor. Wider than the art, because the entry's
+  own spell icon is 16px too, and a frame the size of its art left two adjacent 16x16 textures — one
+  of which deletes the row — and a 16px click target where minor 23's fraction gave about 41px. At
+  26 the `Icon`'s own geometry centers the art with 5px of padding on all four sides, so **the hit
+  area is 26x26** and does not move with the column count. The name's reserve, `ID_REMOVE_REL`,
+  moves from `0.06` to `0.08` so it still covers that frame at two columns. A single-column
+  icon-style list therefore draws its X in a wider frame and its name at `0.90` rather than `0.92`,
+  which is the visible part of this.
+- **A tooltip in a multi-column list hangs off the ROW, not the entry label.** `GameTooltip` is still
+  anchored `ANCHOR_RIGHT`; at one column the label's right edge is the list's right edge and the
+  tooltip lands outside the list, but at two a column-one label's right edge is the middle of the
+  list and the same anchor drops the tooltip over column two — over the entries the reader is on
+  their way to. The row spans the full width at every count, so the rule is the same one applied to
+  the widget that still reaches the edge. Single-column lists are anchored exactly as before.
+- **An odd count leaves the last row half filled**, the trailing entry in the left column at a
+  column's width, because nothing here is asked to fill a row.
+- **A noted entry takes a full-width row of its own** at the one-column widths, and anything
+  half-packed is flushed ahead of it. `entry.note` is a second line under the name, and a Flow row
+  cannot hold that in one column and a neighbor beside it.
+- **The per-entry guard still costs one entry.** It now also rolls the shared row back to the
+  children it held before the failing entry started, so half an entry is never drawn beside a whole
+  one; with nothing else in the row the row is dropped, as it was when an entry had the line to
+  itself. The entries after a failure keep packing into the free column.
+  A row abandoned by a failing FIRST entry is `Release`d rather than dropped: it was never added to
+  the scroll, so nothing else would ever have handed it back to AceGUI's pool.
+- **Out of range reads as usable**: floored and clamped into `1..2`, and a non-number reads as `1`.
+  Two is arithmetic, measured against a width that is a conservative choice, and the constant's
+  comment says which part is which. Two floors bind it. AceGUI's: a `Label` given an image moves the
+  image on top, centered, with the name wrapped underneath, whenever the frame leaves it under 200px
+  beside that image, so an entry's name needs `16 + 200 = 216px` of label. This library's: the X's
+  frame is absolute, so the names must leave `26 * cols` behind. Both are measured against the
+  **content** width, which is derivable here — `L.CONTENT_LEFT` and `L.CONTENT_RIGHT` (`12` and
+  `28`, `LibKa0s/Options.lua:187-188`) off the panel and then `OptionsScroll.lua`'s `GUTTER` of `20`
+  off that, so content is the panel less 60. Two columns want ~584px of content, ~644px of panel;
+  three want ~876px and ~936px. The **panel's** width is not knowable at file scope and nothing in
+  this repo measures it, so the cap is stated as a conservative choice rather than dressed in a
+  measurement. The cap is flat rather than style-aware because `removeStyle` is the host's choice
+  about a delete control, not a fact about the page's width.
+- **At more than one column an entry name does not wrap.** Word wrap is turned off on the name's
+  `FontString`, so every entry is exactly one line tall. It is not cosmetic: AceGUI's Flow centers a
+  row's widgets on each other by `alignoffset`, so one name wrapping to two lines in column one
+  pushes the name *and* the delete control in column two down with it — a broken grid rather than an
+  uneven row, and "Holy Word: Chastise (200200)" is the kind of entry that reaches it. A name too
+  long for its column is truncated by the client, and truncation cuts the **tail**: the tail is the
+  gray `(id)` suffix, so a truncated entry shows part of the name and **no id**. Hover still names
+  the spell or item. The `FontString` is put back on release, because AceGUI pools the widget across
+  every addon in the session. **A single-column list wraps exactly as minor 23 did**, byte for
+  byte; a host that would rather wrap than lose the id asks for one column.
+- **At more than one column the hovered entry is lit.** The tooltip hangs off the whole row there,
+  which can open it a long way from the name the cursor is on; `InteractiveLabel` ships a
+  `HIGHLIGHT`-layer texture and draws nothing in it until a caller names one, so it now wears the
+  same art the id suggestion lines use. Nothing to restore on release — its `OnAcquire` clears it.
+  A single-column list lights nothing, as before.
+
+`lines`, the table `O.IdList` returns, still has one element per entry drawn, in entry order. Where
+entries share a row the same row object is returned once per entry in it, so `lines[i]` is still the
+row carrying the i-th drawn entry. Cases: `tests/test_options_widgets.lua` (sixteen more).
+
 ## v1.46.1 — 2026-09-19
 
 Versions in this release: **Options minor 23** and **OptionsTabs minor 3** (`LibKa0s-Options-1.0`

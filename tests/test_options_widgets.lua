@@ -1098,6 +1098,21 @@ local function listBench(entries, spec)
   return O, rec, ctx, lines, log
 end
 
+--- The entry ROWS an IdList actually added to the scroll, in order -- the groups whose first child
+--- is an entry's name or its X, which is every group the list added except the input line. The
+--- returned `lines` table cannot answer this on its own once entries share a row: it has one
+--- element per ENTRY, and at two columns the same row is in it twice.
+local function listRows(O, ctx)
+  local rows = {}
+  for _, w in ipairs(O.EnsureScroll(ctx).children) do
+    local first = w.children and w.children[1]
+    if first and (first.type == "InteractiveLabel" or first.type == "Icon") then
+      rows[#rows + 1] = w
+    end
+  end
+  return rows
+end
+
 --- The input group an IdList drew: the first SimpleGroup in the scroll holding an EditBox.
 local function listInput(O, ctx)
   for _, w in ipairs(O.EnsureScroll(ctx).children) do
@@ -1151,6 +1166,370 @@ test("IdList: an empty-string or non-string note draws nothing", function()
   -- red under: an empty or non-string note drawing a blank/garbage line anyway
   assertEqual(#lines[1].children, 2, "an empty note draws no line")
   assertEqual(#lines[2].children, 2, "a non-string note draws no line")
+end)
+
+-- ── columns (minor 24) ──────────────────────────────────────────────────────────────────────
+--
+-- The default is one entry per line, and it has to stay what minor 23 drew to the width: every
+-- consumer's list is a default-1 list until it asks otherwise.
+
+test("IdList: with no columns option each entry has its line to itself, at minor 23's widths", function()
+  local O, _, ctx, lines = listBench({ { id = 21562 }, { id = 774, toggle = true } })
+  -- red under: the column divisor reaching a list that never asked for columns
+  assertEqual(#lines, 2, "one line per entry")
+  assertTrue(lines[1] ~= lines[2], "and no two entries share one")
+  assertEqual(#listRows(O, ctx), 2, "two rows in the scroll, one per entry")
+  assertEqual(#lines[1].children, 2, "name and action, and no gutter after them")
+  assertNear(lines[1].children[1].relativeWidth, 0.78, 1e-9, "the name")
+  assertNear(lines[1].children[2].relativeWidth, 0.20, 1e-9, "the action beside it")
+  local O2, _, ctx2, icons = listBench({ { id = 21562 } }, { removeStyle = "icon" })
+  assertEqual(icons[1].children[1].width, 26, "the X, in a frame wider than its 16px art")
+  assertEqual(icons[1].children[1].imageSize[1], 16, "which is still the art it carries")
+  assertNear(icons[1].children[2].relativeWidth, 0.90, 1e-9, "and the name taking the rest")
+  assertEqual(#listRows(O2, ctx2), 1)
+end)
+
+test("IdList: columns = 2 packs entries two to a line, row-major, at half the widths", function()
+  local O, _, ctx, lines = listBench({
+    { id = 21562 }, { id = 774 }, { id = 99999 }, { id = 6948 },
+  }, { columns = 2 })
+  -- red under: a column count that is read but not packed (four rows), or packed column-major
+  assertEqual(#lines, 4, "one returned line per entry drawn, still in entry order")
+  assertTrue(lines[1] == lines[2], "entries 1 and 2 share the first row")
+  assertTrue(lines[3] == lines[4], "entries 3 and 4 share the second")
+  assertTrue(lines[1] ~= lines[3], "and the two pairs are different rows")
+  local rows = listRows(O, ctx)
+  assertEqual(#rows, 2, "each shared row is added to the scroll once, not once per entry")
+  assertEqual(#rows[1].children, 6, "name, action, gutter -- twice, left to right, then wrap")
+  assertEqual(rows[1].children[1].text, "Power Word: Fortitude |cff808080(21562)|r")
+  assertEqual(rows[1].children[4].text, "Rejuvenation |cff808080(774)|r", "the SECOND entry, not the third")
+  assertEqual(rows[2].children[1].text, "Unknown spell 99999")
+  -- Each entry is 0.49 of the row -- name, action and the gutter that separates it from the next --
+  -- so the pair still sums to the 0.98 one entry used to hold on its own.
+  assertNear(rows[1].children[1].relativeWidth, 0.37, 1e-9)
+  assertNear(rows[1].children[2].relativeWidth, 0.10, 1e-9)
+  assertNear(rows[1].children[3].relativeWidth, 0.02, 1e-9)
+  assertNear(rows[1].children[4].relativeWidth, 0.37, 1e-9)
+  assertNear(rows[1].children[5].relativeWidth, 0.10, 1e-9)
+  assertNear(rows[1].children[6].relativeWidth, 0.02, 1e-9)
+end)
+
+test("IdList: columns = 2 in the icon style halves the name and leaves the X alone", function()
+  local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2, removeStyle = "icon" })
+  local row = listRows(O, ctx)[1]
+  -- red under: an X scaled by the column count (its frame would fall under its own art)
+  assertEqual(#row.children, 6, "X, name, gutter -- twice")
+  assertEqual(row.children[1].width, 26, "the X keeps its absolute frame; only the name is halved")
+  assertNear(row.children[2].relativeWidth, 0.43, 1e-9)
+  assertNear(row.children[3].relativeWidth, 0.02, 1e-9)
+  assertEqual(row.children[1].__removeAtlas, "transmog-icon-remove", "still the delete art")
+  assertEqual(row.children[4].width, 26)
+  assertNear(row.children[5].relativeWidth, 0.43, 1e-9)
+end)
+
+test("IdList: an odd entry count leaves the last line half filled, not stretched", function()
+  local O, _, ctx, lines = listBench({ { id = 21562 }, { id = 774 }, { id = 99999 } }, { columns = 2 })
+  local rows = listRows(O, ctx)
+  -- red under: a trailing entry dropped with the row that never filled, or widened to fill it
+  assertEqual(#rows, 2, "the half-filled last row is still added")
+  assertEqual(#rows[2].children, 3, "the odd one out is alone in the left half of its own row")
+  assertNear(rows[2].children[1].relativeWidth, 0.37, 1e-9, "at a column's width")
+  assertTrue(lines[3] == rows[2], "and it is the line returned for entry 3")
+end)
+
+test("IdList: inside a two-column list a noted entry takes a full-width line of its own", function()
+  local O, _, ctx, lines = listBench({
+    { id = 21562 }, { id = 774, note = "hidden by rule 3" }, { id = 99999 }, { id = 6948 },
+  }, { columns = 2 })
+  local rows = listRows(O, ctx)
+  -- red under: a note line packed into a column (its second line would push the pair apart)
+  assertEqual(#rows, 3, "the half-packed row goes out ahead of the noted entry")
+  assertEqual(#rows[1].children, 3, "entry 1 alone: the entry that would have paired with it is noted")
+  assertEqual(#rows[2].children, 3, "name, note, action -- and no gutter, it is a one-column row")
+  assertEqual(rows[2].children[2].text, "|cff808080hidden by rule 3|r")
+  assertNear(rows[2].children[1].relativeWidth, 0.78, 1e-9, "drawn as a one-column entry")
+  assertNear(rows[2].children[2].relativeWidth, 0.78, 1e-9, "and the note under it with it")
+  assertNil(rows[2].children[1].__wordWrap, "which means it wraps, exactly as minor 23 drew it")
+  assertEqual(#rows[3].children, 6, "the entries after it pair up again")
+  assertTrue(lines[2] == rows[2])
+end)
+
+test("IdList: a columns value that is not a usable count is floored, clamped, or read as 1", function()
+  for _, bad in ipairs({ 0, -3, 1.8, "two", true }) do
+    local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = bad })
+    -- red under: a zero or negative divisor (a width of inf, or a row that never fills)
+    assertEqual(#listRows(O, ctx), 2, "one entry per row, as columns = 1: " .. tostring(bad))
+  end
+  local O, _, ctx, lines = listBench({
+    { id = 21562 }, { id = 774 }, { id = 99999 }, { id = 6948 }, { id = 2589 },
+  }, { columns = 40 })
+  local rows = listRows(O, ctx)
+  assertEqual(#rows, 3, "clamped to two a line, so five entries take three rows")
+  assertEqual(#rows[1].children, 6, "two entries, not three")
+  assertTrue(lines[4] == rows[2] and lines[5] == rows[3])
+  assertNear(rows[1].children[1].relativeWidth, 0.37, 1e-9, "half the name's width")
+end)
+
+test("IdList: at two columns a failing entry costs itself, not the entry beside it", function()
+  local O, rec, ctx = bench()
+  seedIds()
+  rec.chat = {}
+  -- Raise while the SECOND entry is drawing, AFTER it has put its name into the shared row: the
+  -- row has to be rolled back to the entry already in it, or half an entry is drawn beside a whole
+  -- one. A host kind, so the raise is the host's and the kinds the library ships are untouched.
+  local drawn, failing = 0, false
+  local realCreate = O.AceGUI.Create
+  O.AceGUI.Create = function(self, wtype)
+    if failing and wtype == "Button" then error("action exploded") end
+    return realCreate(self, wtype)
+  end
+  local kind = { noun = "spell", resolve = function(text) return tonumber(text) end,
+                 info = function(id) drawn = drawn + 1; failing = drawn == 2; return "Spell " .. id end }
+  local ok, lines = pcall(O.IdList, ctx, { kind = kind, columns = 2,
+    entries = function() return { { id = 11 }, { id = 22 }, { id = 33 } } end })
+  O.AceGUI.Create = realCreate
+  assertTrue(ok, "the raise never leaves the list: " .. tostring(lines))
+  -- red under: an unguarded entry (the list stops at entry 2), or a guard that drops the whole row
+  assertEqual(#lines, 2, "the two entries that drew, and no line for the one that did not")
+  local rows = listRows(O, ctx)
+  assertEqual(#rows, 1, "the survivors share the one row")
+  assertEqual(#rows[1].children, 6, "half of entry 2 was trimmed back out of it")
+  assertEqual(rows[1].children[1].text, "Spell 11 |cff808080(11)|r")
+  assertEqual(rows[1].children[4].text, "Spell 33 |cff808080(33)|r", "entry 3 takes the free column")
+  local chat = table.concat(rec.chat, "\n")
+  assertTrue(chat:find("action exploded", 1, true) ~= nil, "and the failure is printed")
+  assertTrue(chat:find("22", 1, true) ~= nil, "against the entry's own id")
+end)
+
+test("IdList: at two columns the FIRST entry of a row fails without stranding the row", function()
+  local O, rec, ctx = bench()
+  seedIds()
+  rec.chat = {}
+  -- The other half of the guard: raise while the entry that OPENS a row is drawing. Nothing else
+  -- is in that row and nothing ever will be, so it is never added to the scroll -- and a row the
+  -- scroll never took is a row no ReleaseChildren will ever reach.
+  local drawn, failing = 0, false
+  local realCreate = O.AceGUI.Create
+  O.AceGUI.Create = function(self, wtype)
+    if failing and wtype == "Button" then error("first exploded") end
+    return realCreate(self, wtype)
+  end
+  local kind = { noun = "spell", resolve = function(text) return tonumber(text) end,
+                 info = function(id) drawn = drawn + 1; failing = drawn == 1; return "Spell " .. id end }
+  local before = #O.AceGUI.__released
+  local ok, lines = pcall(O.IdList, ctx, { kind = kind, columns = 2,
+    entries = function() return { { id = 11 }, { id = 22 }, { id = 33 } } end })
+  O.AceGUI.Create = realCreate
+  assertTrue(ok, "the raise never leaves the list: " .. tostring(lines))
+  assertEqual(#lines, 2, "the two entries after it draw")
+  local rows = listRows(O, ctx)
+  assertEqual(#rows, 1, "and they pair up in one row of their own")
+  assertEqual(rows[1].children[1].text, "Spell 22 |cff808080(22)|r", "entry 2 opens it")
+  assertEqual(rows[1].children[4].text, "Spell 33 |cff808080(33)|r")
+  -- red under: the abandoned row dropped with `pending = nil` and never handed back -- it leaks
+  -- out of AceGUI's pool, one SimpleGroup per failing entry that happened to open a row
+  local freed = false
+  for i = before + 1, #O.AceGUI.__released do
+    if O.AceGUI.__released[i].type == "SimpleGroup" then freed = true end
+  end
+  assertTrue(freed, "the row the first entry abandoned goes back to the pool")
+  assertTrue(table.concat(rec.chat, "\n"):find("first exploded", 1, true) ~= nil)
+end)
+
+-- The cap is arithmetic rather than taste, so the case carries the arithmetic. Two floors bind it.
+--
+-- The LABEL floor is AceGUI's. A Label that has been given an image moves the image ON TOP,
+-- centered, with the name wrapped underneath, whenever the frame leaves it under 200px beside that
+-- image -- `if (width - imagewidth) < 200`, AceGUI-3.0's UpdateImageAnchor
+-- (widgets/AceGUIWidget-Label.lua), which the InteractiveLabel an entry is drawn with hijacks
+-- whole. A count the width cannot pay for is not a narrower list, it is a column of icons over
+-- wrapped names, and nothing anywhere reports it.
+--
+-- The X floor is this library's. The delete control's frame is ABSOLUTE (26px), so the names have
+-- to leave `cols * 26` behind after taking their 0.90 of the row.
+--
+-- Both are measured against the CONTENT width, which is what the library does know about itself:
+-- L.CONTENT_LEFT + L.CONTENT_RIGHT (12 + 28, LibKa0s/Options.lua:187-188) off the panel, and then
+-- OptionsScroll.lua's GUTTER of 20 (LibKa0s/OptionsScroll.lua:34) off that. Panel less 60.
+local ACEGUI_LABEL_MIN = 200    -- UpdateImageAnchor's threshold
+local ENTRY_ICON_PX    = 16     -- ID_ICON_SIZE, the entry's own icon
+local REMOVE_HIT_PX    = 26     -- ID_REMOVE_HIT, the X's absolute frame
+local SCROLL_INSET_PX  = 60     -- panel -> content: 12 + 28 + the scrollbar gutter's 20
+
+--- The fraction of a line one entry's NAME holds, per style, at `cols` columns: 0.98 less what the
+--- delete control takes and less the gutter, over the count. The gutter is drawn only where there
+--- is a neighbor to separate the entry from.
+local function nameRel(iconStyle, cols)
+  local base = iconStyle and 0.90 or 0.78
+  if cols > 1 then base = base - 0.04 end
+  return base / cols
+end
+
+--- The narrowest CONTENT width at which `cols` columns still draw the layout they promise, in the
+--- style `iconStyle` asks for: the wider of the label floor and (in the icon style) the X floor.
+local function minContent(iconStyle, cols)
+  local floor = (ACEGUI_LABEL_MIN + ENTRY_ICON_PX) / nameRel(iconStyle, cols)
+  if iconStyle then floor = math.max(floor, cols * REMOVE_HIT_PX / 0.10) end
+  return floor
+end
+
+test("IdList: columns is capped at two, and the cap's arithmetic is the label's and the X's", function()
+  -- red under: a cap raised past what a settings canvas can pay for. Three columns in the default
+  -- style want 876px of CONTENT -- 936px of panel -- and a panel that wide is not a thing this
+  -- library has ever been handed.
+  assertNear(minContent(false, 1), 276.92, 0.01, "one column wants ~277px of content")
+  assertNear(minContent(false, 2), 583.78, 0.01, "two want ~584px")
+  assertNear(minContent(false, 3), 875.68, 0.01, "three want ~876px")
+  assertNear(minContent(false, 4), 1167.57, 0.01, "and four ~1168px")
+  assertEqual(minContent(true, 1), 260, "the icon style's floor at one column is the X's, not the label's")
+  assertEqual(minContent(true, 2), 520, "and at two it still is -- 26px of frame per column, over 0.10")
+  -- Read the other way round: the panel a count needs is its content plus the scroll's own inset.
+  assertNear(minContent(false, 2) + SCROLL_INSET_PX, 643.78, 0.01, "two columns want a ~644px panel")
+  assertNear(minContent(false, 3) + SCROLL_INSET_PX, 935.68, 0.01, "three want a ~936px panel")
+  -- And the constant agrees with the arithmetic: three is clamped back to two.
+  local O, _, ctx = listBench({ { id = 21562 }, { id = 774 }, { id = 99999 } }, { columns = 3 })
+  local rows = listRows(O, ctx)
+  assertEqual(#rows, 2, "three entries at columns = 3 still take two rows")
+  assertEqual(#rows[1].children, 6, "two entries in the first, not three")
+  assertNear(rows[1].children[1].relativeWidth, 0.37, 1e-9, "at the two-column width")
+end)
+
+test("IdList: the X's frame is wider than its art, absolute, at every column count", function()
+  for _, cols in ipairs({ 1, 2 }) do
+    local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } },
+      { removeStyle = "icon", columns = cols })
+    local x = listRows(O, ctx)[1].children[1]
+    -- red under: a relative width on the X (0.08 / cols falls under the art on a narrow canvas, and
+    -- an Icon anchors its texture TOP-centered rather than clipping it, so the art spills sideways),
+    -- or a frame the size of the art (16px of click target, flush against the 16px spell icon).
+    assertEqual(x.width, REMOVE_HIT_PX, "an absolute 26px frame at " .. cols .. " column(s)")
+    assertNil(x.relativeWidth, "and no relative one to be multiplied down")
+    assertEqual(x.imageSize[1], ENTRY_ICON_PX, "around 16px of art -- 5px of padding on every side")
+    assertEqual(x.imageSize[2], ENTRY_ICON_PX)
+  end
+end)
+
+test("IdList: a gutter separates each entry from the next, and only at more than one column", function()
+  -- AceGUI's Flow butts its children edge to edge (`frame:SetPoint("TOPLEFT",
+  -- children[i-1].frame, "TOPRIGHT", 0, ...)`), so without a widget in between, entry one's Remove
+  -- button sits flush against entry two's NAME -- the name it does not belong to.
+  local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 })
+  local row = listRows(O, ctx)[1]
+  -- red under: no gutter at all, or a gutter that is not a real widget in the row
+  assertEqual(row.children[3].type, "SimpleGroup", "a gutter after entry one's action")
+  assertEqual(row.children[3].height, 1, "one pixel tall, so it adds nothing to the row")
+  assertNil(row.children[3].fullWidth, "and relative, not a full-width spacer that takes its own row")
+  assertNear(row.children[3].relativeWidth, 0.02, 1e-9)
+  assertNear(row.children[1].relativeWidth + row.children[2].relativeWidth
+    + row.children[3].relativeWidth, 0.49, 1e-9, "the entry's whole share of the row is still 0.49")
+  local O2, _, ctx2 = listBench({ { id = 21562 }, { id = 774 } })
+  for _, r in ipairs(listRows(O2, ctx2)) do
+    assertEqual(#r.children, 2, "nothing is drawn at one column, where there is no neighbor")
+  end
+end)
+
+--- An AceGUI whose InteractiveLabel carries the two things the real widget has and the kit's
+--- inert recorder does not: the `label` FontString behind the text, and SetHighlight. Registered
+--- through the fake's own RegisterWidgetType, run, then taken back off again.
+local function withRealLabels(fn)
+  local made = {}
+  T.mocks.__libs["AceGUI-3.0"]:RegisterWidgetType("InteractiveLabel", function()
+    local w = T.mocks.__makeAceGUIWidget("InteractiveLabel")
+    local fs = { wordWrap = true }
+    function fs:SetWordWrap(v) self.wordWrap = v and true or false end
+    w.label = fs
+    function w:SetHighlight(tex) self.highlightTexture = tex end
+    made[#made + 1] = w
+    return w
+  end, 21)
+  local ok, err = pcall(fn, made)
+  T.mocks.__libs["AceGUI-3.0"].WidgetRegistry["InteractiveLabel"] = nil
+  assertTrue(ok, tostring(err))
+end
+
+test("IdList: at more than one column an entry name is one line tall, never wrapped", function()
+  withRealLabels(function()
+    local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 })
+    local row = listRows(O, ctx)[1]
+    -- red under: word wrap left on. AceGUI's Flow centers a row's widgets on each other by
+    -- alignoffset (`frameoffset = child.alignoffset or (frameheight / 2)`, and the next child is
+    -- anchored `frameoffset - lastframeoffset` off its neighbor's TOPRIGHT), so a name that wraps
+    -- to two lines in column one moves the name AND the action in column two down with it. The
+    -- grid stops being a grid.
+    assertFalse(row.children[1].label.wordWrap, "column one's name does not wrap")
+    assertFalse(row.children[4].label.wordWrap, "nor column two's")
+    assertFalse(row.children[1].__wordWrap, "and it is recorded for a fake that has no FontString")
+  end)
+end)
+
+test("IdList: a one-column list wraps exactly as it did, and lights nothing", function()
+  withRealLabels(function()
+    local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } })
+    -- red under: the no-wrap rule leaking into the default. One entry has its whole row, a wrapped
+    -- name pushes nothing sideways, and truncating it would lose the gray id for no gain at all.
+    for _, r in ipairs(listRows(O, ctx)) do
+      assertTrue(r.children[1].label.wordWrap, "the FontString still wraps")
+      assertNil(r.children[1].__wordWrap, "and nothing asked it not to")
+      assertNil(r.children[1].highlightTexture, "no highlight either: the tooltip is already beside it")
+      assertNil(r.children[1].__highlight)
+    end
+  end)
+end)
+
+test("IdList: the no-wrap FontString is put back when AceGUI takes the widget back", function()
+  withRealLabels(function()
+    local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 })
+    local lbl = listRows(O, ctx)[1].children[1]
+    assertFalse(lbl.label.wordWrap)
+    -- red under: word wrap left off on a released widget. AceGUI pools widgets across every addon
+    -- in the session and Label's OnAcquire does not reset it, so the next consumer of this pooled
+    -- label -- in this addon or another -- would get a label that silently stopped wrapping.
+    local fs = lbl.label
+    O.AceGUI:Release(lbl)
+    assertTrue(fs.wordWrap, "release puts the FontString back the way it was found")
+  end)
+end)
+
+test("IdList: at more than one column the hovered entry is lit, so the tooltip has an owner", function()
+  withRealLabels(function()
+    local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 })
+    local row = listRows(O, ctx)[1]
+    -- red under: no highlight. The tooltip hangs off the whole ROW at two columns so that it
+    -- cannot cover the sibling column, which means it can open a long way from the name the cursor
+    -- is on with nothing saying which of the two entries it describes.
+    assertEqual(row.children[1].highlightTexture, "Interface\\QuestFrame\\UI-QuestTitleHighlight")
+    assertEqual(row.children[4].highlightTexture, "Interface\\QuestFrame\\UI-QuestTitleHighlight")
+    assertEqual(row.children[1].__highlight, "Interface\\QuestFrame\\UI-QuestTitleHighlight",
+      "recorded too, for a fake with no SetHighlight to call")
+  end)
+end)
+
+--- Hover `label` with GameTooltip:SetOwner spied; answers what it was anchored to, and how.
+local function hoverOwner(label)
+  local tip, seen = mocks.GameTooltip, {}
+  local saved = rawget(tip, "SetOwner")
+  tip.SetOwner = function(_, owner, anchor) seen.owner, seen.anchor = owner, anchor end
+  local ok, err = pcall(label.__fire, label, "OnEnter")
+  tip.SetOwner = saved
+  assertTrue(ok, tostring(err))
+  return seen
+end
+
+test("IdList: a multi-column tooltip hangs off the row, not over the column beside it", function()
+  local _, _, _, one = listBench({ { id = 21562 } })
+  local single = hoverOwner(one[1].children[1])
+  assertEqual(single.anchor, "ANCHOR_RIGHT")
+  assertTrue(single.owner == one[1].children[1].frame,
+    "one column: the label, whose right edge IS the list's right edge")
+  local O, _, ctx, pair = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 })
+  local row = listRows(O, ctx)[1]
+  -- red under: ANCHOR_RIGHT off a column-one label at two columns -- the tooltip lands squarely
+  -- over column two, hiding the entries the reader is on their way to
+  local left = hoverOwner(pair[1].children[1])
+  assertEqual(left.anchor, "ANCHOR_RIGHT", "the same anchor, on a wider owner")
+  assertTrue(left.owner == row.frame, "two columns: the row, which still reaches the list's edge")
+  local right = hoverOwner(pair[2].children[4])
+  assertTrue(right.owner == row.frame, "and the column-two entry hangs off the same row")
 end)
 
 test("IdList: Remove and a toggle call the host back, and Remove asks for a rebuild", function()

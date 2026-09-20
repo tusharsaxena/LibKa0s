@@ -1,6 +1,6 @@
 # CLAUDE.md — LibKa0s
 
-LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.60.0) —
+LibKa0s adheres to the **Ka0s WoW Addon Standard** (v2.61.0) —
 <https://github.com/tusharsaxena/WowAddonStandards>.
 
 **Read this first: LibKa0s is a library repo, not an addon.** It is in scope for the standard and it
@@ -95,25 +95,27 @@ figure in the `docs/automated-tests/` manifests that no document read, and a RES
 that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
 against a file in it.
 
-Two files, measured 2026-09-16 at v1.40.0 with
+Two files, measured 2026-09-20 at v1.47.0 with
 
 ```sh
 git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 ```
 
-| File | Lines (2026-09-16) | Disposition |
+| File | Lines (2026-09-20) | Disposition |
 |---|---|---|
-| `tests/test_options_widgets.lua` | 3285 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (~1030) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
-| `LibKa0s/OptionsWidgets.lua` | 2812 | Issue [#32](https://github.com/tusharsaxena/LibKa0s/issues/32) — the id surface out to `OptionsIds.lua`: the module-scope `id resolution` and `suggestions while typing` blocks (~585) plus the lookup, dropdown and list members inside `lib.__AttachWidgets` (~765). Leaves the makers and the flow engine at ~1460 |
+| `tests/test_options_widgets.lua` | 3664 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (lines 814–2225, 1412 of them, minor 24's `columns` block included) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
+| `LibKa0s/OptionsWidgets.lua` | 3255 | Issue [#32](https://github.com/tusharsaxena/LibKa0s/issues/32) — the id surface out to `OptionsIds.lua`: the module-scope `id resolution` and `suggestions while typing` blocks (lines 386–970, 585 of them) plus the lookup, list and suggestion-dropdown members inside `lib.__AttachWidgets` (lines 1813–3011, 1199 of them). Leaves the makers and the flow engine at 1471 |
 
 **v1.39.0 peeled the chrome, and both rows survived it.** Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16)
-named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua` (973
-lines), with its thirty-six cases in `tests/test_options_tabs.lua` (842). Both issues are closed and
-both peels are done. What they did not do is clear the cap, and the arithmetic says why rather than
-the effort: `OptionsWidgets.lua` was **1989** lines when #16 was written and **3700** when it was
-executed, because Options minor 16's id surface landed in between; it is 2812 now. A peel sized
-against the file of 2026-09-08 was never going to fit the file of 2026-09-16. The rows above are
-retargeted at what is left rather than deleted, which is the whole point of a census a gate reads.
+named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua`, which
+left v1.39.0 at 973 lines and is **1197** today, minor 22's combat lock and minor 23's dispatcher
+having landed in it since; its thirty-six cases are in `tests/test_options_tabs.lua` (842, unmoved).
+Both issues are closed and both peels are done. What they did not do is clear the cap, and the
+arithmetic says why rather than the effort: `OptionsWidgets.lua` was **1989** lines when #16 was
+written and **3700** when it was executed, because Options minor 16's id surface landed in between;
+it is 3255 now, with minor 24's columns in it. A peel sized against the file of 2026-09-08 was never
+going to fit the file of 2026-09-16. The rows above are retargeted at what is left rather than
+deleted, which is the whole point of a census a gate reads.
 
 **Both are issues, and neither is a register row.** The sibling repository doing this same work gives
 its *mirror suites* register rows rather than issues, on the argument that a suite has no seam of its
@@ -130,7 +132,8 @@ the *membership* of this table, in both directions: a file that crosses 1500 and
 turns the suite red, and so does a row for a file that has fallen back under the cap or been deleted,
 so the census cannot become a graveyard. A figure in this column is a measurement, not a claim about
 today — `OptionsWidgets.lua` was 1838 at the 2026-09-07 review and the suite 2287, then 1989 and
-2398 on 2026-09-08, and both moved while nobody was watching, which is the whole argument for having a gate rather than a paragraph.
+2398 on 2026-09-08, 2812 and 3285 on 2026-09-16, 3113 and 3541 earlier on 2026-09-20, and both moved
+while nobody was watching, which is the whole argument for having a gate rather than a paragraph.
 
 **A peel here is a release, and v1.39.0 is the worked example.** `LibKa0s/` is re-vendored
 whole-folder into eleven consumers and every file in it carries its own LibStub minor, so a peel adds
@@ -141,15 +144,27 @@ key**, an API document and a regenerated manifest — a deliberate release, not 
 2026-09-07 remediation plan ruled out splitting any file (`03_SPEC.md` § C22 non-goals) and that
 cycle's deliverable was the disposition; this cycle executed it.
 
-**The 1000–1500 band is on notice, not in breach**, measured with the same command on 2026-09-16 at
-v1.40.0: `tests/test_widgets.lua` (1493), since kit revision 17
-`testkit/mock_base.lua` (1437 — it was 1499 at kit revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that reason, and kit 22's recording surveys to `testkit/mock_record.lua` for the same one, which is what took it back down), `LibKa0s/Options.lua` (1312; 1460 at v1.46.0 with minor 22's combat lock, whose event frame and cover geometry went to `LibKa0s/OptionsTabs.lua` — 1115 — to keep it under the cap; 1465 at v1.46.1, with the dispatcher moved there too and `OptionsTabs.lua` at 1197), `LibKa0s/Perf.lua` (1308 with minor 12's latch, 1231 at v1.39.0, tracked as
-[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `tests/test_options.lua` (1303), and, since v1.34.0, `tests/test_slash.lua` (1327 at v1.42.0, with minor 14's reserved-but-unregistered case; 1302 at minor 13's restored disabled surface, 1265 at minor 12, 1054 before the gate), and `LibKa0s/Widgets.lua` (1232). They are
-named so a later reader can tell the band was looked at rather than missed; none needs a disposition
-until it crosses, and `tests/test_widgets.lua` at 1493 is seven lines from needing one. **v1.39.0's
-two new files are not even in the band** — `LibKa0s/OptionsTabs.lua` at 973 and
-`tests/test_options_tabs.lua` at 842 — and they are named here only so a reader can see that the
-peel landed clear of it rather than one edit from needing its own disposition. v1.32.0's
+**The 1000–1500 band is on notice, not in breach**, and every figure in it was re-measured with the
+same command on **2026-09-20 at v1.47.0**. It is prose rather than a second table on purpose: the
+gate above reads every backticked-path table row under this heading as a census row, so a band table
+here would be nine rows claiming to be breaches. Nine files, not the seven the band held when it was
+last written out — `tests/test_widgets.lua` (1493), `LibKa0s/Options.lua` (1465; 1312 at v1.40.0,
+then 1460 at v1.46.0 with minor 22's combat lock, whose event frame and cover geometry went to
+`LibKa0s/OptionsTabs.lua` to keep it under the cap, and 1465 at v1.46.1 with the dispatcher moved
+there too), `testkit/mock_base.lua` (1446 — it was 1499 at kit revision 21, one line from the cap;
+kit 20's id lookups went to `testkit/mock_ids.lua` for that reason, and kit 22's recording surveys
+to `testkit/mock_record.lua` for the same one, which is what took it back down), and, since v1.34.0,
+`tests/test_slash.lua` (1327 at v1.42.0, with minor 14's reserved-but-unregistered case; 1302 at
+minor 13's restored disabled surface, 1265 at minor 12, 1054 before the gate), `LibKa0s/Perf.lua`
+(1308 with minor 12's latch, 1231 at v1.39.0, tracked as
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `tests/test_options.lua` (1307),
+`LibKa0s/Widgets.lua` (1232), and **two that the last write-out missed**:
+`testkit/framework.lua` (1227), which was simply never named, and `LibKa0s/OptionsTabs.lua` (1197),
+which that write-out still recorded at **973** — v1.39.0's peel figure — two releases after minor
+22's combat lock and minor 23's dispatcher had moved into it. They are named so a later reader can
+tell the band was looked at rather than missed; none needs a disposition until it crosses, and
+`tests/test_widgets.lua` at 1493 is seven lines from needing one. `tests/test_options_tabs.lua`, the
+other file v1.39.0's peel created, is at 842 and is still clear of the band. v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
 `tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own. v1.33.0's
 font-preload cases did the same, into `tests/test_options_fontpreload.lua`.
