@@ -232,6 +232,43 @@ badge and any count quoted in the docs must agree with it.
 - widgets: the handle owns the collection's 30px gutter unless the host says otherwise
 - widgets: a box frame that cannot make textures is skipped rather than raising
 
+### test_widgets_draghandle.lua (34)
+
+- draghandle: it builds a named strip of the published height, hidden, with a label and a mark
+- draghandle: with no parent, and in a process with no CreateFrame, it answers nil
+- draghandle: a frame that cannot make textures is drawn without them rather than raising
+- draghandle: the mark's ART is 8px -- the chevron's INK rather than the chevron's BOX
+- draghandle: the mark is dimmed to the chevron's own tint, and brightens under the cursor
+- draghandle: the mark's FRAME is the full strip height, so the art shrank and the target did not
+- draghandle: the mark is anchored inside the strip's right end at the published inset
+- draghandle: the label is drawn in the same face it is measured in, and one field sets both
+- draghandle: the label is bounded by the reserve on both sides, and never wraps
+- draghandle: a label far longer than the strip cannot reach the mark
+- draghandle: it wears the host's help art, and falls to Blizzard's without any
+- draghandle: Measure is the label plus the reserve each side of it keeps clear, twice
+- draghandle: the reserve is its own terms, so the clearance beside the label can be changed alone
+- draghandle: ApplyWidth floors the natural width at the host's minimum and returns it
+- draghandle: SetLabel re-texts and re-measures, and touches no geometry of its own
+- draghandle: a measurer the client cannot build is a width of 0, not a raise
+- draghandle: the host's numeric guard is what reads every measurement
+- draghandle: dragging the strip moves the host's frame and reports both ends
+- draghandle: canDrag refuses, and a refused drag stops nothing either
+- draghandle: the strip's drag scripts reach the help mark, so the '?' is not a dead zone
+- draghandle: a host that passes no right-click leaves both frames unregistered
+- draghandle: a host that passes one gets it on the strip and on the mark
+- draghandle: no tooltip descriptor means no tooltip at all
+- draghandle: the three bands are a gold title, white body lines, then a spacer and gray footer
+- draghandle: with no surviving footer line there is no spacer either
+- draghandle: the mark shows the same tooltip the strip does
+- draghandle: a body line that answers nil is dropped, not drawn empty
+- draghandle: a footer line is re-evaluated on EVERY hover, not captured at build time
+- draghandle: the owner is the host's call, because for one host it is not a style choice
+- draghandle: a second descriptor gives the mark its own tooltip, owner and anchor
+- draghandle: a descriptor may own by the cursor while its neighbor owns by the frame
+- draghandle: a line may carry its own color, so a gold line in a white band stays gold
+- draghandle: the strip is a plain Button with a fill, never a BackdropTemplate
+- draghandle: a host with its own edge painter gets its own pixels
+
 ### test_debuglog.lua (67)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
@@ -1342,6 +1379,7 @@ badge and any count quoted in the docs must agree with it.
 | test_item.lua | 13 |
 | test_media.lua | 15 |
 | test_widgets.lua | 81 |
+| test_widgets_draghandle.lua | 34 |
 | test_debuglog.lua | 67 |
 | test_slash.lua | 109 |
 | test_launcher.lua | 22 |
@@ -1373,4 +1411,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1211** |
+| **Total** | **1245** |

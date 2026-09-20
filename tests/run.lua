@@ -61,7 +61,7 @@ _G.LK_TEST = Kit.expose{
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_env", "test_lifecycle", "test_pool", "test_item", "test_media", "test_widgets", "test_debuglog", "test_slash",
+    "test_core", "test_env", "test_lifecycle", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_debuglog", "test_slash",
     "test_launcher",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_tabs",

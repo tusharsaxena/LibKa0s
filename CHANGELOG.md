@@ -10,6 +10,117 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.48.0 — 2026-09-21
+
+Versions in this release: **WidgetsDragHandle minor 1**, a new file (`LibKa0s-Widgets-1.0` 9.1).
+`Widgets.lua` stays at minor 9, every other file is unchanged from v1.47.0, and the kit stays at
+revision 23.
+
+**The unlocked drag handle is a widget now.** `lib.DragHandle(parent, spec)` builds the labeled
+strip a player drags a movable frame by — a dark fill, a 1px gold edge, a centered gold
+`GameFontNormalSmall` label and a help mark in its far end. AuraMaster drew one per container and
+ConsumableMaster drew one over its macro bar, and the two were the same widget twice: the same 18px
+strip, the same 2px gap, the same 24px of padding, the same help `Button` at `RIGHT, -4` over the
+same Blizzard fallback texture, and the same `label + PAD + HELP * 2` width. That is the argument
+the dropdown was lifted under and the argument `lib.ROW_BOX` was published under one layer down.
+
+- **The help mark's art is 8px rather than 14, and it matches the chevron in INK rather than in
+  BOX.** The precedent is the dropdown's chevron, `arrow:SetSize(12, 12)` at the same `RIGHT, -4`
+  inset (`LibKa0s/Widgets.lua:331-333`) — but a box is not a weight. The chevron's art inks 44 of
+  its 64 rows, so a 12px box of it draws 8.25px of mark; this mark's art inks all 64 and the
+  Blizzard fallback is a filled disc, so a 12px box of it draws 12. Against the small label face's
+  cap height (FRIZQT\_\_ at 10px, a cap of roughly 7px) that is about 1.7x the text it annotates,
+  where the chevron is about 1.1x. 8 is the chevron's ink, and it is a floor: below it the "?"
+  loses the gap between its hook and its dot. A draft computed the size from the label's font height
+  and was described as growing with a larger face — untrue, since the cap equalled the default, and
+  it rested on an unevidenced, locale-dependent claim about `GameFontNormalSmall`. Nothing reads a
+  font.
+- **The mark wears the chevron's own tint and brightens under the cursor.** Both copies drew it at
+  full white, the brightest element on a strip whose label is gold `1, 0.82, 0` on a dark fill. The
+  chevron carries `arrow:SetVertexColor(0.7, 0.7, 0.72)` (`LibKa0s/Widgets.lua:335`), set by the
+  widget so that shared white art wears the widget's gray rather than its own; the mark takes the
+  same tint from the same place, at alpha 1 — vertex color multiplies white art, where alpha would
+  fade the mark toward the fill behind it. Unlike the chevron the mark is its own `Button`, so it
+  goes full white on `OnEnter` and back on `OnLeave`.
+- **The label is bounded, not only centered.** `LEFT` and `RIGHT` at `RESERVE` with word wrap off
+  and one line, so a label longer than the strip truncates inside its own half instead of running
+  under the mark and past the gold edge. Both copies anchored the label by a lone `CENTER` point,
+  which has no width of its own and grows both ways: a host floor narrower than the text, a
+  `SetLabel` with no `ApplyWidth` after it, or a client that cannot build a measurer all get there.
+- **`HELP_GUTTER` is exact rather than floored.** The art is placed by `SetPoint("CENTER")`, which
+  halves `HELP_HIT - HELP` whatever its parity, so a floored term in `RESERVE` would advertise a
+  clearance the layout does not draw as soon as those two differ by an odd amount.
+- **The mark's frame is 18px — the strip's full height — so the art shrank and the click target did
+  not.** It is the only right-click affordance on AuraMaster's strip and it opens a settings page;
+  12×12 was not a target to leave it with. `HELP_HIT` is the `Button`, `HELP` is the texture centered
+  inside it, `HELP_GUTTER` is the 3px between them. Same shape `O.IdList`'s remove icon took at
+  v1.47.0 — 16px of atlas inside a 26px frame.
+- **The clearance between the label and the mark is 12px, where both copies spent 8.** That gap was
+  the complaint, and shrinking the art alone did not move it: both copies reserved
+  `PAD / 2 + HELP - HELP_INSET`, and with `HELP` on both sides of that expression 14 → 12 left the 8
+  exactly where it was. `HELP_CLEAR` names it so it can be changed alone.
+- **The reserve is spent twice in the width, so this is a layout change too.** `Measure()` is
+  `labelWidth + RESERVE * 2` — once on the right for the inset, the frame and the clearance, once on
+  the left as the matching gap that keeps the label optically centered. At 29 per side against the
+  copies' 26, a strip's natural width grows by **6px**: invisible wherever the strip is floored by
+  something wider, visible on a narrow one, which is where the crowding was.
+  `handle:ApplyWidth(minWidth)` owns the arithmetic so a host can never restate it.
+- **`lib.DRAG_HANDLE` publishes `HEIGHT`, `GAP`, `HELP`, `HELP_HIT`, `HELP_INSET` and `HELP_CLEAR`,
+  with `HELP_GUTTER` and `RESERVE` computed from them**, on `lib.ROW_BOX`'s precedent: a host that
+  copies the numbers back into its own constants file is the drift this removes. There is no `PAD`:
+  the copies' `24` silently carried the clearance, the inset and half the mark, and splitting it is
+  what made the clearance changeable on its own.
+- **Every tooltip line may be a function, and it is called on every hover.** A `nil` return drops
+  the line, and the blank spacer before the gray footer band is emitted from what survived the hover
+  rather than from the descriptor. That is what lets ConsumableMaster's last line read off the live
+  lock state and AuraMaster's "Attached — …" line appear only while the container is attached.
+- **A line may also carry its own color, `{ entry, r, g, b }`, and one line needed it.** AuraMaster
+  draws its conditional "Attached — …" line gold, in the body, with no blank line above it. Bands
+  that were each one color would have recolored it white or pushed it into the gray footer behind a
+  spacer. **Adoption changes no pixel of that tooltip.**
+- **The strip and the help mark may carry different tooltips.** `spec.tooltip` is shown by both,
+  which is AuraMaster's case and stays one field; `spec.helpTooltip` is a second descriptor the mark
+  shows instead. ConsumableMaster titles its strip "Consumable Master" with a one-line body and its
+  mark "Macro bar" with three body lines, a gray footer and a different anchor — a shape with one
+  descriptor for both frames would have merged the two on adoption, silently, in the host this
+  widget exists for.
+- **`tooltipOwner` is a correctness knob and the spec requires it to be.** AuraMaster's anchor
+  inherits `DisableUntrustedLayoutScriptsTemplate` and the restriction reaches every frame under it,
+  so the client refuses `GameTooltip:SetOwner` on the strip or the mark; that host owns by `UIParent`
+  at the cursor and ConsumableMaster owns by the frame hovered — `ANCHOR_TOP` off the strip,
+  `ANCHOR_TOPRIGHT` off the mark. A widget that picked one would leave the other with no tooltip at
+  all, and only in-game. "The frame hovered" is now literal: the strip owns by the strip, the mark by
+  the mark, and `owner` / `anchor` may be set per descriptor as well as per spec.
+- **The strip's drag scripts reach the mark**, so a left-drag that starts on the "?" moves the frame
+  instead of landing in a dead zone. AuraMaster's copy did that; ConsumableMaster's did not.
+- **A host that passes no `onRightClick` gets no click registration at all**, on either frame — an
+  empty handler on a registered button swallows the click.
+- **A plain `Button` with a fill and four 1px edge strips, never a `BackdropTemplate`.** Under an
+  anchor attached to another frame the strip's size can read secret and `SetBackdrop` does
+  arithmetic on it every set and every resize. ConsumableMaster's handle loses its backdrop on
+  adoption: the pixels are the same, the hazard is not. `spec.name` keeps its global frame name.
+- **The label is measured on a hidden, unanchored FontString of the widget's own**
+  (`lib.__DragHandleMeasurer`), and every read goes through the host's `spec.number` guard.
+  AuraMaster's label hangs off an anchor that inherits secret geometry, and reading its own width
+  raised "attempt to perform arithmetic on a secret number value" out of combat.
+- **`spec.labelFont` sets the face the label is drawn in and the face it is measured in, together.**
+  A draft split them across a hardcoded face and a separate `measureFont`, so a host that set one
+  measured a width the strip never drew — and a label measured narrower than it renders runs into
+  the mark.
+- **The constructor returns a hidden handle, and that is the file's one visibility call.** A strip is
+  born with no width and no anchor point, so a handle that came back visible would flash a
+  zero-width box at its parent's center until the host's first pass. Nothing shows it again.
+
+**It ships as a second file in the Widgets major, not as more of `Widgets.lua` and not as a major of
+its own.** Written into `Widgets.lua` the surface took that file to 1540 lines, over `layout-§1`'s
+cap; `LibKa0s/WidgetsDragHandle.lua` is guarded with the same paired-minor idiom the Options family
+uses (`lib.__dragMinor` against `lib.__dragShellMinor == lib.MINOR`). A major of its own would have
+cost a `core/…Setup.lua` seam in all eleven consumers, nine of which will never draw a handle.
+**A consumer's re-vendor therefore gains a file**: a copy that took only the files it already had
+would leave `LibKa0s.xml` naming a file that is not on disk. Its thirty-four cases are in
+`tests/test_widgets_draghandle.lua`, a suite of its own because `tests/test_widgets.lua` was seven
+lines from the same cap.
+
 ## v1.47.0 — 2026-09-20
 
 Versions in this release: **OptionsWidgets minor 24** (`LibKa0s-Options-1.0` 23.24.3.7.3). Every

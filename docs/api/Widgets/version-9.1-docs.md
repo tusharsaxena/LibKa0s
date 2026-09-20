@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 9
+# `LibKa0s-Widgets-1.0` — version 9.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,77 +8,100 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **9** |
-| Shipped in | v1.24.0 – v1.47.0 |
-| Status | Superseded |
-| Supersedes | [version 8](./version-8-docs.md) |
-| Superseded by | [version 9.1](./version-9.1-docs.md) — `lib.DragHandle`, the unlocked drag strip |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 9 }` |
+| Files and minors | `Widgets.lua` minor **9** · `WidgetsDragHandle.lua` minor **1** |
+| Shipped in | v1.48.0 |
+| Status | **Current** |
+| Supersedes | [version 9](./version-9-docs.md) — which had no drag-handle surface at all |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 9, WidgetsDragHandle = 1 }` |
 
 ## What changed at this version
 
-**`ReorderList` grows the row's bounded box, and one lib-level table publishes its values.**
-`Dropdown`, `CloseMenu`, `CopyWindow` and every instance method are byte-for-byte unchanged, and so
-is the whole of the drag gesture. What is new is `lib.ROW_BOX`, `opts.rowBox`, `opts.rowBoxInset` and
-`spec.dimmed` on `AddRow` — and one **default that moves**: `handleSize` is now `30` rather than
-`24`.
+**A second file joins the major, and one new lib-level member comes with it: `lib.DragHandle`.**
+`Dropdown`, `CloseMenu`, `CopyWindow`, `ReorderList`, `lib.ROW_BOX` and every instance method are
+byte-for-byte unchanged, and `Widgets.lua` does not move — it stays at minor **9**. What is new is
+`LibKa0s/WidgetsDragHandle.lua` at minor **1**, carrying `lib.DragHandle`, `lib.DRAG_HANDLE` and
+`lib.__DragHandleMeasurer`. A file added to an existing major moves that major's version key, which
+is why this document is `9.1` and its predecessor was `9`.
 
-### The row box, and why it is the widget's
+**Why a second file rather than more of `Widgets.lua`:** `layout-§1`'s 1500-line cap, and nothing
+else. The surface written into `Widgets.lua` took that file to 1540 lines, which is a breach needing
+a disposition; the file was already in the 1000–1500 band at 1232. It is guarded with the same
+multi-file idiom the Options family uses — `lib.__dragMinor` paired against `lib.__dragShellMinor ==
+lib.MINOR` — so a handle from one vendored copy can never attach to a shell from another in silence.
+It is **not** a major of its own, which would have cost a `core/<Name>Setup.lua` seam in all eleven
+consumers, nine of which will never draw a handle.
 
-**A deliberate reversal, recorded as one.** Version 8 said this widget owns "the handle, the copy
-that follows the cursor, the insertion line, the index arithmetic, the clamp, and nothing else". It
-now also owns the **row box** — a faint fill and a 1px border on every registered row — because "a
-draggable row looks like this" is a property of the **collection** (`options-ui-§18`), and a property
-of the collection cannot live in two consumers' private code. It did: MultiMeters drew a 6% white
-fill and no border, ConsumableMaster drew nothing at all, and that is the drift.
+### The drag handle, and why it is the widget's
 
-**The row's contents are still entirely the consumer's.** Nothing about `AddRow`'s content contract
-changes; what moved is the box *under* them.
+AuraMaster drew one per container (`modules/Anchors.lua`) and ConsumableMaster drew one over its
+macro bar (`modules/MacroBar.lua`), and the two were the same widget twice. Byte-identical in both:
+`HANDLE_H = 18`, `HANDLE_GAP = 2`, `HANDLE_PAD = 24`, `HANDLE_HELP = 14`; a centered
+`GameFontNormalSmall` label at `1, 0.82, 0`; a help `Button` anchored `RIGHT, -4`; the icon taken
+from the host's `help` art with `Interface\FriendsFrame\InformationIcon` as the last rung; and the
+width `textW + HANDLE_PAD + HANDLE_HELP * 2`. That is the same argument the dropdown was lifted
+under and the same argument `lib.ROW_BOX` was published under — a drag handle over a frame the
+player moves is a draggable row's sentence one frame up.
 
-| Field | Value | Meaning |
-|---|---|---|
-| `lib.ROW_BOX.FILL` | `{ 1, 1, 1, 0.06 }` | the box's background — MultiMeters' shipped fill, now everyone's |
-| `lib.ROW_BOX.FILL_DIM` | `{ 1, 1, 1, 0.03 }` | the same for a row drawn dimmed |
-| `lib.ROW_BOX.EDGE` | `{ 1, 1, 1, 0.12 }` | the 1px border, all four sides — the part nobody had |
-| `lib.ROW_BOX.EDGE_DIM` | `{ 1, 1, 1, 0.06 }` | dimmed |
-| `lib.ROW_BOX.EDGE_SIZE` | `1` | edge thickness |
-| `lib.ROW_BOX.HANDLE_W` | `30` | the gutter the handle owns at the row's far left; row contents start beyond it |
+**The mark's art is 8px, not 14 — and it matches the chevron in ink, not in box.** It is a fixed
+number, derived from nothing at runtime. The precedent is the dropdown's chevron,
+`arrow:SetSize(12, 12)` at the same `RIGHT, -4` inset (`LibKa0s/Widgets.lua:331-333`) — but a box is
+not a weight. The chevron's art is the catalog's `chevron-down`, whose glyph inks 44 of its 64 rows,
+so a 12px box of it draws **8.25px** of mark. This mark's art is `help`, whose `?` inks all 64, and
+the Blizzard fallback is a filled disc and is certainly no more inset: a 12px box draws **12px**.
+Both measurements are of the catalog TGAs, which is what both hosts resolve `help` to. Against
+the small label face's cap height — FRIZQT\_\_ at 10px, a cap of roughly 7px — that is about
+**1.7×** the text the mark annotates, where the chevron is about **1.1×**. At 8 the ink is the
+chevron's ink. 8 is a floor rather than a direction of travel: below it the `?` loses the gap
+between its hook and its dot at 100% UI scale, and the click target never moved with the art.
 
-They are white and low-alpha rather than a chosen hue, so a box reads the same over whatever the
-host's page is painted with. Read them off the table; a host that copies the numbers into its own
-constants file is the drift publishing them prevents.
+> **An intermediate draft shipped 12 and was wrong for a subtler reason than 14 was.** It cited the
+> chevron and matched it in the one dimension that does not reach the player's eye, while leaving
+> the mark at full white beside a gold label — so the annotation was both larger and brighter than
+> the text it annotates. Size was only half the lever; see **the mark's tint** below.
 
-**A frame carrying five textures, not five textures on the host's frame.** Both consumers hand over
-frames their UI framework pools, and a texture is not a widget: nothing releases it and nothing hides
-it, so one created on a pooled frame rides that frame back into the pool and reappears the next time
-it is handed out for something else entirely. Boxes are therefore pooled and reclaimed on `Cancel()`
-on exactly the same terms as the handles — a `Cancel` that reclaimed only half of them would be a fix
-that looked complete. The box sits one frame level **below** the row, because a child frame is one
-level above its parent by default and a box left there is a box painted over the row's own label.
+> An earlier draft of this surface computed the art from the label's font height —
+> `round(labelHeight × 1.2)`, floored at 10 and capped at `HEIGHT - 6` — and described it as a size
+> that grows with a larger face. It was a derivation in name only. The cap equalled the default, so
+> the arithmetic could only ever move the size **down**, and the `GameFontNormalSmall is 10px` fact
+> the whole thing rested on had no evidence in this repo and is locale-dependent. The number is the
+> same 12; what changed is that it no longer claims to have been computed.
 
-**Adopting this is a deletion as well as a re-vendor.** MultiMeters must delete its own `block.bg`
-fill in the same commit as the re-vendor, or the two fills stack. ConsumableMaster has nothing to
-delete. `rowBox = false` exists for a consumer that must keep its own, and no consumer in the
-collection uses it.
+**The mark's tint is the chevron's own, and it brightens under the cursor.** Both copies drew the
+mark at full white — the brightest element on a strip whose label is gold `1, 0.82, 0` on a dark
+fill. The chevron does not: it carries `arrow:SetVertexColor(0.7, 0.7, 0.72)`
+(`LibKa0s/Widgets.lua:335`), set by the widget rather than by the host, which is what makes shared
+white art wear the widget's gray instead of its own. The mark takes the same tint from the same
+place, at **alpha 1** — vertex color multiplies white art, which is what the catalog's art is built
+for, where alpha would fade the mark toward the fill behind it. Unlike the chevron the mark is its
+own `Button`, so it goes to full white on `OnEnter` and back on `OnLeave`; a mark dimmed at rest
+with no response to the cursor reads as decoration rather than as a control.
 
-**It owns a gesture, not a list.** `ReorderList` gives a host drag-to-reorder: the handle, the box,
-the copy that follows the cursor, the insertion line, the index arithmetic and the clamp. It owns
-**no row content whatsoever**. The host builds its rows however it already does — AceGUI containers,
-raw frames, anything — registers each one, and gets an `onMove(from, to)` callback.
+**The mark's frame is 18px — the full strip height — and that is a different number from its art.**
+The art shrank; the click target did not. This control is a destructive-adjacent one on
+ConsumableMaster and the only right-click affordance on AuraMaster's strip, so an 8×8 button was
+not acceptable. `HELP_HIT` is the `Button`, `HELP` is the texture centered inside it, and
+`HELP_GUTTER` is the `(18 - 8) / 2 = 5px` that separates them on all four sides. It is the same
+shape `O.IdList`'s remove icon took one layer down — `ID_REMOVE_SIZE = 16` of atlas inside an
+`ID_REMOVE_HIT = 26` frame — rather than a second answer to the same question.
 
-That boundary is where it is because of what the two adopting lists actually look like. MultiMeters'
-Columns page draws a state glyph and a statistic name. ConsumableMaster's priority list draws a live
-item tooltip, a crafting-quality glyph, a pick star, a score button and a remove button. Neither
-would accept a widget that owned its row, and a `render(row, item)` callback wide enough for both is
-not an abstraction — it is a hole shaped like two addons. What the two lists genuinely share is the
-gesture, which is also the only part that was hard: it took four rounds to get right against a live
-client, and the row content took none.
+**The clearance beside the label is 12px, where both copies spent 8.** That gap was the actual
+complaint, and shrinking the art alone did not touch it: both copies reserved
+`PAD / 2 + HELP - HELP_INSET` on the label's right, and because `HELP` sat on both sides of that
+expression, 14 → 12 left the 8 exactly where it was. `HELP_CLEAR` names the gap so it can be moved
+on its own, and it is also the label's own right **bound** — the label is anchored `LEFT` and
+`RIGHT` at `RESERVE`, with word wrap off, so a label longer than the strip truncates inside its half
+instead of running under the mark, and `RESERVE` — what each side of the label gives up — is computed from
+`HELP_INSET + HELP_HIT - HELP_GUTTER + HELP_CLEAR`, never typed.
 
-**What a host still decides:** where the handle sits, how big it is, what art it wears, how tall a
-row is, and whether the list has one group or two. What it does **not** decide is what a drag looks
-like — the ghost's alpha, the gold insertion line, the fade on the row you picked up. That is the
-part every list in the collection should share, and a host that could restyle it would defeat the
-reason this is a library at all.
+**The reserve feeds the layout, which is why `Measure()` is on the widget.** `RESERVE` is spent
+**twice**: once on the right, where it pays for the inset, the frame and the clearance in front of
+the art, and once on the left as the matching empty gap that keeps the label optically centered. At
+29 per side against the copies' 26, a strip's natural width grows by **6px**. Invisible wherever
+the strip is floored by something wider (ConsumableMaster's bar, AuraMaster's element size); visible
+on a narrow strip, which is exactly where the crowding was. Because the arithmetic lives beside the
+constants, the two cannot drift apart again — and a host that keeps a local copy of the formula
+reintroduces the drift the move exists to remove.
 
 ## What this major is
 
@@ -416,9 +439,222 @@ container. A texture belongs to its own frame's draw layers, so one created on t
 so the line stopping is the only feedback there is; without it a working clamp is indistinguishable
 from a broken drag.
 
+## The unlocked drag handle
+
+**`lib.DragHandle(parent, spec)` → `handle` or `nil`.** A labeled strip with a help mark in its far
+end, shown while a movable frame is unlocked and dragged to move it. A plain constructor with
+everything per-instance: AuraMaster calls it once per container and ConsumableMaster exactly once,
+and nothing in the file is shared between instances but the measuring FontStrings.
+
+It answers `nil` with no `parent`, and `nil` in a process with no `CreateFrame` — a host must be
+ready for that and simply not draw a strip, the same posture every other member here takes.
+
+### `lib.DRAG_HANDLE`
+
+The canonical values, published for the reason `lib.ROW_BOX`'s are: a host that copies them into its
+own constants file is the drift this replaces. Read them off the table.
+
+| Field | Value | Meaning |
+|---|---|---|
+| `HEIGHT` | `18` | the strip's height |
+| `GAP` | `2` | the gap a host leaves between the strip and the frame it moves |
+| `HELP` | `8` | the mark's **art**: the texture's edge — **14 in both copies before this version** |
+| `HELP_HIT` | `18` | the mark's **frame**: the click target, the strip's full height |
+| `HELP_INSET` | `4` | px from the strip's right edge to the mark's frame |
+| `HELP_CLEAR` | `12` | px of empty space between the label's bound and the mark's art — **8 in both copies** |
+| `HELP_GUTTER` | `5` | computed: `(HELP_HIT - HELP) / 2` exactly, never floored, the margin the art is centered in |
+| `RESERVE` | `29` | computed: `HELP_INSET + HELP_HIT - HELP_GUTTER + HELP_CLEAR`, what each side of the label keeps clear |
+
+`HELP_GUTTER` and `RESERVE` are computed at load from the four fields above them rather than typed,
+so a host reading them can never be reading a stale copy of the arithmetic. `PAD` is gone: it was
+`24` of "horizontal padding around the label" that in fact carried the clearance, the inset and half
+the mark, and splitting it is what made the clearance changeable on its own.
+
+`GAP` is published rather than used: the widget never places itself, so the host spends it. AuraMaster
+also spends it in its clamp reach, `HEIGHT + GAP`.
+
+### `spec`
+
+`label` and `moveFrame` are the only required fields.
+
+| Field | Meaning | Absent |
+|---|---|---|
+| `label` **(required)** | the strip's centered text, already localized | empty |
+| `moveFrame` **(required)** | the frame `StartMoving` / `StopMovingOrSizing` are called on | the drag moves nothing |
+| `name` | global frame name (`"KCMMacroBarHandle"`) | anonymous |
+| `helpIcon` | resolved texture path for the mark, the host's `Icon("help")` | `Interface\FriendsFrame\InformationIcon` |
+| `canDrag` | `function() -> boolean`, asked at `OnDragStart` | always allowed |
+| `onDragStart` / `onDragStop` | called once the move has started / stopped; a host saves its position in the second | no-op |
+| `onRightClick` | `function()`; **without it neither the strip nor the mark registers for clicks at all** | no right-click |
+| `tooltip` | the descriptor below — shown by the strip, and by the mark unless `helpTooltip` says otherwise | no tooltip |
+| `helpTooltip` | a **second** descriptor of the same shape, shown by the help mark alone | the mark shows `tooltip` |
+| `tooltipOwner` | the default for both descriptors: `"cursor"` owns by `UIParent` at `ANCHOR_CURSOR`; anything else owns by the frame hovered | by the frame hovered |
+| `tooltipAnchor` | the default anchor point used when owning by the frame | `"ANCHOR_TOP"` |
+| `edge` | `function(frame, size, r, g, b, a)` — the host's own 1px edge painter | the widget's four strips |
+| `number` | `function(v, fallback) -> number` — a secret-safe numeric guard | `tonumber(v) or fallback` |
+| `labelFont` | the font object the label is **drawn in and measured in** | `"GameFontNormalSmall"` |
+
+**`labelFont` sets both or neither, and that is the whole point of the field.** An earlier draft
+drew the label in a hardcoded face and measured it through a separate `measureFont`, so a host that
+set one and not the other measured a width the strip never drew — and a label measured narrower than
+it renders runs into the mark. One face, read by `dhBuildLabel` and by `lib.__DragHandleMeasurer`.
+
+**One tooltip or two.** The common case is one descriptor for both frames and stays one field:
+AuraMaster shows the container's name and the same two lines whichever of the two the cursor is
+over. ConsumableMaster does not — its strip is titled *"Consumable Master"* with a one-line body and
+its mark is titled *"Macro bar"* with three body lines, a gray footer and a different anchor
+(`MacroBar.lua`). A shape with one descriptor for both frames would have merged those two tooltips
+on adoption, silently, in the host this widget exists for. `helpTooltip` is absent in the simple
+case and costs the simple host nothing.
+
+**`tooltipOwner` is a correctness knob, not a style one, and it is why the field exists.**
+AuraMaster's anchor inherits `DisableUntrustedLayoutScriptsTemplate` and the restriction reaches
+every frame anchored under it, so the client **refuses** `GameTooltip:SetOwner` on the strip or the
+mark — *"Anchoring disallowed as dependent object would inherit forbidden aspects:
+UntrustedLayoutScriptExecution"*. That host must own by `UIParent` at the cursor, which depends on
+nothing under the anchor. ConsumableMaster owns by the frame hovered — `ANCHOR_TOP` off the strip,
+`ANCHOR_TOPRIGHT` off the mark. A widget that hard-coded either would leave the other host with no
+tooltip at all, and only in-game — the headless suite cannot see it.
+
+**"The frame hovered" means the frame the cursor is actually on**: the strip owns by the strip and
+the mark owns by the mark. An earlier draft documented that in four places and owned by the strip in
+all cases; the code is what changed. `owner` and `anchor` may also be set on a descriptor itself,
+which is what lets ConsumableMaster's two anchors differ, and a descriptor's own value wins over the
+spec-level default.
+
+### The tooltip descriptor
+
+```lua
+tooltip = {
+  title  = <entry>,              -- gold, 1, 0.82, 0
+  body   = { <entry>, … },       -- white, wrapped
+  footer = { <entry>, … },       -- gray, after one blank line
+  owner  = <"cursor" | nil>,     -- overrides spec.tooltipOwner for this descriptor
+  anchor = <string | nil>,       -- overrides spec.tooltipAnchor for this descriptor
+}
+
+-- <entry> is any of:
+--   "text"                     used as it stands, in its band's color
+--   function() -> string|nil   called on every hover; a nil return drops the line
+--   { <either>, r, g, b }      the same, in a color of its own rather than its band's
+```
+
+Three bands, and the host supplies the strings. **Every entry may be a function, and it is called on
+every hover** — a string is used as it stands, a function is called and a `nil` return drops that
+line entirely. That single rule covers both hosts: ConsumableMaster's last line reads
+*"Locked. Unlock the bar…"* or *"Lock the bar…"* off the live config, and AuraMaster's
+*"Attached — set its offsets on the Layout page."* appears only while the container is attached. A
+descriptor whose strings were resolved once, in the constructor, would tell a player to unlock a bar
+they had already unlocked, forever.
+
+The blank spacer is emitted from **what survived the hover**, not from the descriptor: a `footer`
+whose every entry answers `nil` draws no spacer either.
+
+**An entry may carry its own color**, which exists for one live line. AuraMaster draws its
+conditional *"Attached — set its offsets on the Layout page."* gold, in the body, with no blank line
+above it. Bands that were each one color would have recolored that line white or pushed it into the
+gray footer behind a spacer — a visual change nobody asked for, arriving under a refactor. Written
+as `{ fn, 1, 0.82, 0 }` it is the pixels the host draws today. A `nil` return still drops the line,
+colored or not.
+
+### Instance methods
+
+| Member | Meaning |
+|---|---|
+| `handle:SetLabel(text)` | re-texts the strip. It does **not** re-apply the width |
+| `handle:Measure()` | the natural width: `labelWidth + DRAG_HANDLE.RESERVE * 2` |
+| `handle:ApplyWidth(minWidth)` | sets the width to `max(Measure(), minWidth or 0)` and returns it |
+
+`handle.label`, `handle.help`, `handle.help.icon` and `handle.bg` are readable; the strip itself is a
+`Button` and the host shows, hides, anchors and levels it.
+
+**`SetLabel` deliberately touches no geometry**, and `ApplyWidth` is a method the host calls rather
+than a pass the widget runs. Both hosts parent this strip beside a protected frame — AuraMaster's
+anchor parents an aura engine, ConsumableMaster's bar holds `SecureActionButtonTemplate` slots — and
+both defer layout work to `PLAYER_REGEN_ENABLED`. **After the constructor returns**, nothing here
+calls `SetPoint`, `SetShown`, `Show`, `Hide` or `SetWidth` of its own accord, and nothing here
+listens to an event or runs an `OnUpdate`. A widget that re-measured itself on either would poke a
+protected frame mid-fight from inside the library, where neither host's combat contract can see it.
+
+The one exception is birth: **the constructor ends on `handle:Hide()`**, and the handle comes back
+hidden. A strip is born with no width and no anchor point, because placing and sizing it are the
+host's calls, so a handle that returned visible would flash a zero-width box at its parent's center
+until the host's first pass. AuraMaster's own copy hid its handle in the same breath it built it.
+Nothing shows it again; the host says when.
+
+### `lib.__DragHandleMeasurer(face)`
+
+The hidden, **unanchored** FontString a label is measured on, one per face — `spec.labelFont`, and
+`GameFontNormalSmall` by default: the same face the label is drawn in. A test replaces this function to measure on a stand-in; that is what the `__` says.
+
+It is not tidiness. AuraMaster's label hangs off the strip, the strip off an anchor, and an anchor
+attached to an engine container inherits its **secret** geometry — reading the label's own width
+answered a secret number and the width arithmetic raised *"attempt to perform arithmetic on a secret
+number value"* out of combat. That host had already paid for this once; measuring on a string
+parented to a hidden frame on `UIParent` is what it had to do, and it is the widget's now. A host
+whose frames can read secret must also pass `number`, or the guard is decorative in the one place it
+matters.
+
+### Chrome: a plain `Button`, never a `BackdropTemplate`
+
+A fill texture at `0, 0, 0, 0.75` and four 1px edge strips at `1, 0.82, 0, 0.6`. Under an anchor
+attached to another frame the strip's size can read secret, and `SetBackdrop` does arithmetic on the
+size on every set and every resize; four rectangles read nothing. ConsumableMaster's handle **was** a
+`BackdropTemplate` and loses it on adoption — the pixels are the same, the hazard is not, and
+anything downstream that called `SetBackdropColor` on `bar.handle` would break. Nothing in the
+collection does. `spec.name` exists so the frame's global name survives the move, because a named
+frame is reachable from a player macro.
+
+### The mark is a big frame around a small texture
+
+The `Button` is `HELP_HIT` square — 18px, the strip's full height — and the texture is `HELP` square
+at 8px, centered, leaving `HELP_GUTTER = 5px` on every side. `handle.help` is the frame and
+`handle.help.icon` is the art; a host that reads a size back wants one or the other and they are not
+the same number. Both copies sized the button to its art, which on this widget's smaller art would
+have left an 8×8 click target on a control that opens a settings page.
+
+**`HELP_GUTTER` is exact, never floored**, and that is what keeps the published clearance honest:
+the art is placed by `SetPoint("CENTER")`, which splits `HELP_HIT - HELP` in half whatever its
+parity, so a floored term in `RESERVE` would advertise a clearance the layout does not draw the
+moment those two values differ by an odd amount.
+
+### The label is bounded, not only centered
+
+The label is anchored `LEFT` at `+RESERVE` and `RIGHT` at `-RESERVE` with `SetJustifyH("CENTER")`,
+`SetWordWrap(false)` and `SetMaxLines(1)`. Equal bounds and a centered justify draw exactly where a
+lone `CENTER` point drew, and the difference only shows on a label longer than the strip: a
+`FontString` with one center point has no width of its own and grows both ways, under the mark and
+out past the gold edge. `Measure()` normally sizes the strip to its own label, so the ways to get
+there are the ways the strip stops tracking the label — a host floors the width at something
+narrower (`ApplyWidth(minWidth)`), a host calls `SetLabel` and does not call `ApplyWidth` again,
+which `SetLabel` deliberately leaves to the host, or a client that cannot build a measurer measures
+`0` while still drawing the real string. Bounded, every one of them truncates inside the label's own
+half and the mark keeps its `HELP_CLEAR`.
+
+### The mark takes the strip's drag scripts
+
+A left-drag that starts on the `?` moves the frame, rather than landing in a dead zone. AuraMaster's
+copy did this and ConsumableMaster's did not; both get it from here.
+
+### What the host keeps
+
+Everything about **what it says and where it sits**: every string, the placement and the side, the
+frame level, the clamp, when the strip shows, whether a drag is allowed, what a right-click does, and
+where the moved position is saved. AuraMaster keeps `openSettings` and its combat refusal,
+`SavePosition` and its `Secrets` guards, `handleLevel` / `placeHandle` / `clampToHandle`, and one
+handle per container. ConsumableMaster keeps `savePosition`, the lock model, `applyLock`'s
+`SetShown`, the bar's `moveHint` and its own `OnDragStart`, and passes `bar:GetWidth()` to
+`ApplyWidth`.
+
+**Neither host needs a `core/…Setup.lua` seam.** Both files are in `LibKa0s.xml` and therefore
+already vendored and loaded in both addons, so adoption is one
+`LibStub("LibKa0s-Widgets-1.0", true)` at the module that draws a strip, plus a nil-tolerant
+fallback — and the honest fallback is that a build with no library draws no handle.
+
 ## Degraded
 
-**With the major absent there is no handle and, from minor 9, no box either.** That is an accepted
+**With the major absent there is no reorder handle, no row box and — from this version — no drag
+handle either.** That is an accepted
 cosmetic degradation, stated here so nobody re-solves it host-side: a host-drawn box is the drift the
 change exists to remove.
 
@@ -464,14 +700,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 9.1
-
-A second file joins the major — `WidgetsDragHandle.lua` at minor **1** — and brings one new
-lib-level member, `lib.DragHandle`, with `lib.DRAG_HANDLE` and `lib.__DragHandleMeasurer` beside it.
-`Widgets.lua` does not move: it is still minor **9**, and every member described above behaves
-exactly as it does here. A host written against this version is correct at version 9.1 unmodified.
-
-What it must know is that its **vendored payload gains a file**. `LibKa0s.xml` carries a
-`WidgetsDragHandle.lua` row, so a re-vendor that copied only the files it already had would leave
-the XML naming a file that is not on disk, and the game would fail to load it.

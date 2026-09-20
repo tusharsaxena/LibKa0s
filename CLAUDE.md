@@ -167,7 +167,13 @@ tell the band was looked at rather than missed; none needs a disposition until i
 other file v1.39.0's peel created, is at 842 and is still clear of the band. v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
 `tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own. v1.33.0's
-font-preload cases did the same, into `tests/test_options_fontpreload.lua`.
+font-preload cases did the same, into `tests/test_options_fontpreload.lua`. **v1.48.0 is the band
+paying for itself, twice in one release.** The drag handle written into `LibKa0s/Widgets.lua` took it
+to **1540** and its cases appended to `tests/test_widgets.lua` would have taken that file past the
+same line from seven under it, so both went to files of their own —
+`LibKa0s/WidgetsDragHandle.lua` (507) and `tests/test_widgets_draghandle.lua` (668), neither of them
+in the band. That is a cut chosen while the seam was still obvious rather than one sized against a
+file three releases older than the peel, which is what the two rows above record going wrong.
 
 ## Documentation map
 

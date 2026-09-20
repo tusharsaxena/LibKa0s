@@ -58,7 +58,7 @@ the file you need:
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
-| `LibKa0s-Widgets-1.0` | `<Widgets>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
+| `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsDragHandle>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
@@ -131,7 +131,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [9](./Widgets/version-9-docs.md) | `Widgets.lua` 9 | v1.24.0 | **Current** |
+| [9.1](./Widgets/version-9.1-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 1 | v1.48.0 | **Current** |
+| [9](./Widgets/version-9-docs.md) | `Widgets.lua` 9 | v1.24.0 – v1.47.0 | Superseded |
 | [8](./Widgets/version-8-docs.md) | `Widgets.lua` 8 | v1.19.0 – v1.23.0 | Superseded |
 | [7](./Widgets/version-7-docs.md) | `Widgets.lua` 7 | v1.16.0 | Superseded |
 | [6](./Widgets/version-6-docs.md) | `Widgets.lua` 6 | v1.15.0 | Superseded |

@@ -4,8 +4,8 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.47.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
-| File minor (integer) | `MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
+| Repo semver (`v1.48.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| File minor (integer) | `MINOR` / `DRAG_MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
 is offered for a major and discards the rest, so of the copies vendored across every installed addon,
@@ -23,9 +23,10 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   sixteen, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   eighteen, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Media.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
-   `Slash.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `WIDGETS_MINOR` in
+   `Slash.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `DRAG_MINOR` in
+   `WidgetsDragHandle.lua`, `WIDGETS_MINOR` in
    `OptionsWidgets.lua`, `TABS_MINOR` in `OptionsTabs.lua`, `SCROLL_MINOR`
    in `OptionsScroll.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
    `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`. The secondary files carry
@@ -174,7 +175,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the sixteen `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the eighteen `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -198,7 +199,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.47.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.48.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -391,6 +392,24 @@ Options descriptor exists. The step-9 sweep above was run against the merged `ma
 files, every one in the table; the one it found missing — ConsumableMaster's `settings/MacroBar.lua`,
 the Macro Bar's Buttons drag list — was added to the Widgets row by that sweep. `WhoGotLoots` and
 `BuffTextNotifications` are out of scope until they are on the standard at all.
+
+**Where v1.48.0 stands (2026-09-21).** One LibStub minor moves, and it is a **new file**:
+`WidgetsDragHandle.lua` at minor 1 (`LibKa0s-Widgets-1.0` 9.1). `Widgets.lua` does not move — it
+stays at 9 — and the kit stays at revision 23. It is `lib.DragHandle`, the unlocked drag strip
+AuraMaster and ConsumableMaster each drew a copy of, with the help mark at 8px rather than 14 and
+dimmed to the dropdown chevron's own tint.
+**What a consumer owes is more than the usual copy**: the payload folder gained a file and
+`LibKa0s.xml` names it, so a re-vendor that copied only the files it already had would leave the XML
+pointing at a file that is not on disk and the game would fail to load it. `cp -r LibKa0s/.` is
+already the rule and already handles this; a hand-picked copy does not. No existing member,
+descriptor field or row field changes, so no degradation stub moves — `DragHandle`, `DRAG_HANDLE`
+and `__DragHandleMeasurer` are additions, and `docs/api/Widgets/members-9.1.json` carries them.
+Adoption in AuraMaster (`modules/Anchors.lua`) and ConsumableMaster (`modules/MacroBar.lua`) is a
+deletion as well as a re-vendor — roughly 60–70 and 70–75 lines respectively — and it carries two
+visible changes in each host: every strip's natural width grows by 6px, and ConsumableMaster's
+handle stops being a `BackdropTemplate` and its "?" becomes draggable. Steps 1–6 are done in this
+repository — the gates are green (1245 cases, lint 0/0, nothing above CCN 15) — and **step 7's
+record, the tag and step 8 are not**. All eleven consumers bundle v1.46.1 or earlier on `master`.
 
 **Where v1.47.0 stands (2026-09-20).** One LibStub minor moves — `OptionsWidgets.lua` 24
 (`LibKa0s-Options-1.0` 23.24.3.7.3) — and the kit stays at revision 23. It is `O.IdList`'s

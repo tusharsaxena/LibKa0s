@@ -26,8 +26,9 @@ modules ship today:
   quality, ask the client to cache an id.
 - **`LibKa0s-Media-1.0`** — the art and type the collection draws with, inside the payload, plus the
   paths that reach them and the LibSharedMedia registration.
-- **`LibKa0s-Widgets-1.0`** — the flat-skin dropdown button, the reorderable-list drag, and the one popup menu every instance of
-  it drops, shared process-wide.
+- **`LibKa0s-Widgets-1.0`** — the flat-skin dropdown button, the reorderable-list drag, the
+  unlocked drag handle a player moves a frame by, and the one popup menu every instance of the
+  dropdown drops, shared process-wide.
 - **`LibKa0s-DebugLog-1.0`** — the on-screen debug console: the window, the copy window, the two
   formatters, the buffer, and the seam that turns logging on and off.
 - **`LibKa0s-Slash-1.0`** — the slash dispatcher, the help renderer, the schema CLI
@@ -53,7 +54,9 @@ modules and points there; it does not restate them.
    registering at all when `Core.lua` is missing or older than the minor it needs. When `Options.lua` bails that way, `OptionsWidgets.lua`, `OptionsTabs.lua`,
    `OptionsCompose.lua` and `OptionsScroll.lua` bail too on their own
    `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole five-file module is absent rather
-   than half-attached.
+   than half-attached; `WidgetsDragHandle.lua` does the same behind `Widgets.lua`. Since v1.48.0
+   the folder carries one more file than it did, which is why the copy is the whole folder and
+   never the files you happen to have.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
 3. If you adopt Perf, declare `## SavedVariables: <Addon>PerfDB` in the TOC (the global name you'll
    pass as the descriptor's `sv`). Core and DebugLog persist nothing.
@@ -76,11 +79,11 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass; the keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
 | `LibKa0s-Item-1.0` | Item identity as four primitives and no policy — read an item link, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree in writing. | `Item.lua` | [1](docs/api/Item/version-1-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [3](docs/api/Media/version-3-docs.md) |
-| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua` | [9](docs/api/Widgets/version-9-docs.md) |
+| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all, and `DragHandle`, the labeled strip with a help mark that a player drags a movable frame by. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsDragHandle.lua` | [9.1](docs/api/Widgets/version-9.1-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [14](docs/api/Slash/version-14-docs.md) |
 | `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice — with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. One `OnClick`, implementing launcher-§2's three left-click rungs plus right-click-always-opens-the-panel; LibDBIcon's own `minimap` table taken from the host. Neither broker library is a dependency: both are resolved with `LibStub(…, true)` at register time and every degradation is named rather than raised. | `Launcher.lua` | [1](docs/api/Launcher/version-1-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [23.23.3.7.3](docs/api/Options/version-23.23.3.7.3-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [23.24.3.7.3](docs/api/Options/version-23.24.3.7.3-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [12.5](docs/api/Perf/version-12.5-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
@@ -200,10 +203,10 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.47.0**: `Core = { Core = 7 }`,
+different vendored copy of each. As of **v1.48.0**: `Core = { Core = 7 }`,
 `Env = { Env = 1 }`, `Lifecycle = { Lifecycle = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`,
 `Media = { Media = 3 }`,
-`Widgets = { Widgets = 9 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 14 }`,
+`Widgets = { Widgets = 9, WidgetsDragHandle = 1 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 14 }`,
 `Launcher = { Launcher = 1 }`,
 `Options = { Options = 23, OptionsWidgets = 24, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }`,
 `Perf = { Perf = 12, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
@@ -245,6 +248,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
                         textures/ (7 generated statusbar bars) and fonts/ (JetBrains Mono, SIL
                         OFL); the two third-party sets carry their license beside them
   Widgets.lua        -- LibKa0s-Widgets-1.0, MINOR at the top of the file; needs Core
+  WidgetsDragHandle.lua -- the unlocked drag handle, same module, DRAG_MINOR of its own
   DebugLog.lua       -- LibKa0s-DebugLog-1.0, MINOR at the top of the file; needs Core
   Slash.lua          -- LibKa0s-Slash-1.0, MINOR at the top of the file; needs Core
   Launcher.lua       -- LibKa0s-Launcher-1.0, MINOR at the top of the file; needs Core
