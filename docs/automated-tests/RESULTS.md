@@ -23,6 +23,7 @@ The **Tests** cell reads `passed/skipped/total`.
 
 | Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260921-040120`](20260921-040120/) | 1.48.0 → 1.48.1 | 0/0 | 72 | 1246/0/1246 | skip | 24800 | 3522 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260921-033457`](20260921-033457/) | 1.47.0 → 1.48.0 | 0/0 | 72 | 1245/0/1245 | skip | 24790 | 3520 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260920-194447`](20260920-194447/) | 1.46.1 → 1.47.0 | 0/0 | 70 | 1211/0/1211 | skip | 24089 | 3401 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260919-214428`](20260919-214428/) | 1.46.0 → 1.46.1 | 0/0 | 70 | 1195/0/1195 | skip | 23727 | 3351 | 6.6 | 2.0 | 15 | 0 | **green** |
@@ -91,11 +92,11 @@ The **Tests** cell reads `passed/skipped/total`.
 
 ## Test suite
 
-**1245 cases** — 1245 passed, 0 failed, 0 skipped. The generated inventory
-[`20260921-033457/test-cases.md`](20260921-033457/test-cases.md) is the authority on which cases existed at this run;
+**1246 cases** — 1246 passed, 0 failed, 0 skipped. The generated inventory
+[`20260921-040120/test-cases.md`](20260921-040120/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1211 → 1245** since the previous run.
+Moved **1245 → 1246** since the previous run.
 
 No case reported a `skip`, so passed and total agree and nothing in this row claims coverage
 that was not exercised.
@@ -119,7 +120,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20260921-033457`](20260921-033457/) — **this run's measurement, not its diff.** Max CCN **15** across 3520
+Current as of [`20260921-040120`](20260921-040120/) — **this run's measurement, not its diff.** Max CCN **15** across 3522
 functions, **0** of them warned on; 9 file(s) in the 1000–1500 band and 2 over the 1500 cap
 (`layout-§1`).
 
