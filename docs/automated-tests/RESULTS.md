@@ -23,6 +23,7 @@ The **Tests** cell reads `passed/skipped/total`.
 
 | Run | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260921-033457`](20260921-033457/) | 1.47.0 → 1.48.0 | 0/0 | 72 | 1245/0/1245 | skip | 24790 | 3520 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260920-194447`](20260920-194447/) | 1.46.1 → 1.47.0 | 0/0 | 70 | 1211/0/1211 | skip | 24089 | 3401 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260919-214428`](20260919-214428/) | 1.46.0 → 1.46.1 | 0/0 | 70 | 1195/0/1195 | skip | 23727 | 3351 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260919-211837`](20260919-211837/) | 1.45.0 → 1.46.0 | 0/0 | 70 | 1189/0/1189 | skip | 23599 | 3335 | 6.6 | 2.0 | 15 | 0 | **green** |
@@ -90,18 +91,18 @@ The **Tests** cell reads `passed/skipped/total`.
 
 ## Test suite
 
-**1211 cases** — 1211 passed, 0 failed, 0 skipped. The generated inventory
-[`20260920-194447/test-cases.md`](20260920-194447/test-cases.md) is the authority on which cases existed at this run;
+**1245 cases** — 1245 passed, 0 failed, 0 skipped. The generated inventory
+[`20260921-033457/test-cases.md`](20260921-033457/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1195 → 1211** since the previous run.
+Moved **1211 → 1245** since the previous run.
 
 No case reported a `skip`, so passed and total agree and nothing in this row claims coverage
 that was not exercised.
 
 ## Lint
 
-**0 warnings / 0 errors over 70 files** (`luacheck .`).
+**0 warnings / 0 errors over 72 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -118,7 +119,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20260920-194447`](20260920-194447/) — **this run's measurement, not its diff.** Max CCN **15** across 3401
+Current as of [`20260921-033457`](20260921-033457/) — **this run's measurement, not its diff.** Max CCN **15** across 3520
 functions, **0** of them warned on; 9 file(s) in the 1000–1500 band and 2 over the 1500 cap
 (`layout-§1`).
 
