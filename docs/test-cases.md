@@ -232,13 +232,14 @@ badge and any count quoted in the docs must agree with it.
 - widgets: the handle owns the collection's 30px gutter unless the host says otherwise
 - widgets: a box frame that cannot make textures is skipped rather than raising
 
-### test_widgets_draghandle.lua (34)
+### test_widgets_draghandle.lua (35)
 
 - draghandle: it builds a named strip of the published height, hidden, with a label and a mark
 - draghandle: with no parent, and in a process with no CreateFrame, it answers nil
 - draghandle: a frame that cannot make textures is drawn without them rather than raising
 - draghandle: the mark's ART is 8px -- the chevron's INK rather than the chevron's BOX
-- draghandle: the mark is dimmed to the chevron's own tint, and brightens under the cursor
+- draghandle: the mark is dimmed to the chevron's own tint, and brightens where a click is wired
+- draghandle: a mark with no click behind it does not light up under the cursor
 - draghandle: the mark's FRAME is the full strip height, so the art shrank and the target did not
 - draghandle: the mark is anchored inside the strip's right end at the published inset
 - draghandle: the label is drawn in the same face it is measured in, and one field sets both
@@ -1379,7 +1380,7 @@ badge and any count quoted in the docs must agree with it.
 | test_item.lua | 13 |
 | test_media.lua | 15 |
 | test_widgets.lua | 81 |
-| test_widgets_draghandle.lua | 34 |
+| test_widgets_draghandle.lua | 35 |
 | test_debuglog.lua | 67 |
 | test_slash.lua | 109 |
 | test_launcher.lua | 22 |
@@ -1411,4 +1412,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1245** |
+| **Total** | **1246** |

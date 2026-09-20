@@ -10,6 +10,22 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.48.1 — 2026-09-21
+
+Versions in this release: **WidgetsDragHandle minor 2** (`LibKa0s-Widgets-1.0` 9.2). Every other
+file is unchanged from v1.48.0 and the kit stays at revision 23.
+
+**A help mark only brightens where a click does something.** `dhBuildHelp` tinted the mark to full
+white on `OnEnter` unconditionally, while `dhSetClick` registers no click at all for a host that
+passes no `onRightClick`. On ConsumableMaster — the one host that passes none — the mark lit up
+under the cursor and then did nothing, which is a control advertising itself and then declining.
+The over-tint is now chosen from `spec.onRightClick`: a host with a click still gets the full-white
+response, and a host without one gets a mark that stays at its resting gray and reads as the label
+it is.
+
+Found by the adoption review, after v1.48.0 was tagged and both hosts had already vendored it —
+which is why this is a patch rather than an amendment to that tag.
+
 ## v1.48.0 — 2026-09-21
 
 Versions in this release: **WidgetsDragHandle minor 1**, a new file (`LibKa0s-Widgets-1.0` 9.1).

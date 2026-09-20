@@ -213,14 +213,15 @@ test("draghandle: the mark's ART is 8px -- the chevron's INK rather than the che
   assertEqual(h.help.icon.__h, 8)
 end)
 
-test("draghandle: the mark is dimmed to the chevron's own tint, and brightens under the cursor", function()
+test("draghandle: the mark is dimmed to the chevron's own tint, and brightens where a click is wired",
+function()
   -- The other half of the same complaint. Both copies drew the mark at full white, the brightest
   -- element on a strip whose label is gold on a dark fill. The dropdown's chevron carries
   -- SetVertexColor(0.7, 0.7, 0.72), set by the widget so shared white art wears the widget's gray;
   -- the mark takes the same tint from the same place, and its alpha is left alone.
   -- red under: full white at rest, or a dim with no hover response on a frame that is a Button and
   -- opens a settings page.
-  local h = W.DragHandle(mocks.UIParent, baseSpec())
+  local h = W.DragHandle(mocks.UIParent, baseSpec({ onRightClick = function() end }))
   local rest = h.help.icon.__vertex
   assertEqual(rest[1], 0.7)
   assertEqual(rest[2], 0.7)
@@ -231,6 +232,20 @@ test("draghandle: the mark is dimmed to the chevron's own tint, and brightens un
   assertEqual(h.help.icon.__vertex[3], 1)
   h.help:__fire("OnLeave")
   assertEqual(h.help.icon.__vertex[3], 0.72, "and back to the resting tint when it leaves")
+end)
+
+test("draghandle: a mark with no click behind it does not light up under the cursor", function()
+  -- The brighten is the sentence "this is a control". ConsumableMaster's strip registers no
+  -- right-click at all -- dhSetClick declines to register one -- so a mark that went full white
+  -- under the cursor there advertised an action nothing was behind. Hover feedback and the click
+  -- register or decline together.
+  -- red under: a constant HELP_TINT_OVER on OnEnter, which is what the first draft shipped.
+  local h = W.DragHandle(mocks.UIParent, baseSpec())
+  h.help:__fire("OnEnter")
+  assertEqual(h.help.icon.__vertex[1], 0.7, "still the resting tint, because nothing is clickable")
+  assertEqual(h.help.icon.__vertex[3], 0.72)
+  h.help:__fire("OnLeave")
+  assertEqual(h.help.icon.__vertex[3], 0.72, "and leaving changes nothing either")
 end)
 
 test("draghandle: the mark's FRAME is the full strip height, so the art shrank and the target did not", function()
