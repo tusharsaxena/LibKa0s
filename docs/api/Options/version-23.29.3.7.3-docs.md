@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 23.28.3.7.3
+# `LibKa0s-Options-1.0` — version 23.29.3.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **28** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **29** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.51.0 |
-| Status | Superseded |
-| Supersedes | [version 23.27.3.7.3](./version-23.27.3.7.3-docs.md) |
-| Superseded by | [version 23.29.3.7.3](./version-23.29.3.7.3-docs.md) |
+| Shipped in | v1.52.0 |
+| Status | **Current** |
+| Supersedes | [version 23.28.3.7.3](./version-23.28.3.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 28, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 29, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -28,6 +28,54 @@ member is a fact about when a consumer got it, not about which file holds it tod
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**The help mark grows up (W29).** `OptionsWidgets.lua` 28 -> **29**; every other file of the major
+is unchanged, and the member manifest is identical to W28's apart from the minor and the version
+key. One **regression fix**, one **art change**, and one **new optional field**.
+
+**THE REGRESSION, and it was this library's.** W28 reserved `ID_HELP_REL = 0.05` of the row for a
+mark whose frame is ABSOLUTE, so `entryMinContent`'s mark floor came out at
+`cols * 18 / 0.05` = **720px of content at two columns**. The `ID_COLUMNS_MAX` block calls 584px
+"comfortably inside every settings canvas this collection draws a page into" and 876px "past a
+settings canvas rather than near it" -- 720 is between them, so `fitIdColumns` correctly dropped
+**every** helped list to one column. A host that adopted `help` silently lost its second column.
+The suite could not see it: `listBench` draws into 1000px, which pays for 720.
+
+The reserve is now **0.09**, derived rather than picked: it is the smallest hundredth at which the
+mark's own floor stops binding before the label floor the row already pays. Adopting `help` still
+lifts an icon-style two-column list's floor from **520px to 561px** of content -- that is the label
+floor rising as the name gives up its share, it is unavoidable, and it is stated here rather than
+buried. 561 is still under the 584 the block calls comfortable. **A helped DEFAULT-style (Remove
+button) list at two columns wants ~665px and will fall back to one column on a normal canvas: a
+host that wants help and two columns should draw the X.**
+
+**The glyph is the library's own.** W28 fell back to the client's `InformationIcon` at 8px art,
+which reads as half-drawn beside the two 16px textures an entry already carries. The default is now
+`media/icons/info.tga` -- the icon this library ships and ConsumableMaster already draws -- at
+**14px of art in a 24px frame** (art + 10, the same rule `ID_REMOVE_HIT` is built on).
+
+`lib.DRAG_HANDLE.HELP_HIT` stays 18, and the claim that the two marks share their numbers is
+retired rather than quietly broken: 18 is the drag strip's **full height**, a ceiling a settings row
+does not have.
+
+**Reaching the art across a major boundary.** `Media.Icon` needs the consuming addon's name, and a
+vendored copy cannot know its own folder. So the **Options descriptor takes an optional
+`addonName`**, resolved once per instance through `LibStub("LibKa0s-Media-1.0", true)` at call time
+-- the same shape `Core.MakeCloseButton` and DebugLog already use. Nothing is copied across the
+seam, so Options stays vendorable without Media. **Without Media, without `addonName`, or with a
+name Media does not know, the mark falls back to the client's information glyph at the new size** --
+what W28 drew. `spec.helpIcon` still wins over everything.
+
+**`entry.helpLevel` -- a severity, host-supplied.** The library reads the lines as opaque strings and
+cannot know that one means "this can never match" and another means "also in two other lists". So
+the host says: `"blocked"` tints the mark red, `"info"` leaves it the resting gold, and an entry
+with nothing to say keeps the dimmed mark and no tooltip. An unknown level reads as `"info"` rather
+than as nothing.
+
+**Backward compatible.** An entry passing a plain string or a list of strings, as W28 documented,
+draws exactly as it did -- `helpLevel` is absent, which reads as `"info"`.
+
+## Previously, at 23.28.3.7.3
 
 **A per-entry help mark, and every row lights (W28).** `OptionsWidgets.lua` 27 -> **28**; every
 other file of the major is unchanged. No member is added, removed or repurposed -- the manifest at
@@ -71,7 +119,7 @@ and the host knew that before the player picked the row and could only say so af
 turns a correction into a choice. It is short, uncolored by the library, and never wrapped,
 truncated or measured -- a host that writes a sentence there gets a sentence running off its row.
 
-## Previously, at 23.27.3.7.3
+### Previously, at 23.27.3.7.3
 
 **Four O.IdList follow-ups, none of them a surface change (W27).** `OptionsWidgets.lua` 26 -> **27**;
 every other file of the major is unchanged. No member is added, removed or repurposed -- the member
