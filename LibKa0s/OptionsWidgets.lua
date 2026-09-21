@@ -1845,8 +1845,13 @@ function lib.__AttachWidgets(O, d)
   -- widget carries no label (`SetImageSize` in the same file), so a 26px frame wraps the 16px art in
   -- exactly 5px on all four sides and the click target is 26x26. A frame the size of its own art
   -- would leave the delete control edge to edge with the 16px spell icon the name beside it draws --
-  -- two adjacent textures, one of which deletes the row -- and would cut the target minor 23's
-  -- fraction gave (about 41x26) down to 16x26. ID_REMOVE_REL is neither art nor frame: it is what
+  -- two adjacent textures, one of which deletes the row -- and would cut the click target down to
+  -- 16x26. Minor 23's 0.06 of the row was wider than that; HOW MUCH wider is not sayable in this
+  -- file, and that is the point rather than an omission. A fraction is a width only once the row's
+  -- CONTENT width is known, and the paragraph under ID_COLUMNS_MAX below states that that width
+  -- follows the panel, which is not knowable here and is measured nowhere in this repository. So
+  -- minor 23's target was whatever the player's canvas happened to make it, and 26 is the same
+  -- target at every canvas. ID_REMOVE_REL is neither art nor frame: it is what
   -- the NAME gives up so the frame has somewhere to sit, and it is a fraction because the name is.
   -- It is 0.08 rather than minor 23's 0.06 so that reserve still covers a 26px frame at two
   -- columns -- the arithmetic is under ID_COLUMNS_MAX.
@@ -2746,8 +2751,11 @@ function lib.__AttachWidgets(O, d)
     --
     -- The absolute number is ID_REMOVE_HIT, not ID_REMOVE_SIZE. The art is 16px and so is the spell
     -- icon the name beside it draws, so a frame the size of its art puts two 16x16 textures flush
-    -- against each other, one of which deletes the row, and leaves a 16px-wide click target where
-    -- minor 23's fraction gave about 41. At 26 the Icon's own geometry centers the art with 5px on
+    -- against each other, one of which deletes the row, and leaves a click target exactly 16px wide.
+    -- Minor 23's fraction gave a wider one than that, by an amount this file deliberately does not
+    -- quote: 0.06 is a width only once the row's CONTENT width is known, and that width follows the
+    -- panel, which is not knowable here (the paragraph under ID_COLUMNS_MAX says so, and nothing in
+    -- this repository measures it). At 26 the Icon's own geometry centers the art with 5px on
     -- every side -- the same 5px AceGUI already leaves above and below it -- so the hit area is
     -- 26x26, the gap to the spell icon is real, and nothing about it moves with `cols`.
     x:SetWidth(ID_REMOVE_HIT)
