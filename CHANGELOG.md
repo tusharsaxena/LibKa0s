@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## Unreleased
+## v1.50.0 — 2026-09-21
 
 Versions in this release: **OptionsWidgets minor 27** (`LibKa0s-Options-1.0` 23.27.3.7.3). Every
 other file is unchanged from v1.49.1 and the kit stays at revision 23.
@@ -47,6 +47,9 @@ The fifth finding — the multi-column tooltip anchoring off the list's right ed
 cursor is in — is closed as **no change**, with the reasoning recorded at `entryTooltip`: anchoring
 under the hovered label buys the sibling column and pays for it with every row below the cursor, and
 the debug window already shipped that and took it back.
+
+Verified against lint, tests and complexity. This library ships no `tests/perf.lua`, so the perf
+suite was skipped rather than measured — the release gate covered three suites, not four.
 
 ## v1.49.1 — 2026-09-21
 

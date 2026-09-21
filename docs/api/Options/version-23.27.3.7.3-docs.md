@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **27** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | unreleased |
+| Shipped in | v1.50.0 |
 | Status | **Current** |
 | Supersedes | [version 23.26.3.7.3](./version-23.26.3.7.3-docs.md) |
 | Superseded by | — |
