@@ -965,3 +965,35 @@ suggestCase("IdInput suggestions: the dropdown is as wide as the box looks", fun
   typeText(b, "zephyr")
   assertEqual(width, 300, "a scale the client does not answer is taken as the same")
 end)
+
+-- The host's TAG on a suggestion row (minor 28). `rank` beside it is the library's own answer about
+-- an id and a host cannot supply one; this is the other half: a short word the host knows and the
+-- library cannot. Aura Master's case is an id that is a spell's CAST rather than the aura it
+-- applies, which matches nothing -- without a tag the host could only correct the player AFTER the
+-- pick, which is a correction rather than a choice.
+suggestCase("IdInput suggestions: a host kind's suggestTag is appended after the id", function(made)
+  seedZephyr()
+  local O = Fixture.new()
+  local tagged = 191395
+  local TAG = "|cffff8000never matches|r"
+  local extra = { base = "item", suggestTag = function(id)
+    return id == tagged and TAG or nil
+  end }
+  local b = input(made, { kind = hostKind(O, extra), candidates = zephyrs }, O)
+  typeText(b, ZEPHYR)
+  local seen = {}
+  for _, row in ipairs(dropdown(made).rows) do
+    if row.labelText then seen[#seen + 1] = row.labelText end
+  end
+  local hit, other
+  for _, text in ipairs(seen) do
+    if text:find(tostring(tagged), 1, true) then hit = text
+    elseif text:find("191396", 1, true) then other = text end
+  end
+  -- red under no tag at all, and red under a tag the library placed inside the name rather than
+  -- after the id
+  assertTrue(hit ~= nil and hit:find("never matches", 1, true) ~= nil, "the tagged row says so")
+  assertTrue(hit:find("|r " .. TAG, 1, true) ~= nil, "after the gray id, in the host's own color")
+  assertTrue(other ~= nil and other:find("never matches", 1, true) == nil,
+    "and a row the host said nothing about carries nothing")
+end)

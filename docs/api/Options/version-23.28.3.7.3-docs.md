@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 23.27.3.7.3
+# `LibKa0s-Options-1.0` — version 23.28.3.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **27** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **28** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.50.0 |
-| Status | Superseded |
-| Supersedes | [version 23.26.3.7.3](./version-23.26.3.7.3-docs.md) |
-| Superseded by | [version 23.28.3.7.3](./version-23.28.3.7.3-docs.md) |
+| Shipped in | v1.51.0 |
+| Status | **Current** |
+| Supersedes | [version 23.27.3.7.3](./version-23.27.3.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 27, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 28, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -28,6 +28,50 @@ member is a fact about when a consumer got it, not about which file holds it tod
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**A per-entry help mark, and every row lights (W28).** `OptionsWidgets.lua` 27 -> **28**; every
+other file of the major is unchanged. No member is added, removed or repurposed -- the manifest at
+`members-23.28.3.7.3.json` is identical to W27's apart from the minor and the version key -- but
+there are **three new optional spec fields** and **one behaviour change that needs no adoption**.
+
+**`entry.help` -- a "?" between the delete control and the name.** A string, or a list of strings,
+shown as a tooltip whose title is the entry's own name. The alternative already here is `note`, a
+full-width second line -- and a second line cannot share a Flow row, so a noted entry takes a row of
+its own and punches a hole in a multi-column grid. A host with something to say about MANY entries
+had to choose between saying it and keeping its columns. The mark says it for a fixed 18px.
+
+- **Asked once per LIST, not per entry.** A list where nothing carries `help` draws no marks, claims
+  no width for them, and is byte-identical to what W27 drew. A list that uses it at all gives
+  **every** entry a mark, because a column that appears and disappears down the list is not a
+  column. An entry with nothing to say wears a **dimmed** mark and registers no hover at all, so it
+  cannot answer a hover with a blank tooltip.
+- **`spec.helpIcon`** picks the art, falling back to the client's own information glyph -- the same
+  last rung `lib.DragHandle`'s mark uses.
+- **The numbers are the drag handle's**: 8px of art in an 18px frame, the same gold and the same
+  brighten. A player meets both marks in one panel, and two "?" controls of different sizes reads as
+  one of them being wrong. They are restated in `OptionsWidgets.lua` rather than read across,
+  because `lib.DRAG_HANDLE` belongs to the **Widgets** major and this is the **Options** major's; a
+  cross-major read would make one vendorable without the other.
+- **The column floor covers the mark's frame.** It is absolute, like the X's, so `cols` of them cost
+  a flat `cols * 18px` out of the fraction the names gave up. Without that, `columns`' fit would
+  pass a width that pays for the X and not for the mark.
+
+**Every row lights under the cursor now**, not only at more than one column. **Nothing to adopt --
+this one is automatic.** The old rule reasoned that a one-column tooltip already hangs off the name
+and needs no second owner; but the lit name is also the feedback that says which row the cursor is
+on, and one column wants that as much as two. It also left a **noted** entry -- which is drawn at
+one column even inside a two-column list -- as the only unlit row on the page. Word wrap is still
+turned off only above one column.
+
+**`kind.suggestTag(id)` -- a host's word on a suggestion row**, after the gray id. `rank` beside it
+is the library's own answer about an id (a spell's rank, an item's quality) and a host cannot supply
+one; this is the other half, something the host knows and the library cannot. The case it was
+written for: an id can be a spell's **cast** rather than the aura it applies, which matches nothing,
+and the host knew that before the player picked the row and could only say so afterwards. A tag
+turns a correction into a choice. It is short, uncolored by the library, and never wrapped,
+truncated or measured -- a host that writes a sentence there gets a sentence running off its row.
+
+## Previously, at 23.27.3.7.3
 
 **Four O.IdList follow-ups, none of them a surface change (W27).** `OptionsWidgets.lua` 26 -> **27**;
 every other file of the major is unchanged. No member is added, removed or repurposed -- the member
@@ -62,7 +106,7 @@ harnesses.
 multi-column tooltip's anchor) was closed as no-change, with the reasoning recorded at
 `entryTooltip`.
 
-## Previously, at 23.26.3.7.3
+### Previously, at 23.26.3.7.3
 
 **A based host kind is offered its base's client ids (W26).** `OptionsWidgets.lua` 25 → **26**;
 every other file of the major is unchanged. No member is added, removed or repurposed, and no kind

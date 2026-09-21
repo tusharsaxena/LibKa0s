@@ -10,6 +10,42 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.51.0 — 2026-09-22
+
+Versions in this release: **OptionsWidgets minor 28** (`LibKa0s-Options-1.0` 23.28.3.7.3). Every
+other file is unchanged from v1.50.0 and the kit stays at revision 23.
+
+Three new optional spec fields on `O.IdList`, and one behaviour change that needs no adoption. The
+member manifest is identical to minor 27's apart from the minor and the version key.
+
+- **`entry.help` — a "?" between the delete control and the name.** A string, or a list of them,
+  shown as a tooltip titled with the entry's own name. The alternative already here is `note`, a
+  full-width second line — and a second line cannot share a Flow row, so a noted entry takes a row
+  of its own and punches a hole in a multi-column grid. A host with something to say about MANY
+  entries had to choose between saying it and keeping its columns.
+  **Asked once per LIST, not per entry**: a list where nothing carries `help` draws no marks,
+  claims no width, and is byte-identical to minor 27. A list that uses it gives EVERY entry a mark,
+  because a column that appears and disappears down the list is not a column — an entry with
+  nothing to say wears a dimmed one and registers no hover, so it cannot answer with a blank
+  tooltip. `spec.helpIcon` picks the art.
+- **Every row lights under the cursor now**, not only above one column — **automatic, nothing to
+  adopt**. The old rule reasoned a one-column tooltip already hangs off the name; but the lit name
+  is also the feedback saying which row the cursor is on, and it left a NOTED entry, drawn at one
+  column inside a two-column list, as the only unlit row on the page.
+- **`kind.suggestTag(id)` — a host's word on a suggestion row**, after the gray id. `rank` beside
+  it is the library's own answer about an id and a host cannot supply one; this is the other half.
+  The case it was written for: an id can be a spell's CAST rather than the aura it applies, which
+  matches nothing, and the host knew before the player picked the row and could only say so after.
+  A tag turns a correction into a choice.
+
+The mark's geometry is the drag handle's — 8px of art in an 18px frame, the same gold and the same
+brighten — restated in `OptionsWidgets.lua` rather than read across, because `lib.DRAG_HANDLE` is
+the Widgets major's and this is the Options major's. The column floor covers its frame, which is
+absolute like the X's.
+
+Verified against lint, tests and complexity. This library ships no `tests/perf.lua`, so the perf
+suite was skipped rather than measured — the release gate covered three suites, not four.
+
 ## v1.50.0 — 2026-09-21
 
 Versions in this release: **OptionsWidgets minor 27** (`LibKa0s-Options-1.0` 23.27.3.7.3). Every
