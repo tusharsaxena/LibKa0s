@@ -592,7 +592,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (203)
+### test_options_widgets.lua (208)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -665,6 +665,11 @@ badge and any count quoted in the docs must agree with it.
 - IdList: one line per entry -- icon, name and gray id, then Remove or a checkbox
 - IdList: an entry's note is drawn under its name, and only when it has one
 - IdList: an empty-string or non-string note draws nothing
+- IdList: an entry's suffix is drawn inside the label, after the gray id and in the same gray
+- IdList: an entry with no suffix renders exactly as it did at minor 24
+- IdList: a suffixed entry still pairs up at two columns -- it is not a full-width row
+- IdList: a suffix and a note on one entry -- the note wins its line, the suffix stays inline
+- IdList: a suffix is concatenated, so a % or a |c in it reaches the client as written
 - IdList: with no columns option each entry has its line to itself, at minor 23's widths
 - IdList: columns = 2 packs entries two to a line, row-major, at half the widths
 - IdList: columns = 2 in the icon style halves the name and leaves the X alone
@@ -1387,7 +1392,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 203 |
+| test_options_widgets.lua | 208 |
 | test_options_tabs.lua | 36 |
 | test_options_idsuggest.lua | 36 |
 | test_options_idlist_remove.lua | 5 |
@@ -1412,4 +1417,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1246** |
+| **Total** | **1251** |

@@ -1168,6 +1168,85 @@ test("IdList: an empty-string or non-string note draws nothing", function()
   assertEqual(#lines[2].children, 2, "a non-string note draws no line")
 end)
 
+-- ── entry `suffix` (minor 25) ──────────────────────────────────────────
+--
+-- The lighter option beside `note`: a few host-composed words INSIDE the entry's own label, after
+-- the gray id and in the same gray. It adds no widget, so it costs a shared row nothing -- which
+-- is the entire reason it exists rather than being a second note.
+
+test("IdList: an entry's suffix is drawn inside the label, after the gray id and in the same gray",
+function()
+  local _, _, _, lines = listBench({
+    { id = 21562, suffix = "(also in 1)" }, { id = 99999, suffix = "(also in 2)" },
+  })
+  -- red under: `suffix` ignored, drawn as its own widget, or drawn before the id
+  assertEqual(lines[1].children[1].text,
+    "Power Word: Fortitude |cff808080(21562)|r |cff808080(also in 1)|r")
+  assertEqual(#lines[1].children, 2, "name and action -- the suffix is bytes, not a widget")
+  assertEqual(lines[1].children[2].type, "Button")
+  -- an unnamed entry has no gray (id) to sit after; the suffix still rides its label
+  assertEqual(lines[2].children[1].text, "Unknown spell 99999 |cff808080(also in 2)|r")
+end)
+
+test("IdList: an entry with no suffix renders exactly as it did at minor 24", function()
+  local _, _, _, lines = listBench({
+    { id = 21562 }, { id = 774, suffix = "" }, { id = 99999, suffix = 42 },
+  })
+  -- red under: a nil, empty or non-string suffix appending a stray " |cff808080|r"
+  assertEqual(lines[1].children[1].text, "Power Word: Fortitude |cff808080(21562)|r")
+  assertEqual(lines[2].children[1].text, "Rejuvenation |cff808080(774)|r", "an empty suffix adds nothing")
+  assertEqual(lines[3].children[1].text, "Unknown spell 99999", "nor does a non-string one")
+  for i = 1, 3 do assertEqual(#lines[i].children, 2, "and no widget is added either") end
+end)
+
+test("IdList: a suffixed entry still pairs up at two columns -- it is not a full-width row",
+function()
+  local O, _, ctx, lines = listBench({
+    { id = 21562, suffix = "(also in 1)" }, { id = 774, suffix = "(also in 3)" },
+    { id = 99999 }, { id = 6948 },
+  }, { columns = 2 })
+  local rows = listRows(O, ctx)
+  -- red under: a suffix taken for a note, which would give entry 1 a row of its own (3 rows, not 2)
+  assertEqual(#rows, 2, "two rows for four entries -- the suffixes cost no row")
+  assertTrue(lines[1] == lines[2], "the two suffixed entries share the first row")
+  assertEqual(#rows[1].children, 6, "name, action, gutter -- twice, exactly as an unsuffixed pair")
+  assertNear(rows[1].children[1].relativeWidth, 0.37, 1e-9, "at a column's width, not full width")
+  assertEqual(rows[1].children[1].text,
+    "Power Word: Fortitude |cff808080(21562)|r |cff808080(also in 1)|r")
+  assertEqual(rows[1].children[1].__wordWrap, false, "and word wrap is still off, as at minor 24")
+end)
+
+test("IdList: a suffix and a note on one entry -- the note wins its line, the suffix stays inline",
+function()
+  local O, _, ctx, lines = listBench({
+    { id = 21562 }, { id = 774, note = "hidden by rule 3", suffix = "(also in 2)" },
+    { id = 99999 }, { id = 6948 },
+  }, { columns = 2 })
+  local rows = listRows(O, ctx)
+  -- red under: a suffix cancelling the note's full-width row, or the note swallowing the suffix
+  assertEqual(#rows, 3, "the noted entry still takes a row of its own")
+  assertEqual(#rows[2].children, 3, "name, note, action -- the suffix adds no fourth child")
+  assertEqual(rows[2].children[1].text, "Rejuvenation |cff808080(774)|r |cff808080(also in 2)|r")
+  assertEqual(rows[2].children[2].text, "|cff808080hidden by rule 3|r", "the note is untouched")
+  assertNear(rows[2].children[1].relativeWidth, 0.78, 1e-9, "drawn as a one-column entry")
+  assertTrue(lines[2] == rows[2])
+end)
+
+test("IdList: a suffix is concatenated, so a % or a |c in it reaches the client as written",
+function()
+  local _, _, _, lines = listBench({
+    { id = 21562, suffix = "(100%% of 2)" }, { id = 774, suffix = "|cffff0000(3)|r" },
+    { id = 99999, suffix = "50% off" },
+  })
+  -- red under: the suffix passed through string.format or used as a gsub replacement, where %% and
+  -- %( are the escapes of those functions rather than bytes the player typed
+  assertEqual(lines[1].children[1].text,
+    "Power Word: Fortitude |cff808080(21562)|r |cff808080(100%% of 2)|r")
+  assertEqual(lines[2].children[1].text,
+    "Rejuvenation |cff808080(774)|r |cff808080|cffff0000(3)|r|r", "a host color escape is not stripped")
+  assertEqual(lines[3].children[1].text, "Unknown spell 99999 |cff80808050% off|r")
+end)
+
 -- ── columns (minor 24) ──────────────────────────────────────────────────────────────────────
 --
 -- The default is one entry per line, and it has to stay what minor 23 drew to the width: every

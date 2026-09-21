@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 23.24.3.7.3
+# `LibKa0s-Options-1.0` — version 23.25.3.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **24** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **25** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.47.0 |
-| Status | Superseded |
-| Supersedes | [version 23.23.3.7.3](./version-23.23.3.7.3-docs.md) |
-| Superseded by | [version 23.25.3.7.3](./version-23.25.3.7.3-docs.md) |
+| Shipped in | v1.49.0 |
+| Status | **Current** |
+| Supersedes | [version 23.24.3.7.3](./version-23.24.3.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 24, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 25, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -27,22 +27,82 @@ citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.Pag
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
-## Moving to version 23.25.3.7.3
-
-A feature in LibKa0s v1.49.0 (**W25**): an `O.IdList` entry may carry an optional `suffix`, a short
-host-composed string drawn INSIDE the entry's own label, after the gray `(id)` and in that same gray
-— `Renewing Mist (119611) (also in 1)`. It is the light option beside `entry.note`: bytes appended
-to a `FontString` rather than a second full-width `Label`, so it adds no line and a suffixed entry
-still pairs up under `columns` instead of taking a row of its own the way a noted entry does. `note`
-is unchanged; use it for a sentence and `suffix` for a few words. The suffix is concatenated and
-never formatted, so a `%` or a `|c` in it reaches the client as written, and anything that is not a
-non-empty string draws nothing. Because it lengthens the string the no-wrap rule truncates at more
-than one column, it is the first thing a too-long entry loses — before its id — and that document
-carries the character budget a host should size it against. No member is removed or repurposed, and
-a list whose entries carry no `suffix` renders byte-for-byte what this version renders. See
-[version 23.25.3.7.3](./version-23.25.3.7.3-docs.md).
-
 ## What changed at this version
+
+**An entry may carry a `suffix` (W25): a few host-composed words drawn INSIDE its label, after the
+gray `(id)` and in the same gray.** `OptionsWidgets.lua` 24 → **25**; every other file of the major
+is unchanged. One optional entry field is added and nothing is removed or repurposed. A list whose
+entries carry no `suffix` renders byte-for-byte what W24 rendered.
+
+A row reads:
+
+```
+(X) [icon] Renewing Mist (119611) (also in 1)
+```
+
+- **It is bytes on a string, not a widget.** The name, the gray id and the suffix are one
+  `FontString`, so a suffixed entry adds no child to its line and costs a shared row nothing —
+  two suffixed entries still pair up under `columns`, at the same `0.37` each. That is the whole
+  difference between this and `note`, and it is the reason both exist.
+- **`note` is unchanged and is still the right answer for a sentence.** `entry.note` (W17) is a
+  SECOND full-width `Label` under the name, and a noted entry still takes a full-width row of its
+  own inside a multi-column list. **Reach for `note` when the thing to say is a sentence — why the
+  entry is or is not in effect — and for `suffix` when it is a few words that belong to the name:
+  a count, a tag, `(also in 1)`.** The two are independent: an entry carrying both keeps its
+  full-width row for the note AND draws the suffix inline on the name.
+- **The full story belongs in the entry's TOOLTIP**, which the host already owns. A suffix is a
+  pointer, not the information; it exists so the row can say *that* there is more without spending
+  a line saying what.
+- **Drawn in `ID_GRAY`**, the same `|cff808080` the id wears, so the NAME stays the bright thing on
+  the row and the two gray runs read as one tail.
+- **Concatenated, never formatted.** The suffix is appended with `..`. It is never a `string.format`
+  argument and never a `gsub` replacement, which is the same guarantee `note` gives: a `%`, a `%%`
+  or a `%(` in a host string is drawn as the bytes the host wrote. A `|c` is likewise not stripped,
+  so a host that colors its own suffix gets that color and a host that wants a literal pipe writes
+  `||`, exactly as it must anywhere else it hands the client text.
+- **Anything that is not a non-empty string draws nothing** — `nil`, `""` and a non-string all read
+  as no suffix, as `note` reads. An entry that never heard of the field is untouched.
+- **An entry the kind cannot name** has no gray `(id)` for the suffix to sit after; it is appended
+  to `Unknown <noun> <id>` instead, in the same gray.
+
+### The truncation order, and the character budget
+
+At **more than one column** word wrap is off (W24) and the client truncates the tail of the string
+rather than wrapping it. A suffix makes that string longer, so an entry that already overruns its
+column **loses its suffix first, then its id, then the tail of its own name**. That is the right
+order — the suffix is the least of the three and the tooltip still carries everything — but it is
+stated here rather than left to be discovered, and it is why a host should size its suffix rather
+than compose it freely.
+
+The budget, in pixels, is exact. The label is a fraction of the CONTENT width, which is the panel's
+width less 60 (see [Previously, at 23.24.3.7.3](#previously-at-2324373) for where the 60 comes from),
+and an entry carrying an icon spends `ID_ICON_SIZE = 16` of its label on that icon:
+
+| Style | cols | Label fraction | Text px at content `C` |
+|---|---|---|---|
+| default | 1 | `0.78` | `0.78 * C - 16` |
+| default | 2 | `0.37` | `0.37 * C - 16` |
+| icon | 1 | `0.90` | `0.90 * C - 16` |
+| icon | 2 | `0.43` | `0.43 * C - 16` |
+
+Turning pixels into characters needs a figure this repository does not measure and will not pretend
+to: nothing here reads a font. As a **rule of thumb only**, the default label face averages roughly
+`4.5px` a character across mixed-case Latin text, which makes the budget
+`(fraction * C - 16) / 4.5` characters. At two columns and the `584px` content the column cap is
+chosen against — the narrowest content two columns are drawn at — that is `200px`, or **about 44
+characters for the name, the space, the gray `(id)` and the suffix together**. A 24-character name
+with a 7-character id spends 35 of them, which leaves about 9 for a suffix, and `(also in 1)` is 11.
+So at the floor a long name and a suffix do not both fit, and the suffix is what goes — which is the
+order above, working as designed. A wider panel buys the difference back linearly: every extra
+`100px` of content is about `8` more characters at two columns, and `17` at one.
+
+At **one column** the name wraps and nothing is truncated at all, so the budget is a line-count
+question rather than a character one.
+
+The previous version's "What changed" section follows unchanged under
+[Previously, at 23.24.3.7.3](#previously-at-2324373).
+
+## Previously, at 23.24.3.7.3
 
 **`O.IdList` draws in columns (W24), and one at a time is still the default.**
 `OptionsWidgets.lua` 23 → **24**; every other file of the major is unchanged. One optional spec
@@ -1186,14 +1246,14 @@ Everything `IdInput` takes, plus:
 
 | `spec` field | Meaning |
 |---|---|
-| `entries` | `function() -> ordered { { id =, note = string?, toggle = bool?, on = bool? }, … }`. `note`: **W17**, see below. A raise is reported through `lib.STRINGS.ROW_FAILED` and costs the lines, not the input. |
+| `entries` | `function() -> ordered { { id =, note = string?, suffix = string?, toggle = bool?, on = bool? }, … }`. `note`: **W17**, `suffix`: **W25** — both below. A raise is reported through `lib.STRINGS.ROW_FAILED` and costs the lines, not the input. |
 | `onRemove` | `function(id)`, from an entry's Remove or X. |
 | `onToggle` | `function(id, on)`, from a toggle entry's checkbox. |
 | `heading` | Optional section heading, drawn with `O.Section` and recorded as `ctx.lastGroup`. |
 | `emptyText` | Optional line drawn, through `O.TextRow`, when there are no entries. |
 | `toggleLabel` | Optional label beside a toggle entry's checkbox. |
 | `removeStyle` | **W21**. Optional. `"icon"` draws a 16px X (`transmog-icon-remove`) at the LEFT of every entry in place of the right-hand Remove button or checkbox; a click calls `onRemove` and rebuilds; its tooltip is the `remove` string. Absent, the list is drawn as before. |
-| `columns` | **W24**. Optional, default `1`. Entries per line, packed row-major — `1 2` / `3 4` / `5 6`. Every relative width is divided by it and a gutter separates each entry from the next, so the line still sums to `0.98`. Floored and clamped into `1..2` — see [What changed at this version](#what-changed-at-this-version) for the arithmetic and for what is and is not known about the width it is measured against; a non-number reads as `1`. An entry with a `note` takes a full-width line of its own whatever the count. At more than one column a name **does not wrap**: every entry is one line tall, and a name too long for its column is truncated by the client, which cuts the tail — and the tail is the gray `(id)`, so a truncated entry shows no id. The hovered entry is lit, so the row's tooltip has a visible owner. At one column the name wraps exactly as at W23. |
+| `columns` | **W24**. Optional, default `1`. Entries per line, packed row-major — `1 2` / `3 4` / `5 6`. Every relative width is divided by it and a gutter separates each entry from the next, so the line still sums to `0.98`. Floored and clamped into `1..2` — see [What changed at this version](#what-changed-at-this-version) for the arithmetic and for what is and is not known about the width it is measured against; a non-number reads as `1`. An entry with a `note` takes a full-width line of its own whatever the count. At more than one column a name **does not wrap**: every entry is one line tall, and a name too long for its column is truncated by the client, which cuts the tail — and the tail is the gray `(id)`, so a truncated entry shows no id. The hovered entry is lit, so the row's tooltip has a visible owner. At one column the name wraps exactly as at W23. A `suffix` is the FIRST thing that truncation takes, before the id — see [What changed at this version](#what-changed-at-this-version) for the order and for the character budget. |
 
 It draws into the page's scroll: the heading, the input line, then one line per entry, guarded per
 entry. Each entry line has an `InteractiveLabel` at `0.78` and the action at `0.20`. **From W21**,
@@ -1219,6 +1279,21 @@ is, or is not, actually in effect (AuraMaster's filter rules, for example). An e
 **From W24** a noted entry takes a full-width line of its own inside a multi-column list, at the
 one-column widths, and anything half-packed is flushed ahead of it: a second line under a name
 cannot share a Flow row with a neighbor, and the note's own contract is worth more than the pairing.
+
+**From W25**, `entry.suffix`, when it is a non-empty string, is appended to the entry's own label
+after the gray `(id)` and in that same gray — `Renewing Mist |cff808080(119611)|r
+|cff808080(also in 1)|r`, which reads `Renewing Mist (119611) (also in 1)`. It is the LIGHT option
+beside `note`: bytes on a `FontString` rather than a second `Label`, so it adds no line, costs a
+shared row nothing, and leaves a suffixed entry free to pair up under `columns`. Use `note` for a
+sentence and `suffix` for a few words; an entry may carry both, and then the note still takes its
+full-width line and the suffix still rides the name. The suffix is concatenated and never formatted,
+so a `%`, a `%%` or a `|c` in it reaches the client exactly as the host wrote it. Anything that is
+not a non-empty string draws nothing extra: byte-for-byte what W24 drew. An entry the kind cannot
+name gets the suffix after `Unknown <noun> <id>` instead. Because it lengthens the same string the
+no-wrap rule truncates at more than one column, it is the first thing to go from an entry that
+overruns its column — the order and the character budget are in
+[What changed at this version](#what-changed-at-this-version), and the full story belongs in the
+entry's tooltip, which the host owns.
 
 The action is Remove, or a `CheckBox` for a `toggle` entry (a starter the host can switch off
 without forgetting it), lit by `on`.
@@ -1565,7 +1640,12 @@ removed or repurposed. A list that does not pass it draws what 23.23.3.7.3 drew,
 exception a host can see: an icon-style list's X now sits in an absolute `26px` frame instead of
 `0.06` of the row, and its name takes `0.90` instead of `0.92`, so that the frame can never be
 narrower than the texture it carries at any column count and the delete control is not flush against
-the entry's own icon. **At 23.23.3.7.3 nothing is added either** — it narrows when the lock listens, and out of combat and with no page on screen it now does nothing at all. **At 22.23.2.7.3 no member, descriptor field or row field is added**, so a host written against
+the entry's own icon. **At 23.25.3.7.3 one entry field is added and nothing else moves**: `entry.suffix` (**W25**), an
+optional string drawn inside the entry's own label. A list whose entries do not carry it renders
+byte-for-byte what 23.24.3.7.3 rendered, and `entry.note` is untouched. **At 23.24.3.7.3 one spec
+field is added**, `columns` (**W24**); a list that passes none draws what 23.23.3.7.3 drew, except
+in the icon style, where the X's frame became an absolute `26px` and the name beside it `0.90`.
+**At 23.23.3.7.3 nothing is added either** — it narrows when the lock listens, and out of combat and with no page on screen it now does nothing at all. **At 22.23.2.7.3 no member, descriptor field or row field is added**, so a host written against
 21.22.1.7.3 needs no change. What changes is behavior in combat, and only there: a page shown in
 combat is covered instead of closing the settings window, and the refusals in
 [What changed at this version](#what-changed-at-this-version) apply. Out of combat every page draws

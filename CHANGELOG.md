@@ -10,6 +10,41 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.49.0 — 2026-09-21
+
+Versions in this release: **OptionsWidgets minor 25** (`LibKa0s-Options-1.0` 23.25.3.7.3). Every
+other file is unchanged from v1.48.1 and the kit stays at revision 23.
+
+**An `O.IdList` entry can say a few words on its own row now.** An entry may carry
+`suffix = "<string>"`, drawn INSIDE its label after the gray `(id)` and in that same gray:
+
+```
+(X) [icon] Renewing Mist (119611) (also in 1)
+```
+
+The field exists because `entry.note` (W17) is the wrong shape for a short aside. A note is a
+SECOND full-width `Label` under the name, and under `columns` a noted entry gives up its place in a
+shared row and takes a full-width one — so a three-word remark costs a line and half a row. A
+suffix is bytes appended to the `FontString` the name and the id already share: it adds no widget,
+so two suffixed entries still pair up at the same `0.37` each. `note` is unchanged and is still the
+answer for a sentence; reach for `suffix` for a count, a tag, a pointer.
+
+- **The full story belongs in the entry's tooltip**, which the host already owns. A suffix says
+  *that* there is more, not what.
+- **The truncation order is the cost, and it is documented rather than discovered.** At more than
+  one column word wrap is off (W24) and the client cuts the tail, so an entry that already overruns
+  loses its suffix first, then its id, then its own name. That is the right order — the suffix is
+  the least of the three — but a host has to be able to size a suffix against the room, so the API
+  document carries the pixel budget per style and column count and the rule of thumb that turns it
+  into characters: about 44 for the whole label at two columns at the `584px` content the column cap
+  is chosen against.
+- **Concatenated, never formatted**, which is the guarantee `note` already gives. The suffix is
+  never a `string.format` argument and never a `gsub` replacement, so a `%`, a `%%` or a `%(` is
+  drawn as the byte the host wrote; a `|c` is not stripped either, so a host that colors its own
+  suffix gets that color.
+- **Anything that is not a non-empty string draws nothing.** A list whose entries carry no `suffix`
+  renders byte-for-byte what minor 24 rendered.
+
 ## v1.48.1 — 2026-09-21
 
 Versions in this release: **WidgetsDragHandle minor 2** (`LibKa0s-Widgets-1.0` 9.2). Every other
