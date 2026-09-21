@@ -422,8 +422,10 @@ and the name beside it takes `0.90` rather than `0.92`. No member, descriptor fi
 added, so no degradation stub moves. Steps 1–7 are done in this repository — the gates are green
 (1211 cases, `luacheck` 0/0, nothing above CCN 15) and both standards pointers were checked
 against `../WowAddonStandards/standards/STANDARDS.md` and rolled to v2.61.0 by this step; **the
-release-mode automated-test bundle, the tag and step 8 are not**. Ten of the eleven consumers bundle
-v1.46.1 on `master`. Aura Master is the host this release was written for — its Hard CC and Soft CC
+release-mode automated-test bundle, the tag and step 8 are not**. All eleven consumers bundle
+v1.46.1 on `master` — this line read "ten of the eleven" when it was written, which was wrong on the
+day and contradicted the step-8 paragraph below that said eleven; corrected 2026-09-21 against the
+provenance line on each consumer's own `master` (LibKa0s #34). Aura Master is the host this release was written for — its Hard CC and Soft CC
 spell lists are what a one-entry-per-line list made unreadable — and it carries a v1.47.0 provenance
 line on its own feature branch ahead of the tag.
 
@@ -500,7 +502,10 @@ v1.42.0 tag exactly as it did at v1.41.0 — the kit bytes are identical, but bo
 the tag the provenance line names, so both are copied.
 
 **Every step 8 through v1.46.1 is done**, and so are the adoption changesets that outlived them.
-All eleven consumers bundle **v1.46.1** on `master` and each `CLAUDE.md` provenance line says so, so
+All eleven consumers bundle **v1.46.1** on `master` and each `CLAUDE.md` provenance line says so —
+still true on 2026-09-21, re-measured for LibKa0s #34: what has moved since sits on branches and not
+on any `master`, nine consumers at v1.47.0 on `chore/revendor-libka0s-v1.47.0`, ConsumableMaster at
+v1.48.1 and Aura Master at v1.49.1 on its own feature branch. So
 v1.42.0's one-file Slash fix, v1.43.0's kit-only revision 23, v1.44.0's `removeStyle` and v1.45.0's
 `shownWhen` have all landed downstream along with the combat lock and its patch. The two hosts that
 took the opt-ins are Aura Master (both) and Party Frame Enhanced (`shownWhen`). What is **not** done
