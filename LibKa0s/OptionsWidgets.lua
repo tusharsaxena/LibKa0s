@@ -1905,15 +1905,22 @@ function lib.__AttachWidgets(O, d)
   -- one of these scrolls at Options.lua:929). Content is therefore the panel's width LESS 60, and
   -- the 0.98 these widths sum to is the clip inset on top of that.
   --
-  -- The PANEL's width is not knowable here, and nothing in this repo measures it. It is whatever
-  -- Blizzard's settings canvas gives a registered category at the player's resolution and UI scale;
-  -- there is no constant for it at file scope and no figure for it anywhere else in this
-  -- repository. So the cap is a conservative choice, not a measurement. Two columns want 584px of
-  -- content -- 644px of panel -- which is comfortably inside every settings canvas this collection
-  -- draws a page into. Three wants 876px of content and 936px of panel, which is past a settings
-  -- canvas rather than near it. A count the width cannot pay for is not a narrower list: it is a
-  -- column of icons stacked over wrapped names, and that is the one failure mode nothing reports.
-  -- Two is the last count that is safe without knowing the number.
+  -- The PANEL's width is not knowable HERE, at file scope, and nothing in this repo has a constant
+  -- for it. It is whatever Blizzard's settings canvas gives a registered category at the player's
+  -- resolution and UI scale. So the cap is a conservative CEILING, not a measurement. Two columns
+  -- want 584px of content -- 644px of panel -- which is comfortably inside every settings canvas
+  -- this collection draws a page into. Three wants 876px of content and 936px of panel, which is
+  -- past a settings canvas rather than near it. Two is the last count that is safe without knowing
+  -- the number.
+  --
+  -- A CEILING IS NOT THE WHOLE ANSWER, and the floors above are why. A count the width cannot pay
+  -- for is not a narrower list: it is a column of icons stacked over wrapped names, and in the icon
+  -- style a delete control pushed onto a row of its own -- the one failure mode nothing reported.
+  -- At DRAW time the width IS knowable, because the ScrollFrame the list is drawn into carries the
+  -- very number AceGUI's Flow will lay the row out against; fitIdColumns reads it and drops the
+  -- count a column at a time until the table below is paid. The cap bounds what a host may ASK for;
+  -- the draw-time check decides what a given canvas actually gets. The table stays here because it
+  -- is the arithmetic both of them are made of.
   --
   -- Flat rather than style-aware on purpose. `removeStyle` is the host's choice about a delete
   -- control, and a cap that moved with it would hand two lists of the same width two different
@@ -1921,6 +1928,11 @@ function lib.__AttachWidgets(O, d)
   -- either list that have no icon at all, which are the only ones the 200px rule does not bind.
   -- tests/test_options_widgets.lua pins both the number and this arithmetic.
   local ID_COLUMNS_MAX   = 2
+  -- AceGUI's own threshold, named so the floors above are DERIVED rather than asserted. A Label
+  -- that has been given an image moves the image on top of a wrapped name whenever the frame
+  -- leaves it under this much beside the image -- `if (width - imagewidth) < 200`, UpdateImageAnchor
+  -- at AceGUI-3.0's widgets/AceGUIWidget-Label.lua:19-32. See entryMinContent.
+  local ID_LABEL_MIN     = 200
   -- The status line's failure color, and the gray an entry's id is drawn in after its name.
   local ID_WARN_R, ID_WARN_G, ID_WARN_B = 1, 0.5, 0
   local ID_GRAY = "|cff808080"
@@ -3050,6 +3062,99 @@ function lib.__AttachWidgets(O, d)
     return columns
   end
 
+  --- The CONTENT width one of this list's Flow rows will be laid out against, or nil when this
+  --- render cannot know it.
+  ---
+  --- `content.width`, NOT `scroll.frame:GetWidth()`, and the difference is the whole point. Flow
+  --- measures every child against exactly one number -- `local width = content.width or
+  --- content:GetWidth() or 0`, AceGUI-3.0.lua's Flow layout -- so that is the number a floor has to
+  --- be compared with. The ScrollFrame's own frame is WIDER than it: AceGUI's ScrollFrame sets
+  --- `content.width = width - (self.scrollBarShown and 20 or 0)` in OnWidthSet
+  --- (widgets/AceGUIContainer-ScrollFrame.lua), and OptionsScroll.lua's always-shown-scrollbar patch
+  --- forces that subtraction on whether the bar is needed or not (its forceGutter, and FixScroll
+  --- re-forces it). Measuring the frame would hand every check 20px the row does not have. The
+  --- fallback to `content:GetWidth()` is Flow's own, for the same reason Flow has it.
+  ---
+  --- NIL IS A REAL ANSWER AND IT MEANS "CHANGE NOTHING". The number arrives from OnWidthSet, which
+  --- this library forwards by hand off the scroll frame's OnSizeChanged (Options.lua's EnsureScroll)
+  --- because the ScrollFrame is parented to a Blizzard frame rather than to an AceGUI container that
+  --- would size it. A page drawn before its panel has ever been given a size has not had that fire,
+  --- and a harness whose AceGUI is a fake has no geometry at all; both read as nil or 0. Neither may
+  --- narrow a list. Collapsing a working two-column list because nobody has measured the canvas yet
+  --- would be a worse failure than the silent one this measurement exists to catch, and an
+  --- unmeasurable width is exactly the state every render was in before this check existed.
+  local function idContentWidth(scroll)
+    local content = type(scroll) == "table" and scroll.content or nil
+    if type(content) ~= "table" then return nil end
+    local w = content.width
+    if w == nil and type(content.GetWidth) == "function" then
+      local ok, got = pcall(content.GetWidth, content)
+      w = ok and got or nil
+    end
+    w = tonumber(w)
+    if not w or w <= 0 then return nil end
+    return w
+  end
+
+  --- The narrowest CONTENT width at which `cols` columns still draw the layout they promise, in the
+  --- style asked for. The two floors the ID_COLUMNS_MAX block tabulates, written as code from the
+  --- same constants so the table up there and the check down here cannot drift apart.
+  ---
+  --- THE LABEL FLOOR, both styles. An entry's name is an InteractiveLabel carrying the entry's icon,
+  --- and AceGUI moves that image on TOP of a wrapped name unless the frame leaves ID_LABEL_MIN
+  --- beside it (AceGUIWidget-Label.lua:19-32, quoted at the constant). The name holds entryNameRel
+  --- of the row, so the row needs (icon + threshold) / that fraction before the entry is a line at
+  --- all rather than a stack.
+  ---
+  --- THE X FLOOR, icon style only, and it is the one this function was written for. The X's frame is
+  --- ABSOLUTE (ID_REMOVE_HIT; entryRemoveIcon says why it cannot be relative), so `cols` of them
+  --- cost cols * that many pixels flat however narrow the row gets -- while what the names left for
+  --- them is a fraction of the row. That fraction is the same at every column count: each column's
+  --- name gives up ID_REMOVE_REL / cols, and the gutters come out of the names too, so the line
+  --- always keeps 1 - (ID_MAIN_REL + ID_ACTION_REL) + ID_REMOVE_REL for the delete controls.
+  --- Below that width Flow shrinks nothing -- it WRAPS, starting a new row as soon as
+  --- `(framewidth) + usedwidth > width` (AceGUI-3.0.lua's Flow layout) -- so the trailing gutter,
+  --- and then the last X, drop onto a row of their own and the grid stops being a grid.
+  local function entryMinContent(iconStyle, cols)
+    local floor = (ID_ICON_SIZE + ID_LABEL_MIN) / entryNameRel(iconStyle, cols)
+    if iconStyle then
+      local reserve = 1 - (ID_MAIN_REL + ID_ACTION_REL) + ID_REMOVE_REL
+      floor = math.max(floor, cols * ID_REMOVE_HIT / reserve)
+    end
+    return floor
+  end
+
+  --- How many columns THIS render can pay for: the count the host asked for, dropped one column at
+  --- a time while the measured content width is under entryMinContent, and never below one.
+  ---
+  --- A NARROWER LIST IS A CORRECT LIST; A BROKEN GRID IS NOT. That is the whole trade. One column of
+  --- full-width entries is what every list drew before `columns` existed and is never wrong, only
+  --- longer. Two columns on a canvas that cannot pay for them is icons stacked over wrapped names
+  --- and, in the icon style, a delete control on a line of its own -- which no status line reports,
+  --- which no host can see from its spec, and which the cap alone cannot prevent, because the cap is
+  --- a guess about the canvas and this is a reading of it.
+  ---
+  --- UNMEASURED MEANS UNCHANGED. With no width to compare against (idContentWidth answering nil) the
+  --- host's count is drawn exactly as it was before this check existed.
+  ---
+  --- MEASURED ONCE, AT DRAW TIME. A canvas that NARROWS afterwards is not re-fitted: the
+  --- OnSizeChanged forwarder O.EnsureScroll installs re-runs the Flow layout at the new width
+  --- (OnWidthSet / OnHeightSet / DoLayout / FixScroll) but never re-runs the page builder, and
+  --- the fitted count is already baked into every child's relative width by then. So a player
+  --- who drags the panel narrower after the page is drawn keeps the count the draw chose, until
+  --- something re-renders the list. Left as is deliberately -- a re-fit would mean rebuilding a
+  --- page on a drag, which is a far larger promise than this finding asked for.
+  local function fitIdColumns(scroll, spec, columns)
+    if columns <= 1 then return columns end
+    local width = idContentWidth(scroll)
+    if not width then return columns end
+    local iconStyle = spec.removeStyle == "icon"
+    while columns > 1 and width < entryMinContent(iconStyle, columns) do
+      columns = columns - 1
+    end
+    return columns
+  end
+
   --- The entry lines: `columns` entries per Flow row, filled row-major (1 2 / 3 4 / 5 6), each row
   --- added to the scroll once it is full and the last one added however full it is -- an odd count
   --- leaves the final row half empty rather than stretching the entry across it, because every
@@ -3064,7 +3169,13 @@ function lib.__AttachWidgets(O, d)
   --- Returns one line per entry DRAWN, in entry order; an entry that failed to draw has none. At
   --- more than one column the same row object is returned once per entry packed into it, so
   --- `lines[i]` is still the row carrying the i-th drawn entry.
+  ---
+  --- The count is FITTED to the canvas first (fitIdColumns): the host asks for a maximum, and a
+  --- panel too narrow to pay for it is drawn at the count it can pay for rather than at the count
+  --- it was asked for. That is a decision about THIS render, which is why it is taken here, where
+  --- the scroll is, and not in idColumns, which reads the spec and nothing else.
   local function drawIdEntries(ctx, scroll, spec, k, entries, columns)
+    columns = fitIdColumns(scroll, spec, columns)
     local lines, pending, filled = {}, nil, 0
     local function flush()
       if pending then scroll:AddChild(pending) end
@@ -3155,7 +3266,11 @@ function lib.__AttachWidgets(O, d)
   ---                 to 0.98; an odd count leaves the last row half empty rather than stretching the
   ---                 entry. Floored and clamped into 1..ID_COLUMNS_MAX, which is 2 and is AceGUI's
   ---                 number rather than a taste -- see the constant for the arithmetic. A
-  ---                 non-number reads as 1. An entry with a `note` takes a full-width row of its
+  ---                 non-number reads as 1. It is a MAXIMUM, not a promise: the count is measured
+  ---                 against the width the render actually has (fitIdColumns) and drops toward one
+  ---                 when the panel cannot pay for it, because a narrower list is a correct list
+  ---                 and a wrapped grid is not. A render that cannot measure its width draws the
+  ---                 count as asked. An entry with a `note` takes a full-width row of its
   ---                 own whatever the count, because the note is a second line under the name and
   ---                 cannot share a Flow row with a neighbor. At MORE THAN ONE COLUMN an entry
   ---                 name does NOT wrap: `entryNoWrap` turns word wrap off on the label's
