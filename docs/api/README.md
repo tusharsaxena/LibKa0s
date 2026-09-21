@@ -183,7 +183,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [23.25.3.7.3](./Options/version-23.25.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 25 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.49.0 | **Current** |
+| [23.26.3.7.3](./Options/version-23.26.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 26 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.49.1 | **Current** |
+| [23.25.3.7.3](./Options/version-23.25.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 25 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.49.0 | Superseded |
 | [23.24.3.7.3](./Options/version-23.24.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 24 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.47.0 | Superseded |
 | [23.23.3.7.3](./Options/version-23.23.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 23 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.46.1 | Superseded |
 | [22.23.2.7.3](./Options/version-22.23.2.7.3-docs.md) | `Options.lua` 22 · `OptionsWidgets.lua` 23 · `OptionsTabs.lua` 2 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.46.0 | Superseded |

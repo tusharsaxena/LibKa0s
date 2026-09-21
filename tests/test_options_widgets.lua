@@ -1823,6 +1823,20 @@ test("IdList: a host kind without base, or with a base no library kind has, is d
   end
 end)
 
+test("IdList: a based spell kind draws as a spell and keeps its own tooltip", function()
+  -- AuraMaster's shape: a kind of its own for nothing but the entry tooltip, over ids that are the
+  -- library's spells. `base = "spell"` hands it the spell kind's info and words; the tooltip it
+  -- declares is still the one a hover reaches.
+  local own
+  own = { base = "spell", tooltip = function(_, id) own.shown = id end }
+  local _, _, _, lines = listBench({ { id = 21562 } }, { kind = own })
+  assertEqual(lines[1].children[1].text, "Power Word: Fortitude |cff808080(21562)|r",
+    "the base's info names it, drawn plain as a spell is")
+  assertNil(hoverWith(lines[1].children[1], "SetSpellByID"), "not the base's tooltip")
+  -- red under: a host tooltip filled in from the base (the host's own never called)
+  assertEqual(own.shown, 21562, "the host's own")
+end)
+
 test("IdList: a raising entries() is reported and still draws the input", function()
   local O, rec, ctx = bench()
   rec.chat = {}

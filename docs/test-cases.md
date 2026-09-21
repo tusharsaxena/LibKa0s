@@ -592,7 +592,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (208)
+### test_options_widgets.lua (209)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -698,6 +698,7 @@ badge and any count quoted in the docs must agree with it.
 - IdList: an entry's label shows the client's own tooltip for it
 - IdList: a host kind with base = "item" wears the item kind's color, tooltip and loads
 - IdList: a host kind without base, or with a base no library kind has, is drawn as before
+- IdList: a based spell kind draws as a spell and keeps its own tooltip
 - IdList: a raising entries() is reported and still draws the input
 - IdList: drawn disabled, every Remove and checkbox is disabled
 - IdList: with no AceGUI it draws nothing
@@ -842,7 +843,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
 
-### test_options_idsuggest.lua (36)
+### test_options_idsuggest.lua (39)
 
 - IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
 - IdInput suggestions: one name's rows sort by rank, then by id
@@ -870,6 +871,9 @@ badge and any count quoted in the docs must agree with it.
 - IdInput suggestions: a based kind built per render is collected with its view
 - IdInput suggestions: a based host kind's resolve still decides what a pick adds
 - IdInput suggestions: any library kind can be a base; its ranks and fields come with it
+- IdInput suggestions: a based host kind is offered its base's client ids, ranked as the base ranks them
+- IdInput suggestions: a host kind with no base is offered nothing of the client's
+- IdInput suggestions: the shared-name check reads one source through a based kind and its base
 - IdInput suggestions: one dropdown per instance, whatever the renders
 - IdInput suggestions: a box pooled into a second render is hooked once
 - IdInput suggestions: a box pooled into another instance wakes no list of the first's
@@ -1392,9 +1396,9 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 208 |
+| test_options_widgets.lua | 209 |
 | test_options_tabs.lua | 36 |
-| test_options_idsuggest.lua | 36 |
+| test_options_idsuggest.lua | 39 |
 | test_options_idlist_remove.lua | 5 |
 | test_options_switched.lua | 9 |
 | test_options_combat.lua | 27 |
@@ -1417,4 +1421,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1251** |
+| **Total** | **1255** |

@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 23.25.3.7.3
+# `LibKa0s-Options-1.0` — version 23.26.3.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **25** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **26** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.49.0 |
-| Status | Superseded |
-| Supersedes | [version 23.24.3.7.3](./version-23.24.3.7.3-docs.md) |
-| Superseded by | [version 23.26.3.7.3](./version-23.26.3.7.3-docs.md) |
+| Shipped in | v1.49.1 |
+| Status | **Current** |
+| Supersedes | [version 23.25.3.7.3](./version-23.25.3.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 25, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 26, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -27,19 +27,41 @@ citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.Pag
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
-## Moving to version 23.26.3.7.3
-
-A fix in LibKa0s v1.49.1 (**W26**): a host kind that declares `base = "item"` or `base = "spell"` is
-offered that base's client ids — the bags, the spellbook — in the `O.IdInput` suggestions, after its
-own `candidates()`, and the shared-name check reads them too. At this version the suggestion table
-was keyed by the library's kind table alone, so a host that passed its own kind for nothing but the
-entry tooltip `O.IdList` builds from the kind had an add box that suggested nothing as the player
-typed. Resolution was never affected, and is not changed. A host kind with **no** `base` still gets
-no client source, so a list of ids that are not the client's is never offered the spellbook;
-declaring a `base` is how a host opts in. No member is added or removed. See
-[version 23.26.3.7.3](./version-23.26.3.7.3-docs.md).
-
 ## What changed at this version
+
+**A based host kind is offered its base's client ids (W26).** `OptionsWidgets.lua` 25 → **26**;
+every other file of the major is unchanged. No member is added, removed or repurposed, and no kind
+that does not declare a `base` renders or resolves differently than it did at W25.
+
+A host passes its own kind table when it needs its own entry tooltip, because `O.IdList` builds that
+tooltip from the kind and nothing else. Such a host says `base = "spell"` so everything else —
+resolution, the drawn name, the words — still comes from the library's spell kind. Through W25 that
+cost it the spellbook: the suggestion table was keyed by the library's kind **table**, a host table
+is a different table, and the add box therefore suggested nothing as the player typed unless the host
+listed every candidate itself. A capability was lost for wanting a tooltip, which is the wrong trade
+for a library to impose.
+
+From W26 a based host kind reads its **base's** suggestion row — the same one lookup the rank has
+always gone through — so it gets:
+
+- **the base's client source**: every item in the bags for `base = "item"`, every Spell and
+  FutureSpell slot of the spellbook for `base = "spell"`, listed after the host's own `candidates()`
+  exactly as the base lists them. `base = "currency"` has no client source, so it adds nothing.
+- **the same shared-name check**: a name the client answers is refused as `"ambiguous"` when a
+  DIFFERENT id in that source carries it too, through a based kind exactly as through the base.
+- **the base's rank** on the suggestion rows, which was already so and is now read through the same
+  accessor rather than a second lookup of its own.
+
+**A host kind with no `base` still gets none of this**, which is the protection the old keying was
+really after: such a kind's ids need not be the client's at all, and a list of, say, currency or
+encounter ids must never be offered the spellbook. **Declaring a `base` is how a host opts in;
+leaving it out is how it opts out** — there is no third setting. What a based kind still does not
+get is the base's `byName`: a typed name reaches the host's `resolve` and its `candidates()`, never
+`C_Spell.GetSpellInfo(name)` or `C_Item.GetItemInfoInstant(name)`, so what a host kind **resolves**
+is as much its own as it ever was. Only what it is offered, and what a shared name is checked
+against, now come with the base.
+
+## Previously, at 23.25.3.7.3
 
 **An entry may carry a `suffix` (W25): a few host-composed words drawn INSIDE its label, after the
 gray `(id)` and in the same gray.** `OptionsWidgets.lua` 24 → **25**; every other file of the major
@@ -1015,15 +1037,19 @@ no base, and the kind behaves exactly as a host kind without one.
 | fields it does not set itself | `info`, `link`, `tooltip`, `loads`, `noun`, `plural`. A field the host sets wins, `false` included, so a host that sets `info = false` to show no list keeps showing none. |
 | its name color | an item's quality color, on the suggestion rows and on `IdList`'s entry names. A spell's and a currency's are plain. |
 | its rank label | an item's crafted or reagent quality tier icon, a spell's subtext, on the suggestion rows. |
+| its client source (**W26**) | the ids the base enumerates — the bags for `"item"`, the spellbook for `"spell"`, none for `"currency"` — listed in the suggestions after the host's own `candidates()`, and read by the shared-name check. |
 | its tooltip | `GameTooltip:SetItemByID` / `SetSpellByID` / `SetCurrencyByID` on `IdList`'s entries, unless the host sets `tooltip`. |
 | pre-warm and lookup | as `"item"`'s, when the base is `"item"` (its `loads` and `info`) or the host sets `loads = true` and an `info` itself. |
 
 What it does **not** get: the base's client name lookup (`C_Item.GetItemInfoInstant(name)`,
-`C_Spell.GetSpellInfo(name)`) and its client source (the bags, the spellbook). What a host kind
-resolves, and the ids it suggests, stay its own `candidates()`. A resolver that wants the client's
-lookup and the shared-name check hands a name to `O.ResolveId("item", text, candidates)`, as
-before. A based kind with no `resolve` resolves a number, a link of the base's type, and a name
-over its candidates.
+`C_Spell.GetSpellInfo(name)`). What a host kind **resolves** stays its own — a typed name reaches
+its `resolve` and its `candidates()`. A resolver that wants the client's lookup hands a name to
+`O.ResolveId("item", text, candidates)`, as before. A based kind with no `resolve` resolves a
+number, a link of the base's type, and a name over its candidates.
+
+Before **W26** a based kind got no client source either, so a host that passed its own kind for
+nothing but the entry tooltip lost the spellbook from its add box. It gets it from W26. A kind with
+no `base` still gets none: that is how a host whose ids are not the client's opts out.
 
 **The host still decides what is added.** A pick from a based kind's suggestions is handed to its
 `resolve` first, as the id's digits with the same `candidates`. A refusal adds nothing, keeps the
@@ -1152,7 +1178,8 @@ already knows:
 |---|---|
 | `"item"` | `candidates()`, then every item in the backpack and the equipped bags, through `C_Container.GetContainerNumSlots` / `GetContainerItemID`: bags `0` to `NUM_TOTAL_EQUIPPED_BAG_SLOTS` (the reagent bag included), else to `NUM_BAG_SLOTS`, else to `4` |
 | `"spell"` | `candidates()`, then the Spell and FutureSpell slots of the player's spellbook through `C_SpellBook` (`GetNumSpellBookSkillLines`, `GetSpellBookSkillLineInfo`, `GetSpellBookItemInfo`); a flyout or a pet action is never listed |
-| `"currency"`, or a host table (with a `base` or without) | `candidates()` alone |
+| a host table with `base = "item"` or `base = "spell"` (**W26**) | `candidates()`, then its base's source above |
+| `"currency"`, a host table with `base = "currency"`, or a host table with no base | `candidates()` alone |
 
 A kind with no `info` (a host table without one, or no kind) has nothing to name a row with, and
 suggests nothing. Every source is read at call time and guarded: a client without one, a raising

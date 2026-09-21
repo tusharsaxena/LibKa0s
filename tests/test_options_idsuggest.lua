@@ -684,6 +684,89 @@ suggestCase("IdInput suggestions: any library kind can be a base; its ranks and 
   assertEqual(id, 6948); assertEqual(name, "Hearthstone")
 end)
 
+-- ── a based host kind's suggestions ───────────────────────────────────────
+--
+-- AuraMaster passes a kind of its own for nothing but the entry tooltip O.IdList builds from the
+-- kind, and says `base = "spell"` because its ids are spells. Until minor 26 that cost it the
+-- spellbook: SUGGEST_KIND was keyed by the library's kind table alone, so the add box suggested
+-- nothing as the player typed. A based kind reads its base's row now. A kind with NO base still
+-- reads none -- that is how a host whose ids are not the client's opts out.
+
+suggestCase("IdInput suggestions: a based host kind is offered its base's client ids, ranked as the base ranks them", function(made)
+  mocks.addIdRecord("spell", 21562, "Power Word: Fortitude", 135987)
+  mocks.addIdRecord("spell", 900001, "Twin Strike", 11)
+  mocks.setSpellSubtext(900001, "Rank 2")
+  mocks.setSpellBook({ 21562, 900001 })
+  local O = Fixture.new()
+  local own
+  own = { base = "spell", tooltip = function(_, id) own.shown = id end }
+  local b = input(made, { kind = own }, O)
+  typeText(b, "fort")
+  -- red under: SUGGEST_KIND keyed by the library's kind table alone (a based kind saw no spellbook)
+  assertEqual(shownIds(b), "21562", "the spellbook, with no candidates of its own")
+  typeText(b, "twin")
+  assertEqual(dropdown(made).rows[1].labelText, "Twin Strike Rank 2 " .. GRAY .. "(900001)|r",
+    "and the base's rank on the row")
+
+  mocks.addIdRecord("item", 6948, "Hearthstone", 134414, nil, 1)
+  mocks.setBagItems(0, { 6948 })
+  local i = input(made, { kind = { base = "item", resolve = function(text) return tonumber(text) end } }, O)
+  typeText(i, "hearth")
+  assertEqual(shownIds(i), "6948", "an item base is offered the bags the same way")
+end)
+
+suggestCase("IdInput suggestions: a host kind with no base is offered nothing of the client's", function(made)
+  mocks.addIdRecord("spell", 21562, "Power Word: Fortitude", 135987)
+  mocks.setSpellBook({ 21562 })
+  mocks.addIdRecord("item", 6948, "Hearthstone", 134414, nil, 1)
+  mocks.setBagItems(0, { 6948 })
+  local O = Fixture.new()
+  local spellInfo = function(id)
+    local info = mocks.C_Spell.GetSpellInfo(id)
+    return info and info.name, info and info.iconID
+  end
+  -- A host list of its own ids -- currencies, tokens, anything -- must never be offered spells.
+  local b = input(made, { kind = { noun = "token", info = spellInfo,
+                                   resolve = function(text) return tonumber(text) end } }, O)
+  typeText(b, "fort")
+  -- red under: the client's rows inherited by every host kind (a token list offered the spellbook)
+  assertEqual(shownIds(b), "", "no base, no client source")
+  local c = input(made, { kind = { noun = "token", info = spellInfo,
+                                   resolve = function(text) return tonumber(text) end },
+                          candidates = function() return { 21562 } end }, O)
+  typeText(c, "fort")
+  assertEqual(shownIds(c), "21562", "its own candidates are all it lists, as before")
+end)
+
+suggestCase("IdInput suggestions: the shared-name check reads one source through a based kind and its base", function()
+  -- The client answers ONE id for a name several spells share. Through the base that hit is
+  -- refused when the spellbook holds another spell of the name; a based kind must refuse it too.
+  mocks.addIdRecord("spell", 900001, "Twin Strike", 11)
+  mocks.addIdRecord("spell", 900002, "Twin Strike", 12)
+  mocks.setSpellBook({ 900001, 900002 })
+  local O = Fixture.new()
+  local byName = function(text)
+    if text:lower() == "twin strike" then return 900001, "Twin Strike", 11 end
+  end
+  local based = { base = "spell", byName = byName }
+  local _, viaBase = O.ResolveId("spell", "Twin Strike")
+  assertEqual(viaBase, "ambiguous", "the base refuses a name two spellbook spells share")
+  local id, reason = O.ResolveId(based, "Twin Strike")
+  -- red under: kindSourceIds keyed by the kind table (a based kind saw no spellbook, so no clash)
+  assertNil(id); assertEqual(reason, "ambiguous", "and so does a kind based on it")
+
+  mocks.setSpellBook({ 900001 })
+  assertEqual(O.ResolveId(based, "Twin Strike"), 900001, "one spell of the name: that spell")
+
+  local loose = { noun = "token", byName = byName, info = function(spellId)
+    local info = mocks.C_Spell.GetSpellInfo(spellId)
+    return info and info.name, info and info.iconID
+  end }
+  mocks.setSpellBook({ 900001, 900002 })
+  assertEqual(O.ResolveId(loose, "Twin Strike"), 900001,
+    "a kind with no base reads no client source, so nothing shares the name")
+end)
+
 -- ── frames ───────────────────────────────────────────────────────────────────────────────────
 
 suggestCase("IdInput suggestions: one dropdown per instance, whatever the renders", function(made)

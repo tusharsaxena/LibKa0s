@@ -10,6 +10,36 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.49.1 — 2026-09-21
+
+Versions in this release: **OptionsWidgets minor 26** (`LibKa0s-Options-1.0` 23.26.3.7.3). Every
+other file is unchanged from v1.49.0 and the kit stays at revision 23.
+
+**A host kind that names a base gets that base's suggestions back.** `O.IdList` builds an entry's
+tooltip from the kind and nothing else, so a host that wants its own entry tooltip has to pass its
+own kind table; it says `base = "spell"` so resolution, the drawn name and the words still come from
+the library's spell kind. Through minor 25 the suggestion table was keyed by the library's kind
+TABLE, a host table is a different table, and so the add box under such a list suggested nothing as
+the player typed — the spellbook was no longer a source, and only what the host passed as
+`candidates` could be offered. A tooltip cost a capability, which is not a trade a library should
+impose. A based kind now reads its base's row.
+
+- **What comes with the base**: its client source — the bags for `base = "item"`, the Spell and
+  FutureSpell slots of the spellbook for `base = "spell"` — listed after the host's own
+  `candidates()` exactly as the base lists them, and read by the shared-name check, so a name two
+  spellbook spells share is refused as `"ambiguous"` through a based kind as it is through the base.
+  The base's rank label already came with it; it is now read through the same single lookup as the
+  source, so the two cannot disagree about which row a kind wears.
+- **How a host opts out: by not declaring a `base`.** A host kind with no base still matches nothing
+  in that table and behaves exactly as it did, which is the protection the old keying wanted — such
+  a kind's ids need not be the client's at all, and a list of currency or encounter ids must never be
+  offered the spellbook. There is no third setting: declaring a base opts in, leaving it out opts out.
+- **What still does not come with the base: `byName`.** A typed name reaches the host's `resolve` and
+  its `candidates()`, never `C_Spell.GetSpellInfo(name)` or `C_Item.GetItemInfoInstant(name)`. What a
+  host kind RESOLVES is as much its own as it ever was; only what it is OFFERED changed.
+- Resolution is unchanged for every kind, and a list whose kind declares no base renders and resolves
+  byte-for-byte what minor 25 rendered and resolved.
+
 ## v1.49.0 — 2026-09-21
 
 Versions in this release: **OptionsWidgets minor 25** (`LibKa0s-Options-1.0` 23.25.3.7.3). Every
