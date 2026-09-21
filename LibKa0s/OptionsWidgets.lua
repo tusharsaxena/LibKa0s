@@ -2731,6 +2731,63 @@ function lib.__AttachWidgets(O, d)
     line:AddChild(w)
   end
 
+  --- The X's HIGHLIGHT texture, moved from the art onto the frame, so that what lights up under
+  --- the cursor is what a click actually hits.
+  ---
+  --- AceGUI's Icon anchors its highlight to the IMAGE -- `highlight:SetAllPoints(image)`, in the
+  --- Constructor of AceGUI-3.0's widgets/AceGUIWidget-Icon.lua, right after that texture is
+  --- created -- while the thing that takes the click is the FRAME: the same constructor calls
+  --- `frame:EnableMouse(true)` and puts its OnClick script on the frame, not on the image. The art
+  --- is ID_REMOVE_SIZE and the frame is ID_REMOVE_HIT, so everything the wider frame adds around
+  --- the X is live and unlit. On a control that DELETES the row that is exactly the wrong way
+  --- round: the ring reads as the gap between the X and the spell icon beside it, and a click on
+  --- what looks like a gap removes an entry with nothing having lit up first. Anchoring the
+  --- highlight to the frame makes the lit rectangle and the clickable rectangle the same
+  --- rectangle, which is the only thing that tells the player where the control ends.
+  ---
+  --- FOUND BY WALKING THE REGIONS, because the texture is not reachable any other way: Icon's
+  --- constructor puts only `label`, `image`, `frame` and `type` on the widget table (same file),
+  --- and the highlight is a plain CreateTexture on the HIGHLIGHT draw layer rather than the
+  --- button's own highlight texture, so `GetHighlightTexture` does not answer it either. A client
+  --- that stopped building it, or a harness whose fake frame has no regions, finds nothing here
+  --- and the X is drawn exactly as it was.
+  ---
+  --- RESTORED ON RELEASE, as entryNoWrap's FontString is and for the same reason. AceGUI pools
+  --- this Icon across every addon in the session, and Icon's OnAcquire sets the height, the width,
+  --- the label, the image and the image size and says nothing about the highlight's anchors (the
+  --- `OnAcquire` method in the file above), so an X that simply left it re-anchored would hand the
+  --- next consumer of that pooled Icon a highlight stretched over its whole frame -- on a default
+  --- Icon, whose OnAcquire asks for a 110px frame around a 64px image, a lit border nobody asked
+  --- for. AceGUI:Release fires "OnRelease" on the widget before it clears its callbacks
+  --- (AceGUI-3.0.lua's Release), which is where the texture goes back onto the image.
+  ---
+  --- `__removeHitLit` records what was asked for, the way `__removeAtlas` records the delete art,
+  --- for a harness whose fake Icon has no textures to anchor.
+  local function entryRemoveLit(x)
+    x.__removeHitLit = true
+    local frame, img = x.frame, x.image
+    if type(frame) ~= "table" or type(frame.GetRegions) ~= "function" then return end
+    if type(img) ~= "table" or type(img.SetAllPoints) ~= "function" then return end
+    local hl
+    local regions = { frame:GetRegions() }
+    for i = 1, #regions do
+      local r = regions[i]
+      if type(r) == "table" and r ~= img and type(r.GetDrawLayer) == "function"
+        and type(r.SetAllPoints) == "function" and type(r.ClearAllPoints) == "function"
+        and r:GetDrawLayer() == "HIGHLIGHT" then
+        hl = r
+        break
+      end
+    end
+    if not hl then return end
+    hl:ClearAllPoints()
+    hl:SetAllPoints(frame)
+    x:SetCallback("OnRelease", function()
+      hl:ClearAllPoints()
+      hl:SetAllPoints(img)
+    end)
+  end
+
   --- The entry's X (`removeStyle = "icon"`, minor 21): a small Icon widget at the LEFT of the line,
   --- wearing ID_REMOVE_ATLAS, whose click calls onRemove and rebuilds the list once the host has
   --- removed the entry. Its tooltip is the `remove` string, so a host's `strings.remove` names it. A
@@ -2757,8 +2814,11 @@ function lib.__AttachWidgets(O, d)
     -- panel, which is not knowable here (the paragraph under ID_COLUMNS_MAX says so, and nothing in
     -- this repository measures it). At 26 the Icon's own geometry centers the art with 5px on
     -- every side -- the same 5px AceGUI already leaves above and below it -- so the hit area is
-    -- 26x26, the gap to the spell icon is real, and nothing about it moves with `cols`.
+    -- 26x26, the gap to the spell icon is real, and nothing about it moves with `cols`. What that
+    -- 26x26 LIGHTS is entryRemoveLit's business, just above: AceGUI lights the art alone,
+    -- so without it the 5px ring this width buys is live and dark.
     x:SetWidth(ID_REMOVE_HIT)
+    entryRemoveLit(x)
     x:SetCallback("OnClick", function()
       if callHost(spec.onRemove, entry.id) then rebuildIdList(ctx) end
     end)
