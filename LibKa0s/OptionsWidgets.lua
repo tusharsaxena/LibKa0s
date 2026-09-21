@@ -2704,6 +2704,24 @@ function lib.__AttachWidgets(O, d)
   --- two -- over the entries the reader is on their way to, which is the worst thing it could
   --- cover. The caller hands over the ROW instead, which spans the full width at every column
   --- count: the same rule as before, applied to the widget that still reaches the edge.
+  ---
+  --- NOT under the hovered label. The obvious alternative -- SetOwner(row, "ANCHOR_NONE") and a
+  --- hand-placed TOPLEFT on the label's BOTTOMLEFT, so the tooltip opens in the hovered entry's own
+  --- column -- buys the sibling column and pays for it with every row BELOW the cursor, which is the
+  --- same content by the same argument. The debug window already shipped that and took it back:
+  --- `tests/test_debuglog.lua` ("dbg: an icon control carries NO tooltip") pins the removal of minor
+  --- 9's under-the-control tooltip because it covered the first line of the log every time the
+  --- pointer crossed the title bar. Hand-placing also takes the position away from the client, so a
+  --- row near the bottom of the scroll needs a flip decided from `GetBottom()` against the shown
+  --- tooltip's height -- geometry the headless fake cannot answer: `GetBottom` falls through the
+  --- stub metatable and comes back as the frame itself, and `GetHeight` answers 0 until a test
+  --- arms it with `__setGeom` (tests/_kit/mock_base.lua). The flip would be arithmetic on a table
+  --- in the fake, i.e. a branch that could only ever be checked in game. ANCHOR_RIGHT off the widget that reaches the panel edge is the convention everywhere else
+  --- here too (OptionsTabs.lua's tab tooltip, Widgets.lua's). A host that genuinely wants it
+  --- elsewhere gets a spec-level anchor, the way WidgetsDragHandle's `tooltipAnchor` does it.
+  ---
+  --- What answers "which of the two entries is this?" is not the anchor but entryHighlight, which
+  --- was added for exactly that and is the other half of this decision.
   local function entryTooltip(lbl, k, id, owner)
     local anchor = (owner and (owner.frame or owner)) or lbl.frame or lbl
     lbl:SetCallback("OnEnter", function()
