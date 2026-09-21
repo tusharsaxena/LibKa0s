@@ -1631,16 +1631,92 @@ test("IdList: at more than one column an entry name is one line tall, never wrap
   end)
 end)
 
-test("IdList: a one-column list wraps exactly as it did, and lights nothing", function()
+-- ── the per-entry help mark (minor 28) ──────────────────────────────────────────────────────
+--
+-- The alternative already here is `note`, a full-width second line -- and a second line cannot
+-- share a Flow row, so a noted entry takes a row of its own and punches a hole in a multi-column
+-- grid. A host with something to say about MANY entries had to choose between saying it and
+-- keeping its columns. The mark says it in a tooltip for a fixed 18px and leaves every entry the
+-- same shape.
+
+--- The help Icons of a rendered list, in row order.
+local function helpMarks(O, ctx)
+  local out = {}
+  for _, row in ipairs(listRows(O, ctx)) do
+    for _, kid in ipairs(row.children or {}) do
+      if kid.type == "Icon" and kid.__helpLines ~= nil or (kid.type == "Icon" and kid.__helpTint) then
+        out[#out + 1] = kid
+      end
+    end
+  end
+  return out
+end
+
+test("IdList: a list where nothing carries help draws no marks at all", function()
+  local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } })
+  -- red under a mark drawn per entry rather than per list: a host that never heard of `help` must
+  -- pay nothing for it, in width or in widgets.
+  assertEqual(#helpMarks(O, ctx), 0, "no help, no marks")
+end)
+
+test("IdList: every entry gets a mark once ANY entry carries help", function()
+  local O, _, ctx = listBench({ { id = 21562, help = { "Never matches." } }, { id = 774 } })
+  local marks = helpMarks(O, ctx)
+  -- red under a mark only on the entries that have lines, which would make the column appear and
+  -- disappear down the list and stop the names lining up.
+  assertEqual(#marks, 2, "one mark per entry, not one per helped entry")
+  assertEqual(marks[1].__helpLines[1], "Never matches.", "the first carries the host's line")
+  assertNil(marks[2].__helpLines, "the second has nothing to say")
+end)
+
+test("IdList: a mark with nothing to say is dimmed and answers no tooltip", function()
+  local O, _, ctx = listBench({ { id = 21562, help = { "x" } }, { id = 774 } })
+  local marks = helpMarks(O, ctx)
+  -- red under a mark that looked the same either way, which would invite a hover that does nothing
+  assertTrue(marks[1].__helpTint[1] > marks[2].__helpTint[1], "the helped mark is brighter")
+  assertNil(marks[2].callbacks and marks[2].callbacks.OnEnter,
+    "and the empty one registers no hover at all, so it cannot answer a blank tooltip")
+end)
+
+test("IdList: a string help reads as one line", function()
+  local O, _, ctx = listBench({ { id = 21562, help = "Just the one." } })
+  assertEqual(helpMarks(O, ctx)[1].__helpLines[1], "Just the one.",
+    "a host with one thing to say need not wrap it in a table")
+end)
+
+--- The relative width of the first row's name label.
+local function firstNameRel(entries)
+  local O, _, ctx = listBench(entries)
+  for _, kid in ipairs(listRows(O, ctx)[1].children or {}) do
+    if kid.type == "InteractiveLabel" then return kid.relativeWidth end
+  end
+  return nil
+end
+
+test("IdList: the help mark's width comes out of the NAME", function()
+  local withHelp = firstNameRel({ { id = 21562, help = { "x" } } })
+  local without  = firstNameRel({ { id = 21562 } })
+  assertTrue(withHelp ~= nil and without ~= nil, "both rows drew a name")
+  -- red under a mark that claimed no width, which would push the row past its clip budget and
+  -- wrap the last control onto a line of its own -- the failure nothing reports.
+  assertTrue(withHelp < without, "the name gives up its share for the mark")
+end)
+
+test("IdList: a one-column list still wraps, and now lights too (minor 28)", function()
   withRealLabels(function()
     local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } })
-    -- red under: the no-wrap rule leaking into the default. One entry has its whole row, a wrapped
-    -- name pushes nothing sideways, and truncating it would lose the gray id for no gain at all.
     for _, r in ipairs(listRows(O, ctx)) do
+      -- red under: the no-wrap rule leaking into the default. One entry has its whole row, a
+      -- wrapped name pushes nothing sideways, and truncating it would lose the gray id for no gain.
       assertTrue(r.children[1].label.wordWrap, "the FontString still wraps")
       assertNil(r.children[1].__wordWrap, "and nothing asked it not to")
-      assertNil(r.children[1].highlightTexture, "no highlight either: the tooltip is already beside it")
-      assertNil(r.children[1].__highlight)
+      -- LIT FROM MINOR 28, where this used to assert the opposite. The reasoning it replaces was
+      -- that a one-column tooltip already hangs off the name and needs no second owner -- but the
+      -- lit name is not only a tooltip's owner, it is the feedback that says which row the cursor
+      -- is on, and one column wants that as much as two. It also left a NOTED entry, drawn at one
+      -- column inside a two-column list, as the only unlit row on the page.
+      assertEqual(r.children[1].__highlight, "Interface\\QuestFrame\\UI-QuestTitleHighlight",
+        "the entry lights under the cursor at one column too")
     end
   end)
 end)
