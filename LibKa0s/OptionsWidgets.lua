@@ -2811,24 +2811,32 @@ function lib.__AttachWidgets(O, d)
   --- stop lining up. An entry's name and its gray id are one FontString, so the fix is on that
   --- FontString -- word wrap off, and the client truncates the tail rather than wrapping it.
   ---
-  --- RESTORED ON RELEASE. AceGUI pools this widget across every addon in the session and Label's
-  --- OnAcquire does not reset word wrap, so a list that simply left it off would hand the next
-  --- consumer of that pooled label a label that no longer wraps. AceGUI:Release fires "OnRelease"
-  --- on the widget before it clears its callbacks, which is where the FontString is put back.
+  --- RESTORED ON RELEASE, BY entryRelease RATHER THAN HERE. AceGUI pools this widget across every
+  --- addon in the session and Label's OnAcquire does not reset word wrap -- it sets the width, the
+  --- text, the image and its size, the color, the font object and the two justifications, and never
+  --- touches SetWordWrap (`OnAcquire` in AceGUI-3.0's widgets/AceGUIWidget-Label.lua) -- so a list
+  --- that simply left it off would hand
+  --- the next consumer of that pooled label a label that no longer wraps. The FontString that has
+  --- to be put back is this function's to find, so it RETURNS it and entryRelease does the
+  --- restoring, together with everything else this label owes its pool. It cannot be two
+  --- callbacks: WidgetBase.SetCallback stores one handler per event NAME (`self.events[name] =
+  --- func`, AceGUI-3.0.lua), so a second SetCallback("OnRelease") on the same widget REPLACES the
+  --- first rather than chaining with it, and whichever half was installed earlier would silently
+  --- stop happening.
   ---
   --- One column is untouched. The entry has the whole row, a wrapped name pushes nothing sideways,
   --- and a list that passes no `columns` draws exactly what minor 23 drew.
   ---
   --- `__wordWrap` records what was asked for, the way `__removeAtlas` records the delete art: a
-  --- harness whose AceGUI fake has no FontString behind the widget can still assert the rule.
+  --- harness whose AceGUI fake has no FontString behind the widget can still assert the rule. Such
+  --- a fake takes the early return below -- the marker is set BEFORE it, and entryRelease clears it
+  --- whether or not there was a FontString to hand back.
   local function entryNoWrap(lbl)
     lbl.__wordWrap = false
     local fs = lbl.label
-    if type(fs) ~= "table" or type(fs.SetWordWrap) ~= "function" then return end
+    if type(fs) ~= "table" or type(fs.SetWordWrap) ~= "function" then return nil end
     fs:SetWordWrap(false)
-    lbl:SetCallback("OnRelease", function()
-      if type(fs.SetWordWrap) == "function" then fs:SetWordWrap(true) end
-    end)
+    return fs
   end
 
   --- Light the entry under the cursor, at more than one column.
@@ -2840,14 +2848,52 @@ function lib.__AttachWidgets(O, d)
   --- draws nothing until a caller names one, so naming one is the whole change, and the lit name
   --- is what gives the tooltip an owner the eye can find.
   ---
-  --- Nothing to restore on release: InteractiveLabel's OnAcquire calls SetHighlight with no
-  --- argument, which clears the texture for the next consumer of the pooled widget.
+  --- The TEXTURE needs nothing on release: InteractiveLabel's OnAcquire calls SetHighlight with no
+  --- argument (`OnAcquire` in AceGUI-3.0's widgets/AceGUIWidget-InteractiveLabel.lua), which clears
+  --- it for the next consumer of the pooled widget. The MARKER below does need clearing, and
+  --- entryRelease is where that happens -- see there.
   ---
   --- `__highlight` records the art, as `__removeAtlas` does, for a harness whose fake has no
   --- SetHighlight to call.
   local function entryHighlight(lbl)
     lbl.__highlight = ID_ENTRY_HILITE
     if type(lbl.SetHighlight) == "function" then lbl:SetHighlight(ID_ENTRY_HILITE) end
+  end
+
+  --- The ONE "OnRelease" an entry's label gets, and everything that has to happen inside it.
+  ---
+  --- WHY ONE. WidgetBase.SetCallback stores a handler by event name (`self.events[name] = func`,
+  --- AceGUI-3.0.lua), so callbacks do not chain: a second SetCallback("OnRelease") on this label
+  --- would throw the first one away. Word wrap and the markers are therefore restored and cleared
+  --- from the same handler, and nothing else in this file may hang another "OnRelease" on an entry
+  --- label.
+  ---
+  --- WHY THE MARKERS. AceGUI:Release wipes the widget's userdata and its events and then nils a
+  --- FIXED list of fields -- width, relWidth, height, relHeight, noAutoHeight and the frame's own
+  --- width and height (`AceGUI:Release` in AceGUI-3.0.lua). Keys an ADDON invented are not on that
+  --- list, so `__wordWrap` and `__highlight` ride the widget into the pool and are still on it when
+  --- the next Create hands it out -- to this list, to another list in this addon, or to another
+  --- addon entirely, because the pool is per-widget-type and shared by everything that loaded
+  --- AceGUI. The functional state is already safe without this (the FontString is handed back right
+  --- here, and OnAcquire clears the highlight texture); it is the markers that leak, and a leaked
+  --- marker is not a cosmetic wart. tests/test_options_widgets.lua asserts the one-column contract
+  --- as "no marker on the label", so a marker that survived a release turns that case into one that
+  --- passes or fails on POOL ORDER rather than on what the render asked for.
+  ---
+  --- `fs` is entryNoWrap's FontString, or nil when the label has none -- a harness fake, or any
+  --- future label whose text is not a FontString. Nil is not a reason to skip the callback: the
+  --- marker was set before entryNoWrap's early return and still has to come off.
+  ---
+  --- Hanging this on SetCallback is safe for the same reason landingLogo's is: AceGUI:Release fires
+  --- "OnRelease" BEFORE it clears the events table, and fires it with the widget as the first
+  --- argument and the event name as the second (`WidgetBase.Fire` in AceGUI-3.0.lua) -- which is
+  --- where `w` below comes from, so the handler clears the markers on the widget it was fired for.
+  local function entryRelease(lbl, fs)
+    lbl:SetCallback("OnRelease", function(w)
+      if fs and type(fs.SetWordWrap) == "function" then fs:SetWordWrap(true) end
+      w.__wordWrap = nil
+      w.__highlight = nil
+    end)
   end
 
   --- One entry, drawn into `line`. `cols` is how many entries share that Flow row (1 unless the
@@ -2865,8 +2911,9 @@ function lib.__AttachWidgets(O, d)
     -- string's height. Measuring it once as a wrapped string and once more as a clipped one is a
     -- height that is briefly wrong for no reason.
     if cols > 1 then
-      entryNoWrap(lbl)
+      local fs = entryNoWrap(lbl)
       entryHighlight(lbl)
+      entryRelease(lbl, fs)
     end
     lbl:SetText(entryLabel(spec, k, entry.id, name, entrySuffix(entry)))
     if icon then

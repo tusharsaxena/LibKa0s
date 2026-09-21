@@ -1569,6 +1569,41 @@ test("IdList: the no-wrap FontString is put back when AceGUI takes the widget ba
   end)
 end)
 
+test("IdList: release clears the markers, so a pooled label cannot answer for the next list", function()
+  withRealLabels(function()
+    local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 })
+    local lbl = listRows(O, ctx)[1].children[1]
+    assertFalse(lbl.__wordWrap)
+    assertEqual(lbl.__highlight, "Interface\\QuestFrame\\UI-QuestTitleHighlight")
+    -- red under: the markers left on the widget. AceGUI:Release wipes userdata, events and a fixed
+    -- field list, and keys an addon invented are not on it, so both markers ride the widget into a
+    -- pool shared with every other consumer of AceGUI. The one-column cases above assert the
+    -- default contract as "no marker", which a stale marker turns into a case that passes or fails
+    -- on pool order rather than on what the render asked for.
+    local fs = lbl.label
+    O.AceGUI:Release(lbl)
+    assertNil(lbl.__wordWrap, "the no-wrap marker does not ride the widget into the pool")
+    assertNil(lbl.__highlight, "and neither does the highlight marker")
+    assertTrue(fs.wordWrap, "and the same one callback still hands the FontString back")
+  end)
+end)
+
+test("IdList: a label with no FontString still has its markers cleared", function()
+  -- The kit's InteractiveLabel fake has no `label` FontString, which is exactly the case
+  -- entryNoWrap returns early on -- before it used to install anything. The marker is set before
+  -- that return, so the callback that clears it has to be installed independently of whether there
+  -- was a FontString to restore.
+  -- red under: the clear hidden behind the FontString check.
+  local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 })
+  local lbl = listRows(O, ctx)[1].children[1]
+  assertNil(lbl.label, "the plain fake has no FontString, which is the point of this case")
+  assertFalse(lbl.__wordWrap)
+  assertEqual(lbl.__highlight, "Interface\\QuestFrame\\UI-QuestTitleHighlight")
+  O.AceGUI:Release(lbl)
+  assertNil(lbl.__wordWrap)
+  assertNil(lbl.__highlight)
+end)
+
 test("IdList: at more than one column the hovered entry is lit, so the tooltip has an owner", function()
   withRealLabels(function()
     local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 })
