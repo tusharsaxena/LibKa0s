@@ -90,3 +90,71 @@ test("IdList removeStyle icon: drawn disabled, the X is disabled", function()
   -- red under: entryRemoveIcon ignoring the page's disable (a disabled page would still remove ids)
   assertTrue(lines[1].children[1].disabled)
 end)
+
+--- An AceGUI whose Icon carries the two things the real widget has and the kit's inert recorder
+--- does not: the `image` texture the X's art is set on, and a frame that answers GetRegions with
+--- that image plus the HIGHLIGHT-layer texture AceGUI's Icon constructor anchors to it
+--- (`highlight:SetAllPoints(image)`, widgets/AceGUIWidget-Icon.lua). Registered through the fake's
+--- own RegisterWidgetType, run, then taken back off again -- the same shape as
+--- tests/test_options_widgets.lua's withRealLabels.
+local function withRealIcons(fn)
+  local gui = T.mocks.__libs["AceGUI-3.0"]
+  local function texture(layer)
+    local t = { layer = layer }
+    function t:ClearAllPoints() self.anchoredTo = nil end
+    function t:SetAllPoints(to) self.anchoredTo = to end
+    function t:GetDrawLayer() return self.layer end
+    function t:SetAtlas(name) self.atlas = name end
+    return t
+  end
+  gui:RegisterWidgetType("Icon", function()
+    local w = T.mocks.__makeAceGUIWidget("Icon")
+    local img, hl = texture("BACKGROUND"), texture("HIGHLIGHT")
+    hl:SetAllPoints(img)
+    w.image, w.__hl = img, hl
+    w.frame.GetRegions = function() return img, hl end
+    return w
+  end, 21)
+  local ok, err = pcall(fn)
+  gui.WidgetRegistry["Icon"] = nil
+  assertTrue(ok, tostring(err))
+end
+
+test("IdList removeStyle icon: the X lights its whole hit area, not just the art inside it", function()
+  withRealIcons(function()
+    local _, _, lines = listBench({ { id = 21562 } }, { removeStyle = "icon" })
+    local x = lines[1].children[1]
+    -- red under: AceGUI's own anchoring left alone. Icon's constructor does
+    -- highlight:SetAllPoints(image), so the lit area is the 16px art while the frame that takes
+    -- the click is ID_REMOVE_HIT wide: the ring around the X deletes the entry with nothing
+    -- having lit up under the cursor first.
+    assertTrue(x.__hl.anchoredTo == x.frame, "the highlight covers the frame that takes the click")
+    assertEqual(x.image.atlas, "transmog-icon-remove", "and the art is still on the image")
+    assertTrue(x.__removeHitLit, "recorded too, for a fake with no textures to anchor")
+  end)
+end)
+
+test("IdList removeStyle icon: the highlight goes back onto the art when AceGUI takes the X back", function()
+  withRealIcons(function()
+    local O, _, lines = listBench({ { id = 21562 } }, { removeStyle = "icon" })
+    local x = lines[1].children[1]
+    local hl, img = x.__hl, x.image
+    assertTrue(hl.anchoredTo == x.frame, "drawn, it is on the frame")
+    O.AceGUI:Release(x)
+    -- red under: a frame-sized highlight left on a pooled Icon. AceGUI pools it across every addon
+    -- in the session and Icon's OnAcquire never touches the highlight's anchors, so the next
+    -- consumer -- here or in another addon -- would light the whole of its 110px frame.
+    assertTrue(hl.anchoredTo == img, "release puts the highlight back where it was found")
+  end)
+end)
+
+test("IdList removeStyle icon: an AceGUI whose Icon has no textures still draws the X", function()
+  local _, _, lines = listBench({ { id = 21562 } }, { removeStyle = "icon" })
+  local x = lines[1].children[1]
+  -- red under: the highlight fix assuming there is a texture to re-anchor. The kit's Icon is an
+  -- inert recorder with no image and no regions behind it, which is also what a client that
+  -- stopped building the highlight would look like from here.
+  assertEqual(x.__removeAtlas, "transmog-icon-remove")
+  assertTrue(x.__removeHitLit, "what was asked for is recorded either way")
+  assertNil(x.callbacks.OnRelease, "nothing was moved, so nothing is registered to move back")
+end)

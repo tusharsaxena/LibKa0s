@@ -1082,8 +1082,24 @@ test("IdInput: with no AceGUI it draws nothing", function()
   end)
 end)
 
+--- The CONTENT width listBench draws a list into unless the test names another. Comfortably above
+--- every floor in the ID_COLUMNS_MAX table (the widest is two columns in the default style, ~584px
+--- of content), because almost every test below is about how entries PACK and not about what a
+--- canvas can pay for. Declared rather than inherited: the kit's fake ScrollFrame publishes a 400px
+--- `content.original_width` (tests/_kit/mock_base.lua), which the always-shown-scrollbar patch turns
+--- into a 380px content -- narrower than two columns need, so a bench that took the fake's own
+--- number would draw every multi-column case at one column and prove nothing about packing.
+local LIST_BENCH_WIDTH = 1000
+
 --- One IdList on a throwaway page. `entries` is the host's list; every callback is recorded.
-local function listBench(entries, spec)
+---
+--- `contentWidth` is the canvas the list is measured against: a number writes it onto the scroll's
+--- content frame before the list is drawn (`content.width` is the field AceGUI's Flow measures its
+--- children against and the one AceGUI's ScrollFrame writes from OnWidthSet, so setting it is the
+--- harness equivalent of a panel having been laid out that wide), nothing at all takes
+--- LIST_BENCH_WIDTH, and `false` leaves the scroll UNMEASURED -- the state a page drawn before its
+--- panel was ever given a size is in.
+local function listBench(entries, spec, contentWidth)
   local O, rec, ctx = bench()
   seedIds()
   local log = { added = {}, removed = {}, toggled = {}, rebuilt = 0 }
@@ -1094,6 +1110,14 @@ local function listBench(entries, spec)
   spec.onAdd = function(id) log.added[#log.added + 1] = id end
   spec.onRemove = function(id) log.removed[#log.removed + 1] = id end
   spec.onToggle = function(id, on) log.toggled[#log.toggled + 1] = { id, on } end
+  local content = O.EnsureScroll(ctx).content
+  -- An explicit branch, not `X and nil or Y`: that idiom cannot yield nil, because `and nil`
+  -- makes the whole left side false and control falls through to the right side every time.
+  if contentWidth == false then
+    content.width = nil        -- the bench answers no width at all: the 'unmeasured' case
+  else
+    content.width = contentWidth or LIST_BENCH_WIDTH
+  end
   local lines = O.IdList(ctx, spec)
   return O, rec, ctx, lines, log
 end
@@ -1353,6 +1377,9 @@ test("IdList: at two columns a failing entry costs itself, not the entry beside 
   local O, rec, ctx = bench()
   seedIds()
   rec.chat = {}
+  -- A canvas that pays for two columns, as listBench gives every other case here: this test is
+  -- about the guard, not about the width, and the fake ScrollFrame publishes a content too narrow.
+  O.EnsureScroll(ctx).content.width = LIST_BENCH_WIDTH
   -- Raise while the SECOND entry is drawing, AFTER it has put its name into the shared row: the
   -- row has to be rolled back to the entry already in it, or half an entry is drawn beside a whole
   -- one. A host kind, so the raise is the host's and the kinds the library ships are untouched.
@@ -1384,6 +1411,7 @@ test("IdList: at two columns the FIRST entry of a row fails without stranding th
   local O, rec, ctx = bench()
   seedIds()
   rec.chat = {}
+  O.EnsureScroll(ctx).content.width = LIST_BENCH_WIDTH   -- two columns, as above
   -- The other half of the guard: raise while the entry that OPENS a row is drawing. Nothing else
   -- is in that row and nothing ever will be, so it is never added to the scroll -- and a row the
   -- scroll never took is a row no ReleaseChildren will ever reach.
@@ -1471,6 +1499,68 @@ test("IdList: columns is capped at two, and the cap's arithmetic is the label's 
   assertEqual(#rows, 2, "three entries at columns = 3 still take two rows")
   assertEqual(#rows[1].children, 6, "two entries in the first, not three")
   assertNear(rows[1].children[1].relativeWidth, 0.37, 1e-9, "at the two-column width")
+end)
+
+-- ── the floors, measured rather than assumed ────────────────────────────────────────────────
+--
+-- The cap is a guess about the canvas; these are a reading of it. `content.width` is the number
+-- AceGUI's Flow lays a row out against (`local width = content.width or content:GetWidth() or 0`,
+-- AceGUI-3.0.lua's Flow layout), so a test that writes it is asking the library the same question
+-- a real panel of that width asks.
+
+test("IdList: a content width two columns cannot pay for draws one, not a broken grid", function()
+  -- red under: a column count taken from the spec alone. One pixel under the icon style's floor the
+  -- two X frames (26px each, absolute) no longer fit in what the names left them, and Flow starts a
+  -- new row rather than shrinking anything -- the trailing gutter, then an X, land on a line of
+  -- their own and nothing anywhere says so.
+  local O, _, ctx, lines = listBench({ { id = 21562 }, { id = 774 } },
+    { columns = 2, removeStyle = "icon" }, minContent(true, 2) - 1)
+  local rows = listRows(O, ctx)
+  assertEqual(#rows, 2, "one entry per row: the count fell back to what the width pays for")
+  assertEqual(#rows[1].children, 2, "X and name, and no gutter -- it is a one-column row")
+  assertEqual(rows[1].children[1].width, REMOVE_HIT_PX, "the X keeps its absolute frame")
+  assertNear(rows[1].children[2].relativeWidth, 0.90, 1e-9, "at the one-column name width")
+  assertNil(rows[1].children[2].__wordWrap, "and the name wraps again, as a one-column entry does")
+  assertTrue(lines[1] ~= lines[2], "and no two entries share a row")
+end)
+
+test("IdList: a content width that covers the floor keeps the columns the host asked for", function()
+  -- red under: a fallback that fires on a width which DOES pay for the layout. A two-column list
+  -- collapsed for nothing is the same silent failure seen from the other side.
+  local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } },
+    { columns = 2, removeStyle = "icon" }, minContent(true, 2) + 1)
+  local rows = listRows(O, ctx)
+  assertEqual(#rows, 1, "both entries still share one row")
+  assertEqual(#rows[1].children, 6, "X, name, gutter -- twice")
+  assertNear(rows[1].children[2].relativeWidth, 0.43, 1e-9, "at the two-column name width")
+  assertEqual(rows[1].children[2].__wordWrap, false, "still a one-line entry, so still no wrap")
+end)
+
+test("IdList: the default style falls back on the LABEL's floor, which is its only one", function()
+  -- The default style has no absolute frame to pay for, so its floor is the label's alone: the
+  -- entry's 16px icon plus AceGUI's 200px threshold, over the 0.37 a two-column name holds.
+  local narrow, wide = minContent(false, 2) - 1, minContent(false, 2) + 1
+  local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 }, narrow)
+  -- red under: the icon style's X floor applied to a list that draws no X (it would collapse this
+  -- list at 519px, where the label still has its 200px and the layout is honest)
+  assertEqual(#listRows(O, ctx), 2, "one entry per row below the label floor")
+  local O2, _, ctx2 = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 }, wide)
+  assertEqual(#listRows(O2, ctx2), 1, "and both on one row above it")
+  assertTrue(narrow > minContent(true, 2),
+    "and this width is above the icon style's floor -- the two styles are measured apart")
+end)
+
+test("IdList: a width that cannot be measured leaves the column count exactly as it was", function()
+  -- red under: an unmeasured scroll read as a zero-width one. `false` clears `content.width` and
+  -- the fake's frame answers 0 until a test arms it -- the shape a page drawn before its panel was
+  -- ever given a size has. Collapsing a working two-column list there would be a worse bug than
+  -- the one the measurement exists to catch.
+  local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 }, false)
+  assertEqual(#listRows(O, ctx), 1, "unmeasured is unchanged: both entries still share a row")
+  local O2, _, ctx2 = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 }, 0)
+  assertEqual(#listRows(O2, ctx2), 1, "and a width that reads as zero is unmeasured too")
+  local O3, _, ctx3 = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 }, -40)
+  assertEqual(#listRows(O3, ctx3), 1, "as is a negative one")
 end)
 
 test("IdList: the X's frame is wider than its art, absolute, at every column count", function()
@@ -1567,6 +1657,41 @@ test("IdList: the no-wrap FontString is put back when AceGUI takes the widget ba
     O.AceGUI:Release(lbl)
     assertTrue(fs.wordWrap, "release puts the FontString back the way it was found")
   end)
+end)
+
+test("IdList: release clears the markers, so a pooled label cannot answer for the next list", function()
+  withRealLabels(function()
+    local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 })
+    local lbl = listRows(O, ctx)[1].children[1]
+    assertFalse(lbl.__wordWrap)
+    assertEqual(lbl.__highlight, "Interface\\QuestFrame\\UI-QuestTitleHighlight")
+    -- red under: the markers left on the widget. AceGUI:Release wipes userdata, events and a fixed
+    -- field list, and keys an addon invented are not on it, so both markers ride the widget into a
+    -- pool shared with every other consumer of AceGUI. The one-column cases above assert the
+    -- default contract as "no marker", which a stale marker turns into a case that passes or fails
+    -- on pool order rather than on what the render asked for.
+    local fs = lbl.label
+    O.AceGUI:Release(lbl)
+    assertNil(lbl.__wordWrap, "the no-wrap marker does not ride the widget into the pool")
+    assertNil(lbl.__highlight, "and neither does the highlight marker")
+    assertTrue(fs.wordWrap, "and the same one callback still hands the FontString back")
+  end)
+end)
+
+test("IdList: a label with no FontString still has its markers cleared", function()
+  -- The kit's InteractiveLabel fake has no `label` FontString, which is exactly the case
+  -- entryNoWrap returns early on -- before it used to install anything. The marker is set before
+  -- that return, so the callback that clears it has to be installed independently of whether there
+  -- was a FontString to restore.
+  -- red under: the clear hidden behind the FontString check.
+  local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, { columns = 2 })
+  local lbl = listRows(O, ctx)[1].children[1]
+  assertNil(lbl.label, "the plain fake has no FontString, which is the point of this case")
+  assertFalse(lbl.__wordWrap)
+  assertEqual(lbl.__highlight, "Interface\\QuestFrame\\UI-QuestTitleHighlight")
+  O.AceGUI:Release(lbl)
+  assertNil(lbl.__wordWrap)
+  assertNil(lbl.__highlight)
 end)
 
 test("IdList: at more than one column the hovered entry is lit, so the tooltip has an owner", function()

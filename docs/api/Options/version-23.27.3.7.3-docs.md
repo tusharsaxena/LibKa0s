@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 23.26.3.7.3
+# `LibKa0s-Options-1.0` — version 23.27.3.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **26** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **27** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.49.1 |
-| Status | Superseded |
-| Supersedes | [version 23.25.3.7.3](./version-23.25.3.7.3-docs.md) |
-| Superseded by | [version 23.27.3.7.3](./version-23.27.3.7.3-docs.md) |
+| Shipped in | unreleased |
+| Status | **Current** |
+| Supersedes | [version 23.26.3.7.3](./version-23.26.3.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 26, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 27, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -28,6 +28,41 @@ member is a fact about when a consumer got it, not about which file holds it tod
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**Four O.IdList follow-ups, none of them a surface change (W27).** `OptionsWidgets.lua` 26 -> **27**;
+every other file of the major is unchanged. No member is added, removed or repurposed -- the member
+manifest at `members-23.27.3.7.3.json` is byte-identical to W26's apart from the minor and the
+version key -- and no host has anything to adopt. These are LibKa0s #34's findings 1, 3, 4 and 5.
+
+**The X lights its whole hit area (finding 1).** In `removeStyle = "icon"` the delete control's
+frame is `ID_REMOVE_HIT` (26px) around 16px of art, but AceGUI's Icon anchors its highlight to the
+IMAGE while the FRAME is what takes the click -- so the 5px ring this list deliberately buys was
+live and unlit, on a control that deletes the row. The highlight is now anchored to the frame, and
+put back on the image when AceGUI pools the widget. A client that stops building that texture, or a
+harness whose fake has no regions, is unaffected: the walk finds nothing and the X draws as it did.
+
+**The column count is fitted to the canvas (finding 4).** The X's frame is absolute, so the icon
+style spends 52px of every row before a relative width is multiplied out, and AceGUI's Flow broke
+the trailing gutter onto a row of its own below roughly 520px of content -- icons stacked over
+wrapped names, with nothing reporting it. `columns` is now the count the host asks for as a MAXIMUM:
+the draw measures the content width and drops a column at a time until the count is payable.
+**A width that cannot be measured changes nothing**, so a list on a canvas that answers no geometry
+draws exactly the count it was given, as before. The fit is taken once, at draw time; a canvas
+dragged narrower afterwards is not re-fitted, because nothing re-runs the page builder on a resize.
+
+**An entry label's markers no longer ride into the pool (finding 3).** `__wordWrap` and
+`__highlight` are keys this library invents, and `AceGUI:Release` nils only a fixed list of its own
+fields, so both survived into the pool and could be read by the next consumer of that label. They
+are cleared on release now, from the single `OnRelease` that also hands the FontString back --
+single because `SetCallback` stores one handler per event name, so a second registration would
+silently replace the first. Nothing observable to a host changes; the markers exist for test
+harnesses.
+
+**Finding 5** removed an unsourced pixel figure from two comments, and **finding 2** (the
+multi-column tooltip's anchor) was closed as no-change, with the reasoning recorded at
+`entryTooltip`.
+
+## Previously, at 23.26.3.7.3
 
 **A based host kind is offered its base's client ids (W26).** `OptionsWidgets.lua` 25 → **26**;
 every other file of the major is unchanged. No member is added, removed or repurposed, and no kind
@@ -61,7 +96,7 @@ get is the base's `byName`: a typed name reaches the host's `resolve` and its `c
 is as much its own as it ever was. Only what it is offered, and what a shared name is checked
 against, now come with the base.
 
-## Previously, at 23.25.3.7.3
+### Previously, at 23.25.3.7.3
 
 **An entry may carry a `suffix` (W25): a few host-composed words drawn INSIDE its label, after the
 gray `(id)` and in the same gray.** `OptionsWidgets.lua` 24 → **25**; every other file of the major

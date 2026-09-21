@@ -10,6 +10,44 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## Unreleased
+
+Versions in this release: **OptionsWidgets minor 27** (`LibKa0s-Options-1.0` 23.27.3.7.3). Every
+other file is unchanged from v1.49.1 and the kit stays at revision 23.
+
+Four `O.IdList` follow-ups from the v1.47.0 reviews (issue #34). **Nothing here is a surface
+change**: `docs/api/Options/members-23.27.3.7.3.json` is identical to minor 26's apart from the
+minor and the version key, and no host has anything to adopt.
+
+- **The X lights the whole of its hit area, not just the art inside it.** In `removeStyle = "icon"`
+  the delete control's frame is 26px around 16px of art, but AceGUI's Icon anchors its highlight to
+  the IMAGE while the FRAME is what takes the click — so the 5px ring the list deliberately buys was
+  live and unlit, on a control that deletes the row. A click on what read as the gap between the X
+  and the entry's own icon removed an entry with nothing having lit up first. The highlight now
+  tracks the frame, and goes back onto the image when AceGUI pools the widget.
+- **`columns` is now a maximum, not a promise.** The X's frame is absolute, so the icon style spends
+  52px of every row before a relative width is multiplied out; below roughly 520px of content
+  AceGUI's Flow broke the trailing gutter onto a row of its own, leaving icons stacked over wrapped
+  names with nothing reporting it. The draw measures the content width and drops a column at a time
+  until the count is payable — a narrower list is a correct list, a broken grid is not. **A width
+  that cannot be measured changes nothing**, so a list whose canvas answers no geometry draws the
+  count it was given, exactly as before. Measured once, at draw time: a canvas dragged narrower
+  afterwards is not re-fitted, because nothing re-runs the page builder on a resize.
+- **An entry label's markers no longer ride into the AceGUI pool.** `__wordWrap` and `__highlight`
+  are keys this library invents, and `AceGUI:Release` nils only a fixed list of its own fields, so
+  both survived to be read by the next consumer of that pooled label. They are cleared on release
+  now, from the single `OnRelease` that also hands the FontString back — single because
+  `SetCallback` stores one handler per event name, so a second registration replaces the first
+  rather than chaining with it.
+- **Two comments stopped quoting a pixel figure the file itself calls unknowable.** The fraction
+  minor 23 gave the delete control was "about 41" px only at some content width, and the paragraph
+  under `ID_COLUMNS_MAX` says that width is not knowable here and is measured nowhere in this repo.
+
+The fifth finding — the multi-column tooltip anchoring off the list's right edge whatever column the
+cursor is in — is closed as **no change**, with the reasoning recorded at `entryTooltip`: anchoring
+under the hovered label buys the sibling column and pays for it with every row below the cursor, and
+the debug window already shipped that and took it back.
+
 ## v1.49.1 — 2026-09-21
 
 Versions in this release: **OptionsWidgets minor 26** (`LibKa0s-Options-1.0` 23.26.3.7.3). Every
