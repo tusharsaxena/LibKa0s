@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 23.29.3.7.3
+# `LibKa0s-Options-1.0` — version 23.30.3.7.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **29** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **30** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.52.0 |
-| Status | Superseded |
-| Supersedes | [version 23.28.3.7.3](./version-23.28.3.7.3-docs.md) |
-| Superseded by | [version 23.30.3.7.3](./version-23.30.3.7.3-docs.md) |
+| Shipped in | v1.53.0 |
+| Status | **Current** |
+| Supersedes | [version 23.29.3.7.3](./version-23.29.3.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 29, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 30, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -29,7 +29,27 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-**The help mark grows up (W29).** `OptionsWidgets.lua` 28 -> **29**; every other file of the major
+**The Add button stops overhanging the box beside it (W30).** `OptionsWidgets.lua` 29 -> **30**;
+every other file of the major is unchanged, and the member manifest is identical to W29's apart
+from the minor and the version key. **No new member, no new field, and nothing to adopt** — every
+consumer of `O.IdInput` gets it by re-vendoring.
+
+**What was wrong, and what was not.** The owner reported the Add button sitting *"slightly higher"*
+than the edit box beside it. It was not higher. The two were already centered on each other and
+always had been: AceGUI's labeled `EditBox` publishes `self.alignoffset = 30` (`SetLabel` in
+`widgets/AceGUIWidget-EditBox.lua`) and Flow anchors the next widget by
+`frameoffset - lastframeoffset`, which puts their middles on one line. Measured off the screenshot:
+box 20px tall with its centre at y 43, button 24px with its centre at y 42 — **one pixel apart, and
+four pixels different in height**.
+
+**So the fix is the height, not the anchor.** `InputBoxTemplate` draws its border art **20** tall;
+AceGUI's `Button` is a flat `SetHeight(24)`. Centered, a 24 against a 20 overhangs 2px at each end —
+and the two overhangs do not read alike, because the top one sits against the row's gold caption
+and the bottom one against empty dark. That asymmetry is what reads as *higher*. `O.IdInput` now
+sets the button to `ID_ADD_H = 20`, Blizzard's own number for that border art. The centering stays
+AceGUI's.
+
+**Previously, at 23.29.3.7.3 — the help mark grows up (W29).** `OptionsWidgets.lua` 28 -> **29**; every other file of the major
 is unchanged, and the member manifest is identical to W28's apart from the minor and the version
 key. One **regression fix**, one **art change**, and one **new optional field**.
 
