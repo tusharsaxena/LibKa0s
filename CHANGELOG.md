@@ -10,6 +10,42 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.52.0 — 2026-09-22
+
+Versions in this release: **OptionsWidgets minor 29** (`LibKa0s-Options-1.0` 23.29.3.7.3). Every
+other file is unchanged from v1.51.0 and the kit stays at revision 23. The member manifest is
+identical to minor 28's apart from the minor and the version key.
+
+**A REGRESSION FIX, and it was this library's.** v1.51.0 reserved `0.05` of an id-list row for a
+help mark whose frame is ABSOLUTE, making the two-column floor `2 × 18 ÷ 0.05` = **720px of
+content** — past what a settings canvas hands a page. So `columns`' fit correctly dropped **every
+list that adopted `help` to one column**, and a host that took the option silently lost its second
+column. The suite could not see it: the bench draws into 1000px, which pays for 720.
+
+The reserve is now **0.09**, derived as the smallest hundredth at which the mark's own floor stops
+binding before the label floor the row already pays. Adopting `help` still lifts an icon-style
+two-column list's floor from **520px to 561px** — the label floor rising as the name gives up its
+share, unavoidable, and under the 584px the library already calls comfortable. **A helped
+default-style list at two columns wants ~665px and will fall back to one column on a normal canvas;
+a host that wants help and two columns should draw the X.**
+
+**The glyph is the library's own** `media/icons/info.tga` at **14px of art in a 24px frame**, where
+v1.51.0 used the client's `InformationIcon` at 8px — which reads as half-drawn beside the two 16px
+textures an entry already carries. Reaching it crosses a major boundary, so the **Options descriptor
+takes an optional `addonName`**, resolved at call time through `LibStub("LibKa0s-Media-1.0", true)`
+— the same shape `Core.MakeCloseButton` and DebugLog use. Nothing is copied across the seam, so
+Options stays vendorable without Media, and **without it the mark falls back to the client's glyph
+at the new size**. `spec.helpIcon` still wins.
+
+**`entry.helpLevel` — a severity the host declares.** `"blocked"` tints the mark red, `"info"`
+leaves it the resting gold, and an entry with nothing to say keeps the dimmed mark and no tooltip.
+The library reads the lines as opaque strings and cannot know which means what. An unknown level
+reads as `"info"`. **Backward compatible**: an entry passing a plain string or list, as v1.51.0
+documented, draws exactly as it did.
+
+Verified against lint, tests and complexity. This library ships no `tests/perf.lua`, so the perf
+suite was skipped rather than measured — the release gate covered three suites, not four.
+
 ## v1.51.0 — 2026-09-22
 
 Versions in this release: **OptionsWidgets minor 28** (`LibKa0s-Options-1.0` 23.28.3.7.3). Every

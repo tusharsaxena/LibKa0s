@@ -1099,8 +1099,11 @@ local LIST_BENCH_WIDTH = 1000
 --- harness equivalent of a panel having been laid out that wide), nothing at all takes
 --- LIST_BENCH_WIDTH, and `false` leaves the scroll UNMEASURED -- the state a page drawn before its
 --- panel was ever given a size is in.
-local function listBench(entries, spec, contentWidth)
-  local O, rec, ctx = bench()
+--- `hostOverrides` (minor 29) goes to the DESCRIPTOR rather than to the list: `addonName` is what
+--- the help mark's art ladder resolves LibKa0s-Media-1.0 from, and it is an instance-level field,
+--- so a case about the default glyph has to build its host with one.
+local function listBench(entries, spec, contentWidth, hostOverrides)
+  local O, rec, ctx = bench(hostOverrides)
   seedIds()
   local log = { added = {}, removed = {}, toggled = {}, rebuilt = 0 }
   ctx.rebuild = function() log.rebuilt = log.rebuilt + 1 end
@@ -1700,6 +1703,114 @@ test("IdList: the help mark's width comes out of the NAME", function()
   -- red under a mark that claimed no width, which would push the row past its clip budget and
   -- wrap the last control onto a line of its own -- the failure nothing reports.
   assertTrue(withHelp < without, "the name gives up its share for the mark")
+end)
+
+-- ── the mark's size, its art and its severity (minor 29) ─────────────────────────────────────
+--
+-- Three owner findings against minor 28, and the first is one this suite could not see from the
+-- inside: listBench draws into LIST_BENCH_WIDTH, 1000px, which pays for minor 28's 720px helped
+-- two-column floor. A settings canvas does not. So every helped list in game was fitted down to one
+-- column while every case above stayed green. These read the widths a panel actually hands a page.
+
+local HELP_HIT_PX   = 24      -- ID_HELP_HIT: the mark's absolute frame, its 14px art plus 10
+local HELP_REL_FRAC = 0.09    -- ID_HELP_REL: what the name gives up for that frame
+
+--- The narrowest CONTENT width at which a HELPED two-column icon-style list is still two columns:
+--- AceGUI's label floor over what one name holds once the X (0.08), the gutter (0.04) and the mark
+--- (ID_HELP_REL) are out of the line. Written from the numbers rather than read off the library,
+--- for the same reason minContent above is -- a floor that asks its own implementation cannot fail.
+local function helpedIconFloor()
+  return (ACEGUI_LABEL_MIN + ENTRY_ICON_PX) / ((0.90 - 0.04 - HELP_REL_FRAC) / 2)
+end
+
+test("IdList: a helped list still gets two columns on a canvas that pays for them", function()
+  -- red under minor 28's ID_HELP_REL of 0.05: entryMinContent's mark floor is
+  -- `cols * ID_HELP_HIT / ID_HELP_REL` = 2 * 18 / 0.05 = 720px of content, against the ~584 the
+  -- ID_COLUMNS_MAX block calls comfortable and the ~876 it calls past a canvas. Setting `help` on
+  -- ONE entry therefore collapsed the whole list to one column -- which is what the owner reported
+  -- against a two-column spell list, and what nothing in this file could see at a 1000px bench.
+  local helped = { { id = 21562, help = { "Never matches." } }, { id = 774 } }
+  local O, _, ctx = listBench(helped, { columns = 2, removeStyle = "icon" }, helpedIconFloor() + 1)
+  assertEqual(#listRows(O, ctx), 1, "both entries share one row just above the floor")
+  -- and the floor is still a floor: a pixel under it the list is narrow rather than broken.
+  local O2, _, ctx2 = listBench(helped, { columns = 2, removeStyle = "icon" }, helpedIconFloor() - 1)
+  assertEqual(#listRows(O2, ctx2), 2, "one entry per row just below it")
+end)
+
+test("IdList: the mark is drawn big enough to read, in a frame with the X's 5px ring", function()
+  local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, { removeStyle = "icon" })
+  local mark = helpMarks(O, ctx)[1]
+  -- red under minor 28's 8px art in an 18px frame. 8px between the X's 16px atlas and the entry's
+  -- own 16px icon reads as half-drawn rather than as small, which is the owner's report. The frame
+  -- is the art plus 10 for the reason ID_REMOVE_HIT is: AceGUI centers an Icon's texture and hangs
+  -- it 5px below the frame's top, so art + 10 is 5px of clear space on all four sides.
+  assertEqual(mark.imageSize[1], 14, "the art is 14px, under the 16 beside it and over the 8")
+  assertEqual(mark.width, HELP_HIT_PX, "and the frame is the art plus 10")
+end)
+
+test("IdList: the mark draws this library's own info art when the host names itself", function()
+  -- red under minor 28, which had no default beyond the client's glyph: the collection ships
+  -- `media/icons/info.tga` and ConsumableMaster already draws it for this job, so one addon's info
+  -- mark being the library's and another's the client's was the inconsistency it looks like.
+  local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
+    { addonName = "TestHost" })
+  assertEqual(helpMarks(O, ctx)[1].__helpIcon,
+    "Interface\\AddOns\\TestHost\\libs\\LibKa0s\\media\\icons\\info",
+    "the vendored path Media.Icon builds from the descriptor's addonName, extensionless")
+end)
+
+test("IdList: the art ladder falls back, and a host that names its own art keeps it", function()
+  -- red under a default that assumed Media, or that ignored spec.helpIcon once it had one. A
+  -- payload may ship Options without Media, and a host may name no addon -- both draw the client's
+  -- glyph rather than a blank square, which is exactly what minor 28 drew.
+  local O, _, ctx = listBench({ { id = 21562, help = { "x" } } })
+  assertEqual(helpMarks(O, ctx)[1].__helpIcon, "Interface\\FriendsFrame\\InformationIcon",
+    "no addonName, no library art")
+  local O2, _, ctx2 = listBench({ { id = 21562, help = { "x" } } },
+    { helpIcon = "Interface\\Custom\\Mark" }, nil, { addonName = "TestHost" })
+  assertEqual(helpMarks(O2, ctx2)[1].__helpIcon, "Interface\\Custom\\Mark",
+    "the host's own art still wins over the library's default")
+end)
+
+test("IdList: a help level tints the mark, and an entry that names none keeps its gold", function()
+  local O, _, ctx = listBench({
+    { id = 21562, help = { level = "blocked", "This aura can never match." } },
+    { id = 774,   help = { level = "info", "Also in 2 other categories." } },
+    { id = 99999, help = { "Something to know." } },
+    { id = 12345 },
+  })
+  local marks = helpMarks(O, ctx)
+  -- red under minor 28, where every helped mark was one gold: "can never match" and "also in 2"
+  -- are the same type to the library and two different answers to a player, so the host says which.
+  assertEqual(marks[1].__helpLevel, "blocked", "the level is recorded, for a fake with no texture")
+  assertTrue(marks[1].__helpTint[2] < marks[2].__helpTint[2],
+    "red is red because it drops the green gold keeps, not because it adds red")
+  assertEqual(marks[2].__helpTint, marks[3].__helpTint,
+    "`info` is the same gold a plain list of strings already wore -- one color, not two")
+  assertNil(marks[3].__helpLevel, "and a plain list names no level")
+  assertTrue(marks[3].__helpTint[1] > marks[4].__helpTint[1],
+    "while an entry with nothing to say is still the flat gray")
+end)
+
+test("IdList: an unknown level draws the default, and a hover leaves a mark its own color", function()
+  local O, _, ctx = listBench({
+    { id = 21562, help = { level = "blocked", "Never matches." } },
+    { id = 774,   help = { level = "whatever-the-host-invented", "A line." } },
+  })
+  local marks = helpMarks(O, ctx)
+  -- red under a lookup that raised or blanked on a name it did not know. A host newer than its
+  -- vendored copy is the ordinary case, and the honest answer is the mark minor 28 drew.
+  -- red under an unknown level resolving to nil rather than falling back: `x == (x and x)` is
+  -- true for every value INCLUDING nil, which is what this assertion said before.
+  assertTrue(type(marks[2].__helpTint) == "table", "an unknown level still resolves to a tint")
+  assertEqual(marks[2].__helpLevel, "whatever-the-host-invented", "recorded, so a typo is visible")
+  assertTrue(marks[2].__helpTint[2] > marks[1].__helpTint[2], "and drawn as the default gold")
+  -- red under minor 28's OnLeave, which restored ID_HELP_TINT by name: with levels that turns a red
+  -- mark gold the first time the cursor crosses it, and leaves it gold.
+  marks[1]:__fire("OnEnter")
+  assertEqual(marks[1].__helpTintNow[1], 1, "the hover brightens it to white")
+  marks[1]:__fire("OnLeave")
+  assertEqual(marks[1].__helpTintNow, marks[1].__helpTint, "and it goes back to ITS color, not gold")
 end)
 
 test("IdList: a one-column list still wraps, and now lights too (minor 28)", function()
