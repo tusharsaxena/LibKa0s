@@ -95,16 +95,16 @@ figure in the `docs/automated-tests/` manifests that no document read, and a RES
 that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
 against a file in it.
 
-Two files, measured 2026-09-20 at v1.47.0 with
+Two files, measured 2026-09-22 at v1.53.0 with
 
 ```sh
 git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 ```
 
-| File | Lines (2026-09-20) | Disposition |
+| File | Lines (2026-09-22) | Disposition |
 |---|---|---|
-| `tests/test_options_widgets.lua` | 3664 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (lines 814–2225, 1412 of them, minor 24's `columns` block included) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
-| `LibKa0s/OptionsWidgets.lua` | 3255 | Issue [#32](https://github.com/tusharsaxena/LibKa0s/issues/32) — the id surface out to `OptionsIds.lua`: the module-scope `id resolution` and `suggestions while typing` blocks (lines 386–970, 585 of them) plus the lookup, list and suggestion-dropdown members inside `lib.__AttachWidgets` (lines 1813–3011, 1199 of them). Leaves the makers and the flow engine at 1471 |
+| `tests/test_options_widgets.lua` | 4086 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (lines 814–2225 as measured at v1.47.0, 1412 of them, minor 24's `columns` block included) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
+| `LibKa0s/OptionsWidgets.lua` | 3922 | Issue [#32](https://github.com/tusharsaxena/LibKa0s/issues/32) — the id surface out to `OptionsIds.lua`: the module-scope `id resolution` and `suggestions while typing` blocks (lines 386–970, 585 of them) plus the lookup, list and suggestion-dropdown members inside `lib.__AttachWidgets` (lines 1813–3011, 1199 of them) — both ranges as measured at v1.47.0, to be re-derived from the file as it stands when the cut is made. Leaves the makers and the flow engine at 1471, on that measurement |
 
 **v1.39.0 peeled the chrome, and both rows survived it.** Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16)
 named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua`, which
@@ -113,7 +113,7 @@ having landed in it since; its thirty-six cases are in `tests/test_options_tabs.
 Both issues are closed and both peels are done. What they did not do is clear the cap, and the
 arithmetic says why rather than the effort: `OptionsWidgets.lua` was **1989** lines when #16 was
 written and **3700** when it was executed, because Options minor 16's id surface landed in between;
-it is 3255 now, with minor 24's columns in it. A peel sized against the file of 2026-09-08 was never
+it is 3922 now, with everything up to minor 30 in it. A peel sized against the file of 2026-09-08 was never
 going to fit the file of 2026-09-16. The rows above are retargeted at what is left rather than
 deleted, which is the whole point of a census a gate reads.
 
@@ -132,7 +132,7 @@ the *membership* of this table, in both directions: a file that crosses 1500 and
 turns the suite red, and so does a row for a file that has fallen back under the cap or been deleted,
 so the census cannot become a graveyard. A figure in this column is a measurement, not a claim about
 today — `OptionsWidgets.lua` was 1838 at the 2026-09-07 review and the suite 2287, then 1989 and
-2398 on 2026-09-08, 2812 and 3285 on 2026-09-16, 3113 and 3541 earlier on 2026-09-20, and both moved
+2398 on 2026-09-08, 2812 and 3285 on 2026-09-16, 3113 and 3541 earlier on 2026-09-20, 3922 and 4086 on 2026-09-22, and both moved
 while nobody was watching, which is the whole argument for having a gate rather than a paragraph.
 
 **A peel here is a release, and v1.39.0 is the worked example.** `LibKa0s/` is re-vendored
@@ -145,10 +145,10 @@ key**, an API document and a regenerated manifest — a deliberate release, not 
 cycle's deliverable was the disposition; this cycle executed it.
 
 **The 1000–1500 band is on notice, not in breach**, and every figure in it was re-measured with the
-same command on **2026-09-20 at v1.47.0**. It is prose rather than a second table on purpose: the
+same command on **2026-09-22 at v1.53.0**. It is prose rather than a second table on purpose: the
 gate above reads every backticked-path table row under this heading as a census row, so a band table
 here would be nine rows claiming to be breaches. Nine files, not the seven the band held when it was
-last written out — `tests/test_widgets.lua` (1493), `LibKa0s/Options.lua` (1465; 1312 at v1.40.0,
+last written out — `tests/test_widgets.lua` (1493), `LibKa0s/Options.lua` (1476; 1312 at v1.40.0,
 then 1460 at v1.46.0 with minor 22's combat lock, whose event frame and cover geometry went to
 `LibKa0s/OptionsTabs.lua` to keep it under the cap, and 1465 at v1.46.1 with the dispatcher moved
 there too), `testkit/mock_base.lua` (1446 — it was 1499 at kit revision 21, one line from the cap;
@@ -190,7 +190,7 @@ never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests
 | Doc | Covers |
 |---|---|
 | [`README.md`](README.md) | What each module is, how to install and re-vendor, the repo layout |
-| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Pool`, `Item`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
+| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Lifecycle`, `Pool`, `Item`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
 | [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
 | [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-analysis/README.md` points at rather than restating |
 | [`docs/adoption-prompt.md`](docs/adoption-prompt.md) | The brief handed to a consumer repo adopting a major: what to wire, what to delete, and what must not be hand-rolled |
@@ -215,6 +215,6 @@ lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for w
 luacheck .          # 0 warnings / 0 errors
 ```
 
-That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — sixty-five
-files at v1.40.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
+That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — seventy-two
+files at v1.53.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
 only means something if the files carrying the change are inside the checked set.

@@ -32,7 +32,7 @@ Three tools. Only the first has a version that matters.
 | `lizard` | any recent | 1.24.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). |
 
 The "verified with" column is the toolchain of the last recorded run,
-[`docs/automated-tests/20260916-093057/manifest.json`](docs/automated-tests/20260916-093057/manifest.json)
+[`docs/automated-tests/20260922-170122/manifest.json`](docs/automated-tests/20260922-170122/manifest.json)
 → `host` — evidence, not a pin. `luacheck` and `lizard` are pinned nowhere and pinning them would be
 false precision; `lua5.1` is not a preference. "5.2 will probably work" is **false**, and it costs an
 hour to disprove: 5.2 removed `setfenv`, and the loader is the first thing every suite touches.
@@ -121,7 +121,7 @@ From the repo root, with the development set installed:
 
 ```sh
 lua5.1 tests/run.lua                                # the headless suite — 0 failed
-luacheck .                                          # 0 warnings / 0 errors, in 57 files
+luacheck .                                          # 0 warnings / 0 errors, in 72 files
 lizard -l lua -x "./libs/*" -x "./tests/_kit/*" .   # recorded; 0 functions above CCN 15
 tests/_kit/run-automated-tests.sh                   # all of the above, frozen into a bundle
 ```

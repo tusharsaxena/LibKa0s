@@ -592,7 +592,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (209)
+### test_options_widgets.lua (227)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labelled and seeded from the schema
@@ -653,6 +653,7 @@ badge and any count quoted in the docs must agree with it.
 - ResolveId: a custom kind's resolver is handed everything typed
 - ResolveId: with no client APIs a number still resolves and a name finds nothing
 - IdInput: an edit box and an Add button share a line, with a status line under them
+- IdInput: the Add button is the height of the box it sits beside, not AceGUI's default
 - IdInput: Enter with a valid name adds it once and clears the box
 - IdInput: the Add button submits what was typed
 - IdInput: a name that resolves to nothing says so inline and adds nothing
@@ -679,11 +680,28 @@ badge and any count quoted in the docs must agree with it.
 - IdList: at two columns a failing entry costs itself, not the entry beside it
 - IdList: at two columns the FIRST entry of a row fails without stranding the row
 - IdList: columns is capped at two, and the cap's arithmetic is the label's and the X's
+- IdList: a content width two columns cannot pay for draws one, not a broken grid
+- IdList: a content width that covers the floor keeps the columns the host asked for
+- IdList: the default style falls back on the LABEL's floor, which is its only one
+- IdList: a width that cannot be measured leaves the column count exactly as it was
 - IdList: the X's frame is wider than its art, absolute, at every column count
 - IdList: a gutter separates each entry from the next, and only at more than one column
 - IdList: at more than one column an entry name is one line tall, never wrapped
-- IdList: a one-column list wraps exactly as it did, and lights nothing
+- IdList: a list where nothing carries help draws no marks at all
+- IdList: every entry gets a mark once ANY entry carries help
+- IdList: a mark with nothing to say is dimmed and answers no tooltip
+- IdList: a string help reads as one line
+- IdList: the help mark's width comes out of the NAME
+- IdList: a helped list still gets two columns on a canvas that pays for them
+- IdList: the mark is drawn big enough to read, in a frame with the X's 5px ring
+- IdList: the mark draws this library's own info art when the host names itself
+- IdList: the art ladder falls back, and a host that names its own art keeps it
+- IdList: a help level tints the mark, and an entry that names none keeps its gold
+- IdList: an unknown level draws the default, and a hover leaves a mark its own color
+- IdList: a one-column list still wraps, and now lights too (minor 28)
 - IdList: the no-wrap FontString is put back when AceGUI takes the widget back
+- IdList: release clears the markers, so a pooled label cannot answer for the next list
+- IdList: a label with no FontString still has its markers cleared
 - IdList: at more than one column the hovered entry is lit, so the tooltip has an owner
 - IdList: a multi-column tooltip hangs off the row, not over the column beside it
 - IdList: Remove and a toggle call the host back, and Remove asks for a rebuild
@@ -843,7 +861,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
 
-### test_options_idsuggest.lua (39)
+### test_options_idsuggest.lua (40)
 
 - IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
 - IdInput suggestions: one name's rows sort by rank, then by id
@@ -884,14 +902,18 @@ badge and any count quoted in the docs must agree with it.
 - IdInput suggestions: one render names at most 2000 ids
 - IdInput suggestions: a raising info costs that id's row, not the list
 - IdInput suggestions: the dropdown is as wide as the box looks
+- IdInput suggestions: a host kind's suggestTag is appended after the id
 
-### test_options_idlist_remove.lua (5)
+### test_options_idlist_remove.lua (8)
 
 - IdList removeStyle icon: an X leads every line, then the name; no Remove button and no checkbox
 - IdList removeStyle icon: a click on the X calls onRemove and rebuilds the list
 - IdList removeStyle icon: the X's tooltip is the remove string, a host's override honored
 - IdList without removeStyle draws exactly as before: the name, then Remove or a checkbox
 - IdList removeStyle icon: drawn disabled, the X is disabled
+- IdList removeStyle icon: the X lights its whole hit area, not just the art inside it
+- IdList removeStyle icon: the highlight goes back onto the art when AceGUI takes the X back
+- IdList removeStyle icon: an AceGUI whose Icon has no textures still draws the X
 
 ### test_options_switched.lua (9)
 
@@ -1396,10 +1418,10 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 209 |
+| test_options_widgets.lua | 227 |
 | test_options_tabs.lua | 36 |
-| test_options_idsuggest.lua | 39 |
-| test_options_idlist_remove.lua | 5 |
+| test_options_idsuggest.lua | 40 |
+| test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 9 |
 | test_options_combat.lua | 27 |
 | test_options_compose.lua | 45 |
@@ -1421,4 +1443,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
 | test_eol.lua | 1 |
-| **Total** | **1255** |
+| **Total** | **1277** |
