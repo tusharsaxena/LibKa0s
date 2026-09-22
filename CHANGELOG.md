@@ -37,11 +37,14 @@ takes an optional `addonName`**, resolved at call time through `LibStub("LibKa0s
 Options stays vendorable without Media, and **without it the mark falls back to the client's glyph
 at the new size**. `spec.helpIcon` still wins.
 
-**`entry.helpLevel` — a severity the host declares.** `"blocked"` tints the mark red, `"info"`
-leaves it the resting gold, and an entry with nothing to say keeps the dimmed mark and no tooltip.
-The library reads the lines as opaque strings and cannot know which means what. An unknown level
-reads as `"info"`. **Backward compatible**: an entry passing a plain string or list, as v1.51.0
-documented, draws exactly as it did.
+**A severity the host declares**, as a `level` field on the table carrying the help lines —
+`entry.help = { level = "blocked", "…" }`. `"blocked"` tints the mark red, `"info"` leaves it the
+resting gold, and an entry with nothing to say keeps the dimmed mark and no tooltip. The library
+reads the lines as opaque strings and cannot know which means what. An unknown level reads as
+`"info"`. It rides the lines rather than a second field beside them, so a host builds an entry's
+lines and its severity in one place and neither can go stale against the other. **Backward
+compatible**: an entry passing a plain string or list, as v1.51.0 documented, draws exactly as it
+did — the table carries no `level`, which reads as `"info"`.
 
 Verified against lint, tests and complexity. This library ships no `tests/perf.lua`, so the perf
 suite was skipped rather than measured — the release gate covered three suites, not four.

@@ -66,14 +66,21 @@ seam, so Options stays vendorable without Media. **Without Media, without `addon
 name Media does not know, the mark falls back to the client's information glyph at the new size** --
 what W28 drew. `spec.helpIcon` still wins over everything.
 
-**`entry.helpLevel` -- a severity, host-supplied.** The library reads the lines as opaque strings and
-cannot know that one means "this can never match" and another means "also in two other lists". So
-the host says: `"blocked"` tints the mark red, `"info"` leaves it the resting gold, and an entry
-with nothing to say keeps the dimmed mark and no tooltip. An unknown level reads as `"info"` rather
-than as nothing.
+**A severity, host-supplied, on the help table itself.** The library reads the lines as opaque
+strings and cannot know that one means "this can never match" and another means "also in two other
+lists". So the host says, as a `level` field on the table carrying the lines:
+
+    entry.help = { level = "blocked", "Never matches -- this is the cast. Its aura is 119611." }
+
+`"blocked"` tints the mark red, `"info"` leaves it the resting gold, and an entry with nothing to
+say keeps the dimmed mark and no tooltip. An unknown level reads as `"info"` rather than as nothing.
+
+**The level rides the LINES rather than a second `entry.helpLevel` beside them**, and that is
+deliberate: one field is one host call site, a severity in a second field is a second thing to keep
+in step, and there is then no entry whose level says `"blocked"` while its lines were cleared.
 
 **Backward compatible.** An entry passing a plain string or a list of strings, as W28 documented,
-draws exactly as it did -- `helpLevel` is absent, which reads as `"info"`.
+draws exactly as it did -- the table carries no `level`, which reads as `"info"`.
 
 ## Previously, at 23.28.3.7.3
 
