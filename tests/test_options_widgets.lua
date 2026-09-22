@@ -975,6 +975,23 @@ test("IdInput: an edit box and an Add button share a line, with a status line un
   assertTrue(b.eb.callbacks.OnEnter ~= nil, "the tooltip is attached")
 end)
 
+test("IdInput: the Add button is the height of the box it sits beside, not AceGUI's default",
+  function()
+    -- THE OWNER'S REPORT, 2026-09-22: "the add button is slightly higher than the add a spell
+    -- textbox". It was not higher. The two were already centered on each other and always had
+    -- been -- AceGUI's labeled EditBox publishes `self.alignoffset = 30` (SetLabel in
+    -- widgets/AceGUIWidget-EditBox.lua) and Flow anchors the next widget by
+    -- `frameoffset - lastframeoffset`, which puts their middles on one line. The button was
+    -- TALLER: InputBoxTemplate draws its border art 20 tall and AceGUI's Button is a flat
+    -- SetHeight(24), so it overhung 2px at each end -- and the two overhangs do not read alike,
+    -- because the top one sits against the row's gold caption and the bottom against empty dark.
+    --
+    -- red under the SetHeight going away, which puts AceGUI's 24 back.
+    local b = inputBench({ label = "Add spell" })
+    assertEqual(b.add.height, 20,
+      "the Add button matches InputBoxTemplate's border art, which is 20 tall")
+  end)
+
 test("IdInput: Enter with a valid name adds it once and clears the box", function()
   local b = inputBench()
   typeEnter(b.eb, "power word: fortitude")

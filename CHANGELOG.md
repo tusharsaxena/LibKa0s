@@ -10,6 +10,29 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.53.0 — 2026-09-22
+
+Versions in this release: **OptionsWidgets minor 30** (`LibKa0s-Options-1.0` 23.30.3.7.3). Every
+other file is unchanged from v1.52.0 and the kit stays at revision 23. The member manifest is
+identical to minor 29's apart from the minor and the version key: **no new member, no new field,
+and nothing for a host to adopt.**
+
+**`O.IdInput`'s Add button is the height of the box it sits beside.** The owner reported it sitting
+*"slightly higher"*. It was not higher. The two were already centered on each other and always had
+been: AceGUI's labeled `EditBox` publishes `self.alignoffset = 30` and Flow anchors the next widget
+by `frameoffset - lastframeoffset`, which puts their middles on one line. Measured off the
+screenshot — box 20px tall centered at y 43, button 24px centered at y 42 — they were **one pixel
+apart and four pixels different in height**.
+
+So it was the height. `InputBoxTemplate` draws its border art **20** tall and AceGUI's `Button` is a
+flat `SetHeight(24)`, so a centered 24 against a 20 overhangs 2px at each end — and the overhangs do
+not read alike, because the top one sits against the row's gold caption and the bottom against empty
+dark. That asymmetry is what reads as *higher*. The button is now set to 20, which is Blizzard's own
+number for that art rather than a tuned one; the centering stays AceGUI's.
+
+Every consumer of `O.IdInput` gets this by re-vendoring — Aura Master, ConsumableMaster and KickCD
+all draw one.
+
 ## v1.52.0 — 2026-09-22
 
 Versions in this release: **OptionsWidgets minor 29** (`LibKa0s-Options-1.0` 23.29.3.7.3). Every
