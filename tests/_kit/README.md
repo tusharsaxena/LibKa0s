@@ -121,7 +121,7 @@ and it fails rather than passing.
 The repair when it goes red is `rm <path> && git checkout -- <path>`, per path it names.
 **`git add --renormalize .` fixes nothing here** — it rewrites the index, and the index was never
 wrong; that is precisely why nothing else in a repository ever reports this.
-
+
 ## `test_prose.lua`
 
 The kit's second suite, and it is here for the reason the first one is: eleven repositories need
