@@ -10,6 +10,47 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.54.0 — 2026-09-22
+
+Versions in this release: **test kit revision 24**. **No library file changes at all** — every
+major's version key is exactly v1.53.0's, `LibKa0s-Options-1.0` included, so a consumer that
+re-vendors takes new bytes in `tests/_kit/` and identical bytes in `libs/LibKa0s/`.
+
+**The kit ships the US-English gate** (`test_prose.lua`), beside `test_eol.lua` and on the same
+contract: it takes the kit as its chunk argument, because the exposed table's global name belongs to
+the consumer and a vendored suite cannot know which one it is standing in.
+
+It is here because the rule had one definition and eleven implementations. `localization-5` has
+published the `BRITISH` and `ALLOWED` lists for months and required a gate to carry them **whole**;
+by the time this shipped, **seven** repositories had written that gate by hand under **three**
+different filenames — `test_prose.lua`, `test_spelling.lua`, and folded into `test_docs.lua` — so
+nothing could tell at a glance which repositories had a gate at all, and **four more had none**,
+their drift found only by a sweep somebody happened to run. Eleven hand-written copies are eleven
+chances to carry a subset, and a subset is a gate whose green means nothing.
+
+**Adoption is one line and it is not automatic.** `Kit.assertSuiteInventory` scans `tests/_kit/`, so
+a re-vendor that lands the file in a repo which has not declared it goes **red** naming the entry to
+add — the same bargain `test_eol.lua` struck. Note that the check compares **names**: a repo already
+declaring a `test_prose` of its own satisfies it and keeps running that one, which is the
+"wire one or the other, never both" outcome reached by coincidence.
+
+**Waivers, and the standard's new clause.** Some British spellings in a Ka0s tree are not the
+repository's English to correct — AceTimer's cancellation flag, whose name the kit's own live-timer
+survey reads off a handle; a Blizzard status string matched verbatim off its event; a generated dump
+of the client's own strings. Five repositories had each invented a mechanism for this, which is the
+signal the rule was owed. `localization-5` v2.62.0 now carries it as a MAY under three MUSTs, and
+the kit reads waivers from an optional `tests/prose_waivers.lua`; a file that exists but does not
+return a table is a **failure**, not an empty one, because the alternative silently widens the gate.
+
+The shipped payload does not waive — it declines to quote. The kit gate and the kit README describe
+the forbidden spellings rather than spelling them, because those bytes reach every consumer and no
+consumer can fix them. The one exemption in this repo's own gate is the kit gate's copy of the
+`BRITISH` list, which `localization-5` names as the fourth of its four exclusions.
+
+Release gate (`docs/automated-tests/20260922-202214/`): lint 0/0 in 73 files, 1277 tests 0 failed,
+complexity 0 over CCN 15. Perf SKIPPED, not measured — no `tests/perf.lua` — so the gate covered
+three suites, not four.
+
 ## v1.53.0 — 2026-09-22
 
 Versions in this release: **OptionsWidgets minor 30** (`LibKa0s-Options-1.0` 23.30.3.7.3). Every
