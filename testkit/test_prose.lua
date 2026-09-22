@@ -110,6 +110,12 @@ local SKIPPED_FILES = {
     ["locales/enGB.lua"] = true,
     ["tests/test_prose.lua"] = true,
     ["tests/test_spelling.lua"] = true,
+    -- The waiver file is the fourth exclusion too, and for the same reason the gate is: it
+    -- exists to name forbidden spellings, and every reason written beside a waiver is prose
+    -- ABOUT one. A gate that scans it reddens on the file whose whole job is to record what
+    -- it must not correct, and the only way out would be to write those reasons without
+    -- naming the word -- which is the one place naming it is the point.
+    ["tests/prose_waivers.lua"] = true,
 }
 
 -- ---------------------------------------------------------------------------

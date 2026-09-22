@@ -10,6 +10,18 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.54.2 — 2026-09-22
+
+Versions in this release: **test kit revision 24**, unchanged. `test_prose.lua` stops scanning
+`tests/prose_waivers.lua`.
+
+The waiver file is the fourth exclusion too, and for the same reason the gate itself is: it exists
+to NAME forbidden spellings, and every reason written beside a waiver is prose about one. A gate
+that scans it reddens on the file whose whole job is to record what it must not correct, and the
+only way out would be to write those reasons without naming the word — which is the one place
+naming it is the point. Panel Master hit it on the first adoption: its waiver for a third-party art
+pack's texture path could not explain itself without spelling the path.
+
 ## v1.54.1 — 2026-09-22
 
 Versions in this release: **test kit revision 24**, unchanged from v1.54.0. One byte comes out of
