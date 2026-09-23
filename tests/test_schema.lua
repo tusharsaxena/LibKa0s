@@ -743,6 +743,72 @@ test("schema: a raising onChange propagates after the store and the line, before
   assertEqual(fx.rec.joined(), "debug,boom", "logged, reacted, never announced")
 end)
 
+test("schema: Set resolves before it validates, and validate and the tail see the resolved id", function()
+  -- Characterization for the v1.55.0 CCN split of Set: the resolver runs first, with the caller's
+  -- id, and the id it names is the one validate, onChange and announce are handed.
+  local rec = newRecorder()
+  local store = {}
+  local rows = { { path = "k.v",
+    validate = function(_, rid) rec.add("validate:" .. tostring(rid)); return true end,
+    onChange = function(_, rid) rec.add("onChange:" .. tostring(rid)) end } }
+  local S = Schema:New(spies(rec, { rows = rows, resolveRoot = function(_, id)
+    rec.add("resolve:" .. tostring(id)); return store, 2, "R" end }))
+  assertTrue(S.Set("k.v", 4, "given"))
+  assertEqual(rec.joined(), "resolve:given,validate:R,debug,onChange:R,announce:k.v")
+  assertEqual(store.v, 4, "stored from the resolver's first segment")
+  assertEqual(rec.lastAnnounce.rid, "R")
+end)
+
+test("schema: a resolver naming no id leaves the caller's, and a false id is still an id", function()
+  local rec = newRecorder()
+  local id
+  local rows = { { path = "a", onChange = function(_, rid) rec.add("onChange:" .. tostring(rid)) end } }
+  local S = Schema:New{ rows = rows, resolveRoot = function() return {}, 1, id end }
+  assertTrue(S.Set("a", 1, "given"))
+  id = false
+  assertTrue(S.Set("a", 1, "given"))
+  assertEqual(rec.joined(), "onChange:given,onChange:false")
+end)
+
+test("schema: a closure or sessionOnly row hands validate and the tail the caller's id as given", function()
+  local rec = newRecorder()
+  local seen
+  local function spy(tag) return function(_, rid) rec.add(tag .. ":" .. tostring(rid)); return true end end
+  local rows = {
+    { path = "own", set = function(v) seen = v end, validate = spy("v"), onChange = spy("c") },
+    { path = "sess", sessionOnly = true, validate = spy("v"), onChange = spy("c") },
+    { path = "both", sessionOnly = true, set = function(v) rec.add("set:" .. tostring(v)) end },
+  }
+  local S = Schema:New{ rows = rows, resolveRoot = function() rec.add("resolve"); return {}, 1, "R" end }
+  assertTrue(S.Set("own", 3, 7))
+  assertTrue(S.Set("sess", 4, 8))
+  assertTrue(S.Set("both", 5))
+  assertEqual(seen, 3)
+  assertEqual(rec.joined(), "v:7,c:7,v:8,c:8,set:5", "no resolve; a sessionOnly row's own set still runs")
+end)
+
+test("schema: Set answers one value on success, two on a refusal, three on an invalid value", function()
+  local rows = { { path = "a", validate = function(v) return v ~= 0, "zero" end },
+    { path = "b", validate = function() return nil end } }
+  local root
+  local S = Schema:New{ rows = rows, resolveRoot = function() return root, 1 end }
+  assertEqual(select("#", S.Set("zzz", 1)), 2, "NOT_FOUND")
+  assertEqual(select("#", S.Set("a", 1)), 2, "NO_ROOT")
+  assertEqual(select("#", S.Set("a", 0)), 3, "INVALID carries why")
+  local ok, err, why = S.Set("b", 1)
+  assertFalse(ok); assertEqual(err, "Invalid value for b"); assertNil(why)
+  assertEqual(select("#", S.Set("b", 1)), 3, "INVALID with a nil why is still three")
+  root = {}
+  assertEqual(select("#", S.Set("a", 1)), 1, "success")
+  assertEqual(root.a, 1)
+end)
+
+test("schema: a format answering nil falls back to the value's text on the Set line", function()
+  local S, fx = newFlat({ format = function() return nil end })
+  S.Set("scale", 1.5)
+  assertEqual(fx.rec.debugLines[1], "[Set] scale = 1.5")
+end)
+
 test("schema: Get answers an interior node for a path with no row, and nil past a leaf", function()
   local S, fx = newFlat()
   assertTrue(S.Get("units.player") == fx.db.profile.units.player, "a debugging read of a node")
@@ -1087,6 +1153,72 @@ test("schema: Validate with no print still counts, silently", function()
   local S = Schema:New{ rows = { "x", { path = "a", type = "bool", group = "g" } } }
   local e, r, m = S.Validate{ defaultsRoot = function() return {}, 1 end }
   assertEqual(e, 1); assertEqual(r, 0); assertEqual(m, 1)
+end)
+
+test("schema: one row's errors print in field order, and its missing line prints after them", function()
+  -- Characterization for the v1.55.0 CCN split of Validate: path, type, page, group, then the
+  -- resolution line, which is printed but never counted as an error.
+  local rec = newRecorder()
+  local rows = {
+    { get = function() end, type = "x", page = "q", group = "" },     -- get without set: unreachable
+    { path = "z", type = "x", page = "q" },
+  }
+  local S = Schema:New(spies(rec, { rows = rows }))
+  local e, r, m = S.Validate{ pages = { p = true }, defaultsRoot = function() return {}, 1 end }
+  assertEqual(e, 7); assertEqual(r, 0); assertEqual(m, 1)
+  assertEqual(table.concat(rec.chat, "\n"), table.concat({
+    "|cffff0000schema error|r: row #1 (<no path>): missing or empty `path`",
+    "|cffff0000schema error|r: row #1 (<no path>): invalid `type` = x",
+    "|cffff0000schema error|r: row #1 (<no path>): invalid `page` = q",
+    "|cffff0000schema error|r: row #1 (<no path>): missing or empty `group`",
+    "|cffff0000schema error|r: row #2 (z): invalid `type` = x",
+    "|cffff0000schema error|r: row #2 (z): invalid `page` = q",
+    "|cffff0000schema error|r: row #2 (z): missing or empty `group`",
+    "|cffff0000schema error|r: row #2 (z): `path` does not resolve against the defaults",
+  }, "\n"))
+end)
+
+test("schema: a non-string or empty path is labelled as given and is never a stored path", function()
+  local rec = newRecorder()
+  local calls = 0
+  local rows = {
+    { path = 5, type = "bool", group = "g" },
+    { path = false, type = "bool", group = "g" },
+    { path = "", type = "bool", group = "g", get = function() end, set = function() end },
+    { path = "", type = "bool", group = "g", get = function() end, set = function() end },
+  }
+  local S = Schema:New(spies(rec, { rows = rows }))
+  local e, r, m = S.Validate{ defaultsRoot = function() calls = calls + 1; return {}, 1 end }
+  assertEqual(e, 2, "5 and false are missing paths; a bound \"\" row is not, and is no duplicate")
+  assertEqual(r, 0); assertEqual(m, 0)
+  assertEqual(calls, 0, "defaultsRoot is asked about no row without a string path")
+  assertEqual(rec.chat[1], "|cffff0000schema error|r: row #1 (5): missing or empty `path`")
+  assertEqual(rec.chat[2], "|cffff0000schema error|r: row #2 (<no path>): missing or empty `path`", "a false path reads as none")
+end)
+
+test("schema: defaultsRoot gets the split parts and the row, and its first may be a string", function()
+  local rows = { { path = "x.a", type = "bool", group = "g" }, { path = "x.b", type = "bool", group = "g" } }
+  local S = Schema:New{ rows = rows }
+  local got = {}
+  local e, r, m = S.Validate{ defaultsRoot = function(parts, row)
+    got[#got + 1] = { parts = parts, row = row }
+    if row.path == "x.a" then return { a = 1 }, "2" end
+    return { x = { b = 1 } }, nil
+  end }
+  assertEqual(e, 0); assertEqual(r, 2); assertEqual(m, 0)
+  assertTrue(got[1].parts == Schema.SplitPath("x.a"), "the memoized parts, by identity")
+  assertTrue(got[1].row == rows[1])
+  assertTrue(got[2].row == rows[2])
+end)
+
+test("schema: a malformed spec falls back field by field", function()
+  local rows = { { path = "a", type = "bool", group = "g", page = "nowhere" } }
+  local S = Schema:New{ rows = rows }
+  assertEqual((S.Validate("junk")), 0, "a non-table spec is the empty spec")
+  assertEqual((S.Validate{ types = "junk", pages = "junk", defaultsRoot = "junk" }), 0,
+    "types falls back to the four widget types; no page or resolution check")
+  local e, r, m = S.Validate{ types = { table = true }, defaultsRoot = {} }
+  assertEqual(e, 1, "bool is not in a host's own types set"); assertEqual(r, 0); assertEqual(m, 0)
 end)
 
 test("schema: two instances share nothing", function()

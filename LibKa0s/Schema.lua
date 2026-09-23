@@ -169,6 +169,61 @@ local function deepCopy(v)
   return out
 end
 
+-- ── the shape check's rules ─────────────────────────────────────────────────────────────────
+--
+-- Pure, and each one a rule an instance's Validate applies per row. Lib-level locals rather than
+-- instance closures because none of them reads a descriptor; none is exported.
+
+--- Validate's options with every malformed field replaced by its fallback: the host's `types` set
+--- or the four widget types, the host's `pages` set or nil (no page check), and the host's
+--- `defaultsRoot` or nil (no resolution check). A spec that is not a table is the empty spec.
+local function validateOptions(spec)
+  spec = type(spec) == "table" and spec or {}
+  local types = type(spec.types) == "table" and spec.types or DEFAULT_TYPES
+  local pages = type(spec.pages) == "table" and spec.pages or nil
+  local defaultsRoot = type(spec.defaultsRoot) == "function" and spec.defaultsRoot or nil
+  return types, pages, defaultsRoot
+end
+
+--- How a schema error names row `i`: its path as text, or `<no path>` when it has none.
+local function rowLabel(i, path)
+  return ("row #%d (%s)"):format(i, path ~= nil and tostring(path) or "<no path>")
+end
+
+--- Print one schema error line through the host's `print`, when it gave one.
+local function printSchemaError(print, where, msg)
+  if print then print(("|cffff0000schema error|r: %s: %s"):format(where, msg)) end
+end
+
+--- Report each malformed field of one table row, in the order Validate prints them: a row nothing
+--- can reach (no path, and not an Options bound row carrying both `get` and `set`), then `type`,
+--- `page` and `group`.
+local function reportFieldErrors(row, hasPath, types, pages, report)
+  -- A path-less row carrying both halves of a binding is an Options bound row, which is
+  -- legitimately path-less; anything else without a path is a row nothing can reach.
+  if not hasPath and not (type(row.get) == "function" and type(row.set) == "function") then
+    report("missing or empty `path`")
+  end
+  if not types[row.type] then report("invalid `type` = " .. tostring(row.type)) end
+  if pages and not pages[row.page] then report("invalid `page` = " .. tostring(row.page)) end
+  if type(row.group) ~= "string" or row.group == "" then
+    report("missing or empty `group`")
+  end
+end
+
+--- Whether a stored row's path resolves against the host's defaults: true or false, or nil when
+--- the check does not apply. architecture-§5: a stored path must resolve against the defaults that
+--- hold it, or a typo reads and writes nothing. It does not apply to a row with no path, when there
+--- is no `defaultsRoot`, to a sessionOnly row (not stored), or when the root is not a table (the
+--- host saying "this row is not in any defaults tree": a profiles page, an AceDBOptions row).
+local function resolvesInDefaults(defaultsRoot, row, path, hasPath)
+  if not (hasPath and defaultsRoot and not row.sessionOnly) then return nil end
+  local parts = splitPath(path)
+  local root, first = defaultsRoot(parts, row)
+  if type(root) ~= "table" then return nil end
+  return lib.Read(root, parts, tonumber(first) or 1) ~= nil
+end
+
 -- ── the instance ────────────────────────────────────────────────────────────────────────────
 
 --- One schema runtime for one host. ONE INSTANCE PER ADDON: the bracket, the index and the pending
@@ -311,6 +366,65 @@ function lib:New(descriptor)
 
   -- ── the write seam ────────────────────────────────────────────────────────────────────────
 
+  --- Where a write to a STORED row's `path` lands. Answers `parts, root, first, rid`, or `parts,
+  --- nil, nil, rid, reason` when there is nowhere. `rid` is the id the resolver named, or the
+  --- caller's `instanceId` when it named none — a `false` id is still an id.
+  local function writeTarget(path, instanceId)
+    local parts = splitPath(path)
+    local root, first, id = resolve(parts, instanceId)
+    if not root then return parts, nil, nil, instanceId, first end
+    if id == nil then id = instanceId end
+    return parts, root, first, id
+  end
+
+  --- The INVALID refusal and the row's `why` when the row's own `validate` rejects `value`; nil
+  --- when the row has no validate or it accepts.
+  local function invalidReason(row, path, value, rid)
+    local validate = row.validate
+    if type(validate) ~= "function" then return nil end
+    local ok, why = validate(value, rid)
+    if ok then return nil end
+    return text("INVALID"):format(path), why
+  end
+
+  --- Hand `value` to the row's own `set` (as given, never a copy), or copy it into a resolved
+  --- `root`; with neither — a sessionOnly row without a `set` — nothing is stored.
+  local function storeWrite(set, value, parts, root, first)
+    if set then
+      set(value)
+    elseif root then
+      -- Copied on the way in, so the caller's table and the store never alias: mutating the
+      -- argument afterwards must not reach into a profile, and two profiles must never share one.
+      lib.Write(root, parts, deepCopy(value), first)
+    end
+  end
+
+  --- The per-write `[Set]` line, if logging is on: the host's `format(row, value)` when it answers
+  --- non-nil, the value's tostring otherwise. The formatter never runs while logging is off.
+  local function logWrite(row, path, value)
+    local debug = logEnabled()
+    if not debug then return end
+    local format = fn("format")
+    local shown = format and format(row, value)
+    if shown == nil then shown = tostring(value) end
+    debug("Set", "%s = %s", path, shown)
+  end
+
+  --- The write's tail, in the contract's order: the row's `onChange`, then the host's `announce`.
+  --- Errors propagate, so a raising onChange means no announce.
+  local function reactToWrite(row, path, value, rid)
+    local onChange = row.onChange
+    if type(onChange) == "function" then onChange(value, rid) end
+    local announce = fn("announce")
+    if announce then announce(row, path, value, rid) end
+  end
+
+  --- Count one bracketed write into the tally when the row's read-back differs from `before`,
+  --- the snapshot taken ahead of the store.
+  local function tallyIfMoved(before, path, instanceId)
+    if not sameValue(before, S.Get(path, instanceId)) then tally = tally + 1 end
+  end
+
   --- The single write seam for every schema-row path (architecture-§5). THE ORDER IS THE CONTRACT:
   --- refuse an unknown path; resolve the root; validate; refuse a missing root; store; tally;
   --- log; react; announce. Answers `true`, or `false, err[, why]` with nothing stored and nothing
@@ -325,28 +439,16 @@ function lib:New(descriptor)
     end
 
     local set = row.set
-    local ownSet = type(set) == "function"
-    local stored = not ownSet and not row.sessionOnly
+    if type(set) ~= "function" then set = nil end
+    local stored = not set and not row.sessionOnly
     local parts, root, first, reason
     local rid = instanceId
-    if stored then
-      parts = splitPath(path)
-      local r, f, id = resolve(parts, instanceId)
-      if r then
-        root, first = r, f
-        if id ~= nil then rid = id end
-      else
-        reason = f
-      end
-    end
+    if stored then parts, root, first, rid, reason = writeTarget(path, instanceId) end
 
     -- Validate BEFORE the missing-root refusal, so a bad value is named as bad even when there is
     -- also nowhere to put it — the error a player can act on comes first.
-    local validate = row.validate
-    if type(validate) == "function" then
-      local ok, why = validate(value, rid)
-      if not ok then return false, text("INVALID"):format(path), why end
-    end
+    local invalid, why = invalidReason(row, path, value, rid)
+    if invalid then return false, invalid, why end
     if stored and not root then
       return false, reason or text("NO_ROOT"):format(path)
     end
@@ -360,38 +462,20 @@ function lib:New(descriptor)
     local before
     if bulk then before = deepCopy(S.Get(path, instanceId)) end
 
-    if ownSet then
-      set(value)                                        -- the value as given, never a copy
-    elseif stored then
-      -- Copied on the way in, so the caller's table and the store never alias: mutating the
-      -- argument afterwards must not reach into a profile, and two profiles must never share one.
-      lib.Write(root, parts, deepCopy(value), first)
-    end
+    storeWrite(set, value, parts, root, first)
 
     -- Counted HERE, before any host code runs, so a raising onChange cannot drop a write that did
     -- land from N. Read-back rather than before-versus-argument, because a closure row may store
     -- something other than what it was handed (an inverted key, a clear-to-absence).
-    if bulk and not sameValue(before, S.Get(path, instanceId)) then tally = tally + 1 end
+    if bulk then tallyIfMoved(before, path, instanceId) end
 
     -- Logged BEFORE the reaction, so a raising onChange cannot erase the trace of a write that
     -- landed. Muted inside a bracket: the bracket's one line stands for the act.
-    if not bulk then
-      local debug = logEnabled()
-      if debug then
-        local format = fn("format")
-        local shown = format and format(row, value)
-        if shown == nil then shown = tostring(value) end
-        debug("Set", "%s = %s", path, shown)
-      end
-    end
+    if not bulk then logWrite(row, path, value) end
 
     -- Errors propagate. The value is stored and the line written, so the host's error handler sees
     -- a failure that never claims less than happened.
-    local onChange = row.onChange
-    if type(onChange) == "function" then onChange(value, rid) end
-
-    local announce = fn("announce")
-    if announce then announce(row, path, value, rid) end
+    reactToWrite(row, path, value, rid)
     return true
   end
 
@@ -521,10 +605,7 @@ function lib:New(descriptor)
   --- Answers `errors, resolved, missing`: shape errors, stored paths that resolve against the
   --- defaults, and stored paths that do not.
   function S.Validate(spec)
-    spec = type(spec) == "table" and spec or {}
-    local types = type(spec.types) == "table" and spec.types or DEFAULT_TYPES
-    local pages = type(spec.pages) == "table" and spec.pages or nil
-    local defaultsRoot = type(spec.defaultsRoot) == "function" and spec.defaultsRoot or nil
+    local types, pages, defaultsRoot = validateOptions(spec)
     local print = fn("print")
     local errors, resolved, missing = 0, 0, 0
     local seen = {}
@@ -532,26 +613,17 @@ function lib:New(descriptor)
     for i, row in ipairs(rows) do
       local isTable = type(row) == "table"
       local path = isTable and row.path or nil
-      local where = ("row #%d (%s)"):format(i, path ~= nil and tostring(path) or "<no path>")
+      local where = rowLabel(i, path)
       local function report(msg)
         errors = errors + 1
-        if print then print(("|cffff0000schema error|r: %s: %s"):format(where, msg)) end
+        printSchemaError(print, where, msg)
       end
 
       if not isTable then
         report("row is not a table")
       else
         local hasPath = type(path) == "string" and path ~= ""
-        -- A path-less row carrying both halves of a binding is an Options bound row, which is
-        -- legitimately path-less; anything else without a path is a row nothing can reach.
-        if not hasPath and not (type(row.get) == "function" and type(row.set) == "function") then
-          report("missing or empty `path`")
-        end
-        if not types[row.type] then report("invalid `type` = " .. tostring(row.type)) end
-        if pages and not pages[row.page] then report("invalid `page` = " .. tostring(row.page)) end
-        if type(row.group) ~= "string" or row.group == "" then
-          report("missing or empty `group`")
-        end
+        reportFieldErrors(row, hasPath, types, pages, report)
         if hasPath then
           if seen[path] then
             report(("duplicate `path` (first used by row #%d)"):format(seen[path]))
@@ -560,23 +632,13 @@ function lib:New(descriptor)
           end
         end
 
-        -- architecture-§5: a stored path must resolve against the defaults that hold it, or a typo
-        -- reads and writes nothing. A sessionOnly row is not stored; a nil root is the host saying
-        -- "this row is not in any defaults tree" (a profiles page, an AceDBOptions row).
-        if hasPath and defaultsRoot and not row.sessionOnly then
-          local parts = splitPath(path)
-          local root, first = defaultsRoot(parts, row)
-          if type(root) == "table" then
-            if lib.Read(root, parts, tonumber(first) or 1) ~= nil then
-              resolved = resolved + 1
-            else
-              missing = missing + 1
-              if print then
-                print(("|cffff0000schema error|r: %s: %s"):format(where,
-                  "`path` does not resolve against the defaults"))
-              end
-            end
-          end
+        -- A missing path is printed but not counted as an error: `missing` is its own count.
+        local found = resolvesInDefaults(defaultsRoot, row, path, hasPath)
+        if found then
+          resolved = resolved + 1
+        elseif found == false then
+          missing = missing + 1
+          printSchemaError(print, where, "`path` does not resolve against the defaults")
         end
       end
     end
