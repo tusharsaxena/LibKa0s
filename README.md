@@ -14,7 +14,9 @@ addon's `libs/` folder rather than depended on at runtime. One LibStub major per
 modules ship today:
 
 - **`LibKa0s-Core-1.0`** — the small stateless seams every other module sits on: secret-safe
-  stringification, the window skin and its close button, and a prefixed chat printer.
+  stringification, the window skin and its close button, a prefixed chat printer, and the pcalled
+  event registration helper (`SafeRegisterEvent`) that keeps one unknown event name from taking the
+  rest of a registration block down.
 - **`LibKa0s-Env-1.0`** — the handful of client facts every addon reads, read one way: the TOC
   manifest, the player's map id and the player's zone labels.
 - **`LibKa0s-Compat-1.0`** — the version-variant spell and spec readers two or more addons wrote

@@ -390,6 +390,90 @@ function lib.ResolveColor(stored, on, unit)
   return cr, cg, cb, a
 end
 
+-- ── the pcalled event registration helper ──────────────────────────────────────────────────
+--
+-- The client RAISES `Attempt to register unknown event "<NAME>"` on a name it does not know, and a
+-- block of bare RegisterEvent calls loses every line after the one that raised: a single event
+-- retired by a patch takes an addon's whole enable path down (events-frames-taint-§1). These three
+-- are the collection's one helper for that, since minor 8.
+--
+-- Two rungs. When `C_EventUtils.IsEventValid` exists and answers false, the name is rejected and
+-- NEVER handed to RegisterEvent: no raise to catch, and no half-stored AceEvent callback left behind
+-- (AceEvent stores the callback before the client raises). Otherwise the call is pcall'd, and on
+-- that rung an AceEvent target keeps the callback it stored: inert, since the event never fires,
+-- and cleared by the target's UnregisterAllEvents. Unregistering it here would be wrong, because a
+-- raise for any OTHER reason (a missing method name) would then drop a live earlier registration.
+--
+-- The library keeps NO state and prints nothing. `rejected` is the CALLER'S array, appended once per
+-- name, and the host decides where the player sees it ([Init], a debug verb). The call goes through
+-- `target.RegisterEvent`, whatever that is -- AceEvent's member, a Frame's, or a Bus tracking
+-- wrapper -- so a Bus-stamped target still records the registration for its replay.
+
+-- True when the client says outright that `event` is not a name it knows. Absent API, or an answer
+-- that raised, is not a "no": the pcall rung below still gets its chance.
+local function clientRefuses(event)
+  local utils = C_EventUtils
+  if type(utils) ~= "table" or type(utils.IsEventValid) ~= "function" then return false end
+  local ok, valid = pcall(utils.IsEventValid, event)
+  return ok and valid == false
+end
+
+-- Append `event` to the caller's list unless it is already there. A disable/enable cycle runs the
+-- same block twice, and a list that grew on every cycle would read as a new problem each time.
+local function noteRejected(rejected, event)
+  if type(rejected) ~= "table" then return end
+  for i = 1, #rejected do
+    if rejected[i] == event then return end
+  end
+  rejected[#rejected + 1] = event
+end
+
+-- The one body both members run: `method` is the target's RegisterEvent or RegisterUnitEvent.
+local function register(method, target, event, rejected, ...)
+  if clientRefuses(event) or not pcall(method, target, event, ...) then
+    noteRejected(rejected, event)
+    return false
+  end
+  return true
+end
+
+local function requireTarget(target, member)
+  if type(target) ~= "table" then
+    error(MAJOR .. ":" .. member .. " requires a target table - an AceEvent-embedded object or a frame", 3)
+  end
+end
+
+--- Register one event on `target` without letting an unknown name raise.
+---
+--- @param target table     an AceEvent-embedded object, a Bus target or a Frame
+--- @param event string
+--- @param handler any      passed through to target:RegisterEvent (a Frame ignores it)
+--- @param rejected table|nil  the caller's list; the name is appended once when refused
+--- @return boolean registered
+function lib.SafeRegisterEvent(target, event, handler, rejected)
+  requireTarget(target, "SafeRegisterEvent")
+  return register(target.RegisterEvent, target, event, rejected, handler)
+end
+
+--- Register one unit event on a frame without letting an unknown name raise. The unit tokens are
+--- passed through exactly as given (`unit1[, unit2]`).
+--- @return boolean registered
+function lib.SafeRegisterUnitEvent(frame, event, rejected, ...)
+  requireTarget(frame, "SafeRegisterUnitEvent")
+  return register(frame.RegisterUnitEvent, frame, event, rejected, ...)
+end
+
+--- Register every name in the array `events` on `target`, one refusal costing only itself.
+--- @return number how many registered
+function lib.SafeRegisterEvents(target, events, handler, rejected)
+  requireTarget(target, "SafeRegisterEvents")
+  local n = 0
+  for _, event in ipairs(type(events) == "table" and events or {}) do
+    if register(target.RegisterEvent, target, event, rejected, handler) then n = n + 1 end
+  end
+  return n
+end
+
 -- ── the prefixed chat printer ──────────────────────────────────────────────────────────────
 
 --- Build a printer for one host.

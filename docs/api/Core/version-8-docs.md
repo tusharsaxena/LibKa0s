@@ -21,12 +21,76 @@ as long as any consumer could have had this major".
 
 ## What changed at this version
 
-**`Format` no longer raises on a secret in a numeric slot, and nothing else moves.** No member is
-added or removed, and no descriptor field changes, so a host needs a re-vendor and no code change.
+**`Format` no longer raises on a secret in a numeric slot, and three lib-level members arrive: the
+collection's one pcalled event registration helper.** No member is removed and no descriptor field
+changes, so a host that calls none of the new three needs a re-vendor and no code change. A host
+with a Core degradation stub adds the three to it (see [Degradation](#degradation)).
 
 | | | Since |
 |---|---|---|
 | `Format(fmt, ...)` on a format string that cannot be satisfied | Emits the format string verbatim, then the stringified arguments, space-joined, instead of raising. | **8** |
+| `SafeRegisterEvent(target, event, handler, rejected)` | Registers one event without letting an unknown name raise. Answers `true` or `false`. | **8** |
+| `SafeRegisterUnitEvent(frame, event, rejected, unit1[, unit2])` | The same through `RegisterUnitEvent`. | **8** |
+| `SafeRegisterEvents(target, events, handler, rejected)` | Walks an array of names through `SafeRegisterEvent`. Answers how many registered. | **8** |
+
+### The pcalled event registration helper
+
+The client **raises** `Attempt to register unknown event "<NAME>"` on a name it does not know, and a
+block of bare `RegisterEvent` calls loses every line after the one that raised. One event retired by a
+patch takes an addon's whole enable path down with it (`events-frames-taint-§1`, review finding
+`AuraMaster-R-05`). These three members are the helper that rule names.
+
+**Two rungs.**
+
+1. **The front gate.** When `C_EventUtils.IsEventValid` exists and answers `false`, the name is
+   rejected and is **never handed to `RegisterEvent`**. Nothing raises, and no AceEvent callback is
+   left behind.
+2. **The pcall rung.** Otherwise, or when the gate answers anything but `false`, the call runs as
+   `pcall(target.RegisterEvent, target, event, handler)`. A raise rejects the name. On this rung an
+   AceEvent target keeps the callback CallbackHandler stored before the client raised, which is
+   what the client's own AceEvent does. It is inert, because the event never fires, and the target's
+   `UnregisterAllEvents` clears it. The helper does not unregister it, because a raise for any
+   *other* reason (a method name the target does not have) would then drop a live, earlier
+   registration of the same event.
+
+**The call goes through `target.RegisterEvent`, whatever that is.** An AceEvent-embedded object, a
+Frame (which ignores `handler`) and a `LibKa0s-Bus-1.0` target all work, and a Bus target still
+records the registration for its replay after a stand-down, because the Bus tracking wrapper *is*
+that member. `SafeRegisterUnitEvent` takes a frame and passes the unit tokens through exactly as
+given.
+
+**The library keeps no state and prints nothing.** `rejected` is an optional array the **caller**
+owns. A refused name is appended once, and a name already in it is not appended again, so a
+disable/enable cycle that runs the same block twice leaves the list as it was. The host decides where
+the player sees it: the `[Init]` summary, a debug verb, or both. A host that passes no list still gets
+the isolation. A `target` that is not a table raises, naming the member: that is a host bug, not an
+unknown event.
+
+### Degradation
+
+A host that runs without LibKa0s-Core carries a Core stub, and `Kit.assertSurfaceParity` holds that
+stub to this document's member manifest. The stub carries the three members with **one-rung
+bodies**: the pcall and the rejected-list append, no front gate. A stub is the path for a missing
+library, not a second implementation, and the pcall alone is what keeps one bad name from taking the
+block down:
+
+```lua
+local function safeRegister(method, target, event, rejected, ...)
+  if pcall(method, target, event, ...) then return true end
+  if type(rejected) == "table" then
+    for i = 1, #rejected do if rejected[i] == event then return false end end
+    rejected[#rejected + 1] = event
+  end
+  return false
+end
+Core.SafeRegisterEvent = function(t, e, h, r) return safeRegister(t.RegisterEvent, t, e, r, h) end
+Core.SafeRegisterUnitEvent = function(f, e, r, ...) return safeRegister(f.RegisterUnitEvent, f, e, r, ...) end
+Core.SafeRegisterEvents = function(t, events, h, r)
+  local n = 0
+  for _, e in ipairs(events) do if safeRegister(t.RegisterEvent, t, e, r, h) then n = n + 1 end end
+  return n
+end
+```
 
 ### Why `Format` raised, and what it emits now
 
@@ -164,6 +228,9 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `RGBA(c, dr, dg, db, da)` | 4 | Read a stored color in **either** shape the collection persists — keyed `{ r =, g =, b =, a = }` or positional `{ r, g, b, a }` — and return four **numbers**, never a table. See [Reading a stored color](#reading-a-stored-color). |
 | `ClassColor([unit])` | **7** | `r, g, b` for the unit's class, out of `RAID_CLASS_COLORS`, or **`nil`** where there is no class color to give. `unit` defaults to `"player"`, whose answer is memoized on success; no other unit is cached. See [The one class-color resolver](#the-one-class-color-resolver). |
 | `ResolveColor(stored, on[, unit])` | **7** | `r, g, b, a` for a stored swatch read through its *use class color* companion. The stored alpha always applies; an unresolvable class falls through to the stored rgb. See [`ResolveColor(stored, on, unit)` — three rules, ratified](#resolvecolorstored-on-unit--three-rules-ratified). |
+| `SafeRegisterEvent(target, event[, handler[, rejected]])` | **8** | Register one event on an AceEvent-embedded object, a Bus target or a Frame without letting an unknown name raise. Front gate on `C_EventUtils.IsEventValid` when present, otherwise `pcall`. `true` when it registered; `false` when refused, with the name appended once to the caller's `rejected` array. See [The pcalled event registration helper](#the-pcalled-event-registration-helper). |
+| `SafeRegisterUnitEvent(frame, event, rejected, unit1[, unit2])` | **8** | The same through `frame:RegisterUnitEvent`; the unit tokens pass through as given. |
+| `SafeRegisterEvents(target, events[, handler[, rejected]])` | **8** | `SafeRegisterEvent` over each name in the array `events`, one refusal costing only itself. Answers the number that registered. |
 | `__ResetClassColor()` | **7** | Forget the memoized player color. A suite seam — `__`-prefixed, and a live session cannot need it. |
 | `MakeCloseButton(parent, onClick[, addonName])` | 1 (3rd arg: **6**) | The close control a Ka0s window closes with, returned unanchored for the caller to place. Returns `nil` where `CreateFrame` is unavailable (headless harness, or a load path with no UI). With `addonName` it draws the collection's own `close` icon; without, the multiplication sign. See [Which close control you get](#which-close-control-you-get). |
 | `MODULES` | 1 | `{ Core = <minor> }` — the live minor of every file in this major. The in-game answer to "which version am I actually running?", and the value that picks this document. |

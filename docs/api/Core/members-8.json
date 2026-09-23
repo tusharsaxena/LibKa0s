@@ -15,6 +15,9 @@
     { "name": "ResolveColor", "kind": "function" },
     { "name": "SECRET", "kind": "string" },
     { "name": "SKIN", "kind": "table" },
+    { "name": "SafeRegisterEvent", "kind": "function" },
+    { "name": "SafeRegisterEvents", "kind": "function" },
+    { "name": "SafeRegisterUnitEvent", "kind": "function" },
     { "name": "SafeToString", "kind": "function" }
   ]
 }

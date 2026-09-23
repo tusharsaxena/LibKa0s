@@ -573,6 +573,117 @@ test("core: ResolveColor answers four numbers for a swatch that was never stored
   assertEqual(a, 1)
 end)
 
+-- ── the pcalled event registration helper ──────────────────────────────────────────────────
+--
+-- One retired event name must cost that name, not the rest of the block (events-frames-taint-§1).
+-- Every case asserts on the kit's LIVE registration set, and the kit models both client rungs: an
+-- unknown name in `__badEvents` raises on a raw frame and on AceEvent, and
+-- `C_EventUtils.IsEventValid` answers false for it. `withClient` swaps both in and restores them
+-- even when the case raises.
+
+local RETIRED = "KA0S_RETIRED_EVENT"
+
+--- Run `fn` with RETIRED unknown to the fake client, and with `C_EventUtils` present or not.
+local function withClient(hasEventUtils, fn)
+  local mocks = T.mocks
+  local bad, utils = mocks.__badEvents, mocks.C_EventUtils
+  mocks.__badEvents = { [RETIRED] = true }
+  if not hasEventUtils then mocks.C_EventUtils = nil end
+  local ok, err = pcall(fn)
+  mocks.__badEvents, mocks.C_EventUtils = bad, utils
+  if not ok then error(err, 0) end
+end
+
+--- The live registrations `target` holds, as a sorted comma-joined list of `kind:event[:unit]`.
+local function liveOn(target)
+  local out = {}
+  for _, reg in ipairs(T.mocks.__registrations()) do
+    if reg.target == target then
+      out[#out + 1] = reg.kind .. ":" .. reg.event .. (reg.unit and (":" .. reg.unit) or "")
+    end
+  end
+  table.sort(out)
+  return table.concat(out, ",")
+end
+
+local function aceTarget() return T.mocks.LibStub("AceEvent-3.0"):Embed({}) end
+
+for _, rung in ipairs({ { "front gate", true }, { "pcall rung", false } }) do
+  local label, hasEventUtils = rung[1], rung[2]
+
+  test("core: SafeRegisterEvents registers around a retired name, " .. label, function()
+    -- red under: a bare RegisterEvent
+    withClient(hasEventUtils, function()
+      local target, rejected = aceTarget(), {}
+      local handler = function() end
+      local n = core.SafeRegisterEvents(target, { "PLAYER_LOGIN", RETIRED, "BAG_UPDATE" },
+        handler, rejected)
+      assertEqual(n, 2, "the count names the two that registered")
+      -- On the pcall rung AceEvent has already stored the retired name's callback when the client
+      -- raises, exactly as the client's AceEvent does. It never fires, and it is the reason the
+      -- front gate exists: that rung never hands the name over at all.
+      assertEqual(liveOn(target), hasEventUtils and "event:BAG_UPDATE,event:PLAYER_LOGIN"
+        or "event:BAG_UPDATE,event:" .. RETIRED .. ",event:PLAYER_LOGIN")
+      assertEqual(table.concat(rejected, ","), RETIRED, "the retired name, once")
+      -- The same block again, as a disable/enable cycle runs it: still one entry.
+      core.SafeRegisterEvents(target, { "PLAYER_LOGIN", RETIRED, "BAG_UPDATE" }, handler, rejected)
+      assertEqual(table.concat(rejected, ","), RETIRED, "no duplicate on a second pass")
+    end)
+  end)
+
+  test("core: SafeRegisterUnitEvent on a frame isolates a retired name, " .. label, function()
+    -- red under: a bare RegisterEvent
+    withClient(hasEventUtils, function()
+      local frame, rejected = T.mocks.CreateFrame("Frame"), {}
+      T.assertFalse(core.SafeRegisterUnitEvent(frame, RETIRED, rejected, "player"))
+      T.assertTrue(core.SafeRegisterUnitEvent(frame, "UNIT_AURA", rejected, "player", "target"))
+      assertEqual(liveOn(frame), "unit:UNIT_AURA:player,unit:UNIT_AURA:target")
+      assertEqual(table.concat(rejected, ","), RETIRED)
+    end)
+  end)
+end
+
+test("core: SafeRegisterEvent's front gate rejects without calling RegisterEvent", function()
+  -- With the client's own answer available, a name it calls invalid is never handed to
+  -- RegisterEvent at all: no raise to catch, and no half-stored AceEvent callback left behind.
+  -- red under: a bare RegisterEvent
+  withClient(true, function()
+    local calls, rejected = {}, {}
+    local spy = { RegisterEvent = function(_, event) calls[#calls + 1] = event end }
+    T.assertFalse(core.SafeRegisterEvent(spy, RETIRED, nil, rejected))
+    T.assertTrue(core.SafeRegisterEvent(spy, "PLAYER_LOGIN", nil, rejected))
+    assertEqual(table.concat(calls, ","), "PLAYER_LOGIN", "only the valid name reached the target")
+    assertEqual(table.concat(rejected, ","), RETIRED)
+  end)
+end)
+
+test("core: SafeRegisterEvent on a raw frame, and with no rejected list at all", function()
+  -- The list is optional: a host that does not surface rejects still gets the isolation.
+  -- red under: a bare RegisterEvent
+  withClient(false, function()
+    local frame = T.mocks.CreateFrame("Frame")
+    T.assertFalse(core.SafeRegisterEvent(frame, RETIRED))
+    T.assertTrue(core.SafeRegisterEvent(frame, "PLAYER_REGEN_ENABLED"))
+    assertEqual(liveOn(frame), "frame:PLAYER_REGEN_ENABLED")
+  end)
+end)
+
+test("core: SafeRegisterEvent on a Bus-stamped target is replayed after a stand-down", function()
+  -- The call goes through target:RegisterEvent, so the bus's tracking wrapper records it.
+  -- red under: registering through AceEvent's own member instead of the target's
+  withClient(true, function()
+    local bus = T.bus:New({ name = "CoreSafeRegisterHost" })
+    local target, rejected = bus:NewTarget(), {}
+    local n = core.SafeRegisterEvents(target, { "PLAYER_LOGIN", RETIRED }, function() end, rejected)
+    assertEqual(n, 1)
+    bus:StandDown()
+    assertEqual(liveOn(target), "", "stood down")
+    bus:StandUp()
+    assertEqual(liveOn(target), "event:PLAYER_LOGIN", "replayed from the bus's record")
+    assertEqual(table.concat(rejected, ","), RETIRED)
+  end)
+end)
+
 -- ── Perf's regression ──────────────────────────────────────────────────────────────────────
 
 test("core: Perf refuses to register when Core is missing or below NEEDS_CORE", function()

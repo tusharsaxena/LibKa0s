@@ -32,6 +32,9 @@ read_globals = {
   -- The client's class palette, read by LibKa0s-Core-1.0's ClassColor. RAID_CLASS_COLORS rather
   -- than C_ClassColor because it is the table every other UI on the player's screen already reads.
   "RAID_CLASS_COLORS",
+  -- The client's own "would RegisterEvent raise?", the front gate of Core's SafeRegisterEvent
+  -- family. Read at call time and optional: a client without it takes the pcall rung.
+  "C_EventUtils",
   -- `C_SpecializationInfo` is the namespaced rung P.Context prefers; the two bare names are the
   -- deprecated fallback it keeps for a client that has not moved yet.
   "C_SpecializationInfo",
