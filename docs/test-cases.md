@@ -451,6 +451,14 @@ badge and any count quoted in the docs must agree with it.
 - draghandle: the strip is a plain Button with a fill, never a BackdropTemplate
 - draghandle: a host with its own edge painter gets its own pixels
 
+### test_widgets_reorder.lua (5)
+
+- reorder: a host OnUpdate on a row frame survives a drag start and end
+- reorder: a row frame with no OnUpdate is never given one
+- reorder: two lists with different lineColor show their own color on one pooled container
+- reorder: the drop line is released after Cancel
+- reorder: the drop line goes back at the drop, and the next drag reuses it
+
 ### test_debuglog.lua (75)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
@@ -1759,6 +1767,7 @@ badge and any count quoted in the docs must agree with it.
 | test_media.lua | 20 |
 | test_widgets.lua | 81 |
 | test_widgets_draghandle.lua | 35 |
+| test_widgets_reorder.lua | 5 |
 | test_debuglog.lua | 75 |
 | test_slash.lua | 109 |
 | test_slash_refusal.lua | 7 |
@@ -1797,4 +1806,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1587** |
+| **Total** | **1592** |

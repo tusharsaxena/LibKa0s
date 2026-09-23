@@ -73,7 +73,7 @@ Kit.layoutCap = { hub = "CLAUDE.md" }
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_debuglog", "test_slash", "test_slash_refusal",
+    "test_core", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_slash", "test_slash_refusal",
     "test_launcher",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_tabs",

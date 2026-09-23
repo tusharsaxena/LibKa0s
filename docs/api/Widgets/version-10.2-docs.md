@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 9.2
+# `LibKa0s-Widgets-1.0` — version 10.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,12 +8,45 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **9** · `WidgetsDragHandle.lua` minor **2** |
-| Shipped in | v1.48.1 |
-| Status | Superseded |
-| Supersedes | [version 9.1](./version-9.1-docs.md) |
-| Superseded by | [version 10.2](./version-10.2-docs.md) — a drag polls on the ghost and takes its line from a library free list |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 9, WidgetsDragHandle = 2 }` |
+| Files and minors | `Widgets.lua` minor **10** · `WidgetsDragHandle.lua` minor **2** |
+| Shipped in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 9.2](./version-9.2-docs.md) — a drag polled on the host's row frame and cached its line on the host's container |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 10, WidgetsDragHandle = 2 }` |
+
+## What changed at 10.2
+
+**A `ReorderList` drag no longer borrows anything from the host but the frames it was handed to
+draw on, and gives back everything it parents there.** `Widgets.lua` moves to minor **10**;
+`WidgetsDragHandle.lua` stays at **2**. No lib-level member is added or removed, and every `opts`
+field and `AddRow` `spec` field means what it meant at 9.2. Two internals moved, and one method's
+return with them.
+
+- **The poll runs on the ghost.** At 9.2 `beginDrag` called `row.frame:SetScript("OnUpdate", ...)`
+  on the frame the host handed to `AddRow`, and the drop and `Cancel()` cleared it with nil, which
+  wiped any `OnUpdate` the host had set on that frame. At 10.2 the poll is the ghost's own
+  `OnUpdate` — the process-wide carried copy, a frame this library builds and owns — and it reads the
+  row being dragged at fire time, the way a handle reads `__row`. The ghost is shown for exactly as
+  long as a drag is in flight, so the client polls it for exactly that long. **A host row frame's
+  scripts are never written.**
+- **The insertion line comes from a free list, per drag.** At 9.2 `Finish` built one line per
+  container and cached it there as `__ka0sDropLine`. Both shipped consumers hand over an
+  AceGUI-pooled container, so the line rode back into AceGUI's pool painted in whichever list's
+  `lineColor` first drew on it, and a second list handed the same container drew in the first list's
+  color. At 10.2 the line is taken when a drag starts, parented to the container `Finish` named,
+  repainted in the dragging list's `lineColor` on every take, and given back at the drop and on
+  `Cancel()` — hidden, unanchored and reparented off the container, through the same reclaim the
+  handles and row boxes use. Nothing of this library's is left on a container between drags.
+- **`Finish(container)` returns nothing.** At 9.2 it returned the line it had built. It now only
+  names the container; no shipped consumer read the return.
+
+**What a host suite must change.** One that drives a drag by firing the row frame's `OnUpdate` —
+the way a suite reaches the poll without a client — must fire the ghost's instead:
+`LibStub("LibKa0s-Widgets-1.0").__DragGhost:__fire("OnUpdate", ...)` (or its mock's equivalent).
+The ghost exists from the first grab. MultiMeters' `tests/test_columnblocks.lua` is the one such
+suite on the 2026-09-24 grep. A suite reading `controller.line` after a drop or a `Cancel()` reads
+`nil`: the line is only held while a drag is in flight.
 
 ## What changed at 9.2
 
@@ -384,7 +417,7 @@ Every field is optional except the ones a working list needs.
 | Method | Meaning |
 |---|---|
 | `AddRow(frame, spec)` | Registers one row, **in display order** — the index is the call order. Creates the handle as a child of `spec.parent or frame`, anchored `LEFT`, and returns it so the host may re-anchor it. |
-| `Finish(container)` | Names the frame the insertion line lives on — normally the scroll's content frame, or whatever the rows share as a parent. Call once, after the rows. |
+| `Finish(container)` | Names the frame the insertion line lives on during a drag — normally the scroll's content frame, or whatever the rows share as a parent. Call once, after the rows. **Builds nothing and returns nothing from 10**: the line is taken when a drag starts and given back when it ends. |
 | `Cancel()` | Stops any drag in flight, puts the chrome away, and **gives every handle and every row box back**. Idempotent. **A host must call this before it renders anything** — see below. |
 
 `spec` on `AddRow`, all optional: `ghostText`, `ghostIcon`, `ghostIconColor`, `ghostTextColor`,
@@ -437,14 +470,22 @@ released. If `IsMouseButtonDown` is unavailable, protected, or simply not true y
 frame, a poll that ended on `not held` would finish the drag with zero rows travelled — no error, no
 message, and indistinguishable from a press that was never received.
 
-**The ghost is a process-wide singleton on `UIParent`.** It must escape whatever scroll frame the
+**The ghost is a process-wide singleton on `UIParent`**, and from 10 it carries the drag's poll. It must escape whatever scroll frame the
 list sits in to follow the cursor past the ends of the list, which a child of that scroll cannot do.
 Its mouse is disabled, and that is load-bearing rather than tidy: a frame sitting under the pointer
 that accepts the mouse eats the very button-release that ends the drag it is drawing.
 
-**The insertion line is a frame carrying a texture**, not a bare texture, and it is cached on the
-container. A texture belongs to its own frame's draw layers, so one created on the container draws
-*under* every row — a parent's `OVERLAY` still loses to a child frame.
+**The insertion line is a frame carrying a texture**, not a bare texture. A texture belongs to its
+own frame's draw layers, so one created on the container draws *under* every row — a parent's
+`OVERLAY` still loses to a child frame. **From 10 it is the library's, from a free list, for one
+drag at a time**: taken when a drag starts, parented to the container `Finish` named, painted in
+that list's `lineColor`, and given back at the drop and on `Cancel()` exactly as a handle is. It is
+never cached on the container, because the container is a frame the host's framework pools and a
+line left on it is a line the next list handed that container inherits, color and all.
+
+**The poll is the ghost's, never the row's.** A drag is polled from the ghost's `OnUpdate`, so this
+library writes no script to any frame the host handed it. A host is free to run its own `OnUpdate`
+on a row frame, and a drag leaves it where it was.
 
 **A clamped drag still shows the line**, stopped at the divide. A drop that clamps writes nothing,
 so the line stopping is the only feedback there is; without it a working clamp is indistinguishable
@@ -711,15 +752,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 10.2
-
-`Widgets.lua` moves to minor **10** and `WidgetsDragHandle.lua` stays at minor **2**. No member,
-`opts` field or `spec` field is added or removed; the member manifest differs from this version's
-only in its version key. What moves is internal and one return value: the drag's poll runs on the
-ghost instead of the host's row frame, so a host `OnUpdate` on a row frame survives a drag; the
-insertion line is taken from a library free list per drag and given back at the drop and on
-`Cancel()` instead of being cached on the container as `__ka0sDropLine`, so each list draws its
-own `lineColor` on a pooled container; and `Finish(container)` returns nothing. A host suite that
-fires the row frame's `OnUpdate` to drive a drag must fire the ghost's (`__DragGhost`) instead. See
-[version 10.2](./version-10.2-docs.md).

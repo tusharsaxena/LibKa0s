@@ -15,8 +15,38 @@ cannot drift. Release order is in
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
 (`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
-(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Widgets minor 10: a `ReorderList` drag no longer borrows the host's frames
+
+- **Behavioral: the drag's poll runs on the library's ghost frame, not on the host's row frame**
+  (review finding `LibKa0s-R-12`). Through minor 9 `beginDrag` called
+  `row.frame:SetScript("OnUpdate", ...)` on the frame the host handed to `AddRow`, and the drop and
+  `Cancel` cleared it with nil, wiping any `OnUpdate` the host had set there. The ghost is a frame
+  this library owns and is shown for exactly as long as a drag is in flight; its `OnUpdate` reads the
+  dragged row at fire time, the way the handles do. A host row frame's scripts are never touched.
+- **Behavioral: the insertion line comes from a library free list, per drag.** Through minor 9 it
+  was built once and cached on the container as `__ka0sDropLine`, and both shipped consumers hand
+  over an AceGUI-pooled container, so the line rode back into AceGUI's pool painted in the first
+  list's `lineColor`. It is now taken when a drag starts, parented to the container `Finish` named,
+  repainted in the dragging list's color, and given back (hidden, unanchored, reparented off the
+  container) at the drop and on `Cancel`, through the same reclaim the handles and row boxes use.
+  This restores the file's own pooled-frame invariant (the handle-pool block in `Widgets.lua`).
+- **`Finish(container)` now only names the container** and returns nothing; at minor 9 it built the
+  line and returned it. No shipped consumer reads the return. `controller.line` is set only while a
+  drag is in flight.
+- **A host suite that drives a drag by firing the row frame's `OnUpdate` must fire the ghost's**
+  (`LibStub("LibKa0s-Widgets-1.0").__DragGhost`). On the 2026-09-24 grep one does:
+  MultiMeters' `tests/test_columnblocks.lua` (`drag`, `block:_run("OnUpdate", 0.1)`), which will go
+  red on the re-vendor until it fires the ghost. No consumer reads `__ka0sDropLine` or `Finish`'s
+  return.
+- `tests/test_widgets_reorder.lua` (new; `tests/test_widgets.lua` is at 1493 lines): a host
+  `OnUpdate` on a row frame survives a drag start and end, a row frame with none is never given one,
+  two lists with different `lineColor` draw their own color on one pooled container, and the line
+  goes back on `Cancel` and at the drop and is reused by the next drag. `tests/test_widgets.lua`'s
+  drag cases poll the ghost. Documented in
+  [the version 10.2 document](docs/api/Widgets/version-10.2-docs.md); version 9.2 is Superseded.
 
 ### Perf minor 13: the sampler's state fields stay raw, and the open depth resets at window edges
 

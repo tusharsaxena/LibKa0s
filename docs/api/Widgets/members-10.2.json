@@ -1,0 +1,18 @@
+{
+  "major": "LibKa0s-Widgets-1.0",
+  "versionKey": "10.2",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Widgets", "minor": 10 },
+    { "file": "WidgetsDragHandle", "minor": 2 }
+  ],
+  "members": [
+    { "name": "CloseMenu", "kind": "function" },
+    { "name": "CopyWindow", "kind": "function" },
+    { "name": "DRAG_HANDLE", "kind": "table" },
+    { "name": "DragHandle", "kind": "function" },
+    { "name": "Dropdown", "kind": "function" },
+    { "name": "ROW_BOX", "kind": "table" },
+    { "name": "ReorderList", "kind": "function" }
+  ]
+}

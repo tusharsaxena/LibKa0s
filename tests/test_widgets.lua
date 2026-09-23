@@ -1029,10 +1029,10 @@ local function drag(list, rows, from, n)
   row.handle:__fire("OnMouseDown")
 
   mocks.setCursor(0, 1000 - n * list.stride)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
 
   mocks.setMouseDown("LeftButton", false)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
 end
 
 test("widgets: ReorderList reports where a drag landed", function()
@@ -1092,7 +1092,7 @@ test("widgets: a poll that never reports the button held cannot kill the drag", 
   row.handle:__fire("OnMouseDown")
 
   mocks.setCursor(0, 1000 - 2 * list.stride)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
   assertEqual(#log.moved, 0, "the poll ended a drag it never saw begin")
 
   row.handle:__fire("OnMouseUp")
@@ -1111,12 +1111,12 @@ test("widgets: every start path begins one drag and every end path completes it 
   row.handle:__fire("OnDragStart")          -- the threshold path, first
   row.handle:__fire("OnMouseDown")          -- and the immediate one, second
   mocks.setCursor(0, 1000 - 2 * list.stride)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
 
   row.handle:__fire("OnDragStop")
   row.handle:__fire("OnMouseUp")
   mocks.setMouseDown("LeftButton", false)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
 
   assertEqual(#log.moved, 1, "one grab must produce exactly one reorder")
   assertEqual(log.moved[1][2], 3, "a second start must not reset the origin mid-drag")
@@ -1141,12 +1141,12 @@ test("widgets: ReorderList carries a copy of the row under the cursor", function
 
   local firstY = select(5, ghost:GetPoint(1))
   mocks.setCursor(0, 1000 - 2 * list.stride)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
   assertFalse(select(5, ghost:GetPoint(1)) == firstY, "the ghost did not follow the cursor")
   assertTrue(row.frame:GetAlpha() < 1, "the row it came from must fade behind it")
 
   mocks.setMouseDown("LeftButton", false)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
   assertFalse(ghost:IsShown(), "the ghost must be put away when the drag ends")
 end)
 
@@ -1160,15 +1160,15 @@ test("widgets: the insertion line is ANCHORED to the target row", function()
   mocks.setCursor(0, 1000)
   row.handle:__fire("OnMouseDown")
   mocks.setCursor(0, 1000 - 2 * list.stride)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
 
   assertTrue(list.line:IsShown(), "the line must be visible during a drag")
   local _, relativeTo = list.line:GetPoint(1)
   assertEqual(relativeTo, rows[3].frame, "the line is not against the drop target")
 
   mocks.setMouseDown("LeftButton", false)
-  row.frame:__fire("OnUpdate", 0.1)
-  assertFalse(list.line:IsShown(), "the line must go away when the drag ends")
+  W.__DragGhost:__fire("OnUpdate", 0.1)
+  T.assertNil(list.line, "the line must go back to the pool when the drag ends")
 end)
 
 test("widgets: a clamped drag still shows the line, stopped at the divide", function()
@@ -1181,14 +1181,14 @@ test("widgets: a clamped drag still shows the line, stopped at the divide", func
   mocks.setCursor(0, 1000)
   row.handle:__fire("OnMouseDown")
   mocks.setCursor(0, 1000 - 3 * list.stride)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
 
   assertTrue(list.line:IsShown(), "a clamped drag must still say where it would land")
   local _, relativeTo = list.line:GetPoint(1)
   assertEqual(relativeTo, rows[3].frame, "clamped to its own index, so the line sits on itself")
 
   mocks.setMouseDown("LeftButton", false)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
   assertEqual(#log.moved, 0, "a clamped drag must not report a move")
 end)
 
@@ -1202,15 +1202,15 @@ test("widgets: Cancel stops a drag in flight and puts the chrome away", function
   mocks.setCursor(0, 1000)
   row.handle:__fire("OnMouseDown")
   mocks.setCursor(0, 1000 - 2 * list.stride)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
 
   list:Cancel()
   assertFalse(W.__DragGhost:IsShown(), "the ghost outlived the list it was describing")
-  assertFalse(list.line:IsShown())
+  T.assertNil(list.line, "Cancel must give the line back to the pool")
   assertEqual(row.frame:GetAlpha(), 1, "the picked-up row must come back to full opacity")
 
   mocks.setMouseDown("LeftButton", false)
-  row.frame:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
   assertEqual(#log.moved, 0, "a cancelled drag must not land after the fact")
 end)
 
@@ -1278,9 +1278,9 @@ test("widgets: a row may be registered with no handle at all", function()
   mocks.setCursor(0, 1000)
   h1:__fire("OnMouseDown")
   mocks.setCursor(0, 1000 - 3 * 30)
-  rows[1]:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
   mocks.setMouseDown("LeftButton", false)
-  rows[1]:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
   assertEqual(moved[1][2], 2, "a draggable row still clamps to the last of its own group")
 end)
 
@@ -1312,9 +1312,9 @@ test("widgets: a reused handle drives the LIVE controller, not the one it was bu
   mocks.setCursor(0, 1000)
   handle:__fire("OnMouseDown")
   mocks.setCursor(0, 1000 - 30)
-  parent:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
   mocks.setMouseDown("LeftButton", false)
-  parent:__fire("OnUpdate", 0.1)
+  W.__DragGhost:__fire("OnUpdate", 0.1)
 
   assertEqual(#moved, 1, "the handle drove a dead controller, so nothing moved -- this is the freeze")
   assertEqual(moved[1][2], 2)
