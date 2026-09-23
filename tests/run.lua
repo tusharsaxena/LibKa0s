@@ -41,7 +41,10 @@ _G.LK_TEST = Kit.expose{
   widgets = mocks.LibStub("LibKa0s-Widgets-1.0"),
   core = mocks.LibStub("LibKa0s-Core-1.0"),
   env = mocks.LibStub("LibKa0s-Env-1.0"),
+  compat = mocks.LibStub("LibKa0s-Compat-1.0"),
   lifecycle = mocks.LibStub("LibKa0s-Lifecycle-1.0"),
+  bus = mocks.LibStub("LibKa0s-Bus-1.0"),
+  schema = mocks.LibStub("LibKa0s-Schema-1.0"),
   pool = mocks.LibStub("LibKa0s-Pool-1.0"),
   item = mocks.LibStub("LibKa0s-Item-1.0"),
   debuglog = mocks.LibStub("LibKa0s-DebugLog-1.0"),
@@ -58,10 +61,19 @@ _G.LK_TEST = Kit.expose{
 -- from this list fails the run, and a name here with no file behind it fails it too. That is the
 -- gate, not the typing — the failure mode a hand-typed list has is that a new suite is written,
 -- never declared, and the run stays green over a file that never executed.
+-- The two consumer facts the kit's cap gate cannot infer (`layout-§1`). `hub` is where this repo
+-- keeps its engineer context and therefore its over-cap census: the root CLAUDE.md, not
+-- `docs/ARCHITECTURE.md`, because a Ka0s-owned library repo has no tier model to host one. There is
+-- no `exempt` set: the generated-data carve-out has no instance here, and an empty set is the
+-- honest answer rather than a placeholder. It rides on the kit table because a vendored suite is
+-- handed the kit and nothing else -- the same reason `test_eol.lua` and `test_prose.lua` take the
+-- kit as their chunk argument rather than reading the exposed table by its consumer-chosen name.
+Kit.layoutCap = { hub = "CLAUDE.md" }
+
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_env", "test_lifecycle", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_debuglog", "test_slash",
+    "test_core", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_debuglog", "test_slash",
     "test_launcher",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_tabs",
@@ -70,10 +82,16 @@ Kit.run{
     "test_loader", "test_parallel", "test_kit_limits",
     "test_mock_base", "test_mock_ace", "test_mock_record",
     "test_surface_parity",
-    "test_versioning", "test_kitsync", "test_prose", "test_layout_cap",
-    "test_register",
+    "test_versioning", "test_kitsync", "test_prose",
+    "test_register", "test_kit_inventory", "test_kit_eol",
     -- Shipped in the kit, so every consumer inherits the gate instead of re-typing it; the
     -- inventory assertion goes red in any repo that vendors it and leaves it undeclared.
+    -- Declared by the PAIR (basename, directory) from kit revision 25: a bare name here wires
+    -- this repo's own file of that name, and the kit's copy would load nothing while the suite
+    -- list went on asserting the gate was covered. `test_prose` is the one kit gate this repo
+    -- does not wire, and the decline is a row in CLAUDE.md's `## Documented deviations` rather
+    -- than a silence -- the inventory reads it there and reports it once, as a skip.
     { name = "test_eol", dir = "tests/_kit/" },
+    { name = "test_layout_cap", dir = "tests/_kit/" },
   },
 }

@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **9** · `WidgetsDragHandle.lua` minor **1** |
 | Shipped in | v1.48.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 9](./version-9-docs.md) — which had no drag-handle surface at all |
-| Superseded by | — |
+| Superseded by | [version 9.2](./version-9.2-docs.md) — the help mark brightens on hover only where a click is wired |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 9, WidgetsDragHandle = 1 }` |
 
 ## What changed at this version
@@ -700,3 +700,12 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
+
+## Moving to version 9.2
+
+`WidgetsDragHandle.lua` moves to minor **2** and `Widgets.lua` stays at minor **9**. No member,
+field or descriptor key is added or removed; the member manifest differs from this version's only in
+its version key and that one file minor. The one behavior change is the help mark's hover tint: at
+9.2 it brightens only when the host passed `onRightClick`, and a host that passes none gets a mark
+that holds its resting gray. A host that passes `onRightClick` sees this version's behavior exactly.
+See [version 9.2](./version-9.2-docs.md).

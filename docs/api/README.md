@@ -54,7 +54,10 @@ the file you need:
 |---|---|---|
 | `LibKa0s-Core-1.0` | `<Core>` | `LibStub("LibKa0s-Core-1.0").MODULES` |
 | `LibKa0s-Env-1.0` | `<Env>` | `LibStub("LibKa0s-Env-1.0").MODULES` |
+| `LibKa0s-Compat-1.0` | `<Compat>` | `LibStub("LibKa0s-Compat-1.0").MODULES` |
 | `LibKa0s-Lifecycle-1.0` | `<Lifecycle>` | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` |
+| `LibKa0s-Bus-1.0` | `<Bus>` | `LibStub("LibKa0s-Bus-1.0").MODULES` |
+| `LibKa0s-Schema-1.0` | `<Schema>` | `LibStub("LibKa0s-Schema-1.0").MODULES` |
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
@@ -99,11 +102,29 @@ answers both "what does this version have?" and "when did I get it?".
 |---|---|---|---|
 | [1](./Env/version-1-docs.md) | `Env.lua` 1 | v1.15.0 | **Current** |
 
+### `LibKa0s-Compat-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Compat/version-1-docs.md) | `Compat.lua` 1 | v1.55.0 | **Current** |
+
 ### `LibKa0s-Lifecycle-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
 | [1](./Lifecycle/version-1-docs.md) | `Lifecycle.lua` 1 | v1.40.0 | **Current** |
+
+### `LibKa0s-Bus-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Bus/version-1-docs.md) | `Bus.lua` 1 | v1.55.0 | **Current** |
+
+### `LibKa0s-Schema-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Schema/version-1-docs.md) | `Schema.lua` 1 | v1.55.0 | **Current** |
 
 ### `LibKa0s-Pool-1.0`
 
@@ -131,7 +152,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [9.1](./Widgets/version-9.1-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 1 | v1.48.0 | **Current** |
+| [9.2](./Widgets/version-9.2-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 2 | v1.48.1 | **Current** |
+| [9.1](./Widgets/version-9.1-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 1 | v1.48.0 | Superseded |
 | [9](./Widgets/version-9-docs.md) | `Widgets.lua` 9 | v1.24.0 – v1.47.0 | Superseded |
 | [8](./Widgets/version-8-docs.md) | `Widgets.lua` 8 | v1.19.0 – v1.23.0 | Superseded |
 | [7](./Widgets/version-7-docs.md) | `Widgets.lua` 7 | v1.16.0 | Superseded |
@@ -247,7 +269,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [24](./testkit/version-24-docs.md) | same files **plus `test_prose.lua`**, the kit's second own suite: the US-English gate of `localization-5`, carrying both published lists whole and reading an optional per-file, per-word `tests/prose_waivers.lua` for the spellings that are game data or a library's field name rather than the repo's English. Adoption is one line in the runner's suite list; `assertSuiteInventory` goes red until it is there. | v1.54.0 | **Current** |
+| [25](./testkit/version-25-docs.md) | same files **plus `test_layout_cap.lua`**, the kit's third own suite: the `layout-§1` cap gate, reading the over-cap census out of the repo's engineer-context hub and taking the hub and the generated-data exempt set through `Kit.layoutCap`. A declaration becomes the **pair** (basename, directory), so a bare name no longer covers the kit's file of that name — a collision and an unreferenced kit suite are both reported, and a decline recorded in `## Documented deviations` is reported once as a skip. `test_eol.lua` gains a second case over the `.gitattributes` body itself, `test_prose.lua` gains `Kit.prose.exempt` for `localization-§5`'s generated-data carve-out in the shape `Kit.layoutCap.exempt` already uses — with two of that carve-out's three conditions **enforced**, a path any `.toc` loads and a path `.pkgmeta` does not ignore both refused, and the same two refusals applied to the waiver file's `skipDirs` and `skipFiles`, which reach the same scan and were checked against nothing; one disclosure line names every path the gate was narrowed by, whichever list supplied it, with the suppressed count — and the automated-test runner names the commit and the tree state on every `RESULTS.md` row. A declaration's `dir` and the runner's `dir` are also read **against each other**, so a suites list that mixes an absolute and a relative spelling of one directory survives being invoked by path from another working directory, and every remedy prints a `dir` a suites list can actually carry rather than this checkout's resolved path. | v1.55.0 | **Current** |
+| [24](./testkit/version-24-docs.md) | same files **plus `test_prose.lua`**, the kit's second own suite: the US-English gate of `localization-5`, carrying both published lists whole and reading an optional per-file, per-word `tests/prose_waivers.lua` for the spellings that are game data or a library's field name rather than the repo's English. Adoption is one line in the runner's suite list; `assertSuiteInventory` goes red until it is there. | v1.54.0 | Superseded |
 | [23](./testkit/version-23-docs.md) | same files; the resource guard on load (re-launch depth, process-tree cgroup, `ulimit -v`, timeout), the runner's heap budget, leak gate, CPU ceiling, host-path gate and memory-aware `--jobs`, every suite in `run-automated-tests.sh` bounded, and the `mock_base.lua` build lookup that kept every instance alive | v1.43.0 | Superseded |
 | [22](./testkit/version-22-docs.md) | + `mock_record.lua` — the five recording surveys (`__registrations`, `__timers()`, `__shownFrames`, `__svWrites`, `__printed`), `__fire` / `__fireUnconditional`, an `AceBucket-3.0` fake, and the raw `frame:RegisterEvent` the frame stub used to forget; the timer queue and the `AceDB-3.0` fake move there with them | v1.40.0 | Superseded |
 | [21](./testkit/version-21-docs.md) | same files; the AceGUI fake's `CheckBox` gains a pooled `check` texture (`SetTexture`, `SetVertexColor`, `GetVertexColor`), so a suite can observe `O.ChoiceGrid`'s gold-fill paint and its restoration on `Release` against the stock fixture, with no per-test monkeypatch needed | v1.36.1 | Superseded |

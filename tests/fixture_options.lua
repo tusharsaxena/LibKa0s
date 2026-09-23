@@ -30,7 +30,8 @@ local function buildRows()
     -- pairWith site. A fourth row here would silently disarm that case.
     { path = "showTooltips", page = "general", group = "Master", order = 30, type = "bool",
       label = "Show tooltips", default = true },
-    -- string + no `values` list, declared as a free-text row. The fifth widget type (spec §5.2),
+    -- string + no `values` list, declared as a free-text row. The fifth widget type (the Options
+    -- section of docs/superpowers/specs/2026-07-30-libka0s-five-module-extraction-design.md),
     -- which no AbsorbTracker row uses — so this fixture is the only thing that covers it.
     --
     -- Ordered FIRST in its group, ahead of the solo row below, and that is deliberate: a solo row

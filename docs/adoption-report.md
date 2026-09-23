@@ -37,13 +37,20 @@ The file minor is the mechanism; the semver tag is a courtesy. Extract the live 
 ship folder and from every consumer's vendored copy, and put them in one table:
 
 ```
-grep -hoE 'local (MAJOR, )?(MINOR|WIDGETS_MINOR|SCROLL_MINOR|PANEL_MINOR) *= *("[^"]+", *)?[0-9]+' \
+grep -HoE 'local (MAJOR, )?[A-Z_]*MINOR *= *("[^"]+", *)?[0-9]+' \
   LibKa0s/*.lua
-grep -hoE 'local (MAJOR, )?(MINOR|WIDGETS_MINOR|SCROLL_MINOR|PANEL_MINOR) *= *("[^"]+", *)?[0-9]+' \
+grep -HoE 'local (MAJOR, )?[A-Z_]*MINOR *= *("[^"]+", *)?[0-9]+' \
   ../<Addon>/libs/LibKa0s/*.lua
 ```
 
-Any consumer behind on any of the eight files is **cross-major skew** and is the single most
+The pattern takes any upper-case name ending in `MINOR` rather than a list of them, and `-H` prints
+the file beside each minor. The list it replaced named `MINOR`, `WIDGETS_MINOR`, `SCROLL_MINOR` and
+`PANEL_MINOR` and so missed `COMPOSE_MINOR`, `TABS_MINOR` and `DRAG_MINOR` — three files added after
+the list was written — and printed minors with no file beside them. Against the ship folder it must
+print one line per `LibKa0s/*.lua`; compare `ls LibKa0s/*.lua | wc -l` (21 at v1.55.0) with the
+first command's line count before trusting either.
+
+Any consumer behind on any of those files is **cross-major skew** and is the single most
 serious thing this report can find — it is the failure mode whole-folder vendoring exists to
 prevent, and it does not announce itself at runtime. Report the file, both minors, and what the
 consumer therefore does not have.

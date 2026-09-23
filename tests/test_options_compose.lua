@@ -562,7 +562,7 @@ end)
 -- ── compose minor 4: the record-backed arm (PanelMaster#48, PANELMASTER-A-03) ─────────────────
 --
 -- `spec.bind` binds a composed block to a REGISTRY RECORD instead of to settings paths, for a page
--- that edits records -- PanelMaster's panel editor, whose three option-ui-§16 groups could not
+-- that edits records -- PanelMaster's panel editor, whose three options-ui-§16 groups could not
 -- compose because every row the composers emitted was path-keyed. What the arm must NOT do is move
 -- a single byte of what a path-keyed caller gets, and that is the first case below.
 

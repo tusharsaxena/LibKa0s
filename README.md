@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.61.0
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.64.0
 — as a **library repo**, which is a scope of its own: `library-stack-§7`'s applicability list is what
 binds here, not the addon rule set, because there is no TOC, no player-facing README, no settings
 canvas and no install. [`CLAUDE.md`](CLAUDE.md) spells out which sections apply and which do not, and
@@ -10,16 +10,25 @@ install first.
 ## What it is
 
 A Ka0s-owned shared library, vendored into Ka0s WoW addons the way Ace3 is — copied into each
-addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Twelve
+addon's `libs/` folder rather than depended on at runtime. One LibStub major per module. Fifteen
 modules ship today:
 
 - **`LibKa0s-Core-1.0`** — the small stateless seams every other module sits on: secret-safe
   stringification, the window skin and its close button, and a prefixed chat printer.
 - **`LibKa0s-Env-1.0`** — the handful of client facts every addon reads, read one way: the TOC
   manifest, the player's map id and the player's zone labels.
+- **`LibKa0s-Compat-1.0`** — the version-variant spell and spec readers two or more addons wrote
+  the same way, and the secret-value seam (`IsSecret`, `CanAccess`, `IsSafeKey`) every guard asks
+  before it compares.
 - **`LibKa0s-Lifecycle-1.0`** — the stand-down latch: one addon, many reasons to be inert, one way
   down and one way back up. `disabled` and `perf` are two named holds on one set, and releasing one
   never resurrects an addon the other is still holding down.
+- **`LibKa0s-Bus-1.0`** — the stand-down record for an addon's tracked bus receivers, so a
+  stood-down addon takes every registration down and a stood-up one puts back exactly what is wanted
+  now, and the strict declare-once message catalog (`Catalog`).
+- **`LibKa0s-Schema-1.0`** — the settings schema's runtime without the schema: the dotted-path
+  primitives, the row registry, the single write seam, the bulk bracket, the profile reset's count
+  and the load-time shape check.
 - **`LibKa0s-Pool-1.0`** — the free/active widget pool this collection kept rewriting, keyed and
   unkeyed, with the acquire order preserved across a release.
 - **`LibKa0s-Item-1.0`** — item identity as four primitives and no policy: read a link, name a
@@ -66,7 +75,7 @@ addon must work with no other addon installed.
 
 ## The modules
 
-Twelve LibStub majors, adopted independently. **The full contract for each — the descriptor, every
+Fifteen LibStub majors, adopted independently. **The full contract for each — the descriptor, every
 public member, every row field — lives in [`docs/api/`](docs/api/), one document per shipped
 version.** This section is the map; that directory is the reference. Nothing here restates a
 signature, because a second copy of a contract is a contract that drifts.
@@ -75,7 +84,10 @@ signature, because a second copy of a contract is a contract that drifts.
 |---|---|---|---|
 | `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [7](docs/api/Core/version-7-docs.md) |
 | `LibKa0s-Env-1.0` | The handful of client facts every Ka0s addon reads, read one way: the TOC manifest, the player's map id and the player's zone labels. No state, no frames, no events. | `Env.lua` | [1](docs/api/Env/version-1-docs.md) |
+| `LibKa0s-Compat-1.0` | The version-variant client readers two or more Ka0s addons wrote the same way — `GetSpellInfo`, `GetSpellName`, `GetSpellTexture`, `GetSpellCooldown`, `GetSpecialization`, `GetSpecializationInfo`, each a ladder from the namespaced API down to the deprecated global — plus the secret-value seam every guard asks before it compares (`IsSecret`, `CanAccess`, `IsSafeKey`). Nine stateless functions; no frames, no events, no addon framework. | `Compat.lua` | [1](docs/api/Compat/version-1-docs.md) |
 | `LibKa0s-Lifecycle-1.0` | The stand-down latch. A hold set, an edge, and two host callbacks: `standDown` fires only when the set goes from empty to non-empty and `standUp` only when it goes back to empty, so a perf run that ends under a `disabled` hold does not bring the addon back. There is deliberately no `StandUp()` member — a bare stand-up is the bug the latch exists to prevent. Persists nothing. | `Lifecycle.lua` | [1](docs/api/Lifecycle/version-1-docs.md) |
+| `LibKa0s-Bus-1.0` | The stand-down record for an addon's tracked bus receivers — `New` builds an instance whose `NewTarget` hands out AceEvent targets that remember what they are registered for, so `StandDown` takes every event and message down and `StandUp` puts back what is wanted now, `arg` included — and `Catalog`, the strict declare-once message catalog that validates the `Ka0s_<Addon>_<Event>` names at load and raises on a mistyped key. Owns no hold set: the host calls it from its own Lifecycle callbacks. AceEvent is resolved at call time, never required. | `Bus.lua` | [1](docs/api/Bus/version-1-docs.md) |
+| `LibKa0s-Schema-1.0` | The settings schema's runtime without the schema. The host keeps its rows; this supplies the dotted-path primitives (`SplitPath`, `Read`, `Write`, `SameValue`), the path index, the single write seam `Set`, the bulk bracket that makes a sweep one debug line, the profile reset's changed-row count and `Validate`. Owns no storage, sends no message, formats no value. | `Schema.lua` | [1](docs/api/Schema/version-1-docs.md) |
 | `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass; the keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
 | `LibKa0s-Item-1.0` | Item identity as four primitives and no policy — read an item link, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree in writing. | `Item.lua` | [1](docs/api/Item/version-1-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [3](docs/api/Media/version-3-docs.md) |
@@ -203,8 +215,9 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.54.2**: `Core = { Core = 7 }`,
-`Env = { Env = 1 }`, `Lifecycle = { Lifecycle = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`,
+different vendored copy of each. As of **v1.55.0**, which adds three majors and moves no existing minor: `Core = { Core = 7 }`,
+`Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 1 }`, `Bus = { Bus = 1 }`,
+`Schema = { Schema = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`,
 `Media = { Media = 3 }`,
 `Widgets = { Widgets = 9, WidgetsDragHandle = 2 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 14 }`,
 `Launcher = { Launcher = 1 }`,
@@ -225,8 +238,8 @@ Full release order — bump, changelog, regenerate, tag, then **re-vendor every 
 [docs/releasing.md](docs/releasing.md). That last step is the one that gets forgotten: it already
 happened once, with both repos' suites green throughout.
 
-Re-vendoring is **whole-folder**, never file by file. Every major but Core — Env, Lifecycle, Pool,
-Item, Media, Widgets, DebugLog, Slash, Launcher, Options and Perf — resolves `LibKa0s-Core-1.0` before it calls
+Re-vendoring is **whole-folder**, never file by file. Every major but Core — Env, Compat, Lifecycle, Bus,
+Schema, Pool, Item, Media, Widgets, DebugLog, Slash, Launcher, Options and Perf — resolves `LibKa0s-Core-1.0` before it calls
 `NewLibrary` and returns outright if
 Core is missing or below the minor it needs, so a consumer that copied a new `Perf.lua` over an old
 `Core.lua` gets no probe at all rather than a half-updated one — the host's setup stub then says
@@ -240,7 +253,10 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block; Core first
   Core.lua           -- LibKa0s-Core-1.0, MINOR at the top of the file
   Env.lua            -- LibKa0s-Env-1.0, MINOR at the top of the file; needs Core
+  Compat.lua         -- LibKa0s-Compat-1.0, MINOR at the top of the file; needs Core
   Lifecycle.lua      -- LibKa0s-Lifecycle-1.0, MINOR at the top of the file; needs Core
+  Bus.lua            -- LibKa0s-Bus-1.0, MINOR at the top of the file; needs Core
+  Schema.lua         -- LibKa0s-Schema-1.0, MINOR at the top of the file; needs Core
   Pool.lua           -- LibKa0s-Pool-1.0, MINOR at the top of the file; needs Core
   Item.lua           -- LibKa0s-Item-1.0, MINOR at the top of the file; needs Core
   Media.lua          -- LibKa0s-Media-1.0, MINOR at the top of the file; needs Core

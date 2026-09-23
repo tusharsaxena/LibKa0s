@@ -1,0 +1,19 @@
+{
+  "major": "LibKa0s-Compat-1.0",
+  "versionKey": "1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Compat", "minor": 1 }
+  ],
+  "members": [
+    { "name": "CanAccess", "kind": "function" },
+    { "name": "GetSpecialization", "kind": "function" },
+    { "name": "GetSpecializationInfo", "kind": "function" },
+    { "name": "GetSpellCooldown", "kind": "function" },
+    { "name": "GetSpellInfo", "kind": "function" },
+    { "name": "GetSpellName", "kind": "function" },
+    { "name": "GetSpellTexture", "kind": "function" },
+    { "name": "IsSafeKey", "kind": "function" },
+    { "name": "IsSecret", "kind": "function" }
+  ]
+}
