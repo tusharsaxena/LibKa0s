@@ -58,13 +58,13 @@ end
 --- unscanned — put shipped code in the payload root, where the two gates below can see it.
 --- The two shipped files this gate cannot scan, and the reason is the rule itself.
 ---
---- `testkit/test_prose.lua` IS a prose gate: it carries localization-5's `BRITISH` list, which the
+--- `testkit/test_prose.lua` IS a prose gate: it carries localization-§5's `BRITISH` list, which the
 --- section requires it to copy WHOLE, and that list is ninety-two British spellings by
 --- construction. Scanning it would redden on every entry the standard obliges it to hold, and the
 --- only way to green would be to carry a subset -- which is the anti-pattern the whole-list rule
 --- exists to forbid. Since kit revision 26 the lists themselves live beside the gate, in
 --- `testkit/prose_lists.lua`, which it loads, so the same reason covers both files.
---- localization-5 names this case as the fourth of its four exclusions: "a document whose subject
+--- localization-§5 names this case as the fourth of its four exclusions: "a document whose subject
 --- is this rule and which therefore quotes a forbidden spelling in order to forbid it ... and the
 --- gate's own copy of the lists".
 ---
@@ -292,6 +292,20 @@ end)
 -- The owner's font draws most non-ASCII glyphs as an empty box (screenshot, AuraMaster batch 7
 -- T-1): a rightward arrow in a settings tooltip read as "General [box] Spell Categories".
 --
+-- SCOPED TO `LibKa0s/`, THE ONE PAYLOAD A PLAYER'S CLIENT LOADS. The other two gates in this file
+-- read `testkit/` as well, because they are about prose consistency in everything vendored; this
+-- one is about a glyph a player sees, and no kit string ever reaches a player. The kit runs under a
+-- plain Lua interpreter and prints to a terminal, and its vendored copy lives in a consumer's
+-- `tests/_kit/`, which never ships: every consumer's `.pkgmeta` ignores `tests`. So a kit string
+-- is free to carry a section sign, and from kit revision 26 every section citation in one does,
+-- spelled `<file>-§N` as documentation-§6 requires. The gate used to read `testkit/` too, and
+-- the kit spelled its citations without the sign (`localization-5`) to stay green; those
+-- spellings then printed into every consumer's run and generated `docs/test-cases.md`, where the
+-- consumer could not correct them (the 2026-09-23 audit's `AbsorbTracker-A-17`,
+-- `WHATGROUP-A-13`). Scoping the gate ended the workaround, and it also retired the long-bracket
+-- exemption this gate carried for the kit's verbatim `.gitattributes` transcripts, which the
+-- shipped library has no instance of.
+--
 -- THIS GATE OPERATES ON DECODED BYTES, NOT SOURCE TEXT, DELIBERATELY. A first version of this
 -- gate matched the literal ASCII text of a decimal escape (`\226`, the six characters
 -- backslash-2-2-6) and missed the exact mistake it existed to catch: a contributor who pastes a
@@ -336,9 +350,8 @@ local ASCII_RATIFIED = {
 
 --- Strip a `--` line comment, quote-aware: a `--` or a quote mark INSIDE a `"…"`/`'…'` string
 --- literal does not end the string early or false-start a comment. Lua 5.1's long-bracket form
---- (`[[ ]]`, `[==[ ]==]`, `--[[ ]]`) is not modeled HERE; `longBracketBody` below tracks it for
---- the one gate that needs it, and this function is left alone because a long bracket's content
---- is not a comment and cutting it here would hide it from the British-spelling gate too.
+--- (`[[ ]]`, `[==[ ]==]`, `--[[ ]]`) is not modeled: a long bracket's content is read as though it
+--- were code, which is the stricter reading, and the shipped library carries none today.
 local function stripLineComment(line)
   local out, i, n, quote = {}, 1, #line, nil
   while i <= n do
@@ -392,69 +405,50 @@ local function decodeLuaEscapes(text)
   return table.concat(out)
 end
 
---- A line-at-a-time tracker for Lua's long-bracket form (`[[ … ]]`, `[==[ … ]==]`): true while the
---- line is inside one, including the lines that open and close it. State resets when the path
---- changes, because `scan` walks each file's lines in order and the files in sequence.
----
---- WHY THE ASCII GATE SKIPS THESE AND THE OTHER TWO DO NOT. A long bracket is where the kit copies
---- a DOCUMENT VERBATIM, and kit revision 25 made that concrete: `testkit/test_eol.lua` carries
---- `line-endings-§5`'s two canonical `.gitattributes` bodies, 84 and 85 lines, because §5 requires
---- a repo be DIFFED against the body rather than read against it. Eight section signs and two
---- ellipses live in those bodies, and re-spelling any of them would make the transcript stop being
---- one. This file used to say a long bracket needed no special case, on the strength of the one
---- the payload had then (`testkit/mock_base.lua`'s usage-error text); revision 25 falsified that
---- premise, and this is the answer to it. The exemption is narrow by construction: it is the ASCII
---- gate alone, because a transcript of somebody else's document is the one string this repo is
---- forbidden to re-spell, and the British-spelling and §N.M gates go on reading these lines.
-local function longBracketBody()
-  local path, level
-  return function(p, line)
-    if p ~= path then path, level = p, nil end
-    if level then
-      if line:find("]" .. string.rep("=", level) .. "]", 1, true) then level = nil end
-      return true
-    end
-    local eq = line:match("%[(=*)%[")
-    if not eq then return false end
-    if not line:find("]" .. eq .. "]", 1, true) then level = #eq end
-    return true
+--- The ASCII gate's verdict on one line of one shipped file: what reached a player, or nil.
+--- `used` collects the ratified exemptions that matched, so the case can fail on one that no longer
+--- does.
+local function asciiHit(line, path, used)
+  -- `scan`'s SHIPPED walk includes every plain file under `LibKa0s/` and `testkit/`. Only
+  -- `LibKa0s/` reaches a player (the section header above says why the kit does not), and only
+  -- its `.lua` files: comment-stripping and escape-decoding are Lua syntax (`--` comments,
+  -- `\ddd` escapes), and player-facing text lives only in Lua source.
+  if not path:match("^LibKa0s/") or not path:match("%.lua$") then return nil end
+  local decoded = decodeLuaEscapes(stripLineComment(line))
+  local scrubbed = stripPlain(decoded, ASCII_EM_DASH)
+  for _, glyph in ipairs(ASCII_RATIFIED[path] or NO_EXEMPTIONS) do
+    local stripped, n = stripPlain(scrubbed, glyph)
+    if n > 0 then scrubbed, used[path .. " " .. glyph] = stripped, true end
   end
-end
-
-test("prose: no non-ASCII byte reaches a player, the em dash excepted", function()
-  local used, inLongBracket = {}, longBracketBody()
-  local hits = scan(function(line, path)
-    -- `scan`'s SHIPPED walk includes every plain file under `LibKa0s/` and `testkit/`, not only
-    -- `.lua` -- `testkit/README.md`, `testkit/run-automated-tests.sh`. Comment-stripping and
-    -- escape-decoding are Lua syntax (`--` comments, `\ddd` escapes); a `#` shell comment or a
-    -- README's own prose is neither, and player-facing text lives only in Lua source, so this gate
-    -- -- unlike the British-spelling and §N.M gates, which are about prose consistency everywhere
-    -- vendored -- is scoped to `.lua` files.
-    if not path:match("%.lua$") then return nil end
-    if inLongBracket(path, line) then return nil end
-    local decoded = decodeLuaEscapes(stripLineComment(line))
-    local scrubbed = stripPlain(decoded, ASCII_EM_DASH)
-    for _, glyph in ipairs(ASCII_RATIFIED[path] or NO_EXEMPTIONS) do
-      local stripped, n = stripPlain(scrubbed, glyph)
-      if n > 0 then scrubbed, used[path .. " " .. glyph] = stripped, true end
-    end
-    -- A Lua BYTE-RANGE PATTERN, `"[\128-\191]"` (this file's own `charCount` helper matches
-    -- continuation bytes to count UTF-8 characters, not bytes), decodes to real bytes ≥ 128 same
-    -- as a player-facing glyph would -- it is code, not text a player ever sees, so a high byte
-    -- immediately inside `[...]` -- preceded by `[` or `-`, or immediately followed by `-` -- is a
-    -- pattern boundary, not a string byte, and is excluded on that shape alone, general to any such
-    -- pattern rather than naming the one file that has one today.
-    for i = 1, #scrubbed do
-      if scrubbed:byte(i) >= 128 then
-        local before, after = scrubbed:sub(i - 1, i - 1), scrubbed:sub(i + 1, i + 1)
-        local inCharClass = before == "[" or before == "-" or after == "-"
-        if not inCharClass then
-          return ("byte 0x%02X reaches a player"):format(scrubbed:byte(i))
-        end
+  -- A Lua BYTE-RANGE PATTERN, `"[\128-\191]"` (this file's own `charCount` helper matches
+  -- continuation bytes to count UTF-8 characters, not bytes), decodes to real bytes ≥ 128 same
+  -- as a player-facing glyph would -- it is code, not text a player ever sees, so a high byte
+  -- immediately inside `[...]` -- preceded by `[` or `-`, or immediately followed by `-` -- is a
+  -- pattern boundary, not a string byte, and is excluded on that shape alone, general to any such
+  -- pattern rather than naming the one file that has one today.
+  for i = 1, #scrubbed do
+    if scrubbed:byte(i) >= 128 then
+      local before, after = scrubbed:sub(i - 1, i - 1), scrubbed:sub(i + 1, i + 1)
+      local inCharClass = before == "[" or before == "-" or after == "-"
+      if not inCharClass then
+        return ("byte 0x%02X reaches a player"):format(scrubbed:byte(i))
       end
     end
-    return nil
-  end)
+  end
+  return nil
+end
+
+test("prose: the ASCII gate scans LibKa0s/ and not testkit/", function()
+  local line = 'fail("see line-endings-\194\167' .. '5 for the canonical body")'
+  assertEqual(asciiHit(line, "testkit/test_eol.lua", {}), nil,
+    "a kit string never reaches a player: the kit prints to a terminal and tests/ never ships")
+  T.assertTrue(asciiHit(line, "LibKa0s/Core.lua", {}) ~= nil,
+    "the same string in the shipped library is still a hit")
+end)
+
+test("prose: no non-ASCII byte reaches a player, the em dash excepted", function()
+  local used = {}
+  local hits = scan(function(line, path) return asciiHit(line, path, used) end)
   for path, glyphs in pairs(ASCII_RATIFIED) do
     for _, glyph in ipairs(glyphs) do
       if not used[path .. " " .. glyph] then

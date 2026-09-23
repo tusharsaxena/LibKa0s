@@ -1573,9 +1573,10 @@ badge and any count quoted in the docs must agree with it.
 - kitsync: the runner-mode case skips, with a reason, where there is no work tree
 - kitsync: the runner-mode case skips, with a reason, where io.popen is unavailable
 
-### test_prose.lua (3)
+### test_prose.lua (4)
 
 - prose: no British spelling in the shipped library, the shipped kit or the store roots
+- prose: the ASCII gate scans LibKa0s/ and not testkit/
 - prose: no non-ASCII byte reaches a player, the em dash excepted
 - prose: no retired §N.M section reference in the shipped library or the shipped kit
 
@@ -1583,7 +1584,7 @@ badge and any count quoted in the docs must agree with it.
 
 - every deviation id the register cites is assigned by a bundle in docs/audits/
 
-### test_kit_inventory.lua (37)
+### test_kit_inventory.lua (38)
 
 - a kit suite declared with its directory is covered
 - a bare declaration does not cover the kit's file of the same name
@@ -1598,6 +1599,7 @@ badge and any count quoted in the docs must agree with it.
 - a row in a subsection of the register is not a deviation row
 - `localization-5` and `localization-§5` are the same key
 - the rule each kit gate serves is written down
+- no kit string literal cites a section without the section sign
 - a repository with no register at all is not accidentally declined
 - a listed suite that is not on disk raises, naming the path and the position
 - a listed suite that is absent here but ships in the kit is told so
@@ -1663,13 +1665,13 @@ badge and any count quoted in the docs must agree with it.
 ### test_eol.lua (2)
 
 - eol: every tracked file carries the terminator .gitattributes declares for it
-- eol: .gitattributes is line-endings-5's canonical body for this repo kind
+- eol: .gitattributes is line-endings-§5's canonical body for this repo kind
 
 ### test_layout_cap.lua (13)
 
 - layoutcap: every authored file over the 1500-line cap is named in the census
 - layoutcap: no census row outlives the breach it records
-- layoutcap: every over-cap census row carries one of layout-1's three terminal states
+- layoutcap: every over-cap census row carries one of layout-§1's three terminal states
 - layoutcap: the census and the exempt set agree about which paths were exempted
 - layoutcap: an empty census is written as a result rather than left standing empty
 - layoutcap self-test: the parser reads the census nested under the register, and stops there
@@ -1726,11 +1728,11 @@ badge and any count quoted in the docs must agree with it.
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 12 |
-| test_prose.lua | 3 |
+| test_prose.lua | 4 |
 | test_register.lua | 1 |
-| test_kit_inventory.lua | 37 |
+| test_kit_inventory.lua | 38 |
 | test_kit_eol.lua | 16 |
 | test_kit_prose.lua | 15 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1531** |
+| **Total** | **1533** |

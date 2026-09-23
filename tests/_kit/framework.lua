@@ -291,7 +291,7 @@ end
 ---
 --- Two runners in this collection resolve their own root out of `arg[0]` and fall back to `"."`,
 --- so the same directory reaches the kit twice in two spellings: `./tests/_kit/` from the runner's
---- `dir`, and `tests/_kit/` from the declaration, which is the literal form `testing-9` prescribes.
+--- `dir`, and `tests/_kit/` from the declaration, which is the literal form `testing-§9` prescribes.
 --- Raw string inequality reads those as two different directories, and the pair key, as it was
 --- first written, reported a COLLISION against a repo that had done exactly what the rule asks --
 --- with a remedy that said to delete a vendored file. It failed from `Kit.run`, so the whole suite
@@ -591,14 +591,16 @@ end
 --- hole in it. A kit suite with no row here is still declinable — the register row is then matched
 --- on the suite's name alone — but it loses the half of the match that says the row is about THIS
 --- rule, so a new kit gate adds its row in the revision that ships it.
--- Spelled WITHOUT the section sign, the way every other citation in a kit string is: these
--- values are printed into a failure message, and `tests/test_prose.lua`'s ASCII gate holds the
--- shipped payload to bytes under 128 in string literals. `normRule` below reduces both
--- spellings to one key, so a register cell that writes `localization-§5` still matches.
+-- Spelled `<file>-§N`, the way documentation-§6 spells every citation and every kit string now
+-- does (kit revision 26): these values are printed into a failure message a consumer cannot
+-- respell. Revisions before 26 dropped the section sign here, because LibKa0s's ASCII gate read
+-- the kit's string literals; that gate now reads only the shipped library, since the kit prints
+-- to a terminal and `tests/` never ships. `normRule` below reduces both spellings to one key, so
+-- a register cell that drops the sign still matches.
 local KIT_GATE_RULE = {
-  test_prose      = "localization-5",
-  test_eol        = "line-endings-7",
-  test_layout_cap = "layout-1",
+  test_prose      = "localization-§5",
+  test_eol        = "line-endings-§7",
+  test_layout_cap = "layout-§1",
 }
 
 --- Where a repository keeps its `## Documented deviations` register (`documentation-§3`): an addon
@@ -640,11 +642,10 @@ local function rowCells(row)
 end
 
 --- A rule reference reduced to the form both spellings share. This collection writes
---- `localization-§5` in documents and `localization-5` in several file headers, and a register cell
---- wraps whichever it used in backticks.
+--- `localization-§5`, some older file headers and register cells drop the section sign, and a
+--- register cell wraps whichever it used in backticks.
 local function normRule(s)
-  -- `string.char` rather than "\194\167": a decimal escape decodes to the same two bytes, and
-  -- the ASCII gate over the shipped payload reads the decoded form.
+  -- `string.char(194, 167)` is the section sign's two UTF-8 bytes, stripped wherever they fall.
   return (tostring(s):lower():gsub("[`%s]", ""):gsub(string.char(194, 167), ""))
 end
 

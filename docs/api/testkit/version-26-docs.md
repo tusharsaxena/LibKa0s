@@ -38,8 +38,8 @@ The peel adds, removes, renames or resignatures no member a suite calls, and cha
 them does. Every member is on the kit table at the moment it was in revision 25, so `Kit.expose`
 copies the same set, plus the one new member below. One visible difference only: a failed assertion's error position names `asserts.lua`
 rather than `framework.lua`, because that is where the raising function now lives. `framework.lua`
-is 1382 lines (1583 at revision 25; the peel left it at 1381, and `Kit.expose`'s
-`assertErrorMatches` line adds one) and `test_prose.lua` 1464 (1499).
+is 1383 lines (1583 at revision 25; the peel left it at 1381, `Kit.expose`'s
+`assertErrorMatches` line adds one, and the section-sign note on `KIT_GATE_RULE` one more) and `test_prose.lua` 1464 (1499).
 
 ### One new member: `Kit.assertErrorMatches`
 
@@ -153,7 +153,7 @@ detection caught unmarked is `-text` too, and keying on it would redden PanelMas
 `tools/artwork/bin/realesrgan-ncnn-vulkan` for being a binary. The NUL guard is what tells the two
 apart. The red-first cases are the four "eol lone CR" cases in this repo's `tests/test_kit_eol.lua`,
 each driving the vendored gate over a real git index in a temporary directory. `test_eol.lua` is
-727 lines.
+726 lines, one fewer since its appendix delimiter is typed rather than assembled.
 
 **A consumer note.** A dry run of the widened gate over each addon's working tree on 2026-09-23 found
 two repositories red, and every other addon green:
@@ -219,6 +219,40 @@ Each is an addon fix owed before that addon re-vendors revision 26. AuraMaster s
 disclosure case's name moves from *3 of 148* to *3 of 136* tracked authored files, because the kit
 now skips its `docs/superpowers/`, so its `docs/test-cases.md` is regenerated with the re-vendor.
 
+### Every section citation in a kit string carries the section sign, so four case names change
+
+Through revision 25 the kit spelled its citations without the section sign (`localization-5`,
+`line-endings-5`, `layout-1`, `testing-12`) in string literals, case names and most comments. It did
+that to stay green under this repository's ASCII gate, which read the kit's string literals as well
+as the library's. `documentation-§6` spells a citation `<section-file>-§<N>`, and the ASCII-spelled
+form printed into every consumer's run output and into its generated `docs/test-cases.md`, where the
+consumer cannot correct it (audit findings `AbsorbTracker-A-17` and `WHATGROUP-A-13`).
+
+From revision 26 every one of those citations is spelled with the sign, 79 lines across
+`framework.lua`, `prose_lists.lua`, `test_eol.lua`, `test_layout_cap.lua` and `test_prose.lua`.
+`KIT_GATE_RULE` now maps `test_prose` to `localization-§5`, `test_eol` to `line-endings-§7` and
+`test_layout_cap` to `layout-§1`. `normRule` is unchanged and still reduces both spellings to one
+key, so a register row that drops the sign still declines the gate. `test_eol.lua`'s appendix
+delimiter is now typed as `line-endings-§5` prints it rather than assembled from bytes; the string is
+the same. This repository's ASCII gate now reads only `LibKa0s/`, the one payload a player's client
+loads: the kit prints to a terminal, and `tests/_kit/` never ships because every consumer's
+`.pkgmeta` ignores `tests`.
+
+**The case names that change.** A consumer that re-vendors must regenerate `docs/test-cases.md`,
+or its inventory diff stays red:
+
+| Suite | Revision 25 | Revision 26 |
+|---|---|---|
+| `test_eol.lua` | `eol: .gitattributes is line-endings-5's canonical body for this repo kind` | `... line-endings-§5's ...` |
+| `test_layout_cap.lua` | `layoutcap: every over-cap census row carries one of layout-1's three terminal states` | `... layout-§1's ...` |
+| `test_prose.lua` | `prose: no authored file carries a British spelling from localization-5's published list` | `... localization-§5's ...` |
+| `test_prose.lua` | `prose: the gate carries localization-5's two lists whole, and nothing of its own` | `... localization-§5's ...` |
+
+No case is added or removed, so a consumer's totals do not move. Failure messages that cite a
+section change in the same way. The red-first cases are two in this repository:
+`tests/test_prose.lua`'s "the ASCII gate scans LibKa0s/ and not testkit/", and
+`tests/test_kit_inventory.lua`'s "no kit string literal cites a section without the section sign".
+
 Everything else below is revision 25's contract, carried forward unchanged.
 
 ## The declaration is the pair (basename, directory)
@@ -251,9 +285,9 @@ A decline is read off the repository's register, in `docs/ARCHITECTURE.md` or th
 (`REGISTER_HOSTS`), and **both** halves are required:
 
 - the **Rule** cell names the rule the gate serves — `KIT_GATE_RULE` maps `test_prose` to
-  `localization-5`, `test_eol` to `line-endings-7` and `test_layout_cap` to `layout-1`, and
-  `normRule` reduces `localization-§5`, `` `localization-5` `` and `localization-5` to one key, so a
-  document's spelling and a Lua table's spelling are the same key;
+  `localization-§5`, `test_eol` to `line-endings-§7` and `test_layout_cap` to `layout-§1`, and
+  `normRule` reduces `localization-§5`, `` `localization-§5` `` and the sign-less
+  `localization-5` to one key, so a row written either way is the same key;
 - the **row** names the kit's own path, `tests/_kit/<suite>`, with or without the extension.
 
 Neither half can be relaxed, and this library is the proof of both. Its register carries two

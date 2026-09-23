@@ -18,7 +18,7 @@
 --
 -- The decline reader gets the most cases, because it is the one path that can turn a failure into a
 -- skip. It is deliberately hard to satisfy — the register row names the rule AND the suite — and
--- this library is why: its own register carries two `localization-5` rows about third-party API
+-- this library is why: its own register carries two `localization-§5` rows about third-party API
 -- identifiers, and a reader keyed on the rule alone would have let either one switch the prose gate
 -- off without ever mentioning it.
 
@@ -208,10 +208,10 @@ test("a row in a subsection of the register is not a deviation row", function()
   end)
 end)
 
--- The kit spells the rule `localization-5` in its own table, because a section sign in a shipped
--- string is a byte the ASCII gate stops; a register cell spells it `localization-§5`, because that
--- is how a document writes it. `normRule` is what makes those one key, and it has to hold in both
--- directions -- a row is as free to drop the sign as the table is.
+-- The kit spells the rule `localization-§5` in its own table (kit revision 26; earlier revisions
+-- dropped the sign), and a register cell may write it either way, since older rows and headers
+-- drop the sign. `normRule` is what makes those one key, and it has to hold in both directions --
+-- a row is as free to drop the sign as the table was.
 test("`localization-5` and `localization-§5` are the same key", function()
   for _, spelling in ipairs({ "localization-5", "localization-§5", "`localization-§5`" }) do
     withFixture({ "test_own" }, { "test_prose" }, function(root, dir)
@@ -224,9 +224,63 @@ test("`localization-5` and `localization-§5` are the same key", function()
 end)
 
 test("the rule each kit gate serves is written down", function()
-  assertEqual(Kit.__kitGateRule.test_prose, "localization-5")
-  assertEqual(Kit.__kitGateRule.test_eol, "line-endings-7")
-  assertEqual(Kit.__kitGateRule.test_layout_cap, "layout-1")
+  assertEqual(Kit.__kitGateRule.test_prose, "localization-§5")
+  assertEqual(Kit.__kitGateRule.test_eol, "line-endings-§7")
+  assertEqual(Kit.__kitGateRule.test_layout_cap, "layout-§1")
+end)
+
+-- documentation-§6 spells a citation `<section-file>-§<N>`, and a kit string is printed into a
+-- consumer's run output and rendered into its generated `docs/test-cases.md` as a case name, where
+-- the consumer cannot respell it. Only string literals are read here, double- and single-quoted,
+-- because those are the bytes that leave the kit; a long bracket already transcribes its document
+-- verbatim, section sign and all.
+local CITED_SECTIONS = { "localization", "line%-endings", "layout", "testing", "documentation" }
+
+--- The bodies of the quoted string literals on one line of Lua, in order. Quote-aware and
+--- escape-aware, so an apostrophe inside a double-quoted string opens nothing; a `--` outside a
+--- string ends the line, since a comment is not a literal.
+local function quotedLiterals(line)
+  local out, i, n, quote, buf = {}, 1, #line, nil, nil
+  while i <= n do
+    local c = line:sub(i, i)
+    if quote then
+      if c == "\\" then
+        buf[#buf + 1] = line:sub(i, i + 1)
+        i = i + 1
+      elseif c == quote then
+        out[#out + 1], quote = table.concat(buf), nil
+      else
+        buf[#buf + 1] = c
+      end
+    elseif c == '"' or c == "'" then
+      quote, buf = c, {}
+    elseif c == "-" and line:sub(i + 1, i + 1) == "-" then
+      break
+    end
+    i = i + 1
+  end
+  return out
+end
+
+test("no kit string literal cites a section without the section sign", function()
+  local p = assert(io.popen("ls testkit/*.lua 2>/dev/null"))
+  local hits, files = {}, 0
+  for path in p:lines() do
+    files = files + 1
+    local n = 0
+    for line in io.lines(path) do
+      n = n + 1
+      for _, body in ipairs(quotedLiterals(line)) do
+        for _, name in ipairs(CITED_SECTIONS) do
+          if body:find(name .. "%-%d") then hits[#hits + 1] = ("%s:%d  %s"):format(path, n, body) end
+        end
+      end
+    end
+  end
+  p:close()
+  assertTrue(files > 0, "listed no testkit/*.lua; the case cannot look and must not pass")
+  assertEqual(table.concat(hits, "\n          "), "",
+    "a kit citation is `<file>-§N` (documentation-§6); these print without the section sign")
 end)
 
 test("a repository with no register at all is not accidentally declined", function()
@@ -497,7 +551,7 @@ test("characterization: a plain kit hole is reported word for word", function()
   withFixture({ "test_own" }, { "test_prose" }, function(root, dir, kitDir)
     local err = assertError(function() Kit.assertSuiteInventory(dir, { "test_own" }) end, "a hole")
     assertEqual(bare(err), inventoryFailure(dir,
-      { holeLine(kitDir, root, "test_prose", "localization-5", "tests/_kit/test_prose") }))
+      { holeLine(kitDir, root, "test_prose", "localization-§5", "tests/_kit/test_prose") }))
   end)
 end)
 
@@ -513,7 +567,7 @@ test("characterization: a collision is reported word for word", function()
   withFixture({ "test_prose" }, { "test_prose" }, function(root, dir, kitDir)
     local err = assertError(function() Kit.assertSuiteInventory(dir, { "test_prose" }) end, "a collision")
     assertEqual(bare(err), inventoryFailure(dir, { collisionLine(kitDir, root, "test_prose", 1,
-      dir .. "test_prose.lua", "localization-5", "tests/_kit/test_prose") }))
+      dir .. "test_prose.lua", "localization-§5", "tests/_kit/test_prose") }))
   end)
 end)
 
@@ -526,7 +580,7 @@ test("characterization: of several shadows, the last declared is the one named",
       local last = order[2] == alt and (root .. "alt/test_prose.lua") or (dir .. "test_prose.lua")
       local err = assertError(function() Kit.assertSuiteInventory(dir, order) end, "a collision")
       assertEqual(bare(err), inventoryFailure(dir, { collisionLine(kitDir, root, "test_prose", 2, last,
-        "localization-5", "tests/_kit/test_prose") }))
+        "localization-§5", "tests/_kit/test_prose") }))
     end
   end)
 end)

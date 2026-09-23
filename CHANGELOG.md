@@ -145,6 +145,25 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
 - The new `tests/test_kit_prose.lua` holds twelve cases. Documented in
   [the revision 26 document](docs/api/testkit/version-26-docs.md).
 
+### Test kit revision 26: kit citations carry the section sign
+
+- **Case names change.** Every section citation in a kit string literal, case name and comment is
+  spelled `<file>-§N` (`documentation-§6`), 79 lines across `testkit/framework.lua`,
+  `prose_lists.lua`, `test_eol.lua`, `test_layout_cap.lua` and `test_prose.lua`. Four case names
+  move (`line-endings-§5`, `layout-§1`, and two `localization-§5`), so every consumer regenerates
+  `docs/test-cases.md` with its re-vendor; its totals do not move. `KIT_GATE_RULE` maps to
+  `localization-§5`, `line-endings-§7` and `layout-§1`; `normRule` is unchanged and still matches a
+  register cell written without the sign. Audit findings `AbsorbTracker-A-17` and
+  `WHATGROUP-A-13`.
+- This repo's `tests/test_prose.lua` ASCII gate now reads `LibKa0s/` only. The kit prints to a
+  terminal and `tests/_kit/` never ships, so the gate had no player to protect there, and it was
+  what forced the sign-less spelling. The gate's long-bracket exemption, which existed only for the
+  kit's `.gitattributes` transcripts, is removed.
+- Two red-first cases: "the ASCII gate scans LibKa0s/ and not testkit/" in `tests/test_prose.lua`,
+  and "no kit string literal cites a section without the section sign" in
+  `tests/test_kit_inventory.lua`. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**

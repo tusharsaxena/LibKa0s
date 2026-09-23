@@ -1,20 +1,20 @@
 -- testkit/prose_lists.lua — the lists `test_prose.lua` reads, peeled out of it at kit revision 26.
 --
 -- WHY A SEPARATE FILE. `test_prose.lua` reached 1499 lines at kit revision 25, one under
--- `layout-§1`'s cap, and the lists are the part of it that grows: a spelling localization-5 adds
+-- `layout-§1`'s cap, and the lists are the part of it that grows: a spelling localization-§5 adds
 -- arrives here on the next sync, and so does a frozen-bundle folder the published exclusion list
 -- gains. Kept apart, that growth lands in a file of data rather than in the gate. Moving them
 -- changes no behavior: the same tables, the same order, the same counts.
 --
--- It quotes every forbidden spelling in order to forbid it, which is localization-5's fourth
+-- It quotes every forbidden spelling in order to forbid it, which is localization-§5's fourth
 -- exclusion: the gate's own copy of the lists. `test_prose.lua` loads it by path from its own
 -- folder, and nothing else reads it.
 
 -- ---------------------------------------------------------------------------
--- The published lists (localization-5), copied whole
+-- The published lists (localization-§5), copied whole
 -- ---------------------------------------------------------------------------
 
--- localization-5 · US English is the source dialect. Copy BOTH lists whole.
+-- localization-§5 · US English is the source dialect. Copy BOTH lists whole.
 -- BRITISH: lowercase substrings, matched case-insensitively.
 -- ALLOWED: correct US words that contain a BRITISH substring; removed as WHOLE WORDS first.
 
@@ -67,7 +67,7 @@ local PUBLISHED_BRITISH, PUBLISHED_ALLOWED = 92, 33
 -- What is scanned, and what is not: the published folder exclusions
 -- ---------------------------------------------------------------------------
 
--- The exclusions localization-5 names, and only those. Every one is a directory or a file rather
+-- The exclusions localization-§5 names, and only those. Every one is a directory or a file rather
 -- than a pattern, so the list cannot quietly grow by widening a regex: vendored code the consumer
 -- MUST NOT edit (`libs/`, `tests/_kit/`), frozen dated bundles, which record what a tool said on
 -- the day rather than authored prose, `locales/enGB.lua`, which is what a British locale file is
