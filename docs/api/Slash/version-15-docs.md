@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 14
+# `LibKa0s-Slash-1.0` — version 15
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **14** |
-| Shipped in | v1.42.0 |
-| Status | Superseded |
-| Supersedes | [version 13](./version-13-docs.md) |
-| Superseded by | [version 15](./version-15-docs.md) |
+| Files and minors | `Slash.lua` minor **15** |
+| Shipped in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 14](./version-14-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 14 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 15 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -36,33 +36,31 @@ returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
 
-**A reserved verb the host never registered is no longer refused while disabled.** It answers
-`unknown command '<verb>'` and then the help index — exactly what it answers while the addon is
-running. No member is added, removed, renamed or resignatured, no descriptor field is added, and
-`lib.LIVE_VERBS` does not move, so the member manifest differs from version 13's in the minor alone.
+**`CliSet` and `CliReset` hear the write seam's refusal.** Through version 14 both discarded what the
+descriptor's `set` and `applyDefault` answered. `LibKa0s-Schema-1.0`'s `S.Set` answers
+`false, err[, why]` with nothing stored when a row's `validate` rejects a value, so a player's
+refused `set` printed `path = <the old value>` — an echo that reads as success for a write that did
+not land, and no reason anywhere (review finding `LibKa0s-R-03`). One host, AuraMaster, printed the
+refusal by hand in its own `set` wrapper; BankLedger passed `Schema.Set` straight through and printed
+nothing.
 
-Version 13 answered such a verb with the stand-down refusal line while disabled, and with
-`unknown command` while enabled. The usual case is **`perf`**: a verb is reserved always but
-**registered when wired**, so an addon holding a performance no-combat-path exemption ships no
-`perf` entry at all and `perf` is simply not one of that addon's commands. Refusing it claimed the
-addon had stood down from something it never had, and the asymmetry made the disabled state look as
-though it had swallowed a command. **Five of the eleven consuming addons reported exactly that for
-`/<slash> perf` within a day of adopting version 13.** Nothing was refused, so nothing says it was.
+- **`set` may answer `false, reason[, why]`.** When its first return is exactly `false`, `CliSet`
+  prints `INVALID` for the path, then `reason` and `why` each on a line indented two spaces, and
+  returns without the echo. A `reason` that is itself the `INVALID` line for the path — which is
+  what `S.Set` answers for a `validate` refusal — is not printed a second time. `nil` and `true`
+  both still mean the write landed, and the echo re-reads the stored value as before.
+- **`applyDefault` answering exactly `false`** — which `S.ApplyDefault` does for a row whose
+  `default` is nil — makes `CliReset` print the new `lib.STRINGS.NO_DEFAULT`
+  (`"%s has no default to restore"`) instead of echoing the unchanged value.
+- **`lib.STRINGS.NO_DEFAULT`** is new, and reachable through `L` like every other key.
 
-The rule is now one sentence with no exception inside it: **the gate refuses a verb the host SHIPS,
-and nothing else.** Anything with no `commands` entry behind it — a misspelling, or a reserved verb
-this addon never wired — takes `slash-commands-§3`'s unknown-verb path, in both states, identically.
+No member is added or removed, and the descriptor gains no field: `set` and `applyDefault` keep their
+signatures and gain a meaning for a return value they previously had none for. The member manifest
+differs from version 14's in the minor alone. `CliResetAll` is unchanged — its walk still counts
+every row `applyDefault` returned for, whatever it answered.
 
-### Pinning it in a test: drive it with `perf`, never with a made-up word
-
-`tests/test_slash.lua`'s *sl: a reserved verb the host never shipped is not refused, in either
-state* is the reference shape, and **which verb it drives is load-bearing**. The case only reaches
-the branch this version deletes with a verb that is in `lib.LIVE_VERBS` **and** absent from the
-host's `commands` — `perf` against a host that never wired it. An invented word misses `liveVerbs`
-entirely, so it fell through to the unknown-command path at version 13 as well and a case built on
-one passes against the very behavior it is meant to pin; that is how a first draft of this case
-proved nothing. Assert the ANSWER rather than the line count, too: `help` prints the refusal line
-under its header while disabled, so a disabled burst can be one line longer than the enabled one.
+The cases are in `tests/test_slash_refusal.lua`, a suite of its own because `tests/test_slash.lua`
+sits in the 1000–1500 band.
 
 ## The disabled surface at this version
 
@@ -463,7 +461,7 @@ rendered row depends on which instance rendered it.
 | `lib.ParseBool(word)` | **6** | → `true`, `false`, or **`nil` meaning "not a boolean word"** — never "false". Case-insensitive over the exact eight-word set `lib.STRINGS.ERR_BOOL` advertises. |
 | `lib.DISABLED_LINE_FORMAT` | **12** | `"%s is disabled \226\128\148 enable it with \|cFFFFFF00%s\|r"`. Two substitutions: the brand name, and the command **with its leading slash**. Gold `FFFFFF00` on the command — the same gold `lib.FormatRow` gives a command in the help index — an em dash with a single space either side, no trailing colon and no trailing period. |
 | `lib.LIVE_VERBS` | **12** | The verbs that still answer while disabled. **At 13 it is the standard's twelve reserved verbs** — `help`, `config`, `version`, `enable`, `disable`, `debug`, `perf`, `get`, `set`, `list`, `reset`, `resetall` — where at 12 it read `{ "enable", "help", "disable" }`. A host MAY narrow it to the verbs it ships. The library ships exactly one default, exported so a host that must name the set names THIS one rather than a copy of it. |
-| `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. |
+| `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. `NO_DEFAULT` from **15**. |
 | `lib.MODULES` | 1 | `{ Slash = <minor> }` — the live minor of every file in this major. |
 | `lib:New(descriptor)` | 1 | Build a dispatcher for one host. |
 
@@ -542,10 +540,10 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `print` | function(line) | no | 1 | Where lines go. Defaults to the chat frame. Hosts pass their prefixed printer. |
 | `version` | function | no | 1 | Returns the host's version string, for the help header and `version`. |
 | `get` | function(path) | no | 1 | Read one setting by path. |
-| `set` | function(path, v) | no | 1 | Write one setting by path. |
+| `set` | function(path, v) | no | 1 | Write one setting by path. **From 15** it MAY answer `false, reason[, why]` to refuse the write, as `LibKa0s-Schema-1.0`'s `S.Set` does; `CliSet` then prints the refusal instead of the echo. `nil` or `true` means the write landed. |
 | `findRow` | function(path) | no | 1 | Resolve a path to a schema row, or nil. |
 | `allRows` | function | no | 1 | Every row, in declaration order — which is the order `list` prints. |
-| `applyDefault` | function(row) | no | 1 | Restore one row to its default. |
+| `applyDefault` | function(row) | no | 1 | Restore one row to its default. **From 15**, answering exactly `false` (as `S.ApplyDefault` does for a row with no default) makes `CliReset` print `NO_DEFAULT` instead of the echo. |
 | `bulkBegin` | function(act, scope) | no | **8** | Called once before `CliResetAll` writes its first row: act `"reset"`, scope `"all"`. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. Same field as the Options descriptor's. See [The two fields](#the-two-fields). |
 | `bulkEnd` | function(act, scope, count, err, info) | no | **8** | The fifth argument is the Options major's `info` table, whose `profileReset` is always `false` here. The host emits `[Set] reset all: N rows` when its outermost bracket closes, with N its own tally of writes that changed a stored value — **not** `count`, which includes rows already at their default. A host that mutes in `bulkBegin` MUST supply this field. Called once after the walk, **always** when the bracket was begun — even if a row or `bulkBegin` raised. `count` is the number of rows `applyDefault` returned for, including rows already at their default — the host logs its own tally of changed writes instead; `err` is the raised value or `nil` (a raise of `nil`/`false` also arrives as `nil`), re-raised unchanged after this returns. Unmute here, and emit the one summary line only when the outermost bracket closes. A host supplying neither runs version 7's walk exactly. |
 | `parse` | function(row, text) | no | 1 | Defaults to `lib.ParseValue`. Called with the row and everything after the path, untrimmed. |
@@ -578,8 +576,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `BuildListLines()` | 1 | The `list` output as lines, without printing: header, then each `groupKey` heading in declaration order with its rows beneath. Returns the empty-state line when there are no rows. Grouped in declaration order rather than alphabetically, because a schema's order is the order its panel shows and a listing that disagreed with the panel would be its own puzzle. |
 | `CliList()` | 1 | `BuildListLines()`, printed. |
 | `CliGet(rest)` | 1 | Echo one setting. |
-| `CliSet(rest)` | 1 | Parse and store one setting, then echo it by **re-reading** — a clamped number is only visible to the user because the echo reports what was actually stored, not what was typed. |
-| `CliReset(rest)` | 1 | Reset one setting by path, and echo it. Never annotated. |
+| `CliSet(rest)` | 1 | Parse and store one setting, then echo it by **re-reading** — a clamped number is only visible to the user because the echo reports what was actually stored, not what was typed. **From 15**, when `set` answers `false, reason[, why]`: the `INVALID` line for the path, then `reason` (unless it is that same line) and `why`, each indented two spaces, and no echo. |
+| `CliReset(rest)` | 1 | Reset one setting by path, and echo it. Never annotated. **From 15**, when `applyDefault` answers exactly `false`, prints `NO_DEFAULT` for the path instead of the echo. |
 | `CliResetAll()` | 1 | `applyDefault` over every row, then one acknowledgment. **From 8** the walk runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `"all"`), and the acknowledgment is printed after `bulkEnd` — not at all if the walk raised. |
 | `CliVersion()` | 1 | The host's version. |
 | `SetRowAnnotator(fn)` | 1 | Install a host suffix appended to a rendered setting — most usefully a note that the stored value is not the one in effect. Applied at exactly three sites: a list row, a get echo and a set echo. Never on reset or resetall, where an explanation of what a value means is noise stapled to an acknowledgement that the value went away. |
@@ -598,6 +596,13 @@ correct on every minor.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
+
+**What moves at version 15 is behavior, and only for a host whose seam refuses.** A `set` that
+answers `false` gets its refusal printed instead of an echo of the unchanged value, and an
+`applyDefault` that answers `false` gets `NO_DEFAULT`. A host whose `set` and `applyDefault` answer
+nothing — every host written against version 14 that does not route through `S.Set` — sees no
+change. A host that prints its own refusal inside a `set` wrapper would now print it twice, and
+should return the seam's answer instead.
 
 **What moves at version 14 is behavior, and it is one input.** A reserved verb the host never
 registered answers `unknown command '<verb>'` and the index while disabled, where version 13 answered
@@ -628,23 +633,3 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
-
-## Moving to version 15
-
-**Take it, and a refused write stops looking like a successful one.** Version 15 adds no member and
-no descriptor field; `lib.STRINGS` gains `NO_DEFAULT`, and the member manifest differs from this one
-in the minor alone.
-
-At this version `CliSet` discards whatever the descriptor's `set` answers and echoes the re-read
-value. A host whose `set` is `LibKa0s-Schema-1.0`'s `S.Set` therefore prints `path = <old value>` for
-a value the row's `validate` refused, with no reason. `CliReset` likewise ignores an `applyDefault`
-that answers `false`. From version 15 both refusals are printed.
-
-What a host owes on the re-vendor:
-
-- **Return the seam's answer from `set`.** A wrapper that calls `S.Set` and drops its return value
-  still gets version 14's echo; `return S.Set(path, v)` is the whole change.
-- **Delete any hand-printed refusal in that wrapper**, or the player reads it twice.
-- A host whose `set` answers nothing has nothing to change.
-
-Everything else in this document is unchanged at version 15.

@@ -633,6 +633,16 @@ badge and any count quoted in the docs must agree with it.
 - sl: the gate is asked per dispatch, so a value that changes mid-session is honored
 - sl: the refusal wording is NOT reachable through the locale override
 
+### test_slash_refusal.lua (7)
+
+- sl refusal: a set answering false, err, why prints INVALID and the reason, and no echo
+- sl refusal: an err that is not the INVALID line itself is printed indented, before why
+- sl refusal: a refusal with no err and no why prints the INVALID line alone
+- sl refusal: a set answering true echoes the stored value
+- sl refusal: a set answering nothing still echoes, as at minor 14
+- sl refusal: CliReset prints NO_DEFAULT when applyDefault answers exactly false
+- sl refusal: CliReset echoes when applyDefault answers nil or true
+
 ### test_launcher.lua (27)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
@@ -1737,6 +1747,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_draghandle.lua | 35 |
 | test_debuglog.lua | 67 |
 | test_slash.lua | 109 |
+| test_slash_refusal.lua | 7 |
 | test_launcher.lua | 27 |
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
@@ -1772,4 +1783,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1566** |
+| **Total** | **1573** |

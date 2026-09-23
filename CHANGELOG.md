@@ -15,8 +15,25 @@ cannot drift. Release order is in
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
 (`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
-(`LibKa0s-Launcher-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Slash minor 15: `CliSet` and `CliReset` print the write seam's refusal
+
+- **Behavioral: a `set` answering `false, reason[, why]` is printed as a refusal**, where minor 14
+  discarded the answer and echoed the unchanged value (review finding `LibKa0s-R-03`).
+  `LibKa0s-Schema-1.0`'s `S.Set` answers exactly that when a row's `validate` rejects a value, so a
+  host passing it straight through — BankLedger — showed the player `path = <old value>` and no
+  reason. `CliSet` now prints `INVALID` for the path, then the reason and `why` on lines indented two
+  spaces, and no echo; a reason that is the `INVALID` line itself is not printed twice. `nil` and
+  `true` still mean success.
+- **`CliReset` prints the new `lib.STRINGS.NO_DEFAULT`** (`"%s has no default to restore"`) when
+  `applyDefault` answers exactly `false`, as `S.ApplyDefault` does for a row with no default.
+- No member or descriptor field is added. A host whose `set` wrapper prints its own refusal
+  (AuraMaster) should return the seam's answer and drop its prints, or the player reads it twice.
+- Seven cases in a new `tests/test_slash_refusal.lua` (`tests/test_slash.lua` is in the 1000–1500
+  band). Documented in [the version 15 document](docs/api/Slash/version-15-docs.md); version 14 is
+  Superseded.
 
 ### Launcher minor 2: a disabled gate for the left click, and notices printed once, untagged
 
