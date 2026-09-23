@@ -38,6 +38,22 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   `tests/test_kitsync.lua` gains one case asserting both files exist in `testkit/` and
   `tests/_kit/`.
 
+### Test kit revision 26: `Kit.assertErrorMatches`
+
+- **`Kit.assertErrorMatches(fn, needle, msg)` (new, in `testkit/asserts.lua`).** Asserts that `fn`
+  raises **and** that the raised text contains `needle` as plain text; it fails naming the needle
+  when nothing was raised, and naming both the needle and the raised text when something else was.
+  It returns the error, and `Kit.expose` copies it. `Kit.assertError` only ever proved that
+  *something* raised, and `testing-§12` does not accept that as proof (review finding
+  `LibKa0s-R-07`). Documented in [the revision 26 document](docs/api/testkit/version-26-docs.md).
+- **The 23 statement-position `assertError` calls now assert on the raised text**, in
+  `tests/test_launcher.lua` (the four descriptor refusals, whose expected field names had been
+  passed only as failure messages), `tests/test_kit_inventory.lua` (five decline cases, which
+  would have passed on any unrelated raise), `tests/test_mock_ace.lua` (nine),
+  `tests/test_loader.lua`, `tests/test_options_compose.lua` and `tests/test_schema.lua`. The new
+  `tests/test_kit_asserts.lua` adds three cases for the member itself. A consumer that re-vendors
+  takes the new member; its own suite totals do not move.
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**

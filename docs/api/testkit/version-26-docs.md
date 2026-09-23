@@ -18,7 +18,7 @@
 
 ## What changed
 
-**Two new files, no behavior change.** Both are peels, made to take two kit files back under
+**Two new files, and one new assertion.** The files are peels, made to take two kit files back under
 `layout-§1`'s 1500-line cap and to give the growth still to come somewhere else to land:
 
 | New file | What moved into it | Loaded by |
@@ -31,11 +31,25 @@ with `tests/_kit/` as the fallback for a loader that rewrites chunk names, which
 `mock_base.lua` has found `mock_record.lua` since revision 22. Neither is loaded on its own, and a
 copy of the kit missing either one **raises at load** rather than running without it.
 
-No member a suite calls is added, removed, renamed or resignatured, and none changes what it does.
-Every member is on the kit table at the moment it was in revision 25, so `Kit.expose` copies the
-same set. One visible difference only: a failed assertion's error position names `asserts.lua`
+The peel adds, removes, renames or resignatures no member a suite calls, and changes what none of
+them does. Every member is on the kit table at the moment it was in revision 25, so `Kit.expose`
+copies the same set, plus the one new member below. One visible difference only: a failed assertion's error position names `asserts.lua`
 rather than `framework.lua`, because that is where the raising function now lives. `framework.lua`
 is 1381 lines (1583 at revision 25) and `test_prose.lua` 1464 (1499).
+
+### One new member: `Kit.assertErrorMatches`
+
+| Name | Since | Meaning |
+|---|---|---|
+| `Kit.assertErrorMatches(fn, needle, msg)` | **26** | `fn` must raise, **and** the raised text must contain `needle` — plain text, found with `string.find(err, needle, 1, true)`, never a pattern. Fails when `fn` returns normally, naming the needle it waited for, and fails when `fn` raises something else, naming the needle **and** the text actually raised; `msg`, when given, leads either failure. Returns the error text, as `assertError` does. `Kit.expose` copies it as `assertErrorMatches`. In `asserts.lua`. |
+
+It exists because `Kit.assertError(fn, msg)` proves only that `fn` raised: `msg` is the text of its
+own failure, and a caller that uses it as a statement discards the error it returns. `testing-§12`
+does not accept "it raised" as proof, since such a case passes on a raise from the wrong line, or
+from a typo in the case itself. `assertError` is unchanged and remains the form for a case that
+goes on to check several things about the returned text; a statement-position check wants
+`assertErrorMatches`. This repository's 23 statement-position `assertError` calls were rewritten to
+it in the same release, and `tests/test_kit_asserts.lua` holds the member's own three cases.
 
 Everything else below is revision 25's contract, carried forward unchanged.
 

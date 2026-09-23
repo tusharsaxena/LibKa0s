@@ -14,8 +14,8 @@
 -- away again for the cases that need them gone.
 
 local T = _G.LK_TEST
-local test, assertEqual, assertTrue, assertFalse, assertNil, assertError =
-  T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil, T.assertError
+local test, assertEqual, assertTrue, assertFalse, assertNil, assertErrorMatches =
+  T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil, T.assertErrorMatches
 local mocks = T.mocks
 local lib = T.launcher
 
@@ -120,13 +120,14 @@ test("launcher: New refuses a descriptor missing name, icon or openSettings", fu
   -- ALWAYS opens the panel, so a launcher with no way to do that is one rule short on every addon.
   -- red under: defaulting any of them, which ships a button that draws nothing or loses the angle
   -- the player dragged it to.
-  assertError(function() lib:New{ icon = "x", openSettings = function() end } end,
-    "descriptor.name")
-  assertError(function() lib:New{ name = "X", openSettings = function() end } end,
-    "descriptor.icon")
-  assertError(function() lib:New{ name = "X", icon = "x" } end, "descriptor.openSettings")
-  assertError(function() lib:New{ name = "", icon = "x", openSettings = function() end } end,
-    "descriptor.name", "an empty string is not a folder name")
+  assertErrorMatches(function() lib:New{ icon = "x", openSettings = function() end } end,
+    "requires descriptor.name")
+  assertErrorMatches(function() lib:New{ name = "X", openSettings = function() end } end,
+    "requires descriptor.icon")
+  assertErrorMatches(function() lib:New{ name = "X", icon = "x" } end,
+    "requires descriptor.openSettings")
+  assertErrorMatches(function() lib:New{ name = "", icon = "x", openSettings = function() end } end,
+    "requires descriptor.name", "an empty string is not a folder name")
 end)
 
 -- ── one object, registered twice ─────────────────────────────────────────────────────────────

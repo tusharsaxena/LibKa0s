@@ -24,7 +24,7 @@
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
-local assertError = T.assertError
+local assertError, assertErrorMatches = T.assertError, T.assertErrorMatches
 
 local Kit = dofile("tests/_kit/framework.lua")
 
@@ -170,7 +170,8 @@ test("a row keyed to the rule but silent about the suite grants nothing", functi
   withFixture({ "test_own" }, { "test_prose" }, function(root, dir)
     register(root, "docs/ARCHITECTURE.md",
       { row("localization-§5", "`mock_base.lua` reproduces AceTimer's own handle field verbatim") })
-    assertError(function() Kit.assertSuiteInventory(dir, { "test_own" }) end,
+    assertErrorMatches(function() Kit.assertSuiteInventory(dir, { "test_own" }) end,
+      "running zero cases today",
       "an unrelated row under the same rule must not switch a gate off")
   end)
 end)
@@ -179,7 +180,8 @@ test("a row that only mentions the repo's own copy grants nothing", function()
   withFixture({ "test_own" }, { "test_prose" }, function(root, dir)
     register(root, "docs/ARCHITECTURE.md", { row("localization-§5",
       "`mock_base.lua` keeps AceTimer's own field name; `tests/test_prose.lua` reddens if it stops matching") })
-    assertError(function() Kit.assertSuiteInventory(dir, { "test_own" }) end,
+    assertErrorMatches(function() Kit.assertSuiteInventory(dir, { "test_own" }) end,
+      "running zero cases today",
       "this is the row this library actually carries, and it decides nothing about the kit's copy")
   end)
 end)
@@ -187,7 +189,8 @@ end)
 test("a row naming the suite but keyed to another rule grants nothing", function()
   withFixture({ "test_own" }, { "test_prose" }, function(root, dir)
     register(root, "docs/ARCHITECTURE.md", { row("testing-§1", DECLINE) })
-    assertError(function() Kit.assertSuiteInventory(dir, { "test_own" }) end,
+    assertErrorMatches(function() Kit.assertSuiteInventory(dir, { "test_own" }) end,
+      "running zero cases today",
       "a row filed under the wrong rule is not a decline of this gate")
   end)
 end)
@@ -199,7 +202,8 @@ test("a row in a subsection of the register is not a deviation row", function()
       "| File | Lines | Disposition |", "|---|---|---|",
       "| `localization-§5` | 1600 | " .. DECLINE .. " |",
     })
-    assertError(function() Kit.assertSuiteInventory(dir, { "test_own" }) end,
+    assertErrorMatches(function() Kit.assertSuiteInventory(dir, { "test_own" }) end,
+      "running zero cases today",
       "the census nested under the register is not the register")
   end)
 end)
@@ -227,7 +231,8 @@ end)
 
 test("a repository with no register at all is not accidentally declined", function()
   withFixture({ "test_own" }, { "test_prose" }, function(_, dir)
-    assertError(function() Kit.assertSuiteInventory(dir, { "test_own" }) end,
+    assertErrorMatches(function() Kit.assertSuiteInventory(dir, { "test_own" }) end,
+      "running zero cases today",
       "no register means no decline")
   end)
 end)

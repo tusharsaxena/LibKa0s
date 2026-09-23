@@ -11,8 +11,8 @@
 -- would reorder it in all nine at once.
 
 local T = _G.LK_TEST
-local test, assertEqual, assertTrue, assertFalse, assertNil, assertError =
-  T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil, T.assertError
+local test, assertEqual, assertTrue, assertFalse, assertNil, assertErrorMatches =
+  T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil, T.assertErrorMatches
 local Fixture = dofile("tests/fixture_options.lua")
 
 local O = Fixture.new()
@@ -671,8 +671,10 @@ function()
   -- A bound control with nowhere to write is a dead control, and a dead control that renders is
   -- the failure InlineButtonPair's DEAD_BUTTON report exists for. Here it is refused outright.
   local opts = Fixture.new()
-  assertError(function() opts.BorderGroup{ bind = { get = function() end } } end, "no set raised")
-  assertError(function() opts.BorderGroup{ bind = { set = function() end } } end,
+  assertErrorMatches(function() opts.BorderGroup{ bind = { get = function() end } } end,
+    "spec.bind needs set(field, value, row)", "no set raised")
+  assertErrorMatches(function() opts.BorderGroup{ bind = { set = function() end } } end,
+    "spec.bind needs get(field, row) or record()",
     "neither get nor record raised")
 end)
 

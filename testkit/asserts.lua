@@ -59,6 +59,26 @@ return function(Kit)
     return tostring(err)
   end
 
+  --- Assert that calling fn raises, AND that the raised text contains `needle` (plain text, not a
+  --- pattern). Returns the error message. The statement-position form of `assertError` (kit
+  --- revision 26): `testing-§12` does not accept "it raised" as proof, since a case that checks only
+  --- that passes on a raise from the wrong line, or from a typo in the case itself. Both failures
+  --- name the needle, and a mismatch names the raised text too, so a red run shows the real message.
+  function Kit.assertErrorMatches(fn, needle, msg)
+    local prefix = msg and (msg .. ": ") or ""
+    local ok, err = pcall(fn)
+    if ok then
+      fail(prefix .. ("assertErrorMatches: expected an error containing %q, got no error")
+        :format(tostring(needle)), 1)
+    end
+    err = tostring(err)
+    if not err:find(needle, 1, true) then
+      fail(prefix .. ("assertErrorMatches: expected an error containing %q, got %q")
+        :format(tostring(needle), err), 1)
+    end
+    return err
+  end
+
   -- ── the surface source ─────────────────────────────────────────────────────────────────────
   --
   -- `Kit.assertSurfaceParity(stub, "LibKa0s-Options-1.0")` names a live surface instead of building

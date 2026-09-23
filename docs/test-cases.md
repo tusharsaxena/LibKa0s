@@ -1397,6 +1397,12 @@ badge and any count quoted in the docs must agree with it.
 - kit limits: the heap budget names the case that crossed it
 - kit limits: the leak gate counts what is still held, not garbage waiting to be swept
 
+### test_kit_asserts.lua (3)
+
+- kit: assertErrorMatches passes on a raise that carries the needle, and returns the error
+- kit: assertErrorMatches fails when fn raises something else, naming both strings
+- kit: assertErrorMatches fails when fn does not raise
+
 ### test_mock_base.lua (32)
 
 - mock: a frame that was never armed answers zero, dressed or not
@@ -1664,6 +1670,7 @@ badge and any count quoted in the docs must agree with it.
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
+| test_kit_asserts.lua | 3 |
 | test_mock_base.lua | 32 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 27 |
@@ -1676,4 +1683,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_eol.lua | 12 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1486** |
+| **Total** | **1489** |

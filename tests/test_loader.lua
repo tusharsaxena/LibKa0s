@@ -113,8 +113,9 @@ test("loader: a file that fails to compile stays an error until it is fixed", fu
   -- prevent. So both halves are asserted — it must keep raising while broken, and it must pick up
   -- the fix once the file is valid.
   local path = scratch("this is not lua(((\n")
-  T.assertError(function() Loader.load(path, nil, {}) end, "a syntax error must raise")
-  T.assertError(function() Loader.load(path, nil, {}) end,
+  T.assertErrorMatches(function() Loader.load(path, nil, {}) end, "loadfile(" .. path .. ")",
+    "a syntax error must raise")
+  T.assertErrorMatches(function() Loader.load(path, nil, {}) end, "loadfile(" .. path .. ")",
     "a still-broken file must raise on EVERY attempt, never resolve to a cached nothing")
 
   local f = assert(io.open(path, "wb"))

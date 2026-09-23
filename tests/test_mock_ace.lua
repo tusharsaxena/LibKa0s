@@ -24,6 +24,7 @@
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse, assertNil, assertError =
   T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil, T.assertError
+local assertErrorMatches = T.assertErrorMatches
 local buildMocks = dofile("tests/wow_mock.lua")
 
 --- A fresh environment and its AceAddon fake.
@@ -116,8 +117,10 @@ test("ace: NewModule makes a named child addon, in creation order", function()
   assertTrue(host:GetModule("Beta") == b, "GetModule")
   assertTrue(host.orderedModules[1] == a and host.orderedModules[2] == b, "orderedModules keeps order")
   assertNil(host:GetModule("Gamma", true), "a silent miss answers nil")
-  assertError(function() host:GetModule("Gamma") end, "a loud miss raised")
-  assertError(function() host:NewModule("Alpha") end, "a duplicate module name raised")
+  assertErrorMatches(function() host:GetModule("Gamma") end, "Cannot find module 'Gamma'",
+    "a loud miss raised")
+  assertErrorMatches(function() host:NewModule("Alpha") end, "Module 'Alpha' already exists",
+    "a duplicate module name raised")
 end)
 
 test("ace: a module takes its prototype, default libraries and default state", function()
@@ -134,7 +137,8 @@ test("ace: a module takes its prototype, default libraries and default state", f
   assertTrue(type(m.RegisterEvent) == "function", "and the listed ones")
   assertEqual(m.enabledState, false, "the default module state applies")
   assertTrue(created[1] == m, "OnModuleCreated heard it")
-  assertError(function() host:SetDefaultModuleState(true) end,
+  assertErrorMatches(function() host:SetDefaultModuleState(true) end,
+    "cannot change the module defaults after a module has been registered",
     "module defaults cannot change once a module exists")
 end)
 
@@ -399,8 +403,10 @@ end)
 
 test("ace: ScheduleTimer refuses what AceTimer refuses", function()
   local _, t = timerHost()
-  assertError(function() t:ScheduleTimer(nil, 1) end, "no callback raised")
-  assertError(function() t:ScheduleTimer(function() end) end, "no delay raised")
+  assertErrorMatches(function() t:ScheduleTimer(nil, 1) end,
+    "'callback' and 'delay' must have set values", "no callback raised")
+  assertErrorMatches(function() t:ScheduleTimer(function() end) end,
+    "'callback' and 'delay' must have set values", "no delay raised")
   assertTrue(has(assertError(function() t:ScheduleTimer("Missing", 1) end), "Missing"),
     "a method the object does not carry raised, naming it")
 end)
@@ -485,7 +491,8 @@ test("ace: RegisterChatCommand records the command and dispatches it as the clie
   assertNil(M.SlashCmdList, "no SlashCmdList global is invented where the environment has none")
   t:UnregisterChatCommand("kk")
   assertNil(AceConsole.commands.kk, "UnregisterChatCommand forgets it")
-  assertError(function() t:RegisterChatCommand(7, "OnSlash") end, "a command that is not a string raised")
+  assertErrorMatches(function() t:RegisterChatCommand(7, "OnSlash") end, "'command' - expected a string",
+    "a command that is not a string raised")
 end)
 
 test("ace: where the environment models SlashCmdList, RegisterChatCommand writes the client's globals",
@@ -614,8 +621,10 @@ test("ace: the AceEvent library carries the message registration API, as Callbac
   AceEvent.UnregisterAllMessages(a, b)
   AceEvent:SendMessage("M")
   assertEqual(heard, 0, "UnregisterAllMessages takes several targets at once")
-  assertError(function() AceEvent:UnregisterAllMessages() end, "the library alone is not a meaningful target")
-  assertError(function() AceEvent.UnregisterAllMessages() end, "and nothing at all raised too")
+  assertErrorMatches(function() AceEvent:UnregisterAllMessages() end,
+    "supply a meaningful 'self' or \"addonId\"", "the library alone is not a meaningful target")
+  assertErrorMatches(function() AceEvent.UnregisterAllMessages() end,
+    "missing 'self' or \"addonId\" to unregister events for", "and nothing at all raised too")
 end)
 
 -- ── AceGUI ─────────────────────────────────────────────────────────────────────────────────────
@@ -626,7 +635,8 @@ test("ace: AceGUI's layout registry and version table carry their real names", f
   AceGUI:RegisterLayout("MyFlow", flow)
   assertTrue(AceGUI:GetLayout("myflow") == flow, "names are case-folded, as AceGUI folds them")
   assertTrue(AceGUI.LayoutRegistry.MYFLOW == flow, "LayoutRegistry holds it")
-  assertError(function() AceGUI:RegisterLayout("Bad", 5) end, "a layout that is not a function raised")
+  assertErrorMatches(function() AceGUI:RegisterLayout("Bad", 5) end, "assertion failed",
+    "a layout that is not a function raised")
   AceGUI:RegisterWidgetType("MyWidget", function() end, 7)
   assertEqual(AceGUI.WidgetVersions.MyWidget, 7, "WidgetVersions is the real table name")
   assertTrue(AceGUI.WidgetVersions == AceGUI.__widgetVersions, "the same table the kit always kept")

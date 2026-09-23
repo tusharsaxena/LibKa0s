@@ -261,6 +261,7 @@ function Kit.expose(t)
   t.assertNil   = Kit.assertNil
   t.assertNear  = Kit.assertNear
   t.assertError = Kit.assertError
+  t.assertErrorMatches = Kit.assertErrorMatches
   t.assertSuiteInventory = Kit.assertSuiteInventory
   t.assertSurfaceParity  = Kit.assertSurfaceParity
   t.publicMembers        = Kit.publicMembers

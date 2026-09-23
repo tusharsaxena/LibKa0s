@@ -12,6 +12,7 @@
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse, assertNil, assertError =
   T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil, T.assertError
+local assertErrorMatches = T.assertErrorMatches
 
 local Schema = T.schema
 
@@ -545,7 +546,7 @@ end)
 test("schema: New refuses a descriptor without rows and holds rows by reference", function()
   local err = assertError(function() Schema:New(nil) end)
   assertTrue(err:find("descriptor.rows", 1, true) ~= nil, err)
-  assertError(function() Schema:New{ rows = "x" } end)
+  assertErrorMatches(function() Schema:New{ rows = "x" } end, "descriptor.rows must be a table")
   local S, fx = newFlat()
   assertTrue(S.AllRows() == fx.rows, "AllRows is the host's own table")
   assertTrue(S.FindRow("scale") == fx.rows[2], "rows present at New are indexed")
