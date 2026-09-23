@@ -224,8 +224,9 @@ tracked as [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)),
 `LibKa0s/Widgets.lua` (1266 with `LK-21`'s minor 10; 1232 before it),
 `tests/test_options_tabs.lua` (1218, new to the band: 842 before `LK-27` and `LK-28` put their cases
 in it), and `tests/test_options_idsuggest.lua` (1002, new to the band: 999 at the last write-out,
-until `LK-05`'s shown-by-default frames). They are named so a later reader can tell the band was looked at rather than missed; none
-needs a disposition until it crosses, and three are close enough that the next edit to each should
+until `LK-05`'s shown-by-default frames). They are named so a later reader can tell the band was looked at rather than missed. The seven
+the 2026-09-23 audit found with an expired or blank watch-list disposition carry one now (see *The
+band's terminal states* below); the rest need none until they cross, and three are close enough that the next edit to each should
 be a new file rather than an append: `tests/test_widgets.lua` at 1493 has seven lines of room,
 `LibKa0s/OptionsTabs.lua` at 1489 eleven, and `testkit/test_prose.lua` at 1486 fourteen.
 v1.32.0's
@@ -239,6 +240,41 @@ same line from seven under it, so both went to files of their own —
 then, 683 now), neither of them in the band. That is a cut chosen while the seam was still obvious
 rather than one sized against a file three releases older than the peel, which is what the two rows
 above record going wrong.
+
+**The band's terminal states, ruled 2026-09-24.** `automated-tests-§4` refuses an "accepted" that
+outlives three consecutive release runs and a newly crossed entry with no disposition, and the
+2026-09-23 audit (`LibKa0s-A-03`) found seven band files in one state or the other. Each now has one
+of the two terminal states a band entry may carry, and `docs/automated-tests/RESULTS.md`'s
+Disposition cells point here:
+
+- `tests/test_options.lua` (1339) — issue [#35](https://github.com/tusharsaxena/LibKa0s/issues/35):
+  the render/refresh block peels to `tests/test_options_render.lua`. This is the "owed a tracked ID"
+  the watch list carried with no ID.
+- `LibKa0s/Widgets.lua` (1266) — issue [#36](https://github.com/tusharsaxena/LibKa0s/issues/36):
+  per-widget files, `ReorderList` first.
+- `tests/test_widgets.lua` (1493) — issue [#37](https://github.com/tusharsaxena/LibKa0s/issues/37):
+  split by widget family, the `ReorderList` and row-box cases first; its trigger is *any* new case.
+- `tests/test_schema.lua` (1335) — issue [#38](https://github.com/tusharsaxena/LibKa0s/issues/38):
+  split by pipeline stage, the write stage onward first.
+- `testkit/test_prose.lua` (1486, still in the band after `LK-01` / `LK-07`) — issue
+  [#39](https://github.com/tusharsaxena/LibKa0s/issues/39): the narrowing and coverage machinery
+  peels to a kit module of its own at the next kit revision that touches the file.
+- `LibKa0s/Options.lua` (1457) — **re-ruled 2026-09-24: accepted.** It passed the old "re-check at
+  1350" at 1476 with nobody re-ruling it. `LK-24` then took the seam that ruling had named, the font
+  preload, out to `LibKa0s/OptionsScroll.lua`, and what came back (`LK-25`'s park, `LK-26`) is combat
+  handling on the panel builder every host enters through, where a split is a published-surface
+  change rather than an internal tidy. **Re-check trigger: the next member added to `Options.lua`,
+  or 1475 lines**, whichever comes first; at either, the next member goes to a new file.
+- `LibKa0s/OptionsTabs.lua` (1489, measured after `LK-28`) — **re-ruled 2026-09-24: accepted.** It is
+  the v1.39.0 chrome peel plus minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome
+  fix and `LK-28`'s `RenderTabbedSchema`, all of it the tabbed page's own machinery with no second
+  seam inside it. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1495 lines**;
+  with eleven lines of room, that member is a new file, not an append.
+
+The two re-rule triggers sit above the 1450 the plan wrote for them because both files were
+already past 1450 when they were ruled: 1457 and 1489 as measured, not the "about 1416" the plan
+projected for `Options.lua`. A trigger that has already fired on the day it is written is no
+trigger.
 
 **`testkit/framework.lua` left the band during kit revision 25 and came back at 26.** It was
 never named in the band at all until that revision's write-out put it at 1484; the revision's two
