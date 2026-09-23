@@ -133,15 +133,19 @@ host already carrying the old copy keeps running it, and nothing errors to say s
       is written up as not measured, never as passed. Until this sub-step existed the procedure never
       asked for the file, and 32 of the 38 release-stamped bundles from 2026-09-08 through v1.55.0
       went without one.
-   2. **Commit the bundle, its `ANALYSIS.md` and its `RESULTS.md` row** as the second commit. The
-      write-up rides in that commit, before the tag, never in a follow-up after it.
-   3. **Check the tag's preconditions** below, off the manifest and the bundle on disk.
-   4. **Fill the release-notes line** below from the same manifest, then tag the second commit.
+   2. **Fill the release-notes line** below into the version's `CHANGELOG.md` block, from the same
+      manifest. It needs the manifest's figures, so it cannot ride in the first commit, and it must
+      be in the tree before the second commit or the tag is cut over a working-tree edit.
+   3. **Commit the bundle, its `ANALYSIS.md`, its `RESULTS.md` row and the release-notes line** as
+      the second commit. The write-up and the line ride in that commit, before the tag, never in a
+      follow-up after it.
+   4. **Check the tag's preconditions** below, off the manifest and the bundle on disk, then tag
+      the second commit.
 
    Two
    commits rather than one, deliberately: the manifest names the sha its suites actually measured,
    and the tagged tree still contains the evidence for itself. The two trees differ by the record
-   and nothing else. Taking the run first and committing everything together is what produced the
+   and the one `CHANGELOG.md` line that reports it, and nothing else. Taking the run first and committing everything together is what produced the
    history this order replaces — of this library's twenty-nine release bundles, twenty-eight record
    `"dirty": true`, and `20260903-161751` stamps `"release": "1.25.0"` at sha `895cdf4`, a tree
    nobody can check out. Each of them reads, from a trend line, exactly like a reproducible run.
