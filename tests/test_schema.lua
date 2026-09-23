@@ -228,6 +228,13 @@ local function referenceStub(brand)
   function stubLib:New(d)
     local S, depth = {}, 0
     local rows = d.rows
+    -- writeThrough: one synthetic row per listed path, built once. It has no validate, normalize,
+    -- set or onChange, so `prepare` below stores it raw (a copy) and announces it, as the library
+    -- does; every other row-less path is still refused.
+    local through = {}
+    for _, p in ipairs(type(d.writeThrough) == "table" and d.writeThrough or {}) do
+      if type(p) == "string" and p ~= "" then through[p] = { path = p, writeThrough = true } end
+    end
     local function resolve(parts, id)
       if type(d.resolveRoot) ~= "function" then return nil end
       return d.resolveRoot(parts, id)
@@ -256,10 +263,10 @@ local function referenceStub(brand)
       if type(root) ~= "table" then return nil end
       return stubLib.Read(root, parts, first)
     end
-    -- The write seam's order without its log and tally: refuse, validate, normalize, store, react,
-    -- announce. `prepare` answers a plan, or nil and the refusal; Set and SetMany share it.
+    -- The write seam's order without its log and tally: refuse (a listed writeThrough path is not
+    -- refused), validate, normalize, store, react, announce. `prepare` answers a plan, or nil and the refusal; Set and SetMany share it.
     local function prepare(path, value, id)
-      local row = S.FindRow(path)
+      local row = S.FindRow(path) or through[path]
       if not row then return nil, brand .. ": no setting " .. tostring(path) end
       local w = { row = row, path = path, value = value, rid = id }
       w.stored = type(row.set) ~= "function" and not row.sessionOnly
@@ -474,6 +481,36 @@ test("schema: the stub's SetMany is all or nothing, and lands what the live batc
   assertEqual(degraded.db.profile.enabled, true, "the refused batch's first entry never landed")
   assertEqual(#degraded.rec.debugLines, 0, "log-silent")
   assertEqual(live.rec.debugLines[1], "[Set] copy all: 3 rows", "the live batch is one line")
+end)
+
+test("schema: the stub writes a writeThrough path through, as the live seam does", function()
+  -- The degraded route (a) a host verb takes for a composed row whose composer is absent: `locked`
+  -- is listed and has no row, `scale` is listed and has one, `general.__nope` is neither.
+  -- red under: a stub that refuses every row-less path (the pre-writeThrough reference)
+  local list = { "locked", "scale" }
+  local _, live = newFlat({ writeThrough = list })
+  local _, degraded = newFlat({ writeThrough = list })
+  local stub = referenceStub("Host"):New(degraded.d)
+  for _, S in ipairs({ live.S, stub }) do
+    assertTrue(S.Set("locked", true), "a listed row-less path is written")
+    assertTrue(S.Set("units.player.width", 250), "a row write between the two")
+    assertTrue(S.Set("locked", false), "and written again, false included")
+    local ok, _, why = S.Set("scale", 9)
+    assertFalse(ok, "a listed path WITH a row still goes through its validate")
+    assertEqual(why, "out of range")
+    assertFalse(S.Set("general.__nope", 1), "an unlisted row-less path is still refused")
+  end
+  assertEqual(degraded.db.profile.locked, false, "false is stored, not skipped")
+  assertNil(degraded.db.profile.general, "the refused path created nothing")
+  assertTrue(Schema.SameValue(live.db, degraded.db), "the same store after the same writes")
+  local liveOrder = {}
+  for _, e in ipairs(live.rec.log) do
+    if e ~= "debug" then liveOrder[#liveOrder + 1] = e end
+  end
+  assertEqual(degraded.rec.joined(), table.concat(liveOrder, ","), "the same announce order")
+  assertEqual(degraded.rec.count("onChange:"), 1, "only the row write reacted")
+  assertTrue(degraded.rec.lastAnnounce.row.writeThrough == true, "a synthetic row, marked")
+  assertEqual(degraded.rec.lastAnnounce.path, "locked")
 end)
 
 test("schema: the stub's Reset All sweep resets rows and keeps the sweep veto", function()

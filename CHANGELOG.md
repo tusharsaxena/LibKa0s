@@ -18,7 +18,7 @@ Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 
 (`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
 
-### Schema minor 2: `SetMany`, `row.normalize`, and the instance id reaching `get` and `ApplyDefault`
+### Schema minor 2: `SetMany`, `row.normalize`, `writeThrough`, and the instance id reaching `get` and `ApplyDefault`
 
 - **New: `SetMany(entries, opts)`, the all-or-nothing batch.** `entries = { { path, value }, ... }`,
   `opts = { instanceId, act, scope }`. Every entry is resolved, validated and normalized before any
@@ -38,6 +38,24 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   `LibKa0s-R-14`). `Get(path, instanceId)` calls `row.get(instanceId)` where minor 1 called
   `row.get()`, and `ApplyDefault(row, instanceId)` forwards the id to `Set`. A closure `get` that
   ignores its argument is unaffected.
+- **New: `descriptor.writeThrough`, the declared row-less paths** (audit findings
+  `AbsorbTracker-A-02` and `AbsorbTracker-A-03`; owner-scope PartyFrameEnhanced#14, WhatGroup#22).
+  An array of path strings, read once at `:New`. A write to a listed path **with no indexed row**
+  is no longer refused with `NOT_FOUND`: `Set` (and a `SetMany` entry) resolves the root, stores
+  the value raw and copied in, with no `validate`, `normalize` or `onChange`, logs or tallies it as
+  any write, and calls `announce` with a synthetic row `{ path = path, writeThrough = true }`,
+  built once per path so a write allocates nothing. A listed path that has a row takes the row; a
+  row-less path not in the list is still refused. This is `options-ui-§1`'s route (a): a host verb
+  writing a composed Master-controls row (`enabled`, `locked`, test mode) on a load where the
+  composer is absent (library-absent, or Schema present and Options not) lands its write while the
+  composers stay hollow and no host copy of them exists (anti-pattern #73). The version 2
+  document's *degradation stub* now prescribes the same list for the stub, stored the same way,
+  with every other row-less path refused. Opt-in: a host that passes no list sees no change. A
+  written-through value runs no `onChange`, so a host that needs the reaction dispatches it from
+  `announce` on `row.writeThrough`. Adoption notes for AbsorbTracker (`{ "enabled", "locked" }`,
+  deleting `composeBlock` and the host copies, pinning full count, degraded count and the named
+  composer gap), PartyFrameEnhanced#14 (`{ "enabled", "locked" }`) and WhatGroup#22 (route (b),
+  no list).
 - `Set` and `SetMany` share one `prepareWrite`, so a batch refuses on exactly the rules a single
   write does; `Set`'s answer counts are unchanged (`false, err, why` for a value refusal,
   `false, err` for a missing root).
@@ -52,7 +70,12 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   `Get` hands the id to `row.get`, and `ApplyDefault(row, id)` reaches `Set` with the id.
   `tests/test_schema.lua`'s `referenceStub` gains `SetMany`, `normalize` and the id forwarding, is
   pinned against a live instance with the two-table parity, and a case holds its batch to the live
-  one's store. Documented in [the version 2 document](docs/api/Schema/version-2-docs.md), with
+  one's store. Six `writeThrough` cases in `tests/test_schema_batch.lua` (a listed row-less path is
+  stored, logged and announced with one synthetic row per path; an unlisted one is refused; a listed
+  path with a row takes its `validate`; the store is a copy and a missing root refuses; a bracket
+  tallies it and `SetMany` takes it; a malformed list keeps only its non-empty strings), and the
+  `referenceStub` gains the list, with a case holding its store and announce order to the live
+  seam's on the same writes. Documented in [the version 2 document](docs/api/Schema/version-2-docs.md), with
   per-host mappings for KickCD, ConsumableMaster, MultiMeters and AuraMaster; version 1 is
   Superseded.
 

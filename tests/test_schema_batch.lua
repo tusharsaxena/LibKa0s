@@ -1,5 +1,6 @@
 -- tests/test_schema_batch.lua — LibKa0s-Schema-1.0 minor 2: the all-or-nothing batch `SetMany`,
--- the row's `normalize`, and the instance id reaching a row's `get` and `ApplyDefault`'s write.
+-- the row's `normalize`, the instance id reaching a row's `get` and `ApplyDefault`'s write, and the
+-- descriptor's `writeThrough` paths, stored without a row.
 --
 -- ── WHY A SUITE OF ITS OWN ────────────────────────────────────────────────────────────────────
 --
@@ -299,4 +300,94 @@ test("schema batch: ApplyDefault(row, id) writes through Set with that id", func
   assertEqual(fx.db.scale, 1)
   assertEqual(seen[1], "5", "the resolver saw the id")
   assertEqual(fx.log[#fx.log], "announce:scale=1@5", "and so did the announce")
+end)
+
+-- ── writeThrough ────────────────────────────────────────────────────────────────────────────
+--
+-- A declared list of paths the seam stores WITHOUT a row: the standard's route (a) for a host verb
+-- that writes a composed Master-controls row (`enabled`, `locked`) on a load where the composer
+-- that would have declared the row is absent. Stored raw (a copy), logged, announced with a
+-- synthetic row; no validate, no normalize, no onChange. A path with a row always takes the row.
+
+--- A batch fixture whose `announce` also keeps the row it was handed, per call.
+local function newWriteThrough(list)
+  local S, fx = newBatch({ writeThrough = list })
+  fx.announced = {}
+  fx.d.announce = function(row, path, value, rid)
+    fx.log[#fx.log + 1] = "announce:" .. path .. "=" .. tostring(value) .. "@" .. tostring(rid)
+    fx.announced[#fx.announced + 1] = row
+  end
+  return S, fx
+end
+
+test("schema batch: a writeThrough path with no row is stored raw, logged and announced", function()
+  -- red under: the NOT_FOUND refusal every row-less path got before writeThrough
+  local S, fx = newWriteThrough({ "enabled" })
+  assertNil(S.FindRow("enabled"), "no row declares it")
+  assertTrue(S.Set("enabled", false, 4), "a listed row-less path is written")
+  assertEqual(fx.db.enabled, false, "false is stored, not skipped")
+  assertEqual(table.concat(fx.log, ","), "debug,announce:enabled=false@4",
+    "logged like any write, then announced; no onChange ran")
+  assertEqual(fx.debugLines[1], "[Set] enabled = false")
+  local row = fx.announced[1]
+  assertTrue(row.writeThrough == true, "the announce carries a synthetic row marked writeThrough")
+  assertEqual(row.path, "enabled")
+  assertTrue(S.Set("enabled", true), "written again")
+  assertTrue(fx.announced[2] == row, "one synthetic row per path, built once, never per write")
+end)
+
+test("schema batch: a row-less path NOT in writeThrough is still refused and never stored", function()
+  local S, fx = newWriteThrough({ "enabled" })
+  local ok, err = S.Set("locked", true)
+  assertFalse(ok)
+  assertEqual(err, "Setting not found: locked")
+  assertNil(fx.db.locked, "nothing stored")
+  assertEqual(#fx.log, 0, "nothing logged or announced")
+end)
+
+test("schema batch: a writeThrough path that HAS a row takes the row and its validate", function()
+  -- red under: the list winning over the index (the bad value would be stored raw)
+  local S, fx = newWriteThrough({ "scale" })
+  local ok, err, why = S.Set("scale", "big")
+  assertFalse(ok, "the row's validate still refuses")
+  assertEqual(err, "Invalid value for scale")
+  assertEqual(why, "not a number")
+  assertEqual(fx.db.scale, 1, "nothing stored")
+  assertTrue(S.Set("scale", 1.5))
+  assertEqual(countPrefix(fx.log, "onChange:scale"), 1, "the row's onChange ran")
+  assertTrue(fx.announced[1] == S.FindRow("scale"), "announced with the real row")
+end)
+
+test("schema batch: a writeThrough store is a copy, and a missing root still refuses", function()
+  local S, fx = newWriteThrough({ "tint" })
+  local tint = { r = 1 }
+  assertTrue(S.Set("tint", tint))
+  tint.r = 0
+  assertEqual(fx.db.tint.r, 1, "the caller's table and the store do not alias")
+  fx.d.resolveRoot = function() return nil end
+  local ok, err = S.Set("tint", { r = 0.5 })
+  assertFalse(ok)
+  assertEqual(err, "Setting has nowhere to be stored yet: tint")
+end)
+
+test("schema batch: a writeThrough write inside a bracket joins its tally, and SetMany takes it", function()
+  local S, fx = newWriteThrough({ "enabled", "locked" })
+  S.BulkRun("reset", "all", function()
+    S.Set("enabled", true)
+    S.Set("locked", nil)                          -- already absent: written, not a change
+  end)
+  assertEqual(fx.debugLines[1], "[Set] reset all: 1 rows")
+  assertTrue(S.SetMany({ { path = "locked", value = true }, { path = "scale", value = 2 } }))
+  assertEqual(fx.db.locked, true, "a listed path is a batch entry like any row")
+  assertEqual(fx.db.scale, 2)
+end)
+
+test("schema batch: a malformed writeThrough list keeps only its non-empty strings", function()
+  local S, fx = newWriteThrough({ "enabled", "", 5, false })
+  assertTrue(S.Set("enabled", true))
+  assertFalse(S.Set("", 1), "an empty path is never written through")
+  assertFalse(S.Set("5", 1), "a number is not a path")
+  assertEqual(fx.db["5"], nil)
+  local S2 = newBatch({ writeThrough = "enabled" })
+  assertFalse(S2.Set("enabled", true), "a list that is not a table is no list")
 end)

@@ -18,9 +18,9 @@
 ## What changed at version 2
 
 `Schema.lua` moves to minor **2**. The lib-level surface is unchanged (`members-2.json` differs from
-`members-1.json` in its version key alone); the instance gains one member and the row one field, and
-every change is additive — a host written against version 1 sees no difference unless it passes the
-new arguments or sets the new field.
+`members-1.json` in its version key alone); the instance gains one member, the row one field and the
+descriptor two, and every change is additive — a host written against version 1 sees no difference
+unless it passes the new arguments or sets a new field.
 
 - **`SetMany(entries, opts)`**, the all-or-nothing batch. Every entry is resolved, validated and
   normalized before any is stored; one refusal answers `false, err, why, index` with nothing stored
@@ -36,6 +36,12 @@ new arguments or sets the new field.
   `row.get(instanceId)`, where version 1 called `row.get()` (review finding `LibKa0s-R-14`).
 - **`ApplyDefault(row, instanceId)`** forwards the id to `Set`, where version 1's
   `ApplyDefault(row)` wrote with none (the same finding).
+- **`descriptor.writeThrough`**, a declared list of paths `Set` and `SetMany` store **without a
+  row**: raw (a copy), logged, and announced with a synthetic row, with no `validate`, `normalize`
+  or `onChange`. A listed path that has a row takes the row. It is `options-ui-§1`'s route (a) for
+  a host verb that writes a composed Master-controls row (`enabled`, `locked`, test mode) on a load
+  where the composer that declares the row is absent, and the degradation stub takes the same list.
+  See [`writeThrough`](#writethrough-row-less-paths-a-host-declares).
 
 `Set` and `SetMany` share one preparation step, so a batch refuses on exactly the rules a single
 write does, and `Set`'s answers keep their version-1 arity: `false, err, why` for a value refusal
@@ -101,9 +107,9 @@ cache is bounded by the distinct paths ever asked for.
 
 ## The descriptor
 
-The descriptor is **held by reference**, and every field except `rows` is read **at call time** — a
-host may fill `announce` or `debug` after `:New`, as `LibKa0s-Lifecycle-1.0` reads `print`. A field
-of the wrong type counts as absent.
+The descriptor is **held by reference**, and every field except `rows` and `writeThrough` is read
+**at call time** — a host may fill `announce` or `debug` after `:New`, as `LibKa0s-Lifecycle-1.0`
+reads `print`. A field of the wrong type counts as absent.
 
 | Field | Type | Required | What it is |
 |---|---|---|---|
@@ -115,6 +121,7 @@ of the wrong type counts as absent.
 | `debugEnabled` | `function() -> boolean` | no | Asked **before** a line is formatted. Absent: always log. It is what keeps a color-picker drag, which reaches the seam every frame, from running the host's formatter with debug off. |
 | `format` | `function(row, value) -> string` | no | Renders a value for the `[Set]` line. Absent (or answering `nil`): `tostring(value)` — a string, so a sink that ends in `string.format` cannot raise on a boolean. |
 | `print` | `function(line)` | no | Used by `Validate` only. Absent: `Validate` still counts, silently. |
+| `writeThrough` | array of path strings | no | **Since 2.** Paths `Set` and `SetMany` store **with no row indexed for them**. Read **once, at `:New`**: the instance builds its set and one synthetic row per path there, so a later edit to the array changes nothing. An entry that is not a non-empty string is ignored; a value that is not a table is no list. See [`writeThrough`](#writethrough-row-less-paths-a-host-declares). |
 | `resetExempt` | set `{ [path] = true }` | no | Rows a **sweep** must not reset (`launcher-§3`'s minimap row). Honored by `ApplyDefault` **only while a bracket is open**, so a named single-row reset still works. |
 | `L` | table | no | Overrides `lib.STRINGS` by key, read with **`rawget`** — a Ka0s locale table answers every key with the key itself, and a plain index would mask every string the host did not override (the *`L` trap* `LibKa0s-Slash-1.0` documents). |
 
@@ -176,7 +183,9 @@ The library does not choose the host's public name for the seam: a host binds wh
 ### The `Set` pipeline — the order is the contract
 
 1. `path` not a string, or no indexed row → `false, NOT_FOUND`. **An unknown path is refused, never
-   stored** (`architecture-§5` scopes the seam to schema-row paths).
+   stored** (`architecture-§5` scopes the seam to schema-row paths). **Since 2**, a path in
+   `writeThrough` with no indexed row is not unknown: it goes on with its synthetic row, which has
+   no `set`, `validate`, `normalize` or `onChange`, so steps 3, 4 and 10 do nothing for it.
 2. A **stored** row (no `set`, not `sessionOnly`): `root, first, resolvedId = resolveRoot(parts,
    instanceId)`.
 3. `validate(value, resolvedId)` → falsy: `false, INVALID, why`.
@@ -227,7 +236,51 @@ optional.
    empty batch announces nothing (with `act` it still writes its `0 rows` line).
 5. `true`.
 
-A path named twice in one batch is written twice, in order, and appears twice in `writes`.
+A path named twice in one batch is written twice, in order, and appears twice in `writes`. A
+`writeThrough` path with no row is an entry like any other, with its synthetic row in `writes`.
+
+### `writeThrough`: row-less paths a host declares
+
+A composed Master-controls row — `enabled`, `locked`, test mode — is declared by a
+`LibKa0s-Options-1.0` composer. On a load where that composer is absent (a library-absent build
+running the host's degradation stubs, or a partial load with this major present and Options not),
+`options-ui-§1` keeps the composers hollow and forbids a host copy of them (anti-pattern #73), so
+the row does not exist. The host verbs that write it (`/<slash> enable`, `disable`, `lock`,
+`unlock`, the combat re-lock, the launcher stub) still run. Without a row the seam refuses them,
+and the verb is dead on the load it most needs to survive. `writeThrough` is route (a) of the
+standard's ruling for that case: the host names the paths, as data, and the seam stores them
+without a row.
+
+```lua
+local S = SchemaLib:New({
+  rows = NS.Schema, resolveRoot = resolveRoot, announce = announce,
+  writeThrough = { "enabled", "locked" },
+})
+```
+
+For a listed path with **no** indexed row, `Set(path, value, instanceId)`:
+
+1. resolves the root through `resolveRoot` exactly as for a stored row, and refuses a missing
+   root with the resolver's reason or `NO_ROOT`;
+2. stores `value` **raw**: no `validate`, no `normalize`, and a table is **copied** in;
+3. tallies inside a bracket, or logs `[Set] <path> = <value>` outside one, as any write;
+4. runs **no `onChange`** (there is no row to carry one);
+5. calls `announce(row, path, value, resolvedId)` with a **synthetic row**
+   `{ path = path, writeThrough = true }`. It is built once per path at `:New` and handed out by
+   identity, so a write allocates nothing, and `row.writeThrough` is how a host's `announce` tells
+   it apart. `format(row, value)` receives it too;
+6. answers `true`.
+
+**A path with a row always takes the row.** On a full load the composer declares `enabled`, and a
+write to it is validated, normalized and reacted to like any other, list or no list. `FindRow`
+answers only indexed rows, so it answers `nil` for a written-through path; `Get` already reads a
+row-less path. A row-less path **not** in the list is still refused (`NOT_FOUND`).
+
+**Nothing reacts unless the host does.** A written-through value runs no `onChange`, so a degraded
+`/<slash> disable` stores `false` without moving the host's stand-down latch. A host that needs the
+reaction dispatches it from `announce` on `row.writeThrough` (or calls its own reaction after a
+successful write). A host with no way to honor the value that session takes route (b) instead:
+the library-absent line, and no list.
 
 ### The bulk bracket (`debug-logging-§10`)
 
@@ -316,6 +369,11 @@ Minor 2's invariants are pinned in `tests/test_schema_batch.lua`:
     refuses with `INVALID`, and `normalize` runs only after `validate` accepts.
 20. `Get` hands `instanceId` to a row's `get`, and `ApplyDefault(row, id)` writes through `Set` with
     that id.
+21. A `writeThrough` path with no row is stored raw (a copy), logged, announced with one synthetic
+    row per path marked `writeThrough = true`, and runs no `onChange`; a missing root still
+    refuses it, and inside a bracket it joins the tally.
+22. A row-less path not in `writeThrough` is still refused, and a listed path that has a row takes
+    the row and its `validate`.
 
 ## Worked example
 
@@ -385,7 +443,7 @@ whose `Add` and debug sink are empty functions, so the degraded build has nowher
 |---|---|
 | `AllRows`, `AddRows`, `FindRow`, `Reindex` | Real: rows held by reference, append/insert, a linear first-match `FindRow`, `Reindex` a no-op. Page files call `AddRows` at file load. |
 | `Get` | Real: `row.get(instanceId)` if present, `nil` for a `sessionOnly` row without one, else the host's own root and a plain walk. |
-| `Set` | Real, in the seam's order **without the log and the tally**: unknown path refused (never stored), `validate`, `normalize` (its answer stored; `nil` refuses), missing root refused, store (`row.set` with the value; nothing for `sessionOnly` without `set`; otherwise a **copy** written at the path), `onChange`, `announce`, `true`. Refusals are in the host's own words. |
+| `Set` | Real, in the seam's order **without the log and the tally**: unknown path refused (never stored) unless it is in `writeThrough` (**since 2**, see below), `validate`, `normalize` (its answer stored; `nil` refuses), missing root refused, store (`row.set` with the value; nothing for `sessionOnly` without `set`; otherwise a **copy** written at the path), `onChange`, `announce`, `true`. Refusals are in the host's own words. |
 | `SetMany(entries, opts)` | **Since 2.** Real, with the library's **all-or-nothing** semantics and **log-silent**: every entry prepared as `Set` prepares it, the first refusal answers `false, err, why, index` with nothing stored; then every store, every `onChange`, and `announceBatch` once (or `announce` per write). `opts.act` is not read — there is no line to make one of. |
 | `ApplyDefault(row, instanceId)` | Real: `false` for no string path or `default == nil`; `false` for a `resetExempt` row **while a bracket is open**; otherwise `Set(row.path, copy of row.default, instanceId)`. |
 | `Default(path)` | A copy of the row's `default`, or `nil`. |
@@ -394,6 +452,15 @@ whose `Add` and debug sink are empty functions, so the degraded build has nowher
 | `BulkAdd` | No-op. |
 | `CountOffDefault` · `ResetCounted(fn)` · `ConsumeResetCount` | `0` · runs `fn()` · `nil`. The count exists only for the reset handler's debug line. |
 | `Validate` | `0, 0, 0` and one honest line. |
+
+**`writeThrough` too, since 2.** The stub takes the **same list** the live instance takes — one
+table, handed to both descriptors — and builds a synthetic `{ path = path, writeThrough = true }`
+per listed path once, in its `New`. A listed path with no row is stored the same way: the root
+resolved, a missing root refused, the value **copied** in, no `validate`, `normalize` or `onChange`,
+and `announce` called with the synthetic row. **Every other row-less path is still refused.** This
+is what lets a host verb writing a composed row (`enabled`, `locked`) land on a library-absent load
+while the Options stub's composers stay hollow and no host copy of them exists (`options-ui-§1`
+route (a), anti-pattern #73). A host on route (b) passes no list, and its stub refuses as before.
 
 **The lib level too.** A host whose own code calls the primitives (a data layer's path walk, a
 `SameValue` in a reset verb) needs them when the library is absent. The instance stub's `Get` and
@@ -424,11 +491,11 @@ verb, Reset All, any runtime writer) landing in the store.
 **The reference.** `tests/test_schema.lua` carries `referenceStub`, the stub this section describes.
 It is built with no upvalue and in an environment of plain Lua, so it cannot reach the library it
 stands in for. The suite pins its surface on both levels, its store and reaction order against a
-live instance on the same writes and the same batches, its sweep veto, and its primitives against
-the library's. It measures 172 non-blank, non-comment lines at version 2 (132 at version 1). 101 of
-them are the write half (the copy, the write walk, the shared preparation, `Set`, `SetMany`,
-`Default`, `ApplyDefault` and the depth-only bracket); the rest is the read-completing half and
-`SameValue`. A host copies it and trims what it does not call, except a member the parity pin
+live instance on the same writes and the same batches (a `writeThrough` path among them), its sweep
+veto, and its primitives against the library's. It measures 176 non-blank, non-comment lines at
+version 2 (172 before `writeThrough`, 132 at version 1). 105 of them are the write half (the copy,
+the write walk, the `writeThrough` rows, the shared preparation, `Set`, `SetMany`, `Default`,
+`ApplyDefault` and the depth-only bracket); the rest is the read-completing half and `SameValue`. A host copies it and trims what it does not call, except a member the parity pin
 requires: a host that never batches still carries `SetMany`.
 
 **This is a deliberate, documented duplication**, and a host's stub carries a comment naming this
@@ -467,8 +534,8 @@ panel refresh that snaps the widget back), and it answers `false, why`.
 
 ## Moving to version 2 from version 1
 
-Nothing to do for a host that neither batches nor normalizes: every version-1 call answers as it
-did. A host with a degradation stub adds `SetMany` to it (see the last adoption note). A host whose
+Nothing to do for a host that neither batches, normalizes nor passes `writeThrough`: every
+version-1 call answers as it did. A host with a degradation stub adds `SetMany` to it (see the last adoption note). A host whose
 closure `get` ignored its argument keeps working; one that wants the id now receives it.
 
 ## Adoption notes
@@ -498,7 +565,12 @@ closure `get` ignored its argument keeps working; one that wants the id now rece
   LootHistory, PanelMaster, PrettyChat at v1.55.0) must add `SetMany` to it, with the semantics in
   the stub table above; adding it before the re-vendor is harmless against version 1. A stub that
   forwards `instanceId` to `row.get` and through `ApplyDefault`, and honors `normalize`, matches
-  this version's store as well as its surface.
+  this version's store as well as its surface. A host on `options-ui-§1` route (a) also hands its
+  stub the `writeThrough` list its live instance takes.
+- **`writeThrough` is opt-in.** A host that passes no list sees no change. A host that passes one
+  pins, in its own suite and against both the live instance and its stub: a degraded write to each
+  listed path landing in the store, and a degraded write to a row-less path **not** in the list
+  refused and not stored.
 
 ### Per-host mappings at version 2
 
@@ -518,6 +590,22 @@ rather than a redesign:
 - **MultiMeters** (#52). `SetByPaths` becomes `SetMany(entries, { instanceId = windowId })` against a
   window-aware `resolveRoot(parts, windowId)`; `announceBatch` sends `CONFIG_CHANGED` once per batch.
   The single-path writes go through `Set`.
+- **AbsorbTracker** (AbsorbTracker-A-02, -A-03). `writeThrough = { "enabled", "locked" }` on the
+  instance and the stub. That lets the Options stub's composers go hollow: `composeBlock` and the
+  host copies of the five composed blocks are deleted (anti-pattern #73), and the degraded
+  `enable`, `disable`, `lock`, `unlock`, the combat re-lock and the launcher stub keep writing
+  through `NS.SetByPath`. The host's `announce` dispatches its own reaction for a synthetic row
+  (`row.writeThrough`), since no `onChange` runs. The suite stops pinning schema equality across the
+  live and degraded arms and pins `options-ui-§1`'s three figures: the full row count, the degraded
+  count, and the named gap attributed to the five composers.
+- **PartyFrameEnhanced** (#14). The rolled-back Schema adoption is re-applied on top of
+  `writeThrough = { "enabled", "locked" }`, which covers every path its degraded build writes with
+  no row: `settings/Slash.lua`'s `runLock` (`NS.SetByPath("locked", locked)`, `:117`) and
+  `runEnabled` (`NS.SetByPath("enabled", on)`, `:152`), and `modules/Preview.lua`'s `forceLock`
+  (`:134`), the combat, master-switch and perf re-lock. Line numbers as of 2026-09-24. A degraded write to `general.__nope` is pinned as refused.
+- **WhatGroup** (#22). **No list.** The owner ruling takes route (b): the degraded
+  `enable`/`disable`/test verbs print the library-absent line and write nothing, and the host
+  records the SHOULD deviation from `options-ui-§1`.
 - **AuraMaster** (#21). Its `SetByPath` normalizes after validating; with `row.normalize` that
   semantic is now expressible here, so a partial adoption — the primitives, the registry, the
   bracket and `Validate`, with the host's seam kept until it is re-evaluated — no longer rests on a

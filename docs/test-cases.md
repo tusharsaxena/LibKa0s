@@ -188,7 +188,7 @@ badge and any count quoted in the docs must agree with it.
 - bus: Catalog refuses each malformed declaration, naming what is wrong
 - bus: the catalog is strict on read and on write
 
-### test_schema.lua (72)
+### test_schema.lua (73)
 
 - schema: the major is registered and reports its own live version
 - schema: the module refuses to register without Core, and registers with it
@@ -198,6 +198,7 @@ badge and any count quoted in the docs must agree with it.
 - schema: the reference stub reaches neither the library nor the suite
 - schema: the stub completes writes, in the live seam's order and to the same store
 - schema: the stub's SetMany is all or nothing, and lands what the live batch lands
+- schema: the stub writes a writeThrough path through, as the live seam does
 - schema: the stub's Reset All sweep resets rows and keeps the sweep veto
 - schema: the stub's lib level answers as the library's does on the same inputs
 - schema: L overrides a STRINGS key, and a synthesizing L does not mask the rest
@@ -263,7 +264,7 @@ badge and any count quoted in the docs must agree with it.
 - schema: a malformed spec falls back field by field
 - schema: two instances share nothing
 
-### test_schema_batch.lua (16)
+### test_schema_batch.lua (22)
 
 - schema batch: the instance carries SetMany at minor 2
 - schema batch: one invalid entry stores nothing, calls nothing, and names its index
@@ -281,6 +282,12 @@ badge and any count quoted in the docs must agree with it.
 - schema batch: a normalize refusal comes before a missing root
 - schema batch: Get hands the instance id to a row's own get
 - schema batch: ApplyDefault(row, id) writes through Set with that id
+- schema batch: a writeThrough path with no row is stored raw, logged and announced
+- schema batch: a row-less path NOT in writeThrough is still refused and never stored
+- schema batch: a writeThrough path that HAS a row takes the row and its validate
+- schema batch: a writeThrough store is a copy, and a missing root still refuses
+- schema batch: a writeThrough write inside a bracket joins its tally, and SetMany takes it
+- schema batch: a malformed writeThrough list keeps only its non-empty strings
 
 ### test_pool.lua (23)
 
@@ -1781,8 +1788,8 @@ badge and any count quoted in the docs must agree with it.
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 22 |
 | test_bus.lua | 30 |
-| test_schema.lua | 72 |
-| test_schema_batch.lua | 16 |
+| test_schema.lua | 73 |
+| test_schema_batch.lua | 22 |
 | test_pool.lua | 23 |
 | test_item.lua | 15 |
 | test_media.lua | 20 |
@@ -1827,4 +1834,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1609** |
+| **Total** | **1616** |

@@ -21,7 +21,9 @@
 -- front of this seam, rather than becoming a flag on it — library-stack-§7 bar 2. Two semantics
 -- left that list at minor 2 because a second consumer arrived for each: a row's post-validate
 -- `normalize` (AuraMaster, ConsumableMaster) and the all-or-nothing batch `SetMany`
--- (ConsumableMaster, MultiMeters, KickCD's copy styling).
+-- (ConsumableMaster, MultiMeters, KickCD's copy styling). A third is not a host semantic but a
+-- load shape: `writeThrough`, the declared paths a host verb writes while the composer that would
+-- have declared their rows is absent (options-ui-§1's route (a); eight adopters).
 --
 -- WHY THE INSTANCE MEMBERS ARE DOT-CALLED. `inst.Set(path, value, id)`, never `inst:Set(...)`. The
 -- Options and Slash descriptors take their seams AS VALUES — the flow engine calls
@@ -247,6 +249,7 @@ end
 ---   format        function  (row, value) -> string, renders a value for the `[Set]` line
 ---   print         function  (line), used by Validate only
 ---   resetExempt   set       { [path] = true }: rows a SWEEP must not reset
+---   writeThrough  array     { path, ... }: row-less paths Set still stores (read ONCE, at :New)
 ---   L             table     overrides lib.STRINGS by key (raw keys only; see text() below)
 function lib:New(descriptor)
   local d = type(descriptor) == "table" and descriptor or {}
@@ -255,6 +258,18 @@ function lib:New(descriptor)
   end
   local rows = d.rows
   local index = {}
+  -- The writeThrough rows: one synthetic `{ path =, writeThrough = true }` per listed path, built
+  -- here and handed out by identity forever after, so a write through one allocates nothing. Read
+  -- once, like `rows`, because the set is what the host declares its degraded writers reach, not
+  -- something a later call may widen.
+  local throughRows = {}
+  if type(d.writeThrough) == "table" then
+    for _, path in ipairs(d.writeThrough) do
+      if type(path) == "string" and path ~= "" and not throughRows[path] then
+        throughRows[path] = { path = path, writeThrough = true }
+      end
+    end
+  end
 
   -- The bracket: one tally shared across nesting levels, a depth, and the two flags that decide
   -- whether the outermost close speaks and what it says.
@@ -372,6 +387,16 @@ function lib:New(descriptor)
   end
 
   -- ── the write seam ────────────────────────────────────────────────────────────────────────
+
+  --- The row a write to `path` goes through: the indexed row, else the path's writeThrough row,
+  --- else nil. A path with a row ALWAYS takes the row, so a listed path whose composer did load is
+  --- validated, normalized and reacted to like any other. A writeThrough row carries no validate,
+  --- normalize, set or onChange, so the pipeline below stores it raw (a copy), logs it and
+  --- announces it — and refuses it on a missing root, as any stored row.
+  local function writeRow(path)
+    if type(path) ~= "string" then return nil end
+    return index[path] or throughRows[path]
+  end
 
   --- Where a write to a STORED row's `path` lands. Answers `parts, root, first, rid`, or `parts,
   --- nil, nil, rid, reason` when there is nowhere. `rid` is the id the resolver named, or the
@@ -500,15 +525,15 @@ function lib:New(descriptor)
   end
 
   --- The single write seam for every schema-row path (architecture-§5). THE ORDER IS THE CONTRACT:
-  --- refuse an unknown path; resolve the root; validate; normalize; refuse a missing root; store;
-  --- tally; log; react; announce. Answers `true`, or `false, err[, why]` with nothing stored and
-  --- nothing called.
+  --- refuse an unknown path (a listed writeThrough path is not unknown); resolve the root;
+  --- validate; normalize; refuse a missing root; store; tally; log; react; announce. Answers
+  --- `true`, or `false, err[, why]` with nothing stored and nothing called.
   function S.Set(path, value, instanceId)
-    local row = type(path) == "string" and index[path] or nil
+    local row = writeRow(path)
     if not row then
       -- architecture-§5 scopes the seam to schema-row paths. A write to a path no row declares is
       -- refused, not stored: silently storing it is how a typo'd key becomes a setting nothing
-      -- reads and nothing resets.
+      -- reads and nothing resets. The one exception is a path the host LISTED in writeThrough.
       return false, text("NOT_FOUND"):format(tostring(path))
     end
     -- On a refusal the next three answers are `err, why, withWhy` (see prepareWrite).
@@ -529,7 +554,7 @@ function lib:New(descriptor)
   --- One entry of a batch, checked as Set would check it: a plan to commit, or `nil, err, why`.
   local function prepareEntry(entry, instanceId)
     local path = type(entry) == "table" and entry.path or nil
-    local row = type(path) == "string" and index[path] or nil
+    local row = writeRow(path)
     if not row then return nil, text("NOT_FOUND"):format(tostring(path)) end
     local ok, value, rid, set, parts, root, first = prepareWrite(row, path, entry.value, instanceId)
     if not ok then return nil, value, rid end
