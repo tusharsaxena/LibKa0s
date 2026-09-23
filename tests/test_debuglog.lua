@@ -110,13 +110,14 @@ test("dbg: the cap is 1500 and the message frame is held to the same number", fu
 end)
 
 test("dbg: the buffer is capped, dropping the oldest line", function()
-  -- Never exercised downstream — no addon suite writes 501 lines — so the eviction path is
-  -- covered here for the first time.
+  -- Read through the public readers since minor 13: the raw array may run up to 64 lines past the
+  -- cap between compactions, so #buffer is no longer the cap at MAX_BUFFER + 10. What a reader
+  -- sees still is.
   local D = newLog()
   for i = 1, debuglog.MAX_BUFFER + 10 do D:Add("N", "line " .. i) end
-  assertEqual(#D.buffer, debuglog.MAX_BUFFER)
-  T.assertTrue(D.buffer[1]:find("line 11", 1, true) ~= nil, "the first ten were evicted, oldest first")
-  T.assertTrue(D.buffer[#D.buffer]:find("line " .. (debuglog.MAX_BUFFER + 10), 1, true) ~= nil,
+  assertEqual(D:BufferSize(), debuglog.MAX_BUFFER)
+  T.assertTrue(D:CopyText():find("^[^\n]*line 11\n") ~= nil, "the first ten were evicted, oldest first")
+  T.assertTrue(D:LastLine():find("line " .. (debuglog.MAX_BUFFER + 10), 1, true) ~= nil,
     "and the newest is still last")
 end)
 
@@ -153,6 +154,101 @@ test("dbg: BufferSize, LastLine and FindLine answer without reaching into .buffe
   T.assertTrue(D:LastLine():find("[Combat] left", 1, true) ~= nil, "LastLine is the newest")
   T.assertTrue(D:FindLine("player=1234") ~= nil, "FindLine matches a substring")
   T.assertNil(D:FindLine("nothing here"), "and answers nil when nothing matches")
+end)
+
+-- ── the public readers at and past the cap ─────────────────────────────────────────────────
+--
+-- Characterization written before minor 13 batched the trim, and green on both sides of it: what
+-- a host reads through BufferSize, LastLine, FindLine and CopyText is the newest MAX_BUFFER lines
+-- and nothing else, whatever the raw array happens to hold between compactions. Each line carries
+-- a terminated marker, "L<i>.", so "L100." cannot also match L1000 or L1001.
+
+local function fillTo(n)
+  local D = newLog()
+  for i = 1, n do D:Add("N", "L" .. i .. ".") end
+  return D
+end
+
+local function copiedLines(D)
+  local lines = {}
+  for line in (D:CopyText() .. "\n"):gmatch("(.-)\n") do lines[#lines + 1] = line end
+  return lines
+end
+
+-- For n lines written, the readers must answer exactly lines first..n, first = max(1, n - cap + 1).
+local function assertNewestWindow(D, n)
+  local cap = debuglog.MAX_BUFFER
+  local first = math.max(1, n - cap + 1)
+  assertEqual(D:BufferSize(), n - first + 1, "BufferSize at " .. n)
+  T.assertTrue(D:LastLine():find("L" .. n .. ".", 1, true) ~= nil, "LastLine is line " .. n)
+  T.assertTrue(D:FindLine("L" .. first .. ".") ~= nil, "FindLine reaches the oldest kept line")
+  T.assertTrue(D:FindLine("L" .. n .. ".") ~= nil, "FindLine reaches the newest line")
+  if first > 1 then
+    T.assertNil(D:FindLine("L" .. (first - 1) .. "."), "FindLine never answers an evicted line")
+  end
+  local lines = copiedLines(D)
+  assertEqual(#lines, n - first + 1, "CopyText carries exactly the kept lines at " .. n)
+  T.assertTrue(lines[1]:find("L" .. first .. ".", 1, true) ~= nil, "CopyText opens on the oldest kept line")
+  T.assertTrue(lines[#lines]:find("L" .. n .. ".", 1, true) ~= nil, "CopyText closes on the newest line")
+end
+
+for _, n in ipairs({ 1499, 1500, 1501, 1600 }) do
+  test("dbg: at " .. n .. " lines every public reader answers the newest MAX_BUFFER", function()
+    assertNewestWindow(fillTo(n), n)
+  end)
+end
+
+test("dbg: the 1501st line drops the first", function()
+  local D = fillTo(debuglog.MAX_BUFFER)
+  T.assertTrue(D:FindLine("L1.") ~= nil, "line 1 is still held at the cap")
+  D:Add("N", "L" .. (debuglog.MAX_BUFFER + 1) .. ".")
+  T.assertNil(D:FindLine("L1."), "one line past the cap evicts line 1")
+  T.assertTrue(copiedLines(D)[1]:find("L2.", 1, true) ~= nil, "and the copy now opens on line 2")
+  assertEqual(D:BufferSize(), debuglog.MAX_BUFFER)
+end)
+
+-- ── the trim is batched (minor 13) ─────────────────────────────────────────────────────────
+--
+-- Through minor 12 every Add past the cap ran table.remove(buffer, 1): a 1500-slot shift per line,
+-- for as long as debug logging stayed on. Minor 13 lets the raw array run 64 lines past the cap
+-- and then moves the newest MAX_BUFFER down in one pass, so 1564 adds cost at most one compaction.
+-- The spy counts table.remove because that is what the per-line trim called; the compaction
+-- itself is one copy loop and calls it not at all.
+
+test("dbg: 1564 adds cost at most one compaction, not one table.remove per line", function()
+  local realRemove = table.remove
+  local removes = 0
+  -- rawset rather than assignment: the spy replaces a standard-library field for this case only.
+  rawset(table, "remove", function(...) removes = removes + 1; return realRemove(...) end)
+  local ok, err = pcall(fillTo, debuglog.MAX_BUFFER + 64)
+  rawset(table, "remove", realRemove)
+  T.assertTrue(ok, tostring(err))
+  T.assertTrue(removes <= 1, "expected at most one compaction, saw " .. removes .. " table.remove calls")
+end)
+
+test("dbg: the raw buffer holds at most MAX_BUFFER + 64 lines, and compacts in order", function()
+  local D = newLog()
+  local cap, peak = debuglog.MAX_BUFFER, 0
+  for i = 1, cap + 100 do
+    D:Add("N", "L" .. i .. ".")
+    if #D.buffer > peak then peak = #D.buffer end
+  end
+  assertEqual(peak, cap + 64, "the slack is 64 lines and no more")
+  -- Line 1565 compacts the array to lines 66..1565; 35 more follow: 1535 raw, dense, in order.
+  assertEqual(#D.buffer, cap + 35)
+  T.assertTrue(D.buffer[1]:find("L66.", 1, true) ~= nil, "the compaction kept the newest MAX_BUFFER")
+  for i = 1, #D.buffer do assertEqual(type(D.buffer[i]), "string") end
+  assertNewestWindow(D, cap + 100)
+end)
+
+test("dbg: the status line counts what the readers answer, not the raw array", function()
+  local D = newLog()
+  D:Show()
+  -- A font string cannot be read back through the frame API, so the SetText is recorded instead.
+  local shown
+  rawset(D._frameForTest.lineCount, "SetText", function(_, s) shown = s end)
+  for i = 1, debuglog.MAX_BUFFER + 10 do D:Add("N", "L" .. i .. ".") end
+  assertEqual(shown, D:Text("LINES"):format(debuglog.MAX_BUFFER, debuglog.MAX_BUFFER))
 end)
 
 -- ── the gated sink ─────────────────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 12
+# `LibKa0s-DebugLog-1.0` — version 13
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **12** |
-| Shipped in | v1.16.0 |
-| Status | Superseded |
-| Supersedes | [version 11](./version-11-docs.md) — whose copy window was this file's own, the fifth copy in the collection |
-| Superseded by | [version 13](./version-13-docs.md) |
+| Files and minors | `DebugLog.lua` minor **13** |
+| Shipped in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 12](./version-12-docs.md) — whose buffer trim shifted the whole array once per line at the cap |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 12 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 13 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared. Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
@@ -45,6 +45,44 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 `NewLibrary` if either is missing or below the minor it needs.
 
 ## What changed at this version
+
+**The buffer trim is batched.** Through version 12 every `Add` past the cap ran
+`table.remove(buffer, 1)`: a shift of all 1500 slots for every line written, for as long as debug
+logging stayed on (review finding `LibKa0s-R-10`). From version 13 the raw array is allowed to run
+**64 lines** past `MAX_BUFFER`, and on the line that would take it to 1565 the newest `MAX_BUFFER`
+lines are moved down to `1..MAX_BUFFER` in one pass and the tail is cleared. One compaction per
+65 lines instead of one shift per line; `table.remove` is no longer called at all.
+
+`buffer` stays a **plain ordered array**, not a ring. Host suites across the collection index it
+directly — `#buffer`, `buffer[#buffer]`, `buffer[1]`, the four-argument `table.concat` — and a ring
+with a head index would have broken every one of them. What moves is only its **length past the
+cap**:
+
+| | Version 12 | Version 13 |
+|---|---|---|
+| `#buffer` after N lines, N ≤ 1500 | N | N — unchanged |
+| `#buffer` after N lines, N > 1500 | always 1500 | between 1500 and **1564**, depending on where the last compaction fell |
+| `buffer[#buffer]` | the newest line | the newest line — unchanged |
+| `buffer[1]` past the cap | the oldest kept line | the oldest line **held**, which may be up to 64 lines older than the oldest kept one |
+| `BufferSize()` | `#buffer` | the newest `MAX_BUFFER` at most: `min(#buffer, MAX_BUFFER)` |
+| `LastLine()` | the newest line | unchanged |
+| `FindLine(substr)` | searches the whole array | searches the newest `MAX_BUFFER` lines only, so it never answers a line already evicted |
+| `CopyText()` | the whole array | the newest `MAX_BUFFER` lines, oldest first |
+| The status line (`UpdateStatus`) | `#buffer / MAX_BUFFER` | `BufferSize() / MAX_BUFFER` — never reads more than 1500 |
+
+**Every public reader answers 1500.** Only a caller that reads `#buffer` (or `buffer[1]`) directly
+past the cap can see the slack. Below the cap nothing is observable, and no member is added,
+removed or repurposed: the member manifest differs from version 12's in the minor alone.
+`MAX_BUFFER` stays **1500** — the standard's number, which the message frame's `SetMaxLines` still
+matches — and the slack is a local of `DebugLog.lua`, not a member.
+
+The cases are in `tests/test_debuglog.lua`: characterization written before the change and green on
+both sides of it (every reader at 1499, 1500, 1501 and 1600 lines, and the 1501st line dropping the
+first), a case that counts `table.remove` calls over 1564 adds (64 through version 12, at most one
+now), a case that pins the peak raw length at exactly 1564 and the compaction's order, and a case
+that pins the status line at `1500 / 1500` while the raw array is past the cap.
+
+## What version 12 changed
 
 **The copy window is now drawn by `LibKa0s-Widgets-1.0`'s `CopyWindow`.** That is the whole change,
 and everything else here follows from it: a new hard dependency floor, one descriptor fallback, one
@@ -151,7 +189,7 @@ pinned by a test:
 | The `applySkin` seam | Still covers **both** windows. The same function object goes to `CopyWindow`, so a host that re-skins one re-skins both and the two cannot drift apart. |
 | The `makeCloseButton` descriptor field | Still covers **both** windows, as it has since minor 4. It is forwarded to `CopyWindow`, which gained the field at Widgets minor 7 for exactly this reason — a hardcoded Core × upstream would have quietly narrowed a contract this library had already published. |
 | 560 × 360 | The copy window is the same size. `CopyWindow`'s own default is 640 × 420; this caller passes its own. |
-| `D:CopyText()` | Unchanged. It is still `table.concat(buffer, "\n")`, and it is still split out from `ShowCopy` because an `EditBox` is write-only through the frame API. |
+| `D:CopyText()` | Unchanged at version 12. It was still `table.concat(buffer, "\n")`, and it is still split out from `ShowCopy` because an `EditBox` is write-only through the frame API. Version 13 bounds it to the newest `MAX_BUFFER` lines — see [What changed at this version](#what-changed-at-this-version). |
 
 The `Show` order — width, then text, then cursor, then show, then focus, then highlight — is also
 unchanged, but it is no longer spelled out here: it is `CopyWindow`'s, and it is load-bearing there
@@ -159,7 +197,7 @@ for the same reasons it was load-bearing here.
 
 ### The 1500-line cap, from version 11
 
-`lib.MAX_BUFFER` is **1500**, and this version does not move it.
+`lib.MAX_BUFFER` is **1500**, and neither version 12 nor version 13 moves it.
 
 The cap is not a display preference. **The perf capture workflow pastes out of this buffer**:
 `perf report` prints its summary into the console and `perf dump` writes the whole JSON record as a
@@ -167,9 +205,9 @@ single line, so a capture is read by opening the copy window and pressing Ctrl+C
 overflowed the buffer and lost its head — silently, because a buffer that has dropped its oldest
 lines looks exactly like one that was started later.
 
-**The copy window is a view of the buffer, not a second store.** `CopyText()` is
-`table.concat(buffer, "\n")` and the window caps nothing of its own, so the buffer cap *is* the copy
-cap. That is still true with the window drawn by Widgets: `ShowCopy()` hands `CopyText()` in as
+**The copy window is a view of the buffer, not a second store.** `CopyText()` joins the buffer's
+newest `MAX_BUFFER` lines and the window caps nothing of its own, so the buffer cap *is* the copy
+cap — the 64-line slack version 13 allows the raw array never reaches it. That is still true with the window drawn by Widgets: `ShowCopy()` hands `CopyText()` in as
 text, and `CopyWindow` holds no buffer of its own.
 
 What has to move with the cap is the message frame's own `SetMaxLines`: the cap and `SetMaxLines` are
@@ -281,18 +319,18 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `buffer` | 1 | The plain-text lines, a dense array, newest last and capped at `MAX_BUFFER`. Read directly by host tests across the collection — it is part of the contract, not an internal. |
+| `buffer` | 1 | The plain-text lines, a dense array, newest last. **As of minor 13 it may hold up to `MAX_BUFFER + 64` raw entries between compactions**; the newest `MAX_BUFFER` are the kept lines and anything older is already evicted. Read directly by host tests across the collection — it is part of the contract, not an internal — so a test that needs the kept count past the cap reads `BufferSize()`, not `#buffer`. |
 | `FormatPlain` / `FormatColored` / `MakeCloseButton` | 1 | The lib-level members, mirrored onto the instance so a host holds one object. |
 | `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
 | `Add(tag, msg)` | 1 | Append one line. **Ungated on purpose**: the enable seam's own bracket lines and a host's perf output both have to land whatever the flag says. |
 | `Debug(tag, fmt, ...)` | 1 (raise-proof format: **7**) | The gated sink, and a plain function rather than a method — hosts bind it bare (`NS.Debug = D.Debug`) and call it from everywhere. Zero-allocation when off: it returns before building the argument table. Every vararg goes through `safeToString`, and **as of minor 7 the `string.format` itself is `pcall`’d**: a format the stringified arguments cannot satisfy (a secret reaching a `%d` slot) lands as the format string followed by those arguments, space-joined, instead of raising inside the sink. |
-| `BufferSize()` | 1 | `#buffer`. |
+| `BufferSize()` | 1 | The number of kept lines: `#buffer`, capped at `MAX_BUFFER` as of minor 13. |
 | `LastLine()` | 1 | The newest buffered line. |
-| `FindLine(substr)` | 1 | The newest line containing `substr`. Plain search, not a pattern — callers are looking for a tag or a message fragment, neither of which is written as a Lua pattern. |
+| `FindLine(substr)` | 1 | The newest kept line containing `substr` — as of minor 13 it searches the newest `MAX_BUFFER` lines only, so it never answers an evicted line still in the slack. Plain search, not a pattern — callers are looking for a tag or a message fragment, neither of which is written as a Lua pattern. |
 | `Clear()` | 1 | Empty the log frame and the buffer, then repaint the scrollbar and the status line. |
 | `UpdateScrollBar()` | 1 | Re-sync the slider with the message frame's scroll offset. The two run in opposite directions, so they are related by `maxOffset - value`. |
-| `UpdateStatus()` | 1 | Repaint the `N / MAX` line counter. |
-| `CopyText()` | 1 | The whole buffer as one newline-joined string. Unchanged at minor 12. |
+| `UpdateStatus()` | 1 | Repaint the `N / MAX` line counter. `N` is `BufferSize()` as of minor 13, so it never reads past `MAX`. |
+| `CopyText()` | 1 | The kept lines as one newline-joined string, oldest first — as of minor 13 the newest `MAX_BUFFER` only. |
 | `ShowCopy()` | 1 | Open the copy window over the console, filled with the buffer, focused and selected — Ctrl+C, then Esc. As of minor 12 the window is `LibKa0s-Widgets-1.0`'s `CopyWindow`, built lazily on the first call and kept; it re-anchors to the console on **every** call rather than staying where it was last dragged. |
 | `_copyWindowForTest` | **12** | The `CopyWindow` handle, recorded on the instance by `ShowCopy()`. A test seam: the handle is otherwise a local, and this is what a suite reads to assert which window it got. |
 | `_copyFrameForTest` | **12** | The frame that handle built, from `win:GetFrame()`. The copy window's `EditBox` is write-only through the frame API, which is why `CopyText()` exists — this is for the frame's own properties (its global name, its size, its named scroll child). |
@@ -384,26 +422,14 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
-The one thing that is *not* additive at this version is the **load-time floor**, and it sits below
+The one observable change at version 13 is `#buffer` past the cap, which may read up to 1564 rather
+than 1500. Every method answers as version 12 did. A host suite that writes more than 1500 lines and
+asserts `#D.buffer` or `D.buffer[1]` reads the raw array rather than the kept lines, and moves to
+`D:BufferSize()`, `D:CopyText()` or `D:FindLine()`. On the 2026-09-24 grep of the ten consumers'
+`tests/`, one suite does: PrettyChat's `tests/test_debuglog.lua` ("the buffer is capped and drops
+its oldest lines first", 1520 lines, then `#D.buffer == 1500` and `D.buffer[1]` holding line 21).
+
+The one thing that was *not* additive at version 12 is the **load-time floor**, still in place here,, and it sits below
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
-
-## Moving to version 13
-
-**Take it; nothing in a host's own code changes.** Version 13 adds no member and no descriptor
-field, and the member manifest differs from this one in the minor alone. What moves is how the
-buffer is trimmed at the cap: at this version every `Add` past 1500 lines runs
-`table.remove(buffer, 1)`, a 1500-slot shift per line. From version 13 the raw array may run 64
-lines past `MAX_BUFFER` and is then compacted in one pass.
-
-Every public reader — `BufferSize()`, `LastLine()`, `FindLine()`, `CopyText()` and the status line —
-still answers the newest 1500 lines. Only `#buffer` and `buffer[1]` read directly past the cap can
-see the slack, and that is what a host owes on the re-vendor:
-
-- **A host suite that writes more than 1500 lines and asserts `#D.buffer` or `D.buffer[1]`** moves to
-  `D:BufferSize()` and `D:CopyText()` (or `D:FindLine()`), which answer exactly what this version's
-  `#buffer` and `buffer[1]` did. PrettyChat's `tests/test_debuglog.lua` has one such case.
-- A suite that stays under 1500 lines has nothing to change.
-
-Everything else in this document is unchanged at version 13.

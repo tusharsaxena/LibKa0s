@@ -15,8 +15,26 @@ cannot drift. Release order is in
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
 (`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
-(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### DebugLog minor 13: the buffer trim is batched
+
+- **Performance: one compaction per 65 lines at the cap instead of a 1500-slot shift per line**
+  (review finding `LibKa0s-R-10`). Through minor 12 every `Add` past `MAX_BUFFER` ran
+  `table.remove(buffer, 1)`. The raw array may now run 64 lines past the cap, and the line that would
+  take it to 1565 moves the newest 1500 down in one pass. `table.remove` is no longer called.
+- **`buffer` stays a plain ordered array**, because host suites index it; only its length past the
+  cap moves. Between compactions `#buffer` may read up to **1564**, while every public reader —
+  `BufferSize()`, `LastLine()`, `FindLine()`, `CopyText()` and the status line — answers the newest
+  1500. `FindLine` no longer answers a line in the slack. `MAX_BUFFER` stays 1500.
+- No member or descriptor field is added. A host suite that writes more than 1500 lines and asserts
+  `#D.buffer` or `D.buffer[1]` moves to `BufferSize()` / `CopyText()`; PrettyChat's
+  `tests/test_debuglog.lua` has one such case.
+- Characterization cases at 1499, 1500, 1501 and 1600 lines and "the 1501st line drops the first",
+  green before and after; a `table.remove` spy over 1564 adds (64 calls at minor 12, at most one
+  now); the peak raw length and the compaction's order; the status line past the cap. Documented in
+  [the version 13 document](docs/api/DebugLog/version-13-docs.md); version 12 is Superseded.
 
 ### Slash minor 15: `CliSet` and `CliReset` print the write seam's refusal
 

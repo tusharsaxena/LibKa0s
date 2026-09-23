@@ -451,7 +451,7 @@ badge and any count quoted in the docs must agree with it.
 - draghandle: the strip is a plain Button with a fill, never a BackdropTemplate
 - draghandle: a host with its own edge painter gets its own pixels
 
-### test_debuglog.lua (67)
+### test_debuglog.lua (75)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
 - dbg: FormatPlain tolerates a nil tag
@@ -465,6 +465,14 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the buffer stays a dense array of plain strings
 - dbg: Clear wipes the buffer and works before the window was ever built
 - dbg: BufferSize, LastLine and FindLine answer without reaching into .buffer
+- dbg: at 1499 lines every public reader answers the newest MAX_BUFFER
+- dbg: at 1500 lines every public reader answers the newest MAX_BUFFER
+- dbg: at 1501 lines every public reader answers the newest MAX_BUFFER
+- dbg: at 1600 lines every public reader answers the newest MAX_BUFFER
+- dbg: the 1501st line drops the first
+- dbg: 1564 adds cost at most one compaction, not one table.remove per line
+- dbg: the raw buffer holds at most MAX_BUFFER + 64 lines, and compacts in order
+- dbg: the status line counts what the readers answer, not the raw array
 - dbg: the sink routes the first arg as the [tag] and every vararg through safeToString
 - dbg: the sink is a no-op, and does no work at all, when logging is off
 - dbg: the sink is dot-callable, because host call sites bind it bare
@@ -1749,7 +1757,7 @@ badge and any count quoted in the docs must agree with it.
 | test_media.lua | 20 |
 | test_widgets.lua | 81 |
 | test_widgets_draghandle.lua | 35 |
-| test_debuglog.lua | 67 |
+| test_debuglog.lua | 75 |
 | test_slash.lua | 109 |
 | test_slash_refusal.lua | 7 |
 | test_launcher.lua | 27 |
@@ -1787,4 +1795,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1577** |
+| **Total** | **1585** |

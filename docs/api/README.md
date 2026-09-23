@@ -173,7 +173,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12](./DebugLog/version-12-docs.md) | `DebugLog.lua` 12 | v1.16.0 | **Current** |
+| [13](./DebugLog/version-13-docs.md) | `DebugLog.lua` 13 | v1.56.0 | **Current** |
+| [12](./DebugLog/version-12-docs.md) | `DebugLog.lua` 12 | v1.16.0 | Superseded |
 | [11](./DebugLog/version-11-docs.md) | `DebugLog.lua` 11 | v1.15.0 | Superseded |
 | [10](./DebugLog/version-10-docs.md) | `DebugLog.lua` 10 | v1.10.1 – v1.13.0 | Superseded |
 | [9](./DebugLog/version-9-docs.md) | `DebugLog.lua` 9 | v1.10.0 | Superseded |
