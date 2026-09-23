@@ -124,7 +124,9 @@ the path and the case name.
 
 The first of the kit's three own suites. Its first case holds every file `git ls-files` reports to the
 terminator `.gitattributes` declares for it, reading the bytes rather than trusting git's own
-classification, and it is here rather than in each repo's `tests/` for the reason the rest of the
+classification. From revision 26 it also names every **lone CR** (a CR no LF follows) as
+`path:line`, over the same files: git's `text=auto` stores such a file as binary, so neither git nor
+a count of CRLF pairs sees it. It is here rather than in each repo's `tests/` for the reason the rest of the
 kit is here: eleven repositories need exactly the same gate and none of them should be asked to
 re-type it. `line-endings-§7` MUSTs the check be mechanical and supplies a command; a command is
 something someone runs, a suite is something the run runs.

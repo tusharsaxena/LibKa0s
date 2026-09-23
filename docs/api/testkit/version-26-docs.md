@@ -18,8 +18,9 @@
 
 ## What changed
 
-**Three new files, one new assertion, and three behavioral changes: the AceDB fake, event
-registration, and a new frame starting shown.** The first two files are peels, made to take two kit files back under
+**Three new files, one new assertion, three behavioral changes (the AceDB fake, event
+registration, and a new frame starting shown) and one gate widened: `test_eol.lua` now catches a
+lone CR.** The first two files are peels, made to take two kit files back under
 `layout-§1`'s 1500-line cap and to give the growth still to come somewhere else to land:
 
 | New file | What moved into it | Loaded by |
@@ -133,6 +134,36 @@ shows nothing", which fired `OnHide` at a frame nothing had hidden; its setup no
 first, as the client does when the panel goes away. The red-first case is
 `tests/test_mock_base.lua`'s "a new frame is shown until hidden, as in the client". A consumer whose
 own mock builds its frames without the kit's stub is unaffected until it moves onto the stub.
+
+### A gate widened: `test_eol.lua` case one catches a lone CR
+
+Case one counted each file's LFs and how many had a CR before them, so a CR that **no LF follows**
+was invisible to it: `a\r\r\n` read as one clean CRLF. git cannot see one either. `text=auto`
+classifies a file carrying a lone CR as binary and stores it unnormalized (`i/-text` in
+`git ls-files --eol`), so `git add --renormalize` skips it and `git checkout` restores it as it is.
+That was the known limit `line-endings-§7` recorded for the gate (audit finding
+`AuraMaster-A-18`).
+
+From revision 26 case one also counts every lone CR, over **exactly the set it already scans**:
+every tracked path whose `eol` is `crlf` or `lf`, whose `text` is not `unset`, and whose bytes hold
+no NUL. It fails naming each one as `path:line`, where the line is the one the CR sits on. The
+check is deliberately **not** keyed on the index's `-text`, because every real binary that
+detection caught unmarked is `-text` too, and keying on it would redden PanelMaster's
+`tools/artwork/bin/realesrgan-ncnn-vulkan` for being a binary. The NUL guard is what tells the two
+apart. The red-first cases are the four "eol lone CR" cases in this repo's `tests/test_kit_eol.lua`,
+each driving the vendored gate over a real git index in a temporary directory. `test_eol.lua` is
+727 lines.
+
+**A consumer note.** A dry run of the widened gate over each addon's working tree on 2026-09-23 found
+two repositories red, and every other addon green:
+
+| Repository | Lone CRs | Where |
+|---|---|---|
+| AuraMaster | 1 | `tests/page_helpers.lua:80`, the finding's own example |
+| KickCD | 852 | the five files of the frozen `docs/reviews/2026-09-23/` bundle, whose lines end `\r\r\n` |
+
+Each is an addon fix owed before that addon re-vendors revision 26. The repair is to delete the extra
+CR, not to mark the file: checking it out again restores the same bytes.
 
 Everything else below is revision 25's contract, carried forward unchanged.
 

@@ -39,36 +39,40 @@ local function tempRoot()
   return made .. "/"
 end
 
---- A git index at `root` tracking `paths` (each written as a one-line file) and nothing else.
-local function gitFixture(root, paths)
-  for _, path in ipairs(paths) do
+--- A git index at `root` tracking `files` and nothing else. Each entry is a path, written as a
+--- one-line file, or a `{ path, bytes }` pair written exactly as given.
+local function gitFixture(root, files)
+  for _, entry in ipairs(files) do
+    local path, bytes = entry, "x\n"
+    if type(entry) == "table" then path, bytes = entry[1], entry[2] end
     local parent = path:match("^(.*)/[^/]+$")
     if parent then os.execute(('mkdir -p "%s%s"'):format(root, parent)) end
     local f = assert(io.open(root .. path, "wb"))
-    f:write("x\n")
+    f:write(bytes)
     f:close()
   end
   return os.execute(('cd "%s" && git init -q . >/dev/null 2>&1 && git add -A >/dev/null 2>&1')
     :format(root))
 end
 
---- The (kind, evidence) the vendored eol gate reports for a repo tracking `paths`.
-local function kindOf(paths)
+--- What the vendored eol gate's case whose name contains `needle` says about a repo tracking
+--- `files`: `RESULT OK`, or `RESULT FAIL ` and the failure with its whitespace collapsed.
+local function gateVerdict(files, needle)
   local interpreter, here = (rawget(_G, "arg") or {})[-1], cwd()
   if type(interpreter) ~= "string" or not here then
     T.skip("no interpreter path (arg[-1]) or no `pwd`, so the gate cannot be driven in a fixture")
   end
   local root = tempRoot()
   local ok, outText = pcall(function()
-    gitFixture(root, paths)
+    gitFixture(root, files)
     local chunk = ('local cases = {} '
       .. 'local K = { test = function(n, f) cases[#cases + 1] = { n = n, f = f } end, '
       .. 'fail = function(m) error(m, 0) end } '
       .. 'assert(loadfile([[%s/tests/_kit/test_eol.lua]]))(K) '
-      .. 'for _, c in ipairs(cases) do if c.n:find("canonical body", 1, true) then '
+      .. 'for _, c in ipairs(cases) do if c.n:find([[%s]], 1, true) then '
       .. 'local ok, err = pcall(c.f) '
       .. 'print(ok and "RESULT OK" or ("RESULT FAIL " .. tostring(err):gsub("%%s+", " "))) end end')
-      :format(here)
+      :format(here, needle)
     local p = io.popen(("cd '%s' && '%s' -e '%s' 2>&1"):format(root, interpreter, chunk))
     local text = p and p:read("*a") or ""
     if p then p:close() end
@@ -76,6 +80,12 @@ local function kindOf(paths)
   end)
   os.execute(('rm -rf "%s"'):format(root))
   if not ok then error(outText, 0) end
+  return outText
+end
+
+--- The (kind, evidence) the vendored eol gate reports for a repo tracking `paths`.
+local function kindOf(paths)
+  local outText = gateVerdict(paths, "canonical body")
   local kind, why = outText:match("repo kind %((%a+), because (.-)%), then renormalize")
   if not kind then
     T.skip("the child produced no classification, so this host cannot drive the gate: "
@@ -128,3 +138,56 @@ for _, c in ipairs(CASES) do
     assertEqual(gotWhy, why, "the evidence it quotes")
   end)
 end
+
+-- ── case one's lone-CR check (kit revision 26) ──────────────────────────────────────────────
+--
+-- A CR that no LF follows is a terminator the old count could not see: it counted LFs and asked how
+-- many had a CR before them, so `a\r\r\n` read as one clean CRLF. git's `text=auto` classifies such
+-- a file as binary and stores it unnormalized, so nothing downstream sees it either (the
+-- 2026-09-23 audit's `AuraMaster-A-18`, whose `tests/page_helpers.lua:80` was the live case). Each
+-- fixture is a real git index with a CRLF or LF pin, driven through the vendored gate's case one.
+
+local CASE_ONE = "every tracked file carries the terminator"
+local CRLF_PIN = { ".gitattributes", "* text=auto eol=crlf\r\n" }
+local LF_PIN = { ".gitattributes", "* text=auto eol=lf\n" }
+
+--- The gate's case-one verdict for `files`, or a skip when this host cannot drive a child.
+local function caseOne(files)
+  local out = gateVerdict(files, CASE_ONE)
+  if not out:find("RESULT ", 1, true) then
+    T.skip("the child produced no verdict, so this host cannot drive the gate: "
+      .. out:gsub("%s+", " "):sub(1, 160))
+  end
+  return out
+end
+
+test("eol lone CR: a line ending \\r\\r\\n fails, naming path:line", function()
+  -- red under: count only LFs and the CRs before them (revision 25's terminators())
+  local out = caseOne({ CRLF_PIN, { "bad.lua", "a\r\nb\r\r\nc\r\n" } })
+  T.assertTrue(out:find("RESULT FAIL", 1, true) ~= nil,
+    "a lone CR in a CRLF-pinned file fails case one: " .. out:sub(1, 200))
+  T.assertTrue(out:find("bad.lua:2", 1, true) ~= nil,
+    "the failure names the path and the line the lone CR sits on: " .. out:sub(1, 300))
+end)
+
+test("eol lone CR: every lone CR is named, including one at end of file", function()
+  -- red under: report only the first lone CR in a file
+  local out = caseOne({ LF_PIN, { "two.lua", "a\rb\nc\nd\r" } })
+  T.assertTrue(out:find("two.lua:1", 1, true) ~= nil, "the first lone CR, on line 1: " .. out:sub(1, 300))
+  T.assertTrue(out:find("two.lua:3", 1, true) ~= nil,
+    "the second, a CR the file ends on, on line 3: " .. out:sub(1, 300))
+end)
+
+test("eol lone CR: a file with a NUL byte is skipped", function()
+  -- red under: drop the NUL guard in case one
+  local out = caseOne({ CRLF_PIN, { "blob.dat", "a\0\r\rb\n" } })
+  assertEqual(out:match("RESULT %u+"), "RESULT OK", "a NUL byte marks a binary nobody declared")
+end)
+
+test("eol lone CR: clean CRLF and clean LF files pass", function()
+  -- red under: count the CR of a CRLF as a lone CR
+  local crlf = caseOne({ CRLF_PIN, { "ok.lua", "a\r\nb\r\n" } })
+  assertEqual(crlf:match("RESULT %u+"), "RESULT OK", "a clean CRLF file under a CRLF pin")
+  local lf = caseOne({ LF_PIN, { "ok.lua", "a\nb\n" } })
+  assertEqual(lf:match("RESULT %u+"), "RESULT OK", "a clean LF file under an LF pin")
+end)

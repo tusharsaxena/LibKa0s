@@ -40,6 +40,11 @@
 -- exited and which is therefore outside the runner's own pass. A red here for that file is the gate
 -- working, not the gate being wrong.
 --
+-- IT COUNTS LONE CRs TOO, from revision 26. A CR that no LF follows is invisible to a count of LFs
+-- and the CRs before them, and git's `text=auto` stores such a file unnormalized as binary, so both
+-- the old count and every renormalization walked past it (`AuraMaster-A-18`). It is counted over the
+-- same set as the terminator check and named at its line.
+--
 -- IT FAILS RATHER THAN PASSES WHEN IT CANNOT LOOK. No `io.popen`, no git, no answer from
 -- `check-attr` — all of those are a failure. A gate that goes quiet when it is blind reports
 -- success, which is worse than not existing. Same bargain tests/test_kitsync.lua and
@@ -172,21 +177,49 @@ local function readBytes(path)
   return data
 end
 
---- Count the line terminators in `data` and how many of them are CRLF rather than bare LF.
+--- Count the line terminators in `data`, how many of them are CRLF rather than bare LF, and the
+--- line of every lone CR: a byte 13 that no byte 10 follows.
+---
+--- THE LONE CR IS COUNTED BECAUSE THE PAIR COUNT CANNOT SEE IT. Counting LFs and asking which have a
+--- CR before them reads `a\r\r\n` as one clean CRLF, and git cannot see it either: `text=auto`
+--- classifies a file with a lone CR as binary and stores it unnormalized, so the index is `-text`
+--- and every normalization pass walks past it. Until revision 26 that was this gate's blind spot and
+--- line-endings-7's known limit (the 2026-09-23 audit's `AuraMaster-A-18`). A line number here is
+--- the count of LFs before the CR, plus one: the line the CR sits on.
 local function terminators(data)
-  local total, crlf = 0, 0
+  local total, crlf, lone = 0, 0, {}
   for i = 1, #data do
-    if data:byte(i) == 10 then
+    local b = data:byte(i)
+    if b == 10 then
       total = total + 1
       if i > 1 and data:byte(i - 1) == 13 then crlf = crlf + 1 end
+    elseif b == 13 and data:byte(i + 1) ~= 10 then
+      lone[#lone + 1] = total + 1
     end
   end
-  return total, crlf
+  return total, crlf, lone
+end
+
+--- One tracked path's case-one verdict: a terminator hit (or nil) and a lone-CR hit per lone CR,
+--- the latter appended to `loneHits` as `path:line`. A path with a NUL byte is a binary nobody
+--- marked and is skipped whole, for both counts.
+local function scanPath(path, want, loneHits)
+  local data = readBytes(path)
+  if data == nil then
+    fail("eol gate: cannot read " .. path .. ", which git tracks", 3)
+  end
+  if data:find("\000", 1, true) ~= nil then return nil end
+  local total, crlf, lone = terminators(data)
+  for _, line in ipairs(lone) do loneHits[#loneHits + 1] = path .. ":" .. line end
+  local wrong = (want == "crlf") and (total - crlf) or crlf
+  if wrong == 0 then return nil end
+  return string.format("%s - declared %s, but %d of %d terminators are %s",
+    path, want, wrong, total, (want == "crlf") and "bare LF" or "CRLF")
 end
 
 test("eol: every tracked file carries the terminator .gitattributes declares for it", function()
   local order, attrs = trackedAttrs()
-  local hits = {}
+  local hits, loneHits = {}, {}
   for _, path in ipairs(order) do
     local want, text = attrs[path].eol, attrs[path].text
     if not want then
@@ -199,20 +232,24 @@ test("eol: every tracked file carries the terminator .gitattributes declares for
     -- .tga to a terminator count would be a red about an image. PanelMaster's extension-less
     -- `tools/artwork/bin/realesrgan-ncnn-vulkan` is the live case for that carve-out. The NUL guard
     -- below is the backstop, for a binary nobody remembered to mark.
+    --
+    -- The lone-CR count runs over exactly this set and is NOT keyed on the index's `-text`: a file
+    -- with a lone CR is `-text` in the index because `text=auto` calls it binary, but so is every
+    -- real binary that detection caught unmarked, and keying on it would redden the realesrgan
+    -- binary above for being a binary. The NUL guard is what tells the two apart.
     if (want == "crlf" or want == "lf") and text ~= "unset" then
-      local data = readBytes(path)
-      if data == nil then
-        fail("eol gate: cannot read " .. path .. ", which git tracks", 2)
-      end
-      if data:find("\000", 1, true) == nil then
-        local total, crlf = terminators(data)
-        local wrong = (want == "crlf") and (total - crlf) or crlf
-        if wrong > 0 then
-          hits[#hits + 1] = string.format("%s - declared %s, but %d of %d terminators are %s",
-            path, want, wrong, total, (want == "crlf") and "bare LF" or "CRLF")
-        end
-      end
+      hits[#hits + 1] = scanPath(path, want, loneHits)
     end
+  end
+  if #loneHits > 0 then
+    -- Every lone CR, at its line: there is no bulk repair for these the way there is for a file
+    -- written past git's filters, because checking the file out again restores the same bytes.
+    fail("eol: " .. #loneHits .. " lone CR(s) - a CR no LF follows - in tracked text. No terminator "
+      .. "is a bare CR in this collection, and git's `text=auto` classifies a file carrying one as "
+      .. "binary, so the index stores it unnormalized, `git add --renormalize` skips it and "
+      .. "`git checkout` restores it exactly as it is. Delete each CR at the line named (usually "
+      .. "the `\\r` of a doubled `\\r\\r\\n`), save, and stage the file:\n          "
+      .. table.concat(loneHits, "\n          "), 2)
   end
   if #hits > 0 then
     -- Name every file rather than the first: these arrive a whole directory at a time, and fixing

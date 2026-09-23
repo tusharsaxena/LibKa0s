@@ -1623,7 +1623,7 @@ badge and any count quoted in the docs must agree with it.
 - characterization: a decline over a collision names the file that runs instead
 - characterization: a decline with an empty rule cell, and a reason clipped at 200 bytes
 
-### test_kit_eol.lua (12)
+### test_kit_eol.lua (16)
 
 - eol repo kind: a root .toc is the evidence even when a nested one sorts first
 - eol repo kind: with no root .toc, the first nested one in tracked order
@@ -1637,6 +1637,10 @@ badge and any count quoted in the docs must agree with it.
 - eol repo kind: an aggregate XML with no Lua in its folder is not a payload
 - eol repo kind: an XML not named after its folder is not a payload
 - eol repo kind: an aggregate XML below the folder's top is not a payload
+- eol lone CR: a line ending \r\r\n fails, naming path:line
+- eol lone CR: every lone CR is named, including one at end of file
+- eol lone CR: a file with a NUL byte is skipped
+- eol lone CR: clean CRLF and clean LF files pass
 
 ### test_eol.lua (2)
 
@@ -1707,7 +1711,7 @@ badge and any count quoted in the docs must agree with it.
 | test_prose.lua | 3 |
 | test_register.lua | 1 |
 | test_kit_inventory.lua | 37 |
-| test_kit_eol.lua | 12 |
+| test_kit_eol.lua | 16 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1512** |
+| **Total** | **1516** |

@@ -107,6 +107,20 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   client does when the panel goes away. Documented in
   [the revision 26 document](docs/api/testkit/version-26-docs.md).
 
+### Test kit revision 26: `test_eol.lua` catches a lone CR
+
+- **Gate widened.** `testkit/test_eol.lua`'s first case now also counts every **lone CR** (a byte 13
+  no byte 10 follows) in each file it already scans, and fails naming each as `path:line`. Through
+  revision 25 it counted LFs and the CRs before them, so `a\r\r\n` read as one clean CRLF, and
+  git's `text=auto` stores a file with a lone CR as binary, so nothing else saw it either (audit
+  finding `AuraMaster-A-18`). The check is not keyed on the index's `-text`, which would redden real
+  binaries that detection caught unmarked; the NUL guard still skips those.
+- **Consumer note.** A dry run over every addon found AuraMaster's `tests/page_helpers.lua:80` and
+  KickCD's frozen `docs/reviews/2026-09-23/` bundle (852 lone CRs across five files) red. Both are
+  addon fixes owed before re-vendoring revision 26.
+- `tests/test_kit_eol.lua` gains four "eol lone CR" cases. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**
