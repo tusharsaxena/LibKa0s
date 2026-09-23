@@ -10,7 +10,7 @@ badge and any count quoted in the docs must agree with it.
 
 - suite inventory: tests/_kit/test_prose.lua is declined, and the decline is recorded (skipped: CLAUDE.md carries a `## Documented deviations` row keyed `localization-§5`: The kit ships a US-English gate (`tests/_kit/test_prose.lua`) and this repo leaves it unwired, running its own `tests/test_prose.lua` instead. `testing-§9` and `localization-§5` between them permit  ... — tests/test_prose.lua runs in its place)
 
-### test_core.lua (42)
+### test_core.lua (43)
 
 - core: IsConcatSafe is false for a table.concat-hostile value, true for a plain one
 - core: SafeToString renders a secret as lib.SECRET and passes nil/booleans through
@@ -24,6 +24,7 @@ badge and any count quoted in the docs must agree with it.
 - core: a function prefix is re-read on every call
 - core: a prefix that has not resolved yet prints the body alone
 - core: Format applies the format string with pre-stringified args
+- core: Format lands a secret in a numeric specifier as the format and its parts
 - core: the default sink is DEFAULT_CHAT_FRAME:AddMessage
 - core: :New refuses a descriptor with no prefix
 - core: ApplySkin no-ops on a frame without SetBackdrop
@@ -1698,7 +1699,7 @@ badge and any count quoted in the docs must agree with it.
 | Suite | Cases |
 |-------|------:|
 | the runner | 1 |
-| test_core.lua | 42 |
+| test_core.lua | 43 |
 | test_env.lua | 10 |
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 21 |
@@ -1746,4 +1747,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1540** |
+| **Total** | **1541** |

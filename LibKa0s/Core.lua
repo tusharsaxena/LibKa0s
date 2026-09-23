@@ -15,7 +15,7 @@
 -- Depends on LibStub and nothing else, deliberately — no Ace3, so the lib is adoptable by addons
 -- that are not on the Ace substrate.
 
-local MAJOR, MINOR = "LibKa0s-Core-1.0", 7
+local MAJOR, MINOR = "LibKa0s-Core-1.0", 8
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -451,12 +451,24 @@ function lib:New(d)
 
   --- format() over pre-stringified arguments, so a secret reaching a %s slot renders as the
   --- sentinel instead of raising on its way to the chat frame.
+  ---
+  --- pcall'd since minor 8, and the fallback is the point. SafeToString answers a STRING, so a
+  --- secret reaching a NUMERIC slot (`Format("%d rows", secret)`) hands "<secret>" to %d, and
+  --- string.format raises on it exactly as the unguarded secret would have. On failure the line
+  --- still lands: the format verbatim, then the stringified arguments, space-joined, the same
+  --- fallback LibKa0s-DebugLog-1.0's D.Debug uses. A satisfiable format is untouched.
   function printer.Format(fmt, ...)
     local n = select("#", ...)
-    if n == 0 then emit(lib.SafeToString(fmt)) return end
+    local safeFmt = lib.SafeToString(fmt)
+    if n == 0 then emit(safeFmt) return end
     local parts = {}
     for i = 1, n do parts[i] = lib.SafeToString((select(i, ...))) end
-    emit(lib.SafeToString(fmt):format(unpack(parts)))
+    local ok, out = pcall(string.format, safeFmt, unpack(parts))
+    if ok then
+      emit(out)
+    else
+      emit(safeFmt .. " " .. table.concat(parts, " "))
+    end
   end
 
   return printer

@@ -89,7 +89,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 | **Current** |
+| [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 | **Current** |
+| [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 – v1.55.0 | Superseded |
 | [6](./Core/version-6-docs.md) | `Core.lua` 6 | v1.10.0 – v1.23.0 | Superseded |
 | [5](./Core/version-5-docs.md) | `Core.lua` 5 | v1.8.0 – v1.9.2 | Superseded |
 | [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | Superseded |

@@ -12,8 +12,24 @@ cannot drift. Release order is in
 
 ## v1.56.0 — unreleased
 
-Versions in this release: **test kit revision 26**. Every library file's LibStub minor is still
-v1.55.0's so far; the items that move one add it to this line in the same commit.
+Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **test kit revision 26**. Every
+other library file's LibStub minor is still v1.55.0's so far; the items that move one add it to this
+line in the same commit.
+
+### Core minor 8: `printer.Format` survives a secret in a numeric slot
+
+- **Behavioral, and nothing else moves.** `Format(fmt, ...)` stringifies every argument through
+  `SafeToString` before `format()` sees it, so a secret in a `%s` slot has always rendered as
+  `<secret>`. In a **numeric** slot the sentinel is a string, and `string.format` raised
+  `number expected, got string` on it: `Format("%d rows", secret)` took the raise to exactly the
+  chat line the stringifying was meant to protect (review finding `LibKa0s-R-08`). The call is now
+  `pcall`ed, and on failure the line still lands as the format verbatim and the stringified
+  arguments, space-joined (`%d rows <secret>`), the fallback `LibKa0s-DebugLog-1.0`'s `D.Debug`
+  already uses. A satisfiable format is untouched: `Format("%d rows", 3)` still prints `3 rows`.
+- No floor moves and no member is added, so the member manifest differs from minor 7's only in the
+  minor. Documented in [the version 8 document](docs/api/Core/version-8-docs.md); version 7 is
+  Superseded. `tests/test_core.lua` gains one case. Every consumer gets it by re-vendoring; none
+  needs a code change.
 
 ### Test kit revision 26: two files peeled out, no behavior change
 

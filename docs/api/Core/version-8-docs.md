@@ -1,4 +1,4 @@
-# `LibKa0s-Core-1.0` — version 7
+# `LibKa0s-Core-1.0` — version 8
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Core surface points here rather than restating it. It describes the
@@ -8,18 +8,47 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
-| Files and minors | `Core.lua` minor **7** |
-| Shipped in | v1.24.0 |
-| Status | Superseded |
-| Supersedes | [version 6](./version-6-docs.md) |
-| Superseded by | [version 8](./version-8-docs.md) — `Format` survives a secret in a numeric slot |
-| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 7 }` |
+| Files and minors | `Core.lua` minor **8** |
+| Shipped in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 7](./version-7-docs.md) |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 8 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
 were never tagged, so they have no document of their own — a `Since` of 1 or 2 means "present for
 as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**`Format` no longer raises on a secret in a numeric slot, and nothing else moves.** No member is
+added or removed, and no descriptor field changes, so a host needs a re-vendor and no code change.
+
+| | | Since |
+|---|---|---|
+| `Format(fmt, ...)` on a format string that cannot be satisfied | Emits the format string verbatim, then the stringified arguments, space-joined, instead of raising. | **8** |
+
+### Why `Format` raised, and what it emits now
+
+`Format` has always run every argument through `SafeToString` before `format()` sees it, so a secret
+reaching a `%s` slot renders as `<secret>`. But `SafeToString` answers a **string**, and a string
+in a **numeric** slot is exactly what `string.format` rejects: `Format("%d rows", secret)` handed
+`"<secret>"` to `%d` and raised `number expected, got string` on the way to the chat frame, which is
+the raise the stringifying existed to prevent (review finding `LibKa0s-R-08`).
+`LibKa0s-DebugLog-1.0`'s `D.Debug` had already met and fixed the identical failure.
+
+Since minor 8 the format call is `pcall`ed. When it fails, the line still **lands**: the format
+string verbatim, a space, then every stringified argument joined by single spaces —
+`Format("%d rows", secret)` emits `%d rows <secret>` behind the prefix. That is the fallback `D.Debug`
+uses, so a host reading its chat and its debug console sees one shape. Dropping the line would be the
+other way to lose the diagnostic, and an unfilled format is more useful to read than nothing.
+
+**A satisfiable format is untouched.** `Format("%d rows", 3)` still prints `3 rows`: Lua 5.1 coerces
+a numeric string in a numeric slot, so an ordinary number that went through `SafeToString` formats
+exactly as it did before. The fallback also covers a format string that is malformed in its own
+right (a stray `%` or too few arguments), which raised before and now prints the same joined line.
+
+## What changed at version 7
 
 **Two new lib-level members, and nothing else moves.** Every other member, value and behavior is
 byte-for-byte what version 6 shipped, so a host that does not call the new pair needs a re-vendor
@@ -203,7 +232,7 @@ an older `Core.lua` would lose the whole major until it is re-vendored. It is th
 `enumList` is duplicated verbatim between two majors rather than hoisted. So `lib.RGBA` ships for
 hosts now; the library folds its own copies in only alongside a floor raise made for other reasons.
 
-## What changed at this version
+## What changed at version 5
 
 **Comments only. The surface does not move.** Every member, descriptor field, row field, value and
 behaviour described below is exactly what version 4 shipped, so a host written against version
@@ -238,7 +267,7 @@ does `local print = NS.Print` at file scope and calls it bare, so neither may ne
 | Name | Since | Meaning |
 |---|---|---|
 | `Print(...)` | 1 | Space-joined, prefix-tagged, secret-safe. Mirrors `print()`'s shape, so a host's existing naked `print(...)` call sites keep working once `print` is bound to this. |
-| `Format(fmt, ...)` | 1 | `format()` over pre-stringified arguments, so a secret reaching a `%s` slot renders as the sentinel instead of raising on its way to the chat frame. |
+| `Format(fmt, ...)` | 1 (fallback: **8**) | `format()` over pre-stringified arguments, so a secret reaching a `%s` slot renders as the sentinel instead of raising on its way to the chat frame. A format that still cannot be satisfied (a secret in a `%d` slot) emits the format verbatim and the stringified arguments, space-joined, rather than raising. See [Why `Format` raised, and what it emits now](#why-format-raised-and-what-it-emits-now). |
 
 ## Compatibility
 
@@ -249,13 +278,3 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
-
-## Moving to version 8
-
-Nothing is added and nothing here moves apart from one behavior: `Format(fmt, ...)` no longer raises
-when its format cannot be satisfied. A secret reaching a numeric slot, as in `Format("%d rows",
-secret)`, raised `number expected, got string` at this version, because `SafeToString` hands `%d`
-the string `<secret>`. At version 8 the line lands as the format verbatim and the stringified
-arguments, space-joined, the fallback `LibKa0s-DebugLog-1.0`'s `D.Debug` already used. A host
-written against this version is correct at version 8 unmodified; one that wrapped `Format` in its
-own `pcall` to survive combat can drop the wrapper once every copy it could load is at 8.

@@ -200,6 +200,23 @@ test("core: Format applies the format string with pre-stringified args", functio
   assertEqual(out[1], "[T] value=<secret> after 3 tries")
 end)
 
+test("core: Format lands a secret in a numeric specifier as the format and its parts", function()
+  -- SafeToString hands %d a STRING, so a secret there raises inside string.format exactly as the
+  -- unguarded secret would have (review finding LibKa0s-R-08). Core minor 8 pcalls the format and,
+  -- on failure, emits the format verbatim and the stringified parts space-joined, the fallback
+  -- DebugLog's D.Debug already uses. Red under: remove the pcall.
+  local out = {}
+  local p = core:New{
+    prefix = "[T]",
+    sink = function(line) out[#out + 1] = line end,
+  }
+  p.Format("%d rows", secretMock)
+  assertEqual(out[1], "[T] %d rows <secret>")
+  -- A satisfiable numeric format is untouched.
+  p.Format("%d rows", 3)
+  assertEqual(out[2], "[T] 3 rows")
+end)
+
 test("core: the default sink is DEFAULT_CHAT_FRAME:AddMessage", function()
   local chat = T.mocks.DEFAULT_CHAT_FRAME
   local got
