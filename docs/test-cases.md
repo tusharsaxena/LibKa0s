@@ -1062,7 +1062,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a string row with no values and no dialogControl prints once and still renders
 - widgets: a values-backed row that is momentarily empty does NOT warn
 
-### test_options_tabs.lua (36)
+### test_options_tabs.lua (41)
 
 - widgets: tab packing fills a row and wraps to the next
 - widgets: a tab wider than the strip gets its own row rather than vanishing
@@ -1095,6 +1095,11 @@ badge and any count quoted in the docs must agree with it.
 - widgets: PageHeader without a divider draws the block and no rule
 - widgets: a raising PageHeader builder costs the block, not the page
 - widgets: PageHeader refuses politely with no spec and with no height
+- widgets: two full renders of a banner page leave ONE Dropdown out, not two
+- widgets: a header page after a banner page gives the banner's Dropdown back
+- widgets: PageBanner's re-render from inside its own onSelect never hands itself back
+- widgets: PageHeader hands the SAME frame back on every render of one page
+- widgets: the divider texture is made once per page and hidden, never unparented
 - widgets: SubTabStrip draws inside the host's frame and reports the height it took
 - widgets: a second SubTabStrip call releases the first rather than stacking on it
 - widgets: ClearScroll drains the sub-tab ledger before AceGUI pools the parent
@@ -1579,7 +1584,7 @@ badge and any count quoted in the docs must agree with it.
 - ace: AceDB's OnProfileCopied carries the SOURCE profile's key, as AceDB-3.0 fires it
 - mock_ace: AceDB's ResetProfile fires OnProfileReset with the database alone
 
-### test_mock_record.lua (35)
+### test_mock_record.lua (37)
 
 - record: a fresh build has registered nothing
 - record: a raw frame:RegisterEvent is recorded, by frame and by name
@@ -1616,6 +1621,8 @@ badge and any count quoted in the docs must agree with it.
 - record: DeleteProfile(missing, true) is silent, and a real delete still deletes
 - record: SetProfile strips values equal to their defaults from the OUTGOING profile
 - record: SetProfile keeps a value that differs from its default
+- record: __aceguiLive counts a Create per type and gives it back on Release
+- record: __aceguiLive ignores a Release it never saw created, and a registered type counts
 
 ### test_mock_events.lua (14)
 
@@ -1817,7 +1824,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 227 |
-| test_options_tabs.lua | 36 |
+| test_options_tabs.lua | 41 |
 | test_options_idsuggest.lua | 40 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 9 |
@@ -1835,7 +1842,7 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_asserts.lua | 7 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
-| test_mock_record.lua | 35 |
+| test_mock_record.lua | 37 |
 | test_mock_events.lua | 14 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
@@ -1848,4 +1855,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1626** |
+| **Total** | **1633** |

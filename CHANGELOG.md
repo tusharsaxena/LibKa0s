@@ -15,8 +15,40 @@ cannot drift. Release order is in
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
 (`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
-(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24**, **OptionsWidgets minor 31** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.31.3.7.4; `OptionsTabs` 3 and `OptionsCompose` 7 unchanged), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24**, **OptionsWidgets minor 31**, **OptionsTabs minor 4** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.31.4.7.4; `OptionsCompose` 7 unchanged), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### OptionsTabs minor 4: the page chrome stops leaking a widget per render
+
+- **Fix: a banner or header page no longer grows by a widget and a texture per render** (review
+  finding `LibKa0s-R-02`). Through minor 3 every full render of such a page left its old chrome
+  behind for good: `O.PageBanner` created a fresh AceGUI `Dropdown`, `O.PageHeader` a fresh `Frame`,
+  and the divider under either a fresh texture, and the release only hid and unparented them.
+  AceGUI recycles a widget only when it is Released, and the client never destroys a frame or a
+  region, so every subject switch on a banner or header page (AuraMaster, ConsumableMaster, KickCD,
+  MultiMeters, AbsorbTracker) added to the session's frame count.
+- **The banner's `Dropdown` is Released to AceGUI** when the band is next drawn, by either member.
+  It is hidden at once and Released only after the replacement exists (after `PageBanner`'s own
+  `Create`, after a `PageHeader` builder has run), because the replacing render usually runs inside
+  the old dropdown's own `OnValueChanged` and a widget Released on the way in would be handed
+  straight back to it. The library holds it under a private ctx key: `ctx.__bannerWidget` stays the
+  host's, which AbsorbTracker, AuraMaster, KickCD and MultiMeters each write themselves.
+- **`PageHeader` hands back the same `Frame` on every render of one page**, from a per-page pool of
+  one (`LibKa0s-Pool-1.0`, which the file already floors on). What a builder draws into it is still
+  the host's to release; both hosts in the collection build AceGUI widgets there and Release them.
+- **The divider is one texture per page**, hidden on release and shown again on the next render.
+  `SetParent(nil)` is no longer called on it, since a Region is not promised to honor it.
+- No member or spec field moves; every consumer gets the fix by re-vendoring. `releaseChrome` now
+  releases each piece through its owner, and `__chromeKids` stays as the ledger of what the render
+  drew. `tests/test_options_tabs.lua`: five new cases -- two banner renders leave one `Dropdown` out
+  (red before: two); a header page after a banner page gives the banner's `Dropdown` back (red
+  before); a banner re-rendered from inside its own `onSelect` releases the old picker only after
+  the new one exists; `PageHeader` hands back the same frame (red before: a new one each render);
+  the divider texture is made once per page and never unparented (red before: three textures). The
+  existing "at most ONE chrome block" case now asserts the reused frame, where it asserted the first
+  frame was hidden. The Options key moves 24.31.3.7.4 -> 24.31.4.7.4 and the unreleased document is
+  renamed to match: [the version 24.31.4.7.4 document](docs/api/Options/version-24.31.4.7.4-docs.md).
+  The counts come from the kit's new AceGUI survey, below.
 
 ### OptionsWidgets minor 31: the drag throttles keep their own armed flag
 
@@ -35,7 +67,8 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   `scheduleTimer` arm one timer and commit once (red before: ten timers); the same for the color
   picker (red before: ten timers); the window re-arms once it fires (red before); a handle-returning
   host is unchanged. The Options key moves 24.30.3.7.4 -> 24.31.3.7.4 and the unreleased document
-  is renamed to match: [the version 24.31.3.7.4 document](docs/api/Options/version-24.31.3.7.4-docs.md).
+  is renamed to match: [the version 24.31.3.7.4 document](docs/api/Options/version-24.31.4.7.4-docs.md)
+  (24.31.4.7.4 since OptionsTabs minor 4).
 
 ### Options minor 24: `CreateOptionsPanel` parks in combat; `OpenOptionsPanel` answers a boolean
 
@@ -65,7 +98,7 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   builds the queued pages and lets go of the event; a second call while parked is a no-op; an
   event other than `PLAYER_REGEN_ENABLED` leaves the park armed; the three return values of
   `OpenOptionsPanel`. Documented in
-  [the version 24.31.3.7.4 document](docs/api/Options/version-24.31.3.7.4-docs.md).
+  [the version 24.31.4.7.4 document](docs/api/Options/version-24.31.4.7.4-docs.md).
 
 ### Options minor 24, OptionsScroll minor 4: the font preload moves out of the shell
 
@@ -83,7 +116,7 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
 - `tests/test_options.lua`: one case -- with `lib.__PreloadFonts` nil a panel's show survives and
   renders, and loading `OptionsScroll.lua` installs the preload (red before the move: the shell
   defined it). `tests/test_options_fontpreload.lua` passes unchanged, eleven cases before and after.
-  Documented in [the version 24.31.3.7.4 document](docs/api/Options/version-24.31.3.7.4-docs.md);
+  Documented in [the version 24.31.4.7.4 document](docs/api/Options/version-24.31.4.7.4-docs.md);
   version 23.30.3.7.3 is Superseded.
 
 ### Schema minor 2: `SetMany`, `row.normalize`, `writeThrough`, and the instance id reaching `get` and `ApplyDefault`
@@ -568,6 +601,18 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
 - The new `tests/test_kit_runner.lua` holds seven cases that run the script over fixture repos. The
   complexity case skips where `lizard` is not on PATH. Documented in
   [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
+### Test kit revision 26: an AceGUI Create/Release survey
+
+- **`M.__aceguiLive(type)` (new, in `testkit/mock_record.lua`).** How many widgets of that type the
+  AceGUI fake has handed out and not taken back; with no type, a table of every type with at least
+  one out. The fake never reuses a widget, so a render that Creates on every pass and never
+  Releases passed every other assertion in the kit, which is how the page banner's per-render
+  `Dropdown` went unseen (review finding `LibKa0s-R-02`). `mock_base.lua` feeds it with two lines,
+  one in `Create` and one in `Release` (1454 lines with them). A Release of a widget `Create` never
+  handed out is ignored rather than counted below zero. `tests/test_mock_record.lua` gains two cases.
+  Documented in [the revision 26 document](docs/api/testkit/version-26-docs.md); a consumer's suite
+  totals do not move on re-vendoring.
 
 ## v1.55.0 — 2026-09-23
 

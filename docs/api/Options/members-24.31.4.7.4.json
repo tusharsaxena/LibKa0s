@@ -1,11 +1,11 @@
 {
   "major": "LibKa0s-Options-1.0",
-  "versionKey": "24.31.3.7.4",
+  "versionKey": "24.31.4.7.4",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Options", "minor": 24 },
     { "file": "OptionsWidgets", "minor": 31 },
-    { "file": "OptionsTabs", "minor": 3 },
+    { "file": "OptionsTabs", "minor": 4 },
     { "file": "OptionsCompose", "minor": 7 },
     { "file": "OptionsScroll", "minor": 4 }
   ],

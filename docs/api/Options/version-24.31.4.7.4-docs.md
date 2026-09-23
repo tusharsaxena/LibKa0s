@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 24.31.3.7.4
+# `LibKa0s-Options-1.0` — version 24.31.4.7.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **24** · `OptionsWidgets.lua` **31** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** |
+| Files and minors | `Options.lua` **24** · `OptionsWidgets.lua` **31** · `OptionsTabs.lua` **4** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
 | Shipped in | v1.56.0 |
 | Status | **Current** |
 | Supersedes | [version 23.30.3.7.3](./version-23.30.3.7.3-docs.md) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 24, OptionsWidgets = 31, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 24, OptionsWidgets = 31, OptionsTabs = 4, OptionsCompose = 7, OptionsScroll = 4 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -29,9 +29,9 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-Three changes share this version: `CreateOptionsPanel` parks in combat and `OpenOptionsPanel` answers
-a boolean (below), the font preload moves out of the shell (after them), and the two drag throttles
-keep their own armed flag (last).
+Four changes share this version: `CreateOptionsPanel` parks in combat and `OpenOptionsPanel` answers
+a boolean (below), the font preload moves out of the shell (after them), the two drag throttles
+keep their own armed flag, and the page chrome stops leaking a widget per render (last).
 
 **`CreateOptionsPanel` parks in combat and replays itself (O24).** Called under
 `InCombatLockdown()`, it registers nothing -- no canvas, no category, no page builder runs. It
@@ -69,7 +69,7 @@ replays an **open** (options-ui-§2): only the registration is parked.
 **The font preload moves out of the shell (O24, S4).** `Options.lua` 23 -> **24** and
 `OptionsScroll.lua` 3 -> **4**; `OptionsWidgets.lua`, `OptionsTabs.lua` and `OptionsCompose.lua` do
 not move. **The move adds, removes or repurposes no member, moves no descriptor or row field, and
-leaves nothing to adopt** -- the member manifest at `members-24.31.3.7.4.json` is identical to
+leaves nothing to adopt** -- the member manifest at `members-24.31.4.7.4.json` is identical to
 23.30.3.7.3's apart from the version key.
 
 **What moved.** The whole font preload of **O17** -- the library-level state `lib.__fontPreload`,
@@ -91,7 +91,7 @@ always-shown scrollbar as well, which is the larger symptom.
 
 **Across vendored copies.** `OptionsScroll.lua`'s attach guard re-runs whenever the shell underneath
 it changed or its own minor rises, so the winning shell always carries the winning copy's preload.
-A session that loads a 23.30.3.7.3 copy first and a 24.31.3.7.4 copy second runs the older copy's
+A session that loads a 23.30.3.7.3 copy first and a 24.31.4.7.4 copy second runs the older copy's
 preload (defined by its shell) until the newer `OptionsScroll.lua` attaches and replaces it; the
 state in `lib.__fontPreload` is shared across both, so no face loads twice.
 
@@ -106,6 +106,37 @@ defeated in silence (`KICKCD-R-19`). From W31 each throttle keeps a library-loca
 it calls `scheduleTimer` and cleared inside the callback, and **the return value is unused**. A host
 whose timer answers a handle sees no difference. **No member or field is added or removed, and
 there is nothing to adopt**: the three nil-returning hosts get the 50 ms throttle by re-vendoring.
+
+**The page chrome stops leaking a widget per render (T4).** `OptionsTabs.lua` 3 -> **4**. Through T3
+every full render of a page with a banner or a header block left something behind for good:
+`O.PageBanner` created a fresh AceGUI `Dropdown`, `O.PageHeader` a fresh `Frame`, and the divider
+under either a fresh texture, and the release hid them and unparented them but never gave any of
+them back -- AceGUI recycles a widget only when it is Released, and the client never destroys a
+frame or a region (`LibKa0s-R-02`). Every consumer that renders a banner or header page grew by one
+widget and one texture per subject switch. From T4 each piece goes back to what owns it:
+
+- **The banner's `Dropdown` is Released to AceGUI** when the band is next drawn, by either
+  `PageBanner` or `PageHeader`. It is hidden at once and Released only **after** the replacement
+  exists -- after `PageBanner`'s own `Create`, and after a `PageHeader` builder has run -- because
+  the replacing render usually runs inside the old dropdown's `OnValueChanged`, and a widget
+  Released on the way in would be the one AceGUI's pool hands straight back, re-initialized under its
+  own callback. The library holds it under a private ctx key; **`ctx.__bannerWidget` stays the
+  host's**, which several hosts write themselves, and the library neither reads nor writes it.
+- **`PageHeader` hands back the same `Frame` on every render of one page**, from a pool of one held
+  on the ctx, re-anchored and resized each time. **What a builder draws into that frame is still the
+  host's to release**, as it always was: AceGUI widgets the host Releases after its render, as the
+  collection's two `PageHeader` hosts do, behave exactly as before; a builder that creates raw
+  regions into the frame on every call now stacks them on the one frame, where through T3 each set
+  was hidden with its own frame.
+- **The divider is one texture per page**, created on the first render that draws a rule, hidden on
+  release and re-anchored and shown on the next. `SetParent(nil)` is never called on it: that is
+  not a call the client promises to honor on a Region.
+
+`ctx.__chromeKids` still lists what the current render drew, in order, and still empties on every
+release; it no longer drives the release. **No member or spec field is added or removed, and there
+is nothing to adopt**: every consumer gets the fix by re-vendoring. The kit's AceGUI fake now counts
+what is still out (`M.__aceguiLive`, kit revision 26), which is what the new cases in
+`tests/test_options_tabs.lua` read.
 
 ## Previously, at 23.30.3.7.3
 
@@ -1082,8 +1113,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)` | **W9** | Render one page as a tab strip over its own sections. The partition is by `row.group`, in declaration order — one tab is exactly one group, and there is no second field naming a tab (options-ui-§13). **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first group. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order. |
 | `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). **Its geometry is invariant under the selection from W13.** **From W14 the buttons and the content panel are acquired from `LibKa0s-Pool-1.0` pools held on the `ctx` rather than created per click** — see [What changed at this version](#what-changed-at-this-version). Returns the buttons in tab order, or nil having drawn nothing. |
 | `SubTabStrip(ctx, parent, spec)` | **W13** | A **secondary** strip drawn inside the scroll as ordinary page content, parented to a frame the host supplies (options-ui-§13). Same `spec` shape as `TabStrip`, same selection-invariant pitch, its own ledger (`ctx.__subTabKids`) released on entry, and **no** content panel and **no** `SetChromeHeight` — the page already has both. **Not pooled at W14**, unlike the primary strip: its parent is a frame AceGUI takes back, so its buttons are unparented on release and cannot be recycled. Returns the buttons in tab order **and** the total height the strip occupies, so the host can size the frame it handed in, or nil having drawn nothing. The selection is the host's state: `spec.value` and `spec.onSelect` are the whole contract, and the convention for the collection is `ctx.activeSubTab` as a table keyed by the primary tab's key, session-only and never persisted. |
-| `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip }`. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing. |
-| `PageHeader(ctx, spec)` | **W13** | A host-drawn block pinned in the same band, for controls that apply to **every** tab (options-ui-§14). `spec = { height, build = function(ctx, frame) end, divider = <default true> }`. Anchors a `Frame` across `ctx.chrome`, ledgers it, draws the hairline unless told not to, records the widened band in `ctx.__bannerHeight` via `__bannerBand`, reserves it with `SetChromeHeight`, then calls `build` inside a `pcall` — a raising builder is reported and costs the block, not the page. **A page draws at most one chrome block**: this and `PageBanner` both release `__chromeKids` and both write `ctx.__bannerHeight`, so the second call replaces the first. **Draw it before `TabStrip`.** Returns the frame, or nil having drawn nothing. |
+| `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip }`. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). From **T4** the previous render's dropdown is Released to AceGUI once the new one exists, rather than hidden and kept. **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing. |
+| `PageHeader(ctx, spec)` | **W13** | A host-drawn block pinned in the same band, for controls that apply to **every** tab (options-ui-§14). `spec = { height, build = function(ctx, frame) end, divider = <default true> }`. Anchors a `Frame` across `ctx.chrome`, ledgers it, draws the hairline unless told not to, records the widened band in `ctx.__bannerHeight` via `__bannerBand`, reserves it with `SetChromeHeight`, then calls `build` inside a `pcall` — a raising builder is reported and costs the block, not the page. From **T4** the frame comes from a per-page pool of one, so every render of one page is handed **the same frame**; what `build` draws into it is the host's to release. **A page draws at most one chrome block**: this and `PageBanner` both release the chrome band and both write `ctx.__bannerHeight`, so the second call replaces the first. **Draw it before `TabStrip`.** Returns the frame, or nil having drawn nothing. |
 | `SetChromeHeight(ctx, height)` | **O10** | Reserve `height` pixels of pinned chrome above the scroll, and re-anchor a live scroll to match. Idempotent. `height <= 0` hides `ctx.chrome`. Call only after the wrap of whatever is being reserved is known. |
 | `__scrollTopInset(ctx)` | **O10** | `L.CHROME_GAP + (ctx.chromeHeight or 0)` — the seam `EnsureScroll` and `SetChromeHeight` both read for the scroll's top anchor, so the two cannot disagree. |
 | `__layoutTabs(widths, available, gap)` | **W9** | Pure arithmetic: pack tab pixel widths into rows that fit `available`. A tab wider than `available` is placed alone rather than dropped. Returns rows of 1-based indices into `widths`. Test seam for the wrap rule, callable with no widgets. |
@@ -1921,9 +1952,12 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
-**At 24.31.3.7.4 no member is added or removed**: the font preload moved file; the drag throttles
+**At 24.31.4.7.4 no member is added or removed**: the font preload moved file; the drag throttles
 stop reading `scheduleTimer`'s return value, which a host whose timer answers a handle cannot
-observe; `OpenOptionsPanel`
+observe; the banner's dropdown is Released and the header frame and divider texture reused, which a
+host observes only if it held the old dropdown past the next render or built raw regions into the
+header frame on every call (none of the five hosts calling `PageBanner` or `PageHeader` at this
+version does either); `OpenOptionsPanel`
 now returns a value where it returned none, which a host that ignored the result cannot observe; and
 `CreateOptionsPanel` called in combat registers when combat ends rather than at once. That last one
 is the only difference a host written against 23.30.3.7.3 can see, and only on a login or `/reload`

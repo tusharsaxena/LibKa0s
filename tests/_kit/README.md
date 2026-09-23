@@ -570,6 +570,7 @@ LOSES entries when the addon gives something up — which is the half that matte
 | `M.__shownFrames()` | every frame this build made that is shown, in creation order. From revision 26 a new frame starts **shown**, as `CreateFrame` returns one in the client, so a frame production builds and never hides is on this list. |
 | `M.__svWrites()` | `{ path, value }` for every write that reached a watched SavedVariables tree since `M.__resetSvWrites()`. `M.__watchSv("<Global>")` adds a root the AceDB fake did not create. |
 | `M.__printed()` | every line that reached the chat frame, plus `M.__resetPrinted()` and `M.__recordPrint(line)` for a printer that ends somewhere else. |
+| `M.__aceguiLive(type)` | from revision 26, how many widgets of that type the AceGUI fake has handed out and not taken back; with no type, `{ [type] = count }` for every type with one out. The fake never reuses a widget, so this count is the only way to see a render that Creates and never Releases. Assert on the difference across a render: the shared mock carries earlier suites' widgets. |
 
 Driving them: **`M.__fire(event, ...)` dispatches to the live registration set only** — what the
 client would do — and **`M.__fireUnconditional(target, event, ...)` fires at a target whose

@@ -687,9 +687,11 @@ test("widgets: a page draws at most ONE chrome block -- the second replaces the 
 
   -- Its own re-render first: a page redraws its header on every subject change, and a block left
   -- parented to the chrome would stack with the older one on top.
-  O.PageHeader(ctx, { height = 60, build = function() end })
+  -- Since minor 4 the second render is handed the SAME frame back (from the page's pool of one),
+  -- so "replaces" means reused, not a second frame over the first.
+  local second = O.PageHeader(ctx, { height = 60, build = function() end })
   assertEqual(#ctx.__chromeKids, afterHeader, "a second header stacked on the first")
-  assertFalse(first:IsShown(), "the first block was left on the chrome")
+  assertTrue(second == first, "a second block frame was drawn over the first")
 
   O.PageBanner(ctx, { label = "W", list = { [1] = "One" }, order = { 1 }, value = 1,
                       onSelect = function() end })
@@ -726,6 +728,114 @@ test("widgets: PageHeader refuses politely with no spec and with no height", fun
   assertNil(O.PageHeader(ctx, { height = 0, build = function() end }))
   assertNil(O.PageHeader(nil, { height = 60 }))
   assertEqual(ctx.chromeHeight, 0, "a refusal must reserve nothing")
+end)
+
+-- ── a full page render holds no more than it drew (minor 4) ─────────────────────────────────
+--
+-- Review finding LibKa0s-R-02. Until minor 4 every full render of a banner or header page minted a
+-- fresh Dropdown or raw Frame plus a divider texture, and the release only hid them: the client
+-- never destroys a frame, and AceGUI recycles a widget only when it is Released. The kit's AceGUI
+-- fake never reuses a widget either, so no count below could be read until kit revision 26's
+-- `M.__aceguiLive`.
+
+--- A texture double for ctx.chrome's CreateTexture: the kit's answers the frame itself, which
+--- cannot tell one texture from another or say whether one was unparented.
+local function countTextures(ctx)
+  local made = {}
+  ctx.chrome.CreateTexture = function()
+    local tex = { shown = true, parentCalls = 0 }
+    function tex.SetColorTexture() end
+    function tex.SetPoint() end
+    function tex.ClearAllPoints() end
+    function tex.SetHeight() end
+    function tex.Show(t) t.shown = true end
+    function tex.Hide(t) t.shown = false end
+    function tex.IsShown(t) return t.shown end
+    function tex.SetParent(t) t.parentCalls = t.parentCalls + 1 end
+    made[#made + 1] = tex
+    return tex
+  end
+  return made
+end
+
+local BANNER = { label = "W", list = { [1] = "One", [2] = "Two" }, order = { 1, 2 }, value = 1,
+                 onSelect = function() end }
+
+test("widgets: two full renders of a banner page leave ONE Dropdown out, not two", function()
+  -- red under: PageBanner creating a Dropdown per render and releasing only its frame.
+  local O, _, ctx = bench()
+  local before = T.mocks.__aceguiLive("Dropdown")
+  local first = O.PageBanner(ctx, BANNER)
+  local second = O.PageBanner(ctx, BANNER)
+  assertEqual(T.mocks.__aceguiLive("Dropdown") - before, 1, "the first render's picker was never Released")
+  assertTrue(first ~= second, "the new picker is created before the old one is given back")
+  assertTrue(first.__released, "the first render's picker went back to AceGUI")
+  assertFalse(second.__released == true, "and the picker on screen did not")
+end)
+
+test("widgets: a header page after a banner page gives the banner's Dropdown back", function()
+  -- The two blocks share one band, so moving from one to the other has to release the other's
+  -- furniture too, not only its own.
+  -- red under: releasing the banner widget only from PageBanner.
+  local O, _, ctx = bench()
+  local before = T.mocks.__aceguiLive("Dropdown")
+  local dd = O.PageBanner(ctx, BANNER)
+  O.PageHeader(ctx, { height = 60, build = function() end })
+  assertEqual(T.mocks.__aceguiLive("Dropdown") - before, 0, "the banner's picker outlived its band")
+  assertTrue(dd.__released, "released, not only hidden")
+end)
+
+test("widgets: PageBanner's re-render from inside its own onSelect never hands itself back", function()
+  -- A banner's selection is a change of subject, and a host re-renders the page from inside the
+  -- dropdown's own callback. Released before the new one is created, the old widget is the one
+  -- AceGUI's pool hands straight back, re-initialized while its callback is still running.
+  -- red under: releasing the old picker at the top of the render instead of after the Create.
+  local O, _, ctx = bench()
+  local seen
+  local spec = { label = "W", list = { [1] = "One", [2] = "Two" }, order = { 1, 2 }, value = 1 }
+  spec.onSelect = function() seen = O.PageBanner(ctx, spec) end
+  local before = T.mocks.__aceguiLive("Dropdown")
+  local first = O.PageBanner(ctx, spec)
+  -- The kit's fake never reuses a widget, so the order is read at the moment of the Release: with
+  -- the new picker already created there are two out, and with it not yet created only one.
+  local outAtRelease
+  function first.OnRelease() outAtRelease = T.mocks.__aceguiLive("Dropdown") - before end
+  first:__fire("OnValueChanged", 2)
+  assertTrue(seen ~= nil and seen ~= first, "the re-render drew a fresh picker")
+  assertTrue(first.__released, "the old picker went back to AceGUI")
+  assertEqual(outAtRelease, 2, "the old picker was released before its replacement existed")
+  assertEqual(T.mocks.__aceguiLive("Dropdown") - before, 1)
+end)
+
+test("widgets: PageHeader hands the SAME frame back on every render of one page", function()
+  -- red under: CreateFrame per call, which is one raw Frame per render for the life of the session.
+  local O, _, ctx = bench()
+  local first = O.PageHeader(ctx, { height = 60, build = function() end })
+  local second = O.PageHeader(ctx, { height = 44, build = function() end })
+  assertTrue(first == second, "a second frame was built for the same page")
+  assertTrue(second:IsShown(), "and the reused frame is on screen")
+
+  O.PageBanner(ctx, BANNER)
+  assertFalse(first:IsShown(), "a banner took the band and left the header frame showing")
+  local third = O.PageHeader(ctx, { height = 60, build = function() end })
+  assertTrue(third == first, "back from a banner, the page's frame is still the one handed out")
+end)
+
+test("widgets: the divider texture is made once per page and hidden, never unparented", function()
+  -- SetParent(nil) on a Region is not a call the client promises to honor, and a texture per
+  -- render is a leak the release could only hide.
+  -- red under: drawChromeDivider calling CreateTexture per render, or releaseChrome unparenting it.
+  local O, _, ctx = bench()
+  local made = countTextures(ctx)
+  O.PageHeader(ctx, { height = 60, build = function() end })
+  O.PageHeader(ctx, { height = 60, build = function() end })
+  O.PageBanner(ctx, BANNER)
+  assertEqual(#made, 1, "one rule per page, whatever draws above it")
+  assertTrue(made[1].shown, "the rule is on screen under the block")
+
+  O.PageHeader(ctx, { height = 60, divider = false, build = function() end })
+  assertFalse(made[1].shown, "a block drawn without a divider left the last one showing")
+  assertEqual(made[1].parentCalls, 0, "a Region was unparented")
 end)
 
 -- ── the secondary strip (options-ui-§13) ───────────────────────────────────────────────────

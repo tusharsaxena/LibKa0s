@@ -1346,6 +1346,7 @@ return function()
     local ctor = self.WidgetRegistry[wtype]
     local w = ctor and ctor() or makeWidget(wtype)
     self.__created[#self.__created + 1] = w
+    M.__aceguiNote(w, wtype, 1)   -- mock_record.lua's live-widget survey (revision 26)
     return w
   end
   function aceGUI:GetWidgetVersion(wtype) return self.__widgetVersions[wtype] end
@@ -1396,6 +1397,7 @@ return function()
       widget.frame:SetParent(M.UIParent)
     end
     widget.__released = true
+    M.__aceguiNote(widget, nil, -1)
     self.__released[#self.__released + 1] = widget
     widget.isQueuedForRelease = nil
     if widget.type == "CheckBox" and widget.check then checkTexturePool[#checkTexturePool + 1] = widget.check end

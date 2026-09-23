@@ -37,7 +37,9 @@ local Pool = LibStub and LibStub("LibKa0s-Pool-1.0", true)
 local NEEDS_POOL = 1
 if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 
-local TABS_MINOR = 3
+-- Minor 4: the banner's Dropdown, the header's frame and the divider's texture are reused or
+-- released per page rather than minted on every full render (review finding LibKa0s-R-02).
+local TABS_MINOR = 4
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__tabsMinor and lib.__tabsMinor >= TABS_MINOR
@@ -570,16 +572,27 @@ local function drawContentPanel(ctx)
 end
 
 --- The hairline rule between the banner and the tab strip (options-ui-§14), spanning the
---- chrome's full width. Parked in the BANNER's own ledger (`ctx.__chromeKids`), not the strip's:
+--- chrome's full width. Listed in the BANNER's own ledger (`ctx.__chromeKids`), not the strip's:
 --- only a full page render redraws the banner, so a tab click alone must never touch this
 --- texture the way it touches `ctx.__tabKids`.
+---
+--- ONE TEXTURE PER PAGE (minor 4), built on the first render that draws a rule and kept on the
+--- ctx as `ctx.__ruleTex`. Until minor 4 every full render created a fresh texture and the release
+--- hid it and called SetParent(nil) on it: the client never destroys a region, so that was one
+--- texture per render for the life of the session, and SetParent(nil) on a Region is not a call
+--- the client promises to honor. The release now only hides it, and this re-anchors and shows it.
 local function drawChromeDivider(ctx, rawBannerHeight)
-  local tex = edgeTexture(ctx.chrome, "ARTWORK", CHROME_RULE_COLOR)
-  if not tex then return end
+  local tex = ctx.__ruleTex
+  if not tex then
+    tex = edgeTexture(ctx.chrome, "ARTWORK", CHROME_RULE_COLOR)
+    if not tex then return end
+    ctx.__ruleTex = tex
+  end
   local y = -(rawBannerHeight + L.CHROME_DIVIDER_GAP_TOP)
   tex:SetPoint("TOPLEFT",  ctx.chrome, "TOPLEFT",  0, y)
   tex:SetPoint("TOPRIGHT", ctx.chrome, "TOPRIGHT", 0, y)
   tex:SetHeight(L.CHROME_DIVIDER_H)
+  tex:Show()
   ctx.__chromeKids[#ctx.__chromeKids + 1] = tex
 end
 
@@ -731,7 +744,10 @@ function lib.__AttachTabs(O)
     return top + ((rowCount - 1) * rowPitch) + tabH
   end
 
-  --- Hide, unparent and forget every widget in one of a page's chrome ledgers.
+  --- Hide, unparent and forget every widget in one of a page's ledgers. Since minor 4 only the
+  --- secondary strip's buttons go through here: they are raw Buttons no pool will hand out again.
+  --- The chrome band's three kinds of furniture are each released by what owns them, in
+  --- releaseChrome below.
   local function releaseLedger(ctx, key)
     for _, f in ipairs(ctx[key] or {}) do
       f:Hide()
@@ -757,6 +773,21 @@ function lib.__AttachTabs(O)
     ctx.__tabKids = {}
   end
 
+  --- Give the previous render's banner Dropdown back to AceGUI (minor 4).
+  ---
+  --- Called at the END of the render that replaces it, never from releaseChrome, and that is the
+  --- whole reason the widget is held aside as `ctx.__staleBanner` rather than released on the way
+  --- in. A banner's selection is a change of subject, so the render replacing it very often runs
+  --- INSIDE its OnValueChanged callback; released on the way in, it is back in AceGUI's pool in
+  --- time for this same render's `Create("Dropdown")` -- ours, or one a PageHeader builder makes
+  --- -- to hand it straight back out, re-initialized, with its own callback still on the stack.
+  local function releaseStaleBanner(ctx)
+    local w = ctx.__staleBanner
+    ctx.__staleBanner = nil
+    local AceGUI = O.AceGUI
+    if w and AceGUI and AceGUI.Release then AceGUI:Release(w) end
+  end
+
   --- Release everything a page parked in its chrome band -- the banner AND the strip.
   ---
   --- Two seams, one release, because the two have different LIFETIMES: a tab click redraws the
@@ -764,8 +795,26 @@ function lib.__AttachTabs(O)
   --- Draining both here is what keeps the page-wide teardown total without making the strip's
   --- ledger a second copy of it -- when TabStrip appended to both, __chromeKids grew by one entry
   --- per tab click, forever, holding buttons already hidden and unparented.
+  ---
+  --- BY OWNER, NOT BY LEDGER (minor 4). Until minor 4 this hid and unparented whatever
+  --- `__chromeKids` listed and forgot it, so every full render of a banner or header page left one
+  --- Dropdown or raw Frame and one texture behind for good (review finding LibKa0s-R-02). Each of
+  --- the three now goes back to what owns it: the banner's Dropdown to AceGUI (hidden now, released
+  --- by releaseStaleBanner once the replacement is drawn), the header's frame to the page's
+  --- `ctx.__headerPool`, and the divider's one texture hidden in place. `__chromeKids` stays as the
+  --- ledger a suite reads to ask what this render drew; it no longer owns a release.
   local function releaseChrome(ctx)
-    releaseLedger(ctx, "__chromeKids")
+    local banner = ctx.__bannerDropdown
+    if banner then
+      -- Two releases with no render between them: the older stale widget has nobody left to wait
+      -- for, and holding only one slot is what keeps this from growing a list of its own.
+      releaseStaleBanner(ctx)
+      if banner.frame then banner.frame:Hide() end
+      ctx.__staleBanner, ctx.__bannerDropdown = banner, nil
+    end
+    if ctx.__headerPool then Pool.ReleaseAll(ctx.__headerPool) end
+    if ctx.__ruleTex then ctx.__ruleTex:Hide() end
+    ctx.__chromeKids = {}
     releaseTabs(ctx)
   end
   O.__releaseChrome = releaseChrome
@@ -1033,7 +1082,14 @@ function lib.__AttachTabs(O)
 
     releaseChrome(ctx)
 
+    -- Held on the ctx under a LIBRARY-PRIVATE key (minor 4), so the next releaseChrome can give it
+    -- back. Not `ctx.__bannerWidget`: hosts write that field themselves -- to this dropdown, to a
+    -- picker of their own built inside PageHeader's frame, and to nil before a render -- and a
+    -- release keyed on it would either lose this widget or release one the host owns.
     local dd = AceGUI:Create("Dropdown")
+    ctx.__bannerDropdown = dd
+    -- The replacement exists, so the old picker can no longer be handed back to this render.
+    releaseStaleBanner(ctx)
     dd:SetLabel(spec.label or "")
     dd:SetList(spec.list or {}, spec.order)
     dd:SetValue(spec.value)
@@ -1100,7 +1156,7 @@ function lib.__AttachTabs(O)
   --- `spec` = { height = <number>, build = function(ctx, frame) end, divider = <boolean, default
   --- true> }. Returns the frame, or nil having drawn nothing.
   ---
-  --- A page draws AT MOST ONE chrome block: this and O.PageBanner both release `__chromeKids` and
+  --- A page draws AT MOST ONE chrome block: this and O.PageBanner both release the chrome band and
   --- both write ctx.__bannerHeight, so the second call wins rather than stacking a second band. A
   --- page that needs a picker AND other page-wide controls puts the picker inside this frame and
   --- does not call PageBanner.
@@ -1114,7 +1170,16 @@ function lib.__AttachTabs(O)
 
     releaseChrome(ctx)
 
-    local frame = CreateFrame("Frame", nil, ctx.chrome)
+    -- ONE FRAME PER PAGE (minor 4), from a pool of one held on the ctx, for the reason
+    -- drawContentPanel gives for its panel: until minor 4 this was a CreateFrame per render, and
+    -- the client never destroys a frame. The pool hides and parks it; the parent is the page's own
+    -- chrome, which outlives every render. What the host's builder put INSIDE it is the host's to
+    -- release, as it always was -- the frame coming back is the same one, so a host that
+    -- creates raw regions into it on every build stacks them, where AceGUI widgets it Releases do not.
+    ctx.__headerPool = ctx.__headerPool or Pool.New()
+    local chrome = ctx.chrome
+    local frame = Pool.Acquire(ctx.__headerPool, function() return CreateFrame("Frame", nil, chrome) end)
+    frame:ClearAllPoints()
     frame:SetPoint("TOPLEFT",  ctx.chrome, "TOPLEFT",  0, 0)
     frame:SetPoint("TOPRIGHT", ctx.chrome, "TOPRIGHT", 0, 0)
     frame:SetHeight(height)
@@ -1136,6 +1201,9 @@ function lib.__AttachTabs(O)
       local ok, err = pcall(spec.build, ctx, frame)
       if not ok then print(lib.STRINGS.HEADER_FAILED:format(tostring(err))) end
     end
+    -- After the builder, not before: a builder that makes a Dropdown of its own must not be handed
+    -- back the banner's, which may still be running its callback (see releaseStaleBanner).
+    releaseStaleBanner(ctx)
 
     return frame
   end

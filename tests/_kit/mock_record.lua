@@ -654,6 +654,42 @@ return function(M, ctx)
     return out
   end
 
+  -- ── what AceGUI still holds (revision 26) ────────────────────────────────────────────────
+
+  -- Widgets the AceGUI fake handed out and has not taken back, per type. The fake never reuses a
+  -- widget, so a render that Creates on every pass and never Releases passes every other
+  -- assertion in the kit; the leak is visible only as a count of what is still out. That is how
+  -- a page banner minted a Dropdown per render in every consumer (review finding LibKa0s-R-02).
+  --
+  -- Fed by two lines in `mock_base.lua`: its `Create` reports a widget with the type it was asked
+  -- for, and its `Release` reports it back. A Release of a widget `Create` never handed out --
+  -- one a suite built with `M.__makeAceGUIWidget` -- is not owed, and is ignored rather than
+  -- driving a count below zero.
+  local aceguiType, aceguiLive = setmetatable({}, { __mode = "k" }), {}
+
+  --- Internal: the fake's Create reports `delta = 1` with the type; its Release reports -1.
+  function M.__aceguiNote(widget, wtype, delta)
+    if delta > 0 then
+      aceguiType[widget] = wtype
+    else
+      wtype = aceguiType[widget]
+      if wtype == nil then return end
+      aceguiType[widget] = nil
+    end
+    aceguiLive[wtype] = (aceguiLive[wtype] or 0) + delta
+  end
+
+  --- How many widgets of `wtype` are out (created, not released). With no type, a table of every
+  --- type that has at least one out, keyed by type -- a copy, so a suite can hold it across a render.
+  function M.__aceguiLive(wtype)
+    if wtype ~= nil then return aceguiLive[wtype] or 0 end
+    local out = {}
+    for k, n in pairs(aceguiLive) do
+      if n ~= 0 then out[k] = n end
+    end
+    return out
+  end
+
   M.__resetSvWrites()
   return M
 end

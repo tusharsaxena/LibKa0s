@@ -22,7 +22,8 @@
 registration, and a new frame starting shown) and two gates widened: `test_eol.lua` now catches a
 lone CR, and `test_prose.lua` reads three store-root files, skips two more frozen stores and carries
 `synchronis`. The automated-test runner records the `performance-§12` exemption as perf skip reason
-(2) and prints empty watch-list tables with their header.** The first two files are peels, made to take two kit files back under
+(2) and prints empty watch-list tables with their header. `mock_record.lua` gains an AceGUI
+Create/Release survey, `M.__aceguiLive`.** The first two files are peels, made to take two kit files back under
 `layout-§1`'s 1500-line cap and to give the growth still to come somewhere else to land:
 
 | New file | What moved into it | Loaded by |
@@ -331,6 +332,26 @@ shape on its next run if either list is empty.
 disclaiming row, exit 2 on a register with no separator, the flag with and without a register, and
 the headed empty complexity tables. The last skips where `lizard` is not on PATH. A consumer takes
 the change by re-vendoring; nothing in its own `tests/run.lua` changes.
+
+### A new survey: what AceGUI still holds
+
+| Name | Since | Meaning |
+|---|---|---|
+| `M.__aceguiLive(wtype)` | **26** | How many widgets of type `wtype` the AceGUI fake's `Create` has handed out and its `Release` has not taken back. With no argument, a table `{ [type] = count }` of every type with at least one out -- a copy, so a suite can hold it across a render. Counted by the type `Create` was asked for, so a constructor a suite registered with `RegisterWidgetType` is counted under its own name. A `Release` of a widget `Create` never handed out (one built with `M.__makeAceGUIWidget`) is ignored rather than counted below zero. Per build; in `mock_record.lua`. |
+
+The fake never reuses a widget, so a render that Creates on every pass and never Releases passed
+every other assertion the kit can make: each new widget is a fresh table, and nothing on screen or
+in a ledger grows. That is how the page banner in `LibKa0s/OptionsTabs.lua` minted one `Dropdown`
+per full render in every consumer without a suite noticing (review finding `LibKa0s-R-02`). A suite
+asks the question as a difference -- take `M.__aceguiLive("Dropdown")` before two renders and after,
+and expect one more, not two -- because a shared mock carries every earlier suite's widgets.
+
+`mock_base.lua` feeds the survey with **two lines**: its `Create` reports each widget with the type it
+was asked for, and its `Release` reports it back, after the double-release guard so a widget is
+counted out once. The internal hook is `M.__aceguiNote`, which a suite does not call. `mock_base.lua`
+is 1454 lines with them. The two self-test cases are in this repo's `tests/test_mock_record.lua`, and
+the first consumer cases are `tests/test_options_tabs.lua`'s. Nothing a consumer suite already
+asserts changes; its totals do not move on re-vendoring.
 
 Everything else below is revision 25's contract, carried forward unchanged.
 

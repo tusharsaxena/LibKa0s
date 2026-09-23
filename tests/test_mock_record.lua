@@ -473,3 +473,44 @@ test("record: SetProfile keeps a value that differs from its default", function(
   assertEqual(a.barWidth, 240)
   assertEqual(a.pos.x, 5)
 end)
+
+-- ── what AceGUI still holds (revision 26) ──────────────────────────────────────────────────
+
+test("record: __aceguiLive counts a Create per type and gives it back on Release", function()
+  -- red under: no survey, or a Create or Release that does not report to it
+  --
+  -- The kit's AceGUI fake never reuses a widget, so a render that Creates and never Releases
+  -- passes every other assertion: only a count of what is still out can see the leak
+  -- (review finding LibKa0s-R-02).
+  local M = buildMocks()
+  local AceGUI = M.__libs["AceGUI-3.0"]
+  assertEqual(M.__aceguiLive("Dropdown"), 0, "a fresh build holds nothing")
+  local a = AceGUI:Create("Dropdown")
+  local b = AceGUI:Create("Dropdown")
+  AceGUI:Create("Button")
+  assertEqual(M.__aceguiLive("Dropdown"), 2)
+  assertEqual(M.__aceguiLive("Button"), 1, "counted per type, not in one pile")
+  AceGUI:Release(a)
+  assertEqual(M.__aceguiLive("Dropdown"), 1, "a Release gives one back")
+  b:Release()
+  assertEqual(M.__aceguiLive("Dropdown"), 0, "the method form counts too")
+  local all = M.__aceguiLive()
+  assertEqual(all.Button, 1, "with no type, every type still out")
+  assertEqual(all.Dropdown, nil, "and a type with nothing out is not listed")
+end)
+
+test("record: __aceguiLive ignores a Release it never saw created, and a registered type counts",
+function()
+  -- red under: decrementing on every Release, which drives a count below zero, or counting only
+  -- the factory's own widgets and not a constructor a suite registered
+  local M = buildMocks()
+  local AceGUI = M.__libs["AceGUI-3.0"]
+  local stray = M.__makeAceGUIWidget("Dropdown")
+  AceGUI:Release(stray)
+  assertEqual(M.__aceguiLive("Dropdown"), 0, "a widget the factory never handed out is not owed")
+  AceGUI:RegisterWidgetType("Custom", function() return M.__makeAceGUIWidget("Custom") end, 1)
+  local c = AceGUI:Create("Custom")
+  assertEqual(M.__aceguiLive("Custom"), 1)
+  AceGUI:Release(c)
+  assertEqual(M.__aceguiLive("Custom"), 0)
+end)
