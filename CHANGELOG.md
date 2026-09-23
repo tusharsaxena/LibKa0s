@@ -31,7 +31,9 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   the identifiers the register already ratifies (the `minimise` icon key; AceTimer's `.cancelled`
   field and C_Timer's `IsCancelled`, whose register row now also covers `tests/test_mock_ace.lua`)
   and the quoted words in kit revision 26's document, which records the list entry it added. The
-  gate file itself is exempt, as its kit copy is. No payload byte and no minor moves.
+  gate file itself is read too: only its two list tables are skipped, and the words its comments
+  quote in order to forbid them are named one by one, so its own prose is held to the rule (the
+  sweep's one miss, *licences*, was in it). No payload byte and no minor moves.
 
 ### OptionsTabs minor 4: `RenderTabbedSchema` moves here and takes host tabs, a disabled notice and a chrome hook; `PageBanner` takes an action
 

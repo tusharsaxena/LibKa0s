@@ -54,7 +54,7 @@ end
 --- the first subdirectory this library has ever shipped and the first to find that out.
 ---
 --- The listing does not recurse, so nothing under `media/` is scanned: it holds art, type and their
---- upstream licences, none of it this collection's prose. A `.lua` added under there would go
+--- upstream licenses, none of it this collection's prose. A `.lua` added under there would go
 --- unscanned — put shipped code in the payload root, where the two gates below can see it.
 --- The two shipped files this gate cannot scan, and the reason is the rule itself.
 ---
@@ -141,11 +141,12 @@ end
 -- addition here MUST NOT outlive the change that found it.
 --
 -- BRITISH is lowercase substrings, matched case-insensitively, so one entry covers a word's whole
--- family: `colour` catches coloured and colours, `normalis` catches normalise and normalised. That
--- economy is also the trap — *analysis* contains `analys`, *programmer* contains `programme` — so
--- ALLOWED names the correct US words that collide, and they are REMOVED AS WHOLE WORDS before the
--- substring scan runs. Whole words, not substrings: allowing `analyses` as a substring would
--- swallow *analysed* inside it and hide the very defect this gate exists to find.
+-- family: `colour` catches *coloured* and *colours*, `normalis` catches *normalise* and
+-- *normalised*. That economy is also the trap — *analysis* contains `analys`, *programmer*
+-- contains `programme` — so ALLOWED names the correct US words that collide, and they are REMOVED
+-- AS WHOLE WORDS before the substring scan runs. Whole words, not substrings: allowing `analyses`
+-- as a substring would swallow *analysed* inside it and hide the very defect this gate exists to
+-- find.
 --
 -- Two carve-outs, recorded here so a later sweep does not "fix" them back:
 --   * a Blizzard symbol reproduced verbatim (SetColorTexture, SetBackdropBorderColor) stays as
@@ -276,11 +277,34 @@ local function britishMatcher(ratified, used)
   end
 end
 
+--- Wrap `matcher` so that, in a path `lists` names, the lines of a top-level `local BRITISH = {`
+--- or `local ALLOWED = {` table are not read, up to and including the `}` that closes it at column
+--- one. That is the gate's own copy of the lists, localization-§5's fourth exclusion, and it is ALL
+--- the wrapper skips: the rest of the named file, its comments and its strings, is read like any
+--- other, so a British spelling in the gate's own prose still reddens.
+local function skipListTables(matcher, lists)
+  local open = {}
+  return function(line, path)
+    if not lists[path] then return matcher(line, path) end
+    if open[path] then
+      if line:match("^}") then open[path] = nil end
+      return nil
+    end
+    if line:match("^local BRITISH = {%s*$") or line:match("^local ALLOWED = {%s*$") then
+      open[path] = true
+      return nil
+    end
+    return matcher(line, path)
+  end
+end
+
 --- Every British-spelling hit over `base` (nil: the shipped payload) plus `extra`, and every entry
---- of `ratified` that matched nothing, as one sorted list.
-local function britishHits(ratified, extra, base)
+--- of `ratified` that matched nothing, as one sorted list. `lists` names the files whose list
+--- tables are skipped (`skipListTables`); nil skips none.
+local function britishHits(ratified, extra, base, lists)
   local used = {}
-  local hits = scan(britishMatcher(ratified, used), extra, base)
+  local matcher = skipListTables(britishMatcher(ratified, used), lists or NO_EXEMPTIONS)
+  local hits = scan(matcher, extra, base)
   for path, words in pairs(ratified) do
     for _, word in ipairs(words) do
       if not used[path .. " " .. word] then
@@ -320,9 +344,12 @@ local AUTHORED_FILES = {
 }
 
 -- `tests/test_prose.lua` is this gate: it copies localization-§5's lists whole, so every entry in
--- them is a hit by construction. It is localization-§5's fourth exclusion, the same reason
--- `testkit/test_prose.lua` and `testkit/prose_lists.lua` are exempt above, and it is one named file.
-local AUTHORED_EXEMPT = { ["tests/test_prose.lua"] = true }
+-- them is a hit by construction. That copy is localization-§5's fourth exclusion, and it is the
+-- two list TABLES that are excluded, not the file: the rest of it is read like any other authored
+-- file, and the words its comments quote in order to forbid them are named one by one in
+-- `AUTHORED_RATIFIED` below. A whole-file waiver is the kind localization-§5 forbids, and the one
+-- this used to carry hid a real hit in the file's own prose.
+local AUTHORED_LISTS = { ["tests/test_prose.lua"] = true }
 
 -- Identifiers, not prose, in the authored text. Each is an exemption the register already ratifies,
 -- quoted where it is documented or modeled:
@@ -333,10 +360,12 @@ local AUTHORED_EXEMPT = { ["tests/test_prose.lua"] = true }
 --     that pins the kit's fakes reads them as the fakes spell them, the register row names them,
 --     and the API index's row for kit revision 17, which added the `NewTimer` handle, names the
 --     method.
--- And one document whose subject is this rule, localization-§5's fourth exclusion: kit revision
+-- And two documents whose subject is this rule, localization-§5's fourth exclusion: kit revision
 -- 26's API document records the list entry that revision added and the hits it found in three
--- consumers, word by word. Each word is named here as that document quotes it, so a stray use of
--- the same spelling as prose elsewhere in it still reddens.
+-- consumers, word by word; and this file, whose comments quote the forbidden words in order to
+-- forbid them and whose tables spell out every identifier above. Each word is named here as that
+-- file quotes it, in backticks, asterisks or string quotes, so a stray use of the same spelling as
+-- prose elsewhere in it still reddens.
 local AUTHORED_RATIFIED = {
   ["docs/api/Media/version-4-docs.md"] = { "minimise" },
   ["tools/artwork/icon_cleaner.py"] = { "minimise" },
@@ -345,6 +374,12 @@ local AUTHORED_RATIFIED = {
   ["docs/api/README.md"] = { "iscancelled" },
   ["docs/api/testkit/version-26-docs.md"] = { "`synchronis`", "*synchronis-*", "`synchronisation`",
     "*synchronisation*", "*analysed*", "*neighbours*" },
+  ["tests/test_prose.lua"] = {
+    '`cancelled`', '`colour`', '*coloured*', '*colours*', '`normalis`', '*normalise*',
+    '*normalised*', '`analys`', '`programme`', '*analysed*', '`minimise`', '`minimise.tga`',
+    '"minimise"', '`.cancelled`', '".cancelled"', '`iscancelled`', '"iscancelled"', '`synchronis`',
+    '*synchronis-*', '`synchronisation`', '*synchronisation*', '*neighbours*',
+  },
 }
 
 --- The numeric components of a `version-<key>-docs.md` name, or nil for any other name.
@@ -387,7 +422,7 @@ local function authoredFiles()
   local paths = {}
   for _, name in ipairs(listDir("tests")) do
     local path = "tests/" .. name
-    if name:match("%.lua$") and not AUTHORED_EXEMPT[path] then paths[#paths + 1] = path end
+    if name:match("%.lua$") then paths[#paths + 1] = path end
   end
   for _, name in ipairs(listDir("tools/artwork")) do
     if name:match("%.py$") then paths[#paths + 1] = "tools/artwork/" .. name end
@@ -417,7 +452,7 @@ function()
 end)
 
 test("prose: no British spelling in the tests, the live docs or the artwork tools", function()
-  local hits = britishHits(AUTHORED_RATIFIED, AUTHORED_FILES, authoredFiles())
+  local hits = britishHits(AUTHORED_RATIFIED, AUTHORED_FILES, authoredFiles(), AUTHORED_LISTS)
   assertEqual(table.concat(hits, "\n          "), "",
     "localization-§5 mandates US English in everything this repo authors, not only in what ships")
 end)
