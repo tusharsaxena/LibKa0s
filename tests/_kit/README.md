@@ -23,6 +23,7 @@ broken in the other eleven.
 | `loader.lua` | Headless source loading into the mocked environment |
 | `mock_base.lua` | The universal half of the WoW-API mock, and the Ace fakes |
 | `mock_record.lua` | The recording surveys; `mock_base.lua` loads it from its own folder |
+| `mock_events.lua` | `EventRegistry`, `C_EventUtils.IsEventValid`, and the raw frame registration's `__badEvents` raise; `mock_base.lua` loads it from its own folder (kit revision 26) |
 | `mock_ids.lua` | Opt-in id lookups, installed on a finished mock |
 | `vendor_sync.lua` | The consumer-side vendoring gate |
 | `run-automated-tests.sh` | The consolidated automated-test runner |
@@ -32,8 +33,8 @@ broken in the other eleven.
 | `test_layout_cap.lua` | The 1500-line cap gate, a kit suite |
 | `README.md` | This file |
 
-They vendor as one folder. A copy that leaves out `asserts.lua`, `mock_record.lua` or
-`prose_lists.lua` fails at load rather than passing over nothing.
+They vendor as one folder. A copy that leaves out `asserts.lua`, `mock_record.lua`,
+`mock_events.lua` or `prose_lists.lua` fails at load rather than passing over nothing.
 
 ## `run-automated-tests.sh`
 
@@ -540,7 +541,7 @@ LOSES entries when the addon gives something up — which is the half that matte
 
 | Member | Answers |
 |---|---|
-| `M.__registrations()` | `{ target, kind, event, unit }` for every live registration. `kind` is `event`, `message`, `bucket`, `frame` (a raw `frame:RegisterEvent`) or `unit` (one row **per unit token**). |
+| `M.__registrations()` | `{ target, kind, event, unit }` for every live registration. `kind` is `event`, `message`, `bucket`, `frame` (a raw `frame:RegisterEvent`), `unit` (one row **per unit token**) or, from revision 26, `callback` — an `EventRegistry` callback, shaped `{ kind, event, owner }` with **no `target`**. |
 | `M.__timers()` | every armed AceTimer handle, un-canceled `C_Timer` ticker and frame carrying an `OnUpdate`. `M.__timers` **indexed** is still the pending queue it always was. |
 | `M.__shownFrames()` | every frame this build made that is shown, in creation order. |
 | `M.__svWrites()` | `{ path, value }` for every write that reached a watched SavedVariables tree since `M.__resetSvWrites()`. `M.__watchSv("<Global>")` adds a root the AceDB fake did not create. |
@@ -561,6 +562,15 @@ not call back if it was unregistered before its tick.
 a survey a consumer forgets to switch on does not fail a stand-down suite, it passes it over an
 empty table. The kit vendors as one folder, and a copy missing `mock_record.lua` **raises** on the
 first `base()` rather than degrading. See `docs/api/testkit/version-22-docs.md`.
+
+**Revision 26** adds `mock_events.lua`, installed the same way. `M.EventRegistry` is a recording
+fake of Blizzard's CallbackRegistry — `RegisterCallback(event, func, owner)`,
+`UnregisterCallback(event, owner)`, `TriggerEvent(event, ...)`, one callback per (event, owner),
+invoked as `func(owner, ...)` — and every live callback is a `callback` row in `M.__registrations()`,
+so a stand-down suite sees one left behind. A raw `frame:RegisterEvent` or `RegisterUnitEvent` on a
+name in `M.__badEvents` now raises `Attempt to register unknown event "<NAME>"`, as the AceEvent path
+already did, and records nothing. `M.C_EventUtils.IsEventValid(name)` answers `false` for such a
+name; set `M.C_EventUtils = nil` to model an older client. See `docs/api/testkit/version-26-docs.md`.
 
 ## Id lookups for an id list (`mock_ids.lua`)
 

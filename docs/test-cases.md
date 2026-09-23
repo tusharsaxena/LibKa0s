@@ -1518,6 +1518,23 @@ badge and any count quoted in the docs must agree with it.
 - record: SetProfile strips values equal to their defaults from the OUTGOING profile
 - record: SetProfile keeps a value that differs from its default
 
+### test_mock_events.lua (14)
+
+- events: an EventRegistry callback appears in __registrations as kind 'callback'
+- events: UnregisterCallback removes the callback from __registrations
+- events: one callback per (event, owner) -- a second registration replaces the first
+- events: TriggerEvent reaches a live callback as func(owner, ...) and skips a removed one
+- events: RegisterCallback refuses what CallbackRegistry refuses
+- events: a callback registered with no owner gets a generated numeric owner
+- events: callback rows follow the other kinds, ordered by event then registration
+- events: each build has its own EventRegistry
+- events: frame:RegisterEvent raises on a name in __badEvents, and records nothing
+- events: frame:RegisterUnitEvent raises on a name in __badEvents, and records nothing
+- events: the frame path reads __badEvents at call time
+- events: the frame raise names the caller, not the kit
+- events: C_EventUtils.IsEventValid answers false for a bad name and true otherwise
+- events: a suite may remove C_EventUtils to model an older client
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -1682,6 +1699,7 @@ badge and any count quoted in the docs must agree with it.
 | test_mock_base.lua | 32 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 35 |
+| test_mock_events.lua | 14 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 12 |
@@ -1691,4 +1709,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_eol.lua | 12 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1497** |
+| **Total** | **1511** |

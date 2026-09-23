@@ -6,7 +6,7 @@
 
 | | |
 |---|---|
-| Payload | `testkit/` — `framework.lua`, **`asserts.lua`**, `loader.lua`, `mock_base.lua`, `mock_record.lua`, `mock_ids.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, **`prose_lists.lua`**, `test_layout_cap.lua`, `run-automated-tests.sh`, `README.md` |
+| Payload | `testkit/` — `framework.lua`, **`asserts.lua`**, `loader.lua`, `mock_base.lua`, `mock_record.lua`, **`mock_events.lua`**, `mock_ids.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, **`prose_lists.lua`**, `test_layout_cap.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **26** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.56.0 |
@@ -18,7 +18,8 @@
 
 ## What changed
 
-**Two new files, one new assertion, and one behavioral change to the AceDB fake.** The files are peels, made to take two kit files back under
+**Three new files, one new assertion, and two behavioral changes: the AceDB fake, and event
+registration.** The first two files are peels, made to take two kit files back under
 `layout-§1`'s 1500-line cap and to give the growth still to come somewhere else to land:
 
 | New file | What moved into it | Loaded by |
@@ -80,6 +81,29 @@ also shows up in `M.__svWrites()`, because the SavedVariables file changes. `OnP
 `OnProfileCopied` fire exactly as in revision 25; `OnProfileDeleted` is still not fired. The eight
 cases are in this repo's `tests/test_mock_record.lua` (review findings `AbsorbTracker-R-06` and
 `PartyFrameEnhanced-R-09`).
+
+### A third new file: `mock_events.lua`, and a behavioral change to frame registration
+
+`mock_events.lua` is not a peel. It carries three client surfaces the kit did not model, and
+`mock_base.lua` loads it from its own folder the way it loads `mock_record.lua` (the loader now
+takes the file name), so a copy of the kit missing it **raises at load**. `mock_base.lua` grows by
+two lines, to 1448: the load, the per-frame hook and the install call, less one line the shared
+loader saved.
+
+| Name | Since | Meaning |
+|---|---|---|
+| `M.EventRegistry` | **26** | A recording fake of Blizzard's global CallbackRegistry: `RegisterCallback(event, func, owner)`, `UnregisterCallback(event, owner)` and `TriggerEvent(event, ...)`. One callback per (event, owner), so a second registration **replaces** the first. A function callback is invoked as `func(owner, ...)`, in registration order. An owner left nil is given a generated numeric id, which `RegisterCallback` returns; a numeric owner passed in raises `RegisterCallback 'owner' as number is reserved internally.`, a non-string event and a non-function `func` raise CallbackRegistry's own messages, and `UnregisterCallback` with no owner raises `UnregisterCallback 'owner' is required.`. The closure form (extra arguments after `owner`) is **not modeled** and raises, rather than silently dropping the bound arguments. A callback's error propagates, where the client's securecallfunction would report it. Fresh per build. |
+| `M.__registrations()` kind `"callback"` | **26** | Every live `EventRegistry` callback is a row `{ kind = "callback", event = <name>, owner = <owner> }`, after every other kind, ordered by event name and then registration order. The row carries **no `target`**: a suite that renders rows reads `r.target or r.owner`. `UnregisterCallback` removes the row. `M.__fire` does not dispatch to callbacks; `M.EventRegistry:TriggerEvent` does. |
+| frame `RegisterEvent` / `RegisterUnitEvent` on a name in `M.__badEvents` | **26** | Raises `Attempt to register unknown event "<NAME>"` — the message the AceEvent path has raised since revision 17 — at level 2, so the position names the caller. Nothing is recorded, because the client registers nothing. `M.__badEvents` is read at call time. Applies to every frame the build tracks, `M.__stubFrame()`'s included. |
+| `M.C_EventUtils.IsEventValid(name)` | **26** | `false` for a name in `M.__badEvents`, `true` otherwise, read at call time. A suite models an older client, which has no `C_EventUtils`, with `M.C_EventUtils = nil`; nothing in the kit reads it, so the frame path still raises. |
+
+**Behavioral, in two places.** A consumer suite that surveys `M.__registrations()` now sees a
+surviving `EventRegistry` callback — which is the point: through revision 25 a stand-down suite could
+not see an `EditMode.Exit` callback left behind on disable (review finding
+`PartyFrameEnhanced-R-10`). And a suite that sets `M.__badEvents` now sees a raw frame registration
+raise where it used to record the name. A consumer whose own mock defines `EventRegistry` or
+`C_EventUtils` overwrites the kit's and is unaffected until it drops its own. The fourteen cases are
+in this repo's `tests/test_mock_events.lua`.
 
 Everything else below is revision 25's contract, carried forward unchanged.
 

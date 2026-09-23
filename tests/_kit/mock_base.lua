@@ -54,12 +54,11 @@
 -- whose loader rewrites chunk names. A MISSING recorder RAISES rather than degrading, and that is
 -- the whole point of the error: a mock with no registry does not fail a stand-down suite, it
 -- PASSES it over an empty table, which is worse than having no suite.
-local function loadRecorder()
+local function loadRecorder(name)
   local info = debug and debug.getinfo and debug.getinfo(1, "S")
   local dir = info and tostring(info.source or ""):match("^@(.*[/\\])")
   local tried = {}
-  local candidates = { dir and (dir .. "mock_record.lua") or nil,
-                       "tests/_kit/mock_record.lua", "testkit/mock_record.lua" }
+  local candidates = { dir and (dir .. name) or nil, "tests/_kit/" .. name, "testkit/" .. name }
   for _, path in ipairs(candidates) do
     local f = io.open(path, "r")
     if f then
@@ -68,12 +67,13 @@ local function loadRecorder()
     end
     tried[#tried + 1] = path
   end
-  error("testkit: mock_record.lua was not found beside mock_base.lua (tried "
+  error("testkit: " .. name .. " was not found beside mock_base.lua (tried "
     .. table.concat(tried, ", ") .. ") -- the kit vendors as ONE folder, and a half-copied kit has "
     .. "to fail loudly here: without the recorder every stand-down assertion passes over an empty "
     .. "registry", 2)
 end
-local installRecorders = loadRecorder()
+local installRecorders = loadRecorder("mock_record.lua")
+local Events = loadRecorder("mock_events.lua")  -- EventRegistry, C_EventUtils, frame __badEvents
 
 local function deepcopy(t)
   if type(t) ~= "table" then return t end
@@ -1033,6 +1033,7 @@ return function()
   local function trackFrame(f)
     frameSeq = frameSeq + 1
     f.__seq = frameSeq
+    Events.decorateFrame(M, f)
     frameSet[f] = true
     return f
   end
@@ -1441,6 +1442,7 @@ return function()
     messages = AceEvent.messages,
     aceTimer = aceTimerLib,
   })
+  Events.install(M)
 
   return M
 end

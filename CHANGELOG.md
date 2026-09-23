@@ -70,6 +70,26 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
 - `tests/test_mock_record.lua` gains eight cases. Documented in
   [the revision 26 document](docs/api/testkit/version-26-docs.md).
 
+### Test kit revision 26: `EventRegistry`, `C_EventUtils` and frame registration
+
+- **`testkit/mock_events.lua` (new).** A recording `EventRegistry` (`RegisterCallback`,
+  `UnregisterCallback`, `TriggerEvent`; one callback per event and owner, invoked as
+  `func(owner, ...)`, CallbackRegistry's own argument refusals, and a loud raise on the unmodeled
+  closure form). Every live callback appears in `M.__registrations()` as
+  `{ kind = "callback", event, owner }`, with no `target`, after every other kind. Through revision
+  25 no callback reached the survey, so a stand-down suite could not see an `EditMode.Exit`
+  callback left registered on disable (review finding `PartyFrameEnhanced-R-10`).
+- **Behavioral.** A raw `frame:RegisterEvent` or `frame:RegisterUnitEvent` on a name in
+  `M.__badEvents` raises `Attempt to register unknown event "<NAME>"` at level 2 and records
+  nothing, as the AceEvent path has since revision 17; through revision 25 the frame recorded the
+  name. `M.__badEvents` is read at call time.
+- `M.C_EventUtils.IsEventValid(name)` answers `false` for a name in `M.__badEvents` and `true`
+  otherwise; a suite sets `M.C_EventUtils = nil` to model an older client.
+- `mock_base.lua` loads the file from its own folder through the loader that finds
+  `mock_record.lua`, now taking the file name, and grows two lines to 1448. The new
+  `tests/test_mock_events.lua` holds fourteen cases. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**
