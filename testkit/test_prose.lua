@@ -299,7 +299,7 @@ end
 ---
 --- `covers` is the CHANNEL'S OWN matching rule rather than a shared approximation, because the
 --- refusals must refuse exactly what the scan suppresses: `exemptEntryCovers` for the carve-out,
---- the plain unanchored prefix `filterPaths` compares for `skipDirs`, one exact key for
+--- `dirCovers`, the prefix-with-scan-back `filterPaths` asks for `skipDirs`, one exact key for
 --- `skipFiles`.
 local function narrowing(entry, source, covers)
     return { entry = entry, source = source, covers = covers }
@@ -315,6 +315,14 @@ local function exemptNarrowings(entries)
     return out
 end
 
+--- Whether a `skipDirs` entry, kit or repository, takes `path` out of the scan: the unanchored
+--- prefix, except that a `SCAN_BACK` file is kept against a kit folder, and against a repository
+--- entry that only restates one. `filterPaths` and the refusals both ask this, so a restated kit
+--- folder cannot be disclosed or refused as covering the store-root file the scan reads.
+local function dirCovers(dir, path)
+    return path:sub(1, #dir) == dir and not (SCAN_BACK[path] and KIT_DIRS[dir])
+end
+
 --- The waiver file's two exclusion lists, as narrowings.
 ---
 --- THE OLDER AND WIDER CHANNEL, and the one that went two revisions with no check on it at all: it
@@ -323,7 +331,7 @@ local function waiverNarrowings(rules)
     local out = {}
     for _, dir in ipairs(declaredEntries(rules.skipDirs, SOURCE_SKIPDIRS)) do
         out[#out + 1] = narrowing(dir, SOURCE_SKIPDIRS,
-            function(path) return path:sub(1, #dir) == dir end)
+            function(path) return dirCovers(dir, path) end)
     end
     for _, file in ipairs(declaredEntries(rules.skipFiles, SOURCE_SKIPFILES)) do
         out[#out + 1] = narrowing(file, SOURCE_SKIPFILES,
@@ -682,10 +690,10 @@ end
 --- nothing.
 ---
 --- A `SCAN_BACK` file is kept against a kit folder, and against a repository `skipDirs` entry that
---- only restates one; a wider `skipDirs` entry, or `skipFiles`, still drops it.
+--- only restates one (`dirCovers`); a wider `skipDirs` entry, or `skipFiles`, still drops it.
 local function hiddenByDir(path, skipDirs)
     for _, dir in ipairs(skipDirs) do
-        if path:sub(1, #dir) == dir and not (SCAN_BACK[path] and KIT_DIRS[dir]) then return true end
+        if dirCovers(dir, path) then return true end
     end
     return false
 end

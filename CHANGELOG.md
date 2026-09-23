@@ -128,7 +128,8 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   `docs/perf-analysis/README.md` file by file; `testkit/test_prose.lua` reads them although their
   folders are skipped, because they are rewritten in place rather than frozen (audit findings
   `ConsumableMaster-A-05` and `KICKCD-A-06`). A consumer `skipDirs` entry that only restates a kit
-  folder does not undo it; a wider one, or `skipFiles`, does, and is disclosed.
+  folder does not undo it, and is disclosed as suppressing nothing; a wider one, or `skipFiles`,
+  does, and is disclosed.
 - `SKIPPED_DIRS` gains `docs/superpowers/` and `docs/investigations/`, the two frozen stores
   `documentation-§3` lists that the gate read (`PanelMaster-A-09`).
 - `BRITISH` gains `synchronis` and `ALLOWED` gains *synchronism*, *synchronisms* and *synchronistic*,

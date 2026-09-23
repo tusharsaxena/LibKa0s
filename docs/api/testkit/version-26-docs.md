@@ -190,14 +190,18 @@ standard's v2.65.0, which published `synchronis` together with the three US word
 **What undoes a scan-back.** `SCAN_BACK` overrides the kit's own folders only. A consumer's
 `skipDirs` entry that merely restates one of them (`"docs/perf-analysis/"`) does not un-scan the
 file; a wider entry (`"docs/"`) does, and so does `skipFiles`, and both are disclosed and refused as
-any narrowing is. `filterPaths` asks a new helper, `hiddenByDir`, which carries the rule.
-`test_prose.lua` is 1478 lines.
+any narrowing is. One predicate, `dirCovers`, carries the rule, and both the scan (`filterPaths`,
+through `hiddenByDir`) and a `skipDirs` entry's coverage ask it, so the disclosure and the two
+refusals agree with the scan: a restated kit folder is disclosed as suppressing nothing, and when
+`.pkgmeta` does not ignore it the packaging refusal rejects it as matching nothing rather than
+sending the consumer to `.pkgmeta` for a file the scan reads. `test_prose.lua` is 1486 lines.
 
-The red-first cases are the twelve in this repository's new `tests/test_kit_prose.lua`, each of the
-first eleven driving the vendored gate over a real git index in a temporary directory: each
+The red-first cases are the fifteen in this repository's new `tests/test_kit_prose.lua`, each of
+the first fourteen driving the vendored gate over a real git index in a temporary directory: each
 store-root file reddens; a dated bundle file, a store-root name one folder down, and a file under
 either frozen store stays green; `synchronis` reddens and the three allowances do not; a restated
-kit folder in `skipDirs` does not un-scan the README; and the lists hold 92 and 33 entries. This
+kit folder in `skipDirs` does not un-scan the README, is disclosed as suppressing nothing, and is
+refused as matching nothing unless `.pkgmeta` ignores it; and the lists hold 92 and 33 entries. This
 repository's own `tests/test_prose.lua`, the gate it runs instead of the kit's (CLAUDE.md, register
 row 3), takes the same lists and reads its own two `docs/automated-tests/` store-root files; its one
 hit, `synchronisation` in a comment at `LibKa0s/OptionsTabs.lua:1017`, is corrected.

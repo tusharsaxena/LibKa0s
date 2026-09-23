@@ -58,11 +58,13 @@ local STAND_IN = 'local cases = {} '
   .. 'local function no() error("unused", 0) end '
   .. 'local K = { prose = {}, test = function(n, f) cases[#cases + 1] = { n = n, f = f } end, '
   .. 'fail = function(m) error(m, 0) end, skip = function(m) error("SKIP " .. m, 0) end, '
-  .. 'assertEqual = no, assertTrue = no, assertFalse = no } '
+  .. 'assertEqual = function(a, b, m) if a ~= b then error(m, 0) end end, '
+  .. 'assertTrue = no, assertFalse = no } '
 
---- What the vendored prose gate's scan case says about a repository tracking `files`: `RESULT OK`,
---- or `RESULT FAIL ` and the failure with its whitespace collapsed.
-local function scanVerdict(files)
+--- What the vendored prose gate's case whose name carries `needle` says about a repository tracking
+--- `files`: `NAME ` and the case name, then `RESULT OK`, or `RESULT FAIL ` and the failure with its
+--- whitespace collapsed. The name is printed because the disclosure case carries its figure there.
+local function caseVerdict(files, needle)
   local interpreter, here = (rawget(_G, "arg") or {})[-1], cwd()
   if type(interpreter) ~= "string" or not here then
     T.skip("no interpreter path (arg[-1]) or no `pwd`, so the gate cannot be driven in a fixture")
@@ -72,10 +74,10 @@ local function scanVerdict(files)
     gitFixture(root, files)
     local chunk = (STAND_IN
       .. 'assert(loadfile([[%s/tests/_kit/test_prose.lua]]))(K) '
-      .. 'for _, c in ipairs(cases) do if c.n:find([[no authored file carries]], 1, true) then '
-      .. 'local ok, err = pcall(c.f) '
+      .. 'for _, c in ipairs(cases) do if c.n:find([[%s]], 1, true) then '
+      .. 'print("NAME " .. c.n) local ok, err = pcall(c.f) '
       .. 'print(ok and "RESULT OK" or ("RESULT FAIL " .. tostring(err):gsub("%%s+", " "))) end end')
-      :format(here)
+      :format(here, needle)
     local p = io.popen(("cd '%s' && '%s' -e '%s' 2>&1"):format(root, interpreter, chunk))
     local text = p and p:read("*a") or ""
     if p then p:close() end
@@ -89,6 +91,9 @@ local function scanVerdict(files)
   end
   return outText
 end
+
+--- What the vendored prose gate's scan case says about a repository tracking `files`.
+local function scanVerdict(files) return caseVerdict(files, "no authored file carries") end
 
 --- A fixture: a clean root README, so the scan always has something to read, plus `extra`.
 local function tree(extra)
@@ -155,6 +160,49 @@ function()
   assertTrue(out:find("docs/perf-analysis/README.md:1", 1, true) ~= nil,
     "a repository that wants the file unread names it in skipFiles, where the refusals see it: "
     .. out)
+end)
+
+-- The restated kit folder, seen by the disclosure and the packaging refusal. The entry suppresses
+-- nothing -- the kit already skips the folder, and the scan reads its store-root file back past it
+-- -- so both must say so, rather than naming as narrowed a file the scan reads or sending the
+-- consumer to .pkgmeta for it.
+local function restated(pkgmeta)
+  return tree{
+    ["docs/perf-analysis/README.md"] = "A clean store root.\n",
+    ["tests/prose_waivers.lua"] = 'return { skipDirs = { "docs/perf-analysis/" } }\n',
+    ["Fixture.toc"] = "## Interface: 110200\nCore.lua\n",
+    [".pkgmeta"] = pkgmeta,
+  }
+end
+
+test("prose scan-back: a restated kit folder in skipDirs is disclosed as suppressing nothing",
+function()
+  local out = caseVerdict(restated("ignore:\n  - docs\n"), "this repository declared suppressed")
+  assertTrue(out:find("suppressed 0 of ", 1, true) ~= nil, "no file is suppressed: " .. out)
+  assertTrue(out:find("docs/perf-analysis/ [skipDirs", 1, true) ~= nil
+    and out:find("(0): nothing", 1, true) ~= nil,
+    "and the entry is disclosed as covering nothing: " .. out)
+  assertTrue(out:find("(1): docs/perf-analysis/README.md", 1, true) == nil,
+    "never as covering the store-root file the scan reads: " .. out)
+end)
+
+test("prose scan-back: a restated kit folder in skipDirs, not ignored, is refused as matching nothing",
+function()
+  local out = caseVerdict(restated("ignore:\n  - tests\n"), "is one .pkgmeta keeps out of the zip")
+  assertTrue(out:find("RESULT FAIL", 1, true) ~= nil, "the dead entry is refused: " .. out)
+  assertTrue(out:find("match nothing", 1, true) ~= nil
+    and out:find("docs/perf-analysis/", 1, true) ~= nil,
+    "as matching nothing, with its name: " .. out)
+  assertTrue(out:find("not ones .pkgmeta", 1, true) == nil,
+    "and never sent to .pkgmeta for a file the scan reads: " .. out)
+end)
+
+-- An entry .pkgmeta ignores is not refused for matching nothing, which is the refusal's standing
+-- contract rather than anything the scan-back changed; the disclosure above is what names it dead.
+test("prose scan-back: a restated kit folder in skipDirs that .pkgmeta ignores passes the refusal",
+function()
+  local out = caseVerdict(restated("ignore:\n  - docs\n"), "is one .pkgmeta keeps out of the zip")
+  assertEqual(out:match("RESULT %a+"), "RESULT OK", "nothing it suppresses ships: " .. out)
 end)
 
 test("prose lists: PUBLISHED_BRITISH == #BRITISH == 92 and PUBLISHED_ALLOWED == #ALLOWED == 33",
