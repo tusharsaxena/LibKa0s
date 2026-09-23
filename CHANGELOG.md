@@ -14,8 +14,31 @@ cannot drift. Release order is in
 
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
-(`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
+(`LibKa0s-Launcher-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Launcher minor 2: a disabled gate for the left click, and notices printed once, untagged
+
+- **Additive: an optional `isEnabled` / `disabledLine` pair on the descriptor.** Where `onClick` is
+  present and `isEnabled()` answers false, a left click prints `disabledLine()` and does not call
+  `onClick`. That is `launcher-§2`'s disabled rung (a)/(b), which BankLedger, AuraMaster and
+  AbsorbTracker each hand-wrote inside `onClick` in three spellings (review finding
+  `LibKa0s-R-06`). Right-click and rung (c) are never gated; both open the settings panel, where the
+  addon is re-enabled. `New` raises on an `isEnabled` with no `disabledLine`. A host that passes
+  neither behaves exactly as at minor 1.
+- **Behavioral: `NO_BROKER`, `NO_ICON` and `NO_MINIMAP` print once per instance**, where minor 1
+  printed them on every failing `Register` — twice for a host that registers at `OnInitialize` and
+  again at login. The debug seam still hears every call.
+- **The four `lib.STRINGS` values drop their `[LibKa0s] ` prefix** (review finding `LibKa0s-R-09`):
+  every line goes out through the host's printer, which adds the host's own tag, so the library's
+  was a second tag. The keys are unchanged, so a `d.L` override still works. A consumer test that
+  asserts the prefix has to drop it.
+- `tests/test_launcher.lua` gains five cases: the refused left click, right-click and rung (c)
+  ungated, the half-filled pair refused at `New`, one `NO_ICON` (and one `NO_BROKER`) across two
+  `Register` calls, and no tag in `lib.STRINGS`. Documented in
+  [the version 2 document](docs/api/Launcher/version-2-docs.md); version 1 is Superseded. Adopting
+  the gate is a per-host follow-up: pass the two fields and delete the hand-written check.
 
 ### Lifecycle minor 2: the nested-edge (re-entrancy) behavior is documented and pinned
 

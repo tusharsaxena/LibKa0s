@@ -1,4 +1,4 @@
-# `LibKa0s-Launcher-1.0` — version 1
+# `LibKa0s-Launcher-1.0` — version 2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Launcher surface points here rather than restating it. It describes the
@@ -8,13 +8,35 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Launcher-1.0` |
-| Files and minors | `Launcher.lua` minor **1** |
-| Shipped in | v1.39.0 |
-| Status | Superseded |
-| Supersedes | — (first version) |
-| Superseded by | [version 2](./version-2-docs.md) — an optional `isEnabled` / `disabledLine` gate on the left click; missing-library notices print once, without the `[LibKa0s] ` prefix |
+| Files and minors | `Launcher.lua` minor **2** |
+| Shipped in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 1](./version-1-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **LibDataBroker-1.1** and **LibDBIcon-1.0** are OPTIONAL and are resolved with `LibStub(…, true)` at `Register` time, never at load. |
-| Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 2 }` |
+
+## What changed at this version
+
+Two changes, both from the 2026-09-23 review.
+
+- **An optional disabled gate for the left click** (`LibKa0s-R-06`). Two new descriptor fields,
+  `isEnabled` and `disabledLine`. Where `isEnabled()` answers false and `onClick` is present, a
+  **left** click prints `disabledLine()` through the host's printer and does **not** call `onClick`.
+  That is `launcher-§2`'s disabled rung (a)/(b), which three hosts had each hand-written inside their
+  own `onClick` in three spellings, and which a host that forgot would skip, writing SavedVariables
+  while disabled (**anti-pattern #85**). The right button and rung (c) are never gated: both open the
+  settings panel, which is where the addon is enabled again. The gate is opt-in, so a host that
+  passes neither field behaves exactly as at version 1. `New` raises on an `isEnabled` with no
+  `disabledLine`, because a refusal that prints nothing is the silent left button the section
+  forbids.
+- **The missing-library notices print once, untagged** (`LibKa0s-R-09`). `NO_BROKER`, `NO_ICON` and
+  `NO_MINIMAP` print at most once per instance, where version 1 printed them again on every failing
+  `Register` (a host calls it from `OnInitialize` and again at login). The debug seam still hears
+  every call. Every `lib.STRINGS` value loses its `[LibKa0s] ` prefix, because each line goes out
+  through the host's printer, which already carries the host's tag; the `%s` is still the addon's
+  folder name, so the chat-frame fallback still says whose launcher it is. The **keys** are
+  unchanged, so a host's `d.L` override keeps working.
 
 ## What this major is
 
@@ -70,12 +92,13 @@ lookup taken at load would answer `nil` for a host that happens to list LibKa0s 
 | `descriptor.minimap` answers no table | `false` | the object | none | `IsShown` answers `true` |
 
 Every one of those reports one line naming the addon and the missing piece, through
-`descriptor.print` or the chat frame.
+`descriptor.print` or the chat frame — **once per instance** since version 2, however many times
+`Register` is called.
 
 ## The descriptor
 
-`lib:New(d)` raises on a missing `name`, `icon` or `openSettings`, and on nothing else. None of the
-three has a defensible default: the folder name keys LibDBIcon's saved position, the icon is the
+`lib:New(d)` raises on a missing `name`, `icon` or `openSettings`, and — since version 2 — on an
+`isEnabled` passed without a `disabledLine`. None of the first three has a defensible default: the folder name keys LibDBIcon's saved position, the icon is the
 addon's face in three places, and right-click **always** opens the panel.
 
 | Field | Since | Required | What it is |
@@ -86,6 +109,8 @@ addon's face in three places, and right-click **always** opens the panel.
 | `minimap` | **L1** | yes | LibDBIcon's own table, `db.global.minimap`, **or a function answering it**. A function is the usual shape: `db.global.minimap` does not exist when the host builds its descriptor at file load, and a table captured then is one AceDB later replaces. Resolved at `Register` time. |
 | `openSettings` | **L1** | yes | Opens the addon's settings panel. **Right-click always** calls it, whatever rung the addon is on; so does left-click on rung (c). |
 | `onClick` | **L1** | no | The **left** click's action, and therefore which rung the addon is on. Handed the button name. |
+| `isEnabled` | **L2** | no | Whether the addon is enabled, asked on every click. Where it answers false (or nil) and `onClick` is present, the **left** click is refused: `disabledLine()` is printed and `onClick` is not called. Right-click and rung (c) are never gated. |
+| `disabledLine` | **L2** | with `isEnabled` | Answers the line the refusal prints. Pass the host's Slash dispatcher's own disabled line, so the minimap and `/<slash>` refuse in the same words (`slash-commands-§7`). A non-string answer prints nothing. |
 | `onTooltipShow` | **L1** | no | Handed straight to the LDB object. Its contents are the addon's own and nothing here binds them. A non-function is dropped rather than passed on. |
 | `print` | **L1** | no | Where this module's own reports go. Defaults to `DEFAULT_CHAT_FRAME`. |
 | `debug` | **L1** | no | `debug(tag, message)` — the host's log seam, called with the tag `"Launcher"`. |
@@ -126,14 +151,20 @@ addon's face in three places, and right-click **always** opens the panel.
 
 `lib.STRINGS` carries the four reports (`NO_BROKER`, `NO_ICON`, `NO_MINIMAP`, `CLICK_FAILED`), as a
 literal table, exactly as every other major's does: the library carries no locale, and a host that
-wants its own words passes `d.L`.
+wants its own words passes `d.L`. Since version 2 none carries a `[LibKa0s] ` tag; each begins with
+the addon's folder name, and the host's printer adds the host's own tag.
 
 ## The one click implementation
 
 Both surfaces dispatch into it, so `launcher-§2` is satisfied on the minimap and in a broker display
 **by construction** rather than by two implementations agreeing.
 
-It is `pcall`'d. This runs inside the client's click dispatch, where a raise is a red error box over
+**The disabled gate sits inside it** (version 2). A left click on a host that passed `onClick` and
+`isEnabled` asks `isEnabled()` first; a false answer prints `disabledLine()` and stops. The right
+button and a rung (c) left click go straight to `openSettings`.
+
+It is `pcall`'d, the gate included, so a raising `isEnabled` or `disabledLine` is reported the same
+way a raising `onClick` is. This runs inside the client's click dispatch, where a raise is a red error box over
 the player's minimap with nothing naming the addon that caused it; one line names the addon, the
 button and what raised, and the launcher keeps working.
 
@@ -152,6 +183,8 @@ if Launcher then
         minimap = function() return NS.db.global.minimap end,
         openSettings = function() NS.OpenSettings() end,    -- right-click, always
         onClick = function() NS.ToggleBrowser() end,        -- rung (a); omit entirely for rung (c)
+        isEnabled = function() return not NS.IsDisabled() end,  -- the left click refuses while disabled
+        disabledLine = function() return NS.cli:DisabledLine() end,  -- the dispatcher's own words
         debug = NS.Debug,
     }
     NS.Launcher:Register()
@@ -185,7 +218,10 @@ of which already guard on `NS.Launcher`.
 ## Compatibility
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
-removed or repurposed. This is minor 1 and there is nothing to be compatible with yet.
+removed or repurposed. Version 2 adds two optional descriptor fields and no member. The one change a
+version 1 host can observe without adopting anything is in the words: the four `lib.STRINGS` values
+lose their `[LibKa0s] ` prefix, and the three missing-library notices print once rather than once per
+`Register`. A consumer test that asserts the prefix is the only thing that breaks.
 
 ## Vendoring
 
@@ -205,12 +241,3 @@ listed in the TOC's `# Libraries` section (`toc-file-§4`). They are not part of
 never will be: they are third-party libraries with their own release cadence, and bundling them
 inside a folder that is itself copied into eleven addons would give each of them two copies to
 reconcile.
-
-## Moving to version 2
-
-Nothing has to change, and a host on rung (a) or (b) should. Version 2 adds two optional descriptor
-fields, `isEnabled` and `disabledLine`; pass both and delete the disabled check your `onClick` makes
-by hand, so the library refuses the left click with your dispatcher's line. A rung (c) host has
-nothing to adopt. The one difference a host sees without adopting is in the notices: they print once
-per instance, and the four `lib.STRINGS` values no longer begin `[LibKa0s] `. A test that asserts
-that prefix has to drop it.

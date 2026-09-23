@@ -249,6 +249,68 @@ test("launcher: with no onClick, left-click opens the panel too — that is rung
   assertEqual(rec.opened, 1)
 end)
 
+-- ── the disabled gate (minor 2, launcher-§2) ─────────────────────────────────────────────────
+
+test("launcher: with isEnabled false, a left click prints disabledLine and never calls onClick", function()
+  -- launcher-§2: a disabled rung (a)/(b) addon refuses the left click with the dispatcher's own
+  -- line. Hosts hand-wrote that gate inside onClick in three spellings; this is the one owner.
+  -- red under: no gate, which runs the host's action (and writes SavedVariables) while disabled.
+  local enabled = false
+  local rec = fixture{
+    isEnabled = function() return enabled end,
+    disabledLine = function() return "TestHost is disabled — enable it with /th enable" end,
+  }
+  rec.d.onClick = function() rec.left = rec.left + 1 end
+  local L = lib:New(rec.d)
+  L:Register()
+  L:Object().OnClick(nil, "LeftButton")
+  assertEqual(rec.left, 0, "the host's action never ran")
+  assertEqual(rec.opened, 0, "and nothing else opened in its place")
+  assertEqual(#rec.lines, 1, "exactly one line")
+  assertEqual(rec.lines[1], "TestHost is disabled — enable it with /th enable",
+    "and it is the host's disabledLine, verbatim")
+
+  enabled = true
+  L:Object().OnClick(nil, "LeftButton")
+  assertEqual(rec.left, 1, "enabled again, the action runs")
+  assertEqual(#rec.lines, 1, "and nothing more is said")
+end)
+
+test("launcher: the gate leaves right-click and rung (c) exactly as they were", function()
+  -- Right-click ALWAYS opens settings, and a disabled addon's settings panel is where it is
+  -- re-enabled. Rung (c) is still expressed by omitting onClick, and its left click opens the panel.
+  -- red under: gating every click, which locks the player out of the one surface that re-enables.
+  local rungAB = fixture{
+    onClick = function() end,
+    isEnabled = function() return false end,
+    disabledLine = function() return "disabled" end,
+  }
+  local A = lib:New(rungAB.d)
+  A:Register()
+  A:Object().OnClick(nil, "RightButton")
+  assertEqual(rungAB.opened, 1, "right-click still opens settings while disabled")
+  assertEqual(#rungAB.lines, 0, "and refuses nothing")
+
+  local rungC = fixture{
+    isEnabled = function() return false end,
+    disabledLine = function() return "disabled" end,
+  }
+  local C = lib:New(rungC.d)
+  C:Register()
+  C:Object().OnClick(nil, "LeftButton")
+  assertEqual(rungC.opened, 1, "rung (c): left-click still opens settings")
+  assertEqual(#rungC.lines, 0)
+end)
+
+test("launcher: New refuses an isEnabled with no disabledLine", function()
+  -- A refusal that says nothing is the silent left button launcher-§2 exists to forbid.
+  -- red under: accepting the pair half-filled, which ships a button that does nothing when clicked.
+  assertErrorMatches(function()
+    lib:New{ name = "X", icon = "x", openSettings = function() end,
+      onClick = function() end, isEnabled = function() return true end }
+  end, "requires descriptor.disabledLine")
+end)
+
 test("launcher: a raising click is reported and never escapes into the client", function()
   -- This runs inside the client's click dispatch, where a raise is a red error box over the
   -- player's minimap with nothing naming the addon that caused it.
@@ -362,6 +424,36 @@ test("launcher: with no LibDBIcon the broker plugin still registers; the button 
   assertTrue(L:Object() ~= nil, "but the one object exists and a display can draw it")
   assertNil(ICON.__buttons[rec.name], "and no button was registered")
   assertTrue(said(rec):find("LibDBIcon", 1, true) ~= nil)
+end)
+
+test("launcher: two Register calls with no LibDBIcon print NO_ICON once", function()
+  -- Register is callable from OnInitialize and again from login, and a failing Register reaches the
+  -- notice again each time. One missing library is one line, not one per call.
+  -- red under: no once guard, which prints the same notice twice per session.
+  local rec = fixture()
+  local L = lib:New(rec.d)
+  withoutLibs({ "LibDBIcon-1.0" }, function()
+    L:Register()
+    L:Register()
+  end)
+  assertEqual(#rec.lines, 1, "one notice across two calls")
+  assertTrue(rec.lines[1]:find("LibDBIcon", 1, true) ~= nil)
+
+  local rec2 = fixture()
+  local L2 = lib:New(rec2.d)
+  withoutLibs({ "LibDataBroker-1.1" }, function()
+    L2:Register()
+    L2:Register()
+  end)
+  assertEqual(#rec2.lines, 1, "NO_BROKER likewise")
+end)
+
+test("launcher: STRINGS carry no [LibKa0s] tag, because the host printer adds its own", function()
+  -- makeEmit hands these to the host's tagged printer, so a library tag is a second tag.
+  -- red under: the old prefix, which reads "[Host] [LibKa0s] Host: ..." in chat.
+  for key, value in pairs(lib.STRINGS) do
+    assertTrue(value:find("[LibKa0s]", 1, true) == nil, key .. " carries no library tag")
+  end
 end)
 
 test("launcher: SetShown still records the player's choice where LibDBIcon is absent", function()

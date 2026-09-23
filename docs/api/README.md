@@ -204,7 +204,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Launcher/version-1-docs.md) | `Launcher.lua` 1 | v1.39.0 | **Current** |
+| [2](./Launcher/version-2-docs.md) | `Launcher.lua` 2 | v1.56.0 | **Current** |
+| [1](./Launcher/version-1-docs.md) | `Launcher.lua` 1 | v1.39.0 | Superseded |
 
 ### `LibKa0s-Options-1.0`
 

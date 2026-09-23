@@ -633,7 +633,7 @@ badge and any count quoted in the docs must agree with it.
 - sl: the gate is asked per dispatch, so a value that changes mid-session is honored
 - sl: the refusal wording is NOT reachable through the locale override
 
-### test_launcher.lua (22)
+### test_launcher.lua (27)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
 - launcher: ONE object, of type 'launcher', carrying the host's own icon
@@ -644,6 +644,9 @@ badge and any count quoted in the docs must agree with it.
 - launcher: right-click ALWAYS opens the settings panel, on every rung
 - launcher: left-click runs the host's action on rungs (a) and (b)
 - launcher: with no onClick, left-click opens the panel too — that is rung (c)
+- launcher: with isEnabled false, a left click prints disabledLine and never calls onClick
+- launcher: the gate leaves right-click and rung (c) exactly as they were
+- launcher: New refuses an isEnabled with no disabledLine
 - launcher: a raising click is reported and never escapes into the client
 - launcher: the host's OWN minimap table is handed to LibDBIcon, never a copy
 - launcher: the minimap table is resolved at REGISTER time, not at New
@@ -652,6 +655,8 @@ badge and any count quoted in the docs must agree with it.
 - launcher: the debug seam reports under the Launcher tag
 - launcher: with no LibDataBroker there is no object, and nothing raises
 - launcher: with no LibDBIcon the broker plugin still registers; the button does not
+- launcher: two Register calls with no LibDBIcon print NO_ICON once
+- launcher: STRINGS carry no [LibKa0s] tag, because the host printer adds its own
 - launcher: SetShown still records the player's choice where LibDBIcon is absent
 - launcher: a descriptor whose minimap answers no table refuses the button and says why
 - launcher: a name LibDataBroker already holds takes that object rather than none
@@ -1732,7 +1737,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_draghandle.lua | 35 |
 | test_debuglog.lua | 67 |
 | test_slash.lua | 109 |
-| test_launcher.lua | 22 |
+| test_launcher.lua | 27 |
 | test_options.lua | 84 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
@@ -1767,4 +1772,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1561** |
+| **Total** | **1566** |
