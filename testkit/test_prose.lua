@@ -168,12 +168,19 @@ local BRITISH, ALLOWED = LISTS.BRITISH, LISTS.ALLOWED
 local PUBLISHED_BRITISH, PUBLISHED_ALLOWED = LISTS.PUBLISHED_BRITISH, LISTS.PUBLISHED_ALLOWED
 local SKIPPED_DIRS = LISTS.SKIPPED_DIRS
 
+-- The store-root files read although a kit folder above covers them (`SCAN_BACK`, revision 26), and
+-- the kit folders they are read back from. Sets, because `filterPaths` asks both per path.
+local SCAN_BACK, KIT_DIRS = {}, {}
+for _, path in ipairs(LISTS.SCAN_BACK) do SCAN_BACK[path] = true end
+for _, dir in ipairs(SKIPPED_DIRS) do KIT_DIRS[dir] = true end
+
 -- ---------------------------------------------------------------------------
 -- What is scanned, and what is not
 -- ---------------------------------------------------------------------------
 
 -- The exclusions localization-5 names, and only those. The folders are `SKIPPED_DIRS`, in
--- `prose_lists.lua` with the spellings; the files are below. Every one is a directory or a file
+-- `prose_lists.lua` with the spellings, which also names in `SCAN_BACK` the three store-root files
+-- read back out of them; the files are below. Every one is a directory or a file
 -- rather than a pattern, so the list cannot quietly grow by widening a regex: `locales/enGB.lua`,
 -- which is what a British locale file is for, and the gate itself, which quotes every forbidden
 -- spelling in order to forbid it.
@@ -673,15 +680,22 @@ end
 --- The exempt set drops the file outright rather than filtering its hits: a carved-out dump is
 --- generated data the gate has no opinion about, and PrettyChat's is 1.6 MB it would read to say
 --- nothing.
+---
+--- A `SCAN_BACK` file is kept against a kit folder, and against a repository `skipDirs` entry that
+--- only restates one; a wider `skipDirs` entry, or `skipFiles`, still drops it.
+local function hiddenByDir(path, skipDirs)
+    for _, dir in ipairs(skipDirs) do
+        if path:sub(1, #dir) == dir and not (SCAN_BACK[path] and KIT_DIRS[dir]) then return true end
+    end
+    return false
+end
+
 local function filterPaths(all, skipFiles, skipDirs, exempt)
     local paths = {}
     for _, path in ipairs(all) do
-        if isAuthoredText(path) and not skipFiles[path] and not exempt[path] then
-            local skip = false
-            for _, dir in ipairs(skipDirs) do
-                if path:sub(1, #dir) == dir then skip = true break end
-            end
-            if not skip then paths[#paths + 1] = path end
+        if isAuthoredText(path) and not skipFiles[path] and not exempt[path]
+            and not hiddenByDir(path, skipDirs) then
+            paths[#paths + 1] = path
         end
     end
     return paths
@@ -906,7 +920,7 @@ test("prose: the gate carries localization-5's two lists whole, and nothing of i
     end
 
     -- The section's prose says an allowance is a correct US word that CONTAINS a British substring,
-    -- and two of the published thirty do not: `syntheses` and `emphases` are the plurals of
+    -- and two of the published thirty-three do not: `syntheses` and `emphases` are the plurals of
     -- `synthesis` and `emphasis`, and neither plural contains its own entry. So that containment
     -- rule is described here rather than asserted. A gate that reddens on the list it is required to
     -- copy whole gets deleted rather than obeyed, and the divergence is the standard's to settle.

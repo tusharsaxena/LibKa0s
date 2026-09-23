@@ -121,6 +121,29 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
 - `tests/test_kit_eol.lua` gains four "eol lone CR" cases. Documented in
   [the revision 26 document](docs/api/testkit/version-26-docs.md).
 
+### Test kit revision 26: the prose gate reads the store roots and lists `synchronis`
+
+- **Gate widened.** `testkit/prose_lists.lua` gains `SCAN_BACK`, naming
+  `docs/automated-tests/README.md`, `docs/automated-tests/RESULTS.md` and
+  `docs/perf-analysis/README.md` file by file; `testkit/test_prose.lua` reads them although their
+  folders are skipped, because they are rewritten in place rather than frozen (audit findings
+  `ConsumableMaster-A-05` and `KICKCD-A-06`). A consumer `skipDirs` entry that only restates a kit
+  folder does not undo it; a wider one, or `skipFiles`, does, and is disclosed.
+- `SKIPPED_DIRS` gains `docs/superpowers/` and `docs/investigations/`, the two frozen stores
+  `documentation-§3` lists that the gate read (`PanelMaster-A-09`).
+- `BRITISH` gains `synchronis` and `ALLOWED` gains *synchronism*, *synchronisms* and *synchronistic*,
+  to the standard's v2.65.0 lists: 92 and 33.
+- This repo's own `tests/test_prose.lua` carries the same lists and reads its two
+  `docs/automated-tests/` store-root files. Its one new hit, a comment in `LibKa0s/OptionsTabs.lua`,
+  is respelled; `TABS_MINOR` moves with `LK-27`'s change to that file in this release.
+- **Consumer note.** A dry run found ConsumableMaster (`docs/perf-analysis/README.md:25-26`,
+  `docs/settings-panel.md:80`), KickCD (`docs/perf-analysis/README.md:35-36`,
+  `docs/settings-panel.md:168`, `settings/Panel_Render.lua:61`) and MultiMeters
+  (`tests/test_options_panel.lua:1091`) red; each is an addon fix owed before re-vendoring revision
+  26. AuraMaster's disclosure case name changes, so its `docs/test-cases.md` regenerates.
+- The new `tests/test_kit_prose.lua` holds twelve cases. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**

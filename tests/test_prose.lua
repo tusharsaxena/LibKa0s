@@ -59,7 +59,7 @@ end
 --- The two shipped files this gate cannot scan, and the reason is the rule itself.
 ---
 --- `testkit/test_prose.lua` IS a prose gate: it carries localization-5's `BRITISH` list, which the
---- section requires it to copy WHOLE, and that list is ninety-one British spellings by
+--- section requires it to copy WHOLE, and that list is ninety-two British spellings by
 --- construction. Scanning it would redden on every entry the standard obliges it to hold, and the
 --- only way to green would be to carry a subset -- which is the anti-pattern the whole-list rule
 --- exists to forbid. Since kit revision 26 the lists themselves live beside the gate, in
@@ -99,12 +99,18 @@ local function shippedFiles()
   return paths
 end
 
---- Run `matcher(line, path)` over every line of every shipped file, collecting `file:line —
---- <what>` for each hit. One walk, two gates: reading the payload twice would double the shell-outs
---- for nothing.
-local function scan(matcher)
-  local hits = {}
-  for _, path in ipairs(shippedFiles()) do
+--- Run `matcher(line, path)` over every line of every shipped file, and of every path in `extra`,
+--- collecting `file:line — <what>` for each hit. One walk per gate, over one listing: reading the
+--- payload's directory again per gate would multiply the shell-outs for nothing. An `extra` path
+--- that cannot be opened is a hit, not a skip: it is named because it is expected to exist.
+local function scan(matcher, extra)
+  local hits, paths = {}, shippedFiles()
+  for _, path in ipairs(extra or {}) do
+    local probe = io.open(path, "r")
+    if probe then probe:close() else hits[#hits + 1] = path .. " — cannot be opened" end
+    paths[#paths + 1] = path
+  end
+  for _, path in ipairs(paths) do
     local f = io.open(path, "r")
     if f then
       local nline = 0
@@ -158,8 +164,8 @@ local BRITISH = {
   "serialis", "summaris", "utilis", "organis", "authoris", "prioritis",
   "alphabetis", "categoris", "sanitis", "visualis", "minimis", "maximis",
   "itemis", "randomis", "tokenis", "capitalis", "localis", "modularis",
-  "standardis", "memois", "recognis", "analys", "paralys", "synthesis",
-  "emphasis",
+  "standardis", "memois", "recognis", "synchronis", "analys", "paralys",
+  "synthesis", "emphasis",
   -- a doubled consonant before a suffix, where US English keeps one
   "cancelled", "cancelling", "cancellable", "labelled", "labelling",
   "travelled", "travelling", "modelled", "modelling", "signalled",
@@ -180,6 +186,7 @@ local ALLOWED = {
   "paralysis", "paralyses", "synthesis", "syntheses", "emphasis", "emphases",
   "fulfill", "fulfills", "fulfilled", "fulfilling", "fulfillment",
   "programmer", "programmers", "programmed",
+  "synchronism", "synchronisms", "synchronistic",
 }
 
 -- The whole-word index ALLOWED is consulted through. `%a+` matches a maximal run of letters, so a
@@ -221,6 +228,14 @@ local RATIFIED = {
 }
 local NO_EXEMPTIONS = {}
 
+-- The kit gate's scan-back (`SCAN_BACK` in `testkit/prose_lists.lua`, kit revision 26), applied
+-- here to the two store-root files this repository has. The dated bundles beside them are frozen
+-- records; these two are rewritten in place by every automated-test run, so they are authored text
+-- a reader meets first. This library keeps no `docs/perf-analysis/` store, so the third file the
+-- kit names has no instance here. Read by the British-spelling gate only: the ASCII gate is about
+-- Lua a player's client draws, and the section-reference gate is about the bytes that ship.
+local SCAN_BACK = { "docs/automated-tests/README.md", "docs/automated-tests/RESULTS.md" }
+
 --- Replace every plain (non-pattern) occurrence of `needle` in `s` with a space. Returns the new
 --- string and how many it replaced. Plain rather than `gsub` so an exemption is read as the literal
 --- text it is, with no chance of a magic character in it quietly widening what it covers.
@@ -237,7 +252,8 @@ local function stripPlain(s, needle)
   return table.concat(out), n
 end
 
-test("prose: no British spelling in the shipped library or the shipped kit", function()
+test("prose: no British spelling in the shipped library, the shipped kit or the store roots",
+function()
   local used = {}
   local hits = scan(function(line, path)
     -- ALLOWED first, as WHOLE WORDS: `%a+` matches a maximal run of letters, so a token that
@@ -256,7 +272,7 @@ test("prose: no British spelling in the shipped library or the shipped kit", fun
       if lower:find(word, 1, true) then return word end
     end
     return nil
-  end)
+  end, SCAN_BACK)
   for path, words in pairs(RATIFIED) do
     for _, word in ipairs(words) do
       if not used[path .. " " .. word] then

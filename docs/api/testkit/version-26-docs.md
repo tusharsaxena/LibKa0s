@@ -19,8 +19,9 @@
 ## What changed
 
 **Three new files, one new assertion, three behavioral changes (the AceDB fake, event
-registration, and a new frame starting shown) and one gate widened: `test_eol.lua` now catches a
-lone CR.** The first two files are peels, made to take two kit files back under
+registration, and a new frame starting shown) and two gates widened: `test_eol.lua` now catches a
+lone CR, and `test_prose.lua` reads three store-root files, skips two more frozen stores and carries
+`synchronis`.** The first two files are peels, made to take two kit files back under
 `layout-§1`'s 1500-line cap and to give the growth still to come somewhere else to land:
 
 | New file | What moved into it | Loaded by |
@@ -164,6 +165,55 @@ two repositories red, and every other addon green:
 
 Each is an addon fix owed before that addon re-vendors revision 26. The repair is to delete the extra
 CR, not to mark the file: checking it out again restores the same bytes.
+
+### A gate widened: `test_prose.lua` reads the store roots, skips two more frozen stores, and lists `synchronis`
+
+Three changes to what the prose gate reads, all of them in `prose_lists.lua`:
+
+| Change | Revision 25 | Revision 26 |
+|---|---|---|
+| `docs/automated-tests/README.md`, `docs/automated-tests/RESULTS.md`, `docs/perf-analysis/README.md` | skipped with the whole store | **read**, named file by file in the new `SCAN_BACK` list |
+| `docs/superpowers/`, `docs/investigations/` | read | **skipped**, added to `SKIPPED_DIRS` |
+| `BRITISH` / `ALLOWED` | 91 / 30 | **92 / 33**: `synchronis`, and *synchronism*, *synchronisms*, *synchronistic* allowed beside it |
+
+`localization-§5` lets a gate skip frozen dated bundles, and through revision 25 the kit skipped the
+two dated stores whole. The three files above sit at a store's root rather than in a bundle, and
+`documentation-§3` has them rewritten or overwritten in place, so they are authored text; skipping
+the folder hid real British spellings in two consumers (audit findings `ConsumableMaster-A-05` and
+`KICKCD-A-06`). They are named, never matched by a pattern over the bundles' dated names, because
+`localization-§5` requires each exclusion to be named, and a file one folder down with the same name
+is a bundle file and stays skipped. `documentation-§3` also lists `docs/superpowers/` and
+`docs/investigations/` as frozen, and the gate read both, so a consumer respelled a frozen spec's word
+into a non-word rather than leave the record alone (`PanelMaster-A-09`). The lists follow the
+standard's v2.65.0, which published `synchronis` together with the three US words that contain it.
+
+**What undoes a scan-back.** `SCAN_BACK` overrides the kit's own folders only. A consumer's
+`skipDirs` entry that merely restates one of them (`"docs/perf-analysis/"`) does not un-scan the
+file; a wider entry (`"docs/"`) does, and so does `skipFiles`, and both are disclosed and refused as
+any narrowing is. `filterPaths` asks a new helper, `hiddenByDir`, which carries the rule.
+`test_prose.lua` is 1478 lines.
+
+The red-first cases are the twelve in this repository's new `tests/test_kit_prose.lua`, each of the
+first eleven driving the vendored gate over a real git index in a temporary directory: each
+store-root file reddens; a dated bundle file, a store-root name one folder down, and a file under
+either frozen store stays green; `synchronis` reddens and the three allowances do not; a restated
+kit folder in `skipDirs` does not un-scan the README; and the lists hold 92 and 33 entries. This
+repository's own `tests/test_prose.lua`, the gate it runs instead of the kit's (CLAUDE.md, register
+row 3), takes the same lists and reads its own two `docs/automated-tests/` store-root files; its one
+hit, `synchronisation` in a comment at `LibKa0s/OptionsTabs.lua:1017`, is corrected.
+
+**A consumer note.** A dry run of the kit over a clone of each addon on 2026-09-23 found three
+repositories red on this gate, and eight green:
+
+| Repository | Hits | Where |
+|---|---|---|
+| ConsumableMaster | 3 | `docs/perf-analysis/README.md:25` (*analysed*), `:26` (*neighbours*), `docs/settings-panel.md:80` (*synchronisation*) |
+| KickCD | 4 | `docs/perf-analysis/README.md:35` (*analysed*), `:36` (*neighbours*), `docs/settings-panel.md:168` and `settings/Panel_Render.lua:61` (*synchronis-*) |
+| MultiMeters | 1 | `tests/test_options_panel.lua:1091` (*synchronis-*) |
+
+Each is an addon fix owed before that addon re-vendors revision 26. AuraMaster stays green but its
+disclosure case's name moves from *3 of 148* to *3 of 136* tracked authored files, because the kit
+now skips its `docs/superpowers/`, so its `docs/test-cases.md` is regenerated with the re-vendor.
 
 Everything else below is revision 25's contract, carried forward unchanged.
 

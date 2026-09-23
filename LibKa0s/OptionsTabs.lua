@@ -1014,7 +1014,7 @@ function lib.__AttachTabs(O)
   --- it, pinned above the strip and the scroll.
   ---
   --- It carries the PICKER rather than a label, and it is the ONLY picker: a page that already
-  --- had one deletes it. Two controls over one piece of session state is a synchronisation
+  --- had one deletes it. Two controls over one piece of session state is a synchronization
   --- problem the design invented and would then own forever -- here there is one value, read at
   --- render time, and the structural refresh the write already triggers repaints every panel.
   ---

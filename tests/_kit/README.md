@@ -29,7 +29,7 @@ broken in the other eleven.
 | `run-automated-tests.sh` | The consolidated automated-test runner |
 | `test_eol.lua` | The line-ending gates, a kit suite |
 | `test_prose.lua` | The US-English prose gate, a kit suite |
-| `prose_lists.lua` | The published lists `test_prose.lua` reads: both spelling lists and the folder exclusions. `test_prose.lua` loads it from its own folder; nothing else does (kit revision 26) |
+| `prose_lists.lua` | The published lists `test_prose.lua` reads: both spelling lists, the folder exclusions and the store-root files read back out of them. `test_prose.lua` loads it from its own folder; nothing else does (kit revision 26) |
 | `test_layout_cap.lua` | The 1500-line cap gate, a kit suite |
 | `README.md` | This file |
 
@@ -186,6 +186,19 @@ Kit.run{ dir = "tests/", suites = { "test_schema", ..., { name = "test_prose", d
 
 **A repo that already has its own copy wires one or the other, never both.** Two gates over one
 rule is two lists to keep whole, which is the divergence this file exists to end.
+
+### What it reads
+
+Every tracked `.lua`, `.md` and `.toc` file and `.luacheckrc`, minus `localization-§5`'s named
+exclusions, which live in `prose_lists.lua` beside the gate: vendored code (`libs/`, `tests/_kit/`),
+the frozen stores (`docs/audits/`, `docs/automated-tests/`, `docs/perf-analysis/`, `docs/reviews/`,
+`docs/revendor/`, and from revision 26 `docs/superpowers/` and `docs/investigations/`),
+`locales/enGB.lua` and the gate's own files. **From revision 26 three store-root files are read back
+out of those folders**, named file by file in `SCAN_BACK`: `docs/automated-tests/README.md`,
+`docs/automated-tests/RESULTS.md` and `docs/perf-analysis/README.md`. A store's dated bundles are
+frozen, but these three are rewritten in place (`documentation-§3`), so they are authored text. A
+repository's own `skipDirs` entry that only restates one of the kit's folders does not undo the
+scan-back; one that is wider does, and so does `skipFiles`, both disclosed as below.
 
 ### `Kit.prose` — the generated-data carve-out
 

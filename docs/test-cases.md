@@ -1575,7 +1575,7 @@ badge and any count quoted in the docs must agree with it.
 
 ### test_prose.lua (3)
 
-- prose: no British spelling in the shipped library or the shipped kit
+- prose: no British spelling in the shipped library, the shipped kit or the store roots
 - prose: no non-ASCII byte reaches a player, the em dash excepted
 - prose: no retired §N.M section reference in the shipped library or the shipped kit
 
@@ -1641,6 +1641,21 @@ badge and any count quoted in the docs must agree with it.
 - eol lone CR: every lone CR is named, including one at end of file
 - eol lone CR: a file with a NUL byte is skipped
 - eol lone CR: clean CRLF and clean LF files pass
+
+### test_kit_prose.lua (12)
+
+- prose scan-back: a store-root perf-analysis README is read though its folder is skipped
+- prose scan-back: a store-root automated-tests README is read
+- prose scan-back: a store-root automated-tests RESULTS.md is read
+- prose scan-back: a dated perf-analysis bundle stays skipped
+- prose scan-back: a dated automated-tests bundle stays skipped
+- prose scan-back: a store-root name one folder down is a bundle file
+- prose scan-back: docs/superpowers/ is a frozen store and skipped
+- prose scan-back: docs/investigations/ is a frozen store and skipped
+- prose lists: synchronis is published, and a root README carrying it is red
+- prose lists: synchronism, synchronisms and synchronistic are allowed
+- prose scan-back: restating the kit's own folder in skipDirs does not un-scan the root README
+- prose lists: PUBLISHED_BRITISH == #BRITISH == 92 and PUBLISHED_ALLOWED == #ALLOWED == 33
 
 ### test_eol.lua (2)
 
@@ -1712,6 +1727,7 @@ badge and any count quoted in the docs must agree with it.
 | test_register.lua | 1 |
 | test_kit_inventory.lua | 37 |
 | test_kit_eol.lua | 16 |
+| test_kit_prose.lua | 12 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1516** |
+| **Total** | **1528** |

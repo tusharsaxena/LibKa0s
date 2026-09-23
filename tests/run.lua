@@ -83,7 +83,7 @@ Kit.run{
     "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events",
     "test_surface_parity",
     "test_versioning", "test_kitsync", "test_prose",
-    "test_register", "test_kit_inventory", "test_kit_eol",
+    "test_register", "test_kit_inventory", "test_kit_eol", "test_kit_prose",
     -- Shipped in the kit, so every consumer inherits the gate instead of re-typing it; the
     -- inventory assertion goes red in any repo that vendors it and leaves it undeclared.
     -- Declared by the PAIR (basename, directory) from kit revision 25: a bare name here wires
