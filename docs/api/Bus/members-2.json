@@ -1,0 +1,12 @@
+{
+  "major": "LibKa0s-Bus-1.0",
+  "versionKey": "2",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Bus", "minor": 2 }
+  ],
+  "members": [
+    { "name": "Catalog", "kind": "function" },
+    { "name": "New", "kind": "function" }
+  ]
+}

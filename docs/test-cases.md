@@ -154,7 +154,7 @@ badge and any count quoted in the docs must agree with it.
 - lifecycle: Hold and Release refuse a key that is not a non-empty string
 - lifecycle: two latches share nothing
 
-### test_bus.lua (27)
+### test_bus.lua (30)
 
 - bus: the major is registered and reports its file minor
 - bus: the major is absent without Core, and with a Core below its floor
@@ -175,6 +175,9 @@ badge and any count quoted in the docs must agree with it.
 - bus: a rejected entry is dropped from the record
 - bus: StandUp is refused while isDown answers true, and the bus stays down
 - bus: composed with Lifecycle, releasing one hold under another leaves the bus down
+- bus: a re-embedded target is re-stamped at the next edge, so later registrations stand down
+- bus: after a re-stamp, a registration made while down is recorded and not live
+- bus: the re-stamp adopts the new raw member and counts a target once
 - bus: a target only CallbackHandler holds survives StandDown and a full GC
 - bus: a target emptied by its owner leaves the bus, which then holds nothing of it
 - bus: two buses share nothing
@@ -1719,7 +1722,7 @@ badge and any count quoted in the docs must agree with it.
 | test_env.lua | 10 |
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 21 |
-| test_bus.lua | 27 |
+| test_bus.lua | 30 |
 | test_schema.lua | 71 |
 | test_pool.lua | 23 |
 | test_item.lua | 15 |
@@ -1763,4 +1766,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1557** |
+| **Total** | **1560** |

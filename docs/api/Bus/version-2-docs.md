@@ -1,4 +1,4 @@
-# `LibKa0s-Bus-1.0` — version 1
+# `LibKa0s-Bus-1.0` — version 2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Bus surface points here rather than restating it. It describes the
@@ -8,12 +8,37 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Bus-1.0` |
-| Files and minors | `Bus.lua` minor **1** |
-| Shipped in | v1.55.0 |
-| Status | Superseded |
-| Supersedes | — (first version) |
-| Superseded by | [version 2](./version-2-docs.md) — the tracking wrappers are re-stamped at every edge after a newer AceEvent-3.0 re-embed |
-| Confirm in-game | `LibStub("LibKa0s-Bus-1.0").MODULES` → `{ Bus = 1 }` |
+| Files and minors | `Bus.lua` minor **2** |
+| Shipped in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 1](./version-1-docs.md) |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Bus-1.0").MODULES` → `{ Bus = 2 }` |
+
+## What changed at this version
+
+**The bus re-stamps its tracking wrappers at every edge, so a newer AceEvent-3.0 loading later in
+the session no longer takes a target out of the record for good.** No member is added or removed,
+so the manifest differs from version 1's only in the minor, and every host gets the fix by
+re-vendoring with no code change.
+
+| | | Since |
+|---|---|---|
+| `bus:StandDown()` / `bus:StandUp()` | Re-stamp every target this bus created **first**, in every case — including the idempotent and the refused calls — before doing anything else. | **2** |
+| `bus:StandDown()` | Answers a trailing second value: the number of targets re-stamped. | **2** |
+| `bus:StandUp()` | Answers a trailing third value: the number of targets re-stamped. | **2** |
+| A re-stamped target | Its wrappers forward to the member the re-embed left behind, adopted as the new raw member. | **2** |
+
+At version 1, AceEvent-3.0's upgrade loop re-embedding a target overwrote its six wrappers with the
+raw mixins for the rest of the session. A registration made through the overwritten members went
+straight to CallbackHandler and was never recorded, so `StandDown` left it live on a target with an
+empty record, and `StandUp` never brought it back on one with a recorded entry (review finding
+`LibKa0s-R-05`). See *The re-stamp* below for what is closed and the window that remains.
+
+**The trailing values are additive.** A host that reads `local n = bus:StandDown()` or
+`local replayed, rejected = bus:StandUp()` is unaffected. One that forwards the call in the last
+position of an argument list — `assertEqual(x, bus:StandDown())`, or `return bus:StandDown()`
+into such a call — now passes one more value there.
 
 ## What this major is
 
@@ -95,8 +120,8 @@ and is not a function.
 | Member | Since | Answers | What it does |
 |---|---|---|---|
 | `bus:NewTarget()` | 1 | a target, or **nil** | A fresh AceEvent-embedded table whose six register/unregister members are wrapped (below). One per receiver, never shared. `nil` when `AceEvent-3.0` is not in LibStub. |
-| `bus:StandDown()` | 1 | number | Raw-unregisters every tracked registration, events **and** messages, and keeps the record. Answers the number of recorded entries. Idempotent: a second call answers `0` and touches nothing. Not guarded by `isDown`. |
-| `bus:StandUp()` | 1 | number, array | Replays the record as it is **now**. Answers `replayed, rejected` — the entries made live, and a **fresh sorted** array of `"event:NAME"` / `"message:NAME"` for the entries that raised. `0, {}` when already up, and `0, {}` (the bus staying down) while `isDown()` answers truthy. Never raises. |
+| `bus:StandDown()` | 1 | number, number | Raw-unregisters every tracked registration, events **and** messages, and keeps the record. Answers the number of recorded entries, then (**since 2**) the number of targets re-stamped. Idempotent: a second call answers `0` and takes nothing down. Not guarded by `isDown`. |
+| `bus:StandUp()` | 1 | number, array, number | Replays the record as it is **now**. Answers `replayed, rejected` — the entries made live, and a **fresh sorted** array of `"event:NAME"` / `"message:NAME"` for the entries that raised — then (**since 2**) the number of targets re-stamped. `0, {}` when already up, and `0, {}` (the bus staying down) while `isDown()` answers truthy, each with the re-stamp count after them. Never raises. |
 | `bus.name` | 1 | — | The descriptor's `name`. |
 
 ## A tracked target
@@ -104,6 +129,26 @@ and is not a function.
 `NewTarget` embeds AceEvent into a fresh table, captures the six raw members, and stamps a wrapper
 over each: `RegisterEvent`, `UnregisterEvent`, `UnregisterAllEvents`, `RegisterMessage`,
 `UnregisterMessage`, `UnregisterAllMessages`. `SendMessage` is left raw.
+
+Each wrapper calls the raw member it holds **at call time**, so a raw member the re-stamp adopts is
+the one called from then on.
+
+### The re-stamp
+
+AceEvent-3.0 ends its file with an upgrade loop that calls `Embed` again on every table in
+`AceEvent.embeds`. A newer minor loading after a Ka0s host has created targets therefore writes the
+six raw members back over the bus's wrappers. **Both edges re-stamp first:** `StandDown` and
+`StandUp` walk every target this bus created and, for each of the six members that no longer holds
+its wrapper, adopt what they find there as the new raw member and put the wrapper back. They do it
+before their own idempotence and `isDown` checks, so a no-op or refused call still re-stamps, and
+they answer the number of targets re-stamped as a trailing value for the host's debug seam.
+
+**The residual window.** A registration made between a re-embed and the next edge goes straight to
+CallbackHandler and is untracked. At that edge, `StandDown` still takes it down when its target
+holds a recorded entry (the raw unregister-all clears the whole target), but it is not in the
+record, so `StandUp` does not bring it back; on a target whose record is empty it stays live. From
+the edge on the target is tracked again. The edges are the only moments the record is read, which
+is why they are where it is repaired: there is no fork of Ace3 and no metatable proxy on the target.
 
 ### The record
 
@@ -162,7 +207,12 @@ empties — through any unregister path, including `UnregisterAll*`. So:
 - A target nothing but CallbackHandler holds survives a stand-down (which drops CallbackHandler's
   reference) and is there to replay.
 - A target its owner retires by emptying it leaves the bus, with **no `Retire` member needed**.
-  Outside that window the bus holds no reference to it at all.
+  Outside that window the bus holds no strong reference to it at all.
+
+**Since 2** the bus also keeps every target it created in a **weak-keyed** set, so the edges can
+re-stamp a target whose record is empty. Lua 5.1 has no ephemerons, so that set releases a target
+only because nothing reachable from the bus's per-target record names the target: the wrappers
+recognize their own target by looking it up in the set, rather than by holding it.
 
 In the client, AceEvent-3.0's own `embeds` set also holds every table it has embedded, for the whole
 session. The bus does not lean on that internal, and it is why "leaves the bus" is the promise rather
@@ -175,8 +225,8 @@ than "is collected".
 | `lib:New` | the major is **absent**: `LibStub("LibKa0s-Bus-1.0", true)` answers nil and the host's stub answers | works — the instance is bookkeeping |
 | `lib.Catalog` | absent; the host's stub hands back its own plain table | works — a pure function |
 | `bus:NewTarget` | — | **nil**, which callers already treat as "no bus" |
-| `bus:StandDown` | — | `0` — nothing was ever tracked |
-| `bus:StandUp` | — | `0, {}` |
+| `bus:StandDown` | — | `0, 0` — nothing was ever tracked or created |
+| `bus:StandUp` | — | `0, {}, 0` |
 
 AceEvent is looked up on every `NewTarget`, never cached as absent, so a library that registers
 after this file loads is still found.
@@ -253,6 +303,12 @@ Each has a case in `tests/test_bus.lua`, named here by its title.
 16. **Without AceEvent** every member answers the table above, and the lookup is at call time.
 17. **`Catalog` refuses each malformed declaration** (one row per check), **answers a fresh copy**,
     and **is strict** on read and on write.
+18. **A re-embedded target is re-stamped at the next edge**, and a registration made after that
+    edge stands down and is replayed — *a re-embedded target is re-stamped at the next edge, so
+    later registrations stand down*, and *after a re-stamp, a registration made while down is
+    recorded and not live*.
+19. **The re-stamp adopts the member it found as the new raw member**, and counts a target once —
+    *the re-stamp adopts the new raw member and counts a target once*.
 
 ## Worked example
 
@@ -290,8 +346,9 @@ NS.busRecord = Bus:New{ name = addonName, isDown = function() return NS.IsStoodD
 function NS.NewBusTarget() return NS.busRecord:NewTarget() end
 function NS.BusStandDown() return NS.busRecord:StandDown() end
 function NS.BusStandUp()
-  local replayed, rejected = NS.busRecord:StandUp()
+  local replayed, rejected, restamped = NS.busRecord:StandUp()
   if #rejected > 0 then NS.Debug("bus: rejected on stand-up: %s", table.concat(rejected, ", ")) end
+  if restamped > 0 then NS.Debug("bus: re-stamped %d re-embedded target(s)", restamped) end
   return replayed
 end
 
@@ -310,17 +367,14 @@ NS.lifecycle = LibStub("LibKa0s-Lifecycle-1.0"):New{
 
 A host's test suite holds that stub to the live surface with
 `Kit.assertSurfaceParity(stub, "LibKa0s-Bus-1.0")`; the members it owes are `New` and `Catalog`
-(`members-1.json`).
+(`members-2.json`).
 
 ## Known limitations
 
-1. **An AceEvent-3.0 upgrade later in the session re-embeds every target in `AceEvent.embeds`**
-   (the loop at the end of `AceEvent-3.0.lua`), which overwrites the six wrappers with the raw
-   mixins. From then on the record stops following that target: `StandDown` still takes everything
-   down (it calls the raw members it captured), but `StandUp` replays the record as it was at the
-   upgrade. The collection vendors AceEvent-3.0 minor 4 everywhere. Re-check trigger: any AceEvent-3.0
-   minor above 4 in any consumer's `libs/`. The hand-written records this replaces carry the same
-   exposure.
+1. **A registration made between an AceEvent-3.0 re-embed and the next edge is untracked** — the
+   residual window under *The re-stamp*. The collection vendors AceEvent-3.0 minor 4 everywhere, so
+   no re-embed happens today. Re-check trigger: any AceEvent-3.0 minor above 4 in any consumer's
+   `libs/`.
 2. **A registration made on a tracked target while the bus is down is not validated until
    `StandUp`.** A bad event name, or a method name the target does not carry, surfaces in
    `rejected`, not at the call site.
@@ -334,12 +388,3 @@ A host's test suite holds that stub to the live surface with
 5. **`UnregisterAll*` called with several targets** (`t.UnregisterAllMessages(t, other)`, a form
    CallbackHandler accepts) forgets only the record of the first when it is the target itself; the
    raw call still unregisters all of them. No consumer uses the multi-target form.
-
-## Moving to version 2
-
-No member is added or removed and no signature loses a value. `StandDown` and `StandUp` re-stamp
-every target the bus created before anything else, which closes known limitation 1 above down to
-the window between a re-embed and the next edge, and each answers one more trailing value, the
-number of targets re-stamped. A host written against this version is correct at version 2
-unmodified, unless it forwards either call in the last position of an argument list, where the
-extra value now arrives too.

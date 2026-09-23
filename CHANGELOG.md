@@ -13,8 +13,33 @@ cannot drift. Release order is in
 ## v1.56.0 — unreleased
 
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
-(`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
+(`LibKa0s-Bus-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Bus minor 2: the tracking wrappers are re-stamped after a newer AceEvent re-embed
+
+- **Behavioral, and additive on the answers.** AceEvent-3.0's upgrade loop re-embeds every table in
+  `AceEvent.embeds`, so a newer AceEvent minor loading after a Ka0s host had created its bus targets
+  wrote the six raw members back over the bus's wrappers for the rest of the session. From then on a
+  registration went straight to CallbackHandler and was never recorded: `StandDown` left it live on a
+  target with an empty record, and `StandUp` never brought it back on one with a recorded entry
+  (review finding `LibKa0s-R-05`). `StandDown` and `StandUp` now re-stamp every target the bus
+  created before anything else, adopting whatever member they find in a wrapper's place as the new
+  raw member, so a newer AceEvent's member is the one forwarded to. They answer the number of
+  targets re-stamped as a trailing value (`n, restamped` and `replayed, rejected, restamped`) for the
+  host's debug seam.
+- **The residual window is documented, not closed.** A registration made between a re-embed and the
+  next edge is still untracked until that edge. The edges are the only moments the record is read,
+  so no Ace3 fork and no metatable proxy.
+- The bus keeps every target it created in a **weak-keyed** set so an edge can re-stamp a target
+  whose record is empty. It releases a target in Lua 5.1 only because the per-target record no
+  longer names its target: the wrappers look their target up in the set instead of holding it.
+- No member is added, so the manifest differs from minor 1's only in the minor. Documented in
+  [the version 2 document](docs/api/Bus/version-2-docs.md); version 1 is Superseded.
+  `tests/test_bus.lua` gains three cases. Every consumer gets it by re-vendoring; none needs a code
+  change, unless it forwards either call in the last position of an argument list, where the extra
+  value now arrives too. No consumer vendors an AceEvent-3.0 above minor 4 today, so this is latent.
 
 ### Media minor 4: `RegisterLSM` flags the face western + ruRU and counts what LSM holds
 

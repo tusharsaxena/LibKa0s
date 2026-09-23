@@ -522,6 +522,84 @@ test("bus: composed with Lifecycle, releasing one hold under another leaves the 
   t:UnregisterAllMessages()
 end)
 
+-- ── a newer AceEvent re-embed ──────────────────────────────────────────────────────────────
+--
+-- AceEvent-3.0's upgrade loop calls Embed again on every table in `AceEvent.embeds`, which puts the
+-- six raw members back over the bus's wrappers. The kit's Embed stamps the same members, so calling
+-- it on a tracked target is that loop, one target at a time.
+
+local function reembed(t) mocks.LibStub("AceEvent-3.0"):Embed(t) end
+
+test("bus: a re-embedded target is re-stamped at the next edge, so later registrations stand down", function()
+  -- red under: drop the restamp calls at the top of StandDown and StandUp
+  local bus, rec = F.newBus()
+  local t = bus:NewTarget()
+  local msg = F.name("Ka0s_Test_Reembed")
+  reembed(t)
+  local downCount, restamped = bus:StandDown()
+  local _, _, restampedUp = bus:StandUp()
+  t:RegisterMessage(msg, rec.hit("after"))
+  local n = bus:StandDown()
+  assertEqual(F.live(t), "", "the registration made after the re-stamp stood down")
+  F.send(msg)
+  assertEqual(rec.joined(), "", "and nothing heard the message while down")
+  assertEqual(n, 1, "because the record holds it")
+  assertEqual(bus:StandUp(), 1, "StandUp replays it")
+  F.send(msg)
+  assertEqual(rec.joined(), "after " .. msg)
+  assertEqual(downCount, 0, "nothing was recorded at the first edge")
+  assertEqual(restamped, 1, "the first edge re-stamped the one overwritten target")
+  assertEqual(restampedUp, 0, "and the next edge found nothing left to re-stamp")
+  t:UnregisterAllMessages()
+end)
+
+test("bus: after a re-stamp, a registration made while down is recorded and not live", function()
+  -- red under: drop the restamp call at the top of StandDown
+  local bus, rec = F.newBus()
+  local t = bus:NewTarget()
+  local ev, msg = F.name("EV_REEMBED"), F.name("Ka0s_Test_ReembedDown")
+  reembed(t)
+  bus:StandDown()
+  t:RegisterEvent(ev, rec.hit("event"))
+  t:RegisterMessage(msg, rec.hit("msg"))
+  assertEqual(F.live(t), "", "a stood-down addon registers nothing, re-embed or not")
+  local replayed, rejected, restamped = bus:StandUp()
+  assertEqual(replayed, 2, "both come back at StandUp")
+  assertEqual(#rejected, 0)
+  assertEqual(restamped, 0, "the StandDown edge already re-stamped it")
+  assertEqual(F.live(t), "1:event:" .. ev .. ",1:message:" .. msg)
+  t:UnregisterAllEvents(); t:UnregisterAllMessages()
+end)
+
+test("bus: the re-stamp adopts the new raw member and counts a target once", function()
+  -- red under: re-stamp the wrapper without adopting the member it found as the new raw
+  local bus = F.newBus()
+  local t = bus:NewTarget()
+  bus:NewTarget()   -- a second target nothing overwrites, so the count is per target re-stamped
+  local msg = F.name("Ka0s_Test_Adopt")
+  local newer = {}
+  -- A newer AceEvent's members: distinct functions over the same registry.
+  local AceEvent = mocks.LibStub("AceEvent-3.0")
+  for _, member in ipairs{ "RegisterMessage", "UnregisterMessage", "UnregisterAllMessages" } do
+    local base = AceEvent[member]
+    t[member] = function(...)
+      newer[#newer + 1] = member
+      return base(...)
+    end
+  end
+  local _, restamped = bus:StandDown()
+  assertEqual(restamped, 1, "three members overwritten on one target is one target re-stamped")
+  bus:StandUp()
+  t:RegisterMessage(msg, function() end)
+  assertEqual(table.concat(newer, ","), "RegisterMessage", "the wrapper forwards to the adopted member")
+  assertEqual(F.live(t), "1:message:" .. msg)
+  assertEqual(bus:StandDown(), 1, "and the record holds the registration")
+  assertEqual(table.concat(newer, ","), "RegisterMessage,UnregisterAllMessages",
+    "StandDown takes it down through the adopted member too")
+  bus:StandUp()
+  t:UnregisterAllMessages()
+end)
+
 -- ── retention ──────────────────────────────────────────────────────────────────────────────
 
 test("bus: a target only CallbackHandler holds survives StandDown and a full GC", function()
@@ -551,7 +629,7 @@ test("bus: a target only CallbackHandler holds survives StandDown and a full GC"
 end)
 
 test("bus: a target emptied by its owner leaves the bus, which then holds nothing of it", function()
-  -- red under: never release a target from the held set
+  -- red under: never release a target from the held set, or make the created set strong-keyed
   local bus = F.newBus()
   local probe = setmetatable({}, { __mode = "k" })
   local function buildAndRetire()

@@ -119,7 +119,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Bus/version-1-docs.md) | `Bus.lua` 1 | v1.55.0 | **Current** |
+| [2](./Bus/version-2-docs.md) | `Bus.lua` 2 | v1.56.0 | **Current** |
+| [1](./Bus/version-1-docs.md) | `Bus.lua` 1 | v1.55.0 | Superseded |
 
 ### `LibKa0s-Schema-1.0`
 
