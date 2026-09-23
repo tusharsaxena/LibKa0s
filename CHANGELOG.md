@@ -214,6 +214,28 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   `tests/test_kit_asserts.lua` adds three cases for the member itself. A consumer that re-vendors
   takes the new member; its own suite totals do not move.
 
+### Test kit revision 26: `Kit.assertLibraryConstant`, and the Slash degradation stub
+
+- **`Kit.assertLibraryConstant(value, majorName, memberPath, msg)` (new, in
+  `testkit/asserts.lua`).** Asserts that a degradation stub's copy of a library constant is
+  byte-equal to the live library's `memberPath` (a member or a dotted path) on `majorName`, and
+  fails naming both strings when they differ, or naming the major or member that did not resolve.
+  The live half is looked up through the registered surface source; a member the source's answer
+  lacks is read off the exposed LibStub instead, which `Kit.expose` now records as the fallback
+  whenever the exposed table carries one, so a runner that maps `LibKa0s-Slash-1.0` to the Slash
+  instance (AbsorbTracker, WhatGroup) can still pin the lib-level `DISABLED_LINE_FORMAT`. What
+  `Kit.expose` registers as the surface source is unchanged (review finding
+  `PartyFrameEnhanced-R-11`; WhatGroup#22). `tests/test_kit_asserts.lua` gains four cases.
+  Documented in [the revision 26 document](docs/api/testkit/version-26-docs.md).
+- **The Slash version 15 document gains *The degradation stub*** — the shape `slash-commands-§1`
+  now bounds a library-absent Slash stub to: minimal `OnSlash` dispatch; `DisabledLine` built from
+  `DISABLED_LINE_FORMAT`'s bytes copied verbatim, the one library string a stub may carry, pinned
+  with the new assertion; help rows printed `cmd  desc` with no `FormatRow` copy; and a
+  composed-row verb that either writes through the Schema seam's `writeThrough` list or prints
+  `%s is unavailable: the LibKa0s library did not load.`, never raising. Documentation only:
+  `Slash.lua` does not change, and its minor stays 15. Every consumer's stub is asked to pin its
+  line on its next re-vendor.
+
 ### Test kit revision 26: the AceDB fake raises where AceDB-3.0 raises
 
 - **Behavioral.** `CopyProfile(name, silent)` raises on the active profile, and on a missing source

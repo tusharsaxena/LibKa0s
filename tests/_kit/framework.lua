@@ -262,6 +262,7 @@ function Kit.expose(t)
   t.assertNear  = Kit.assertNear
   t.assertError = Kit.assertError
   t.assertErrorMatches = Kit.assertErrorMatches
+  t.assertLibraryConstant = Kit.assertLibraryConstant
   t.assertSuiteInventory = Kit.assertSuiteInventory
   t.assertSurfaceParity  = Kit.assertSurfaceParity
   t.publicMembers        = Kit.publicMembers
@@ -270,12 +271,13 @@ function Kit.expose(t)
   -- The by-name form needs somewhere to look, and every harness in this collection that stubs a
   -- LIBRARY TABLE already has it: the mock it just built. Wired here rather than demanded of the
   -- runner so that adoption is the case alone, and only when nothing is registered yet — a repo
-  -- that called setSurfaceSource itself (because its stubs mirror instances) keeps its own.
-  if asserts.surfaceSource() == nil then
-    local mock = t.mocks or t.mock
-    local ls = t.LibStub or (type(mock) == "table" and mock.LibStub) or nil
-    if ls then Kit.setSurfaceSource(ls) end
-  end
+  -- that called setSurfaceSource itself (because its stubs mirror instances) keeps its own. The
+  -- same LibStub is always recorded as `assertLibraryConstant`'s fallback, since such a repo's
+  -- source answers an instance, and a lib-level constant is not on it.
+  local mock = t.mocks or t.mock
+  local ls = t.LibStub or (type(mock) == "table" and mock.LibStub) or nil
+  if ls then asserts.setLibraryFallback(ls) end
+  if ls and asserts.surfaceSource() == nil then Kit.setSurfaceSource(ls) end
   return t
 end
 

@@ -1,4 +1,5 @@
--- tests/test_kit_asserts.lua — Kit.assertErrorMatches (kit revision 26).
+-- tests/test_kit_asserts.lua — Kit.assertErrorMatches and Kit.assertLibraryConstant (kit
+-- revision 26).
 --
 -- `Kit.assertError(fn, msg)` proves that fn raised and nothing more: `msg` is only the text of its
 -- own failure, and the raised error it returns is discarded by any caller that uses it as a
@@ -44,4 +45,65 @@ test("kit: assertErrorMatches fails when fn does not raise", function()
   assertTrue(has(err, "anything"), "the failure names the needle it was waiting for: "
     .. tostring(err))
   assertTrue(has(err, "no error"), "the failure says nothing was raised: " .. tostring(err))
+end)
+
+-- ── Kit.assertLibraryConstant ────────────────────────────────────────────────────────────────
+--
+-- A library-absent Slash stub may carry exactly one library string verbatim, `LibKa0s-Slash-1.0`'s
+-- `DISABLED_LINE_FORMAT` (`slash-commands-§1`), and must pin it against the live library so the copy
+-- cannot drift. `assertLibraryConstant` is that pin: it resolves the major through the registered
+-- surface source, falls back to the harness's LibStub when the source maps the name to an INSTANCE
+-- that does not carry the member, and compares byte for byte.
+
+local SLASH = "LibKa0s-Slash-1.0"
+
+test("kit: assertLibraryConstant passes on the live bytes, and on a dotted member path", function()
+  -- red under: the member not existing, or not being exposed by Kit.expose.
+  T.assertLibraryConstant(T.slash.DISABLED_LINE_FORMAT, SLASH, "DISABLED_LINE_FORMAT")
+  T.assertLibraryConstant("%s is disabled \226\128\148 enable it with |cFFFFFF00%s|r", SLASH,
+    "DISABLED_LINE_FORMAT", "the stub's hand-carried copy")
+  T.assertLibraryConstant(T.slash.STRINGS.NO_DEFAULT, SLASH, "STRINGS.NO_DEFAULT")
+end)
+
+test("kit: assertLibraryConstant fails on a one-byte difference, naming both strings", function()
+  -- red under: a comparison that ignores case or the multibyte dash, or a failure that names only
+  -- one side (the reader then has to go and find the other).
+  local copy = "%s is disabled - enable it with |cFFFFFF00%s|r"
+  local ok, err = pcall(T.assertLibraryConstant, copy, SLASH, "DISABLED_LINE_FORMAT", "stub line")
+  assertFalse(ok, "a copy that differs must fail")
+  assertTrue(has(err, "stub line"), "the failure carries the caller's message: " .. tostring(err))
+  assertTrue(has(err, ("%q"):format(copy)), "the failure names the copy: " .. tostring(err))
+  assertTrue(has(err, ("%q"):format(T.slash.DISABLED_LINE_FORMAT)),
+    "the failure names the live bytes: " .. tostring(err))
+  assertTrue(has(err, "DISABLED_LINE_FORMAT"), "the failure names the member: " .. tostring(err))
+end)
+
+test("kit: assertLibraryConstant fails clearly on an unknown major or member", function()
+  -- red under: a member that answers nil for an unresolved name and then compares nil to nil, or
+  -- that raises an index error on the way instead of saying what did not resolve.
+  local ok, err = pcall(T.assertLibraryConstant, "x", "LibKa0s-Nope-1.0", "DISABLED_LINE_FORMAT")
+  assertFalse(ok, "an unknown major must fail")
+  assertTrue(has(err, "LibKa0s-Nope-1.0"), "the failure names the major: " .. tostring(err))
+  assertTrue(has(err, "did not resolve"), "the failure says it did not resolve: " .. tostring(err))
+
+  ok, err = pcall(T.assertLibraryConstant, nil, SLASH, "NO_SUCH_FORMAT")
+  assertFalse(ok, "a member the library does not carry must fail, even against a nil copy")
+  assertTrue(has(err, "NO_SUCH_FORMAT"), "the failure names the member: " .. tostring(err))
+end)
+
+test("kit: assertLibraryConstant falls back to LibStub when the source maps the name to an "
+  .. "instance", function()
+  -- red under: reading the member off the registered source only. AbsorbTracker's and WhatGroup's
+  -- runners map "LibKa0s-Slash-1.0" to the Slash INSTANCE (`NS.Slash.__cli`) for the parity gate,
+  -- and `DISABLED_LINE_FORMAT` is lib-level, so without the fallback neither could pin its stub.
+  local instance = { OnSlash = function() end, DisabledLine = function() end }
+  local restore = T.setSurfaceSource{ [SLASH] = instance }
+  local ok, err = pcall(T.assertLibraryConstant, T.slash.DISABLED_LINE_FORMAT, SLASH,
+    "DISABLED_LINE_FORMAT")
+  local okOther, errOther = pcall(T.assertLibraryConstant, "x", SLASH, "DISABLED_LINE_FORMAT")
+  T.setSurfaceSource(restore)
+  assertTrue(ok, "the live bytes resolve through the LibStub fallback: " .. tostring(err))
+  assertFalse(okOther, "the fallback still compares")
+  assertTrue(has(errOther, ("%q"):format(T.slash.DISABLED_LINE_FORMAT)),
+    "and names the library's bytes: " .. tostring(errOther))
 end)

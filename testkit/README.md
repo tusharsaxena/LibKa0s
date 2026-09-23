@@ -19,7 +19,7 @@ broken in the other eleven.
 | File | What it is |
 |---|---|
 | `framework.lua` | The entry point: the resource guard, the registry, `Kit.skip`, `Kit.expose`, the suite inventory, the runner and the `--list` renderer |
-| `asserts.lua` | The assertions (`assertEqual` to `assertError` and `assertErrorMatches`) and the surface-parity gate (`setSurfaceSource`, `publicMembers`, `assertSurfaceParity`). `framework.lua` loads it from its own folder; nothing else does (kit revision 26) |
+| `asserts.lua` | The assertions (`assertEqual` to `assertError`, `assertErrorMatches` and `assertLibraryConstant`) and the surface-parity gate (`setSurfaceSource`, `publicMembers`, `assertSurfaceParity`). `framework.lua` loads it from its own folder; nothing else does (kit revision 26) |
 | `loader.lua` | Headless source loading into the mocked environment |
 | `mock_base.lua` | The universal half of the WoW-API mock, and the Ace fakes |
 | `mock_record.lua` | The recording surveys; `mock_base.lua` loads it from its own folder |

@@ -146,6 +146,69 @@ return function(Kit)
     return live
   end
 
+  -- ── a library constant a degradation stub carries verbatim ────────────────────────────────
+  --
+  -- `slash-commands-§1` lets a library-absent Slash stub carry exactly one library string verbatim
+  -- (`LibKa0s-Slash-1.0`'s `DISABLED_LINE_FORMAT`), on condition that a case pins the copy against
+  -- the live library. The surface source is where the live half is looked up, but a runner that
+  -- maps the name to an INSTANCE (AbsorbTracker and WhatGroup map "LibKa0s-Slash-1.0" to
+  -- `NS.Slash.__cli`, for the parity gate) hands back a table that does not carry a LIB-level
+  -- constant. So a member the source's answer lacks is read off the harness's LibStub instead,
+  -- which `Kit.expose` records whenever the exposed table carries one, whatever source is set.
+
+  local libraryFallback
+
+  --- Record the LibStub `assertLibraryConstant` falls back to (framework.lua's `Kit.expose`).
+  local function setLibraryFallback(ls) libraryFallback = ls end
+
+  --- Read a dotted `path` ("STRINGS.NO_DEFAULT") off table `t`, or nil.
+  local function readPath(t, path)
+    for part in tostring(path):gmatch("[^%.]+") do
+      if type(t) ~= "table" then return nil end
+      t = t[part]
+    end
+    return t
+  end
+
+  --- The live value of `memberPath` on major `name`: the registered source first, then LibStub.
+  --- Returns the value, or nil plus why not.
+  local function resolveConstant(name, memberPath)
+    local live, why = resolveSurface(name)
+    local v = live and readPath(live, memberPath)
+    if v ~= nil then return v end
+    if callable(libraryFallback) then
+      local ok, lib = pcall(libraryFallback, name, true)
+      v = ok and type(lib) == "table" and readPath(lib, memberPath) or nil
+      if v ~= nil then return v end
+      if not live and not (ok and type(lib) == "table") then
+        return nil, ("%q did not resolve to a live library (%s; LibStub has no such major)")
+          :format(name, why)
+      end
+    elseif not live then
+      return nil, ("%q did not resolve to a live library (%s)"):format(name, why)
+    end
+    return nil, ("%q resolved, but carries no member %s"):format(name, tostring(memberPath))
+  end
+
+  local function quote(v)
+    if type(v) == "string" then return ("%q"):format(v) end
+    return fmt(v)
+  end
+
+  --- Assert that `value` — a degradation stub's copy of a library constant — is byte-equal to the
+  --- live library's `memberPath` (dotted, e.g. "DISABLED_LINE_FORMAT" or "STRINGS.NO_DEFAULT") on
+  --- major `majorName`. Fails naming the major and the path when either does not resolve, and
+  --- naming BOTH strings when they differ, so a red run shows exactly which byte drifted.
+  function Kit.assertLibraryConstant(value, majorName, memberPath, msg)
+    local prefix = (msg and (msg .. ": ") or "") .. "assertLibraryConstant: "
+    local live, why = resolveConstant(majorName, memberPath)
+    if live == nil then fail(prefix .. why, 1) end
+    if value ~= live then
+      fail(prefix .. ("%s %s is %s, but the copy is %s")
+        :format(tostring(majorName), tostring(memberPath), quote(live), quote(value)), 1)
+    end
+  end
+
   -- ── the public surface of a live module ────────────────────────────────────────────────────
 
   --- LibStub bookkeeping. Present on every registered major, carried by no degradation stub in this
@@ -256,11 +319,12 @@ return function(Kit)
     end
   end
 
-  --- What `framework.lua` needs back: its own `fail`, and whether a surface source is registered
-  --- (`Kit.expose` wires one only when nothing is).
+  --- What `framework.lua` needs back: its own `fail`, whether a surface source is registered
+  --- (`Kit.expose` wires one only when nothing is), and where to record the LibStub fallback.
   return {
     fail = fail,
     surfaceSource = function() return surfaceSource end,
+    setLibraryFallback = setLibraryFallback,
   }
 
 end

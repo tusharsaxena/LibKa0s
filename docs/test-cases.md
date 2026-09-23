@@ -1433,11 +1433,15 @@ badge and any count quoted in the docs must agree with it.
 - kit limits: the heap budget names the case that crossed it
 - kit limits: the leak gate counts what is still held, not garbage waiting to be swept
 
-### test_kit_asserts.lua (3)
+### test_kit_asserts.lua (7)
 
 - kit: assertErrorMatches passes on a raise that carries the needle, and returns the error
 - kit: assertErrorMatches fails when fn raises something else, naming both strings
 - kit: assertErrorMatches fails when fn does not raise
+- kit: assertLibraryConstant passes on the live bytes, and on a dotted member path
+- kit: assertLibraryConstant fails on a one-byte difference, naming both strings
+- kit: assertLibraryConstant fails clearly on an unknown major or member
+- kit: assertLibraryConstant falls back to LibStub when the source maps the name to an instance
 
 ### test_mock_base.lua (33)
 
@@ -1767,7 +1771,7 @@ badge and any count quoted in the docs must agree with it.
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
-| test_kit_asserts.lua | 3 |
+| test_kit_asserts.lua | 7 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 35 |
@@ -1783,4 +1787,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1573** |
+| **Total** | **1577** |

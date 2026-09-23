@@ -190,7 +190,7 @@ kit 20's id lookups went to `testkit/mock_ids.lua` for that reason, and kit 22's
 to `testkit/mock_record.lua` for the same one, which is what took it back down),
 `testkit/test_prose.lua` (1464; 335 at v1.54.2, and kit revision 25 took it to 1499, one line from
 the cap, until kit revision 26 moved its published lists out to `testkit/prose_lists.lua`),
-`testkit/framework.lua` (1383 with the section-sign note on `KIT_GATE_RULE`; 1382 with `Kit.expose`'s `assertErrorMatches` line; 1381 when the peel took
+`testkit/framework.lua` (1385 with `assertLibraryConstant`'s expose line and LibStub-fallback wiring; 1383 with the section-sign note on `KIT_GATE_RULE`; 1382 with `Kit.expose`'s `assertErrorMatches` line; 1381 when the peel took
 it back into the band from the census above), and, since v1.34.0,
 `tests/test_slash.lua` (1327 at v1.42.0, with minor 14's reserved-but-unregistered case; 1302 at
 minor 13's restored disabled surface, 1265 at minor 12, 1054 before the gate), `LibKa0s/Perf.lua`

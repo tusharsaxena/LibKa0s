@@ -62,6 +62,11 @@ every row `applyDefault` returned for, whatever it answered.
 The cases are in `tests/test_slash_refusal.lua`, a suite of its own because `tests/test_slash.lua`
 sits in the 1000–1500 band.
 
+**This version's document also prescribes the degradation stub**: the shape a host's library-absent
+Slash stub takes, and the one library string it may carry. See
+[The degradation stub](#the-degradation-stub). That is documentation of the host's side of the
+contract; `Slash.lua` does not change for it and the minor does not move again.
+
 ## The disabled surface at this version
 
 ### The live set is the standard's twelve reserved verbs
@@ -582,6 +587,90 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `CliVersion()` | 1 | The host's version. |
 | `SetRowAnnotator(fn)` | 1 | Install a host suffix appended to a rendered setting — most usefully a note that the stored value is not the one in effect. Applied at exactly three sites: a list row, a get echo and a set echo. Never on reset or resetall, where an explanation of what a value means is noise stapled to an acknowledgement that the value went away. |
 | `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
+
+## The degradation stub
+
+A host's library-absent build — `libs/LibKa0s/` missing, or `LibStub("LibKa0s-Slash-1.0", true)`
+answering nil — still has a slash command, and something has to answer it. That something is the
+host's **degradation stub**: a small table standing in for the instance `lib:New(descriptor)` would
+have returned. `slash-commands-§1` bounds what it may carry, and this section is the shape that
+meets the bound. Nothing in `Slash.lua` changes for it; the contract is the host's, and the pin
+that keeps it honest is `Kit.assertLibraryConstant` (test kit revision 26).
+
+**Minimal `OnSlash` dispatch is sanctioned.** Split the verb off, lower-case it, look it up in the
+host's own `commands` table, call the handler with the rest. An unknown verb says so and prints
+the rows. That is all: no alias map, no disabled gate beyond the one below, no schema CLI. The
+stub is not a second dispatcher and MUST NOT grow into one.
+
+**`DisabledLine` is built from `DISABLED_LINE_FORMAT`'s bytes, copied verbatim — and that is the
+one library string a stub may carry.** Wording the refusal differently in a degraded build is the
+drift `slash-commands-§7`'s one-refusal-line rule exists to prevent, and the library is not there
+to ask. So the host copies the format string once, byte for byte (the em dash is
+`\226\128\148`), and formats it the way `cli:DisabledLine()` does: the plain-text `brandName`,
+then `<slash> enable`. A case in the host's suite then pins the copy against the live library:
+
+```lua
+T.assertLibraryConstant(Sl.__DISABLED_LINE_FORMAT, "LibKa0s-Slash-1.0", "DISABLED_LINE_FORMAT")
+```
+
+The assertion resolves the major through the runner's surface source and, when that source maps
+the name to the Slash **instance** (as a runner does for the parity gate), falls back to the mock's
+LibStub for this lib-level member. It fails naming both strings, so a red run shows which byte
+drifted. The string is the only one: `lib.STRINGS`, the help header and every other wording stay
+the library's, and a stub that needs one of them prints its own plain sentence instead.
+
+**Help rows print `cmd  desc`, plainly — no `FormatRow` copy.** `lib.FormatRow`'s colors and its
+` — ` separator are rendering, and a stub that re-implements the library's rendering is the thing
+anti-pattern #73 forbids. Two spaces between the command and its description, no color escapes, no
+em dash. A degraded help index is allowed to look degraded.
+
+**A verb whose write targets a composed row takes one of `options-ui-§1`'s two routes, and never
+raises.** `enable`, `disable`, `lock`, `unlock`, test mode, the combat re-lock: each writes a row
+the library's composers build, and on a library-absent load there is no row. The verb either:
+
+- **(a) writes through** the path the host declares in the Schema seam's `writeThrough` list
+  (`LibKa0s-Schema-1.0` minor 2) — the same list handed to the live instance and to the
+  runtime-completing Schema stub, so the stored value lands without a hand-written row; or
+- **(b) prints the library-absent line** and writes nothing:
+
+  ```lua
+  -- one sentence, one placeholder, routed through the host's locale
+  L["%s is unavailable: the LibKa0s library did not load."]:format("/wg enable")
+  ```
+
+  `%s` is the full verb as the player typed it. The verb MUST NOT raise a Lua error and MUST NOT
+  acknowledge a write that did not land.
+
+`enable` and `disable` SHOULD take route (a); a host that takes (b) for them records the SHOULD
+deviation. Every other verb the stub cannot serve — `get`, `set`, `list` with no schema behind them
+— prints the library-absent line for itself in the same way.
+
+A minimal stub, with route (b) throughout:
+
+```lua
+local STUB_DISABLED_LINE_FORMAT = "%s is disabled \226\128\148 enable it with |cFFFFFF00%s|r"
+local UNAVAILABLE = L["%s is unavailable: the LibKa0s library did not load."]
+
+local Sl = { __DISABLED_LINE_FORMAT = STUB_DISABLED_LINE_FORMAT }
+
+function Sl:DisabledLine()
+  return STUB_DISABLED_LINE_FORMAT:format(BRAND, SLASH .. " enable")
+end
+
+function Sl:OnSlash(msg)
+  local verb, rest = (msg or ""):match("^%s*(%S*)%s*(.-)%s*$")
+  verb = verb:lower()
+  for _, entry in ipairs(COMMANDS) do
+    if entry[1] == verb then return entry[3](rest) end
+  end
+  -- the host's own words: UNKNOWN_COMMAND is lib.STRINGS', and a stub does not copy it
+  if verb ~= "" and verb ~= "help" then Print(("%s %s: no such command"):format(SLASH, verb)) end
+  for _, entry in ipairs(COMMANDS) do Print(SLASH .. " " .. entry[1] .. "  " .. entry[2]) end
+end
+
+-- a composed-row verb on route (b)
+local function degradedEnable() Print(UNAVAILABLE:format(SLASH .. " enable")) end
+```
 
 ## The `L` trap
 

@@ -18,7 +18,7 @@
 
 ## What changed
 
-**Three new files, one new assertion, three behavioral changes (the AceDB fake, event
+**Three new files, two new assertions, three behavioral changes (the AceDB fake, event
 registration, and a new frame starting shown) and two gates widened: `test_eol.lua` now catches a
 lone CR, and `test_prose.lua` reads three store-root files, skips two more frozen stores and carries
 `synchronis`. The automated-test runner records the `performance-§12` exemption as perf skip reason
@@ -37,10 +37,11 @@ copy of the kit missing either one **raises at load** rather than running withou
 
 The peel adds, removes, renames or resignatures no member a suite calls, and changes what none of
 them does. Every member is on the kit table at the moment it was in revision 25, so `Kit.expose`
-copies the same set, plus the one new member below. One visible difference only: a failed assertion's error position names `asserts.lua`
+copies the same set, plus the two new members below. One visible difference only: a failed assertion's error position names `asserts.lua`
 rather than `framework.lua`, because that is where the raising function now lives. `framework.lua`
-is 1383 lines (1583 at revision 25; the peel left it at 1381, `Kit.expose`'s
-`assertErrorMatches` line adds one, and the section-sign note on `KIT_GATE_RULE` one more) and `test_prose.lua` 1464 (1499).
+is 1385 lines (1583 at revision 25; the peel left it at 1381, `Kit.expose`'s
+`assertErrorMatches` line adds one, the section-sign note on `KIT_GATE_RULE` one more, and
+`assertLibraryConstant`'s expose line and LibStub-fallback wiring two more) and `test_prose.lua` 1464 (1499).
 
 ### One new member: `Kit.assertErrorMatches`
 
@@ -55,6 +56,35 @@ from a typo in the case itself. `assertError` is unchanged and remains the form 
 goes on to check several things about the returned text; a statement-position check wants
 `assertErrorMatches`. This repository's 23 statement-position `assertError` calls were rewritten to
 it in the same release, and `tests/test_kit_asserts.lua` holds the member's own three cases.
+
+### A second new member: `Kit.assertLibraryConstant`
+
+| Name | Since | Meaning |
+|---|---|---|
+| `Kit.assertLibraryConstant(value, majorName, memberPath, msg)` | **26** | `value` — a degradation stub's copy of a library constant — must be byte-equal (`==`) to the live library's `memberPath` on `majorName`. `memberPath` is a member name or a dotted path (`"DISABLED_LINE_FORMAT"`, `"STRINGS.NO_DEFAULT"`). The live half is resolved through the registered surface source, exactly as `assertSurfaceParity`'s by-name form resolves it; when the source's answer does not carry the member, it is read off the harness's LibStub instead (below). Fails naming the major when it resolves to nothing, naming the member when the library does not carry it, and naming **both** strings, quoted with `%q`, when they differ; `msg`, when given, leads every failure. Returns nothing. `Kit.expose` copies it as `assertLibraryConstant`. In `asserts.lua`. |
+
+It exists for `slash-commands-§1`: a library-absent Slash stub may carry exactly one library string
+verbatim, `LibKa0s-Slash-1.0`'s `DISABLED_LINE_FORMAT`, and must pin that copy against the live
+library so it cannot drift (review finding `PartyFrameEnhanced-R-11`; the stub's prescribed shape is
+[the Slash version 15 document's *The degradation stub*](../Slash/version-15-docs.md#the-degradation-stub)):
+
+```lua
+T.assertLibraryConstant(Sl.__DISABLED_LINE_FORMAT, "LibKa0s-Slash-1.0", "DISABLED_LINE_FORMAT")
+```
+
+**The LibStub fallback.** A runner whose stubs mirror instances maps a major to the INSTANCE
+(`Kit.setSurfaceSource{ ["LibKa0s-Slash-1.0"] = NS.Slash.__cli }`, as AbsorbTracker's and WhatGroup's
+do for the parity gate), and a lib-level constant is not on the instance. So `Kit.expose` now records
+the LibStub it finds on the exposed table (`t.LibStub`, or `t.mocks.LibStub` / `t.mock.LibStub`) as
+this member's fallback **whether or not** a surface source is already registered, and a member the
+source's answer lacks is read off `LibStub(majorName, true)`. What `Kit.expose` registers as the
+surface source is unchanged: still the same LibStub, and still only when nothing is registered.
+A harness that exposes no LibStub has no fallback, and the member then reads the source alone.
+
+`tests/test_kit_asserts.lua` holds its four cases: the live bytes and a dotted path pass; a
+one-byte-different copy fails naming both strings; an unknown major and an unknown member each fail
+saying so; and, with the source swapped to an instance that lacks the member, the fallback resolves
+it and still compares.
 
 ### A behavioral change: the AceDB fake's profile verbs raise where AceDB-3.0 raises
 
