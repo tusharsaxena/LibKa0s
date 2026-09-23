@@ -329,8 +329,8 @@ if not Bus then
           if not AceEvent then return nil end
           local t = {}; AceEvent:Embed(t); return t
         end,
-        StandDown = function() return 0 end,
-        StandUp   = function() return 0, {} end,
+        StandDown = function() return 0, 0 end,
+        StandUp   = function() return 0, {}, 0 end,
       }
     end,
     Catalog = function(_, messages) return messages end,
