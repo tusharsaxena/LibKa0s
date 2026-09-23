@@ -1062,7 +1062,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a string row with no values and no dialogControl prints once and still renders
 - widgets: a values-backed row that is momentarily empty does NOT warn
 
-### test_options_tabs.lua (41)
+### test_options_tabs.lua (54)
 
 - widgets: tab packing fills a row and wraps to the next
 - widgets: a tab wider than the strip gets its own row rather than vanishing
@@ -1105,6 +1105,19 @@ badge and any count quoted in the docs must agree with it.
 - widgets: ClearScroll drains the sub-tab ledger before AceGUI pools the parent
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
+- widgets: a host tab sits before the group it names and renders through its callback
+- widgets: a host tab keyed by a group takes that group's place and is handed its rows
+- widgets: a stale active tab heals to the first tab when only host tabs remain
+- widgets: disabledFor draws the notice ABOVE the rows, and the rows disabled
+- widgets: disabledFor false draws no notice and live rows; a raising one reads as enabled
+- widgets: a host tab renders under the page's disable, and the flag never outlives it
+- widgets: chrome is called once per render, after the strip and before the rows
+- widgets: with OptionsTabs.lua absent RenderTabbedSchema takes opts and renders untabbed
+- widgets: the tab half alone does not define RenderTabbedSchema over no flow engine
+- widgets: PageBanner's action draws a Button whose click calls onClick
+- widgets: PageBanner's action button is Released like its picker, never leaked
+- widgets: PageBanner's action re-rendering from its own click never hands itself back
+- widgets: PageBanner's action is refused in combat, like its picker
 
 ### test_options_idsuggest.lua (40)
 
@@ -1824,7 +1837,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 227 |
-| test_options_tabs.lua | 41 |
+| test_options_tabs.lua | 54 |
 | test_options_idsuggest.lua | 40 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 9 |
@@ -1855,4 +1868,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1633** |
+| **Total** | **1646** |

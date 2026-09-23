@@ -1447,9 +1447,9 @@ function lib:New(d)
   -- leaves its half absent rather than erroring at :New, which is why the shell's own members
   -- reach for O.AttachTooltip and O.PatchAlwaysShowScrollbar at CALL time and never at load time.
   if lib.__AttachWidgets then lib.__AttachWidgets(O, d) end
-  -- No descriptor: the chrome is geometry and art and reaches none of the host's data. See
-  -- OptionsTabs.lua's own note on why the signature differs from the three around it.
-  if lib.__AttachTabs    then lib.__AttachTabs(O)       end
+  -- After the widgets, because the chrome half's RenderTabbedSchema replaces the widget half's
+  -- untabbed fallback. The descriptor reaches it for `rowsForPage` alone (OptionsTabs minor 4).
+  if lib.__AttachTabs    then lib.__AttachTabs(O, d)    end
   if lib.__AttachCompose then lib.__AttachCompose(O, d) end
   if lib.__AttachScroll  then lib.__AttachScroll(O, d)  end
 

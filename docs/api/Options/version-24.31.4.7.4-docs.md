@@ -23,15 +23,18 @@ minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
-`OptionsTabs.lua`'s from it, with no change to what any of them does. The minor that introduced a
+`OptionsTabs.lua`'s from it, with no change to what any of them does; `O.RenderTabbedSchema` (**W9**)
+moved the same way at **T4**. The minor that introduced a
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
 
-Four changes share this version: `CreateOptionsPanel` parks in combat and `OpenOptionsPanel` answers
+Five changes share this version: `CreateOptionsPanel` parks in combat and `OpenOptionsPanel` answers
 a boolean (below), the font preload moves out of the shell (after them), the two drag throttles
-keep their own armed flag, and the page chrome stops leaking a widget per render (last).
+keep their own armed flag, the page chrome stops leaking a widget per render, and the tabbed page
+moves to `OptionsTabs.lua` with host tabs, a disabled notice, a chrome hook and a banner action
+(last).
 
 **`CreateOptionsPanel` parks in combat and replays itself (O24).** Called under
 `InCombatLockdown()`, it registers nothing -- no canvas, no category, no page builder runs. It
@@ -137,6 +140,37 @@ release; it no longer drives the release. **No member or spec field is added or 
 is nothing to adopt**: every consumer gets the fix by re-vendoring. The kit's AceGUI fake now counts
 what is still out (`M.__aceguiLive`, kit revision 26), which is what the new cases in
 `tests/test_options_tabs.lua` read.
+
+**The tabbed page moves to `OptionsTabs.lua` and takes `opts` (T4).** `O.RenderTabbedSchema` is now
+defined in `OptionsTabs.lua`'s attach, which the shell calls as `lib.__AttachTabs(O, d)` so it can read
+`d.rowsForPage`; that is the only descriptor field the chrome half reads. `OptionsWidgets.lua` keeps an
+untabbed stand-in under the same name, which the chrome half's attach replaces: a partial copy without
+`OptionsTabs.lua` still draws every row with its headings and ignores `opts`. A partial copy without
+`OptionsWidgets.lua` has no `RenderTabbedSchema` at all, as before. The four-argument call every host
+makes is unchanged. AuraMaster (`AuraMaster-R-04`) forked the whole render for the fields below, and
+AbsorbTracker, KickCD, ConsumableMaster and MultiMeters hand-build the same strip shape, so none of
+them is a per-consumer flag (anti-pattern #55). A fifth argument, every field optional:
+
+| Field | Since | What it does |
+|---|---|---|
+| `tabs` | **T4** | `{ { key, label, tooltip, before, render = function(ctx, rows) } }`: host tabs drawn by their own callback. One whose `key` equals a schema group takes that group's place in the strip (its `label` and `tooltip` win when given) and `render` is handed that group's rows, which the flow engine then does not draw. Any other is placed ahead of the tab `before` names, or last when that tab is not drawn, and `render` is handed nil. An entry with no `key` or no `render` function is not a tab. A page whose only tabs are host tabs draws its strip and is not reported as having no groups. |
+| `cfg` | **T4** | The subject this render edits, handed to `disabledFor` and `disabledNotice`. |
+| `disabledFor` | **T4** | `function(cfg)`. Answering true draws `disabledNotice` **above** the rows and renders the rows disabled (`RenderRows`' `opts.disabled`); a host tab's `render` runs with `ctx.__renderDisabled` set, restored on the way out, a raise included. The rows are still drawn: the notice does not replace them. A raising predicate reads as enabled, as a row's `disabledIf` does. |
+| `disabledNotice` | **T4** | A string, or `function(cfg)` answering one, drawn with `O.TextRow` in `GameFontHighlightSmall` followed by a row gap. The library adds no color; a host embeds its own escape sequence. |
+| `chrome` | **T4** | `function(ctx)`, called once per render, after the strip and before the notice and the rows: a line that belongs above every tab. A tab click is a render, so it is called again. A banner is not chrome here: draw `PageBanner` or `PageHeader` before calling `RenderTabbedSchema`, since both release the strip. |
+
+A tab click re-renders with the same `opts`. `RenderTabbedSchema` also returns a second value from
+T4, the key of every tab the strip drew in strip order; the first is still the group names.
+
+**`O.PageBanner` gains `action` (T4).** `spec.action = { text, tooltip, onClick }` draws an AceGUI
+`Button` in the band's right half, level with the dropdown's control (14px down under a label, 0
+without), and the dropdown takes the left half. This is the picker+create band of `options-ui-§14`,
+which AuraMaster built inside `PageHeader`'s frame by hand. `onClick` is pcall'd (a raise prints
+`BUTTON_FAILED`) and refused in combat, as the picker's selection is. The Button is held and Released
+exactly as the dropdown is (hidden when the band is next drawn, Released once the replacement
+exists), so a create act that re-renders the page from inside its own `OnClick` is never handed its
+own button back. `PageBanner` returns the Button as a second value. A spec without `action` draws what
+T3 drew, apart from the release fix above.
 
 ## Previously, at 23.30.3.7.3
 
@@ -739,14 +773,14 @@ the leak Options minor 14 ended. A payload holding four of the five files is not
 and LibStub cannot detect it, which is why whole-folder vendoring is mandatory.
 
 **Two cross-file calls are now guarded, and both are honest degradations rather than defensiveness.**
-`O.RenderTabbedSchema` (in `OptionsWidgets.lua`) falls back to the untabbed render when `O.TabStrip`
+`O.RenderTabbedSchema` (in `OptionsWidgets.lua` at this historic version; from T4 its untabbed stand-in there) falls back to the untabbed render when `O.TabStrip`
 is absent — every row with its section headings, exactly what its no-groups branch already does —
 and `O.PageBanner` (in `OptionsTabs.lua`) skips its tooltip when `O.AttachTooltip` is absent. The
 two files are paired on the **shell's** minor rather than on each other's, so a copy carrying one
 and not the other is a state LibStub cannot see; a page that still draws is a smaller failure than
 a page that raises.
 
-**`OptionsTabs.lua` takes no descriptor.** `lib.__AttachTabs(O)` is called with the instance alone,
+**`OptionsTabs.lua` takes no descriptor** (until T4, which passes it for `rowsForPage`). `lib.__AttachTabs(O)` is called with the instance alone,
 unlike the three attach calls around it. The chrome is geometry and art: it reads no setting, writes
 none, and calls no host callback other than the `onSelect` its own spec carries. The signature says
 so, so a reader can tell which half of the old file could reach the host's data.
@@ -1110,10 +1144,10 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `SessionCheckbox(ctx, parent, relWidth, spec)` | W1 (disabled render: **W16**) | A checkbox wired to caller-supplied `get`/`set` instead of a settings path, for runtime-only toggles that must never persist. From W16 it is drawn disabled when drawn inside a disabled render. |
 | `RenderRows(ctx, rows, afterGroup, pairWith, opts)` | W1 (`opts.noHeadings`: **W9**; `opts.disabled`: **W16**; `shownWhen`: **W22**) | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. `opts = { noHeadings = true }` suppresses the automatic `Section` heading, for a page whose sections are drawn as tabs instead (options-ui-§13); the row-boundary flush and `ctx.lastGroup` advance still happen. Omitted by every untabbed caller. **`opts.disabled = true` (W16)** draws every widget of the call disabled, the widgets an `afterGroup` or `pairWith` hook draws included, through `ctx.__renderDisabled` held for the call alone. A nested call inherits it, and the outer value is restored on a raise, which is re-raised unchanged — see [What changed at this version](#what-changed-at-this-version). |
 | `RenderSchema(ctx, pageKey, afterGroup, pairWith)` | W1 | The per-page wrapper. |
-| `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith)` | **W9** | Render one page as a tab strip over its own sections. The partition is by `row.group`, in declaration order — one tab is exactly one group, and there is no second field naming a tab (options-ui-§13). **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first group. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order. |
+| `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith, opts)` | **W9** (`opts`: **T4**) | Render one page as a tab strip over its own sections. Defined in `OptionsTabs.lua` from **T4**; `OptionsWidgets.lua` keeps an untabbed stand-in that ignores `opts` for a partial copy without it. `opts` = `{ tabs, cfg, disabledFor, disabledNotice, chrome }`, each optional — see [What changed at this version](#what-changed-at-this-version). The partition is by `row.group`, in declaration order — one tab is exactly one group, and there is no second field naming a tab (options-ui-§13). **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first group. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order, and from **T4** every drawn tab's key in strip order. |
 | `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). **Its geometry is invariant under the selection from W13.** **From W14 the buttons and the content panel are acquired from `LibKa0s-Pool-1.0` pools held on the `ctx` rather than created per click** — see [What changed at this version](#what-changed-at-this-version). Returns the buttons in tab order, or nil having drawn nothing. |
 | `SubTabStrip(ctx, parent, spec)` | **W13** | A **secondary** strip drawn inside the scroll as ordinary page content, parented to a frame the host supplies (options-ui-§13). Same `spec` shape as `TabStrip`, same selection-invariant pitch, its own ledger (`ctx.__subTabKids`) released on entry, and **no** content panel and **no** `SetChromeHeight` — the page already has both. **Not pooled at W14**, unlike the primary strip: its parent is a frame AceGUI takes back, so its buttons are unparented on release and cannot be recycled. Returns the buttons in tab order **and** the total height the strip occupies, so the host can size the frame it handed in, or nil having drawn nothing. The selection is the host's state: `spec.value` and `spec.onSelect` are the whole contract, and the convention for the collection is `ctx.activeSubTab` as a table keyed by the primary tab's key, session-only and never persisted. |
-| `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip }`. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). From **T4** the previous render's dropdown is Released to AceGUI once the new one exists, rather than hidden and kept. **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing. |
+| `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip, action }`; `action = { text, tooltip, onClick }` (**T4**) draws a `Button` in the band's right half for the picker+create band, pcall'd, refused in combat, and Released like the dropdown. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). From **T4** the previous render's dropdown is Released to AceGUI once the new one exists, rather than hidden and kept. **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing, and the action's `Button` as a second value when there is one. |
 | `PageHeader(ctx, spec)` | **W13** | A host-drawn block pinned in the same band, for controls that apply to **every** tab (options-ui-§14). `spec = { height, build = function(ctx, frame) end, divider = <default true> }`. Anchors a `Frame` across `ctx.chrome`, ledgers it, draws the hairline unless told not to, records the widened band in `ctx.__bannerHeight` via `__bannerBand`, reserves it with `SetChromeHeight`, then calls `build` inside a `pcall` — a raising builder is reported and costs the block, not the page. From **T4** the frame comes from a per-page pool of one, so every render of one page is handed **the same frame**; what `build` draws into it is the host's to release. **A page draws at most one chrome block**: this and `PageBanner` both release the chrome band and both write `ctx.__bannerHeight`, so the second call replaces the first. **Draw it before `TabStrip`.** Returns the frame, or nil having drawn nothing. |
 | `SetChromeHeight(ctx, height)` | **O10** | Reserve `height` pixels of pinned chrome above the scroll, and re-anchor a live scroll to match. Idempotent. `height <= 0` hides `ctx.chrome`. Call only after the wrap of whatever is being reserved is known. |
 | `__scrollTopInset(ctx)` | **O10** | `L.CHROME_GAP + (ctx.chromeHeight or 0)` — the seam `EnsureScroll` and `SetChromeHeight` both read for the scroll's top anchor, so the two cannot disagree. |
@@ -1959,7 +1993,10 @@ host observes only if it held the old dropdown past the next render or built raw
 header frame on every call (none of the five hosts calling `PageBanner` or `PageHeader` at this
 version does either); `OpenOptionsPanel`
 now returns a value where it returned none, which a host that ignored the result cannot observe; and
-`CreateOptionsPanel` called in combat registers when combat ends rather than at once. That last one
+`CreateOptionsPanel` called in combat registers when combat ends rather than at once.
+`RenderTabbedSchema`'s fifth argument and `PageBanner`'s `action` are optional spec fields: a host
+that passes neither draws what it drew, and each gains a second return value a caller that ignored
+the first cannot observe. The `CreateOptionsPanel` park
 is the only difference a host written against 23.30.3.7.3 can see, and only on a login or `/reload`
 taken in combat: its category appears in the AddOns sidebar when the fight ends. A host suite that
 pinned "registering during combat still registers" (WhatGroup's, for its WG-A-12 fix) now needs to

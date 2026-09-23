@@ -13,9 +13,9 @@
 -- with nothing, and one-suite-per-module is what makes a red legible.
 --
 -- The cases under *the tabbed page* STAYED, and that is the one place the cut differs from the
--- banner list #8 wrote down. `O.RenderTabbedSchema` is the flow engine's tabbed entry point and it
--- is still in OptionsWidgets.lua; those cases read a strip because that is what the entry point
--- draws, but what they assert is which ROWS a tab shows.
+-- banner list #8 wrote down. `O.RenderTabbedSchema` was the flow engine's tabbed entry point; it
+-- moved to OptionsTabs.lua at OptionsTabs minor 4, and these cases stayed unchanged as the
+-- characterization of that move. Its new `opts` fields are pinned in tests/test_options_tabs.lua.
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse, assertNil, assertNear =

@@ -1869,7 +1869,9 @@ it got.
 `Options.lua` moves to minor **24**, `OptionsWidgets.lua` to **31**, `OptionsTabs.lua` to **4** and
 `OptionsScroll.lua` to minor **4**; `OptionsCompose.lua` does not move. No member, descriptor field or
 row field is added or removed, and the member manifest differs from this version's only in its
-version key. What moves is where the font preload is defined: `lib.__PreloadFonts` and its state now
+version key. Two optional spec fields are added: `RenderTabbedSchema` takes a fifth `opts` argument
+(host tabs, a disabled notice, a chrome hook) and moves to `OptionsTabs.lua`, and `PageBanner` takes
+an `action` button; a host that passes neither draws what it drew. What moves is where the font preload is defined: `lib.__PreloadFonts` and its state now
 live in `OptionsScroll.lua`, unchanged, to keep the shell under the 1500-line cap. A partial copy
 missing `OptionsScroll.lua` shows its pages with no preload and no error. The slider's live commit
 and the color picker's drag throttle stop reading `scheduleTimer`'s return value as their armed

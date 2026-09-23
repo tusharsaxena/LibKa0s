@@ -18,6 +18,39 @@ Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 
 (`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24**, **OptionsWidgets minor 31**, **OptionsTabs minor 4** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.31.4.7.4; `OptionsCompose` 7 unchanged), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
 
+### OptionsTabs minor 4: `RenderTabbedSchema` moves here and takes host tabs, a disabled notice and a chrome hook; `PageBanner` takes an action
+
+- **`O.RenderTabbedSchema` moves from `OptionsWidgets.lua` to `OptionsTabs.lua`** (review finding
+  `AuraMaster-R-04`, a first peel toward the `OptionsWidgets.lua` census row). The shell now calls
+  `lib.__AttachTabs(O, d)` so the chrome half can read `d.rowsForPage`. `OptionsWidgets.lua` keeps an
+  untabbed stand-in under the same name that the chrome half's attach replaces, so a partial copy
+  without `OptionsTabs.lua` still draws every row with its headings. The four-argument call every
+  host makes is unchanged, and every existing case in `tests/test_options_widgets.lua` passes as it
+  did.
+- **A fifth, optional `opts` argument**, for the page AuraMaster forked whole and four more hosts
+  (AbsorbTracker, KickCD, ConsumableMaster, MultiMeters) hand-build the strip of: `tabs` (host tabs
+  drawn by `render(ctx, rows)`; one keyed by a schema group takes that group's place and is handed
+  its rows, any other is placed `before` a named tab or last), `cfg`, `disabledFor(cfg)` plus
+  `disabledNotice` (a string or a function of `cfg`; when the predicate answers true the notice is
+  drawn **above** the rows and the rows are drawn disabled, not replaced), and `chrome(ctx)`, called
+  once per render after the strip and before the rows. A second return value lists every drawn
+  tab's key in strip order.
+- **`O.PageBanner` takes `action = { text, tooltip, onClick }`**: a `Button` in the band's right half,
+  level with the dropdown's control, for `options-ui-§14`'s picker+create band. It is refused in
+  combat, pcall'd, and Released like the banner's dropdown (after its replacement exists, so a create
+  act that re-renders from its own click is never handed its own button). Returned as a second value.
+- No minor moves beyond this release's (OptionsWidgets 31 and OptionsTabs 4 are already unreleased),
+  no member is added, and the member manifest is unchanged. `OptionsTabs.lua` is 1489 lines and
+  `OptionsWidgets.lua` 3852. `tests/test_options_tabs.lua`: thirteen new cases. Red before: a host
+  tab placed `before` a group and rendered by its callback; a host tab replacing its group and
+  handed its rows; a page of host tabs alone drawing its strip; the notice above rows drawn
+  disabled; a host tab under the disable, restored after a raise; `chrome` once per render after
+  the strip; the banner's action button, its release, its re-render from its own click and its
+  combat refusal. Green from the start, as guards on the move: a false or raising `disabledFor`,
+  the stand-in taking `opts` with `OptionsTabs.lua` absent, and no `RenderTabbedSchema` over a copy
+  without the flow engine. Documented in
+  [the version 24.31.4.7.4 document](docs/api/Options/version-24.31.4.7.4-docs.md).
+
 ### OptionsTabs minor 4: the page chrome stops leaking a widget per render
 
 - **Fix: a banner or header page no longer grows by a widget and a texture per render** (review
