@@ -185,7 +185,7 @@ a census row, so a band table here would be eleven rows claiming to be breaches.
 more than the ten the band held when it was last written out — `tests/test_widgets.lua` (1493), `LibKa0s/Options.lua` (1476; 1312 at v1.40.0,
 then 1460 at v1.46.0 with minor 22's combat lock, whose event frame and cover geometry went to
 `LibKa0s/OptionsTabs.lua` to keep it under the cap, and 1465 at v1.46.1 with the dispatcher moved
-there too), `testkit/mock_base.lua` (1446 — it was 1499 at kit revision 21, one line from the cap;
+there too), `testkit/mock_base.lua` (1448 with `testkit/mock_events.lua`'s load, hook and install lines; 1446 before them — it was 1499 at kit revision 21, one line from the cap;
 kit 20's id lookups went to `testkit/mock_ids.lua` for that reason, and kit 22's recording surveys
 to `testkit/mock_record.lua` for the same one, which is what took it back down),
 `testkit/test_prose.lua` (1464; 335 at v1.54.2, and kit revision 25 took it to 1499, one line from
