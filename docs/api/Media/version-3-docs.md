@@ -259,6 +259,7 @@ and normalized line endings on everything, which is right for Lua and wrong for 
 No member is added or removed and no signature moves. `RegisterLSM` changes in two ways. It
 registers JetBrains Mono with `LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU`, where this version
 passed no langmask and so lost the face on every non-western client, and its two counts now answer
-what LSM holds after the call (`LSM:IsValid`) rather than how many `Register` calls were made. A
+what LSM holds after the call (`LSM:IsValid`) rather than how many `Register` calls were made. An LSM
+with no `IsValid` method (a test fake) is not asked, and every call counts as here. A
 host written against this version is correct at version 4 unmodified. A host that read `fonts == 1`
 as "the face is in the dropdown" now reads the truth, which is `0` on a koKR, zhCN or zhTW client.

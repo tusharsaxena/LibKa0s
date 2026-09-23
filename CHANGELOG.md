@@ -26,13 +26,15 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   otherwise): it has Latin and Cyrillic glyphs, so ruRU keeps it, and it has no Hangul or Han, so
   CJK clients are excluded on purpose. Both counts now answer what LSM holds afterwards
   (`LSM:IsValid(type, name)`), not how many `Register` calls were made; a key another copy
-  registered first still counts, because LSM has it.
+  registered first still counts, because LSM has it. An LSM with no `IsValid` method, which the
+  real LSM-3.0 always has but consumers' test fakes (MultiMeters, Aura Master) do not, is not asked:
+  every `Register` call counts there, as at minor 3, so those harnesses keep loading unmodified.
 - The doc comment claimed an identical `(mediatype, key, path)` triple made a second registration
   free. Every consumer offers a different path; the first registration wins, and it is harmless
   because every one of those paths names identical bytes. The comment now says so.
 - No member is added, so the manifest differs from minor 3's only in the minor. Documented in
   [the version 4 document](docs/api/Media/version-4-docs.md); version 3 is Superseded.
-  `tests/test_media.lua` gains four cases, and the existing registration case's fake gains
+  `tests/test_media.lua` gains five cases, and the existing registration case's fake gains
   `IsValid`. Every consumer gets it by re-vendoring; none needs a code change.
 
 ### Item minor 2: `QualityFromLink` reads the 11.1.5+ `|cnIQ<n>` link color

@@ -241,13 +241,16 @@ end
 -- ── LibSharedMedia ─────────────────────────────────────────────────────────────────────────
 
 --- Register one entry and answer 1 when LSM holds the key afterwards, 0 when it does not.
---- `langmask` is passed only when non-nil, so an LSM without locale bits sees the plain call.
+--- `langmask` is passed only when non-nil, so an LSM without locale bits sees the plain call. An
+--- LSM with no `IsValid` (a consumer's test fake; the real LSM-3.0 has it) cannot be asked, so the
+--- call counts, as it did at minor 3.
 local function registerOne(LSM, kind, name, path, langmask)
   if langmask then
     LSM:Register(kind, name, path, langmask)
   else
     LSM:Register(kind, name, path)
   end
+  if type(LSM.IsValid) ~= "function" then return 1 end
   return LSM:IsValid(kind, name) and 1 or 0
 end
 
@@ -282,7 +285,8 @@ end
 ---
 --- COUNTED ONLY WHEN LSM HAS IT. A font or texture counts when `LSM:IsValid(type, name)` answers
 --- true after the call, not because `Register` was called: a refused face is not registered, and a
---- key another copy registered first is (see above).
+--- key another copy registered first is (see above). An LSM without `IsValid` — never the real
+--- LSM-3.0, but the fakes in consumers' test harnesses — counts every call, as minor 3 did.
 ---
 --- Call it at FILE LOAD rather than at PLAYER_LOGIN. LibSharedMedia is vendored under `libs/` and
 --- has therefore already run by the time a TOC reaches the consumer's own files, and a default that

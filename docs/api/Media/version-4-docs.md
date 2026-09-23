@@ -24,7 +24,7 @@ finding `LibKa0s-R-04`):
 | | | Since |
 |---|---|---|
 | The face carries a langmask | JetBrains Mono is registered with `LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU`, so a ruRU client keeps it. At version 3 it carried no mask, and LibSharedMedia refuses a maskless font on every non-western client: on ruRU, koKR, zhCN and zhTW the face never reached the dropdown. An LSM that publishes no `LOCALE_BIT_*` constants gets the plain call. | **4** |
-| The count is what LSM holds | `fonts` and `bars` count an entry only when `LSM:IsValid(type, name)` answers true after the call. Version 3 counted every `Register` call, so it answered `1` on a client that had refused the face. A key another copy registered first still counts, because LSM has it. | **4** |
+| The count is what LSM holds | `fonts` and `bars` count an entry only when `LSM:IsValid(type, name)` answers true after the call. Version 3 counted every `Register` call, so it answered `1` on a client that had refused the face. A key another copy registered first still counts, because LSM has it. An LSM with no `IsValid` method (a test fake; the real LSM-3.0 has one) cannot be asked, so there every `Register` call counts, as in version 3. | **4** |
 
 **CJK clients are excluded on purpose.** The face has Latin and Cyrillic glyphs and no Hangul or Han,
 so on koKR, zhCN and zhTW it would draw a player's own text as boxes. It does not belong in their

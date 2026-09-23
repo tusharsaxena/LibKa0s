@@ -303,6 +303,23 @@ test("media: an LSM without the locale bits gets a plain Register", function()
   assertEqual(argc[1], 2, "key and path, and no langmask argument")
 end)
 
+test("media: an LSM without IsValid counts every Register call, as minor 3 did", function()
+  -- red under: minor 4 before this fix, which called LSM:IsValid unguarded and raised
+  -- "attempt to call method 'IsValid' (a nil value)". Consumers' test harnesses fake LSM with
+  -- only Register/Fetch/List/HashTable and call RegisterLSM at file load, so re-vendoring must not
+  -- break them: with no IsValid to ask, a Register call counts, which is what minor 3 answered.
+  local registered = 0
+  T.mocks.__libs["LibSharedMedia-3.0"] = {
+    MediaType = { FONT = "font", STATUSBAR = "statusbar" },
+    Register = function() registered = registered + 1 end,   -- answers nothing, like the fakes
+  }
+  local ok, fonts, bars = pcall(media.RegisterLSM, "MythicMeters")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertTrue(ok, "RegisterLSM raised on an LSM without IsValid: " .. tostring(fonts))
+  assertEqual(fonts + bars, registered, "every Register call counts when IsValid is absent")
+  assertEqual(fonts, 1)
+end)
+
 test("media: no LibSharedMedia is 0 registrations, not an error", function()
   -- An addon that does not carry LSM still wants its icons, so this degrades rather than raising.
   T.mocks.__libs["LibSharedMedia-3.0"] = nil

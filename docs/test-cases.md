@@ -302,7 +302,7 @@ badge and any count quoted in the docs must agree with it.
 - item: LoadItem fires the callback once the item is loaded
 - item: LoadItem is inert without an id or without the API
 
-### test_media.lua (19)
+### test_media.lua (20)
 
 - media: every name in ICONS has a file, and every file has a name
 - media: the icon license ships beside the art
@@ -322,6 +322,7 @@ badge and any count quoted in the docs must agree with it.
 - media: RegisterLSM counts only what LibSharedMedia kept
 - media: RegisterLSM counts a face another copy registered first
 - media: an LSM without the locale bits gets a plain Register
+- media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
 
 ### test_widgets.lua (81)
@@ -1722,7 +1723,7 @@ badge and any count quoted in the docs must agree with it.
 | test_schema.lua | 71 |
 | test_pool.lua | 23 |
 | test_item.lua | 15 |
-| test_media.lua | 19 |
+| test_media.lua | 20 |
 | test_widgets.lua | 81 |
 | test_widgets_draghandle.lua | 35 |
 | test_debuglog.lua | 67 |
@@ -1762,4 +1763,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1556** |
+| **Total** | **1557** |
