@@ -13,8 +13,27 @@ cannot drift. Release order is in
 ## v1.56.0 — unreleased
 
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
-(`LibKa0s-Item-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Media minor 4: `RegisterLSM` flags the face western + ruRU and counts what LSM holds
+
+- **Behavioral, and nothing else moves.** `RegisterLSM` registered JetBrains Mono with no langmask,
+  and LibSharedMedia refuses a maskless font on every non-western client, so on ruRU, koKR, zhCN and
+  zhTW the face never reached a font dropdown while the returned count still said `1` (review
+  finding `LibKa0s-R-04`). The face is now registered with
+  `LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU` when LSM publishes those bits (a plain `Register`
+  otherwise): it has Latin and Cyrillic glyphs, so ruRU keeps it, and it has no Hangul or Han, so
+  CJK clients are excluded on purpose. Both counts now answer what LSM holds afterwards
+  (`LSM:IsValid(type, name)`), not how many `Register` calls were made; a key another copy
+  registered first still counts, because LSM has it.
+- The doc comment claimed an identical `(mediatype, key, path)` triple made a second registration
+  free. Every consumer offers a different path; the first registration wins, and it is harmless
+  because every one of those paths names identical bytes. The comment now says so.
+- No member is added, so the manifest differs from minor 3's only in the minor. Documented in
+  [the version 4 document](docs/api/Media/version-4-docs.md); version 3 is Superseded.
+  `tests/test_media.lua` gains four cases, and the existing registration case's fake gains
+  `IsValid`. Every consumer gets it by re-vendoring; none needs a code change.
 
 ### Item minor 2: `QualityFromLink` reads the 11.1.5+ `|cnIQ<n>` link color
 

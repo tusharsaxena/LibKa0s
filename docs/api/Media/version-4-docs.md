@@ -1,4 +1,4 @@
-# `LibKa0s-Media-1.0` — version 3
+# `LibKa0s-Media-1.0` — version 4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Media surface points here rather than restating it. It describes the
@@ -8,24 +8,40 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Media-1.0` |
-| Files and minors | `Media.lua` minor **3** |
-| Shipped in | v1.9.2 |
-| Status | Superseded |
-| Supersedes | [version 2](./version-2-docs.md) — 49 icons, no textures |
-| Superseded by | [version 4](./version-4-docs.md) — `RegisterLSM` flags the face western + ruRU and counts only what LSM holds |
-| Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 3 }` |
+| Files and minors | `Media.lua` minor **4** |
+| Shipped in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 3](./version-3-docs.md) — the face registered with no langmask, and counted whatever LSM answered |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 4 }` |
 
 ## What changed at this version
+
+**Behavioral, one function.** No member is added or removed and no signature moves; the member
+manifest differs from version 3's only in the minor. `RegisterLSM` changes in two ways (review
+finding `LibKa0s-R-04`):
+
+| | | Since |
+|---|---|---|
+| The face carries a langmask | JetBrains Mono is registered with `LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU`, so a ruRU client keeps it. At version 3 it carried no mask, and LibSharedMedia refuses a maskless font on every non-western client: on ruRU, koKR, zhCN and zhTW the face never reached the dropdown. An LSM that publishes no `LOCALE_BIT_*` constants gets the plain call. | **4** |
+| The count is what LSM holds | `fonts` and `bars` count an entry only when `LSM:IsValid(type, name)` answers true after the call. Version 3 counted every `Register` call, so it answered `1` on a client that had refused the face. A key another copy registered first still counts, because LSM has it. | **4** |
+
+**CJK clients are excluded on purpose.** The face has Latin and Cyrillic glyphs and no Hangul or Han,
+so on koKR, zhCN and zhTW it would draw a player's own text as boxes. It does not belong in their
+font dropdown, and `RegisterLSM` answers `0` fonts there. A host that draws with `Font(...)` directly
+still gets the path on every client.
+
+## What version 3 added
 
 **Additive.** Nothing that existed at version 2 behaves differently, and the only signature to move
 gained a second return value rather than changing its first.
 
 | | | Since |
 |---|---|---|
-| 64 more icons | `ICONS` goes from 49 names to 113: the left/right arrow family, both text-alignment families, two more grid densities, chat and speech-bubble, and the tools, places, sound and session marks. Every version-2 name still resolves. | **3** |
-| `TEXTURES` | Seven **statusbar** textures, keyed by the LSM display name a player picks and a profile stores. | **3** |
-| `Texture(addonName, name[, vendorPath])` | The vendored path for one of them, extensionless, or `nil`. | **3** |
-| `RegisterLSM` returns `fonts, bars` | It registers the textures as `statusbar` alongside the face. A caller reading one return still reads the font count. | **3** |
+| 64 more icons | `ICONS` goes from 49 names to 113: the left/right arrow family, both text-alignment families, two more grid densities, chat and speech-bubble, and the tools, places, sound and session marks. Every version-2 name still resolves. | 3 |
+| `TEXTURES` | Seven **statusbar** textures, keyed by the LSM display name a player picks and a profile stores. | 3 |
+| `Texture(addonName, name[, vendorPath])` | The vendored path for one of them, extensionless, or `nil`. | 3 |
+| `RegisterLSM` returns `fonts, bars` | It registers the textures as `statusbar` alongside the face. A caller reading one return still reads the font count. | 3 |
 
 ### The textures, and why they are generated rather than drawn
 
@@ -105,10 +121,10 @@ Read straight off the LibStub table. Every function is stateless.
 | Name | Since | Meaning |
 |---|---|---|
 | `Icon(addonName, name[, vendorPath])` | 1 (extensionless since **2**) | The texture path for one icon, **without an extension** — the client appends it — or `nil` when `name` is not in `ICONS` or `addonName` is missing or empty. The file behind it is `<name>.tga`. |
-| `Texture(addonName, name[, vendorPath])` | **3** | The path of one shipped statusbar texture, extensionless, or `nil` when `name` is not a key of `TEXTURES` or `addonName` is missing or empty. |
-| `TEXTURES` | **3** | Map of LSM display name → `{ file }`. The catalog of the seven bar textures. |
+| `Texture(addonName, name[, vendorPath])` | 3 | The path of one shipped statusbar texture, extensionless, or `nil` when `name` is not a key of `TEXTURES` or `addonName` is missing or empty. |
+| `TEXTURES` | 3 | Map of LSM display name → `{ file }`. The catalog of the seven bar textures. |
 | `Font(addonName, name[, vendorPath])` | 1 | The font path for one registered face, or `nil` when `name` is not a key of `FONTS` or `addonName` is missing or empty. |
-| `RegisterLSM(addonName[, vendorPath])` | 1 (second return: **3**) | Register every shipped font **and every shipped statusbar texture** with LibSharedMedia under its catalog name. Returns `fonts, bars`; **`0, 0` when LSM is absent, which is not an error**. |
+| `RegisterLSM(addonName[, vendorPath])` | 1 (second return: 3; langmask and counted-only-if-held: **4**) | Register every shipped font **and every shipped statusbar texture** with LibSharedMedia under its catalog name, the font flagged western + ruRU. Returns `fonts, bars`, each counting what LSM holds afterwards (`LSM:IsValid`); **`0, 0` when LSM is absent, which is not an error**. |
 | `ICONS` | 1 | Array of every icon name, which is each file's own basename. The catalog — enumerate it rather than hard-coding a list. |
 | `FONTS` | 1 | Map of LSM name → `{ file, license }`, both basenames under `media/fonts/`. |
 | `VENDOR_PATH` | 1 | `"libs\\LibKa0s"` — where the collection vendors this library, and the default third argument above. |
@@ -212,10 +228,17 @@ Call it at **file load**, not at `PLAYER_LOGIN`. LibSharedMedia is vendored unde
 already run by the time a TOC reaches the consumer's own files, and a default naming a face LSM has
 not heard of yet resolves to nothing.
 
-Registration is **idempotent** — LSM charges nothing for an identical `(mediatype, key, path)` triple
-— so two consumers each registering at load is not a conflict. Two consumers registering *different*
-paths under one key would be, and that is precisely the collision this module removes: every consumer
-now points at the same bytes under the same name.
+**The first registration wins.** LSM keeps the first path offered under a key and answers `false` to
+every later `Register` for it. Each consumer offers a *different* path, its own
+`Interface\AddOns\<Addon>\libs\LibKa0s\...`, so what makes a second consumer harmless is not an
+identical triple: every one of those paths names identical bytes, the same file vendored whole into
+each addon. Whichever copy wins, the player sees the same face under the same name, and each
+consumer's `RegisterLSM` counts it, because LSM holds it.
+
+**The face is flagged western + ruRU** (since **4**). On a non-western client LSM refuses a font with
+no langmask, and one whose mask lacks the client's locale bit. JetBrains Mono covers Latin and
+Cyrillic, so western and ruRU clients get it in the dropdown and koKR, zhCN and zhTW clients do not:
+the face has no glyphs for their text.
 
 ## Adopting it
 
@@ -253,12 +276,3 @@ The consumer-side gate compares the vendored payload against the tag byte for by
 and normalized line endings on everything, which is right for Lua and wrong for a TGA. **Kit revision
 11 or newer is required** to vendor a payload with `media/` in it — see
 [`../testkit/version-11-docs.md`](../testkit/version-11-docs.md).
-
-## Moving to version 4
-
-No member is added or removed and no signature moves. `RegisterLSM` changes in two ways. It
-registers JetBrains Mono with `LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU`, where this version
-passed no langmask and so lost the face on every non-western client, and its two counts now answer
-what LSM holds after the call (`LSM:IsValid`) rather than how many `Register` calls were made. A
-host written against this version is correct at version 4 unmodified. A host that read `fonts == 1`
-as "the face is in the dropdown" now reads the truth, which is `0` on a koKR, zhCN or zhTW client.
