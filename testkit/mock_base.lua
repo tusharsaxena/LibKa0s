@@ -26,6 +26,8 @@
 -- 5. Model the awkward real behavior, not the convenient one. AceDB's copyDefaults merges in place
 --    and AceConsole's Embed clobbers a same-named custom Print and Printf — all are reproduced
 --    here, because each has already caused a real bug that a friendlier mock would have hidden.
+--    A new frame starts shown, as in the client: the hidden default was the convenient one, and it
+--    let a frame production never hid pass every "nothing is on screen" assertion (kit 26).
 --
 -- ── Known divergence, deliberately kept ────────────────────────────────────────────────────────
 --
@@ -118,8 +120,10 @@ local ATLAS_SIZES = {
 -- because a consumer's own mock may call the published `M.__stubFrame` (which supplies it) or this
 -- function through some older path (which does not, and whose frames are then simply not surveyed).
 local function stubFrame(track)
-  local f = { __shown = false, __scripts = {} }
+  local f = { __shown = true, __scripts = {} }
   -- Track shown state so IsShown/Toggle behave (a debug console's visibility checkbox reads it).
+  -- A new frame starts SHOWN, as `CreateFrame` hands one back in the client (kit revision 26; it
+  -- started hidden before, so a stand-down baseline never saw a container nobody hid -- rule 5).
   -- Every other capitalized method still no-ops through the metatable below.
   function f:Show() self.__shown = true; return self end
   function f:Hide() self.__shown = false; return self end
@@ -1121,7 +1125,7 @@ return function()
   M.__stopwatch = {}
   local function sw(action) return function() M.__stopwatch[#M.__stopwatch + 1] = action end end
   M.Stopwatch_Clear, M.Stopwatch_Play, M.Stopwatch_Pause = sw("clear"), sw("play"), sw("pause")
-  M.StopwatchFrame = newFrame()
+  M.StopwatchFrame = newFrame():Hide()   -- hidden until opened, as in the client (kit 26)
 
   -- ── UI ───────────────────────────────────────────────────────────────────────────────────
   M.UIParent = newFrame()
@@ -1143,7 +1147,7 @@ return function()
   M.DEFAULT_CHAT_FRAME = newFrame()
   M.StaticPopupDialogs = {}
   M.StaticPopup_Show = function() end
-  M.GameTooltip = newFrame()
+  M.GameTooltip = newFrame():Hide()      -- hidden until something owns it, as in the client
   M.hooksecurefunc = function() end
   M.CreateColor = function(r, g, b, a) return { r = r, g = g, b = b, a = a } end
   M.PlaySound = function() end
@@ -1159,7 +1163,7 @@ return function()
   -- that from a guard which merely printed is seeing the close land. Left nil, the branch is
   -- unreachable and the case passes either way.
   M.__settingsClosed = 0
-  M.SettingsPanel = newFrame()
+  M.SettingsPanel = newFrame():Hide()    -- closed until opened, as in the client
   function M.SettingsPanel:Close() M.__settingsClosed = M.__settingsClosed + 1 end
 
   M.Settings = {

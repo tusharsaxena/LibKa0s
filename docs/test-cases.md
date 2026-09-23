@@ -1403,7 +1403,7 @@ badge and any count quoted in the docs must agree with it.
 - kit: assertErrorMatches fails when fn raises something else, naming both strings
 - kit: assertErrorMatches fails when fn does not raise
 
-### test_mock_base.lua (32)
+### test_mock_base.lua (33)
 
 - mock: a frame that was never armed answers zero, dressed or not
 - mock: __setGeom is the opt-in, and the only thing that arms a frame
@@ -1411,6 +1411,7 @@ badge and any count quoted in the docs must agree with it.
 - mock: SetAtlas records the name whether or not a size was asked for
 - mock: an atlas the table does not publish leaves geometry alone
 - mock: the selected and unselected tab atlases are published at different heights
+- mock: a new frame is shown until hidden, as in the client
 - mock: AceGUI:Release takes a widget back: flagged, frame hidden, recorded in order
 - mock: AceGUI:Release fires OnRelease, then drops the children and the callbacks
 - mock: a Release reached from the widget's own OnRelease is ignored, as AceGUI's guard ignores it
@@ -1696,7 +1697,7 @@ badge and any count quoted in the docs must agree with it.
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
 | test_kit_asserts.lua | 3 |
-| test_mock_base.lua | 32 |
+| test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 35 |
 | test_mock_events.lua | 14 |
@@ -1709,4 +1710,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_eol.lua | 12 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1511** |
+| **Total** | **1512** |

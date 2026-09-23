@@ -18,8 +18,8 @@
 
 ## What changed
 
-**Three new files, one new assertion, and two behavioral changes: the AceDB fake, and event
-registration.** The first two files are peels, made to take two kit files back under
+**Three new files, one new assertion, and three behavioral changes: the AceDB fake, event
+registration, and a new frame starting shown.** The first two files are peels, made to take two kit files back under
 `layout-§1`'s 1500-line cap and to give the growth still to come somewhere else to land:
 
 | New file | What moved into it | Loaded by |
@@ -104,6 +104,35 @@ not see an `EditMode.Exit` callback left behind on disable (review finding
 raise where it used to record the name. A consumer whose own mock defines `EventRegistry` or
 `C_EventUtils` overwrites the kit's and is unaffected until it drops its own. The fourteen cases are
 in this repo's `tests/test_mock_events.lua`.
+
+### A behavioral flip: a new frame starts shown
+
+| Call | Revision 25 | Revision 26, as the client |
+|---|---|---|
+| `CreateFrame(...)`, then `IsShown()` / `IsVisible()` | `false` until `Show()` | `true` until `Hide()` |
+| `M.__shownFrames()` right after a build | only the frames something called `Show()` on | every frame the build made that nothing hid |
+| `M.GameTooltip`, `M.SettingsPanel`, `M.StopwatchFrame` | hidden | hidden: the build hides them, because the client's own windows start closed |
+
+In the client, `CreateFrame` hands back a frame that is shown: a container stays on screen until
+the code that built it hides it. Through revision 25 every kit frame started hidden (`__shown =
+false` in `mock_base.lua`'s frame stub), which is the convenient default fidelity rule 5 forbids.
+It let a frame production built and never hid pass every "nothing is on screen" assertion (review
+finding `PartyFrameEnhanced-A-02`). `Show`, `Hide`, `SetShown` and `IsShown` behave as before;
+`IsVisible` still answers the frame's own flag and does not walk its parents. The change applies to
+every tracked frame, `M.__stubFrame()`'s and the AceGUI fake's widget frames included, since both
+are built by the same stub. `UIParent` and `DEFAULT_CHAT_FRAME` are now shown, as they are in the
+client. `mock_base.lua` is 1452 lines with the change.
+
+**A consumer note.** A stand-down suite that takes an `F_on` baseline from `M.__shownFrames()`
+**now sees the addon's container frames** (holders, fade frames, anchors), which it could not see
+before. A suite that goes red on re-vendoring has two honest answers. Either the addon leaves a
+frame shown where it should have hidden it, which is a real defect, or the suite's setup owes the
+case the `Hide()` the production path performs. Weakening the assertion is not one of them. This
+repo had one such case, `tests/test_options_idsuggest.lua`'s "a box that left before the pause
+shows nothing", which fired `OnHide` at a frame nothing had hidden; its setup now hides the frame
+first, as the client does when the panel goes away. The red-first case is
+`tests/test_mock_base.lua`'s "a new frame is shown until hidden, as in the client". A consumer whose
+own mock builds its frames without the kit's stub is unaffected until it moves onto the stub.
 
 Everything else below is revision 25's contract, carried forward unchanged.
 

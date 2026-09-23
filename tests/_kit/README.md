@@ -543,7 +543,7 @@ LOSES entries when the addon gives something up — which is the half that matte
 |---|---|
 | `M.__registrations()` | `{ target, kind, event, unit }` for every live registration. `kind` is `event`, `message`, `bucket`, `frame` (a raw `frame:RegisterEvent`), `unit` (one row **per unit token**) or, from revision 26, `callback` — an `EventRegistry` callback, shaped `{ kind, event, owner }` with **no `target`**. |
 | `M.__timers()` | every armed AceTimer handle, un-canceled `C_Timer` ticker and frame carrying an `OnUpdate`. `M.__timers` **indexed** is still the pending queue it always was. |
-| `M.__shownFrames()` | every frame this build made that is shown, in creation order. |
+| `M.__shownFrames()` | every frame this build made that is shown, in creation order. From revision 26 a new frame starts **shown**, as `CreateFrame` returns one in the client, so a frame production builds and never hides is on this list. |
 | `M.__svWrites()` | `{ path, value }` for every write that reached a watched SavedVariables tree since `M.__resetSvWrites()`. `M.__watchSv("<Global>")` adds a root the AceDB fake did not create. |
 | `M.__printed()` | every line that reached the chat frame, plus `M.__resetPrinted()` and `M.__recordPrint(line)` for a printer that ends somewhere else. |
 

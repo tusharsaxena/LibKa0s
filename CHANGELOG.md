@@ -90,6 +90,23 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   `tests/test_mock_events.lua` holds fourteen cases. Documented in
   [the revision 26 document](docs/api/testkit/version-26-docs.md).
 
+### Test kit revision 26: a new frame starts shown
+
+- **Behavioral.** The frame stub in `testkit/mock_base.lua` starts every frame **shown**
+  (`__shown = true`), as `CreateFrame` returns one in the client; through revision 25 it started
+  hidden, so `M.__shownFrames()` never listed a frame production built and never hid (audit finding
+  `PartyFrameEnhanced-A-02`). `M.GameTooltip`, `M.SettingsPanel` and `M.StopwatchFrame` are hidden
+  at build, because the client's own windows start closed. Fidelity rule 5's note says so, and
+  `mock_base.lua` is 1452 lines.
+- **Consumer note.** A stand-down suite's `F_on` baseline now sees the addon's container frames. A
+  red on re-vendoring is either a frame the addon leaves shown, a real defect, or a setup that owes
+  the case the `Hide()` production performs; it is never fixed by weakening an assertion.
+- `tests/test_mock_base.lua` gains "a new frame is shown until hidden, as in the client". This
+  repo's one case that relied on the old default, `tests/test_options_idsuggest.lua`'s "a box that
+  left before the pause shows nothing", now hides the box's frame before firing `OnHide`, as the
+  client does when the panel goes away. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**
