@@ -1480,7 +1480,7 @@ badge and any count quoted in the docs must agree with it.
 - ace: AceDB's OnProfileCopied carries the SOURCE profile's key, as AceDB-3.0 fires it
 - mock_ace: AceDB's ResetProfile fires OnProfileReset with the database alone
 
-### test_mock_record.lua (27)
+### test_mock_record.lua (35)
 
 - record: a fresh build has registered nothing
 - record: a raw frame:RegisterEvent is recorded, by frame and by name
@@ -1509,6 +1509,14 @@ badge and any count quoted in the docs must agree with it.
 - record: clearing a key counts as a write
 - record: a global SavedVariables table can be watched explicitly
 - record: two databases are told apart in the report
+- record: CopyProfile onto the active profile raises AceDB's own message
+- record: CopyProfile from a missing profile raises unless silent
+- record: CopyProfile(missing, true) is silent, and resets the active profile as AceDB does
+- record: DeleteProfile on the active profile raises AceDB's own message
+- record: DeleteProfile on a missing profile raises unless silent
+- record: DeleteProfile(missing, true) is silent, and a real delete still deletes
+- record: SetProfile strips values equal to their defaults from the OUTGOING profile
+- record: SetProfile keeps a value that differs from its default
 
 ### test_surface_parity.lua (7)
 
@@ -1673,7 +1681,7 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_asserts.lua | 3 |
 | test_mock_base.lua | 32 |
 | test_mock_ace.lua | 39 |
-| test_mock_record.lua | 27 |
+| test_mock_record.lua | 35 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 12 |
@@ -1683,4 +1691,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_eol.lua | 12 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1489** |
+| **Total** | **1497** |

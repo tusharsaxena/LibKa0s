@@ -18,7 +18,7 @@
 
 ## What changed
 
-**Two new files, and one new assertion.** The files are peels, made to take two kit files back under
+**Two new files, one new assertion, and one behavioral change to the AceDB fake.** The files are peels, made to take two kit files back under
 `layout-§1`'s 1500-line cap and to give the growth still to come somewhere else to land:
 
 | New file | What moved into it | Loaded by |
@@ -51,6 +51,35 @@ from a typo in the case itself. `assertError` is unchanged and remains the form 
 goes on to check several things about the returned text; a statement-position check wants
 `assertErrorMatches`. This repository's 23 statement-position `assertError` calls were rewritten to
 it in the same release, and `tests/test_kit_asserts.lua` holds the member's own three cases.
+
+### A behavioral change: the AceDB fake's profile verbs raise where AceDB-3.0 raises
+
+**This one is behavioral.** A consumer suite that calls `CopyProfile` or `DeleteProfile` on a bad name
+will now see the raise the client would, where through revision 25 it saw a silent return. A suite
+that goes red on re-vendoring this revision has found a real defect: the addon code it drives raises a
+raw Lua error in the client on the same input.
+
+| Call | Revision 25 | Revision 26, as AceDB-3.0 |
+|---|---|---|
+| `CopyProfile(active)` | returned | raises `Cannot have the same source and destination profiles ("<name>").` (`AceDB-3.0.lua:582`) |
+| `CopyProfile(missing)` | returned | raises `Cannot copy profile "<name>" as it does not exist.` (`:586`) |
+| `CopyProfile(missing, true)` | returned | resets the active profile to its defaults and fires `OnProfileCopied` with `name` — AceDB resets before it copies, and there is nothing to copy |
+| `CopyProfile(existing)` | wiped the active profile and copied the source over it | the same, then fills the defaults the source lacks, as AceDB's reset-then-copy leaves them |
+| `DeleteProfile(active)` | returned | raises `Cannot delete the active profile ("<name>") in an AceDBObject.` (`:532`) |
+| `DeleteProfile(missing)` | returned | raises `Cannot delete profile "<name>" as it does not exist.` (`:536`) |
+| `DeleteProfile(missing, true)` | returned | returns |
+| `SetProfile(other)` | swapped and fired | first strips the **outgoing** profile, in place, of every value equal to its default (`:460-463`), then swaps and fires |
+
+Every raise is at level 2, so its position names the caller rather than the kit, and the messages
+are copied byte for byte from the `AceDB-3.0.lua` every consumer vendors (`:531-537` and
+`:581-587`). The `SetProfile` strip models `removeDefaults`' scalar arm (a value equal to its
+default is removed) and its plain-table arm (a default table is recursed into and removed if that
+leaves it empty); the `"*"` and `"**"` wildcard arms and the blocker they thread are **not**
+modeled, and the fake's `copyDefaults` does not expand wildcards either. A stripped outgoing profile
+also shows up in `M.__svWrites()`, because the SavedVariables file changes. `OnProfileChanged` and
+`OnProfileCopied` fire exactly as in revision 25; `OnProfileDeleted` is still not fired. The eight
+cases are in this repo's `tests/test_mock_record.lua` (review findings `AbsorbTracker-R-06` and
+`PartyFrameEnhanced-R-09`).
 
 Everything else below is revision 25's contract, carried forward unchanged.
 

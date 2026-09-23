@@ -238,8 +238,29 @@ return function(M, ctx)
         return names
       end
 
+      -- AceDB-3.0's removeDefaults (AceDB-3.0.lua:134-178), which SetProfile runs over the
+      -- OUTGOING profile before it switches (:460-463): a scalar equal to its default is removed,
+      -- a default table is recursed into and removed if that leaves it empty, and a key with no
+      -- default is never touched. So the SavedVariables file holds, for a profile nobody is using,
+      -- only what differs from the defaults, and a handler holding the old db.profile sees it
+      -- stripped in place. Modeled: the scalar arm and the plain-table arm. NOT modeled: the "*"
+      -- and "**" wildcard arms and the blocker argument they thread through the recursion — the
+      -- fake's copyDefaults does not expand wildcards either, so a "*" key here is an ordinary
+      -- key, filled and stripped as one.
+      local function removeDefaults(dest, src)
+        for k, v in pairs(src or {}) do
+          if type(v) == "table" and type(dest[k]) == "table" then
+            removeDefaults(dest[k], v)
+            if next(dest[k]) == nil then dest[k] = nil end
+          elseif dest[k] == v then
+            dest[k] = nil
+          end
+        end
+      end
+
       db.SetProfile = function(_, name)
         if name == current then return end
+        removeDefaults(sv.profiles[current], defaults and defaults.profile)
         current = name
         db.profile = ensureProfile(name)
         fire("OnProfileChanged", current)
@@ -254,17 +275,37 @@ return function(M, ctx)
         fire("OnProfileReset")   -- the db alone, as AceDB-3.0 fires it (revision 19)
       end
 
-      db.CopyProfile = function(_, name)
+      -- CopyProfile and DeleteProfile raise where AceDB-3.0 raises, with its messages byte for
+      -- byte and at level 2, so the position names the caller (AceDB-3.0.lua:531-537 and :581-587
+      -- in every consumer's vendored copy). Through revision 25 both returned silently on every
+      -- bad name, which let a consumer's copy or delete command pass a suite on a name that
+      -- raises a raw Lua error in the client — fidelity rule 5 (revision 26).
+      db.CopyProfile = function(_, name, silent)
+        if name == current then
+          error(("Cannot have the same source and destination profiles (%q)."):format(name), 2)
+        end
         local src = sv.profiles[name]
-        if not src or name == current then return end
+        if not src and not silent then
+          error(("Cannot copy profile %q as it does not exist."):format(name), 2)
+        end
+        -- AceDB resets the active profile first, then copies the source over it, so a key the
+        -- source lacks reads its default afterwards; a silent copy of a missing profile is
+        -- therefore a reset.
         local p = sv.profiles[current]
         for k in pairs(p) do p[k] = nil end
-        for k, v in pairs(deepcopy(src)) do p[k] = v end
+        for k, v in pairs(deepcopy(src or {})) do p[k] = v end
+        copyDefaults(p, defaults and defaults.profile)
         fire("OnProfileCopied", name)   -- the SOURCE, as AceDB-3.0 fires it (revision 18)
       end
 
-      db.DeleteProfile = function(_, name)
-        if name == current then return end
+      -- OnProfileDeleted is not fired: no consumer registers for it, and the fake never has.
+      db.DeleteProfile = function(_, name, silent)
+        if name == current then
+          error(("Cannot delete the active profile (%q) in an AceDBObject."):format(name), 2)
+        end
+        if not sv.profiles[name] and not silent then
+          error(("Cannot delete profile %q as it does not exist."):format(name), 2)
+        end
         sv.profiles[name] = nil
       end
 

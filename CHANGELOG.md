@@ -54,6 +54,22 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   `tests/test_kit_asserts.lua` adds three cases for the member itself. A consumer that re-vendors
   takes the new member; its own suite totals do not move.
 
+### Test kit revision 26: the AceDB fake raises where AceDB-3.0 raises
+
+- **Behavioral.** `CopyProfile(name, silent)` raises on the active profile, and on a missing source
+  unless `silent`; `DeleteProfile(name, silent)` raises on the active profile, and on a missing one
+  unless `silent`. The four messages are AceDB-3.0's own, byte for byte (`AceDB-3.0.lua:531-537`
+  and `:581-587`), at level 2. Through revision 25 all four returned silently, so a consumer's copy
+  or delete command passed its suite on a name that raises a raw Lua error in the client (review
+  findings `AbsorbTracker-R-06` and `PartyFrameEnhanced-R-09`). A consumer suite that goes red on
+  re-vendoring is exposing that defect, not a kit regression.
+- `CopyProfile` resets before it copies, as AceDB does, so a key the source lacks reads its default,
+  and a silent copy of a missing profile is a reset. `SetProfile` strips the outgoing profile of
+  every value equal to its default (`:460-463`), modeling `removeDefaults`' scalar and plain-table
+  arms but not its `"*"`/`"**"` wildcards. `OnProfileChanged` and `OnProfileCopied` fire as before.
+- `tests/test_mock_record.lua` gains eight cases. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**

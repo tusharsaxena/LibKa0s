@@ -666,6 +666,18 @@ checked against the real Ace3 source. **Build on them rather than replacing them
 replaces a fake wholesale never receives a kit revision again. The fakes never read their receiver, so
 a wrapper that calls through with its own table as `self` is served.
 
+**Revision 26** makes the AceDB fake's profile verbs fail where AceDB-3.0 fails. `CopyProfile(name,
+silent)` raises `Cannot have the same source and destination profiles ("<name>").` when `name` is the
+active profile, and `Cannot copy profile "<name>" as it does not exist.` for a missing source unless
+`silent`; `DeleteProfile(name, silent)` raises `Cannot delete the active profile ("<name>") in an
+AceDBObject.` on the active profile, and `Cannot delete profile "<name>" as it does not exist.` on a
+missing one unless `silent`. The messages are AceDB-3.0's own, byte for byte (`AceDB-3.0.lua:531-537`
+and `:581-587`), raised at level 2. `CopyProfile` now resets the active profile before copying, as
+AceDB does, so a key the source lacks reads its default. `SetProfile` strips the **outgoing** profile
+of every value equal to its default (`:460-463`) — the scalar and plain-table arms of
+`removeDefaults`, not the `"*"`/`"**"` wildcards. Through revision 25 every bad name returned
+silently, so a consumer's copy or delete command passed its suite on a name that raises in the client.
+
 **Revision 19** fixes one more. The AceDB fake's `ResetProfile` fires `OnProfileReset` with the
 database alone, as AceDB-3.0 does (`self.callbacks:Fire("OnProfileReset", self)`); through revision
 18 it passed the active profile as a third argument, so a reset handler that read one passed under
