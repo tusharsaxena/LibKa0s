@@ -123,7 +123,22 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    tests/_kit/run-automated-tests.sh --release <X.Y.Z>
    ```
 
-   Then a **second** commit carrying the bundle and its `RESULTS.md` row, and the tag on that. Two
+   Then the write-up, the second commit, the checks and the tag, as four sub-steps in this order:
+
+   1. **Write `docs/automated-tests/<stamp>/ANALYSIS.md`** per the uniform analysis prompt in the
+      standards repo's `AUTOMATED_TESTS.md` (*Step 2 — Write `<bundle>/ANALYSIS.md`*).
+      `automated-tests-§5` makes it a MUST for every release run and forbids backfill, so a release
+      bundle that ships without one cannot be repaired afterwards, only noted by the next write-up.
+      Every figure comes from the manifest or a suite artifact in the same bundle, and the perf skip
+      is written up as not measured, never as passed. Until this sub-step existed the procedure never
+      asked for the file, and 32 of the 38 release-stamped bundles from 2026-09-08 through v1.55.0
+      went without one.
+   2. **Commit the bundle, its `ANALYSIS.md` and its `RESULTS.md` row** as the second commit. The
+      write-up rides in that commit, before the tag, never in a follow-up after it.
+   3. **Check the tag's preconditions** below, off the manifest and the bundle on disk.
+   4. **Fill the release-notes line** below from the same manifest, then tag the second commit.
+
+   Two
    commits rather than one, deliberately: the manifest names the sha its suites actually measured,
    and the tagged tree still contains the evidence for itself. The two trees differ by the record
    and nothing else. Taking the run first and committing everything together is what produced the
@@ -150,7 +165,14 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    jq -r '.git.sha'                     "$S"    # the commit being tagged, or its parent
    jq -r '.suites | to_entries[] | "\(.key) \(.value.status)"' "$S"
    jq -r '.suites.complexity.warnings'  "$S"    # 0
+   grep -l '"release": "<X.Y.Z>"' docs/automated-tests/*/manifest.json  # >= 1 path, <stamp> among them
+   test -f docs/automated-tests/<stamp>/ANALYSIS.md && echo present     # present
    ```
+
+   The `grep -l` must print at least one path, and `<stamp>` must be one of them: the newest clean,
+   all-pass bundle for this version, which is the one the tag is cut from. It does not have to be
+   the only one. Re-running the gate for one release is normal (1.35.0 has five bundles), and a
+   check for exactly one path would block a correctly released version.
 
    `lint`, `tests` and `complexity` must read `pass` and `complexity.warnings` must be zero — no
    function above CCN 15 (`automated-tests-§3`, *The release gate*). A `skip` is NOT EVALUATED
@@ -159,7 +181,23 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    [`automated-tests/README.md`](automated-tests/README.md). **No tag is cut without a bundle whose
    `release` field names it.** `v1.24.0` is the reason that sentence is here: the tag exists, the
    bundles jump 1.23.0 to 1.25.0, and there is a released version of this library whose test record
-   does not.
+   does not. Six more followed it: `v1.28.0`, `v1.29.0`, `v1.36.0`, `v1.36.1`, `v1.54.1` and
+   `v1.54.2` carry no bundle, the last two tagged five minutes apart. They are not backfilled; the
+   `grep -l` line above is what stops a seventh.
+
+   **The release-notes line.** `automated-tests-§3` requires the perf skip to be stated in the
+   release notes when a repo ships no `tests/perf.lua`, and from v1.47.0 on it came and went with
+   whoever wrote the entry. End the version's `CHANGELOG.md` block with this line, every figure
+   read off `$S` (`lint.warnings`/`lint.errors`/`lint.files`, `tests.total`/`tests.failed`,
+   `complexity.warnings`):
+
+   ```text
+   Release gate (`docs/automated-tests/<stamp>/`): lint pass, <warnings>/<errors> in <files> files;
+   tests pass, <total> tests, <failed> failed; complexity pass, <warnings> over CCN 15. Perf
+   SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+   ```
+
+   The line goes into the new entry only. Released entries stay as written.
 8. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
    includes bumping the version named in each consumer's `CLAUDE.md` provenance line, in the same
    commit as the copy.
