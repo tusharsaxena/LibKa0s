@@ -113,7 +113,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Lifecycle/version-1-docs.md) | `Lifecycle.lua` 1 | v1.40.0 | **Current** |
+| [2](./Lifecycle/version-2-docs.md) | `Lifecycle.lua` 2 | v1.56.0 | **Current** |
+| [1](./Lifecycle/version-1-docs.md) | `Lifecycle.lua` 1 | v1.40.0 | Superseded |
 
 ### `LibKa0s-Bus-1.0`
 

@@ -130,7 +130,7 @@ badge and any count quoted in the docs must agree with it.
 - compat: with every rung removed each member answers the documented absent value
 - compat: a host patching the shared table does not change another member's answer
 
-### test_lifecycle.lua (21)
+### test_lifecycle.lua (22)
 
 - lifecycle: the major is registered and floors on Core
 - lifecycle: the reserved hold keys are exported rather than spelled per host
@@ -151,6 +151,7 @@ badge and any count quoted in the docs must agree with it.
 - lifecycle: PrintHolds with no host printer answers false rather than raising
 - lifecycle: a raising standUp still leaves the hold set empty and the latch up
 - lifecycle: a raising standDown leaves the hold taken, so the release path still works
+- lifecycle: a standDown that releases a hold fires standUp nested, and the latch ends up
 - lifecycle: Hold and Release refuse a key that is not a non-empty string
 - lifecycle: two latches share nothing
 
@@ -1721,7 +1722,7 @@ badge and any count quoted in the docs must agree with it.
 | test_core.lua | 52 |
 | test_env.lua | 10 |
 | test_compat.lua | 49 |
-| test_lifecycle.lua | 21 |
+| test_lifecycle.lua | 22 |
 | test_bus.lua | 30 |
 | test_schema.lua | 71 |
 | test_pool.lua | 23 |
@@ -1766,4 +1767,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1560** |
+| **Total** | **1561** |

@@ -14,8 +14,23 @@ cannot drift. Release order is in
 
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
-(`LibKa0s-Bus-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Lifecycle minor 2: the nested-edge (re-entrancy) behavior is documented and pinned
+
+- **Documentation only; the bytes move, so the minor does.** `New`'s docstring now states that a
+  `standDown` or `standUp` callback MUST NOT take or release a hold on its own latch, and what
+  happens if one does: the edge calls the callback synchronously, so the nested edge runs to
+  completion inside the outer one — a `standDown` that releases a hold fires `standUp` before it
+  returns. The latch stays consistent (the edge is recorded before each callback), but the host's
+  teardown and rebuild interleave (review finding `LibKa0s-R-17`). No shipped callback touches its
+  latch. The code is unchanged.
+- `tests/test_lifecycle.lua` gains one characterization case pinning the nested order and that
+  `IsDown()` ends false. No member moves, so the manifest differs from minor 1's only in the minor.
+  Documented in [the version 2 document](docs/api/Lifecycle/version-2-docs.md), with a
+  *Re-entrancy* section; version 1 is Superseded. Every consumer gets the new bytes by
+  re-vendoring; none needs a code change.
 
 ### Bus minor 2: the tracking wrappers are re-stamped after a newer AceEvent re-embed
 

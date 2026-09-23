@@ -1,4 +1,4 @@
-# `LibKa0s-Lifecycle-1.0` — version 1
+# `LibKa0s-Lifecycle-1.0` — version 2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Lifecycle surface points here rather than restating it. It describes the
@@ -8,12 +8,21 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Lifecycle-1.0` |
-| Files and minors | `Lifecycle.lua` minor **1** |
-| Shipped in | v1.40.0 |
-| Status | Superseded |
-| Supersedes | — (first version) |
-| Superseded by | [version 2](./version-2-docs.md) — documents and pins the nested-edge (re-entrancy) behavior; the code is unchanged |
-| Confirm in-game | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` → `{ Lifecycle = 1 }` |
+| Files and minors | `Lifecycle.lua` minor **2** |
+| Shipped in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 1](./version-1-docs.md) |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` → `{ Lifecycle = 2 }` |
+
+## What changed at this version
+
+**Nothing the code does.** Version 2 documents a rule version 1 left unsaid — a `standDown` or
+`standUp` callback must not take or release a hold on its own latch — and pins what happens when one
+does anyway (see *Re-entrancy* below, review finding `LibKa0s-R-17`). The only change to
+`Lifecycle.lua` is that comment, but a comment still changes the file's bytes, and a released change
+to a file moves its LibStub minor. No member is added or removed, so the manifest differs from
+version 1's only in the minor, and a host needs no code change.
 
 ## What this major is
 
@@ -151,6 +160,37 @@ Each of these has a case in `tests/test_lifecycle.lua`.
    leaves the set empty and the latch up; the error reaches the host's own error handler and the
    next `Hold` behaves correctly. Update-after would leave the latch believing the addon was still
    down over an empty hold set, with no hold left to release.
+7. **A nested edge runs to completion inside the outer one** (version 2, characterization). See
+   *Re-entrancy*.
+
+## Re-entrancy
+
+**A `standDown` or `standUp` callback MUST NOT take or release a hold on its own latch** — no
+`Hold`, `Release` or `Set` from inside a callback, and no `Reevaluate` after one. This is a rule on
+the host, not something the latch enforces: nothing here queues a nested edge or refuses one.
+
+What happens if a callback does it anyway is fixed, and `tests/test_lifecycle.lua` pins it. The edge
+calls the callback synchronously, so a hold taken or released inside it re-enters the edge, and the
+nested edge runs **to completion inside the outer one**. A `standDown` that releases the hold that
+put the addon down fires `standUp` before `standDown` has returned:
+
+```
+Hold("disabled")
+  standDown enters
+    Release("disabled")  -- answers true: this call was an edge
+      standUp runs
+  standDown returns
+Hold answers true; IsDown() is false; the set is empty
+```
+
+**The latch stays consistent.** The edge is recorded before each callback runs (invariant 6), so
+afterwards the hold set, the recorded edge and `IsDown()` all agree. What does not stay consistent
+is the host: its teardown is interrupted halfway by its own rebuild, and then the rest of the
+teardown runs over the rebuilt addon. No host is written for that state, which is why the rule
+exists. A host that needs a follow-up edge (take a second hold, release the first) defers it until
+the callback has returned.
+
+No shipped callback in the collection touches its latch.
 
 ## Worked example
 
@@ -195,10 +235,3 @@ still has to be reachable by the player who wants to enable it again.
 The one sanctioned exception on the teardown side is a hook that cannot be undone:
 `hooksecurefunc` has no un-hook, so such a hook gates its own body and returns. A raw hook or an
 AceHook hook **must** be un-hooked, because it can be.
-
-## Moving to version 2
-
-Nothing to change. No member is added or removed, no signature moves and no behavior changes:
-version 2 adds the rule that a `standDown` or `standUp` callback must not take or release a hold,
-and a characterization case pinning what happens when one does. A host written against this version
-is correct at version 2 unmodified, provided its callbacks already leave the latch alone.
