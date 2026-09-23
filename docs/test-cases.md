@@ -1167,7 +1167,7 @@ badge and any count quoted in the docs must agree with it.
 - switched: a bound (path-less) selector reads and is watched through its record
 - switched: two selectors changing in one frame cost one re-render
 
-### test_options_combat.lua (27)
+### test_options_combat.lua (32)
 
 - combat: a page shown in combat is covered and not drawn, and the window is left alone
 - combat: the cover is built out of combat, hidden, and takes the mouse and the wheel
@@ -1196,6 +1196,11 @@ badge and any count quoted in the docs must agree with it.
 - combat: a page shown mid-combat is locked off InCombatLockdown alone
 - combat: a page hidden without OnHide is let go at the next combat edge
 - combat: a registration an older copy left is dropped when nothing is shown
+- combat: CreateOptionsPanel in combat registers nothing and waits for REGEN_ENABLED
+- combat: the end of combat registers the parked panel once and lets go of the event
+- combat: a second CreateOptionsPanel while parked is a no-op
+- combat: an event other than REGEN_ENABLED leaves the park armed
+- combat: OpenOptionsPanel answers false in combat, true when opened, nil with no category
 
 ### test_options_compose.lua (45)
 
@@ -1809,7 +1814,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_idsuggest.lua | 40 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 9 |
-| test_options_combat.lua | 27 |
+| test_options_combat.lua | 32 |
 | test_options_compose.lua | 45 |
 | test_perf_core.lua | 71 |
 | test_perf_run.lua | 40 |
@@ -1835,4 +1840,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1617** |
+| **Total** | **1622** |

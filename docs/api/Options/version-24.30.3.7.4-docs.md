@@ -29,17 +29,51 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
+Two changes share this version: `CreateOptionsPanel` parks in combat and `OpenOptionsPanel` answers
+a boolean (below), and the font preload moves out of the shell (after them).
+
+**`CreateOptionsPanel` parks in combat and replays itself (O24).** Called under
+`InCombatLockdown()`, it registers nothing -- no canvas, no category, no page builder runs. It
+**parks** the request with the library and returns. When combat ends (`PLAYER_REGEN_ENABLED`) the
+library replays the parked call once, which registers the category and builds every queued page
+exactly as an out-of-combat call would have. The replay does not go through the host: it runs
+whatever the host's stand-down state, so an addon disabled or stood down mid-combat still gets its
+category when the fight ends (ConsumableMaster's hand-rolled park lost it there,
+`ConsumableMaster-R-03`). A second `CreateOptionsPanel` while the first is parked is a no-op, so the
+replay registers one category, not two. `OpenOptionsPanel` while parked answers `nil` -- there is no
+category yet. A `/reload` or login taken in combat therefore shows the addon in the AddOns sidebar
+only once combat ends; out of combat nothing changes. **No instance member is added** (the original
+proposal's `ReplayPending` is not needed: the library drains its own park), so a degradation stub
+does not move and the member manifest is unchanged.
+
+**The park's private frame.** One frame for the process, `lib.__parkFrame`, created on the first
+park, hidden, and kept across a LibStub upgrade. It is **not** the page lock's `lib.__combatFrame`.
+It is registered for `PLAYER_REGEN_ENABLED` **only while something is parked**, and let go of before
+the replay runs, so a host with nothing parked owns no registration from it and a stand-down suite
+that fires every event at every frame reaches it with nothing to do. Its `OnEvent` looks
+`lib.__OnParkEvent` up at call time, so the newest vendored copy drains what an older one parked.
+Where no `CreateFrame` exists to listen with, the call registers at once, as before O24. See
+[the park's library-level names](#the-registration-parks-library-level-names-o24).
+
+**`OpenOptionsPanel` answers what happened (O24).** `true` when the category was opened; `false`
+when it was refused in combat (the gray `COMBAT_REFUSED` line is still printed); `nil` when there is
+no category to open -- `CreateOptionsPanel` has not registered one (not yet run, parked, or the
+client lacks the canvas API) or the client has no `Settings.OpenToCategory`. Through O23 it returned
+nothing in every case, so a host that ignored the result is unaffected. It still never defers and
+replays an **open** (options-ui-§2): only the registration is parked.
+
 **The font preload moves out of the shell (O24, S4).** `Options.lua` 23 -> **24** and
 `OptionsScroll.lua` 3 -> **4**; `OptionsWidgets.lua`, `OptionsTabs.lua` and `OptionsCompose.lua` do
-not move. **No member is added, removed or repurposed, no descriptor or row field moves, and there
-is nothing to adopt** -- the member manifest at `members-24.30.3.7.4.json` is identical to
+not move. **The move adds, removes or repurposes no member, moves no descriptor or row field, and
+leaves nothing to adopt** -- the member manifest at `members-24.30.3.7.4.json` is identical to
 23.30.3.7.3's apart from the version key.
 
 **What moved.** The whole font preload of **O17** -- the library-level state `lib.__fontPreload`,
 the preload frame, the per-path load, the one late-registration subscription and
 [`lib.__PreloadFonts`](#lib__preloadfontslsm--number) itself -- is now defined at the foot of
 `OptionsScroll.lua` instead of in `Options.lua`, byte-for-byte the same code. It moved to keep the
-shell under `layout-§1`'s 1500-line cap: `Options.lua` was 1476 lines at O23 and is 1376 at O24.
+shell under `layout-§1`'s 1500-line cap: `Options.lua` was 1476 lines at O23 and 1376 after the
+move, before the park above was added.
 `OptionsScroll.lua` was chosen because the preload, like the scrollbar patch already there, is
 stateless lib-level code with no instance half. `lib.__PatchLSM30Border` stays in the shell.
 
@@ -998,6 +1032,17 @@ On the instance, equally internal: `O.__combatRefused()` (O22, the refusal every
 `O.__buildCover(panel)` (T2) and `O.__releaseOwnedFocus(panels)` (T2), and `ctx.__combatCover` on
 every ctx `CreatePanel` returns.
 
+### The registration park's library-level names (O24)
+
+**Since O24.** Internal for the same reasons as the lock's names above; a host calls none of them.
+
+| Name | Since | Meaning |
+|---|---|---|
+| `lib.__parkedPanels` | O24 | The parked replays, in the order they were parked. Kept across an upgrade; replaced with a fresh table when drained. |
+| `lib.__parkFrame` | O24 | The park's private frame, separate from `lib.__combatFrame`. Created on the first park, hidden, kept across an upgrade; registered for `PLAYER_REGEN_ENABLED` only while `lib.__parkedPanels` is non-empty. |
+| `lib.__parkRegistration(replay)` → boolean | O24 | Append `replay`, (re)set the frame's `OnEvent` and register the event. `false` when no frame can be made, and the caller then registers at once. |
+| `lib.__OnParkEvent(event)` | O24 | Ignores every event but `PLAYER_REGEN_ENABLED`; on it, unregisters, takes the parked list and replays each once, each `pcall`'d, then raises the first error (if any) so it is reported rather than swallowed. A replay that finds the client still locked parks again. |
+
 ## The instance surface
 
 Everything `lib:New(descriptor)` returns on the instance.
@@ -1033,8 +1078,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `__tabArtHeight()` | **W13** | The measured row pitch — the **unselected** tab art's own height, or `TAB_H` where nothing can be measured. Memoized on success only. Published because the invariant a suite has to pin is unassertable without the one number the band and every row offset are both built from. |
 | `__resetTabArtHeight()` | **W13** | Forget that measurement. A harness seam; an atlas does not change size mid-session. |
 | `RegisterOptionsPage(key, name, builder)` | O1 | Queue a page. Builders run once, in order, at `CreateOptionsPanel`. |
-| `CreateOptionsPanel()` | O1 | Resolve AceGUI, hand it to the host, validate, register the main canvas, run every builder. |
-| `OpenOptionsPanel()` | O1 (combat refusal: O3) | Open the category. **Refuses** under combat and never defers-and-replays. The gate for a page **shown** in combat another way is the lock (**O22**). |
+| `CreateOptionsPanel()` | O1 (combat park: **O24**) | Resolve AceGUI, hand it to the host, validate, register the main canvas, run every builder. Idempotent. **From O24**, under `InCombatLockdown()` it registers nothing, parks the call and replays it once at `PLAYER_REGEN_ENABLED`; a second call while parked is a no-op. |
+| `OpenOptionsPanel()` → `true`, `false` or `nil` | O1 (combat refusal: O3; return value: **O24**) | Open the category. **Refuses** under combat and never defers-and-replays. The gate for a page **shown** in combat another way is the lock (**O22**). **From O24** answers `true` when opened, `false` when refused in combat, and `nil` when there is no category to open; through O23 it returned nothing. |
 | `RestoreDefaults(pageKey, ctx)` | O1 | The per-page Defaults button. Refreshes only the ctx it was given. **From O16** the page walk runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `pageKey`); the refresh runs after it closes. **From O22** refused in combat (nothing is reset); `RestoreAllDefaults` is not, because a slash reset verb calls it. |
 | `RestoreAllDefaults()` | O1 | Without `resetProfile`: every non-vetoed row, then `afterRestoreAll`, then a full refresh — unchanged. **With `resetProfile` (O9):** only the `sessionOnly` rows, then `resetProfile()`, then `afterRestoreAll`, then a full refresh. **From O16** everything before the refresh — the row walk, `resetProfile` and `afterRestoreAll` — runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `"all"`). |
 | `SetRenderer(ctx, fn)` | O1 (combat lock: **O22**) | Declare how a page draws itself. The library owns *when*: first show, again after a refresh marked it dirty while hidden, and — from O22 — at `PLAYER_REGEN_ENABLED` for a page on screen that combat left owed a render. Also builds the Defaults button. Under combat it **covers** the page and draws nothing; through O21 it closed the settings window instead (anti-pattern #88). |
@@ -1860,8 +1905,13 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
-**At 24.30.3.7.4 nothing is added, removed or repurposed**: the font preload moved file, and a host
-written against 23.30.3.7.3 needs no change and sees no difference.
+**At 24.30.3.7.4 no member is added or removed**: the font preload moved file; `OpenOptionsPanel`
+now returns a value where it returned none, which a host that ignored the result cannot observe; and
+`CreateOptionsPanel` called in combat registers when combat ends rather than at once. That last one
+is the only difference a host written against 23.30.3.7.3 can see, and only on a login or `/reload`
+taken in combat: its category appears in the AddOns sidebar when the fight ends. A host suite that
+pinned "registering during combat still registers" (WhatGroup's, for its WG-A-12 fix) now needs to
+fire the end of combat first.
 
 **At 23.24.3.7.3 one optional spec field is added** — `O.IdList`'s `columns` — and nothing is
 removed or repurposed. A list that does not pass it draws what 23.23.3.7.3 drew, with one deliberate

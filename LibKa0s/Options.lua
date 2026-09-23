@@ -362,6 +362,61 @@ end
 -- The dispatcher, lib.__OnCombatEvent, is OptionsTabs.lua's from minor 23, beside the page-scoped
 -- registration it depends on.
 
+-- ── the registration park (minor 24) ────────────────────────────────────────────────────────
+--
+-- O.CreateOptionsPanel under InCombatLockdown() registers nothing: registering a category is the
+-- first touch a panel makes on Blizzard's settings tree, and a host reaching it from a /reload taken
+-- in combat is the one path every consumer shares. The request is PARKED here instead, and replayed
+-- once when combat ends. The replay does not go through the host: it runs whatever the host's own
+-- stand-down state, so an addon disabled mid-combat still gets its category (ConsumableMaster's own
+-- park lost it there). No instance member is added, so no degradation stub moves.
+--
+-- LIBRARY-LEVEL and private: one frame for the whole process (`lib.__parkFrame`), separate from the
+-- page lock's, registered for PLAYER_REGEN_ENABLED ONLY while something is parked and let go before
+-- the replay runs. Its handler looks `lib.__OnParkEvent` up when the event arrives, so the newest
+-- copy's dispatcher drains what an older copy parked. A stand-down suite that fires every event at
+-- every frame reaches it with nothing parked, and nothing happens.
+
+lib.__parkedPanels = lib.__parkedPanels or {}
+
+--- Drain the park: let go of the event, then replay every parked request once, in order. Each is
+--- pcall'd so one host's registration cannot cost another's; the first error is raised after the
+--- rest have run, so it is reported rather than swallowed.
+function lib.__OnParkEvent(event)
+  if event ~= "PLAYER_REGEN_ENABLED" then return end
+  local f = lib.__parkFrame
+  if f then f:UnregisterEvent("PLAYER_REGEN_ENABLED") end
+  local parked = lib.__parkedPanels
+  lib.__parkedPanels = {}
+  local firstErr
+  for _, replay in ipairs(parked) do
+    local ok, err = pcall(replay)
+    if not ok and firstErr == nil then firstErr = err end
+  end
+  if firstErr ~= nil then error(firstErr, 0) end
+end
+
+--- Park one replay and listen for the end of combat. Answers false when the client has no frame to
+--- listen with, and the caller then registers at once, as every minor before 24 did.
+function lib.__parkRegistration(replay)
+  local f = lib.__parkFrame
+  if not f then
+    if type(CreateFrame) ~= "function" then return false end
+    f = CreateFrame("Frame")
+    if not f then return false end
+    f:Hide()
+    lib.__parkFrame = f
+  end
+  f:SetScript("OnEvent", function(_, event)
+    local dispatch = lib.__OnParkEvent
+    if type(dispatch) == "function" then dispatch(event) end
+  end)
+  local parked = lib.__parkedPanels
+  parked[#parked + 1] = replay
+  f:RegisterEvent("PLAYER_REGEN_ENABLED")
+  return true
+end
+
 -- ── the instance ───────────────────────────────────────────────────────────────────────────
 
 --- Build one host's options surface.
@@ -1246,8 +1301,24 @@ function lib:New(d)
     mainCategoryID = mainCategory:GetID()
   end
 
+  local parked = false         -- is a combat-time CreateOptionsPanel waiting in lib.__parkedPanels?
+
+  --- Under InCombatLockdown(), park this instance's registration for the end of combat (minor 24;
+  --- read the note at lib.__parkRegistration). Answers true when the caller must stop here: parked
+  --- now, or already parked, which makes a second call in the same combat a no-op.
+  local function parkIfLocked()
+    if parked then return true end
+    if not (InCombatLockdown and InCombatLockdown()) then return false end
+    parked = lib.__parkRegistration(function()
+      parked = false
+      O.CreateOptionsPanel()
+    end)
+    if parked and type(d.debug) == "function" then d.debug("Cfg", "register parked (in combat)") end
+    return parked
+  end
+
   --- Build the whole options surface: resolve AceGUI, validate, register the main canvas, then run
-  --- every page builder.
+  --- every page builder. In combat it registers nothing and replays itself once combat ends.
   function O.CreateOptionsPanel()
     -- Idempotent: a second call is a no-op. The function is public and cheap to reach twice (a
     -- login plus a profile change), and re-running it would register a SECOND Blizzard category
@@ -1255,6 +1326,7 @@ function lib:New(d)
     -- the RefreshAllPanels fan-out. The guard is on RE-registration only; the lazy body render at
     -- first OnShow is untouched.
     if mainCategory then return end
+    if parkIfLocked() then return end
 
     -- Re-resolved rather than trusting the handle taken at New time. A host builds its panel at
     -- PLAYER_LOGIN, by which point an AceGUI that was absent at load may be present (and vice
@@ -1308,17 +1380,23 @@ function lib:New(d)
   ---
   --- The gate lives HERE rather than in a host's slash dispatcher, so every caller is refused —
   --- the config verb, a /run script, a future internal caller.
+  ---
+  --- @return true when the category was opened; false when refused in combat (the chat line is
+  ---         still printed); nil when there is no category to open -- CreateOptionsPanel has not
+  ---         registered one yet (or is parked for the end of combat), or the client has no
+  ---         Settings.OpenToCategory. (minor 24; every earlier minor returned nothing.)
   function O.OpenOptionsPanel()
     if InCombatLockdown and InCombatLockdown() then
       if type(d.debug) == "function" then d.debug("Cfg", "open refused (in combat)") end
       print(lib.STRINGS.COMBAT_REFUSED)
-      return
+      return false
     end
-    if not (Settings and Settings.OpenToCategory) then return end
-    if not mainCategoryID then return end
+    if not (Settings and Settings.OpenToCategory) then return nil end
+    if not mainCategoryID then return nil end
     if type(d.debug) == "function" then d.debug("Cfg", "opened") end
     Settings.OpenToCategory(mainCategoryID)
     expandMainCategory()
+    return true
   end
 
   -- ── test seams ───────────────────────────────────────────────────────────────────────────

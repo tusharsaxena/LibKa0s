@@ -18,6 +18,31 @@ Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 
 (`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.30.3.7.4; `OptionsWidgets` 30, `OptionsTabs` 3 and `OptionsCompose` 7 unchanged), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
 
+### Options minor 24: `CreateOptionsPanel` parks in combat; `OpenOptionsPanel` answers a boolean
+
+- **Behavioral: `CreateOptionsPanel` under `InCombatLockdown()` registers nothing and replays itself
+  when combat ends** (audit finding `ConsumableMaster-A-04`). The call is parked with the library;
+  at `PLAYER_REGEN_ENABLED` the library replays it once, registering the category and building every
+  queued page, whatever the host's stand-down state -- which also covers `ConsumableMaster-R-03`'s
+  category lost to a stand-down mid-combat. A second call while parked is a no-op. A login or
+  `/reload` taken in combat now shows the addon's category when the fight ends rather than at once;
+  out of combat nothing changes. A host suite that pins "registering during combat still registers"
+  (WhatGroup's `tests/test_panel.lua`) must fire the end of combat first.
+- **The park listens on its own private frame**, `lib.__parkFrame`, separate from the page lock's
+  `lib.__combatFrame`: created on the first park, kept across an upgrade, and registered for
+  `PLAYER_REGEN_ENABLED` only while something is parked. Its dispatcher (`lib.__OnParkEvent`) is
+  looked up at call time, so the newest copy drains what an older one parked. No instance member is
+  added (no `ReplayPending`), so no degradation stub moves and the member manifest is unchanged.
+- **`OpenOptionsPanel` now answers**: `true` when it opened the category, `false` when refused in
+  combat (the `COMBAT_REFUSED` line still prints), `nil` when there is no category to open. It
+  returned nothing through minor 23. It still never defers an **open**.
+- `tests/test_options_combat.lua`: five cases -- in combat nothing registers and the park listens on
+  its own frame (red before: the category registered at once); the end of combat registers once,
+  builds the queued pages and lets go of the event; a second call while parked is a no-op; an
+  event other than `PLAYER_REGEN_ENABLED` leaves the park armed; the three return values of
+  `OpenOptionsPanel`. Documented in
+  [the version 24.30.3.7.4 document](docs/api/Options/version-24.30.3.7.4-docs.md).
+
 ### Options minor 24, OptionsScroll minor 4: the font preload moves out of the shell
 
 - **Structural, behavior-neutral: the font preload (Options minor 17) now lives in
