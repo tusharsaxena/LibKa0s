@@ -444,9 +444,12 @@ the gates are green, the standards pointer reads v2.65.0, the release run is com
 `v1.56.0` exists **locally only**. **Step 8 waits on the owner's approval** of this branch's
 merge; only then is the branch merged and `git push origin v1.56.0` run. Each consumer's
 `tests/test_vendor_sync.lua` resolves the tag from the local sibling checkout, so the re-vendors can
-be prepared on branches against the local tag before it is pushed. One ruling is still owed before
-the tag is pushed or any consumer re-vendors it: the `options-ui-§9` row in `CLAUDE.md`'s
-`## Documented deviations` (`CreateOptionsPanel`'s combat park) says so. All eleven consumers bundle
+be prepared on branches against the local tag before it is pushed. The one ruling owed before the
+tag could be pushed or re-vendored is made: `CreateOptionsPanel`'s combat park stays, and the
+standard was amended to permit it (`options-ui-§5` and `options-ui-§9`, v2.65.0). The provisional
+`options-ui-§9` row is gone from `CLAUDE.md`'s `## Documented deviations`, and the local tag was
+re-cut on that commit (`LK-34`), so it no longer points at `446b7c1`, the commit the release run's
+frozen `ANALYSIS.md` names. All eleven consumers bundle
 **v1.55.0** on `master`, and each `CLAUDE.md` provenance line says so. Step 9's sweep was run
 against the eleven working trees on 2026-09-24: 144 lookup sites, every one in the table above
 after adding AbsorbTracker's two Widgets lookups, which the v1.55.0 sweep missed.
