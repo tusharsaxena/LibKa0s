@@ -10,13 +10,60 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.56.0 — unreleased
+## v1.56.0 — 2026-09-24
 
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
 (`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
-(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24**, **OptionsWidgets minor 31**, **OptionsTabs minor 4** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.31.4.7.4; `OptionsCompose` 7 unchanged), **test kit revision 26**. Every other library file's LibStub minor is still
-v1.55.0's so far; the items that move one add it to this line in the same commit.
+(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13**
+(`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key
+13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2),
+**Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24**, **OptionsWidgets minor 31**,
+**OptionsTabs minor 4** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.31.4.7.4;
+`OptionsCompose` stays 7), **test kit revision 26**. Unchanged from v1.55.0: `Env` 1, `Compat` 1,
+`Pool` 3, `WidgetsDragHandle` 2 and `PerfPanel` 5.
+
+A minor release: every change is additive, no `NEEDS_*` floor rises and no major changes, so a
+consumer that re-vendors keeps every module it had. The cost of re-vendoring comes from the test
+kit, not the library, and the section below lists it.
+
+### What a consumer owes on re-vendoring v1.56.0
+
+Copy both payloads whole (`cp -r LibKa0s/. <Addon>/libs/LibKa0s/`, `cp -r testkit/. <Addon>/tests/_kit/`)
+and move the `CLAUDE.md` provenance line to v1.56.0 in the same commit, as always. Beyond that:
+
+- **Surface-parity churn.** A degradation stub pinned with `Kit.assertSurfaceParity` goes red until it
+  gains the new members. `LibKa0s-Core-1.0` adds `SafeRegisterEvent`, `SafeRegisterUnitEvent` and
+  `SafeRegisterEvents`: every Core stub gains the three with one-rung bodies (pcall the
+  registration, answer its result). A Schema **instance** stub gains `SetMany` (AbsorbTracker,
+  BankLedger, LootHistory, PanelMaster and PrettyChat on the 2026-09-24 reading). A Slash stub is
+  asked to pin its `DisabledLine` bytes with the new `Kit.assertLibraryConstant`. No other major's
+  lib-level surface moves.
+- **Behavioral kit flips.** Each can redden a suite that passed on revision 25, and the owner's
+  standing ruling is that such a red is fixed in the addon, never by weakening an assertion:
+  - `CreateFrame` starts frames **shown**, so a stand-down suite's `F_on` baseline now sees the
+    addon's container frames;
+  - the **AceDB fake raises** on a bad `CopyProfile` / `DeleteProfile` name and strips defaults on
+    `SetProfile`, as AceDB-3.0 does;
+  - `EventRegistry` callbacks are **recorded** in `M.__registrations()` as kind `callback`, and raw
+    frame `RegisterEvent` / `RegisterUnitEvent` raise on a name in `M.__badEvents`;
+  - `test_eol.lua` counts every **lone CR**, named as `path:line`;
+  - the prose gate reads the three **store-root** files (`docs/automated-tests/README.md`,
+    `docs/automated-tests/RESULTS.md`, `docs/perf-analysis/README.md`) and lists `synchronis`;
+  - kit **case names carry `§`** (`line-endings-§5`, `layout-§1`, two `localization-§5`), so every
+    consumer regenerates `docs/test-cases.md`;
+  - the runner records a `performance-§12` register row as perf skip reason (2), fails a run whose
+    register it cannot read, and heads an empty watch-list table instead of printing `None.`.
+- **Opt-ins, owed only where a plan item adopts them**: Schema's `SetMany`, `row.normalize` and
+  `writeThrough`; Launcher's `isEnabled` / `disabledLine`; `RenderTabbedSchema`'s `opts.tabs`,
+  `disabledFor` / `disabledNotice` and `chrome`; `PageBanner`'s `action`; Core's
+  `SafeRegisterEvent` family in place of a hand-rolled pcall.
+- **Arrives without being asked for**: `CreateOptionsPanel` called in combat parks and replays at
+  `PLAYER_REGEN_ENABLED` (a host that rolled its own park deletes it), `OpenOptionsPanel` answers a
+  boolean, `Slash`'s `CliSet` / `CliReset` print the write seam's refusal, and the launcher's
+  missing-library notice prints once without the `[LibKa0s] ` prefix.
+
+The collection dry-run of this payload, per addon, is in the release bundle's `ANALYSIS.md`.
 
 ### Repository: the suite, the live documents and the artwork tools are held to US English
 

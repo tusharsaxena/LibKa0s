@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.64.0
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.65.0
 — as a **library repo**, which is a scope of its own: `library-stack-§7`'s applicability list is what
 binds here, not the addon rule set, because there is no TOC, no player-facing README, no settings
 canvas and no install. [`CLAUDE.md`](CLAUDE.md) spells out which sections apply and which do not, and
@@ -217,14 +217,14 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.55.0**, which adds three majors and moves no existing minor: `Core = { Core = 7 }`,
-`Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 1 }`, `Bus = { Bus = 1 }`,
-`Schema = { Schema = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`,
-`Media = { Media = 3 }`,
-`Widgets = { Widgets = 9, WidgetsDragHandle = 2 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 14 }`,
-`Launcher = { Launcher = 1 }`,
-`Options = { Options = 23, OptionsWidgets = 30, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }`,
-`Perf = { Perf = 12, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
+different vendored copy of each. As of **v1.56.0**, which moves twelve majors' minors and adds none: `Core = { Core = 8 }`,
+`Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 2 }`, `Bus = { Bus = 2 }`,
+`Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
+`Media = { Media = 4 }`,
+`Widgets = { Widgets = 10, WidgetsDragHandle = 2 }`, `DebugLog = { DebugLog = 13 }`, `Slash = { Slash = 15 }`,
+`Launcher = { Launcher = 2 }`,
+`Options = { Options = 24, OptionsWidgets = 31, OptionsTabs = 4, OptionsCompose = 7, OptionsScroll = 4 }`,
+`Perf = { Perf = 13, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
 attached to which probe?" from in-game, once several addons each ship their own vendored copy.
