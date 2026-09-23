@@ -12,9 +12,28 @@ cannot drift. Release order is in
 
 ## v1.56.0 — unreleased
 
-Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **test kit revision 26**. Every
-other library file's LibStub minor is still v1.55.0's so far; the items that move one add it to this
-line in the same commit.
+Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
+(`LibKa0s-Item-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
+v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Item minor 2: `QualityFromLink` reads the 11.1.5+ `|cnIQ<n>` link color
+
+- **Behavioral, and nothing else moves.** Since patch 11.1.5 the client colors an item link by
+  quality number, `|cnIQ<n>:`, not by an eight-digit hex. `QualityFromLink` matched only the hex
+  shape, so it answered `nil` for every live link, and a consumer that falls back to the link for an
+  uncached drop recorded that drop with no quality (review finding `LibKa0s-R-01`). A `|cnIQ<n>`
+  rung now runs ahead of the hex one, anchored on the digits with no trailing `:` required, and
+  answers `n` (`|cnIQ0` answers `0`). The hex rung stays for links stored before the patch.
+- **The hex rung's quality map is kept only when non-empty** (review finding `LibKa0s-R-13`). It
+  was assigned before `ITEM_QUALITY_COLORS` was read, so a first call that landed before the client
+  populated that table pinned an empty map for the session. It is now built into a local and
+  committed only when at least one entry landed, so the next call retries.
+- `LoadItem`'s fixed 0.4 s timer is **deliberately unchanged**: it was byte-identical in both addons
+  it came from, and both treat the callback as "try again". No member is added, so the manifest
+  differs from minor 1's only in the minor. Documented in
+  [the version 2 document](docs/api/Item/version-2-docs.md); version 1 is Superseded.
+  `tests/test_item.lua` gains two cases, and its two `|cff` cases stay as the legacy rung's. Every
+  consumer gets it by re-vendoring; none needs a code change.
 
 ### Core minor 8: `printer.Format` survives a secret in a numeric slot
 

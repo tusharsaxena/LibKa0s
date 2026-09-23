@@ -284,12 +284,14 @@ badge and any count quoted in the docs must agree with it.
 - pool: the ReleaseAll guard cannot catch keys that are themselves 1..n
 - pool: a keyed release is unaffected by ordering — the key is the mapping
 
-### test_item.lua (13)
+### test_item.lua (15)
 
 - item: ItemIDFromLink pulls the id out of a full link
 - item: ItemIDFromLink accepts a bare itemString
 - item: ItemIDFromLink answers nil for anything that is not a link
-- item: QualityFromLink reads the quality out of the colour prefix
+- item: QualityFromLink reads the quality out of a legacy |cff hex prefix
+- item: QualityFromLink reads the 11.1.5+ |cnIQ<n> link color
+- item: QualityFromLink retries a quality map that was built empty
 - item: QualityFromLink answers nil for an uncoloured or absent link
 - item: QualityFromLink answers nil for a colour no quality uses
 - item: QualityLabel prefers the client's localized label
@@ -1715,7 +1717,7 @@ badge and any count quoted in the docs must agree with it.
 | test_bus.lua | 27 |
 | test_schema.lua | 71 |
 | test_pool.lua | 23 |
-| test_item.lua | 13 |
+| test_item.lua | 15 |
 | test_media.lua | 15 |
 | test_widgets.lua | 81 |
 | test_widgets_draghandle.lua | 35 |
@@ -1756,4 +1758,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1550** |
+| **Total** | **1552** |
