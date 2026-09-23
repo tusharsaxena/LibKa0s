@@ -42,7 +42,10 @@ category when the fight ends (ConsumableMaster's hand-rolled park lost it there,
 `ConsumableMaster-R-03`). A second `CreateOptionsPanel` while the first is parked is a no-op, so the
 replay registers one category, not two. `OpenOptionsPanel` while parked answers `nil` -- there is no
 category yet. A `/reload` or login taken in combat therefore shows the addon in the AddOns sidebar
-only once combat ends; out of combat nothing changes. **No instance member is added** (the original
+only once combat ends; out of combat nothing changes. **This is ahead of the standard:**
+`options-ui-§9` still requires the registration to happen eagerly at load, and the gap is a
+provisional `options-ui-§9` row in the repository's `CLAUDE.md` register until the owner rules
+(the standard gains a MAY-park / MUST-replay sentence, or the park is withdrawn). **No instance member is added** (the original
 proposal's `ReplayPending` is not needed: the library drains its own park), so a degradation stub
 does not move and the member manifest is unchanged.
 

@@ -28,6 +28,11 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   `/reload` taken in combat now shows the addon's category when the fight ends rather than at once;
   out of combat nothing changes. A host suite that pins "registering during combat still registers"
   (WhatGroup's `tests/test_panel.lua`) must fire the end of combat first.
+- **Ahead of the standard.** `options-ui-§9` still requires the category to register eagerly at load,
+  in combat too, and does not yet sanction this park. The gap is recorded as a provisional
+  `options-ui-§9` row in `CLAUDE.md`'s `## Documented deviations`, pending the owner's ruling: the
+  standard gains the park sentence, or the park is withdrawn and the category registers at once.
+  It is settled before this release is tagged or re-vendored.
 - **The park listens on its own private frame**, `lib.__parkFrame`, separate from the page lock's
   `lib.__combatFrame`: created on the first park, kept across an upgrade, and registered for
   `PLAYER_REGEN_ENABLED` only while something is parked. Its dispatcher (`lib.__OnParkEvent`) is
