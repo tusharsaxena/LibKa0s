@@ -711,6 +711,10 @@ The collection dry-run of this payload, per addon, is in the release bundle's `A
   Documented in [the revision 26 document](docs/api/testkit/version-26-docs.md); a consumer's suite
   totals do not move on re-vendoring.
 
+Release gate (`docs/automated-tests/20260924-040553/`): lint pass, 0/0 in 92 files;
+tests pass, 1648 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**
