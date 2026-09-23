@@ -493,12 +493,17 @@ passes here therefore proves very little about the eleven trees the folder is co
 The lesson is written into the kit's own headers rather than left here: a gate whose self-test reads
 the live runner's state is a gate that tests the repository it is standing in, not the gate.
 
-The green gate here: **1456 passed, 0 failed, 1 skipped, 1457 total**, `luacheck` **0 warnings /
-0 errors in 80 files**. The kit revision alone measured 1318 passed of 1319 in 74 files; the three
-new majors add 138 cases (49 Compat, 27 Bus, 62 Schema) and six files. The one skip is the prose
+The green gate here: **1484 passed, 0 failed, 1 skipped, 1485 total**, `luacheck` **0 warnings /
+0 errors in 81 files**, and `lizard` **0 functions above CCN 15**. The kit revision alone measured
+1318 passed of 1319 in 74 files; the three new majors add 147 cases (49 Compat, 27 Bus, 71 Schema)
+and six files. The release run first found four functions above CCN 15, all new in this release
+(Schema's `Set` and `Validate`, the kit's `collectKitHoles` and `repoKind`). Each was split with
+its behavior pinned first: 9 of the Schema cases, 7 more inventory cases and the new
+`tests/test_kit_eol.lua` (12) are those pins. Differential runs of the old code against the new
+found no difference. The one skip is the prose
 decline, which is the point of it — and it is also why the prose gate's seven self-tests and its
 three carve-out cases run in the consumers that wire the kit's copy and in none of this repository's
-1457: a suite this library declines is a suite it cannot exercise.
+1485: a suite this library declines is a suite it cannot exercise.
 
 ## v1.54.2 — 2026-09-22
 

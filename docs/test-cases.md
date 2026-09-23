@@ -174,7 +174,7 @@ badge and any count quoted in the docs must agree with it.
 - bus: Catalog refuses each malformed declaration, naming what is wrong
 - bus: the catalog is strict on read and on write
 
-### test_schema.lua (62)
+### test_schema.lua (71)
 
 - schema: the major is registered and reports its own live version
 - schema: the module refuses to register without Core, and registers with it
@@ -210,6 +210,11 @@ badge and any count quoted in the docs must agree with it.
 - schema: the Set line carries format(row, v) when given and the value otherwise
 - schema: with no debug, announce or format the seam still stores and reacts
 - schema: a raising onChange propagates after the store and the line, before announce
+- schema: Set resolves before it validates, and validate and the tail see the resolved id
+- schema: a resolver naming no id leaves the caller's, and a false id is still an id
+- schema: a closure or sessionOnly row hands validate and the tail the caller's id as given
+- schema: Set answers one value on success, two on a refusal, three on an invalid value
+- schema: a format answering nil falls back to the value's text on the Set line
 - schema: Get answers an interior node for a path with no row, and nil past a leaf
 - schema: every instance member works taken as a bare value, without self
 - schema: Default is a deep copy and nil for an unknown path
@@ -237,6 +242,10 @@ badge and any count quoted in the docs must agree with it.
 - schema: an unresolvable path is missing; sessionOnly, nil roots and bound rows are exempt
 - schema: types defaults to the four widget types and a host set replaces it
 - schema: Validate with no print still counts, silently
+- schema: one row's errors print in field order, and its missing line prints after them
+- schema: a non-string or empty path is labelled as given and is never a stored path
+- schema: defaultsRoot gets the split parts and the row, and its first may be a string
+- schema: a malformed spec falls back field by field
 - schema: two instances share nothing
 
 ### test_pool.lua (23)
@@ -1541,7 +1550,7 @@ badge and any count quoted in the docs must agree with it.
 
 - every deviation id the register cites is assigned by a bundle in docs/audits/
 
-### test_kit_inventory.lua (30)
+### test_kit_inventory.lua (37)
 
 - a kit suite declared with its directory is covered
 - a bare declaration does not cover the kit's file of the same name
@@ -1573,6 +1582,28 @@ badge and any count quoted in the docs must agree with it.
 - the remedy names a `dir` a suites list can actually carry
 - the two sides are resolved against each other, and only where they differ
 - a remedy under a relative runner dir is printed exactly as it resolved
+- characterization: a plain kit hole is reported word for word
+- characterization: a kit suite with no rule row names the fallback rule
+- characterization: a collision is reported word for word
+- characterization: of several shadows, the last declared is the one named
+- characterization: a decline's name and reason, word for word
+- characterization: a decline over a collision names the file that runs instead
+- characterization: a decline with an empty rule cell, and a reason clipped at 200 bytes
+
+### test_kit_eol.lua (12)
+
+- eol repo kind: a root .toc is the evidence even when a nested one sorts first
+- eol repo kind: with no root .toc, the first nested one in tracked order
+- eol repo kind: a .toc outranks a libs/ tree
+- eol repo kind: a libs/ tree with no .toc, first path in tracked order
+- eol repo kind: a libs/ tree outranks a library payload folder
+- eol repo kind: only a top-level libs/ counts
+- eol repo kind: a payload folder: its own aggregate XML with Lua beside it
+- eol repo kind: Lua anywhere under the payload folder counts
+- eol repo kind: of two payload folders, the first in tracked order
+- eol repo kind: an aggregate XML with no Lua in its folder is not a payload
+- eol repo kind: an XML not named after its folder is not a payload
+- eol repo kind: an aggregate XML below the folder's top is not a payload
 
 ### test_eol.lua (2)
 
@@ -1605,7 +1636,7 @@ badge and any count quoted in the docs must agree with it.
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 21 |
 | test_bus.lua | 27 |
-| test_schema.lua | 62 |
+| test_schema.lua | 71 |
 | test_pool.lua | 23 |
 | test_item.lua | 13 |
 | test_media.lua | 15 |
@@ -1640,7 +1671,8 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 11 |
 | test_prose.lua | 3 |
 | test_register.lua | 1 |
-| test_kit_inventory.lua | 30 |
+| test_kit_inventory.lua | 37 |
+| test_kit_eol.lua | 12 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1457** |
+| **Total** | **1485** |
