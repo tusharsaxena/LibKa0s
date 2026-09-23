@@ -200,7 +200,7 @@ test("reorder: the drop line is released after Cancel", function()
   T.assertNil(container.__ka0sDropLine, "the line is cached on the host's container")
 
   release()
-  assertEqual(#moved, 0, "a cancelled drag must not land after the fact")
+  assertEqual(#moved, 0, "a canceled drag must not land after the fact")
 end)
 
 test("reorder: the drop line goes back at the drop, and the next drag reuses it", function()

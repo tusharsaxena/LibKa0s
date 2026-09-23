@@ -4,9 +4,10 @@
 -- are rewritten in place (`docs/automated-tests/README.md`, `docs/automated-tests/RESULTS.md`,
 -- `docs/perf-analysis/README.md`) although they sit under folders it otherwise skips, that it still
 -- skips the dated bundles beside them and the two frozen stores `docs/superpowers/` and
--- `docs/investigations/`, and that it carries `localization-§5`'s lists whole, `synchronis`
--- included. This repository does not wire the kit's copy of the gate (CLAUDE.md, register row 3),
--- so without this file the scan-back would be proved nowhere before a consumer re-vendored it.
+-- `docs/investigations/`, and that it carries `localization-§5`'s lists whole, the British
+-- stem of *synchronize* included. This repository does not wire the kit's copy of the gate
+-- (CLAUDE.md, register row 3), so without this file the scan-back would be proved nowhere before a
+-- consumer re-vendored it.
 --
 -- DRIVEN THROUGH THE GATE, NOT AROUND IT, the way `tests/test_kit_eol.lua` drives the eol gate.
 -- The walker is a local of a vendored suite and reads the tracked set from `git ls-files` in the
@@ -102,23 +103,26 @@ local function tree(extra)
   return files
 end
 
--- Built from parts so this file's own prose carries no forbidden spelling.
-local ANALYSED = "analy" .. "sed"
-local SYNC = "synchroni" .. "sation"
+-- Built from parts so this file's own prose carries no forbidden spelling: `tests/test_prose.lua`
+-- reads every suite here, and these are the words each case feeds the kit's gate on purpose.
+local ANALYZED_UK = "analy" .. "sed"
+local ANALYZE_STEM = "analy" .. "s"
+local SYNC_STEM = "synchroni" .. "s"
+local SYNC = SYNC_STEM .. "ation"
 
 local RED = {
   { "a store-root perf-analysis README is read though its folder is skipped",
-    "docs/perf-analysis/README.md", "analys" },
+    "docs/perf-analysis/README.md", ANALYZE_STEM },
   { "a store-root automated-tests README is read",
-    "docs/automated-tests/README.md", "analys" },
+    "docs/automated-tests/README.md", ANALYZE_STEM },
   { "a store-root automated-tests RESULTS.md is read",
-    "docs/automated-tests/RESULTS.md", "analys" },
+    "docs/automated-tests/RESULTS.md", ANALYZE_STEM },
 }
 
 for _, c in ipairs(RED) do
   local label, path, word = c[1], c[2], c[3]
   test("prose scan-back: " .. label, function()
-    local out = scanVerdict(tree{ [path] = "Numbers " .. ANALYSED .. " here.\n" })
+    local out = scanVerdict(tree{ [path] = "Numbers " .. ANALYZED_UK .. " here.\n" })
     assertTrue(out:find("RESULT FAIL", 1, true) ~= nil, "the gate reddens: " .. out)
     assertTrue(out:find(path .. ":1 - " .. word, 1, true) ~= nil,
       "and names the store-root file, its line and its word: " .. out)
@@ -136,14 +140,14 @@ local GREEN = {
 for _, c in ipairs(GREEN) do
   local label, path = c[1], c[2]
   test("prose scan-back: " .. label, function()
-    local out = scanVerdict(tree{ [path] = "Numbers " .. ANALYSED .. " here.\n" })
+    local out = scanVerdict(tree{ [path] = "Numbers " .. ANALYZED_UK .. " here.\n" })
     assertEqual(out:match("RESULT %a+"), "RESULT OK", path .. " is not read: " .. out)
   end)
 end
 
-test("prose lists: synchronis is published, and a root README carrying it is red", function()
+test("prose lists: the British synchronize stem is published; a root README carrying it is red", function()
   local out = scanVerdict{ ["README.md"] = "Settings " .. SYNC .. " across profiles.\n" }
-  assertTrue(out:find("README.md:1 - synchronis", 1, true) ~= nil, "the root README reddens: " .. out)
+  assertTrue(out:find("README.md:1 - " .. SYNC_STEM, 1, true) ~= nil, "the root README reddens: " .. out)
 end)
 
 test("prose lists: synchronism, synchronisms and synchronistic are allowed", function()
@@ -154,7 +158,7 @@ end)
 test("prose scan-back: restating the kit's own folder in skipDirs does not un-scan the root README",
 function()
   local out = scanVerdict(tree{
-    ["docs/perf-analysis/README.md"] = "Numbers " .. ANALYSED .. " here.\n",
+    ["docs/perf-analysis/README.md"] = "Numbers " .. ANALYZED_UK .. " here.\n",
     ["tests/prose_waivers.lua"] = 'return { skipDirs = { "docs/perf-analysis/" } }\n',
   })
   assertTrue(out:find("docs/perf-analysis/README.md:1", 1, true) ~= nil,

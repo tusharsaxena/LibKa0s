@@ -234,7 +234,7 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `IsConcatSafe(v)` | 1 | Whether `v` survives the `table.concat` every emitted line ends in. Probes `table.concat` itself, not `..` — `..` silently propagates secretness and reports a secret as safe. |
 | `SafeToString(v)` | 1 | Concat-safe stringifier. Ordinary values → `tostring(v)`; an un-concatenable (secret) value → `lib.SECRET`. `nil` and booleans are answered up front, so they are never masked. |
 | `SECRET` | 1 | What an un-renderable value renders as (`"<secret>"`). Exported so a host's tests, its docs and this implementation cannot drift apart. |
-| `SKIN` | 1 | The one skin every Ka0s window wears. **Values changed at minor 3** and three keys were added — see [The skin table](#the-skin-table). Backdrop fields and every colour travel in one table, because taking the backdrop without the colours is exactly the drift this prevents. |
+| `SKIN` | 1 | The one skin every Ka0s window wears. **Values changed at minor 3** and three keys were added — see [The skin table](#the-skin-table). Backdrop fields and every color travel in one table, because taking the backdrop without the colors is exactly the drift this prevents. |
 | `ApplySkin(frame[, skin])` | 1 (2nd arg: 3) | Wear the skin. Makes the three calls a table cannot describe as well as the backdrop: the inner-border child frame (built once, re-tinted after), the title tint and the divider tint — each guarded on the skin key AND the frame member, so a window with no divider is fine. `skin` defaults to `lib.SKIN`; it exists so DebugLog's `skin` override reaches one implementation. A no-op on a frame with no `SetBackdrop`: undecorated is not broken. |
 | `RGBA(c, dr, dg, db, da)` | 4 | Read a stored color in **either** shape the collection persists — keyed `{ r =, g =, b =, a = }` or positional `{ r, g, b, a }` — and return four **numbers**, never a table. See [Reading a stored color](#reading-a-stored-color). |
 | `ClassColor([unit])` | **7** | `r, g, b` for the unit's class, out of `RAID_CLASS_COLORS`, or **`nil`** where there is no class color to give. `unit` defaults to `"player"`, whose answer is memoized on success; no other unit is cached. See [The one class-color resolver](#the-one-class-color-resolver). |
@@ -313,13 +313,13 @@ hosts now; the library folds its own copies in only alongside a floor raise made
 ## What changed at version 5
 
 **Comments only. The surface does not move.** Every member, descriptor field, row field, value and
-behaviour described below is exactly what version 4 shipped, so a host written against version
+behavior described below is exactly what version 4 shipped, so a host written against version
 4 is correct here unmodified and there is nothing to migrate.
 
-`Core.lua`'s comments and docstrings were rewritten to US English — `colour` → `color`,
-`behaviour` → `behavior`, `synthesised` → `synthesized`, `normalised` → `normalized`,
-`recognise` → `recognize`. `localization-§5` mandates US English and anti-pattern #46 names code
-comments explicitly. **No identifier, no key, no user-visible string and no Blizzard symbol moves**,
+`Core.lua`'s comments and docstrings were rewritten to US English — the *-our*, *-ise* and
+*-yse* spellings became *-or*, *-ize* and *-yze*. `localization-§5` mandates US English and
+anti-pattern #46 names code comments explicitly. **No identifier, no key, no user-visible string
+and no Blizzard symbol moves**,
 and `tests/test_prose.lua` fails the run on a regression. `lib.SKIN`'s keys and values are
 untouched, so nothing redraws.
 
@@ -333,7 +333,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 
 | Field | Type | Required | Since | Meaning |
 |---|---|---|---|---|
-| `prefix` | string or function | yes | 1 | The tag, **verbatim** — never synthesised from an abbreviation, because the collection's tags differ in case, colour and trailing space. A function is re-read on *every* call, which is what lets a host whose prefix constant lives in a later-loading file pass `function() return NS.PREFIX end` instead of capturing `nil` forever. A prefix that has not resolved yet emits the body alone: an untagged line beats one reading `nil something happened`. |
+| `prefix` | string or function | yes | 1 | The tag, **verbatim** — never synthesized from an abbreviation, because the collection's tags differ in case, color and trailing space. A function is re-read on *every* call, which is what lets a host whose prefix constant lives in a later-loading file pass `function() return NS.PREFIX end` instead of capturing `nil` forever. A prefix that has not resolved yet emits the body alone: an untagged line beats one reading `nil something happened`. |
 | `sep` | string | no | 1 | Separates the prefix from the body. Defaults to `" "`; a tag that carries its own trailing space passes `""`. |
 | `sink` | function(line) | no | 1 | Where a finished line goes. Defaults to `DEFAULT_CHAT_FRAME:AddMessage`. Injectable because hosts capture chat at exactly this seam in their headless harnesses. |
 

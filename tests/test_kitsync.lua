@@ -14,9 +14,9 @@
 --   * byte-identical CONTENT for every one of them, README.md included. The file that actually
 --     diverged was a README, so a check restricted to *.lua would have caught nothing.
 --
--- The comparison is over raw bytes read in binary mode. It deliberately does not normalise line
+-- The comparison is over raw bytes read in binary mode. It deliberately does not normalize line
 -- endings: every file here is pinned CRLF by .gitattributes, and a copy that arrived through an
--- LF-normalising path is exactly one of the regressions this repo has had.
+-- LF-normalizing path is exactly one of the regressions this repo has had.
 
 local T = _G.LK_TEST
 local test, fail = T.test, T.fail

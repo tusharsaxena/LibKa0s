@@ -53,7 +53,7 @@ test("mock: __setGeom is the opt-in, and the only thing that arms a frame", func
   f:__setGeom(120, 37)
   assertEqual(f:GetHeight(), 37, "height after __setGeom")
   assertEqual(f:GetWidth(), 120, "width after __setGeom")
-  -- Per frame, not per environment: arming one frame must not arm its neighbours, or the opt-in is
+  -- Per frame, not per environment: arming one frame must not arm its neighbors, or the opt-in is
   -- a global switch wearing a method's clothes.
   assertEqual(frame():GetHeight(), 0, "a sibling frame is unaffected")
 end)

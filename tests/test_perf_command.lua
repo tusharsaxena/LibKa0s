@@ -192,7 +192,7 @@ end)
 test("cmd: a panel click prints exactly what typing the command prints", function()
   -- The panel and the typed command must be ONE path. OnCommand returns its chat lines rather than
   -- printing them, so the click wiring has to print them itself; discarding them made clicking
-  -- through a run produce a fraction of the output typing it did — the "ARMED" acknowledgement
+  -- through a run produce a fraction of the output typing it did — the "ARMED" acknowledgment
   -- above all, which is the line telling the user the window is live.
   local typedP, typedRec = Fixture.new()
   local clickP, clickRec = Fixture.new()
@@ -217,7 +217,7 @@ test("cmd: a panel click prints exactly what typing the command prints", functio
     assertEqual(clickRec.chat[i], line, "chat line " .. i)
   end
   assertTrue(table.concat(clickRec.chat, "\n"):find("ARMED", 1, true) ~= nil,
-    "including the acknowledgement that the window is armed")
+    "including the acknowledgment that the window is armed")
   clickP.HidePanel()
 end)
 

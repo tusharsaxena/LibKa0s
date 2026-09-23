@@ -38,7 +38,7 @@ WHAT IT WRITES:
 WHY THE ART IS WHITE:
 
     Identical reason to the icons: WoW tints a texture by MULTIPLYING, so white becomes any color a
-    caller asks for and grey becomes a muddy version of it. The reference bar is light grey, which
+    caller asks for and gray becomes a muddy version of it. The reference bar is light gray, which
     is why it looks slightly dull under a saturated statusbar color. Ours peaks at pure white and
     the gradient lives in the falloff, so a full-saturation bar color arrives full-saturation.
 

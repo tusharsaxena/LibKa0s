@@ -18,6 +18,21 @@ Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 
 (`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24**, **OptionsWidgets minor 31**, **OptionsTabs minor 4** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.31.4.7.4; `OptionsCompose` 7 unchanged), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
 
+### Repository: the suite, the live documents and the artwork tools are held to US English
+
+- **Swept** (audit finding `LibKa0s-A-07`): every `tests/*.lua`, the live document of every major
+  under `docs/api/` and that folder's README, `docs/releasing.md`, `README.md`, `DEPENDENCIES.md`,
+  `CLAUDE.md` and `tools/artwork/*.py` now carry no spelling from `localization-§5`'s British list.
+  Superseded API documents and released entries in this file are records and were left as written.
+  Case names changed with their prose (*colour*, *honours*, *synthesises* and the like), so
+  `docs/test-cases.md` was regenerated; `icon_cleaner.py`'s recolor stage is now `recolor_white`.
+- **Gated**: `tests/test_prose.lua` gains a case that reads that set, picking each major's live
+  document by its highest version key and checking that it names no successor. Its exemptions are
+  the identifiers the register already ratifies (the `minimise` icon key; AceTimer's `.cancelled`
+  field and C_Timer's `IsCancelled`, whose register row now also covers `tests/test_mock_ace.lua`)
+  and the quoted words in kit revision 26's document, which records the list entry it added. The
+  gate file itself is exempt, as its kit copy is. No payload byte and no minor moves.
+
 ### OptionsTabs minor 4: `RenderTabbedSchema` moves here and takes host tabs, a disabled notice and a chrome hook; `PageBanner` takes an action
 
 - **`O.RenderTabbedSchema` moves from `OptionsWidgets.lua` to `OptionsTabs.lua`** (review finding

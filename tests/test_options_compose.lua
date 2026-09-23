@@ -75,7 +75,7 @@ test("compose: FontGroup emits the six canonical leaves in the canonical order",
   -- The order IS the rule (options-ui-§16): font, size, color, companion, flags, shadow, landing as
   -- three lines. Five addons were about to type this out slightly differently each.
   -- red under: any reordering at all, or dropping the shadow row because one addon has no use for
-  -- it -- a control the addon cannot honour is a control it should not have needed a group for.
+  -- it -- a control the addon cannot honor is a control it should not have needed a group for.
   assertEqual(paths(O.FontGroup(spec())),
     "font|fontSize|fontColor|useClassColorFont|fontFlags|fontShadow")
 end)
@@ -297,11 +297,11 @@ test("compose: keys, labels and defaults override without changing what the bloc
   -- red under: ignoring `keys`, which is the override that actually protects stored data.
   local rows = O.BarGroup(spec{
     prefix   = "bar.",
-    keys     = { barAlpha = "opacity", barColor = "colour" },
+    keys     = { barAlpha = "opacity", barColor = "color" },
     labels   = { barTexture = "Statusbar" },
     defaults = { barAlpha = 0.7 },
   })
-  assertEqual(paths(rows), "bar.barTexture|bar.opacity|bar.colour|bar.useClassColorBar")
+  assertEqual(paths(rows), "bar.barTexture|bar.opacity|bar.color|bar.useClassColorBar")
   assertEqual(rowAt(rows, "bar.barTexture").label, "Statusbar")
   assertEqual(rowAt(rows, "bar.opacity").default, 0.7)
   assertEqual(rowAt(rows, "bar.opacity").label, "Bar opacity", "an override is one field, not all")

@@ -654,7 +654,7 @@ end)
 test("widgets: PageHeader reserves the band, and the strip lands beneath it", function()
   -- Controls that apply to every tab sit ABOVE the strip: drawn under one tab they read as
   -- belonging to it, and they vanish the moment the player clicks another. O.PageBanner draws
-  -- exactly one Dropdown, so what is generalised here is the BAND, not the banner.
+  -- exactly one Dropdown, so what is generalized here is the BAND, not the banner.
   -- red under: reserving the raw height rather than O.__bannerBand's widened one, which lands the
   -- first tab on top of the block's own bottom edge.
   local O, _, ctx = bench()

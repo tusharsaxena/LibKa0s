@@ -2,7 +2,7 @@
 --
 -- WHAT IS DELIBERATELY ABSENT HERE IS THE POINT. There is no merged "resolve an item" function,
 -- because the two consumers disagree — on purpose, in writing — about what an UNCACHED item means:
--- LootHistory guesses from the link's colour and brackets, BankLedger refuses and records the skip
+-- LootHistory guesses from the link's color and brackets, BankLedger refuses and records the skip
 -- so a quality gate never admits a row it cannot classify. Both are right for their addon, and a
 -- shared resolver would have quietly overturned one of them. So this module carries the four
 -- primitives they compose and no opinion about how.
@@ -38,7 +38,7 @@ end)
 test("item: QualityFromLink reads the quality out of a legacy |cff hex prefix", function()
   -- THE CASE THE COLLECTION LEARNED THE HARD WAY. C_Item.GetItemInfo(itemID) can only ever answer
   -- with the BASE item, so an upgrade-track drop reads back at the quality it started as. The link
-  -- carries the real one in its colour, and that is the only thing available before the client has
+  -- carries the real one in its color, and that is the only thing available before the client has
   -- cached the item. These two are the pre-11.1.5 hex shape, which stored links still carry.
   assertEqual(item.QualityFromLink(EPIC_LINK), 4)
   assertEqual(item.QualityFromLink(RARE_LINK), 3)
@@ -72,13 +72,13 @@ test("item: QualityFromLink retries a quality map that was built empty", functio
     "the empty map was not kept, so the populated palette is read on the next call")
 end)
 
-test("item: QualityFromLink answers nil for an uncoloured or absent link", function()
+test("item: QualityFromLink answers nil for an uncolored or absent link", function()
   assertEqual(item.QualityFromLink("|Hitem:19019::::::::::|h[Thunderfury]|h"), nil)
   assertEqual(item.QualityFromLink(nil), nil)
   assertEqual(item.QualityFromLink("Linen Cloth"), nil)
 end)
 
-test("item: QualityFromLink answers nil for a colour no quality uses", function()
+test("item: QualityFromLink answers nil for a color no quality uses", function()
   assertEqual(item.QualityFromLink("|cff123456|Hitem:1::|h[x]|h|r"), nil)
 end)
 

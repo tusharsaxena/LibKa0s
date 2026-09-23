@@ -27,8 +27,8 @@ The slash dispatcher, the help renderer, the schema CLI and the value parser —
 
 Four-plus copies of it exist across the collection, in two different shapes, and the divergence is
 not cosmetic. One shape parses values by bare coercion, so `set barWidth 99999` stores 99999 and a
-`get` on a colour prints a table address. This library takes the type-aware shape — clamping, enum
-validation, colour tuples — on the view that a CLI silently accepting a value it cannot honour is
+`get` on a color prints a table address. This library takes the type-aware shape — clamping, enum
+validation, color tuples — on the view that a CLI silently accepting a value it cannot honor is
 worse than one that refuses.
 
 Like DebugLog, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and it
@@ -412,13 +412,13 @@ log-at-zero rule, each level would emit its own line.
 ### Previously, at version 7
 
 **Comments only. The surface does not move.** Every member, descriptor field, row field, value and
-behaviour described below is exactly what version 6 shipped, so a host written against version
+behavior described below is exactly what version 6 shipped, so a host written against version
 6 is correct here unmodified and there is nothing to migrate.
 
-`Slash.lua`'s comments and docstrings were rewritten to US English — `colour` → `color`,
-`behaviour` → `behavior`, `synthesised` → `synthesized`, `normalised` → `normalized`,
-`recognise` → `recognize`. `localization-§5` mandates US English and anti-pattern #46 names code
-comments explicitly. **No identifier, no key, no user-visible string and no Blizzard symbol moves**,
+`Slash.lua`'s comments and docstrings were rewritten to US English — the *-our*, *-ise* and
+*-yse* spellings became *-or*, *-ize* and *-yze*. `localization-§5` mandates US English and
+anti-pattern #46 names code comments explicitly. **No identifier, no key, no user-visible string
+and no Blizzard symbol moves**,
 and `tests/test_prose.lua` fails the run on a regression.
 
 The bump exists because the file's bytes changed and LibStub decides which vendored copy wins by
@@ -458,7 +458,7 @@ rendered row depends on which instance rendered it.
 |---|---|---|
 | `lib.FormatRow(command, description)` | 1 | One command row: `\|cFFFFFF00` command, an em dash with a single space either side, `\|cFFFFFFFF` description. **Not** indented — the indent belongs to whoever renders, because a chat line sits under a header and a settings-panel label does not. This is the one command-row formatter in the collection; the `/at list` header, its group headings and any host annotation are a different, lower-case-hex family and stay that way. |
 | `lib.FormatKV(path, valueStr)` | 1 | One `key = value` pair, gold key and white value, no trailing colon. Used by the list rows and by the get/set echo, so a setting reads identically wherever it is printed. |
-| `lib.FormatValue(row, v)` | 1 | Render a stored value by the row's declared type — a colour as `{r, g, b, a}` to two places, a number through the row's `fmt`, an empty string as `STRINGS.NONE`, anything else through Core's `SafeToString`. At this minor the descriptor's `format` hook, when present, takes precedence over this entirely. |
+| `lib.FormatValue(row, v)` | 1 | Render a stored value by the row's declared type — a color as `{r, g, b, a}` to two places, a number through the row's `fmt`, an empty string as `STRINGS.NONE`, anything else through Core's `SafeToString`. At this minor the descriptor's `format` hook, when present, takes precedence over this entirely. |
 | `lib.ParseValue(row, text)` | 1 | The type-aware parser. Returns the value, or `nil` plus a reason. A `string` row reads the whole of `text`, trimmed at both ends, and an enum is matched on that full string (**10**); every other type reads whitespace-separated tokens. |
 | `lib.SplitVerb(rest)` | **6** | → `verb, remainder`. The verb **lowercased**, the remainder's case *and* internal spacing preserved. The asymmetry is the contract, not an oversight — see below. Both default to `""`. |
 | `lib.FindCommand(list, name)` | **6** | → the matched `{ name, description, handler }` entry, or `nil`. Linear scan, compared verbatim; callers lowercase through `lib.SplitVerb` first. |
@@ -475,17 +475,17 @@ same. A **number out of range clamps** rather than failing, because a user typin
 than the panel allows means "as wide as it goes". A **string outside its enum fails**, because there
 is no such reading of a misspelt texture name. A row's `values` may be a function, evaluated at call
 time rather than at load, since a host's media list is populated by another addon and is not
-knowable when the schema row is declared. Colours accept `r g b [a]` in either 0–1 or 0–255 and are
-rescaled **jointly** — `255 128 0` is one colour expressed in one scale, and dividing only the
+knowable when the schema row is declared. Colors accept `r g b [a]` in either 0–1 or 0–255 and are
+rescaled **jointly** — `255 128 0` is one color expressed in one scale, and dividing only the
 channels that happen to exceed 1 would mangle the rest.
 
-Failure is signalled by a `nil` first return plus a message. No row type has a valid value that is
+Failure is signaled by a `nil` first return plus a message. No row type has a valid value that is
 itself `nil`, which is what makes that unambiguous; adding one would be a contract change rather
 than a new type.
 
 A `string` row's value is the whole of `text`, trimmed at both ends (**since 10**), so a free-text
 row holds several words and an enum entry containing a space, such as an LSM font name, can be
-named. A `bool` and a `number` read their first token and a colour its first four, as they always
+named. A `bool` and a `number` read their first token and a color its first four, as they always
 have.
 
 ## The sub-command vocabulary
@@ -572,12 +572,12 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `OnSlash(msg)` | 1 | The entry point. **From 12**, when `isEnabled` answers false: the verb is lower-cased and aliases resolve as always, every verb in `liveVerbs` dispatches normally, and anything else prints `DisabledLine()` and returns. **From 13** the gate moved AFTER the COMMANDS lookup, so only a verb the host SHIPS is refused; a typo falls through to `unknown command` and the index, per slash-commands-§3. **From 13** the live set is the standard's twelve reserved verbs and the bare command runs the host's `config` verb in either state, where at 12 the bare command was refused. **From 14** a verb that is in `liveVerbs` but has no COMMANDS entry behind it — `perf` on an addon holding a no-combat-path exemption — is no longer refused either: it is not one of the host's commands, so it takes the same `unknown command` path it takes while enabled, where 13 answered it with `DisabledLine()`. Enabled, or with no `isEnabled` at all: an empty line runs the host's `config` verb, or prints help when the host has none (**11**; through 10 it always printed help); otherwise the first token is lowercased, mapped through `aliases`, and dispatched. Only the verb is lowercased — `rest` keeps its case, because schema paths are case-sensitive, and its internal spacing, because a colour is several tokens. An unknown verb says so and then prints help. |
+| `OnSlash(msg)` | 1 | The entry point. **From 12**, when `isEnabled` answers false: the verb is lower-cased and aliases resolve as always, every verb in `liveVerbs` dispatches normally, and anything else prints `DisabledLine()` and returns. **From 13** the gate moved AFTER the COMMANDS lookup, so only a verb the host SHIPS is refused; a typo falls through to `unknown command` and the index, per slash-commands-§3. **From 13** the live set is the standard's twelve reserved verbs and the bare command runs the host's `config` verb in either state, where at 12 the bare command was refused. **From 14** a verb that is in `liveVerbs` but has no COMMANDS entry behind it — `perf` on an addon holding a no-combat-path exemption — is no longer refused either: it is not one of the host's commands, so it takes the same `unknown command` path it takes while enabled, where 13 answered it with `DisabledLine()`. Enabled, or with no `isEnabled` at all: an empty line runs the host's `config` verb, or prints help when the host has none (**11**; through 10 it always printed help); otherwise the first token is lowercased, mapped through `aliases`, and dispatched. Only the verb is lowercased — `rest` keeps its case, because schema paths are case-sensitive, and its internal spacing, because a color is several tokens. An unknown verb says so and then prints help. |
 | `DisabledLine()` | **12** | The one refusal line, built from `lib.DISABLED_LINE_FORMAT` and the descriptor's `brandName` and `slash`. Every call site — the dispatcher's gate, the help header, the launcher's left-click — calls THIS. The host's own `print` adds `NS.PREFIX` as it does for every other line, so the tag is not built in. |
 | `PrintHelp()` | 1 | The header, then `HelpRows()`, through the descriptor's `print`. **From 12**, when the gate is closed, the refusal line is emitted immediately after the header and before the first row, unindented. |
 | `HelpHeader()` | 1 | `v<version> — slash commands`, plus the alias note when `slashAliases` has one. |
 | `HelpRows()` | 1 | The command rows, indented two spaces, because each sits under a header in chat. |
-| `LandingRows()` | 1 | The same rows, same colours and spacing, **no** indent — for a settings panel, where each row is its own label and a leading indent reads as a mistake. |
+| `LandingRows()` | 1 | The same rows, same colors and spacing, **no** indent — for a settings panel, where each row is its own label and a leading indent reads as a mistake. |
 | `BuildListLines()` | 1 | The `list` output as lines, without printing: header, then each `groupKey` heading in declaration order with its rows beneath. Returns the empty-state line when there are no rows. Grouped in declaration order rather than alphabetically, because a schema's order is the order its panel shows and a listing that disagreed with the panel would be its own puzzle. |
 | `CliList()` | 1 | `BuildListLines()`, printed. |
 | `CliGet(rest)` | 1 | Echo one setting. |
@@ -585,7 +585,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `CliReset(rest)` | 1 | Reset one setting by path, and echo it. Never annotated. **From 15**, when `applyDefault` answers exactly `false`, prints `NO_DEFAULT` for the path instead of the echo. |
 | `CliResetAll()` | 1 | `applyDefault` over every row, then one acknowledgment. **From 8** the walk runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `"all"`), and the acknowledgment is printed after `bulkEnd` — not at all if the walk raised. |
 | `CliVersion()` | 1 | The host's version. |
-| `SetRowAnnotator(fn)` | 1 | Install a host suffix appended to a rendered setting — most usefully a note that the stored value is not the one in effect. Applied at exactly three sites: a list row, a get echo and a set echo. Never on reset or resetall, where an explanation of what a value means is noise stapled to an acknowledgement that the value went away. |
+| `SetRowAnnotator(fn)` | 1 | Install a host suffix appended to a rendered setting — most usefully a note that the stored value is not the one in effect. Applied at exactly three sites: a list row, a get echo and a set echo. Never on reset or resetall, where an explanation of what a value means is noise stapled to an acknowledgment that the value went away. |
 | `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
 
 ## The degradation stub

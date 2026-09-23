@@ -5,12 +5,12 @@ local debuglog = T.debuglog
 local test, assertEqual = T.test, T.assertEqual
 
 -- A stand-in for a WoW combat "secret" value. Crucially it models BOTH halves of the real
--- behaviour: the `..` operator SUCCEEDS on a secret (silently propagating secretness) while
+-- behavior: the `..` operator SUCCEEDS on a secret (silently propagating secretness) while
 -- `table.concat` RAISES on it. A table with a string-returning __concat concatenates fine via
 -- `..`, yet `table.concat({mock})` still rejects it (table.concat ignores __concat and refuses a
 -- non-string/number element) — so this catches a detector that (wrongly) probes with `..` and
 -- passes one that probes with `table.concat`. (Earlier a __concat that *errored* was used, which
--- modelled the opposite of a real secret and gave false confidence.)
+-- modeled the opposite of a real secret and gave false confidence.)
 local secretMock = setmetatable({}, {
   __concat = function() return "secret-propagated" end,
 })
@@ -37,7 +37,7 @@ end
 -- ── the two formatters ─────────────────────────────────────────────────────────────────────
 --
 -- These three assertions are the only place the rendered text is pinned byte for byte. The buffer
--- holds the plain form only, so a buffer assertion can never see the coloured one — that its output
+-- holds the plain form only, so a buffer assertion can never see the colored one — that its output
 -- actually reaches the console is asserted separately, further down, with a recorder on the message
 -- frame.
 
@@ -50,8 +50,8 @@ test("dbg: FormatPlain tolerates a nil tag", function()
   assertEqual(debuglog.FormatPlain("15:04:43", nil, "hi"), "15:04:43 | [] hi")
 end)
 
-test("dbg: FormatColored colours the timestamp and tag; pipe and content default", function()
-  -- The `||` in the format string is WoW's escape for ONE literal pipe inside a colour-coded
+test("dbg: FormatColored colors the timestamp and tag; pipe and content default", function()
+  -- The `||` in the format string is WoW's escape for ONE literal pipe inside a color-coded
   -- string. A de-duplication that "fixes" it to a single pipe breaks the console's separator.
   assertEqual(debuglog.FormatColored("15:04:43", "Absorb", "player=1234"),
     "|cff6f8faf15:04:43|r || |cffc9a66b[Absorb]|r player=1234")
@@ -86,7 +86,7 @@ test("dbg: Add appends the plain form to the buffer and is never gated on the fl
   D:Add("Perf", "a line")
   assertEqual(#D.buffer, 1)
   T.assertTrue(D.buffer[1]:find("[Perf] a line", 1, true) ~= nil, "the plain form lands verbatim")
-  T.assertTrue(D.buffer[1]:find("|cff", 1, true) == nil, "and carries no colour codes")
+  T.assertTrue(D.buffer[1]:find("|cff", 1, true) == nil, "and carries no color codes")
 end)
 
 test("dbg: the cap is 1500 and the message frame is held to the same number", function()
@@ -329,7 +329,7 @@ test("dbg: SetEnabled writes the flag through the host, not into the library", f
   assertEqual(D:IsEnabled(), false)
 end)
 
-test("dbg: SetEnabled normalises a truthy value to a boolean", function()
+test("dbg: SetEnabled normalizes a truthy value to a boolean", function()
   local D, rec = newLog()
   D:SetEnabled("yes")
   assertEqual(rec.enabled, true, "the host is handed a boolean, never the raw argument")
@@ -452,8 +452,8 @@ test("dbg: the copy text is the whole buffer, in order, newline-joined", functio
   T.assertTrue(ok, "and the window itself builds without raising")
 end)
 
-test("dbg: Add sends the COLOURED form to the console and the plain one to the buffer", function()
-  -- Without this the coloured formatter's delivery is unpinned: swapping FormatColored for
+test("dbg: Add sends the COLORED form to the console and the plain one to the buffer", function()
+  -- Without this the colored formatter's delivery is unpinned: swapping FormatColored for
   -- FormatPlain at the AddMessage call is invisible to every buffer assertion in the file.
   local D = newLog()
   D:Show()
@@ -463,7 +463,7 @@ test("dbg: Add sends the COLOURED form to the console and the plain one to the b
   D:Add("Absorb", "player=1")
   rawset(log, "AddMessage", nil)
   T.assertTrue(got ~= nil and got:find("|cffc9a66b[Absorb]|r", 1, true) ~= nil,
-    "the console gets the colour-coded line: " .. tostring(got))
+    "the console gets the color-coded line: " .. tostring(got))
   T.assertTrue(D:LastLine():find("|cff", 1, true) == nil, "the buffer gets the plain one")
 end)
 
@@ -649,7 +649,7 @@ end)
 --
 -- A host's locale table carries a metatable fallback that answers EVERY key with
 -- the key itself — the Ka0s standard mandates one (anti-patterns #2). Resolving
--- an override with a plain index therefore accepts that synthesised value for
+-- an override with a plain index therefore accepts that synthesized value for
 -- every key, this module's own STRINGS become unreachable, and the host renders
 -- raw keys. It shipped: KickCD's perf panel read "STEP_START" / "Ka0s
 -- KickCDPANEL_TITLE_SUFFIX" in game, and no headless case caught it.
@@ -661,11 +661,11 @@ local function fallbackLocale()
   return setmetatable({}, { __index = function(_, k) return k end })
 end
 
-test("an L whose metatable synthesises every key does NOT mask the module's own strings", function()
+test("an L whose metatable synthesizes every key does NOT mask the module's own strings", function()
   -- red under: reverting D:Text to `strings[key]`
   local d = newLog({ L = fallbackLocale() })
   assertEqual(d:Text("DEBUG_ON"), debuglog.STRINGS.DEBUG_ON,
-    "a synthesised override must fall through to the module's own string")
+    "a synthesized override must fall through to the module's own string")
   assertEqual(d:Text("COPY_TITLE"), debuglog.STRINGS.COPY_TITLE)
 end)
 
@@ -677,7 +677,7 @@ test("a REAL entry in an L that also has a fallback still overrides", function()
   local d = newLog({ L = L })
   assertEqual(d:Text("DEBUG_ON"), "Debogage: ACTIF", "a real entry must still win")
   assertEqual(d:Text("DEBUG_OFF"), debuglog.STRINGS.DEBUG_OFF,
-    "and its neighbours must still fall through")
+    "and its neighbors must still fall through")
 end)
 
 test("a plain L table overrides exactly as before", function()
@@ -690,14 +690,14 @@ end)
 -- ── host window chrome ─────────────────────────────────────────────────────────────────────
 --
 -- Added at DebugLog minor 4, for the two hosts (BankLedger and LootHistory) whose windows wear a
--- flat 1px double border with a synthesised inner border, a gold title tint and a grey divider, and
--- close with a 24x24 class-coloured x shared across every window they draw. At the time Core.SKIN
+-- flat 1px double border with a synthesized inner border, a gold title tint and a gray divider, and
+-- close with a 24x24 class-colored x shared across every window they draw. At the time Core.SKIN
 -- was a 12px tooltip border and could not express any of it, so taking the library default was a
 -- visual redesign of every window such a host owned.
 --
 -- As of Core minor 3 that treatment IS the library default (see test_core.lua's "the Ka0s window
 -- edge"), so the two hooks no longer exist to rescue a host from the default — they exist for
--- chrome that differs in SHAPE rather than colour, and for a host that wants its console to track
+-- chrome that differs in SHAPE rather than color, and for a host that wants its console to track
 -- its own re-skin seam. Both still DEFAULT to what the library draws, so no consumer changes by
 -- passing nothing.
 
@@ -706,7 +706,7 @@ test("dbg: with no makeCloseButton, BOTH windows close with Core's x", function(
   -- The console and the copy window are the LIBRARY's windows, so they wear the library's close
   -- glyph. A host whose own main window closes with a different one must not push that difference
   -- onto them: two adopters did exactly that, and their diagnostic windows ended up with a 24x24
-  -- class-coloured x where the other three had Core's thin 18x18 one.
+  -- class-colored x where the other three had Core's thin 18x18 one.
   --
   -- Spying on core.MakeCloseButton rather than on the returned button is what makes this specific:
   -- lib.MakeCloseButton forwards through the core TABLE at CALL time, so a default that stopped
@@ -728,7 +728,7 @@ test("dbg: with no makeCloseButton, BOTH windows close with Core's x", function(
 end)
 test("dbg: the default chrome IS the Ka0s window edge, on both windows", function()
   -- The host-facing half of Core minor 3. A host that passes no applySkin must get the flat
-  -- black edge, the grey inner highlight, the gold title and the grey divider — not the tooltip
+  -- black edge, the gray inner highlight, the gold title and the gray divider — not the tooltip
   -- border it got through v1.2.0. Asserted on the frame the library actually built.
   local D = newLog{}
   D:Show()
@@ -736,7 +736,7 @@ test("dbg: the default chrome IS the Ka0s window edge, on both windows", functio
   T.assertTrue(frame ~= nil, "the console frame must exist")
   T.assertTrue(frame.divider ~= nil, "and carry the divider the skin tints")
   T.assertTrue(frame.innerBorder ~= nil,
-    "the 1px inner highlight must be synthesised by the default skin, not only by a host hook")
+    "the 1px inner highlight must be synthesized by the default skin, not only by a host hook")
 end)
 
 test("dbg: a host can supply its own skin function, for both windows", function()
@@ -971,8 +971,8 @@ test("dbg: the copy window still shows the whole buffer, in order", function()
   T.assertTrue(got:find("first line", 1, true) < got:find("second line", 1, true), "in order")
 end)
 
-test("dbg: the copy window re-anchors to the console instead of a fixed centre", function()
-  -- Behaviour the convergence GAINED. The hand-rolled window anchored once at build, so it opened
+test("dbg: the copy window re-anchors to the console instead of a fixed center", function()
+  -- Behavior the convergence GAINED. The hand-rolled window anchored once at build, so it opened
   -- wherever it was last dragged however far the console had since moved. The shared member
   -- re-anchors on every show, which is what the three existing adopters already do.
   local D = newLog({ name = "CopyHost" })

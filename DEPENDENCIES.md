@@ -97,7 +97,7 @@ Pillow and NumPy only.
 |---|---|---|
 | Python 3 | Both tools are Python scripts (`tools/artwork/icon_cleaner.py`, `tools/artwork/bar_textures.py`) | `sudo apt install python3` |
 | Pillow | Reads the source PNGs and writes the RLE TGAs (`from PIL import Image`, in both scripts) | `sudo apt install python3-pil` |
-| NumPy | The recolour, solidify and normalize stages, and the bar gradients, are array work (`import numpy as np`, in both scripts) | `sudo apt install python3-numpy` |
+| NumPy | The recolor, solidify and normalize stages, and the bar gradients, are array work (`import numpy as np`, in both scripts) | `sudo apt install python3-numpy` |
 | GitHub CLI | Fetches the upstream PNGs through `gh api`, which the script uses in place of raw.githubusercontent.com because that host times out from here often enough to be useless in a script | `sudo apt install gh && gh auth login` |
 
 **Ubuntu 24.04 trap:** `pip install pillow` fails on PEP 668's `EXTERNALLY-MANAGED` marker, and

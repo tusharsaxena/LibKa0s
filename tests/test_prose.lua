@@ -13,9 +13,9 @@
 local T = _G.LK_TEST
 local test, assertEqual, fail = T.test, T.assertEqual, T.fail
 
--- The directories whose BYTES SHIP. `tests/` is deliberately not here: its prose never leaves this
--- repo, and a gate over it would fire on the fixtures that deliberately spell a host's own field
--- names.
+-- The directories whose BYTES SHIP. `tests/` is not here: its prose never leaves this repo, so the
+-- ASCII and section-reference gates, which are about bytes a consumer receives, do not read it. The
+-- US-English gate reads it all the same, through `authoredFiles()` below, in a case of its own.
 local SHIPPED = { "LibKa0s", "testkit" }
 
 --- List the plain files in a directory, as a sorted array of basenames.
@@ -102,9 +102,10 @@ end
 --- Run `matcher(line, path)` over every line of every shipped file, and of every path in `extra`,
 --- collecting `file:line — <what>` for each hit. One walk per gate, over one listing: reading the
 --- payload's directory again per gate would multiply the shell-outs for nothing. An `extra` path
---- that cannot be opened is a hit, not a skip: it is named because it is expected to exist.
-local function scan(matcher, extra)
-  local hits, paths = {}, shippedFiles()
+--- that cannot be opened is a hit, not a skip: it is named because it is expected to exist. `base`
+--- replaces the shipped listing when given, which is how the authored-text case reuses the walk.
+local function scan(matcher, extra, base)
+  local hits, paths = {}, base or shippedFiles()
   for _, path in ipairs(extra or {}) do
     local probe = io.open(path, "r")
     if probe then probe:close() else hits[#hits + 1] = path .. " — cannot be opened" end
@@ -252,17 +253,17 @@ local function stripPlain(s, needle)
   return table.concat(out), n
 end
 
-test("prose: no British spelling in the shipped library, the shipped kit or the store roots",
-function()
-  local used = {}
-  local hits = scan(function(line, path)
+--- The US-English matcher, for one exemption table. `used` collects `path word` for every
+--- exemption that matched, so the caller can fail on one that has stopped matching.
+local function britishMatcher(ratified, used)
+  return function(line, path)
     -- ALLOWED first, as WHOLE WORDS: `%a+` matches a maximal run of letters, so a token that
     -- survives this lookup is a word and never a fragment of a longer one.
     local lower = line:lower():gsub("%a+", function(word)
       if ALLOWED_WORDS[word] then return " " end
       return word
     end)
-    for _, word in ipairs(RATIFIED[path] or NO_EXEMPTIONS) do
+    for _, word in ipairs(ratified[path] or NO_EXEMPTIONS) do
       local stripped, n = stripPlain(lower, word)
       if n > 0 then
         lower, used[path .. " " .. word] = stripped, true
@@ -272,8 +273,15 @@ function()
       if lower:find(word, 1, true) then return word end
     end
     return nil
-  end, SCAN_BACK)
-  for path, words in pairs(RATIFIED) do
+  end
+end
+
+--- Every British-spelling hit over `base` (nil: the shipped payload) plus `extra`, and every entry
+--- of `ratified` that matched nothing, as one sorted list.
+local function britishHits(ratified, extra, base)
+  local used = {}
+  local hits = scan(britishMatcher(ratified, used), extra, base)
+  for path, words in pairs(ratified) do
     for _, word in ipairs(words) do
       if not used[path .. " " .. word] then
         hits[#hits + 1] = ("%s — ratified exemption `%s` matches nothing; drop it here and in "
@@ -282,9 +290,136 @@ function()
     end
   end
   table.sort(hits)
+  return hits
+end
+
+test("prose: no British spelling in the shipped library, the shipped kit or the store roots",
+function()
+  local hits = britishHits(RATIFIED, SCAN_BACK)
   assertEqual(table.concat(hits, "\n          "), "",
     "localization-§5 mandates US English and anti-patterns #46 names comments explicitly; these "
     .. "spellings ship to every consumer and no consumer can fix them")
+end)
+
+-- ── US English over the text this repo writes and does not ship ────────────────────────────
+--
+-- The case above reads the payloads. This one reads everything else this repo AUTHORS and still
+-- maintains: every `tests/*.lua` (not `tests/_kit/`, the vendored copy of `testkit/`, which the
+-- case above already reads at its source), the live document of every major under `docs/api/`,
+-- that folder's README, `docs/releasing.md`, the root `README.md`, `DEPENDENCIES.md` and
+-- `CLAUDE.md`, and the artwork tools under `tools/artwork/`. It was the 2026-09-23 audit's
+-- `LibKa0s-A-07`: 210 lines across 33 of these files, which no gate read.
+--
+-- THE LIVE DOCUMENT ONLY. A superseded `docs/api/` document is a record of what an older copy did
+-- and `docs/api/README.md` forbids editing it, so this case reads the highest version key in each
+-- major's folder and nothing older. The key is compared numerically, component by component, so
+-- `10.2` is newer than `9.2`. Released `CHANGELOG.md` entries stay out for the same reason, and so
+-- do the frozen `docs/audits/`, `docs/reviews/`, `docs/adoption/` and `docs/superpowers/` stores.
+local AUTHORED_FILES = {
+  "docs/api/README.md", "docs/releasing.md", "README.md", "DEPENDENCIES.md", "CLAUDE.md",
+}
+
+-- `tests/test_prose.lua` is this gate: it copies localization-§5's lists whole, so every entry in
+-- them is a hit by construction. It is localization-§5's fourth exclusion, the same reason
+-- `testkit/test_prose.lua` and `testkit/prose_lists.lua` are exempt above, and it is one named file.
+local AUTHORED_EXEMPT = { ["tests/test_prose.lua"] = true }
+
+-- Identifiers, not prose, in the authored text. Each is an exemption the register already ratifies,
+-- quoted where it is documented or modeled:
+--   * `minimise`, the `lib.ICONS` key and texture name (register row 2): named in the live Media
+--     document's icon table, in the register row itself, and as the source-to-target name map in
+--     the tool that produced the texture;
+--   * AceTimer's `.cancelled` handle field and C_Timer's `IsCancelled` (register row 1): the suite
+--     that pins the kit's fakes reads them as the fakes spell them, the register row names them,
+--     and the API index's row for kit revision 17, which added the `NewTimer` handle, names the
+--     method.
+-- And one document whose subject is this rule, localization-§5's fourth exclusion: kit revision
+-- 26's API document records the list entry that revision added and the hits it found in three
+-- consumers, word by word. Each word is named here as that document quotes it, so a stray use of
+-- the same spelling as prose elsewhere in it still reddens.
+local AUTHORED_RATIFIED = {
+  ["docs/api/Media/version-4-docs.md"] = { "minimise" },
+  ["tools/artwork/icon_cleaner.py"] = { "minimise" },
+  ["CLAUDE.md"] = { "minimise", ".cancelled", "iscancelled" },
+  ["tests/test_mock_ace.lua"] = { ".cancelled", "iscancelled" },
+  ["docs/api/README.md"] = { "iscancelled" },
+  ["docs/api/testkit/version-26-docs.md"] = { "`synchronis`", "*synchronis-*", "`synchronisation`",
+    "*synchronisation*", "*analysed*", "*neighbours*" },
+}
+
+--- The numeric components of a `version-<key>-docs.md` name, or nil for any other name.
+local function versionKey(name)
+  local key = name:match("^version%-([%d%.]+)%-docs%.md$")
+  if not key then return nil end
+  local parts = {}
+  for n in key:gmatch("%d+") do parts[#parts + 1] = tonumber(n) end
+  return parts
+end
+
+--- True when version key `a` is newer than `b`, component by component; a longer key wins a tie.
+local function newerKey(a, b)
+  for i = 1, math.max(#a, #b) do
+    local x, y = a[i] or -1, b[i] or -1
+    if x ~= y then return x > y end
+  end
+  return false
+end
+
+--- The live document of every major under `docs/api/`: the highest version key in each folder.
+--- A major's folder is every entry without a dot in its name; the README beside them has one.
+local function liveApiDocs()
+  local docs = {}
+  for _, major in ipairs(listDir("docs/api")) do
+    if not major:find(".", 1, true) then
+      local best, bestKey
+      for _, name in ipairs(listDir("docs/api/" .. major)) do
+        local key = versionKey(name)
+        if key and (not bestKey or newerKey(key, bestKey)) then best, bestKey = name, key end
+      end
+      if best then docs[#docs + 1] = "docs/api/" .. major .. "/" .. best end
+    end
+  end
+  return docs
+end
+
+--- Every authored path the case reads, but for the fixed list, which `scan` probes as `extra`.
+local function authoredFiles()
+  local paths = {}
+  for _, name in ipairs(listDir("tests")) do
+    local path = "tests/" .. name
+    if name:match("%.lua$") and not AUTHORED_EXEMPT[path] then paths[#paths + 1] = path end
+  end
+  for _, name in ipairs(listDir("tools/artwork")) do
+    if name:match("%.py$") then paths[#paths + 1] = "tools/artwork/" .. name end
+  end
+  for _, path in ipairs(liveApiDocs()) do paths[#paths + 1] = path end
+  return paths
+end
+
+test("prose: the live API document of a major is its highest version key, compared numerically",
+function()
+  assertEqual(versionKey("members-3.json"), nil, "a manifest is not a document")
+  T.assertTrue(newerKey(versionKey("version-10.2-docs.md"), versionKey("version-9.2-docs.md")),
+    "10.2 is newer than 9.2, which a string comparison gets backwards")
+  T.assertTrue(newerKey(versionKey("version-9.1-docs.md"), versionKey("version-9-docs.md")),
+    "9.1 is newer than 9")
+  -- Every document this picks must be one that names no successor: a pick that lands on a
+  -- superseded record would have this case asking for an edit `docs/api/README.md` forbids.
+  local docs = liveApiDocs()
+  T.assertTrue(#docs > 0, "docs/api/ yields at least one live document")
+  for _, path in ipairs(docs) do
+    local f = assert(io.open(path, "r"))
+    local body = f:read("*a")
+    f:close()
+    T.assertTrue(body:find("| Superseded by | \226\128\148 |", 1, true) ~= nil,
+      path .. " is the live document, superseded by nothing")
+  end
+end)
+
+test("prose: no British spelling in the tests, the live docs or the artwork tools", function()
+  local hits = britishHits(AUTHORED_RATIFIED, AUTHORED_FILES, authoredFiles())
+  assertEqual(table.concat(hits, "\n          "), "",
+    "localization-§5 mandates US English in everything this repo authors, not only in what ships")
 end)
 
 -- ── ASCII-only player-facing text (localization-§5, batch 7 G-1's font finding) ─────────────

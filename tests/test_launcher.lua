@@ -52,8 +52,8 @@ end
 --- Run `fn` with the named LibStub majors invisible, then put the registry back.
 ---
 --- The module resolves both libraries at CALL time through the environment's `LibStub`, so swapping
---- that one field is enough and nothing has to be unloaded. `silent` is honoured exactly as the
---- mock's own LibStub honours it: a non-silent lookup of a blocked major still raises, so a case
+--- that one field is enough and nothing has to be unloaded. `silent` is honored exactly as the
+--- mock's own LibStub honors it: a non-silent lookup of a blocked major still raises, so a case
 --- cannot pass because the module forgot its `, true`.
 local function withoutLibs(blockedNames, fn)
   local blocked = {}
@@ -154,7 +154,7 @@ test("launcher: both registrations use the addon's folder name, and a host may r
   -- The NAME is not cosmetic: LibDBIcon keys the button's saved position by it, so two spellings
   -- drop the angle the player dragged the button to. The LABEL is what a display prints and is the
   -- host's to choose.
-  -- red under: labelling one registration and naming the other, which is the drift §1 names.
+  -- red under: labeling one registration and naming the other, which is the drift §1 names.
   local rec = fixture{ label = "Test Host" }
   local L = lib:New(rec.d)
   L:Register()
@@ -203,7 +203,7 @@ test("launcher: OnTooltipShow is passed through, and only when it is a function"
   assertNil(P:Object().OnTooltipShow)
 end)
 
--- ── click behaviour (launcher-§2) ────────────────────────────────────────────────────────────
+-- ── click behavior (launcher-§2) ────────────────────────────────────────────────────────────
 
 test("launcher: right-click ALWAYS opens the settings panel, on every rung", function()
   -- The rule that lets rungs (a) and (b) spend the left button on something better: the panel is

@@ -28,14 +28,14 @@ badge and any count quoted in the docs must agree with it.
 - core: the default sink is DEFAULT_CHAT_FRAME:AddMessage
 - core: :New refuses a descriptor with no prefix
 - core: ApplySkin no-ops on a frame without SetBackdrop
-- core: ApplySkin applies the skin table and both colours
+- core: ApplySkin applies the skin table and both colors
 - core: SKIN is the flat 1px Ka0s edge, not the 12px tooltip border
-- core: ApplySkin synthesises the inner highlight, exactly once
+- core: ApplySkin synthesizes the inner highlight, exactly once
 - core: ApplySkin survives a frame whose metatable answers every key
 - core: ApplySkin tints a title and a divider when the frame carries them
 - core: ApplySkin lays the backdrop down before anything drawn on top of it
 - core: ApplySkin tolerates a frame with neither a title nor a divider
-- core: ApplySkin honours an explicit skin table
+- core: ApplySkin honors an explicit skin table
 - core: RGBA reads the keyed shape
 - core: RGBA reads the positional shape
 - core: RGBA lets the keyed shape win every channel, never mixing the two
@@ -259,7 +259,7 @@ badge and any count quoted in the docs must agree with it.
 - schema: types defaults to the four widget types and a host set replaces it
 - schema: Validate with no print still counts, silently
 - schema: one row's errors print in field order, and its missing line prints after them
-- schema: a non-string or empty path is labelled as given and is never a stored path
+- schema: a non-string or empty path is labeled as given and is never a stored path
 - schema: defaultsRoot gets the split parts and the row, and its first may be a string
 - schema: a malformed spec falls back field by field
 - schema: two instances share nothing
@@ -323,8 +323,8 @@ badge and any count quoted in the docs must agree with it.
 - item: QualityFromLink reads the quality out of a legacy |cff hex prefix
 - item: QualityFromLink reads the 11.1.5+ |cnIQ<n> link color
 - item: QualityFromLink retries a quality map that was built empty
-- item: QualityFromLink answers nil for an uncoloured or absent link
-- item: QualityFromLink answers nil for a colour no quality uses
+- item: QualityFromLink answers nil for an uncolored or absent link
+- item: QualityFromLink answers nil for a color no quality uses
 - item: QualityLabel prefers the client's localized label
 - item: QualityLabel falls back to the static English map
 - item: QualityLabel defaults to Poor when given nothing
@@ -407,7 +407,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: CopyWindow answers nil with no client
 - widgets: CopyWindow requires an addon name
 - widgets: CopyWindow fills in the collection's defaults
-- widgets: CopyWindow honours an overridden descriptor
+- widgets: CopyWindow honors an overridden descriptor
 - widgets: the frame is built once and reused
 - widgets: Show puts the text in the box and leaves it shown
 - widgets: Show sets the text BEFORE it highlights
@@ -430,8 +430,8 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a released handle is reused rather than a second one built
 - widgets: a row may be registered with no handle at all
 - widgets: a reused handle drives the LIVE controller, not the one it was built for
-- widgets: the handle takes the hover colour and drops it again
-- widgets: a host may override both handle colours
+- widgets: the handle takes the hover color and drops it again
+- widgets: a host may override both handle colors
 - widgets: only the handle starts a drag
 - widgets: every registered row gets a fill and four edges
 - widgets: a dimmed row gets the muted variant, and a pooled box does not carry it over
@@ -490,7 +490,7 @@ badge and any count quoted in the docs must agree with it.
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
 - dbg: FormatPlain tolerates a nil tag
-- dbg: FormatColored colours the timestamp and tag; pipe and content default
+- dbg: FormatColored colors the timestamp and tag; pipe and content default
 - dbg: both formatters are reachable on an instance as well as on the library
 - dbg: the window title is the host's, with the library's suffix appended
 - dbg: a host can override the title suffix
@@ -514,7 +514,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the sink survives a format the stringified args cannot satisfy
 - dbg: an ordinary format is NOT routed through the fallback
 - dbg: SetEnabled writes the flag through the host, not into the library
-- dbg: SetEnabled normalises a truthy value to a boolean
+- dbg: SetEnabled normalizes a truthy value to a boolean
 - dbg: enabling acks in green, brackets the session, then adds the [Init] summary
 - dbg: disabling acks in red and the bracket line still lands after the flag flips
 - dbg: disabling adds no [Init] summary
@@ -525,7 +525,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: showing and hiding the console tells the host
 - dbg: two instances own separate buffers and separate frames
 - dbg: the copy text is the whole buffer, in order, newline-joined
-- dbg: Add sends the COLOURED form to the console and the plain one to the buffer
+- dbg: Add sends the COLORED form to the console and the plain one to the buffer
 - dbg: the window degrades to nothing when CreateFrame is unavailable
 - dbg: ConsoleCheckbox get reflects window visibility, not the logging flag
 - dbg: ConsoleCheckbox set shows and hides without touching the logging flag
@@ -537,7 +537,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: a newer Core loading after DebugLog supplies the console's close button
 - dbg: an instance built after the upgrade draws the newer Core's button
 - dbg: Add renders a secret message as the sentinel
-- an L whose metatable synthesises every key does NOT mask the module's own strings
+- an L whose metatable synthesizes every key does NOT mask the module's own strings
 - a REAL entry in an L that also has a fallback still overrides
 - a plain L table overrides exactly as before
 - dbg: with no makeCloseButton, BOTH windows close with Core's x
@@ -562,7 +562,7 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the converged copy window keeps its named scroll frame
 - dbg: the converged copy window keeps its global frame name
 - dbg: the copy window still shows the whole buffer, in order
-- dbg: the copy window re-anchors to the console instead of a fixed centre
+- dbg: the copy window re-anchors to the console instead of a fixed center
 
 ### test_slash.lua (109)
 
@@ -587,10 +587,10 @@ badge and any count quoted in the docs must agree with it.
 - sl: a number row with no fmt renders bare
 - sl: a row whose value does not fit its declared type falls through to the generic renderer
 - sl: FormatValue renders a secret as the sentinel on every formatting branch
-- sl: FormatValue reads a POSITIONAL colour as well as a named-key one
-- sl: a positional colour with a secret component still renders the sentinel
-- sl: a host colour codec round-trips through set and its echo
-- sl: CliReset's echo uses the host colour codec too
+- sl: FormatValue reads a POSITIONAL color as well as a named-key one
+- sl: a positional color with a secret component still renders the sentinel
+- sl: a host color codec round-trips through set and its echo
+- sl: CliReset's echo uses the host color codec too
 - sl: a guarded FormatValue still survives the FormatKV string.format around it
 - sl: SplitVerb lowercases the verb and preserves the remainder's case
 - sl: SplitVerb keeps the remainder's internal spacing
@@ -623,12 +623,12 @@ badge and any count quoted in the docs must agree with it.
 - sl: set stores a multi-word free-text value whole, through the dispatcher
 - sl: a key SET labels its entries with its keys, not with 'true'
 - sl: an enum supplied as a function is evaluated at parse time
-- sl: a colour parses r g b with an optional alpha
-- sl: a colour given in 0-255 is rescaled, and all three channels together
-- sl: a colour missing a channel is rejected with the expected form
+- sl: a color parses r g b with an optional alpha
+- sl: a color given in 0-255 is rescaled, and all three channels together
+- sl: a color missing a channel is rejected with the expected form
 - sl: an unknown row type is rejected by name
 - sl: list groups rows under the host's own group keys, indented
-- sl: the list keeps its own colours — green header, azure group headings
+- sl: the list keeps its own colors — green header, azure group headings
 - sl: list says so when nothing is registered
 - sl: get echoes the canonical path and the stored value
 - sl: a stored false renders as false, not as nil
@@ -649,16 +649,16 @@ badge and any count quoted in the docs must agree with it.
 - sl: resetall with NO bracket is minor 7's walk — an error escapes with its own stack
 - sl: version prints one line and nothing else
 - sl: the annotator fires on list, get and set — and on nothing else
-- sl: the annotation follows the coloured pair rather than interrupting it
+- sl: the annotation follows the colored pair rather than interrupting it
 - sl: with no annotator set, nothing is appended
 - sl: Slash refuses to register without Core
-- sl: an L whose metatable synthesises every key does NOT mask the module's strings
+- sl: an L whose metatable synthesizes every key does NOT mask the module's strings
 - sl: a REAL entry in an L that also has a fallback still overrides
 - sl: a plain L table overrides exactly as before
 - slash: a host can supply its own value formatter for a type the library does not know
 - slash: the format hook reaches the get, set and reset echoes too
 - slash: a host with no format hook renders exactly as it always did
-- slash: the format hook takes precedence over the colour codec, and gets the raw stored value
+- slash: the format hook takes precedence over the color codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
 - sl: the refusal line's shape is the collection's, down to the color and the dash
 - sl: an absent isEnabled leaves the dispatcher behaving exactly as it did at minor 11
@@ -745,7 +745,7 @@ badge and any count quoted in the docs must agree with it.
 - options: the narrowing is applied BEFORE skipRestoreAll is consulted
 - options: with NO resetProfile the reset is exactly what it always was
 - options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the panels
-- options: RestoreAllDefaults honours the host's skipRestoreAll veto
+- options: RestoreAllDefaults honors the host's skipRestoreAll veto
 - options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower
 - options: registered page builders run in registration order, once, at CreateOptionsPanel
 - options: CreateOptionsPanel hands the host the AceGUI it resolved
@@ -763,7 +763,7 @@ badge and any count quoted in the docs must agree with it.
 - options: RefreshPanel touches ONE page, on both tiers
 - options: RefreshPanel defers a hidden page to its next show
 - options: RefreshPanel ignores a non-ctx rather than raising
-- options: a ctx that never went through SetRenderer keeps the old ungated behaviour
+- options: a ctx that never went through SetRenderer keeps the old ungated behavior
 - options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay
 - options: OpenOptionsPanel opens the registered category out of combat
 - options: :New refuses a descriptor with no mainPanelName
@@ -835,7 +835,7 @@ badge and any count quoted in the docs must agree with it.
 ### test_options_widgets.lua (227)
 
 - widgets: the cross-slice layout constants are published on the instance
-- widgets: a bool row renders a CheckBox labelled and seeded from the schema
+- widgets: a bool row renders a CheckBox labeled and seeded from the schema
 - widgets: clicking a checkbox writes through the descriptor's set
 - widgets: a checkbox registers a refresher that re-reads after an external change
 - widgets: every widget gets tooltip callbacks wired from the schema desc
@@ -846,14 +846,14 @@ badge and any count quoted in the docs must agree with it.
 - widgets: releasing a slider snaps the value to the row's step
 - widgets: slider snapping is relative to the row's min, not to zero
 - widgets: a string row with values renders a Dropdown, sorted alphabetically by default
-- widgets: a row with explicit `sorting` keeps that order instead of alphabetising
+- widgets: a row with explicit `sorting` keeps that order instead of alphabetizing
 - widgets: a dropdown falls back to a plain Dropdown when its dialogControl is unregistered
 - widgets: a dropdown uses its dialogControl widget when that IS registered
 - widgets: a dropdown writes the chosen value, and its refresher re-applies the LIST
 - widgets: a dropdown built from an ordered array keeps declaration order
 - widgets: a key set labels its entries with its keys, not with 'true'
 - widgets: the dropdown's options and the CLI's allowed values agree, in both shapes
-- widgets: a colour row opts OUT of alpha by declaring it, and cannot before
+- widgets: a color row opts OUT of alpha by declaring it, and cannot before
 - widgets: a tooltip body comes from `tooltip`, with `desc` still accepted
 - widgets: a slider does not commit on drag by default
 - widgets: sliderCommit = 'change' commits on drag, throttled, last value wins
@@ -979,9 +979,9 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a string row asking for an EditBox gets one, not a dropdown
 - widgets: an edit box commits on OnEnterPressed and re-reads on refresh
 - widgets: a color row renders a ColorPicker seeded through the descriptor's codec
-- widgets: a color picker substitutes 1s for a missing or corrupt stored colour
-- widgets: the colour codec is the descriptor's, so an array-storing host is not translated
-- widgets: disabledIf greys the swatch out while its sibling toggle is on
+- widgets: a color picker substitutes 1s for a missing or corrupt stored color
+- widgets: the color codec is the descriptor's, so an array-storing host is not translated
+- widgets: disabledIf grays the swatch out while its sibling toggle is on
 - widgets: a function disabledIf disables every maker and is re-evaluated on refresh
 - widgets: a path disabledIf disables every maker while that setting is on
 - widgets: a row with no disabledIf never has its disabled state touched
@@ -992,10 +992,10 @@ badge and any count quoted in the docs must agree with it.
 - widgets: an afterGroup hook that raises still propagates, and the flag is cleared
 - widgets: OnValueConfirmed commits immediately — cancel must not wait on the throttle
 - widgets: OnValueChanged throttles a drag to ONE timer and commits the LAST value
-- widgets: a colour drag does NOT refresh every panel
+- widgets: a color drag does NOT refresh every panel
 - widgets: every other maker's write DOES refresh every panel
 - widgets: RenderField dispatches each schema type to its widget
-- widgets: RenderField returns nil for an unrecognised type instead of erroring
+- widgets: RenderField returns nil for an unrecognized type instead of erroring
 - widgets: RenderField adds the widget to the parent it was given
 - widgets: RenderSchema pairs widgets two-to-a-row inside full-width Flow groups
 - widgets: a `solo` row is rendered alone on its own line
@@ -1023,11 +1023,11 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a number row with NO values list still renders as a Slider
 - widgets: a number row whose values function answers empty falls back to a Slider
 - widgets: TextRow adds a full-width Label carrying the text
-- widgets: TextRow left-justifies by default and honours an explicit justify
+- widgets: TextRow left-justifies by default and honors an explicit justify
 - widgets: TextRow applies a font object by NAME, and only when the global exists
 - widgets: TextRow draws nothing and returns nil when there is no scroll to draw into
 - widgets: BuildLandingPage draws the logo block at its declared size, then a spacer
-- widgets: BuildLandingPage honours an explicit logoSize
+- widgets: BuildLandingPage honors an explicit logoSize
 - widgets: a logo whose widget has no backing frame costs the logo, not the page
 - widgets: a POOLED frame gains ONE logo texture, and hides it when released
 - widgets: a spec with no logo draws no logo block
@@ -1316,7 +1316,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: a nested bucket carries its parent into the record
 - lib: a record stamps the host's interface version and the capture time
 - lib: the record's context names the character's class
-- lib: a cancelled run takes its context stamp with it
+- lib: a canceled run takes its context stamp with it
 - lib: a record built before Start has no context at all
 - lib: a Note key the descriptor never declared still lands in the record
 - lib: Save creates the perf global and appends the run
@@ -1345,7 +1345,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: ContextLines omits an empty sub-zone cleanly
 - lib: ContextLines tolerates a record with no context
 - lib: a host passing only the three required fields gets working defaults
-- perf: an L whose metatable synthesises every key does NOT mask the module's strings
+- perf: an L whose metatable synthesizes every key does NOT mask the module's strings
 - perf: a step label is never its own SCREAMING_SNAKE_CASE key
 - perf: a REAL entry in an L that also has a fallback still overrides
 
@@ -1377,12 +1377,12 @@ badge and any count quoted in the docs must agree with it.
 - lib: two completed windows produce a delta
 - lib: recording start and end are announced to chat AND the debug log
 - lib: the end announcement carries the duration and frame rate
-- lib: the console log is plain text, free of colour escapes
+- lib: the console log is plain text, free of color escapes
 - lib: experiments are named A and B, never active/suspended
 - lib: the run start is logged with its context
 - lib: arming logs which experiment and whether the addon is suspended
 - lib: measure b calls the host's suspend, measure a its resume
-- lib: cancelling a suspended run restores the host
+- lib: canceling a suspended run restores the host
 - lib: the stopwatch is driven per window
 - latch: Suspend takes the 'perf' hold and Resume gives it back
 - latch: p.suspended reads the latch rather than a copy of it
@@ -1415,12 +1415,12 @@ badge and any count quoted in the docs must agree with it.
 - lib: labels are plain text with no decoration baked in
 - lib: cancel is offered throughout a run and nowhere else
 - lib: cancel has its own state, so it never reads as the next step
-- lib: cancelling discards the run without saving it
-- lib: cancelling restores a suspended addon
-- lib: cancelling mid-recording does not announce the experiment as ended
-- lib: cancelling detaches the sampler
+- lib: canceling discards the run without saving it
+- lib: canceling restores a suspended addon
+- lib: canceling mid-recording does not announce the experiment as ended
+- lib: canceling detaches the sampler
 - lib: cancel returns false when there is nothing to cancel
-- lib: a cancelled run leaves the next one clean
+- lib: a canceled run leaves the next one clean
 - lib: every row shows its slash command
 - lib: cancel stays clickable while a run is mid-experiment
 - lib: cancel is not clickable once the run is finished
@@ -1691,9 +1691,11 @@ badge and any count quoted in the docs must agree with it.
 - kitsync: the runner-mode case skips, with a reason, where there is no work tree
 - kitsync: the runner-mode case skips, with a reason, where io.popen is unavailable
 
-### test_prose.lua (4)
+### test_prose.lua (6)
 
 - prose: no British spelling in the shipped library, the shipped kit or the store roots
+- prose: the live API document of a major is its highest version key, compared numerically
+- prose: no British spelling in the tests, the live docs or the artwork tools
 - prose: the ASCII gate scans LibKa0s/ and not testkit/
 - prose: no non-ASCII byte reaches a player, the em dash excepted
 - prose: no retired §N.M section reference in the shipped library or the shipped kit
@@ -1772,7 +1774,7 @@ badge and any count quoted in the docs must agree with it.
 - prose scan-back: a store-root name one folder down is a bundle file
 - prose scan-back: docs/superpowers/ is a frozen store and skipped
 - prose scan-back: docs/investigations/ is a frozen store and skipped
-- prose lists: synchronis is published, and a root README carrying it is red
+- prose lists: the British synchronize stem is published; a root README carrying it is red
 - prose lists: synchronism, synchronisms and synchronistic are allowed
 - prose scan-back: restating the kit's own folder in skipDirs does not un-scan the root README
 - prose scan-back: a restated kit folder in skipDirs is disclosed as suppressing nothing
@@ -1860,7 +1862,7 @@ badge and any count quoted in the docs must agree with it.
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 12 |
-| test_prose.lua | 4 |
+| test_prose.lua | 6 |
 | test_register.lua | 1 |
 | test_kit_inventory.lua | 38 |
 | test_kit_eol.lua | 16 |
@@ -1868,4 +1870,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1646** |
+| **Total** | **1648** |

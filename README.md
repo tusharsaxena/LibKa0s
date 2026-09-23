@@ -94,7 +94,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-Item-1.0` | Item identity as four primitives and no policy — read an item link, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree in writing. | `Item.lua` | [1](docs/api/Item/version-1-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [4](docs/api/Media/version-4-docs.md) |
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all, and `DragHandle`, the labeled strip with a help mark that a player drags a movable frame by. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsDragHandle.lua` | [9.2](docs/api/Widgets/version-9.2-docs.md) |
-| `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
+| `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, color-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [14](docs/api/Slash/version-14-docs.md) |
 | `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice — with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. One `OnClick`, implementing launcher-§2's three left-click rungs plus right-click-always-opens-the-panel; LibDBIcon's own `minimap` table taken from the host. Neither broker library is a dependency: both are resolved with `LibStub(…, true)` at register time and every degradation is named rather than raised. | `Launcher.lua` | [1](docs/api/Launcher/version-1-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [23.30.3.7.3](docs/api/Options/version-23.30.3.7.3-docs.md) |
@@ -140,7 +140,7 @@ local L = setmetatable({}, { __index = function(_, k) return k end })   -- local
 ```
 
 `L["STEP_START"]` on such a table answers `"STEP_START"`. Before `DebugLog` minor 3 / `Slash` minor 3
-/ `Perf` minor 4 the resolver used a plain index, accepted that synthesised string, and so never
+/ `Perf` minor 4 the resolver used a plain index, accepted that synthesized string, and so never
 reached this library's own strings — the host rendered raw keys (`STEP_START`,
 `PANEL_TITLE_SUFFIX`, `LIST_HEADER`) in place of English, for every key at once, visible only in
 game. KickCD shipped a perf panel titled `Ka0s KickCDPANEL_TITLE_SUFFIX` this way.
@@ -159,7 +159,7 @@ is what keeps a host working against an older vendored copy:
   ```
 
   The values may come from the locale table; the **table you pass** must not be it.
-- **SHOULD NOT** pass `NS.L`, an AceLocale table, or anything else whose `__index` synthesises a
+- **SHOULD NOT** pass `NS.L`, an AceLocale table, or anything else whose `__index` synthesizes a
   value for an unknown key. It is safe from the minors above, but a host that does so gets no
   override at all from the keys it *did* translate through the fallback, and it breaks outright
   against any older vendored copy still carrying the plain-index resolver.
@@ -206,7 +206,7 @@ in [`docs/api/testkit/`](docs/api/testkit/), indexed alongside the majors;
 This repo consumes its own kit through `tests/_kit/` rather than reaching into `testkit/` directly,
 so LibKa0s is a consumer on the same terms as every addon: a kit change that would break a consumer
 breaks this repo first. `tests/test_kitsync.lua` enforces the byte-identity rather than trusting a
-remembered `diff -r` — every file, README included, no line-ending normalisation.
+remembered `diff -r` — every file, README included, no line-ending normalization.
 
 ### Versioning
 

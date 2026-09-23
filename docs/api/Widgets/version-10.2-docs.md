@@ -467,7 +467,7 @@ implementations that each picked one pair shipped a drag that did nothing at all
 
 **The poll may not act alone**, and it has to see the button *held* before it may act on it being
 released. If `IsMouseButtonDown` is unavailable, protected, or simply not true yet on the first
-frame, a poll that ended on `not held` would finish the drag with zero rows travelled — no error, no
+frame, a poll that ended on `not held` would finish the drag with zero rows traveled — no error, no
 message, and indistinguishable from a press that was never received.
 
 **The ghost is a process-wide singleton on `UIParent`**, and from 10 it carries the drag's poll. It must escape whatever scroll frame the

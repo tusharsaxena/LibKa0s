@@ -184,7 +184,7 @@ than the edit box beside it. It was not higher. The two were already centered on
 always had been: AceGUI's labeled `EditBox` publishes `self.alignoffset = 30` (`SetLabel` in
 `widgets/AceGUIWidget-EditBox.lua`) and Flow anchors the next widget by
 `frameoffset - lastframeoffset`, which puts their middles on one line. Measured off the screenshot:
-box 20px tall with its centre at y 43, button 24px with its centre at y 42 — **one pixel apart, and
+box 20px tall with its center at y 43, button 24px with its center at y 42 — **one pixel apart, and
 four pixels different in height**.
 
 **So the fix is the height, not the anchor.** `InputBoxTemplate` draws its border art **20** tall;
@@ -252,7 +252,7 @@ draws exactly as it did -- the table carries no `level`, which reads as `"info"`
 **A per-entry help mark, and every row lights (W28).** `OptionsWidgets.lua` 27 -> **28**; every
 other file of the major is unchanged. No member is added, removed or repurposed -- the manifest at
 `members-23.28.3.7.3.json` is identical to W27's apart from the minor and the version key -- but
-there are **three new optional spec fields** and **one behaviour change that needs no adoption**.
+there are **three new optional spec fields** and **one behavior change that needs no adoption**.
 
 **`entry.help` -- a "?" between the delete control and the name.** A string, or a list of strings,
 shown as a tooltip whose title is the entry's own name. The alternative already here is `note`, a
@@ -986,8 +986,8 @@ the refresh fan-out.
 
 ## Two divergences absorbed rather than decided
 
-**Colour storage** is a descriptor codec, in **both** majors. AbsorbTracker stores
-`{r=,g=,b=,a=}`; KickCD and the Ka0s options colour widget store arrays. Baking either in would
+**Color storage** is a descriptor codec, in **both** majors. AbsorbTracker stores
+`{r=,g=,b=,a=}`; KickCD and the Ka0s options color widget store arrays. Baking either in would
 force the other to translate at every read site in the addon, so `colorDecode` / `colorEncode` are
 descriptor options — under the same names on the Options and Slash descriptors, so a host passes
 one pair to both — and the named-key form is only the default. `Slash.FormatValue` additionally
@@ -1019,7 +1019,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `afterRestoreAll` | function | no | O1 | Runs after the rows are reset **and after `resetProfile`**, and **before** the panels refresh, for state in neither the schema nor the profile. The order is load-bearing: a refresh first would paint the pre-hook values. A dragged frame's saved position is **not** an example any more — a position lives in the profile and comes back with it. |
 | `bulkBegin` | function(act, scope) | no | **O16** | Called once before `RestoreDefaults` (act `"reset"`, scope the `pageKey`) or `RestoreAllDefaults` (act `"reset"`, scope `"all"`) writes its first row. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. See [The two fields](#the-two-fields). |
 | `bulkEnd` | function(act, scope, count, err, info) | no | **O16** | Called once when the act ends, **always** when the bracket was begun — even if a row, `resetProfile`, `afterRestoreAll` or `bulkBegin` raised. `count` is the rows whose `applyDefault` returned, including rows already at their default, so it is **not** §10's N; `err` is the raised value or `nil` (a raise of `nil`/`false` also arrives as `nil`), and is re-raised unchanged after this returns; `info` is `{ profileReset = <boolean> }`, `true` only when `RestoreAllDefaults` called `resetProfile` and it returned. Unmute here. Then, only when the outermost bracket closes: if any level reported `info.profileReset`, the host **MUST NOT** emit a bulk line (its profile-event handler logs the reset once); otherwise it emits `[Set] reset <scope>: N rows`, with N its own tally of writes that changed a stored value. A host that mutes in `bulkBegin` MUST supply this field. See [What the host logs](#what-the-host-logs--the-contract). A host supplying neither field runs minor 15's walk exactly. |
-| `scheduleTimer` | function(fn, delay) | no | O1 | Backs the 50 ms colour-drag throttle and the slider's live commit. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. **Its return value is unused** (W31): the library keeps its own armed flag, so a `C_Timer.After` wrapper that answers nil is throttled like one that answers a handle. Through W30 a nil return defeated the throttle. |
+| `scheduleTimer` | function(fn, delay) | no | O1 | Backs the 50 ms color-drag throttle and the slider's live commit. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. **Its return value is unused** (W31): the library keeps its own armed flag, so a `C_Timer.After` wrapper that answers nil is throttled like one that answers a handle. Through W30 a nil return defeated the throttle. |
 | `getLSM` | function | no | O1 | Returns LibSharedMedia-3.0, for `LSMValues` and, **since O17**, for the font preload a panel's show runs ([`lib.__PreloadFonts`](#lib__preloadfontslsm--number)). Absent, a host gets no preload. |
 | `validate` | function | no | O1 | Runs once, before the page builders. A host's schema-shape check. |
 | `onAceGUI` | function(AceGUI) | no | O1 | Handed the resolved AceGUI so the host can stash it (library-stack-§4) for its own page files. |
@@ -1685,7 +1685,7 @@ Ka0s host's schema declares, or `desc`, this library's own name for it; both are
 | `shownWhen` | **W22** | `{ path = <selector path>, equals = <value> \| { <value>, … } }`. Draw the row only while the selector (read like a `disabledIf` path) holds `equals`, or any value of an `equals` list; otherwise it is dropped from the render, its heading with it when its whole subsection is dropped. A raising read reads as shown. A selector drawn in the same `RenderRows` call is watched (by its `path`, or a bound row by its `field`), and a change re-renders the page once on the next frame — see [What changed at this version](#what-changed-at-this-version). **The page must declare a renderer (`O.SetRenderer`)**: without one the page keeps the section it first drew. **Switch subgroups, not a tabbed page's groups**: `RenderTabbedSchema` builds its tabs from the unfiltered rows, so a group dropped whole still gets a tab. The row stays in the schema. For a subsection a **dropdown** chooses; a single row a checkbox dims keeps `disabledIf`. |
 | `min` / `max` / `step` | W1 | Slider range. Snapping is relative to `min`, not to zero. |
 | `values` on a `number` row | **W5** | Makes it a **dropdown** rather than a slider, matching what `LibKa0s-Slash-1.0`'s parser has always understood the shape to mean. Inferred, not opted into — a `values` list that resolves empty falls back to the slider. |
-| `values` / `sorting` | W1 (ordered-array shape: W3) | Dropdown list, in either shape: an **ordered array** of `{ value =, text = }` (position is the order, and `sorting` is ignored) or a **key map** `{ KEY = "Label" }` (`sorting` keeps a deliberate order instead of alphabetising). A degenerate key *set* `{ KEY = true }` labels each entry with its key. `values` may be a function, evaluated at render and parse time. |
+| `values` / `sorting` | W1 (ordered-array shape: W3) | Dropdown list, in either shape: an **ordered array** of `{ value =, text = }` (position is the order, and `sorting` is ignored) or a **key map** `{ KEY = "Label" }` (`sorting` keeps a deliberate order instead of alphabetizing). A degenerate key *set* `{ KEY = true }` labels each entry with its key. `values` may be a function, evaluated at render and parse time. |
 | `dialogControl` | W1 | An in-tree widget type (`LSM30_*`, `EditBox`). Unregistered types fall back to a plain Dropdown, so an optional media-widget library staying absent costs a swatch, not the option. |
 | `hasAlpha` | W1 | Color picker: alpha channel — **default true**, declare `false` to suppress it. |
 | `disabledIf` | W1 (every maker, and the predicate form: **W16**) | Draw the row disabled while it holds. A **settings path** whose truth disables (a path-less row reads it through `row.get(key)`), or **from W16** a predicate `function(row) -> bool`, `pcall`'d, whose raise reads as enabled. Through W15 the color picker alone read it; from W16 the checkbox, slider, dropdown, edit box and color picker all do, at build and on every refresh. A row without it is never touched. **`disabledIf` must not be used for a class-color companion** (options-ui-§17, anti-patterns #74): the swatch is still read, for its alpha, so graying it says something untrue. No composed row carries it. |
@@ -1740,7 +1740,7 @@ Every composer takes these, and each is optional except `page` and `group` in pr
 | `subgroup` | string | The intra-tab heading, copied onto every row. |
 | `order` | number | Order of the first row; each subsequent row `+10`. Ten, so a host can splice a row of its own between two canonical ones without renumbering either. Defaults to `0`. |
 | `keys` | table | `{ <canonicalLeaf> = "myLeaf" }` — path-leaf overrides. **The composer must not change what is stored**, and this is the override that protects a live SavedVariables. |
-| `labels` | table | `{ <canonicalLeaf> = "My label" }` — host-localised label overrides. |
+| `labels` | table | `{ <canonicalLeaf> = "My label" }` — host-localized label overrides. |
 | `defaults` | table | `{ <canonicalLeaf> = <value> }` — default overrides. |
 | `omit` | table | `{ <canonicalLeaf> = true }` — leave the row out. The survivors stay contiguous, so an omission leaves no hole in the order. |
 | `classColor` | table | `{ source = "player" \| "unit", unit = <token>, default = <boolean> }`. Stamped on both rows of every color pair. |

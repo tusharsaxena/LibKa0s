@@ -353,7 +353,7 @@ test("options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the pa
   assertEqual(table.concat(order, ","), "hook,refresh")
 end)
 
-test("options: RestoreAllDefaults honours the host's skipRestoreAll veto", function()
+test("options: RestoreAllDefaults honors the host's skipRestoreAll veto", function()
   -- AbsorbTracker's profiles page: resetting it would delete user data, so it must never be swept
   -- up in a global reset. The library takes the predicate rather than knowing the page name.
   local O, rec = Fixture.new{ skipRestoreAll = function(row) return row.page == "bar" end }
@@ -604,7 +604,7 @@ test("options: RefreshPanel ignores a non-ctx rather than raising", function()
   assertTrue(pcall(O.RefreshPanel, "notactx", false), "so is a non-table")
 end)
 
-test("options: a ctx that never went through SetRenderer keeps the old ungated behaviour",
+test("options: a ctx that never went through SetRenderer keeps the old ungated behavior",
   function()
   -- The migration seam, and the most important case in this block: a host adopting the registry
   -- one page at a time keeps working, and so does one that never adopts it at all.
@@ -932,7 +932,7 @@ test("options: FixScroll disables the bar when the content fits, enables it when
 
   scroll.content.GetHeight = function() return 50 end        -- fits
   scroll:FixScroll()
-  assertTrue(scroll.scrollbar.__disabled, "nothing to scroll, so the bar greys out")
+  assertTrue(scroll.scrollbar.__disabled, "nothing to scroll, so the bar grays out")
   assertTrue(scroll.scrollBarShown, "but it is still SHOWN \226\128\148 that is the patch's point")
 
   scroll.content.GetHeight = function() return 1000 end      -- overflows
@@ -1122,7 +1122,7 @@ test("options: the shell installs no main renderer of its own, whatever else the
   function()
   -- The regression this pins: a shell that reads some OTHER descriptor field and installs a
   -- renderer from it changes what lib:New DOES for a descriptor that never asked for one. A host's
-  -- unrecognised keys are the host's business, and an unrecognised key is not a request to draw.
+  -- unrecognized keys are the host's business, and an unrecognized key is not a request to draw.
   local O = Fixture.new{ landing = {
     notes    = "never drawn",
     sections = { { heading = "Never Drawn", rows = function() return { "/x help" } end } },

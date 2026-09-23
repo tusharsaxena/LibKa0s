@@ -908,7 +908,7 @@ test("widgets: CopyWindow fills in the collection's defaults", function()
   assertEqual(d.title, "Export")
 end)
 
-test("widgets: CopyWindow honours an overridden descriptor", function()
+test("widgets: CopyWindow honors an overridden descriptor", function()
   local win = W.CopyWindow({
     addonName = "TestHost", name = "MyCopyBox", width = 500, height = 300,
     title = "Export \226\128\148 Ctrl+C, then Esc", fontSize = 12,
@@ -1081,7 +1081,7 @@ end)
 
 test("widgets: a poll that never reports the button held cannot kill the drag", function()
   -- If IsMouseButtonDown is unavailable, protected, or simply not true yet on the first frame, a
-  -- poll that ended on `not held` would finish the drag with zero rows travelled -- no error, no
+  -- poll that ended on `not held` would finish the drag with zero rows traveled -- no error, no
   -- message, and indistinguishable from a press that was never received. It has to see the button
   -- HELD before it may act on it being released.
   local list, rows, log = reorderList(5)
@@ -1097,7 +1097,7 @@ test("widgets: a poll that never reports the button held cannot kill the drag", 
 
   row.handle:__fire("OnMouseUp")
   assertEqual(#log.moved, 1, "OnMouseUp did not complete the drag")
-  assertEqual(log.moved[1][2], 3, "the distance travelled was thrown away")
+  assertEqual(log.moved[1][2], 3, "the distance traveled was thrown away")
 end)
 
 test("widgets: every start path begins one drag and every end path completes it once", function()
@@ -1211,7 +1211,7 @@ test("widgets: Cancel stops a drag in flight and puts the chrome away", function
 
   mocks.setMouseDown("LeftButton", false)
   W.__DragGhost:__fire("OnUpdate", 0.1)
-  assertEqual(#log.moved, 0, "a cancelled drag must not land after the fact")
+  assertEqual(#log.moved, 0, "a canceled drag must not land after the fact")
 end)
 
 test("widgets: Cancel takes every handle OFF the host's frame", function()
@@ -1320,7 +1320,7 @@ test("widgets: a reused handle drives the LIVE controller, not the one it was bu
   assertEqual(moved[1][2], 2)
 end)
 
-test("widgets: the handle takes the hover colour and drops it again", function()
+test("widgets: the handle takes the hover color and drops it again", function()
   -- The handle has to say it is a control before you press it. The tint is the host's to choose;
   -- the default is the collection's gold, so a host that says nothing matches every other list.
   local parent = geomFrame()
@@ -1332,10 +1332,10 @@ test("widgets: the handle takes the hover colour and drops it again", function()
   assertEqual(r, 1); assertEqual(g, 0.82); assertEqual(b, 0)
 
   handle:__fire("OnLeave")
-  assertEqual(handle.art.__vertexColor[1], 0.7, "the handle must go back to its rest colour")
+  assertEqual(handle.art.__vertexColor[1], 0.7, "the handle must go back to its rest color")
 end)
 
-test("widgets: a host may override both handle colours", function()
+test("widgets: a host may override both handle colors", function()
   local parent = geomFrame()
   local list = W.ReorderList({
     stride           = 30,
@@ -1343,10 +1343,10 @@ test("widgets: a host may override both handle colours", function()
     handleHoverColor = { 0.9, 0.1, 0.1 },
   })
   local handle = list:AddRow(parent, {})
-  assertEqual(handle.art.__vertexColor[1], 0.2, "the rest colour was not the host's")
+  assertEqual(handle.art.__vertexColor[1], 0.2, "the rest color was not the host's")
 
   handle:__fire("OnEnter")
-  assertEqual(handle.art.__vertexColor[1], 0.9, "the hover colour was not the host's")
+  assertEqual(handle.art.__vertexColor[1], 0.9, "the hover color was not the host's")
 end)
 
 test("widgets: only the handle starts a drag", function()
@@ -1467,7 +1467,7 @@ test("widgets: a box frame that cannot make textures is skipped rather than rais
   -- and every texture path in this file guards on the ANSWER rather than on the method.
   -- red under: calling SetAllPoints on the answer before checking it.
   --
-  -- Deliberately NOT cancelled, and the free list is DRAINED FIRST. A pooled box was built with
+  -- Deliberately NOT canceled, and the free list is DRAINED FIRST. A pooled box was built with
   -- real textures, so a case about a frame that cannot make them has to be handed a new one -- and
   -- a textureless box returned to the shared list would be handed to the next case, which would
   -- then be asserting against a box that was never built.

@@ -8,12 +8,12 @@ local Loader = dofile("tests/_kit/loader.lua")
 local buildMocks = dofile("tests/wow_mock.lua")
 
 -- A stand-in for a WoW combat "secret" value. Crucially it models BOTH halves of the real
--- behaviour: the `..` operator SUCCEEDS on a secret (silently propagating secretness) while
+-- behavior: the `..` operator SUCCEEDS on a secret (silently propagating secretness) while
 -- `table.concat` RAISES on it. A table with a string-returning __concat concatenates fine via
 -- `..`, yet `table.concat({mock})` still rejects it (table.concat ignores __concat and refuses a
 -- non-string/number element) — so this catches a detector that (wrongly) probes with `..` and
 -- passes one that probes with `table.concat`. (Earlier a __concat that *errored* was used, which
--- modelled the opposite of a real secret and gave false confidence.)
+-- modeled the opposite of a real secret and gave false confidence.)
 local secretMock = setmetatable({}, {
   __concat = function() return "secret-propagated" end,
 })
@@ -236,7 +236,7 @@ end)
 -- ── the window chrome seam ─────────────────────────────────────────────────────────────────
 
 test("core: ApplySkin no-ops on a frame without SetBackdrop", function()
-  -- A bare table, not a mock frame: the mock synthesises every PascalCase method, so
+  -- A bare table, not a mock frame: the mock synthesizes every PascalCase method, so
   -- `frame.SetBackdrop` is always truthy there and the guard could never be exercised.
   local bare = {}
   local ok = pcall(core.ApplySkin, bare)
@@ -244,7 +244,7 @@ test("core: ApplySkin no-ops on a frame without SetBackdrop", function()
   T.assertNil(bare.backdrop, "nothing is written to a frame that cannot take a backdrop")
 end)
 
-test("core: ApplySkin applies the skin table and both colours", function()
+test("core: ApplySkin applies the skin table and both colors", function()
   local calls = {}
   local frame = {
     SetBackdrop = function(_, b) calls.backdrop = b end,
@@ -263,8 +263,8 @@ end)
 -- ── the Ka0s window edge ───────────────────────────────────────────────────────────────────
 --
 -- One treatment, defined once, worn by every window this library draws and by every window a host
--- draws beside them: a flat 1px BLACK outer border with a 1px light-grey highlight synthesised
--- just inside it (the "double edge"), a gold title and a grey divider under the title bar.
+-- draws beside them: a flat 1px BLACK outer border with a 1px light-gray highlight synthesized
+-- just inside it (the "double edge"), a gold title and a gray divider under the title bar.
 --
 -- It became the definition because two hosts had already converged on it independently and looked
 -- right, while the three on this library's 12px UI-Tooltip-Border did not read as the same suite of
@@ -298,7 +298,7 @@ test("core: SKIN is the flat 1px Ka0s edge, not the 12px tooltip border", functi
   assertEqual(table.concat(core.SKIN.title, ","), "1,0.82,0")
 end)
 
-test("core: ApplySkin synthesises the inner highlight, exactly once", function()
+test("core: ApplySkin synthesizes the inner highlight, exactly once", function()
   local created = 0
   -- The loader env resolves WoW globals from the mock set BEFORE _G, so a swap on _G would be
   -- shadowed and this case would report 0 created frames forever.
@@ -329,7 +329,7 @@ test("core: ApplySkin survives a frame whose metatable answers every key", funct
   local ok, err = pcall(core.ApplySkin, answersEverything)
   T.assertTrue(ok, "ApplySkin must not raise on such a frame: " .. tostring(err))
   T.assertTrue(type(rawget(answersEverything, "innerBorder")) == "table",
-    "and it must have replaced the synthesised answer with a real inner-border frame")
+    "and it must have replaced the synthesized answer with a real inner-border frame")
 end)
 test("core: ApplySkin tints a title and a divider when the frame carries them", function()
   local frame = recorderFrame()
@@ -338,7 +338,7 @@ test("core: ApplySkin tints a title and a divider when the frame carries them", 
   frame.divider = { SetColorTexture = function(_, r, g, b, a) drawn = { r, g, b, a } end }
   core.ApplySkin(frame)
   assertEqual(table.concat(tinted, ","), "1,0.82,0", "the title is Blizzard gold")
-  assertEqual(table.concat(drawn, ","), "0.24,0.24,0.27,0.85", "the divider is the grey line")
+  assertEqual(table.concat(drawn, ","), "0.24,0.24,0.27,0.85", "the divider is the gray line")
 end)
 
 test("core: ApplySkin lays the backdrop down before anything drawn on top of it", function()
@@ -379,7 +379,7 @@ test("core: ApplySkin tolerates a frame with neither a title nor a divider", fun
   T.assertTrue(ok, "ApplySkin must not require either")
 end)
 
-test("core: ApplySkin honours an explicit skin table", function()
+test("core: ApplySkin honors an explicit skin table", function()
   -- The optional second argument, so DebugLog's descriptor `skin` override reaches ONE
   -- implementation rather than a second copy of these calls.
   local frame = recorderFrame()

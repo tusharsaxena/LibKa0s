@@ -1280,7 +1280,7 @@ test("schema: one row's errors print in field order, and its missing line prints
   }, "\n"))
 end)
 
-test("schema: a non-string or empty path is labelled as given and is never a stored path", function()
+test("schema: a non-string or empty path is labeled as given and is never a stored path", function()
   local rec = newRecorder()
   local calls = 0
   local rows = {

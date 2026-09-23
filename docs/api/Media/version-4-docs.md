@@ -59,8 +59,8 @@ traced, sampled or copied from anything.
 frame sized for one is sized for all seven, so switching between them gives a player a different
 line rather than a different-shaped widget, and an addon can offer the set as one dropdown.
 
-The gradient peaks at **white** where a typical bar texture peaks at light grey. A texture is tinted
-by *multiplying*, so grey art mutes a saturated statusbar color; white delivers the caller's color
+The gradient peaks at **white** where a typical bar texture peaks at light gray. A texture is tinted
+by *multiplying*, so gray art mutes a saturated statusbar color; white delivers the caller's color
 undiluted, and the shading lives in the falloff. The falloff is eased rather than linear (exponent
 1.7), which keeps the top third — the part a player reads the color from — bright.
 

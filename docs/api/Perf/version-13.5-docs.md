@@ -235,7 +235,7 @@ written against minor 1 keeps working unmodified against any later minor.
 | `print` | function(line) | no | 1 | Chat-and-console sink, for what the user must see while looking at the game. Defaults to `print`. |
 | `showLog` | function | no | 1 | Reveals the host's own log/console window. Defaults to a no-op. The lib owns no console frame of its own, so this is how `start`, `report` and `dump` bring the log into view. |
 | `onChange` | function | no | 1 | Called after every state transition, once the panel has already repainted. Lets the host republish on its own message bus. Defaults to a no-op. |
-| `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). Unlocalised hosts pass nothing and get the built-in English strings. |
+| `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). Unlocalized hosts pass nothing and get the built-in English strings. |
 | `slash` | string | no | 1 | The command prefix shown in the panel's command column and in `Usage()`/`StatusLines()`. Defaults to `"/" .. name:lower()`. |
 | `title` | string | no | 1 | Panel title (before the `— Perf Run` suffix). Defaults to `name`. |
 | `ring` | number | no | 1 | Depth of the SavedVariables capture ring. Defaults to `lib.DEFAULT_RING` (10). |
@@ -401,7 +401,7 @@ capture doesn't error — it silently lies:
 1. **`suspend` MUST make the host inert without a `/reload`.** Reloading, or disabling the addon
    through the AddOns list, shifts shared-frame ownership — which is the exact confound that makes
    the built-in Addon Profiler untrustworthy for this question in the first place. `suspend` and
-   `resume` must flip the host's behaviour in place, live, mid-session.
+   `resume` must flip the host's behavior in place, live, mid-session.
 2. **Visibility MUST be enforced at the source**, i.e. as a check the host's own show-decision makes
    (`if perf.suspended then return end` inside whatever function decides to show a frame) — never by
    having `suspend` reach in and imperatively hide frames itself. Imperative hiding is a snapshot: the
@@ -419,7 +419,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `Open(key)` | **P7** (`Open()` was P6) | Open a Shape B measurement bracket on `key`. No-op while the probe is off. Allocates nothing in the steady state as of **P8** — slots come from a high-water free list. See [Bracketing a multi-exit function](#bracketing-a-multi-exit-function). |
 | `Close(key)` | **P7** (`Close(t0, key)` was P6) | Close the bracket `Open(key)` opened, recording its elapsed ms under `key` and the enclosing bracket's key as the observed parent. A `Close` with no matching open slot is a **silent no-op**. |
 | `Reset()` | 1 | Zero every counter — buckets, completion/review flags, FPS arms. |
-| `Log(fmt, ...)` | 1 | Console-only line, colour-stripped. |
+| `Log(fmt, ...)` | 1 | Console-only line, color-stripped. |
 | `Announce(fmt, ...)` | 1 | Chat-and-console line, for what the user must see mid-fight. |
 | `MarkReviewed(key)` | 1 | Mark a review action (`report`/`dump`) used, without disabling it. |
 | `Progress()` | 1 | The run as a table of step states (`ready`/`busy`/`done`/`locked`/`used`/`cancel`), for a panel to render. |

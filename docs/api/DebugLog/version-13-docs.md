@@ -302,7 +302,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `fontSize` | number | no | 1 | Defaults to `10`. Applies to both windows, the copy window's via `CopyWindow`'s `fontSize`. |
 | `isEnabled` | function | yes | 1 | Reads the host's logging flag. The library never stores it. |
 | `setEnabled` | function | yes | 1 | Writes it. Always handed a real boolean. |
-| `print` | function(line) | no | 1 | Where the chat acknowledgement goes. Defaults to the chat frame, untagged — a host that wants its own tag passes its printer, which is what every Ka0s addon does. |
+| `print` | function(line) | no | 1 | Where the chat acknowledgment goes. Defaults to the chat frame, untagged — a host that wants its own tag passes its printer, which is what every Ka0s addon does. |
 | `safeToString` | function | no | 1 | Defaults to Core's. Every logged value goes through it, so a combat-protected value renders rather than raising downstream. |
 | `initSummary` | function | no | 1 | Returns one line naming version/schema/profile. The library owns *when* it is emitted (on enable, as the `[Init]` line); only the host can know what it says. |
 | `onVisibilityChanged` | function | no | 1 | Fired on both `OnShow` and `OnHide`, so a host can repaint a settings panel whose checkbox mirrors the console's visibility. |
