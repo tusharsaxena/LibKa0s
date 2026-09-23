@@ -15,8 +15,27 @@ cannot drift. Release order is in
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
 (`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
-(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.30.3.7.4; `OptionsWidgets` 30, `OptionsTabs` 3 and `OptionsCompose` 7 unchanged), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Options minor 24, OptionsScroll minor 4: the font preload moves out of the shell
+
+- **Structural, behavior-neutral: the font preload (Options minor 17) now lives in
+  `OptionsScroll.lua`**, moved unchanged from `Options.lua` -- `preloadState`, `preloadFrame`,
+  `preloadPath`, `subscribeLate` and `lib.__PreloadFonts`, with the library-level
+  `lib.__fontPreload` state they share. `Options.lua` drops from 1476 lines to 1376, back under
+  `layout-§1`'s 1500-line cap with room for the Options items later in this release.
+  `lib.__PatchLSM30Border` stays in the shell.
+- **A partial copy missing `OptionsScroll.lua` shows its pages with no preload and no error.** Both
+  callers -- the instance's show trigger in `lib:New` and the late-registration callback -- already
+  looked `lib.__PreloadFonts` up on `lib` at call time and did nothing when it was not a function,
+  so no call site changed. The member, its contract and its state are unchanged; the member
+  manifest differs from 23.30.3.7.3's in the version key alone.
+- `tests/test_options.lua`: one case -- with `lib.__PreloadFonts` nil a panel's show survives and
+  renders, and loading `OptionsScroll.lua` installs the preload (red before the move: the shell
+  defined it). `tests/test_options_fontpreload.lua` passes unchanged, eleven cases before and after.
+  Documented in [the version 24.30.3.7.4 document](docs/api/Options/version-24.30.3.7.4-docs.md);
+  version 23.30.3.7.3 is Superseded.
 
 ### Schema minor 2: `SetMany`, `row.normalize`, `writeThrough`, and the instance id reaching `get` and `ApplyDefault`
 

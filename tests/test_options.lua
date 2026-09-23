@@ -15,6 +15,7 @@ local test, assertEqual, assertTrue, assertFalse, assertNil =
   T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil
 local mocks = T.mocks
 local Fixture = dofile("tests/fixture_options.lua")
+local Loader  = dofile("tests/_kit/loader.lua")
 
 local lib = T.options
 
@@ -878,6 +879,37 @@ test("options: EnsureScroll is lazy, created once, and patched", function()
   assertTrue(first.scrollBarShown, "the scrollbar and its gutter stay shown across pages")
   assertEqual(first.content.width, first.content.original_width - 20,
     "the content is inset by the gutter so every page's right edge lines up")
+end)
+
+test("options: OptionsScroll.lua owns the font preload; without it a show still renders", function()
+  -- Options minor 24 moved the preload (minor 17) out of the shell and into OptionsScroll.lua. A
+  -- partial copy missing that file leaves lib.__PreloadFonts nil, and both callers -- the shell's
+  -- show trigger and the late-registration callback -- look it up on `lib` at call time, so the
+  -- only acceptable outcome is no preload, never an error and never a blank page.
+  local saved = {
+    preload = lib.__PreloadFonts, scrollMinor = lib.__scrollMinor,
+    scrollShell = lib.__scrollShellMinor, state = lib.__fontPreload,
+  }
+  local ok, err = pcall(function()
+    lib.__PreloadFonts, lib.__fontPreload = nil, nil
+    local O, rec = Fixture.new()
+    rec.lsm = { HashTable = function() return { Face = "Fonts\\FRIZQT__.TTF" } end }
+    local ctx = O.CreatePanel("TestPanelNoPreload", "No Preload", { pageKey = "nopreload" })
+    local drawn = 0
+    O.SetRenderer(ctx, function() drawn = drawn + 1 end)
+    ctx.panel:Show()
+    assertTrue(pcall(ctx.panel.__fire, ctx.panel, "OnShow"), "the show survives")
+    assertEqual(drawn, 1, "and the page renders")
+    assertNil(lib.__fontPreload, "with no preload state created by anything")
+
+    -- Loading OptionsScroll.lua is what installs it: the shell alone does not.
+    lib.__scrollMinor = nil
+    Loader.load("LibKa0s/OptionsScroll.lua", nil, mocks)
+    assertTrue(type(lib.__PreloadFonts) == "function", "OptionsScroll.lua defines the preload")
+  end)
+  lib.__PreloadFonts, lib.__scrollMinor = saved.preload, saved.scrollMinor
+  lib.__scrollShellMinor, lib.__fontPreload = saved.scrollShell, saved.state
+  if not ok then error(err, 0) end
 end)
 
 test("options: the scrollbar patch is idempotent", function()

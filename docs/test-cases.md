@@ -716,7 +716,7 @@ badge and any count quoted in the docs must agree with it.
 - launcher: a host locale overrides a report, and a key-echoing fallback does not
 - launcher: with no descriptor print, a report reaches the chat frame
 
-### test_options.lua (84)
+### test_options.lua (85)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -777,6 +777,7 @@ badge and any count quoted in the docs must agree with it.
 - options: the patched constructor hides the preview tile and re-anchors the bar
 - options: __PatchLSM30Border stays armed while the widget is absent
 - options: EnsureScroll is lazy, created once, and patched
+- options: OptionsScroll.lua owns the font preload; without it a show still renders
 - options: the scrollbar patch is idempotent
 - options: FixScroll disables the bar when the content fits, enables it when it does not
 - options: OnRelease restores AceGUI's own FixScroll and clears the marker
@@ -1800,7 +1801,7 @@ badge and any count quoted in the docs must agree with it.
 | test_slash.lua | 109 |
 | test_slash_refusal.lua | 7 |
 | test_launcher.lua | 27 |
-| test_options.lua | 84 |
+| test_options.lua | 85 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 227 |
@@ -1834,4 +1835,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1616** |
+| **Total** | **1617** |

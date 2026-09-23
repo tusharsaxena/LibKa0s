@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 23.30.3.7.3
+# `LibKa0s-Options-1.0` — version 24.30.3.7.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,19 +8,19 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **30** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
+| Files and minors | `Options.lua` **24** · `OptionsWidgets.lua` **30** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.53.0 |
-| Status | Superseded |
-| Supersedes | [version 23.29.3.7.3](./version-23.29.3.7.3-docs.md) |
-| Superseded by | [version 24.30.3.7.4](./version-24.30.3.7.4-docs.md) — the font preload moves from `Options.lua` into `OptionsScroll.lua` |
+| Shipped in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 23.30.3.7.3](./version-23.30.3.7.3-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 30, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 24, OptionsWidgets = 30, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 4 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
-for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
+for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
-`OptionsScroll.lua` minor 1. **A `W`
+`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
 `OptionsTabs.lua`'s from it, with no change to what any of them does. The minor that introduced a
@@ -28,6 +28,36 @@ member is a fact about when a consumer got it, not about which file holds it tod
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**The font preload moves out of the shell (O24, S4).** `Options.lua` 23 -> **24** and
+`OptionsScroll.lua` 3 -> **4**; `OptionsWidgets.lua`, `OptionsTabs.lua` and `OptionsCompose.lua` do
+not move. **No member is added, removed or repurposed, no descriptor or row field moves, and there
+is nothing to adopt** -- the member manifest at `members-24.30.3.7.4.json` is identical to
+23.30.3.7.3's apart from the version key.
+
+**What moved.** The whole font preload of **O17** -- the library-level state `lib.__fontPreload`,
+the preload frame, the per-path load, the one late-registration subscription and
+[`lib.__PreloadFonts`](#lib__preloadfontslsm--number) itself -- is now defined at the foot of
+`OptionsScroll.lua` instead of in `Options.lua`, byte-for-byte the same code. It moved to keep the
+shell under `layout-§1`'s 1500-line cap: `Options.lua` was 1476 lines at O23 and is 1376 at O24.
+`OptionsScroll.lua` was chosen because the preload, like the scrollbar patch already there, is
+stateless lib-level code with no instance half. `lib.__PatchLSM30Border` stays in the shell.
+
+**What did not move.** The two triggers are still the shell's, in `lib:New`: `O.SetRenderer`'s
+OnShow after its combat refusal, and the OnShow hook `O.CreatePanel` installs. Both, and the
+late-registration callback, look `lib.__PreloadFonts` up on `lib` at call time and do nothing when
+it is not a function, as they did at O17 -- so a **partial vendored copy missing
+`OptionsScroll.lua`** shows every page with no preload (O16's behavior: a font dropdown's first open
+may draw blank rows) and never an error. A partial copy missing that file has lost the
+always-shown scrollbar as well, which is the larger symptom.
+
+**Across vendored copies.** `OptionsScroll.lua`'s attach guard re-runs whenever the shell underneath
+it changed or its own minor rises, so the winning shell always carries the winning copy's preload.
+A session that loads a 23.30.3.7.3 copy first and a 24.30.3.7.4 copy second runs the older copy's
+preload (defined by its shell) until the newer `OptionsScroll.lua` attaches and replaces it; the
+state in `lib.__fontPreload` is shared across both, so no face loads twice.
+
+## Previously, at 23.30.3.7.3
 
 **The Add button stops overhanging the box beside it (W30).** `OptionsWidgets.lua` 29 -> **30**;
 every other file of the major is unchanged, and the member manifest is identical to W29's apart
@@ -925,8 +955,10 @@ the five-deep stack this member exists to end.
 ### `lib.__PreloadFonts(LSM)` → number
 
 **Since O17.** Load every LibSharedMedia font face not loaded yet, then subscribe once to faces
-registered later. Returns how many faces this call loaded. See
-[What changed at this version](#what-changed-at-this-version) for why.
+registered later. Returns how many faces this call loaded. **Defined in `OptionsScroll.lua` from
+O24/S4** (in `Options.lua` from O17 to O23), unchanged; nil in a partial copy missing that file,
+which both callers treat as no preload. The header of the preload block in `OptionsScroll.lua`
+says why it runs on a panel's show.
 
 | | |
 |---|---|
@@ -1828,6 +1860,9 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
+**At 24.30.3.7.4 nothing is added, removed or repurposed**: the font preload moved file, and a host
+written against 23.30.3.7.3 needs no change and sees no difference.
+
 **At 23.24.3.7.3 one optional spec field is added** — `O.IdList`'s `columns` — and nothing is
 removed or repurposed. A list that does not pass it draws what 23.23.3.7.3 drew, with one deliberate
 exception a host can see: an icon-style list's X now sits in an absolute `26px` frame instead of
@@ -1863,12 +1898,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 24.30.3.7.4
-
-`Options.lua` moves to minor **24** and `OptionsScroll.lua` to minor **4**; the other three files do
-not move. No member, descriptor field or row field is added or removed, and the member manifest
-differs from this version's only in its version key. What moves is where the font preload is
-defined: `lib.__PreloadFonts` and its state now live in `OptionsScroll.lua`, unchanged, to keep the
-shell under the 1500-line cap. A partial copy missing `OptionsScroll.lua` shows its pages with no
-preload and no error. See [version 24.30.3.7.4](./version-24.30.3.7.4-docs.md).
