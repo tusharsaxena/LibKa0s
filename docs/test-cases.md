@@ -188,7 +188,7 @@ badge and any count quoted in the docs must agree with it.
 - bus: Catalog refuses each malformed declaration, naming what is wrong
 - bus: the catalog is strict on read and on write
 
-### test_schema.lua (71)
+### test_schema.lua (72)
 
 - schema: the major is registered and reports its own live version
 - schema: the module refuses to register without Core, and registers with it
@@ -197,6 +197,7 @@ badge and any count quoted in the docs must agree with it.
 - schema: the reference stub carries the whole surface, lib level and instance
 - schema: the reference stub reaches neither the library nor the suite
 - schema: the stub completes writes, in the live seam's order and to the same store
+- schema: the stub's SetMany is all or nothing, and lands what the live batch lands
 - schema: the stub's Reset All sweep resets rows and keeps the sweep veto
 - schema: the stub's lib level answers as the library's does on the same inputs
 - schema: L overrides a STRINGS key, and a synthesizing L does not mask the rest
@@ -261,6 +262,25 @@ badge and any count quoted in the docs must agree with it.
 - schema: defaultsRoot gets the split parts and the row, and its first may be a string
 - schema: a malformed spec falls back field by field
 - schema: two instances share nothing
+
+### test_schema_batch.lua (16)
+
+- schema batch: the instance carries SetMany at minor 2
+- schema batch: one invalid entry stores nothing, calls nothing, and names its index
+- schema batch: an unknown path refuses the whole batch
+- schema batch: a normalize refusal inside a batch refuses it whole
+- schema batch: a valid batch stores every entry, runs every onChange, announces once
+- schema batch: every store lands before the first onChange runs
+- schema batch: without announceBatch, announce runs once per write, after the reactions
+- schema batch: with an act the batch is one bracket and one line counting the rows it moved
+- schema batch: a raising onChange still closes the batch's bracket, and the stores stand
+- schema batch: an empty batch stores nothing and answers true
+- schema batch: Set stores normalize's value and hands it to onChange and announce
+- schema batch: normalize answering nil, why refuses with INVALID and stores nothing
+- schema batch: normalize runs only after validate accepts
+- schema batch: a normalize refusal comes before a missing root
+- schema batch: Get hands the instance id to a row's own get
+- schema batch: ApplyDefault(row, id) writes through Set with that id
 
 ### test_pool.lua (23)
 
@@ -1761,7 +1781,8 @@ badge and any count quoted in the docs must agree with it.
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 22 |
 | test_bus.lua | 30 |
-| test_schema.lua | 71 |
+| test_schema.lua | 72 |
+| test_schema_batch.lua | 16 |
 | test_pool.lua | 23 |
 | test_item.lua | 15 |
 | test_media.lua | 20 |
@@ -1806,4 +1827,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1592** |
+| **Total** | **1609** |

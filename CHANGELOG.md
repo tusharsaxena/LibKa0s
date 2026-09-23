@@ -15,8 +15,46 @@ cannot drift. Release order is in
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
 (`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
-(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Schema minor 2: `SetMany`, `row.normalize`, and the instance id reaching `get` and `ApplyDefault`
+
+- **New: `SetMany(entries, opts)`, the all-or-nothing batch.** `entries = { { path, value }, ... }`,
+  `opts = { instanceId, act, scope }`. Every entry is resolved, validated and normalized before any
+  is stored; one refusal answers `false, err, why, index` with nothing stored and nothing called.
+  A batch that passes stores every entry in order, then runs every row's `onChange`, then calls the
+  new optional descriptor field `announceBatch(writes, resolvedId)` **once** (or `announce` once per
+  write without it). With `opts.act` the batch is one bulk bracket, so one
+  `[Set] <act> <scope>: N rows` line. Owner-scope consumers: ConsumableMaster#39
+  (`SetManyAndRefresh`), MultiMeters#52 (`SetByPaths`), KickCD#22 (copy styling).
+- **New: `row.normalize(value, resolvedId)`**, after `validate` accepts and before the missing-root
+  refusal and the store. It answers the value to store, or `nil, why`, which refuses with
+  `INVALID`. The normalized value is what is stored, logged and handed to `onChange` and
+  `announce`. AuraMaster#21 and ConsumableMaster#39 carry this semantic in front of their seams
+  today, which clears `library-stack-§7` bar 2; the header's "deliberately does not do" paragraph
+  no longer excludes it or the batch.
+- **Behavioral: the instance id reaches a row's `get` and `ApplyDefault`'s write** (review finding
+  `LibKa0s-R-14`). `Get(path, instanceId)` calls `row.get(instanceId)` where minor 1 called
+  `row.get()`, and `ApplyDefault(row, instanceId)` forwards the id to `Set`. A closure `get` that
+  ignores its argument is unaffected.
+- `Set` and `SetMany` share one `prepareWrite`, so a batch refuses on exactly the rules a single
+  write does; `Set`'s answer counts are unchanged (`false, err, why` for a value refusal,
+  `false, err` for a missing root).
+- **Consumer impact: every Schema degradation stub pinned with the two-table
+  `T.assertSurfaceParity` goes red on the re-vendor until it gains `SetMany`** — AbsorbTracker,
+  BankLedger, LootHistory, PanelMaster and PrettyChat on the 2026-09-24 reading. Adding it before
+  the re-vendor is harmless against minor 1. The lib-level surface is unchanged.
+- `tests/test_schema_batch.lua` (new; `tests/test_schema.lua` was 1233 lines): a batch with one
+  invalid entry stores nothing and names its index, an unknown path refuses the batch whole, a
+  valid batch stores all, runs every `onChange` and calls `announceBatch` once, `act` gives exactly
+  one bracket line counting the rows moved, `normalize`'s value is stored and `nil, why` refuses,
+  `Get` hands the id to `row.get`, and `ApplyDefault(row, id)` reaches `Set` with the id.
+  `tests/test_schema.lua`'s `referenceStub` gains `SetMany`, `normalize` and the id forwarding, is
+  pinned against a live instance with the two-table parity, and a case holds its batch to the live
+  one's store. Documented in [the version 2 document](docs/api/Schema/version-2-docs.md), with
+  per-host mappings for KickCD, ConsumableMaster, MultiMeters and AuraMaster; version 1 is
+  Superseded.
 
 ### Widgets minor 10: a `ReorderList` drag no longer borrows the host's frames
 

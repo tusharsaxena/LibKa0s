@@ -127,7 +127,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Schema/version-1-docs.md) | `Schema.lua` 1 | v1.55.0 | **Current** |
+| [2](./Schema/version-2-docs.md) | `Schema.lua` 2 | v1.56.0 | **Current** |
+| [1](./Schema/version-1-docs.md) | `Schema.lua` 1 | v1.55.0 | Superseded |
 
 ### `LibKa0s-Pool-1.0`
 
