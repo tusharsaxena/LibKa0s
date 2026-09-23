@@ -488,9 +488,12 @@ end
 ---                              with N the host's OWN tally of writes that changed a stored value,
 ---                              never `count`. A host that supplies neither field gets minor 15's
 ---                              walk exactly, with no pcall.
----   scheduleTimer(fn, delay)   optional. Backs the color picker's 50 ms drag throttle. A
----                              descriptor field rather than an AceTimer embed, because embedding
----                              would be this library's second dependency-budget breach.
+---   scheduleTimer(fn, delay)   optional. Backs the color picker's 50 ms drag throttle and the
+---                              slider's live commit. A descriptor field rather than an AceTimer
+---                              embed, because embedding would be this library's second
+---                              dependency-budget breach. Its return value is unused: the library
+---                              keeps its own armed flag (OptionsWidgets minor 31), so a
+---                              C_Timer.After wrapper that answers nil is throttled like any other.
 ---   getLSM()                   optional. Returns LibSharedMedia-3.0, for LSMValues and, since
 ---                              minor 17, for the font preload every panel show runs (see
 ---                              lib.__PreloadFonts).

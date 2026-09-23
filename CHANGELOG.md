@@ -15,8 +15,27 @@ cannot drift. Release order is in
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
 (`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
-(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.30.3.7.4; `OptionsWidgets` 30, `OptionsTabs` 3 and `OptionsCompose` 7 unchanged), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2), **Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24**, **OptionsWidgets minor 31** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.31.3.7.4; `OptionsTabs` 3 and `OptionsCompose` 7 unchanged), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### OptionsWidgets minor 31: the drag throttles keep their own armed flag
+
+- **Fix: a host whose `scheduleTimer` answers nil gets the 50 ms drag throttle** (review finding
+  `KICKCD-R-19`). The slider's live commit (`commitOn` / `sliderCommit = "change"`) and the color
+  picker's drag throttle each stored `scheduleTimer`'s return value and read it as "a timer is
+  armed", so a `C_Timer.After` wrapper -- which answers nil, and which KickCD, LootHistory and
+  MultiMeters all pass -- armed a new timer and closure on every drag frame and committed about once
+  a frame. Each throttle now keeps a library-local boolean, set before it calls `scheduleTimer` and
+  cleared inside the callback, and the return value is unused. A host whose timer answers a handle
+  sees no difference. No member or field moves; the three hosts get the fix by re-vendoring.
+- `LibKa0s/Options.lua`'s descriptor comment says `scheduleTimer`'s return value is unused and that
+  it backs the slider's live commit too. Options stays at minor 24, already bumped in this release.
+- `tests/test_options_throttle.lua`, a new suite (`tests/test_options_widgets.lua` is a census row
+  over the 1500-line cap): four cases -- ten slider drag frames in one window with a nil-returning
+  `scheduleTimer` arm one timer and commit once (red before: ten timers); the same for the color
+  picker (red before: ten timers); the window re-arms once it fires (red before); a handle-returning
+  host is unchanged. The Options key moves 24.30.3.7.4 -> 24.31.3.7.4 and the unreleased document
+  is renamed to match: [the version 24.31.3.7.4 document](docs/api/Options/version-24.31.3.7.4-docs.md).
 
 ### Options minor 24: `CreateOptionsPanel` parks in combat; `OpenOptionsPanel` answers a boolean
 
@@ -46,7 +65,7 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   builds the queued pages and lets go of the event; a second call while parked is a no-op; an
   event other than `PLAYER_REGEN_ENABLED` leaves the park armed; the three return values of
   `OpenOptionsPanel`. Documented in
-  [the version 24.30.3.7.4 document](docs/api/Options/version-24.30.3.7.4-docs.md).
+  [the version 24.31.3.7.4 document](docs/api/Options/version-24.31.3.7.4-docs.md).
 
 ### Options minor 24, OptionsScroll minor 4: the font preload moves out of the shell
 
@@ -64,7 +83,7 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
 - `tests/test_options.lua`: one case -- with `lib.__PreloadFonts` nil a panel's show survives and
   renders, and loading `OptionsScroll.lua` installs the preload (red before the move: the shell
   defined it). `tests/test_options_fontpreload.lua` passes unchanged, eleven cases before and after.
-  Documented in [the version 24.30.3.7.4 document](docs/api/Options/version-24.30.3.7.4-docs.md);
+  Documented in [the version 24.31.3.7.4 document](docs/api/Options/version-24.31.3.7.4-docs.md);
   version 23.30.3.7.3 is Superseded.
 
 ### Schema minor 2: `SetMany`, `row.normalize`, `writeThrough`, and the instance id reaching `get` and `ApplyDefault`

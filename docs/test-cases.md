@@ -1250,6 +1250,13 @@ badge and any count quoted in the docs must agree with it.
 - compose: the descriptor moves the Reset all tooltip and nothing else Master controls draws
 - compose: a shell that hands __AttachCompose no descriptor keeps the minor-4 tooltip
 
+### test_options_throttle.lua (4)
+
+- throttle: a nil-returning scheduleTimer still gets ONE slider timer per window
+- throttle: a nil-returning scheduleTimer still gets ONE color timer per window
+- throttle: the window re-arms after it fires, for a nil-returning host
+- throttle: a host whose timer answers a handle is unchanged
+
 ### test_perf_core.lua (71)
 
 - lib: registers under its major with a schema and a default ring
@@ -1816,6 +1823,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_switched.lua | 9 |
 | test_options_combat.lua | 32 |
 | test_options_compose.lua | 45 |
+| test_options_throttle.lua | 4 |
 | test_perf_core.lua | 71 |
 | test_perf_run.lua | 40 |
 | test_perf_panel.lua | 45 |
@@ -1840,4 +1848,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1622** |
+| **Total** | **1626** |

@@ -32,7 +32,7 @@ local Pool = LibStub and LibStub("LibKa0s-Pool-1.0", true)
 local NEEDS_POOL = 1
 if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 
-local WIDGETS_MINOR = 30
+local WIDGETS_MINOR = 31
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__widgetsMinor and lib.__widgetsMinor >= WIDGETS_MINOR
@@ -1324,13 +1324,17 @@ function lib.__AttachWidgets(O, d)
     -- the release commit does, or the release would silently correct what the drag stored.
     local liveCommit = row.commitOn or d.sliderCommit
     if liveCommit == "change" then
-      local pendingValue, dragTimer
+      -- `armed` is the library's own flag, never the host's return value (minor 31): the
+      -- descriptor asks for no handle, and a C_Timer.After wrapper answers nil, which read as
+      -- "not armed" on every frame and defeated the throttle.
+      local pendingValue, armed
       s:SetCallback("OnValueChanged", function(_, _, value)
         if type(d.scheduleTimer) ~= "function" then return commitSlider(value) end
         pendingValue = value
-        if dragTimer then return end
-        dragTimer = d.scheduleTimer(function()
-          dragTimer = nil
+        if armed then return end
+        armed = true
+        d.scheduleTimer(function()
+          armed = false
           local v = pendingValue
           pendingValue = nil
           if v ~= nil then commitSlider(v) end
@@ -1466,16 +1470,18 @@ function lib.__AttachWidgets(O, d)
     -- A single re-armed timer over a reused args table, so a 60 Hz drag produces O(1) garbage
     -- rather than sixty closures and sixty tables a second. The timer is the host's (the
     -- descriptor's scheduleTimer), because embedding AceTimer here would be this library's second
-    -- dependency-budget breach.
+    -- dependency-budget breach. `armed` is the library's own flag rather than whatever
+    -- scheduleTimer returns (minor 31): a host's C_Timer.After wrapper answers nil.
     local pendingArgs
-    local timer
+    local armed = false
     local function throttledCommit(r, g, b, a)
       if type(d.scheduleTimer) ~= "function" then return commit(r, g, b, a) end
       pendingArgs = pendingArgs or {}
       pendingArgs[1], pendingArgs[2], pendingArgs[3], pendingArgs[4] = r, g, b, a
-      if timer then return end
-      timer = d.scheduleTimer(function()
-        timer = nil
+      if armed then return end
+      armed = true
+      d.scheduleTimer(function()
+        armed = false
         local p = pendingArgs
         pendingArgs = nil
         if p then commit(p[1], p[2], p[3], p[4]) end

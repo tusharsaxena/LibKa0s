@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 24.30.3.7.4
+# `LibKa0s-Options-1.0` — version 24.31.3.7.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **24** · `OptionsWidgets.lua` **30** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** |
+| Files and minors | `Options.lua` **24** · `OptionsWidgets.lua` **31** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
 | Shipped in | v1.56.0 |
 | Status | **Current** |
 | Supersedes | [version 23.30.3.7.3](./version-23.30.3.7.3-docs.md) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 24, OptionsWidgets = 30, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 24, OptionsWidgets = 31, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 4 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -29,8 +29,9 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-Two changes share this version: `CreateOptionsPanel` parks in combat and `OpenOptionsPanel` answers
-a boolean (below), and the font preload moves out of the shell (after them).
+Three changes share this version: `CreateOptionsPanel` parks in combat and `OpenOptionsPanel` answers
+a boolean (below), the font preload moves out of the shell (after them), and the two drag throttles
+keep their own armed flag (last).
 
 **`CreateOptionsPanel` parks in combat and replays itself (O24).** Called under
 `InCombatLockdown()`, it registers nothing -- no canvas, no category, no page builder runs. It
@@ -68,7 +69,7 @@ replays an **open** (options-ui-§2): only the registration is parked.
 **The font preload moves out of the shell (O24, S4).** `Options.lua` 23 -> **24** and
 `OptionsScroll.lua` 3 -> **4**; `OptionsWidgets.lua`, `OptionsTabs.lua` and `OptionsCompose.lua` do
 not move. **The move adds, removes or repurposes no member, moves no descriptor or row field, and
-leaves nothing to adopt** -- the member manifest at `members-24.30.3.7.4.json` is identical to
+leaves nothing to adopt** -- the member manifest at `members-24.31.3.7.4.json` is identical to
 23.30.3.7.3's apart from the version key.
 
 **What moved.** The whole font preload of **O17** -- the library-level state `lib.__fontPreload`,
@@ -90,9 +91,21 @@ always-shown scrollbar as well, which is the larger symptom.
 
 **Across vendored copies.** `OptionsScroll.lua`'s attach guard re-runs whenever the shell underneath
 it changed or its own minor rises, so the winning shell always carries the winning copy's preload.
-A session that loads a 23.30.3.7.3 copy first and a 24.30.3.7.4 copy second runs the older copy's
+A session that loads a 23.30.3.7.3 copy first and a 24.31.3.7.4 copy second runs the older copy's
 preload (defined by its shell) until the newer `OptionsScroll.lua` attaches and replaces it; the
 state in `lib.__fontPreload` is shared across both, so no face loads twice.
+
+**The drag throttles keep their own armed flag (W31).** `OptionsWidgets.lua` 30 -> **31**. The
+slider's live commit (`commitOn` / `sliderCommit = "change"`) and the color picker's drag throttle
+both re-arm one timer per 50 ms window through the descriptor's
+[`scheduleTimer`](#the-panel-descriptor). Through W30 each one stored what `scheduleTimer` returned
+and read it as "a timer is armed" on the next drag frame, so a host whose `scheduleTimer` answers
+nil -- a `C_Timer.After` wrapper, which KickCD, LootHistory and MultiMeters all pass -- armed a fresh
+timer and a fresh closure on **every** frame and committed about once a frame: the throttle was
+defeated in silence (`KICKCD-R-19`). From W31 each throttle keeps a library-local boolean, set before
+it calls `scheduleTimer` and cleared inside the callback, and **the return value is unused**. A host
+whose timer answers a handle sees no difference. **No member or field is added or removed, and
+there is nothing to adopt**: the three nil-returning hosts get the 50 ms throttle by re-vendoring.
 
 ## Previously, at 23.30.3.7.3
 
@@ -941,7 +954,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `afterRestoreAll` | function | no | O1 | Runs after the rows are reset **and after `resetProfile`**, and **before** the panels refresh, for state in neither the schema nor the profile. The order is load-bearing: a refresh first would paint the pre-hook values. A dragged frame's saved position is **not** an example any more — a position lives in the profile and comes back with it. |
 | `bulkBegin` | function(act, scope) | no | **O16** | Called once before `RestoreDefaults` (act `"reset"`, scope the `pageKey`) or `RestoreAllDefaults` (act `"reset"`, scope `"all"`) writes its first row. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. See [The two fields](#the-two-fields). |
 | `bulkEnd` | function(act, scope, count, err, info) | no | **O16** | Called once when the act ends, **always** when the bracket was begun — even if a row, `resetProfile`, `afterRestoreAll` or `bulkBegin` raised. `count` is the rows whose `applyDefault` returned, including rows already at their default, so it is **not** §10's N; `err` is the raised value or `nil` (a raise of `nil`/`false` also arrives as `nil`), and is re-raised unchanged after this returns; `info` is `{ profileReset = <boolean> }`, `true` only when `RestoreAllDefaults` called `resetProfile` and it returned. Unmute here. Then, only when the outermost bracket closes: if any level reported `info.profileReset`, the host **MUST NOT** emit a bulk line (its profile-event handler logs the reset once); otherwise it emits `[Set] reset <scope>: N rows`, with N its own tally of writes that changed a stored value. A host that mutes in `bulkBegin` MUST supply this field. See [What the host logs](#what-the-host-logs--the-contract). A host supplying neither field runs minor 15's walk exactly. |
-| `scheduleTimer` | function(fn, delay) | no | O1 | Backs the 50 ms colour-drag throttle. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. |
+| `scheduleTimer` | function(fn, delay) | no | O1 | Backs the 50 ms colour-drag throttle and the slider's live commit. A descriptor field rather than an AceTimer embed, because embedding would be this library's second dependency-budget breach. Without it a drag commits every frame. **Its return value is unused** (W31): the library keeps its own armed flag, so a `C_Timer.After` wrapper that answers nil is throttled like one that answers a handle. Through W30 a nil return defeated the throttle. |
 | `getLSM` | function | no | O1 | Returns LibSharedMedia-3.0, for `LSMValues` and, **since O17**, for the font preload a panel's show runs ([`lib.__PreloadFonts`](#lib__preloadfontslsm--number)). Absent, a host gets no preload. |
 | `validate` | function | no | O1 | Runs once, before the page builders. A host's schema-shape check. |
 | `onAceGUI` | function(AceGUI) | no | O1 | Handed the resolved AceGUI so the host can stash it (library-stack-§4) for its own page files. |
@@ -1908,7 +1921,9 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
-**At 24.30.3.7.4 no member is added or removed**: the font preload moved file; `OpenOptionsPanel`
+**At 24.31.3.7.4 no member is added or removed**: the font preload moved file; the drag throttles
+stop reading `scheduleTimer`'s return value, which a host whose timer answers a handle cannot
+observe; `OpenOptionsPanel`
 now returns a value where it returned none, which a host that ignored the result cannot observe; and
 `CreateOptionsPanel` called in combat registers when combat ends rather than at once. That last one
 is the only difference a host written against 23.30.3.7.3 can see, and only on a login or `/reload`
