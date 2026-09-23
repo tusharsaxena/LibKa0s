@@ -6,6 +6,10 @@ badge and any count quoted in the docs must agree with it.
 
 **Generated — do not hand-edit.** Regenerate with `lua tests/run.lua --list > docs/test-cases.md`.
 
+### the runner (1)
+
+- suite inventory: tests/_kit/test_prose.lua is declined, and the decline is recorded (skipped: CLAUDE.md carries a `## Documented deviations` row keyed `localization-§5`: The kit ships a US-English gate (`tests/_kit/test_prose.lua`) and this repo leaves it unwired, running its own `tests/test_prose.lua` instead. `testing-§9` and `localization-§5` between them permit  ... — tests/test_prose.lua runs in its place)
+
 ### test_core.lua (42)
 
 - core: IsConcatSafe is false for a table.concat-hostile value, true for a plain one
@@ -1386,24 +1390,69 @@ badge and any count quoted in the docs must agree with it.
 - prose: no non-ASCII byte reaches a player, the em dash excepted
 - prose: no retired §N.M section reference in the shipped library or the shipped kit
 
-### test_layout_cap.lua (3)
-
-- layoutcap: every authored file over 1500 lines is named in the CLAUDE.md census
-- layoutcap: no census row outlives the breach it records
-- layoutcap: every census row carries a disposition that can be followed
-
 ### test_register.lua (1)
 
 - every deviation id the register cites is assigned by a bundle in docs/audits/
 
-### test_eol.lua (1)
+### test_kit_inventory.lua (30)
+
+- a kit suite declared with its directory is covered
+- a bare declaration does not cover the kit's file of the same name
+- an unreferenced kit suite with no local twin is the same hole
+- a bare entry whose file ships only in the kit is told which directory it wants
+- a recorded decline in docs/ARCHITECTURE.md is a skip, not a hole
+- a recorded decline in the root CLAUDE.md is read too
+- a decline is reported once however often the inventory is asserted
+- a row keyed to the rule but silent about the suite grants nothing
+- a row that only mentions the repo's own copy grants nothing
+- a row naming the suite but keyed to another rule grants nothing
+- a row in a subsection of the register is not a deviation row
+- `localization-5` and `localization-§5` are the same key
+- the rule each kit gate serves is written down
+- a repository with no register at all is not accidentally declined
+- a listed suite that is not on disk raises, naming the path and the position
+- a listed suite that is absent here but ships in the kit is told so
+- a `pending` entry with no file registers a skip carrying its reason
+- a `pending` entry whose file exists raises
+- the kit is revision 25
+- a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
+- a real shadow is still reported when the runner dir is spelled `./tests/`
+- a `./` segment inside the runner dir does not fork the pair key
+- a doubled slash and a missing trailing slash are the same directory
+- the directory normalizer folds only the spellings it claims to
+- a relative declaration is not a collision under an absolute runner dir
+- an absolute declaration is not a collision under a relative runner dir
+- a mixed suites list survives being invoked from another working directory
+- the remedy names a `dir` a suites list can actually carry
+- the two sides are resolved against each other, and only where they differ
+- a remedy under a relative runner dir is printed exactly as it resolved
+
+### test_eol.lua (2)
 
 - eol: every tracked file carries the terminator .gitattributes declares for it
+- eol: .gitattributes is line-endings-5's canonical body for this repo kind
+
+### test_layout_cap.lua (13)
+
+- layoutcap: every authored file over the 1500-line cap is named in the census
+- layoutcap: no census row outlives the breach it records
+- layoutcap: every over-cap census row carries one of layout-1's three terminal states
+- layoutcap: the census and the exempt set agree about which paths were exempted
+- layoutcap: an empty census is written as a result rather than left standing empty
+- layoutcap self-test: the parser reads the census nested under the register, and stops there
+- layoutcap self-test: a census outside its register, or at the wrong level, is not read
+- layoutcap self-test: an over-cap file missing from the census is reported, and an exempt one is not
+- layoutcap self-test: a census row that outlives its breach is reported
+- layoutcap self-test: an over-cap row that names no terminal state is reported
+- layoutcap self-test: the census and the exempt set are held to naming the same paths
+- layoutcap self-test: a census that states nothing is told apart from one that states none
+- layoutcap self-test: the exempt set takes folders as well as paths
 
 ## Totals
 
 | Suite | Cases |
 |-------|------:|
+| the runner | 1 |
 | test_core.lua | 42 |
 | test_env.lua | 10 |
 | test_lifecycle.lua | 21 |
@@ -1440,7 +1489,8 @@ badge and any count quoted in the docs must agree with it.
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 11 |
 | test_prose.lua | 3 |
-| test_layout_cap.lua | 3 |
 | test_register.lua | 1 |
-| test_eol.lua | 1 |
-| **Total** | **1277** |
+| test_kit_inventory.lua | 30 |
+| test_eol.lua | 2 |
+| test_layout_cap.lua | 13 |
+| **Total** | **1319** |

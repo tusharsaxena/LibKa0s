@@ -316,10 +316,10 @@ local ASCII_RATIFIED = {
 }
 
 --- Strip a `--` line comment, quote-aware: a `--` or a quote mark INSIDE a `"…"`/`'…'` string
---- literal does not end the string early or false-start a comment. Lua 5.1's long-bracket strings
---- and comments (`[[ ]]`, `--[[ ]]`) are not modeled -- the shipped payload has exactly one
---- long-bracket STRING (`testkit/mock_base.lua`'s usage-error text) and it carries no `--` and
---- balanced ordinary quotes inside it, so it survives this scan unharmed without special-casing.
+--- literal does not end the string early or false-start a comment. Lua 5.1's long-bracket form
+--- (`[[ ]]`, `[==[ ]==]`, `--[[ ]]`) is not modeled HERE; `longBracketBody` below tracks it for
+--- the one gate that needs it, and this function is left alone because a long bracket's content
+--- is not a comment and cutting it here would hide it from the British-spelling gate too.
 local function stripLineComment(line)
   local out, i, n, quote = {}, 1, #line, nil
   while i <= n do
@@ -373,8 +373,37 @@ local function decodeLuaEscapes(text)
   return table.concat(out)
 end
 
+--- A line-at-a-time tracker for Lua's long-bracket form (`[[ … ]]`, `[==[ … ]==]`): true while the
+--- line is inside one, including the lines that open and close it. State resets when the path
+--- changes, because `scan` walks each file's lines in order and the files in sequence.
+---
+--- WHY THE ASCII GATE SKIPS THESE AND THE OTHER TWO DO NOT. A long bracket is where the kit copies
+--- a DOCUMENT VERBATIM, and kit revision 25 made that concrete: `testkit/test_eol.lua` carries
+--- `line-endings-§5`'s two canonical `.gitattributes` bodies, 84 and 85 lines, because §5 requires
+--- a repo be DIFFED against the body rather than read against it. Eight section signs and two
+--- ellipses live in those bodies, and re-spelling any of them would make the transcript stop being
+--- one. This file used to say a long bracket needed no special case, on the strength of the one
+--- the payload had then (`testkit/mock_base.lua`'s usage-error text); revision 25 falsified that
+--- premise, and this is the answer to it. The exemption is narrow by construction: it is the ASCII
+--- gate alone, because a transcript of somebody else's document is the one string this repo is
+--- forbidden to re-spell, and the British-spelling and §N.M gates go on reading these lines.
+local function longBracketBody()
+  local path, level
+  return function(p, line)
+    if p ~= path then path, level = p, nil end
+    if level then
+      if line:find("]" .. string.rep("=", level) .. "]", 1, true) then level = nil end
+      return true
+    end
+    local eq = line:match("%[(=*)%[")
+    if not eq then return false end
+    if not line:find("]" .. eq .. "]", 1, true) then level = #eq end
+    return true
+  end
+end
+
 test("prose: no non-ASCII byte reaches a player, the em dash excepted", function()
-  local used = {}
+  local used, inLongBracket = {}, longBracketBody()
   local hits = scan(function(line, path)
     -- `scan`'s SHIPPED walk includes every plain file under `LibKa0s/` and `testkit/`, not only
     -- `.lua` -- `testkit/README.md`, `testkit/run-automated-tests.sh`. Comment-stripping and
@@ -383,6 +412,7 @@ test("prose: no non-ASCII byte reaches a player, the em dash excepted", function
     -- -- unlike the British-spelling and §N.M gates, which are about prose consistency everywhere
     -- vendored -- is scoped to `.lua` files.
     if not path:match("%.lua$") then return nil end
+    if inLongBracket(path, line) then return nil end
     local decoded = decodeLuaEscapes(stripLineComment(line))
     local scrubbed = stripPlain(decoded, ASCII_EM_DASH)
     for _, glyph in ipairs(ASCII_RATIFIED[path] or NO_EXEMPTIONS) do

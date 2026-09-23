@@ -67,9 +67,11 @@ is re-vendored. Never patch a vendored copy downstream; fix it here and copy acr
 |---|---|---|---|---|
 | `localization-§5` | `testkit/mock_base.lua` and `testkit/mock_record.lua` reproduce AceTimer-3.0's handle field `cancelled` (as a member access, `.cancelled`) and the `IsCancelled` method of Blizzard's `C_Timer` handles, verbatim | Third-party API identifiers, not prose. The kit's AceTimer fake hands out AceTimer's own handle table, and a suite written against the real field reads `handle.cancelled`; a kit that renamed it would answer nil there and pass, which is fidelity rule 1's failure (`testkit/mock_base.lua`'s header). The same for `IsCancelled`, which a `C_Timer.NewTimer` handle answers in the client. `tests/test_prose.lua`'s `RATIFIED` carries exactly these spellings for exactly these two files, matched as `.cancelled` and `iscancelled`, so prose in the same files is still held to US English. Filed by the v1.31.0 review; the second path arrived with kit revision 22, which peeled the timer queue and both handle kinds out to `testkit/mock_record.lua`. | 2026-09-12, owner decision on the v1.31.0 review | AceTimer renames the field, or the kit stops modeling the handle (and `C_Timer` renames `IsCancelled`, or the kit stops modeling `NewTimer` handles). `tests/test_prose.lua` reddens on its own if either exemption stops matching. |
 | `localization-§5` | `lib.ICONS` keeps `minimise`, the one British spelling left in the shipped payload | The key is not prose. `lib.Icon` (`LibKa0s/Media.lua:202`) builds the texture path **from** the key — `base .. ICON_DIR .. "\\" .. name` — and the file on disk is `minimise.tga`, vendored into every consumer's `libs/LibKa0s/media/icons/`. Renaming the key alone points at a texture that does not exist, and `Media.lua:190-196` records what that costs: a texture that fails to load draws nothing and raises nothing, so the icon simply disappears from every consumer's title bar with no error anywhere. Renaming it safely needs a second `.tga` or an alias map, which is a change to `Media.lua`'s surface, not a spelling fix. Filed as `LK-06` in `docs/audits/2026-09-07/`, which names the key as "a key consumers bind against" and asks for an alias rather than a rename. | 2026-09-07, executing `M1-LK-11` | A `minimize.tga` shipped beside the current file, or an alias map in `lib.Icon` — either ends this row, and the key moves in the same change as the eleven consumers' re-vendor. `tests/test_prose.lua` reddens on its own if the exemption ever stops matching, so a dead row cannot sit here unnoticed. |
+| `localization-§5` | The kit ships a US-English gate (`tests/_kit/test_prose.lua`) and this repo leaves it unwired, running its own `tests/test_prose.lua` instead. `testing-§9` and `localization-§5` between them permit exactly that — wire the kit's copy, or wire your own and record why the kit's is unwired — and this row is the record. The suite inventory reads it and reports the kit's copy once, as a declared skip carrying this reason, so the decline appears in `docs/test-cases.md` and in every run's output rather than as a gate nobody knows is not running. | The kit's copy is the broader gate over the same rule and the narrower one over this repo. Broader: it reads the whole tracked set, where this repo's reads only the two folders whose bytes ship. Narrower: this repo's copy carries two cases the kit's has no equivalent for — no non-ASCII byte reaches a player, the em dash excepted, and no retired `§N.M` section reference survives in the shipped library or the shipped kit — and wiring the kit's copy alone would retire both over the one payload eleven consumers receive by copy and cannot fix for themselves. What the extra breadth would cost was measured on 2026-09-23 at kit revision 25: the kit's copy reports **1121 lines across 147 files** here. **Twelve of them are in the shipped payload outside the gate's own source, and all twelve are the two rows above** — the gate this repo runs is already green over everything it ships. The other 1109 are records this repo must not rewrite or does not write at all: 560 in `docs/api/`'s frozen per-version documents, 150 under `tests/`, 118 under `docs/adoption/`, 107 under `docs/superpowers/`, 63 in `CHANGELOG.md`'s entries, 46 in the generated `docs/test-cases.md`, 21 in `docs/adoption-prompt.md`, and 23 in `testkit/test_prose.lua` itself, which quotes every forbidden spelling in order to forbid it and gained six more with kit revision 25's carve-out fixtures. Re-measured 2026-09-23 after the revision-25 fix passes, with the kit's gate wired in a throwaway copy of this checkout; the figures before that re-measurement were 1115 / 143 / 17. The kit's exclusion list names five frozen-bundle folders and this repo has three more of its own; closing the gap with per-file waivers is the whole-file waiver `localization-§5` forbids, and closing it with `skipDirs` would leave 150 real hits under `tests/`, which is a US-English sweep and not an integration. | 2026-09-23, integrating kit revision 25 | The kit's copy grows the non-ASCII and retired-section cases, **or** `docs/api/`, `docs/adoption/`, `docs/superpowers/` and released changelog entries join the kit's own frozen-bundle exclusions and this repo's `tests/` prose is swept to US English. Either ends this row, and the sweep is the larger half: 150 lines under `tests/` at the last measurement. |
 
-**Two rows, and neither is prose**: a path fragment, and two third-party API identifiers. The table
-is otherwise empty on purpose:
+**Three rows.** Two are not prose at all — a path fragment and two third-party API identifiers — and
+the third declines a kit gate in favor of this repo's own, which is a state `testing-§9` names and
+the suite inventory reads. The table is otherwise empty on purpose:
 the alternative is a register that gets created in the same breath as the first deviation, by whoever
 is already arguing for it.
 
@@ -77,7 +79,7 @@ is already arguing for it.
 bind this repo at all, so there is nothing to ratify. A row belongs here only when a section that
 *does* bind is knowingly not followed.
 
-## Files over the 1500-line cap
+### Files over the 1500-line cap
 
 `layout-§1` caps every **authored** `.lua` file this repository tracks at 1500 lines. Two things are
 worth stating explicitly here, because this repo was one of the four that read the old, silent text
@@ -87,26 +89,40 @@ on both breaches below no longer stands. `testkit/` is **authored here** and cap
 else; `tests/_kit/` is this repo's own vendored copy of it and is not, on the same terms every
 consumer's copy is exempt. The second carve-out, generated non-shipping data, has no instance here.
 
+**The heading is nested, and the gate is the kit's.** From kit revision 25 the census's parent is
+fixed at `## Documented deviations` in whichever document hosts it, so the level follows that
+register rather than the host — a `##` register takes a `###` census beneath it, here and in the
+ten repos that host theirs in `docs/ARCHITECTURE.md`. This repo owed that one-level move and this
+is it. What reads the table is now `tests/_kit/test_layout_cap.lua`, wired as
+`{ name = "test_layout_cap", dir = "tests/_kit/" }`; the hand-written copy this repo carried is
+deleted, because a twelfth local copy of a gate the kit ships is the drift the kit gate exists to
+end — five repos wrote their own and no two were byte-identical. The two facts the gate cannot
+infer arrive through `Kit.layoutCap` in `tests/run.lua`: `hub = "CLAUDE.md"`, because this is where
+a library repo keeps its engineer context, and no `exempt` set, because the generated-data
+carve-out has no instance here.
+
 A file over the cap has three terminal states, not one: peeled, an **open issue naming the seam** a
-peel would follow, or a **ratified row** in `## Documented deviations` above carrying a re-check
+peel would follow, or a **ratified row** in the `## Documented deviations` register this heading
+now nests under, carrying a re-check
 trigger. What the rule refuses is a fourth state — a breach nothing anywhere remarks on, "the count
 sitting in a bundle manifest that no document reads". This repo had precisely that: an `overCapFiles`
 figure in the `docs/automated-tests/` manifests that no document read, and a RESULTS.md watch list
 that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
 against a file in it.
 
-Two files, measured 2026-09-22 at v1.53.0 with
+Three files, measured 2026-09-23 at kit revision 25 with
 
 ```sh
 git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 ```
 
-| File | Lines (2026-09-22) | Disposition |
+| File | Lines (2026-09-23) | Disposition |
 |---|---|---|
 | `tests/test_options_widgets.lua` | 4086 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (lines 814–2225 as measured at v1.47.0, 1412 of them, minor 24's `columns` block included) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
 | `LibKa0s/OptionsWidgets.lua` | 3922 | Issue [#32](https://github.com/tusharsaxena/LibKa0s/issues/32) — the id surface out to `OptionsIds.lua`: the module-scope `id resolution` and `suggestions while typing` blocks (lines 386–970, 585 of them) plus the lookup, list and suggestion-dropdown members inside `lib.__AttachWidgets` (lines 1813–3011, 1199 of them) — both ranges as measured at v1.47.0, to be re-derived from the file as it stands when the cut is made. Leaves the makers and the flow engine at 1471, on that measurement |
+| `testkit/framework.lua` | 1571 | Ratified deviation row — kit revision 25's `resolveDir` / `adviceDir` pair (`testkit/framework.lua:569` and `:598`) carried the file past the cap. It was 1227 at v1.53.0 and 1571 here; a comment-free implementation of the two fixes still lands around 1512, so the breach is the change and not its prose. The seam a peel would follow is the suite inventory — the `── suite loading ──` band, `fileExists` through `Kit.assertSuiteInventory` (lines 483–1066, 584 of them) — out to a `testkit/inventory.lua` the kit loads beside `framework.lua` and vendors in the same folder. Re-check trigger: the next kit revision that touches the suite inventory, or the first consumer whose re-vendor of this revision reports it |
 
-**v1.39.0 peeled the chrome, and both rows survived it.** Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16)
+**v1.39.0 peeled the chrome, and the two Options rows survived it.** Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16)
 named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua`, which
 left v1.39.0 at 973 lines and is **1197** today, minor 22's combat lock and minor 23's dispatcher
 having landed in it since; its thirty-six cases are in `tests/test_options_tabs.lua` (842, unmoved).
@@ -117,7 +133,7 @@ it is 3922 now, with everything up to minor 30 in it. A peel sized against the f
 going to fit the file of 2026-09-16. The rows above are retargeted at what is left rather than
 deleted, which is the whole point of a census a gate reads.
 
-**Both are issues, and neither is a register row.** The sibling repository doing this same work gives
+**The two Options rows are issues; the kit row is not.** The sibling repository doing this same work gives
 its *mirror suites* register rows rather than issues, on the argument that a suite has no seam of its
 own. That argument holds here too and is written into #8 — the suite peels on the module's seam, in
 the module's commit — but the row would have been a second record of a file that **already had an
@@ -127,7 +143,21 @@ it would be two records free to disagree, which is the failure this section exis
 deviation register above also stays deliberately near-empty (see its note), and a breach with a live
 issue is not a deviation from the standard — it is one of the states the standard allows.
 
-**The line counts are dated, and nothing asserts them.** What `tests/test_layout_cap.lua` asserts is
+**`testkit/framework.lua` is the exception, and the difference is who the file belongs to.**
+The two Options rows describe files with a seam an issue can be opened against and a release to
+peel them in. The kit file's breach arrived in the change that is being integrated right now: kit
+revision 25's `resolveDir` / `adviceDir` pair, written because two consumers' runners spell one
+directory two ways and the inventory aborted their suites before a case ran. Deferring that fix to a
+peel would leave two repositories unable to run their tests; peeling in the same change would move
+584 lines of the inventory into a new vendored file in the same revision that changes how it
+behaves, which is the one thing a whole-folder vendored payload should not do to eleven consumers at
+once. So this one is ratified rather than filed, with the seam named and a re-check trigger that
+fires on the next revision to touch the inventory. **It is an owner decision and it is recorded here
+rather than assumed**: if the preference is an issue instead, the row is replaced by one and nothing
+else in this pass changes.
+
+**The line counts are dated, and nothing asserts them.** What `tests/_kit/test_layout_cap.lua`
+asserts is
 the *membership* of this table, in both directions: a file that crosses 1500 and is not listed here
 turns the suite red, and so does a row for a file that has fallen back under the cap or been deleted,
 so the census cannot become a graveyard. A figure in this column is a measurement, not a claim about
@@ -147,7 +177,7 @@ cycle's deliverable was the disposition; this cycle executed it.
 **The 1000–1500 band is on notice, not in breach**, and every figure in it was re-measured with the
 same command on **2026-09-22 at v1.53.0**. It is prose rather than a second table on purpose: the
 gate above reads every backticked-path table row under this heading as a census row, so a band table
-here would be nine rows claiming to be breaches. Nine files, not the seven the band held when it was
+here would be eight rows claiming to be breaches. Eight files, not the nine the band held when it was
 last written out — `tests/test_widgets.lua` (1493), `LibKa0s/Options.lua` (1476; 1312 at v1.40.0,
 then 1460 at v1.46.0 with minor 22's combat lock, whose event frame and cover geometry went to
 `LibKa0s/OptionsTabs.lua` to keep it under the cap, and 1465 at v1.46.1 with the dispatcher moved
@@ -158,8 +188,8 @@ to `testkit/mock_record.lua` for the same one, which is what took it back down),
 minor 13's restored disabled surface, 1265 at minor 12, 1054 before the gate), `LibKa0s/Perf.lua`
 (1308 with minor 12's latch, 1231 at v1.39.0, tracked as
 [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), `tests/test_options.lua` (1307),
-`LibKa0s/Widgets.lua` (1232), and **two that the last write-out missed**:
-`testkit/framework.lua` (1227), which was simply never named, and `LibKa0s/OptionsTabs.lua` (1197),
+`LibKa0s/Widgets.lua` (1232), and **one that the write-out before last missed**:
+`LibKa0s/OptionsTabs.lua` (1197),
 which that write-out still recorded at **973** — v1.39.0's peel figure — two releases after minor
 22's combat lock and minor 23's dispatcher had moved into it. They are named so a later reader can
 tell the band was looked at rather than missed; none needs a disposition until it crosses, and
@@ -174,6 +204,12 @@ same line from seven under it, so both went to files of their own —
 `LibKa0s/WidgetsDragHandle.lua` (507) and `tests/test_widgets_draghandle.lua` (668), neither of them
 in the band. That is a cut chosen while the seam was still obvious rather than one sized against a
 file three releases older than the peel, which is what the two rows above record going wrong.
+
+**`testkit/framework.lua` left the band during this revision and is in the census above.** It was
+never named in the band at all until kit revision 25's write-out put it at 1484; the revision's two
+fix passes took it to **1571**, which is a breach and not a notice, so the row moved up into the
+table rather than staying in this paragraph. The band figures around it were re-measured on
+**2026-09-23 at kit revision 25** with the same command; only `testkit/framework.lua` moved.
 
 ## Documentation map
 

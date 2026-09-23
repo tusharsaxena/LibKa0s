@@ -10,6 +10,415 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.55.0 — 2026-09-23
+
+Versions in this release: **test kit revision 25**. **No library file changes at all** — every
+major's version key and every file's LibStub minor are exactly v1.54.2's, so a consumer that
+re-vendors takes new bytes in `tests/_kit/` and identical bytes in `libs/LibKa0s/`.
+
+**Five rules in the Ka0s WoW Addon Standard v2.63.0 name this revision, and this release is what
+they were waiting for.** `layout-§1`, `line-endings-§7`, `testing-§9`, `localization-§5` and
+`automated-tests-§4` each carry a commencement clause reading *from LibKa0s test-kit revision 25
+(LibKa0s v1.55.0)*. They were written that way because the standard's own audit found a defect
+class it had been producing for a year: a **MUST no repository can satisfy by any act of its own**.
+Each of those five rules is enforced by a gate, the gate lives in this kit, and a repo's only move
+is the re-vendor. A consumer's obligations under those five clauses therefore commence when it
+re-vendors this tag — not when the standard was committed — and a repo whose kit predates revision
+25 owes the re-vendor, never a hand-written suite of its own.
+
+### The declaration is the pair (basename, directory)
+
+`Kit.assertSuiteInventory` keyed a declaration by **basename** through revision 24. A bare
+`"test_prose"` in a runner's suite list wired that repo's own `tests/test_prose.lua` and was
+accepted as covering `tests/_kit/test_prose.lua` too, which was loading nothing. **Six of the twelve
+repos carrying the kit were in exactly that state** — BankLedger, ConsumableMaster, LibKa0s,
+LootHistory, PrettyChat and WhatGroup, each declaring a bare `test_prose` beside a local file of
+that name, and **not one of the six carrying a register row for it**. That is worse than an absent
+gate: an absent gate leaves a visible gap, while a shadowed one leaves the repo's own record — the
+suite list, `docs/test-cases.md`, the pass count — asserting the rule is covered.
+
+The key is now the pair, and the inventory reports three shapes instead of one. A **collision** —
+the basename declared bare against the repo's own directory while the kit ships one too — is a
+failure naming **both** paths and saying which one is running. An unreferenced kit suite with no
+local twin is the same **hole**, and the same failure. And either of those, with a
+`## Documented deviations` row behind it, is a **decline**: reported once, as a skip carrying the
+row's own reason, so it lands in `docs/test-cases.md` and in the run's output rather than nowhere.
+The carve-out reaches the collision as well as the general form, because every repo
+`localization-§5`'s permission was written for *is* a collision, and a carve-out that reached only
+the general form would leave that permission unexercisable by exactly those repos.
+
+**A decline row has to say which copy it is declining**, and this library is the proof. Its register
+carries two `localization-§5` rows about third-party API identifiers, so matching on the rule cell
+alone would have switched the prose gate off without ever mentioning it — and both of those rows go
+on to mention `tests/test_prose.lua` in passing, so matching the bare basename would have done the
+same. So a decline needs the Rule cell to name the rule **and** the row to name `tests/_kit/<suite>`.
+That is narrower than the standard's wording, deliberately: the alternative hands six repositories a
+waiver none of them wrote.
+
+**The kit was green and wrong at the same time, and that is the part worth keeping.** Written
+without path normalization, the pair key compared directory strings raw. Two runners in the
+collection — KickCD and MultiMeters — compose their `dir` out of a root resolved from `arg[0]`, so
+`./tests/_kit/` arrives from one side while the suites list beside it spells the literal
+`tests/_kit/` that `testing-§9` prescribes. Raw inequality read those as two directories and
+reported a **collision** against two repositories that had done exactly what the rule asks, with a
+remedy telling them to delete a vendored file — and it failed from `Kit.run`, so the whole suite
+aborted, no case ran, and `--list` aborted with it, leaving the repo unable to regenerate its own
+`docs/test-cases.md`.
+
+This library's own suite passed throughout, because it spells its `dir` one way on both sides.
+The defect was caught by running the revision against the other eleven trees before it shipped,
+which is a check a kit's own suite structurally cannot make: every gate in here is enforced
+somewhere else, and green at home says nothing about that. Every directory that becomes a key or a
+comparand now folds to one spelling at the point it enters the gate — `./` stripped, `//` and `/./`
+collapsed, exactly one trailing slash — lexically, leaving `..` and backslashes alone, because
+resolving file identity would need a subprocess per comparison and would follow symlinks the
+runner's own `dir` does not.
+
+**Then the same defect came back wearing the other hat, and a second consumer drive found it.**
+Folding the spellings ONE hand produces is not the same as folding the spellings TWO hands produce.
+KickCD and MultiMeters each take a root from `arg[0]` with a `"."` fallback, hand `Kit.run`
+`root .. "/tests/"`, and then declare one kit suite as `root .. "/tests/_kit/"` and the next as a
+bare `"tests/_kit/"` — both correct, both in the same list. From the repo root the fallback makes
+the root `"."` and normalization folds the two together, which is why the first fix looked
+sufficient. Invoked BY PATH from any other working directory — a wrapper script, an editor's
+runner, a CI step — the root is absolute, the relative entry keys against a different string from
+the very directory it names, and the inventory reported one correctly wired suite as BOTH "declared
+but not on disk" AND "arrived with the kit but is not declared", aborting before a case ran. So
+neither side is keyed until it has been read against the other (`resolveDir`): a relative entry
+under an absolute runner takes the runner's own root, and an absolute entry under a relative runner
+is cut back at the runner's own directory — the one anchor the two share, at its LAST occurrence so
+a checkout that itself lives under a `tests/` cuts in the right place. An absolute entry that never
+passes through that directory is left alone rather than given an invented relationship.
+
+**And the remedy was printing something nobody could paste.** Every hint here hands over a
+`{ name = ..., dir = ... }` for a suites list, and each interpolated the directory the gate had
+RESOLVED: under a runner rooted at `arg[0]`, invoked from elsewhere, that read
+`dir = "/home/someone/GIT/KickCD/tests/_kit/"`. An engineer who follows a remedy literally — which
+is what a remedy is for — would have hard-coded one machine's checkout into a file every other
+checkout runs. `adviceDir` now separates the two: the resolved path is still printed as a
+diagnostic, saying where the file is, while the advice is the repo-relative directory plus the
+instruction to build it from the same root expression the runner already passes to `Kit.run`. The
+declined-gate case NAME had the same defect and it reached further: it interpolated the resolved
+path, so `docs/test-cases.md` — a generated file that is committed — said one thing when the runner
+ran from the repo root and another when a wrapper invoked it by path. That name is now the
+root-relative `tests/_kit/<suite>.lua`. **The dedupe key stays the resolved path**, and trying to
+move it too was the mistake that proved it: the key has to tell two REPOSITORIES apart inside one
+process, and `tests/_kit/test_prose` is the same string in all of them.
+
+Eleven cases pin all of this, in a suite of thirty — the five normalization cases, including one
+that starts a child interpreter from a fixture root to reproduce the literal shape, and six more for
+the two-sided resolution and the remedy text, four of which drive KickCD's own mixed list.
+
+### `test_layout_cap.lua` — the cap gate, in the kit
+
+`layout-§1` caps every authored `.lua` file a repo tracks at 1500 lines and requires each breach's
+disposition to be written where a reader and a gate can both find it. Until now the enforcement was
+five hand-written suites and seven addons with nothing. The five measure **232, 221, 209, 380 and
+206 lines and no two are byte-identical** (md5 `5a08ecf7`, `94822c5e`, `8a6f4efb`, `14b885da`,
+`dada183d`), and they had drifted where it costs: one looks for a heading named ``Files by the
+`layout-§1` band`` where the other four look for `Files over the 1500-line cap`, so one rule was
+keyed to two names, and that same copy gates the 1000–1500 band the release watch list already
+generates.
+
+The kit's copy reads `git ls-files`, drops vendored code (`libs/` and `tests/_kit/`), counts lines
+on the bytes on disk, and asserts the three things `layout-§1` names and their converses: nothing
+over the cap is missing from the census, no census row outlives its breach, and every over-cap row
+carries one of the three terminal states — except a row marked `exempt`, which is graded against the
+exempt set the gate is handed. It **fails rather than skips when it cannot look**, and a repo that
+tracks no authored `.lua` skips with the reason said out loud.
+
+The two facts a gate cannot infer arrive on the kit table as `Kit.layoutCap`: the engineer-context
+hub, and the generated-data exempt set. Whether an exemption is *legitimate* rests on three
+repository facts no path betrays — generated rather than authored, loaded by nothing, excluded from
+the payload — and that judgment stays with the auditor. What the gate asserts is only that the
+census and the exempt set **agree about which paths were exempted**.
+
+### `test_prose.lua` — the generated-data carve-out, as an input
+
+`localization-§5`'s third exclusion is a generated dump of the client's own strings. It now reaches
+the prose gate the way the cap gate's exempt set reaches that one, on the kit table before
+`Kit.run`:
+
+```lua
+Kit.prose = { exempt = { "GlobalStrings/" } }   -- generated, loaded by nothing, not packaged
+```
+
+Same shape, same semantics, same bargain: an array, a map or both; a tracked path or a folder,
+compared as `entry .. "/"` so a sibling whose name merely starts with it is not swept in; no globs;
+a stale entry is stale rather than silent and is not a failure; a malformed one is. The carve-out
+drops the path **before it is opened** rather than filtering its hits — the one folder in the
+collection it applies to is 3.6 MB across 27 files, one of them 23,842 lines, that the gate would
+otherwise read to say nothing.
+
+It is an input rather than an inference because it rests on three facts about the repository that no
+path betrays: a script writes the file and a person does not edit it, nothing loads it, and
+`.pkgmeta` keeps it out of the packaged zip. **A generated file that ships is not exempt** — the
+third condition fails, and its spellings reach a screen.
+
+**Two of the three are now GATED, and the first draft gated none of them.** A path betrays nothing,
+but the repository root this gate already runs in answers two of the three out loud, and that is the
+difference between a carve-out and the whole-file waiver `localization-§5` forbids. Measured on a
+repository in this collection: with
+`Kit.prose = { exempt = { "core/WhatGroup.lua", "docs/data-flow.md", "tests/" } }` WhatGroup's prose
+gate went green while silencing five real hits, two of them inside the packaged payload, and the run
+printed not one word about it — `core\WhatGroup.lua` is line 48 of that addon's TOC. So:
+
+- **A path the TOC loads is refused.** Every tracked `.toc` is parsed, its backslashes read as the
+  separators they are, its `##` directives and comments dropped, and each file line resolved against
+  its own TOC's folder so a vendored library's TOC names its own files. A declared narrowing
+  covering any of them reddens the run.
+- **A path `.pkgmeta` does not ignore is refused.** The root `.pkgmeta`'s `ignore:` block alone is
+  read — a column-zero sibling key closes it, indented comments and blank lines do not — and an
+  entry no ignore line covers reddens the run. Coverage is exact, by folder, and by the packager's
+  `*`, matched on the whole path and on the basename.
+- **Both refusals reach both channels.** A repository narrows this gate in two places —
+  `Kit.prose.exempt` in the runner, and `skipDirs` / `skipFiles` in `tests/prose_waivers.lua` — and
+  they are merged into the same exclusion sets and take files out of the same scan. The first draft
+  gated the carve-out alone and left the older, wider channel beside it checked against nothing,
+  while the refusal's own failure text pointed a refused consumer straight at it. Every entry in
+  all three lists is now a **declared narrowing** and both refusals run over the lot, in the same
+  words. Each list is refused on **its own** matching rule, because a refusal has to cover exactly
+  what that list suppresses: the carve-out matches a path or a folder, `skipDirs` is the plain
+  prefix the scan compares, `skipFiles` is one exact path. `localization-§5`'s own published
+  exclusions are neither refused nor disclosed — they are the baseline, and `libs/` is on every TOC
+  in the collection on purpose.
+- **Both refusals read ONE resolved coverage set, because they had come to disagree about what
+  they were refusing.** `narrowingsNotIgnored` asked `.pkgmeta` about the narrowing **entry as
+  written**; `narrowingsLoadedByToc` asked about the paths the narrowing actually suppresses. For
+  `Kit.prose.exempt` and `skipFiles` the two questions coincide. For `skipDirs` they do not: its
+  coverage is an unanchored plain prefix while the ignore check anchors on `entry .. "/"`, so
+  coverage spills past the boundary the refusal checks. Measured in a throwaway Aura Master with
+  its real `.pkgmeta`, which ignores `tools`: `skipDirs = { "docs/spell-research/", "tools" }` hid
+  the **shipped root file** `tools-notes.md` carrying `colour` and `cancelled`, and the run was
+  **15 passed / 0 failed with both refusals green**. Every entry is now resolved through its own
+  rule against the tracked authored set **once**, and the refusals, the disclosure and the counts
+  read that one resolution. The packaging refusal asks about the entry as written **and** about
+  every path it covers — the first arm keeps a stale entry honest, the second closes what it left
+  open — and names the shipped file it found, not only the entry.
+- **A narrowing that covers no tracked path is refused for its SPELLING**, in its own message, and
+  only where the entry arm already refused it. Sending it to `.pkgmeta` contradicted the same run's
+  disclosure, which says truthfully that the entry suppressed nothing. It stays red — git writes
+  forward slashes, no leading `./`, no trailing `/`, and is case-sensitive — while a stale entry
+  `.pkgmeta` does cover stays stale rather than silent, and not a failure.
+- **The narrowing now says what it suppressed, in one line covering both channels, and names the
+  files.** A third case passes with every declared path, the list each one came from, the file
+  count **and the suppressed paths grouped under the entry that suppressed each** — `suppressed 3
+  of 148 tracked authored file(s), by: docs/spell-research/ [skipDirs in tests/prose_waivers.lua]
+  (3): docs/spell-research/2026-09-20/ANALYSIS.md, ...`. The count on its own was what made a
+  `.pkgmeta`-blessed entry over a shipped file read as ratified rather than as suspicious: nothing
+  tied the number to a file. The list is **bounded and says so** — past twelve paths every entry
+  falls back to its count and three examples, `and 25 more (list bounded)` — because Pretty Chat's
+  carve-out alone suppresses 28 files and a truncated list read as a complete one is worse than a
+  count. Its body re-measures the live lists and compares them against the reading taken at load,
+  so a suite or a waiver file that changes between the two is caught rather than obeyed. The three
+  cases register wherever a repository declared a narrowing of **either** kind; keyed on the
+  carve-out alone, the one repository in this collection that narrows the gate only through the
+  waiver file registered none of them. **A narrowing that arrives after load finds none of them
+  armed, so the gate refuses it itself**: a repository that declared nothing at load and then had a
+  later suite write `Kit.prose.exempt` hid a shipped file behind a green gate, with no refusal and
+  no disclosure registered to notice. The gate now fails with *a narrowing was declared after this
+  suite loaded*.
+- **`waived` is validated for shape, which it never was.** It is the third key in the same table:
+  a `waived` that was not a table died inside the scan with a raw Lua error instead of the gate's
+  own message, and either array form — `waived = { "core/Foo.lua" }`, or a file's words written as
+  an array — waived **nothing** and said nothing, because the scan looks both up by key. That is
+  the silence just removed from `skipFiles`, left standing one key over. Keys must be strings,
+  values tables, words string keys. `waived` stays **outside** the two refusals deliberately: it is
+  per file **and** per word, so it cannot hide a spelling it did not name, which is why both
+  refusals point at it as the way out. Only its shape is policed.
+
+**Where a repository has no `.toc`, the TOC condition degrades out loud rather than disappearing** —
+it `skip`s with the reason printed, because a repo that packages no addon has no TOC for LOADED BY
+NOTHING to be read off. Same for `.pkgmeta` where nothing is packaged. **But a `.toc` with no
+`.pkgmeta` is refused**, because the packager then ships the working tree whole. The gate reads each
+TOC's own lines and follows nothing further: an `.xml` line pulls in a tree of `.lua` the TOC never
+names, and a `dofile` inside a loaded file pulls in more.
+
+**The third condition stays the auditor's, and the reason is stated rather than assumed**: nothing
+in the repository root records whether a script or a person wrote the lines. GENERATED RATHER THAN
+AUTHORED is not gated, here or in `layout-§1`'s cap gate, and a repository that names a hand-written
+file in either exempt set has fooled the gate and will be caught by a reader.
+
+Without it this gate fails the one repository that had already done everything the rule asked.
+Pretty Chat's own hand-written copy named that folder in its skip list and was green; retiring that
+copy for the shipped one, which `testing-§9` requires, takes it red on **34 lines, all 34 of them
+under that folder** — 17 in the dump itself and 17 across nine of its chunk files, so a carve-out
+naming only the large file would leave exactly half the red standing. With the folder named, it
+passes. A repository must not lose a gate it had by adopting the shipped one.
+
+This is not a whole-file waiver by the back door, and the old docstring was holding that door open:
+its `skipDirs` example was literally `GlobalStrings/`. `skipDirs` and `skipFiles` extend
+`localization-§5`'s own **named exclusion** list and nothing wider; generated data goes in the
+runner, beside `Kit.layoutCap.exempt` naming the same folder for the same three reasons, so one fact
+about the repository is recorded once. What the two channels now share is the two refusals and the
+one disclosure, because what a reader *means* by an entry does not change what it *does* to the
+scan. One consequence, stated rather than left to be discovered in a red run: a **British locale
+file cannot be excluded by `skipFiles`**, because a locale file is TOC-loaded and shipped, so both
+refusals reject it — `locales/enGB.lua` is excluded by name in the kit's copy of `localization-§5`'s
+published list, which is where a differently-named one belongs too.
+
+An authored file somebody would rather not fix still belongs in `tests/prose_waivers.lua`'s
+`waived` table, per file **and** per word, with the reason beside it. `waived` is the one list the
+two refusals do not police, because a waiver that has to name the word cannot hide a spelling it did
+not name — which is why it, and not `skipFiles`, is what a refusal now points at.
+
+**This is a documented deviation until the standard says otherwise.** `localization-§5` publishes
+four exclusions, each MUST-named in the gate rather than inferred from a pattern, and lists a
+generated dump of the client's own strings among the *waivable* shapes rather than the exempt ones.
+A per-word waiver over 27 files is a whole-file waiver with extra typing, and `layout-§1` took
+exactly this amendment one revision earlier — but until §5 takes it too, `Kit.prose.exempt` is
+flagged here rather than treated as settled by the code that implements it.
+
+### `test_eol.lua` — a second case, over the `.gitattributes` body
+
+`line-endings-§5` publishes two canonical bodies and `§7` now asks that a repo be **diffed** against
+the right one rather than read against it. It is a second case in the suite that already owns the
+question rather than a second suite, because two gates over one rule is two lists to keep whole.
+The case checks the file is present and tracked, that the pin is the one `§2` gives this repo kind,
+that `§3`'s carve-outs and `§4`'s binary marks are there, and that the body matches line for line
+through its final line and terminator — then grades any `§5` appendix below it against `§5`'s own
+five rules. The repo kind is decided by `§2`'s mechanical discriminator, never by a roster: the
+directory a checkout sits under is the one fact a gate cannot read.
+
+Both bodies are **84 and 85 lines**, counted off `§5`'s fenced blocks rather than copied from prose.
+The standard carried 81/82 until v2.63.0, and a body short by three lines would have reported three
+phantom differences against a correct file, in every repository, forever.
+
+**This repository failed its own new case, and the fix is in this release.** `LibKa0s/.gitattributes`
+was 82 lines against a required 84: it carried the pre-v2.61.0 six-line shell-scripts comment where
+`§5` now has the eight-line shebang comment, the widening that brought `*.py` under the same rule.
+Twelve of the collection's fourteen `.gitattributes` are missing `*.py text eol=lf` entirely; only
+Aura Master and this repo carry it, and this repo was carrying it under the wrong comment.
+
+### The automated-test runner names the commit every row measured
+
+`automated-tests-§4` requires each `RESULTS.md` row to carry the commit the run measured and whether
+the tree was clean at it. Two generated cells arrive: `Commit`, the short sha, and `Tree`, `clean`
+or `**dirty**` — both read from git, neither typed, `unknown` where there is no git to ask. The
+watch list's `Disposition` remains the one authored cell in the file.
+
+The table widens **once**. The revision-24 header is recognized and spliced; a header the runner
+does not recognize is still left alone with a warning. Every row written before the runner emitted
+these cells is carried forward with both cells `unknown` — not `clean`, and not reconstructed from
+git archaeology, because a row that names a commit it never measured is worse than a row that admits
+it does not know. **189 existing rows widen this way across the collection**: 73 here,
+ConsumableMaster 13, Panel Master 12, WhatGroup 12, AbsorbTracker / BankLedger / KickCD /
+LootHistory / Pretty Chat 11 each, MultiMeters 9, PartyFrameEnhanced 9, Aura Master 6. All twelve
+carry the byte-identical revision-24 header, so one predecessor is enough.
+
+The console also prints one `record:` line per run, saying whether the newest bundle was measured at
+HEAD, how many commits behind it is, that it is not an ancestor of HEAD, or that it predates this
+revision. It reports and stops there — it never touches the verdict or the exit code, because
+`automated-tests-§3` forbids failing a run on a result of that kind. The manifest half needed
+nothing: revision 24 already emitted `"git": { "sha", "branch", "dirty" }` on 73 of 73 bundles here.
+
+Why the columns exist at all is in the record: of this repository's **73** bundles, **29** record a
+dirty tree, and **28 of those 29 are release bundles** — `20260903-161751` stamps
+`"release": "1.25.0"` at sha `895cdf4` on a tree that cannot be checked out. Every one of them reads,
+to a trend line, exactly like a reproducible run.
+
+### What this repository owed itself, and paid
+
+The library consumes its own kit through `tests/_kit/` on exactly the terms every addon does, so
+every obligation above landed here first.
+
+- **The hand-written cap gate is deleted.** `tests/test_layout_cap.lua` (206 lines) is gone and
+  `{ name = "test_layout_cap", dir = "tests/_kit/" }` is wired in its place, with
+  `Kit.layoutCap = { hub = "CLAUDE.md" }` beside `Kit.run`. Keeping both would have been the
+  collision the new inventory reports, and the bare form would have wired the local file over the
+  kit's.
+- **The census moved one level.** `Files over the 1500-line cap` was a sibling `##` of
+  `## Documented deviations` in the root `CLAUDE.md`; `layout-§1` fixes the parent in both hosts, so
+  it is now a `###` nested under the register. Re-measured today at revision 25, the census is
+  **three** files: `tests/test_options_widgets.lua` at 4086 and `LibKa0s/OptionsWidgets.lua` at
+  3922, both carrying open issues that name the seam, and a new row for **`testkit/framework.lua` at
+  1571**. That third row is this revision's own doing: `resolveDir` and `adviceDir` took the file
+  from 1227 at v1.53.0 past the cap, and a comment-free implementation of the two fixes still lands
+  around 1512, so the breach is the change and not its prose. It is ratified rather than filed as an
+  issue, on the argument that deferring the fix to a peel would leave two repositories unable to run
+  their tests at all, while peeling in the same change would move 584 lines of the suite inventory
+  into a new vendored file in the same revision that changes how it behaves — the one thing a
+  whole-folder vendored payload should not do to eleven consumers at once. The seam is named in the
+  row (the `suite loading` band, `fileExists` through `Kit.assertSuiteInventory`, out to a
+  `testkit/inventory.lua`) and the trigger is the next revision that touches the inventory.
+  `testkit/framework.lua` therefore leaves the 1000–1500 band note it had just been added to, which
+  is now eight files rather than nine.
+- **The prose gate is declined, on the record.** This repo is one of the six, and the row is now in
+  the register keyed `localization-§5` naming `tests/_kit/test_prose.lua`. The reason is measured
+  rather than asserted: the kit's copy reports **1121 lines across 147 files** here, and **twelve
+  of them are in the shipped payload outside the gate's own source — all twelve already ratified
+  by the two rows above it**. The other 1109 are records this repo must not rewrite or does not
+  write at all: 560 in `docs/api/`'s frozen per-version documents, 150 under `tests/`, 118 under `docs/adoption/`, 107
+  under `docs/superpowers/`, 63 in `CHANGELOG.md`'s entries, 46 in the generated
+  `docs/test-cases.md`, 21 in `docs/adoption-prompt.md`, and 23 in `testkit/test_prose.lua` itself, which quotes every forbidden
+  spelling in order to forbid it and gained six more with this revision's fixture. Against that,
+  this repo's own copy carries two cases the kit's has no equivalent for — no non-ASCII byte
+  reaches a player, and no retired `§N.M` section reference survives — over the one payload eleven
+  consumers receive by copy and cannot fix for themselves. The row carries the trigger that ends it.
+- **The ASCII gate learned about long-bracket strings.** `tests/test_prose.lua` justified not
+  modeling them on the premise that the shipped payload had exactly one; revision 25 falsified it,
+  because `testkit/test_eol.lua` now carries `§5`'s two canonical bodies verbatim, section signs and
+  all. The exemption is the ASCII gate alone — a transcript of somebody else's document is the one
+  string this repo is forbidden to re-spell — and the British-spelling and `§N.M` gates go on
+  reading those lines.
+
+### Adoption
+
+```sh
+cp -r testkit/. tests/_kit/
+git update-index --chmod=+x tests/_kit/run-automated-tests.sh
+```
+
+Then, in the consuming `tests/run.lua`: add `{ name = "test_layout_cap", dir = "tests/_kit/" }`,
+delete any local `tests/test_layout_cap.lua` and the bare string that wired it, set `Kit.layoutCap`
+if the hub is not `docs/ARCHITECTURE.md` or the repo has generated data, and resolve the prose
+gate — the kit-directory entry with the local file deleted, or the register row that declines it.
+A local prose copy being retired that named a generated folder in its own skip list moves that
+folder to `Kit.prose = { exempt = { ... } }` in the same change.
+Nothing is owed for `test_eol`'s second case or for the runner's two cells. Collection-wide, the cap
+gate lands green today in MultiMeters as-is and in Pretty Chat with one `exempt` entry;
+ConsumableMaster owes its census's move under its register, Panel Master owes the rename off its
+band heading, and the seven addons with no census owe the heading itself, with "Nothing is over the
+cap today" where nothing breaches.
+
+Every consumer whose `docs/test-cases.md` carries a declined kit gate regenerates that file in the
+same change: the decline's case name moved from the resolved path to the root-relative
+`tests/_kit/<suite>.lua`. No consumer runner needs editing for the path fix — the mixed spellings in
+KickCD's and MultiMeters' lists are correct as written and are now read as correct.
+
+### Three rounds of consumer-tree driving, and why the count is in the record
+
+**This kit was green in its own repository and wrong in consumer trees twice before it shipped.**
+Writing that down is the point of this heading, because the pattern is structural rather than
+careless. LibKa0s is an unrepresentative consumer of its own kit: it declines the prose gate, it
+spells its suite directories one way on both sides, and it has no `.toc` and no `libs/`. A case that
+passes here therefore proves very little about the eleven trees the folder is copied into.
+
+- **Round one.** The pair key compared two spellings of one directory as raw strings. Green here;
+  fatal in two repositories that had done exactly what `testing-§9` asks.
+- **Round two.** Two fixes, both invisible at home. The suite-list spellings folded together under
+  this repo's own single-spelling runner and only came apart when a suite was invoked by path from
+  another working directory. And the prose gate's own self-test read the LIVE carve-out instead of a
+  fixture, which is permanently green here — this repository sets no `Kit.prose` — and permanently
+  red in the one repository the carve-out exists for.
+- **Round three, this one.** Every assertion added in this revision is driven off a fixture the case
+  builds, never off the live runner's state, and the result was driven in throwaway copies of four
+  real consumers before it was called done: **PrettyChat** (the legitimate carve-out) at 417 passed
+  / 1 failed / 2 skipped of 420, with all twelve prose cases green and the disclosure reading
+  `suppressed 28 of 95 tracked authored file(s), by: GlobalStrings/`; **WhatGroup** (the abuse case)
+  with both new refusals red and naming `core/WhatGroup.lua (loads core/WhatGroup.lua, line 48 of
+  WhatGroup.toc)`; and **KickCD** (1027 cases) and **MultiMeters** (1926 cases), each driven BY PATH
+  from a foreign working directory, where the inventory previously aborted before a single case ran.
+
+The lesson is written into the kit's own headers rather than left here: a gate whose self-test reads
+the live runner's state is a gate that tests the repository it is standing in, not the gate.
+
+The green gate here: **1318 passed, 0 failed, 1 skipped, 1319 total**, `luacheck` **0 warnings /
+0 errors in 74 files**. The one skip is the prose decline, which is the point of it — and it is
+also why the prose gate's seven self-tests and its three carve-out cases run in the consumers that
+wire the kit's copy and in none of this repository's 1319: a suite this library declines is a suite
+it cannot exercise.
+
 ## v1.54.2 — 2026-09-22
 
 Versions in this release: **test kit revision 24**, unchanged. `test_prose.lua` stops scanning
