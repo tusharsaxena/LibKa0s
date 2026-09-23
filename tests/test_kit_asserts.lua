@@ -68,14 +68,20 @@ end)
 test("kit: assertLibraryConstant fails on a one-byte difference, naming both strings", function()
   -- red under: a comparison that ignores case or the multibyte dash, or a failure that names only
   -- one side (the reader then has to go and find the other).
-  local copy = "%s is disabled - enable it with |cFFFFFF00%s|r"
-  local ok, err = pcall(T.assertLibraryConstant, copy, SLASH, "DISABLED_LINE_FORMAT", "stub line")
-  assertFalse(ok, "a copy that differs must fail")
-  assertTrue(has(err, "stub line"), "the failure carries the caller's message: " .. tostring(err))
-  assertTrue(has(err, ("%q"):format(copy)), "the failure names the copy: " .. tostring(err))
-  assertTrue(has(err, ("%q"):format(T.slash.DISABLED_LINE_FORMAT)),
-    "the failure names the live bytes: " .. tostring(err))
-  assertTrue(has(err, "DISABLED_LINE_FORMAT"), "the failure names the member: " .. tostring(err))
+  -- Both copies keep the live length, so a length-only comparator stays green on them: the em
+  -- dash's last byte turned into an en dash's (\148 -> \147), and one letter's case flipped.
+  local live = T.slash.DISABLED_LINE_FORMAT
+  local copies = { (live:gsub("\148", "\147")), (live:gsub("disabled", "Disabled", 1)) }
+  for _, copy in ipairs(copies) do
+    assertEqual(#live, #copy, "the fixture keeps the live length")
+    assertTrue(copy ~= live, "the fixture differs from the live bytes")
+    local ok, err = pcall(T.assertLibraryConstant, copy, SLASH, "DISABLED_LINE_FORMAT", "stub line")
+    assertFalse(ok, "a copy that differs by one byte must fail: " .. ("%q"):format(copy))
+    assertTrue(has(err, "stub line"), "the failure carries the caller's message: " .. tostring(err))
+    assertTrue(has(err, ("%q"):format(copy)), "the failure names the copy: " .. tostring(err))
+    assertTrue(has(err, ("%q"):format(live)), "the failure names the live bytes: " .. tostring(err))
+    assertTrue(has(err, "DISABLED_LINE_FORMAT"), "the failure names the member: " .. tostring(err))
+  end
 end)
 
 test("kit: assertLibraryConstant fails clearly on an unknown major or member", function()
