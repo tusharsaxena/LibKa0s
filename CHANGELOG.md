@@ -10,6 +10,34 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.56.0 — unreleased
+
+Versions in this release: **test kit revision 26**. Every library file's LibStub minor is still
+v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Test kit revision 26: two files peeled out, no behavior change
+
+- **`testkit/asserts.lua` (new).** `framework.lua`'s assertion family (`Kit.fail`,
+  `Kit.assertEqual`, `assertTrue`, `assertFalse`, `assertNil`, `assertNear`, `assertError`) and its
+  surface-parity gate (`Kit.setSurfaceSource`, `Kit.publicMembers`, `Kit.assertSurfaceParity`, and
+  the private `callable` / `resolveSurface` helpers behind them) moved, unchanged, into a file of
+  their own. `framework.lua` loads it once, where the block stood and before `Kit.expose`, from the
+  folder its own chunk name names (falling back to `tests/_kit/`), so every member is on the kit
+  table exactly when it was. `framework.lua` drops from 1583 lines to 1381, back under
+  `layout-§1`'s cap, which retires its row in the over-cap census in `CLAUDE.md`. That row had
+  claimed a "Ratified deviation row" that the deviation register never held (the 2026-09-23 audit's
+  `LK-34`), and peeling the file resolves the claim without adding one.
+- **`testkit/prose_lists.lua` (new).** The prose gate's published lists — `BRITISH`, `ALLOWED`, the
+  two published counts and the `SKIPPED_DIRS` folder exclusions — moved out of
+  `testkit/test_prose.lua`, which loads them from its own folder the same way. The gate drops from
+  1499 lines to 1464, and the list growth still to come lands in a file of data rather than in it.
+  This repo's own `tests/test_prose.lua` exempts the new file for the reason it exempts the gate:
+  it quotes every forbidden spelling in order to forbid it.
+- `Kit.VERSION` 25 → 26, with [its document](docs/api/testkit/version-26-docs.md). A consumer that
+  re-vendors takes two new files in `tests/_kit/`; its suite totals do not move.
+  `tests/test_kitsync.lua` gains one case asserting both files exist in `testkit/` and
+  `tests/_kit/`.
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**

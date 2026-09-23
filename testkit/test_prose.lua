@@ -148,70 +148,35 @@ local Kit = ...
 local test, fail = Kit.test, Kit.fail
 
 -- ---------------------------------------------------------------------------
--- The published lists (localization-5), copied whole
+-- The published lists (localization-5), copied whole, and the folder exclusions
 -- ---------------------------------------------------------------------------
 
--- localization-5 · US English is the source dialect. Copy BOTH lists whole.
--- BRITISH: lowercase substrings, matched case-insensitively.
--- ALLOWED: correct US words that contain a BRITISH substring; removed as WHOLE WORDS first.
+-- In `prose_lists.lua` beside this file since kit revision 26, so that the lists can grow without
+-- taking this gate past `layout-§1`'s cap. Found from this chunk's own name, the way `mock_base.lua`
+-- finds `mock_record.lua`, with the vendored layout as the fallback. A missing file raises at load:
+-- a gate with no list to read would pass every file it scans.
+local function listsDir()
+    local info = debug and debug.getinfo and debug.getinfo(1, "S")
+    local dir = info and tostring(info.source or ""):match("^@(.*[/\\])")
+    local f = dir and io.open(dir .. "prose_lists.lua", "r")
+    if f then f:close(); return dir end
+    return "tests/_kit/"
+end
 
-local BRITISH = {
-    -- -our → -or
-    "colour", "behaviour", "favour", "honour", "neighbour", "armour", "flavour",
-    "labour", "rumour", "humour", "endeavour", "rigour", "vigour", "saviour",
-    -- -re → -er
-    "centre", "centring", "metre", "fibre", "calibre", "theatre", "manoeuvre",
-    -- -ce → -se
-    "defence", "licence", "offence", "pretence", "practis",
-    -- -ise / -isation → -ize / -ization, and the -yse verbs
-    "initialis", "normalis", "generalis", "specialis", "optimis", "customis",
-    "serialis", "summaris", "utilis", "organis", "authoris", "prioritis",
-    "alphabetis", "categoris", "sanitis", "visualis", "minimis", "maximis",
-    "itemis", "randomis", "tokenis", "capitalis", "localis", "modularis",
-    "standardis", "memois", "recognis", "analys", "paralys", "synthesis",
-    "emphasis",
-    -- a doubled consonant before a suffix, where US English keeps one
-    "cancelled", "cancelling", "cancellable", "labelled", "labelling",
-    "travelled", "travelling", "modelled", "modelling", "signalled",
-    "signalling", "levelled", "levelling", "fuelled", "fuelling", "totalled",
-    "totalling", "fulfil",
-    -- -ogue → -og
-    "catalogue", "dialogue", "analogue",
-    -- no family, just British
-    "grey", "artefact", "whilst", "amongst", "learnt", "ageing", "enquir",
-    "acknowledgement", "judgement", "sceptic", "mould", "sulphur", "programme",
-}
-
-local ALLOWED = {
-    "analysis", "analyses", "analyst", "analysts",
-    "organism", "organisms", "organist",
-    "specialist", "specialists", "generalist", "generalists",
-    "optimism", "optimist", "optimists", "optimistic", "optimistically",
-    "paralysis", "paralyses", "synthesis", "syntheses", "emphasis", "emphases",
-    "fulfill", "fulfills", "fulfilled", "fulfilling", "fulfillment",
-    "programmer", "programmers", "programmed",
-}
-
--- The published block is 91 substrings and 30 allowances. The counts are a tripwire, not a proof —
--- a copy that drops one entry and invents another passes them — but the failure mode they catch is
--- the one that actually happens, which is a list arriving truncated or half-pasted.
-local PUBLISHED_BRITISH, PUBLISHED_ALLOWED = 91, 30
+local LISTS = dofile(listsDir() .. "prose_lists.lua")
+local BRITISH, ALLOWED = LISTS.BRITISH, LISTS.ALLOWED
+local PUBLISHED_BRITISH, PUBLISHED_ALLOWED = LISTS.PUBLISHED_BRITISH, LISTS.PUBLISHED_ALLOWED
+local SKIPPED_DIRS = LISTS.SKIPPED_DIRS
 
 -- ---------------------------------------------------------------------------
 -- What is scanned, and what is not
 -- ---------------------------------------------------------------------------
 
--- The exclusions localization-5 names, and only those. Every one is a directory or a file rather
--- than a pattern, so the list cannot quietly grow by widening a regex: vendored code the consumer
--- MUST NOT edit (`libs/`, `tests/_kit/`), frozen dated bundles, which record what a tool said on
--- the day rather than authored prose, `locales/enGB.lua`, which is what a British locale file is
--- for, and the gate itself, which quotes every forbidden spelling in order to forbid it.
-local SKIPPED_DIRS = {
-    "libs/", "Libs/", "tests/_kit/",
-    "docs/audits/", "docs/automated-tests/", "docs/perf-analysis/",
-    "docs/reviews/", "docs/revendor/",
-}
-
+-- The exclusions localization-5 names, and only those. The folders are `SKIPPED_DIRS`, in
+-- `prose_lists.lua` with the spellings; the files are below. Every one is a directory or a file
+-- rather than a pattern, so the list cannot quietly grow by widening a regex: `locales/enGB.lua`,
+-- which is what a British locale file is for, and the gate itself, which quotes every forbidden
+-- spelling in order to forbid it.
 local SKIPPED_FILES = {
     ["locales/enGB.lua"] = true,
     ["tests/test_prose.lua"] = true,

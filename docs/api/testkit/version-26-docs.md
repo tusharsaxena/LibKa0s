@@ -1,4 +1,4 @@
-# `testkit` — version 25
+# `testkit` — version 26
 
 > **This document is the source of truth for this version of the kit.** Anything else in this repo
 > that describes the kit's surface points here rather than restating it. It describes the contract
@@ -6,28 +6,38 @@
 
 | | |
 |---|---|
-| Payload | `testkit/` — `framework.lua`, `loader.lua`, `mock_base.lua`, `mock_record.lua`, `mock_ids.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, **`test_layout_cap.lua`**, `run-automated-tests.sh`, `README.md` |
-| Version | **25** (`Kit.VERSION`, top of `framework.lua`) |
+| Payload | `testkit/` — `framework.lua`, **`asserts.lua`**, `loader.lua`, `mock_base.lua`, `mock_record.lua`, `mock_ids.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, **`prose_lists.lua`**, `test_layout_cap.lua`, `run-automated-tests.sh`, `README.md` |
+| Version | **26** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.55.0 |
-| Status | Superseded |
-| Supersedes | [version 24](version-24-docs.md) — the US-English gate |
-| Superseded by | [version 26](version-26-docs.md) — two files peeled out, no behavior change |
+| First released in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 25](version-25-docs.md) — the pair key, the cap gate and the prose carve-out |
+| Superseded by | — |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
-| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `25` |
+| Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `26` |
 
-**Five rules in the Ka0s WoW Addon Standard v2.63.0 name this revision.** `layout-§1`,
-`line-endings-§7`, `testing-§9`, `localization-§5` and `automated-tests-§4` each carry a
-commencement clause reading *from LibKa0s test-kit revision 25 (LibKa0s v1.55.0)*, because each
-states a MUST that no repository can satisfy by any act of its own — the obligation is a gate, and
-the gate arrives by re-vendor. A consumer's obligations under those five clauses therefore commence
-when it re-vendors this revision, and a repository whose kit predates it owes **the re-vendor**,
-never a hand-written suite.
+## What changed
 
-No member a suite calls is removed, renamed or resignatured. `Kit.assertSuiteInventory`'s signature
-is unchanged. One file is added, one suite gains a case, one shell script gains two generated
-columns, the suite-list key widens from a name to a pair, and the prose gate gains an opts table,
-`Kit.prose`, in the shape `Kit.layoutCap` already established.
+**Two new files, no behavior change.** Both are peels, made to take two kit files back under
+`layout-§1`'s 1500-line cap and to give the growth still to come somewhere else to land:
+
+| New file | What moved into it | Loaded by |
+|---|---|---|
+| `asserts.lua` | `Kit.fail`, `Kit.assertEqual`, `Kit.assertTrue`, `Kit.assertFalse`, `Kit.assertNil`, `Kit.assertNear`, `Kit.assertError`; the surface source and the parity gate — `Kit.setSurfaceSource`, `Kit.publicMembers`, `Kit.assertSurfaceParity` and their private helpers | `framework.lua`, once, where the block stood and before `Kit.expose` |
+| `prose_lists.lua` | `test_prose.lua`'s published `BRITISH` and `ALLOWED` lists, their two published counts, and the `SKIPPED_DIRS` folder exclusions | `test_prose.lua`, at load |
+
+Each is found from its parent's own chunk name — the folder `debug.getinfo(1, "S").source` names —
+with `tests/_kit/` as the fallback for a loader that rewrites chunk names, which is how
+`mock_base.lua` has found `mock_record.lua` since revision 22. Neither is loaded on its own, and a
+copy of the kit missing either one **raises at load** rather than running without it.
+
+No member a suite calls is added, removed, renamed or resignatured, and none changes what it does.
+Every member is on the kit table at the moment it was in revision 25, so `Kit.expose` copies the
+same set. One visible difference only: a failed assertion's error position names `asserts.lua`
+rather than `framework.lua`, because that is where the raising function now lives. `framework.lua`
+is 1381 lines (1583 at revision 25) and `test_prose.lua` 1464 (1499).
+
+Everything else below is revision 25's contract, carried forward unchanged.
 
 ## The declaration is the pair (basename, directory)
 
@@ -527,11 +537,3 @@ then, in the consuming `tests/run.lua`:
 run's diff touches every line because the table grew two columns. It is a one-time cost and the
 console announces it. **Nothing in that file needs hand-editing, and nothing may be**: a maintainer
 who types a sha into an old row has invented the second authored cell `§4` forbids.
-
-## Moving to revision 26
-
-Nothing to change at a call site. Revision 26 moves `framework.lua`'s assertions and surface-parity
-gate into `asserts.lua`, and `test_prose.lua`'s published lists into `prose_lists.lua`, and each
-parent loads its new sibling from its own folder. No member is added, removed or changed. Re-vendor
-the whole folder, as always — a copy that leaves either new file out raises at load. See
-[version 26](version-26-docs.md).

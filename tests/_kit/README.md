@@ -14,6 +14,27 @@ The link is absolute on purpose. This file is byte-identical in twelve places â€
 `tests/_kit/`, and each of the ten consumers' â€” so a relative path that resolved from one would be
 broken in the other eleven.
 
+## The files
+
+| File | What it is |
+|---|---|
+| `framework.lua` | The entry point: the resource guard, the registry, `Kit.skip`, `Kit.expose`, the suite inventory, the runner and the `--list` renderer |
+| `asserts.lua` | The assertions (`assertEqual` to `assertError`) and the surface-parity gate (`setSurfaceSource`, `publicMembers`, `assertSurfaceParity`). `framework.lua` loads it from its own folder; nothing else does (kit revision 26) |
+| `loader.lua` | Headless source loading into the mocked environment |
+| `mock_base.lua` | The universal half of the WoW-API mock, and the Ace fakes |
+| `mock_record.lua` | The recording surveys; `mock_base.lua` loads it from its own folder |
+| `mock_ids.lua` | Opt-in id lookups, installed on a finished mock |
+| `vendor_sync.lua` | The consumer-side vendoring gate |
+| `run-automated-tests.sh` | The consolidated automated-test runner |
+| `test_eol.lua` | The line-ending gates, a kit suite |
+| `test_prose.lua` | The US-English prose gate, a kit suite |
+| `prose_lists.lua` | The published lists `test_prose.lua` reads: both spelling lists and the folder exclusions. `test_prose.lua` loads it from its own folder; nothing else does (kit revision 26) |
+| `test_layout_cap.lua` | The 1500-line cap gate, a kit suite |
+| `README.md` | This file |
+
+They vendor as one folder. A copy that leaves out `asserts.lua`, `mock_record.lua` or
+`prose_lists.lua` fails at load rather than passing over nothing.
+
 ## `run-automated-tests.sh`
 
 The collection's consolidated automated-test runner, and the only executable in the kit. It runs the

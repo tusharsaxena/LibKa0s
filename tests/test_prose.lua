@@ -56,21 +56,24 @@ end
 --- The listing does not recurse, so nothing under `media/` is scanned: it holds art, type and their
 --- upstream licences, none of it this collection's prose. A `.lua` added under there would go
 --- unscanned — put shipped code in the payload root, where the two gates below can see it.
---- The one shipped file this gate cannot scan, and the reason is the rule itself.
+--- The two shipped files this gate cannot scan, and the reason is the rule itself.
 ---
 --- `testkit/test_prose.lua` IS a prose gate: it carries localization-5's `BRITISH` list, which the
 --- section requires it to copy WHOLE, and that list is ninety-one British spellings by
 --- construction. Scanning it would redden on every entry the standard obliges it to hold, and the
 --- only way to green would be to carry a subset -- which is the anti-pattern the whole-list rule
---- exists to forbid. localization-5 names this case as the fourth of its four exclusions: "a
---- document whose subject is this rule and which therefore quotes a forbidden spelling in order to
---- forbid it ... and the gate's own copy of the lists".
+--- exists to forbid. Since kit revision 26 the lists themselves live beside the gate, in
+--- `testkit/prose_lists.lua`, which it loads, so the same reason covers both files.
+--- localization-5 names this case as the fourth of its four exclusions: "a document whose subject
+--- is this rule and which therefore quotes a forbidden spelling in order to forbid it ... and the
+--- gate's own copy of the lists".
 ---
---- Named as ONE file rather than as a pattern over `test_*`, so the exclusion cannot widen: every
+--- Named as TWO files rather than as a pattern over `test_*`, so the exclusion cannot widen: every
 --- other file under `testkit/` is scanned, including the README beside this one, which is why that
 --- README describes the waived spellings instead of quoting them.
 local SHIPPED_EXEMPT = {
   ["testkit/test_prose.lua"] = true,
+  ["testkit/prose_lists.lua"] = true,
 }
 
 local function shippedFiles()
