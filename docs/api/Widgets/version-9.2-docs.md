@@ -10,6 +10,10 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **9** · `WidgetsDragHandle.lua` minor **2** |
 | Shipped in | v1.48.1 |
+| Status | **Current** |
+| Supersedes | [version 9.1](./version-9.1-docs.md) |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 9, WidgetsDragHandle = 2 }` |
 
 ## What changed at 9.2
 
@@ -22,12 +26,7 @@ the full-white response unchanged, and a host without one gets a mark that holds
 
 Nothing else moved. A host that passes `onRightClick` sees 9.1's behavior exactly.
 
-| Status | **Current** |
-| Supersedes | [version 9](./version-9-docs.md) — which had no drag-handle surface at all |
-| Superseded by | — |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 9, WidgetsDragHandle = 1 }` |
-
-## What changed at this version
+## What changed at 9.1
 
 **A second file joins the major, and one new lib-level member comes with it: `lib.DragHandle`.**
 `Dropdown`, `CloseMenu`, `CopyWindow`, `ReorderList`, `lib.ROW_BOX` and every instance method are

@@ -14,10 +14,17 @@ cannot drift. Release order is in
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**
 (`LibKa0s-Compat-1.0`), **Bus minor 1** (`LibKa0s-Bus-1.0`) and **Schema minor 1**
-(`LibKa0s-Schema-1.0`). **No existing library file changes** — every existing major's version key
-and every existing file's LibStub minor are exactly v1.54.2's, so a consumer that re-vendors takes
-new bytes in `tests/_kit/`, three new files and three new `LibKa0s.xml` rows in `libs/LibKa0s/`,
-and identical bytes everywhere else in the payload.
+(`LibKa0s-Schema-1.0`). **No existing `.lua` file in the library changes** — every existing major's
+version key and every existing file's LibStub minor are exactly v1.54.2's. The payload is not
+unchanged, though, and this release is not kit-only: it gains three files, `LibKa0s/Compat.lua`,
+`LibKa0s/Bus.lua` and `LibKa0s/Schema.lua`, and `LibKa0s/LibKa0s.xml` is the one existing payload
+file whose bytes move, by the three `<Script>` rows that load them. The kit gains one file,
+`testkit/test_layout_cap.lua`, and changes five. So a consumer that re-vendors takes new bytes in
+`tests/_kit/`, the three new files and the three new XML rows in `libs/LibKa0s/`, and identical
+bytes everywhere else in the payload. The repository also gains `tests/test_compat.lua`,
+`tests/test_bus.lua`, `tests/test_schema.lua`, `tests/test_kit_inventory.lua`, and a
+`docs/api/Compat/`, `docs/api/Bus/` and `docs/api/Schema/` folder each holding a version-1 document
+and member manifest. None of those is vendored.
 
 **Five rules in the Ka0s WoW Addon Standard v2.63.0 name this revision, and this release is what
 they were waiting for.** `layout-§1`, `line-endings-§7`, `testing-§9`, `localization-§5` and
@@ -36,7 +43,8 @@ findings C2-F01 (Compat), C2-F02 (the bus), C2-F03 (the schema runtime) and C3-F
 seam, narrowed to `IsSecret` / `CanAccess` / `IsSafeKey` and folded into Compat) in that bundle's
 `02_FINDINGS.md`. Each lands the way a new major always has: a new file in `LibKa0s/`, a new
 `LibKa0s.xml` row, a new row in `tests/majors.lua`, a suite, an API document and a generated
-member manifest. **All three are additive.** None changes a byte of an existing file, and each
+member manifest. **All three are additive.** None changes a byte of an existing `.lua` file, the
+only existing payload file touched is `LibKa0s.xml`, which gains their three rows, and each
 floors on Core minor 1 and returns before `NewLibrary` without it, calling no Core member — the
 load-payload check `library-stack-§7` asks for, so a partial payload leaves every module absent
 rather than a working half.
@@ -405,8 +413,11 @@ every obligation above landed here first.
   whole-folder vendored payload should not do to eleven consumers at once. The seam is named in the
   row (the `suite loading` band, `fileExists` through `Kit.assertSuiteInventory`, out to a
   `testkit/inventory.lua`) and the trigger is the next revision that touches the inventory.
-  `testkit/framework.lua` therefore leaves the 1000–1500 band note it had just been added to, which
-  is now eight files rather than nine.
+  `testkit/framework.lua` therefore leaves the 1000–1500 band note it had just been added to. The
+  note first said that left eight files, which was wrong: the same revision took
+  `testkit/test_prose.lua` from 335 lines to 1499, one under the cap, and the Schema major's
+  `tests/test_schema.lua` arrived at 1101. The band is **ten** files at v1.55.0, re-measured with
+  `git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn`.
 - **The prose gate is declined, on the record.** This repo is one of the six, and the row is now in
   the register keyed `localization-§5` naming `tests/_kit/test_prose.lua`. The reason is measured
   rather than asserted: the kit's copy reports **1121 lines across 147 files** here, and **twelve
@@ -428,9 +439,14 @@ every obligation above landed here first.
 
 ### Adoption
 
+Both payloads, whole-folder as always. The library copy brings the three new majors' files and their
+`LibKa0s.xml` rows; adopting any of the three majors is a separate, per-host change (see *Three new
+majors*, above).
+
 ```sh
-cp -r testkit/. tests/_kit/
-git update-index --chmod=+x tests/_kit/run-automated-tests.sh
+cp -r LibKa0s/. <Addon>/libs/LibKa0s/
+cp -r testkit/. <Addon>/tests/_kit/
+git -C <Addon> update-index --chmod=+x tests/_kit/run-automated-tests.sh
 ```
 
 Then, in the consuming `tests/run.lua`: add `{ name = "test_layout_cap", dir = "tests/_kit/" }`,

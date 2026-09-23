@@ -152,7 +152,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [9.1](./Widgets/version-9.1-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 1 | v1.48.0 | **Current** |
+| [9.2](./Widgets/version-9.2-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 2 | v1.48.1 | **Current** |
+| [9.1](./Widgets/version-9.1-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 1 | v1.48.0 | Superseded |
 | [9](./Widgets/version-9-docs.md) | `Widgets.lua` 9 | v1.24.0 – v1.47.0 | Superseded |
 | [8](./Widgets/version-8-docs.md) | `Widgets.lua` 8 | v1.19.0 – v1.23.0 | Superseded |
 | [7](./Widgets/version-7-docs.md) | `Widgets.lua` 7 | v1.16.0 | Superseded |
