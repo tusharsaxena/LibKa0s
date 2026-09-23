@@ -70,6 +70,15 @@ about it are load-bearing:
   these cells carries `unknown` in both, never `clean` and never a sha reconstructed from
   archaeology (`automated-tests-§4`). The full sha, the branch and a boolean `dirty` are in each
   bundle's `manifest.json`, as they already were.
+- **From kit revision 26 a missing `tests/perf.lua` is read against the deviation register.**
+  `automated-tests-§3` sanctions two perf skip reasons. Before recording reason (1), *nothing to
+  run*, the runner reads the `## Documented deviations` table in `docs/ARCHITECTURE.md` and then the
+  root `CLAUDE.md`. A row whose Rule cell is exactly `performance-§12` records reason (2), the
+  ratified no-combat-path exemption, naming the file it came from, and `RESULTS.md`'s Perf section
+  points at `docs/performance.md`. A register the runner cannot read exits 2 before any suite runs.
+  `KA0S_PERF_EXEMPT=1` records reason (2) only in a repo that has no register.
+- **An empty watch-list table still prints its header row and separator** (kit revision 26,
+  `automated-tests-§4`), where revision 25 printed `None.`.
 - **The bundle is written to whatever `.gitattributes` declares for it**, read per path with
   `git check-attr text eol` at the end of the run — not assumed. Everything the runner writes goes
   down a plain shell redirect, which bypasses git's filters entirely, so before kit revision 10 every

@@ -164,6 +164,31 @@ v1.55.0's so far; the items that move one add it to this line in the same commit
   `tests/test_kit_inventory.lua`. Documented in
   [the revision 26 document](docs/api/testkit/version-26-docs.md).
 
+### Test kit revision 26: the runner records the `performance-§12` exemption and heads empty tables
+
+- **Perf skip reason (2).** When a repo ships no `tests/perf.lua`, `run-automated-tests.sh` now reads
+  its `## Documented deviations` register (`docs/ARCHITECTURE.md`, then the root `CLAUDE.md`) before
+  it falls back to reason (1). A row whose Rule cell is exactly `performance-§12`, after `normRule`'s
+  reduction, records `performance-§12 no-combat-path exemption (ratified; <file> -> Documented
+  deviations)` as the manifest's `skipReason`, and `RESULTS.md`'s Perf section states the second
+  sanctioned reason and points at `docs/performance.md`. A disclaiming row such as `performance-§12
+  (the exemption is not claimed)` does not match. Reason (1)'s text is unchanged. Through revision
+  25 the runner knew reason (1) only, so BankLedger, LootHistory and PrettyChat had their ratified
+  exemption denied in every record (audit findings `BankLedger-A-04`, `LootHistory-A-12`,
+  `PRETTYCHAT-A-15`). Each records reason (2) on its first run after re-vendoring.
+- **An unreadable register exits 2**, before any suite runs and before the bundle directory exists:
+  a register table with no `Rule` header, no `|---|` separator, or a row with no cell after its
+  Rule. A row with more cells than the header is accepted, because a `|` in a code span splits a
+  cell and several registers in the collection carry one.
+- **`KA0S_PERF_EXEMPT=1`** records reason (2) only in a repo with no register at all. A present
+  register outranks it.
+- **Empty watch-list tables keep their header.** `fn_table` and `band_table` print the header row
+  and separator unconditionally, and the `None.` they printed for an empty set is gone
+  (`automated-tests-§4`; audit finding `LibKa0s-A-09`).
+- The new `tests/test_kit_runner.lua` holds seven cases that run the script over fixture repos. The
+  complexity case skips where `lizard` is not on PATH. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**

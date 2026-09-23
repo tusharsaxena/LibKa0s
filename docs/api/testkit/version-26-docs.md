@@ -21,7 +21,8 @@
 **Three new files, one new assertion, three behavioral changes (the AceDB fake, event
 registration, and a new frame starting shown) and two gates widened: `test_eol.lua` now catches a
 lone CR, and `test_prose.lua` reads three store-root files, skips two more frozen stores and carries
-`synchronis`.** The first two files are peels, made to take two kit files back under
+`synchronis`. The automated-test runner records the `performance-§12` exemption as perf skip reason
+(2) and prints empty watch-list tables with their header.** The first two files are peels, made to take two kit files back under
 `layout-§1`'s 1500-line cap and to give the growth still to come somewhere else to land:
 
 | New file | What moved into it | Loaded by |
@@ -252,6 +253,54 @@ No case is added or removed, so a consumer's totals do not move. Failure message
 section change in the same way. The red-first cases are two in this repository:
 `tests/test_prose.lua`'s "the ASCII gate scans LibKa0s/ and not testkit/", and
 `tests/test_kit_inventory.lua`'s "no kit string literal cites a section without the section sign".
+
+### The runner records perf skip reason (2), and heads an empty watch-list table
+
+`automated-tests-§3` sanctions two reasons for a permanent perf `skip` and says the second MUST be
+recorded when it applies. Through revision 25 `run-automated-tests.sh` knew only the first, so the
+three addons holding a ratified `performance-§12` exemption had it denied in every record, and could
+not fix that without editing the kit (audit findings `BankLedger-A-04`, `LootHistory-A-12`,
+`PRETTYCHAT-A-15`).
+
+| Repo state | Revision 25 `skipReason` | Revision 26 `skipReason` |
+|---|---|---|
+| `tests/perf.lua` present | — (perf runs) | — (perf runs) |
+| no `tests/perf.lua`, register row keyed exactly `performance-§12` | `no tests/perf.lua — this addon ships no offline scenarios` | `performance-§12 no-combat-path exemption (ratified; <file> -> Documented deviations)` |
+| no `tests/perf.lua`, no such row | the reason (1) text | the reason (1) text, unchanged |
+| no `tests/perf.lua`, no register anywhere, `KA0S_PERF_EXEMPT=1` | the reason (1) text | `performance-§12 no-combat-path exemption (ratified; KA0S_PERF_EXEMPT=1)` |
+| no `tests/perf.lua`, a register the runner cannot read | the reason (1) text | **exit 2**, naming the file, before any suite runs and before the bundle directory exists |
+
+- **Where it reads.** The `## Documented deviations` register, in `docs/ARCHITECTURE.md` and then
+  the root `CLAUDE.md`, the hosts and order `framework.lua`'s `deviationRows` uses. Only the table
+  rows directly under the heading count, up to the next heading of any level. The first match names
+  `<file>`.
+- **What matches.** The Rule cell, reduced as `normRule` reduces it (lower case, no backticks, no
+  whitespace, no section sign), must equal `performance-12` exactly. WhatGroup's row
+  `performance-§12 (the exemption is not claimed)` does not match, and PanelMaster's
+  `performance-§1` row does not either.
+- **What is unreadable.** A register table whose header does not open with a `Rule` cell, with no
+  `|---|` separator under the header, or with a row that has no cell after its Rule. A row with
+  more cells than the header is accepted: a `|` inside a code span splits a cell, and BankLedger,
+  KickCD and PrettyChat each carry such a row today. The rule is read from the first cell alone.
+- **The flag.** `KA0S_PERF_EXEMPT=1` counts only in a repo with no register at all. A register is
+  the record, and a flag that could outvote it would ratify a deviation nobody reviewed.
+- **`RESULTS.md`.** The Perf section for reason (2) says the repo holds the exemption, names where the
+  runner read it, and points at `docs/performance.md`. Reason (1)'s paragraph is unchanged.
+
+Measured across the collection on 2026-09-24 with `--no-bundle --suite perf`: BankLedger,
+LootHistory and PrettyChat record reason (2); PanelMaster and this library record reason (1);
+every other repo ships `tests/perf.lua`, so perf runs.
+
+**Empty watch-list tables.** `fn_table` and `band_table` print their header row and separator
+unconditionally. An empty set is the header with no data rows under it, where revision 25 printed
+`None.` (`automated-tests-§4`; audit finding `LibKa0s-A-09`). Every consumer's `RESULTS.md` changes
+shape on its next run if either list is empty.
+
+`tests/test_kit_runner.lua` drives the script over fixture repos in temporary directories: reason
+(2) from an addon register and from a library's `CLAUDE.md`, reason (1) without the row and with a
+disclaiming row, exit 2 on a register with no separator, the flag with and without a register, and
+the headed empty complexity tables. The last skips where `lizard` is not on PATH. A consumer takes
+the change by re-vendoring; nothing in its own `tests/run.lua` changes.
 
 Everything else below is revision 25's contract, carried forward unchanged.
 

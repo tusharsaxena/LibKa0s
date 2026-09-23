@@ -1662,6 +1662,16 @@ badge and any count quoted in the docs must agree with it.
 - prose scan-back: a restated kit folder in skipDirs that .pkgmeta ignores passes the refusal
 - prose lists: PUBLISHED_BRITISH == #BRITISH == 92 and PUBLISHED_ALLOWED == #ALLOWED == 33
 
+### test_kit_runner.lua (7)
+
+- runner perf: a performance-§12 register row records skip reason (2), in the manifest and RESULTS.md
+- runner perf: a library's root CLAUDE.md register is read when there is no docs/ARCHITECTURE.md
+- runner perf: with no performance-§12 row the skip stays reason (1)
+- runner perf: a row that disclaims the exemption is not the exemption
+- runner perf: an unparseable register exits 2 before any bundle is written
+- runner perf: KA0S_PERF_EXEMPT=1 counts only where no register exists
+- runner complexity: empty watch-list tables print their header rows, never 'None.'
+
 ### test_eol.lua (2)
 
 - eol: every tracked file carries the terminator .gitattributes declares for it
@@ -1733,6 +1743,7 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_inventory.lua | 38 |
 | test_kit_eol.lua | 16 |
 | test_kit_prose.lua | 15 |
+| test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1533** |
+| **Total** | **1540** |
