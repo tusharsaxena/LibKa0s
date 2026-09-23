@@ -608,7 +608,7 @@ end
 
 local function aceTarget() return T.mocks.LibStub("AceEvent-3.0"):Embed({}) end
 
-for _, rung in ipairs({ { "front gate", true }, { "pcall rung", false } }) do
+for _, rung in ipairs({ { "front gate", true }, { "probe frame", false } }) do
   local label, hasEventUtils = rung[1], rung[2]
 
   test("core: SafeRegisterEvents registers around a retired name, " .. label, function()
@@ -619,15 +619,30 @@ for _, rung in ipairs({ { "front gate", true }, { "pcall rung", false } }) do
       local n = core.SafeRegisterEvents(target, { "PLAYER_LOGIN", RETIRED, "BAG_UPDATE" },
         handler, rejected)
       assertEqual(n, 2, "the count names the two that registered")
-      -- On the pcall rung AceEvent has already stored the retired name's callback when the client
-      -- raises, exactly as the client's AceEvent does. It never fires, and it is the reason the
-      -- front gate exists: that rung never hands the name over at all.
-      assertEqual(liveOn(target), hasEventUtils and "event:BAG_UPDATE,event:PLAYER_LOGIN"
-        or "event:BAG_UPDATE,event:" .. RETIRED .. ",event:PLAYER_LOGIN")
+      -- Neither rung hands the retired name to AceEvent, so no half-stored callback is left behind
+      -- to make a later registrant's call succeed.
+      assertEqual(liveOn(target), "event:BAG_UPDATE,event:PLAYER_LOGIN")
       assertEqual(table.concat(rejected, ","), RETIRED, "the retired name, once")
-      -- The same block again, as a disable/enable cycle runs it: still one entry.
-      core.SafeRegisterEvents(target, { "PLAYER_LOGIN", RETIRED, "BAG_UPDATE" }, handler, rejected)
+      -- The same block again, as a disable/enable cycle runs it: refused again, still one entry.
+      n = core.SafeRegisterEvents(target, { "PLAYER_LOGIN", RETIRED, "BAG_UPDATE" }, handler, rejected)
+      assertEqual(n, 2, "the retired name is refused on the second pass too")
       assertEqual(table.concat(rejected, ","), RETIRED, "no duplicate on a second pass")
+    end)
+  end)
+
+  test("core: SafeRegisterEvent refuses a retired name for every AceEvent registrant, " .. label, function()
+    -- AceEvent's registry is shared by the whole client, and CallbackHandler asks the frame for an
+    -- event only on its FIRST registrant. A pcall on the target alone answers "registered" for
+    -- every later one: the same target again, a second module, any other addon.
+    -- red under: treating a pcall that did not raise as "registered"
+    withClient(hasEventUtils, function()
+      local first, second = aceTarget(), aceTarget()
+      local mine, theirs = {}, {}
+      T.assertFalse(core.SafeRegisterEvent(first, RETIRED, function() end, mine))
+      T.assertFalse(core.SafeRegisterEvent(first, RETIRED, function() end, {}), "same target again")
+      T.assertFalse(core.SafeRegisterEvent(second, RETIRED, function() end, theirs), "second target")
+      assertEqual(table.concat(theirs, ","), RETIRED, "recorded on the second caller's own list")
+      assertEqual(liveOn(first) .. "|" .. liveOn(second), "|")
     end)
   end)
 

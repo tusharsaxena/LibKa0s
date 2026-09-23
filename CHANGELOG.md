@@ -37,20 +37,23 @@ line in the same commit.
   (`events-frames-taint-§1`, review finding `AuraMaster-R-05`). The client raises on an event name
   it does not know, and a block of bare `RegisterEvent` calls loses every line after the one that
   raised. `SafeRegisterEvent(target, event, handler, rejected)` rejects the name without a call when
-  `C_EventUtils.IsEventValid` exists and answers `false`, and otherwise runs
+  `C_EventUtils.IsEventValid` exists and answers `false`, otherwise asks a private probe frame (a
+  raw frame asks the client on every call; AceEvent asks only for an event's first registrant, so the
+  target's own answer is `true` for every later one), and then runs
   `pcall(target.RegisterEvent, target, event, handler)`, so an AceEvent-embedded object, a Frame and
   a Bus target all work, and a Bus target still records the registration for its replay.
   `SafeRegisterUnitEvent(frame, event, rejected, unit1, unit2)` does the same through
   `RegisterUnitEvent`; `SafeRegisterEvents(target, events, handler, rejected)` walks an array and
   answers how many registered. Each answers `true`/`false` (or the count).
-- **No library state, no printing.** `rejected` is an optional array the caller owns, appended once
+- **No registration state, no printing.** `rejected` is an optional array the caller owns, appended once
   per refused name and never twice, so a disable/enable cycle leaves it unchanged. The host surfaces
   it (`[Init]`, a debug verb).
 - Still minor 8: v1.56.0 has not shipped, and one unreleased minor carries both changes. The member
   manifest gains the three names; `.luacheckrc` gains `C_EventUtils` as a read global.
-  `tests/test_core.lua` gains seven cases, run on both rungs. A consumer with a Core degradation stub
-  adds the three members with one-rung bodies (pcall, no front gate), shown under *Degradation* in
-  the version 8 document, so `Kit.assertSurfaceParity` stays green.
+  `tests/test_core.lua` gains nine cases, the per-rung ones run on the front gate and on the probe
+  frame. A consumer with a Core degradation stub adds the three members with one-rung bodies (pcall,
+  no front gate, no probe), shown under *Degradation* in the version 8 document, so
+  `Kit.assertSurfaceParity` stays green.
 
 ### Test kit revision 26: two files peeled out, no behavior change
 

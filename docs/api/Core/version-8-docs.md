@@ -40,18 +40,27 @@ block of bare `RegisterEvent` calls loses every line after the one that raised. 
 patch takes an addon's whole enable path down with it (`events-frames-taint-§1`, review finding
 `AuraMaster-R-05`). These three members are the helper that rule names.
 
-**Two rungs.**
+**The name is checked before the target sees it.** An AceEvent target's own answer cannot be
+trusted for this. CallbackHandler stores the callback and only then asks the client's frame for the
+event, and it asks only for the event's **first** registrant in a registry the whole client shares.
+The raise leaves that callback behind, so every later registrant gets a call that does not raise for a
+name the client never registered. That covers the same target registering again, a second module and
+any other addon. A helper that trusted the target's `pcall` would answer `true`, count the name as
+registered and never record it.
 
-1. **The front gate.** When `C_EventUtils.IsEventValid` exists and answers `false`, the name is
-   rejected and is **never handed to `RegisterEvent`**. Nothing raises, and no AceEvent callback is
-   left behind.
-2. **The pcall rung.** Otherwise, or when the gate answers anything but `false`, the call runs as
-   `pcall(target.RegisterEvent, target, event, handler)`. A raise rejects the name. On this rung an
-   AceEvent target keeps the callback CallbackHandler stored before the client raised, which is
-   what the client's own AceEvent does. It is inert, because the event never fires, and the target's
-   `UnregisterAllEvents` clears it. The helper does not unregister it, because a raise for any
-   *other* reason (a method name the target does not have) would then drop a live, earlier
-   registration of the same event.
+**Three rungs, and a refused name never reaches the target on the first two.**
+
+1. **The front gate.** When `C_EventUtils.IsEventValid` exists and answers a boolean, that answer
+   decides. `false` rejects the name. Nothing raises, and no AceEvent callback is left behind.
+2. **The probe frame.** Otherwise the library asks a private frame of its own, made once on first
+   need. The frame registers the name under `pcall` and unregisters it at once. A raw frame asks the
+   client on every call, so its answer holds for every registrant. A raise rejects the name.
+3. **The target's own pcall.** Past the gate, the call runs as
+   `pcall(target.RegisterEvent, target, event, handler)`, and a raise for any other reason (a
+   method name the target does not have) rejects the name too. The helper never unregisters on the
+   target, because that would drop a live, earlier registration of the same event. Only where
+   `CreateFrame` is unavailable (a load path with no UI) does this rung decide alone, and there it
+   inherits AceEvent's first-registrant blind spot described above.
 
 **The call goes through `target.RegisterEvent`, whatever that is.** An AceEvent-embedded object, a
 Frame (which ignores `handler`) and a `LibKa0s-Bus-1.0` target all work, and a Bus target still
@@ -59,7 +68,8 @@ records the registration for its replay after a stand-down, because the Bus trac
 that member. `SafeRegisterUnitEvent` takes a frame and passes the unit tokens through exactly as
 given.
 
-**The library keeps no state and prints nothing.** `rejected` is an optional array the **caller**
+**The library keeps no registration state and prints nothing.** The probe frame holds no
+registration between calls. `rejected` is an optional array the **caller**
 owns. A refused name is appended once, and a name already in it is not appended again, so a
 disable/enable cycle that runs the same block twice leaves the list as it was. The host decides where
 the player sees it: the `[Init]` summary, a debug verb, or both. A host that passes no list still gets
@@ -72,7 +82,8 @@ A host that runs without LibKa0s-Core carries a Core stub, and `Kit.assertSurfac
 stub to this document's member manifest. The stub carries the three members with **one-rung
 bodies**: the pcall and the rejected-list append, no front gate. A stub is the path for a missing
 library, not a second implementation, and the pcall alone is what keeps one bad name from taking the
-block down:
+block down. It has no probe, so on an AceEvent target it inherits the first-registrant blind spot:
+only the name's first registrant is told `false`.
 
 ```lua
 local function safeRegister(method, target, event, rejected, ...)
@@ -228,7 +239,7 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `RGBA(c, dr, dg, db, da)` | 4 | Read a stored color in **either** shape the collection persists — keyed `{ r =, g =, b =, a = }` or positional `{ r, g, b, a }` — and return four **numbers**, never a table. See [Reading a stored color](#reading-a-stored-color). |
 | `ClassColor([unit])` | **7** | `r, g, b` for the unit's class, out of `RAID_CLASS_COLORS`, or **`nil`** where there is no class color to give. `unit` defaults to `"player"`, whose answer is memoized on success; no other unit is cached. See [The one class-color resolver](#the-one-class-color-resolver). |
 | `ResolveColor(stored, on[, unit])` | **7** | `r, g, b, a` for a stored swatch read through its *use class color* companion. The stored alpha always applies; an unresolvable class falls through to the stored rgb. See [`ResolveColor(stored, on, unit)` — three rules, ratified](#resolvecolorstored-on-unit--three-rules-ratified). |
-| `SafeRegisterEvent(target, event[, handler[, rejected]])` | **8** | Register one event on an AceEvent-embedded object, a Bus target or a Frame without letting an unknown name raise. Front gate on `C_EventUtils.IsEventValid` when present, otherwise `pcall`. `true` when it registered; `false` when refused, with the name appended once to the caller's `rejected` array. See [The pcalled event registration helper](#the-pcalled-event-registration-helper). |
+| `SafeRegisterEvent(target, event[, handler[, rejected]])` | **8** | Register one event on an AceEvent-embedded object, a Bus target or a Frame without letting an unknown name raise. Front gate on `C_EventUtils.IsEventValid` when present, otherwise a private probe frame, then `pcall` on the target. `true` when it registered; `false` when refused, with the name appended once to the caller's `rejected` array. See [The pcalled event registration helper](#the-pcalled-event-registration-helper). |
 | `SafeRegisterUnitEvent(frame, event, rejected, unit1[, unit2])` | **8** | The same through `frame:RegisterUnitEvent`; the unit tokens pass through as given. |
 | `SafeRegisterEvents(target, events[, handler[, rejected]])` | **8** | `SafeRegisterEvent` over each name in the array `events`, one refusal costing only itself. Answers the number that registered. |
 | `__ResetClassColor()` | **7** | Forget the memoized player color. A suite seam — `__`-prefixed, and a live session cannot need it. |

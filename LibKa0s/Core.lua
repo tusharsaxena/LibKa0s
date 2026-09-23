@@ -397,25 +397,50 @@ end
 -- retired by a patch takes an addon's whole enable path down (events-frames-taint-§1). These three
 -- are the collection's one helper for that, since minor 8.
 --
--- Two rungs. When `C_EventUtils.IsEventValid` exists and answers false, the name is rejected and
--- NEVER handed to RegisterEvent: no raise to catch, and no half-stored AceEvent callback left behind
--- (AceEvent stores the callback before the client raises). Otherwise the call is pcall'd, and on
--- that rung an AceEvent target keeps the callback it stored: inert, since the event never fires,
--- and cleared by the target's UnregisterAllEvents. Unregistering it here would be wrong, because a
--- raise for any OTHER reason (a missing method name) would then drop a live earlier registration.
+-- The name is asked about BEFORE the target sees it, because the target's own answer lies for
+-- AceEvent: CallbackHandler stores the callback and only then asks the client's frame, and only
+-- for the event's FIRST registrant in a registry the whole client shares. The raise leaves that
+-- callback behind, so every later registrant -- the same target again, a second module, another
+-- addon -- gets a call that does not raise for a name the client never registered.
 --
--- The library keeps NO state and prints nothing. `rejected` is the CALLER'S array, appended once per
+-- So: when `C_EventUtils.IsEventValid` exists and answers a boolean, that is the answer. Otherwise
+-- a private probe frame, made once, registers the name under pcall and unregisters it at once; a
+-- raw frame asks the client every time. A refused name is NEVER handed to the target. Only where
+-- neither is available (no CreateFrame: a load path with no UI) does the target's own pcall decide
+-- alone, and that rung inherits AceEvent's first-registrant blind spot. The target call is pcall'd
+-- on every rung all the same, so a raise for any other reason (a missing method name) rejects too.
+-- The helper never unregisters on the target: that would drop a live earlier registration.
+--
+-- The library keeps no registration state and prints nothing; the probe frame registers nothing
+-- between calls. `rejected` is the CALLER'S array, appended once per
 -- name, and the host decides where the player sees it ([Init], a debug verb). The call goes through
 -- `target.RegisterEvent`, whatever that is -- AceEvent's member, a Frame's, or a Bus tracking
 -- wrapper -- so a Bus-stamped target still records the registration for its replay.
 
--- True when the client says outright that `event` is not a name it knows. Absent API, or an answer
--- that raised, is not a "no": the pcall rung below still gets its chance.
+local probe  -- the private frame probeRefuses asks with; made on first need
+
+-- True when a raw frame of our own raises on `event`. False when there is no frame to ask with.
+local function probeRefuses(event)
+  if not probe then
+    if type(CreateFrame) ~= "function" then return false end
+    local ok, frame = pcall(CreateFrame, "Frame")
+    if not ok or type(frame) ~= "table" then return false end
+    probe = frame
+  end
+  if not pcall(probe.RegisterEvent, probe, event) then return true end
+  probe:UnregisterEvent(event)
+  return false
+end
+
+-- True when the client says `event` is not a name it knows: through IsEventValid when that answers
+-- a boolean, else through the probe frame. Absent both, the target's own pcall still gets its chance.
 local function clientRefuses(event)
   local utils = C_EventUtils
-  if type(utils) ~= "table" or type(utils.IsEventValid) ~= "function" then return false end
-  local ok, valid = pcall(utils.IsEventValid, event)
-  return ok and valid == false
+  if type(utils) == "table" and type(utils.IsEventValid) == "function" then
+    local ok, valid = pcall(utils.IsEventValid, event)
+    if ok and type(valid) == "boolean" then return not valid end
+  end
+  return probeRefuses(event)
 end
 
 -- Append `event` to the caller's list unless it is already there. A disable/enable cycle runs the

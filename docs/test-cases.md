@@ -10,7 +10,7 @@ badge and any count quoted in the docs must agree with it.
 
 - suite inventory: tests/_kit/test_prose.lua is declined, and the decline is recorded (skipped: CLAUDE.md carries a `## Documented deviations` row keyed `localization-§5`: The kit ships a US-English gate (`tests/_kit/test_prose.lua`) and this repo leaves it unwired, running its own `tests/test_prose.lua` instead. `testing-§9` and `localization-§5` between them permit  ... — tests/test_prose.lua runs in its place)
 
-### test_core.lua (50)
+### test_core.lua (52)
 
 - core: IsConcatSafe is false for a table.concat-hostile value, true for a plain one
 - core: SafeToString renders a secret as lib.SECRET and passes nil/booleans through
@@ -54,9 +54,11 @@ badge and any count quoted in the docs must agree with it.
 - core: ResolveColor with the companion off never reaches the class palette
 - core: ResolveColor answers four numbers for a swatch that was never stored
 - core: SafeRegisterEvents registers around a retired name, front gate
+- core: SafeRegisterEvent refuses a retired name for every AceEvent registrant, front gate
 - core: SafeRegisterUnitEvent on a frame isolates a retired name, front gate
-- core: SafeRegisterEvents registers around a retired name, pcall rung
-- core: SafeRegisterUnitEvent on a frame isolates a retired name, pcall rung
+- core: SafeRegisterEvents registers around a retired name, probe frame
+- core: SafeRegisterEvent refuses a retired name for every AceEvent registrant, probe frame
+- core: SafeRegisterUnitEvent on a frame isolates a retired name, probe frame
 - core: SafeRegisterEvent's front gate rejects without calling RegisterEvent
 - core: SafeRegisterEvent on a raw frame, and with no rejected list at all
 - core: SafeRegisterEvent on a Bus-stamped target is replayed after a stand-down
@@ -1706,7 +1708,7 @@ badge and any count quoted in the docs must agree with it.
 | Suite | Cases |
 |-------|------:|
 | the runner | 1 |
-| test_core.lua | 50 |
+| test_core.lua | 52 |
 | test_env.lua | 10 |
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 21 |
@@ -1754,4 +1756,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1548** |
+| **Total** | **1550** |
