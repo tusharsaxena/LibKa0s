@@ -35,7 +35,8 @@ The peel adds, removes, renames or resignatures no member a suite calls, and cha
 them does. Every member is on the kit table at the moment it was in revision 25, so `Kit.expose`
 copies the same set, plus the one new member below. One visible difference only: a failed assertion's error position names `asserts.lua`
 rather than `framework.lua`, because that is where the raising function now lives. `framework.lua`
-is 1381 lines (1583 at revision 25) and `test_prose.lua` 1464 (1499).
+is 1382 lines (1583 at revision 25; the peel left it at 1381, and `Kit.expose`'s
+`assertErrorMatches` line adds one) and `test_prose.lua` 1464 (1499).
 
 ### One new member: `Kit.assertErrorMatches`
 
