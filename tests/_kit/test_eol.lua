@@ -467,6 +467,33 @@ local function marksOf(body)
   return pin, carveOuts, binaries
 end
 
+--- The first two arms' evidence: the first tracked `.toc` (one at the root preferred over a nested
+--- one) and the first tracked path under a top-level `libs/`, each nil when there is none.
+local function clientEvidence(paths)
+  local rootToc, anyToc, libs = nil, nil, nil
+  for _, p in ipairs(paths) do
+    if not rootToc and p:match("^[^/]+%.toc$") then rootToc = p end
+    if not anyToc and p:match("%.toc$") then anyToc = p end
+    if not libs and p:match("^libs/") then libs = p end
+  end
+  return rootToc or anyToc, libs
+end
+
+--- The third arm: the first top-level folder carrying `<folder>/<folder>.xml` with Lua anywhere
+--- beneath it, returned as the folder and that XML's path, or nil when no folder has that shape.
+local function libraryPayload(paths)
+  local luaUnder = {}
+  for _, p in ipairs(paths) do
+    local top = p:match("^([^/]+)/")
+    if top and p:match("%.lua$") then luaUnder[top] = true end
+  end
+  for _, p in ipairs(paths) do
+    local dir = p:match("^([^/]+)/[^/]+%.xml$")
+    if dir and p == dir .. "/" .. dir .. ".xml" and luaUnder[dir] then return dir, p end
+  end
+  return nil
+end
+
 --- Which body this repo must carry, by §2's mechanical discriminator and nothing else.
 ---
 --- THREE ARMS, IN ORDER, AND NO ROSTER. A `.toc` says the repo ships an addon; a tracked `libs/`
@@ -483,28 +510,17 @@ end
 --- Returns the body, the pin kind, and the evidence in words, which every failure below quotes so a
 --- reader checks the classification before checking the diff.
 local function repoKind(paths)
-  local luaUnder, rootToc, anyToc, libs = {}, nil, nil, nil
-  for _, p in ipairs(paths) do
-    local top = p:match("^([^/]+)/")
-    if top and p:match("%.lua$") then luaUnder[top] = true end
-    if not rootToc and p:match("^[^/]+%.toc$") then rootToc = p end
-    if not anyToc and p:match("%.toc$") then anyToc = p end
-    if not libs and p:match("^libs/") then libs = p end
-  end
-
-  local toc = rootToc or anyToc
+  local toc, libs = clientEvidence(paths)
   if toc then
     return BODY_CLIENT, "crlf", "it ships an addon to the client (" .. toc .. ")"
   end
   if libs then
     return BODY_CLIENT, "crlf", "it ships a client-bound libs/ tree (" .. libs .. ")"
   end
-  for _, p in ipairs(paths) do
-    local dir = p:match("^([^/]+)/[^/]+%.xml$")
-    if dir and p == dir .. "/" .. dir .. ".xml" and luaUnder[dir] then
-      return BODY_CLIENT, "crlf",
-        "it is a Ka0s-owned library repo whose ship payload is " .. dir .. "/ (" .. p .. ")"
-    end
+  local dir, xml = libraryPayload(paths)
+  if dir then
+    return BODY_CLIENT, "crlf",
+      "it is a Ka0s-owned library repo whose ship payload is " .. dir .. "/ (" .. xml .. ")"
   end
   return BODY_NONCLIENT, "lf",
     "it ships nothing into the WoW client: no .toc, no tracked libs/, no library payload folder"

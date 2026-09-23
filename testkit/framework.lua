@@ -957,6 +957,31 @@ local function collectUndeclared(problems, dir, onDisk, at)
   end
 end
 
+--- The last declaration of `name` against a directory other than the kit's whose file exists:
+--- the repo's own copy a collision reports as running in the kit's place, or nil.
+local function kitShadow(recs, kitDir, name)
+  local shadow = nil
+  for _, rec in ipairs(recs or {}) do
+    if rec.dir ~= kitDir and fileExists(rec.dir .. name .. ".lua") then shadow = rec end
+  end
+  return shadow
+end
+
+--- The declared skip a recorded decline becomes: keyed per repo, named and reasoned per gate.
+local function declineRecord(kitPath, gate, register, cells, shadowPath)
+  return {
+    -- NAMED by the root-relative gate rather than by `kitPath`, because the name is read
+    -- back by `--list` into `docs/test-cases.md`: a committed generated file must not say
+    -- one thing when the runner is invoked from the repo root and another when a wrapper
+    -- invokes it by path. Keyed by `kitPath`, which is the half that must stay per-repo.
+    key  = kitPath,
+    name = ("suite inventory: %s.lua is declined, and the decline is recorded"):format(gate),
+    reason = ("%s carries a `## Documented deviations` row keyed %s: %s%s"):format(
+      register, cells[1] ~= "" and cells[1] or "(no rule cell)", clip(cells[2], 200),
+      shadowPath and (" — %s runs in its place"):format(shadowPath) or ""),
+  }
+end
+
 -- Direction two, over the vendored kit, and the half the pair key changes (kit revision 25).
 --
 -- A kit suite no declaration names is a gate running zero cases, and it arrives in three shapes.
@@ -971,10 +996,7 @@ end
 local function collectKitHoles(problems, declines, kitDir, onDisk, at, byName, root)
   for _, name in ipairs(onDisk) do
     if not at[kitDir .. name] then
-      local kitPath, shadow = kitDir .. name .. ".lua", nil
-      for _, rec in ipairs(byName[name] or {}) do
-        if rec.dir ~= kitDir and fileExists(rec.dir .. name .. ".lua") then shadow = rec end
-      end
+      local kitPath, shadow = kitDir .. name .. ".lua", kitShadow(byName[name], kitDir, name)
       local shadowPath = shadow and (shadow.dir .. name .. ".lua") or nil
       local rule = KIT_GATE_RULE[name]
       -- The kit's path as the REGISTER would write it: relative to the repository root, which is
@@ -986,17 +1008,7 @@ local function collectKitHoles(problems, declines, kitDir, onDisk, at, byName, r
       local register, cells = declineFor(root, gate, rule)
       rule = rule or "the rule this gate serves"
       if register then
-        declines[#declines + 1] = {
-          -- NAMED by the root-relative gate rather than by `kitPath`, because the name is read
-          -- back by `--list` into `docs/test-cases.md`: a committed generated file must not say
-          -- one thing when the runner is invoked from the repo root and another when a wrapper
-          -- invokes it by path. Keyed by `kitPath`, which is the half that must stay per-repo.
-          key  = kitPath,
-          name = ("suite inventory: %s.lua is declined, and the decline is recorded"):format(gate),
-          reason = ("%s carries a `## Documented deviations` row keyed %s: %s%s"):format(
-            register, cells[1] ~= "" and cells[1] or "(no rule cell)", clip(cells[2], 200),
-            shadowPath and (" — %s runs in its place"):format(shadowPath) or ""),
-        }
+        declines[#declines + 1] = declineRecord(kitPath, gate, register, cells, shadowPath)
       elseif shadow then
         problems[#problems + 1] = ("%s ships in the vendored kit, and the suites list declares a "
           .. "bare %q (position %d) instead — that entry wires %s, %s is what runs, and the kit's "

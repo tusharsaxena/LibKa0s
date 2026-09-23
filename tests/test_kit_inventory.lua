@@ -447,3 +447,120 @@ test("a remedy under a relative runner dir is printed exactly as it resolved", f
   assertEqual(advice, "tests/_kit/", "a relative runner already spells it the way its list does")
   assertEqual(note, "", "and needs no note about where the prefix came from")
 end)
+
+-- ── the kit-hole report, word for word ──────────────────────────────────────────────────────
+--
+-- Characterization of `collectKitHoles`, pinned before it was split into named units to bring it
+-- under the complexity ceiling (CCN 15). The cases above assert what each report MEANS; these
+-- assert what it SAYS, byte for byte, on every arm: the collision, the plain hole, the decline with
+-- and without a shadow, a rule cell left empty, a kit suite the rule table does not know, the
+-- 200-byte clip on a decline's reason, and which of several shadows a collision names. A refactor
+-- that moves a word, or picks a different shadow, goes red here.
+
+-- Built from bytes so this file's literals stay ASCII.
+local EM = string.char(226, 128, 148)
+local LOC5 = "localization-" .. string.char(194, 167) .. "5"
+
+--- The one problem line `collectKitHoles` writes for an unwired kit suite with no shadow.
+local function holeLine(kitDir, root, name, rule, gate)
+  local advice, note = Kit.__adviceDir(kitDir, root)
+  return ("%s%s.lua arrived with the vendored kit but is not declared in the suites list " .. EM
+    .. " add { name = %q, dir = %q }%s to the runner, or record the decline as a `## Documented "
+    .. "deviations` row keyed %s that names %s.lua; it is running zero cases today")
+    :format(kitDir, name, name, advice, note, rule, gate)
+end
+
+--- The one problem line `collectKitHoles` writes for a kit suite a bare declaration shadows.
+local function collisionLine(kitDir, root, name, index, shadowPath, rule, gate)
+  local advice, note = Kit.__adviceDir(kitDir, root)
+  return ("%s%s.lua ships in the vendored kit, and the suites list declares a bare %q (position %d) "
+    .. "instead " .. EM .. " that entry wires %s, %s is what runs, and the kit's copy is loading zero "
+    .. "cases. Wire one or the other, never both: change the entry to { name = %q, dir = %q }%s and "
+    .. "delete %s, or record the decline as a `## Documented deviations` row keyed %s that names %s.lua")
+    :format(kitDir, name, name, index, shadowPath, shadowPath, name, advice, note, shadowPath, rule, gate)
+end
+
+--- The whole failure `assertSuiteInventory` raises for `lines`, in order.
+local function inventoryFailure(dir, lines)
+  return "suite inventory (" .. dir .. "):\n          - " .. table.concat(lines, "\n          - ")
+end
+
+--- `err` without the `file:line: ` position `error` prefixes to it.
+local function bare(err) return (err:gsub("^[^\n]-:%d+: ", "", 1)) end
+
+test("characterization: a plain kit hole is reported word for word", function()
+  withFixture({ "test_own" }, { "test_prose" }, function(root, dir, kitDir)
+    local err = assertError(function() Kit.assertSuiteInventory(dir, { "test_own" }) end, "a hole")
+    assertEqual(bare(err), inventoryFailure(dir,
+      { holeLine(kitDir, root, "test_prose", "localization-5", "tests/_kit/test_prose") }))
+  end)
+end)
+
+test("characterization: a kit suite with no rule row names the fallback rule", function()
+  withFixture({ "test_own" }, { "test_custom" }, function(root, dir, kitDir)
+    local err = assertError(function() Kit.assertSuiteInventory(dir, { "test_own" }) end, "a hole")
+    assertEqual(bare(err), inventoryFailure(dir,
+      { holeLine(kitDir, root, "test_custom", "the rule this gate serves", "tests/_kit/test_custom") }))
+  end)
+end)
+
+test("characterization: a collision is reported word for word", function()
+  withFixture({ "test_prose" }, { "test_prose" }, function(root, dir, kitDir)
+    local err = assertError(function() Kit.assertSuiteInventory(dir, { "test_prose" }) end, "a collision")
+    assertEqual(bare(err), inventoryFailure(dir, { collisionLine(kitDir, root, "test_prose", 1,
+      dir .. "test_prose.lua", "localization-5", "tests/_kit/test_prose") }))
+  end)
+end)
+
+test("characterization: of several shadows, the last declared is the one named", function()
+  withFixture({ "test_prose" }, { "test_prose" }, function(root, dir, kitDir)
+    os.execute(('mkdir -p "%salt"'):format(root))
+    write(root .. "alt/test_prose.lua")
+    local alt = { name = "test_prose", dir = root .. "alt/" }
+    for _, order in ipairs({ { "test_prose", alt }, { alt, "test_prose" } }) do
+      local last = order[2] == alt and (root .. "alt/test_prose.lua") or (dir .. "test_prose.lua")
+      local err = assertError(function() Kit.assertSuiteInventory(dir, order) end, "a collision")
+      assertEqual(bare(err), inventoryFailure(dir, { collisionLine(kitDir, root, "test_prose", 2, last,
+        "localization-5", "tests/_kit/test_prose") }))
+    end
+  end)
+end)
+
+--- The declared skip the last `assertSuiteInventory` call registered, asserted to be exactly one.
+local function onlyDecline(dir, suites)
+  local before = #Kit.__tests()
+  local ok, err = pcall(Kit.assertSuiteInventory, dir, suites)
+  assertTrue(ok, "a recorded decline does not fail the run: " .. tostring(err))
+  assertEqual(#Kit.__tests(), before + 1, "exactly one case registered")
+  return Kit.__tests()[#Kit.__tests()]
+end
+
+test("characterization: a decline's name and reason, word for word", function()
+  withFixture({ "test_own" }, { "test_prose" }, function(root, dir)
+    register(root, "docs/ARCHITECTURE.md", { row(LOC5, DECLINE) })
+    local added = onlyDecline(dir, { "test_own" })
+    assertEqual(added.name, "suite inventory: tests/_kit/test_prose.lua is declined, and the decline is recorded")
+    assertEqual(added.skip, root .. "docs/ARCHITECTURE.md carries a `## Documented deviations` row "
+      .. "keyed `" .. LOC5 .. "`: " .. DECLINE)
+  end)
+end)
+
+test("characterization: a decline over a collision names the file that runs instead", function()
+  withFixture({ "test_prose" }, { "test_prose" }, function(root, dir)
+    register(root, "docs/ARCHITECTURE.md", { row(LOC5, DECLINE) })
+    local added = onlyDecline(dir, { "test_prose" })
+    assertEqual(added.skip, root .. "docs/ARCHITECTURE.md carries a `## Documented deviations` row "
+      .. "keyed `" .. LOC5 .. "`: " .. DECLINE .. " " .. EM .. " " .. dir .. "test_prose.lua runs in its place")
+  end)
+end)
+
+test("characterization: a decline with an empty rule cell, and a reason clipped at 200 bytes", function()
+  withFixture({ "test_own" }, { "test_custom" }, function(root, dir)
+    local long = "`tests/_kit/test_custom` is unwired   because " .. ("x"):rep(240)
+    register(root, "CLAUDE.md", { "|  | " .. long .. " | Why | 2026-09-23 | Never |" })
+    local added = onlyDecline(dir, { "test_own" })
+    local folded = long:gsub("%s+", " ")
+    assertEqual(added.skip, root .. "CLAUDE.md carries a `## Documented deviations` row keyed "
+      .. "(no rule cell): " .. folded:sub(1, 200) .. " ...")
+  end)
+end)
