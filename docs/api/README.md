@@ -258,7 +258,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12.5](./Perf/version-12.5-docs.md) | `Perf.lua` 12 · `PerfPanel.lua` 5 | v1.40.0 | **Current** |
+| [13.5](./Perf/version-13.5-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 5 | v1.56.0 | **Current** |
+| [12.5](./Perf/version-12.5-docs.md) | `Perf.lua` 12 · `PerfPanel.lua` 5 | v1.40.0 – v1.55.0 | Superseded |
 | [11.5](./Perf/version-11.5-docs.md) | `Perf.lua` 11 · `PerfPanel.lua` 5 | v1.31.0 | Superseded |
 | [10.5](./Perf/version-10.5-docs.md) | `Perf.lua` 10 · `PerfPanel.lua` 5 | v1.29.0 – v1.30.0 | Superseded |
 | [9.4](./Perf/version-9.4-docs.md) | `Perf.lua` 9 · `PerfPanel.lua` 4 | v1.28.0 | Superseded |

@@ -1,4 +1,4 @@
-# `LibKa0s-Perf-1.0` — version 12.5
+# `LibKa0s-Perf-1.0` — version 13.5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Perf surface points here rather than restating it. It describes the
@@ -8,17 +8,17 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **12** · `PerfPanel.lua` **5** |
+| Files and minors | `Perf.lua` **13** · `PerfPanel.lua` **5** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.40.0 |
-| Status | Superseded |
-| Supersedes | [version 11.5](./version-11.5-docs.md) |
-| Superseded by | [version 13.5](./version-13.5-docs.md) |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) **and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`)** |
+| Shipped in | v1.56.0 |
+| Status | **Current** |
+| Supersedes | [version 12.5](./version-12.5-docs.md) — whose sampler fields fell through the instance metatable after a nil write, and whose leaked bracket could parent a later window's |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 12, PerfPanel = 5 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 13, PerfPanel = 5 }` |
 
-`Since` names the file and minor a member first appeared in — `P11` for `Perf.lua` minor 11, `PP5`
+`Since` names the file and minor a member first appeared in — `P13` for `Perf.lua` minor 13, `PP5`
 for `PerfPanel.lua` minor 5. It is `1` for nearly everything: this major did not move at all between
 the first tag and minor 6, so every adopter before that version is on the same one.
 
@@ -36,9 +36,48 @@ a state LibStub can detect. **This is why the version key above is a pair.**
 
 ## What changed at this version
 
-**`Perf.lua` minor 12 — suspend and resume become two holds on one latch, and the floor rises.**
+**`Perf.lua` minor 13 — the sampler's state fields stay raw, and the open depth resets at window
+edges.** One file moves, 12 → 13. Nothing is added, removed or resignatured, and the member manifest
+differs from 12.5's in its version key alone. `PerfPanel.lua` stays 5 and the floors do not move.
 
-### The floor is a re-vendor trigger
+### `armed`, `recording` and `label` hold `false`, never nil
+
+Through minor 12 `P.armed` and `P.recording` were initialized to `nil` and set back to `nil` whenever
+a window opened or closed, and `P.label` went back to `nil` on `Cancel`. Assigning nil removes a raw
+key, so every later read fell through to the instance's `__index` closure, and the sampler reads
+`recording` and `armed` on every frame of a run. The closure exists only for
+[`suspended`](#the-instance-surface); the old comment claiming the instance had "no metatable" was
+stale from minor 12.
+
+From 13 all three start as `false` and every write that used to be nil writes `false`: `openWindow`
+(`armed`), `closeWindow` (`recording`), `Start`, `Stop` and `Cancel`. `Start(label)` stores
+`label or false`, so a label-less `Start()` keeps the key too. `P.on` was already a raw boolean and
+is unchanged.
+
+**What a host can observe.** A read of `P.armed`, `P.recording` or `P.label` answers `false` where it
+answered `nil`. Every reader in this library tests truthiness or compares against a window name, so
+nothing here changes. A host suite that asserts `P.recording == nil` (or `assertEqual(p.recording,
+nil)`) after a window closes now reads `false` and must assert falsiness instead; this library's own
+`tests/test_perf_run.lua` had three such asserts. No consumer asserts nil on the 2026-09-24 grep.
+AbsorbTracker's perf suites reset the fields to nil by hand between cases, which still works: the
+reads then fall through to `__index` and answer nil, as they did at 12.5.
+
+### A leaked `Open` no longer parents a bracket in a later window
+
+`Close` finds its slot by scanning down from the open depth, and a host error between `Open` and
+`Close` leaves that slot open. Through minor 12 only `P.Reset` (from `Start`) dropped the depth, so
+for the rest of the run every nested `Close` named the leaked key as its **observed** parent
+(`observedWithin`), even in a later window. From 13 the window edges, `openWindow` and
+`closeWindow`, reset the depth to zero. Inside one window a leaked slot is still discarded, not
+credited ([Bracketing a multi-exit function](#bracketing-a-multi-exit-function)). The free list
+itself is kept, so the steady state still allocates nothing.
+
+### Previously, at 12.5
+
+**`Perf.lua` minor 12 — suspend and resume become two holds on one latch, and the floor rises.** The
+floor `NEEDS_LIFECYCLE = 1` is unchanged at 13.
+
+#### The floor is a re-vendor trigger
 
 This file now returns before `NewLibrary` unless `LibKa0s-Lifecycle-1.0` is present at minor 1 or
 newer, exactly as it already did for Core. **A floor bump is a re-vendor trigger**: a vendored copy
@@ -47,7 +86,7 @@ so a host that copied half the folder loses its perf probe outright rather than 
 Re-vendoring is whole-folder, so this is a loud failure in the one case it can happen — a partial
 copy — and no failure at all otherwise.
 
-### `descriptor.lifecycle`, and what it replaces
+#### `descriptor.lifecycle`, and what it replaces
 
 `lifecycle` is **required**. `suspend` and `resume` are no longer required and are **no longer
 called**; a host that has adopted the latch passes the very same two functions to
@@ -61,7 +100,7 @@ change exists to make unreachable. An instance with no latch has no way to make 
 all, so Experiment B would measure a fully live addon and report a delta of about zero: a wrong
 answer that looks exactly like a good one.
 
-### `P.Suspend()` takes a named hold; `P.Resume()` gives it back
+#### `P.Suspend()` takes a named hold; `P.Resume()` gives it back
 
 `P.Suspend()` takes `lifecycle.HOLD_PERF` (`"perf"`), and it is the latch that runs the host's
 teardown — and only if this is the first hold. An addon the player has already disabled is already
@@ -76,7 +115,7 @@ The log line follows the answer rather than announcing a restore that did not ha
 reading "events and frames restored" over an addon that is still off has been told the opposite of
 what occurred and will go looking for the bug in the wrong addon.
 
-### `P.suspended` is now a view, not a copy
+#### `P.suspended` is now a view, not a copy
 
 The field keeps its name and its meaning — it is still what the host contract tells a show-decision
 to consult — but it **reads the latch** rather than holding a second boolean beside it. This module
@@ -86,7 +125,7 @@ keeps no `suspended` state of its own; `lifecycle:IsHeld("perf")` is the answer.
 after, and from that moment the module would have two answers to "is this addon inert" — which is
 the exact bug this change removes, arriving silently through the back door.
 
-### "Resume before saving or reporting" becomes "release the hold before saving or reporting"
+#### "Resume before saving or reporting" becomes "release the hold before saving or reporting"
 
 `perf finish` still releases before `Save` and `FormatReport`, and the guarantee is unchanged in
 substance: a raise inside persistence or formatting **must not** be able to strand the hold for the
@@ -407,6 +446,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `EncodeJSON(value)` | 1 | The lib's hand-rolled JSON encoder, mirrored onto every instance. |
 | `SCHEMA` | 1 | The record schema version this build of the lib emits. |
 | `on` | 1 | Plain boolean field — read directly by every hot-path bracket. |
+| `armed` / `recording` | 1 · **13** | The window armed and waiting for combat, and the window recording now (`"active"` or `"suspended"`). **From 13 `false` when there is none, never nil**, so both stay raw keys the sampler reads without reaching the metatable. |
+| `label` | 1 · **13** | The run's capture label, as `Start(label)` stored it. **From 13 `false` before a `Start`, after a `Cancel`, and after a label-less `Start()`**, never nil. |
 | `suspended` | 1 · **12** | The one the host contract above tells a show-decision to consult. **From 12 it is a VIEW of the latch** (`lifecycle:IsHeld("perf")`), not a stored boolean, and **assigning to it raises** — take or release the hold instead. `Stop()` still leaves the hold alone. |
 | `__buckets()` / `__fpsArms()` / `__completed()` / `__reviewed()` / `__sampler()` / `__panel()` | 1 | Test seams over state that is otherwise private. A host suite asserting that a declared bucket was actually reached has no other handle on it. |
 
@@ -543,17 +584,3 @@ host that passes nothing gets a better-looking button from the same call it alwa
 The two files move as one. A consumer holding `Perf.lua` from one vendored copy and `PerfPanel.lua`
 from another is not a supported state and LibStub cannot detect it — which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 13.5
-
-**Take it; nothing in a host's own code changes.** Version 13.5 adds no member and no descriptor
-field, and the member manifest differs from this one in its version key alone. Two internals move:
-
-- **`armed`, `recording` and `label` read `false` where they read `nil` here.** The sampler reads the
-  first two every frame, and a nil write sent each read through the instance's `__index` closure.
-  A host suite asserting `p.recording == nil` (or `assertEqual(p.recording, nil)`) after a window
-  closes must assert falsiness instead. Nothing that tests truthiness changes.
-- **The open bracket depth resets when a window opens and when it closes.** A bracket leaked by a
-  host error in one window no longer shows up as the observed parent of brackets in a later window.
-
-Everything else in this document is unchanged at version 13.5.

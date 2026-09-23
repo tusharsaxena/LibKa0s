@@ -15,8 +15,29 @@ cannot drift. Release order is in
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
 (`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
 (`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
-(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **test kit revision 26**. Every other library file's LibStub minor is still
+(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13** (`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key 13.5), **test kit revision 26**. Every other library file's LibStub minor is still
 v1.55.0's so far; the items that move one add it to this line in the same commit.
+
+### Perf minor 13: the sampler's state fields stay raw, and the open depth resets at window edges
+
+- **Performance: `armed`, `recording` and `label` hold `false`, never nil** (review finding
+  `LibKa0s-R-11`). Through minor 12 they were initialized and reset to nil, which removes the raw
+  key, so the sampler's every-frame reads of `recording` and `armed` fell through to the instance's
+  `__index` closure (it exists only for `suspended`). All three now start `false` and every nil write
+  (`openWindow`, `closeWindow`, `Start`, `Stop`, `Cancel`) writes `false`; `Start(label)` stores
+  `label or false`. The stale "no metatable" comment on `P.on` is rewritten.
+- **Behavioral: a leaked `Open` no longer parents a bracket in a later window** (review finding
+  `LibKa0s-R-16`). A host error between `Open` and `Close` left the slot open until the next
+  `Start`, so every nested `Close` for the rest of the run named the leaked key as its observed
+  parent. `openWindow` and `closeWindow` now reset the open depth to zero; the free list is kept.
+- No member or descriptor field is added. A host suite asserting `p.recording == nil` after a window
+  closes reads `false` now and must assert falsiness; this repo's `tests/test_perf_run.lua` had three.
+  No consumer asserts nil on the 2026-09-24 grep; AbsorbTracker's perf suites write nil by hand
+  between cases, which still works.
+- `tests/test_perf_core.lua`: "a leaked Open in window A does not parent a bracket in window B".
+  `tests/test_perf_isolation.lua`: the three fields stay raw keys across a window, a cancel and a
+  label-less `Start`; the 0 KB bracket pins stay green. Documented in
+  [the version 13.5 document](docs/api/Perf/version-13.5-docs.md); version 12.5 is Superseded.
 
 ### DebugLog minor 13: the buffer trim is batched
 

@@ -1209,7 +1209,7 @@ badge and any count quoted in the docs must agree with it.
 - compose: the descriptor moves the Reset all tooltip and nothing else Master controls draws
 - compose: a shell that hands __AttachCompose no descriptor keeps the minor-4 tooltip
 
-### test_perf_core.lua (70)
+### test_perf_core.lua (71)
 
 - lib: registers under its major with a schema and a default ring
 - lib: New requires a name, an sv global and a lifecycle latch
@@ -1232,6 +1232,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: Open/Close feed the same buckets P.Note does
 - lib: a bracket opened inside another records the enclosing key as its observed parent
 - lib: an exit that forgot its Close is discarded, not credited with a later bracket's time
+- lib: a leaked Open in window A does not parent a bracket in window B
 - lib: EncodeJSON emits object keys in sorted order
 - lib: EncodeJSON renders integral numbers without a decimal point
 - lib: EncodeJSON renders fractional numbers to four places
@@ -1396,13 +1397,14 @@ badge and any count quoted in the docs must agree with it.
 - cmd: a panel click prints exactly what typing the command prints
 - cmd: clicking a locked panel row does nothing
 
-### test_perf_isolation.lua (11)
+### test_perf_isolation.lua (12)
 
 - iso: two instances create separate sampler frames
 - iso: driving one instance's sampler accumulates into that instance alone
 - iso: an instance's sampler is detached without touching the other's
 - iso: a dormant Open/Close bracket allocates nothing and records nothing
 - iso: an active Open/Close bracket reuses its slots instead of allocating one per open
+- iso: armed, recording and label stay raw fields across a window and a cancel
 - iso: two instances create separate panel frames
 - iso: each panel renders its own host's state and its own slash prefix
 - iso: clicking one host's panel drives that host only
@@ -1771,11 +1773,11 @@ badge and any count quoted in the docs must agree with it.
 | test_options_switched.lua | 9 |
 | test_options_combat.lua | 27 |
 | test_options_compose.lua | 45 |
-| test_perf_core.lua | 70 |
+| test_perf_core.lua | 71 |
 | test_perf_run.lua | 40 |
 | test_perf_panel.lua | 45 |
 | test_perf_command.lua | 20 |
-| test_perf_isolation.lua | 11 |
+| test_perf_isolation.lua | 12 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -1795,4 +1797,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1585** |
+| **Total** | **1587** |

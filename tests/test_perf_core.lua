@@ -249,6 +249,33 @@ function()
   assertEqual(p.__buckets().outer.totalMs, 50, "and its parent is unaffected")
 end)
 
+test("lib: a leaked Open in window A does not parent a bracket in window B", function()
+  -- A host error between Open and Close leaves the slot open. Before Perf minor 13 only Reset
+  -- (from Start) dropped the depth, so every nested Close for the rest of the run named the leaked
+  -- key as its observed parent, even in a later window. The window edges now reset it.
+  local p = Fixture.new()
+  local function tick(combat)
+    T.mocks.__inCombat = combat
+    p.__sampler():__fire("OnUpdate", 0.5)
+  end
+  p.Start("leak")
+  p.Measure("a")
+  tick(true)                 -- window A opens
+  T.mocks.__profileMs = 0
+  p.Open("leaked")           -- and the host raised before its Close
+  tick(false)                -- window A closes
+  p.Measure("b")
+  tick(true)                 -- window B opens
+  p.Open("inner")
+  T.mocks.__profileMs = 2
+  p.Close("inner")
+  tick(false)
+  assertEqual(p.__buckets().inner.observedWithin, nil,
+    "the leaked window-A slot must not be named as window B's parent")
+  p.Stop()
+  if p.suspended then p.Resume() end
+end)
+
 -- ── JSON encoding ───────────────────────────────────────────────────────────────────────────
 
 test("lib: EncodeJSON emits object keys in sorted order", function()
