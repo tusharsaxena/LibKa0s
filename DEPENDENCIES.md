@@ -121,7 +121,7 @@ From the repo root, with the development set installed:
 
 ```sh
 lua5.1 tests/run.lua                                # the headless suite — 0 failed
-luacheck .                                          # 0 warnings / 0 errors, in 72 files
+luacheck .                                          # 0 warnings / 0 errors, in 80 files
 lizard -l lua -x "./libs/*" -x "./tests/_kit/*" .   # recorded; 0 functions above CCN 15
 tests/_kit/run-automated-tests.sh                   # all of the above, frozen into a bundle
 ```

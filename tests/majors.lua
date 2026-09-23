@@ -25,9 +25,24 @@ local MAJORS = {
     primary = "Env",
   },
   {
+    major = "LibKa0s-Compat-1.0",
+    files = { "Compat" },
+    primary = "Compat",
+  },
+  {
     major = "LibKa0s-Lifecycle-1.0",
     files = { "Lifecycle" },
     primary = "Lifecycle",
+  },
+  {
+    major = "LibKa0s-Bus-1.0",
+    files = { "Bus" },
+    primary = "Bus",
+  },
+  {
+    major = "LibKa0s-Schema-1.0",
+    files = { "Schema" },
+    primary = "Schema",
   },
   {
     major = "LibKa0s-Pool-1.0",

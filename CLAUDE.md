@@ -226,7 +226,7 @@ never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests
 | Doc | Covers |
 |---|---|
 | [`README.md`](README.md) | What each module is, how to install and re-vendor, the repo layout |
-| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Lifecycle`, `Pool`, `Item`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
+| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Compat`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
 | [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
 | [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-analysis/README.md` points at rather than restating |
 | [`docs/adoption-prompt.md`](docs/adoption-prompt.md) | The brief handed to a consumer repo adopting a major: what to wire, what to delete, and what must not be hand-rolled |
@@ -251,6 +251,6 @@ lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for w
 luacheck .          # 0 warnings / 0 errors
 ```
 
-That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — seventy-two
-files at v1.53.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
+That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — eighty
+files at v1.55.0, everything but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). 0/0
 only means something if the files carrying the change are inside the checked set.

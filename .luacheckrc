@@ -37,6 +37,9 @@ read_globals = {
   "C_SpecializationInfo",
   "GetSpecialization", "GetSpecializationInfo", "IsInInstance", "IsInRaid", "IsInGroup",
   "GetNumGroupMembers",
+  -- LibKa0s-Compat-1.0's ladders: the deprecated spell globals below C_Spell, and 12.0's secret
+  -- tests. Every one read bare, at call time, and guarded for absence.
+  "GetSpellInfo", "GetSpellTexture", "GetSpellCooldown", "issecretvalue", "canaccessvalue",
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes
 -- through _G[name]. That is the one sanctioned _G mutation in this library.

@@ -12,9 +12,12 @@ cannot drift. Release order is in
 
 ## v1.55.0 — 2026-09-23
 
-Versions in this release: **test kit revision 25**. **No library file changes at all** — every
-major's version key and every file's LibStub minor are exactly v1.54.2's, so a consumer that
-re-vendors takes new bytes in `tests/_kit/` and identical bytes in `libs/LibKa0s/`.
+Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**
+(`LibKa0s-Compat-1.0`), **Bus minor 1** (`LibKa0s-Bus-1.0`) and **Schema minor 1**
+(`LibKa0s-Schema-1.0`). **No existing library file changes** — every existing major's version key
+and every existing file's LibStub minor are exactly v1.54.2's, so a consumer that re-vendors takes
+new bytes in `tests/_kit/`, three new files and three new `LibKa0s.xml` rows in `libs/LibKa0s/`,
+and identical bytes everywhere else in the payload.
 
 **Five rules in the Ka0s WoW Addon Standard v2.63.0 name this revision, and this release is what
 they were waiting for.** `layout-§1`, `line-endings-§7`, `testing-§9`, `localization-§5` and
@@ -25,6 +28,67 @@ Each of those five rules is enforced by a gate, the gate lives in this kit, and 
 is the re-vendor. A consumer's obligations under those five clauses therefore commence when it
 re-vendors this tag — not when the standard was committed — and a repo whose kit predates revision
 25 owes the re-vendor, never a hand-written suite of its own.
+
+### Three new majors: Compat, Bus and Schema
+
+The Ka0s WoW Addon Standard's harvest of 2026-09-22 ratified three extractions into this library —
+findings C2-F01 (Compat), C2-F02 (the bus), C2-F03 (the schema runtime) and C3-F08 (the secret
+seam, narrowed to `IsSecret` / `CanAccess` / `IsSafeKey` and folded into Compat) in that bundle's
+`02_FINDINGS.md`. Each lands the way a new major always has: a new file in `LibKa0s/`, a new
+`LibKa0s.xml` row, a new row in `tests/majors.lua`, a suite, an API document and a generated
+member manifest. **All three are additive.** None changes a byte of an existing file, and each
+floors on Core minor 1 and returns before `NewLibrary` without it, calling no Core member — the
+load-payload check `library-stack-§7` asks for, so a partial payload leaves every module absent
+rather than a working half.
+
+- **New major `LibKa0s-Compat-1.0` (`Compat.lua`, Compat minor 1): nine stateless members.** The
+  secret seam — `IsSecret`, `CanAccess`, `IsSafeKey` — and six version-variant readers:
+  `GetSpellInfo`, `GetSpellName`, `GetSpellTexture`, `GetSpellCooldown`, `GetSpecialization`,
+  `GetSpecializationInfo`, each a ladder from the namespaced API down to the deprecated global,
+  read at call time and guarded for absence. It is deliberately narrow: a member is here only when
+  two or more addons had a production caller for it and every copy agreed on the right answer, and
+  what was considered and left out is recorded in the document. The copies it replaces had
+  drifted — two read the deprecated `GetSpellInfo` global's rank as the icon, one compared a
+  possibly-secret spell name with `""`, one read a legacy `isEnabled` of `0` as enabled — and each
+  is resolved in writing in [its document](docs/api/Compat/version-1-docs.md). One statement there
+  rests on the source copies rather than on a measurement, and the document says so: that
+  `isEnabled` on the modern cooldown table is a plain value. It wants an in-game check on a 12.x
+  client. `tests/test_compat.lua`, 49 cases.
+- **New major `LibKa0s-Bus-1.0` (`Bus.lua`, Bus minor 1).** `New` builds the stand-down record for
+  an addon's tracked bus receivers — `NewTarget`, `StandDown`, `StandUp` — so a stood-down addon
+  takes every event and message registration down and a stood-up one puts back exactly what is
+  wanted now, CallbackHandler's optional `arg` included. `Catalog` validates the addon's
+  `Ka0s_<Addon>_<Event>` message names once at load and hands back a strict copy that raises on a
+  mistyped key (`architecture-§4`). Four repos wrote the record by hand; this is the widest of them
+  without the two defects the copies carried, a key list that gained a duplicate on every
+  re-register and a replay that dropped `arg`. It owns no hold set — the host calls it from inside
+  its own Lifecycle callbacks, at the point in its sequence it chooses — and AceEvent-3.0 is
+  resolved at call time, never required. [Its document](docs/api/Bus/version-1-docs.md) records
+  what it does not free: every AceEvent-embedded target lives for the session in `AceEvent.embeds`
+  whatever the bus does, so retiring a record releases the bus's reference, not the memory.
+  `tests/test_bus.lua`, 27 cases.
+- **New major `LibKa0s-Schema-1.0` (`Schema.lua`, Schema minor 1): the settings schema runtime.**
+  The host keeps its rows; this supplies the path primitives (`SplitPath` / `Read` / `Write` /
+  `SameValue`, and the `STRINGS` table of default refusal wording), the row registry, the single
+  write seam `Set` (`architecture-§5`), the bulk bracket (`debug-logging-§10`), the profile reset's
+  count and `Validate`. Nine hosts carried that machinery and the copies disagreed on which of two
+  duplicate rows wins, whether a table value is copied into the store, what the bulk line counts
+  and whether a raising `onChange` is swallowed; each is one answer now, recorded in
+  [its document](docs/api/Schema/version-1-docs.md) with the reading taken. Adopting it changes
+  some hosts' behavior on purpose, and that document's adoption notes list every such change.
+  A host's library-absent stub is write-completing and log-silent, so host verbs and Reset All
+  keep writing on a degraded load; `tests/test_schema.lua` carries the reference stub.
+  `tests/test_schema.lua`, 62 cases.
+
+**A consumer whose harness re-types its lib load list owes three rows on re-vendor.** A harness that
+derives the list from `LibKa0s.xml` picks the new files up with no edit. Two re-type it —
+LootHistory's `tests/test_libka0s.lua` (`LIB_FILES`) and WhatGroup's `tests/loader.lua`
+(`LIBKA0S`) — and each adds `libs/LibKa0s/Compat.lua` after `Env.lua`, then `libs/LibKa0s/Bus.lua`
+and `libs/LibKa0s/Schema.lua` after `Lifecycle.lua`, the XML's own order. Adoption of any of the
+three majors is per host and separate from the re-vendor; `docs/releasing.md`'s consumer table
+carries each as pending. A consumer whose runner registers a table-map surface source adds the
+major's row to it when it adopts, or the by-name parity call cannot resolve the live half
+([Compat's gate](docs/api/Compat/version-1-docs.md#how-a-host-wires-it)).
 
 ### The declaration is the pair (basename, directory)
 
@@ -413,11 +477,12 @@ passes here therefore proves very little about the eleven trees the folder is co
 The lesson is written into the kit's own headers rather than left here: a gate whose self-test reads
 the live runner's state is a gate that tests the repository it is standing in, not the gate.
 
-The green gate here: **1318 passed, 0 failed, 1 skipped, 1319 total**, `luacheck` **0 warnings /
-0 errors in 74 files**. The one skip is the prose decline, which is the point of it — and it is
-also why the prose gate's seven self-tests and its three carve-out cases run in the consumers that
-wire the kit's copy and in none of this repository's 1319: a suite this library declines is a suite
-it cannot exercise.
+The green gate here: **1456 passed, 0 failed, 1 skipped, 1457 total**, `luacheck` **0 warnings /
+0 errors in 80 files**. The kit revision alone measured 1318 passed of 1319 in 74 files; the three
+new majors add 138 cases (49 Compat, 27 Bus, 62 Schema) and six files. The one skip is the prose
+decline, which is the point of it — and it is also why the prose gate's seven self-tests and its
+three carve-out cases run in the consumers that wire the kit's copy and in none of this repository's
+1457: a suite this library declines is a suite it cannot exercise.
 
 ## v1.54.2 — 2026-09-22
 

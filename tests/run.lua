@@ -41,7 +41,10 @@ _G.LK_TEST = Kit.expose{
   widgets = mocks.LibStub("LibKa0s-Widgets-1.0"),
   core = mocks.LibStub("LibKa0s-Core-1.0"),
   env = mocks.LibStub("LibKa0s-Env-1.0"),
+  compat = mocks.LibStub("LibKa0s-Compat-1.0"),
   lifecycle = mocks.LibStub("LibKa0s-Lifecycle-1.0"),
+  bus = mocks.LibStub("LibKa0s-Bus-1.0"),
+  schema = mocks.LibStub("LibKa0s-Schema-1.0"),
   pool = mocks.LibStub("LibKa0s-Pool-1.0"),
   item = mocks.LibStub("LibKa0s-Item-1.0"),
   debuglog = mocks.LibStub("LibKa0s-DebugLog-1.0"),
@@ -70,7 +73,7 @@ Kit.layoutCap = { hub = "CLAUDE.md" }
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_env", "test_lifecycle", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_debuglog", "test_slash",
+    "test_core", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_debuglog", "test_slash",
     "test_launcher",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_tabs",

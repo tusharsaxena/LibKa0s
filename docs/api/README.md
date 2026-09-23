@@ -54,7 +54,10 @@ the file you need:
 |---|---|---|
 | `LibKa0s-Core-1.0` | `<Core>` | `LibStub("LibKa0s-Core-1.0").MODULES` |
 | `LibKa0s-Env-1.0` | `<Env>` | `LibStub("LibKa0s-Env-1.0").MODULES` |
+| `LibKa0s-Compat-1.0` | `<Compat>` | `LibStub("LibKa0s-Compat-1.0").MODULES` |
 | `LibKa0s-Lifecycle-1.0` | `<Lifecycle>` | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` |
+| `LibKa0s-Bus-1.0` | `<Bus>` | `LibStub("LibKa0s-Bus-1.0").MODULES` |
+| `LibKa0s-Schema-1.0` | `<Schema>` | `LibStub("LibKa0s-Schema-1.0").MODULES` |
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
@@ -99,11 +102,29 @@ answers both "what does this version have?" and "when did I get it?".
 |---|---|---|---|
 | [1](./Env/version-1-docs.md) | `Env.lua` 1 | v1.15.0 | **Current** |
 
+### `LibKa0s-Compat-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Compat/version-1-docs.md) | `Compat.lua` 1 | v1.55.0 | **Current** |
+
 ### `LibKa0s-Lifecycle-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
 | [1](./Lifecycle/version-1-docs.md) | `Lifecycle.lua` 1 | v1.40.0 | **Current** |
+
+### `LibKa0s-Bus-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Bus/version-1-docs.md) | `Bus.lua` 1 | v1.55.0 | **Current** |
+
+### `LibKa0s-Schema-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Schema/version-1-docs.md) | `Schema.lua` 1 | v1.55.0 | **Current** |
 
 ### `LibKa0s-Pool-1.0`
 

@@ -16,14 +16,15 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
    That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
-   is sixty-five files at v1.40.0: everything but `tests/_kit/`, which is excluded only because
+   is eighty files at v1.55.0: everything but `tests/_kit/`, which is excluded only because
    it is a byte copy of `testkit/` and would report every finding twice. A consumer's is scoped too,
    and usually excludes `libs/` and `tests/`. 0/0
    only means something if the files carrying the seam are inside the checked set, so confirm that
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   eighteen, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   twenty-one, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   `Compat.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Media.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `DRAG_MINOR` in
    `WidgetsDragHandle.lua`, `WIDGETS_MINOR` in
@@ -33,7 +34,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
    file you did not touch does not move. Bumping the whole lib in lockstep would discard the
    narrow-skew property that made one major per module worth having.
-3. **A new module is also a new row in `tests/run.lua`'s `MAJORS`** — its major string, its files in
+3. **A new module is also a new row in `tests/majors.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
    that table rather than naming files inline, so a module missing from it is a module nothing
    checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of five and a
@@ -43,7 +44,8 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`). **A file added to an existing major moves
    that major's version key**, because the key is every file's minor in load order — the Options key
    ran three numbers through 13.12.3, four from 14.13.1.3 and five from 21.20.1.7.3. The table
-   carries one row per shipped major — twelve today, since `LibKa0s-Lifecycle-1.0` at v1.40.0.
+   carries one row per shipped major — fifteen today, since `LibKa0s-Compat-1.0`,
+   `LibKa0s-Bus-1.0` and `LibKa0s-Schema-1.0` at v1.55.0.
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
    say what changed. `tests/test_versioning.lua` fails if the block and any major's `lib.MODULES`
    disagree, so this is enforced rather than remembered.
@@ -175,7 +177,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the eighteen `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the twenty-one `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -278,8 +280,8 @@ Rules, and the reason each exists:
   minors, per-module re-vendoring is exactly how cross-major skew gets manufactured: an addon ends
   up carrying a new `Perf.lua` over an old `Core.lua`, or a `Core.lua` that never arrived at all.
   The only negotiation between majors is a floor — a dependent file names the minimum minor it needs
-  (`NEEDS_CORE`, at the top of every major's primary file but Core's — `Env.lua`, `Pool.lua`,
-  `Item.lua`, `Media.lua`, `Widgets.lua`, `DebugLog.lua`, `Slash.lua`, `Launcher.lua`,
+  (`NEEDS_CORE`, at the top of every major's primary file but Core's — `Env.lua`, `Compat.lua`,
+  `Lifecycle.lua`, `Bus.lua`, `Schema.lua`, `Pool.lua`, `Item.lua`, `Media.lua`, `Widgets.lua`, `DebugLog.lua`, `Slash.lua`, `Launcher.lua`,
   `Options.lua` and `Perf.lua`)
   and returns
   before `NewLibrary` if the dependency is missing or older, so the module is **absent** rather than
@@ -344,6 +346,9 @@ dropped `makeCloseButton`, which as of v1.5.0 has no consumer at all** — it as
 | `LibKa0s-Env-1.0` | AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, PartyFrameEnhanced | `core/EnvSetup.lua` (all eleven). **This row read "none yet" until the v1.19.0 sweep**, which is the second time this table has carried that exact error — the Media row did it at v1.15.0, and the note there says why: the major landed everywhere at once, so there is no first host to notice and no second host to prompt a revisit. A row claiming no consumers is worse than a row that is merely stale, because it reads as a decision rather than as an omission |
 | `LibKa0s-Pool-1.0` | BankLedger, LootHistory, MultiMeters, KickCD, AuraMaster | All five look it up in `core/PoolSetup.lua` and expose it as `NS.Pool`, each keeping a local fallback so a degraded install still pools rather than allocating a frame per row per refresh. BankLedger: five sites across four files — `modules/LedgerTable.lua` and `modules/SessionWindow.lua` row pools, plus `modules/Insights.lua` and `modules/InsightsWidgets.lua`, where a nested `ReleaseAll(pool, fn)` hook releases each panel's `_rows`. LootHistory: the heaviest consumer and the leak that motivated the module — `modules/BrowserTable.lua`'s row pool plus ~36 array pools in `modules/Analytics.lua` (bars, swatches, legends, list rows). MultiMeters: `modules/Window.lua`, and the ONLY consumer that takes position from acquire order — the pooled object is the row TABLE, not the frame it wraps, with `row:Release()` as the `before` hook. It is why minor 3 exists: see the CHANGELOG. KickCD: the only KEYED consumer — `modules/IconGrid.lua` keys buttons by spellID through `NewKeyed`/`AcquireKeyed`/`ReleaseAllKeyed` so a cooldown message reaches one widget without a scan, which is why `NewKeyed` was added at minor 2. AuraMaster: an array pool per container for the preview's placeholder elements, with `modules/Preview.lua` its only caller. The live aura buttons are Blizzard's and never come from the pool. **Ordering matters to two of them.** Minor 3's guarantee — a position gets its own object back — is load-bearing for MultiMeters and for AuraMaster, where a re-dressed preview keeps every placeholder in the slot it held (its local fallback reproduces the same backward release). It is inert for the three whose redraws are event-driven and whose figures are plain, and meaningless for KickCD, where the key is the mapping |
 | `LibKa0s-Item-1.0` | BankLedger, ConsumableMaster, LootHistory | `core/ItemSetup.lua` (all three). The adoption plan named BankLedger and LootHistory; **ConsumableMaster is a third that arrived without one**, which is the sort of thing only this sweep finds. MultiMeters is a deliberate NON-consumer and says so upstream — a damage meter has no item surface — so its absence here is a decision rather than a gap, unlike the six addons that simply have no reason to look it up |
+| `LibKa0s-Compat-1.0` | None yet — adoption pending | New at v1.55.0. The copies it replaces are the hosts' own `core/Compat.lua` and, in AuraMaster and MultiMeters, `core/Secrets.lua`; a host keeps calling `NS.Compat.X` / `NS.Secrets.X` and only the definitions move ([Adopting it](api/Compat/version-1-docs.md#adopting-it)). |
+| `LibKa0s-Bus-1.0` | None yet — adoption pending | New at v1.55.0. The stand-down record replaces the hand-written ones in PartyFrameEnhanced, AbsorbTracker, ConsumableMaster and MultiMeters; `Catalog` is open to every host that declares `Ka0s_<Addon>_<Event>` constants ([What this major is](api/Bus/version-1-docs.md#what-this-major-is)). |
+| `LibKa0s-Schema-1.0` | None yet — adoption pending | New at v1.55.0. Each host's `settings/Schema.lua` keeps its rows and hands the runtime to this major; the behavior a host crosses on adoption is listed in [Adoption notes](api/Schema/version-1-docs.md#adoption-notes). |
 
 **A gap the Slash consumers had, found by PrettyChat and closed at Slash minor 10 (v1.34.0).**
 Through Slash minor 9, `lib.ParseValue` split the remainder on whitespace and a `string` row took the

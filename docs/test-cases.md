@@ -68,6 +68,58 @@ badge and any count quoted in the docs must agree with it.
 - env: GetZone answers zone and subzone
 - env: GetZone answers empty strings, never nil, when the readers are absent
 
+### test_compat.lua (49)
+
+- compat: registers minor 1 with exactly the nine public members
+- compat: the Core floor keeps the major absent from a payload without Core
+- compat: the source reads every global bare, never through the global table
+- compat: IsSecret is false for every value when the client has no secrets system
+- compat: IsSecret asks the client's own test
+- compat: IsSecret normalizes a truthy non-boolean answer to true
+- compat: CanAccess asks canaccessvalue where it exists
+- compat: CanAccess without canaccessvalue is 'accessible unless secret'
+- compat: CanAccess with neither global answers true, nil included
+- compat: a secret that is accessible is still not a safe key
+- compat: IsSafeKey(nil) is false with and without the secrets system
+- compat: IsSafeKey is true for plain values, and v ~= nil with no system
+- compat: Core's concat probe answers a different question and is not duplicated
+- compat: GetSpellInfo flattens C_Spell's table into exactly six values
+- compat: GetSpellInfo's modern rung is authoritative when it answers nil
+- compat: GetSpellInfo remaps the legacy global's real shape, dropping the rank
+- compat: GetSpellInfo answers a single nil when neither rung exists
+- compat: GetSpellInfo takes a number or a string and calls no rung for anything else
+- compat: GetSpellInfo passes a secret field through untouched
+- compat: GetSpellInfo answers a single nil when the legacy global has no name
+- compat: GetSpellName answers from C_Spell.GetSpellName first
+- compat: GetSpellName falls to C_Spell.GetSpellInfo's name when the top rung is nil
+- compat: GetSpellName treats a plain empty string as no answer
+- compat: GetSpellName reads C_Spell.GetSpellInfo when C_Spell.GetSpellName is absent
+- compat: GetSpellName on the legacy global returns its first value only
+- compat: GetSpellName answers nil when no rung exists
+- compat: GetSpellName returns a secret untouched and asks IsSecret before anything else
+- compat: GetSpellName(nil) answers nil and calls no rung
+- compat: GetSpellTexture returns one value, dropping the client's original icon
+- compat: GetSpellTexture's modern rung is authoritative when it answers nil
+- compat: GetSpellTexture falls back to the legacy global, one value
+- compat: GetSpellTexture answers nil with no rung, and for a nil id calls none
+- compat: GetSpellCooldown returns the modern table's five values in order
+- compat: GetSpellCooldown reads a missing isEnabled as true and only true as active
+- compat: GetSpellCooldown answers the inert tuple for a nil info table
+- compat: GetSpellCooldown passes secret timings through without touching them
+- compat: GetSpellCooldown derives isActive on the legacy global
+- compat: GetSpellCooldown reads a zero legacy duration as not active
+- compat: GetSpellCooldown reads a legacy isEnabled of 0 or false as disabled
+- compat: GetSpellCooldown never orders a secret legacy duration
+- compat: GetSpellCooldown is inert with no rung and calls none for a bad id
+- compat: GetSpecialization prefers the namespaced reader, even its nil, one value
+- compat: GetSpecialization falls back to the global, one value
+- compat: GetSpecialization answers nil when neither reader exists
+- compat: GetSpecializationInfo passes the namespaced multi-return through exactly
+- compat: GetSpecializationInfo uses the global only when the namespaced reader is absent
+- compat: GetSpecializationInfo(nil) calls no reader, and nil when none exists
+- compat: with every rung removed each member answers the documented absent value
+- compat: a host patching the shared table does not change another member's answer
+
 ### test_lifecycle.lua (21)
 
 - lifecycle: the major is registered and floors on Core
@@ -91,6 +143,101 @@ badge and any count quoted in the docs must agree with it.
 - lifecycle: a raising standDown leaves the hold taken, so the release path still works
 - lifecycle: Hold and Release refuse a key that is not a non-empty string
 - lifecycle: two latches share nothing
+
+### test_bus.lua (27)
+
+- bus: the major is registered and reports its file minor
+- bus: the major is absent without Core, and with a Core below its floor
+- bus: New refuses a descriptor without name, and a non-function isDown
+- bus: the documented degradation stub matches the live surface
+- bus: NewTarget answers a fresh target per call, and two receivers both hear one message
+- bus: SendMessage on a tracked target is left raw, and reaches others while its own are down
+- bus: the record follows every wrapper, and UnregisterAllEvents leaves messages alone
+- bus: StandDown takes events AND messages down and answers the entry count
+- bus: StandDown keeps the record and StandUp replays it
+- bus: StandUp replays the record as it is NOW, not a snapshot taken at StandDown
+- bus: a registration made while down is recorded and NOT live until StandUp
+- bus: StandDown and StandUp are idempotent
+- bus: re-registering a key replaces the entry in place and never duplicates it
+- bus: every handler form survives the round trip with CallbackHandler's arguments
+- bus: a raw register that raises while up reaches the caller and is not recorded
+- bus: one entry that raises on replay does not stop the others, and StandUp never raises
+- bus: a rejected entry is dropped from the record
+- bus: StandUp is refused while isDown answers true, and the bus stays down
+- bus: composed with Lifecycle, releasing one hold under another leaves the bus down
+- bus: a target only CallbackHandler holds survives StandDown and a full GC
+- bus: a target emptied by its owner leaves the bus, which then holds nothing of it
+- bus: two buses share nothing
+- bus: the bus prints nothing across a full cycle
+- bus: without AceEvent-3.0, NewTarget answers nil and the rest answer zero
+- bus: Catalog accepts a conforming table and answers a fresh copy of it
+- bus: Catalog refuses each malformed declaration, naming what is wrong
+- bus: the catalog is strict on read and on write
+
+### test_schema.lua (62)
+
+- schema: the major is registered and reports its own live version
+- schema: the module refuses to register without Core, and registers with it
+- schema: the lib-level surface is exactly the six pure members
+- schema: the instance surface is exactly the documented member list
+- schema: the reference stub carries the whole surface, lib level and instance
+- schema: the reference stub reaches neither the library nor the suite
+- schema: the stub completes writes, in the live seam's order and to the same store
+- schema: the stub's Reset All sweep resets rows and keeps the sweep veto
+- schema: the stub's lib level answers as the library's does on the same inputs
+- schema: L overrides a STRINGS key, and a synthesizing L does not mask the rest
+- schema: SplitPath memoizes by identity, drops empty segments, tostrings a number
+- schema: Read walks a nested path and answers nil at every absence
+- schema: Write creates intermediates and repairs a non-table one
+- schema: SameValue compares scalars, -0, nested tables, both directions
+- schema: a warm Read allocates nothing
+- schema: New refuses a descriptor without rows and holds rows by reference
+- schema: FindRow is first-wins, skips path-less rows, and refuses a non-string
+- schema: AddRows appends, inserts at the head in order, and clamps past the end
+- schema: a head insert re-indexes, so a new duplicate becomes the first
+- schema: a host's in-place removal is seen after Reindex and not before
+- schema: an unknown path is refused and nothing is stored or called
+- schema: a write logs, then reacts, then announces, once each, and copies a table
+- schema: a validate refusal names the path and carries why, and nothing happens
+- schema: a bare-false validate is refused with why = nil
+- schema: an instance-rooted write reaches the named instance, not the active one
+- schema: an absent instance is refused with the resolver's reason, after validate
+- schema: a resolver answering nil with no reason is refused as NO_ROOT
+- schema: a row with its own set stores through it and never resolves a root
+- schema: a sessionOnly row without set stores nothing and still reacts and announces
+- schema: the inverted minimap row stores the inverse and reads back the value
+- schema: debugEnabled false means neither debug nor format runs
+- schema: the Set line carries format(row, v) when given and the value otherwise
+- schema: with no debug, announce or format the seam still stores and reacts
+- schema: a raising onChange propagates after the store and the line, before announce
+- schema: Get answers an interior node for a path with no row, and nil past a leaf
+- schema: every instance member works taken as a bare value, without self
+- schema: Default is a deep copy and nil for an unknown path
+- schema: ApplyDefault writes through Set, and refuses a row with nothing to restore
+- schema: ApplyDefault's table default is stored as a copy
+- schema: resetExempt vetoes a sweep inside a bracket and not a named reset outside one
+- schema: a bracket mutes per-row lines and closes with one line counting changed rows
+- schema: nested brackets are one act, one line, the outermost act and scope
+- schema: a profile reset at any level silences the bracket
+- schema: an error at any level marks the line stopped
+- schema: an unpaired BulkEnd is a no-op and never drives the depth negative
+- schema: BulkRun re-raises the same error value, closes the bracket, marks the line
+- schema: BulkRun hands fn an info table whose profileReset silences the line
+- schema: BulkAdd feeds the open bracket's tally and does nothing outside one
+- schema: a closure row that stores what it already held counts 0 (read-back tally)
+- schema: a raising onChange inside a bracket still counts the write that landed
+- schema: the bulk line honors debugEnabled
+- schema: CountOffDefault counts stored rows off default and honors pred
+- schema: CountOffDefault with no root counts exactly the rows that have a default
+- schema: ResetCounted leaves the count pending for exactly one consumer
+- schema: ResetCounted re-raises unchanged and clears the pending count
+- schema: ConsumeResetCount while a bracket is open closes it with no line
+- schema: a healthy schema validates to zero errors and resolves every stored row
+- schema: each shape error is counted and printed once
+- schema: an unresolvable path is missing; sessionOnly, nil roots and bound rows are exempt
+- schema: types defaults to the four widget types and a host set replaces it
+- schema: Validate with no print still counts, silently
+- schema: two instances share nothing
 
 ### test_pool.lua (23)
 
@@ -1455,7 +1602,10 @@ badge and any count quoted in the docs must agree with it.
 | the runner | 1 |
 | test_core.lua | 42 |
 | test_env.lua | 10 |
+| test_compat.lua | 49 |
 | test_lifecycle.lua | 21 |
+| test_bus.lua | 27 |
+| test_schema.lua | 62 |
 | test_pool.lua | 23 |
 | test_item.lua | 13 |
 | test_media.lua | 15 |
@@ -1493,4 +1643,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_inventory.lua | 30 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1319** |
+| **Total** | **1457** |
