@@ -186,21 +186,352 @@ test("launcher: IsRegistered is false until BOTH halves are wired", function()
   assertTrue(L:IsRegistered())
 end)
 
-test("launcher: OnTooltipShow is passed through, and only when it is a function", function()
-  -- launcher-§1 leaves the contents to the addon and binds nothing about them; what it does bind
-  -- is that there is one object to hang them on.
-  -- red under: dropping the hook, or handing LDB a non-function a display would then call.
-  local shown = 0
-  local rec = fixture{ onTooltipShow = function() shown = shown + 1 end }
+-- ── the status tooltip (minor 3, launcher-§1 as of standard v2.66.0) ─────────────────────────
+--
+-- The library draws it, always, in one shape for all eleven addons:
+--
+--   <label>  v<version>          (version optional)
+--   Enabled: Yes|No              (always)
+--   Locked: Yes|No               (only with isLocked)
+--   Test mode: On|Off            (only with isTestMode)
+--   <the host's own lines>       (onTooltipShow, appended once)
+--   Left-click: <what it does>
+--   Right-click: Open settings
+
+--- A GameTooltip stand-in that records each line's text, and nothing it was not asked to hold.
+local function fakeTooltip()
+  local tt = { lines = {} }
+  function tt:AddLine(line) self.lines[#self.lines + 1] = line end
+  return tt
+end
+
+--- A line with its color escapes taken out, which is what the player reads.
+local function plain(line)
+  return (tostring(line):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""))
+end
+
+--- Show the tooltip once and answer the plain lines, then the raw ones.
+local function hover(L)
+  local tt = fakeTooltip()
+  L:Object().OnTooltipShow(tt)
+  local out = {}
+  for i, line in ipairs(tt.lines) do out[i] = plain(line) end
+  return out, tt.lines
+end
+
+local DISABLED_LINE = "TestHost is disabled \226\128\148 enable it with |cFFFFFF00/th enable|r"
+
+test("launcher: the library ALWAYS draws the tooltip, and a rung (c) host need pass nothing", function()
+  -- launcher-§1 (v2.66.0): the tooltip is a MUST, drawn by this module from the descriptor, so a
+  -- host that passes no hook still answers a hover with its name, its state and its two clicks.
+  -- red under: minor 2's pass-through, which left OnTooltipShow nil and the button silent.
+  local rec = fixture()
   local L = lib:New(rec.d)
   L:Register()
-  L:Object().OnTooltipShow({})
-  assertEqual(shown, 1)
+  assertEqual(type(L:Object().OnTooltipShow), "function", "set with no host hook at all")
+  local lines = hover(L)
+  assertEqual(table.concat(lines, "\n"), table.concat({
+    rec.name,
+    "Enabled: Yes",
+    "Left-click: Open settings",
+    "Right-click: Open settings",
+  }, "\n"))
+end)
 
-  local plain = fixture{ onTooltipShow = "not a function" }
-  local P = lib:New(plain.d)
+test("launcher: the tooltip title is the label, and the version where one is passed", function()
+  -- red under: a title read from the folder name when a label was given, or a doubled `vv`.
+  local rec = fixture{ label = "Ka0s Test Host", version = "1.2.3" }
+  local L = lib:New(rec.d)
+  L:Register()
+  assertEqual(hover(L)[1], "Ka0s Test Host  v1.2.3")
+
+  local rec2 = fixture{ label = "Ka0s Test Host", version = "v2.0.0" }
+  local L2 = lib:New(rec2.d)
+  L2:Register()
+  assertEqual(hover(L2)[1], "Ka0s Test Host  v2.0.0", "a leading v is not doubled")
+
+  local v = "3.0.0"
+  local rec3 = fixture{ label = "Ka0s Test Host", version = function() return v end }
+  local L3 = lib:New(rec3.d)
+  L3:Register()
+  assertEqual(hover(L3)[1], "Ka0s Test Host  v3.0.0", "a function is asked")
+  v = nil
+  assertEqual(hover(L3)[1], "Ka0s Test Host", "and answering nothing drops the version")
+end)
+
+test("launcher: the tooltip's Enabled line is green Yes or red No, read from isEnabled", function()
+  -- The one status line on every addon (slash-commands-§7), and the only color is the value's.
+  -- red under: an uncolored value, or a disabled addon reading Yes.
+  local enabled = true
+  local rec = fixture{
+    onClick = function() end,
+    isEnabled = function() return enabled end,
+    disabledLine = function() return DISABLED_LINE end,
+  }
+  local L = lib:New(rec.d)
+  L:Register()
+  local lines, raw = hover(L)
+  assertEqual(lines[2], "Enabled: Yes")
+  assertTrue(raw[2]:find("|cFF00FF00Yes|r", 1, true) ~= nil, "Yes is green")
+  enabled = false
+  lines, raw = hover(L)
+  assertEqual(lines[2], "Enabled: No")
+  assertTrue(raw[2]:find("|cFFFF0000No|r", 1, true) ~= nil, "No is red")
+  assertTrue(raw[1]:find("|c", 1, true) == nil, "the title carries no color")
+end)
+
+test("launcher: a disabled rung (a)/(b) hint names the enable command, read from disabledLine", function()
+  -- launcher-§2 (v2.66.0): the tooltip says before the click what the refusal will print after it.
+  -- The host passes nothing new: the command is read out of the dispatcher's own disabled line.
+  -- red under: the enabled label while disabled, which promises a click that will be refused.
+  local rec = fixture{
+    onClick = function() end,
+    leftClickLabel = "Toggle window",
+    isEnabled = function() return false end,
+    disabledLine = function() return DISABLED_LINE end,
+  }
+  local L = lib:New(rec.d)
+  L:Register()
+  local lines = hover(L)
+  assertEqual(lines[#lines - 1], "Left-click: disabled \226\128\148 /th enable")
+  assertEqual(lines[#lines], "Right-click: Open settings", "the right button does not change")
+  assertEqual(#rec.lines, 0, "hovering prints nothing to chat")
+end)
+
+test("launcher: an explicit slash wins, and a line naming no command still says disabled", function()
+  -- red under: a hint that loses the command when the host's line is worded differently.
+  local rec = fixture{
+    onClick = function() end,
+    slash = "th2",
+    isEnabled = function() return false end,
+    disabledLine = function() return DISABLED_LINE end,
+  }
+  local L = lib:New(rec.d)
+  L:Register()
+  local lines = hover(L)
+  assertEqual(lines[#lines - 1], "Left-click: disabled \226\128\148 /th2 enable",
+    "descriptor.slash, given its slash")
+
+  local rec2 = fixture{
+    onClick = function() end,
+    isEnabled = function() return false end,
+    disabledLine = function() return "off" end,
+  }
+  local L2 = lib:New(rec2.d)
+  L2:Register()
+  local lines2 = hover(L2)
+  assertEqual(lines2[#lines2 - 1], "Left-click: disabled")
+end)
+
+test("launcher: a rung (c) tooltip reads Open settings whether enabled or not", function()
+  -- launcher-§2: rung (c)'s left click opens the panel in either state, and so says the hint.
+  -- red under: a disabled pointer on a button whose left click still works.
+  local rec = fixture{
+    isEnabled = function() return false end,
+    disabledLine = function() return DISABLED_LINE end,
+  }
+  local L = lib:New(rec.d)
+  L:Register()
+  local lines = hover(L)
+  assertEqual(lines[2], "Enabled: No")
+  assertEqual(lines[#lines - 1], "Left-click: Open settings")
+end)
+
+test("launcher: leftClickLabel may be a function, and rung (a)/(b) without one reads Toggle", function()
+  -- A lock toggle's label follows the lock, so a function is asked on every show.
+  -- red under: a label captured once, which reads Unlock frame on an unlocked frame.
+  local locked = true
+  local rec = fixture{
+    onClick = function() end,
+    leftClickLabel = function() return locked and "Unlock frame" or "Lock frame" end,
+  }
+  local L = lib:New(rec.d)
+  L:Register()
+  local lines = hover(L)
+  assertEqual(lines[#lines - 1], "Left-click: Unlock frame")
+  locked = false
+  lines = hover(L)
+  assertEqual(lines[#lines - 1], "Left-click: Lock frame")
+
+  local rec2 = fixture{ onClick = function() end }
+  local L2 = lib:New(rec2.d)
+  L2:Register()
+  local lines2 = hover(L2)
+  assertEqual(lines2[#lines2 - 1], "Left-click: Toggle")
+end)
+
+--- The descriptor fields one matrix cell passes, and the lines it must draw.
+local function matrixCell(enabled, rungAB, lockMode, testMode)
+  local over = {
+    label = "Ka0s Test Host",
+    version = "9.9.9",
+    isEnabled = function() return enabled end,
+    disabledLine = function() return DISABLED_LINE end,
+  }
+  local want = { "Ka0s Test Host  v9.9.9", "Enabled: " .. (enabled and "Yes" or "No") }
+  if lockMode ~= "absent" then
+    over.isLocked = function() return lockMode end
+    want[#want + 1] = "Locked: " .. (lockMode and "Yes" or "No")
+  end
+  if testMode ~= "absent" then
+    over.isTestMode = function() return testMode end
+    want[#want + 1] = "Test mode: " .. (testMode and "On" or "Off")
+  end
+  local left = "Open settings"
+  if rungAB then
+    over.onClick = function() end
+    over.leftClickLabel = "Toggle window"
+    left = enabled and "Toggle window" or "disabled \226\128\148 /th enable"
+  end
+  want[#want + 1] = "Left-click: " .. left
+  want[#want + 1] = "Right-click: Open settings"
+  return over, want
+end
+
+test("launcher: every combination of state, rung and status lines draws the fixed shape", function()
+  -- The matrix the shape is written for: enabled or disabled, rung (a)/(b) or (c), with or without
+  -- a lock, with or without a test mode, each value both ways. Status lines appear only for the
+  -- states the addon has (never a permanent No), and the order never moves.
+  -- red under: any line out of order, a status line drawn for a state not passed, or a hint wrong
+  -- for its rung and state.
+  local cases = 0
+  for _, enabled in ipairs{ true, false } do
+    for _, rungAB in ipairs{ true, false } do
+      for _, lockMode in ipairs{ "absent", true, false } do
+        for _, testMode in ipairs{ "absent", true, false } do
+          local over, want = matrixCell(enabled, rungAB, lockMode, testMode)
+          local rec = fixture(over)
+          local L = lib:New(rec.d)
+          L:Register()
+          local label = ("enabled=%s rungAB=%s lock=%s test=%s"):format(
+            tostring(enabled), tostring(rungAB), tostring(lockMode), tostring(testMode))
+          assertEqual(table.concat(hover(L), "\n"), table.concat(want, "\n"), label)
+          cases = cases + 1
+        end
+      end
+    end
+  end
+  assertEqual(cases, 36)
+end)
+
+test("launcher: tooltip Locked and Test mode values are green for Yes/On, red for No/Off", function()
+  -- red under: status values drawn plain, which the standard's one permitted color is for.
+  local rec = fixture{ isLocked = function() return true end, isTestMode = function() return false end }
+  local L = lib:New(rec.d)
+  L:Register()
+  local _, raw = hover(L)
+  assertTrue(raw[3]:find("|cFF00FF00Yes|r", 1, true) ~= nil, "Locked: Yes is green")
+  assertTrue(raw[4]:find("|cFFFF0000Off|r", 1, true) ~= nil, "Test mode: Off is red")
+end)
+
+test("launcher: the host's tooltip lines are appended ONCE, below the status, above the hints", function()
+  -- launcher-§1: the host's onTooltipShow adds what is the addon's own, between the status block
+  -- and the click hints, and nowhere else.
+  -- red under: handing the host the object's OnTooltipShow (its lines alone, or twice), or drawing
+  -- them after the hints.
+  local calls = 0
+  local rec = fixture{
+    isLocked = function() return false end,
+    onTooltipShow = function(tt)
+      calls = calls + 1
+      tt:AddLine("Entries: 42")
+      tt:AddLine("Session: 3")
+    end,
+  }
+  local L = lib:New(rec.d)
+  L:Register()
+  local lines = hover(L)
+  assertEqual(calls, 1, "the host hook runs once per show")
+  assertEqual(table.concat(lines, "\n"), table.concat({
+    rec.name, "Enabled: Yes", "Locked: No", "Entries: 42", "Session: 3",
+    "Left-click: Open settings", "Right-click: Open settings",
+  }, "\n"))
+  hover(L)
+  assertEqual(calls, 2, "and once again on the next show")
+
+  local plainRec = fixture{ onTooltipShow = "not a function" }
+  local P = lib:New(plainRec.d)
   P:Register()
-  assertNil(P:Object().OnTooltipShow)
+  assertEqual(#hover(P), 4, "a non-function hook is dropped, and the library's block still draws")
+end)
+
+test("launcher: tooltip status is read on EVERY show, never cached", function()
+  -- red under: a state captured at Register or at the first hover, which disagrees with the panel
+  -- the moment the player changes it.
+  local enabled, locked, testing = true, true, false
+  local asked = 0
+  local rec = fixture{
+    onClick = function() end,
+    leftClickLabel = "Toggle test mode",
+    isEnabled = function() asked = asked + 1; return enabled end,
+    disabledLine = function() return DISABLED_LINE end,
+    isLocked = function() return locked end,
+    isTestMode = function() return testing end,
+  }
+  local L = lib:New(rec.d)
+  L:Register()
+  local first = hover(L)
+  enabled, locked, testing = false, false, true
+  local second = hover(L)
+  assertEqual(first[2] .. "|" .. first[3] .. "|" .. first[4], "Enabled: Yes|Locked: Yes|Test mode: Off")
+  assertEqual(second[2] .. "|" .. second[3] .. "|" .. second[4], "Enabled: No|Locked: No|Test mode: On")
+  assertEqual(second[5], "Left-click: disabled \226\128\148 /th enable")
+  assertEqual(asked, 2, "isEnabled was asked once per show")
+end)
+
+test("launcher: a raising tooltip accessor or host hook costs its own line, not the tooltip", function()
+  -- The tooltip runs inside the client's hover dispatch, where a raise is a red error box.
+  -- red under: an unguarded accessor, which draws half a tooltip and an error.
+  local rec = fixture{
+    onClick = function() end,
+    leftClickLabel = function() error("label boom") end,
+    isLocked = function() error("lock boom") end,
+    onTooltipShow = function() error("host boom") end,
+  }
+  local L = lib:New(rec.d)
+  L:Register()
+  local ok, lines = pcall(hover, L)
+  assertTrue(ok, tostring(lines))
+  assertEqual(lines[3], "Locked: No", "a raising isLocked reads as No")
+  assertEqual(lines[#lines - 1], "Left-click: Toggle", "a raising label falls back")
+  assertEqual(lines[#lines], "Right-click: Open settings", "and the hints still draw")
+  assertTrue(table.concat(rec.logs, "|"):find("host boom", 1, true) ~= nil, "the debug seam heard it")
+  assertEqual(#rec.lines, 0, "and nothing went to chat on a hover")
+end)
+
+test("launcher: a tooltip argument with no AddLine is left alone", function()
+  -- A display may hand OnTooltipShow something that is not a GameTooltip. Refuse it quietly.
+  -- red under: calling a method the argument does not have.
+  local rec = fixture()
+  local L = lib:New(rec.d)
+  L:Register()
+  assertTrue(pcall(L:Object().OnTooltipShow, {}))
+  assertTrue(pcall(L:Object().OnTooltipShow, nil))
+end)
+
+test("launcher: every tooltip string goes through the descriptor's L, rawget-guarded", function()
+  -- localization: lib.STRINGS overridden by d.L. A key-echoing table falls through to English.
+  -- red under: literals in the draw code, or a plain index that prints TOOLTIP_ENABLED.
+  local L1 = setmetatable({ TOOLTIP_ENABLED = "Aktiv: %s", TOOLTIP_YES = "Ja" },
+    { __index = function(_, k) return k end })
+  local rec = fixture{ L = L1 }
+  local L = lib:New(rec.d)
+  L:Register()
+  local lines = hover(L)
+  assertEqual(lines[2], "Aktiv: Ja")
+  assertEqual(lines[#lines], "Right-click: Open settings", "an unset key falls through")
+  for _, key in ipairs{ "TOOLTIP_TITLE_VERSION", "TOOLTIP_ENABLED", "TOOLTIP_LOCKED",
+    "TOOLTIP_TEST_MODE", "TOOLTIP_YES", "TOOLTIP_NO", "TOOLTIP_ON", "TOOLTIP_OFF", "TOOLTIP_LEFT",
+    "TOOLTIP_RIGHT", "TOOLTIP_OPEN_SETTINGS", "TOOLTIP_LEFT_DEFAULT", "TOOLTIP_DISABLED_HINT",
+    "TOOLTIP_DISABLED_BARE" } do
+    assertEqual(type(lib.STRINGS[key]), "string", key .. " is in lib.STRINGS")
+  end
+end)
+
+test("launcher: minor 3 is live", function()
+  -- red under: a tooltip change that forgot its bump, which reaches no host holding minor 2.
+  assertEqual(lib.MINOR, 3)
+  assertEqual(lib.MODULES.Launcher, 3)
 end)
 
 -- ── click behavior (launcher-§2) ────────────────────────────────────────────────────────────

@@ -686,14 +686,28 @@ badge and any count quoted in the docs must agree with it.
 - sl refusal: CliReset prints NO_DEFAULT when applyDefault answers exactly false
 - sl refusal: CliReset echoes when applyDefault answers nil or true
 
-### test_launcher.lua (27)
+### test_launcher.lua (41)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
 - launcher: ONE object, of type 'launcher', carrying the host's own icon
 - launcher: both registrations use the addon's folder name, and a host may relabel
 - launcher: Register is idempotent, so a second call builds no second button
 - launcher: IsRegistered is false until BOTH halves are wired
-- launcher: OnTooltipShow is passed through, and only when it is a function
+- launcher: the library ALWAYS draws the tooltip, and a rung (c) host need pass nothing
+- launcher: the tooltip title is the label, and the version where one is passed
+- launcher: the tooltip's Enabled line is green Yes or red No, read from isEnabled
+- launcher: a disabled rung (a)/(b) hint names the enable command, read from disabledLine
+- launcher: an explicit slash wins, and a line naming no command still says disabled
+- launcher: a rung (c) tooltip reads Open settings whether enabled or not
+- launcher: leftClickLabel may be a function, and rung (a)/(b) without one reads Toggle
+- launcher: every combination of state, rung and status lines draws the fixed shape
+- launcher: tooltip Locked and Test mode values are green for Yes/On, red for No/Off
+- launcher: the host's tooltip lines are appended ONCE, below the status, above the hints
+- launcher: tooltip status is read on EVERY show, never cached
+- launcher: a raising tooltip accessor or host hook costs its own line, not the tooltip
+- launcher: a tooltip argument with no AddLine is left alone
+- launcher: every tooltip string goes through the descriptor's L, rawget-guarded
+- launcher: minor 3 is live
 - launcher: right-click ALWAYS opens the settings panel, on every rung
 - launcher: left-click runs the host's action on rungs (a) and (b)
 - launcher: with no onClick, left-click opens the panel too — that is rung (c)
@@ -1834,7 +1848,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog.lua | 75 |
 | test_slash.lua | 109 |
 | test_slash_refusal.lua | 7 |
-| test_launcher.lua | 27 |
+| test_launcher.lua | 41 |
 | test_options.lua | 85 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
@@ -1870,4 +1884,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1648** |
+| **Total** | **1662** |

@@ -10,6 +10,57 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.57.0 — 2026-09-24
+
+Versions in this release: **Launcher minor 3** (`LibKa0s-Launcher-1.0` 3). Every other file is
+unchanged from v1.56.0: `Core` 8, `Env` 1, `Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3,
+`Item` 2, `Media` 4, `Widgets` 10 and `WidgetsDragHandle` 2 (key 10.2), `DebugLog` 13, `Slash` 15,
+`Options` key 24.31.4.7.4, `Perf` 13 and `PerfPanel` 5 (key 13.5), and the test kit stays at
+**revision 26**. No `NEEDS_*` floor rises and no major is added. Built to the Ka0s WoW Addon Standard
+**v2.66.0**, whose `launcher-§1` makes the tooltip below a MUST drawn by this module.
+
+### Launcher minor 3: the library always draws the status tooltip
+
+- **The LDB object's `OnTooltipShow` is the library's, on every host** (M5, the owner's ruling from
+  the 2026-09-24 smoke pass; `launcher-§1`/`§2` as of the standard's v2.66.0). It draws one fixed
+  shape in all eleven addons, and it draws it **while the addon is disabled** too: the label and,
+  where passed, `v<version>`; `Enabled: Yes|No` (always, green or red); `Locked: Yes|No` and
+  `Test mode: On|Off` only where the descriptor passes `isLocked` / `isTestMode`; the host's own
+  lines; `Left-click: <leftClickLabel>` on rungs (a)/(b), `Left-click: disabled — /<slash> enable`
+  on those rungs while disabled, `Left-click: Open settings` on rung (c) in either state; and
+  `Right-click: Open settings`.
+- **Five new optional descriptor fields**: `version`, `isLocked`, `isTestMode`, `leftClickLabel`
+  (a string, or a function asked on every show) and `slash`. The disabled hint needs nothing new: the
+  command is read out of `disabledLine()`, which every host already passes as its Slash dispatcher's
+  `DisabledLine()`; `slash` is for a line worded otherwise.
+- **`onTooltipShow` now appends.** It is called once per show, between the status block and the
+  click hints, and no longer handed to the LDB object as the whole tooltip. A host hook that drew a
+  title, a version, a status line or a click hint draws a second copy of it (anti-pattern #89).
+- **Every state is read on every show**, never cached, and every accessor and the host hook is
+  `pcall`'d: a raise costs its own value and goes to the debug seam, never to chat.
+- **Fourteen `TOOLTIP_*` keys in `lib.STRINGS`**, overridable through `d.L` with the same `rawget`
+  guard as the four reports. No member is added, so `docs/api/Launcher/members-3.json` lists the same
+  surface as `members-2.json`.
+- `tests/test_launcher.lua`: fifteen new cases, one of them a 36-cell matrix (enabled or disabled,
+  rung (a)/(b) or (c), lock absent/Yes/No, test mode absent/On/Off). The minor-2 case that asserted
+  the pass-through (`OnTooltipShow is passed through, and only when it is a function`) is replaced:
+  that contract is the one this release retires. Documented in
+  [the version 3 document](docs/api/Launcher/version-3-docs.md).
+
+### What a consumer owes on re-vendoring v1.57.0
+
+Copy both payloads whole and move the `CLAUDE.md` provenance line to v1.57.0 in the same commit, as
+always; the kit bytes are those of v1.56.0. Then, in `core/LauncherSetup.lua` (the M5 re-vendors):
+
+- **Arrives without being asked for**: the button shows the library's tooltip on hover, enabled or
+  disabled, whether or not the host passes `onTooltipShow`. A host test that called the object's
+  `OnTooltipShow` and expected only the host's lines now sees the library's around them.
+- **Owed by `launcher-§1`**: pass `version`; `leftClickLabel` on rung (a)/(b); `isLocked` and
+  `isTestMode` where the addon has that state, reading the accessor its Master-controls row reads;
+  and cut any existing `onTooltipShow` down to the addon's own lines, deleting every title, version,
+  status line and click hint it drew.
+- No degradation stub moves: the member manifest is unchanged.
+
 ## v1.56.0 — 2026-09-24
 
 Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**

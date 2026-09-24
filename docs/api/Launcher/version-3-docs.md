@@ -1,4 +1,4 @@
-# `LibKa0s-Launcher-1.0` — version 2
+# `LibKa0s-Launcher-1.0` — version 3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Launcher surface points here rather than restating it. It describes the
@@ -8,35 +8,48 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Launcher-1.0` |
-| Files and minors | `Launcher.lua` minor **2** |
-| Shipped in | v1.56.0 |
-| Status | Superseded |
-| Supersedes | [version 1](./version-1-docs.md) |
-| Superseded by | [version 3](./version-3-docs.md) — the library always draws the status tooltip; new optional `version`, `isLocked`, `isTestMode`, `leftClickLabel` and `slash`; `onTooltipShow` appends rather than replaces |
+| Files and minors | `Launcher.lua` minor **3** |
+| Shipped in | v1.57.0 |
+| Status | **Current** |
+| Supersedes | [version 2](./version-2-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **LibDataBroker-1.1** and **LibDBIcon-1.0** are OPTIONAL and are resolved with `LibStub(…, true)` at `Register` time, never at load. |
-| Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 2 }` |
+| Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 3 }` |
 
 ## What changed at this version
 
-Two changes, both from the 2026-09-23 review.
+One change, from the 2026-09-24 smoke pass and the standard's v2.66.0 (`launcher-§1`, WS-10).
 
-- **An optional disabled gate for the left click** (`LibKa0s-R-06`). Two new descriptor fields,
-  `isEnabled` and `disabledLine`. Where `isEnabled()` answers false and `onClick` is present, a
-  **left** click prints `disabledLine()` through the host's printer and does **not** call `onClick`.
-  That is `launcher-§2`'s disabled rung (a)/(b), which three hosts had each hand-written inside their
-  own `onClick` in three spellings, and which a host that forgot would skip, writing SavedVariables
-  while disabled (**anti-pattern #85**). The right button and rung (c) are never gated: both open the
-  settings panel, which is where the addon is enabled again. The gate is opt-in, so a host that
-  passes neither field behaves exactly as at version 1. `New` raises on an `isEnabled` with no
-  `disabledLine`, because a refusal that prints nothing is the silent left button the section
-  forbids.
-- **The missing-library notices print once, untagged** (`LibKa0s-R-09`). `NO_BROKER`, `NO_ICON` and
-  `NO_MINIMAP` print at most once per instance, where version 1 printed them again on every failing
-  `Register` (a host calls it from `OnInitialize` and again at login). The debug seam still hears
-  every call. Every `lib.STRINGS` value loses its `[LibKa0s] ` prefix, because each line goes out
-  through the host's printer, which already carries the host's tag; the `%s` is still the addon's
-  folder name, so the chat-frame fallback still says whose launcher it is. The **keys** are
-  unchanged, so a host's `d.L` override keeps working.
+- **The library always draws the status tooltip.** The LDB object's `OnTooltipShow` is this
+  module's, on every host, whether or not the descriptor passes a hook, and it draws one fixed shape
+  in all eleven addons, **including while the addon is disabled**:
+
+  ```
+  <label>  v<version>             the label; the version only where `version` answers one
+  Enabled: Yes|No                 always; green Yes, red No
+  Locked: Yes|No                  only where the descriptor passes `isLocked`
+  Test mode: On|Off               only where the descriptor passes `isTestMode`
+  <the host's own lines>          `onTooltipShow`, called once per show, appended here
+  Left-click: <leftClickLabel>    rungs (a)/(b); while disabled: `disabled — /<slash> enable`
+  Left-click: Open settings       rung (c), in either state
+  Right-click: Open settings      always
+  ```
+
+- **Five new optional descriptor fields**: `version`, `isLocked`, `isTestMode`, `leftClickLabel`
+  and `slash`. The disabled hint's command needs no new field on a host that already passes
+  `disabledLine`: the library reads `/<slash> enable` out of that line, which is the Slash
+  dispatcher's own `DisabledLine()` on every host. `slash` exists for a host whose line is worded
+  otherwise.
+- **`onTooltipShow` changes meaning.** Through version 2 it was handed to the LDB object as the whole
+  tooltip. From version 3 it is called by the library, once per show, between the status block and
+  the click hints, and it draws only what is the addon's own. A host whose hook draws a title, a
+  version, a status line or a click hint now draws a second copy of one; that is **anti-pattern
+  #89**, and the re-vendor deletes those lines.
+- **Fourteen new `lib.STRINGS` keys** (`TOOLTIP_*`), reached through `d.L` exactly as the four
+  reports are.
+- **Every state is read on every show, never cached**, and every accessor is `pcall`'d: a raising
+  one costs its own value (a status reads as No, the label falls back to `Toggle`, the host's lines
+  are skipped) and is reported to the debug seam, never to chat, since a hover repeats.
 
 ## What this major is
 
@@ -111,7 +124,12 @@ addon's face in three places, and right-click **always** opens the panel.
 | `onClick` | **L1** | no | The **left** click's action, and therefore which rung the addon is on. Handed the button name. |
 | `isEnabled` | **L2** | no | Whether the addon is enabled, asked on every click. Where it answers false (or nil) and `onClick` is present, the **left** click is refused: `disabledLine()` is printed and `onClick` is not called. Right-click and rung (c) are never gated. |
 | `disabledLine` | **L2** | with `isEnabled` | Answers the line the refusal prints. Pass the host's Slash dispatcher's own disabled line, so the minimap and `/<slash>` refuse in the same words (`slash-commands-§7`). A non-string answer prints nothing. |
-| `onTooltipShow` | **L1** | no | Handed straight to the LDB object. Its contents are the addon's own and nothing here binds them. A non-function is dropped rather than passed on. |
+| `onTooltipShow` | **L1**, meaning changed at **L3** | no | Called **once per show**, handed the tooltip, to **append** the addon's own lines between the status block and the click hints. It draws no title, version, status line or click hint (the library draws all four; a second copy is **anti-pattern #89**). A non-function is dropped; a raising one costs its lines and nothing else. Through version 2 it was handed to the LDB object as the whole tooltip. |
+| `version` | **L3** | no | A string (or a function answering one) drawn after the label in the tooltip's title, `<label>  v<version>`. A leading `v` is not doubled; `nil` or `""` draws the label alone. |
+| `isLocked` | **L3** | no | Where the addon has a lock (the *Lock frame* row): answers whether it is locked, and the tooltip draws `Locked: Yes\|No`. Pass the same accessor the Master-controls row reads. Absent: no line. |
+| `isTestMode` | **L3** | no | Where the addon has a test mode: answers whether it is on, and the tooltip draws `Test mode: On\|Off`. Absent: no line. |
+| `leftClickLabel` | **L3** | no | What the left click does on rungs (a)/(b) (`Toggle window`, `Toggle test mode`), or a function answering it on every show (a lock toggle's `Unlock frame` / `Lock frame`). Drawn as `Left-click: <label>`. Missing or empty on rung (a)/(b) reads `Toggle`; ignored on rung (c). |
+| `slash` | **L3** | no | The slash command the disabled hint names (`/th` or `th`). Rarely needed: without it the command is read out of `disabledLine()` (the first `/<word> enable` in it), which the Slash dispatcher's `DisabledLine()` always contains. Where neither answers, the hint reads `Left-click: disabled`. |
 | `print` | **L1** | no | Where this module's own reports go. Defaults to `DEFAULT_CHAT_FRAME`. |
 | `debug` | **L1** | no | `debug(tag, message)` — the host's log seam, called with the tag `"Launcher"`. |
 | `L` | **L1** | no | Locale override, keyed to `lib.STRINGS`. Read with `rawget`, so a host table that answers an unknown key **with the key** (which every Ka0s locale table does — **anti-pattern #2**) falls through to the library's English rather than printing `NO_BROKER` at the player. |
@@ -137,6 +155,31 @@ addon's face in three places, and right-click **always** opens the panel.
   design — it has skipped the rule, since the panel is already on the right button. That, and a
   right-click doing anything else, is **anti-pattern #81**.
 
+## The status tooltip
+
+Drawn by `drawTooltip`, which is the LDB object's `OnTooltipShow` on every host (version 3). LibDBIcon
+calls it on hover with `GameTooltip`, a broker display with its own tooltip; an argument with no
+`AddLine` is left alone.
+
+| Line | Drawn when | Reads |
+|---|---|---|
+| `<label>  v<version>` | always | `label` (else `name`), `version` |
+| `Enabled: Yes\|No` | always | `isEnabled()`; a host with no `isEnabled` is always Yes, as its clicks are ungated. Green Yes, red No. |
+| `Locked: Yes\|No` | `isLocked` passed | `isLocked()`, green Yes, red No |
+| `Test mode: On\|Off` | `isTestMode` passed | `isTestMode()`, green On, red Off |
+| the host's lines | `onTooltipShow` passed | whatever it adds, once |
+| `Left-click: …` | always | rung (c): `Open settings`. Rungs (a)/(b): `leftClickLabel` while enabled; `disabled — /<slash> enable` while disabled. |
+| `Right-click: Open settings` | always | nothing; the right button never changes |
+
+- **Never cached.** Every accessor is asked on every show, so the tooltip reads what the settings
+  panel reads the moment it changes. That is also why each is a function rather than a value.
+- **The only color is the status value's**, green for Yes/On and red for No/Off, wrapped by the code
+  around the localized word; no `lib.STRINGS` value carries an escape, and the title carries none.
+- **Nothing a hover does goes to chat.** A raising accessor is reported to `debug` and answers nil.
+- **The disabled hint mirrors the click.** While `isEnabled()` answers false, a rung (a)/(b) left
+  click prints `disabledLine()` and does nothing (version 2's gate), and the hint says so before the
+  click. Rung (c) and the right button are not gated, and their hints do not change.
+
 ## The instance surface
 
 `lib:New(d)` returns an instance. Nothing is registered until `Register` is called.
@@ -149,8 +192,11 @@ addon's face in three places, and right-click **always** opens the panel.
 | `Lb:IsShown()` | **L1** | Whether the button is shown — `not minimap.hide`. Answers from the **store**, so it is still right on a host where LibDBIcon never loaded, and the Master-controls checkbox reflects what the player chose. |
 | `Lb:SetShown(shown)` | **L1** | Writes `minimap.hide` and calls LibDBIcon's `Show` / `Hide`, so the button follows the checkbox immediately rather than at the next reload. Returns whether the **button** could be moved; the store is updated either way. |
 
-`lib.STRINGS` carries the four reports (`NO_BROKER`, `NO_ICON`, `NO_MINIMAP`, `CLICK_FAILED`), as a
-literal table, exactly as every other major's does: the library carries no locale, and a host that
+`lib.STRINGS` carries the four reports (`NO_BROKER`, `NO_ICON`, `NO_MINIMAP`, `CLICK_FAILED`) and,
+since version 3, the fourteen tooltip strings (`TOOLTIP_TITLE_VERSION`, `TOOLTIP_ENABLED`,
+`TOOLTIP_LOCKED`, `TOOLTIP_TEST_MODE`, `TOOLTIP_YES`, `TOOLTIP_NO`, `TOOLTIP_ON`, `TOOLTIP_OFF`,
+`TOOLTIP_LEFT`, `TOOLTIP_RIGHT`, `TOOLTIP_OPEN_SETTINGS`, `TOOLTIP_LEFT_DEFAULT`,
+`TOOLTIP_DISABLED_HINT`, `TOOLTIP_DISABLED_BARE`), as a literal table, exactly as every other major's does: the library carries no locale, and a host that
 wants its own words passes `d.L`. Since version 2 none carries a `[LibKa0s] ` tag; each begins with
 the addon's folder name, and the host's printer adds the host's own tag.
 
@@ -185,6 +231,12 @@ if Launcher then
         onClick = function() NS.ToggleBrowser() end,        -- rung (a); omit entirely for rung (c)
         isEnabled = function() return not NS.IsDisabled() end,  -- the left click refuses while disabled
         disabledLine = function() return NS.cli:DisabledLine() end,  -- the dispatcher's own words
+        -- the status tooltip (version 3); the library draws it, these only answer its questions
+        label = "Ka0s Bank Ledger",
+        version = NS.VERSION,
+        leftClickLabel = "Toggle window",
+        isLocked = function() return NS.db.profile.locked end,       -- only where there is a lock
+        onTooltipShow = function(tt) tt:AddLine(NS.EntryCountLine()) end,  -- the addon's own lines
         debug = NS.Debug,
     }
     NS.Launcher:Register()
@@ -218,10 +270,13 @@ of which already guard on `NS.Launcher`.
 ## Compatibility
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
-removed or repurposed. Version 2 adds two optional descriptor fields and no member. The one change a
-version 1 host can observe without adopting anything is in the words: the four `lib.STRINGS` values
-lose their `[LibKa0s] ` prefix, and the three missing-library notices print once rather than once per
-`Register`. A consumer test that asserts the prefix is the only thing that breaks.
+removed or repurposed. Version 3 adds five optional descriptor fields and fourteen `lib.STRINGS` keys,
+and no member. **It changes what a version 2 host sees without adopting anything**, and that is the
+point of the release: every host's button now answers a hover with the status tooltip, including a
+host that passed no `onTooltipShow`. A host that did pass one keeps its lines, now drawn inside the
+library's block rather than as the whole tooltip, so a hook that drew its own title or click hints
+draws them twice until the host deletes them. A consumer test that called the object's
+`OnTooltipShow` and expected only its own lines has to expect the library's around them.
 
 ## Vendoring
 
@@ -241,13 +296,3 @@ listed in the TOC's `# Libraries` section (`toc-file-§4`). They are not part of
 never will be: they are third-party libraries with their own release cadence, and bundling them
 inside a folder that is itself copied into eleven addons would give each of them two copies to
 reconcile.
-
-## Moving to version 3
-
-Something changes whether or not you adopt: from version 3 the library draws the status tooltip on
-every host, and your `onTooltipShow`, if you pass one, is called inside it to append your own lines.
-To adopt, pass `version`, `leftClickLabel` on rung (a)/(b), and `isLocked` / `isTestMode` where the
-addon has that state, each reading the same accessor its Master-controls row reads. Then cut your
-`onTooltipShow` down to what is the addon's own: delete any title, version, status line or click hint
-it drew, since the library now draws each of them (`launcher-§1`, anti-pattern #89). The disabled hint
-needs nothing new if you already pass `disabledLine`.
