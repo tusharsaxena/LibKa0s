@@ -10,6 +10,65 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.58.0 — 2026-09-24
+
+Versions in this release: **Launcher minor 4** (`LibKa0s-Launcher-1.0` 4). Every other file is
+unchanged from v1.57.0: `Core` 8, `Env` 1, `Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3,
+`Item` 2, `Media` 4, `Widgets` 10 and `WidgetsDragHandle` 2 (key 10.2), `DebugLog` 13, `Slash` 15,
+`Options` key 24.31.4.7.4, `Perf` 13 and `PerfPanel` 5 (key 13.5), and the test kit stays at
+**revision 26**. No `NEEDS_*` floor rises and no major is added. Built to the Ka0s WoW Addon Standard
+**v2.67.0**, whose `launcher-§2` makes the click behavior below a MUST drawn by this module.
+
+### Launcher minor 4: left-click opens settings, right-click opens the options menu
+
+- **Left-click calls `openSettings`, on every host, in either state** (M6, the owner's ruling of
+  2026-09-24; `launcher-§2` as of the standard's v2.67.0). The three left-click rungs are retired,
+  and so is minor 2's disabled left-click refusal: the panel is setup, and where a disabled addon is
+  re-enabled.
+- **Right-click opens the client's context menu** (`MenuUtil.CreateContextMenu`, 11.0+), anchored to
+  the clicked frame and titled with the label, with one checkbox per toggle the descriptor supplies,
+  in the one order: *Enabled* (`isEnabled` + `setEnabled(bool)`), *Locked* (`isLocked` +
+  `toggleLock`), *Test mode* (`isTestMode` + `toggleTestMode`), *Show window* (`isWindowShown` +
+  `toggleWindow`). An entry needs both halves. Each state is read when the menu opens; a click
+  calls the host's handler once and closes the menu.
+- **While `isEnabled()` is false**, *Enabled* stays live and the other entries are grayed
+  (`SetEnabled(false)`) and read `<entry> (enable the addon first)`; a grayed entry clicked anyway
+  calls no handler.
+- **Every client call is nil-guarded.** With no `MenuUtil`, no `CreateContextMenu`, or no supplied
+  entry at all, right-click opens the settings panel instead. A raising handler or menu API prints
+  one line naming the addon and never escapes into the client's dispatch.
+- **Retired, and ignored if passed** (no error): `onClick`, `leftClickLabel`, `disabledLine` and
+  `slash`. `isEnabled` no longer requires `disabledLine`.
+- **The tooltip's hints are fixed**: `Left-click: Open settings`, `Right-click: Options menu`. The
+  rest of minor 3's tooltip is unchanged.
+- **`lib.STRINGS`**: `TOOLTIP_OPTIONS_MENU` and seven `MENU_*` keys added; `TOOLTIP_LEFT_DEFAULT`,
+  `TOOLTIP_DISABLED_HINT` and `TOOLTIP_DISABLED_BARE` removed with the rungs. No member is added, so
+  `docs/api/Launcher/members-4.json` lists the same surface as `members-3.json`.
+- `tests/test_launcher.lua` against a new headless menu stand-in, `tests/mock_menu.lua`
+  (repo-local, not in the kit): fifteen new cases, fourteen for the clicks and the menu, among them the sixteen-cell matrix of pairs
+  present or absent, half pairs, order, read-at-open, grayed while disabled, one call per toggle,
+  the missing-API fallback and the retired fields. The minor-2 and minor-3 cases that pinned the
+  rungs, the refusal and the rung hints are replaced, since this release retires those contracts.
+  `.luacheckrc` declares `MenuUtil` and `MenuResponse`. Documented in
+  [the version 4 document](docs/api/Launcher/version-4-docs.md).
+
+### What a consumer owes on re-vendoring v1.58.0
+
+Copy both payloads whole and move the `CLAUDE.md` provenance line to v1.58.0 in the same commit, as
+always; the kit bytes are those of v1.56.0. Then, in `core/LauncherSetup.lua` (the M6 re-vendors):
+
+- **Arrives without being asked for**: left-click opens the settings panel on every host, so a rung
+  (a)/(b) host's `onClick` stops running; the hints read `Open settings` / `Options menu`; and the
+  disabled refusal is gone. Until the host passes a pair, right-click still opens the panel.
+- **Owed by `launcher-§2`**: pass `setEnabled` beside `isEnabled`, and `toggleLock`,
+  `toggleTestMode`, `isWindowShown` + `toggleWindow` for each state the addon really has, each wired
+  to the **same** handler its slash verb and settings row use; record the entries in the addon's
+  docs. Delete `onClick`, `leftClickLabel`, `disabledLine` and `slash` from the descriptor.
+- **Tests**: a host test that pinned the left click's action, the disabled refusal or minor 3's
+  hints re-pins. A test of the menu needs a `MenuUtil` fake in the host's own harness; the kit does
+  not ship one.
+- No degradation stub moves: the member manifest is unchanged.
+
 ## v1.57.0 — 2026-09-24
 
 Versions in this release: **Launcher minor 3** (`LibKa0s-Launcher-1.0` 3). Every other file is

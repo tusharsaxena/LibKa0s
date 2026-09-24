@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.66.0
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.67.0
 — as a **library repo**, which is a scope of its own: `library-stack-§7`'s applicability list is what
 binds here, not the addon rule set, because there is no TOC, no player-facing README, no settings
 canvas and no install. [`CLAUDE.md`](CLAUDE.md) spells out which sections apply and which do not, and
@@ -96,7 +96,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all, and `DragHandle`, the labeled strip with a help mark that a player drags a movable frame by. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsDragHandle.lua` | [9.2](docs/api/Widgets/version-9.2-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, color-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [14](docs/api/Slash/version-14-docs.md) |
-| `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice — with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. One `OnClick`, implementing launcher-§2's three left-click rungs plus right-click-always-opens-the-panel; LibDBIcon's own `minimap` table taken from the host. Neither broker library is a dependency: both are resolved with `LibStub(…, true)` at register time and every degradation is named rather than raised. | `Launcher.lua` | [1](docs/api/Launcher/version-1-docs.md) |
+| `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice — with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. One `OnClick`, implementing launcher-§2: left-click opens the settings panel, right-click opens the client's context menu of the toggles the host supplies (Enabled, Locked, Test mode, Show window), and one library-drawn status tooltip (launcher-§1); LibDBIcon's own `minimap` table taken from the host. Neither broker library is a dependency: both are resolved with `LibStub(…, true)` at register time and every degradation is named rather than raised. | `Launcher.lua` | [1](docs/api/Launcher/version-1-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [23.30.3.7.3](docs/api/Options/version-23.30.3.7.3-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [12.5](docs/api/Perf/version-12.5-docs.md) |
 
@@ -217,12 +217,12 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.57.0**, which moves one major's minor (Launcher) and adds none: `Core = { Core = 8 }`,
+different vendored copy of each. As of **v1.58.0**, which moves one major's minor (Launcher) and adds none: `Core = { Core = 8 }`,
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 2 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
 `Widgets = { Widgets = 10, WidgetsDragHandle = 2 }`, `DebugLog = { DebugLog = 13 }`, `Slash = { Slash = 15 }`,
-`Launcher = { Launcher = 3 }`,
+`Launcher = { Launcher = 4 }`,
 `Options = { Options = 24, OptionsWidgets = 31, OptionsTabs = 4, OptionsCompose = 7, OptionsScroll = 4 }`,
 `Perf = { Perf = 13, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.

@@ -686,35 +686,39 @@ badge and any count quoted in the docs must agree with it.
 - sl refusal: CliReset prints NO_DEFAULT when applyDefault answers exactly false
 - sl refusal: CliReset echoes when applyDefault answers nil or true
 
-### test_launcher.lua (41)
+### test_launcher.lua (45)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
 - launcher: ONE object, of type 'launcher', carrying the host's own icon
 - launcher: both registrations use the addon's folder name, and a host may relabel
 - launcher: Register is idempotent, so a second call builds no second button
 - launcher: IsRegistered is false until BOTH halves are wired
-- launcher: the library ALWAYS draws the tooltip, and a rung (c) host need pass nothing
+- launcher: the library ALWAYS draws the tooltip, and a host need pass nothing
 - launcher: the tooltip title is the label, and the version where one is passed
 - launcher: the tooltip's Enabled line is green Yes or red No, read from isEnabled
-- launcher: a disabled rung (a)/(b) hint names the enable command, read from disabledLine
-- launcher: an explicit slash wins, and a line naming no command still says disabled
-- launcher: a rung (c) tooltip reads Open settings whether enabled or not
-- launcher: leftClickLabel may be a function, and rung (a)/(b) without one reads Toggle
-- launcher: every combination of state, rung and status lines draws the fixed shape
+- launcher: the click hints are fixed, in either state, whatever retired fields are passed
+- launcher: every combination of state and status lines draws the fixed shape
 - launcher: tooltip Locked and Test mode values are green for Yes/On, red for No/Off
 - launcher: the host's tooltip lines are appended ONCE, below the status, above the hints
 - launcher: tooltip status is read on EVERY show, never cached
 - launcher: a raising tooltip accessor or host hook costs its own line, not the tooltip
 - launcher: a tooltip argument with no AddLine is left alone
 - launcher: every tooltip string goes through the descriptor's L, rawget-guarded
-- launcher: minor 3 is live
-- launcher: right-click ALWAYS opens the settings panel, on every rung
-- launcher: left-click runs the host's action on rungs (a) and (b)
-- launcher: with no onClick, left-click opens the panel too — that is rung (c)
-- launcher: with isEnabled false, a left click prints disabledLine and never calls onClick
-- launcher: the gate leaves right-click and rung (c) exactly as they were
-- launcher: New refuses an isEnabled with no disabledLine
-- launcher: a raising click is reported and never escapes into the client
+- launcher: minor 4 is live
+- launcher: left-click opens the settings panel, enabled or disabled
+- launcher: onClick, leftClickLabel, disabledLine and slash are retired and ignored
+- launcher: right-click opens the client's context menu, titled with the label
+- launcher: the menu carries one checkbox per supplied toggle, in the one order
+- launcher: an accessor without its toggle, or a toggle without its accessor, draws nothing
+- launcher: each checkbox shows the state its accessor answers when the menu opens
+- launcher: each entry toggles through its host function exactly once
+- launcher: while disabled, Enabled stays live and the rest are grayed with the note
+- launcher: a grayed entry clicked anyway calls no handler and writes nothing
+- launcher: a host with no isEnabled has nothing grayed and no Enabled entry
+- launcher: with no MenuUtil, right-click degrades to the settings panel
+- launcher: a raising toggle or menu API is reported and never escapes
+- launcher: a raising accessor costs its checkmark, not the menu
+- launcher: every menu string goes through the descriptor's L, rawget-guarded
 - launcher: the host's OWN minimap table is handed to LibDBIcon, never a copy
 - launcher: the minimap table is resolved at REGISTER time, not at New
 - launcher: IsShown reads LibDBIcon's own `hide` key and inverts it
@@ -1848,7 +1852,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog.lua | 75 |
 | test_slash.lua | 109 |
 | test_slash_refusal.lua | 7 |
-| test_launcher.lua | 41 |
+| test_launcher.lua | 45 |
 | test_options.lua | 85 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
@@ -1884,4 +1888,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1662** |
+| **Total** | **1666** |

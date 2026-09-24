@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Launcher-1.0` |
 | Files and minors | `Launcher.lua` minor **3** |
 | Shipped in | v1.57.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 2](./version-2-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 4](./version-4-docs.md) — left-click opens the settings panel, right-click the options menu; new `setEnabled`, `toggleLock`, `toggleTestMode`, `isWindowShown`, `toggleWindow`; `onClick`, `leftClickLabel`, `disabledLine` and `slash` retired; fixed tooltip hints |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **LibDataBroker-1.1** and **LibDBIcon-1.0** are OPTIONAL and are resolved with `LibStub(…, true)` at `Register` time, never at load. |
 | Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 3 }` |
 
@@ -296,3 +296,21 @@ listed in the TOC's `# Libraries` section (`toc-file-§4`). They are not part of
 never will be: they are third-party libraries with their own release cadence, and bundling them
 inside a folder that is itself copied into eleven addons would give each of them two copies to
 reconcile.
+
+## Moving to version 4
+
+Something changes whether or not you adopt: from version 4 the left button opens the settings panel
+on every host, in either state, and your `onClick` no longer runs; the right button opens the
+client's context menu wherever the descriptor supplies at least one accessor-and-toggle pair, and
+otherwise still opens the panel; the tooltip's hints read `Left-click: Open settings` and
+`Right-click: Options menu`. The disabled left-click refusal is gone, so `disabledLine` is never
+printed.
+
+To adopt (`launcher-§2`, standard v2.67.0): pass `setEnabled` beside `isEnabled` (the path
+`/<slash> enable` / `disable` write); `toggleLock` beside `isLocked` where the addon has a lock;
+`toggleTestMode` beside `isTestMode` where it has a test mode; and `isWindowShown` with
+`toggleWindow` where it has a primary window. Each toggle is the addon's **own** handler, the one its
+slash verb and settings row already use, never a copy. Then delete `onClick`, `leftClickLabel`,
+`disabledLine` and `slash` from the descriptor: they are ignored, and a host still passing them is
+carrying dead configuration. Any test that pinned version 3's click hints, the left click's action
+or the disabled refusal re-pins to version 4's behavior.

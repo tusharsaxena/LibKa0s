@@ -43,6 +43,9 @@ read_globals = {
   -- LibKa0s-Compat-1.0's ladders: the deprecated spell globals below C_Spell, and 12.0's secret
   -- tests. Every one read bare, at call time, and guarded for absence.
   "GetSpellInfo", "GetSpellTexture", "GetSpellCooldown", "issecretvalue", "canaccessvalue",
+  -- The client's context menu (11.0+), which LibKa0s-Launcher-1.0's right click opens (minor 4).
+  -- Read at call time and guarded: a client without it degrades to opening the settings panel.
+  "MenuUtil", "MenuResponse",
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes
 -- through _G[name]. That is the one sanctioned _G mutation in this library.

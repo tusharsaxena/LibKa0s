@@ -208,7 +208,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [3](./Launcher/version-3-docs.md) | `Launcher.lua` 3 | v1.57.0 | **Current** |
+| [4](./Launcher/version-4-docs.md) | `Launcher.lua` 4 | v1.58.0 | **Current** |
+| [3](./Launcher/version-3-docs.md) | `Launcher.lua` 3 | v1.57.0 | Superseded |
 | [2](./Launcher/version-2-docs.md) | `Launcher.lua` 2 | v1.56.0 | Superseded |
 | [1](./Launcher/version-1-docs.md) | `Launcher.lua` 1 | v1.39.0 | Superseded |
 
