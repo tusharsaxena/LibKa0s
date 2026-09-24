@@ -69,6 +69,10 @@ always; the kit bytes are those of v1.56.0. Then, in `core/LauncherSetup.lua` (t
   not ship one.
 - No degradation stub moves: the member manifest is unchanged.
 
+Release gate (`docs/automated-tests/20260924-234934/`): lint pass, 0/0 in 93 files;
+tests pass, 1666 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.57.0 — 2026-09-24
 
 Versions in this release: **Launcher minor 3** (`LibKa0s-Launcher-1.0` 3). Every other file is
