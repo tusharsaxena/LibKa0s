@@ -16,6 +16,7 @@ read_globals = {
   "C_Container", "C_SpellBook", "C_TradeSkillUI", "Enum", "NUM_TOTAL_EQUIPPED_BAG_SLOTS",
   "NUM_BAG_SLOTS", "BackdropTemplateMixin",
   "GetBuildInfo",   -- the client interface version a perf record stamps
+  "GetLocale",      -- the client locale, printed by the DebugLog diagnostics report's header
   -- The settings canvas (LibKa0s-Options-1.0). `Settings` is the public registration API;
   -- `SettingsPanel` is private and only ever reached inside a pcall, for expanding the left tree,
   -- or guarded, for the combat refusal. `HideUIPanel` is that refusal's older fallback.

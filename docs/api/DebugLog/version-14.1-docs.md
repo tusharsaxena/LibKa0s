@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 14
+# `LibKa0s-DebugLog-1.0` — version 14.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,15 +8,16 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **14** |
+| Files and minors | `DebugLog.lua` minor **14** · `DebugLogDiagnostics.lua` minor **1** |
 | Shipped in | v1.60.0 |
 | Status | **Current** |
-| Supersedes | [version 13](./version-13-docs.md) — whose buffer slack was a private local and whose copy window could not be timed |
+| Supersedes | [version 13](./version-13-docs.md) — whose buffer slack was a private local, whose copy window could not be timed, and which had no diagnostics report |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 14 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 14, DebugLogDiagnostics = 1 }` |
 
-`Since` in the tables below is the DebugLog minor in which the member first appeared. Minors 1 and 2
+`Since` in the tables below is the DebugLog minor in which the member first appeared; a `Since` of
+**D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file this version adds. Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
 this major".
 
@@ -46,8 +47,82 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 
 ## What changed at this version
 
-Two lib-level members, both additive. Neither changes what a console does unless someone reaches
-for it.
+Two things, both additive: the diagnostics report, in a new secondary file (below), and two
+lib-level members in `DebugLog.lua` 14 that change nothing a console does unless someone reaches for
+them.
+
+### The diagnostics report (`DebugLogDiagnostics.lua` 1)
+
+The Ka0s WoW Addon Standard v2.68.0 makes a diagnostics dump a MUST for every addon
+(`debug-logging-§14`): `/<slash> diagnostics` and `/<slash> debug diagnostics` write one report
+into the debug console, after whatever trace the player just reproduced, so one Copy carries both.
+The report's content is per-addon; everything around it is here, and a host writes sections.
+
+It is a **secondary file of this major**, not a major of its own, for the reason
+`WidgetsDragHandle.lua` is one of Widgets: `DebugLog.lua` would otherwise have passed the 1000-line
+band. It pairs on the shell's minor (`lib.__diagMinor` / `lib.__diagShellMinor`, the idiom
+`WidgetsDragHandle.lua` uses), and `lib:New` installs its methods on each instance through
+`lib.__installDiagnostics` when it has loaded. Without it an instance has no report methods, which
+is the state a consumer's library-absent stub already answers for.
+
+**One report, in order:**
+
+1. `[Diag] ==== <brandName> diagnostics begin ====`. `brandName` is a new descriptor field and falls
+   back to `title`.
+2. **The identity header**, written by the library: the host's `initSummary()` line, the client
+   (`GetBuildInfo`: version, build, date, interface), the locale, the debug-logging flag, the two
+   combat reads (`InCombatLockdown()`, `UnitAffectingCombat("player")`, each pcall'd and printed
+   `unreadable` if it raises), and every file of every LibKa0s major **running** in the client, as
+   `File minor`. Running, because under LibStub the winning copy may be another addon's vendor.
+3. **The host's sections**, from the descriptor's `diagnostics()` (called at run time, so a module
+   that loads after the console can still supply one) or from `spec.sections`. Each runs under its
+   own pcall; a raise costs one line, `section <name> failed: <err>`, and the next section runs.
+4. `truncated: N line(s) omitted, per-list caps hit=yes|no`, only when a cap bit.
+5. `[Diag] ==== <brandName> diagnostics end: N line(s) ====`, N counting every report line, both
+   markers included.
+
+**The cap.** At most `min(lib.DIAG_MAX_LINES, lib.MAX_BUFFER - 100)` lines, markers included, so a
+report never evicts itself and always leaves some trace above it. Two lines are kept free for the
+truncated line and the end marker, so a capped report still ends properly. `spec.maxLines` may
+lower the cap and cannot raise it past the clamp.
+
+**What the report never does.** It never calls `Clear()`. It writes through the ungated append, so
+it lands with logging off, and it never reads or writes the flag beyond printing it. It never reads
+the host's enabled state: whether a disabled addon may run it is the dispatcher's question, which
+Slash 16 answers by putting `diagnostics` on `LIVE_VERBS`. It calls no protected API.
+
+`RunDiagnostics` writes the lines with one scrollbar and status repaint at the end rather than one
+per line, shows the console if it was hidden, and prints one chat line through the descriptor's
+`print`: `lib.STRINGS.DIAG_WRITTEN`, *"Diagnostic report written to the debug console: %d lines.
+Use Copy to share it."*, overridable through `L`. The report body is English diagnostic text and
+does not go through `L`, like every trace line.
+
+**The writer a section is handed.** Each section is called as `fn(out)`:
+
+| Member | Meaning |
+|---|---|
+| `out:add(tag, fmt, ...)` | One line. Every argument goes through the console's `safeToString` before the format sees it; the format is pcall'd, and one the stringified arguments cannot satisfy lands as the format followed by the arguments, space-joined, as the gated sink does. Escapes are stripped. Past the cap the line is dropped and counted, and `false` comes back. |
+| `out:joined(tag, lead, parts, width?)` | `lead` then `parts`, comma-separated, wrapped at `width` (200) onto indented continuation lines. An empty list writes `lead -`. |
+| `out:list(tag, lead, items, cap?)` | `joined` with a cap (`lib.DIAG_MAX_PER_LIST`, 40, by default): past it the rest become `(+N more)` and the per-list flag is set, which the truncated line reports. |
+| `out:section(name, fn, ...)` | `fn(out, ...)` under a pcall of its own, for a part of a section that may raise on its own. |
+| `out:str(v)` / `out:plain(s)` | A value, or text, as plain report text: `safeToString`, then stripped of color, texture, atlas and hyperlink escapes (a hyperlink keeps its display text). |
+| `out:escape(s)` | `\|` doubled to `\|\|`, for a value whose escapes are the evidence (a chat format string). The doubled pipe survives the strip and pastes back into a `/<slash> set` unchanged. |
+| `out:readable(v)` | True only for a number that can be compared and added: the client's `issecretvalue` is asked first where it exists, and the arithmetic is pcall'd either way. |
+| `out:nonDefaults(rows, get, default?, format?, opts?)` | Every schema row whose value differs from its default, as `path = value (default)`. Skips `sessionOnly` rows and rows marked `hidden = true`. `get(row)` reads a value, `default(row)` a default (`row.default` when omitted), `format(row, v)` renders one (a one-line, key-sorted dump of a table when omitted); `opts.always` names paths printed whatever their value, `opts.tag` the tag (`Set`). Returns the number printed. |
+
+`DebugVerb(rest)` is the standard's `debug` words from one place, for a host that wants them:
+`diagnostics` runs the report (tested first, in any case), `on` and `off` set the flag, and
+anything else answers `false` so the host keeps its own fallback: its window toggle, its usage
+line, or its own topic words. It is optional; the standard requires the behavior, not the call. It
+never recognizes `diag` or any other short name.
+
+The library's cases are in `tests/test_debuglog_diagnostics.lua`. The dispatcher half of the rule,
+both slash forms, while disabled, append, ungated, the markers and `diag` not running the report,
+is the kit's shared case `testkit/test_diagnostics_contract.lua` (kit revision 27), which every
+consumer runs against its own dispatcher and which this repo runs against the fixture host in
+`tests/fixture_diagnostics.lua`.
+
+### `DebugLog.lua` 14: two lib-level members
 
 | | | Since |
 |---|---|---|
@@ -346,9 +421,11 @@ rather than paying it with a tooltip over the log. A host that wants the words b
 | `lib.MAX_BUFFER` | 1 | The line cap (**1500** as of minor 11; 500 through minor 10). Fixed by the standard rather than by the host: the cap and the message frame's own `SetMaxLines` must move together or the visible log and the copied buffer diverge. 1500 because the perf capture workflow pastes out of this buffer — `perf dump` writes a whole JSON record as one line — and the copy window is a *view* of the buffer rather than a second store, so this one number caps both. |
 | `lib.BUFFER_SLACK` | **14** | How far the raw `buffer` may run past `MAX_BUFFER` before `Add` compacts it: **64**. Read by `Add` at call time. A private local through minor 13, with the same value. |
 | `lib.TIME_COPY` | **14** | `false` at load and never saved. While `true`, each `ShowCopy()` prints one `COPY_TIMING` line through the descriptor's `print` on the next frame. See [Timing the copy window](#timing-the-copy-window). |
+| `lib.DIAG_MAX_LINES` | **D1** | **1200**. The most lines one diagnostics report writes, markers included; the effective cap is this or `MAX_BUFFER - 100`, whichever is smaller. |
+| `lib.DIAG_MAX_PER_LIST` | **D1** | **40**. The default cap of `out:list`. |
 | `lib.MakeCloseButton` | 1 | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. Forwards through the `core` table at call time, not captured at load. |
 | `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
-| `lib.MODULES` | 1 | `{ DebugLog = <minor> }` — the live minor of every file in this major. |
+| `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor> }` — the live minor of every file in this major (the second from D1). |
 | `lib:New(descriptor)` | 1 | Build a console for one host. See below. |
 
 ## The console descriptor
@@ -368,6 +445,8 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `initSummary` | function | no | 1 | Returns one line naming version/schema/profile. The library owns *when* it is emitted (on enable, as the `[Init]` line); only the host can know what it says. |
 | `onVisibilityChanged` | function | no | 1 | Fired on both `OnShow` and `OnHide`, so a host can repaint a settings panel whose checkbox mirrors the console's visibility. |
 | `slash` | string | no | 1 | Composes the checkbox tooltip's `"<slash> debug"` reference. |
+| `brandName` | string | no | **D1** | The addon's plain-text brand, `Ka0s <Name>`, named in both diagnostics markers. Falls back to `title`. |
+| `diagnostics` | function | no | **D1** | Returns the host's report sections, `{ { name, fn }, ... }`, each `fn(out)`. Called each time a report runs, never at `New`. |
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 | `skin` | table | no | 1 | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
 | `applySkin` | function | no | **4** | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. Since minor 12 the copy window's half is served by handing this same function to `CopyWindow` as its `applySkin`, which runs it instead of `Core.ApplySkin` — so the two windows still cannot drift apart. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than color, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
@@ -400,6 +479,9 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshHeader()` | 1 | Repaint the title-bar toggle — `Debug: ON` green, `Debug: OFF` red. |
 | `SetEnabled(on)` | 1 | The single seam for changing debug state: writes the host's flag, repaints the header, prints the color-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
 | `ConsoleCheckbox()` | 1 | The data contract below. |
+| `RunDiagnostics(spec?)` | **D1** | Build the report and append it to the console, repaint once, show the console if hidden, print the one `DIAG_WRITTEN` chat line, and return the number of lines written. Never clears and never touches the flag. `spec` may carry `sections`, `maxLines` and `maxPerList`. |
+| `BuildDiagnostics(spec?)` | **D1** | The same report as data, `{ lines = { { tag, msg }, ... }, dropped = n, capped = bool, capsHit = bool }`, writing nothing anywhere. For tests. |
+| `DebugVerb(rest)` | **D1** | `diagnostics` runs the report, `on` / `off` set the flag, and each answers `true`; anything else answers `false` and does nothing. |
 | `_toggleClickForTest` / `_frameForTest` | 1 | Test seams. A headless mock's `Show`/`Hide` track visibility without firing `OnShow`/`OnHide`, and stub `GetScript`, so the click handler and the visibility callback are only reachable directly. |
 
 ## The `ConsoleCheckbox()` data contract
@@ -483,8 +565,12 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
-Version 14 adds two lib-level members and one string and changes no behavior while `TIME_COPY` is
-off. A host's degradation stub is an instance surface and gains nothing. A host suite that
+Version 14.1 adds four lib-level members, two strings, two descriptor fields and three instance
+members, and changes no existing behavior while `TIME_COPY` is off. **A host's library-absent
+DebugLog stub is an instance surface, so it gains `RunDiagnostics`, `BuildDiagnostics` and
+`DebugVerb`** for its parity case: the stub's `RunDiagnostics` prints the collection's placeholder
+line, `"%s is unavailable: the LibKa0s library did not load."` with `/<slash> diagnostics`, writes
+nothing and returns 0 (`debug-logging-§14`). A host suite that
 hard-codes the slack as `64` can read `lib.BUFFER_SLACK` instead; it passes either way at this
 version.
 

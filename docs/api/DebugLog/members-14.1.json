@@ -1,12 +1,15 @@
 {
   "major": "LibKa0s-DebugLog-1.0",
-  "versionKey": "14",
+  "versionKey": "14.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "DebugLog", "minor": 14 }
+    { "file": "DebugLog", "minor": 14 },
+    { "file": "DebugLogDiagnostics", "minor": 1 }
   ],
   "members": [
     { "name": "BUFFER_SLACK", "kind": "number" },
+    { "name": "DIAG_MAX_LINES", "kind": "number" },
+    { "name": "DIAG_MAX_PER_LIST", "kind": "number" },
     { "name": "FormatColored", "kind": "function" },
     { "name": "FormatPlain", "kind": "function" },
     { "name": "MAX_BUFFER", "kind": "number" },

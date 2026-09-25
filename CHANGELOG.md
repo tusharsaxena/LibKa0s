@@ -12,10 +12,10 @@ cannot drift. Release order is in
 
 ## v1.60.0 — unreleased
 
-Versions in this release: **DebugLog minor 14** (`LibKa0s-DebugLog-1.0` 14) and **Slash minor 16**
-(`LibKa0s-Slash-1.0` 16). Every other library
-file's LibStub minor is still v1.59.0's so far, and the test kit stays at **revision 26** so far;
-the items that move one add it to this line in the same commit. Stacked on the unmerged v1.59.0
+Versions in this release: **DebugLog minor 14** and **DebugLogDiagnostics minor 1**
+(`LibKa0s-DebugLog-1.0` 14.1) and **Slash minor 16** (`LibKa0s-Slash-1.0` 16), and the test kit at
+**revision 27**. Every other library file's LibStub minor is still v1.59.0's so far; the items that
+move one add it to this line in the same commit. Stacked on the unmerged v1.59.0
 (`53c141a`), for the 2026-09-25 diagnostics rollout.
 
 ### DebugLog minor 14: the copy-timing switch and the published buffer slack
@@ -37,10 +37,56 @@ the items that move one add it to this line in the same commit. Stacked on the u
   reading no clock, one exact line from a scripted clock, the line never reaching the buffer, the
   timed path handing the window the same text, the kept-line count past the cap, both headless
   guards, the slack pinned at 64, and `Add` honoring a changed slack.
-  Documented in [the version 14 document](docs/api/DebugLog/version-14-docs.md); version 13 is
-  Superseded. `docs/api/DebugLog/members-14.json` gains `BUFFER_SLACK` and `TIME_COPY`, both
-  lib-level: every consumer's DebugLog parity case resolves the instance, so no degradation stub
-  moves.
+  Documented in [the version 14.1 document](docs/api/DebugLog/version-14.1-docs.md) (key 14.1
+  with the diagnostics file below); version 13 is Superseded. The member manifest,
+  `docs/api/DebugLog/members-14.1.json`, gains `BUFFER_SLACK` and `TIME_COPY`, both lib-level.
+
+### DebugLogDiagnostics minor 1: the diagnostics report
+
+- **A new secondary file of `LibKa0s-DebugLog-1.0`, `DebugLogDiagnostics.lua`**, for the standard's
+  diagnostics dump (v2.68.0, `debug-logging-§14`). Paired on the shell's minor
+  (`__diagMinor` / `__diagShellMinor`, as `WidgetsDragHandle.lua` pairs); loaded after
+  `DebugLog.lua` in `LibKa0s.xml`; `lib:New` installs its methods on each instance through
+  `lib.__installDiagnostics`. The version key becomes **14.1**.
+- **`D:RunDiagnostics(spec?)`** writes one report into the console and returns its line count: the
+  begin marker `[Diag] ==== <brandName> diagnostics begin ====`; the identity header (the host's
+  `initSummary()`, `GetBuildInfo`, the locale, the debug flag, `InCombatLockdown()` and
+  `UnitAffectingCombat("player")` each pcall'd, and every running LibKa0s file minor); the host's
+  sections, each under its own pcall so a raise costs one line; a `truncated` line when a cap bit;
+  and the end marker, which counts every line. It appends through an internal ungated append with
+  one repaint at the end, never calls `Clear`, never touches the flag, shows a hidden console, and
+  prints one chat line, `lib.STRINGS.DIAG_WRITTEN`. **`D:BuildDiagnostics(spec?)`** is the same
+  report as data and writes nothing. **`D:DebugVerb(rest)`** routes `diagnostics`, `on` and `off`
+  and answers `false` for anything else, so the host keeps its own fallback.
+- **The cap**: `lib.DIAG_MAX_LINES` (**1200**), clamped to `lib.MAX_BUFFER - 100`, with two lines kept
+  for the truncated line and the end marker; `lib.DIAG_MAX_PER_LIST` (**40**) for `out:list`.
+- **The writer a section is handed**, `out`: `add`, `joined`, `list`, `section`, `str`, `plain`,
+  `escape`, `readable` and `nonDefaults`. Every value goes through the console's `safeToString`,
+  every format is pcall'd with the gated sink's fallback join, and color, texture, atlas and
+  hyperlink escapes are stripped; `escape` doubles `|` for a value whose escapes are the evidence.
+- **Two descriptor fields**: `brandName` (the markers; falls back to `title`) and `diagnostics` (a
+  function returning the sections, called at run time).
+- `DebugLog.lua` 14 (still unreleased) gains the `DIAG_WRITTEN` string, the install call at the end
+  of `New`, and an `append` split out of `Add` so the report can repaint once.
+- **Consumers' library-absent DebugLog stubs gain three members** for their parity cases:
+  `RunDiagnostics` (the collection's placeholder line, nothing written, returns 0),
+  `BuildDiagnostics` and `DebugVerb`.
+- The cases are in a new suite, `tests/test_debuglog_diagnostics.lua`. Documented in
+  [the version 14.1 document](docs/api/DebugLog/version-14.1-docs.md).
+
+### Test kit revision 27: the shared diagnostics contract
+
+- **`testkit/test_diagnostics_contract.lua`**, the kit's fourth own suite: the dispatcher half of
+  `debug-logging-§14`, run against the consumer's own dispatcher through `Kit.diagnostics` (`brand`,
+  `dispatch`, `console`, `setDebug`, `setDisabled`, optional `retired` and `reset`). Seven cases:
+  both forms write one report; the debug word in any case; both markers carry the brand and the end
+  marker counts the lines; the report appends; it lands with logging off and leaves it off; both
+  forms run while disabled; `diag`, `dx` and the retired names run nothing. With `Kit.diagnostics`
+  unset it registers one declared skip naming the rule, so a consumer's re-vendor stays green
+  before the addon has its report. `framework.lua`'s `KIT_GATE_RULE` gains the suite's row.
+- This repo wires it against a fixture host, `tests/fixture_diagnostics.lua` (a DebugLog console
+  and a Slash dispatcher gated on an enabled flag). Documented in
+  [the revision 27 document](docs/api/testkit/version-27-docs.md); revision 26 is Superseded.
 
 ### Slash minor 16: `diagnostics` is live while disabled
 

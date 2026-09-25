@@ -129,6 +129,10 @@ lib.STRINGS = {
   -- Printed only while lib.TIME_COPY is on (minor 14). Milliseconds from debugprofilestop.
   COPY_TIMING      = "copy timing: %d lines, %d bytes, concat %.1fms, open+highlight %.1fms, " ..
     "next frame %.1fms",
+  -- The one chat line a diagnostics report prints (minor 14, DebugLogDiagnostics.lua). Localizable
+  -- like every string here; the report BODY is English diagnostic text and never goes through `L`.
+  DIAG_WRITTEN     = "Diagnostic report written to the debug console: %d lines. " ..
+    "Use Copy to share it.",
 }
 
 -- ── the formatters ─────────────────────────────────────────────────────────────────────────
@@ -334,6 +338,12 @@ end
 ---                         and shipped diagnostic windows that did not match the other three's.
 ---                         Pass this only for a close control that is genuinely DIFFERENT IN
 ---                         KIND — not merely the host's own.
+---   brandName   string    optional, minor 14. The addon's plain-text brand, `Ka0s <Name>`, named
+---                         in both diagnostics markers. Falls back to `title`.
+---   diagnostics function  optional, minor 14. Returns the host's report sections as
+---                         `{ { name, fn }, ... }`, each `fn(out)`. CALLED AT RUN TIME rather than
+---                         read at New, so a module that loads after the console can still supply
+---                         a section. Read only when DebugLogDiagnostics.lua is loaded.
 function lib:New(d)
   d = type(d) == "table" and d or {}
   for _, field in ipairs({ "name", "title", "font", "isEnabled", "setEnabled" }) do
@@ -635,9 +645,10 @@ function lib:New(d)
 
   -- ── logging ──────────────────────────────────────────────────────────────────────────────
 
-  --- Append one line. UNGATED on purpose: the enable seam's own bracket lines and a host's perf
-  --- output both have to land whatever the flag says. The gate lives in D.Debug.
-  function D:Add(tag, msg)
+  --- The append itself, without the repaint. Add is this plus one scrollbar and status update; the
+  --- diagnostics report (minor 14) writes up to DIAG_MAX_LINES lines through this and repaints once
+  --- at the end, rather than repainting the status line once per line.
+  local function append(tag, msg)
     -- Through the seam even though the two formatters end in string.format rather than
     -- table.concat: a WoW secret raises inside format just as it does inside concat, and Add is
     -- PUBLIC and ungated — it is the path a host's perf output and the enable brackets take. The
@@ -656,6 +667,12 @@ function lib:New(d)
       for i = 1, cap do buf[i] = buf[i + drop] end
       for i = n, cap + 1, -1 do buf[i] = nil end
     end
+  end
+
+  --- Append one line. UNGATED on purpose: the enable seam's own bracket lines and a host's perf
+  --- output both have to land whatever the flag says. The gate lives in D.Debug.
+  function D:Add(tag, msg)
+    append(tag, msg)
     D:UpdateScrollBar()
     D:UpdateStatus()
   end
@@ -854,6 +871,21 @@ function lib:New(d)
         if v then D:Show() else D:Hide() end
       end,
     }
+  end
+
+  -- The diagnostics report (minor 14) lives in DebugLogDiagnostics.lua, a secondary file of this
+  -- major, and installs itself here when it loaded. It is handed the private pieces it needs and
+  -- nothing else: the batched append and the one repaint, the chat printer, the stringifier, and
+  -- the descriptor for `brandName`, `title`, `initSummary` and `diagnostics`. Absent, the instance
+  -- has no report methods, which is what a host's own degradation stub already answers for.
+  if type(lib.__installDiagnostics) == "function" then
+    lib.__installDiagnostics(D, {
+      d = d,
+      emit = emit,
+      safeToString = safeToString,
+      append = append,
+      repaint = function() D:UpdateScrollBar(); D:UpdateStatus() end,
+    })
   end
 
   return D

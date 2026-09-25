@@ -12,7 +12,7 @@
 | Shipped in | v1.56.0 |
 | Status | Superseded |
 | Supersedes | [version 12](./version-12-docs.md) — whose buffer trim shifted the whole array once per line at the cap |
-| Superseded by | [version 14](./version-14-docs.md) |
+| Superseded by | [version 14.1](./version-14.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 13 }` |
 
@@ -434,15 +434,21 @@ the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a c
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
 
-## Moving to version 14
+## Moving to version 14.1
 
-**Take it; nothing in a host's own code changes.** Version 14 adds `lib.BUFFER_SLACK` (the
-compaction slack, still 64, which this version keeps as a private local), `lib.TIME_COPY` (a
-session-only switch that times the copy window, off at load) and the `COPY_TIMING` string. No
-instance member and no descriptor field moves, so no degradation stub changes, and with
-`TIME_COPY` off every method behaves as it does here.
+**Take it; nothing in a host's own code changes, but its degradation stub does.** The next version
+is key 14.1: `DebugLog.lua` 14 with a new secondary file, `DebugLogDiagnostics.lua` 1. `DebugLog.lua`
+14 adds `lib.BUFFER_SLACK` (the compaction slack, still 64, which this version keeps as a private
+local), `lib.TIME_COPY` (a session-only switch that times the copy window, off at load) and the
+`COPY_TIMING` string. With `TIME_COPY` off every existing method behaves as it does here.
+`DebugLogDiagnostics.lua` adds the diagnostics report: three instance members (`RunDiagnostics`,
+`BuildDiagnostics`, `DebugVerb`), two descriptor fields (`brandName`, `diagnostics`) and two
+lib-level caps. See [version 14.1](./version-14.1-docs.md).
 
+- **A host's library-absent DebugLog stub** mirrors an instance, so its parity case now asks for the
+  three new members. The stub's `RunDiagnostics` prints the collection's placeholder line, writes
+  nothing and returns 0.
 - **A host suite that hard-codes the slack as `64`** may read `lib.BUFFER_SLACK` instead. It passes
-  either way at version 14, which does not change the value.
+  either way at version 14.1, which does not change the value.
 
-Everything else in this document is unchanged at version 14.
+Everything else in this document is unchanged at version 14.1.
