@@ -34,7 +34,7 @@ local widgets = LibStub and LibStub("LibKa0s-Widgets-1.0", true)
 local NEEDS_WIDGETS = 7
 if not widgets or (widgets.MINOR or 0) < NEEDS_WIDGETS then return end
 
-local MAJOR, MINOR = "LibKa0s-DebugLog-1.0", 13
+local MAJOR, MINOR = "LibKa0s-DebugLog-1.0", 14
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -65,7 +65,20 @@ lib.MAX_BUFFER = 1500
 -- collection index it directly. What moves is only its LENGTH past the cap: between compactions it
 -- may hold up to MAX_BUFFER + BUFFER_SLACK raw entries, and every public reader (BufferSize,
 -- LastLine, FindLine, CopyText, the status line) answers the newest MAX_BUFFER and no more.
-local BUFFER_SLACK = 64
+--
+-- Published at minor 14 rather than kept a local, and read by Add at call time like MAX_BUFFER.
+-- The two move together: moves per line is roughly MAX_BUFFER / (BUFFER_SLACK + 1), so a bigger
+-- buffer takes a bigger slack to keep the same amortized cost, and a suite that pinned 64 as a
+-- literal next to a constant it reads back would go stale the day the buffer moves.
+lib.BUFFER_SLACK = 64
+
+-- Copy timing (minor 14). Off by default and never persisted: a session-only switch for measuring
+-- what the copy window costs at a given buffer size, set by hand with
+-- `/run LibStub("LibKa0s-DebugLog-1.0").TIME_COPY = true`. While it is on, every ShowCopy prints
+-- one COPY_TIMING line through the host's chat printer, never through Add, so a measurement does
+-- not grow the very buffer it is measuring. Lib-level on purpose: it is a question about the
+-- library's window, and one switch answers it for every console loaded.
+lib.TIME_COPY = false
 
 -- Re-exported rather than left for the host to reach into Core for. A host that draws a close
 -- button on its own windows should get the same one its console wears, from one factory — three
@@ -113,6 +126,9 @@ lib.STRINGS = {
   -- an empty substitution, because "Same as  debug." reads as a bug and this text ships frozen.
   CHECKBOX_TOOLTIP_NO_SLASH = "Show or hide the on-screen debug console window. Whether logging " ..
     "is on is separate \226\128\148 use the window's own toggle.",
+  -- Printed only while lib.TIME_COPY is on (minor 14). Milliseconds from debugprofilestop.
+  COPY_TIMING      = "copy timing: %d lines, %d bytes, concat %.1fms, open+highlight %.1fms, " ..
+    "next frame %.1fms",
 }
 
 -- ── the formatters ─────────────────────────────────────────────────────────────────────────
@@ -633,7 +649,7 @@ function lib:New(d)
     local buf = D.buffer
     buf[#buf + 1] = lib.FormatPlain(ts, tag, msg)
     local n, cap = #buf, lib.MAX_BUFFER
-    if n > cap + BUFFER_SLACK then
+    if n > cap + lib.BUFFER_SLACK then
       -- One pass: the newest `cap` lines move down to 1..cap, then the tail is cleared from the end
       -- so the array stays dense at every step.
       local drop = n - cap
@@ -731,12 +747,35 @@ function lib:New(d)
   --- MAX_BUFFER lines only, since minor 13: any slack past the cap is already evicted.
   function D:CopyText() return table.concat(D.buffer, "\n", firstKept(), #D.buffer) end
 
+  --- ShowCopy with the three costs measured (minor 14): the concat that builds the text, the open
+  --- (CopyWindow's SetText, cursor, Show, SetFocus and HighlightText), and whatever the client does
+  --- before the next frame, which is where laying out a large EditBox lands. Headless, or on a client
+  --- without either clock, the window opens untimed rather than raising: the flag is a measuring
+  --- aid, and a missing clock must never cost the user the copy window itself.
+  local function timedShowCopy(win)
+    local clock, timer = debugprofilestop, C_Timer
+    local after = type(timer) == "table" and timer.After
+    if type(clock) ~= "function" or type(after) ~= "function" then
+      win:Show(D:CopyText())
+      return
+    end
+    local t0 = clock()
+    local text = D:CopyText()
+    local t1 = clock()
+    win:Show(text)
+    local t2 = clock()
+    local lines, bytes = D:BufferSize(), #text
+    after(0, function()
+      emit(D:Text("COPY_TIMING"):format(lines, bytes, t1 - t0, t2 - t1, clock() - t2))
+    end)
+  end
+
   function D:ShowCopy()
     local win = EnsureCopyWindow()
     if not win then return end
     -- The width/text/cursor/show/focus/highlight order this used to spell out is CopyWindow's now,
     -- and it is load-bearing there for the same reasons it was here.
-    win:Show(D:CopyText())
+    if lib.TIME_COPY then timedShowCopy(win) else win:Show(D:CopyText()) end
     D._copyWindowForTest = win
     D._copyFrameForTest  = win:GetFrame()
   end

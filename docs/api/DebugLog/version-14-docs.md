@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 13
+# `LibKa0s-DebugLog-1.0` — version 14
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **13** |
-| Shipped in | v1.56.0 |
-| Status | Superseded |
-| Supersedes | [version 12](./version-12-docs.md) — whose buffer trim shifted the whole array once per line at the cap |
-| Superseded by | [version 14](./version-14-docs.md) |
+| Files and minors | `DebugLog.lua` minor **14** |
+| Shipped in | v1.60.0 |
+| Status | **Current** |
+| Supersedes | [version 13](./version-13-docs.md) — whose buffer slack was a private local and whose copy window could not be timed |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 13 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 14 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared. Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
@@ -46,6 +46,65 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 
 ## What changed at this version
 
+Two lib-level members, both additive. Neither changes what a console does unless someone reaches
+for it.
+
+| | | Since |
+|---|---|---|
+| `lib.BUFFER_SLACK` | The compaction slack, **64**, published. It was a local of `DebugLog.lua` at version 13 with the same value and the same job; `Add` now reads it from the library at call time, as it already read `MAX_BUFFER`. | **14** |
+| `lib.TIME_COPY` | A session-only switch, `false` at load. While it is `true`, every `ShowCopy()` prints one line through the descriptor's `print` naming what the copy cost. See [Timing the copy window](#timing-the-copy-window). | **14** |
+| `lib.STRINGS.COPY_TIMING` | The text of that line, overridable through `L` like every other string. | **14** |
+
+**Why the slack is published.** The slack and the cap move together: a compaction moves about
+`MAX_BUFFER / (BUFFER_SLACK + 1)` lines per line written, 23 at 1500 and 64, and a larger buffer
+needs a larger slack to keep that ratio. With the slack a private local, a suite that checked the
+compaction had to write `64` as a literal next to a `MAX_BUFFER` it read back from the library, and
+that literal would go stale the day the buffer moved. Now a suite reads both. The value does not
+change at this version.
+
+### Timing the copy window
+
+`lib.TIME_COPY` exists to measure what the copy window costs at a given buffer size, in the live
+client, before the buffer is made larger. Turn it on by hand:
+
+```lua
+/run LibStub("LibKa0s-DebugLog-1.0").TIME_COPY = true
+```
+
+Every `ShowCopy()` then reads `debugprofilestop` three times around the copy and once more on the
+next frame (`C_Timer.After(0, ...)`), and on that next frame prints one line through the console's
+chat printer, shaped like this (the figures are placeholders, not a measurement):
+
+```text
+copy timing: 1500 lines, 120000 bytes, concat 1.0ms, open+highlight 10.0ms, next frame 100.0ms
+```
+
+| Figure | What it covers |
+|---|---|
+| lines | `BufferSize()`: the kept lines, never the raw array's slack |
+| bytes | the length of the text the window was handed |
+| concat | `CopyText()`, the `table.concat` that builds that text |
+| open+highlight | `CopyWindow`'s `Show`: `SetText`, the cursor, `Show`, `SetFocus`, `HighlightText` |
+| next frame | from the end of the open to the next frame, where the client lays out the `EditBox` |
+
+The line goes through the descriptor's `print`, **never through `Add`**, so a measurement does not
+grow the buffer it measures. The switch is lib-level, not per console: it answers a question about
+the library's window, and one `/run` covers every console loaded. It is never saved; a `/reload`
+turns it off.
+
+With no `debugprofilestop` or no `C_Timer.After` (a headless suite, say), a timed `ShowCopy()`
+opens the window untimed and prints nothing. With the switch off, `ShowCopy()` reads no clock and
+schedules nothing, exactly as at version 13.
+
+The cases are in `tests/test_debuglog_copytiming.lua`, a suite of its own because
+`tests/test_debuglog.lua` was 988 lines: the default and the string pinned as literals, the untimed
+path reading no clock, one exact line on the next frame from a scripted clock, the line never
+reaching the buffer, the timed and untimed paths handing the window the same text, the count being
+the kept lines past the cap, both headless guards, the slack pinned at 64, and `Add` honoring a
+changed slack at call time.
+
+## What version 13 changed
+
 **The buffer trim is batched.** Through version 12 every `Add` past the cap ran
 `table.remove(buffer, 1)`: a shift of all 1500 slots for every line written, for as long as debug
 logging stayed on (review finding `LibKa0s-R-10`). From version 13 the raw array is allowed to run
@@ -74,7 +133,7 @@ cap**:
 past the cap can see the slack. Below the cap nothing is observable, and no member is added,
 removed or repurposed: the member manifest differs from version 12's in the minor alone.
 `MAX_BUFFER` stays **1500** — the standard's number, which the message frame's `SetMaxLines` still
-matches — and the slack is a local of `DebugLog.lua`, not a member.
+matches — and the slack was a local of `DebugLog.lua` at version 13, not a member. Version 14 publishes it as `lib.BUFFER_SLACK`.
 
 The cases are in `tests/test_debuglog.lua`: characterization written before the change and green on
 both sides of it (every reader at 1499, 1500, 1501 and 1600 lines, and the 1501st line dropping the
@@ -285,6 +344,8 @@ rather than paying it with a tooltip over the log. A host that wants the words b
 | `lib.FormatPlain(ts, tag, msg)` | 1 | `"<ts> \| [<tag>] <msg>"` — what the buffer holds and the copy window mirrors. Pure and lib-level, so a host's tests call it directly. |
 | `lib.FormatColored(ts, tag, msg)` | 1 | The console view's line: timestamp muted steel-blue (`6f8faf`), `[tag]` muted tan/gold (`c9a66b`), separator and message default white. |
 | `lib.MAX_BUFFER` | 1 | The line cap (**1500** as of minor 11; 500 through minor 10). Fixed by the standard rather than by the host: the cap and the message frame's own `SetMaxLines` must move together or the visible log and the copied buffer diverge. 1500 because the perf capture workflow pastes out of this buffer — `perf dump` writes a whole JSON record as one line — and the copy window is a *view* of the buffer rather than a second store, so this one number caps both. |
+| `lib.BUFFER_SLACK` | **14** | How far the raw `buffer` may run past `MAX_BUFFER` before `Add` compacts it: **64**. Read by `Add` at call time. A private local through minor 13, with the same value. |
+| `lib.TIME_COPY` | **14** | `false` at load and never saved. While `true`, each `ShowCopy()` prints one `COPY_TIMING` line through the descriptor's `print` on the next frame. See [Timing the copy window](#timing-the-copy-window). |
 | `lib.MakeCloseButton` | 1 | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. Forwards through the `core` table at call time, not captured at load. |
 | `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
 | `lib.MODULES` | 1 | `{ DebugLog = <minor> }` — the live minor of every file in this major. |
@@ -319,7 +380,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `buffer` | 1 | The plain-text lines, a dense array, newest last. **As of minor 13 it may hold up to `MAX_BUFFER + 64` raw entries between compactions**; the newest `MAX_BUFFER` are the kept lines and anything older is already evicted. Read directly by host tests across the collection — it is part of the contract, not an internal — so a test that needs the kept count past the cap reads `BufferSize()`, not `#buffer`. |
+| `buffer` | 1 | The plain-text lines, a dense array, newest last. **As of minor 13 it may hold up to `MAX_BUFFER + BUFFER_SLACK` (1564) raw entries between compactions**; the newest `MAX_BUFFER` are the kept lines and anything older is already evicted. Read directly by host tests across the collection — it is part of the contract, not an internal — so a test that needs the kept count past the cap reads `BufferSize()`, not `#buffer`. |
 | `FormatPlain` / `FormatColored` / `MakeCloseButton` | 1 | The lib-level members, mirrored onto the instance so a host holds one object. |
 | `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
 | `Add(tag, msg)` | 1 | Append one line. **Ungated on purpose**: the enable seam's own bracket lines and a host's perf output both have to land whatever the flag says. |
@@ -331,7 +392,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `UpdateScrollBar()` | 1 | Re-sync the slider with the message frame's scroll offset. The two run in opposite directions, so they are related by `maxOffset - value`. |
 | `UpdateStatus()` | 1 | Repaint the `N / MAX` line counter. `N` is `BufferSize()` as of minor 13, so it never reads past `MAX`. |
 | `CopyText()` | 1 | The kept lines as one newline-joined string, oldest first — as of minor 13 the newest `MAX_BUFFER` only. |
-| `ShowCopy()` | 1 | Open the copy window over the console, filled with the buffer, focused and selected — Ctrl+C, then Esc. As of minor 12 the window is `LibKa0s-Widgets-1.0`'s `CopyWindow`, built lazily on the first call and kept; it re-anchors to the console on **every** call rather than staying where it was last dragged. |
+| `ShowCopy()` | 1 | Open the copy window over the console, filled with the buffer, focused and selected — Ctrl+C, then Esc. As of minor 12 the window is `LibKa0s-Widgets-1.0`'s `CopyWindow`, built lazily on the first call and kept; it re-anchors to the console on **every** call rather than staying where it was last dragged. As of minor 14, with `lib.TIME_COPY` on, it also prints the timing line described in [Timing the copy window](#timing-the-copy-window). |
 | `_copyWindowForTest` | **12** | The `CopyWindow` handle, recorded on the instance by `ShowCopy()`. A test seam: the handle is otherwise a local, and this is what a suite reads to assert which window it got. |
 | `_copyFrameForTest` | **12** | The frame that handle built, from `win:GetFrame()`. The copy window's `EditBox` is write-only through the frame API, which is why `CopyText()` exists — this is for the frame's own properties (its global name, its size, its named scroll child). |
 | `Show()` / `Hide()` / `IsShown()` / `Toggle()` | 1 | Window visibility. `Hide` never builds a frame: a settings panel calls `IsShown` on every refresh, and a `Hide` that constructed a window would build one nobody asked for. |
@@ -422,6 +483,11 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+Version 14 adds two lib-level members and one string and changes no behavior while `TIME_COPY` is
+off. A host's degradation stub is an instance surface and gains nothing. A host suite that
+hard-codes the slack as `64` can read `lib.BUFFER_SLACK` instead; it passes either way at this
+version.
+
 The one observable change at version 13 is `#buffer` past the cap, which may read up to 1564 rather
 than 1500. Every method answers as version 12 did. A host suite that writes more than 1500 lines and
 asserts `#D.buffer` or `D.buffer[1]` reads the raw array rather than the kept lines, and moves to
@@ -433,16 +499,3 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
-
-## Moving to version 14
-
-**Take it; nothing in a host's own code changes.** Version 14 adds `lib.BUFFER_SLACK` (the
-compaction slack, still 64, which this version keeps as a private local), `lib.TIME_COPY` (a
-session-only switch that times the copy window, off at load) and the `COPY_TIMING` string. No
-instance member and no descriptor field moves, so no degradation stub changes, and with
-`TIME_COPY` off every method behaves as it does here.
-
-- **A host suite that hard-codes the slack as `64`** may read `lib.BUFFER_SLACK` instead. It passes
-  either way at version 14, which does not change the value.
-
-Everything else in this document is unchanged at version 14.

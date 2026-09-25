@@ -10,6 +10,37 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.60.0 — unreleased
+
+Versions in this release: **DebugLog minor 14** (`LibKa0s-DebugLog-1.0` 14). Every other library
+file's LibStub minor is still v1.59.0's so far, and the test kit stays at **revision 26** so far;
+the items that move one add it to this line in the same commit. Stacked on the unmerged v1.59.0
+(`53c141a`), for the 2026-09-25 diagnostics rollout.
+
+### DebugLog minor 14: the copy-timing switch and the published buffer slack
+
+- **`lib.TIME_COPY`**, `false` at load and never saved. Turned on by hand
+  (`/run LibStub("LibKa0s-DebugLog-1.0").TIME_COPY = true`), every `ShowCopy()` prints one line
+  through the console's chat printer on the next frame: `copy timing: %d lines, %d bytes, concat
+  %.1fms, open+highlight %.1fms, next frame %.1fms`, read from `debugprofilestop` around
+  `CopyText()`, around `CopyWindow`'s `Show`, and from there to a `C_Timer.After(0)` callback. It is
+  the measuring aid for the buffer-size decision this release carries. The line goes through the
+  descriptor's `print`, never through `Add`, so it does not grow the buffer it measures. With no
+  `debugprofilestop` or no `C_Timer.After`, the window opens untimed and nothing prints; with the
+  switch off, `ShowCopy()` reads no clock, as at minor 13. The text is `lib.STRINGS.COPY_TIMING`.
+- **`lib.BUFFER_SLACK`**, the compaction slack, published at **64**, its minor-13 value. `Add` reads
+  it from the library at call time, as it reads `MAX_BUFFER`, so a suite reads both back rather than
+  writing `64` beside a constant it reads.
+- The cases are in a new suite, `tests/test_debuglog_copytiming.lua`, because
+  `tests/test_debuglog.lua` is 988 lines: the default and the string as literals, the untimed path
+  reading no clock, one exact line from a scripted clock, the line never reaching the buffer, the
+  timed path handing the window the same text, the kept-line count past the cap, both headless
+  guards, the slack pinned at 64, and `Add` honoring a changed slack.
+  Documented in [the version 14 document](docs/api/DebugLog/version-14-docs.md); version 13 is
+  Superseded. `docs/api/DebugLog/members-14.json` gains `BUFFER_SLACK` and `TIME_COPY`, both
+  lib-level: every consumer's DebugLog parity case resolves the instance, so no degradation stub
+  moves.
+
 ## v1.59.0 — 2026-09-25
 
 Versions in this release: **WidgetsDragHandle minor 3** (`LibKa0s-Widgets-1.0` 10.3). Every other

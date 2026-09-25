@@ -575,6 +575,19 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the copy window still shows the whole buffer, in order
 - dbg: the copy window re-anchors to the console instead of a fixed center
 
+### test_debuglog_copytiming.lua (10)
+
+- dbgtime: TIME_COPY is off at load, and the timing line's text is published in STRINGS
+- dbgtime: with TIME_COPY off, ShowCopy reads no clock, queues nothing and prints nothing
+- dbgtime: with TIME_COPY on, the next frame prints one exact timing line through emit
+- dbgtime: the timing line never lands in the buffer it measures
+- dbgtime: the timed open hands the window exactly CopyText, as the untimed one does
+- dbgtime: the line counts the kept lines, not the raw array past the cap
+- dbgtime: with no debugprofilestop, TIME_COPY opens the window untimed and prints nothing
+- dbgtime: with no C_Timer, TIME_COPY opens the window untimed and prints nothing
+- dbgtime: BUFFER_SLACK is published, and is 64 at minor 14
+- dbgtime: Add reads BUFFER_SLACK at call time, like MAX_BUFFER
+
 ### test_slash.lua (109)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
@@ -1861,6 +1874,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_reorder.lua | 5 |
 | test_debuglog.lua | 75 |
+| test_debuglog_copytiming.lua | 10 |
 | test_slash.lua | 109 |
 | test_slash_refusal.lua | 7 |
 | test_launcher.lua | 45 |
@@ -1899,4 +1913,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1677** |
+| **Total** | **1687** |
