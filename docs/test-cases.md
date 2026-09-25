@@ -588,7 +588,7 @@ badge and any count quoted in the docs must agree with it.
 - dbgtime: BUFFER_SLACK is published, and is 64 at minor 14
 - dbgtime: Add reads BUFFER_SLACK at call time, like MAX_BUFFER
 
-### test_slash.lua (109)
+### test_slash.lua (110)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
 - sl: whitespace-only input is treated as empty
@@ -695,7 +695,8 @@ badge and any count quoted in the docs must agree with it.
 - sl: disable ECHOES the write rather than refusing, and is idempotent
 - sl: help prints the full index with the refusal line under its header, unindented
 - sl: help enabled prints no refusal line at all
-- sl: liveVerbs defaults to the standard's twelve reserved verbs and is overridable as DATA
+- sl: liveVerbs defaults to the standard's thirteen reserved verbs and is overridable as DATA
+- sl: a disabled host that ships diagnostics runs it, by the default live set (minor 16)
 - sl: a reserved verb the host never shipped is not refused, in either state
 - sl: the gate is asked per dispatch, so a value that changes mid-session is honored
 - sl: the refusal wording is NOT reachable through the locale override
@@ -1875,7 +1876,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_reorder.lua | 5 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
-| test_slash.lua | 109 |
+| test_slash.lua | 110 |
 | test_slash_refusal.lua | 7 |
 | test_launcher.lua | 45 |
 | test_options.lua | 85 |
@@ -1913,4 +1914,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1687** |
+| **Total** | **1688** |

@@ -12,7 +12,8 @@ cannot drift. Release order is in
 
 ## v1.60.0 — unreleased
 
-Versions in this release: **DebugLog minor 14** (`LibKa0s-DebugLog-1.0` 14). Every other library
+Versions in this release: **DebugLog minor 14** (`LibKa0s-DebugLog-1.0` 14) and **Slash minor 16**
+(`LibKa0s-Slash-1.0` 16). Every other library
 file's LibStub minor is still v1.59.0's so far, and the test kit stays at **revision 26** so far;
 the items that move one add it to this line in the same commit. Stacked on the unmerged v1.59.0
 (`53c141a`), for the 2026-09-25 diagnostics rollout.
@@ -40,6 +41,18 @@ the items that move one add it to this line in the same commit. Stacked on the u
   Superseded. `docs/api/DebugLog/members-14.json` gains `BUFFER_SLACK` and `TIME_COPY`, both
   lib-level: every consumer's DebugLog parity case resolves the instance, so no degradation stub
   moves.
+
+### Slash minor 16: `diagnostics` is live while disabled
+
+- **`lib.LIVE_VERBS` gains `diagnostics`**, after `perf`: the standard's thirteen reserved verbs,
+  for v2.68.0's diagnostics dump (`debug-logging-§14`, `slash-commands-§2`, `§7`). A disabled host
+  that ships the verb and passes no `liveVerbs`, or builds its array from `lib.LIVE_VERBS`, runs it
+  where minor 15 answered the refusal line. A host with a literal array adds the verb itself. No
+  member, descriptor field or `NEEDS_*` floor moves; `members-16.json` differs from
+  `members-15.json` in the minor alone.
+- `tests/test_slash.lua` re-pins the default set and adds one case: a disabled host that ships
+  `diagnostics` runs it with no refusal line. Documented in
+  [the version 16 document](docs/api/Slash/version-16-docs.md); version 15 is Superseded.
 
 ## v1.59.0 — 2026-09-25
 
