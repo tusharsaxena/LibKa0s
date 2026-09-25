@@ -148,6 +148,10 @@ this time, 26 → 27, so both copies are owed. Then, in the same commit so the s
   `brandName` and the `diagnostics` descriptor field, the host's sections, `Kit.diagnostics`, and the
   README's `## Reporting a bug`. Until those land the addon is on v1.60.0 and still owes the dump.
 
+Release gate (`docs/automated-tests/20260926-034006/`): lint pass, 0/0 in 98 files;
+tests pass, 1730 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.59.0 — 2026-09-25
 
 Versions in this release: **WidgetsDragHandle minor 3** (`LibKa0s-Widgets-1.0` 10.3). Every other
