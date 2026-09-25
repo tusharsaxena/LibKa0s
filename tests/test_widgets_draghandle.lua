@@ -681,3 +681,221 @@ test("draghandle: a host with its own edge painter gets its own pixels", functio
   assertEqual(seen.size, 1)
   assertEqual(table.concat({ seen.r, seen.g, seen.b, seen.a }, ","), "1,0.82,0,0.6")
 end)
+
+-- ── The close mark (minor 3), and the hosts that did not ask for one ────────────────────────
+
+local HOST_CLOSE     = "Interface\\AddOns\\Host\\media\\icons\\close"
+local CLOSE_FALLBACK = "Interface\\Buttons\\UI-StopButton"
+
+--- Run `fn` with CreateFrame counted, so a case can say how many frames a spec cost.
+local function countingFrames(fn)
+  local saved, n = mocks.CreateFrame, 0
+  mocks.CreateFrame = function(...) n = n + 1; return saved(...) end
+  local ok, err = pcall(fn)
+  mocks.CreateFrame = saved
+  if not ok then error(err, 0) end
+  return n
+end
+
+test("draghandle: DragHandle is at minor 3, the close mark's minor", function()
+  assertEqual(W.MODULES.WidgetsDragHandle, 3)
+  assertEqual(W.__dragMinor, 3)
+end)
+
+test("draghandle: a spec with no onClose draws exactly the minor-2 strip, number for number", function()
+  -- THE OPT-IN MUST BE EXACT. ConsumableMaster, KickCD and AbsorbTracker pass no onClose and are
+  -- not re-vendored with this release, but they will be one day, and on that day their strips must
+  -- not move a pixel. Every figure below is the literal minor 2 drew, not a value read back off
+  -- DRAG_HANDLE, so a change to the table itself is caught here too.
+  -- red under: a reserve that grows for every host, or a close frame built and hidden.
+  stubMeasurer()
+  local h
+  local frames = countingFrames(function() h = W.DragHandle(mocks.UIParent, baseSpec()) end)
+  assertEqual(frames, 2, "the strip and the '?', and no third frame")
+  T.assertNil(h.close, "no close mark at all")
+  local D = W.DRAG_HANDLE
+  assertEqual(D.HEIGHT, 18)
+  assertEqual(D.GAP, 2)
+  assertEqual(D.HELP, 8)
+  assertEqual(D.HELP_HIT, 18)
+  assertEqual(D.HELP_INSET, 4)
+  assertEqual(D.HELP_CLEAR, 12)
+  assertEqual(D.HELP_GUTTER, 5)
+  assertEqual(D.RESERVE, 29)
+  assertEqual(h:Reserve(), 29)
+  assertEqual(h:Measure(), 88)
+  assertEqual(h:ApplyWidth(), 88)
+  local p1, r1, rp1, x1, y1 = h.label:GetPoint(1)
+  assertEqual(table.concat({ p1, rp1, x1, y1 }, ","), "LEFT,LEFT,29,0")
+  assertEqual(r1, h)
+  local p2, r2, rp2, x2, y2 = h.label:GetPoint(2)
+  assertEqual(table.concat({ p2, rp2, x2, y2 }, ","), "RIGHT,RIGHT,-29,0")
+  assertEqual(r2, h)
+  T.assertNil(h.label:GetPoint(3), "two label points and no more")
+  local hp, hr, hrp, hx, hy = h.help:GetPoint(1)
+  assertEqual(table.concat({ hp, hrp, hx, hy }, ","), "RIGHT,RIGHT,-4,0")
+  assertEqual(hr, h)
+  T.assertNil(h.help:GetPoint(2))
+  assertEqual(h.help.__w .. "x" .. h.help.__h, "18x18")
+  assertEqual(h.help.icon.__w .. "x" .. h.help.icon.__h, "8x8")
+  assertEqual(h.__h, 18)
+end)
+
+test("draghandle: onClose builds an X the same frame and art size as the '?', immediately left of it",
+function()
+  -- The owner's ask: the X is the '?''s twin in size and hit box, and it sits in front of it.
+  -- CLOSE_GAP is the px between the two FRAMES; at 0 the two arts sit 2 * HELP_GUTTER apart.
+  local h = W.DragHandle(mocks.UIParent, baseSpec({ onClose = function() end, closeIcon = HOST_CLOSE }))
+  local D = W.DRAG_HANDLE
+  assertTrue(h.close ~= nil, "the X is built")
+  assertEqual(D.CLOSE_GAP, 0)
+  assertEqual(h.close.__w, D.HELP_HIT)
+  assertEqual(h.close.__h, D.HELP_HIT)
+  local point, rel, relPoint, x, y = h.close:GetPoint(1)
+  assertEqual(point, "RIGHT")
+  assertEqual(rel, h.help, "anchored to the '?', so it follows the mark rather than restating its inset")
+  assertEqual(relPoint, "LEFT")
+  assertEqual(x, -D.CLOSE_GAP)
+  assertEqual(y, 0)
+  assertEqual(h.close.icon.__w, D.HELP)
+  assertEqual(h.close.icon.__h, D.HELP)
+  local ip, ir, irp = h.close.icon:GetPoint(1)
+  assertEqual(ip, "CENTER")
+  assertEqual(ir, h.close)
+  assertEqual(irp, "CENTER")
+  assertEqual(h.close.icon.__texture, HOST_CLOSE)
+  local rest = h.close.icon.__vertex
+  assertEqual(table.concat({ rest[1], rest[2], rest[3] }, ","), "0.7,0.7,0.72", "the '?''s resting tint")
+end)
+
+test("draghandle: with no closeIcon the X falls to Blizzard's stop button", function()
+  -- The rung a host with no LibKa0s-Media lands on, beside HELP_FALLBACK and for the same reason.
+  local h = W.DragHandle(mocks.UIParent, baseSpec({ onClose = function() end }))
+  assertEqual(h.close.icon.__texture, CLOSE_FALLBACK)
+end)
+
+test("draghandle: the X widens the reserve on BOTH sides, so the label stays centered", function()
+  -- The symmetric reserve is the owner's ruling (CX-1): the strip grows by two X frames rather
+  -- than one, and the label's center stays the strip's center. And because the reserve grows by
+  -- exactly the X's frame plus its gap, the clearance in front of the X's ink is HELP_CLEAR, the
+  -- same 12px the '?' keeps on a strip without one.
+  -- red under: a one-sided reserve, which pushes the label left of center by half an X.
+  stubMeasurer()
+  local h = W.DragHandle(mocks.UIParent, baseSpec({ onClose = function() end }))
+  local D = W.DRAG_HANDLE
+  local reserve = D.RESERVE + D.HELP_HIT + D.CLOSE_GAP
+  assertEqual(reserve, 47)
+  assertEqual(h:Reserve(), reserve)
+  assertEqual(h:Measure(), 5 * 6 + reserve * 2)
+  local width = h:ApplyWidth()
+  assertEqual(width, 124)
+  local _, _, _, left = h.label:GetPoint(1)
+  local _, _, _, right = h.label:GetPoint(2)
+  assertEqual(left, reserve)
+  assertEqual(right, -reserve)
+  assertEqual((left + (width + right)) / 2, width / 2, "the label's bounds are centered on the strip")
+  local labelRight = width - reserve
+  local closeArtLeft = width - D.HELP_INSET - D.HELP_HIT - D.CLOSE_GAP - D.HELP_HIT + D.HELP_GUTTER
+  assertEqual(closeArtLeft - labelRight, D.HELP_CLEAR, "the X keeps the clearance the '?' keeps")
+end)
+
+test("draghandle: a left click on the X calls onClose once, and a right click does not", function()
+  local closes, menus = 0, 0
+  local h = W.DragHandle(mocks.UIParent, baseSpec({
+    onClose = function() closes = closes + 1 end,
+    onRightClick = function() menus = menus + 1 end,
+  }))
+  h.close:__fire("OnClick", "LeftButton")
+  assertEqual(closes, 1)
+  assertEqual(menus, 0)
+  h.close:__fire("OnClick", "RightButton")
+  assertEqual(closes, 1, "a right click never closes")
+  assertEqual(menus, 1, "it is passed through to the host's right-click, as the '?' does")
+  local regs = table.concat(h.close.__clicks, ",")
+  assertEqual(regs, "LeftButtonUp,RightButtonUp")
+end)
+
+test("draghandle: an X on a host with no right-click registers the left click alone", function()
+  -- dhSetClick's rule, carried over: no registration for a click nothing handles, because a
+  -- registered click the button does nothing with is swallowed.
+  local closes = 0
+  local h = W.DragHandle(mocks.UIParent, baseSpec({ onClose = function() closes = closes + 1 end }))
+  assertEqual(table.concat(h.close.__clicks, ","), "LeftButtonUp")
+  h.close:__fire("OnClick", "RightButton")
+  assertEqual(closes, 0)
+  h.close:__fire("OnClick", "LeftButton")
+  assertEqual(closes, 1)
+  assertEqual(#h.__clicks, 0, "and the strip itself still registers nothing")
+end)
+
+test("draghandle: the X takes the strip's drag scripts, so a drag that starts on it moves the frame",
+function()
+  -- The '?''s rule (CX-1: it passes drag through). An 18px dead zone on a strip whose whole job is
+  -- to be dragged is the defect ConsumableMaster's '?' had before this widget existed.
+  local moved = geomFrame()
+  local closes = 0
+  local h = W.DragHandle(mocks.UIParent, baseSpec({
+    moveFrame = moved, onClose = function() closes = closes + 1 end,
+  }))
+  assertEqual(h.close:GetScript("OnDragStart"), h:GetScript("OnDragStart"))
+  assertEqual(h.close:GetScript("OnDragStop"), h:GetScript("OnDragStop"))
+  assertEqual(h.close.__drags[1], "LeftButton")
+  h.close:__fire("OnDragStart")
+  assertTrue(moved.__moving, "firing it on the X really moves the frame")
+  h.close:__fire("OnDragStop")
+  assertFalse(moved.__moving)
+  assertEqual(closes, 0, "and a drag is not a close")
+end)
+
+test("draghandle: the X brightens under the cursor and shows closeTooltip, owned by the X", function()
+  local h = W.DragHandle(mocks.UIParent, baseSpec({
+    onClose = function() end,
+    tooltip = { title = "Buffs" },
+    closeTooltip = { title = "Disable Buffs", body = { "Turn it back on in settings." } },
+  }))
+  local seen = hover(h.close)
+  assertEqual(seen.lines[1].text, "Disable Buffs")
+  assertEqual(seen.lines[2].text, "Turn it back on in settings.")
+  assertEqual(seen.owner, h.close, "the frame hovered is the X")
+  assertEqual(h.close.icon.__vertex[1], 1, "full white under the cursor: there is always a click here")
+  assertEqual(h.close.icon.__vertex[3], 1)
+  assertEqual(hover(h).lines[1].text, "Buffs", "the strip keeps its own descriptor")
+  local left = false
+  local tip = mocks.GameTooltip
+  local savedHide = rawget(tip, "Hide")
+  rawset(tip, "Hide", function() left = true end)
+  h.close:__fire("OnLeave")
+  rawset(tip, "Hide", savedHide)
+  assertTrue(left, "leaving hides the tooltip")
+  assertEqual(h.close.icon.__vertex[3], 0.72, "and restores the resting tint")
+end)
+
+test("draghandle: an X with no closeTooltip shows the strip's, and follows a cursor owner", function()
+  local h = W.DragHandle(mocks.UIParent, baseSpec({
+    onClose = function() end, tooltip = { title = "Buffs" }, tooltipOwner = "cursor",
+  }))
+  local seen = hover(h.close)
+  assertEqual(seen.lines[1].text, "Buffs")
+  assertEqual(seen.owner, mocks.UIParent)
+  assertEqual(seen.anchor, "ANCHOR_CURSOR")
+end)
+
+test("draghandle: an X on a strip whose '?' could not be built sits where the '?' would", function()
+  -- The degraded path: a client that answers the strip but not its second frame. The X must not
+  -- index a nil '?' to anchor itself.
+  local saved, n = mocks.CreateFrame, 0
+  mocks.CreateFrame = function(...)
+    n = n + 1
+    if n == 2 then return nil end
+    return saved(...)
+  end
+  local ok, err = pcall(function()
+    local h = W.DragHandle(geomUIParent, baseSpec({ onClose = function() end }))
+    T.assertNil(h.help)
+    local point, rel, relPoint, x = h.close:GetPoint(1)
+    assertEqual(table.concat({ point, relPoint, x }, ","), "RIGHT,RIGHT," .. -W.DRAG_HANDLE.HELP_INSET)
+    assertEqual(rel, h)
+  end)
+  mocks.CreateFrame = saved
+  assertTrue(ok, tostring(err))
+end)

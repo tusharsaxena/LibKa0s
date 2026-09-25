@@ -10,6 +10,51 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.59.0 — 2026-09-25
+
+Versions in this release: **WidgetsDragHandle minor 3** (`LibKa0s-Widgets-1.0` 10.3). Every other
+file is unchanged from v1.58.0: `Core` 8, `Env` 1, `Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2,
+`Pool` 3, `Item` 2, `Media` 4, `Widgets` 10, `DebugLog` 13, `Slash` 15, `Launcher` 4, `Options` key
+24.31.4.7.4, `Perf` 13 and `PerfPanel` 5 (key 13.5), and the test kit stays at **revision 26**. No
+`NEEDS_*` floor rises and no major is added. Built to the Ka0s WoW Addon Standard **v2.67.0**,
+unchanged.
+
+### WidgetsDragHandle minor 3: an opt-in close mark beside the help mark
+
+- **`spec.onClose`** builds a close mark, an X, immediately left of the help mark, and calls the
+  function on the X's left click. Asked for by AuraMaster (feedback batch 8, `CX-1`), whose X
+  disables the container it sits on; what the X does is always the host's.
+- **The X is the help mark's twin**: the same `HELP_HIT` (18px) frame around the same `HELP` (8px)
+  art at `CENTER`, anchored `RIGHT` to the help mark's `LEFT` at `-CLOSE_GAP`, the same resting tint
+  `0.7, 0.7, 0.72` and full white under the cursor. It takes the strip's drag scripts, so a drag that
+  starts on it moves the frame and closes nothing, and it passes a right click to `onRightClick`
+  where the host wired one; with none it registers `LeftButtonUp` alone.
+- **`spec.closeIcon`** is its art, a resolved path (a host's `Icon("close")`), falling back to
+  `Interface\Buttons\UI-StopButton`; **`spec.closeTooltip`** is its own descriptor, falling back to
+  `tooltip`.
+- **The label stays centered.** The reserve grows by `HELP_HIT + CLOSE_GAP` on **both** sides, 29 to
+  47, so a strip with an X is 36px wider and keeps `HELP_CLEAR` (12px) in front of the X's ink.
+  `lib.DRAG_HANDLE.CLOSE_GAP = 0` is new, and so is **`handle:Reserve()`**, which answers this
+  strip's reserve; `handle.close` (and `handle.close.icon`) is readable, `nil` without `onClose`.
+- **A spec with no `onClose` is exactly minor 2**: two frames, a reserve of 29, the same label
+  bounds, `Measure()` and click registrations. `tests/test_widgets_draghandle.lua` pins every one of
+  those numbers as a literal, beside a minor check and nine new cases for the X (build, fallback
+  art, symmetric reserve, left and right click, drag pass-through, hover and tooltip, a strip with
+  no help mark).
+  Documented in [the version 10.3 document](docs/api/Widgets/version-10.3-docs.md); version 10.2 is
+  Superseded. No lib-level member moves, so `docs/api/Widgets/members-10.3.json` lists the same
+  surface as `members-10.2.json`.
+
+### What a consumer owes on re-vendoring v1.59.0
+
+Copy both payloads whole and move the `CLAUDE.md` provenance line to v1.59.0 in the same commit, as
+always; the kit bytes are those of v1.56.0. **Nothing else, unless the host wants an X**: a
+`DragHandle` host that passes no `onClose` (ConsumableMaster, KickCD, AbsorbTracker today) draws the
+same pixels and needs no change. A host that adopts it passes `onClose`, `closeIcon` and
+`closeTooltip`, and any host test that hard-codes the strip's width or `RESERVE * 2` re-pins against
+`handle:Reserve()`. No degradation stub moves: the member manifest is unchanged. This release is
+re-vendored into AuraMaster only (batch 8, `D3`); the other hosts take it on their next re-vendor.
+
 ## v1.58.0 — 2026-09-24
 
 Versions in this release: **Launcher minor 4** (`LibKa0s-Launcher-1.0` 4). Every other file is

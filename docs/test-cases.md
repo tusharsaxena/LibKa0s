@@ -440,7 +440,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: the handle owns the collection's 30px gutter unless the host says otherwise
 - widgets: a box frame that cannot make textures is skipped rather than raising
 
-### test_widgets_draghandle.lua (35)
+### test_widgets_draghandle.lua (46)
 
 - draghandle: it builds a named strip of the published height, hidden, with a label and a mark
 - draghandle: with no parent, and in a process with no CreateFrame, it answers nil
@@ -477,6 +477,17 @@ badge and any count quoted in the docs must agree with it.
 - draghandle: a line may carry its own color, so a gold line in a white band stays gold
 - draghandle: the strip is a plain Button with a fill, never a BackdropTemplate
 - draghandle: a host with its own edge painter gets its own pixels
+- draghandle: DragHandle is at minor 3, the close mark's minor
+- draghandle: a spec with no onClose draws exactly the minor-2 strip, number for number
+- draghandle: onClose builds an X the same frame and art size as the '?', immediately left of it
+- draghandle: with no closeIcon the X falls to Blizzard's stop button
+- draghandle: the X widens the reserve on BOTH sides, so the label stays centered
+- draghandle: a left click on the X calls onClose once, and a right click does not
+- draghandle: an X on a host with no right-click registers the left click alone
+- draghandle: the X takes the strip's drag scripts, so a drag that starts on it moves the frame
+- draghandle: the X brightens under the cursor and shows closeTooltip, owned by the X
+- draghandle: an X with no closeTooltip shows the strip's, and follows a cursor owner
+- draghandle: an X on a strip whose '?' could not be built sits where the '?' would
 
 ### test_widgets_reorder.lua (5)
 
@@ -1847,7 +1858,7 @@ badge and any count quoted in the docs must agree with it.
 | test_item.lua | 15 |
 | test_media.lua | 20 |
 | test_widgets.lua | 81 |
-| test_widgets_draghandle.lua | 35 |
+| test_widgets_draghandle.lua | 46 |
 | test_widgets_reorder.lua | 5 |
 | test_debuglog.lua | 75 |
 | test_slash.lua | 109 |
@@ -1888,4 +1899,4 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1666** |
+| **Total** | **1677** |

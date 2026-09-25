@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 10.2
+# `LibKa0s-Widgets-1.0` — version 10.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,12 +8,41 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **10** · `WidgetsDragHandle.lua` minor **2** |
-| Shipped in | v1.56.0 |
-| Status | Superseded |
-| Supersedes | [version 9.2](./version-9.2-docs.md) — a drag polled on the host's row frame and cached its line on the host's container |
-| Superseded by | [version 10.3](./version-10.3-docs.md) — `DragHandle` gains an opt-in close mark |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 10, WidgetsDragHandle = 2 }` |
+| Files and minors | `Widgets.lua` minor **10** · `WidgetsDragHandle.lua` minor **3** |
+| Shipped in | v1.59.0 |
+| Status | **Current** |
+| Supersedes | [version 10.2](./version-10.2-docs.md) — a drag handle with a help mark and no close mark |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 10, WidgetsDragHandle = 3 }` |
+
+## What changed at 10.3
+
+**`DragHandle` can draw a close mark, and only for a host that asks for one.** `WidgetsDragHandle.lua`
+moves to minor **3**; `Widgets.lua` stays at **10**. No lib-level member is added or removed, so the
+member manifest lists the same surface as 10.2's. What is new is three `spec` fields, one
+`DRAG_HANDLE` field, one instance method and one readable field, all **Since 3**:
+
+- **`spec.onClose`** builds an X immediately left of the help mark and calls this function on its
+  left click. **Without it nothing is built and the strip is exactly 10.2's**: the same two frames,
+  the same `RESERVE` of 29 on each side of the label, the same `Measure()`. A suite case pins every
+  one of those numbers as a literal (`a spec with no onClose draws exactly the minor-2 strip`).
+- **`spec.closeIcon`** is the X's art, a resolved path (a host's `Icon("close")`); with none it
+  falls back to `Interface\Buttons\UI-StopButton`.
+- **`spec.closeTooltip`** is a descriptor of the usual shape, shown by the X alone; with none the X
+  shows `tooltip`.
+- **`DRAG_HANDLE.CLOSE_GAP = 0`**, the px between the X's frame and the help mark's frame.
+- **`handle:Reserve()`** answers what each side of the label keeps clear on this strip, and
+  **`handle.close`** (with `handle.close.icon`) is readable, `nil` on a strip without one.
+
+The X is the help mark's twin, which is what the owner asked for (AuraMaster feedback batch 8,
+`CX-1`): the same `HELP_HIT` frame around the same `HELP` art, the same resting tint and the same
+full-white hover, and the strip's own drag scripts, so a drag that starts on it moves the frame. The
+label stays centered, because the reserve grows on **both** sides by `HELP_HIT + CLOSE_GAP` — 47
+rather than 29, so a strip with an X is 36px wider than one without. See [The close
+mark](#the-close-mark).
+
+**What a host must change: nothing, unless it wants an X.** A host that passes no `onClose` draws
+the same pixels and registers the same clicks as at 10.2.
 
 ## What changed at 10.2
 
@@ -515,7 +544,8 @@ own constants file is the drift this replaces. Read them off the table.
 | `HELP_INSET` | `4` | px from the strip's right edge to the mark's frame |
 | `HELP_CLEAR` | `12` | px of empty space between the label's bound and the mark's art — **8 in both copies** |
 | `HELP_GUTTER` | `5` | computed: `(HELP_HIT - HELP) / 2` exactly, never floored, the margin the art is centered in |
-| `RESERVE` | `29` | computed: `HELP_INSET + HELP_HIT - HELP_GUTTER + HELP_CLEAR`, what each side of the label keeps clear |
+| `RESERVE` | `29` | computed: `HELP_INSET + HELP_HIT - HELP_GUTTER + HELP_CLEAR`, what each side of the label keeps clear on a strip **without** a close mark |
+| `CLOSE_GAP` | `0` | **Since 3.** px between the close mark's frame and the help mark's frame; at `0` the two arts sit `2 * HELP_GUTTER = 10px` apart |
 
 `HELP_GUTTER` and `RESERVE` are computed at load from the four fields above them rather than typed,
 so a host reading them can never be reading a stale copy of the arithmetic. `PAD` is gone: it was
@@ -537,7 +567,10 @@ also spends it in its clamp reach, `HEIGHT + GAP`.
 | `helpIcon` | resolved texture path for the mark, the host's `Icon("help")` | `Interface\FriendsFrame\InformationIcon` |
 | `canDrag` | `function() -> boolean`, asked at `OnDragStart` | always allowed |
 | `onDragStart` / `onDragStop` | called once the move has started / stopped; a host saves its position in the second | no-op |
-| `onRightClick` | `function()`; **without it neither the strip nor the mark registers for clicks at all** | no right-click |
+| `onRightClick` | `function()`; **without it neither the strip nor the mark registers for clicks at all** (a close mark registers its left click alone) | no right-click |
+| `onClose` | **Since 3.** `function()`, called on a left click of the close mark; its presence is what builds the mark | no close mark; the strip is 10.2's exactly |
+| `closeIcon` | **Since 3.** resolved texture path for the close mark, the host's `Icon("close")` | `Interface\Buttons\UI-StopButton` |
+| `closeTooltip` | **Since 3.** a descriptor of the tooltip shape, shown by the close mark alone | the close mark shows `tooltip` |
 | `tooltip` | the descriptor below — shown by the strip, and by the mark unless `helpTooltip` says otherwise | no tooltip |
 | `helpTooltip` | a **second** descriptor of the same shape, shown by the help mark alone | the mark shows `tooltip` |
 | `tooltipOwner` | the default for both descriptors: `"cursor"` owns by `UIParent` at `ANCHOR_CURSOR`; anything else owns by the frame hovered | by the frame hovered |
@@ -614,10 +647,12 @@ colored or not.
 | Member | Meaning |
 |---|---|
 | `handle:SetLabel(text)` | re-texts the strip. It does **not** re-apply the width |
-| `handle:Measure()` | the natural width: `labelWidth + DRAG_HANDLE.RESERVE * 2` |
+| `handle:Measure()` | the natural width: `labelWidth + handle:Reserve() * 2` |
+| `handle:Reserve()` | **Since 3.** what each side of the label keeps clear: `DRAG_HANDLE.RESERVE` without a close mark, `RESERVE + HELP_HIT + CLOSE_GAP` with one |
 | `handle:ApplyWidth(minWidth)` | sets the width to `max(Measure(), minWidth or 0)` and returns it |
 
-`handle.label`, `handle.help`, `handle.help.icon` and `handle.bg` are readable; the strip itself is a
+`handle.label`, `handle.help`, `handle.help.icon`, `handle.bg` and, since 3, `handle.close` and
+`handle.close.icon` (`nil` without `onClose`) are readable; the strip itself is a
 `Button` and the host shows, hides, anchors and levels it.
 
 **`SetLabel` deliberately touches no geometry**, and `ApplyWidth` is a method the host calls rather
@@ -672,7 +707,8 @@ moment those two values differ by an odd amount.
 
 ### The label is bounded, not only centered
 
-The label is anchored `LEFT` at `+RESERVE` and `RIGHT` at `-RESERVE` with `SetJustifyH("CENTER")`,
+The label is anchored `LEFT` at `+handle:Reserve()` and `RIGHT` at `-handle:Reserve()` — `RESERVE`
+on a strip without a close mark — with `SetJustifyH("CENTER")`,
 `SetWordWrap(false)` and `SetMaxLines(1)`. Equal bounds and a centered justify draw exactly where a
 lone `CENTER` point drew, and the difference only shows on a label longer than the strip: a
 `FontString` with one center point has no width of its own and grows both ways, under the mark and
@@ -687,6 +723,33 @@ half and the mark keeps its `HELP_CLEAR`.
 
 A left-drag that starts on the `?` moves the frame, rather than landing in a dead zone. AuraMaster's
 copy did this and ConsumableMaster's did not; both get it from here.
+
+### The close mark
+
+**Since 3, and only for a host that passes `onClose`.** An X immediately left of the help mark: a
+`Button` `HELP_HIT` square anchored `RIGHT` to the help mark's `LEFT` at `-CLOSE_GAP`, holding an
+`OVERLAY` texture `HELP` square at `CENTER` — the same big-frame-around-small-art geometry as the
+`?`, so the X and the `?` are the same size and the same click target. On a strip whose help mark
+could not be built it takes the mark's own place, `RIGHT` at `-HELP_INSET`.
+
+- **Tint and hover are the help mark's.** `0.7, 0.7, 0.72` at rest and full white under the cursor.
+  Unlike the `?` the X always brightens, because it always has a click behind it.
+- **The click.** A left click calls `onClose`. A right click is passed to `onRightClick` when the
+  host wired one, as the `?` passes it, so the X is not a dead zone for the strip's own right-click;
+  with no `onRightClick` the X registers `LeftButtonUp` alone. A press that becomes a drag is not a
+  click — the client fires no `OnClick` for it.
+- **The drag passes through.** The X takes the strip's `OnDragStart` / `OnDragStop`, as the `?` does,
+  so a left-drag that starts on it moves the frame and closes nothing.
+- **The tooltip** is `closeTooltip`, read on every hover, falling back to `tooltip`; it is owned by
+  the X itself, or by `UIParent` at the cursor under `tooltipOwner = "cursor"`.
+- **The label stays centered.** `handle:Reserve()` is `RESERVE + HELP_HIT + CLOSE_GAP` (47) on
+  **each** side, so `Measure()` grows by 36px and the label's bounds move in by 18px on both sides.
+  The clearance between the label's right bound and the X's ink is then `HELP_CLEAR`, exactly what
+  the `?` keeps on a strip without an X. A host whose clamp or overhang reads `ApplyWidth` gets the
+  wider strip without a change of its own.
+
+What the X **does** is the host's: the library calls `onClose` and nothing else. AuraMaster's
+disables the container through its settings write seam.
 
 ### What the host keeps
 
@@ -752,12 +815,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 10.3
-
-`WidgetsDragHandle.lua` moves to minor **3** and `Widgets.lua` stays at minor **10**. No lib-level
-member is added or removed; the member manifest differs from this version's only in its version key.
-What is new is opt-in: `spec.onClose`, `spec.closeIcon` and `spec.closeTooltip` build a close mark
-(an X, the help mark's size and tint) immediately left of the help mark, with `DRAG_HANDLE.CLOSE_GAP`,
-`handle:Reserve()` and `handle.close` beside them. **A host that passes no `onClose` draws exactly
-what it drew at this version**, number for number. See [version 10.3](./version-10.3-docs.md).

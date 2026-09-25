@@ -233,8 +233,8 @@ font-preload cases did the same, into `tests/test_options_fontpreload.lua`. **v1
 paying for itself, twice in one release.** The drag handle written into `LibKa0s/Widgets.lua` took it
 to **1540** and its cases appended to `tests/test_widgets.lua` would have taken that file past the
 same line from seven under it, so both went to files of their own —
-`LibKa0s/WidgetsDragHandle.lua` (507 then, 520 now) and `tests/test_widgets_draghandle.lua` (668
-then, 683 now), neither of them in the band. That is a cut chosen while the seam was still obvious
+`LibKa0s/WidgetsDragHandle.lua` (507 then, 621 now) and `tests/test_widgets_draghandle.lua` (668
+then, 901 now), neither of them in the band. That is a cut chosen while the seam was still obvious
 rather than one sized against a file three releases older than the peel, which is what the two rows
 above record going wrong.
 
