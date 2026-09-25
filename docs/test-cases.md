@@ -506,18 +506,18 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the window title is the host's, with the library's suffix appended
 - dbg: a host can override the title suffix
 - dbg: Add appends the plain form to the buffer and is never gated on the flag
-- dbg: the cap is 1500 and the message frame is held to the same number
+- dbg: the cap is 3000 and the message frame is held to the same number
 - dbg: the buffer is capped, dropping the oldest line
 - dbg: the buffer stays a dense array of plain strings
 - dbg: Clear wipes the buffer and works before the window was ever built
 - dbg: BufferSize, LastLine and FindLine answer without reaching into .buffer
-- dbg: at 1499 lines every public reader answers the newest MAX_BUFFER
-- dbg: at 1500 lines every public reader answers the newest MAX_BUFFER
-- dbg: at 1501 lines every public reader answers the newest MAX_BUFFER
-- dbg: at 1600 lines every public reader answers the newest MAX_BUFFER
-- dbg: the 1501st line drops the first
-- dbg: 1564 adds cost at most one compaction, not one table.remove per line
-- dbg: the raw buffer holds at most MAX_BUFFER + 64 lines, and compacts in order
+- dbg: at 2999 lines every public reader answers the newest MAX_BUFFER
+- dbg: at 3000 lines every public reader answers the newest MAX_BUFFER
+- dbg: at 3001 lines every public reader answers the newest MAX_BUFFER
+- dbg: at 3100 lines every public reader answers the newest MAX_BUFFER
+- dbg: the 3001st line drops the first
+- dbg: 3129 adds cost at most one compaction, not one table.remove per line
+- dbg: the raw buffer holds at most MAX_BUFFER + BUFFER_SLACK lines, and compacts in order
 - dbg: the status line counts what the readers answer, not the raw array
 - dbg: the sink routes the first arg as the [tag] and every vararg through safeToString
 - dbg: the sink is a no-op, and does no work at all, when logging is off
@@ -585,7 +585,7 @@ badge and any count quoted in the docs must agree with it.
 - dbgtime: the line counts the kept lines, not the raw array past the cap
 - dbgtime: with no debugprofilestop, TIME_COPY opens the window untimed and prints nothing
 - dbgtime: with no C_Timer, TIME_COPY opens the window untimed and prints nothing
-- dbgtime: BUFFER_SLACK is published, and is 64 at minor 14
+- dbgtime: BUFFER_SLACK is published, and is 128 at minor 14
 - dbgtime: Add reads BUFFER_SLACK at call time, like MAX_BUFFER
 
 ### test_debuglog_diagnostics.lua (35)

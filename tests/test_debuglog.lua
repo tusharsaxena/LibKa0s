@@ -89,11 +89,12 @@ test("dbg: Add appends the plain form to the buffer and is never gated on the fl
   T.assertTrue(D.buffer[1]:find("|cff", 1, true) == nil, "and carries no color codes")
 end)
 
-test("dbg: the cap is 1500 and the message frame is held to the same number", function()
+test("dbg: the cap is 3000 and the message frame is held to the same number", function()
   -- Pinned as a literal because every other case reads the constant back out of the library and
   -- would pass at any value. The two must move together or the visible log and the copied buffer
-  -- disagree about how much history there is.
-  assertEqual(debuglog.MAX_BUFFER, 1500)
+  -- disagree about how much history there is. 3000 is the measured ceiling (DebugLog.lua's
+  -- rationale): 5000 failed the copy-box timing in the live client.
+  assertEqual(debuglog.MAX_BUFFER, 3000)
   -- SetMaxLines is called during the window build, so the recorder has to be in place before the
   -- frame exists: wrap the factory rather than the frame.
   local seen = {}
@@ -110,8 +111,8 @@ test("dbg: the cap is 1500 and the message frame is held to the same number", fu
 end)
 
 test("dbg: the buffer is capped, dropping the oldest line", function()
-  -- Read through the public readers since minor 13: the raw array may run up to 64 lines past the
-  -- cap between compactions, so #buffer is no longer the cap at MAX_BUFFER + 10. What a reader
+  -- Read through the public readers since minor 13: the raw array may run up to BUFFER_SLACK lines
+  -- past the cap between compactions, so #buffer is no longer the cap at MAX_BUFFER + 10. What a reader
   -- sees still is.
   local D = newLog()
   for i = 1, debuglog.MAX_BUFFER + 10 do D:Add("N", "line " .. i) end
@@ -192,13 +193,14 @@ local function assertNewestWindow(D, n)
   T.assertTrue(lines[#lines]:find("L" .. n .. ".", 1, true) ~= nil, "CopyText closes on the newest line")
 end
 
-for _, n in ipairs({ 1499, 1500, 1501, 1600 }) do
+local CAP = debuglog.MAX_BUFFER
+for _, n in ipairs({ CAP - 1, CAP, CAP + 1, CAP + 100 }) do
   test("dbg: at " .. n .. " lines every public reader answers the newest MAX_BUFFER", function()
     assertNewestWindow(fillTo(n), n)
   end)
 end
 
-test("dbg: the 1501st line drops the first", function()
+test("dbg: the " .. (CAP + 1) .. "st line drops the first", function()
   local D = fillTo(debuglog.MAX_BUFFER)
   T.assertTrue(D:FindLine("L1.") ~= nil, "line 1 is still held at the cap")
   D:Add("N", "L" .. (debuglog.MAX_BUFFER + 1) .. ".")
@@ -209,36 +211,43 @@ end)
 
 -- ── the trim is batched (minor 13) ─────────────────────────────────────────────────────────
 --
--- Through minor 12 every Add past the cap ran table.remove(buffer, 1): a 1500-slot shift per line,
--- for as long as debug logging stayed on. Minor 13 lets the raw array run 64 lines past the cap
--- and then moves the newest MAX_BUFFER down in one pass, so 1564 adds cost at most one compaction.
--- The spy counts table.remove because that is what the per-line trim called; the compaction
--- itself is one copy loop and calls it not at all.
+-- Through minor 12 every Add past the cap ran table.remove(buffer, 1): a MAX_BUFFER-slot shift per
+-- line, for as long as debug logging stayed on. Minor 13 lets the raw array run BUFFER_SLACK lines
+-- past the cap and then moves the newest MAX_BUFFER down in one pass, so MAX_BUFFER + BUFFER_SLACK
+-- + 1 adds cost exactly one compaction. Both cases read the two constants back; each is pinned as a
+-- literal once, in its own case. The spy counts table.remove because that is what the per-line
+-- trim called; the compaction itself is one copy loop and calls it not at all.
 
-test("dbg: 1564 adds cost at most one compaction, not one table.remove per line", function()
-  local realRemove = table.remove
-  local removes = 0
-  -- rawset rather than assignment: the spy replaces a standard-library field for this case only.
-  rawset(table, "remove", function(...) removes = removes + 1; return realRemove(...) end)
-  local ok, err = pcall(fillTo, debuglog.MAX_BUFFER + 64)
-  rawset(table, "remove", realRemove)
-  T.assertTrue(ok, tostring(err))
-  T.assertTrue(removes <= 1, "expected at most one compaction, saw " .. removes .. " table.remove calls")
-end)
+local SLACK = debuglog.BUFFER_SLACK
 
-test("dbg: the raw buffer holds at most MAX_BUFFER + 64 lines, and compacts in order", function()
+test("dbg: " .. (CAP + SLACK + 1) .. " adds cost at most one compaction, not one table.remove per line",
+  function()
+    local realRemove = table.remove
+    local removes = 0
+    -- rawset rather than assignment: the spy replaces a standard-library field for this case only.
+    rawset(table, "remove", function(...) removes = removes + 1; return realRemove(...) end)
+    local ok, err = pcall(fillTo, debuglog.MAX_BUFFER + debuglog.BUFFER_SLACK + 1)
+    rawset(table, "remove", realRemove)
+    T.assertTrue(ok, tostring(err))
+    T.assertTrue(removes <= 1, "expected at most one compaction, saw " .. removes .. " table.remove calls")
+  end)
+
+test("dbg: the raw buffer holds at most MAX_BUFFER + BUFFER_SLACK lines, and compacts in order", function()
   local D = newLog()
-  local cap, peak = debuglog.MAX_BUFFER, 0
-  for i = 1, cap + 100 do
+  local cap, slack, peak = debuglog.MAX_BUFFER, debuglog.BUFFER_SLACK, 0
+  -- cap + slack + 36 adds: add cap + slack + 1 compacts the array to lines slack + 2 .. cap + slack
+  -- + 1, then 35 more follow, so the raw array ends at cap + 35, dense and in order.
+  local n = cap + slack + 36
+  for i = 1, n do
     D:Add("N", "L" .. i .. ".")
     if #D.buffer > peak then peak = #D.buffer end
   end
-  assertEqual(peak, cap + 64, "the slack is 64 lines and no more")
-  -- Line 1565 compacts the array to lines 66..1565; 35 more follow: 1535 raw, dense, in order.
+  assertEqual(peak, cap + slack, "the slack is BUFFER_SLACK lines and no more")
   assertEqual(#D.buffer, cap + 35)
-  T.assertTrue(D.buffer[1]:find("L66.", 1, true) ~= nil, "the compaction kept the newest MAX_BUFFER")
+  T.assertTrue(D.buffer[1]:find("L" .. (slack + 2) .. ".", 1, true) ~= nil,
+    "the compaction kept the newest MAX_BUFFER")
   for i = 1, #D.buffer do assertEqual(type(D.buffer[i]), "string") end
-  assertNewestWindow(D, cap + 100)
+  assertNewestWindow(D, n)
 end)
 
 test("dbg: the status line counts what the readers answer, not the raw array", function()

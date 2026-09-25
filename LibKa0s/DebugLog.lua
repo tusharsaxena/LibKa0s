@@ -49,17 +49,28 @@ lib.MODULES.DebugLog = MINOR
 -- a console is a diagnostic window read by hand, and the cap and the message frame's own SetMaxLines
 -- must move together or the visible log and the copied buffer diverge.
 --
--- 1500 rather than the original 500 because the perf capture workflow pastes out of THIS buffer:
--- `perf report` prints its summary here and `perf dump` writes the whole JSON record as one line
--- (Perf.lua), so a long run overflowed 500 and lost its head with nothing saying so. The copy
--- window is a view of this array and caps nothing of its own, which is why raising this raises
--- both and why there is no second number.
-lib.MAX_BUFFER = 1500
+-- The history, because each step had its own reason. 500 through minor 10. 1500 from minor 11
+-- through minor 13, because the perf capture workflow pastes out of THIS buffer: `perf report`
+-- prints its summary here and `perf dump` writes the whole JSON record as one line (Perf.lua), so
+-- a long run overflowed 500 and lost its head with nothing saying so. 3000 from minor 14, because
+-- the diagnostics report (DebugLogDiagnostics.lua) is written into this same buffer after the
+-- debug trace, so a player copies both in one go. At 1500 a report at its 1200-line cap
+-- (DIAG_MAX_LINES) would leave as little as 300 lines of the trace it is meant to travel with.
+--
+-- Why 3000 and not 5000: measured in the live client on 2026-09-26 with TIME_COPY's bench (open +
+-- highlight plus the next frame, the N = 0 baseline subtracted, median of three). At 120-column
+-- lines 3000 cost 246 ms against a 250 ms limit and 5000 cost 378 ms, and by hand the copy box at
+-- 5000 was sluggish. 3000 passes, only just, so this is the ceiling rather than a starting point.
+--
+-- The copy window is a view of this array and caps nothing of its own, which is why raising this
+-- raises both and why there is no second number.
+lib.MAX_BUFFER = 3000
 
 -- How far the raw array may run past MAX_BUFFER before it is compacted (minor 13). Through minor 12
 -- every Add past the cap ran table.remove(buffer, 1), a MAX_BUFFER-slot shift per line for as long
 -- as logging stayed on. Now the array grows to MAX_BUFFER + BUFFER_SLACK and the newest MAX_BUFFER
--- lines are then moved down in one pass: one compaction per 65 lines instead of a shift per line.
+-- lines are then moved down in one pass: one compaction per BUFFER_SLACK + 1 lines instead of a
+-- shift per line.
 --
 -- `buffer` stays a plain ordered array rather than a ring, because host suites across the
 -- collection index it directly. What moves is only its LENGTH past the cap: between compactions it
@@ -69,8 +80,9 @@ lib.MAX_BUFFER = 1500
 -- Published at minor 14 rather than kept a local, and read by Add at call time like MAX_BUFFER.
 -- The two move together: moves per line is roughly MAX_BUFFER / (BUFFER_SLACK + 1), so a bigger
 -- buffer takes a bigger slack to keep the same amortized cost, and a suite that pinned 64 as a
--- literal next to a constant it reads back would go stale the day the buffer moves.
-lib.BUFFER_SLACK = 64
+-- literal next to a constant it reads back would go stale the day the buffer moves. It did move,
+-- in the same minor: 64 at 1500 was about 23 moves per line, and 128 at 3000 keeps it there.
+lib.BUFFER_SLACK = 128
 
 -- Copy timing (minor 14). Off by default and never persisted: a session-only switch for measuring
 -- what the copy window costs at a given buffer size, set by hand with

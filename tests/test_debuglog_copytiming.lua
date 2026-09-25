@@ -12,8 +12,8 @@
 -- line naming what the concat, the open and the next frame cost. Every clock here is scripted, so
 -- each figure in the printed line is exact rather than "some positive number".
 --
--- lib.BUFFER_SLACK is the compaction slack that was a local through minor 13. Published so a suite
--- reads it back rather than hard-coding 64, and read by Add at call time.
+-- lib.BUFFER_SLACK is the compaction slack that was a local (64) through minor 13. Published so a
+-- suite reads it back rather than hard-coding it, and read by Add at call time.
 
 local T = _G.LK_TEST
 local debuglog, mocks = T.debuglog, T.mocks
@@ -182,9 +182,10 @@ end
 
 -- ── lib.BUFFER_SLACK ───────────────────────────────────────────────────────────────────────
 
-test("dbgtime: BUFFER_SLACK is published, and is 64 at minor 14", function()
-  -- Pinned as a literal once, here; the compaction cases read it back.
-  assertEqual(debuglog.BUFFER_SLACK, 64)
+test("dbgtime: BUFFER_SLACK is published, and is 128 at minor 14", function()
+  -- Pinned as a literal once, here; the compaction cases read it back. 128 moves with the
+  -- 3000-line buffer: about 23 moves per line, as 64 was at 1500.
+  assertEqual(debuglog.BUFFER_SLACK, 128)
 end)
 
 test("dbgtime: Add reads BUFFER_SLACK at call time, like MAX_BUFFER", function()
