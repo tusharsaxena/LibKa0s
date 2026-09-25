@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 15
+# `LibKa0s-Slash-1.0` — version 16
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **15** |
-| Shipped in | v1.56.0 |
-| Status | Superseded |
-| Supersedes | [version 14](./version-14-docs.md) |
-| Superseded by | [version 16](./version-16-docs.md) |
+| Files and minors | `Slash.lua` minor **16** |
+| Shipped in | v1.60.0 |
+| Status | **Current** |
+| Supersedes | [version 15](./version-15-docs.md) — whose live set did not include `diagnostics` |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 15 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 16 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -35,6 +35,29 @@ Like DebugLog, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon fram
 returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
+
+**`lib.LIVE_VERBS` gains `diagnostics`, so the live set is the standard's thirteen reserved verbs.**
+The Ka0s WoW Addon Standard v2.68.0 adds the diagnostics dump (`debug-logging-§14`) and reserves
+`diagnostics` as a verb every addon registers (`slash-commands-§2`), live while the addon is
+disabled (`slash-commands-§7`). A disabled addon is exactly the one a player is most likely to be
+reporting, so the report has to answer in that state.
+
+- **`lib.LIVE_VERBS`** reads `help, config, version, enable, disable, debug, perf, diagnostics, get,
+  set, list, reset, resetall`, in that order. `diagnostics` sits after `perf`, beside the other two
+  diagnostic verbs.
+- **No member, no descriptor field and no `NEEDS_*` floor moves.** The member manifest differs from
+  version 15's in the minor alone.
+- **A host that passes no `liveVerbs`** inherits the new verb on re-vendor. **A host that builds its
+  own `liveVerbs` from `lib.LIVE_VERBS`** inherits it too. **A host that passes a literal array**
+  does not, and adds `"diagnostics"` to it when it registers the verb.
+- The `debug diagnostics` form needs nothing here: it is a word of `debug`, which was already live.
+
+The pin is in `tests/test_slash.lua` (*liveVerbs defaults to the standard's thirteen reserved
+verbs*). Nothing else in the dispatcher changes; the gate still sits after the COMMANDS lookup, so
+a host that has not registered `diagnostics` yet answers it with `unknown command` in either state,
+as version 14 made true of every reserved verb.
+
+### Previously, at version 15
 
 **`CliSet` and `CliReset` hear the write seam's refusal.** Through version 14 both discarded what the
 descriptor's `set` and `applyDefault` answered. `LibKa0s-Schema-1.0`'s `S.Set` answers
@@ -62,19 +85,19 @@ every row `applyDefault` returned for, whatever it answered.
 The cases are in `tests/test_slash_refusal.lua`, a suite of its own because `tests/test_slash.lua`
 sits in the 1000–1500 band.
 
-**This version's document also prescribes the degradation stub**: the shape a host's library-absent
+**Version 15's document also prescribes the degradation stub**: the shape a host's library-absent
 Slash stub takes, and the one library string it may carry. See
 [The degradation stub](#the-degradation-stub). That is documentation of the host's side of the
-contract; `Slash.lua` does not change for it and the minor does not move again.
+contract; `Slash.lua` did not change for it, and this document carries it forward unchanged.
 
 ## The disabled surface at this version
 
-### The live set is the standard's twelve reserved verbs
+### The live set is the standard's thirteen reserved verbs
 
 ```lua
 lib.LIVE_VERBS = {
   "help", "config", "version", "enable", "disable", "debug",
-  "perf", "get", "set", "list", "reset", "resetall",
+  "perf", "diagnostics", "get", "set", "list", "reset", "resetall",
 }
 ```
 
@@ -82,11 +105,11 @@ They all answer while disabled, and the bare `/<slash>` opens the panel exactly 
 addon is running (`slash-commands-§2`, `§7`). The reasoning is that a player must be able to **read
 and repair settings** and to **reach the panel** while the addon is off — which is precisely when
 they are most likely to need to — and **`enable` above all**, or the switch only goes one way.
-`debug` and `perf` are diagnostics rather than features: the usual reason to reach for either is
-that the addon is misbehaving.
+`debug`, `perf` and `diagnostics` are diagnostics rather than features: the usual reason to reach
+for any of them is that the addon is misbehaving.
 
 The set is the set of verbs the standard **reserves**. It is not a claim that any given host ships
-all twelve, and from this version the dispatcher no longer behaves as though it were — see above.
+all thirteen, and from version 14 the dispatcher does not behave as though it were.
 
 ### So the gate refuses exactly the host's own FEATURE verbs
 
@@ -110,14 +133,17 @@ refuse anything on the live set above.
 | `version` | **prints the version** | 13 |
 | `get` / `set` / `list` / `reset` / `resetall` | **reads and repairs settings** | 13 |
 | `debug` / `perf`, when the host SHIPS them | **runs**, as the diagnostics they are | 13 |
+| `diagnostics`, when the host SHIPS it | **writes the report**, as the standard requires | **16** |
 | `enable` / `disable` | dispatched | 12 |
 | `help` | the full index, refusal line under the header | 12 |
 | a host FEATURE verb (`lock`, `show`, `export`, …) | the refusal line | 12 |
 | a typo (no `commands` entry) | `unknown command '<verb>'` + the index | 13 |
 | **a reserved verb the host never registered** (`perf` on an exempt addon) | **`unknown command '<verb>'` + the index** | **14** |
 
-**One row moves at this version, and it is the last one.** At version 13 it read *the refusal line*;
-every other row answers at 14 exactly what it answered at 13.
+**One row is new at this version: `diagnostics`.** At version 15 a disabled host that shipped
+`diagnostics` and passed no `liveVerbs` answered it with the refusal line; every other row answers
+at 16 exactly what it answered at 15. The last row moved at version 14, where version 13 read *the
+refusal line*.
 
 Two rows are worth their own sentence.
 
@@ -134,7 +160,7 @@ Two rows are worth their own sentence.
   MUST is unqualified — the disabled state does not carve it out. Gating before the lookup conflated
   the two and answered a misspelling with "the addon is disabled", which is a true sentence and the
   wrong answer. Version 13 fixed that for the misspelling and kept one exception for a reserved verb
-  the host never registered; **this version removes the exception**, because the exception was the
+  the host never registered; **version 14 removed the exception**, because the exception was the
   same mistake in a narrower window.
 
 ### None of this weakens the stand-down
@@ -163,11 +189,14 @@ override still does not reach this wording: the line is the collection's, not th
 
 ### What the host does
 
-- **A host already on version 13: re-vendor, and nothing else.** No member and no descriptor field
-  moves. The one thing to look at is its `tests/test_disabled.lua`: a host that asserted the refusal
-  line for a reserved verb it does not ship — the exempt addons asserting it for `perf` — inverts
-  that one expectation to the unknown-command line. A host that only ever asserted its own feature
-  verbs has nothing to change.
+- **A host already on version 15: re-vendor.** No member and no descriptor field moves. A host that
+  passes a literal `liveVerbs` array adds `"diagnostics"` to it when it registers the verb; a host
+  that passes none, or builds its array from `lib.LIVE_VERBS`, has nothing to change. A suite that
+  pins the live set by value re-pins it with `diagnostics` after `perf`.
+- **A host on version 13:** as above, and look at its `tests/test_disabled.lua`: a host that
+  asserted the refusal line for a reserved verb it does not ship (the exempt addons asserting it for
+  `perf`) inverts that one expectation to the unknown-command line, which is what version 14
+  changed.
 - **A host not yet gated:** wire `isEnabled` and `brandName` onto the descriptor and nothing else.
   `isEnabled` is asked at dispatch time, never cached, so the command after an `enable` works.
 - **Call `cli:DisabledLine()` from the launcher's left-click**, rather than writing the line again.
@@ -185,7 +214,7 @@ it protects.
 
 Version 13 also moved the gate to sit **after** the COMMANDS lookup, so a typo stopped being
 answered with "the addon is disabled" — with one exception, for a reserved verb the host never
-registered, which this version removes. Version 13's document says input by input what moved at 13.
+registered, which version 14 removed. Version 13's document says input by input what moved at 13.
 
 ### Previously, at version 12
 
@@ -199,7 +228,7 @@ Where version 12 differs from version 13 is `lib.LIVE_VERBS` alone. At version 1
 `{ "enable", "help", "disable" }`, and **every other input** — `config`, `version`, the whole schema
 CLI, `debug`, `perf`, the bare `/<slash>` and an unknown verb — printed the refusal line and did
 nothing else. That was the standard's v2.56.0 narrowing, and v2.57.0 reversed it. Version 13's
-document says input by input what moved there; the one further move at this version is above.
+document says input by input what moved there; the moves since, at versions 14 and 16, are above.
 
 A host that vendored version 12 is not broken: it refuses more than it needs to, and a player has to
 reach the settings panel through Blizzard's AddOns tree or the launcher's right-click instead of
@@ -465,7 +494,7 @@ rendered row depends on which instance rendered it.
 | `lib.CommandRows(prefix, commands, indent)` | **6** | → an array of rendered rows, one per entry: `indent .. lib.FormatRow(prefix .. " " .. entry[1], entry[2])`. `indent` defaults to `""`. |
 | `lib.ParseBool(word)` | **6** | → `true`, `false`, or **`nil` meaning "not a boolean word"** — never "false". Case-insensitive over the exact eight-word set `lib.STRINGS.ERR_BOOL` advertises. |
 | `lib.DISABLED_LINE_FORMAT` | **12** | `"%s is disabled \226\128\148 enable it with \|cFFFFFF00%s\|r"`. Two substitutions: the brand name, and the command **with its leading slash**. Gold `FFFFFF00` on the command — the same gold `lib.FormatRow` gives a command in the help index — an em dash with a single space either side, no trailing colon and no trailing period. |
-| `lib.LIVE_VERBS` | **12** | The verbs that still answer while disabled. **At 13 it is the standard's twelve reserved verbs** — `help`, `config`, `version`, `enable`, `disable`, `debug`, `perf`, `get`, `set`, `list`, `reset`, `resetall` — where at 12 it read `{ "enable", "help", "disable" }`. A host MAY narrow it to the verbs it ships. The library ships exactly one default, exported so a host that must name the set names THIS one rather than a copy of it. |
+| `lib.LIVE_VERBS` | **12** | The verbs that still answer while disabled. **At 16 it is the standard's thirteen reserved verbs** — `help`, `config`, `version`, `enable`, `disable`, `debug`, `perf`, `diagnostics`, `get`, `set`, `list`, `reset`, `resetall`. At 13 to 15 it was the same set without `diagnostics`, and at 12 it read `{ "enable", "help", "disable" }`. A host MAY narrow it to the verbs it ships. The library ships exactly one default, exported so a host that must name the set names THIS one rather than a copy of it. |
 | `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. `NO_DEFAULT` from **15**. |
 | `lib.MODULES` | 1 | `{ Slash = <minor> }` — the live minor of every file in this major. |
 | `lib:New(descriptor)` | 1 | Build a dispatcher for one host. |
@@ -558,7 +587,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `colorEncode` | function(r,g,b,a) | no | 4 | → stored. Defaults to `{r=,g=,b=,a=}`. |
 | `isEnabled` | function | no | **12** | → boolean. **Absent, the gate is off** and the dispatcher behaves exactly as at version 11. Present and answering false, the verbs in `liveVerbs` dispatch as usual — as does the bare command, which opens the panel (**13**) — and every other verb the host SHIPS prints the refusal line. A verb with no `commands` entry behind it is not refused at all (**14**). Asked at dispatch time, never cached. |
 | `brandName` | string | **when `isEnabled` is given** | **12** | The addon's brand name in plain text, `Ka0s <Name>` — the same string the LDB object takes as its `label`. Never derived from the TOC `Title`, which may carry color escapes. Missing it alongside `isEnabled` raises at `New`. |
-| `liveVerbs` | table | no | **12** | Array of the verbs that still answer while disabled. Defaults to `lib.LIVE_VERBS`, which is the standard's twelve reserved verbs from **13**. It names the verbs that stay live, not the verbs the host registers: from **14** a verb listed here with no `commands` entry behind it is answered as unknown rather than refused. Present so the set is data rather than a hard-coded branch; a host MAY narrow it to the verbs it actually ships. |
+| `liveVerbs` | table | no | **12** | Array of the verbs that still answer while disabled. Defaults to `lib.LIVE_VERBS`, which is the standard's reserved verbs from **13**, thirteen of them from **16** (`diagnostics`). It names the verbs that stay live, not the verbs the host registers: from **14** a verb listed here with no `commands` entry behind it is answered as unknown rather than refused. Present so the set is data rather than a hard-coded branch; a host MAY narrow it to the verbs it actually ships. |
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **It does not reach the disabled refusal line** (**12**): that wording is the collection's rather than the addon's. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 
 Only `slash` and `commands` are required, and both raise rather than defaulting: a dispatcher with
@@ -572,7 +601,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `OnSlash(msg)` | 1 | The entry point. **From 12**, when `isEnabled` answers false: the verb is lower-cased and aliases resolve as always, every verb in `liveVerbs` dispatches normally, and anything else prints `DisabledLine()` and returns. **From 13** the gate moved AFTER the COMMANDS lookup, so only a verb the host SHIPS is refused; a typo falls through to `unknown command` and the index, per slash-commands-§3. **From 13** the live set is the standard's twelve reserved verbs and the bare command runs the host's `config` verb in either state, where at 12 the bare command was refused. **From 14** a verb that is in `liveVerbs` but has no COMMANDS entry behind it — `perf` on an addon holding a no-combat-path exemption — is no longer refused either: it is not one of the host's commands, so it takes the same `unknown command` path it takes while enabled, where 13 answered it with `DisabledLine()`. Enabled, or with no `isEnabled` at all: an empty line runs the host's `config` verb, or prints help when the host has none (**11**; through 10 it always printed help); otherwise the first token is lowercased, mapped through `aliases`, and dispatched. Only the verb is lowercased — `rest` keeps its case, because schema paths are case-sensitive, and its internal spacing, because a color is several tokens. An unknown verb says so and then prints help. |
+| `OnSlash(msg)` | 1 | The entry point. **From 12**, when `isEnabled` answers false: the verb is lower-cased and aliases resolve as always, every verb in `liveVerbs` dispatches normally, and anything else prints `DisabledLine()` and returns. **From 13** the gate moved AFTER the COMMANDS lookup, so only a verb the host SHIPS is refused; a typo falls through to `unknown command` and the index, per slash-commands-§3. **From 13** the live set is the standard's reserved verbs (twelve; thirteen from **16**, with `diagnostics`) and the bare command runs the host's `config` verb in either state, where at 12 the bare command was refused. **From 14** a verb that is in `liveVerbs` but has no COMMANDS entry behind it — `perf` on an addon holding a no-combat-path exemption — is no longer refused either: it is not one of the host's commands, so it takes the same `unknown command` path it takes while enabled, where 13 answered it with `DisabledLine()`. Enabled, or with no `isEnabled` at all: an empty line runs the host's `config` verb, or prints help when the host has none (**11**; through 10 it always printed help); otherwise the first token is lowercased, mapped through `aliases`, and dispatched. Only the verb is lowercased — `rest` keeps its case, because schema paths are case-sensitive, and its internal spacing, because a color is several tokens. An unknown verb says so and then prints help. |
 | `DisabledLine()` | **12** | The one refusal line, built from `lib.DISABLED_LINE_FORMAT` and the descriptor's `brandName` and `slash`. Every call site — the dispatcher's gate, the help header, the launcher's left-click — calls THIS. The host's own `print` adds `NS.PREFIX` as it does for every other line, so the tag is not built in. |
 | `PrintHelp()` | 1 | The header, then `HelpRows()`, through the descriptor's `print`. **From 12**, when the gate is closed, the refusal line is emitted immediately after the header and before the first row, unindented. |
 | `HelpHeader()` | 1 | `v<version> — slash commands`, plus the alias note when `slashAliases` has one. |
@@ -686,6 +715,12 @@ correct on every minor.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+**What moves at version 16 is the default live set, by one verb.** `diagnostics` joins
+`lib.LIVE_VERBS`, so a disabled host that ships the verb and passes no `liveVerbs` (or one built on
+`lib.LIVE_VERBS`) runs it where version 15 answered the refusal line. A host that does not register
+`diagnostics` sees no change in either state. A host that passes a literal array keeps its own set
+until it adds the verb. No member and no descriptor field moves.
+
 **What moves at version 15 is behavior, and only for a host whose seam refuses.** A `set` that
 answers `false` gets its refusal printed instead of an echo of the unchanged value, and an
 `applyDefault` that answers `false` gets `NO_DEFAULT`. A host whose `set` and `applyDefault` answer
@@ -722,18 +757,3 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
-
-## Moving to version 16
-
-**Take it; a host that ships `diagnostics` gets it answered while disabled.** Version 16 adds
-`diagnostics` to `lib.LIVE_VERBS`, after `perf`, for the standard's v2.68.0 diagnostics dump
-(`debug-logging-§14`, `slash-commands-§2`, `§7`). No member, no descriptor field and no `NEEDS_*`
-floor moves, and the member manifest differs from this one in the minor alone.
-
-What a host owes on the re-vendor:
-
-- **Nothing, if it passes no `liveVerbs`** or builds its array from `lib.LIVE_VERBS`.
-- **Add `"diagnostics"` to a literal `liveVerbs` array** when it registers the verb.
-- **Re-pin a suite that asserts the live set by value**, with `diagnostics` after `perf`.
-
-Everything else in this document is unchanged at version 16.

@@ -1269,15 +1269,27 @@ test("sl: help enabled prints no refusal line at all", function()
   assertEqual(rec.chat[2], Sl:HelpRows()[1], "the first row follows the header directly")
 end)
 
-test("sl: liveVerbs defaults to the standard's twelve reserved verbs and is overridable as DATA", function()
+test("sl: liveVerbs defaults to the standard's thirteen reserved verbs and is overridable as DATA", function()
   assertEqual(table.concat(slash.LIVE_VERBS, ","),
-    "help,config,version,enable,disable,debug,perf,get,set,list,reset,resetall",
+    "help,config,version,enable,disable,debug,perf,diagnostics,get,set,list,reset,resetall",
     "the library ships one default and a host reads THIS rather than copying it")
   -- Narrowed rather than widened, which is the direction a host most often needs: an addon that
   -- registers no `perf` verb names the ones it has.
   local Sl, rec = disabledHost({ liveVerbs = { "enable", "help" } })
   Sl:OnSlash("disable")
   assertEqual(rec.chat[1], REFUSAL, "a verb outside the declared set is gated like any other")
+end)
+
+test("sl: a disabled host that ships diagnostics runs it, by the default live set (minor 16)", function()
+  -- debug-logging-§14: the report is most needed from an addon that is off, so the verb is live.
+  -- Minor 15 answered it with the refusal line for a host that passed no liveVerbs.
+  local Sl, rec = disabledHost()
+  rec.commands[#rec.commands + 1] = { "diagnostics", "Write the diagnostics report", function()
+    rec.chat[#rec.chat + 1] = "report"
+  end }
+  Sl:OnSlash("DIAGNOSTICS")
+  assertEqual(rec.chat[1], "report", "dispatched, case-insensitively, with no refusal line")
+  assertEqual(#rec.chat, 1, "and nothing else printed")
 end)
 
 test("sl: a reserved verb the host never shipped is not refused, in either state", function()

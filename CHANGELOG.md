@@ -10,6 +10,144 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.60.0 — unreleased
+
+Versions in this release: **DebugLog minor 14** and **DebugLogDiagnostics minor 1**
+(`LibKa0s-DebugLog-1.0` 14.1) and **Slash minor 16** (`LibKa0s-Slash-1.0` 16), and the test kit at
+**revision 27**. Every other file is unchanged from v1.59.0: `Core` 8, `Env` 1, `Compat` 1,
+`Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Widgets` 10 and
+`WidgetsDragHandle` 3 (key 10.3), `Launcher` 4, `Options` key 24.31.4.7.4, `Perf` 13 and `PerfPanel`
+5 (key 13.5). No `NEEDS_*` floor rises and no major is added; `DebugLogDiagnostics.lua` is a second
+file of the DebugLog major, so the library is **fifteen majors across twenty-two files**. Built to the
+Ka0s WoW Addon Standard **v2.68.0**, whose `debug-logging-§14` makes the diagnostics dump below a
+MUST for every addon. Stacked on the unmerged v1.59.0 (`53c141a`), for the 2026-09-25 diagnostics
+rollout.
+
+### DebugLog minor 14: the copy-timing switch and the published buffer slack
+
+- **`lib.TIME_COPY`**, `false` at load and never saved. Turned on by hand
+  (`/run LibStub("LibKa0s-DebugLog-1.0").TIME_COPY = true`), every `ShowCopy()` prints one line
+  through the console's chat printer on the next frame: `copy timing: %d lines, %d bytes, concat
+  %.1fms, open+highlight %.1fms, next frame %.1fms`, read from `debugprofilestop` around
+  `CopyText()`, around `CopyWindow`'s `Show`, and from there to a `C_Timer.After(0)` callback. It is
+  the measuring aid for the buffer-size decision this release carries. The line goes through the
+  descriptor's `print`, never through `Add`, so it does not grow the buffer it measures. With no
+  `debugprofilestop` or no `C_Timer.After`, the window opens untimed and nothing prints; with the
+  switch off, `ShowCopy()` reads no clock, as at minor 13. The text is `lib.STRINGS.COPY_TIMING`.
+- **`lib.BUFFER_SLACK`**, the compaction slack, published. It was a private local at minor 13, at
+  64. `Add` reads it from the library at call time, as it reads `MAX_BUFFER`, so a suite reads both
+  back rather than writing `64` beside a constant it reads. It is **128** at this release (below).
+- **The buffer is 3000 lines**: `lib.MAX_BUFFER` **1500 → 3000** and `lib.BUFFER_SLACK` **64 → 128**,
+  which keeps a compaction near 23 moves per appended line. The message frame's `SetMaxLines` and
+  the copy window move with it, as they read the same constant. Why: the diagnostics report is
+  written into this buffer after the trace, and at 1500 a report at its 1200-line cap would leave as
+  little as 300 lines of trace. Why 3000 and not 5000: the owner measured the copy window in the live
+  client on 2026-09-26 with a throwaway copy bench (median of three runs of the Copy open plus the
+  next frame, the empty-buffer baseline subtracted). At 120-column lines 3000 cost **246 ms**
+  against the 250 ms limit and 5000 cost **378 ms**; at 200 columns, 346 ms and 419 ms against 1 s.
+  By hand the copy box at 5000 kept every line but was sluggish. So 3000, which passes only just
+  and is a ceiling rather than a starting point. `tests/test_debuglog.lua` pins the cap as the
+  literal 3000 and reads both constants back for its boundary (`cap - 1` to `cap + 100`) and
+  compaction cases.
+- The cases are in a new suite, `tests/test_debuglog_copytiming.lua`, because
+  `tests/test_debuglog.lua` was 988 lines: the default and the string as literals, the untimed path
+  reading no clock, one exact line from a scripted clock, the line never reaching the buffer, the
+  timed path handing the window the same text, the kept-line count past the cap, both headless
+  guards, the slack pinned (at 128 since the buffer moved), and `Add` honoring a changed slack.
+  Documented in [the version 14.1 document](docs/api/DebugLog/version-14.1-docs.md) (key 14.1
+  with the diagnostics file below); version 13 is Superseded. The member manifest,
+  `docs/api/DebugLog/members-14.1.json`, gains `BUFFER_SLACK` and `TIME_COPY`, both lib-level.
+  The buffer's move is in the same document, under *the buffer is 3000 lines*.
+
+### DebugLogDiagnostics minor 1: the diagnostics report
+
+- **A new secondary file of `LibKa0s-DebugLog-1.0`, `DebugLogDiagnostics.lua`**, for the standard's
+  diagnostics dump (v2.68.0, `debug-logging-§14`). Paired on the shell's minor
+  (`__diagMinor` / `__diagShellMinor`, as `WidgetsDragHandle.lua` pairs); loaded after
+  `DebugLog.lua` in `LibKa0s.xml`; `lib:New` installs its methods on each instance through
+  `lib.__installDiagnostics`. The version key becomes **14.1**.
+- **`D:RunDiagnostics(spec?)`** writes one report into the console and returns its line count: the
+  begin marker `[Diag] ==== <brandName> diagnostics begin ====`; the identity header (the host's
+  `initSummary()`, `GetBuildInfo`, the locale, the debug flag, `InCombatLockdown()` and
+  `UnitAffectingCombat("player")` each pcall'd, and every running LibKa0s file minor); the host's
+  sections, each under its own pcall so a raise costs one line; a `truncated` line when a cap bit;
+  and the end marker, which counts every line. It appends through an internal ungated append with
+  one repaint at the end, never calls `Clear`, never touches the flag, shows a hidden console, and
+  prints one chat line, `lib.STRINGS.DIAG_WRITTEN`. **`D:BuildDiagnostics(spec?)`** is the same
+  report as data and writes nothing. **`D:DebugVerb(rest)`** routes `diagnostics`, `on` and `off`
+  and answers `false` for anything else, so the host keeps its own fallback.
+- **The cap**: `lib.DIAG_MAX_LINES` (**1200**), clamped to `lib.MAX_BUFFER - 100`, with two lines kept
+  for the truncated line and the end marker; `lib.DIAG_MAX_PER_LIST` (**40**) for `out:list`.
+- **The writer a section is handed**, `out`: `add`, `joined`, `list`, `section`, `str`, `plain`,
+  `escape`, `readable` and `nonDefaults`. Every value goes through the console's `safeToString`,
+  every format is pcall'd with the gated sink's fallback join, and color, texture, atlas and
+  hyperlink escapes are stripped; `escape` doubles `|` for a value whose escapes are the evidence.
+- **Two descriptor fields**: `brandName` (the markers; falls back to `title`) and `diagnostics` (a
+  function returning the sections, called at run time).
+- `DebugLog.lua` 14 (still unreleased) gains the `DIAG_WRITTEN` string, the install call at the end
+  of `New`, and an `append` split out of `Add` so the report can repaint once.
+- **Consumers' library-absent DebugLog stubs gain three members** for their parity cases:
+  `RunDiagnostics` (the collection's placeholder line, nothing written, returns 0),
+  `BuildDiagnostics` and `DebugVerb`.
+- The cases are in a new suite, `tests/test_debuglog_diagnostics.lua`. Documented in
+  [the version 14.1 document](docs/api/DebugLog/version-14.1-docs.md).
+
+### Test kit revision 27: the shared diagnostics contract
+
+- **`testkit/test_diagnostics_contract.lua`**, the kit's fourth own suite: the dispatcher half of
+  `debug-logging-§14`, run against the consumer's own dispatcher through `Kit.diagnostics` (`brand`,
+  `dispatch`, `console`, `setDebug`, `setDisabled`, optional `retired` and `reset`). Seven cases:
+  both forms write one report; the debug word in any case; both markers carry the brand and the end
+  marker counts the lines; the report appends; it lands with logging off and leaves it off; both
+  forms run while disabled; `diag`, `dx` and the retired names run nothing. With `Kit.diagnostics`
+  unset it registers one declared skip naming the rule, so a consumer's re-vendor stays green
+  before the addon has its report. `framework.lua`'s `KIT_GATE_RULE` gains the suite's row.
+- This repo wires it against a fixture host, `tests/fixture_diagnostics.lua` (a DebugLog console
+  and a Slash dispatcher gated on an enabled flag). Documented in
+  [the revision 27 document](docs/api/testkit/version-27-docs.md); revision 26 is Superseded.
+
+### Slash minor 16: `diagnostics` is live while disabled
+
+- **`lib.LIVE_VERBS` gains `diagnostics`**, after `perf`: the standard's thirteen reserved verbs,
+  for v2.68.0's diagnostics dump (`debug-logging-§14`, `slash-commands-§2`, `§7`). A disabled host
+  that ships the verb and passes no `liveVerbs`, or builds its array from `lib.LIVE_VERBS`, runs it
+  where minor 15 answered the refusal line. A host with a literal array adds the verb itself. No
+  member, descriptor field or `NEEDS_*` floor moves; `members-16.json` differs from
+  `members-15.json` in the minor alone.
+- `tests/test_slash.lua` re-pins the default set and adds one case: a disabled host that ships
+  `diagnostics` runs it with no refusal line. Documented in
+  [the version 16 document](docs/api/Slash/version-16-docs.md); version 15 is Superseded.
+
+### What a consumer owes on re-vendoring v1.60.0
+
+Copy both payloads whole (`cp -r LibKa0s/. <Addon>/libs/LibKa0s/`, `cp -r testkit/. <Addon>/tests/_kit/`)
+and move the `CLAUDE.md` provenance line to v1.60.0 in the same commit, as always. The kit moves
+this time, 26 → 27, so both copies are owed. Then, in the same commit so the suite stays green:
+
+- **The load list.** A runner that derives its library files from `libs/LibKa0s/LibKa0s.xml`, as
+  the collection's do, loads `DebugLogDiagnostics.lua` after `DebugLog.lua` with no change; a list
+  typed by hand gains it there.
+- **Surface-parity churn.** A DebugLog degradation stub pinned with `Kit.assertSurfaceParity` goes
+  red until it gains the three instance members: `RunDiagnostics` prints the collection's
+  library-absent line (`"%s is unavailable: the LibKa0s library did not load."`, naming
+  `/<slash> diagnostics`), writes nothing and returns 0; `BuildDiagnostics` and `DebugVerb` are
+  carried beside it for the parity case. No other major's surface moves.
+- **The kit's new suite.** `tests/run.lua`'s suites list gains
+  `{ name = "test_diagnostics_contract", dir = "tests/_kit/" }`; the inventory fails the run until it
+  is there. With `Kit.diagnostics` unset it is one declared skip, so the re-vendor is green before
+  the addon has its report. Regenerate `docs/test-cases.md`.
+- **The buffer.** A host suite that writes a literal 1500 (or 1500 plus a margin) to push the
+  console past its cap, or asserts the cap or the slack as a literal, re-pins, preferably on
+  `lib.MAX_BUFFER` and `lib.BUFFER_SLACK`. A doc or comment that states the console holds 1500 lines
+  moves to 3000.
+- **The live verb.** A host whose `liveVerbs` is Slash's default, or built from `lib.LIVE_VERBS`,
+  gets `diagnostics` live while disabled with no change. A host with a literal live-verb array, or a
+  degraded fallback list, adds `diagnostics` itself, and a host test that pins the live set as a
+  literal re-pins.
+- **Owed by `debug-logging-§14`, and not by the re-vendor**: the report itself, both slash forms,
+  `brandName` and the `diagnostics` descriptor field, the host's sections, `Kit.diagnostics`, and the
+  README's `## Reporting a bug`. Until those land the addon is on v1.60.0 and still owes the dump.
+
 ## v1.59.0 — 2026-09-25
 
 Versions in this release: **WidgetsDragHandle minor 3** (`LibKa0s-Widgets-1.0` 10.3). Every other

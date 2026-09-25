@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 13
+# `LibKa0s-DebugLog-1.0` — version 14.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,15 +8,16 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **13** |
-| Shipped in | v1.56.0 |
-| Status | Superseded |
-| Supersedes | [version 12](./version-12-docs.md) — whose buffer trim shifted the whole array once per line at the cap |
-| Superseded by | [version 14.1](./version-14.1-docs.md) |
+| Files and minors | `DebugLog.lua` minor **14** · `DebugLogDiagnostics.lua` minor **1** |
+| Shipped in | v1.60.0 |
+| Status | **Current** |
+| Supersedes | [version 13](./version-13-docs.md) — whose buffer held 1500 lines with a private 64-line slack, whose copy window could not be timed, and which had no diagnostics report |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 13 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 14, DebugLogDiagnostics = 1 }` |
 
-`Since` in the tables below is the DebugLog minor in which the member first appeared. Minors 1 and 2
+`Since` in the tables below is the DebugLog minor in which the member first appeared; a `Since` of
+**D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file this version adds. Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
 this major".
 
@@ -46,6 +47,176 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 
 ## What changed at this version
 
+Three things: the diagnostics report, in a new secondary file (below); the buffer, which doubles to
+**3000** lines with its slack doubled to **128** to match; and two lib-level members in `DebugLog.lua`
+14 that change nothing a console does unless someone reaches for them. The first and the last are
+additive. The buffer is the one change a console shows: it keeps twice the lines, and a host suite
+that pins 1500 as a literal moves (see [Compatibility](#compatibility)).
+
+### The diagnostics report (`DebugLogDiagnostics.lua` 1)
+
+The Ka0s WoW Addon Standard v2.68.0 makes a diagnostics dump a MUST for every addon
+(`debug-logging-§14`): `/<slash> diagnostics` and `/<slash> debug diagnostics` write one report
+into the debug console, after whatever trace the player just reproduced, so one Copy carries both.
+The report's content is per-addon; everything around it is here, and a host writes sections.
+
+It is a **secondary file of this major**, not a major of its own, for the reason
+`WidgetsDragHandle.lua` is one of Widgets: `DebugLog.lua` would otherwise have passed the 1000-line
+band. It pairs on the shell's minor (`lib.__diagMinor` / `lib.__diagShellMinor`, the idiom
+`WidgetsDragHandle.lua` uses), and `lib:New` installs its methods on each instance through
+`lib.__installDiagnostics` when it has loaded. Without it an instance has no report methods, which
+is the state a consumer's library-absent stub already answers for.
+
+**One report, in order:**
+
+1. `[Diag] ==== <brandName> diagnostics begin ====`. `brandName` is a new descriptor field and falls
+   back to `title`.
+2. **The identity header**, written by the library: the host's `initSummary()` line (pcall'd,
+   `unreadable` if it raises, so the lines below still land), the client (`GetBuildInfo`:
+   version, build, date, interface), the locale, the debug-logging flag, the two combat reads
+   (`InCombatLockdown()`, `UnitAffectingCombat("player")`, each pcall'd and printed `unreadable`
+   if it raises), and every file of every LibKa0s major **running** in the client, as
+   `File minor`. Running, because under LibStub the winning copy may be another addon's vendor.
+3. **The host's sections**, from the descriptor's `diagnostics()` (called at run time, so a module
+   that loads after the console can still supply one) or from `spec.sections`. Each runs under its
+   own pcall; a raise costs one line, `section <name> failed: <err>`, and the next section runs.
+4. `truncated: N line(s) omitted, per-list caps hit=yes|no`, only when a cap bit.
+5. `[Diag] ==== <brandName> diagnostics end: N line(s) ====`, N counting every report line, both
+   markers included.
+
+**The cap.** At most `min(lib.DIAG_MAX_LINES, lib.MAX_BUFFER - 100)` lines, markers included, so a
+report never evicts itself and always leaves some trace above it. Two lines are kept free for the
+truncated line and the end marker, so a capped report still ends properly. `spec.maxLines` may
+lower the cap and cannot raise it past the clamp.
+
+**What the report never does.** It never calls `Clear()`. It writes through the ungated append, so
+it lands with logging off, and it never reads or writes the flag beyond printing it. It never reads
+the host's enabled state: whether a disabled addon may run it is the dispatcher's question, which
+Slash 16 answers by putting `diagnostics` on `LIVE_VERBS`. It calls no protected API.
+
+`RunDiagnostics` writes the lines with one scrollbar and status repaint at the end rather than one
+per line, shows the console if it was hidden, and prints one chat line through the descriptor's
+`print`: `lib.STRINGS.DIAG_WRITTEN`, *"Diagnostic report written to the debug console: %d lines.
+Use Copy to share it."*, overridable through `L`. The report body is English diagnostic text and
+does not go through `L`, like every trace line.
+
+**The writer a section is handed.** Each section is called as `fn(out)`:
+
+| Member | Meaning |
+|---|---|
+| `out:add(tag, fmt, ...)` | One line. Every argument goes through the console's `safeToString` before the format sees it; the format is pcall'd, and one the stringified arguments cannot satisfy lands as the format followed by the arguments, space-joined, as the gated sink does. Escapes are stripped. Past the cap the line is dropped and counted, and `false` comes back. |
+| `out:joined(tag, lead, parts, width?)` | `lead` then `parts`, comma-separated, wrapped at `width` (200) onto indented continuation lines. An empty list writes `lead -`. |
+| `out:list(tag, lead, items, cap?)` | `joined` with a cap (`lib.DIAG_MAX_PER_LIST`, 40, by default): past it the rest become `(+N more)` and the per-list flag is set, which the truncated line reports. |
+| `out:section(name, fn, ...)` | `fn(out, ...)` under a pcall of its own, for a part of a section that may raise on its own. |
+| `out:str(v)` / `out:plain(s)` | A value, or text, as plain report text: `safeToString`, then stripped of color, texture, atlas and hyperlink escapes (a hyperlink keeps its display text). |
+| `out:escape(s)` | `\|` doubled to `\|\|`, for a value whose escapes are the evidence (a chat format string). The doubled pipe survives the strip and pastes back into a `/<slash> set` unchanged. |
+| `out:readable(v)` | True only for a number that can be compared and added: the client's `issecretvalue` is asked first where it exists, and the arithmetic is pcall'd either way. |
+| `out:nonDefaults(rows, get, default?, format?, opts?)` | Every schema row whose value differs from its default, as `path = value (default)`. Skips `sessionOnly` rows and rows marked `hidden = true`. `get(row)` reads a value, `default(row)` a default (`row.default` when omitted), `format(row, v)` renders one (a one-line, key-sorted dump of a table when omitted); `opts.always` names paths printed whatever their value, `opts.tag` the tag (`Set`). Returns the number printed. |
+
+`DebugVerb(rest)` is the standard's `debug` words from one place, for a host that wants them:
+`diagnostics` runs the report (tested first, in any case), `on` and `off` set the flag, and
+anything else answers `false` so the host keeps its own fallback: its window toggle, its usage
+line, or its own topic words. It is optional; the standard requires the behavior, not the call. It
+never recognizes `diag` or any other short name.
+
+The library's cases are in `tests/test_debuglog_diagnostics.lua`. The dispatcher half of the rule,
+both slash forms, while disabled, append, ungated, the markers and `diag` not running the report,
+is the kit's shared case `testkit/test_diagnostics_contract.lua` (kit revision 27), which every
+consumer runs against its own dispatcher and which this repo runs against the fixture host in
+`tests/fixture_diagnostics.lua`.
+
+### `DebugLog.lua` 14: the buffer is 3000 lines
+
+`lib.MAX_BUFFER` moves **1500 → 3000**, and `lib.BUFFER_SLACK` **64 → 128**. The message frame's
+`SetMaxLines` reads the same constant, so the visible log and the copied buffer still move together,
+and the copy window, a view of the buffer, now holds up to 3000 lines too.
+
+**Why it moved.** The diagnostics report is written into this buffer after the debug trace, so that
+one Copy carries both. At 1500, a report at its 1200-line cap (`lib.DIAG_MAX_LINES`) would leave as
+little as 300 lines of the trace it is meant to travel with. At 3000 the report's effective cap is
+still 1200 (`min(1200, 3000 - 100)`), and at least 1800 lines of trace survive above a full report.
+
+**Why 3000 and not 5000.** The owner measured the copy window in the live client on 2026-09-26 with
+a throwaway, uncommitted copy bench addon (not `lib.TIME_COPY`, which only prints one `ShowCopy()`'s
+figures). Each figure is the median of three runs of the Copy open (`SetText`, cursor, `Show`,
+`SetFocus`, `HighlightText`) plus the next frame, with the empty-buffer baseline subtracted:
+
+| Line width | 1500 lines | 3000 lines | 5000 lines | Limit |
+|---|---|---|---|---|
+| 120 columns | 112 ms | 246 ms | **378 ms** | 250 ms |
+| 200 columns | 171 ms | 346 ms | 419 ms | 1000 ms |
+
+At 5000 the 120-column case fails its limit, and by hand the copy box at 5000, though it captured
+every line intact, was slow and sluggish. 3000 passes, only just (246 ms against 250 ms), so it is
+the ceiling rather than a starting point: a later increase needs a new measurement first.
+
+**Why the slack moved with it.** A compaction moves about `MAX_BUFFER / (BUFFER_SLACK + 1)` lines per
+line written: 23 at 1500 and 64, and 23 again at 3000 and 128. The raw array may therefore reach
+`MAX_BUFFER + BUFFER_SLACK` = **3128** entries between compactions, where version 13's reached 1564.
+
+`tests/test_debuglog.lua` pins the cap as the literal 3000, deliberately, and reads the constants
+back for the rest: the boundary set is `{cap - 1, cap, cap + 1, cap + 100}`, and the compaction case
+runs `cap + S + 36` adds and asserts a peak of `cap + S`, the first kept line `L(S + 2)` and a final
+length of `cap + 35`. `tests/test_debuglog_copytiming.lua` pins the slack as the literal 128.
+
+### `DebugLog.lua` 14: two lib-level members
+
+| | | Since |
+|---|---|---|
+| `lib.BUFFER_SLACK` | The compaction slack, **128**, published. It was a local of `DebugLog.lua` at version 13, at 64, with the same job; `Add` now reads it from the library at call time, as it already read `MAX_BUFFER`. | **14** |
+| `lib.TIME_COPY` | A session-only switch, `false` at load. While it is `true`, every `ShowCopy()` prints one line through the descriptor's `print` naming what the copy cost. See [Timing the copy window](#timing-the-copy-window). | **14** |
+| `lib.STRINGS.COPY_TIMING` | The text of that line, overridable through `L` like every other string. | **14** |
+
+**Why the slack is published.** The slack and the cap move together: a compaction moves about
+`MAX_BUFFER / (BUFFER_SLACK + 1)` lines per line written, 23 at 1500 and 64, and a larger buffer
+needs a larger slack to keep that ratio. With the slack a private local, a suite that checked the
+compaction had to write `64` as a literal next to a `MAX_BUFFER` it read back from the library, and
+that literal would go stale the day the buffer moved. Now a suite reads both. The buffer moved in
+this same version, and the slack with it, to 128 (above).
+
+### Timing the copy window
+
+`lib.TIME_COPY` exists to measure what the copy window costs at a given buffer size, in the live
+client, before the buffer is made larger. Turn it on by hand:
+
+```lua
+/run LibStub("LibKa0s-DebugLog-1.0").TIME_COPY = true
+```
+
+Every `ShowCopy()` then reads `debugprofilestop` three times around the copy and once more on the
+next frame (`C_Timer.After(0, ...)`), and on that next frame prints one line through the console's
+chat printer, shaped like this (the figures are placeholders, not a measurement):
+
+```text
+copy timing: 3000 lines, 240000 bytes, concat 1.0ms, open+highlight 10.0ms, next frame 100.0ms
+```
+
+| Figure | What it covers |
+|---|---|
+| lines | `BufferSize()`: the kept lines, never the raw array's slack |
+| bytes | the length of the text the window was handed |
+| concat | `CopyText()`, the `table.concat` that builds that text |
+| open+highlight | `CopyWindow`'s `Show`: `SetText`, the cursor, `Show`, `SetFocus`, `HighlightText` |
+| next frame | from the end of the open to the next frame, where the client lays out the `EditBox` |
+
+The line goes through the descriptor's `print`, **never through `Add`**, so a measurement does not
+grow the buffer it measures. The switch is lib-level, not per console: it answers a question about
+the library's window, and one `/run` covers every console loaded. It is never saved; a `/reload`
+turns it off.
+
+With no `debugprofilestop` or no `C_Timer.After` (a headless suite, say), a timed `ShowCopy()`
+opens the window untimed and prints nothing. With the switch off, `ShowCopy()` reads no clock and
+schedules nothing, exactly as at version 13.
+
+The cases are in `tests/test_debuglog_copytiming.lua`, a suite of its own because
+`tests/test_debuglog.lua` was 988 lines: the default and the string pinned as literals, the untimed
+path reading no clock, one exact line on the next frame from a scripted clock, the line never
+reaching the buffer, the timed and untimed paths handing the window the same text, the count being
+the kept lines past the cap, both headless guards, the slack pinned at 128, and `Add` honoring a
+changed slack at call time.
+
+## What version 13 changed
+
 **The buffer trim is batched.** Through version 12 every `Add` past the cap ran
 `table.remove(buffer, 1)`: a shift of all 1500 slots for every line written, for as long as debug
 logging stayed on (review finding `LibKa0s-R-10`). From version 13 the raw array is allowed to run
@@ -74,7 +245,9 @@ cap**:
 past the cap can see the slack. Below the cap nothing is observable, and no member is added,
 removed or repurposed: the member manifest differs from version 12's in the minor alone.
 `MAX_BUFFER` stays **1500** — the standard's number, which the message frame's `SetMaxLines` still
-matches — and the slack is a local of `DebugLog.lua`, not a member.
+matches — and the slack was a local of `DebugLog.lua` at version 13, not a member. Version 14
+publishes it as `lib.BUFFER_SLACK` and raises the pair to 3000 and 128, so the figures in this
+section (1500, 1564, the 1501st line) are version 13's.
 
 The cases are in `tests/test_debuglog.lua`: characterization written before the change and green on
 both sides of it (every reader at 1499, 1500, 1501 and 1600 lines, and the 1501st line dropping the
@@ -195,9 +368,11 @@ The `Show` order — width, then text, then cursor, then show, then focus, then 
 unchanged, but it is no longer spelled out here: it is `CopyWindow`'s, and it is load-bearing there
 for the same reasons it was load-bearing here.
 
-### The 1500-line cap, from version 11
+### The line cap: 1500 from version 11, 3000 from version 14
 
-`lib.MAX_BUFFER` is **1500**, and neither version 12 nor version 13 moves it.
+`lib.MAX_BUFFER` is **3000** at this version. It was 1500 from version 11 through version 13, and
+[the buffer is 3000 lines](#debugloglua-14-the-buffer-is-3000-lines) says why it doubled here. The
+1500 had a reason of its own, and it still holds:
 
 The cap is not a display preference. **The perf capture workflow pastes out of this buffer**:
 `perf report` prints its summary into the console and `perf dump` writes the whole JSON record as a
@@ -207,7 +382,8 @@ lines looks exactly like one that was started later.
 
 **The copy window is a view of the buffer, not a second store.** `CopyText()` joins the buffer's
 newest `MAX_BUFFER` lines and the window caps nothing of its own, so the buffer cap *is* the copy
-cap — the 64-line slack version 13 allows the raw array never reaches it. That is still true with the window drawn by Widgets: `ShowCopy()` hands `CopyText()` in as
+cap — the slack version 13 introduced (`BUFFER_SLACK`, 128 lines here) lets the raw array run past
+the cap, and the copy never reaches it. That is still true with the window drawn by Widgets: `ShowCopy()` hands `CopyText()` in as
 text, and `CopyWindow` holds no buffer of its own.
 
 What has to move with the cap is the message frame's own `SetMaxLines`: the cap and `SetMaxLines` are
@@ -284,10 +460,14 @@ rather than paying it with a tooltip over the log. A host that wants the words b
 |---|---|---|
 | `lib.FormatPlain(ts, tag, msg)` | 1 | `"<ts> \| [<tag>] <msg>"` — what the buffer holds and the copy window mirrors. Pure and lib-level, so a host's tests call it directly. |
 | `lib.FormatColored(ts, tag, msg)` | 1 | The console view's line: timestamp muted steel-blue (`6f8faf`), `[tag]` muted tan/gold (`c9a66b`), separator and message default white. |
-| `lib.MAX_BUFFER` | 1 | The line cap (**1500** as of minor 11; 500 through minor 10). Fixed by the standard rather than by the host: the cap and the message frame's own `SetMaxLines` must move together or the visible log and the copied buffer diverge. 1500 because the perf capture workflow pastes out of this buffer — `perf dump` writes a whole JSON record as one line — and the copy window is a *view* of the buffer rather than a second store, so this one number caps both. |
+| `lib.MAX_BUFFER` | 1 | The line cap (**3000** as of minor 14; 1500 from minor 11 through 13; 500 through minor 10). Fixed by the standard rather than by the host: the cap and the message frame's own `SetMaxLines` must move together or the visible log and the copied buffer diverge. 1500 because the perf capture workflow pastes out of this buffer — `perf dump` writes a whole JSON record as one line — and 3000 so a diagnostics report and the trace it travels with fit in one Copy, measured as the most the copy window takes before it turns sluggish. The copy window is a *view* of the buffer rather than a second store, so this one number caps both. |
+| `lib.BUFFER_SLACK` | **14** | How far the raw `buffer` may run past `MAX_BUFFER` before `Add` compacts it: **128**. Read by `Add` at call time. A private local through minor 13, at 64. |
+| `lib.TIME_COPY` | **14** | `false` at load and never saved. While `true`, each `ShowCopy()` prints one `COPY_TIMING` line through the descriptor's `print` on the next frame. See [Timing the copy window](#timing-the-copy-window). |
+| `lib.DIAG_MAX_LINES` | **D1** | **1200**. The most lines one diagnostics report writes, markers included; the effective cap is this or `MAX_BUFFER - 100`, whichever is smaller, so 1200 at this version's 3000. |
+| `lib.DIAG_MAX_PER_LIST` | **D1** | **40**. The default cap of `out:list`. |
 | `lib.MakeCloseButton` | 1 | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. Forwards through the `core` table at call time, not captured at load. |
 | `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
-| `lib.MODULES` | 1 | `{ DebugLog = <minor> }` — the live minor of every file in this major. |
+| `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor> }` — the live minor of every file in this major (the second from D1). |
 | `lib:New(descriptor)` | 1 | Build a console for one host. See below. |
 
 ## The console descriptor
@@ -307,6 +487,8 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `initSummary` | function | no | 1 | Returns one line naming version/schema/profile. The library owns *when* it is emitted (on enable, as the `[Init]` line); only the host can know what it says. |
 | `onVisibilityChanged` | function | no | 1 | Fired on both `OnShow` and `OnHide`, so a host can repaint a settings panel whose checkbox mirrors the console's visibility. |
 | `slash` | string | no | 1 | Composes the checkbox tooltip's `"<slash> debug"` reference. |
+| `brandName` | string | no | **D1** | The addon's plain-text brand, `Ka0s <Name>`, named in both diagnostics markers. Falls back to `title`. |
+| `diagnostics` | function | no | **D1** | Returns the host's report sections, `{ { name, fn }, ... }`, each `fn(out)`. Called each time a report runs, never at `New`. |
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 | `skin` | table | no | 1 | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
 | `applySkin` | function | no | **4** | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. Since minor 12 the copy window's half is served by handing this same function to `CopyWindow` as its `applySkin`, which runs it instead of `Core.ApplySkin` — so the two windows still cannot drift apart. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than color, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
@@ -319,7 +501,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `buffer` | 1 | The plain-text lines, a dense array, newest last. **As of minor 13 it may hold up to `MAX_BUFFER + 64` raw entries between compactions**; the newest `MAX_BUFFER` are the kept lines and anything older is already evicted. Read directly by host tests across the collection — it is part of the contract, not an internal — so a test that needs the kept count past the cap reads `BufferSize()`, not `#buffer`. |
+| `buffer` | 1 | The plain-text lines, a dense array, newest last. **As of minor 13 it may hold up to `MAX_BUFFER + BUFFER_SLACK` raw entries between compactions (3128 as of minor 14; 1564 at minor 13)**; the newest `MAX_BUFFER` are the kept lines and anything older is already evicted. Read directly by host tests across the collection — it is part of the contract, not an internal — so a test that needs the kept count past the cap reads `BufferSize()`, not `#buffer`. |
 | `FormatPlain` / `FormatColored` / `MakeCloseButton` | 1 | The lib-level members, mirrored onto the instance so a host holds one object. |
 | `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
 | `Add(tag, msg)` | 1 | Append one line. **Ungated on purpose**: the enable seam's own bracket lines and a host's perf output both have to land whatever the flag says. |
@@ -331,7 +513,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `UpdateScrollBar()` | 1 | Re-sync the slider with the message frame's scroll offset. The two run in opposite directions, so they are related by `maxOffset - value`. |
 | `UpdateStatus()` | 1 | Repaint the `N / MAX` line counter. `N` is `BufferSize()` as of minor 13, so it never reads past `MAX`. |
 | `CopyText()` | 1 | The kept lines as one newline-joined string, oldest first — as of minor 13 the newest `MAX_BUFFER` only. |
-| `ShowCopy()` | 1 | Open the copy window over the console, filled with the buffer, focused and selected — Ctrl+C, then Esc. As of minor 12 the window is `LibKa0s-Widgets-1.0`'s `CopyWindow`, built lazily on the first call and kept; it re-anchors to the console on **every** call rather than staying where it was last dragged. |
+| `ShowCopy()` | 1 | Open the copy window over the console, filled with the buffer, focused and selected — Ctrl+C, then Esc. As of minor 12 the window is `LibKa0s-Widgets-1.0`'s `CopyWindow`, built lazily on the first call and kept; it re-anchors to the console on **every** call rather than staying where it was last dragged. As of minor 14, with `lib.TIME_COPY` on, it also prints the timing line described in [Timing the copy window](#timing-the-copy-window). |
 | `_copyWindowForTest` | **12** | The `CopyWindow` handle, recorded on the instance by `ShowCopy()`. A test seam: the handle is otherwise a local, and this is what a suite reads to assert which window it got. |
 | `_copyFrameForTest` | **12** | The frame that handle built, from `win:GetFrame()`. The copy window's `EditBox` is write-only through the frame API, which is why `CopyText()` exists — this is for the frame's own properties (its global name, its size, its named scroll child). |
 | `Show()` / `Hide()` / `IsShown()` / `Toggle()` | 1 | Window visibility. `Hide` never builds a frame: a settings panel calls `IsShown` on every refresh, and a `Hide` that constructed a window would build one nobody asked for. |
@@ -339,6 +521,9 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshHeader()` | 1 | Repaint the title-bar toggle — `Debug: ON` green, `Debug: OFF` red. |
 | `SetEnabled(on)` | 1 | The single seam for changing debug state: writes the host's flag, repaints the header, prints the color-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
 | `ConsoleCheckbox()` | 1 | The data contract below. |
+| `RunDiagnostics(spec?)` | **D1** | Build the report and append it to the console, repaint once, show the console if hidden, print the one `DIAG_WRITTEN` chat line, and return the number of lines written. Never clears and never touches the flag. `spec` may carry `sections`, `maxLines` and `maxPerList`. |
+| `BuildDiagnostics(spec?)` | **D1** | The same report as data, `{ lines = { { tag, msg }, ... }, dropped = n, capped = bool, capsHit = bool }`, writing nothing anywhere. For tests. |
+| `DebugVerb(rest)` | **D1** | `diagnostics` runs the report, `on` / `off` set the flag, and each answers `true`; anything else answers `false` and does nothing. |
 | `_toggleClickForTest` / `_frameForTest` | 1 | Test seams. A headless mock's `Show`/`Hide` track visibility without firing `OnShow`/`OnHide`, and stub `GetScript`, so the click handler and the visibility callback are only reachable directly. |
 
 ## The `ConsoleCheckbox()` data contract
@@ -422,6 +607,18 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+Version 14.1 adds four lib-level members, two strings, two descriptor fields and three instance
+members. The one existing behavior it changes is the buffer: **3000 kept lines where version 13 kept
+1500**, and up to 3128 raw entries where it held 1564. A host suite that writes a literal 1500, or
+1500 plus a margin, to push the console past its cap, or asserts the cap as 1500, re-pins at
+re-vendor, preferably on `lib.MAX_BUFFER` and `lib.BUFFER_SLACK` rather than on a new literal.
+Otherwise it changes nothing while `TIME_COPY` is off. **A host's library-absent
+DebugLog stub is an instance surface, so it gains `RunDiagnostics`, `BuildDiagnostics` and
+`DebugVerb`** for its parity case: the stub's `RunDiagnostics` prints the collection's placeholder
+line, `"%s is unavailable: the LibKa0s library did not load."` with `/<slash> diagnostics`, writes
+nothing and returns 0 (`debug-logging-§14`). A host suite that
+hard-codes the slack as `64` reads `lib.BUFFER_SLACK` instead: it is 128 at this version.
+
 The one observable change at version 13 is `#buffer` past the cap, which may read up to 1564 rather
 than 1500. Every method answers as version 12 did. A host suite that writes more than 1500 lines and
 asserts `#D.buffer` or `D.buffer[1]` reads the raw array rather than the kept lines, and moves to
@@ -433,22 +630,3 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
-
-## Moving to version 14.1
-
-**Take it; nothing in a host's own code changes, but its degradation stub does.** The next version
-is key 14.1: `DebugLog.lua` 14 with a new secondary file, `DebugLogDiagnostics.lua` 1. `DebugLog.lua`
-14 adds `lib.BUFFER_SLACK` (the compaction slack, still 64, which this version keeps as a private
-local), `lib.TIME_COPY` (a session-only switch that times the copy window, off at load) and the
-`COPY_TIMING` string. With `TIME_COPY` off every existing method behaves as it does here.
-`DebugLogDiagnostics.lua` adds the diagnostics report: three instance members (`RunDiagnostics`,
-`BuildDiagnostics`, `DebugVerb`), two descriptor fields (`brandName`, `diagnostics`) and two
-lib-level caps. See [version 14.1](./version-14.1-docs.md).
-
-- **A host's library-absent DebugLog stub** mirrors an instance, so its parity case now asks for the
-  three new members. The stub's `RunDiagnostics` prints the collection's placeholder line, writes
-  nothing and returns 0.
-- **A host suite that hard-codes the slack as `64`** may read `lib.BUFFER_SLACK` instead. It passes
-  either way at version 14.1, which does not change the value.
-
-Everything else in this document is unchanged at version 14.1.

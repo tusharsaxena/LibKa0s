@@ -506,18 +506,18 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the window title is the host's, with the library's suffix appended
 - dbg: a host can override the title suffix
 - dbg: Add appends the plain form to the buffer and is never gated on the flag
-- dbg: the cap is 1500 and the message frame is held to the same number
+- dbg: the cap is 3000 and the message frame is held to the same number
 - dbg: the buffer is capped, dropping the oldest line
 - dbg: the buffer stays a dense array of plain strings
 - dbg: Clear wipes the buffer and works before the window was ever built
 - dbg: BufferSize, LastLine and FindLine answer without reaching into .buffer
-- dbg: at 1499 lines every public reader answers the newest MAX_BUFFER
-- dbg: at 1500 lines every public reader answers the newest MAX_BUFFER
-- dbg: at 1501 lines every public reader answers the newest MAX_BUFFER
-- dbg: at 1600 lines every public reader answers the newest MAX_BUFFER
-- dbg: the 1501st line drops the first
-- dbg: 1564 adds cost at most one compaction, not one table.remove per line
-- dbg: the raw buffer holds at most MAX_BUFFER + 64 lines, and compacts in order
+- dbg: at 2999 lines every public reader answers the newest MAX_BUFFER
+- dbg: at 3000 lines every public reader answers the newest MAX_BUFFER
+- dbg: at 3001 lines every public reader answers the newest MAX_BUFFER
+- dbg: at 3100 lines every public reader answers the newest MAX_BUFFER
+- dbg: the 3001st line drops the first
+- dbg: 3129 adds cost at most one compaction, not one table.remove per line
+- dbg: the raw buffer holds at most MAX_BUFFER + BUFFER_SLACK lines, and compacts in order
 - dbg: the status line counts what the readers answer, not the raw array
 - dbg: the sink routes the first arg as the [tag] and every vararg through safeToString
 - dbg: the sink is a no-op, and does no work at all, when logging is off
@@ -575,7 +575,58 @@ badge and any count quoted in the docs must agree with it.
 - dbg: the copy window still shows the whole buffer, in order
 - dbg: the copy window re-anchors to the console instead of a fixed center
 
-### test_slash.lua (109)
+### test_debuglog_copytiming.lua (10)
+
+- dbgtime: TIME_COPY is off at load, and the timing line's text is published in STRINGS
+- dbgtime: with TIME_COPY off, ShowCopy reads no clock, queues nothing and prints nothing
+- dbgtime: with TIME_COPY on, the next frame prints one exact timing line through emit
+- dbgtime: the timing line never lands in the buffer it measures
+- dbgtime: the timed open hands the window exactly CopyText, as the untimed one does
+- dbgtime: the line counts the kept lines, not the raw array past the cap
+- dbgtime: with no debugprofilestop, TIME_COPY opens the window untimed and prints nothing
+- dbgtime: with no C_Timer, TIME_COPY opens the window untimed and prints nothing
+- dbgtime: BUFFER_SLACK is published, and is 128 at minor 14
+- dbgtime: Add reads BUFFER_SLACK at call time, like MAX_BUFFER
+
+### test_debuglog_diagnostics.lua (35)
+
+- diag: the caps are pinned as literals, and the file registers under the major
+- diag: both markers carry the brand, and the end marker counts every line
+- diag: with no brandName the markers name the title
+- diag: the identity header names the host, the client, the flags and the running minors
+- diag: a combat read that raises prints unreadable and costs nothing else
+- diag: an initSummary that raises prints unreadable and the header still follows
+- diag: BuildDiagnostics writes nothing
+- diag: the report appends, and the trace before it survives
+- diag: the report never calls Clear
+- diag: the report is ungated: it lands with logging off and leaves the flag alone
+- diag: RunDiagnostics prints one chat line with the count and returns it
+- diag: the chat line is the host's when L overrides it
+- diag: RunDiagnostics shows a hidden console
+- diag: the report repaints once, not once per line
+- diag: sections are asked for at run time, so one added after New still reports
+- diag: spec.sections replaces the host's list
+- diag: a raising section costs exactly one line, and the next section still runs
+- diag: a raising section list costs one line
+- diag: an over-cap report keeps two lines for the truncated line and the end marker
+- diag: the cap is clamped a hundred lines below the buffer
+- diag: an uncapped report writes no truncated line
+- diag: a per-list cap sets the flag the truncated line reports
+- diag: a list under its own cap is written whole and sets nothing
+- diag: out:add strips color, texture, atlas and hyperlink escapes
+- diag: out:escape doubles the pipe, and the doubled pipe survives the strip
+- diag: a secret value goes through safeToString and does not raise
+- diag: out:readable refuses what the client calls secret
+- diag: out:joined wraps at 200 characters and writes `lead -` for nothing
+- diag: out:section nests a pcall of its own
+- diag: out:nonDefaults prints what differs, skips session-only and hidden rows
+- diag: DebugVerb runs the report for `diagnostics`, in any case
+- diag: DebugVerb sets the flag for on and off
+- diag: DebugVerb answers false for anything else and writes no report
+- diag: the three instance members a consumer's DebugLog stub must carry
+- diag: without the secondary file an instance has no report methods
+
+### test_slash.lua (110)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
 - sl: whitespace-only input is treated as empty
@@ -682,7 +733,8 @@ badge and any count quoted in the docs must agree with it.
 - sl: disable ECHOES the write rather than refusing, and is idempotent
 - sl: help prints the full index with the refusal line under its header, unindented
 - sl: help enabled prints no refusal line at all
-- sl: liveVerbs defaults to the standard's twelve reserved verbs and is overridable as DATA
+- sl: liveVerbs defaults to the standard's thirteen reserved verbs and is overridable as DATA
+- sl: a disabled host that ships diagnostics runs it, by the default live set (minor 16)
 - sl: a reserved verb the host never shipped is not refused, in either state
 - sl: the gate is asked per dispatch, so a value that changes mid-session is honored
 - sl: the refusal wording is NOT reachable through the locale override
@@ -1754,7 +1806,7 @@ badge and any count quoted in the docs must agree with it.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 26
+- the kit is revision 27
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -1842,6 +1894,16 @@ badge and any count quoted in the docs must agree with it.
 - layoutcap self-test: a census that states nothing is told apart from one that states none
 - layoutcap self-test: the exempt set takes folders as well as paths
 
+### test_diagnostics_contract.lua (7)
+
+- diagnostics contract: both forms run the report
+- diagnostics contract: the debug word is matched in any case
+- diagnostics contract: both markers carry the brand and the end counts the report
+- diagnostics contract: the report appends after what the console already holds
+- diagnostics contract: the report lands with logging off and leaves it off
+- diagnostics contract: both forms run while the addon is disabled
+- diagnostics contract: no other name runs the report
+
 ## Totals
 
 | Suite | Cases |
@@ -1861,7 +1923,9 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_reorder.lua | 5 |
 | test_debuglog.lua | 75 |
-| test_slash.lua | 109 |
+| test_debuglog_copytiming.lua | 10 |
+| test_debuglog_diagnostics.lua | 35 |
+| test_slash.lua | 110 |
 | test_slash_refusal.lua | 7 |
 | test_launcher.lua | 45 |
 | test_options.lua | 85 |
@@ -1899,4 +1963,5 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 7 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| **Total** | **1677** |
+| test_diagnostics_contract.lua | 7 |
+| **Total** | **1730** |

@@ -70,10 +70,15 @@ _G.LK_TEST = Kit.expose{
 -- kit as their chunk argument rather than reading the exposed table by its consumer-chosen name.
 Kit.layoutCap = { hub = "CLAUDE.md" }
 
+-- The consumer facts for the kit's shared diagnostics contract (debug-logging-§14). A library has
+-- no slash command, so the contract runs against a fixture host built from this repo's own DebugLog
+-- and Slash; see tests/fixture_diagnostics.lua.
+Kit.diagnostics = dofile("tests/fixture_diagnostics.lua")(_G.LK_TEST)
+
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_slash", "test_slash_refusal",
+    "test_core", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_slash", "test_slash_refusal",
     "test_launcher",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_tabs",
@@ -94,5 +99,6 @@ Kit.run{
     -- than a silence -- the inventory reads it there and reports it once, as a skip.
     { name = "test_eol", dir = "tests/_kit/" },
     { name = "test_layout_cap", dir = "tests/_kit/" },
+    { name = "test_diagnostics_contract", dir = "tests/_kit/" },
   },
 }

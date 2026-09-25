@@ -360,10 +360,11 @@ local AUTHORED_LISTS = { ["tests/test_prose.lua"] = true }
 --     that pins the kit's fakes reads them as the fakes spell them, the register row names them,
 --     and the API index's row for kit revision 17, which added the `NewTimer` handle, names the
 --     method.
--- And two documents whose subject is this rule, localization-§5's fourth exclusion: kit revision
--- 26's API document records the list entry that revision added and the hits it found in three
--- consumers, word by word; and this file, whose comments quote the forbidden words in order to
--- forbid them and whose tables spell out every identifier above. Each word is named here as that
+-- And one document whose subject is this rule, localization-§5's fourth exclusion: this file,
+-- whose comments quote the forbidden words in order to forbid them and whose tables spell out every
+-- identifier above. Kit revision 26's API document, which records word by word the list entry that
+-- revision added, had a row here while it was the live kit document; revision 27 superseded it, so
+-- this case no longer reads it and the row went with it. Each word is named here as that
 -- file quotes it, in backticks, asterisks or string quotes, so a stray use of the same spelling as
 -- prose elsewhere in it still reddens.
 local AUTHORED_RATIFIED = {
@@ -372,8 +373,6 @@ local AUTHORED_RATIFIED = {
   ["CLAUDE.md"] = { "minimise", ".cancelled", "iscancelled" },
   ["tests/test_mock_ace.lua"] = { ".cancelled", "iscancelled" },
   ["docs/api/README.md"] = { "iscancelled" },
-  ["docs/api/testkit/version-26-docs.md"] = { "`synchronis`", "*synchronis-*", "`synchronisation`",
-    "*synchronisation*", "*analysed*", "*neighbours*" },
   ["tests/test_prose.lua"] = {
     '`cancelled`', '`colour`', '*coloured*', '*colours*', '`normalis`', '*normalise*',
     '*normalised*', '`analys`', '`programme`', '*analysed*', '`minimise`', '`minimise.tga`',
