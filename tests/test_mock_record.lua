@@ -13,6 +13,7 @@
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse = T.test, T.assertEqual, T.assertTrue, T.assertFalse
+local assertErrorMatches = T.assertErrorMatches
 
 local buildMocks = dofile("tests/wow_mock.lua")
 
@@ -374,4 +375,142 @@ test("record: two databases are told apart in the report", function()
   assertEqual(#writes, 2)
   assertEqual(writes[1].path, "RecordOneDB.profiles.Default.locked")
   assertEqual(writes[2].path, "RecordTwoDB.profiles.Default.locked")
+end)
+
+-- ── AceDB's profile verbs raise where AceDB-3.0 raises (revision 26) ──────────────────────
+--
+-- Through revision 25 the fake returned silently from every bad profile name, so a consumer's
+-- "copy a profile" slash command passed a headless suite on a name that raises a raw Lua error in
+-- the client. The messages are asserted byte for byte: they are AceDB-3.0.lua's own, :531-537 and
+-- :581-587 in every consumer's vendored copy.
+
+local function profileDb(M, name)
+  _G[name] = nil
+  local db = M.__libs["AceDB-3.0"]:New(name, { profile = { barWidth = 200, pos = { x = 1 } } })
+  db:SetProfile("B")
+  db:SetProfile("Default")
+  return db
+end
+
+test("record: CopyProfile onto the active profile raises AceDB's own message", function()
+  -- red under: `if not src or name == current then return end`, the silent return
+  local db = profileDb(buildMocks(), "RecordCopySelfDB")
+  local err = assertErrorMatches(function() db:CopyProfile("Default") end,
+    'Cannot have the same source and destination profiles ("Default").')
+  assertTrue(err:find("test_mock_record.lua:", 1, true) ~= nil,
+    "raised at level 2, so the position names the caller, not the kit: " .. err)
+end)
+
+test("record: CopyProfile from a missing profile raises unless silent", function()
+  -- red under: `if not src or name == current then return end`, the silent return
+  local db = profileDb(buildMocks(), "RecordCopyMissingDB")
+  assertErrorMatches(function() db:CopyProfile("Missing") end,
+    'Cannot copy profile "Missing" as it does not exist.')
+end)
+
+test("record: CopyProfile(missing, true) is silent, and resets the active profile as AceDB does", function()
+  -- red under: the silent return, which left the active profile untouched
+  local db = profileDb(buildMocks(), "RecordCopySilentDB")
+  db.profile.barWidth = 240
+  local heard
+  db.RegisterCallback({}, "OnProfileCopied", function(_, _, key) heard = key end)
+  db:CopyProfile("Missing", true)
+  assertEqual(db.profile.barWidth, 200, "AceDB resets before it copies, and there was nothing to copy")
+  assertEqual(heard, "Missing", "OnProfileCopied still fires, with the source's name")
+end)
+
+test("record: DeleteProfile on the active profile raises AceDB's own message", function()
+  -- red under: `if name == current then return end`, the silent return
+  local db = profileDb(buildMocks(), "RecordDeleteSelfDB")
+  assertErrorMatches(function() db:DeleteProfile("Default") end,
+    'Cannot delete the active profile ("Default") in an AceDBObject.')
+  assertTrue(db.sv.profiles.Default ~= nil, "and the profile is still there")
+end)
+
+test("record: DeleteProfile on a missing profile raises unless silent", function()
+  -- red under: `sv.profiles[name] = nil` run unconditionally, a silent no-op on a missing name
+  local db = profileDb(buildMocks(), "RecordDeleteMissingDB")
+  assertErrorMatches(function() db:DeleteProfile("Missing") end,
+    'Cannot delete profile "Missing" as it does not exist.')
+end)
+
+test("record: DeleteProfile(missing, true) is silent, and a real delete still deletes", function()
+  -- red under: a DeleteProfile that ignores `silent` and raises on every missing name. Green under
+  -- the old silent return too: it is the pair to the raise above, so that raise cannot be won by
+  -- raising on every call.
+  local db = profileDb(buildMocks(), "RecordDeleteSilentDB")
+  db:DeleteProfile("Missing", true)
+  db:DeleteProfile("B")
+  assertEqual(db.sv.profiles.B, nil, "a profile that exists is deleted")
+end)
+
+test("record: SetProfile strips values equal to their defaults from the OUTGOING profile", function()
+  -- red under: a SetProfile that only swaps `current` and fires, with no removeDefaults
+  --
+  -- AceDB-3.0.lua:460-463 runs removeDefaults over the old profile before it switches, so what the
+  -- SavedVariables file holds for a profile nobody is using is only what differs from the defaults.
+  local db = profileDb(buildMocks(), "RecordStripDB")
+  local a = db.profile
+  a.barWidth = 200            -- equal to its default: the scalar arm strips it
+  a.pos.x = 1                 -- equal to its default, inside a default table: the table arm
+  a.extra = "kept"            -- no default at all: never touched
+  db:SetProfile("B")
+  assertEqual(a.barWidth, nil, "a scalar equal to its default is stripped")
+  assertEqual(a.pos, nil, "a default table left empty by the strip is removed")
+  assertEqual(a.extra, "kept", "a key with no default survives")
+  assertTrue(db.sv.profiles.Default == a, "stripped in place, as AceDB does")
+  db:SetProfile("Default")
+  assertEqual(db.profile.barWidth, 200, "and switching back reads the default again")
+end)
+
+test("record: SetProfile keeps a value that differs from its default", function()
+  -- red under: a strip that compares by key presence rather than by value
+  local db = profileDb(buildMocks(), "RecordKeepDB")
+  local a = db.profile
+  a.barWidth = 240
+  a.pos.x = 5
+  db:SetProfile("B")
+  assertEqual(a.barWidth, 240)
+  assertEqual(a.pos.x, 5)
+end)
+
+-- ── what AceGUI still holds (revision 26) ──────────────────────────────────────────────────
+
+test("record: __aceguiLive counts a Create per type and gives it back on Release", function()
+  -- red under: no survey, or a Create or Release that does not report to it
+  --
+  -- The kit's AceGUI fake never reuses a widget, so a render that Creates and never Releases
+  -- passes every other assertion: only a count of what is still out can see the leak
+  -- (review finding LibKa0s-R-02).
+  local M = buildMocks()
+  local AceGUI = M.__libs["AceGUI-3.0"]
+  assertEqual(M.__aceguiLive("Dropdown"), 0, "a fresh build holds nothing")
+  local a = AceGUI:Create("Dropdown")
+  local b = AceGUI:Create("Dropdown")
+  AceGUI:Create("Button")
+  assertEqual(M.__aceguiLive("Dropdown"), 2)
+  assertEqual(M.__aceguiLive("Button"), 1, "counted per type, not in one pile")
+  AceGUI:Release(a)
+  assertEqual(M.__aceguiLive("Dropdown"), 1, "a Release gives one back")
+  b:Release()
+  assertEqual(M.__aceguiLive("Dropdown"), 0, "the method form counts too")
+  local all = M.__aceguiLive()
+  assertEqual(all.Button, 1, "with no type, every type still out")
+  assertEqual(all.Dropdown, nil, "and a type with nothing out is not listed")
+end)
+
+test("record: __aceguiLive ignores a Release it never saw created, and a registered type counts",
+function()
+  -- red under: decrementing on every Release, which drives a count below zero, or counting only
+  -- the factory's own widgets and not a constructor a suite registered
+  local M = buildMocks()
+  local AceGUI = M.__libs["AceGUI-3.0"]
+  local stray = M.__makeAceGUIWidget("Dropdown")
+  AceGUI:Release(stray)
+  assertEqual(M.__aceguiLive("Dropdown"), 0, "a widget the factory never handed out is not owed")
+  AceGUI:RegisterWidgetType("Custom", function() return M.__makeAceGUIWidget("Custom") end, 1)
+  local c = AceGUI:Create("Custom")
+  assertEqual(M.__aceguiLive("Custom"), 1)
+  AceGUI:Release(c)
+  assertEqual(M.__aceguiLive("Custom"), 0)
 end)

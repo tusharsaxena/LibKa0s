@@ -73,17 +73,18 @@ Kit.layoutCap = { hub = "CLAUDE.md" }
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_debuglog", "test_slash",
+    "test_core", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_slash", "test_slash_refusal",
     "test_launcher",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_tabs",
     "test_options_idsuggest", "test_options_idlist_remove", "test_options_switched", "test_options_combat", "test_options_compose",
+    "test_options_throttle",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
-    "test_loader", "test_parallel", "test_kit_limits",
-    "test_mock_base", "test_mock_ace", "test_mock_record",
+    "test_loader", "test_parallel", "test_kit_limits", "test_kit_asserts",
+    "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events",
     "test_surface_parity",
     "test_versioning", "test_kitsync", "test_prose",
-    "test_register", "test_kit_inventory", "test_kit_eol",
+    "test_register", "test_kit_inventory", "test_kit_eol", "test_kit_prose", "test_kit_runner",
     -- Shipped in the kit, so every consumer inherits the gate instead of re-typing it; the
     -- inventory assertion goes red in any repo that vendors it and leaves it undeclared.
     -- Declared by the PAIR (basename, directory) from kit revision 25: a bare name here wires

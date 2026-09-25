@@ -1,0 +1,23 @@
+{
+  "major": "LibKa0s-Core-1.0",
+  "versionKey": "8",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Core", "minor": 8 }
+  ],
+  "members": [
+    { "name": "ApplySkin", "kind": "function" },
+    { "name": "ClassColor", "kind": "function" },
+    { "name": "IsConcatSafe", "kind": "function" },
+    { "name": "MakeCloseButton", "kind": "function" },
+    { "name": "New", "kind": "function" },
+    { "name": "RGBA", "kind": "function" },
+    { "name": "ResolveColor", "kind": "function" },
+    { "name": "SECRET", "kind": "string" },
+    { "name": "SKIN", "kind": "table" },
+    { "name": "SafeRegisterEvent", "kind": "function" },
+    { "name": "SafeRegisterEvents", "kind": "function" },
+    { "name": "SafeRegisterUnitEvent", "kind": "function" },
+    { "name": "SafeToString", "kind": "function" }
+  ]
+}

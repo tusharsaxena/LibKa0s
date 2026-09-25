@@ -83,7 +83,7 @@ end)
 
 test("sl: a help row is gold command, single-spaced em dash, white description", function()
   -- The one formatter both the chat help and a host's landing page render through. Uppercase hex,
-  -- one space either side of the em dash, and the description coloured rather than left bare.
+  -- one space either side of the em dash, and the description colored rather than left bare.
   assertEqual(slash.FormatRow("/th get", "Print a setting"),
     "|cFFFFFF00/th get|r \226\128\148 |cFFFFFFFFPrint a setting|r")
 end)
@@ -211,22 +211,22 @@ test("sl: FormatValue renders a secret as the sentinel on every formatting branc
     "the bare-number branch guards before tostring")
   assertEqual(slash.FormatValue(row("units.player.barColor"),
     { r = secretMock, g = 0.2, b = 0.3, a = 0.4 }), T.core.SECRET,
-    "the colour branch guards each component before the %.2f tuple")
+    "the color branch guards each component before the %.2f tuple")
   assertEqual(slash.FormatValue(row("labelText"), secretMock), T.core.SECRET,
     "the string branch guards")
 end)
 
-test("sl: FormatValue reads a POSITIONAL colour as well as a named-key one", function()
-  -- The Ka0s options colour widget writes { r, g, b, a } positionally. Rendered through the
+test("sl: FormatValue reads a POSITIONAL color as well as a named-key one", function()
+  -- The Ka0s options color widget writes { r, g, b, a } positionally. Rendered through the
   -- named-key reader alone, every such row read as {0.00, 0.00, 0.00, 1.00} — and shipped that
-  -- way, because nothing asserts a rendered colour's VALUE outside this file.
+  -- way, because nothing asserts a rendered color's VALUE outside this file.
   local _, rec = F.new()
   local row = rec.byPath["units.player.barColor"]
   assertEqual(slash.FormatValue(row, { 0.1, 0.2, 0.3, 0.4 }), "{0.10, 0.20, 0.30, 0.40}",
-    "byte-identical to the named-key rendering of the same colour")
+    "byte-identical to the named-key rendering of the same color")
 end)
 
-test("sl: a positional colour with a secret component still renders the sentinel", function()
+test("sl: a positional color with a secret component still renders the sentinel", function()
   -- The guard has to cover the new indexing path too, or a combat-protected component reaches
   -- string.format by the back door.
   local _, rec = F.new()
@@ -234,10 +234,10 @@ test("sl: a positional colour with a secret component still renders the sentinel
   assertEqual(slash.FormatValue(row, { secretMock, 0.2, 0.3, 0.4 }), T.core.SECRET)
 end)
 
-test("sl: a host colour codec round-trips through set and its echo", function()
+test("sl: a host color codec round-trips through set and its echo", function()
   -- The end-to-end case, parameterised by shape: parse writes what the host stores, and the echo
   -- reads it back through the same codec. A partial fix that changed only one of them renders a
-  -- colour the host never stored.
+  -- color the host never stored.
   local POSITIONAL = {
     colorDecode = function(c) c = type(c) == "table" and c or {}
                               return c[1] or 0, c[2] or 0, c[3] or 0, c[4] or 1 end,
@@ -254,7 +254,7 @@ test("sl: a host colour codec round-trips through set and its echo", function()
     "the echo reads it back through the same codec: " .. text)
 end)
 
-test("sl: CliReset's echo uses the host colour codec too", function()
+test("sl: CliReset's echo uses the host color codec too", function()
   -- The second FormatValue site, and the one a partial fix misses.
   local store = {}
   local Sl, rec = F.new({
@@ -426,7 +426,7 @@ test("sl: an enum declared as an ordered array is offered in declaration order",
   -- The Ka0s options schema declares enums as an ordered array of { value =, text = }, because
   -- the declared order IS the dropdown's display order. Declared here so that alphabetical and
   -- declared order DISAGREE — with a list that happens to sort into its own order, the assertion
-  -- passes whether or not the implementation honours the position.
+  -- passes whether or not the implementation honors the position.
   local row = { type = "string", values = {
     { value = "short", text = "Short" },
     { value = "none",  text = "None"  },
@@ -549,22 +549,22 @@ test("sl: an enum supplied as a function is evaluated at parse time", function()
   assertEqual(slash.ParseValue(row, "flat"), "flat")
 end)
 
-test("sl: a colour parses r g b with an optional alpha", function()
+test("sl: a color parses r g b with an optional alpha", function()
   local c = slash.ParseValue({ type = "color" }, "0.1 0.2 0.3 0.4")
   T.assertNear(c.r, 0.1, 1e-6); T.assertNear(c.a, 0.4, 1e-6)
   local d = slash.ParseValue({ type = "color" }, "0.1 0.2 0.3")
   assertEqual(d.a, 1, "alpha defaults to opaque")
 end)
 
-test("sl: a colour given in 0-255 is rescaled, and all three channels together", function()
+test("sl: a color given in 0-255 is rescaled, and all three channels together", function()
   -- Rescaling per channel would mangle a mixed input worse than rescaling jointly does; this is
-  -- the existing behaviour and it is preserved deliberately rather than tidied.
+  -- the existing behavior and it is preserved deliberately rather than tidied.
   local c = slash.ParseValue({ type = "color" }, "255 128 0")
   T.assertNear(c.r, 1, 1e-6); T.assertNear(c.b, 0, 1e-6)
   T.assertTrue(c.g > 0.5 and c.g < 0.51, "128/255")
 end)
 
-test("sl: a colour missing a channel is rejected with the expected form", function()
+test("sl: a color missing a channel is rejected with the expected form", function()
   local v, err = slash.ParseValue({ type = "color" }, "1 0")
   T.assertNil(v)
   T.assertTrue(err:find("r g b", 1, true) ~= nil, err)
@@ -591,7 +591,7 @@ test("sl: list groups rows under the host's own group keys, indented", function(
     "rows indent four, and render through FormatKV: " .. joined)
 end)
 
-test("sl: the list keeps its own colours \226\128\148 green header, azure group headings", function()
+test("sl: the list keeps its own colors \226\128\148 green header, azure group headings", function()
   -- Decision D3 converges the COMMAND-row formatter, and nothing else. Recasing these to match it
   -- would be a user-visible change outside what was asked for.
   local Sl, rec = F.new()
@@ -838,7 +838,7 @@ end)
 
 test("sl: the annotator fires on list, get and set — and on nothing else", function()
   -- Three sites, and never on reset or resetall: an annotation explaining what a value means is
-  -- noise attached to an acknowledgement that a value went away.
+  -- noise attached to an acknowledgment that a value went away.
   local Sl, rec = F.new()
   Sl:SetRowAnnotator(function(row)
     return row.unit == "target" and "  (annotated)" or ""
@@ -858,7 +858,7 @@ test("sl: the annotator fires on list, get and set — and on nothing else", fun
   T.assertFalse(saw(function() Sl:CliResetAll() end), "nor on resetall")
 end)
 
-test("sl: the annotation follows the coloured pair rather than interrupting it", function()
+test("sl: the annotation follows the colored pair rather than interrupting it", function()
   local Sl, rec = F.new()
   Sl:SetRowAnnotator(function() return "  (note)" end)
   Sl:CliGet("units.player.barWidth")
@@ -894,11 +894,11 @@ local function fallbackLocale()
   return setmetatable({}, { __index = function(_, k) return k end })
 end
 
-test("sl: an L whose metatable synthesises every key does NOT mask the module's strings", function()
+test("sl: an L whose metatable synthesizes every key does NOT mask the module's strings", function()
   -- red under: reverting Sl:Text to `strings[key]`
   local Sl = F.new({ L = fallbackLocale() })
   assertEqual(Sl:Text("LIST_HEADER"), slash.STRINGS.LIST_HEADER,
-    "a synthesised override must fall through to the module's own string")
+    "a synthesized override must fall through to the module's own string")
   assertEqual(Sl:Text("NOT_FOUND"), slash.STRINGS.NOT_FOUND)
 end)
 
@@ -908,7 +908,7 @@ test("sl: a REAL entry in an L that also has a fallback still overrides", functi
   local Sl = F.new({ L = L })
   assertEqual(Sl:Text("LIST_HEADER"), "Reglages disponibles", "a real entry must still win")
   assertEqual(Sl:Text("NOT_FOUND"), slash.STRINGS.NOT_FOUND,
-    "and its neighbours must still fall through")
+    "and its neighbors must still fall through")
 end)
 
 test("sl: a plain L table overrides exactly as before", function()
@@ -992,10 +992,10 @@ test("slash: a host with no format hook renders exactly as it always did", funct
   assertEqual(lines[#lines], "    " .. slash.FormatKV("s.n", "1.50x"))
 end)
 
-test("slash: the format hook takes precedence over the colour codec, and gets the raw stored value",
+test("slash: the format hook takes precedence over the color codec, and gets the raw stored value",
   function()
     -- A host that supplies both is telling us it owns rendering outright. Handing it the DECODED
-    -- colour instead of what it stored would make the two hooks disagree about their own input.
+    -- color instead of what it stored would make the two hooks disagree about their own input.
     local rows = { { path = "s.c", type = "color", default = {} } }
     local seen
     local Sl = slash:New({
@@ -1018,7 +1018,7 @@ test("slash: format beats colorDecode at the get, set and reset echoes, and colo
     --
     -- The case above pins the ordering at the list echo only. This pins it at the other three, and
     -- on the write side at the same time, because the documented precedence is over `colorDecode`
-    -- ALONE: a host that owns rendering has said nothing about how its colour is STORED, so
+    -- ALONE: a host that owns rendering has said nothing about how its color is STORED, so
     -- `colorEncode` must still turn the parser's named-key tuple into the host's shape before the
     -- echo re-reads it. Nothing ships this descriptor — the three `format` hosts and the three
     -- codec hosts are disjoint sets and no ninth consumer is coming — so this suite is the only

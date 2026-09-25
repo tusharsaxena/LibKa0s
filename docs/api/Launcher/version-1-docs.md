@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Launcher-1.0` |
 | Files and minors | `Launcher.lua` minor **1** |
 | Shipped in | v1.39.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2](./version-2-docs.md) — an optional `isEnabled` / `disabledLine` gate on the left click; missing-library notices print once, without the `[LibKa0s] ` prefix |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **LibDataBroker-1.1** and **LibDBIcon-1.0** are OPTIONAL and are resolved with `LibStub(…, true)` at `Register` time, never at load. |
 | Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 1 }` |
 
@@ -205,3 +205,12 @@ listed in the TOC's `# Libraries` section (`toc-file-§4`). They are not part of
 never will be: they are third-party libraries with their own release cadence, and bundling them
 inside a folder that is itself copied into eleven addons would give each of them two copies to
 reconcile.
+
+## Moving to version 2
+
+Nothing has to change, and a host on rung (a) or (b) should. Version 2 adds two optional descriptor
+fields, `isEnabled` and `disabledLine`; pass both and delete the disabled check your `onClick` makes
+by hand, so the library refuses the left click with your dispatcher's line. A rung (c) host has
+nothing to adopt. The one difference a host sees without adopting is in the notices: they print once
+per instance, and the four `lib.STRINGS` values no longer begin `[LibKa0s] `. A test that asserts
+that prefix has to drop it.

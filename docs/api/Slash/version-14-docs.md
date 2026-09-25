@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Slash-1.0` |
 | Files and minors | `Slash.lua` minor **14** |
 | Shipped in | v1.42.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 13](./version-13-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 15](./version-15-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 14 }` |
 
@@ -628,3 +628,23 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
+
+## Moving to version 15
+
+**Take it, and a refused write stops looking like a successful one.** Version 15 adds no member and
+no descriptor field; `lib.STRINGS` gains `NO_DEFAULT`, and the member manifest differs from this one
+in the minor alone.
+
+At this version `CliSet` discards whatever the descriptor's `set` answers and echoes the re-read
+value. A host whose `set` is `LibKa0s-Schema-1.0`'s `S.Set` therefore prints `path = <old value>` for
+a value the row's `validate` refused, with no reason. `CliReset` likewise ignores an `applyDefault`
+that answers `false`. From version 15 both refusals are printed.
+
+What a host owes on the re-vendor:
+
+- **Return the seam's answer from `set`.** A wrapper that calls `S.Set` and drops its return value
+  still gets version 14's echo; `return S.Set(path, v)` is the whole change.
+- **Delete any hand-printed refusal in that wrapper**, or the player reads it twice.
+- A host whose `set` answers nothing has nothing to change.
+
+Everything else in this document is unchanged at version 15.

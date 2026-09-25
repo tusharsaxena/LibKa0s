@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Bus-1.0` |
 | Files and minors | `Bus.lua` minor **1** |
 | Shipped in | v1.55.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2](./version-2-docs.md) — the tracking wrappers are re-stamped at every edge after a newer AceEvent-3.0 re-embed |
 | Confirm in-game | `LibStub("LibKa0s-Bus-1.0").MODULES` → `{ Bus = 1 }` |
 
 ## What this major is
@@ -334,3 +334,12 @@ A host's test suite holds that stub to the live surface with
 5. **`UnregisterAll*` called with several targets** (`t.UnregisterAllMessages(t, other)`, a form
    CallbackHandler accepts) forgets only the record of the first when it is the target itself; the
    raw call still unregisters all of them. No consumer uses the multi-target form.
+
+## Moving to version 2
+
+No member is added or removed and no signature loses a value. `StandDown` and `StandUp` re-stamp
+every target the bus created before anything else, which closes known limitation 1 above down to
+the window between a re-embed and the next edge, and each answers one more trailing value, the
+number of targets re-stamped. A host written against this version is correct at version 2
+unmodified, unless it forwards either call in the last position of an argument list, where the
+extra value now arrives too.

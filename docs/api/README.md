@@ -89,7 +89,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 | **Current** |
+| [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 | **Current** |
+| [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 – v1.55.0 | Superseded |
 | [6](./Core/version-6-docs.md) | `Core.lua` 6 | v1.10.0 – v1.23.0 | Superseded |
 | [5](./Core/version-5-docs.md) | `Core.lua` 5 | v1.8.0 – v1.9.2 | Superseded |
 | [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | Superseded |
@@ -112,19 +113,22 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Lifecycle/version-1-docs.md) | `Lifecycle.lua` 1 | v1.40.0 | **Current** |
+| [2](./Lifecycle/version-2-docs.md) | `Lifecycle.lua` 2 | v1.56.0 | **Current** |
+| [1](./Lifecycle/version-1-docs.md) | `Lifecycle.lua` 1 | v1.40.0 | Superseded |
 
 ### `LibKa0s-Bus-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Bus/version-1-docs.md) | `Bus.lua` 1 | v1.55.0 | **Current** |
+| [2](./Bus/version-2-docs.md) | `Bus.lua` 2 | v1.56.0 | **Current** |
+| [1](./Bus/version-1-docs.md) | `Bus.lua` 1 | v1.55.0 | Superseded |
 
 ### `LibKa0s-Schema-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Schema/version-1-docs.md) | `Schema.lua` 1 | v1.55.0 | **Current** |
+| [2](./Schema/version-2-docs.md) | `Schema.lua` 2 | v1.56.0 | **Current** |
+| [1](./Schema/version-1-docs.md) | `Schema.lua` 1 | v1.55.0 | Superseded |
 
 ### `LibKa0s-Pool-1.0`
 
@@ -138,13 +142,15 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Item/version-1-docs.md) | `Item.lua` 1 | v1.15.0 | **Current** |
+| [2](./Item/version-2-docs.md) | `Item.lua` 2 | v1.56.0 | **Current** |
+| [1](./Item/version-1-docs.md) | `Item.lua` 1 | v1.15.0 – v1.55.0 | Superseded |
 
 ### `LibKa0s-Media-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [3](./Media/version-3-docs.md) | `Media.lua` 3 | v1.9.2 | **Current** |
+| [4](./Media/version-4-docs.md) | `Media.lua` 4 | v1.56.0 | **Current** |
+| [3](./Media/version-3-docs.md) | `Media.lua` 3 | v1.9.2 – v1.55.0 | Superseded |
 | [2](./Media/version-2-docs.md) | `Media.lua` 2 | v1.9.1 | Superseded |
 | [1](./Media/version-1-docs.md) | `Media.lua` 1 | v1.9.0 | Superseded |
 
@@ -152,7 +158,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [9.2](./Widgets/version-9.2-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 2 | v1.48.1 | **Current** |
+| [10.2](./Widgets/version-10.2-docs.md) | `Widgets.lua` 10 · `WidgetsDragHandle.lua` 2 | v1.56.0 | **Current** |
+| [9.2](./Widgets/version-9.2-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 2 | v1.48.1 – v1.55.0 | Superseded |
 | [9.1](./Widgets/version-9.1-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 1 | v1.48.0 | Superseded |
 | [9](./Widgets/version-9-docs.md) | `Widgets.lua` 9 | v1.24.0 – v1.47.0 | Superseded |
 | [8](./Widgets/version-8-docs.md) | `Widgets.lua` 8 | v1.19.0 – v1.23.0 | Superseded |
@@ -168,7 +175,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12](./DebugLog/version-12-docs.md) | `DebugLog.lua` 12 | v1.16.0 | **Current** |
+| [13](./DebugLog/version-13-docs.md) | `DebugLog.lua` 13 | v1.56.0 | **Current** |
+| [12](./DebugLog/version-12-docs.md) | `DebugLog.lua` 12 | v1.16.0 | Superseded |
 | [11](./DebugLog/version-11-docs.md) | `DebugLog.lua` 11 | v1.15.0 | Superseded |
 | [10](./DebugLog/version-10-docs.md) | `DebugLog.lua` 10 | v1.10.1 – v1.13.0 | Superseded |
 | [9](./DebugLog/version-9-docs.md) | `DebugLog.lua` 9 | v1.10.0 | Superseded |
@@ -183,7 +191,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [14](./Slash/version-14-docs.md) | `Slash.lua` 14 | v1.42.0 | **Current** |
+| [15](./Slash/version-15-docs.md) | `Slash.lua` 15 | v1.56.0 | **Current** |
+| [14](./Slash/version-14-docs.md) | `Slash.lua` 14 | v1.42.0 | Superseded |
 | [13](./Slash/version-13-docs.md) | `Slash.lua` 13 | v1.41.0 | Superseded |
 | [12](./Slash/version-12-docs.md) | `Slash.lua` 12 | v1.40.0 | Superseded |
 | [11](./Slash/version-11-docs.md) | `Slash.lua` 11 | v1.38.0 | Superseded |
@@ -199,13 +208,17 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Launcher/version-1-docs.md) | `Launcher.lua` 1 | v1.39.0 | **Current** |
+| [4](./Launcher/version-4-docs.md) | `Launcher.lua` 4 | v1.58.0 | **Current** |
+| [3](./Launcher/version-3-docs.md) | `Launcher.lua` 3 | v1.57.0 | Superseded |
+| [2](./Launcher/version-2-docs.md) | `Launcher.lua` 2 | v1.56.0 | Superseded |
+| [1](./Launcher/version-1-docs.md) | `Launcher.lua` 1 | v1.39.0 | Superseded |
 
 ### `LibKa0s-Options-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [23.30.3.7.3](./Options/version-23.30.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 30 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.53.0 | **Current** |
+| [24.31.4.7.4](./Options/version-24.31.4.7.4-docs.md) | `Options.lua` 24 · `OptionsWidgets.lua` 31 · `OptionsTabs.lua` 4 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 | v1.56.0 | **Current** |
+| [23.30.3.7.3](./Options/version-23.30.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 30 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.53.0 – v1.55.0 | Superseded |
 | [23.29.3.7.3](./Options/version-23.29.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 29 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.52.0 | Superseded |
 | [23.28.3.7.3](./Options/version-23.28.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 28 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.51.0 | Superseded |
 | [23.27.3.7.3](./Options/version-23.27.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 27 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.50.0 | Superseded |
@@ -250,7 +263,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12.5](./Perf/version-12.5-docs.md) | `Perf.lua` 12 · `PerfPanel.lua` 5 | v1.40.0 | **Current** |
+| [13.5](./Perf/version-13.5-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 5 | v1.56.0 | **Current** |
+| [12.5](./Perf/version-12.5-docs.md) | `Perf.lua` 12 · `PerfPanel.lua` 5 | v1.40.0 – v1.55.0 | Superseded |
 | [11.5](./Perf/version-11.5-docs.md) | `Perf.lua` 11 · `PerfPanel.lua` 5 | v1.31.0 | Superseded |
 | [10.5](./Perf/version-10.5-docs.md) | `Perf.lua` 10 · `PerfPanel.lua` 5 | v1.29.0 – v1.30.0 | Superseded |
 | [9.4](./Perf/version-9.4-docs.md) | `Perf.lua` 9 · `PerfPanel.lua` 4 | v1.28.0 | Superseded |
@@ -269,7 +283,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [25](./testkit/version-25-docs.md) | same files **plus `test_layout_cap.lua`**, the kit's third own suite: the `layout-§1` cap gate, reading the over-cap census out of the repo's engineer-context hub and taking the hub and the generated-data exempt set through `Kit.layoutCap`. A declaration becomes the **pair** (basename, directory), so a bare name no longer covers the kit's file of that name — a collision and an unreferenced kit suite are both reported, and a decline recorded in `## Documented deviations` is reported once as a skip. `test_eol.lua` gains a second case over the `.gitattributes` body itself, `test_prose.lua` gains `Kit.prose.exempt` for `localization-§5`'s generated-data carve-out in the shape `Kit.layoutCap.exempt` already uses — with two of that carve-out's three conditions **enforced**, a path any `.toc` loads and a path `.pkgmeta` does not ignore both refused, and the same two refusals applied to the waiver file's `skipDirs` and `skipFiles`, which reach the same scan and were checked against nothing; one disclosure line names every path the gate was narrowed by, whichever list supplied it, with the suppressed count — and the automated-test runner names the commit and the tree state on every `RESULTS.md` row. A declaration's `dir` and the runner's `dir` are also read **against each other**, so a suites list that mixes an absolute and a relative spelling of one directory survives being invoked by path from another working directory, and every remedy prints a `dir` a suites list can actually carry rather than this checkout's resolved path. | v1.55.0 | **Current** |
+| [26](./testkit/version-26-docs.md) | same files **plus `asserts.lua`, `prose_lists.lua` and `mock_events.lua`**, the first two peels with no behavior change: `framework.lua`'s assertions and surface-parity gate move to the first and `test_prose.lua`'s published lists to the second, each loaded from its parent's own folder, which takes both parents back under `layout-§1`'s cap; and two new assertions, `Kit.assertErrorMatches(fn, needle, msg)`, which checks the raised text rather than only that something raised, and `Kit.assertLibraryConstant(value, majorName, memberPath, msg)`, which pins a degradation stub's verbatim copy of a library constant byte for byte against the live library, falling back to the exposed LibStub when the surface source maps the major to an instance; and one **behavioral** change, the AceDB fake's `CopyProfile` and `DeleteProfile` raising AceDB-3.0's own messages on a bad name and `SetProfile` stripping defaults from the outgoing profile; and a third file, **`mock_events.lua`**: a recording `EventRegistry` whose callbacks reach `__registrations()` as kind `callback`, raw frame `RegisterEvent` / `RegisterUnitEvent` raising on a name in `__badEvents`, and `C_EventUtils.IsEventValid`; a **behavioral** flip in `mock_base.lua`, a new frame starting shown as `CreateFrame` hands one back in the client, so `M.__shownFrames()` right after a build lists every frame nothing hid; and two gates widened, `test_eol.lua`'s case one also counting every lone CR over the set it already scans, named as `path:line`, and `test_prose.lua` reading the three store-root files named in `prose_lists.lua`'s new `SCAN_BACK`, skipping `docs/superpowers/` and `docs/investigations/`, and carrying the British stem of *synchronize* (92 / 33); and every section citation in a kit string spelled `<file>-§N`, which **renames four case names** (`line-endings-§5`, `layout-§1`, two `localization-§5`), so a consumer regenerates `docs/test-cases.md`; and two **behavioral** changes in `run-automated-tests.sh`: with no `tests/perf.lua` it reads the `## Documented deviations` register (`docs/ARCHITECTURE.md`, then the root `CLAUDE.md`) and records a Rule cell of exactly `performance-§12` as perf skip reason (2) in the manifest's `skipReason` and in `RESULTS.md`, with `KA0S_PERF_EXEMPT=1` counting only where no register exists, and a register it cannot read (no Rule header, no separator, or a row with no cell after its Rule) **fails the whole run with exit 2** before any suite runs or the bundle is made; and an empty watch-list table in `RESULTS.md` now keeps its header row and separator where revision 25 printed `None.`, so that file changes shape | v1.56.0 | **Current** |
+| [25](./testkit/version-25-docs.md) | same files **plus `test_layout_cap.lua`**, the kit's third own suite: the `layout-§1` cap gate, reading the over-cap census out of the repo's engineer-context hub and taking the hub and the generated-data exempt set through `Kit.layoutCap`. A declaration becomes the **pair** (basename, directory), so a bare name no longer covers the kit's file of that name — a collision and an unreferenced kit suite are both reported, and a decline recorded in `## Documented deviations` is reported once as a skip. `test_eol.lua` gains a second case over the `.gitattributes` body itself, `test_prose.lua` gains `Kit.prose.exempt` for `localization-§5`'s generated-data carve-out in the shape `Kit.layoutCap.exempt` already uses — with two of that carve-out's three conditions **enforced**, a path any `.toc` loads and a path `.pkgmeta` does not ignore both refused, and the same two refusals applied to the waiver file's `skipDirs` and `skipFiles`, which reach the same scan and were checked against nothing; one disclosure line names every path the gate was narrowed by, whichever list supplied it, with the suppressed count — and the automated-test runner names the commit and the tree state on every `RESULTS.md` row. A declaration's `dir` and the runner's `dir` are also read **against each other**, so a suites list that mixes an absolute and a relative spelling of one directory survives being invoked by path from another working directory, and every remedy prints a `dir` a suites list can actually carry rather than this checkout's resolved path. | v1.55.0 | Superseded |
 | [24](./testkit/version-24-docs.md) | same files **plus `test_prose.lua`**, the kit's second own suite: the US-English gate of `localization-5`, carrying both published lists whole and reading an optional per-file, per-word `tests/prose_waivers.lua` for the spellings that are game data or a library's field name rather than the repo's English. Adoption is one line in the runner's suite list; `assertSuiteInventory` goes red until it is there. | v1.54.0 | Superseded |
 | [23](./testkit/version-23-docs.md) | same files; the resource guard on load (re-launch depth, process-tree cgroup, `ulimit -v`, timeout), the runner's heap budget, leak gate, CPU ceiling, host-path gate and memory-aware `--jobs`, every suite in `run-automated-tests.sh` bounded, and the `mock_base.lua` build lookup that kept every instance alive | v1.43.0 | Superseded |
 | [22](./testkit/version-22-docs.md) | + `mock_record.lua` — the five recording surveys (`__registrations`, `__timers()`, `__shownFrames`, `__svWrites`, `__printed`), `__fire` / `__fireUnconditional`, an `AceBucket-3.0` fake, and the raw `frame:RegisterEvent` the frame stub used to forget; the timer queue and the `AceDB-3.0` fake move there with them | v1.40.0 | Superseded |
@@ -331,7 +346,7 @@ A minor bump is not released until its API document exists. The full order is in
    descriptor field or row field the bump introduced.
 4. Add the row to the table above.
 
-Never edit a superseded document to describe new behaviour. The point of the folder is that an
+Never edit a superseded document to describe new behavior. The point of the folder is that an
 adopter on an old copy reads what their copy actually does.
 
 ## Related contracts that are not API

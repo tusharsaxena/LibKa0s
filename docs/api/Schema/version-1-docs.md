@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Schema-1.0` |
 | Files and minors | `Schema.lua` minor **1** |
 | Shipped in | v1.55.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2](./version-2-docs.md) — `SetMany`, `row.normalize`, and the instance id reaching a row's `get` and `ApplyDefault` |
 | Confirm in-game | `LibStub("LibKa0s-Schema-1.0").MODULES` → `{ Schema = 1 }` |
 
 ## What this major is
@@ -404,3 +404,14 @@ panel refresh that snaps the widget back), and it answers `false, why`.
 - **A pre-seam gate moves into `validate`.** A host that refuses some values in a wrapper in front
   of its seam moves the check into the row's `validate` before binding the descriptors to the
   instance members, and adds a case that drives the refusal through the CLI's `set`.
+
+## Moving to version 2
+
+`Schema.lua` moves to minor **2**. The lib-level surface is unchanged; `members-2.json` differs from
+this version's only in its version key. The instance gains `SetMany(entries, opts)`, the
+all-or-nothing batch (one refused entry stores nothing; with `opts.act` one bracket line; one
+`announceBatch` or one `announce` per write), and the descriptor gains the optional `announceBatch`.
+Rows gain an optional `normalize(value, resolvedId)`, run after `validate` and before the store.
+`Get` now hands `instanceId` to a row's `get`, and `ApplyDefault(row, instanceId)` forwards the id
+to `Set` (review finding `LibKa0s-R-14`). A host degradation stub pinned with the two-table surface
+parity must add `SetMany`. See [version 2](./version-2-docs.md).

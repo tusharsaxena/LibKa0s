@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **23** · `OptionsWidgets.lua` **30** · `OptionsTabs.lua` **3** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **3** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
 | Shipped in | v1.53.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 23.29.3.7.3](./version-23.29.3.7.3-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 24.31.4.7.4](./version-24.31.4.7.4-docs.md) — the font preload moves from `Options.lua` into `OptionsScroll.lua` |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 23, OptionsWidgets = 30, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }` |
 
@@ -1863,3 +1863,19 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 24.31.4.7.4
+
+`Options.lua` moves to minor **24**, `OptionsWidgets.lua` to **31**, `OptionsTabs.lua` to **4** and
+`OptionsScroll.lua` to minor **4**; `OptionsCompose.lua` does not move. No member, descriptor field or
+row field is added or removed, and the member manifest differs from this version's only in its
+version key. Two optional spec fields are added: `RenderTabbedSchema` takes a fifth `opts` argument
+(host tabs, a disabled notice, a chrome hook) and moves to `OptionsTabs.lua`, and `PageBanner` takes
+an `action` button; a host that passes neither draws what it drew. What moves is where the font preload is defined: `lib.__PreloadFonts` and its state now
+live in `OptionsScroll.lua`, unchanged, to keep the shell under the 1500-line cap. A partial copy
+missing `OptionsScroll.lua` shows its pages with no preload and no error. The slider's live commit
+and the color picker's drag throttle stop reading `scheduleTimer`'s return value as their armed
+flag, so a host whose `scheduleTimer` answers nil gets the 50 ms throttle it never had here. A full
+render of a banner or header page stops leaving a `Dropdown` or `Frame` and a texture behind: the
+banner's dropdown is Released, and the header frame and the divider texture are reused per page. See
+[version 24.31.4.7.4](./version-24.31.4.7.4-docs.md).

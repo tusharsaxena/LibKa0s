@@ -10,6 +10,830 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.58.0 — 2026-09-24
+
+Versions in this release: **Launcher minor 4** (`LibKa0s-Launcher-1.0` 4). Every other file is
+unchanged from v1.57.0: `Core` 8, `Env` 1, `Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3,
+`Item` 2, `Media` 4, `Widgets` 10 and `WidgetsDragHandle` 2 (key 10.2), `DebugLog` 13, `Slash` 15,
+`Options` key 24.31.4.7.4, `Perf` 13 and `PerfPanel` 5 (key 13.5), and the test kit stays at
+**revision 26**. No `NEEDS_*` floor rises and no major is added. Built to the Ka0s WoW Addon Standard
+**v2.67.0**, whose `launcher-§2` makes the click behavior below a MUST drawn by this module.
+
+### Launcher minor 4: left-click opens settings, right-click opens the options menu
+
+- **Left-click calls `openSettings`, on every host, in either state** (M6, the owner's ruling of
+  2026-09-24; `launcher-§2` as of the standard's v2.67.0). The three left-click rungs are retired,
+  and so is minor 2's disabled left-click refusal: the panel is setup, and where a disabled addon is
+  re-enabled.
+- **Right-click opens the client's context menu** (`MenuUtil.CreateContextMenu`, 11.0+), anchored to
+  the clicked frame and titled with the label, with one checkbox per toggle the descriptor supplies,
+  in the one order: *Enabled* (`isEnabled` + `setEnabled(bool)`), *Locked* (`isLocked` +
+  `toggleLock`), *Test mode* (`isTestMode` + `toggleTestMode`), *Show window* (`isWindowShown` +
+  `toggleWindow`). An entry needs both halves. Each state is read when the menu opens; a click
+  calls the host's handler once and closes the menu.
+- **While `isEnabled()` is false**, *Enabled* stays live and the other entries are grayed
+  (`SetEnabled(false)`) and read `<entry> (enable the addon first)`; a grayed entry clicked anyway
+  calls no handler.
+- **Every client call is nil-guarded.** With no `MenuUtil`, no `CreateContextMenu`, or no supplied
+  entry at all, right-click opens the settings panel instead. A raising handler or menu API prints
+  one line naming the addon and never escapes into the client's dispatch.
+- **Retired, and ignored if passed** (no error): `onClick`, `leftClickLabel`, `disabledLine` and
+  `slash`. `isEnabled` no longer requires `disabledLine`.
+- **The tooltip's hints are fixed**: `Left-click: Open settings`, `Right-click: Options menu`. The
+  rest of minor 3's tooltip is unchanged.
+- **`lib.STRINGS`**: `TOOLTIP_OPTIONS_MENU` and seven `MENU_*` keys added; `TOOLTIP_LEFT_DEFAULT`,
+  `TOOLTIP_DISABLED_HINT` and `TOOLTIP_DISABLED_BARE` removed with the rungs. No member is added, so
+  `docs/api/Launcher/members-4.json` lists the same surface as `members-3.json`.
+- `tests/test_launcher.lua` against a new headless menu stand-in, `tests/mock_menu.lua`
+  (repo-local, not in the kit): fifteen new cases, fourteen for the clicks and the menu, among them the sixteen-cell matrix of pairs
+  present or absent, half pairs, order, read-at-open, grayed while disabled, one call per toggle,
+  the missing-API fallback and the retired fields. The minor-2 and minor-3 cases that pinned the
+  rungs, the refusal and the rung hints are replaced, since this release retires those contracts.
+  `.luacheckrc` declares `MenuUtil` and `MenuResponse`. Documented in
+  [the version 4 document](docs/api/Launcher/version-4-docs.md).
+
+### What a consumer owes on re-vendoring v1.58.0
+
+Copy both payloads whole and move the `CLAUDE.md` provenance line to v1.58.0 in the same commit, as
+always; the kit bytes are those of v1.56.0. Then, in `core/LauncherSetup.lua` (the M6 re-vendors):
+
+- **Arrives without being asked for**: left-click opens the settings panel on every host, so a rung
+  (a)/(b) host's `onClick` stops running; the hints read `Open settings` / `Options menu`; and the
+  disabled refusal is gone. Until the host passes a pair, right-click still opens the panel.
+- **Owed by `launcher-§2`**: pass `setEnabled` beside `isEnabled`, and `toggleLock`,
+  `toggleTestMode`, `isWindowShown` + `toggleWindow` for each state the addon really has, each wired
+  to the **same** handler its slash verb and settings row use; record the entries in the addon's
+  docs. Delete `onClick`, `leftClickLabel`, `disabledLine` and `slash` from the descriptor.
+- **Tests**: a host test that pinned the left click's action, the disabled refusal or minor 3's
+  hints re-pins. A test of the menu needs a `MenuUtil` fake in the host's own harness; the kit does
+  not ship one.
+- No degradation stub moves: the member manifest is unchanged.
+
+Release gate (`docs/automated-tests/20260924-234934/`): lint pass, 0/0 in 93 files;
+tests pass, 1666 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+## v1.57.0 — 2026-09-24
+
+Versions in this release: **Launcher minor 3** (`LibKa0s-Launcher-1.0` 3). Every other file is
+unchanged from v1.56.0: `Core` 8, `Env` 1, `Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3,
+`Item` 2, `Media` 4, `Widgets` 10 and `WidgetsDragHandle` 2 (key 10.2), `DebugLog` 13, `Slash` 15,
+`Options` key 24.31.4.7.4, `Perf` 13 and `PerfPanel` 5 (key 13.5), and the test kit stays at
+**revision 26**. No `NEEDS_*` floor rises and no major is added. Built to the Ka0s WoW Addon Standard
+**v2.66.0**, whose `launcher-§1` makes the tooltip below a MUST drawn by this module.
+
+### Launcher minor 3: the library always draws the status tooltip
+
+- **The LDB object's `OnTooltipShow` is the library's, on every host** (M5, the owner's ruling from
+  the 2026-09-24 smoke pass; `launcher-§1`/`§2` as of the standard's v2.66.0). It draws one fixed
+  shape in all eleven addons, and it draws it **while the addon is disabled** too: the label and,
+  where passed, `v<version>`; `Enabled: Yes|No` (always, green or red); `Locked: Yes|No` and
+  `Test mode: On|Off` only where the descriptor passes `isLocked` / `isTestMode`; the host's own
+  lines; `Left-click: <leftClickLabel>` on rungs (a)/(b), `Left-click: disabled — /<slash> enable`
+  on those rungs while disabled, `Left-click: Open settings` on rung (c) in either state; and
+  `Right-click: Open settings`.
+- **Five new optional descriptor fields**: `version`, `isLocked`, `isTestMode`, `leftClickLabel`
+  (a string, or a function asked on every show) and `slash`. The disabled hint needs nothing new: the
+  command is read out of `disabledLine()`, which every host already passes as its Slash dispatcher's
+  `DisabledLine()`; `slash` is for a line worded otherwise.
+- **`onTooltipShow` now appends.** It is called once per show, between the status block and the
+  click hints, and no longer handed to the LDB object as the whole tooltip. A host hook that drew a
+  title, a version, a status line or a click hint draws a second copy of it (anti-pattern #89).
+- **Every state is read on every show**, never cached, and every accessor and the host hook is
+  `pcall`'d: a raise costs its own value and goes to the debug seam, never to chat.
+- **Fourteen `TOOLTIP_*` keys in `lib.STRINGS`**, overridable through `d.L` with the same `rawget`
+  guard as the four reports. No member is added, so `docs/api/Launcher/members-3.json` lists the same
+  surface as `members-2.json`.
+- `tests/test_launcher.lua`: fifteen new cases, one of them a 36-cell matrix (enabled or disabled,
+  rung (a)/(b) or (c), lock absent/Yes/No, test mode absent/On/Off). The minor-2 case that asserted
+  the pass-through (`OnTooltipShow is passed through, and only when it is a function`) is replaced:
+  that contract is the one this release retires. Documented in
+  [the version 3 document](docs/api/Launcher/version-3-docs.md).
+
+### What a consumer owes on re-vendoring v1.57.0
+
+Copy both payloads whole and move the `CLAUDE.md` provenance line to v1.57.0 in the same commit, as
+always; the kit bytes are those of v1.56.0. Then, in `core/LauncherSetup.lua` (the M5 re-vendors):
+
+- **Arrives without being asked for**: the button shows the library's tooltip on hover, enabled or
+  disabled, whether or not the host passes `onTooltipShow`. A host test that called the object's
+  `OnTooltipShow` and expected only the host's lines now sees the library's around them.
+- **Owed by `launcher-§1`**: pass `version`; `leftClickLabel` on rung (a)/(b); `isLocked` and
+  `isTestMode` where the addon has that state, reading the accessor its Master-controls row reads;
+  and cut any existing `onTooltipShow` down to the addon's own lines, deleting every title, version,
+  status line and click hint it drew.
+- No degradation stub moves: the member manifest is unchanged.
+
+Release gate (`docs/automated-tests/20260924-225548/`): lint pass, 0/0 in 92 files;
+tests pass, 1662 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+## v1.56.0 — 2026-09-24
+
+Versions in this release: **Core minor 8** (`LibKa0s-Core-1.0` 8), **Item minor 2**
+(`LibKa0s-Item-1.0` 2), **Media minor 4** (`LibKa0s-Media-1.0` 4), **Bus minor 2**
+(`LibKa0s-Bus-1.0` 2), **Lifecycle minor 2** (`LibKa0s-Lifecycle-1.0` 2), **Launcher minor 2**
+(`LibKa0s-Launcher-1.0` 2), **Slash minor 15** (`LibKa0s-Slash-1.0` 15), **DebugLog minor 13**
+(`LibKa0s-DebugLog-1.0` 13), **Perf minor 13** (`LibKa0s-Perf-1.0` 13; `PerfPanel` stays 5, key
+13.5), **Widgets minor 10** (`LibKa0s-Widgets-1.0` 10; `WidgetsDragHandle` stays 2, key 10.2),
+**Schema minor 2** (`LibKa0s-Schema-1.0` 2), **Options minor 24**, **OptionsWidgets minor 31**,
+**OptionsTabs minor 4** and **OptionsScroll minor 4** (`LibKa0s-Options-1.0` key 24.31.4.7.4;
+`OptionsCompose` stays 7), **test kit revision 26**. Unchanged from v1.55.0: `Env` 1, `Compat` 1,
+`Pool` 3, `WidgetsDragHandle` 2 and `PerfPanel` 5.
+
+A minor release: every change is additive, no `NEEDS_*` floor rises and no major changes, so a
+consumer that re-vendors keeps every module it had. The cost of re-vendoring comes from the test
+kit, not the library, and the section below lists it.
+
+### What a consumer owes on re-vendoring v1.56.0
+
+Copy both payloads whole (`cp -r LibKa0s/. <Addon>/libs/LibKa0s/`, `cp -r testkit/. <Addon>/tests/_kit/`)
+and move the `CLAUDE.md` provenance line to v1.56.0 in the same commit, as always. Beyond that:
+
+- **Surface-parity churn.** A degradation stub pinned with `Kit.assertSurfaceParity` goes red until it
+  gains the new members. `LibKa0s-Core-1.0` adds `SafeRegisterEvent`, `SafeRegisterUnitEvent` and
+  `SafeRegisterEvents`: every Core stub gains the three with one-rung bodies (pcall the
+  registration, answer its result). A Schema **instance** stub gains `SetMany` (AbsorbTracker,
+  BankLedger, LootHistory, PanelMaster and PrettyChat on the 2026-09-24 reading). A Slash stub is
+  asked to pin its `DisabledLine` bytes with the new `Kit.assertLibraryConstant`. No other major's
+  lib-level surface moves.
+- **Behavioral kit flips.** Each can redden a suite that passed on revision 25, and the owner's
+  standing ruling is that such a red is fixed in the addon, never by weakening an assertion:
+  - `CreateFrame` starts frames **shown**, so a stand-down suite's `F_on` baseline now sees the
+    addon's container frames;
+  - the **AceDB fake raises** on a bad `CopyProfile` / `DeleteProfile` name and strips defaults on
+    `SetProfile`, as AceDB-3.0 does;
+  - `EventRegistry` callbacks are **recorded** in `M.__registrations()` as kind `callback`, and raw
+    frame `RegisterEvent` / `RegisterUnitEvent` raise on a name in `M.__badEvents`;
+  - `test_eol.lua` counts every **lone CR**, named as `path:line`;
+  - the prose gate reads the three **store-root** files (`docs/automated-tests/README.md`,
+    `docs/automated-tests/RESULTS.md`, `docs/perf-analysis/README.md`) and lists `synchronis`;
+  - kit **case names carry `§`** (`line-endings-§5`, `layout-§1`, two `localization-§5`), so every
+    consumer regenerates `docs/test-cases.md`;
+  - the runner records a `performance-§12` register row as perf skip reason (2), fails a run whose
+    register it cannot read, and heads an empty watch-list table instead of printing `None.`.
+- **Opt-ins, owed only where a plan item adopts them**: Schema's `SetMany`, `row.normalize` and
+  `writeThrough`; Launcher's `isEnabled` / `disabledLine`; `RenderTabbedSchema`'s `opts.tabs`,
+  `disabledFor` / `disabledNotice` and `chrome`; `PageBanner`'s `action`; Core's
+  `SafeRegisterEvent` family in place of a hand-rolled pcall.
+- **Arrives without being asked for**: `CreateOptionsPanel` called in combat parks and replays at
+  `PLAYER_REGEN_ENABLED` (a host that rolled its own park deletes it), `OpenOptionsPanel` answers a
+  boolean, `Slash`'s `CliSet` / `CliReset` print the write seam's refusal, and the launcher's
+  missing-library notice prints once without the `[LibKa0s] ` prefix.
+
+The collection dry-run of this payload, per addon, is in the release bundle's `ANALYSIS.md`.
+
+### Repository: the suite, the live documents and the artwork tools are held to US English
+
+- **Swept** (audit finding `LibKa0s-A-07`): every `tests/*.lua`, the live document of every major
+  under `docs/api/` and that folder's README, `docs/releasing.md`, `README.md`, `DEPENDENCIES.md`,
+  `CLAUDE.md` and `tools/artwork/*.py` now carry no spelling from `localization-§5`'s British list.
+  Superseded API documents and released entries in this file are records and were left as written.
+  Case names changed with their prose (*colour*, *honours*, *synthesises* and the like), so
+  `docs/test-cases.md` was regenerated; `icon_cleaner.py`'s recolor stage is now `recolor_white`.
+- **Gated**: `tests/test_prose.lua` gains a case that reads that set, picking each major's live
+  document by its highest version key and checking that it names no successor. Its exemptions are
+  the identifiers the register already ratifies (the `minimise` icon key; AceTimer's `.cancelled`
+  field and C_Timer's `IsCancelled`, whose register row now also covers `tests/test_mock_ace.lua`)
+  and the quoted words in kit revision 26's document, which records the list entry it added. The
+  gate file itself is read too: only its two list tables are skipped, and the words its comments
+  quote in order to forbid them are named one by one, so its own prose is held to the rule (the
+  sweep's one miss, *licences*, was in it). No payload byte and no minor moves.
+
+### OptionsTabs minor 4: `RenderTabbedSchema` moves here and takes host tabs, a disabled notice and a chrome hook; `PageBanner` takes an action
+
+- **`O.RenderTabbedSchema` moves from `OptionsWidgets.lua` to `OptionsTabs.lua`** (review finding
+  `AuraMaster-R-04`, a first peel toward the `OptionsWidgets.lua` census row). The shell now calls
+  `lib.__AttachTabs(O, d)` so the chrome half can read `d.rowsForPage`. `OptionsWidgets.lua` keeps an
+  untabbed stand-in under the same name that the chrome half's attach replaces, so a partial copy
+  without `OptionsTabs.lua` still draws every row with its headings. The four-argument call every
+  host makes is unchanged, and every existing case in `tests/test_options_widgets.lua` passes as it
+  did.
+- **A fifth, optional `opts` argument**, for the page AuraMaster forked whole and four more hosts
+  (AbsorbTracker, KickCD, ConsumableMaster, MultiMeters) hand-build the strip of: `tabs` (host tabs
+  drawn by `render(ctx, rows)`; one keyed by a schema group takes that group's place and is handed
+  its rows, any other is placed `before` a named tab or last), `cfg`, `disabledFor(cfg)` plus
+  `disabledNotice` (a string or a function of `cfg`; when the predicate answers true the notice is
+  drawn **above** the rows and the rows are drawn disabled, not replaced), and `chrome(ctx)`, called
+  once per render after the strip and before the rows. A second return value lists every drawn
+  tab's key in strip order.
+- **`O.PageBanner` takes `action = { text, tooltip, onClick }`**: a `Button` in the band's right half,
+  level with the dropdown's control, for `options-ui-§14`'s picker+create band. It is refused in
+  combat, pcall'd, and Released like the banner's dropdown (after its replacement exists, so a create
+  act that re-renders from its own click is never handed its own button). Returned as a second value.
+- No minor moves beyond this release's (OptionsWidgets 31 and OptionsTabs 4 are already unreleased),
+  no member is added, and the member manifest is unchanged. `OptionsTabs.lua` is 1489 lines and
+  `OptionsWidgets.lua` 3852. `tests/test_options_tabs.lua`: thirteen new cases. Red before: a host
+  tab placed `before` a group and rendered by its callback; a host tab replacing its group and
+  handed its rows; a page of host tabs alone drawing its strip; the notice above rows drawn
+  disabled; a host tab under the disable, restored after a raise; `chrome` once per render after
+  the strip; the banner's action button, its release, its re-render from its own click and its
+  combat refusal. Green from the start, as guards on the move: a false or raising `disabledFor`,
+  the stand-in taking `opts` with `OptionsTabs.lua` absent, and no `RenderTabbedSchema` over a copy
+  without the flow engine. Documented in
+  [the version 24.31.4.7.4 document](docs/api/Options/version-24.31.4.7.4-docs.md).
+
+### OptionsTabs minor 4: the page chrome stops leaking a widget per render
+
+- **Fix: a banner or header page no longer grows by a widget and a texture per render** (review
+  finding `LibKa0s-R-02`). Through minor 3 every full render of such a page left its old chrome
+  behind for good: `O.PageBanner` created a fresh AceGUI `Dropdown`, `O.PageHeader` a fresh `Frame`,
+  and the divider under either a fresh texture, and the release only hid and unparented them.
+  AceGUI recycles a widget only when it is Released, and the client never destroys a frame or a
+  region, so every subject switch on a banner or header page (AuraMaster, ConsumableMaster, KickCD,
+  MultiMeters, AbsorbTracker) added to the session's frame count.
+- **The banner's `Dropdown` is Released to AceGUI** when the band is next drawn, by either member.
+  It is hidden at once and Released only after the replacement exists (after `PageBanner`'s own
+  `Create`, after a `PageHeader` builder has run), because the replacing render usually runs inside
+  the old dropdown's own `OnValueChanged` and a widget Released on the way in would be handed
+  straight back to it. The library holds it under a private ctx key: `ctx.__bannerWidget` stays the
+  host's, which AbsorbTracker, AuraMaster, KickCD and MultiMeters each write themselves.
+- **`PageHeader` hands back the same `Frame` on every render of one page**, from a per-page pool of
+  one (`LibKa0s-Pool-1.0`, which the file already floors on). What a builder draws into it is still
+  the host's to release; both hosts in the collection build AceGUI widgets there and Release them.
+- **The divider is one texture per page**, hidden on release and shown again on the next render.
+  `SetParent(nil)` is no longer called on it, since a Region is not promised to honor it.
+- No member or spec field moves; every consumer gets the fix by re-vendoring. `releaseChrome` now
+  releases each piece through its owner, and `__chromeKids` stays as the ledger of what the render
+  drew. `tests/test_options_tabs.lua`: five new cases -- two banner renders leave one `Dropdown` out
+  (red before: two); a header page after a banner page gives the banner's `Dropdown` back (red
+  before); a banner re-rendered from inside its own `onSelect` releases the old picker only after
+  the new one exists; `PageHeader` hands back the same frame (red before: a new one each render);
+  the divider texture is made once per page and never unparented (red before: three textures). The
+  existing "at most ONE chrome block" case now asserts the reused frame, where it asserted the first
+  frame was hidden. The Options key moves 24.31.3.7.4 -> 24.31.4.7.4 and the unreleased document is
+  renamed to match: [the version 24.31.4.7.4 document](docs/api/Options/version-24.31.4.7.4-docs.md).
+  The counts come from the kit's new AceGUI survey, below.
+
+### OptionsWidgets minor 31: the drag throttles keep their own armed flag
+
+- **Fix: a host whose `scheduleTimer` answers nil gets the 50 ms drag throttle** (review finding
+  `KICKCD-R-19`). The slider's live commit (`commitOn` / `sliderCommit = "change"`) and the color
+  picker's drag throttle each stored `scheduleTimer`'s return value and read it as "a timer is
+  armed", so a `C_Timer.After` wrapper -- which answers nil, and which KickCD, LootHistory and
+  MultiMeters all pass -- armed a new timer and closure on every drag frame and committed about once
+  a frame. Each throttle now keeps a library-local boolean, set before it calls `scheduleTimer` and
+  cleared inside the callback, and the return value is unused. A host whose timer answers a handle
+  sees no difference. No member or field moves; the three hosts get the fix by re-vendoring.
+- `LibKa0s/Options.lua`'s descriptor comment says `scheduleTimer`'s return value is unused and that
+  it backs the slider's live commit too. Options stays at minor 24, already bumped in this release.
+- `tests/test_options_throttle.lua`, a new suite (`tests/test_options_widgets.lua` is a census row
+  over the 1500-line cap): four cases -- ten slider drag frames in one window with a nil-returning
+  `scheduleTimer` arm one timer and commit once (red before: ten timers); the same for the color
+  picker (red before: ten timers); the window re-arms once it fires (red before); a handle-returning
+  host is unchanged. The Options key moves 24.30.3.7.4 -> 24.31.3.7.4 and the unreleased document
+  is renamed to match: [the version 24.31.3.7.4 document](docs/api/Options/version-24.31.4.7.4-docs.md)
+  (24.31.4.7.4 since OptionsTabs minor 4).
+
+### Options minor 24: `CreateOptionsPanel` parks in combat; `OpenOptionsPanel` answers a boolean
+
+- **Behavioral: `CreateOptionsPanel` under `InCombatLockdown()` registers nothing and replays itself
+  when combat ends** (audit finding `ConsumableMaster-A-04`). The call is parked with the library;
+  at `PLAYER_REGEN_ENABLED` the library replays it once, registering the category and building every
+  queued page, whatever the host's stand-down state -- which also covers `ConsumableMaster-R-03`'s
+  category lost to a stand-down mid-combat. A second call while parked is a no-op. A login or
+  `/reload` taken in combat now shows the addon's category when the fight ends rather than at once;
+  out of combat nothing changes. A host suite that pins "registering during combat still registers"
+  (WhatGroup's `tests/test_panel.lua`) must fire the end of combat first.
+- **Permitted by the standard.** `options-ui-§5` and `options-ui-§9` (standard v2.65.0) sanction
+  this park: the library **MAY** park a registration requested under `InCombatLockdown()` and
+  **MUST** replay it exactly once at `PLAYER_REGEN_ENABLED`, whatever the host's stand-down state,
+  and a host **MUST NOT** add its own park on top. A parked registration waits on the client, never
+  on the user, so it is not the deferral `options-ui-§9` forbids. The provisional `options-ui-§9`
+  row this change first opened in `CLAUDE.md`'s `## Documented deviations` is retired.
+- **The park listens on its own private frame**, `lib.__parkFrame`, separate from the page lock's
+  `lib.__combatFrame`: created on the first park, kept across an upgrade, and registered for
+  `PLAYER_REGEN_ENABLED` only while something is parked. Its dispatcher (`lib.__OnParkEvent`) is
+  looked up at call time, so the newest copy drains what an older one parked. No instance member is
+  added (no `ReplayPending`), so no degradation stub moves and the member manifest is unchanged.
+- **`OpenOptionsPanel` now answers**: `true` when it opened the category, `false` when refused in
+  combat (the `COMBAT_REFUSED` line still prints), `nil` when there is no category to open. It
+  returned nothing through minor 23. It still never defers an **open**.
+- `tests/test_options_combat.lua`: five cases -- in combat nothing registers and the park listens on
+  its own frame (red before: the category registered at once); the end of combat registers once,
+  builds the queued pages and lets go of the event; a second call while parked is a no-op; an
+  event other than `PLAYER_REGEN_ENABLED` leaves the park armed; the three return values of
+  `OpenOptionsPanel`. Documented in
+  [the version 24.31.4.7.4 document](docs/api/Options/version-24.31.4.7.4-docs.md).
+
+### Options minor 24, OptionsScroll minor 4: the font preload moves out of the shell
+
+- **Structural, behavior-neutral: the font preload (Options minor 17) now lives in
+  `OptionsScroll.lua`**, moved unchanged from `Options.lua` -- `preloadState`, `preloadFrame`,
+  `preloadPath`, `subscribeLate` and `lib.__PreloadFonts`, with the library-level
+  `lib.__fontPreload` state they share. `Options.lua` drops from 1476 lines to 1376, back under
+  `layout-§1`'s 1500-line cap with room for the Options items later in this release.
+  `lib.__PatchLSM30Border` stays in the shell.
+- **A partial copy missing `OptionsScroll.lua` shows its pages with no preload and no error.** Both
+  callers -- the instance's show trigger in `lib:New` and the late-registration callback -- already
+  looked `lib.__PreloadFonts` up on `lib` at call time and did nothing when it was not a function,
+  so no call site changed. The member, its contract and its state are unchanged; the member
+  manifest differs from 23.30.3.7.3's in the version key alone.
+- `tests/test_options.lua`: one case -- with `lib.__PreloadFonts` nil a panel's show survives and
+  renders, and loading `OptionsScroll.lua` installs the preload (red before the move: the shell
+  defined it). `tests/test_options_fontpreload.lua` passes unchanged, eleven cases before and after.
+  Documented in [the version 24.31.4.7.4 document](docs/api/Options/version-24.31.4.7.4-docs.md);
+  version 23.30.3.7.3 is Superseded.
+
+### Schema minor 2: `SetMany`, `row.normalize`, `writeThrough`, and the instance id reaching `get` and `ApplyDefault`
+
+- **New: `SetMany(entries, opts)`, the all-or-nothing batch.** `entries = { { path, value }, ... }`,
+  `opts = { instanceId, act, scope }`. Every entry is resolved, validated and normalized before any
+  is stored; one refusal answers `false, err, why, index` with nothing stored and nothing called.
+  A batch that passes stores every entry in order, then runs every row's `onChange`, then calls the
+  new optional descriptor field `announceBatch(writes, resolvedId)` **once** (or `announce` once per
+  write without it). With `opts.act` the batch is one bulk bracket, so one
+  `[Set] <act> <scope>: N rows` line. Owner-scope consumers: ConsumableMaster#39
+  (`SetManyAndRefresh`), MultiMeters#52 (`SetByPaths`), KickCD#22 (copy styling).
+- **New: `row.normalize(value, resolvedId)`**, after `validate` accepts and before the missing-root
+  refusal and the store. It answers the value to store, or `nil, why`, which refuses with
+  `INVALID`. The normalized value is what is stored, logged and handed to `onChange` and
+  `announce`. AuraMaster#21 and ConsumableMaster#39 carry this semantic in front of their seams
+  today, which clears `library-stack-§7` bar 2; the header's "deliberately does not do" paragraph
+  no longer excludes it or the batch.
+- **Behavioral: the instance id reaches a row's `get` and `ApplyDefault`'s write** (review finding
+  `LibKa0s-R-14`). `Get(path, instanceId)` calls `row.get(instanceId)` where minor 1 called
+  `row.get()`, and `ApplyDefault(row, instanceId)` forwards the id to `Set`. A closure `get` that
+  ignores its argument is unaffected.
+- **New: `descriptor.writeThrough`, the declared row-less paths** (audit findings
+  `AbsorbTracker-A-02` and `AbsorbTracker-A-03`; owner-scope PartyFrameEnhanced#14, WhatGroup#22).
+  An array of path strings, read once at `:New`. A write to a listed path **with no indexed row**
+  is no longer refused with `NOT_FOUND`: `Set` (and a `SetMany` entry) resolves the root, stores
+  the value raw and copied in, with no `validate`, `normalize` or `onChange`, logs or tallies it as
+  any write, and calls `announce` with a synthetic row `{ path = path, writeThrough = true }`,
+  built once per path so a write allocates nothing. A listed path that has a row takes the row; a
+  row-less path not in the list is still refused. This is `options-ui-§1`'s route (a): a host verb
+  writing a composed Master-controls row (`enabled`, `locked`, test mode) on a load where the
+  composer is absent (library-absent, or Schema present and Options not) lands its write while the
+  composers stay hollow and no host copy of them exists (anti-pattern #73). The version 2
+  document's *degradation stub* now prescribes the same list for the stub, stored the same way,
+  with every other row-less path refused. Opt-in: a host that passes no list sees no change. A
+  written-through value runs no `onChange`, so a host that needs the reaction dispatches it from
+  `announce` on `row.writeThrough`. Adoption notes for AbsorbTracker (`{ "enabled", "locked" }`,
+  deleting `composeBlock` and the host copies, pinning full count, degraded count and the named
+  composer gap), PartyFrameEnhanced#14 (`{ "enabled", "locked" }`) and WhatGroup#22 (route (b),
+  no list).
+- `Set` and `SetMany` share one `prepareWrite`, so a batch refuses on exactly the rules a single
+  write does; `Set`'s answer counts are unchanged (`false, err, why` for a value refusal,
+  `false, err` for a missing root).
+- **Consumer impact: every Schema degradation stub pinned with the two-table
+  `T.assertSurfaceParity` goes red on the re-vendor until it gains `SetMany`** — AbsorbTracker,
+  BankLedger, LootHistory, PanelMaster and PrettyChat on the 2026-09-24 reading. Adding it before
+  the re-vendor is harmless against minor 1. The lib-level surface is unchanged.
+- `tests/test_schema_batch.lua` (new; `tests/test_schema.lua` was 1233 lines): a batch with one
+  invalid entry stores nothing and names its index, an unknown path refuses the batch whole, a
+  valid batch stores all, runs every `onChange` and calls `announceBatch` once, `act` gives exactly
+  one bracket line counting the rows moved, `normalize`'s value is stored and `nil, why` refuses,
+  `Get` hands the id to `row.get`, and `ApplyDefault(row, id)` reaches `Set` with the id.
+  `tests/test_schema.lua`'s `referenceStub` gains `SetMany`, `normalize` and the id forwarding, is
+  pinned against a live instance with the two-table parity, and a case holds its batch to the live
+  one's store. Six `writeThrough` cases in `tests/test_schema_batch.lua` (a listed row-less path is
+  stored, logged and announced with one synthetic row per path; an unlisted one is refused; a listed
+  path with a row takes its `validate`; the store is a copy and a missing root refuses; a bracket
+  tallies it and `SetMany` takes it; a malformed list keeps only its non-empty strings), and the
+  `referenceStub` gains the list, with a case holding its store and announce order to the live
+  seam's on the same writes. Documented in [the version 2 document](docs/api/Schema/version-2-docs.md), with
+  per-host mappings for KickCD, ConsumableMaster, MultiMeters and AuraMaster; version 1 is
+  Superseded.
+
+### Widgets minor 10: a `ReorderList` drag no longer borrows the host's frames
+
+- **Behavioral: the drag's poll runs on the library's ghost frame, not on the host's row frame**
+  (review finding `LibKa0s-R-12`). Through minor 9 `beginDrag` called
+  `row.frame:SetScript("OnUpdate", ...)` on the frame the host handed to `AddRow`, and the drop and
+  `Cancel` cleared it with nil, wiping any `OnUpdate` the host had set there. The ghost is a frame
+  this library owns and is shown for exactly as long as a drag is in flight; its `OnUpdate` reads the
+  dragged row at fire time, the way the handles do. A host row frame's scripts are never touched.
+- **Behavioral: the insertion line comes from a library free list, per drag.** Through minor 9 it
+  was built once and cached on the container as `__ka0sDropLine`, and both shipped consumers hand
+  over an AceGUI-pooled container, so the line rode back into AceGUI's pool painted in the first
+  list's `lineColor`. It is now taken when a drag starts, parented to the container `Finish` named,
+  repainted in the dragging list's color, and given back (hidden, unanchored, reparented off the
+  container) at the drop and on `Cancel`, through the same reclaim the handles and row boxes use.
+  This restores the file's own pooled-frame invariant (the handle-pool block in `Widgets.lua`).
+- **`Finish(container)` now only names the container** and returns nothing; at minor 9 it built the
+  line and returned it. No shipped consumer reads the return. `controller.line` is set only while a
+  drag is in flight.
+- **A host suite that drives a drag by firing the row frame's `OnUpdate` must fire the ghost's**
+  (`LibStub("LibKa0s-Widgets-1.0").__DragGhost`). On the 2026-09-24 grep one does:
+  MultiMeters' `tests/test_columnblocks.lua` (`drag`, `block:_run("OnUpdate", 0.1)`), which will go
+  red on the re-vendor until it fires the ghost. No consumer reads `__ka0sDropLine` or `Finish`'s
+  return.
+- `tests/test_widgets_reorder.lua` (new; `tests/test_widgets.lua` is at 1493 lines): a host
+  `OnUpdate` on a row frame survives a drag start and end, a row frame with none is never given one,
+  two lists with different `lineColor` draw their own color on one pooled container, and the line
+  goes back on `Cancel` and at the drop and is reused by the next drag. `tests/test_widgets.lua`'s
+  drag cases poll the ghost. Documented in
+  [the version 10.2 document](docs/api/Widgets/version-10.2-docs.md); version 9.2 is Superseded.
+
+### Perf minor 13: the sampler's state fields stay raw, and the open depth resets at window edges
+
+- **Performance: `armed`, `recording` and `label` hold `false`, never nil** (review finding
+  `LibKa0s-R-11`). Through minor 12 they were initialized and reset to nil, which removes the raw
+  key, so the sampler's every-frame reads of `recording` and `armed` fell through to the instance's
+  `__index` closure (it exists only for `suspended`). All three now start `false` and every nil write
+  (`openWindow`, `closeWindow`, `Start`, `Stop`, `Cancel`) writes `false`; `Start(label)` stores
+  `label or false`. The stale "no metatable" comment on `P.on` is rewritten.
+- **Behavioral: a leaked `Open` no longer parents a bracket in a later window** (review finding
+  `LibKa0s-R-16`). A host error between `Open` and `Close` left the slot open until the next
+  `Start`, so every nested `Close` for the rest of the run named the leaked key as its observed
+  parent. `openWindow` and `closeWindow` now reset the open depth to zero; the free list is kept.
+- No member or descriptor field is added. A host suite asserting `p.recording == nil` after a window
+  closes reads `false` now and must assert falsiness; this repo's `tests/test_perf_run.lua` had three.
+  No consumer asserts nil on the 2026-09-24 grep; AbsorbTracker's perf suites write nil by hand
+  between cases, which still works.
+- `tests/test_perf_core.lua`: "a leaked Open in window A does not parent a bracket in window B".
+  `tests/test_perf_isolation.lua`: the three fields stay raw keys across a window, a cancel and a
+  label-less `Start`; the 0 KB bracket pins stay green. Documented in
+  [the version 13.5 document](docs/api/Perf/version-13.5-docs.md); version 12.5 is Superseded.
+
+### DebugLog minor 13: the buffer trim is batched
+
+- **Performance: one compaction per 65 lines at the cap instead of a 1500-slot shift per line**
+  (review finding `LibKa0s-R-10`). Through minor 12 every `Add` past `MAX_BUFFER` ran
+  `table.remove(buffer, 1)`. The raw array may now run 64 lines past the cap, and the line that would
+  take it to 1565 moves the newest 1500 down in one pass. `table.remove` is no longer called.
+- **`buffer` stays a plain ordered array**, because host suites index it; only its length past the
+  cap moves. Between compactions `#buffer` may read up to **1564**, while every public reader —
+  `BufferSize()`, `LastLine()`, `FindLine()`, `CopyText()` and the status line — answers the newest
+  1500. `FindLine` no longer answers a line in the slack. `MAX_BUFFER` stays 1500.
+- No member or descriptor field is added. A host suite that writes more than 1500 lines and asserts
+  `#D.buffer` or `D.buffer[1]` moves to `BufferSize()` / `CopyText()`; PrettyChat's
+  `tests/test_debuglog.lua` has one such case.
+- Characterization cases at 1499, 1500, 1501 and 1600 lines and "the 1501st line drops the first",
+  green before and after; a `table.remove` spy over 1564 adds (64 calls at minor 12, at most one
+  now); the peak raw length and the compaction's order; the status line past the cap. Documented in
+  [the version 13 document](docs/api/DebugLog/version-13-docs.md); version 12 is Superseded.
+
+### Slash minor 15: `CliSet` and `CliReset` print the write seam's refusal
+
+- **Behavioral: a `set` answering `false, reason[, why]` is printed as a refusal**, where minor 14
+  discarded the answer and echoed the unchanged value (review finding `LibKa0s-R-03`).
+  `LibKa0s-Schema-1.0`'s `S.Set` answers exactly that when a row's `validate` rejects a value, so a
+  host passing it straight through — BankLedger — showed the player `path = <old value>` and no
+  reason. `CliSet` now prints `INVALID` for the path, then the reason and `why` on lines indented two
+  spaces, and no echo; a reason that is the `INVALID` line itself is not printed twice. `nil` and
+  `true` still mean success.
+- **`CliReset` prints the new `lib.STRINGS.NO_DEFAULT`** (`"%s has no default to restore"`) when
+  `applyDefault` answers exactly `false`, as `S.ApplyDefault` does for a row with no default.
+- No member or descriptor field is added. A host whose `set` wrapper prints its own refusal
+  (AuraMaster) should return the seam's answer and drop its prints, or the player reads it twice.
+- Seven cases in a new `tests/test_slash_refusal.lua` (`tests/test_slash.lua` is in the 1000–1500
+  band). Documented in [the version 15 document](docs/api/Slash/version-15-docs.md); version 14 is
+  Superseded.
+
+### Launcher minor 2: a disabled gate for the left click, and notices printed once, untagged
+
+- **Additive: an optional `isEnabled` / `disabledLine` pair on the descriptor.** Where `onClick` is
+  present and `isEnabled()` answers false, a left click prints `disabledLine()` and does not call
+  `onClick`. That is `launcher-§2`'s disabled rung (a)/(b), which BankLedger, AuraMaster and
+  AbsorbTracker each hand-wrote inside `onClick` in three spellings (review finding
+  `LibKa0s-R-06`). Right-click and rung (c) are never gated; both open the settings panel, where the
+  addon is re-enabled. `New` raises on an `isEnabled` with no `disabledLine`. A host that passes
+  neither behaves exactly as at minor 1.
+- **Behavioral: `NO_BROKER`, `NO_ICON` and `NO_MINIMAP` print once per instance**, where minor 1
+  printed them on every failing `Register` — twice for a host that registers at `OnInitialize` and
+  again at login. The debug seam still hears every call.
+- **The four `lib.STRINGS` values drop their `[LibKa0s] ` prefix** (review finding `LibKa0s-R-09`):
+  every line goes out through the host's printer, which adds the host's own tag, so the library's
+  was a second tag. The keys are unchanged, so a `d.L` override still works. A consumer test that
+  asserts the prefix has to drop it.
+- `tests/test_launcher.lua` gains five cases: the refused left click, right-click and rung (c)
+  ungated, the half-filled pair refused at `New`, one `NO_ICON` (and one `NO_BROKER`) across two
+  `Register` calls, and no tag in `lib.STRINGS`. Documented in
+  [the version 2 document](docs/api/Launcher/version-2-docs.md); version 1 is Superseded. Adopting
+  the gate is a per-host follow-up: pass the two fields and delete the hand-written check.
+
+### Lifecycle minor 2: the nested-edge (re-entrancy) behavior is documented and pinned
+
+- **Documentation only; the bytes move, so the minor does.** `New`'s docstring now states that a
+  `standDown` or `standUp` callback MUST NOT take or release a hold on its own latch, and what
+  happens if one does: the edge calls the callback synchronously, so the nested edge runs to
+  completion inside the outer one — a `standDown` that releases a hold fires `standUp` before it
+  returns. The latch stays consistent (the edge is recorded before each callback), but the host's
+  teardown and rebuild interleave (review finding `LibKa0s-R-17`). No shipped callback touches its
+  latch. The code is unchanged.
+- `tests/test_lifecycle.lua` gains one characterization case pinning the nested order and that
+  `IsDown()` ends false. No member moves, so the manifest differs from minor 1's only in the minor.
+  Documented in [the version 2 document](docs/api/Lifecycle/version-2-docs.md), with a
+  *Re-entrancy* section; version 1 is Superseded. Every consumer gets the new bytes by
+  re-vendoring; none needs a code change.
+
+### Bus minor 2: the tracking wrappers are re-stamped after a newer AceEvent re-embed
+
+- **Behavioral, and additive on the answers.** AceEvent-3.0's upgrade loop re-embeds every table in
+  `AceEvent.embeds`, so a newer AceEvent minor loading after a Ka0s host had created its bus targets
+  wrote the six raw members back over the bus's wrappers for the rest of the session. From then on a
+  registration went straight to CallbackHandler and was never recorded: `StandDown` left it live on a
+  target with an empty record, and `StandUp` never brought it back on one with a recorded entry
+  (review finding `LibKa0s-R-05`). `StandDown` and `StandUp` now re-stamp every target the bus
+  created before anything else, adopting whatever member they find in a wrapper's place as the new
+  raw member, so a newer AceEvent's member is the one forwarded to. They answer the number of
+  targets re-stamped as a trailing value (`n, restamped` and `replayed, rejected, restamped`) for the
+  host's debug seam.
+- **The residual window is documented, not closed.** A registration made between a re-embed and the
+  next edge is still untracked until that edge. The edges are the only moments the record is read,
+  so no Ace3 fork and no metatable proxy.
+- The bus keeps every target it created in a **weak-keyed** set so an edge can re-stamp a target
+  whose record is empty. It releases a target in Lua 5.1 only because the per-target record no
+  longer names its target: the wrappers look their target up in the set instead of holding it.
+- No member is added, so the manifest differs from minor 1's only in the minor. Documented in
+  [the version 2 document](docs/api/Bus/version-2-docs.md); version 1 is Superseded.
+  `tests/test_bus.lua` gains three cases. Every consumer gets it by re-vendoring; none needs a code
+  change, unless it forwards either call in the last position of an argument list, where the extra
+  value now arrives too. No consumer vendors an AceEvent-3.0 above minor 4 today, so this is latent.
+
+### Media minor 4: `RegisterLSM` flags the face western + ruRU and counts what LSM holds
+
+- **Behavioral, and nothing else moves.** `RegisterLSM` registered JetBrains Mono with no langmask,
+  and LibSharedMedia refuses a maskless font on every non-western client, so on ruRU, koKR, zhCN and
+  zhTW the face never reached a font dropdown while the returned count still said `1` (review
+  finding `LibKa0s-R-04`). The face is now registered with
+  `LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU` when LSM publishes those bits (a plain `Register`
+  otherwise): it has Latin and Cyrillic glyphs, so ruRU keeps it, and it has no Hangul or Han, so
+  CJK clients are excluded on purpose. Both counts now answer what LSM holds afterwards
+  (`LSM:IsValid(type, name)`), not how many `Register` calls were made; a key another copy
+  registered first still counts, because LSM has it. An LSM with no `IsValid` method, which the
+  real LSM-3.0 always has but consumers' test fakes (MultiMeters, Aura Master) do not, is not asked:
+  every `Register` call counts there, as at minor 3, so those harnesses keep loading unmodified.
+- The doc comment claimed an identical `(mediatype, key, path)` triple made a second registration
+  free. Every consumer offers a different path; the first registration wins, and it is harmless
+  because every one of those paths names identical bytes. The comment now says so.
+- No member is added, so the manifest differs from minor 3's only in the minor. Documented in
+  [the version 4 document](docs/api/Media/version-4-docs.md); version 3 is Superseded.
+  `tests/test_media.lua` gains five cases, and the existing registration case's fake gains
+  `IsValid`. Every consumer gets it by re-vendoring; none needs a code change.
+
+### Item minor 2: `QualityFromLink` reads the 11.1.5+ `|cnIQ<n>` link color
+
+- **Behavioral, and nothing else moves.** Since patch 11.1.5 the client colors an item link by
+  quality number, `|cnIQ<n>:`, not by an eight-digit hex. `QualityFromLink` matched only the hex
+  shape, so it answered `nil` for every live link, and a consumer that falls back to the link for an
+  uncached drop recorded that drop with no quality (review finding `LibKa0s-R-01`). A `|cnIQ<n>`
+  rung now runs ahead of the hex one, anchored on the digits with no trailing `:` required, and
+  answers `n` (`|cnIQ0` answers `0`). The hex rung stays for links stored before the patch.
+- **The hex rung's quality map is kept only when non-empty** (review finding `LibKa0s-R-13`). It
+  was assigned before `ITEM_QUALITY_COLORS` was read, so a first call that landed before the client
+  populated that table pinned an empty map for the session. It is now built into a local and
+  committed only when at least one entry landed, so the next call retries.
+- `LoadItem`'s fixed 0.4 s timer is **deliberately unchanged**: it was byte-identical in both addons
+  it came from, and both treat the callback as "try again". No member is added, so the manifest
+  differs from minor 1's only in the minor. Documented in
+  [the version 2 document](docs/api/Item/version-2-docs.md); version 1 is Superseded.
+  `tests/test_item.lua` gains two cases, and its two `|cff` cases stay as the legacy rung's. Every
+  consumer gets it by re-vendoring; none needs a code change.
+
+### Core minor 8: `printer.Format` survives a secret in a numeric slot
+
+- **Behavioral, and nothing else moves.** `Format(fmt, ...)` stringifies every argument through
+  `SafeToString` before `format()` sees it, so a secret in a `%s` slot has always rendered as
+  `<secret>`. In a **numeric** slot the sentinel is a string, and `string.format` raised
+  `number expected, got string` on it: `Format("%d rows", secret)` took the raise to exactly the
+  chat line the stringifying was meant to protect (review finding `LibKa0s-R-08`). The call is now
+  `pcall`ed, and on failure the line still lands as the format verbatim and the stringified
+  arguments, space-joined (`%d rows <secret>`), the fallback `LibKa0s-DebugLog-1.0`'s `D.Debug`
+  already uses. A satisfiable format is untouched: `Format("%d rows", 3)` still prints `3 rows`.
+- No floor moves and this change adds no member. Documented in
+  [the version 8 document](docs/api/Core/version-8-docs.md); version 7 is Superseded.
+  `tests/test_core.lua` gains one case. Every consumer gets it by re-vendoring; none needs a code
+  change.
+
+### Core minor 8: `SafeRegisterEvent`, `SafeRegisterUnitEvent`, `SafeRegisterEvents`
+
+- **Three new lib-level members, the collection's one pcalled event registration helper**
+  (`events-frames-taint-§1`, review finding `AuraMaster-R-05`). The client raises on an event name
+  it does not know, and a block of bare `RegisterEvent` calls loses every line after the one that
+  raised. `SafeRegisterEvent(target, event, handler, rejected)` rejects the name without a call when
+  `C_EventUtils.IsEventValid` exists and answers `false`, otherwise asks a private probe frame (a
+  raw frame asks the client on every call; AceEvent asks only for an event's first registrant, so the
+  target's own answer is `true` for every later one), and then runs
+  `pcall(target.RegisterEvent, target, event, handler)`, so an AceEvent-embedded object, a Frame and
+  a Bus target all work, and a Bus target still records the registration for its replay.
+  `SafeRegisterUnitEvent(frame, event, rejected, unit1, unit2)` does the same through
+  `RegisterUnitEvent`; `SafeRegisterEvents(target, events, handler, rejected)` walks an array and
+  answers how many registered. Each answers `true`/`false` (or the count).
+- **No registration state, no printing.** `rejected` is an optional array the caller owns, appended once
+  per refused name and never twice, so a disable/enable cycle leaves it unchanged. The host surfaces
+  it (`[Init]`, a debug verb).
+- Still minor 8: v1.56.0 has not shipped, and one unreleased minor carries both changes. The member
+  manifest gains the three names; `.luacheckrc` gains `C_EventUtils` as a read global.
+  `tests/test_core.lua` gains nine cases, the per-rung ones run on the front gate and on the probe
+  frame. A consumer with a Core degradation stub adds the three members with one-rung bodies (pcall,
+  no front gate, no probe), shown under *Degradation* in the version 8 document, so
+  `Kit.assertSurfaceParity` stays green.
+
+### Test kit revision 26: two files peeled out, no behavior change
+
+- **`testkit/asserts.lua` (new).** `framework.lua`'s assertion family (`Kit.fail`,
+  `Kit.assertEqual`, `assertTrue`, `assertFalse`, `assertNil`, `assertNear`, `assertError`) and its
+  surface-parity gate (`Kit.setSurfaceSource`, `Kit.publicMembers`, `Kit.assertSurfaceParity`, and
+  the private `callable` / `resolveSurface` helpers behind them) moved, unchanged, into a file of
+  their own. `framework.lua` loads it once, where the block stood and before `Kit.expose`, from the
+  folder its own chunk name names (falling back to `tests/_kit/`), so every member is on the kit
+  table exactly when it was. `framework.lua` drops from 1583 lines to 1381, back under
+  `layout-§1`'s cap, which retires its row in the over-cap census in `CLAUDE.md`. That row had
+  claimed a "Ratified deviation row" that the deviation register never held (the 2026-09-23 audit's
+  `LK-34`), and peeling the file resolves the claim without adding one.
+- **`testkit/prose_lists.lua` (new).** The prose gate's published lists — `BRITISH`, `ALLOWED`, the
+  two published counts and the `SKIPPED_DIRS` folder exclusions — moved out of
+  `testkit/test_prose.lua`, which loads them from its own folder the same way. The gate drops from
+  1499 lines to 1464, and the list growth still to come lands in a file of data rather than in it.
+  This repo's own `tests/test_prose.lua` exempts the new file for the reason it exempts the gate:
+  it quotes every forbidden spelling in order to forbid it.
+- `Kit.VERSION` 25 → 26, with [its document](docs/api/testkit/version-26-docs.md). A consumer that
+  re-vendors takes two new files in `tests/_kit/`; its suite totals do not move.
+  `tests/test_kitsync.lua` gains one case asserting both files exist in `testkit/` and
+  `tests/_kit/`.
+
+### Test kit revision 26: `Kit.assertErrorMatches`
+
+- **`Kit.assertErrorMatches(fn, needle, msg)` (new, in `testkit/asserts.lua`).** Asserts that `fn`
+  raises **and** that the raised text contains `needle` as plain text; it fails naming the needle
+  when nothing was raised, and naming both the needle and the raised text when something else was.
+  It returns the error, and `Kit.expose` copies it. `Kit.assertError` only ever proved that
+  *something* raised, and `testing-§12` does not accept that as proof (review finding
+  `LibKa0s-R-07`). Documented in [the revision 26 document](docs/api/testkit/version-26-docs.md).
+- **The 23 statement-position `assertError` calls now assert on the raised text**, in
+  `tests/test_launcher.lua` (the four descriptor refusals, whose expected field names had been
+  passed only as failure messages), `tests/test_kit_inventory.lua` (five decline cases, which
+  would have passed on any unrelated raise), `tests/test_mock_ace.lua` (nine),
+  `tests/test_loader.lua`, `tests/test_options_compose.lua` and `tests/test_schema.lua`. The new
+  `tests/test_kit_asserts.lua` adds three cases for the member itself. A consumer that re-vendors
+  takes the new member; its own suite totals do not move.
+
+### Test kit revision 26: `Kit.assertLibraryConstant`, and the Slash degradation stub
+
+- **`Kit.assertLibraryConstant(value, majorName, memberPath, msg)` (new, in
+  `testkit/asserts.lua`).** Asserts that a degradation stub's copy of a library constant is
+  byte-equal to the live library's `memberPath` (a member or a dotted path) on `majorName`, and
+  fails naming both strings when they differ, or naming the major or member that did not resolve.
+  The live half is looked up through the registered surface source; a member the source's answer
+  lacks is read off the exposed LibStub instead, which `Kit.expose` now records as the fallback
+  whenever the exposed table carries one, so a runner that maps `LibKa0s-Slash-1.0` to the Slash
+  instance (AbsorbTracker, WhatGroup) can still pin the lib-level `DISABLED_LINE_FORMAT`. What
+  `Kit.expose` registers as the surface source is unchanged (review finding
+  `PartyFrameEnhanced-R-11`; WhatGroup#22). `tests/test_kit_asserts.lua` gains four cases.
+  Documented in [the revision 26 document](docs/api/testkit/version-26-docs.md).
+- **The Slash version 15 document gains *The degradation stub*** — the shape `slash-commands-§1`
+  now bounds a library-absent Slash stub to: minimal `OnSlash` dispatch; `DisabledLine` built from
+  `DISABLED_LINE_FORMAT`'s bytes copied verbatim, the one library string a stub may carry, pinned
+  with the new assertion; help rows printed `cmd  desc` with no `FormatRow` copy; and a
+  composed-row verb that either writes through the Schema seam's `writeThrough` list or prints
+  `%s is unavailable: the LibKa0s library did not load.`, never raising. Documentation only:
+  `Slash.lua` does not change, and its minor stays 15. Every consumer's stub is asked to pin its
+  line on its next re-vendor.
+
+### Test kit revision 26: the AceDB fake raises where AceDB-3.0 raises
+
+- **Behavioral.** `CopyProfile(name, silent)` raises on the active profile, and on a missing source
+  unless `silent`; `DeleteProfile(name, silent)` raises on the active profile, and on a missing one
+  unless `silent`. The four messages are AceDB-3.0's own, byte for byte (`AceDB-3.0.lua:531-537`
+  and `:581-587`), at level 2. Through revision 25 all four returned silently, so a consumer's copy
+  or delete command passed its suite on a name that raises a raw Lua error in the client (review
+  findings `AbsorbTracker-R-06` and `PartyFrameEnhanced-R-09`). A consumer suite that goes red on
+  re-vendoring is exposing that defect, not a kit regression.
+- `CopyProfile` resets before it copies, as AceDB does, so a key the source lacks reads its default,
+  and a silent copy of a missing profile is a reset. `SetProfile` strips the outgoing profile of
+  every value equal to its default (`:460-463`), modeling `removeDefaults`' scalar and plain-table
+  arms but not its `"*"`/`"**"` wildcards. `OnProfileChanged` and `OnProfileCopied` fire as before.
+- `tests/test_mock_record.lua` gains eight cases. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
+### Test kit revision 26: `EventRegistry`, `C_EventUtils` and frame registration
+
+- **`testkit/mock_events.lua` (new).** A recording `EventRegistry` (`RegisterCallback`,
+  `UnregisterCallback`, `TriggerEvent`; one callback per event and owner, invoked as
+  `func(owner, ...)`, CallbackRegistry's own argument refusals, and a loud raise on the unmodeled
+  closure form). Every live callback appears in `M.__registrations()` as
+  `{ kind = "callback", event, owner }`, with no `target`, after every other kind. Through revision
+  25 no callback reached the survey, so a stand-down suite could not see an `EditMode.Exit`
+  callback left registered on disable (review finding `PartyFrameEnhanced-R-10`).
+- **Behavioral.** A raw `frame:RegisterEvent` or `frame:RegisterUnitEvent` on a name in
+  `M.__badEvents` raises `Attempt to register unknown event "<NAME>"` at level 2 and records
+  nothing, as the AceEvent path has since revision 17; through revision 25 the frame recorded the
+  name. `M.__badEvents` is read at call time.
+- `M.C_EventUtils.IsEventValid(name)` answers `false` for a name in `M.__badEvents` and `true`
+  otherwise; a suite sets `M.C_EventUtils = nil` to model an older client.
+- `mock_base.lua` loads the file from its own folder through the loader that finds
+  `mock_record.lua`, now taking the file name, and grows two lines to 1448. The new
+  `tests/test_mock_events.lua` holds fourteen cases. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
+### Test kit revision 26: a new frame starts shown
+
+- **Behavioral.** The frame stub in `testkit/mock_base.lua` starts every frame **shown**
+  (`__shown = true`), as `CreateFrame` returns one in the client; through revision 25 it started
+  hidden, so `M.__shownFrames()` never listed a frame production built and never hid (audit finding
+  `PartyFrameEnhanced-A-02`). `M.GameTooltip`, `M.SettingsPanel` and `M.StopwatchFrame` are hidden
+  at build, because the client's own windows start closed. Fidelity rule 5's note says so, and
+  `mock_base.lua` is 1452 lines.
+- **Consumer note.** A stand-down suite's `F_on` baseline now sees the addon's container frames. A
+  red on re-vendoring is either a frame the addon leaves shown, a real defect, or a setup that owes
+  the case the `Hide()` production performs; it is never fixed by weakening an assertion.
+- `tests/test_mock_base.lua` gains "a new frame is shown until hidden, as in the client". This
+  repo's one case that relied on the old default, `tests/test_options_idsuggest.lua`'s "a box that
+  left before the pause shows nothing", now hides the box's frame before firing `OnHide`, as the
+  client does when the panel goes away. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
+### Test kit revision 26: `test_eol.lua` catches a lone CR
+
+- **Gate widened.** `testkit/test_eol.lua`'s first case now also counts every **lone CR** (a byte 13
+  no byte 10 follows) in each file it already scans, and fails naming each as `path:line`. Through
+  revision 25 it counted LFs and the CRs before them, so `a\r\r\n` read as one clean CRLF, and
+  git's `text=auto` stores a file with a lone CR as binary, so nothing else saw it either (audit
+  finding `AuraMaster-A-18`). The check is not keyed on the index's `-text`, which would redden real
+  binaries that detection caught unmarked; the NUL guard still skips those.
+- **Consumer note.** A dry run over every addon found AuraMaster's `tests/page_helpers.lua:80` and
+  KickCD's frozen `docs/reviews/2026-09-23/` bundle (852 lone CRs across five files) red. Both are
+  addon fixes owed before re-vendoring revision 26.
+- `tests/test_kit_eol.lua` gains four "eol lone CR" cases. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
+### Test kit revision 26: the prose gate reads the store roots and lists `synchronis`
+
+- **Gate widened.** `testkit/prose_lists.lua` gains `SCAN_BACK`, naming
+  `docs/automated-tests/README.md`, `docs/automated-tests/RESULTS.md` and
+  `docs/perf-analysis/README.md` file by file; `testkit/test_prose.lua` reads them although their
+  folders are skipped, because they are rewritten in place rather than frozen (audit findings
+  `ConsumableMaster-A-05` and `KICKCD-A-06`). A consumer `skipDirs` entry that only restates a kit
+  folder does not undo it, and is disclosed as suppressing nothing; a wider one, or `skipFiles`,
+  does, and is disclosed.
+- `SKIPPED_DIRS` gains `docs/superpowers/` and `docs/investigations/`, the two frozen stores
+  `documentation-§3` lists that the gate read (`PanelMaster-A-09`).
+- `BRITISH` gains `synchronis` and `ALLOWED` gains *synchronism*, *synchronisms* and *synchronistic*,
+  to the standard's v2.65.0 lists: 92 and 33.
+- This repo's own `tests/test_prose.lua` carries the same lists and reads its two
+  `docs/automated-tests/` store-root files. Its one new hit, a comment in `LibKa0s/OptionsTabs.lua`,
+  is respelled; `TABS_MINOR` moves with `LK-27`'s change to that file in this release.
+- **Consumer note.** A dry run found ConsumableMaster (`docs/perf-analysis/README.md:25-26`,
+  `docs/settings-panel.md:80`), KickCD (`docs/perf-analysis/README.md:35-36`,
+  `docs/settings-panel.md:168`, `settings/Panel_Render.lua:61`) and MultiMeters
+  (`tests/test_options_panel.lua:1091`) red; each is an addon fix owed before re-vendoring revision
+  26. AuraMaster's disclosure case name changes, so its `docs/test-cases.md` regenerates.
+- The new `tests/test_kit_prose.lua` holds twelve cases. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
+### Test kit revision 26: kit citations carry the section sign
+
+- **Case names change.** Every section citation in a kit string literal, case name and comment is
+  spelled `<file>-§N` (`documentation-§6`), 79 lines across `testkit/framework.lua`,
+  `prose_lists.lua`, `test_eol.lua`, `test_layout_cap.lua` and `test_prose.lua`. Four case names
+  move (`line-endings-§5`, `layout-§1`, and two `localization-§5`), so every consumer regenerates
+  `docs/test-cases.md` with its re-vendor; its totals do not move. `KIT_GATE_RULE` maps to
+  `localization-§5`, `line-endings-§7` and `layout-§1`; `normRule` is unchanged and still matches a
+  register cell written without the sign. Audit findings `AbsorbTracker-A-17` and
+  `WHATGROUP-A-13`.
+- This repo's `tests/test_prose.lua` ASCII gate now reads `LibKa0s/` only. The kit prints to a
+  terminal and `tests/_kit/` never ships, so the gate had no player to protect there, and it was
+  what forced the sign-less spelling. The gate's long-bracket exemption, which existed only for the
+  kit's `.gitattributes` transcripts, is removed.
+- Two red-first cases: "the ASCII gate scans LibKa0s/ and not testkit/" in `tests/test_prose.lua`,
+  and "no kit string literal cites a section without the section sign" in
+  `tests/test_kit_inventory.lua`. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
+### Test kit revision 26: the runner records the `performance-§12` exemption and heads empty tables
+
+- **Perf skip reason (2).** When a repo ships no `tests/perf.lua`, `run-automated-tests.sh` now reads
+  its `## Documented deviations` register (`docs/ARCHITECTURE.md`, then the root `CLAUDE.md`) before
+  it falls back to reason (1). A row whose Rule cell is exactly `performance-§12`, after `normRule`'s
+  reduction, records `performance-§12 no-combat-path exemption (ratified; <file> -> Documented
+  deviations)` as the manifest's `skipReason`, and `RESULTS.md`'s Perf section states the second
+  sanctioned reason and points at `docs/performance.md`. A disclaiming row such as `performance-§12
+  (the exemption is not claimed)` does not match. Reason (1)'s text is unchanged. Through revision
+  25 the runner knew reason (1) only, so BankLedger, LootHistory and PrettyChat had their ratified
+  exemption denied in every record (audit findings `BankLedger-A-04`, `LootHistory-A-12`,
+  `PRETTYCHAT-A-15`). Each records reason (2) on its first run after re-vendoring.
+- **An unreadable register exits 2**, before any suite runs and before the bundle directory exists:
+  a register table with no `Rule` header, no `|---|` separator, or a row with no cell after its
+  Rule. A row with more cells than the header is accepted, because a `|` in a code span splits a
+  cell and several registers in the collection carry one.
+- **`KA0S_PERF_EXEMPT=1`** records reason (2) only in a repo with no register at all. A present
+  register outranks it.
+- **Empty watch-list tables keep their header.** `fn_table` and `band_table` print the header row
+  and separator unconditionally, and the `None.` they printed for an empty set is gone
+  (`automated-tests-§4`; audit finding `LibKa0s-A-09`).
+- The new `tests/test_kit_runner.lua` holds seven cases that run the script over fixture repos. The
+  complexity case skips where `lizard` is not on PATH. Documented in
+  [the revision 26 document](docs/api/testkit/version-26-docs.md).
+
+### Test kit revision 26: an AceGUI Create/Release survey
+
+- **`M.__aceguiLive(type)` (new, in `testkit/mock_record.lua`).** How many widgets of that type the
+  AceGUI fake has handed out and not taken back; with no type, a table of every type with at least
+  one out. The fake never reuses a widget, so a render that Creates on every pass and never
+  Releases passed every other assertion in the kit, which is how the page banner's per-render
+  `Dropdown` went unseen (review finding `LibKa0s-R-02`). `mock_base.lua` feeds it with two lines,
+  one in `Create` and one in `Release` (1454 lines with them). A Release of a widget `Create` never
+  handed out is ignored rather than counted below zero. `tests/test_mock_record.lua` gains two cases.
+  Documented in [the revision 26 document](docs/api/testkit/version-26-docs.md); a consumer's suite
+  totals do not move on re-vendoring.
+
+Release gate (`docs/automated-tests/20260924-040553/`): lint pass, 0/0 in 92 files;
+tests pass, 1648 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.55.0 — 2026-09-23
 
 Versions in this release: **test kit revision 25**, and three new majors — **Compat minor 1**

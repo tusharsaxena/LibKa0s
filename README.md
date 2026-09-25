@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.64.0
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.67.0
 — as a **library repo**, which is a scope of its own: `library-stack-§7`'s applicability list is what
 binds here, not the addon rule set, because there is no TOC, no player-facing README, no settings
 canvas and no install. [`CLAUDE.md`](CLAUDE.md) spells out which sections apply and which do not, and
@@ -14,7 +14,9 @@ addon's `libs/` folder rather than depended on at runtime. One LibStub major per
 modules ship today:
 
 - **`LibKa0s-Core-1.0`** — the small stateless seams every other module sits on: secret-safe
-  stringification, the window skin and its close button, and a prefixed chat printer.
+  stringification, the window skin and its close button, a prefixed chat printer, and the pcalled
+  event registration helper (`SafeRegisterEvent`) that keeps one unknown event name from taking the
+  rest of a registration block down.
 - **`LibKa0s-Env-1.0`** — the handful of client facts every addon reads, read one way: the TOC
   manifest, the player's map id and the player's zone labels.
 - **`LibKa0s-Compat-1.0`** — the version-variant spell and spec readers two or more addons wrote
@@ -82,21 +84,21 @@ signature, because a second copy of a contract is a contract that drifts.
 
 | Major | What it is | Files | Current version |
 |---|---|---|---|
-| `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [7](docs/api/Core/version-7-docs.md) |
+| `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. Depends on LibStub and nothing else, which is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [8](docs/api/Core/version-8-docs.md) |
 | `LibKa0s-Env-1.0` | The handful of client facts every Ka0s addon reads, read one way: the TOC manifest, the player's map id and the player's zone labels. No state, no frames, no events. | `Env.lua` | [1](docs/api/Env/version-1-docs.md) |
 | `LibKa0s-Compat-1.0` | The version-variant client readers two or more Ka0s addons wrote the same way — `GetSpellInfo`, `GetSpellName`, `GetSpellTexture`, `GetSpellCooldown`, `GetSpecialization`, `GetSpecializationInfo`, each a ladder from the namespaced API down to the deprecated global — plus the secret-value seam every guard asks before it compares (`IsSecret`, `CanAccess`, `IsSafeKey`). Nine stateless functions; no frames, no events, no addon framework. | `Compat.lua` | [1](docs/api/Compat/version-1-docs.md) |
-| `LibKa0s-Lifecycle-1.0` | The stand-down latch. A hold set, an edge, and two host callbacks: `standDown` fires only when the set goes from empty to non-empty and `standUp` only when it goes back to empty, so a perf run that ends under a `disabled` hold does not bring the addon back. There is deliberately no `StandUp()` member — a bare stand-up is the bug the latch exists to prevent. Persists nothing. | `Lifecycle.lua` | [1](docs/api/Lifecycle/version-1-docs.md) |
-| `LibKa0s-Bus-1.0` | The stand-down record for an addon's tracked bus receivers — `New` builds an instance whose `NewTarget` hands out AceEvent targets that remember what they are registered for, so `StandDown` takes every event and message down and `StandUp` puts back what is wanted now, `arg` included — and `Catalog`, the strict declare-once message catalog that validates the `Ka0s_<Addon>_<Event>` names at load and raises on a mistyped key. Owns no hold set: the host calls it from its own Lifecycle callbacks. AceEvent is resolved at call time, never required. | `Bus.lua` | [1](docs/api/Bus/version-1-docs.md) |
-| `LibKa0s-Schema-1.0` | The settings schema's runtime without the schema. The host keeps its rows; this supplies the dotted-path primitives (`SplitPath`, `Read`, `Write`, `SameValue`), the path index, the single write seam `Set`, the bulk bracket that makes a sweep one debug line, the profile reset's changed-row count and `Validate`. Owns no storage, sends no message, formats no value. | `Schema.lua` | [1](docs/api/Schema/version-1-docs.md) |
+| `LibKa0s-Lifecycle-1.0` | The stand-down latch. A hold set, an edge, and two host callbacks: `standDown` fires only when the set goes from empty to non-empty and `standUp` only when it goes back to empty, so a perf run that ends under a `disabled` hold does not bring the addon back. There is deliberately no `StandUp()` member — a bare stand-up is the bug the latch exists to prevent. Persists nothing. | `Lifecycle.lua` | [2](docs/api/Lifecycle/version-2-docs.md) |
+| `LibKa0s-Bus-1.0` | The stand-down record for an addon's tracked bus receivers — `New` builds an instance whose `NewTarget` hands out AceEvent targets that remember what they are registered for, so `StandDown` takes every event and message down and `StandUp` puts back what is wanted now, `arg` included — and `Catalog`, the strict declare-once message catalog that validates the `Ka0s_<Addon>_<Event>` names at load and raises on a mistyped key. Owns no hold set: the host calls it from its own Lifecycle callbacks. AceEvent is resolved at call time, never required. | `Bus.lua` | [2](docs/api/Bus/version-2-docs.md) |
+| `LibKa0s-Schema-1.0` | The settings schema's runtime without the schema. The host keeps its rows; this supplies the dotted-path primitives (`SplitPath`, `Read`, `Write`, `SameValue`), the path index, the single write seam `Set` and its all-or-nothing batch `SetMany`, the bulk bracket that makes a sweep one debug line, the profile reset's changed-row count and `Validate`. Owns no storage, sends no message, formats no value. | `Schema.lua` | [2](docs/api/Schema/version-2-docs.md) |
 | `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass; the keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
-| `LibKa0s-Item-1.0` | Item identity as four primitives and no policy — read an item link, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree in writing. | `Item.lua` | [1](docs/api/Item/version-1-docs.md) |
-| `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [3](docs/api/Media/version-3-docs.md) |
-| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all, and `DragHandle`, the labeled strip with a help mark that a player drags a movable frame by. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsDragHandle.lua` | [9.2](docs/api/Widgets/version-9.2-docs.md) |
-| `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, colour-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [12](docs/api/DebugLog/version-12-docs.md) |
-| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [14](docs/api/Slash/version-14-docs.md) |
-| `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice — with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. One `OnClick`, implementing launcher-§2's three left-click rungs plus right-click-always-opens-the-panel; LibDBIcon's own `minimap` table taken from the host. Neither broker library is a dependency: both are resolved with `LibStub(…, true)` at register time and every degradation is named rather than raised. | `Launcher.lua` | [1](docs/api/Launcher/version-1-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [23.30.3.7.3](docs/api/Options/version-23.30.3.7.3-docs.md) |
-| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [12.5](docs/api/Perf/version-12.5-docs.md) |
+| `LibKa0s-Item-1.0` | Item identity as four primitives and no policy — read an item link, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree in writing. | `Item.lua` | [2](docs/api/Item/version-2-docs.md) |
+| `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL) — all inside the payload, plus the paths that reach them and the LibSharedMedia registration. | `Media.lua`, `media/` | [4](docs/api/Media/version-4-docs.md) |
+| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops — shared process-wide, across addons — plus `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, and no row content at all, and `DragHandle`, the labeled strip with a help mark that a player drags a movable frame by. Takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsDragHandle.lua` | [10.2](docs/api/Widgets/version-10.2-docs.md) |
+| `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, color-coded log, copy box, and the one seam that turns logging on and off. | `DebugLog.lua` | [13](docs/api/DebugLog/version-13-docs.md) |
+| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [15](docs/api/Slash/version-15-docs.md) |
+| `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice — with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. One `OnClick`, implementing launcher-§2: left-click opens the settings panel, right-click opens the client's context menu of the toggles the host supplies (Enabled, Locked, Test mode, Show window), and one library-drawn status tooltip (launcher-§1); LibDBIcon's own `minimap` table taken from the host. Neither broker library is a dependency: both are resolved with `LibStub(…, true)` at register time and every degradation is named rather than raised. | `Launcher.lua` | [4](docs/api/Launcher/version-4-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` | [24.31.4.7.4](docs/api/Options/version-24.31.4.7.4-docs.md) |
+| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [13.5](docs/api/Perf/version-13.5-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
 returns before `NewLibrary` if Core is missing or below the minor it needs — so a consumer that
@@ -138,7 +140,7 @@ local L = setmetatable({}, { __index = function(_, k) return k end })   -- local
 ```
 
 `L["STEP_START"]` on such a table answers `"STEP_START"`. Before `DebugLog` minor 3 / `Slash` minor 3
-/ `Perf` minor 4 the resolver used a plain index, accepted that synthesised string, and so never
+/ `Perf` minor 4 the resolver used a plain index, accepted that synthesized string, and so never
 reached this library's own strings — the host rendered raw keys (`STEP_START`,
 `PANEL_TITLE_SUFFIX`, `LIST_HEADER`) in place of English, for every key at once, visible only in
 game. KickCD shipped a perf panel titled `Ka0s KickCDPANEL_TITLE_SUFFIX` this way.
@@ -157,7 +159,7 @@ is what keeps a host working against an older vendored copy:
   ```
 
   The values may come from the locale table; the **table you pass** must not be it.
-- **SHOULD NOT** pass `NS.L`, an AceLocale table, or anything else whose `__index` synthesises a
+- **SHOULD NOT** pass `NS.L`, an AceLocale table, or anything else whose `__index` synthesizes a
   value for an unknown key. It is safe from the minors above, but a host that does so gets no
   override at all from the keys it *did* translate through the fallback, and it breaks outright
   against any older vendored copy still carrying the plain-index resolver.
@@ -204,7 +206,7 @@ in [`docs/api/testkit/`](docs/api/testkit/), indexed alongside the majors;
 This repo consumes its own kit through `tests/_kit/` rather than reaching into `testkit/` directly,
 so LibKa0s is a consumer on the same terms as every addon: a kit change that would break a consumer
 breaks this repo first. `tests/test_kitsync.lua` enforces the byte-identity rather than trusting a
-remembered `diff -r` — every file, README included, no line-ending normalisation.
+remembered `diff -r` — every file, README included, no line-ending normalization.
 
 ### Versioning
 
@@ -215,14 +217,14 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.55.0**, which adds three majors and moves no existing minor: `Core = { Core = 7 }`,
-`Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 1 }`, `Bus = { Bus = 1 }`,
-`Schema = { Schema = 1 }`, `Pool = { Pool = 3 }`, `Item = { Item = 1 }`,
-`Media = { Media = 3 }`,
-`Widgets = { Widgets = 9, WidgetsDragHandle = 2 }`, `DebugLog = { DebugLog = 12 }`, `Slash = { Slash = 14 }`,
-`Launcher = { Launcher = 1 }`,
-`Options = { Options = 23, OptionsWidgets = 30, OptionsTabs = 3, OptionsCompose = 7, OptionsScroll = 3 }`,
-`Perf = { Perf = 12, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
+different vendored copy of each. As of **v1.58.0**, which moves one major's minor (Launcher) and adds none: `Core = { Core = 8 }`,
+`Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 2 }`, `Bus = { Bus = 2 }`,
+`Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
+`Media = { Media = 4 }`,
+`Widgets = { Widgets = 10, WidgetsDragHandle = 2 }`, `DebugLog = { DebugLog = 13 }`, `Slash = { Slash = 15 }`,
+`Launcher = { Launcher = 4 }`,
+`Options = { Options = 24, OptionsWidgets = 31, OptionsTabs = 4, OptionsCompose = 7, OptionsScroll = 4 }`,
+`Perf = { Perf = 13, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
 attached to which probe?" from in-game, once several addons each ship their own vendored copy.

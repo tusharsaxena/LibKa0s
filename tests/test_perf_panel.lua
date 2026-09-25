@@ -2,7 +2,7 @@
 --
 -- Progress() is the whole state model — asserted directly against the probe belongs in
 -- test_perf_run.lua. This suite covers what the panel itself adds: the frame, the buttons, their
--- state-driven colour and clickability, and show/hide/toggle.
+-- state-driven color and clickability, and show/hide/toggle.
 --
 -- What a click actually DISPATCHES lives in test_perf_command.lua, next to the typed form of the
 -- same command: the two must produce identical output, and asserting that in one place is what
@@ -178,7 +178,7 @@ test("lib: a step state is always one of the state words, never a value the run 
   -- The three arms are derived from run flags by TRUTHINESS, and those flags are not all booleans:
   -- P.armed and P.recording hold arm NAMES ("active" / "suspended"). A derivation written as an
   -- `and`/`or` chain hands back whichever operand it stopped on, so the wrong shape leaks a run
-  -- flag out as a state — and the panel colours by exact string, so a leaked "active" paints as
+  -- flag out as a state — and the panel colors by exact string, so a leaked "active" paints as
   -- locked rather than erroring anywhere a test would see it.
   local allowed = {
     ready = true, locked = true, busy = true, done = true, used = true, cancel = true,
@@ -311,7 +311,7 @@ test("lib: cancel is offered throughout a run and nowhere else", function()
   tick(p, 0.5, true); tick(p, 0.5, false)
   assertEqual(p.Progress().cancel, "cancel", "between experiments")
   p.Stop()
-  assertEqual(p.Progress().cancel, "locked", "and greyed out once finished")
+  assertEqual(p.Progress().cancel, "locked", "and grayed out once finished")
 end)
 
 test("lib: cancel has its own state, so it never reads as the next step", function()
@@ -322,18 +322,18 @@ test("lib: cancel has its own state, so it never reads as the next step", functi
   assertEqual(ready, 1, "cancel does not inflate the ready count")
 end)
 
-test("lib: cancelling discards the run without saving it", function()
+test("lib: canceling discards the run without saving it", function()
   local p = Fixture.new()
   p.Start("thrown away")
   p.Measure("a"); tick(p, 0.5, true); tick(p, 0.5, false)
-  assertTrue(p.Cancel(), "cancelled")
+  assertTrue(p.Cancel(), "canceled")
   assertEqual(_G.TestHostPerfDB, nil, "nothing was written to the ring")
   assertFalse(p.run, "run over")
   assertEqual(p.__fpsArms().active.frames, 0, "counters zeroed")
   assertEqual(p.Progress().measureA, "locked", "and the progression is back to the start")
 end)
 
-test("lib: cancelling restores a suspended addon", function()
+test("lib: canceling restores a suspended addon", function()
   local p, rec = Fixture.new()
   p.Start("c")
   p.Measure("b")
@@ -343,7 +343,7 @@ test("lib: cancelling restores a suspended addon", function()
   assertEqual(rec.calls[#rec.calls], "resume", "and the host was resumed with it")
 end)
 
-test("lib: cancelling mid-recording does not announce the experiment as ended", function()
+test("lib: canceling mid-recording does not announce the experiment as ended", function()
   -- It goes through neither closeWindow nor Stop: marking a thrown-away window "ENDED" would be a
   -- lie about a measurement that never counted.
   local p, rec = Fixture.new()
@@ -353,10 +353,10 @@ test("lib: cancelling mid-recording does not announce the experiment as ended", 
   p.Cancel()
   local lines = table.concat(rec.log, "\n")
   assertEqual(lines:find("ENDED", 1, true), nil, "no end-of-experiment line: " .. lines)
-  assertTrue(lines:find("CANCELED", 1, true) ~= nil, "but it says it was cancelled")
+  assertTrue(lines:find("CANCELED", 1, true) ~= nil, "but it says it was canceled")
 end)
 
-test("lib: cancelling detaches the sampler", function()
+test("lib: canceling detaches the sampler", function()
   local p = Fixture.new()
   p.Start("c")
   p.Cancel()
@@ -368,7 +368,7 @@ test("lib: cancel returns false when there is nothing to cancel", function()
   assertFalse(p.Cancel(), "no run in flight")
 end)
 
-test("lib: a cancelled run leaves the next one clean", function()
+test("lib: a canceled run leaves the next one clean", function()
   local p = Fixture.new()
   p.Start("first")
   p.Measure("a"); tick(p, 0.5, true); tick(p, 0.5, false)
@@ -412,7 +412,7 @@ test("lib: cancel is not clickable once the run is finished", function()
   p.Measure("a"); tick(p, 0.5, true); tick(p, 0.5, false)
   p.Stop()
   p.ShowPanel()
-  assertEqual(p.PanelStateOf("cancel"), "locked", "greyed out")
+  assertEqual(p.PanelStateOf("cancel"), "locked", "grayed out")
   assertFalse(p.PanelIsActionable("cancel"), "and inert")
   p.HidePanel()
 end)

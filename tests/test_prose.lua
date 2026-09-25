@@ -13,9 +13,9 @@
 local T = _G.LK_TEST
 local test, assertEqual, fail = T.test, T.assertEqual, T.fail
 
--- The directories whose BYTES SHIP. `tests/` is deliberately not here: its prose never leaves this
--- repo, and a gate over it would fire on the fixtures that deliberately spell a host's own field
--- names.
+-- The directories whose BYTES SHIP. `tests/` is not here: its prose never leaves this repo, so the
+-- ASCII and section-reference gates, which are about bytes a consumer receives, do not read it. The
+-- US-English gate reads it all the same, through `authoredFiles()` below, in a case of its own.
 local SHIPPED = { "LibKa0s", "testkit" }
 
 --- List the plain files in a directory, as a sorted array of basenames.
@@ -54,23 +54,26 @@ end
 --- the first subdirectory this library has ever shipped and the first to find that out.
 ---
 --- The listing does not recurse, so nothing under `media/` is scanned: it holds art, type and their
---- upstream licences, none of it this collection's prose. A `.lua` added under there would go
+--- upstream licenses, none of it this collection's prose. A `.lua` added under there would go
 --- unscanned — put shipped code in the payload root, where the two gates below can see it.
---- The one shipped file this gate cannot scan, and the reason is the rule itself.
+--- The two shipped files this gate cannot scan, and the reason is the rule itself.
 ---
---- `testkit/test_prose.lua` IS a prose gate: it carries localization-5's `BRITISH` list, which the
---- section requires it to copy WHOLE, and that list is ninety-one British spellings by
+--- `testkit/test_prose.lua` IS a prose gate: it carries localization-§5's `BRITISH` list, which the
+--- section requires it to copy WHOLE, and that list is ninety-two British spellings by
 --- construction. Scanning it would redden on every entry the standard obliges it to hold, and the
 --- only way to green would be to carry a subset -- which is the anti-pattern the whole-list rule
---- exists to forbid. localization-5 names this case as the fourth of its four exclusions: "a
---- document whose subject is this rule and which therefore quotes a forbidden spelling in order to
---- forbid it ... and the gate's own copy of the lists".
+--- exists to forbid. Since kit revision 26 the lists themselves live beside the gate, in
+--- `testkit/prose_lists.lua`, which it loads, so the same reason covers both files.
+--- localization-§5 names this case as the fourth of its four exclusions: "a document whose subject
+--- is this rule and which therefore quotes a forbidden spelling in order to forbid it ... and the
+--- gate's own copy of the lists".
 ---
---- Named as ONE file rather than as a pattern over `test_*`, so the exclusion cannot widen: every
+--- Named as TWO files rather than as a pattern over `test_*`, so the exclusion cannot widen: every
 --- other file under `testkit/` is scanned, including the README beside this one, which is why that
 --- README describes the waived spellings instead of quoting them.
 local SHIPPED_EXEMPT = {
   ["testkit/test_prose.lua"] = true,
+  ["testkit/prose_lists.lua"] = true,
 }
 
 local function shippedFiles()
@@ -96,12 +99,19 @@ local function shippedFiles()
   return paths
 end
 
---- Run `matcher(line, path)` over every line of every shipped file, collecting `file:line —
---- <what>` for each hit. One walk, two gates: reading the payload twice would double the shell-outs
---- for nothing.
-local function scan(matcher)
-  local hits = {}
-  for _, path in ipairs(shippedFiles()) do
+--- Run `matcher(line, path)` over every line of every shipped file, and of every path in `extra`,
+--- collecting `file:line — <what>` for each hit. One walk per gate, over one listing: reading the
+--- payload's directory again per gate would multiply the shell-outs for nothing. An `extra` path
+--- that cannot be opened is a hit, not a skip: it is named because it is expected to exist. `base`
+--- replaces the shipped listing when given, which is how the authored-text case reuses the walk.
+local function scan(matcher, extra, base)
+  local hits, paths = {}, base or shippedFiles()
+  for _, path in ipairs(extra or {}) do
+    local probe = io.open(path, "r")
+    if probe then probe:close() else hits[#hits + 1] = path .. " — cannot be opened" end
+    paths[#paths + 1] = path
+  end
+  for _, path in ipairs(paths) do
     local f = io.open(path, "r")
     if f then
       local nline = 0
@@ -131,11 +141,12 @@ end
 -- addition here MUST NOT outlive the change that found it.
 --
 -- BRITISH is lowercase substrings, matched case-insensitively, so one entry covers a word's whole
--- family: `colour` catches coloured and colours, `normalis` catches normalise and normalised. That
--- economy is also the trap — *analysis* contains `analys`, *programmer* contains `programme` — so
--- ALLOWED names the correct US words that collide, and they are REMOVED AS WHOLE WORDS before the
--- substring scan runs. Whole words, not substrings: allowing `analyses` as a substring would
--- swallow *analysed* inside it and hide the very defect this gate exists to find.
+-- family: `colour` catches *coloured* and *colours*, `normalis` catches *normalise* and
+-- *normalised*. That economy is also the trap — *analysis* contains `analys`, *programmer*
+-- contains `programme` — so ALLOWED names the correct US words that collide, and they are REMOVED
+-- AS WHOLE WORDS before the substring scan runs. Whole words, not substrings: allowing `analyses`
+-- as a substring would swallow *analysed* inside it and hide the very defect this gate exists to
+-- find.
 --
 -- Two carve-outs, recorded here so a later sweep does not "fix" them back:
 --   * a Blizzard symbol reproduced verbatim (SetColorTexture, SetBackdropBorderColor) stays as
@@ -155,8 +166,8 @@ local BRITISH = {
   "serialis", "summaris", "utilis", "organis", "authoris", "prioritis",
   "alphabetis", "categoris", "sanitis", "visualis", "minimis", "maximis",
   "itemis", "randomis", "tokenis", "capitalis", "localis", "modularis",
-  "standardis", "memois", "recognis", "analys", "paralys", "synthesis",
-  "emphasis",
+  "standardis", "memois", "recognis", "synchronis", "analys", "paralys",
+  "synthesis", "emphasis",
   -- a doubled consonant before a suffix, where US English keeps one
   "cancelled", "cancelling", "cancellable", "labelled", "labelling",
   "travelled", "travelling", "modelled", "modelling", "signalled",
@@ -177,6 +188,7 @@ local ALLOWED = {
   "paralysis", "paralyses", "synthesis", "syntheses", "emphasis", "emphases",
   "fulfill", "fulfills", "fulfilled", "fulfilling", "fulfillment",
   "programmer", "programmers", "programmed",
+  "synchronism", "synchronisms", "synchronistic",
 }
 
 -- The whole-word index ALLOWED is consulted through. `%a+` matches a maximal run of letters, so a
@@ -218,6 +230,14 @@ local RATIFIED = {
 }
 local NO_EXEMPTIONS = {}
 
+-- The kit gate's scan-back (`SCAN_BACK` in `testkit/prose_lists.lua`, kit revision 26), applied
+-- here to the two store-root files this repository has. The dated bundles beside them are frozen
+-- records; these two are rewritten in place by every automated-test run, so they are authored text
+-- a reader meets first. This library keeps no `docs/perf-analysis/` store, so the third file the
+-- kit names has no instance here. Read by the British-spelling gate only: the ASCII gate is about
+-- Lua a player's client draws, and the section-reference gate is about the bytes that ship.
+local SCAN_BACK = { "docs/automated-tests/README.md", "docs/automated-tests/RESULTS.md" }
+
 --- Replace every plain (non-pattern) occurrence of `needle` in `s` with a space. Returns the new
 --- string and how many it replaced. Plain rather than `gsub` so an exemption is read as the literal
 --- text it is, with no chance of a magic character in it quietly widening what it covers.
@@ -234,16 +254,17 @@ local function stripPlain(s, needle)
   return table.concat(out), n
 end
 
-test("prose: no British spelling in the shipped library or the shipped kit", function()
-  local used = {}
-  local hits = scan(function(line, path)
+--- The US-English matcher, for one exemption table. `used` collects `path word` for every
+--- exemption that matched, so the caller can fail on one that has stopped matching.
+local function britishMatcher(ratified, used)
+  return function(line, path)
     -- ALLOWED first, as WHOLE WORDS: `%a+` matches a maximal run of letters, so a token that
     -- survives this lookup is a word and never a fragment of a longer one.
     local lower = line:lower():gsub("%a+", function(word)
       if ALLOWED_WORDS[word] then return " " end
       return word
     end)
-    for _, word in ipairs(RATIFIED[path] or NO_EXEMPTIONS) do
+    for _, word in ipairs(ratified[path] or NO_EXEMPTIONS) do
       local stripped, n = stripPlain(lower, word)
       if n > 0 then
         lower, used[path .. " " .. word] = stripped, true
@@ -253,8 +274,38 @@ test("prose: no British spelling in the shipped library or the shipped kit", fun
       if lower:find(word, 1, true) then return word end
     end
     return nil
-  end)
-  for path, words in pairs(RATIFIED) do
+  end
+end
+
+--- Wrap `matcher` so that, in a path `lists` names, the lines of a top-level `local BRITISH = {`
+--- or `local ALLOWED = {` table are not read, up to and including the `}` that closes it at column
+--- one. That is the gate's own copy of the lists, localization-§5's fourth exclusion, and it is ALL
+--- the wrapper skips: the rest of the named file, its comments and its strings, is read like any
+--- other, so a British spelling in the gate's own prose still reddens.
+local function skipListTables(matcher, lists)
+  local open = {}
+  return function(line, path)
+    if not lists[path] then return matcher(line, path) end
+    if open[path] then
+      if line:match("^}") then open[path] = nil end
+      return nil
+    end
+    if line:match("^local BRITISH = {%s*$") or line:match("^local ALLOWED = {%s*$") then
+      open[path] = true
+      return nil
+    end
+    return matcher(line, path)
+  end
+end
+
+--- Every British-spelling hit over `base` (nil: the shipped payload) plus `extra`, and every entry
+--- of `ratified` that matched nothing, as one sorted list. `lists` names the files whose list
+--- tables are skipped (`skipListTables`); nil skips none.
+local function britishHits(ratified, extra, base, lists)
+  local used = {}
+  local matcher = skipListTables(britishMatcher(ratified, used), lists or NO_EXEMPTIONS)
+  local hits = scan(matcher, extra, base)
+  for path, words in pairs(ratified) do
     for _, word in ipairs(words) do
       if not used[path .. " " .. word] then
         hits[#hits + 1] = ("%s — ratified exemption `%s` matches nothing; drop it here and in "
@@ -263,15 +314,167 @@ test("prose: no British spelling in the shipped library or the shipped kit", fun
     end
   end
   table.sort(hits)
+  return hits
+end
+
+test("prose: no British spelling in the shipped library, the shipped kit or the store roots",
+function()
+  local hits = britishHits(RATIFIED, SCAN_BACK)
   assertEqual(table.concat(hits, "\n          "), "",
     "localization-§5 mandates US English and anti-patterns #46 names comments explicitly; these "
     .. "spellings ship to every consumer and no consumer can fix them")
+end)
+
+-- ── US English over the text this repo writes and does not ship ────────────────────────────
+--
+-- The case above reads the payloads. This one reads everything else this repo AUTHORS and still
+-- maintains: every `tests/*.lua` (not `tests/_kit/`, the vendored copy of `testkit/`, which the
+-- case above already reads at its source), the live document of every major under `docs/api/`,
+-- that folder's README, `docs/releasing.md`, the root `README.md`, `DEPENDENCIES.md` and
+-- `CLAUDE.md`, and the artwork tools under `tools/artwork/`. It was the 2026-09-23 audit's
+-- `LibKa0s-A-07`: 210 lines across 33 of these files, which no gate read.
+--
+-- THE LIVE DOCUMENT ONLY. A superseded `docs/api/` document is a record of what an older copy did
+-- and `docs/api/README.md` forbids editing it, so this case reads the highest version key in each
+-- major's folder and nothing older. The key is compared numerically, component by component, so
+-- `10.2` is newer than `9.2`. Released `CHANGELOG.md` entries stay out for the same reason, and so
+-- do the frozen `docs/audits/`, `docs/reviews/`, `docs/adoption/` and `docs/superpowers/` stores.
+local AUTHORED_FILES = {
+  "docs/api/README.md", "docs/releasing.md", "README.md", "DEPENDENCIES.md", "CLAUDE.md",
+}
+
+-- `tests/test_prose.lua` is this gate: it copies localization-§5's lists whole, so every entry in
+-- them is a hit by construction. That copy is localization-§5's fourth exclusion, and it is the
+-- two list TABLES that are excluded, not the file: the rest of it is read like any other authored
+-- file, and the words its comments quote in order to forbid them are named one by one in
+-- `AUTHORED_RATIFIED` below. A whole-file waiver is the kind localization-§5 forbids, and the one
+-- this used to carry hid a real hit in the file's own prose.
+local AUTHORED_LISTS = { ["tests/test_prose.lua"] = true }
+
+-- Identifiers, not prose, in the authored text. Each is an exemption the register already ratifies,
+-- quoted where it is documented or modeled:
+--   * `minimise`, the `lib.ICONS` key and texture name (register row 2): named in the live Media
+--     document's icon table, in the register row itself, and as the source-to-target name map in
+--     the tool that produced the texture;
+--   * AceTimer's `.cancelled` handle field and C_Timer's `IsCancelled` (register row 1): the suite
+--     that pins the kit's fakes reads them as the fakes spell them, the register row names them,
+--     and the API index's row for kit revision 17, which added the `NewTimer` handle, names the
+--     method.
+-- And two documents whose subject is this rule, localization-§5's fourth exclusion: kit revision
+-- 26's API document records the list entry that revision added and the hits it found in three
+-- consumers, word by word; and this file, whose comments quote the forbidden words in order to
+-- forbid them and whose tables spell out every identifier above. Each word is named here as that
+-- file quotes it, in backticks, asterisks or string quotes, so a stray use of the same spelling as
+-- prose elsewhere in it still reddens.
+local AUTHORED_RATIFIED = {
+  ["docs/api/Media/version-4-docs.md"] = { "minimise" },
+  ["tools/artwork/icon_cleaner.py"] = { "minimise" },
+  ["CLAUDE.md"] = { "minimise", ".cancelled", "iscancelled" },
+  ["tests/test_mock_ace.lua"] = { ".cancelled", "iscancelled" },
+  ["docs/api/README.md"] = { "iscancelled" },
+  ["docs/api/testkit/version-26-docs.md"] = { "`synchronis`", "*synchronis-*", "`synchronisation`",
+    "*synchronisation*", "*analysed*", "*neighbours*" },
+  ["tests/test_prose.lua"] = {
+    '`cancelled`', '`colour`', '*coloured*', '*colours*', '`normalis`', '*normalise*',
+    '*normalised*', '`analys`', '`programme`', '*analysed*', '`minimise`', '`minimise.tga`',
+    '"minimise"', '`.cancelled`', '".cancelled"', '`iscancelled`', '"iscancelled"', '`synchronis`',
+    '*synchronis-*', '`synchronisation`', '*synchronisation*', '*neighbours*',
+  },
+}
+
+--- The numeric components of a `version-<key>-docs.md` name, or nil for any other name.
+local function versionKey(name)
+  local key = name:match("^version%-([%d%.]+)%-docs%.md$")
+  if not key then return nil end
+  local parts = {}
+  for n in key:gmatch("%d+") do parts[#parts + 1] = tonumber(n) end
+  return parts
+end
+
+--- True when version key `a` is newer than `b`, component by component; a longer key wins a tie.
+local function newerKey(a, b)
+  for i = 1, math.max(#a, #b) do
+    local x, y = a[i] or -1, b[i] or -1
+    if x ~= y then return x > y end
+  end
+  return false
+end
+
+--- The live document of every major under `docs/api/`: the highest version key in each folder.
+--- A major's folder is every entry without a dot in its name; the README beside them has one.
+local function liveApiDocs()
+  local docs = {}
+  for _, major in ipairs(listDir("docs/api")) do
+    if not major:find(".", 1, true) then
+      local best, bestKey
+      for _, name in ipairs(listDir("docs/api/" .. major)) do
+        local key = versionKey(name)
+        if key and (not bestKey or newerKey(key, bestKey)) then best, bestKey = name, key end
+      end
+      if best then docs[#docs + 1] = "docs/api/" .. major .. "/" .. best end
+    end
+  end
+  return docs
+end
+
+--- Every authored path the case reads, but for the fixed list, which `scan` probes as `extra`.
+local function authoredFiles()
+  local paths = {}
+  for _, name in ipairs(listDir("tests")) do
+    local path = "tests/" .. name
+    if name:match("%.lua$") then paths[#paths + 1] = path end
+  end
+  for _, name in ipairs(listDir("tools/artwork")) do
+    if name:match("%.py$") then paths[#paths + 1] = "tools/artwork/" .. name end
+  end
+  for _, path in ipairs(liveApiDocs()) do paths[#paths + 1] = path end
+  return paths
+end
+
+test("prose: the live API document of a major is its highest version key, compared numerically",
+function()
+  assertEqual(versionKey("members-3.json"), nil, "a manifest is not a document")
+  T.assertTrue(newerKey(versionKey("version-10.2-docs.md"), versionKey("version-9.2-docs.md")),
+    "10.2 is newer than 9.2, which a string comparison gets backwards")
+  T.assertTrue(newerKey(versionKey("version-9.1-docs.md"), versionKey("version-9-docs.md")),
+    "9.1 is newer than 9")
+  -- Every document this picks must be one that names no successor: a pick that lands on a
+  -- superseded record would have this case asking for an edit `docs/api/README.md` forbids.
+  local docs = liveApiDocs()
+  T.assertTrue(#docs > 0, "docs/api/ yields at least one live document")
+  for _, path in ipairs(docs) do
+    local f = assert(io.open(path, "r"))
+    local body = f:read("*a")
+    f:close()
+    T.assertTrue(body:find("| Superseded by | \226\128\148 |", 1, true) ~= nil,
+      path .. " is the live document, superseded by nothing")
+  end
+end)
+
+test("prose: no British spelling in the tests, the live docs or the artwork tools", function()
+  local hits = britishHits(AUTHORED_RATIFIED, AUTHORED_FILES, authoredFiles(), AUTHORED_LISTS)
+  assertEqual(table.concat(hits, "\n          "), "",
+    "localization-§5 mandates US English in everything this repo authors, not only in what ships")
 end)
 
 -- ── ASCII-only player-facing text (localization-§5, batch 7 G-1's font finding) ─────────────
 --
 -- The owner's font draws most non-ASCII glyphs as an empty box (screenshot, AuraMaster batch 7
 -- T-1): a rightward arrow in a settings tooltip read as "General [box] Spell Categories".
+--
+-- SCOPED TO `LibKa0s/`, THE ONE PAYLOAD A PLAYER'S CLIENT LOADS. The other two gates in this file
+-- read `testkit/` as well, because they are about prose consistency in everything vendored; this
+-- one is about a glyph a player sees, and no kit string ever reaches a player. The kit runs under a
+-- plain Lua interpreter and prints to a terminal, and its vendored copy lives in a consumer's
+-- `tests/_kit/`, which never ships: every consumer's `.pkgmeta` ignores `tests`. So a kit string
+-- is free to carry a section sign, and from kit revision 26 every section citation in one does,
+-- spelled `<file>-§N` as documentation-§6 requires. The gate used to read `testkit/` too, and
+-- the kit spelled its citations without the sign (`localization-5`) to stay green; those
+-- spellings then printed into every consumer's run and generated `docs/test-cases.md`, where the
+-- consumer could not correct them (the 2026-09-23 audit's `AbsorbTracker-A-17`,
+-- `WHATGROUP-A-13`). Scoping the gate ended the workaround, and it also retired the long-bracket
+-- exemption this gate carried for the kit's verbatim `.gitattributes` transcripts, which the
+-- shipped library has no instance of.
 --
 -- THIS GATE OPERATES ON DECODED BYTES, NOT SOURCE TEXT, DELIBERATELY. A first version of this
 -- gate matched the literal ASCII text of a decimal escape (`\226`, the six characters
@@ -317,9 +520,8 @@ local ASCII_RATIFIED = {
 
 --- Strip a `--` line comment, quote-aware: a `--` or a quote mark INSIDE a `"…"`/`'…'` string
 --- literal does not end the string early or false-start a comment. Lua 5.1's long-bracket form
---- (`[[ ]]`, `[==[ ]==]`, `--[[ ]]`) is not modeled HERE; `longBracketBody` below tracks it for
---- the one gate that needs it, and this function is left alone because a long bracket's content
---- is not a comment and cutting it here would hide it from the British-spelling gate too.
+--- (`[[ ]]`, `[==[ ]==]`, `--[[ ]]`) is not modeled: a long bracket's content is read as though it
+--- were code, which is the stricter reading, and the shipped library carries none today.
 local function stripLineComment(line)
   local out, i, n, quote = {}, 1, #line, nil
   while i <= n do
@@ -373,69 +575,50 @@ local function decodeLuaEscapes(text)
   return table.concat(out)
 end
 
---- A line-at-a-time tracker for Lua's long-bracket form (`[[ … ]]`, `[==[ … ]==]`): true while the
---- line is inside one, including the lines that open and close it. State resets when the path
---- changes, because `scan` walks each file's lines in order and the files in sequence.
----
---- WHY THE ASCII GATE SKIPS THESE AND THE OTHER TWO DO NOT. A long bracket is where the kit copies
---- a DOCUMENT VERBATIM, and kit revision 25 made that concrete: `testkit/test_eol.lua` carries
---- `line-endings-§5`'s two canonical `.gitattributes` bodies, 84 and 85 lines, because §5 requires
---- a repo be DIFFED against the body rather than read against it. Eight section signs and two
---- ellipses live in those bodies, and re-spelling any of them would make the transcript stop being
---- one. This file used to say a long bracket needed no special case, on the strength of the one
---- the payload had then (`testkit/mock_base.lua`'s usage-error text); revision 25 falsified that
---- premise, and this is the answer to it. The exemption is narrow by construction: it is the ASCII
---- gate alone, because a transcript of somebody else's document is the one string this repo is
---- forbidden to re-spell, and the British-spelling and §N.M gates go on reading these lines.
-local function longBracketBody()
-  local path, level
-  return function(p, line)
-    if p ~= path then path, level = p, nil end
-    if level then
-      if line:find("]" .. string.rep("=", level) .. "]", 1, true) then level = nil end
-      return true
-    end
-    local eq = line:match("%[(=*)%[")
-    if not eq then return false end
-    if not line:find("]" .. eq .. "]", 1, true) then level = #eq end
-    return true
+--- The ASCII gate's verdict on one line of one shipped file: what reached a player, or nil.
+--- `used` collects the ratified exemptions that matched, so the case can fail on one that no longer
+--- does.
+local function asciiHit(line, path, used)
+  -- `scan`'s SHIPPED walk includes every plain file under `LibKa0s/` and `testkit/`. Only
+  -- `LibKa0s/` reaches a player (the section header above says why the kit does not), and only
+  -- its `.lua` files: comment-stripping and escape-decoding are Lua syntax (`--` comments,
+  -- `\ddd` escapes), and player-facing text lives only in Lua source.
+  if not path:match("^LibKa0s/") or not path:match("%.lua$") then return nil end
+  local decoded = decodeLuaEscapes(stripLineComment(line))
+  local scrubbed = stripPlain(decoded, ASCII_EM_DASH)
+  for _, glyph in ipairs(ASCII_RATIFIED[path] or NO_EXEMPTIONS) do
+    local stripped, n = stripPlain(scrubbed, glyph)
+    if n > 0 then scrubbed, used[path .. " " .. glyph] = stripped, true end
   end
-end
-
-test("prose: no non-ASCII byte reaches a player, the em dash excepted", function()
-  local used, inLongBracket = {}, longBracketBody()
-  local hits = scan(function(line, path)
-    -- `scan`'s SHIPPED walk includes every plain file under `LibKa0s/` and `testkit/`, not only
-    -- `.lua` -- `testkit/README.md`, `testkit/run-automated-tests.sh`. Comment-stripping and
-    -- escape-decoding are Lua syntax (`--` comments, `\ddd` escapes); a `#` shell comment or a
-    -- README's own prose is neither, and player-facing text lives only in Lua source, so this gate
-    -- -- unlike the British-spelling and §N.M gates, which are about prose consistency everywhere
-    -- vendored -- is scoped to `.lua` files.
-    if not path:match("%.lua$") then return nil end
-    if inLongBracket(path, line) then return nil end
-    local decoded = decodeLuaEscapes(stripLineComment(line))
-    local scrubbed = stripPlain(decoded, ASCII_EM_DASH)
-    for _, glyph in ipairs(ASCII_RATIFIED[path] or NO_EXEMPTIONS) do
-      local stripped, n = stripPlain(scrubbed, glyph)
-      if n > 0 then scrubbed, used[path .. " " .. glyph] = stripped, true end
-    end
-    -- A Lua BYTE-RANGE PATTERN, `"[\128-\191]"` (this file's own `charCount` helper matches
-    -- continuation bytes to count UTF-8 characters, not bytes), decodes to real bytes ≥ 128 same
-    -- as a player-facing glyph would -- it is code, not text a player ever sees, so a high byte
-    -- immediately inside `[...]` -- preceded by `[` or `-`, or immediately followed by `-` -- is a
-    -- pattern boundary, not a string byte, and is excluded on that shape alone, general to any such
-    -- pattern rather than naming the one file that has one today.
-    for i = 1, #scrubbed do
-      if scrubbed:byte(i) >= 128 then
-        local before, after = scrubbed:sub(i - 1, i - 1), scrubbed:sub(i + 1, i + 1)
-        local inCharClass = before == "[" or before == "-" or after == "-"
-        if not inCharClass then
-          return ("byte 0x%02X reaches a player"):format(scrubbed:byte(i))
-        end
+  -- A Lua BYTE-RANGE PATTERN, `"[\128-\191]"` (this file's own `charCount` helper matches
+  -- continuation bytes to count UTF-8 characters, not bytes), decodes to real bytes ≥ 128 same
+  -- as a player-facing glyph would -- it is code, not text a player ever sees, so a high byte
+  -- immediately inside `[...]` -- preceded by `[` or `-`, or immediately followed by `-` -- is a
+  -- pattern boundary, not a string byte, and is excluded on that shape alone, general to any such
+  -- pattern rather than naming the one file that has one today.
+  for i = 1, #scrubbed do
+    if scrubbed:byte(i) >= 128 then
+      local before, after = scrubbed:sub(i - 1, i - 1), scrubbed:sub(i + 1, i + 1)
+      local inCharClass = before == "[" or before == "-" or after == "-"
+      if not inCharClass then
+        return ("byte 0x%02X reaches a player"):format(scrubbed:byte(i))
       end
     end
-    return nil
-  end)
+  end
+  return nil
+end
+
+test("prose: the ASCII gate scans LibKa0s/ and not testkit/", function()
+  local line = 'fail("see line-endings-\194\167' .. '5 for the canonical body")'
+  assertEqual(asciiHit(line, "testkit/test_eol.lua", {}), nil,
+    "a kit string never reaches a player: the kit prints to a terminal and tests/ never ships")
+  T.assertTrue(asciiHit(line, "LibKa0s/Core.lua", {}) ~= nil,
+    "the same string in the shipped library is still a hit")
+end)
+
+test("prose: no non-ASCII byte reaches a player, the em dash excepted", function()
+  local used = {}
+  local hits = scan(function(line, path) return asciiHit(line, path, used) end)
   for path, glyphs in pairs(ASCII_RATIFIED) do
     for _, glyph in ipairs(glyphs) do
       if not used[path .. " " .. glyph] then

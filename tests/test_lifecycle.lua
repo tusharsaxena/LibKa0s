@@ -248,6 +248,35 @@ test("lifecycle: a raising standDown leaves the hold taken, so the release path 
   assertTrue(lc:Release("disabled"), "and releasing it is an edge, so the host can rebuild")
 end)
 
+-- ── re-entrancy ────────────────────────────────────────────────────────────────
+
+test("lifecycle: a standDown that releases a hold fires standUp nested, and the latch ends up", function()
+  -- A characterization, not a feature: New's docstring says a callback MUST NOT take or release a
+  -- hold. This pins what happens when one does anyway, so the behavior cannot change unannounced.
+  -- The nested edge runs to completion inside the outer one — "up" lands between standDown's entry
+  -- and its exit — and because `down` is recorded before each callback the latch is consistent
+  -- afterwards: the set is empty and IsDown() agrees.
+  local trace, lc = {}, nil
+  lc = LC:New{
+    name = "X",
+    standDown = function()
+      trace[#trace + 1] = "down:enter"
+      -- Called first and stored: `trace[#trace + 1] = lc:Release(...)` would take the index
+      -- before the nested standUp appends, and overwrite its entry.
+      local edged = lc:Release("disabled")
+      trace[#trace + 1] = edged and "release:edge" or "release:no-edge"
+      trace[#trace + 1] = "down:exit"
+    end,
+    standUp = function() trace[#trace + 1] = "up" end,
+  }
+  assertTrue(lc:Hold("disabled"), "the outer Hold still answers that it stood the addon down")
+  assertEqual(table.concat(trace, ","), "down:enter,up,release:edge,down:exit",
+    "standUp fires nested, before standDown returns")
+  assertFalse(lc:IsDown(), "the latch ends up")
+  assertFalse(lc:IsHeld("disabled"))
+  assertEqual(#lc:Holds(), 0, "the set is empty")
+end)
+
 test("lifecycle: Hold and Release refuse a key that is not a non-empty string", function()
   local lc = newLatch()
   assertRaises(function() lc:Hold(nil) end, "string key")

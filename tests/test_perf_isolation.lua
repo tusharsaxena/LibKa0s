@@ -127,6 +127,34 @@ function()
   assertEqual(p.__buckets().outer.calls, 10100, "and every one of them was still recorded")
 end)
 
+-- ── the sampler's raw fields ────────────────────────────────────────────────────────────────
+--
+-- The sampler reads `P.recording` and `P.armed` on every frame of a run. A nil write removes the
+-- raw key, and each later read then falls through to the instance's __index closure (it exists
+-- only for `suspended`). Since Perf minor 13 the three state fields hold `false`, never nil.
+
+test("iso: armed, recording and label stay raw fields across a window and a cancel", function()
+  local p = Fixture.new()
+  local function raw(k) return rawget(p, k) end
+  assertTrue(raw("armed") ~= nil and raw("recording") ~= nil and raw("label") ~= nil,
+    "initialized as raw keys")
+  p.Start("raw")
+  p.Measure("a")
+  mocks.__inCombat = true
+  p.__sampler():__fire("OnUpdate", 0.5)      -- the window opens: armed is handed to recording
+  assertTrue(raw("armed") ~= nil, "armed stays raw once its window opens")
+  mocks.__inCombat = false
+  p.__sampler():__fire("OnUpdate", 0.5)      -- the window closes
+  assertTrue(raw("recording") ~= nil, "recording stays raw after a window closes")
+  assertEqual(p.recording, false, "and reads false")
+  p.Cancel()
+  assertTrue(raw("armed") ~= nil and raw("recording") ~= nil and raw("label") ~= nil,
+    "a cancel writes false, not nil")
+  p.Start()
+  assertTrue(raw("label") ~= nil, "a Start with no label keeps the key raw")
+  p.Cancel()
+end)
+
 -- ── the panel frame ─────────────────────────────────────────────────────────────────────────
 
 test("iso: two instances create separate panel frames", function()

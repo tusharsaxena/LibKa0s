@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **12** |
 | Shipped in | v1.16.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 11](./version-11-docs.md) — whose copy window was this file's own, the fifth copy in the collection |
-| Superseded by | — |
+| Superseded by | [version 13](./version-13-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 12 }` |
 
@@ -388,3 +388,22 @@ The one thing that is *not* additive at this version is the **load-time floor**,
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
+
+## Moving to version 13
+
+**Take it; nothing in a host's own code changes.** Version 13 adds no member and no descriptor
+field, and the member manifest differs from this one in the minor alone. What moves is how the
+buffer is trimmed at the cap: at this version every `Add` past 1500 lines runs
+`table.remove(buffer, 1)`, a 1500-slot shift per line. From version 13 the raw array may run 64
+lines past `MAX_BUFFER` and is then compacted in one pass.
+
+Every public reader — `BufferSize()`, `LastLine()`, `FindLine()`, `CopyText()` and the status line —
+still answers the newest 1500 lines. Only `#buffer` and `buffer[1]` read directly past the cap can
+see the slack, and that is what a host owes on the re-vendor:
+
+- **A host suite that writes more than 1500 lines and asserts `#D.buffer` or `D.buffer[1]`** moves to
+  `D:BufferSize()` and `D:CopyText()` (or `D:FindLine()`), which answer exactly what this version's
+  `#buffer` and `buffer[1]` did. PrettyChat's `tests/test_debuglog.lua` has one such case.
+- A suite that stays under 1500 lines has nothing to change.
+
+Everything else in this document is unchanged at version 13.

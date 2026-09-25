@@ -53,7 +53,7 @@ test("mock: __setGeom is the opt-in, and the only thing that arms a frame", func
   f:__setGeom(120, 37)
   assertEqual(f:GetHeight(), 37, "height after __setGeom")
   assertEqual(f:GetWidth(), 120, "width after __setGeom")
-  -- Per frame, not per environment: arming one frame must not arm its neighbours, or the opt-in is
+  -- Per frame, not per environment: arming one frame must not arm its neighbors, or the opt-in is
   -- a global switch wearing a method's clothes.
   assertEqual(frame():GetHeight(), 0, "a sibling frame is unaffected")
 end)
@@ -107,6 +107,34 @@ test("mock: the selected and unselected tab atlases are published at different h
   assertTrue(type(off) == "table" and type(on) == "table", "both families are published")
   assertTrue(off[2] ~= on[2],
     "the two tab atlas families must not share a height, or an invariance case cannot fail")
+end)
+
+-- ── shown state: a new frame starts shown, as the client's does ─────────────────────────────
+--
+-- Kit revision 26 flips this default. `CreateFrame` in the client hands back a frame whose
+-- `IsShown()` is true until something hides it; the kit handed back one that was hidden, so a
+-- stand-down suite's `M.__shownFrames()` baseline never saw a container frame production built and
+-- never hid (PartyFrameEnhanced-A-02). A frame that should be hidden is hidden by the production
+-- path that builds it, and that `Hide()` is now something a suite can see go missing.
+test("mock: a new frame is shown until hidden, as in the client", function()
+  local env = dofile("tests/wow_mock.lua")()
+  local f = env.CreateFrame("Frame", "LK05ShownProbe", env.UIParent)
+  T.assertTrue(f:IsShown(), "a frame is shown the moment CreateFrame returns it")
+  T.assertTrue(f:IsVisible(), "and visible, with nothing hiding it")
+  local listed = false
+  for _, g in ipairs(env.__shownFrames()) do if g == f then listed = true end end
+  T.assertTrue(listed, "__shownFrames() lists a frame nobody hid")
+  f:Hide()
+  T.assertFalse(f:IsShown(), "Hide() hides it")
+  for _, g in ipairs(env.__shownFrames()) do
+    T.assertTrue(g ~= f, "__shownFrames() drops it once hidden")
+  end
+  f:Show()
+  T.assertTrue(f:IsShown(), "Show() brings it back")
+  -- The client's own windows that start closed stay closed, so they are not on every baseline.
+  T.assertFalse(env.GameTooltip:IsShown(), "GameTooltip starts hidden, as in the client")
+  T.assertFalse(env.SettingsPanel:IsShown(), "SettingsPanel starts closed, as in the client")
+  T.assertFalse(env.StopwatchFrame:IsShown(), "StopwatchFrame starts hidden, as in the client")
 end)
 
 -- ── the Ace fakes: AceGUI:Release, AceEvent's event half, AceConsole's Printf ─────────────────

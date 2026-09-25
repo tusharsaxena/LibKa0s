@@ -12,6 +12,7 @@
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse, assertNil, assertError =
   T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil, T.assertError
+local assertErrorMatches = T.assertErrorMatches
 
 local Schema = T.schema
 
@@ -227,6 +228,13 @@ local function referenceStub(brand)
   function stubLib:New(d)
     local S, depth = {}, 0
     local rows = d.rows
+    -- writeThrough: one synthetic row per listed path, built once. It has no validate, normalize,
+    -- set or onChange, so `prepare` below stores it raw (a copy) and announces it, as the library
+    -- does; every other row-less path is still refused.
+    local through = {}
+    for _, p in ipairs(type(d.writeThrough) == "table" and d.writeThrough or {}) do
+      if type(p) == "string" and p ~= "" then through[p] = { path = p, writeThrough = true } end
+    end
     local function resolve(parts, id)
       if type(d.resolveRoot) ~= "function" then return nil end
       return d.resolveRoot(parts, id)
@@ -248,48 +256,91 @@ local function referenceStub(brand)
     function S.Reindex() end
     function S.Get(path, id)
       local row = S.FindRow(path)
-      if row and type(row.get) == "function" then return row.get() end
+      if row and type(row.get) == "function" then return row.get(id) end
       if type(path) ~= "string" or (row and row.sessionOnly) then return nil end
       local parts = stubLib.SplitPath(path)
       local root, first = resolve(parts, id)
       if type(root) ~= "table" then return nil end
       return stubLib.Read(root, parts, first)
     end
-    -- The write seam's order without its log and tally: refuse, validate, store, react, announce.
-    function S.Set(path, value, id)
-      local row = S.FindRow(path)
-      if not row then return false, brand .. ": no setting " .. tostring(path) end
-      local stored = type(row.set) ~= "function" and not row.sessionOnly
-      local parts, root, first, rid = nil, nil, nil, id
-      if stored then
-        parts = stubLib.SplitPath(path)
-        local r, f, got = resolve(parts, id)
-        if type(r) == "table" then root, first = r, f end
-        if got ~= nil then rid = got end
+    -- The write seam's order without its log and tally: refuse (a listed writeThrough path is not
+    -- refused), validate, normalize, store, react, announce. `prepare` answers a plan, or nil and the refusal; Set and SetMany share it.
+    local function prepare(path, value, id)
+      local row = S.FindRow(path) or through[path]
+      if not row then return nil, brand .. ": no setting " .. tostring(path) end
+      local w = { row = row, path = path, value = value, rid = id }
+      w.stored = type(row.set) ~= "function" and not row.sessionOnly
+      if w.stored then
+        w.parts = stubLib.SplitPath(path)
+        local r, f, got = resolve(w.parts, id)
+        if type(r) == "table" then w.root, w.first = r, f end
+        if got ~= nil then w.rid = got end
       end
       if type(row.validate) == "function" then
-        local ok, why = row.validate(value, rid)
-        if not ok then return false, brand .. ": invalid value for " .. path, why end
+        local ok, why = row.validate(value, w.rid)
+        if not ok then return nil, brand .. ": invalid value for " .. path, why end
       end
-      if stored and not root then return false, brand .. ": nowhere to store " .. path end
-      if type(row.set) == "function" then
-        row.set(value)
-      elseif stored then
-        stubLib.Write(root, parts, copy(value), first)
+      if type(row.normalize) == "function" then
+        local out, why = row.normalize(value, w.rid)
+        if out == nil then return nil, brand .. ": invalid value for " .. path, why end
+        w.value = out
       end
-      if type(row.onChange) == "function" then row.onChange(value, rid) end
-      if type(d.announce) == "function" then d.announce(row, path, value, rid) end
+      if w.stored and not w.root then return nil, brand .. ": nowhere to store " .. path end
+      return w
+    end
+    local function store(w)
+      if type(w.row.set) == "function" then
+        w.row.set(w.value)
+      elseif w.stored then
+        stubLib.Write(w.root, w.parts, copy(w.value), w.first)
+      end
+    end
+    local function react(w)
+      if type(w.row.onChange) == "function" then w.row.onChange(w.value, w.rid) end
+    end
+    function S.Set(path, value, id)
+      local w, err, why = prepare(path, value, id)
+      if not w then return false, err, why end
+      store(w)
+      react(w)
+      if type(d.announce) == "function" then d.announce(w.row, path, w.value, w.rid) end
+      return true
+    end
+    -- All or nothing, as the library's: every entry prepared, then every store, every onChange,
+    -- and one announceBatch (or announce per write). Log-silent, so `act` is not read at all.
+    local function prepareAll(entries, id)
+      local ws = {}
+      for i, e in ipairs(type(entries) == "table" and entries or {}) do
+        if type(e) ~= "table" then e = {} end
+        local w, err, why = prepare(e.path, e.value, id)
+        if not w then return nil, err, why, i end
+        ws[i] = w
+      end
+      return ws
+    end
+    local function announceAll(ws)
+      if #ws == 0 then return end
+      if type(d.announceBatch) == "function" then return d.announceBatch(ws, ws[1].rid) end
+      if type(d.announce) ~= "function" then return end
+      for _, w in ipairs(ws) do d.announce(w.row, w.path, w.value, w.rid) end
+    end
+    function S.SetMany(entries, opts)
+      local ws, err, why, at = prepareAll(entries, type(opts) == "table" and opts.instanceId or nil)
+      if not ws then return false, err, why, at end
+      for _, w in ipairs(ws) do store(w) end
+      for _, w in ipairs(ws) do react(w) end
+      announceAll(ws)
       return true
     end
     function S.Default(path)
       local row = S.FindRow(path)
       return row and copy(row.default)
     end
-    function S.ApplyDefault(row)
+    function S.ApplyDefault(row, id)
       if type(row) ~= "table" or type(row.path) ~= "string" or row.default == nil then return false end
       local exempt = d.resetExempt
       if depth > 0 and type(exempt) == "table" and exempt[row.path] then return false end
-      return S.Set(row.path, copy(row.default))
+      return S.Set(row.path, copy(row.default), id)
     end
     -- The bracket keeps its depth, because the sweep veto above reads it; it counts nothing.
     function S.BulkBegin() depth = depth + 1 end
@@ -358,7 +409,7 @@ test("schema: the instance surface is exactly the documented member list", funct
   assertEqual(sortedKeys(S), table.concat({
     "AddRows", "AllRows", "ApplyDefault", "BulkAdd", "BulkBegin", "BulkEnd", "BulkRun",
     "ConsumeResetCount", "CountOffDefault", "Default", "FindRow", "Get", "InBulk", "Reindex",
-    "ResetCounted", "Set", "Validate",
+    "ResetCounted", "Set", "SetMany", "Validate",
   }, ","))
 end)
 
@@ -409,6 +460,57 @@ test("schema: the stub completes writes, in the live seam's order and to the sam
   end
   assertEqual(degraded.rec.joined(), table.concat(liveOrder, ","), "onChange then announce, per write")
   assertEqual(#degraded.rec.debugLines, 0, "log-silent: the degraded sink would discard the line")
+end)
+
+test("schema: the stub's SetMany is all or nothing, and lands what the live batch lands", function()
+  -- red under: a stub SetMany that stores entries as they validate, or one that logs
+  local _, live = newFlat()
+  local _, degraded = newFlat()
+  local stub = referenceStub("Host"):New(degraded.d)
+  local good = { { path = "scale", value = 1.5 }, { path = "units.player.width", value = 250 },
+                 { path = "minimap", value = false } }
+  local bad = { { path = "enabled", value = false }, { path = "scale", value = 9 } }
+  for _, S in ipairs({ live.S, stub }) do
+    local ok, _, why, at = S.SetMany(bad)
+    assertFalse(ok, "one refused entry refuses the batch")
+    assertEqual(why, "out of range")
+    assertEqual(at, 2)
+    assertTrue(S.SetMany(good, { act = "copy", scope = "all" }))
+  end
+  assertTrue(Schema.SameValue(live.db, degraded.db), "the same store after the same batches")
+  assertEqual(degraded.db.profile.enabled, true, "the refused batch's first entry never landed")
+  assertEqual(#degraded.rec.debugLines, 0, "log-silent")
+  assertEqual(live.rec.debugLines[1], "[Set] copy all: 3 rows", "the live batch is one line")
+end)
+
+test("schema: the stub writes a writeThrough path through, as the live seam does", function()
+  -- The degraded route (a) a host verb takes for a composed row whose composer is absent: `locked`
+  -- is listed and has no row, `scale` is listed and has one, `general.__nope` is neither.
+  -- red under: a stub that refuses every row-less path (the pre-writeThrough reference)
+  local list = { "locked", "scale" }
+  local _, live = newFlat({ writeThrough = list })
+  local _, degraded = newFlat({ writeThrough = list })
+  local stub = referenceStub("Host"):New(degraded.d)
+  for _, S in ipairs({ live.S, stub }) do
+    assertTrue(S.Set("locked", true), "a listed row-less path is written")
+    assertTrue(S.Set("units.player.width", 250), "a row write between the two")
+    assertTrue(S.Set("locked", false), "and written again, false included")
+    local ok, _, why = S.Set("scale", 9)
+    assertFalse(ok, "a listed path WITH a row still goes through its validate")
+    assertEqual(why, "out of range")
+    assertFalse(S.Set("general.__nope", 1), "an unlisted row-less path is still refused")
+  end
+  assertEqual(degraded.db.profile.locked, false, "false is stored, not skipped")
+  assertNil(degraded.db.profile.general, "the refused path created nothing")
+  assertTrue(Schema.SameValue(live.db, degraded.db), "the same store after the same writes")
+  local liveOrder = {}
+  for _, e in ipairs(live.rec.log) do
+    if e ~= "debug" then liveOrder[#liveOrder + 1] = e end
+  end
+  assertEqual(degraded.rec.joined(), table.concat(liveOrder, ","), "the same announce order")
+  assertEqual(degraded.rec.count("onChange:"), 1, "only the row write reacted")
+  assertTrue(degraded.rec.lastAnnounce.row.writeThrough == true, "a synthetic row, marked")
+  assertEqual(degraded.rec.lastAnnounce.path, "locked")
 end)
 
 test("schema: the stub's Reset All sweep resets rows and keeps the sweep veto", function()
@@ -545,7 +647,7 @@ end)
 test("schema: New refuses a descriptor without rows and holds rows by reference", function()
   local err = assertError(function() Schema:New(nil) end)
   assertTrue(err:find("descriptor.rows", 1, true) ~= nil, err)
-  assertError(function() Schema:New{ rows = "x" } end)
+  assertErrorMatches(function() Schema:New{ rows = "x" } end, "descriptor.rows must be a table")
   local S, fx = newFlat()
   assertTrue(S.AllRows() == fx.rows, "AllRows is the host's own table")
   assertTrue(S.FindRow("scale") == fx.rows[2], "rows present at New are indexed")
@@ -1178,7 +1280,7 @@ test("schema: one row's errors print in field order, and its missing line prints
   }, "\n"))
 end)
 
-test("schema: a non-string or empty path is labelled as given and is never a stored path", function()
+test("schema: a non-string or empty path is labeled as given and is never a stored path", function()
   local rec = newRecorder()
   local calls = 0
   local rows = {

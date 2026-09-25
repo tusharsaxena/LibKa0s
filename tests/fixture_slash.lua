@@ -6,7 +6,7 @@
 --
 -- The schema is deliberately shaped to exercise every branch the library has: a bool, a number with
 -- min/max/fmt (so clamping and the " px" suffix are reachable), a string with an enum, a string
--- that is empty (the "(none)" branch), a colour, and two pages — one of which is per-unit, so the
+-- that is empty (the "(none)" branch), a color, and two pages — one of which is per-unit, so the
 -- host's groupKey produces "bar / player"-style headers and the other a bare page name.
 
 local T = _G.LK_TEST
@@ -93,8 +93,8 @@ function Fixture.new(overrides)
   return rec.instance, rec
 end
 
---- Strip WoW colour escapes, so an assertion about wording is not also an assertion about colour.
---- The cases that mean to pin colour do so explicitly, without this.
+--- Strip WoW color escapes, so an assertion about wording is not also an assertion about color.
+--- The cases that mean to pin color do so explicitly, without this.
 function Fixture.plain(s)
   return (s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""))
 end

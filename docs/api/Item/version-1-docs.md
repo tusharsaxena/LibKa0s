@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Item-1.0` |
 | Files and minors | `Item.lua` minor **1** |
 | Shipped in | v1.15.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2](./version-2-docs.md) — `QualityFromLink` reads the 11.1.5+ `\|cnIQ<n>` link color |
 | Confirm in-game | `LibStub("LibKa0s-Item-1.0").MODULES` → `{ Item = 1 }` |
 
 ## What this major is
@@ -130,3 +130,12 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 
 `Item.lua` is a new entry in `LibKa0s.xml`, so a consumer whose test harness derives its load list
 from that XML picks it up with no edit; a consumer that re-types the list adds one row.
+
+## Moving to version 2
+
+No member is added or removed and no signature moves. `QualityFromLink` changes in two ways. It reads
+the `|cnIQ<n>` link color the client has written since patch 11.1.5, which this version answers
+`nil` for, and its hex map is no longer kept when it was built before `ITEM_QUALITY_COLORS` was
+populated. A host written against this version is correct at version 2 unmodified. A host that
+worked around the `nil` with its own `|cnIQ` parse can drop the workaround once every copy it could
+load is at 2.

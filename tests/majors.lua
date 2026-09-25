@@ -12,7 +12,7 @@
 -- XML but forgotten here surfaces as a versioning failure instead of as silence.
 --
 -- `paired` names a secondary file carrying the __<file>Minor / __<file>ProbeMinor guard, so the
--- pairing assertion generalises with the rest.
+-- pairing assertion generalizes with the rest.
 local MAJORS = {
   {
     major = "LibKa0s-Core-1.0",

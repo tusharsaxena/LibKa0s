@@ -186,6 +186,9 @@ test("media: RegisterLSM registers every font and every texture, by catalog name
       byKind[kind][key] = path
       return true
     end,
+    IsValid = function(_, kind, key)
+      return byKind[kind] ~= nil and byKind[kind][key] ~= nil
+    end,
   }
 
   local fonts, bars = media.RegisterLSM("MythicMeters")
@@ -207,6 +210,114 @@ test("media: RegisterLSM registers every font and every texture, by catalog name
   end
   assertEqual(fonts, wantFonts)
   assertEqual(bars, wantBars)
+end)
+
+--- A LibSharedMedia fake that behaves as the real one does on a NON-WESTERN client: a font with no
+--- langmask is refused (LibSharedMedia-3.0's `Register` returns false and stores nothing), and so is
+--- a font whose mask lacks the client's locale bit. `clientBit` is that bit (2 for ruRU, 1 for
+--- koKR, 128 for a western client), `store` records what actually landed, which `IsValid` reads,
+--- and `masks` records the langmask each font was offered.
+local function localeLSM(clientBit, store, masks)
+  return {
+    MediaType = { FONT = "font", STATUSBAR = "statusbar" },
+    LOCALE_BIT_koKR = 1, LOCALE_BIT_ruRU = 2, LOCALE_BIT_zhCN = 4, LOCALE_BIT_zhTW = 8,
+    LOCALE_BIT_western = 128,
+    Register = function(_, kind, key, path, langmask)
+      if kind == "font" then
+        masks[key] = langmask or "none"
+        if not langmask or math.floor(langmask / clientBit) % 2 ~= 1 then return false end
+      end
+      store[kind] = store[kind] or {}
+      if store[kind][key] then return false end
+      store[kind][key] = path
+      return true
+    end,
+    IsValid = function(_, kind, key)
+      return store[kind] ~= nil and store[kind][key] ~= nil
+    end,
+  }
+end
+
+test("media: RegisterLSM flags the face western+ruRU, so a ruRU client keeps it", function()
+  -- red under: minor 3, which passed no langmask. LSM refuses that on every non-western client,
+  -- and the count still said 1.
+  local store, masks = {}, {}
+  T.mocks.__libs["LibSharedMedia-3.0"] = localeLSM(2, store, masks)
+  local fonts = media.RegisterLSM("MythicMeters")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+
+  assertEqual(masks["JetBrains Mono"], 128 + 2, "the face must be flagged western + ruRU")
+  assertEqual(store.font and store.font["JetBrains Mono"],
+    media.Font("MythicMeters", "JetBrains Mono"), "the face did not land in LSM")
+  assertEqual(fonts, 1)
+end)
+
+test("media: RegisterLSM counts only what LibSharedMedia kept", function()
+  -- red under: minor 3, which counted every Register call whatever it answered. A koKR client
+  -- refuses the face, which has no Hangul, so the count is 0 although Register was asked.
+  local store, masks = {}, {}
+  T.mocks.__libs["LibSharedMedia-3.0"] = localeLSM(1, store, masks)
+  local fonts = media.RegisterLSM("MythicMeters")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertTrue(masks["JetBrains Mono"] ~= nil, "Register was never asked")
+  assertEqual(fonts, 0, "a refused face is not a registered one")
+
+  -- An LSM that refuses everything, statusbars included, answers 0, 0.
+  T.mocks.__libs["LibSharedMedia-3.0"] = {
+    MediaType = { FONT = "font", STATUSBAR = "statusbar" },
+    Register = function() return false end,
+    IsValid = function() return false end,
+  }
+  local f2, b2 = media.RegisterLSM("MythicMeters")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertEqual(f2, 0)
+  assertEqual(b2, 0)
+end)
+
+test("media: RegisterLSM counts a face another copy registered first", function()
+  -- LSM's first registration wins and a second answers false. The face is still in every dropdown,
+  -- so it counts: the question is whether LSM has it, not whether this call put it there.
+  local first = "Interface\\AddOns\\Other\\libs\\LibKa0s\\media\\fonts\\JetBrainsMono-Regular.ttf"
+  local store, masks = { font = { ["JetBrains Mono"] = first } }, {}
+  T.mocks.__libs["LibSharedMedia-3.0"] = localeLSM(128, store, masks)
+  local fonts = media.RegisterLSM("MythicMeters")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertEqual(fonts, 1)
+  assertEqual(store.font["JetBrains Mono"], first, "the first registration stays")
+end)
+
+test("media: an LSM without the locale bits gets a plain Register", function()
+  -- The langmask argument is only offered when LSM publishes the bits to build it from.
+  local argc = {}
+  T.mocks.__libs["LibSharedMedia-3.0"] = {
+    MediaType = { FONT = "font", STATUSBAR = "statusbar" },
+    Register = function(_, kind, ...)
+      if kind == "font" then argc[#argc + 1] = select("#", ...) end
+      return true
+    end,
+    IsValid = function() return true end,
+  }
+  local fonts = media.RegisterLSM("MythicMeters")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertEqual(fonts, 1)
+  assertEqual(argc[1], 2, "key and path, and no langmask argument")
+end)
+
+test("media: an LSM without IsValid counts every Register call, as minor 3 did", function()
+  -- red under: minor 4 before this fix, which called LSM:IsValid unguarded and raised
+  -- "attempt to call method 'IsValid' (a nil value)". Consumers' test harnesses fake LSM with
+  -- only Register/Fetch/List/HashTable and call RegisterLSM at file load, so re-vendoring must not
+  -- break them: with no IsValid to ask, a Register call counts, which is what minor 3 answered.
+  local registered = 0
+  T.mocks.__libs["LibSharedMedia-3.0"] = {
+    MediaType = { FONT = "font", STATUSBAR = "statusbar" },
+    Register = function() registered = registered + 1 end,   -- answers nothing, like the fakes
+  }
+  local ok, fonts, bars = pcall(media.RegisterLSM, "MythicMeters")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertTrue(ok, "RegisterLSM raised on an LSM without IsValid: " .. tostring(fonts))
+  assertEqual(fonts + bars, registered, "every Register call counts when IsValid is absent")
+  assertEqual(fonts, 1)
 end)
 
 test("media: no LibSharedMedia is 0 registrations, not an error", function()

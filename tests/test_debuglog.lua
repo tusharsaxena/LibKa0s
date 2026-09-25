@@ -5,12 +5,12 @@ local debuglog = T.debuglog
 local test, assertEqual = T.test, T.assertEqual
 
 -- A stand-in for a WoW combat "secret" value. Crucially it models BOTH halves of the real
--- behaviour: the `..` operator SUCCEEDS on a secret (silently propagating secretness) while
+-- behavior: the `..` operator SUCCEEDS on a secret (silently propagating secretness) while
 -- `table.concat` RAISES on it. A table with a string-returning __concat concatenates fine via
 -- `..`, yet `table.concat({mock})` still rejects it (table.concat ignores __concat and refuses a
 -- non-string/number element) — so this catches a detector that (wrongly) probes with `..` and
 -- passes one that probes with `table.concat`. (Earlier a __concat that *errored* was used, which
--- modelled the opposite of a real secret and gave false confidence.)
+-- modeled the opposite of a real secret and gave false confidence.)
 local secretMock = setmetatable({}, {
   __concat = function() return "secret-propagated" end,
 })
@@ -37,7 +37,7 @@ end
 -- ── the two formatters ─────────────────────────────────────────────────────────────────────
 --
 -- These three assertions are the only place the rendered text is pinned byte for byte. The buffer
--- holds the plain form only, so a buffer assertion can never see the coloured one — that its output
+-- holds the plain form only, so a buffer assertion can never see the colored one — that its output
 -- actually reaches the console is asserted separately, further down, with a recorder on the message
 -- frame.
 
@@ -50,8 +50,8 @@ test("dbg: FormatPlain tolerates a nil tag", function()
   assertEqual(debuglog.FormatPlain("15:04:43", nil, "hi"), "15:04:43 | [] hi")
 end)
 
-test("dbg: FormatColored colours the timestamp and tag; pipe and content default", function()
-  -- The `||` in the format string is WoW's escape for ONE literal pipe inside a colour-coded
+test("dbg: FormatColored colors the timestamp and tag; pipe and content default", function()
+  -- The `||` in the format string is WoW's escape for ONE literal pipe inside a color-coded
   -- string. A de-duplication that "fixes" it to a single pipe breaks the console's separator.
   assertEqual(debuglog.FormatColored("15:04:43", "Absorb", "player=1234"),
     "|cff6f8faf15:04:43|r || |cffc9a66b[Absorb]|r player=1234")
@@ -86,7 +86,7 @@ test("dbg: Add appends the plain form to the buffer and is never gated on the fl
   D:Add("Perf", "a line")
   assertEqual(#D.buffer, 1)
   T.assertTrue(D.buffer[1]:find("[Perf] a line", 1, true) ~= nil, "the plain form lands verbatim")
-  T.assertTrue(D.buffer[1]:find("|cff", 1, true) == nil, "and carries no colour codes")
+  T.assertTrue(D.buffer[1]:find("|cff", 1, true) == nil, "and carries no color codes")
 end)
 
 test("dbg: the cap is 1500 and the message frame is held to the same number", function()
@@ -110,13 +110,14 @@ test("dbg: the cap is 1500 and the message frame is held to the same number", fu
 end)
 
 test("dbg: the buffer is capped, dropping the oldest line", function()
-  -- Never exercised downstream — no addon suite writes 501 lines — so the eviction path is
-  -- covered here for the first time.
+  -- Read through the public readers since minor 13: the raw array may run up to 64 lines past the
+  -- cap between compactions, so #buffer is no longer the cap at MAX_BUFFER + 10. What a reader
+  -- sees still is.
   local D = newLog()
   for i = 1, debuglog.MAX_BUFFER + 10 do D:Add("N", "line " .. i) end
-  assertEqual(#D.buffer, debuglog.MAX_BUFFER)
-  T.assertTrue(D.buffer[1]:find("line 11", 1, true) ~= nil, "the first ten were evicted, oldest first")
-  T.assertTrue(D.buffer[#D.buffer]:find("line " .. (debuglog.MAX_BUFFER + 10), 1, true) ~= nil,
+  assertEqual(D:BufferSize(), debuglog.MAX_BUFFER)
+  T.assertTrue(D:CopyText():find("^[^\n]*line 11\n") ~= nil, "the first ten were evicted, oldest first")
+  T.assertTrue(D:LastLine():find("line " .. (debuglog.MAX_BUFFER + 10), 1, true) ~= nil,
     "and the newest is still last")
 end)
 
@@ -153,6 +154,101 @@ test("dbg: BufferSize, LastLine and FindLine answer without reaching into .buffe
   T.assertTrue(D:LastLine():find("[Combat] left", 1, true) ~= nil, "LastLine is the newest")
   T.assertTrue(D:FindLine("player=1234") ~= nil, "FindLine matches a substring")
   T.assertNil(D:FindLine("nothing here"), "and answers nil when nothing matches")
+end)
+
+-- ── the public readers at and past the cap ─────────────────────────────────────────────────
+--
+-- Characterization written before minor 13 batched the trim, and green on both sides of it: what
+-- a host reads through BufferSize, LastLine, FindLine and CopyText is the newest MAX_BUFFER lines
+-- and nothing else, whatever the raw array happens to hold between compactions. Each line carries
+-- a terminated marker, "L<i>.", so "L100." cannot also match L1000 or L1001.
+
+local function fillTo(n)
+  local D = newLog()
+  for i = 1, n do D:Add("N", "L" .. i .. ".") end
+  return D
+end
+
+local function copiedLines(D)
+  local lines = {}
+  for line in (D:CopyText() .. "\n"):gmatch("(.-)\n") do lines[#lines + 1] = line end
+  return lines
+end
+
+-- For n lines written, the readers must answer exactly lines first..n, first = max(1, n - cap + 1).
+local function assertNewestWindow(D, n)
+  local cap = debuglog.MAX_BUFFER
+  local first = math.max(1, n - cap + 1)
+  assertEqual(D:BufferSize(), n - first + 1, "BufferSize at " .. n)
+  T.assertTrue(D:LastLine():find("L" .. n .. ".", 1, true) ~= nil, "LastLine is line " .. n)
+  T.assertTrue(D:FindLine("L" .. first .. ".") ~= nil, "FindLine reaches the oldest kept line")
+  T.assertTrue(D:FindLine("L" .. n .. ".") ~= nil, "FindLine reaches the newest line")
+  if first > 1 then
+    T.assertNil(D:FindLine("L" .. (first - 1) .. "."), "FindLine never answers an evicted line")
+  end
+  local lines = copiedLines(D)
+  assertEqual(#lines, n - first + 1, "CopyText carries exactly the kept lines at " .. n)
+  T.assertTrue(lines[1]:find("L" .. first .. ".", 1, true) ~= nil, "CopyText opens on the oldest kept line")
+  T.assertTrue(lines[#lines]:find("L" .. n .. ".", 1, true) ~= nil, "CopyText closes on the newest line")
+end
+
+for _, n in ipairs({ 1499, 1500, 1501, 1600 }) do
+  test("dbg: at " .. n .. " lines every public reader answers the newest MAX_BUFFER", function()
+    assertNewestWindow(fillTo(n), n)
+  end)
+end
+
+test("dbg: the 1501st line drops the first", function()
+  local D = fillTo(debuglog.MAX_BUFFER)
+  T.assertTrue(D:FindLine("L1.") ~= nil, "line 1 is still held at the cap")
+  D:Add("N", "L" .. (debuglog.MAX_BUFFER + 1) .. ".")
+  T.assertNil(D:FindLine("L1."), "one line past the cap evicts line 1")
+  T.assertTrue(copiedLines(D)[1]:find("L2.", 1, true) ~= nil, "and the copy now opens on line 2")
+  assertEqual(D:BufferSize(), debuglog.MAX_BUFFER)
+end)
+
+-- ── the trim is batched (minor 13) ─────────────────────────────────────────────────────────
+--
+-- Through minor 12 every Add past the cap ran table.remove(buffer, 1): a 1500-slot shift per line,
+-- for as long as debug logging stayed on. Minor 13 lets the raw array run 64 lines past the cap
+-- and then moves the newest MAX_BUFFER down in one pass, so 1564 adds cost at most one compaction.
+-- The spy counts table.remove because that is what the per-line trim called; the compaction
+-- itself is one copy loop and calls it not at all.
+
+test("dbg: 1564 adds cost at most one compaction, not one table.remove per line", function()
+  local realRemove = table.remove
+  local removes = 0
+  -- rawset rather than assignment: the spy replaces a standard-library field for this case only.
+  rawset(table, "remove", function(...) removes = removes + 1; return realRemove(...) end)
+  local ok, err = pcall(fillTo, debuglog.MAX_BUFFER + 64)
+  rawset(table, "remove", realRemove)
+  T.assertTrue(ok, tostring(err))
+  T.assertTrue(removes <= 1, "expected at most one compaction, saw " .. removes .. " table.remove calls")
+end)
+
+test("dbg: the raw buffer holds at most MAX_BUFFER + 64 lines, and compacts in order", function()
+  local D = newLog()
+  local cap, peak = debuglog.MAX_BUFFER, 0
+  for i = 1, cap + 100 do
+    D:Add("N", "L" .. i .. ".")
+    if #D.buffer > peak then peak = #D.buffer end
+  end
+  assertEqual(peak, cap + 64, "the slack is 64 lines and no more")
+  -- Line 1565 compacts the array to lines 66..1565; 35 more follow: 1535 raw, dense, in order.
+  assertEqual(#D.buffer, cap + 35)
+  T.assertTrue(D.buffer[1]:find("L66.", 1, true) ~= nil, "the compaction kept the newest MAX_BUFFER")
+  for i = 1, #D.buffer do assertEqual(type(D.buffer[i]), "string") end
+  assertNewestWindow(D, cap + 100)
+end)
+
+test("dbg: the status line counts what the readers answer, not the raw array", function()
+  local D = newLog()
+  D:Show()
+  -- A font string cannot be read back through the frame API, so the SetText is recorded instead.
+  local shown
+  rawset(D._frameForTest.lineCount, "SetText", function(_, s) shown = s end)
+  for i = 1, debuglog.MAX_BUFFER + 10 do D:Add("N", "L" .. i .. ".") end
+  assertEqual(shown, D:Text("LINES"):format(debuglog.MAX_BUFFER, debuglog.MAX_BUFFER))
 end)
 
 -- ── the gated sink ─────────────────────────────────────────────────────────────────────────
@@ -233,7 +329,7 @@ test("dbg: SetEnabled writes the flag through the host, not into the library", f
   assertEqual(D:IsEnabled(), false)
 end)
 
-test("dbg: SetEnabled normalises a truthy value to a boolean", function()
+test("dbg: SetEnabled normalizes a truthy value to a boolean", function()
   local D, rec = newLog()
   D:SetEnabled("yes")
   assertEqual(rec.enabled, true, "the host is handed a boolean, never the raw argument")
@@ -356,8 +452,8 @@ test("dbg: the copy text is the whole buffer, in order, newline-joined", functio
   T.assertTrue(ok, "and the window itself builds without raising")
 end)
 
-test("dbg: Add sends the COLOURED form to the console and the plain one to the buffer", function()
-  -- Without this the coloured formatter's delivery is unpinned: swapping FormatColored for
+test("dbg: Add sends the COLORED form to the console and the plain one to the buffer", function()
+  -- Without this the colored formatter's delivery is unpinned: swapping FormatColored for
   -- FormatPlain at the AddMessage call is invisible to every buffer assertion in the file.
   local D = newLog()
   D:Show()
@@ -367,7 +463,7 @@ test("dbg: Add sends the COLOURED form to the console and the plain one to the b
   D:Add("Absorb", "player=1")
   rawset(log, "AddMessage", nil)
   T.assertTrue(got ~= nil and got:find("|cffc9a66b[Absorb]|r", 1, true) ~= nil,
-    "the console gets the colour-coded line: " .. tostring(got))
+    "the console gets the color-coded line: " .. tostring(got))
   T.assertTrue(D:LastLine():find("|cff", 1, true) == nil, "the buffer gets the plain one")
 end)
 
@@ -553,7 +649,7 @@ end)
 --
 -- A host's locale table carries a metatable fallback that answers EVERY key with
 -- the key itself — the Ka0s standard mandates one (anti-patterns #2). Resolving
--- an override with a plain index therefore accepts that synthesised value for
+-- an override with a plain index therefore accepts that synthesized value for
 -- every key, this module's own STRINGS become unreachable, and the host renders
 -- raw keys. It shipped: KickCD's perf panel read "STEP_START" / "Ka0s
 -- KickCDPANEL_TITLE_SUFFIX" in game, and no headless case caught it.
@@ -565,11 +661,11 @@ local function fallbackLocale()
   return setmetatable({}, { __index = function(_, k) return k end })
 end
 
-test("an L whose metatable synthesises every key does NOT mask the module's own strings", function()
+test("an L whose metatable synthesizes every key does NOT mask the module's own strings", function()
   -- red under: reverting D:Text to `strings[key]`
   local d = newLog({ L = fallbackLocale() })
   assertEqual(d:Text("DEBUG_ON"), debuglog.STRINGS.DEBUG_ON,
-    "a synthesised override must fall through to the module's own string")
+    "a synthesized override must fall through to the module's own string")
   assertEqual(d:Text("COPY_TITLE"), debuglog.STRINGS.COPY_TITLE)
 end)
 
@@ -581,7 +677,7 @@ test("a REAL entry in an L that also has a fallback still overrides", function()
   local d = newLog({ L = L })
   assertEqual(d:Text("DEBUG_ON"), "Debogage: ACTIF", "a real entry must still win")
   assertEqual(d:Text("DEBUG_OFF"), debuglog.STRINGS.DEBUG_OFF,
-    "and its neighbours must still fall through")
+    "and its neighbors must still fall through")
 end)
 
 test("a plain L table overrides exactly as before", function()
@@ -594,14 +690,14 @@ end)
 -- ── host window chrome ─────────────────────────────────────────────────────────────────────
 --
 -- Added at DebugLog minor 4, for the two hosts (BankLedger and LootHistory) whose windows wear a
--- flat 1px double border with a synthesised inner border, a gold title tint and a grey divider, and
--- close with a 24x24 class-coloured x shared across every window they draw. At the time Core.SKIN
+-- flat 1px double border with a synthesized inner border, a gold title tint and a gray divider, and
+-- close with a 24x24 class-colored x shared across every window they draw. At the time Core.SKIN
 -- was a 12px tooltip border and could not express any of it, so taking the library default was a
 -- visual redesign of every window such a host owned.
 --
 -- As of Core minor 3 that treatment IS the library default (see test_core.lua's "the Ka0s window
 -- edge"), so the two hooks no longer exist to rescue a host from the default — they exist for
--- chrome that differs in SHAPE rather than colour, and for a host that wants its console to track
+-- chrome that differs in SHAPE rather than color, and for a host that wants its console to track
 -- its own re-skin seam. Both still DEFAULT to what the library draws, so no consumer changes by
 -- passing nothing.
 
@@ -610,7 +706,7 @@ test("dbg: with no makeCloseButton, BOTH windows close with Core's x", function(
   -- The console and the copy window are the LIBRARY's windows, so they wear the library's close
   -- glyph. A host whose own main window closes with a different one must not push that difference
   -- onto them: two adopters did exactly that, and their diagnostic windows ended up with a 24x24
-  -- class-coloured x where the other three had Core's thin 18x18 one.
+  -- class-colored x where the other three had Core's thin 18x18 one.
   --
   -- Spying on core.MakeCloseButton rather than on the returned button is what makes this specific:
   -- lib.MakeCloseButton forwards through the core TABLE at CALL time, so a default that stopped
@@ -632,7 +728,7 @@ test("dbg: with no makeCloseButton, BOTH windows close with Core's x", function(
 end)
 test("dbg: the default chrome IS the Ka0s window edge, on both windows", function()
   -- The host-facing half of Core minor 3. A host that passes no applySkin must get the flat
-  -- black edge, the grey inner highlight, the gold title and the grey divider — not the tooltip
+  -- black edge, the gray inner highlight, the gold title and the gray divider — not the tooltip
   -- border it got through v1.2.0. Asserted on the frame the library actually built.
   local D = newLog{}
   D:Show()
@@ -640,7 +736,7 @@ test("dbg: the default chrome IS the Ka0s window edge, on both windows", functio
   T.assertTrue(frame ~= nil, "the console frame must exist")
   T.assertTrue(frame.divider ~= nil, "and carry the divider the skin tints")
   T.assertTrue(frame.innerBorder ~= nil,
-    "the 1px inner highlight must be synthesised by the default skin, not only by a host hook")
+    "the 1px inner highlight must be synthesized by the default skin, not only by a host hook")
 end)
 
 test("dbg: a host can supply its own skin function, for both windows", function()
@@ -875,8 +971,8 @@ test("dbg: the copy window still shows the whole buffer, in order", function()
   T.assertTrue(got:find("first line", 1, true) < got:find("second line", 1, true), "in order")
 end)
 
-test("dbg: the copy window re-anchors to the console instead of a fixed centre", function()
-  -- Behaviour the convergence GAINED. The hand-rolled window anchored once at build, so it opened
+test("dbg: the copy window re-anchors to the console instead of a fixed center", function()
+  -- Behavior the convergence GAINED. The hand-rolled window anchored once at build, so it opened
   -- wherever it was last dragged however far the console had since moved. The shared member
   -- re-anchors on every show, which is what the three existing adopters already do.
   local D = newLog({ name = "CopyHost" })

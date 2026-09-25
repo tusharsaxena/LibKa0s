@@ -147,7 +147,7 @@ test("lib: a window closes when combat ends and stops accumulating", function()
   tick(p, 0.5, false)            -- combat ended: closes the window
   tick(p, 9.0, false)            -- and nothing lands afterwards
   tick(p, 9.0, true)             -- not even a later, unrelated fight
-  assertEqual(p.recording, nil, "window closed")
+  assertEqual(p.recording, false, "window closed")
   assertEqual(p.__fpsArms().active.frames, 1, "only the in-combat frame counted")
   assertFalse(p.on, "brackets closed with the window")
   finish(p)
@@ -213,7 +213,7 @@ test("lib: arming a window mid-combat closes the one already open", function()
   p.Measure("a")
   tick(p, 1.0, true)
   p.Measure("b")
-  assertEqual(p.recording, nil, "A was closed, B not yet open")
+  assertEqual(p.recording, false, "A was closed, B not yet open")
   assertEqual(p.__fpsArms().active.seconds, 1, "A kept what it had")
   finish(p)
 end)
@@ -248,7 +248,7 @@ test("lib: Stop closes an open window rather than discarding it", function()
   p.Measure("a")
   tick(p, 1.5, true)
   local record = p.Stop()
-  assertEqual(p.recording, nil, "closed")
+  assertEqual(p.recording, false, "closed")
   assertEqual(record.fps.active.seconds, 1.5, "and its data survived into the record")
 end)
 
@@ -270,7 +270,7 @@ test("lib: the sampler ignores ticks once the experiment is over", function()
 end)
 
 test("lib: Stop deliberately leaves a suspended host suspended", function()
-  -- Pinning documented behaviour, not endorsing it. SUBS.finish resumes BEFORE it saves, so that an
+  -- Pinning documented behavior, not endorsing it. SUBS.finish resumes BEFORE it saves, so that an
   -- error in Save or FormatReport cannot strand the host inert — and it can only order it that way
   -- because Stop() leaves the suspend state alone. The cost is that a host driving this API
   -- directly owns the matching Resume(); the README's Stop() row says so.
@@ -333,8 +333,8 @@ test("lib: the end announcement carries the duration and frame rate", function()
   assertTrue(logText:find("20.0 fps", 1, true) ~= nil, "and the rate")
 end)
 
-test("lib: the console log is plain text, free of colour escapes", function()
-  -- The Copy window mirrors this buffer verbatim; colour codes in a log you are about to paste
+test("lib: the console log is plain text, free of color escapes", function()
+  -- The Copy window mirrors this buffer verbatim; color codes in a log you are about to paste
   -- somewhere for analysis are noise.
   local p, rec = Fixture.new()
   p.Start("plain")
@@ -342,7 +342,7 @@ test("lib: the console log is plain text, free of colour escapes", function()
   tick(p, 0.5, true)
   p.Stop()
   local logText = table.concat(rec.log, "\n")
-  assertEqual(logText:find("|c", 1, true), nil, "no colour escapes: " .. logText)
+  assertEqual(logText:find("|c", 1, true), nil, "no color escapes: " .. logText)
   assertTrue(logText:find("Experiment A", 1, true) ~= nil, "and it reads cleanly")
 end)
 
@@ -390,7 +390,7 @@ test("lib: measure b calls the host's suspend, measure a its resume", function()
   assertEqual(rec.calls[#rec.calls], "resume", "arming A resumes it")
 end)
 
-test("lib: cancelling a suspended run restores the host", function()
+test("lib: canceling a suspended run restores the host", function()
   local p, rec = Fixture.new()
   p.Start("cap")
   p.Measure("b")

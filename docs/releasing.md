@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.55.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.58.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `DRAG_MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -16,8 +16,10 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 1. **Make the change**, with its test. Green gate: `lua tests/run.lua` and `luacheck .` (0/0).
    That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide — here it
-   is eighty-one files at v1.55.0: everything but `tests/_kit/`, which is excluded only because
-   it is a byte copy of `testkit/` and would report every finding twice. A consumer's is scoped too,
+   is everything but `tests/_kit/`, which is excluded only because it is a byte copy of `testkit/`
+   and would report every finding twice. How many files that is, luacheck prints (`in N files`)
+   and every run's `docs/automated-tests/RESULTS.md` *Lint* section carries, generated; no prose
+   copy of the count is kept here to drift. A consumer's is scoped too,
    and usually excludes `libs/` and `tests/`. 0/0
    only means something if the files carrying the seam are inside the checked set, so confirm that
    before reading a clean run as a clean adoption.
@@ -61,7 +63,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
      *Moving to …* section;
    - add the row to the table in [`api/README.md`](api/README.md).
 
-   Never edit a superseded document to describe new behaviour — an adopter still on that copy has to
+   Never edit a superseded document to describe new behavior — an adopter still on that copy has to
    be able to read what their copy actually does. A minor bump is not released until its document
    exists, and since v1.8.0 that is a gate rather than a rule:
    `tests/test_versioning.lua` derives `docs/api/<Major>/version-<minors>-docs.md` from each major's
@@ -121,10 +123,29 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    tests/_kit/run-automated-tests.sh --release <X.Y.Z>
    ```
 
-   Then a **second** commit carrying the bundle and its `RESULTS.md` row, and the tag on that. Two
+   Then the write-up, the second commit, the checks and the tag, as four sub-steps in this order:
+
+   1. **Write `docs/automated-tests/<stamp>/ANALYSIS.md`** per the uniform analysis prompt in the
+      standards repo's `AUTOMATED_TESTS.md` (*Step 2 — Write `<bundle>/ANALYSIS.md`*).
+      `automated-tests-§5` makes it a MUST for every release run and forbids backfill, so a release
+      bundle that ships without one cannot be repaired afterwards, only noted by the next write-up.
+      Every figure comes from the manifest or a suite artifact in the same bundle, and the perf skip
+      is written up as not measured, never as passed. Until this sub-step existed the procedure never
+      asked for the file, and 32 of the 38 release-stamped bundles from 2026-09-08 through v1.55.0
+      went without one.
+   2. **Fill the release-notes line** below into the version's `CHANGELOG.md` block, from the same
+      manifest. It needs the manifest's figures, so it cannot ride in the first commit, and it must
+      be in the tree before the second commit or the tag is cut over a working-tree edit.
+   3. **Commit the bundle, its `ANALYSIS.md`, its `RESULTS.md` row and the release-notes line** as
+      the second commit. The write-up and the line ride in that commit, before the tag, never in a
+      follow-up after it.
+   4. **Check the tag's preconditions** below, off the manifest and the bundle on disk, then tag
+      the second commit.
+
+   Two
    commits rather than one, deliberately: the manifest names the sha its suites actually measured,
    and the tagged tree still contains the evidence for itself. The two trees differ by the record
-   and nothing else. Taking the run first and committing everything together is what produced the
+   and the one `CHANGELOG.md` line that reports it, and nothing else. Taking the run first and committing everything together is what produced the
    history this order replaces — of this library's twenty-nine release bundles, twenty-eight record
    `"dirty": true`, and `20260903-161751` stamps `"release": "1.25.0"` at sha `895cdf4`, a tree
    nobody can check out. Each of them reads, from a trend line, exactly like a reproducible run.
@@ -148,7 +169,14 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    jq -r '.git.sha'                     "$S"    # the commit being tagged, or its parent
    jq -r '.suites | to_entries[] | "\(.key) \(.value.status)"' "$S"
    jq -r '.suites.complexity.warnings'  "$S"    # 0
+   grep -l '"release": "<X.Y.Z>"' docs/automated-tests/*/manifest.json  # >= 1 path, <stamp> among them
+   test -f docs/automated-tests/<stamp>/ANALYSIS.md && echo present     # present
    ```
+
+   The `grep -l` must print at least one path, and `<stamp>` must be one of them: the newest clean,
+   all-pass bundle for this version, which is the one the tag is cut from. It does not have to be
+   the only one. Re-running the gate for one release is normal (1.35.0 has five bundles), and a
+   check for exactly one path would block a correctly released version.
 
    `lint`, `tests` and `complexity` must read `pass` and `complexity.warnings` must be zero — no
    function above CCN 15 (`automated-tests-§3`, *The release gate*). A `skip` is NOT EVALUATED
@@ -157,7 +185,23 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    [`automated-tests/README.md`](automated-tests/README.md). **No tag is cut without a bundle whose
    `release` field names it.** `v1.24.0` is the reason that sentence is here: the tag exists, the
    bundles jump 1.23.0 to 1.25.0, and there is a released version of this library whose test record
-   does not.
+   does not. Six more followed it: `v1.28.0`, `v1.29.0`, `v1.36.0`, `v1.36.1`, `v1.54.1` and
+   `v1.54.2` carry no bundle, the last two tagged five minutes apart. They are not backfilled; the
+   `grep -l` line above is what stops a seventh.
+
+   **The release-notes line.** `automated-tests-§3` requires the perf skip to be stated in the
+   release notes when a repo ships no `tests/perf.lua`, and from v1.47.0 on it came and went with
+   whoever wrote the entry. End the version's `CHANGELOG.md` block with this line, every figure
+   read off `$S` (`lint.warnings`/`lint.errors`/`lint.files`, `tests.total`/`tests.failed`,
+   `complexity.warnings`):
+
+   ```text
+   Release gate (`docs/automated-tests/<stamp>/`): lint pass, <warnings>/<errors> in <files> files;
+   tests pass, <total> tests, <failed> failed; complexity pass, <warnings> over CCN 15. Perf
+   SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+   ```
+
+   The line goes into the new entry only. Released entries stay as written.
 8. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
    includes bumping the version named in each consumer's `CLAUDE.md` provenance line, in the same
    commit as the copy.
@@ -203,7 +247,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.55.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.58.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -230,7 +274,7 @@ file by file. So a provenance line that is ahead of the tag, or a re-vendor take
 `master`, fails there — which is exactly how the untagged kit revision was caught. Re-vendor from a
 tag, and move the line in the same commit.
 
-That line is part of the re-vendor, not a follow-up to it. It is the only artefact that answers
+That line is part of the re-vendor, not a follow-up to it. It is the only artifact that answers
 "which LibKa0s does this addon carry?" without grepping eight minor constants out of the vendored
 source, and it is only true if it moves with the bytes — and only checkable if step 7's tag exists,
 which is why the tag is not the optional half of that step.
@@ -240,7 +284,7 @@ ignored; if it reports anything, a copy has genuinely forked and re-vendoring is
 compares raw bytes. If the first is empty and the second is not, **nothing has forked** — the two
 checkouts merely disagree about line endings, which every repo here pins to CRLF via
 `.gitattributes` and which `git status` will never show you, because the blobs are LF on both sides
-either way. The fix is to renormalise whichever side drifted (`git add --renormalize .`, and if the
+either way. The fix is to renormalize whichever side drifted (`git add --renormalize .`, and if the
 working tree does not flip, delete the affected paths and `git checkout -- .` to pull them back
 through the filter). It is **never** an edit to `libs/`. Editing `libs/` to settle a line-ending
 disagreement creates a fork to fix a fork that was not there.
@@ -267,11 +311,11 @@ diff -r testkit <Addon>/tests/_kit                       # bytes  — SHOULD be 
 ```
 
 The same reading applies: content-empty and bytes-nonempty is a line-ending divergence, fixed by
-renormalising the side that drifted, never by editing the vendored copy.
+renormalizing the side that drifted, never by editing the vendored copy.
 
 In THIS repo the same check is mechanical rather than remembered: `tests/test_kitsync.lua`
 compares `testkit/` against `tests/_kit/` byte for byte — every file, README included, with no
-line-ending normalisation — and names the file that drifted. It exists because the commit before
+line-ending normalization — and names the file that drifted. It exists because the commit before
 it shipped a `testkit/README.md` that was never re-vendored while three documents asserted the
 gate was passing; both copies worked and both suites stayed green. A consuming addon has no such
 gate yet, so downstream the `diff -r` above is still yours to run.
@@ -290,7 +334,7 @@ Rules, and the reason each exists:
   half-wired. That is the honest failure, not a working one: the host's setup file reports the
   library as missing and falls back. Nothing negotiates the other direction, and the four
   paired-minor guards that protect a secondary file within a major (`OptionsWidgets`,
-  `OptionsTabs`, `OptionsCompose`, `OptionsScroll`, `PerfPanel`) do not generalise across them. Whole-folder copying is the
+  `OptionsTabs`, `OptionsCompose`, `OptionsScroll`, `PerfPanel`) do not generalize across them. Whole-folder copying is the
   mitigation.
 - **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** FIVE files since
   v1.39.0. The other majors
@@ -335,13 +379,13 @@ which hosts' descriptors a change to one module can reach.
 
 | Module | Consumers | Where the wiring lives |
 |---|---|---|
-| `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | `core/CoreSetup.lua` (all eleven). PrettyChat is the **first host to pass `sep = ""`** — its `[PC]` tag bakes its own trailing space, so the default `" "` would double-space every line it prints. It also **declines the window-chrome half** for the same reason PanelMaster does: its only window is the debug console, which reaches Core's chrome from inside the DebugLog major. PanelMaster **declines the window-chrome half** (`SKIN`/`ApplySkin`/`MakeCloseButton`): its only standalone window is the debug console, which reaches Core's chrome from inside the DebugLog major |
+| `LibKa0s-Core-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | `core/CoreSetup.lua` (all eleven). PrettyChat is the **first host to pass `sep = ""`** — its `[PC]` tag bakes its own trailing space, so the default `" "` would double-space every line it prints. It also **declines the window-chrome half** for the same reason PanelMaster does: its only window is the debug console, which reaches Core's chrome from inside the DebugLog major. PanelMaster **declines the window-chrome half** (`SKIN`/`ApplySkin`/`MakeCloseButton`): its only standalone window is the debug console, which reaches Core's chrome from inside the DebugLog major. **Minor 8's `SafeRegisterEvent` family has no consumer yet** (v1.56.0 sweep, 2026-09-24): no host's own code calls `SafeRegisterEvent`, `SafeRegisterUnitEvent` or `SafeRegisterEvents`; the adoptions are the remediation plan's Milestone 2 and 3 items, and each adopter is named here as it lands. Every Core degradation stub gains the three members on the v1.56.0 re-vendor all the same, because `Kit.assertSurfaceParity` reads the manifest |
 | `LibKa0s-DebugLog-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | `core/DebugLogSetup.lua` (all eleven) — ConsumableMaster's was at `modules/DebugLog.lua` when this table was written and is not there now; that file no longer exists, and the lookup is at `core/DebugLogSetup.lua:59` with everyone else's. PrettyChat passes **none** of `skin` / `applySkin` / `makeCloseButton` and deleted a 424-line hand-written console to take the library's edge as-is — the first adoption where the Core-minor-3 default *was* the answer rather than something to override. **LootHistory is the second host on minor 4's `applySkin` — and both it and BankLedger have since dropped `makeCloseButton`, which as of v1.5.0 has no consumer at all** — it asserts the derived title-bar offsets rather than assuming them |
-| `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | PrettyChat: `settings/Slash.lua`, **plus a second lookup at `settings/Schema.lua`** — the same shape as AbsorbTracker's and found the same way, by the sweep above. `Schema.FormatValue` is the addon's ONE value renderer, and it has two consumers that are not both CLI surfaces: the descriptor's `format` hook and the `[Set]` debug trace at the write seam, so it lives beside the rows rather than in the slash file. PrettyChat is also the **second host on minor 5's `format` hook and the first to use it on a row type the library can already render** — the case this doc listed as untried: it doubles `\|` to `\|\|` so a Blizzard format string's colour escapes read as text instead of colouring the chat line, delegating to `lib.FormatValue` first so the empty-string `(none)` stays the library's. Its `parse` adapter exists for a **gap**, not an exotic type — see the note under the table. `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory, MultiMeters, WhatGroup, AuraMaster) — LootHistory is the **second host on minor 5's `format` hook**, for the same set-valued row shape BankLedger drove it for; ConsumableMaster: `settings/Slash.lua` — moved there from `core/SlashCommands.lua` (CM-47/CM-54); this table said the old path until the v1.7.0 sweep, which is what the step-9 re-sweep is for. PanelMaster: `settings/Slash.lua`, and it is the **first host to pass a descriptor `L`** — a plain one-key table (`RESET_ALL`), so the override path is now exercised as well as the fallback; it also carries a `parse` adapter that up-cases enum input before delegating to `lib.ParseValue`. AbsorbTracker has a **second** lookup at `settings/Schema.lua`, stashed at file load so `NS.FormatSchemaValue` can call `lib.FormatValue(row, v)` — the seam every panel widget and every `/at set` renders through PartyFrameEnhanced: `settings/Slash.lua`, **plus a second lookup at `settings/Schema.lua:294`**, found by the v1.37.0 sweep. |
-| `LibKa0s-Launcher-1.0` | AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | `core/LauncherSetup.lua` (all eleven). **This cell read "none yet" until the v1.42.0 sweep**, three releases after the major shipped at v1.39.0 and after every host had adopted `launcher-§5` — the third time this table has carried that error, for the reason its own warning gave: a major that lands everywhere at once has no first host to prompt a revisit. AbsorbTracker has a **second lookup at `core/Constants.lua`**. | 
+| `LibKa0s-Slash-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | PrettyChat: `settings/Slash.lua`, **plus a second lookup at `settings/Schema.lua`** — the same shape as AbsorbTracker's and found the same way, by the sweep above. `Schema.FormatValue` is the addon's ONE value renderer, and it has two consumers that are not both CLI surfaces: the descriptor's `format` hook and the `[Set]` debug trace at the write seam, so it lives beside the rows rather than in the slash file. PrettyChat is also the **second host on minor 5's `format` hook and the first to use it on a row type the library can already render** — the case this doc listed as untried: it doubles `\|` to `\|\|` so a Blizzard format string's color escapes read as text instead of coloring the chat line, delegating to `lib.FormatValue` first so the empty-string `(none)` stays the library's. Its `parse` adapter exists for a **gap**, not an exotic type — see the note under the table. `settings/Slash.lua` (AbsorbTracker, KickCD, BankLedger, LootHistory, MultiMeters, WhatGroup, AuraMaster) — LootHistory is the **second host on minor 5's `format` hook**, for the same set-valued row shape BankLedger drove it for; ConsumableMaster: `settings/Slash.lua` — moved there from `core/SlashCommands.lua` (CM-47/CM-54); this table said the old path until the v1.7.0 sweep, which is what the step-9 re-sweep is for. PanelMaster: `settings/Slash.lua`, and it is the **first host to pass a descriptor `L`** — a plain one-key table (`RESET_ALL`), so the override path is now exercised as well as the fallback; it also carries a `parse` adapter that up-cases enum input before delegating to `lib.ParseValue`. AbsorbTracker has a **second** lookup at `settings/Schema.lua`, stashed at file load so `NS.FormatSchemaValue` can call `lib.FormatValue(row, v)` — the seam every panel widget and every `/at set` renders through PartyFrameEnhanced: `settings/Slash.lua`, **plus a second lookup at `settings/Schema.lua:294`**, found by the v1.37.0 sweep. |
+| `LibKa0s-Launcher-1.0` | AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | `core/LauncherSetup.lua` (all eleven). **This cell read "none yet" until the v1.42.0 sweep**, three releases after the major shipped at v1.39.0 and after every host had adopted `launcher-§5` — the third time this table has carried that error, for the reason its own warning gave: a major that lands everywhere at once has no first host to prompt a revisit. AbsorbTracker has a **second lookup at `core/Constants.lua`**. **Minor 3's tooltip fields (`version`, `isLocked`, `isTestMode`) and minor 4's menu pairs (`setEnabled`, `toggleLock`, `toggleTestMode`, `isWindowShown`, `toggleWindow`) have no consumer yet** (v1.58.0, 2026-09-24), though every host gets the library-drawn tooltip and the left-click-opens-settings behavior on re-vendor; the adoptions are the M5 and M6 re-vendor items, and each adopter is named here as it lands. Minor 4 retires `onClick`, `leftClickLabel`, `disabledLine` and `slash`, which every host still passes today and which the M6 items delete. | 
 | `LibKa0s-Options-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | AuraMaster: `settings/OptionsSetup.lua`, decorated by its page files under `settings/`, which call the composers at file load; it passes `skipRestoreAll` to veto the Profiles page and every profile-backed row. PrettyChat: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. It **declines `RestoreDefaults` / `RestoreAllDefaults`** — both are row-by-row over ~171 rows, which would run its `ApplyStrings` once per row and emit one `[Set]` line per row into a 500-line console buffer; its own batch resets stay, reached through `defaultsOnClick` so `CreatePanel`'s `OnDefault` forwarding still makes the footer control and the header button one body. Its per-string editor is an AceGUI `TreeGroup` — a 200px list of the category's format strings beside one full-width editor — that `RenderGrid` cannot express either (HALF or full width, no third ratio). LootHistory: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. BankLedger: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`. AbsorbTracker: `settings/OptionsSetup.lua` + `settings/UnitPanel.lua`. KickCD: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, `Panel_Widgets.lua`, `Panel_Render.lua`. ConsumableMaster: `settings/OptionsSetup.lua`, the only place the instance is built, with the addon's own half in `settings/Panel.lua` — this cell named `settings/Panel.lua` alone until the v1.30.0 sweep. MultiMeters: `settings/OptionsSetup.lua`, decorated by fourteen page files under `settings/` (`Bars`, `Columns`, `Data`, `Frame`, `General`, `Header`, `Icons`, `Profiles`, `Rows`, `Text`, `Tooltip`, `Visibility`, `Windows`, `Schema`) — the widest decoration surface of any host, and the reason its descriptor reaches the instance through a `helpers()` accessor at call time (`settings/OptionsSetup.lua:36`) rather than capturing a member: every one of those files runs after the seam. It has a **second lookup at `settings/Schema_Compose.lua:463`**, guarded on `__AttachCompose`, for the composer products that forward to `NS.Helpers` at call time. It passes `skipRestoreAll`, vetoing the Profiles page from Restore All because those rows are AceDBOptions' and resetting them deletes profiles — this cell called it the only host to do so, but AbsorbTracker, KickCD and AuraMaster pass it too. PanelMaster: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, which **wraps `RenderField` and `EnsureScroll` on the instance** for its own open-dropdown registry — the first host to need either. WhatGroup: `settings/OptionsSetup.lua`, decorated by `settings/Panel.lua`, and it is the **second host to wrap instance members** — `SetRenderer` and `EnsureDefaultsButton`, so both the page body and the Defaults button build on the NEXT frame rather than synchronously inside `OnShow`. It is a taint fix that addon had already shipped: Blizzard's GameMenu / Logout flows can dispatch a settings canvas's `OnShow` inside a secure-execute chain. Wrapping on the instance is load-bearing for the same reason it was for PanelMaster — `SetRenderer`'s handler resolves `EnsureDefaultsButton` from the instance at call time PartyFrameEnhanced: `settings/OptionsSetup.lua`. **The two `testModePath` adopters (compose minor 6, v1.37.0)** are PartyFrameEnhanced (`state.testMode`, replacing a `leadButton`) and AuraMaster (`state.preview`, moved from a hand-written Display-tab row, its degradation stub mirroring the row). PanelMaster, KickCD and ConsumableMaster drop the row under the standard's v2.49.0 exemption (an addon whose unlocked view is its preview omits Test mode); AuraMaster no longer does — unlocking a container leaves it draggable with its live auras still drawing (B1, 2026-09-19), so the unlocked view is no longer a preview and the exemption no longer applies. `settings/General.lua` composes the row again, now on `state.testMode`: a SESSION row driven by `/am test` and the launcher's left-click, both reaching `modules/Preview.lua`'s `Preview.SetTestMode`. AuraMaster is also the **first host on OptionsWidgets minor 21's `removeStyle = "icon"`** — the X moves to the left of every entry on its `IdList`s in `settings/GeneralSpells.lua` and `settings/Filters.lua`. `shownWhen` (minor 22): Aura Master (`settings/Layout.lua`, Layout → Anchor) and Party Frame Enhanced (`settings/ElementRows.lua`, Size & Position, pending its merge). |
 | `LibKa0s-Media-1.0` | AbsorbTracker, KickCD, ConsumableMaster, BankLedger, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, AuraMaster, PartyFrameEnhanced | `core/MediaSetup.lua` (all eleven; AuraMaster's came with the addon, not with the v1.9.0 pass). **This row did not exist until the v1.15.0 sweep** — the major shipped at v1.9.0, went into every consumer in the same pass, and was never added here, which is precisely the failure the re-sweep exists to catch: nine wiring sites the table pointed a reviewer at zero of. There is no first host and no second host to name, because it landed everywhere at once. Two hosts reach it for more than the font: MultiMeters resolves an icon per call site rather than caching one (`modules/Export.lua:1323`), and it is `core/LSMPatch.lua`'s reason for existing — the bar textures the library owns are registered into LibSharedMedia by the library, not by the addon. LibSharedMedia itself is OPTIONAL to the major (`LibKa0s/Media.lua:48`), so a host that has it gets the registrations and a host that does not still gets the paths |
-| `LibKa0s-Widgets-1.0` | AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters | **The v1.48.0 `DragHandle` adopters were missing from this row until the v1.55.0 sweep**: AuraMaster joined on it alone, at `modules/Anchors.lua`; ConsumableMaster has a **fourth lookup at `modules/MacroBar.lua`** for the Macro Bar's strip; KickCD has **third and fourth lookups at `modules/Castbar_Handle.lua` and `modules/IconGrid.lua`** for the cast bar's and each grid's strip. **KickCD was missing from this row until the v1.30.0 sweep**: `settings/Spells.lua` looks the major up twice, at `:740` to read the handle gutter off `ROW_BOX.HANDLE_W` rather than restating it, and at `:1001` for `ReorderList`. **ConsumableMaster joined at v1.19.0**, on `ReorderList`: `settings/Category.lua`, which drags a priority row to a new position, **plus a second lookup at `settings/StatPriority.lua:122`** for the same member, which reads its handle width the same way Category does, **and a third at `settings/MacroBar.lua:723`** for the Macro Bar's Buttons tab, which drags the bar's slots with the shown ones ahead of a dimmed hidden group (added by the v1.34.0 sweep). It is the second consumer that minor 8 waited for — MultiMeters had recorded the deviation of keeping the widget local, with "a second addon wants an orderable list" written in as the condition that ends it. MultiMeters has a **second lookup at `settings/ColumnBlocks.lua`** for the same member, and the two adopt it from opposite directions: MultiMeters' list has two groups and a clamp at the divide, ConsumableMaster's is flat. Between them they are why the member owns the gesture and no row content — their rows have nothing in common. BankLedger: `modules/Browser.lua`, which is where this widget was lifted FROM — its adoption at v1.11.1 is what found `CloseMenu()`, **plus a second lookup at `modules/Export.lua:14`** for `CloseMenu()` alone: the popup is a process-wide singleton parented to UIParent, so the export modal's own `Hide()` does not reach it. LootHistory: `core/WidgetsSetup.lua:85`, the only host to put the lookup behind a NAMED seam file rather than in the surface that draws — `NS.MakeDropdown`, `NS.HasWidgets` and `NS.CloseMenu`, with `HasWidgets` existing so a surface whose only control is a dropdown can learn of a degraded install BEFORE it builds a globally-named frame it would then have to leak. MultiMeters: `modules/Export_Modal.lua` (the lookup moved there from `modules/Export.lua`), the second adopter and the reason the widget was lifted at all; it drives two dropdowns from one export modal and calls `CloseMenu()` on that modal's hide. All of them look the major up once at file load and refuse to draw the surface at all when it answers `nil`. **None passes `glyphFont`** — the glyph column is BankLedger's store-direction case and nothing in either shipped host uses it today, which is why v1.11.0's and v1.11.1's crash on the first click reached both of them and was found by neither's suite |
+| `LibKa0s-Widgets-1.0` | AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters | **AbsorbTracker was missing from this row until the v1.56.0 sweep**: it looks the major up twice, at `modules/Bar.lua` for `DragHandle` over each unlocked bar and at `modules/Display.lua` for the strip's published height and gap, with no `core/<Name>Setup.lua` seam. **The v1.48.0 `DragHandle` adopters were missing from this row until the v1.55.0 sweep**: AuraMaster joined on it alone, at `modules/Anchors.lua`; ConsumableMaster has a **fourth lookup at `modules/MacroBar.lua`** for the Macro Bar's strip; KickCD has **third and fourth lookups at `modules/Castbar_Handle.lua` and `modules/IconGrid.lua`** for the cast bar's and each grid's strip. **KickCD was missing from this row until the v1.30.0 sweep**: `settings/Spells.lua` looks the major up twice, at `:740` to read the handle gutter off `ROW_BOX.HANDLE_W` rather than restating it, and at `:1001` for `ReorderList`. **ConsumableMaster joined at v1.19.0**, on `ReorderList`: `settings/Category.lua`, which drags a priority row to a new position, **plus a second lookup at `settings/StatPriority.lua:122`** for the same member, which reads its handle width the same way Category does, **and a third at `settings/MacroBar.lua:723`** for the Macro Bar's Buttons tab, which drags the bar's slots with the shown ones ahead of a dimmed hidden group (added by the v1.34.0 sweep). It is the second consumer that minor 8 waited for — MultiMeters had recorded the deviation of keeping the widget local, with "a second addon wants an orderable list" written in as the condition that ends it. MultiMeters has a **second lookup at `settings/ColumnBlocks.lua`** for the same member, and the two adopt it from opposite directions: MultiMeters' list has two groups and a clamp at the divide, ConsumableMaster's is flat. Between them they are why the member owns the gesture and no row content — their rows have nothing in common. BankLedger: `modules/Browser.lua`, which is where this widget was lifted FROM — its adoption at v1.11.1 is what found `CloseMenu()`, **plus a second lookup at `modules/Export.lua:14`** for `CloseMenu()` alone: the popup is a process-wide singleton parented to UIParent, so the export modal's own `Hide()` does not reach it. LootHistory: `core/WidgetsSetup.lua:85`, the only host to put the lookup behind a NAMED seam file rather than in the surface that draws — `NS.MakeDropdown`, `NS.HasWidgets` and `NS.CloseMenu`, with `HasWidgets` existing so a surface whose only control is a dropdown can learn of a degraded install BEFORE it builds a globally-named frame it would then have to leak. MultiMeters: `modules/Export_Modal.lua` (the lookup moved there from `modules/Export.lua`), the second adopter and the reason the widget was lifted at all; it drives two dropdowns from one export modal and calls `CloseMenu()` on that modal's hide. All of them look the major up once at file load and refuse to draw the surface at all when it answers `nil`. **None passes `glyphFont`** — the glyph column is BankLedger's store-direction case and nothing in either shipped host uses it today, which is why v1.11.0's and v1.11.1's crash on the first click reached both of them and was found by neither's suite |
 | `LibKa0s-Perf-1.0` | AbsorbTracker, KickCD, ConsumableMaster, MultiMeters, AuraMaster, PartyFrameEnhanced | `core/PerfSetup.lua` (all six; AuraMaster's is built at file load, ahead of every module that takes `NS.Perf` as a load-time upvalue) — ConsumableMaster's was at `modules/PerfSetup.lua` when this table was written and is not there now. MultiMeters is the host with the deepest bucket tree, and the only one that NESTS: `renderRow` sits inside `render` because 20 players times 7 columns is 140 cells a pass, and per-row is the only grain at which "the window is slow" becomes "the window is slow because of how many rows it has" (`core/PerfSetup.lua:30-40`). A reader must never sum a parent with its children. **Declined** by BankLedger (`LIBKA0S-17`), PanelMaster (`LIBKA0S-31`), PrettyChat (`LIBKA0S-12`) and WhatGroup (`LIBKA0S-15`), all on structural grounds — none has work that runs inside a combat-gated measurement window. WhatGroup declines on two independent reasons: no hot path (zero `OnUpdate`; its one repeating timer, added 2026-08-06, is the teleport-cooldown countdown, armed only while its popup is on screen and doing one cooldown read and one `SetText` a second; otherwise a combat-gated window reaches a roster handler that fires zero times on most pulls and a combat-edge visibility check), **and** the suspend contract — it is a CAPTURE addon, so an inert arm means an LFG apply or an invite-accept inside the window is never recorded and the popup the player joined for silently does not appear. That second reason is LootHistory's, arrived at independently. PrettyChat is the strongest case of the three: a whole-repo sweep finds **zero** `OnUpdate` handlers and tickers, and its only event registration is an opt-in combat-boundary watcher (armed only for the two combat-scoped visibility modes, firing at most twice per fight) beside one one-shot `C_Timer.After(0, …)` on the settings-panel render path, so every bucket would read `0.000` by construction — and its `suspend` would have to restore Blizzard's own chat formats for the duration of the window, visibly flipping the player's chat mid-fight for a capture that can only report zero |
 | `LibKa0s-Lifecycle-1.0` | AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | `core/LifecycleSetup.lua` (ten of the eleven; **AbsorbTracker's is `core/Lifecycle.lua`**), beside `core/PerfSetup.lua`, which is the seam this major generalizes. Three hosts reach it a second time: AuraMaster from `core/PerfSetup.lua` and `modules/ContainerManager.lua`, PrettyChat from `modules/Override.lua` and `settings/Schema.lua`, WhatGroup from `core/WhatGroup.lua`. **This cell read "none yet" until the v1.42.0 sweep**, a release after every host had wired it — the fourth time this table has done that, after Media, Env and Launcher. |
 | `LibKa0s-Env-1.0` | AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup, PartyFrameEnhanced | `core/EnvSetup.lua` (all eleven). **This row read "none yet" until the v1.19.0 sweep**, which is the second time this table has carried that exact error — the Media row did it at v1.15.0, and the note there says why: the major landed everywhere at once, so there is no first host to notice and no second host to prompt a revisit. A row claiming no consumers is worse than a row that is merely stale, because it reads as a decision rather than as an omission |
@@ -349,7 +393,7 @@ which hosts' descriptors a change to one module can reach.
 | `LibKa0s-Item-1.0` | BankLedger, ConsumableMaster, LootHistory | `core/ItemSetup.lua` (all three). The adoption plan named BankLedger and LootHistory; **ConsumableMaster is a third that arrived without one**, which is the sort of thing only this sweep finds. MultiMeters is a deliberate NON-consumer and says so upstream — a damage meter has no item surface — so its absence here is a decision rather than a gap, unlike the six addons that simply have no reason to look it up |
 | `LibKa0s-Compat-1.0` | AuraMaster, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced, WhatGroup | `core/Compat.lua` (all seven), each wiring only the members it calls and keeping `NS.Compat.X` as the call surface: AuraMaster `GetSpellInfo`; ConsumableMaster `GetSpecialization`, `GetSpecializationInfo`, `GetSpellName`, `IsSecret`; KickCD `GetSpecialization`, `GetSpecializationInfo`, `GetSpellCooldown`, `GetSpellInfo`, `GetSpellTexture`, `IsSecret`; LootHistory `GetSpellName`; MultiMeters `GetSpecialization`, `GetSpecializationInfo`, `GetSpellInfo`, `GetSpellTexture`; PartyFrameEnhanced `IsSecret` alone; WhatGroup `GetSpellCooldown`, `GetSpellName`, `GetSpellTexture`. AuraMaster and MultiMeters have a **second lookup at `core/Secrets.lua`** for the three guards, `IsSecret`, `CanAccess` and `IsSafeKey`. Every host takes the reader arm (a reader answers the documented no-rung value) and, where it wires a guard, the guard arm's one-rung body ([Degradation](api/Compat/version-1-docs.md#degradation)). AbsorbTracker, BankLedger, PanelMaster and PrettyChat keep their own `core/Compat.lua` and do not look the major up (v1.55.0 sweep) |
 | `LibKa0s-Bus-1.0` | AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced | Two members, adopted separately. **`Catalog`** (all eight): `core/Bus.lua` in AbsorbTracker, AuraMaster, ConsumableMaster and PartyFrameEnhanced; `core/Constants.lua` in BankLedger, KickCD, LootHistory and MultiMeters. **`New`, the stand-down record** (four, the hosts whose hand-written records it replaced): `core/Bus.lua` in AbsorbTracker, ConsumableMaster and PartyFrameEnhanced, and MultiMeters' **second lookup at `core/Namespace.lua`**. BankLedger carries the untracked-target stub's full shape but calls only `Catalog`; its receivers keep the addon's own untracked factory. AuraMaster (`core/Bus.lua`) and LootHistory (`core/Constants.lua`) stub `Catalog` alone. KickCD and MultiMeters' `core/Constants.lua` lookup carry no stub table: each falls back inline to the plain declared table (`NS.MSG = Bus and Bus.Catalog(addonName, MSG) or MSG` in KickCD, `Constants.MSG = BusLib and BusLib.Catalog(addonName, MSG) or MSG` in MultiMeters); MultiMeters' full stub sits on the `core/Namespace.lua` lookup, which calls `New`. PanelMaster, PrettyChat and WhatGroup do not look the major up (v1.55.0 sweep) |
-| `LibKa0s-Schema-1.0` | AbsorbTracker, BankLedger, LootHistory, PanelMaster, PrettyChat | `settings/Schema.lua` (all five): the host keeps its rows and hands the runtime to this major, each with the runtime-completing stub `options-ui-§1` names for a degraded install. PrettyChat passes no `resolveRoot` (every row carries its own get/set); BankLedger's and LootHistory's root is the account-wide store, PanelMaster's the active profile, and AbsorbTracker's splits on a leading `global.` segment. AbsorbTracker and PrettyChat look up `LibKa0s-Slash-1.0` in the same file as well (see the Slash row). AuraMaster, ConsumableMaster, KickCD, MultiMeters, PartyFrameEnhanced and WhatGroup do not look the major up (v1.55.0 sweep); the behavior a host crosses on adoption is listed in [Adoption notes](api/Schema/version-1-docs.md#adoption-notes) |
+| `LibKa0s-Schema-1.0` | AbsorbTracker, BankLedger, LootHistory, PanelMaster, PrettyChat | `settings/Schema.lua` (all five): the host keeps its rows and hands the runtime to this major, each with the runtime-completing stub `options-ui-§1` names for a degraded install. PrettyChat passes no `resolveRoot` (every row carries its own get/set); BankLedger's and LootHistory's root is the account-wide store, PanelMaster's the active profile, and AbsorbTracker's splits on a leading `global.` segment. AbsorbTracker and PrettyChat look up `LibKa0s-Slash-1.0` in the same file as well (see the Slash row). AuraMaster, ConsumableMaster, KickCD, MultiMeters, PartyFrameEnhanced and WhatGroup do not look the major up (v1.55.0 sweep, unchanged at the v1.56.0 sweep); the behavior a host crosses on adoption is listed in [Adoption notes](api/Schema/version-2-docs.md#adoption-notes). **Minor 2 (v1.56.0) adds `SetMany`, `row.normalize` and `descriptor.writeThrough`, and no host passes any of them yet**: every one of the five instance stubs gains `SetMany` on the re-vendor for surface parity; `writeThrough` is planned for AbsorbTracker and PartyFrameEnhanced (`{ "enabled", "locked" }`), and `SetMany` for the owner-scope batches of ConsumableMaster#39, KickCD#22 and MultiMeters#52, which do not look the major up today. ConsumableMaster's `settings/Panel.lua` carries its own `KCM.Schema:SetMany`, a host method the library's replaces on adoption |
 
 **A gap the Slash consumers had, found by PrettyChat and closed at Slash minor 10 (v1.34.0).**
 Through Slash minor 9, `lib.ParseValue` split the remainder on whitespace and a `string` row took the
@@ -364,17 +408,17 @@ PrettyChat's adapter keeps its `||` unescape; its whitespace half is redundant f
 AbsorbTracker vendors to `libs/LibKa0s/` and is consumer #1 for the five it drove — Core, DebugLog, Slash, Options, Perf. Media is not one of them and never was: it reached all nine consumers in one pass at v1.9.0, so it has no #1. Its `settings/UnitPanel.lua`
 is the one non-obvious entry: it **decorates the library instance itself** — `NS.Helpers` *is* the
 `lib:New` return, not a wrapper — with the two pieces of the old helpers file that did not
-generalise, `ResetAllPositions` and `RenderUnitPanel`. A change to the Options instance surface can
+generalize, `ResetAllPositions` and `RenderUnitPanel`. A change to the Options instance surface can
 therefore collide with a host member, which no other module can do.
 
 KickCD is consumer #2 for those same five, and two of its wirings are worth knowing about before changing a
 descriptor:
 
-- **`LibKa0s-Slash-1.0` had no colour codec, and KickCD is why that surfaced.** Fixed in Slash minor
+- **`LibKa0s-Slash-1.0` had no color codec, and KickCD is why that surfaced.** Fixed in Slash minor
   4: `colorDecode` / `colorEncode` now exist on the Slash descriptor under the same names the
   Options one uses, and `lib.FormatValue` reads the positional shape directly so the common case
   needs no descriptor at all. KickCD had closed the gap with `get`/`parse` closures and then removed
-  them by migrating its stored colour shape; neither workaround is needed now. The asymmetry
+  them by migrating its stored color shape; neither workaround is needed now. The asymmetry
   between the two modules is gone.
 - **`RenderRows` pcalls each row** as of OptionsWidgets minor 4, so one corrupt saved value or one
   throwing `values` function costs that row and nothing else — which is what KickCD's own flow
@@ -386,6 +430,59 @@ table** and not in step 9's loop, although it had shipped carrying v1.29.0. It t
 Core, DebugLog, Slash, Options, Media, Env, Pool and Perf. It does not look up Widgets or Item. It
 is the host that found the four kit gaps revision 16 closes (#27–#30). **No addon on the standard
 remains unadopted.**
+
+**Where v1.58.0 stands (2026-09-24).** One LibStub minor moves, `Launcher.lua` 4
+(`LibKa0s-Launcher-1.0` 4), and the kit stays at **revision 26**; no `NEEDS_*` floor rises. It is the
+click behavior the Ka0s WoW Addon Standard v2.67.0 makes a library-drawn MUST (`launcher-§2`, M6 of
+the 2026-09-23 remediation): left-click opens the settings panel on every host in either state, and
+right-click opens the client's context menu of the toggles the descriptor supplies (*Enabled*,
+*Locked*, *Test mode*, *Show window*), the last three grayed while the addon is disabled. What a
+consumer owes is in the `CHANGELOG.md` block: the copy and the provenance line, and in
+`core/LauncherSetup.lua` the accessor-and-toggle pairs the addon really has, wired to the handlers
+its slash verbs use, with `onClick`, `leftClickLabel`, `disabledLine` and `slash` deleted. No member
+moves, so no degradation stub does. Steps 1–7 are done in this repository and the tag `v1.58.0`
+exists **locally only**; it is cut on this branch after v1.57.0's, and leaves v1.56.0's and
+v1.57.0's where they are. **Step 8 is the M6 re-vendor items**, which supersede the M5 ones for any
+consumer not yet re-vendored: each takes v1.58.0 on its `feat/2026-09-23-review-audit-remediation`
+branch against the local tag, and the push of all three tags waits on the owner's approval of the
+merge.
+
+**Where v1.57.0 stood (2026-09-24).** One LibStub minor moves, `Launcher.lua` 3
+(`LibKa0s-Launcher-1.0` 3), and the kit stays at **revision 26**; no `NEEDS_*` floor rises. It is the
+status tooltip the Ka0s WoW Addon Standard v2.66.0 makes a library-drawn MUST (`launcher-§1`, M5 of
+the 2026-09-23 remediation): the library always sets the LDB object's `OnTooltipShow`, draws the
+fixed status block and click hints, and calls a host's `onTooltipShow` inside it to append the
+addon's own lines. What a consumer owes is in the `CHANGELOG.md` block: the copy and the provenance
+line, and in `core/LauncherSetup.lua` the new `version`, `leftClickLabel`, `isLocked` and
+`isTestMode` where the addon has them, with any title, version, status line or click hint its own
+hook drew deleted (anti-pattern #89). No member moves, so no degradation stub does. Steps 1–7 are
+done in this repository and the tag `v1.57.0` exists **locally only**; it is cut on this branch
+after v1.56.0's, which it leaves where it is. **Step 8 is the M5 re-vendor items**, taken on each
+consumer's `feat/2026-09-23-review-audit-remediation` branch against the local tag, and the push of
+both tags waits on the owner's approval of the merge, as v1.56.0's does.
+
+**Where v1.56.0 stood (2026-09-24).** Twelve majors' minors move and none is added: Core 8, Item 2,
+Media 4, Bus 2, Lifecycle 2, Launcher 2, Slash 15, DebugLog 13, Perf 13 (key 13.5), Widgets 10 (key
+10.2), Schema 2 and Options 24.31.4.7.4; Env, Compat and Pool do not move, and the kit is at
+**revision 26**. No `NEEDS_*` floor rises. The `CHANGELOG.md` block's *What a consumer owes* section
+is the list a re-vendor works from: three new Core members and `SetMany` on the Schema instance for
+every stub under `Kit.assertSurfaceParity`, and six behavioral kit flips (frames start shown, the
+AceDB fake raises, `EventRegistry` is recorded, lone CRs, the store-root prose files, `§` in case
+names), each of which can redden a suite that was green on revision 25. **Steps 1–7 are done**:
+the gates are green, the standards pointer reads v2.65.0, the release run is committed with its
+`ANALYSIS.md`, which carries the collection dry-run of this payload per addon, and the tag
+`v1.56.0` exists **locally only**. **Step 8 waits on the owner's approval** of this branch's
+merge; only then is the branch merged and `git push origin v1.56.0` run. Each consumer's
+`tests/test_vendor_sync.lua` resolves the tag from the local sibling checkout, so the re-vendors can
+be prepared on branches against the local tag before it is pushed. The one ruling owed before the
+tag could be pushed or re-vendored is made: `CreateOptionsPanel`'s combat park stays, and the
+standard was amended to permit it (`options-ui-§5` and `options-ui-§9`, v2.65.0). The provisional
+`options-ui-§9` row is gone from `CLAUDE.md`'s `## Documented deviations`, and the local tag was
+re-cut on that commit (`LK-34`), so it no longer points at `446b7c1`, the commit the release run's
+frozen `ANALYSIS.md` names. All eleven consumers bundle
+**v1.55.0** on `master`, and each `CLAUDE.md` provenance line says so. Step 9's sweep was run
+against the eleven working trees on 2026-09-24: 144 lookup sites, every one in the table above
+after adding AbsorbTracker's two Widgets lookups, which the v1.55.0 sweep missed.
 
 **Where v1.34.0 stands in the consumers (2026-09-13).** Step 8 is done and merged. All ten
 consumers bundle v1.34.0 on `master`, and each `CLAUDE.md` provenance line says so. v1.33.0 and
@@ -507,15 +604,11 @@ The kit stays at **revision 22**, so `tests/test_vendor_sync.lua` pairs the two 
 v1.42.0 tag exactly as it did at v1.41.0 — the kit bytes are identical, but both are resolved from
 the tag the provenance line names, so both are copied.
 
-**Every step 8 through v1.46.1 is done**, and so are the adoption changesets that outlived them.
-All eleven consumers bundle **v1.46.1** on `master` and each `CLAUDE.md` provenance line says so —
-still true on 2026-09-21, re-measured for LibKa0s #34: what has moved since sits on branches and not
-on any `master`, nine consumers at v1.47.0 on `chore/revendor-libka0s-v1.47.0`, ConsumableMaster at
-v1.48.1 and Aura Master at v1.49.1 on its own feature branch. So
-v1.42.0's one-file Slash fix, v1.43.0's kit-only revision 23, v1.44.0's `removeStyle` and v1.45.0's
-`shownWhen` have all landed downstream along with the combat lock and its patch. The two hosts that
-took the opt-ins are Aura Master (both) and Party Frame Enhanced (`shownWhen`). What is **not** done
-is this release's own step 8, which cannot begin before the tag.
+**Every step 8 through v1.55.0 is done**, and so are the adoption changesets that outlived them.
+All eleven consumers bundle **v1.55.0** on `master` and each `CLAUDE.md` provenance line says so,
+re-measured on 2026-09-24 for v1.56.0 against each consumer's own `master`. What is **not** done is
+the step 8 of v1.56.0, v1.57.0 and v1.58.0, which wait on the owner's approval of the merge and the
+tag pushes (see *Where v1.58.0 stands*, *Where v1.57.0 stood* and *Where v1.56.0 stood* above).
 
 This paragraph says where the consumers stand as of the release being prepared, so it is stale the
 moment it is not rewritten. **Rewrite it at the next release**, in the same commit as step 7's other

@@ -1,0 +1,18 @@
+{
+  "major": "LibKa0s-Media-1.0",
+  "versionKey": "4",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Media", "minor": 4 }
+  ],
+  "members": [
+    { "name": "FONTS", "kind": "table" },
+    { "name": "Font", "kind": "function" },
+    { "name": "ICONS", "kind": "table" },
+    { "name": "Icon", "kind": "function" },
+    { "name": "RegisterLSM", "kind": "function" },
+    { "name": "TEXTURES", "kind": "table" },
+    { "name": "Texture", "kind": "function" },
+    { "name": "VENDOR_PATH", "kind": "string" }
+  ]
+}

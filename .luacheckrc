@@ -32,6 +32,9 @@ read_globals = {
   -- The client's class palette, read by LibKa0s-Core-1.0's ClassColor. RAID_CLASS_COLORS rather
   -- than C_ClassColor because it is the table every other UI on the player's screen already reads.
   "RAID_CLASS_COLORS",
+  -- The client's own "would RegisterEvent raise?", the front gate of Core's SafeRegisterEvent
+  -- family. Read at call time and optional: a client without it takes the pcall rung.
+  "C_EventUtils",
   -- `C_SpecializationInfo` is the namespaced rung P.Context prefers; the two bare names are the
   -- deprecated fallback it keeps for a client that has not moved yet.
   "C_SpecializationInfo",
@@ -40,6 +43,9 @@ read_globals = {
   -- LibKa0s-Compat-1.0's ladders: the deprecated spell globals below C_Spell, and 12.0's secret
   -- tests. Every one read bare, at call time, and guarded for absence.
   "GetSpellInfo", "GetSpellTexture", "GetSpellCooldown", "issecretvalue", "canaccessvalue",
+  -- The client's context menu (11.0+), which LibKa0s-Launcher-1.0's right click opens (minor 4).
+  -- Read at call time and guarded: a client without it degrades to opening the settings panel.
+  "MenuUtil", "MenuResponse",
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes
 -- through _G[name]. That is the one sanctioned _G mutation in this library.

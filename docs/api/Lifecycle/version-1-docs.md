@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Lifecycle-1.0` |
 | Files and minors | `Lifecycle.lua` minor **1** |
 | Shipped in | v1.40.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2](./version-2-docs.md) — documents and pins the nested-edge (re-entrancy) behavior; the code is unchanged |
 | Confirm in-game | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` → `{ Lifecycle = 1 }` |
 
 ## What this major is
@@ -195,3 +195,10 @@ still has to be reachable by the player who wants to enable it again.
 The one sanctioned exception on the teardown side is a hook that cannot be undone:
 `hooksecurefunc` has no un-hook, so such a hook gates its own body and returns. A raw hook or an
 AceHook hook **must** be un-hooked, because it can be.
+
+## Moving to version 2
+
+Nothing to change. No member is added or removed, no signature moves and no behavior changes:
+version 2 adds the rule that a `standDown` or `standUp` callback must not take or release a hold,
+and a characterization case pinning what happens when one does. A host written against this version
+is correct at version 2 unmodified, provided its callbacks already leave the latch alone.

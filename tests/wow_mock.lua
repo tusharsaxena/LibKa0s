@@ -50,7 +50,7 @@ return function()
   -- spellbook, quality tiers, spell subtext, and the EditBox's input frame the keys land on.
   M.installIdSuggestions()
 
-  -- The colour table QualityFromLink builds its reverse map out of, and O.IdList colors an item's
+  -- The color table QualityFromLink builds its reverse map out of, and O.IdList colors an item's
   -- name from. Real hex values — the parse is the thing under test and a made-up palette would test
   -- the parser against itself.
   M.ITEM_QUALITY_COLORS = {
@@ -72,7 +72,7 @@ return function()
   -- FOURTH return. version, build, date, tocversion.
   M.GetBuildInfo = function() return "12.0.7", "60000", "Jul 31 2026", 120007 end
 
-  -- This repo's suites assert that a capture's context records the character's LOCALISED class
+  -- This repo's suites assert that a capture's context records the character's LOCALIZED class
   -- name rather than the token, so the fixture character is a Death Knight — the pair where the two
   -- strings differ most obviously. The base defaults to a Mage, where they differ only by case and
   -- a swapped return would go unnoticed.

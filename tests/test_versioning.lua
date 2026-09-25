@@ -200,7 +200,7 @@ test("versioning: every major's published member manifest matches its live surfa
   -- It regenerates and compares, exactly as the standing check on docs/test-cases.md does. That
   -- means a bug in the renderer is invisible here — both sides come from one function — and the
   -- thing it actually catches is the one that has happened: a member added or removed and the
-  -- published list left behind. Byte comparison, CR-normalised on both sides, because the file is
+  -- published list left behind. Byte comparison, CR-normalized on both sides, because the file is
   -- pinned CRLF by .gitattributes and the renderer emits LF.
   local render = dofile("tools/gen-api-members.lua")
   local problems = {}

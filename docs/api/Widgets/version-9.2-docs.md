@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **9** · `WidgetsDragHandle.lua` minor **2** |
 | Shipped in | v1.48.1 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 9.1](./version-9.1-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 10.2](./version-10.2-docs.md) — a drag polls on the ghost and takes its line from a library free list |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 9, WidgetsDragHandle = 2 }` |
 
 ## What changed at 9.2
@@ -711,3 +711,15 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
+
+## Moving to version 10.2
+
+`Widgets.lua` moves to minor **10** and `WidgetsDragHandle.lua` stays at minor **2**. No member,
+`opts` field or `spec` field is added or removed; the member manifest differs from this version's
+only in its version key. What moves is internal and one return value: the drag's poll runs on the
+ghost instead of the host's row frame, so a host `OnUpdate` on a row frame survives a drag; the
+insertion line is taken from a library free list per drag and given back at the drop and on
+`Cancel()` instead of being cached on the container as `__ka0sDropLine`, so each list draws its
+own `lineColor` on a pooled container; and `Finish(container)` returns nothing. A host suite that
+fires the row frame's `OnUpdate` to drive a drag must fire the ghost's (`__DragGhost`) instead. See
+[version 10.2](./version-10.2-docs.md).

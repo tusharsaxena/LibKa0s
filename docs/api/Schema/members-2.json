@@ -1,0 +1,16 @@
+{
+  "major": "LibKa0s-Schema-1.0",
+  "versionKey": "2",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Schema", "minor": 2 }
+  ],
+  "members": [
+    { "name": "New", "kind": "function" },
+    { "name": "Read", "kind": "function" },
+    { "name": "STRINGS", "kind": "table" },
+    { "name": "SameValue", "kind": "function" },
+    { "name": "SplitPath", "kind": "function" },
+    { "name": "Write", "kind": "function" }
+  ]
+}

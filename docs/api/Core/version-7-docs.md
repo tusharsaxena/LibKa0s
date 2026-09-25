@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **7** |
 | Shipped in | v1.24.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 6](./version-6-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 8](./version-8-docs.md) — `Format` survives a secret in a numeric slot |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 7 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
@@ -249,3 +249,13 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
+
+## Moving to version 8
+
+Nothing is added and nothing here moves apart from one behavior: `Format(fmt, ...)` no longer raises
+when its format cannot be satisfied. A secret reaching a numeric slot, as in `Format("%d rows",
+secret)`, raised `number expected, got string` at this version, because `SafeToString` hands `%d`
+the string `<secret>`. At version 8 the line lands as the format verbatim and the stringified
+arguments, space-joined, the fallback `LibKa0s-DebugLog-1.0`'s `D.Debug` already used. A host
+written against this version is correct at version 8 unmodified; one that wrapped `Format` in its
+own `pcall` to survive combat can drop the wrapper once every copy it could load is at 8.

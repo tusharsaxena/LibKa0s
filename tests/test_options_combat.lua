@@ -576,3 +576,92 @@ combatCase("combat: a registration an older copy left is dropped when nothing is
   lib.__syncCombatEvents()
   assertFalse(registered())
 end)
+
+-- ── the registration park (Options minor 24) ─────────────────────────────────────────────────
+--
+-- CreateOptionsPanel under InCombatLockdown() registers nothing: it parks the request, and a
+-- library-private frame listens for PLAYER_REGEN_ENABLED only while something is parked. The end of
+-- combat replays the registration once and lets go of the event, whatever the host's stand-down
+-- state (ConsumableMaster-A-04; the host copy it replaces is ConsumableMaster's own park).
+
+--- A case with the park's process-lived state put back however it ends, and the Blizzard
+--- registration counted.
+local function parkCase(name, fn)
+  combatCase(name, function()
+    local savedReg = mocks.Settings.RegisterAddOnCategory
+    local count = { n = 0 }
+    mocks.Settings.RegisterAddOnCategory = function() count.n = count.n + 1 end
+    local ok, err = pcall(fn, count)
+    mocks.Settings.RegisterAddOnCategory = savedReg
+    lib.__parkedPanels = {}
+    if lib.__parkFrame then lib.__parkFrame:UnregisterEvent("PLAYER_REGEN_ENABLED") end
+    if not ok then error(err, 0) end
+  end)
+end
+
+local function parkRegistered()
+  local f = lib.__parkFrame
+  return f ~= nil and f:IsEventRegistered("PLAYER_REGEN_ENABLED") or false
+end
+
+local function endCombatForPark()
+  mocks.InCombatLockdown = function() return false end
+  assertTrue(lib.__parkFrame ~= nil, "the park owns a library-private frame")
+  lib.__parkFrame:__fire("OnEvent", "PLAYER_REGEN_ENABLED")
+end
+
+parkCase("combat: CreateOptionsPanel in combat registers nothing and waits for REGEN_ENABLED",
+  function(count)
+  local O = Fixture.new()
+  mocks.InCombatLockdown = function() return true end
+  O.CreateOptionsPanel()
+  assertEqual(count.n, 0, "no Blizzard category is registered under lockdown")
+  assertTrue(parkRegistered(), "and the park listens for the end of combat")
+  assertFalse(lib.__combatFrame:IsEventRegistered("PLAYER_REGEN_ENABLED"),
+    "on its own frame, not the page lock's")
+end)
+
+parkCase("combat: the end of combat registers the parked panel once and lets go of the event",
+  function(count)
+  local O = Fixture.new()
+  local built = 0
+  O.RegisterOptionsPage("general", "General", function() built = built + 1 end)
+  mocks.InCombatLockdown = function() return true end
+  O.CreateOptionsPanel()
+  endCombatForPark()
+  assertEqual(count.n, 1, "registered exactly once")
+  assertEqual(built, 1, "and every queued page built")
+  assertFalse(parkRegistered(), "the event is let go")
+  lib.__parkFrame:__fire("OnEvent", "PLAYER_REGEN_ENABLED")
+  assertEqual(count.n, 1, "a stray REGEN_ENABLED afterwards registers nothing")
+end)
+
+parkCase("combat: a second CreateOptionsPanel while parked is a no-op", function(count)
+  local O = Fixture.new()
+  mocks.InCombatLockdown = function() return true end
+  O.CreateOptionsPanel()
+  O.CreateOptionsPanel()
+  assertEqual(#lib.__parkedPanels, 1, "one parked request, not two")
+  endCombatForPark()
+  assertEqual(count.n, 1, "and one registration when combat ends")
+end)
+
+parkCase("combat: an event other than REGEN_ENABLED leaves the park armed", function(count)
+  local O = Fixture.new()
+  mocks.InCombatLockdown = function() return true end
+  O.CreateOptionsPanel()
+  lib.__parkFrame:__fire("OnEvent", "PLAYER_REGEN_DISABLED")
+  assertEqual(count.n, 0)
+  assertTrue(parkRegistered(), "still waiting")
+end)
+
+parkCase("combat: OpenOptionsPanel answers false in combat, true when opened, nil with no category",
+  function()
+  local O = Fixture.new()
+  assertEqual(O.OpenOptionsPanel(), nil, "nothing registered yet")
+  O.CreateOptionsPanel()
+  mocks.InCombatLockdown = function() return true end
+  assertEqual(O.OpenOptionsPanel(), false, "refused in combat")
+  mocks.InCombatLockdown = function() return false end
+  assertEqual(O.OpenOptionsPanel(), true, "opened out of it")
+end)

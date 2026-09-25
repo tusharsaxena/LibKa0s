@@ -8,12 +8,12 @@ local Loader = dofile("tests/_kit/loader.lua")
 local buildMocks = dofile("tests/wow_mock.lua")
 
 -- A stand-in for a WoW combat "secret" value. Crucially it models BOTH halves of the real
--- behaviour: the `..` operator SUCCEEDS on a secret (silently propagating secretness) while
+-- behavior: the `..` operator SUCCEEDS on a secret (silently propagating secretness) while
 -- `table.concat` RAISES on it. A table with a string-returning __concat concatenates fine via
 -- `..`, yet `table.concat({mock})` still rejects it (table.concat ignores __concat and refuses a
 -- non-string/number element) — so this catches a detector that (wrongly) probes with `..` and
 -- passes one that probes with `table.concat`. (Earlier a __concat that *errored* was used, which
--- modelled the opposite of a real secret and gave false confidence.)
+-- modeled the opposite of a real secret and gave false confidence.)
 local secretMock = setmetatable({}, {
   __concat = function() return "secret-propagated" end,
 })
@@ -200,6 +200,23 @@ test("core: Format applies the format string with pre-stringified args", functio
   assertEqual(out[1], "[T] value=<secret> after 3 tries")
 end)
 
+test("core: Format lands a secret in a numeric specifier as the format and its parts", function()
+  -- SafeToString hands %d a STRING, so a secret there raises inside string.format exactly as the
+  -- unguarded secret would have (review finding LibKa0s-R-08). Core minor 8 pcalls the format and,
+  -- on failure, emits the format verbatim and the stringified parts space-joined, the fallback
+  -- DebugLog's D.Debug already uses. Red under: remove the pcall.
+  local out = {}
+  local p = core:New{
+    prefix = "[T]",
+    sink = function(line) out[#out + 1] = line end,
+  }
+  p.Format("%d rows", secretMock)
+  assertEqual(out[1], "[T] %d rows <secret>")
+  -- A satisfiable numeric format is untouched.
+  p.Format("%d rows", 3)
+  assertEqual(out[2], "[T] 3 rows")
+end)
+
 test("core: the default sink is DEFAULT_CHAT_FRAME:AddMessage", function()
   local chat = T.mocks.DEFAULT_CHAT_FRAME
   local got
@@ -219,7 +236,7 @@ end)
 -- ── the window chrome seam ─────────────────────────────────────────────────────────────────
 
 test("core: ApplySkin no-ops on a frame without SetBackdrop", function()
-  -- A bare table, not a mock frame: the mock synthesises every PascalCase method, so
+  -- A bare table, not a mock frame: the mock synthesizes every PascalCase method, so
   -- `frame.SetBackdrop` is always truthy there and the guard could never be exercised.
   local bare = {}
   local ok = pcall(core.ApplySkin, bare)
@@ -227,7 +244,7 @@ test("core: ApplySkin no-ops on a frame without SetBackdrop", function()
   T.assertNil(bare.backdrop, "nothing is written to a frame that cannot take a backdrop")
 end)
 
-test("core: ApplySkin applies the skin table and both colours", function()
+test("core: ApplySkin applies the skin table and both colors", function()
   local calls = {}
   local frame = {
     SetBackdrop = function(_, b) calls.backdrop = b end,
@@ -246,8 +263,8 @@ end)
 -- ── the Ka0s window edge ───────────────────────────────────────────────────────────────────
 --
 -- One treatment, defined once, worn by every window this library draws and by every window a host
--- draws beside them: a flat 1px BLACK outer border with a 1px light-grey highlight synthesised
--- just inside it (the "double edge"), a gold title and a grey divider under the title bar.
+-- draws beside them: a flat 1px BLACK outer border with a 1px light-gray highlight synthesized
+-- just inside it (the "double edge"), a gold title and a gray divider under the title bar.
 --
 -- It became the definition because two hosts had already converged on it independently and looked
 -- right, while the three on this library's 12px UI-Tooltip-Border did not read as the same suite of
@@ -281,7 +298,7 @@ test("core: SKIN is the flat 1px Ka0s edge, not the 12px tooltip border", functi
   assertEqual(table.concat(core.SKIN.title, ","), "1,0.82,0")
 end)
 
-test("core: ApplySkin synthesises the inner highlight, exactly once", function()
+test("core: ApplySkin synthesizes the inner highlight, exactly once", function()
   local created = 0
   -- The loader env resolves WoW globals from the mock set BEFORE _G, so a swap on _G would be
   -- shadowed and this case would report 0 created frames forever.
@@ -312,7 +329,7 @@ test("core: ApplySkin survives a frame whose metatable answers every key", funct
   local ok, err = pcall(core.ApplySkin, answersEverything)
   T.assertTrue(ok, "ApplySkin must not raise on such a frame: " .. tostring(err))
   T.assertTrue(type(rawget(answersEverything, "innerBorder")) == "table",
-    "and it must have replaced the synthesised answer with a real inner-border frame")
+    "and it must have replaced the synthesized answer with a real inner-border frame")
 end)
 test("core: ApplySkin tints a title and a divider when the frame carries them", function()
   local frame = recorderFrame()
@@ -321,7 +338,7 @@ test("core: ApplySkin tints a title and a divider when the frame carries them", 
   frame.divider = { SetColorTexture = function(_, r, g, b, a) drawn = { r, g, b, a } end }
   core.ApplySkin(frame)
   assertEqual(table.concat(tinted, ","), "1,0.82,0", "the title is Blizzard gold")
-  assertEqual(table.concat(drawn, ","), "0.24,0.24,0.27,0.85", "the divider is the grey line")
+  assertEqual(table.concat(drawn, ","), "0.24,0.24,0.27,0.85", "the divider is the gray line")
 end)
 
 test("core: ApplySkin lays the backdrop down before anything drawn on top of it", function()
@@ -362,7 +379,7 @@ test("core: ApplySkin tolerates a frame with neither a title nor a divider", fun
   T.assertTrue(ok, "ApplySkin must not require either")
 end)
 
-test("core: ApplySkin honours an explicit skin table", function()
+test("core: ApplySkin honors an explicit skin table", function()
   -- The optional second argument, so DebugLog's descriptor `skin` override reaches ONE
   -- implementation rather than a second copy of these calls.
   local frame = recorderFrame()
@@ -554,6 +571,132 @@ test("core: ResolveColor answers four numbers for a swatch that was never stored
   assertEqual(g, 1)
   assertEqual(b, 1)
   assertEqual(a, 1)
+end)
+
+-- ── the pcalled event registration helper ──────────────────────────────────────────────────
+--
+-- One retired event name must cost that name, not the rest of the block (events-frames-taint-§1).
+-- Every case asserts on the kit's LIVE registration set, and the kit models both client rungs: an
+-- unknown name in `__badEvents` raises on a raw frame and on AceEvent, and
+-- `C_EventUtils.IsEventValid` answers false for it. `withClient` swaps both in and restores them
+-- even when the case raises.
+
+local RETIRED = "KA0S_RETIRED_EVENT"
+
+--- Run `fn` with RETIRED unknown to the fake client, and with `C_EventUtils` present or not.
+local function withClient(hasEventUtils, fn)
+  local mocks = T.mocks
+  local bad, utils = mocks.__badEvents, mocks.C_EventUtils
+  mocks.__badEvents = { [RETIRED] = true }
+  if not hasEventUtils then mocks.C_EventUtils = nil end
+  local ok, err = pcall(fn)
+  mocks.__badEvents, mocks.C_EventUtils = bad, utils
+  if not ok then error(err, 0) end
+end
+
+--- The live registrations `target` holds, as a sorted comma-joined list of `kind:event[:unit]`.
+local function liveOn(target)
+  local out = {}
+  for _, reg in ipairs(T.mocks.__registrations()) do
+    if reg.target == target then
+      out[#out + 1] = reg.kind .. ":" .. reg.event .. (reg.unit and (":" .. reg.unit) or "")
+    end
+  end
+  table.sort(out)
+  return table.concat(out, ",")
+end
+
+local function aceTarget() return T.mocks.LibStub("AceEvent-3.0"):Embed({}) end
+
+for _, rung in ipairs({ { "front gate", true }, { "probe frame", false } }) do
+  local label, hasEventUtils = rung[1], rung[2]
+
+  test("core: SafeRegisterEvents registers around a retired name, " .. label, function()
+    -- red under: a bare RegisterEvent
+    withClient(hasEventUtils, function()
+      local target, rejected = aceTarget(), {}
+      local handler = function() end
+      local n = core.SafeRegisterEvents(target, { "PLAYER_LOGIN", RETIRED, "BAG_UPDATE" },
+        handler, rejected)
+      assertEqual(n, 2, "the count names the two that registered")
+      -- Neither rung hands the retired name to AceEvent, so no half-stored callback is left behind
+      -- to make a later registrant's call succeed.
+      assertEqual(liveOn(target), "event:BAG_UPDATE,event:PLAYER_LOGIN")
+      assertEqual(table.concat(rejected, ","), RETIRED, "the retired name, once")
+      -- The same block again, as a disable/enable cycle runs it: refused again, still one entry.
+      n = core.SafeRegisterEvents(target, { "PLAYER_LOGIN", RETIRED, "BAG_UPDATE" }, handler, rejected)
+      assertEqual(n, 2, "the retired name is refused on the second pass too")
+      assertEqual(table.concat(rejected, ","), RETIRED, "no duplicate on a second pass")
+    end)
+  end)
+
+  test("core: SafeRegisterEvent refuses a retired name for every AceEvent registrant, " .. label, function()
+    -- AceEvent's registry is shared by the whole client, and CallbackHandler asks the frame for an
+    -- event only on its FIRST registrant. A pcall on the target alone answers "registered" for
+    -- every later one: the same target again, a second module, any other addon.
+    -- red under: treating a pcall that did not raise as "registered"
+    withClient(hasEventUtils, function()
+      local first, second = aceTarget(), aceTarget()
+      local mine, theirs = {}, {}
+      T.assertFalse(core.SafeRegisterEvent(first, RETIRED, function() end, mine))
+      T.assertFalse(core.SafeRegisterEvent(first, RETIRED, function() end, {}), "same target again")
+      T.assertFalse(core.SafeRegisterEvent(second, RETIRED, function() end, theirs), "second target")
+      assertEqual(table.concat(theirs, ","), RETIRED, "recorded on the second caller's own list")
+      assertEqual(liveOn(first) .. "|" .. liveOn(second), "|")
+    end)
+  end)
+
+  test("core: SafeRegisterUnitEvent on a frame isolates a retired name, " .. label, function()
+    -- red under: a bare RegisterEvent
+    withClient(hasEventUtils, function()
+      local frame, rejected = T.mocks.CreateFrame("Frame"), {}
+      T.assertFalse(core.SafeRegisterUnitEvent(frame, RETIRED, rejected, "player"))
+      T.assertTrue(core.SafeRegisterUnitEvent(frame, "UNIT_AURA", rejected, "player", "target"))
+      assertEqual(liveOn(frame), "unit:UNIT_AURA:player,unit:UNIT_AURA:target")
+      assertEqual(table.concat(rejected, ","), RETIRED)
+    end)
+  end)
+end
+
+test("core: SafeRegisterEvent's front gate rejects without calling RegisterEvent", function()
+  -- With the client's own answer available, a name it calls invalid is never handed to
+  -- RegisterEvent at all: no raise to catch, and no half-stored AceEvent callback left behind.
+  -- red under: a bare RegisterEvent
+  withClient(true, function()
+    local calls, rejected = {}, {}
+    local spy = { RegisterEvent = function(_, event) calls[#calls + 1] = event end }
+    T.assertFalse(core.SafeRegisterEvent(spy, RETIRED, nil, rejected))
+    T.assertTrue(core.SafeRegisterEvent(spy, "PLAYER_LOGIN", nil, rejected))
+    assertEqual(table.concat(calls, ","), "PLAYER_LOGIN", "only the valid name reached the target")
+    assertEqual(table.concat(rejected, ","), RETIRED)
+  end)
+end)
+
+test("core: SafeRegisterEvent on a raw frame, and with no rejected list at all", function()
+  -- The list is optional: a host that does not surface rejects still gets the isolation.
+  -- red under: a bare RegisterEvent
+  withClient(false, function()
+    local frame = T.mocks.CreateFrame("Frame")
+    T.assertFalse(core.SafeRegisterEvent(frame, RETIRED))
+    T.assertTrue(core.SafeRegisterEvent(frame, "PLAYER_REGEN_ENABLED"))
+    assertEqual(liveOn(frame), "frame:PLAYER_REGEN_ENABLED")
+  end)
+end)
+
+test("core: SafeRegisterEvent on a Bus-stamped target is replayed after a stand-down", function()
+  -- The call goes through target:RegisterEvent, so the bus's tracking wrapper records it.
+  -- red under: registering through AceEvent's own member instead of the target's
+  withClient(true, function()
+    local bus = T.bus:New({ name = "CoreSafeRegisterHost" })
+    local target, rejected = bus:NewTarget(), {}
+    local n = core.SafeRegisterEvents(target, { "PLAYER_LOGIN", RETIRED }, function() end, rejected)
+    assertEqual(n, 1)
+    bus:StandDown()
+    assertEqual(liveOn(target), "", "stood down")
+    bus:StandUp()
+    assertEqual(liveOn(target), "event:PLAYER_LOGIN", "replayed from the bus's record")
+    assertEqual(table.concat(rejected, ","), RETIRED)
+  end)
 end)
 
 -- ── Perf's regression ──────────────────────────────────────────────────────────────────────

@@ -10,9 +10,9 @@
 | Version | **25** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.55.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 24](version-24-docs.md) — the US-English gate |
-| Superseded by | — |
+| Superseded by | [version 26](version-26-docs.md) — two files peeled out, no behavior change |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `25` |
 
@@ -527,3 +527,11 @@ then, in the consuming `tests/run.lua`:
 run's diff touches every line because the table grew two columns. It is a one-time cost and the
 console announces it. **Nothing in that file needs hand-editing, and nothing may be**: a maintainer
 who types a sha into an old row has invented the second authored cell `§4` forbids.
+
+## Moving to revision 26
+
+Nothing to change at a call site. Revision 26 moves `framework.lua`'s assertions and surface-parity
+gate into `asserts.lua`, and `test_prose.lua`'s published lists into `prose_lists.lua`, and each
+parent loads its new sibling from its own folder. No member is added, removed or changed. Re-vendor
+the whole folder, as always — a copy that leaves either new file out raises at load. See
+[version 26](version-26-docs.md).

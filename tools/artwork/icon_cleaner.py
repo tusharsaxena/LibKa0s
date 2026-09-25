@@ -14,15 +14,15 @@ WHY THIS TOOL EXISTS AT ALL, rather than a checked-in binary somebody once made:
 
     The provenance question is the whole point. An icon in a repo with no record of where it came
     from cannot be relicensed, cannot be regenerated at a different size, and cannot be replaced
-    when it turns out to be wrong. This file IS the record -- the upstream repo, the licence, the
+    when it turns out to be wrong. This file IS the record -- the upstream repo, the license, the
     exact file names and every transformation applied, in the one place that cannot drift from the
     art because it is what produces it.
 
 WHAT IT DOES TO EACH ICON, in order:
 
-    recolour   black -> white, alpha untouched
-    solidify   push opaque colour outward under the transparent pixels
-    fit        centre on a square power-of-two canvas, never crop
+    recolor    black -> white, alpha untouched
+    solidify   push opaque color outward under the transparent pixels
+    fit        center on a square power-of-two canvas, never crop
     normalize  force every fully-transparent pixel to (0,0,0,0)
     save       32-bit RLE TGA
 
@@ -278,10 +278,10 @@ LICENSE_DST = "LICENSE-open-iconic.txt"
 SIZE = 64
 
 # What a fully-transparent pixel's RGB becomes. Black, so an additive or alpha-keyed blend cannot
-# find a colour hiding under a pixel nothing was supposed to draw.
+# find a color hiding under a pixel nothing was supposed to draw.
 TRANSPARENT = (0, 0, 0, 0)
 
-# How far to push opaque colour outward under the transparent region. Three is plenty at this size;
+# How far to push opaque color outward under the transparent region. Three is plenty at this size;
 # the stage exists for the downscale, not for an upscaler.
 SOLIDIFY_ITERS = 3
 
@@ -333,12 +333,12 @@ def fetch():
 # Convert
 # ---------------------------------------------------------------------------
 
-def recolour_white(im):
+def recolor_white(im):
     """Black art -> white art, alpha untouched.
 
-    THE STAGE THAT DECIDES WHETHER THE ICONS OBEY THE PLAYER'S COLOUR SETTING. Every glyph the
-    header draws today is tinted at draw time to the header's text colour, and a texture is tinted
-    by MULTIPLYING -- so a white source becomes any colour asked for and a black one stays black
+    THE STAGE THAT DECIDES WHETHER THE ICONS OBEY THE PLAYER'S COLOR SETTING. Every glyph the
+    header draws today is tinted at draw time to the header's text color, and a texture is tinted
+    by MULTIPLYING -- so a white source becomes any color asked for and a black one stays black
     whatever it is asked for. Open Iconic ships black.
 
     Only the RGB is touched. The antialiased edge lives entirely in the alpha channel, so writing
@@ -350,7 +350,7 @@ def recolour_white(im):
 
 
 def _box_sum(arr):
-    """Sum of each pixel's 3x3 neighbourhood, edges clamped."""
+    """Sum of each pixel's 3x3 neighborhood, edges clamped."""
     p = np.pad(arr, ((1, 1), (1, 1), (0, 0)), mode="edge")
     return (p[:-2, :-2] + p[:-2, 1:-1] + p[:-2, 2:] +
             p[1:-1, :-2] + p[1:-1, 1:-1] + p[1:-1, 2:] +
@@ -362,12 +362,12 @@ def solidify(im, iters=SOLIDIFY_ITERS):
 
     Kept from PanelMaster's tool, and kept for the same reason stated there: nothing renders the
     RGB under a transparent pixel, so nothing complains when it is arbitrary -- until a resample
-    samples it. The client downscales these from 64 to 18, and its kernel reads the neighbours of
+    samples it. The client downscales these from 64 to 18, and its kernel reads the neighbors of
     every edge pixel including the transparent ones.
 
-    After `recolour_white` the under-alpha RGB is already white, so this is close to a no-op today.
+    After `recolor_white` the under-alpha RGB is already white, so this is close to a no-op today.
     It stays because the invariant it protects is "whatever is under the alpha continues the art",
-    and that stops being free the moment a coloured icon is added.
+    and that stops being free the moment a colored icon is added.
     """
     a = np.asarray(im.convert("RGBA"), dtype=np.float32)
     rgb, alpha = a[..., :3], a[..., 3]
@@ -385,7 +385,7 @@ def solidify(im, iters=SOLIDIFY_ITERS):
 
 
 def fit_square(im, size=SIZE):
-    """Centre on a square power-of-two canvas. Never crop.
+    """Center on a square power-of-two canvas. Never crop.
 
     A source already at `size` passes through untouched, which is the case every glyph currently
     takes -- the branch exists so a differently-sized replacement does not silently get cropped.
@@ -403,7 +403,7 @@ def fit_square(im, size=SIZE):
 def normalize_transparent(im):
     """Force every fully-transparent pixel to one defined RGB.
 
-    Must run LAST. LANCZOS premultiplies and a paste carries its canvas colour in, so normalising
+    Must run LAST. LANCZOS premultiplies and a paste carries its canvas color in, so normalizing
     any earlier is simply undone by the next stage.
     """
     a = np.asarray(im.convert("RGBA")).copy()
@@ -414,7 +414,7 @@ def normalize_transparent(im):
 def convert_one(src, dst):
     im = Image.open(src)
     im = im.convert("RGBA") if im.mode != "RGBA" else im.copy()
-    im = normalize_transparent(fit_square(solidify(recolour_white(im))))
+    im = normalize_transparent(fit_square(solidify(recolor_white(im))))
     # RLE, matching media/textures/Default.tga -- the texture this client is already known to load.
     im.save(dst, compression="tga_rle")
     return im.size

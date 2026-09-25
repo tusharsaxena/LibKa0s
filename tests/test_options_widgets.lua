@@ -13,9 +13,9 @@
 -- with nothing, and one-suite-per-module is what makes a red legible.
 --
 -- The cases under *the tabbed page* STAYED, and that is the one place the cut differs from the
--- banner list #8 wrote down. `O.RenderTabbedSchema` is the flow engine's tabbed entry point and it
--- is still in OptionsWidgets.lua; those cases read a strip because that is what the entry point
--- draws, but what they assert is which ROWS a tab shows.
+-- banner list #8 wrote down. `O.RenderTabbedSchema` was the flow engine's tabbed entry point; it
+-- moved to OptionsTabs.lua at OptionsTabs minor 4, and these cases stayed unchanged as the
+-- characterization of that move. Its new `opts` fields are pinned in tests/test_options_tabs.lua.
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse, assertNil, assertNear =
@@ -74,7 +74,7 @@ end)
 
 -- ── checkbox ───────────────────────────────────────────────────────────────────────────────
 
-test("widgets: a bool row renders a CheckBox labelled and seeded from the schema", function()
+test("widgets: a bool row renders a CheckBox labeled and seeded from the schema", function()
   local cb, row = render("locked")
   assertEqual(cb.type, "CheckBox")
   assertEqual(cb.labelText, row.label)
@@ -187,12 +187,12 @@ test("widgets: a string row with values renders a Dropdown, sorted alphabeticall
   -- The exact sequence, not merely a monotonic one: `pairs` order is arbitrary in Lua, so an
   -- implementation that dropped the sort could satisfy a "non-decreasing" check by luck.
   assertEqual(table.concat(dd.order, ","), "Aluminium,Blizzard,Smooth",
-    "every key in " .. row.path .. "'s values list is offered, alphabetised")
+    "every key in " .. row.path .. "'s values list is offered, alphabetized")
 end)
 
-test("widgets: a row with explicit `sorting` keeps that order instead of alphabetising",
+test("widgets: a row with explicit `sorting` keeps that order instead of alphabetizing",
   function()
-  -- Outline styles read in a deliberate order (None, Outline, Thick); alphabetising scrambles it.
+  -- Outline styles read in a deliberate order (None, Outline, Thick); alphabetizing scrambles it.
   local dd, row = render("anchor")
   assertEqual(#dd.order, #row.sorting)
   for i, key in ipairs(row.sorting) do
@@ -270,14 +270,14 @@ test("widgets: the dropdown's options and the CLI's allowed values agree, in bot
   end
 end)
 
-test("widgets: a colour row opts OUT of alpha by declaring it, and cannot before", function()
+test("widgets: a color row opts OUT of alpha by declaring it, and cannot before", function()
   -- The flipped default. `row.hasAlpha and true or false` made an absent field and a declared
   -- false the same thing, so "no alpha" was inexpressible while the codec stored an alpha the
   -- user could never reach.
   local withAlpha = render("barColor")
   assertTrue(withAlpha.hasAlpha, "absent means yes")
   local without = render("borderColor")
-  assertFalse(without.hasAlpha, "and a declared false is honoured")
+  assertFalse(without.hasAlpha, "and a declared false is honored")
 end)
 
 test("widgets: a tooltip body comes from `tooltip`, with `desc` still accepted", function()
@@ -1267,7 +1267,7 @@ function()
     { id = 99999 }, { id = 6948 },
   }, { columns = 2 })
   local rows = listRows(O, ctx)
-  -- red under: a suffix cancelling the note's full-width row, or the note swallowing the suffix
+  -- red under: a suffix canceling the note's full-width row, or the note swallowing the suffix
   assertEqual(#rows, 3, "the noted entry still takes a row of its own")
   assertEqual(#rows[2].children, 3, "name, note, action -- the suffix adds no fourth child")
   assertEqual(rows[2].children[1].text, "Rejuvenation |cff808080(774)|r |cff808080(also in 2)|r")
@@ -2665,7 +2665,7 @@ test("widgets: an edit box commits on OnEnterPressed and re-reads on refresh", f
   assertEqual(eb.text, "elsewhere")
 end)
 
--- ── colour picker ──────────────────────────────────────────────────────────────────────────
+-- ── color picker ──────────────────────────────────────────────────────────────────────────
 
 test("widgets: a color row renders a ColorPicker seeded through the descriptor's codec", function()
   local O, rec, ctx = bench()
@@ -2677,7 +2677,7 @@ test("widgets: a color row renders a ColorPicker seeded through the descriptor's
   assertNear(cp.color.a, 0.4, 1e-6)
 end)
 
-test("widgets: a color picker substitutes 1s for a missing or corrupt stored colour", function()
+test("widgets: a color picker substitutes 1s for a missing or corrupt stored color", function()
   local O, rec, ctx = bench()
   rec.store.barColor = "not a table"
   local cp = O.RenderField(ctx, rec.byPath.barColor, O.AceGUI:Create("SimpleGroup"), 0.5)
@@ -2685,7 +2685,7 @@ test("widgets: a color picker substitutes 1s for a missing or corrupt stored col
   assertEqual(cp.color.a, 1)
 end)
 
-test("widgets: the colour codec is the descriptor's, so an array-storing host is not translated",
+test("widgets: the color codec is the descriptor's, so an array-storing host is not translated",
   function()
   -- AbsorbTracker stores {r=,g=,b=,a=}; KickCD stores {[1],[2],[3],[4]}. The library takes the
   -- codec rather than picking a winner, or one of the two would need a translation layer at every
@@ -2704,11 +2704,11 @@ test("widgets: the colour codec is the descriptor's, so an array-storing host is
   assertNil(stored.r, "never in the library's")
 end)
 
-test("widgets: disabledIf greys the swatch out while its sibling toggle is on", function()
+test("widgets: disabledIf grays the swatch out while its sibling toggle is on", function()
   local O, rec, ctx = bench()
   rec.store.useClassColor = true
   local cp = O.RenderField(ctx, rec.byPath.barColor, O.AceGUI:Create("SimpleGroup"), 0.5)
-  assertTrue(cp.disabled, "class colour on -> swatch disabled")
+  assertTrue(cp.disabled, "class color on -> swatch disabled")
 
   rec.store.useClassColor = false
   for _, fn in ipairs(ctx.refreshers) do fn() end
@@ -2738,7 +2738,7 @@ local MAKER_PATHS = {
 }
 
 --- The first widget under the ctx's scroll whose label reads `label`.
-local function widgetLabelled(O, ctx, label)
+local function widgetLabeled(O, ctx, label)
   for _, w in ipairs(Fixture.flatten(O.EnsureScroll(ctx))) do
     if w.labelText == label or w.text == label then return w end
   end
@@ -2839,8 +2839,8 @@ test("widgets: a disabled render's flag never leaks into a later render or into 
   local O, rec, ctx = bench()
   O.RenderRows(ctx, { rec.byPath.locked }, nil, nil, { disabled = true })
   O.RenderRows(ctx, { rec.byPath.showTooltips })
-  local first = widgetLabelled(O, ctx, "Lock Position")
-  local second = widgetLabelled(O, ctx, "Show tooltips")
+  local first = widgetLabeled(O, ctx, "Lock Position")
+  local second = widgetLabeled(O, ctx, "Show tooltips")
   assertTrue(first.disabled)
   assertNil(second.disabled, "a later render without opts draws enabled, untouched widgets")
 
@@ -2855,7 +2855,7 @@ test("widgets: a render nested inside a disabled render inherits the disable", f
   local after = { Master = function(c) O.RenderRows(c, { rec.byPath.profileName }) end }
   O.RenderRows(ctx, { rec.byPath.locked }, after, nil, { disabled = true })
   -- red under: a nested RenderRows resetting the flag to its own (absent) opts
-  assertTrue(widgetLabelled(O, ctx, "Profile label").disabled,
+  assertTrue(widgetLabeled(O, ctx, "Profile label").disabled,
     "a bespoke block drawn from an afterGroup hook is part of the disabled page")
   assertNil(ctx.__renderDisabled, "and the outer call still clears it")
 end)
@@ -2897,7 +2897,7 @@ test("widgets: OnValueChanged throttles a drag to ONE timer and commits the LAST
   assertNear(rec.store.barColor.r, 0.5, 1e-6)
 end)
 
-test("widgets: a colour drag does NOT refresh every panel", function()
+test("widgets: a color drag does NOT refresh every panel", function()
   -- A sustained drag would re-traverse every widget on every panel at 20 Hz. The picker is the one
   -- maker that deliberately declines the refresh.
   local O, rec, ctx = bench()
@@ -2913,7 +2913,7 @@ end)
 
 test("widgets: every other maker's write DOES refresh every panel", function()
   -- This is what makes paired controls just work: a "Use Class Color" toggle flips and the
-  -- matching swatch greys out on the same frame.
+  -- matching swatch grays out on the same frame.
   local O, rec, ctx = bench()
   local other = O.CreatePanel("WidgetBenchOther", "Other", {})
   local refreshed = 0
@@ -2933,7 +2933,7 @@ test("widgets: RenderField dispatches each schema type to its widget", function(
   assertEqual(render("barColor").type, "ColorPicker")
 end)
 
-test("widgets: RenderField returns nil for an unrecognised type instead of erroring", function()
+test("widgets: RenderField returns nil for an unrecognized type instead of erroring", function()
   local O, _, ctx = bench()
   assertNil(O.RenderField(ctx, { path = "x", type = "mystery", label = "X" },
     O.AceGUI:Create("SimpleGroup"), 0.5))
@@ -3047,7 +3047,7 @@ test("widgets: an afterGroup callback runs with its group's tail row already on 
   function()
   -- The one thing the callback's POSITION means. afterGroup draws buttons, and they belong on a
   -- fresh line under the group rather than packed into the empty right half of its last row — so
-  -- the pending line is flushed BEFORE the hook is called, not after. The neighbouring case counts
+  -- the pending line is flushed BEFORE the hook is called, not after. The neighboring case counts
   -- children at fire time, which still passes if the flush moves to after the call; this names the
   -- widget that has to be down already. Master's third row, showTooltips, is the odd one left alone
   -- on its line, so it is exactly the row a late flush would strand.
@@ -3274,7 +3274,7 @@ end)
 -- Inferred from `values` rather than opted into with a `dialogControl`, because Slash infers too
 -- and an opt-in would leave the two disagreeing for any row that declares `values` and nothing
 -- else. Safe in the failure direction: a row whose values list comes back empty falls through to
--- makeSlider, which is exactly the old behaviour.
+-- makeSlider, which is exactly the old behavior.
 
 test("widgets: a number row carrying a values list renders as a Dropdown, not a Slider", function()
   local w = render("retentionDays")
@@ -3361,7 +3361,7 @@ test("widgets: TextRow adds a full-width Label carrying the text", function()
   assertEqual(ctx.scroll.children[#ctx.scroll.children], w, "and it went into the page's scroll")
 end)
 
-test("widgets: TextRow left-justifies by default and honours an explicit justify", function()
+test("widgets: TextRow left-justifies by default and honors an explicit justify", function()
   local O, _, ctx = bench()
   withFontStringLabels(O, function()
     assertEqual(O.TextRow(ctx, "left").label.justify, "LEFT")
@@ -3406,7 +3406,7 @@ test("widgets: BuildLandingPage draws the logo block at its declared size, then 
   assertEqual(kids[2].height, 8, "LANDING_GAP_LOGO")
 end)
 
-test("widgets: BuildLandingPage honours an explicit logoSize", function()
+test("widgets: BuildLandingPage honors an explicit logoSize", function()
   local O, _, ctx = bench()
   O.BuildLandingPage(ctx, { logo = "x.tga", logoSize = 128 })
   assertEqual(ctx.scroll.children[1].height, 128)

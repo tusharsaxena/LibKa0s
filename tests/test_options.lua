@@ -15,6 +15,7 @@ local test, assertEqual, assertTrue, assertFalse, assertNil =
   T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil
 local mocks = T.mocks
 local Fixture = dofile("tests/fixture_options.lua")
+local Loader  = dofile("tests/_kit/loader.lua")
 
 local lib = T.options
 
@@ -352,7 +353,7 @@ test("options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the pa
   assertEqual(table.concat(order, ","), "hook,refresh")
 end)
 
-test("options: RestoreAllDefaults honours the host's skipRestoreAll veto", function()
+test("options: RestoreAllDefaults honors the host's skipRestoreAll veto", function()
   -- AbsorbTracker's profiles page: resetting it would delete user data, so it must never be swept
   -- up in a global reset. The library takes the predicate rather than knowing the page name.
   local O, rec = Fixture.new{ skipRestoreAll = function(row) return row.page == "bar" end }
@@ -603,7 +604,7 @@ test("options: RefreshPanel ignores a non-ctx rather than raising", function()
   assertTrue(pcall(O.RefreshPanel, "notactx", false), "so is a non-table")
 end)
 
-test("options: a ctx that never went through SetRenderer keeps the old ungated behaviour",
+test("options: a ctx that never went through SetRenderer keeps the old ungated behavior",
   function()
   -- The migration seam, and the most important case in this block: a host adopting the registry
   -- one page at a time keeps working, and so does one that never adopts it at all.
@@ -880,6 +881,37 @@ test("options: EnsureScroll is lazy, created once, and patched", function()
     "the content is inset by the gutter so every page's right edge lines up")
 end)
 
+test("options: OptionsScroll.lua owns the font preload; without it a show still renders", function()
+  -- Options minor 24 moved the preload (minor 17) out of the shell and into OptionsScroll.lua. A
+  -- partial copy missing that file leaves lib.__PreloadFonts nil, and both callers -- the shell's
+  -- show trigger and the late-registration callback -- look it up on `lib` at call time, so the
+  -- only acceptable outcome is no preload, never an error and never a blank page.
+  local saved = {
+    preload = lib.__PreloadFonts, scrollMinor = lib.__scrollMinor,
+    scrollShell = lib.__scrollShellMinor, state = lib.__fontPreload,
+  }
+  local ok, err = pcall(function()
+    lib.__PreloadFonts, lib.__fontPreload = nil, nil
+    local O, rec = Fixture.new()
+    rec.lsm = { HashTable = function() return { Face = "Fonts\\FRIZQT__.TTF" } end }
+    local ctx = O.CreatePanel("TestPanelNoPreload", "No Preload", { pageKey = "nopreload" })
+    local drawn = 0
+    O.SetRenderer(ctx, function() drawn = drawn + 1 end)
+    ctx.panel:Show()
+    assertTrue(pcall(ctx.panel.__fire, ctx.panel, "OnShow"), "the show survives")
+    assertEqual(drawn, 1, "and the page renders")
+    assertNil(lib.__fontPreload, "with no preload state created by anything")
+
+    -- Loading OptionsScroll.lua is what installs it: the shell alone does not.
+    lib.__scrollMinor = nil
+    Loader.load("LibKa0s/OptionsScroll.lua", nil, mocks)
+    assertTrue(type(lib.__PreloadFonts) == "function", "OptionsScroll.lua defines the preload")
+  end)
+  lib.__PreloadFonts, lib.__scrollMinor = saved.preload, saved.scrollMinor
+  lib.__scrollShellMinor, lib.__fontPreload = saved.scrollShell, saved.state
+  if not ok then error(err, 0) end
+end)
+
 test("options: the scrollbar patch is idempotent", function()
   local O = Fixture.new()
   local scroll = O.EnsureScroll(O.CreatePanel("TestPanelQ", "Test Q", {}))
@@ -900,7 +932,7 @@ test("options: FixScroll disables the bar when the content fits, enables it when
 
   scroll.content.GetHeight = function() return 50 end        -- fits
   scroll:FixScroll()
-  assertTrue(scroll.scrollbar.__disabled, "nothing to scroll, so the bar greys out")
+  assertTrue(scroll.scrollbar.__disabled, "nothing to scroll, so the bar grays out")
   assertTrue(scroll.scrollBarShown, "but it is still SHOWN \226\128\148 that is the patch's point")
 
   scroll.content.GetHeight = function() return 1000 end      -- overflows
@@ -1090,7 +1122,7 @@ test("options: the shell installs no main renderer of its own, whatever else the
   function()
   -- The regression this pins: a shell that reads some OTHER descriptor field and installs a
   -- renderer from it changes what lib:New DOES for a descriptor that never asked for one. A host's
-  -- unrecognised keys are the host's business, and an unrecognised key is not a request to draw.
+  -- unrecognized keys are the host's business, and an unrecognized key is not a request to draw.
   local O = Fixture.new{ landing = {
     notes    = "never drawn",
     sections = { { heading = "Never Drawn", rows = function() return { "/x help" } end } },

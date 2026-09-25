@@ -887,6 +887,9 @@ suggestCase("IdInput suggestions: a box that left before the pause shows nothing
   typeThen(function() b.eb.editbox:__fire("OnEscapePressed") end, "Escape")
   typeThen(function()
     b.eb.editbox:__fire("OnEditFocusLost")
+    -- The panel going away is what makes the box not visible in the client, and the frame starts
+    -- shown (kit 26), so the hide is performed here rather than assumed from a hidden default.
+    b.eb.frame:Hide()
     b.eb.frame:__fire("OnHide")
   end, "focus lost, then the panel hidden (Escape twice)")
   typeText(b, "zephyr")

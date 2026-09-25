@@ -249,6 +249,33 @@ function()
   assertEqual(p.__buckets().outer.totalMs, 50, "and its parent is unaffected")
 end)
 
+test("lib: a leaked Open in window A does not parent a bracket in window B", function()
+  -- A host error between Open and Close leaves the slot open. Before Perf minor 13 only Reset
+  -- (from Start) dropped the depth, so every nested Close for the rest of the run named the leaked
+  -- key as its observed parent, even in a later window. The window edges now reset it.
+  local p = Fixture.new()
+  local function tick(combat)
+    T.mocks.__inCombat = combat
+    p.__sampler():__fire("OnUpdate", 0.5)
+  end
+  p.Start("leak")
+  p.Measure("a")
+  tick(true)                 -- window A opens
+  T.mocks.__profileMs = 0
+  p.Open("leaked")           -- and the host raised before its Close
+  tick(false)                -- window A closes
+  p.Measure("b")
+  tick(true)                 -- window B opens
+  p.Open("inner")
+  T.mocks.__profileMs = 2
+  p.Close("inner")
+  tick(false)
+  assertEqual(p.__buckets().inner.observedWithin, nil,
+    "the leaked window-A slot must not be named as window B's parent")
+  p.Stop()
+  if p.suspended then p.Resume() end
+end)
+
 -- ── JSON encoding ───────────────────────────────────────────────────────────────────────────
 
 test("lib: EncodeJSON emits object keys in sorted order", function()
@@ -375,12 +402,12 @@ test("lib: the record's context names the character's class", function()
   local p = Fixture.new()
   p.Start("ctx")
   local r = p.BuildRecord("ctx")
-  assertEqual(r.context.class, "Death Knight", "UnitClass's localised name, not the token")
+  assertEqual(r.context.class, "Death Knight", "UnitClass's localized name, not the token")
   assertEqual(r.context.character, "Testchar", "and the rest of the snapshot travels with it")
   p.Stop()
 end)
 
-test("lib: a cancelled run takes its context stamp with it", function()
+test("lib: a canceled run takes its context stamp with it", function()
   -- Cancel cleared run, armed, recording and label and reset the counters, but left P.context
   -- standing — so a `perf report` after a cancel printed empty buckets wearing the discarded run's
   -- character, realm and zone: a record that reads like a capture of somewhere nobody measured.
@@ -388,7 +415,7 @@ test("lib: a cancelled run takes its context stamp with it", function()
   p.Start("doomed")
   T.assertTrue(p.context ~= nil, "a started run stamps its context")
   p.Cancel()
-  assertEqual(p.context, nil, "and cancelling discards it with everything else")
+  assertEqual(p.context, nil, "and canceling discards it with everything else")
   local r = p.BuildRecord()
   assertEqual(r.context, nil, "so a report built after the cancel carries no stamp")
 end)
@@ -749,7 +776,7 @@ local function fallbackLocale()
   return setmetatable({}, { __index = function(_, k) return k end })
 end
 
-test("perf: an L whose metatable synthesises every key does NOT mask the module's strings", function()
+test("perf: an L whose metatable synthesizes every key does NOT mask the module's strings", function()
   -- red under: reverting tr() to `L[key] or lib.STRINGS[key]`
   local P = Fixture.new({ L = fallbackLocale() })
   for _, step in ipairs(P.STEPS) do
@@ -775,7 +802,7 @@ test("perf: a REAL entry in an L that also has a fallback still overrides", func
     if step.string == "STEP_START" then
       assertEqual(step.label, "Demarrer", "a real entry must still win")
     else
-      assertEqual(step.label, lib.STRINGS[step.string], "neighbours must fall through")
+      assertEqual(step.label, lib.STRINGS[step.string], "neighbors must fall through")
     end
   end
 end)

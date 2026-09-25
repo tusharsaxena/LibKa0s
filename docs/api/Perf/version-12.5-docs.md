@@ -11,9 +11,9 @@
 | Files and minors | `Perf.lua` **12** · `PerfPanel.lua` **5** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
 | Shipped in | v1.40.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 11.5](./version-11.5-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 13.5](./version-13.5-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) **and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`)** |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 12, PerfPanel = 5 }` |
@@ -543,3 +543,17 @@ host that passes nothing gets a better-looking button from the same call it alwa
 The two files move as one. A consumer holding `Perf.lua` from one vendored copy and `PerfPanel.lua`
 from another is not a supported state and LibStub cannot detect it — which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 13.5
+
+**Take it; nothing in a host's own code changes.** Version 13.5 adds no member and no descriptor
+field, and the member manifest differs from this one in its version key alone. Two internals move:
+
+- **`armed`, `recording` and `label` read `false` where they read `nil` here.** The sampler reads the
+  first two every frame, and a nil write sent each read through the instance's `__index` closure.
+  A host suite asserting `p.recording == nil` (or `assertEqual(p.recording, nil)`) after a window
+  closes must assert falsiness instead. Nothing that tests truthiness changes.
+- **The open bracket depth resets when a window opens and when it closes.** A bracket leaked by a
+  host error in one window no longer shows up as the observed parent of brackets in a later window.
+
+Everything else in this document is unchanged at version 13.5.

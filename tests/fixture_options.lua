@@ -3,7 +3,7 @@
 --
 -- A THIRD fixture rather than a parameterisation of fixture_slash.lua, and the reason is the row
 -- shape. The slash fixture's rows are chosen to reach the parser and formatter branches — a clamped
--- number, an enum, an empty string, a colour — and carry no `group`, `label`, `order`, `solo` or
+-- number, an enum, an empty string, a color — and carry no `group`, `label`, `order`, `solo` or
 -- `skipRender`, because the dispatcher never reads one. Every branch THIS module has is in exactly
 -- those fields. Bolting them onto the slash rows would either mutate a table two suites share or
 -- leave each fixture carrying the other's dead weight, so the two stay separate and each says what
@@ -60,7 +60,7 @@ local function buildRows()
     -- default nothing asserts is a default nothing protects, which is how the old `false` survived.
     { path = "barColor", page = "bar", group = "Fill", order = 20, type = "color",
       label = "Bar Color", default = { r = 1, g = 1, b = 1, a = 1 },
-      tooltip = "The bar's fill colour.",
+      tooltip = "The bar's fill color.",
       disabledIf = "useClassColor" },
     -- And the other side of it: a row opting out, which the old reader could not express — an
     -- absent field and a declared false were indistinguishable.
@@ -70,7 +70,7 @@ local function buildRows()
       label = "Use Class Color", default = false },
     -- An explicit order that is NOT the alphabetical one. That matters: an enum whose declared
     -- order happens to sort alphabetically (NONE / OUTLINE / THICKOUTLINE, say) makes the
-    -- `sorting` assertion pass whether or not the implementation honours it.
+    -- `sorting` assertion pass whether or not the implementation honors it.
     { path = "anchor", page = "bar", group = "Fill", order = 40, type = "string",
       label = "Anchor", default = "CENTER",
       values = { TOP = true, CENTER = true, BOTTOM = true },
@@ -171,7 +171,7 @@ function Fixture.new(overrides)
     --- contract AbsorbTracker's NS.SchemaForPage has, reimplemented here rather than imported so
     --- the fixture does not quietly become a second copy of the addon.
     ---
-    --- The second argument is the host's own filter (a unit, in AbsorbTracker), and it is honoured
+    --- The second argument is the host's own filter (a unit, in AbsorbTracker), and it is honored
     --- here on purpose: RenderSchema passes ctx.unit and RestoreDefaults deliberately does not, so
     --- a fixture that ignored it would leave that difference unobservable either way. A row with no
     --- `unit` is unfiltered and belongs to every filter value.
@@ -186,7 +186,7 @@ function Fixture.new(overrides)
     end,
 
     -- A one-shot queue rather than a real clock: `rec.fireTimers()` is what advances it, so the
-    -- colour throttle is observable instead of timing-dependent.
+    -- color throttle is observable instead of timing-dependent.
     scheduleTimer = function(fn, _delay)
       rec.timers[#rec.timers + 1] = fn
       return #rec.timers
