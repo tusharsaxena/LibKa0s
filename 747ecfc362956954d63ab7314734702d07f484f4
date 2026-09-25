@@ -1,0 +1,1 @@
+fixed: DR-LK-03 meets LIB-01..LIB-09 and the rulings; DR-LK-03R (765a12a) pcalls initSummary so a raise no longer drops the whole identity header; gate 1729/0/1, luacheck 0/0, lizard clean
