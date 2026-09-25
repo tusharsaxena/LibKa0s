@@ -1,0 +1,1 @@
+fixed: DR-LK-04 matches LIB-10 (LIVE_VERBS gains diagnostics, 3 comments, pin re-pinned, no alias, no floor move); docs pulled forward by test_versioning is a sound adaptation; DR-LK-04R rewrapped a 122-col comment; gate 1687/0/1, lint 0/0, CCN clean
