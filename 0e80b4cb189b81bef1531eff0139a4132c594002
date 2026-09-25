@@ -1,0 +1,1 @@
+fixed: DR-LK-02 matches BUF-01/03/04/05 and DR-OW-02 (3000/128), tests on the constants, gate green; comment misattributed the measurement to TIME_COPY, fixed in DR-LK-02R
