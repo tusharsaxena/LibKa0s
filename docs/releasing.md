@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.58.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.59.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `DRAG_MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -247,7 +247,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.58.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.59.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -431,7 +431,20 @@ Core, DebugLog, Slash, Options, Media, Env, Pool and Perf. It does not look up W
 is the host that found the four kit gaps revision 16 closes (#27–#30). **No addon on the standard
 remains unadopted.**
 
-**Where v1.58.0 stands (2026-09-24).** One LibStub minor moves, `Launcher.lua` 4
+**Where v1.59.0 stands (2026-09-25).** One LibStub minor moves, `WidgetsDragHandle.lua` 3
+(`LibKa0s-Widgets-1.0` 10.3), and the kit stays at **revision 26**; no `NEEDS_*` floor rises. It is
+an opt-in close mark on `DragHandle` (`spec.onClose`, `closeIcon`, `closeTooltip`), asked for by
+AuraMaster's feedback batch 8 (`CX-1`): an X the help mark's size and tint, immediately left of it,
+with the label kept centered by a reserve that grows on both sides. A host that passes no `onClose`
+draws exactly what it drew at v1.58.0, and a suite case pins that as literals. What a consumer owes
+is in the `CHANGELOG.md` block: the copy and the provenance line, and nothing more unless it adopts
+the X. No member moves, so no degradation stub does. Steps 1–7 are done in this repository on
+`feat/2026-09-25-draghandle-close` and the tag `v1.59.0` exists **locally only**. **Step 8 is
+AuraMaster alone** (batch 8, `D3`), taken on its `feat/2026-09-25-feedback-batch8` branch against
+the local tag; ConsumableMaster, KickCD and AbsorbTracker take v1.59.0 on their next re-vendor, and
+the tag's push waits on the owner's approval of the merge.
+
+**Where v1.58.0 stood (2026-09-24).** One LibStub minor moves, `Launcher.lua` 4
 (`LibKa0s-Launcher-1.0` 4), and the kit stays at **revision 26**; no `NEEDS_*` floor rises. It is the
 click behavior the Ka0s WoW Addon Standard v2.67.0 makes a library-drawn MUST (`launcher-§2`, M6 of
 the 2026-09-23 remediation): left-click opens the settings panel on every host in either state, and
