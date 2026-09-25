@@ -1,0 +1,1 @@
+clean: DR-LK-01 matches BUF-06b/BUF-03 (TIME_COPY via emit on next frame with headless guards, BUFFER_SLACK published at 64 and read at call time, minor 14 docs/manifest/changelog consistent); gate re-run: 1686 passed/0 failed/1 skipped, luacheck 0/0 in 94 files, lizard CCN<=15 clean, DebugLog.lua 860 lines
