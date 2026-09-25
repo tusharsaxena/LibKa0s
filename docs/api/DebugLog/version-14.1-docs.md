@@ -11,7 +11,7 @@
 | Files and minors | `DebugLog.lua` minor **14** · `DebugLogDiagnostics.lua` minor **1** |
 | Shipped in | v1.60.0 |
 | Status | **Current** |
-| Supersedes | [version 13](./version-13-docs.md) — whose buffer slack was a private local, whose copy window could not be timed, and which had no diagnostics report |
+| Supersedes | [version 13](./version-13-docs.md) — whose buffer held 1500 lines with a private 64-line slack, whose copy window could not be timed, and which had no diagnostics report |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 14, DebugLogDiagnostics = 1 }` |
@@ -47,9 +47,11 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 
 ## What changed at this version
 
-Two things, both additive: the diagnostics report, in a new secondary file (below), and two
-lib-level members in `DebugLog.lua` 14 that change nothing a console does unless someone reaches for
-them.
+Three things: the diagnostics report, in a new secondary file (below); the buffer, which doubles to
+**3000** lines with its slack doubled to **128** to match; and two lib-level members in `DebugLog.lua`
+14 that change nothing a console does unless someone reaches for them. The first and the last are
+additive. The buffer is the one change a console shows: it keeps twice the lines, and a host suite
+that pins 1500 as a literal moves (see [Compatibility](#compatibility)).
 
 ### The diagnostics report (`DebugLogDiagnostics.lua` 1)
 
@@ -123,11 +125,45 @@ is the kit's shared case `testkit/test_diagnostics_contract.lua` (kit revision 2
 consumer runs against its own dispatcher and which this repo runs against the fixture host in
 `tests/fixture_diagnostics.lua`.
 
+### `DebugLog.lua` 14: the buffer is 3000 lines
+
+`lib.MAX_BUFFER` moves **1500 → 3000**, and `lib.BUFFER_SLACK` **64 → 128**. The message frame's
+`SetMaxLines` reads the same constant, so the visible log and the copied buffer still move together,
+and the copy window, a view of the buffer, now holds up to 3000 lines too.
+
+**Why it moved.** The diagnostics report is written into this buffer after the debug trace, so that
+one Copy carries both. At 1500, a report at its 1200-line cap (`lib.DIAG_MAX_LINES`) would leave as
+little as 300 lines of the trace it is meant to travel with. At 3000 the report's effective cap is
+still 1200 (`min(1200, 3000 - 100)`), and at least 1800 lines of trace survive above a full report.
+
+**Why 3000 and not 5000.** The owner measured the copy window in the live client on 2026-09-26 with
+a throwaway, uncommitted copy bench addon (not `lib.TIME_COPY`, which only prints one `ShowCopy()`'s
+figures). Each figure is the median of three runs of the Copy open (`SetText`, cursor, `Show`,
+`SetFocus`, `HighlightText`) plus the next frame, with the empty-buffer baseline subtracted:
+
+| Line width | 1500 lines | 3000 lines | 5000 lines | Limit |
+|---|---|---|---|---|
+| 120 columns | 112 ms | 246 ms | **378 ms** | 250 ms |
+| 200 columns | 171 ms | 346 ms | 419 ms | 1000 ms |
+
+At 5000 the 120-column case fails its limit, and by hand the copy box at 5000, though it captured
+every line intact, was slow and sluggish. 3000 passes, only just (246 ms against 250 ms), so it is
+the ceiling rather than a starting point: a later increase needs a new measurement first.
+
+**Why the slack moved with it.** A compaction moves about `MAX_BUFFER / (BUFFER_SLACK + 1)` lines per
+line written: 23 at 1500 and 64, and 23 again at 3000 and 128. The raw array may therefore reach
+`MAX_BUFFER + BUFFER_SLACK` = **3128** entries between compactions, where version 13's reached 1564.
+
+`tests/test_debuglog.lua` pins the cap as the literal 3000, deliberately, and reads the constants
+back for the rest: the boundary set is `{cap - 1, cap, cap + 1, cap + 100}`, and the compaction case
+runs `cap + S + 36` adds and asserts a peak of `cap + S`, the first kept line `L(S + 2)` and a final
+length of `cap + 35`. `tests/test_debuglog_copytiming.lua` pins the slack as the literal 128.
+
 ### `DebugLog.lua` 14: two lib-level members
 
 | | | Since |
 |---|---|---|
-| `lib.BUFFER_SLACK` | The compaction slack, **64**, published. It was a local of `DebugLog.lua` at version 13 with the same value and the same job; `Add` now reads it from the library at call time, as it already read `MAX_BUFFER`. | **14** |
+| `lib.BUFFER_SLACK` | The compaction slack, **128**, published. It was a local of `DebugLog.lua` at version 13, at 64, with the same job; `Add` now reads it from the library at call time, as it already read `MAX_BUFFER`. | **14** |
 | `lib.TIME_COPY` | A session-only switch, `false` at load. While it is `true`, every `ShowCopy()` prints one line through the descriptor's `print` naming what the copy cost. See [Timing the copy window](#timing-the-copy-window). | **14** |
 | `lib.STRINGS.COPY_TIMING` | The text of that line, overridable through `L` like every other string. | **14** |
 
@@ -135,8 +171,8 @@ consumer runs against its own dispatcher and which this repo runs against the fi
 `MAX_BUFFER / (BUFFER_SLACK + 1)` lines per line written, 23 at 1500 and 64, and a larger buffer
 needs a larger slack to keep that ratio. With the slack a private local, a suite that checked the
 compaction had to write `64` as a literal next to a `MAX_BUFFER` it read back from the library, and
-that literal would go stale the day the buffer moved. Now a suite reads both. The value does not
-change at this version.
+that literal would go stale the day the buffer moved. Now a suite reads both. The buffer moved in
+this same version, and the slack with it, to 128 (above).
 
 ### Timing the copy window
 
@@ -152,7 +188,7 @@ next frame (`C_Timer.After(0, ...)`), and on that next frame prints one line thr
 chat printer, shaped like this (the figures are placeholders, not a measurement):
 
 ```text
-copy timing: 1500 lines, 120000 bytes, concat 1.0ms, open+highlight 10.0ms, next frame 100.0ms
+copy timing: 3000 lines, 240000 bytes, concat 1.0ms, open+highlight 10.0ms, next frame 100.0ms
 ```
 
 | Figure | What it covers |
@@ -176,7 +212,7 @@ The cases are in `tests/test_debuglog_copytiming.lua`, a suite of its own becaus
 `tests/test_debuglog.lua` was 988 lines: the default and the string pinned as literals, the untimed
 path reading no clock, one exact line on the next frame from a scripted clock, the line never
 reaching the buffer, the timed and untimed paths handing the window the same text, the count being
-the kept lines past the cap, both headless guards, the slack pinned at 64, and `Add` honoring a
+the kept lines past the cap, both headless guards, the slack pinned at 128, and `Add` honoring a
 changed slack at call time.
 
 ## What version 13 changed
@@ -209,7 +245,9 @@ cap**:
 past the cap can see the slack. Below the cap nothing is observable, and no member is added,
 removed or repurposed: the member manifest differs from version 12's in the minor alone.
 `MAX_BUFFER` stays **1500** — the standard's number, which the message frame's `SetMaxLines` still
-matches — and the slack was a local of `DebugLog.lua` at version 13, not a member. Version 14 publishes it as `lib.BUFFER_SLACK`.
+matches — and the slack was a local of `DebugLog.lua` at version 13, not a member. Version 14
+publishes it as `lib.BUFFER_SLACK` and raises the pair to 3000 and 128, so the figures in this
+section (1500, 1564, the 1501st line) are version 13's.
 
 The cases are in `tests/test_debuglog.lua`: characterization written before the change and green on
 both sides of it (every reader at 1499, 1500, 1501 and 1600 lines, and the 1501st line dropping the
@@ -330,9 +368,11 @@ The `Show` order — width, then text, then cursor, then show, then focus, then 
 unchanged, but it is no longer spelled out here: it is `CopyWindow`'s, and it is load-bearing there
 for the same reasons it was load-bearing here.
 
-### The 1500-line cap, from version 11
+### The line cap: 1500 from version 11, 3000 from version 14
 
-`lib.MAX_BUFFER` is **1500**, and neither version 12 nor version 13 moves it.
+`lib.MAX_BUFFER` is **3000** at this version. It was 1500 from version 11 through version 13, and
+[the buffer is 3000 lines](#debugloglua-14-the-buffer-is-3000-lines) says why it doubled here. The
+1500 had a reason of its own, and it still holds:
 
 The cap is not a display preference. **The perf capture workflow pastes out of this buffer**:
 `perf report` prints its summary into the console and `perf dump` writes the whole JSON record as a
@@ -342,7 +382,8 @@ lines looks exactly like one that was started later.
 
 **The copy window is a view of the buffer, not a second store.** `CopyText()` joins the buffer's
 newest `MAX_BUFFER` lines and the window caps nothing of its own, so the buffer cap *is* the copy
-cap — the 64-line slack version 13 allows the raw array never reaches it. That is still true with the window drawn by Widgets: `ShowCopy()` hands `CopyText()` in as
+cap — the slack version 13 introduced (`BUFFER_SLACK`, 128 lines here) lets the raw array run past
+the cap, and the copy never reaches it. That is still true with the window drawn by Widgets: `ShowCopy()` hands `CopyText()` in as
 text, and `CopyWindow` holds no buffer of its own.
 
 What has to move with the cap is the message frame's own `SetMaxLines`: the cap and `SetMaxLines` are
@@ -419,10 +460,10 @@ rather than paying it with a tooltip over the log. A host that wants the words b
 |---|---|---|
 | `lib.FormatPlain(ts, tag, msg)` | 1 | `"<ts> \| [<tag>] <msg>"` — what the buffer holds and the copy window mirrors. Pure and lib-level, so a host's tests call it directly. |
 | `lib.FormatColored(ts, tag, msg)` | 1 | The console view's line: timestamp muted steel-blue (`6f8faf`), `[tag]` muted tan/gold (`c9a66b`), separator and message default white. |
-| `lib.MAX_BUFFER` | 1 | The line cap (**1500** as of minor 11; 500 through minor 10). Fixed by the standard rather than by the host: the cap and the message frame's own `SetMaxLines` must move together or the visible log and the copied buffer diverge. 1500 because the perf capture workflow pastes out of this buffer — `perf dump` writes a whole JSON record as one line — and the copy window is a *view* of the buffer rather than a second store, so this one number caps both. |
-| `lib.BUFFER_SLACK` | **14** | How far the raw `buffer` may run past `MAX_BUFFER` before `Add` compacts it: **64**. Read by `Add` at call time. A private local through minor 13, with the same value. |
+| `lib.MAX_BUFFER` | 1 | The line cap (**3000** as of minor 14; 1500 from minor 11 through 13; 500 through minor 10). Fixed by the standard rather than by the host: the cap and the message frame's own `SetMaxLines` must move together or the visible log and the copied buffer diverge. 1500 because the perf capture workflow pastes out of this buffer — `perf dump` writes a whole JSON record as one line — and 3000 so a diagnostics report and the trace it travels with fit in one Copy, measured as the most the copy window takes before it turns sluggish. The copy window is a *view* of the buffer rather than a second store, so this one number caps both. |
+| `lib.BUFFER_SLACK` | **14** | How far the raw `buffer` may run past `MAX_BUFFER` before `Add` compacts it: **128**. Read by `Add` at call time. A private local through minor 13, at 64. |
 | `lib.TIME_COPY` | **14** | `false` at load and never saved. While `true`, each `ShowCopy()` prints one `COPY_TIMING` line through the descriptor's `print` on the next frame. See [Timing the copy window](#timing-the-copy-window). |
-| `lib.DIAG_MAX_LINES` | **D1** | **1200**. The most lines one diagnostics report writes, markers included; the effective cap is this or `MAX_BUFFER - 100`, whichever is smaller. |
+| `lib.DIAG_MAX_LINES` | **D1** | **1200**. The most lines one diagnostics report writes, markers included; the effective cap is this or `MAX_BUFFER - 100`, whichever is smaller, so 1200 at this version's 3000. |
 | `lib.DIAG_MAX_PER_LIST` | **D1** | **40**. The default cap of `out:list`. |
 | `lib.MakeCloseButton` | 1 | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. Forwards through the `core` table at call time, not captured at load. |
 | `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
@@ -460,7 +501,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `buffer` | 1 | The plain-text lines, a dense array, newest last. **As of minor 13 it may hold up to `MAX_BUFFER + BUFFER_SLACK` (1564) raw entries between compactions**; the newest `MAX_BUFFER` are the kept lines and anything older is already evicted. Read directly by host tests across the collection — it is part of the contract, not an internal — so a test that needs the kept count past the cap reads `BufferSize()`, not `#buffer`. |
+| `buffer` | 1 | The plain-text lines, a dense array, newest last. **As of minor 13 it may hold up to `MAX_BUFFER + BUFFER_SLACK` raw entries between compactions (3128 as of minor 14; 1564 at minor 13)**; the newest `MAX_BUFFER` are the kept lines and anything older is already evicted. Read directly by host tests across the collection — it is part of the contract, not an internal — so a test that needs the kept count past the cap reads `BufferSize()`, not `#buffer`. |
 | `FormatPlain` / `FormatColored` / `MakeCloseButton` | 1 | The lib-level members, mirrored onto the instance so a host holds one object. |
 | `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
 | `Add(tag, msg)` | 1 | Append one line. **Ungated on purpose**: the enable seam's own bracket lines and a host's perf output both have to land whatever the flag says. |
@@ -567,13 +608,16 @@ The API is **additive-only**: a member or descriptor field may be added in a lat
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
 Version 14.1 adds four lib-level members, two strings, two descriptor fields and three instance
-members, and changes no existing behavior while `TIME_COPY` is off. **A host's library-absent
+members. The one existing behavior it changes is the buffer: **3000 kept lines where version 13 kept
+1500**, and up to 3128 raw entries where it held 1564. A host suite that writes a literal 1500, or
+1500 plus a margin, to push the console past its cap, or asserts the cap as 1500, re-pins at
+re-vendor, preferably on `lib.MAX_BUFFER` and `lib.BUFFER_SLACK` rather than on a new literal.
+Otherwise it changes nothing while `TIME_COPY` is off. **A host's library-absent
 DebugLog stub is an instance surface, so it gains `RunDiagnostics`, `BuildDiagnostics` and
 `DebugVerb`** for its parity case: the stub's `RunDiagnostics` prints the collection's placeholder
 line, `"%s is unavailable: the LibKa0s library did not load."` with `/<slash> diagnostics`, writes
 nothing and returns 0 (`debug-logging-§14`). A host suite that
-hard-codes the slack as `64` can read `lib.BUFFER_SLACK` instead; it passes either way at this
-version.
+hard-codes the slack as `64` reads `lib.BUFFER_SLACK` instead: it is 128 at this version.
 
 The one observable change at version 13 is `#buffer` past the cap, which may read up to 1564 rather
 than 1500. Every method answers as version 12 did. A host suite that writes more than 1500 lines and

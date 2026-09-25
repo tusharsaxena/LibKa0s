@@ -281,13 +281,13 @@ around it were re-measured at kit revision 25 and that only `testkit/framework.l
 was wrong on the day: the same revision took `testkit/test_prose.lua` from 335 to 1499, into the
 band, and nothing named it. The re-measurement above is the correction.
 
-**`tests/test_slash.lua` (1327) — re-ruled 2026-09-24: accepted**, by the review of `LK-33`. The
+**`tests/test_slash.lua` (1339 at v1.60.0's `DR-LK-04`) — re-ruled 2026-09-24: accepted**, by the review of `LK-33`. The
 v1.56.0 release run (`docs/automated-tests/20260924-040553/`) left its Disposition cell as carried
 from v1.34.0, "466 lines clear of the cap … Re-check at 1350", when the file already stood at 1327
 with 173 lines of room, and that bundle's `ANALYSIS.md` says every Disposition cell was "ruled at
 this run" and lists the row as *Carried: re-check at 1350*. Both are wrong for this row; the bundle
 is frozen, so this paragraph and the row's `RESULTS.md` cell are the correction. The file is a flat
-list of independent cases mirroring `LibKa0s/Slash.lua` (863), and the parser block (`ParseBool`
+list of independent cases mirroring `LibKa0s/Slash.lua` (866), and the parser block (`ParseBool`
 through `ParseValue`) is its peel seam, as `tests/test_slash_parse.lua`. **Re-check trigger: the
 next Slash minor that adds parser cases, or 1400 lines**, whichever comes first; at either, the
 parser block peels before the append.

@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.67.0
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.68.0
 — as a **library repo**, which is a scope of its own: `library-stack-§7`'s applicability list is what
 binds here, not the addon rule set, because there is no TOC, no player-facing README, no settings
 canvas and no install. [`CLAUDE.md`](CLAUDE.md) spells out which sections apply and which do not, and
@@ -217,11 +217,11 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.59.0**, which moves one major's minor (Widgets, through `WidgetsDragHandle`) and adds none: `Core = { Core = 8 }`,
+different vendored copy of each. As of **v1.60.0**, which moves two majors' minors (DebugLog, which also gains the file `DebugLogDiagnostics`, and Slash) and adds no major: `Core = { Core = 8 }`,
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 2 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
-`Widgets = { Widgets = 10, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 13 }`, `Slash = { Slash = 15 }`,
+`Widgets = { Widgets = 10, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 14, DebugLogDiagnostics = 1 }`, `Slash = { Slash = 16 }`,
 `Launcher = { Launcher = 4 }`,
 `Options = { Options = 24, OptionsWidgets = 31, OptionsTabs = 4, OptionsCompose = 7, OptionsScroll = 4 }`,
 `Perf = { Perf = 13, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
