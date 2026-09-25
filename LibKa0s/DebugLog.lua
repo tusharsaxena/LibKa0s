@@ -57,8 +57,9 @@ lib.MODULES.DebugLog = MINOR
 -- debug trace, so a player copies both in one go. At 1500 a report at its 1200-line cap
 -- (DIAG_MAX_LINES) would leave as little as 300 lines of the trace it is meant to travel with.
 --
--- Why 3000 and not 5000: measured in the live client on 2026-09-26 with TIME_COPY's bench (open +
--- highlight plus the next frame, the N = 0 baseline subtracted, median of three). At 120-column
+-- Why 3000 and not 5000: measured in the live client on 2026-09-26 with a throwaway, uncommitted
+-- copy bench addon (open + highlight plus the next frame, the N = 0 baseline subtracted, median of
+-- three), not with TIME_COPY below, which only prints one ShowCopy's figures. At 120-column
 -- lines 3000 cost 246 ms against a 250 ms limit and 5000 cost 378 ms, and by hand the copy box at
 -- 5000 was sluggish. 3000 passes, only just, so this is the ceiling rather than a starting point.
 --
