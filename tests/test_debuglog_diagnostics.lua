@@ -111,6 +111,17 @@ test("diag: a combat read that raises prints unreadable and costs nothing else",
   if not ok then error(err, 0) end
 end)
 
+test("diag: an initSummary that raises prints unreadable and the header still follows", function()
+  -- red under: initSummary called bare inside the identity section, where its raise costs the
+  -- client, locale, flag, combat and running-minor lines a broken addon's report needs most
+  local D = newLog({ initSummary = function() error("summary blew up") end })
+  local t = texts(D:BuildDiagnostics())
+  assertEqual(t[2], "unreadable", "the summary line is marked")
+  assertTrue(has(t, "locale: enUS"), "the rest of the header is still read")
+  assertTrue(has(t, "LibKa0s running: "), "down to the running minors")
+  assertFalse(has(t, "section identity failed"), "the header did not fall over")
+end)
+
 -- ── what the report never does ─────────────────────────────────────────────────────────────
 
 test("diag: BuildDiagnostics writes nothing", function()

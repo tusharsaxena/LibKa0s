@@ -290,7 +290,9 @@ local function runningMinors()
 end
 
 local function identity(out, D, d)
-  local summary = type(d.initSummary) == "function" and d.initSummary() or nil
+  -- pcall'd like the client reads: the summary is host code, and a raise here must not cost the
+  -- client, locale, flag, combat and minor lines below it, which a broken addon needs most.
+  local summary = type(d.initSummary) == "function" and read(d.initSummary) or nil
   if summary ~= nil then out:add(TAG, "%s", summary) end
   if type(GetBuildInfo) == "function" then
     local ok, version, build, stamp, interface = pcall(GetBuildInfo)

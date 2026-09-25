@@ -69,10 +69,11 @@ is the state a consumer's library-absent stub already answers for.
 
 1. `[Diag] ==== <brandName> diagnostics begin ====`. `brandName` is a new descriptor field and falls
    back to `title`.
-2. **The identity header**, written by the library: the host's `initSummary()` line, the client
-   (`GetBuildInfo`: version, build, date, interface), the locale, the debug-logging flag, the two
-   combat reads (`InCombatLockdown()`, `UnitAffectingCombat("player")`, each pcall'd and printed
-   `unreadable` if it raises), and every file of every LibKa0s major **running** in the client, as
+2. **The identity header**, written by the library: the host's `initSummary()` line (pcall'd,
+   `unreadable` if it raises, so the lines below still land), the client (`GetBuildInfo`:
+   version, build, date, interface), the locale, the debug-logging flag, the two combat reads
+   (`InCombatLockdown()`, `UnitAffectingCombat("player")`, each pcall'd and printed `unreadable`
+   if it raises), and every file of every LibKa0s major **running** in the client, as
    `File minor`. Running, because under LibStub the winning copy may be another addon's vendor.
 3. **The host's sections**, from the descriptor's `diagnostics()` (called at run time, so a module
    that loads after the console can still supply one) or from `spec.sections`. Each runs under its

@@ -588,13 +588,14 @@ badge and any count quoted in the docs must agree with it.
 - dbgtime: BUFFER_SLACK is published, and is 64 at minor 14
 - dbgtime: Add reads BUFFER_SLACK at call time, like MAX_BUFFER
 
-### test_debuglog_diagnostics.lua (34)
+### test_debuglog_diagnostics.lua (35)
 
 - diag: the caps are pinned as literals, and the file registers under the major
 - diag: both markers carry the brand, and the end marker counts every line
 - diag: with no brandName the markers name the title
 - diag: the identity header names the host, the client, the flags and the running minors
 - diag: a combat read that raises prints unreadable and costs nothing else
+- diag: an initSummary that raises prints unreadable and the header still follows
 - diag: BuildDiagnostics writes nothing
 - diag: the report appends, and the trace before it survives
 - diag: the report never calls Clear
@@ -1923,7 +1924,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_reorder.lua | 5 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
-| test_debuglog_diagnostics.lua | 34 |
+| test_debuglog_diagnostics.lua | 35 |
 | test_slash.lua | 110 |
 | test_slash_refusal.lua | 7 |
 | test_launcher.lua | 45 |
@@ -1963,4 +1964,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 7 |
-| **Total** | **1729** |
+| **Total** | **1730** |
