@@ -50,7 +50,7 @@ rollout.
   literal 3000 and reads both constants back for its boundary (`cap - 1` to `cap + 100`) and
   compaction cases.
 - The cases are in a new suite, `tests/test_debuglog_copytiming.lua`, because
-  `tests/test_debuglog.lua` is 988 lines: the default and the string as literals, the untimed path
+  `tests/test_debuglog.lua` was 988 lines: the default and the string as literals, the untimed path
   reading no clock, one exact line from a scripted clock, the line never reaching the buffer, the
   timed path handing the window the same text, the kept-line count past the cap, both headless
   guards, the slack pinned (at 128 since the buffer moved), and `Add` honoring a changed slack.
