@@ -91,9 +91,10 @@ lib.DISABLED_LINE_FORMAT = "%s is disabled \226\128\148 enable it with |cFFFFFF0
 -- `diagnostics` and the whole schema CLI — `get`, `set`, `list`, `reset`, `resetall` — keep
 -- answering. A player must be able to READ AND REPAIR SETTINGS and to REACH THE PANEL while the
 -- addon is off, which is precisely when they are most likely to need to, and `enable` above all, or
--- the switch only goes one way. `debug`, `perf` and `diagnostics` are diagnostics rather than features: the usual reason
--- to reach for any of them is that the addon is misbehaving. `diagnostics` joined at minor 16, under
--- the standard's v2.68.0 (debug-logging-§14): the report is most needed from an addon that is off.
+-- the switch only goes one way. `debug`, `perf` and `diagnostics` are diagnostics rather than
+-- features: the usual reason to reach for any of them is that the addon is misbehaving.
+-- `diagnostics` joined at minor 16, under the standard's v2.68.0 (debug-logging-§14): the report is
+-- most needed from an addon that is off.
 --
 -- What the gate is left refusing is therefore exactly the HOST'S OWN FEATURE VERBS — the ones that
 -- draw, show, hide, track, record, test, clear or export the thing the addon exists to do. That is
