@@ -55,6 +55,10 @@ same pixels and needs no change. A host that adopts it passes `onClose`, `closeI
 `handle:Reserve()`. No degradation stub moves: the member manifest is unchanged. This release is
 re-vendored into AuraMaster only (batch 8, `D3`); the other hosts take it on their next re-vendor.
 
+Release gate (`docs/automated-tests/20260925-170346/`): lint pass, 0/0 in 93 files;
+tests pass, 1677 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.58.0 — 2026-09-24
 
 Versions in this release: **Launcher minor 4** (`LibKa0s-Launcher-1.0` 4). Every other file is
