@@ -440,10 +440,10 @@ and a debug buffer of **3000** lines (was 1500) with a compaction slack of **128
 the owner's in-client measurement of the copy window on 2026-09-26 (3000 lines cost 246 ms against a
 250 ms limit at 120 columns; 5000 cost 378 ms and was sluggish by hand). What a consumer owes is in
 the `CHANGELOG.md` block: the copy, the kit, the provenance line, three stub members and any literal
-1500 in its suite. Built on `feat/2026-09-25-diagnostics-rollout`, stacked on the unmerged v1.59.0
-(`53c141a`); the release run and the **local** tag `v1.60.0` are step 7 and wait on it. **Step 8 is
-every consumer**, one re-vendor item each in the rollout, and the tag's push waits on the owner's
-approval of the merge.
+1500 in its suite. Built on `feat/2026-09-25-diagnostics-rollout`, stacked on v1.59.0 (`53c141a`),
+and merged to `master` (`db0c54a`) with the owner's approval. Steps 1–7 are done on `master` and
+the tag `v1.60.0` exists **locally only**; its push, and `master`'s, wait on the owner's check.
+**Step 8 is every consumer**, one re-vendor item each in the rollout (its M3).
 
 **Where v1.59.0 stood (2026-09-25).** One LibStub minor moves, `WidgetsDragHandle.lua` 3
 (`LibKa0s-Widgets-1.0` 10.3), and the kit stays at **revision 26**; no `NEEDS_*` floor rises. It is
@@ -631,11 +631,11 @@ The kit stays at **revision 22**, so `tests/test_vendor_sync.lua` pairs the two 
 v1.42.0 tag exactly as it did at v1.41.0 — the kit bytes are identical, but both are resolved from
 the tag the provenance line names, so both are copied.
 
-**Every step 8 through v1.55.0 is done**, and so are the adoption changesets that outlived them.
-All eleven consumers bundle **v1.55.0** on `master` and each `CLAUDE.md` provenance line says so,
-re-measured on 2026-09-24 for v1.56.0 against each consumer's own `master`. What is **not** done is
-the step 8 of v1.56.0, v1.57.0 and v1.58.0, which wait on the owner's approval of the merge and the
-tag pushes (see *Where v1.58.0 stands*, *Where v1.57.0 stood* and *Where v1.56.0 stood* above).
+**Every step 8 through v1.58.0 is done**, and v1.59.0's for AuraMaster, the one host it was
+re-vendored into. Ten consumers bundle **v1.58.0** on `master` and AuraMaster bundles **v1.59.0**,
+and each `CLAUDE.md` provenance line says so, re-measured on 2026-09-26 for v1.60.0 against each
+consumer's own `master`. What is **not** done is the step 8 of v1.60.0, which is every consumer and
+the diagnostics rollout's M3 (see *Where v1.60.0 stands* above); the other ten take v1.59.0 with it.
 
 This paragraph says where the consumers stand as of the release being prepared, so it is stale the
 moment it is not rewritten. **Rewrite it at the next release**, in the same commit as step 7's other

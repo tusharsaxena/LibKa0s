@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.60.0 — unreleased
+## v1.60.0 — 2026-09-26
 
 Versions in this release: **DebugLog minor 14** and **DebugLogDiagnostics minor 1**
 (`LibKa0s-DebugLog-1.0` 14.1) and **Slash minor 16** (`LibKa0s-Slash-1.0` 16), and the test kit at
