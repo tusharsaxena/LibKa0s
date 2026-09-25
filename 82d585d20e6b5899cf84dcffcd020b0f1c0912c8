@@ -1,0 +1,1 @@
+fixed: DR-LK-05 checked against the item row, DR-OW-02 (3000/128 and the measured figures) and the code's minors, counts and tests; one stale count (test_debuglog.lua 'is 988', now 997) fixed in DR-LK-05R; gate green (1729/0/1, luacheck 0/0, lizard 0 over 15)
