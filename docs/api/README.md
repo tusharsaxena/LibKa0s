@@ -65,7 +65,7 @@ the file you need:
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
-| `LibKa0s-Options-1.0` | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
+| `LibKa0s-Options-1.0` | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
 | `LibKa0s-Perf-1.0` | `<Perf>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
 
 A multi-file major gets a composite key because its files carry **independent** minors that really do
@@ -76,7 +76,7 @@ from another out of the wild, and LibStub cannot detect that mismatch if it happ
 
 **A key gains a component when its major gains a file.** The Options key ran three numbers through
 `13.12.3`, four from `14.13.1.3` where `OptionsCompose.lua` joined the major, and five from
-`21.20.1.7.3` where `OptionsTabs.lua` did. The order is
+`21.20.1.7.3` where `OptionsTabs.lua` did, and six from `25.31.5.7.4.1` where `OptionsNav.lua` did. The order is
 load order — `LibKa0s.xml`'s — which is what `tests/test_versioning.lua` derives the expected
 filename from, so the two cannot disagree.
 
@@ -220,7 +220,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [24.31.4.7.4](./Options/version-24.31.4.7.4-docs.md) | `Options.lua` 24 · `OptionsWidgets.lua` 31 · `OptionsTabs.lua` 4 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 | v1.56.0 | **Current** |
+| [25.31.5.7.4.1](./Options/version-25.31.5.7.4.1-docs.md) | `Options.lua` 25 · `OptionsWidgets.lua` 31 · `OptionsTabs.lua` 5 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | v1.61.0 | **Current** |
+| [24.31.4.7.4](./Options/version-24.31.4.7.4-docs.md) | `Options.lua` 24 · `OptionsWidgets.lua` 31 · `OptionsTabs.lua` 4 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 | v1.56.0 – v1.60.0 | Superseded |
 | [23.30.3.7.3](./Options/version-23.30.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 30 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.53.0 – v1.55.0 | Superseded |
 | [23.29.3.7.3](./Options/version-23.29.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 29 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.52.0 | Superseded |
 | [23.28.3.7.3](./Options/version-23.28.3.7.3-docs.md) | `Options.lua` 23 · `OptionsWidgets.lua` 28 · `OptionsTabs.lua` 3 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 3 | v1.51.0 | Superseded |

@@ -10,6 +10,67 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.61.0 — 2026-09-26
+
+Versions in this release: **Options minor 25**, **OptionsTabs minor 5** and a new file,
+**OptionsNav minor 1** (`LibKa0s-Options-1.0` **25.31.5.7.4.1**). Every other file is unchanged
+from v1.60.0: `Core` 8, `Env` 1, `Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2,
+`Media` 4, `Widgets` 10 and `WidgetsDragHandle` 3 (key 10.3), `DebugLog` 14 and `DebugLogDiagnostics`
+1 (key 14.1), `Slash` 16, `Launcher` 4, `OptionsWidgets` 31, `OptionsCompose` 7, `OptionsScroll` 4,
+`Perf` 13 and `PerfPanel` 5 (key 13.5); the test kit stays at **revision 27**. No `NEEDS_*` floor
+rises and no major is added; `OptionsNav.lua` is a sixth file of the Options major, so the library is
+**fifteen majors across twenty-three files**. Built to the Ka0s WoW Addon Standard **v2.69.0**, whose
+options-ui-§13 sanctions the nav rail below, for AuraMaster#6.
+
+### OptionsNav minor 1: the nav rail
+
+- **`O.NavRail(ctx, spec)`**, `spec = { entries = { { key, label, tooltip } }, value, onSelect, width }`:
+  a pinned vertical list at the left of the page's body, the first level of a page that edits one
+  instance out of many (options-ui-§13), in AceGUI's TreeGroup tree-pane look (tooltip-border
+  backdrop, 0.1/0.1/0.1/0.5 fill, 0.4 border; gold `GameFontNormal` entries; the selected entry
+  white on the blue `UI-QuestLogTitleHighlight` bar, and disabled, as the active tab is). `width`
+  defaults to 120. Draw it after `O.PageBanner` and before `O.TabStrip`. The selection is the host's
+  (`spec.value` / `spec.onSelect`, as `O.SubTabStrip`'s is); `onSelect` is pcall'd, and a click is
+  refused in combat by the library as a tab click is. Entries are pooled per page and released on
+  every call; an empty list releases the rail and records `ctx.railWidth = 0`.
+- **`lib.__railInset(ctx)`**: the rail's width plus a 12px gap, or 0 with no rail. The one number
+  the strip's placement, the content panel's left edge and the scroll's left anchor read, so the
+  three cannot disagree. Library-level because `drawContentPanel` has no instance in reach.
+- **The rail's top** is level with the selected tab's art top: `-(bannerHeight + TAB_H -
+  activeArtHeight)`, the active cap atlas measured once on a probe texture and cached on success
+  only, falling back to the strip's own pitch. Seams: `O.__railTop`, `O.__railEntryY`,
+  `O.__navArtHeight`, `O.__resetNavArtHeight`, `O.__railInset`.
+
+### Options minor 25: the scroll starts right of a nav rail
+
+`anchorScroll` adds `lib.__railInset(ctx)` to the scroll's left anchor, and `lib:New` attaches
+`OptionsNav.lua` after `OptionsScroll.lua`. Both reads are guarded: with no rail, or no
+`OptionsNav.lua` in the copy, the scroll is anchored exactly as at minor 24.
+
+### OptionsTabs minor 5: the strip and the content panel start right of a nav rail
+
+`placeTabs` places every tab `lib.__railInset(ctx)` right of the chrome's left edge and wraps against
+the chrome's width less that inset (never less than `TAB_MIN_W`, so the first render's zero-width
+chrome cannot go negative; `replaceOnResize` re-places with the inset when the width arrives).
+`drawContentPanel` moves the panel's left edge by the same inset. The banner, the header block and
+the chrome divider stay full width. With no rail the numbers are minor 4's.
+
+### What a consumer owes on re-vendoring v1.61.0
+
+Copy both payloads whole and move the `CLAUDE.md` provenance line to v1.61.0 in the same commit, as
+always; the kit does not move (27). Then, in the same commit so the suite stays green:
+
+- **Surface-parity churn.** An Options degradation stub pinned with `Kit.assertSurfaceParity` by
+  name goes red until it gains **`NavRail`** as a no-op (library-absent builds draw no panel). A
+  stub checked through an explicit seam list (ConsumableMaster's `OPTIONS_SEAM`) is unaffected. The
+  `__`-prefixed seams are outside parity.
+- **Nothing else.** A page that draws no rail is laid out exactly as at v1.60.0; the load list
+  derived from `LibKa0s.xml` picks up `OptionsNav.lua` with no change.
+
+Release gate (`docs/automated-tests/20260926-121411/`): lint pass, 0/0 in 100 files;
+tests pass, 1745 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.60.0 — 2026-09-26
 
 Versions in this release: **DebugLog minor 14** and **DebugLogDiagnostics minor 1**
