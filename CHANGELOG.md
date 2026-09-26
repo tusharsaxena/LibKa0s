@@ -10,13 +10,24 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.62.0 — unreleased
+## v1.62.0 — 2026-09-26
 
-Versions in this release so far: **Options minor 26**, **OptionsWidgets minor 32**, **OptionsTabs
+Versions in this release: **Options minor 26**, **OptionsWidgets minor 32**, **OptionsTabs
 minor 6** and four new files, **OptionsRegistry minor 1**, **OptionsIds minor 1**, **OptionsIdList
 minor 1** and **OptionsCombat minor 1** (`LibKa0s-Options-1.0` **26.1.32.1.1.6.1.7.4.1**), and the
-test kit at **revision 31**. Every other file is unchanged from v1.61.0. The Options major is ten files, so the library is **fifteen
-majors across twenty-seven files**.
+test kit at **revision 31**. Every other file is unchanged from v1.61.0: `Core` 8, `Env` 1,
+`Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Widgets` 10 and
+`WidgetsDragHandle` 3 (key 10.3), `DebugLog` 14 and `DebugLogDiagnostics` 1 (key 14.1), `Slash` 16,
+`Launcher` 4, `OptionsCompose` 7, `OptionsScroll` 4, `OptionsNav` 1, `Perf` 13 and `PerfPanel` 5
+(key 13.5). No `NEEDS_*` floor rises, no major is added, and no member, descriptor field or row field
+changes. The Options major is ten files, so the library is **fifteen majors across twenty-seven
+files**. Built to the Ka0s WoW Addon Standard **v2.69.0**.
+
+This is the library's half of the 2026-09-26 automated-tests sweep (`ATS-03`, `ATS-04`, `ATS-06`,
+`ATS-07`, `ATS-20`, `ATS-21`). After it nothing in this repo is over `layout-§1`'s 1500-line cap,
+and each of the six band entries the sweep found carried as *Accepted* past `automated-tests-§4`'s
+three-release shelf life is peeled or split. A consumer re-vendors both payloads whole, `libs/LibKa0s/`
+and `tests/_kit/`, rolls its provenance line, and changes nothing else.
 
 ### The id surface leaves OptionsWidgets.lua (issue #32)
 

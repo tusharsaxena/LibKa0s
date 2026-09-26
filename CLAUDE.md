@@ -199,54 +199,47 @@ key**, an API document and a regenerated manifest — a deliberate release, not 
 cycle's deliverable was the disposition; this cycle executed it.
 
 **The 1000–1500 band is on notice, not in breach**, and every figure in it was re-measured with the
-same command on **2026-09-24 at kit revision 26** (v1.56.0, unreleased, after `LK-29`). It is prose
-rather than a second table on purpose: the gate above reads every backticked-path table row under
-this heading as a census row, so a band table here would be thirteen rows claiming to be breaches.
-Thirteen files, two more than the eleven the band held when it was last written out:
-`tests/test_widgets.lua` (1493; 861 after the 2026-09-26 sweep split its `ReorderList` cases out to
-`tests/test_widgets_reorderlist.lua`, issue #37, which takes it out of the band),
-`LibKa0s/OptionsTabs.lua` (1293 after the 2026-09-26 sweep moved its combat half to `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 1197 at the last write-out, which the write-out before that still
-recorded at **973** — v1.39.0's peel figure — two releases after minor 22's combat lock and minor
-23's dispatcher had moved into it; `LK-27`'s page-chrome fix and `LK-28`'s `RenderTabbedSchema` took
-it the rest of the way),
-`testkit/test_prose.lua` (750 after kit revision 29 moved its narrowing machinery out to
-`testkit/prose_coverage.lua` and its self-tests to `testkit/prose_selftests.lua` on 2026-09-26,
-issue #39, which takes it out of the band; 1486 before that; 335 at v1.54.2, and kit revision 25
-took it to 1499, one line from the cap, until kit revision 26 moved its published lists out to
-`testkit/prose_lists.lua`; 1464 after that peel, and `LK-07` / `LK-08` added the rest),
-`LibKa0s/Options.lua` (1261 after the 2026-09-26 sweep moved its page registry to `LibKa0s/OptionsRegistry.lua`; 1462 with `SR-LK-01`'s rail inset and attach line, 1457 before it; 1312 at v1.40.0, then 1460 at v1.46.0 with minor 22's combat lock,
-whose event frame and cover geometry went to `LibKa0s/OptionsTabs.lua` to keep it under the cap,
-1465 at v1.46.1 with the dispatcher moved there too, and 1476 at the last write-out; `LK-24` moved
-the font preload out to 1376, `LK-25`'s park took it to 1454 and `LK-26` to 1457),
-`testkit/mock_base.lua` (1454; 1452 with the shown-by-default flip's four comment lines, 1448 with
-`testkit/mock_events.lua`'s load, hook and install lines, 1446 before them — it was 1499 at kit
-revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that
-reason, and kit 22's recording surveys to `testkit/mock_record.lua` for the same one, which is what
-took it back down),
-`testkit/framework.lua` (920 after kit revision 28 moved the suite inventory out to
-`testkit/inventory.lua` on 2026-09-26, which takes it out of the band; 1386 before that, with
-`Kit.VERSION` at 27; 1385 with `assertLibraryConstant`'s expose line and LibStub-fallback
-wiring; 1383 with the section-sign note on `KIT_GATE_RULE`; 1382 with `Kit.expose`'s
-`assertErrorMatches` line; 1381 when the peel took it back into the band from the census above),
-`tests/test_options.lua` (1339; 1307 at the last write-out),
-`tests/test_schema.lua` (1335; 1101 when it was new at v1.55.0 with the Schema major, 1233 at the
-last write-out, before `LK-22` and `LK-23`),
-and, since v1.34.0, `tests/test_slash.lua` (1327 at v1.42.0, with minor 14's
-reserved-but-unregistered case, and unmoved since; 1302 at minor 13's restored disabled surface,
-1265 at minor 12, 1054 before the gate; 848 after the 2026-09-26 sweep split the parser and the
-disabled gate out to `tests/test_slash_parse.lua` and `tests/test_slash_disabled.lua`, out of the band),
-`LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0,
-tracked as [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)),
-`LibKa0s/Widgets.lua` (1266 with `LK-21`'s minor 10; 1232 before it),
-`tests/test_options_tabs.lua` (1218, new to the band: 842 before `LK-27` and `LK-28` put their cases
-in it; 954 after the 2026-09-26 sweep's split, out of the band), and `tests/test_options_idsuggest.lua`
-(1002, new to the band: 999 at the last write-out, until `LK-05`'s shown-by-default frames; 691 after
-the 2026-09-26 sweep's split, out of the band). They are named so a later reader can tell the band was looked at rather than missed. The seven
-the 2026-09-23 audit found with an expired or blank watch-list disposition carry one now (see *The
-band's terminal states* below); the rest need none until they cross. Three were close enough that
-the next edit to each had to be a new file rather than an append: `testkit/test_prose.lua` at 1486
-with fourteen lines of room, and `LibKa0s/OptionsTabs.lua` and `tests/test_widgets.lua` at 1493 with
-seven each, until the 2026-09-26 sweep peeled them to 750, 1293 and 861.
+same command on **2026-09-26 at v1.62.0's release, kit revision 31**, after the automated-tests
+sweep. It is prose rather than a second table on purpose: the gate above reads every
+backticked-path table row under this heading as a census row, so a band table here would be ten
+rows claiming to be breaches. Ten files, three fewer than the thirteen of the 2026-09-24 write-out:
+the sweep took six out and its id peel brought three in. Largest first:
+
+- `testkit/mock_base.lua` (1454; 1452 with the shown-by-default flip's four comment lines, 1448 with
+  `testkit/mock_events.lua`'s load, hook and install lines, 1446 before them — it was 1499 at kit
+  revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that
+  reason, and kit 22's recording surveys to `testkit/mock_record.lua` for the same one). The closest
+  file to the cap, with 46 lines of room; its `RESULTS.md` re-check trigger is 1490 lines, or any kit
+  change that adds more than 30 lines here.
+- `LibKa0s/OptionsWidgets.lua` (1422, new to the band: it came down from the census's 3852 when the
+  id surface left it), ruled below.
+- `LibKa0s/OptionsIds.lua` (1358, new: the id peel), ruled below.
+- `tests/test_options.lua` (1339; 1307 at the 2026-09-23 write-out), issue #35.
+- `tests/test_schema.lua` (1335; 1101 when it was new at v1.55.0 with the Schema major, 1233 before
+  `LK-22` and `LK-23`), issue #38.
+- `LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0),
+  issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7).
+- `LibKa0s/OptionsTabs.lua` (1293 after the sweep moved its combat half to
+  `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
+  peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
+  `RenderTabbedSchema` took it the rest of the way), peeled then accepted, below.
+- `LibKa0s/Widgets.lua` (1266 with `LK-21`'s minor 10; 1232 before it), issue #36.
+- `LibKa0s/Options.lua` (1261 after the sweep moved its page registry to
+  `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
+  combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
+  accepted, below.
+- `LibKa0s/OptionsIdList.lua` (1193, new: the id peel), ruled below.
+
+Six left the band in the sweep, each on a seam named below: `testkit/test_prose.lua` 1486 → 750
+(issue #39, kit revision 29), `testkit/framework.lua` 1386 → 920 (kit revision 28; 984 at kit
+revision 31, with the runner's `--layout-cap-exempt` answer, sixteen under the band), and four
+suites, `tests/test_widgets.lua` 1493 → 861 (issue #37), `tests/test_slash.lua` 1339 → 848,
+`tests/test_options_tabs.lua` 1218 → 954 and `tests/test_options_idsuggest.lua` 1002 → 691. The
+three that sat within fifteen lines of the cap, `testkit/test_prose.lua` and, at 1493,
+`LibKa0s/OptionsTabs.lua` and `tests/test_widgets.lua`, are among them. They are named so a later
+reader can tell the band was looked at rather than missed. Every file in it carries a disposition in
+`docs/automated-tests/RESULTS.md` (see *The band's terminal states* below): an issue naming its
+seam, or an acceptance with a re-check trigger.
 v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
 `tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own. v1.33.0's

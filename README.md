@@ -217,7 +217,7 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.62.0** (unreleased), which moves one major's minors (Options, which also gains the files `OptionsRegistry`, `OptionsIds`, `OptionsIdList` and `OptionsCombat`) and adds no major: `Core = { Core = 8 }`,
+different vendored copy of each. As of **v1.62.0**, which moves one major's minors (Options, which also gains the files `OptionsRegistry`, `OptionsIds`, `OptionsIdList` and `OptionsCombat`) and adds no major: `Core = { Core = 8 }`,
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 2 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
