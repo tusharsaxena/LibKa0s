@@ -1,7 +1,8 @@
 -- tests/fixture_widgets.lua — the benches the OptionsWidgets.lua suites share:
 -- tests/test_options_widgets.lua (the schema-row makers), tests/test_options_choicegrid.lua
 -- (O.ChoiceGrid), tests/test_options_flow.lua (the two-column flow engine and the tabbed page) and
--- tests/test_options_landing.lua (O.TextRow and O.BuildLandingPage).
+-- tests/test_options_landing.lua (O.TextRow and O.BuildLandingPage). tests/test_options_tabbed.lua
+-- (OptionsTabs.lua's tabbed page and banner action) borrows the bench too.
 --
 -- Moved out of tests/test_options_widgets.lua with the cases that use them, when issue #33 split
 -- that suite on its own case seams. One copy rather than four, for the reason tests/fixture_ids.lua

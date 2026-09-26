@@ -114,6 +114,25 @@ functions. A consumer re-vendors the whole folder and changes nothing else; a co
 `tests/test_kit_inventory.lua` pins revision 28. 1745 cases before and after. Documented in
 [`docs/api/testkit/version-28-docs.md`](docs/api/testkit/version-28-docs.md).
 
+### Four suites leave the 1000–1500 band
+
+Four suites that sat in `layout-§1`'s band, each carried as *Accepted* or tracked past the
+three-release shelf life (`automated-tests-§4`), split on their own case seams. Every case moved
+unchanged, in its original order, to a suite wired right after the one it left:
+
+- `tests/test_widgets.lua` 1493 → 861: the `ReorderList` and row-box cases (24) to
+  `tests/test_widgets_reorderlist.lua` (527), issue #37's split, with the geometry frame factory
+  both suites install in `tests/fixture_geom.lua` (154).
+- `tests/test_slash.lua` 1339 → 848: `ParseBool` and the parser (24) to `tests/test_slash_parse.lua`
+  (225), and the disabled gate (16) to `tests/test_slash_disabled.lua` (298).
+- `tests/test_options_tabs.lua` 1218 → 954: the tabbed page's `opts` and the banner's action (13) to
+  `tests/test_options_tabbed.lua` (291), on `tests/fixture_widgets.lua`'s bench.
+- `tests/test_options_idsuggest.lua` 1002 → 691: the dropdown's frames (11) to
+  `tests/test_options_idsuggest_frames.lua` (254), with the bench both use in
+  `tests/fixture_idsuggest.lua` (112).
+
+No library file changes. 1745 cases before and after.
+
 ## v1.61.0 — 2026-09-26
 
 Versions in this release: **Options minor 25**, **OptionsTabs minor 5** and a new file,

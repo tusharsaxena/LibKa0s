@@ -356,7 +356,7 @@ badge and any count quoted in the docs must agree with it.
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
 
-### test_widgets.lua (81)
+### test_widgets.lua (57)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
 - Widgets.Dropdown falls to Blizzard's arrow with no host art
@@ -415,6 +415,9 @@ badge and any count quoted in the docs must agree with it.
 - widgets: anchorTo is consulted on EVERY show
 - widgets: CopyWindow names the scroll frame when asked (minor 7)
 - widgets: CopyWindow leaves the scroll frame anonymous when not asked
+
+### test_widgets_reorderlist.lua (24)
+
 - widgets: ReorderList reports where a drag landed
 - widgets: ReorderList says nothing for a drag that lands where it started
 - widgets: ReorderList clamps a flat list to its own ends
@@ -626,7 +629,7 @@ badge and any count quoted in the docs must agree with it.
 - diag: the three instance members a consumer's DebugLog stub must carry
 - diag: without the secondary file an instance has no report methods
 
-### test_slash.lua (110)
+### test_slash.lua (70)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
 - sl: whitespace-only input is treated as empty
@@ -665,30 +668,6 @@ badge and any count quoted in the docs must agree with it.
 - sl: CommandRows defaults to no indent and applies the one it is given
 - sl: CommandRows answers an empty list rather than raising on a missing table
 - sl: HelpRows and LandingRows render through CommandRows
-- sl: ParseBool accepts the same eight words the error string advertises
-- sl: ParseBool answers nil, never false, for a non-boolean word
-- sl: booleans accept the whole human vocabulary
-- sl: a junk boolean is rejected and the accepted words are listed
-- sl: a number is clamped to the row's range rather than rejected
-- sl: a non-numeric value for a number row is rejected
-- sl: a string is validated against its enum, case-sensitively
-- sl: an enum declared as an ordered array is offered in declaration order
-- sl: an ordered array supplied as a function is evaluated at parse time
-- sl: a numeric dropdown rejects an out-of-list value rather than clamping it
-- sl: a number row with no values list still clamps to min/max
-- sl: a string row with no values list accepts free text
-- sl: a free-text string row keeps every word of a multi-word value
-- sl: a string enum accepts an entry that contains spaces, in both enum shapes
-- sl: a string value is trimmed at both ends before it is stored or validated
-- sl: an empty or blank string value is still refused with 'expected a value'
-- sl: bool, number and color rows still read tokens exactly as before
-- sl: set stores a multi-word free-text value whole, through the dispatcher
-- sl: a key SET labels its entries with its keys, not with 'true'
-- sl: an enum supplied as a function is evaluated at parse time
-- sl: a color parses r g b with an optional alpha
-- sl: a color given in 0-255 is rescaled, and all three channels together
-- sl: a color missing a channel is rejected with the expected form
-- sl: an unknown row type is rejected by name
 - sl: list groups rows under the host's own group keys, indented
 - sl: the list keeps its own colors — green header, azure group headings
 - sl: list says so when nothing is registered
@@ -722,6 +701,36 @@ badge and any count quoted in the docs must agree with it.
 - slash: a host with no format hook renders exactly as it always did
 - slash: the format hook takes precedence over the color codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
+
+### test_slash_parse.lua (24)
+
+- sl: ParseBool accepts the same eight words the error string advertises
+- sl: ParseBool answers nil, never false, for a non-boolean word
+- sl: booleans accept the whole human vocabulary
+- sl: a junk boolean is rejected and the accepted words are listed
+- sl: a number is clamped to the row's range rather than rejected
+- sl: a non-numeric value for a number row is rejected
+- sl: a string is validated against its enum, case-sensitively
+- sl: an enum declared as an ordered array is offered in declaration order
+- sl: an ordered array supplied as a function is evaluated at parse time
+- sl: a numeric dropdown rejects an out-of-list value rather than clamping it
+- sl: a number row with no values list still clamps to min/max
+- sl: a string row with no values list accepts free text
+- sl: a free-text string row keeps every word of a multi-word value
+- sl: a string enum accepts an entry that contains spaces, in both enum shapes
+- sl: a string value is trimmed at both ends before it is stored or validated
+- sl: an empty or blank string value is still refused with 'expected a value'
+- sl: bool, number and color rows still read tokens exactly as before
+- sl: set stores a multi-word free-text value whole, through the dispatcher
+- sl: a key SET labels its entries with its keys, not with 'true'
+- sl: an enum supplied as a function is evaluated at parse time
+- sl: a color parses r g b with an optional alpha
+- sl: a color given in 0-255 is rescaled, and all three channels together
+- sl: a color missing a channel is rejected with the expected form
+- sl: an unknown row type is rejected by name
+
+### test_slash_disabled.lua (16)
+
 - sl: the refusal line's shape is the collection's, down to the color and the dash
 - sl: an absent isEnabled leaves the dispatcher behaving exactly as it did at minor 11
 - sl: isEnabled without brandName is refused at New, not rendered as 'nil is disabled'
@@ -1161,7 +1170,7 @@ badge and any count quoted in the docs must agree with it.
 - IdList: at more than one column the hovered entry is lit, so the tooltip has an owner
 - IdList: a multi-column tooltip hangs off the row, not over the column beside it
 
-### test_options_tabs.lua (54)
+### test_options_tabs.lua (41)
 
 - widgets: tab packing fills a row and wraps to the next
 - widgets: a tab wider than the strip gets its own row rather than vanishing
@@ -1204,6 +1213,9 @@ badge and any count quoted in the docs must agree with it.
 - widgets: ClearScroll drains the sub-tab ledger before AceGUI pools the parent
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
+
+### test_options_tabbed.lua (13)
+
 - widgets: a host tab sits before the group it names and renders through its callback
 - widgets: a host tab keyed by a group takes that group's place and is handed its rows
 - widgets: a stale active tab heals to the first tab when only host tabs remain
@@ -1235,7 +1247,7 @@ badge and any count quoted in the docs must agree with it.
 - nav: a live scroll moves right of the rail at once, and back when the rail is released, with or without a band
 - nav: with OptionsNav.lua absent there is no NavRail and nothing is inset
 
-### test_options_idsuggest.lua (40)
+### test_options_idsuggest.lua (29)
 
 - IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
 - IdInput suggestions: one name's rows sort by rank, then by id
@@ -1266,6 +1278,9 @@ badge and any count quoted in the docs must agree with it.
 - IdInput suggestions: a based host kind is offered its base's client ids, ranked as the base ranks them
 - IdInput suggestions: a host kind with no base is offered nothing of the client's
 - IdInput suggestions: the shared-name check reads one source through a based kind and its base
+
+### test_options_idsuggest_frames.lua (11)
+
 - IdInput suggestions: one dropdown per instance, whatever the renders
 - IdInput suggestions: a box pooled into a second render is hooked once
 - IdInput suggestions: a box pooled into another instance wakes no list of the first's
@@ -1955,13 +1970,16 @@ badge and any count quoted in the docs must agree with it.
 | test_pool.lua | 23 |
 | test_item.lua | 15 |
 | test_media.lua | 20 |
-| test_widgets.lua | 81 |
+| test_widgets.lua | 57 |
+| test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_reorder.lua | 5 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 35 |
-| test_slash.lua | 110 |
+| test_slash.lua | 70 |
+| test_slash_parse.lua | 24 |
+| test_slash_disabled.lua | 16 |
 | test_slash_refusal.lua | 7 |
 | test_launcher.lua | 45 |
 | test_options.lua | 85 |
@@ -1974,9 +1992,11 @@ badge and any count quoted in the docs must agree with it.
 | test_options_ids.lua | 35 |
 | test_options_idlist.lua | 24 |
 | test_options_idlist_layout.lua | 33 |
-| test_options_tabs.lua | 54 |
+| test_options_tabs.lua | 41 |
+| test_options_tabbed.lua | 13 |
 | test_options_nav.lua | 14 |
-| test_options_idsuggest.lua | 40 |
+| test_options_idsuggest.lua | 29 |
+| test_options_idsuggest_frames.lua | 11 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 9 |
 | test_options_combat.lua | 33 |

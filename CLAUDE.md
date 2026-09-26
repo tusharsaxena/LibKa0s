@@ -145,7 +145,8 @@ git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua`, which
 left v1.39.0 at 973 lines and reached **1493**, minor 22's combat lock, minor 23's dispatcher, minor 5's rail inset (`SR-LK-01`, v1.61.0) and,
 on 2026-09-24, `RenderTabbedSchema` (`LK-28`) having landed in it since; its cases are in
-`tests/test_options_tabs.lua` (1218; 842 before `LK-27` and `LK-28`). On 2026-09-26 the
+`tests/test_options_tabs.lua` (1218; 842 before `LK-27` and `LK-28`; 954 after the 2026-09-26
+sweep split the tabbed page's cases out to `tests/test_options_tabbed.lua`). On 2026-09-26 the
 automated-tests sweep moved the combat lock's page chrome out to `LibKa0s/OptionsCombat.lua` (249),
 which took it to **1293**.
 Both issues are closed and both peels are done. What they did not do is clear the cap, and the
@@ -202,7 +203,8 @@ same command on **2026-09-24 at kit revision 26** (v1.56.0, unreleased, after `L
 rather than a second table on purpose: the gate above reads every backticked-path table row under
 this heading as a census row, so a band table here would be thirteen rows claiming to be breaches.
 Thirteen files, two more than the eleven the band held when it was last written out:
-`tests/test_widgets.lua` (1493),
+`tests/test_widgets.lua` (1493; 861 after the 2026-09-26 sweep split its `ReorderList` cases out to
+`tests/test_widgets_reorderlist.lua`, issue #37, which takes it out of the band),
 `LibKa0s/OptionsTabs.lua` (1293 after the 2026-09-26 sweep moved its combat half to `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 1197 at the last write-out, which the write-out before that still
 recorded at **973** — v1.39.0's peel figure — two releases after minor 22's combat lock and minor
 23's dispatcher had moved into it; `LK-27`'s page-chrome fix and `LK-28`'s `RenderTabbedSchema` took
@@ -229,18 +231,20 @@ wiring; 1383 with the section-sign note on `KIT_GATE_RULE`; 1382 with `Kit.expos
 last write-out, before `LK-22` and `LK-23`),
 and, since v1.34.0, `tests/test_slash.lua` (1327 at v1.42.0, with minor 14's
 reserved-but-unregistered case, and unmoved since; 1302 at minor 13's restored disabled surface,
-1265 at minor 12, 1054 before the gate),
+1265 at minor 12, 1054 before the gate; 848 after the 2026-09-26 sweep split the parser and the
+disabled gate out to `tests/test_slash_parse.lua` and `tests/test_slash_disabled.lua`, out of the band),
 `LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0,
 tracked as [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)),
 `LibKa0s/Widgets.lua` (1266 with `LK-21`'s minor 10; 1232 before it),
 `tests/test_options_tabs.lua` (1218, new to the band: 842 before `LK-27` and `LK-28` put their cases
-in it), and `tests/test_options_idsuggest.lua` (1002, new to the band: 999 at the last write-out,
-until `LK-05`'s shown-by-default frames). They are named so a later reader can tell the band was looked at rather than missed. The seven
+in it; 954 after the 2026-09-26 sweep's split, out of the band), and `tests/test_options_idsuggest.lua`
+(1002, new to the band: 999 at the last write-out, until `LK-05`'s shown-by-default frames; 691 after
+the 2026-09-26 sweep's split, out of the band). They are named so a later reader can tell the band was looked at rather than missed. The seven
 the 2026-09-23 audit found with an expired or blank watch-list disposition carry one now (see *The
-band's terminal states* below); the rest need none until they cross, and two are close enough that the next edit to each should
-be a new file rather than an append: `tests/test_widgets.lua` at 1493 has seven lines of room,
-and `testkit/test_prose.lua` at 1486 fourteen. `LibKa0s/OptionsTabs.lua` was the third, at 1493 with
-seven, until the 2026-09-26 sweep peeled it to 1293.
+band's terminal states* below); the rest need none until they cross, and one is close enough that the next edit to it should
+be a new file rather than an append: `testkit/test_prose.lua` at 1486 has fourteen lines of room.
+`LibKa0s/OptionsTabs.lua` and `tests/test_widgets.lua` were the other two, at 1493 with seven each,
+until the 2026-09-26 sweep peeled them to 1293 and 861.
 v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
 `tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own. v1.33.0's
@@ -272,8 +276,24 @@ suites the rest of `tests/test_options_widgets.lua` split into: `tests/test_opti
 425, `tests/test_options_flow.lua` 801, `tests/test_options_landing.lua` 340, and the makers left
 behind at 717.
 `tests/test_options_idsuggest.lua` (1002), whose re-check trigger was "1200 lines, or #32's peel",
-now pairs with `LibKa0s/OptionsIds.lua`, the module the peel gave it; it moved no case and stays
-**accepted**, its trigger now 1200 lines alone.
+now pairs with `LibKa0s/OptionsIds.lua`, the module the peel gave it; it moved no case in that peel.
+
+**The 2026-09-26 sweep's suite split takes four suites out of the band**, each on its
+own case seams, every case moved unchanged and 1745 in all before and after:
+
+- `tests/test_widgets.lua` 1493 → 861: the `ReorderList` and row-box cases, 24 of 81, went to
+  `tests/test_widgets_reorderlist.lua` (527), with the geometry factory both use in
+  `tests/fixture_geom.lua` (154). This is issue #37's split.
+- `tests/test_slash.lua` 1339 → 848: `ParseBool` and the parser, 24 of 110, went to
+  `tests/test_slash_parse.lua` (225), the seam its watch-list entry named, and the disabled gate, 16,
+  to `tests/test_slash_disabled.lua` (298).
+- `tests/test_options_tabs.lua` 1218 → 954: the tabbed page's `opts` and the banner's action, 13 of
+  54, went to `tests/test_options_tabbed.lua` (291).
+- `tests/test_options_idsuggest.lua` 1002 → 691: the dropdown's frames, 11 of 40, went to
+  `tests/test_options_idsuggest_frames.lua` (254), with the bench both use in
+  `tests/fixture_idsuggest.lua` (112).
+
+None of the seven new files is in the band.
 
 **The band's terminal states, ruled 2026-09-24.** `automated-tests-§4` refuses an "accepted" that
 outlives three consecutive release runs and a newly crossed entry with no disposition, and the
@@ -288,6 +308,8 @@ Disposition cells point here:
   per-widget files, `ReorderList` first.
 - `tests/test_widgets.lua` (1493) — issue [#37](https://github.com/tusharsaxena/LibKa0s/issues/37):
   split by widget family, the `ReorderList` and row-box cases first; its trigger is *any* new case.
+  **Split 2026-09-26**: those cases are `tests/test_widgets_reorderlist.lua`, and the
+  file is 861, out of the band.
 - `tests/test_schema.lua` (1335) — issue [#38](https://github.com/tusharsaxena/LibKa0s/issues/38):
   split by pipeline stage, the write stage onward first.
 - `testkit/test_prose.lua` (1486, still in the band after `LK-01` / `LK-07`) — issue
@@ -342,7 +364,9 @@ is frozen, so this paragraph and the row's `RESULTS.md` cell are the correction.
 list of independent cases mirroring `LibKa0s/Slash.lua` (866), and the parser block (`ParseBool`
 through `ParseValue`) is its peel seam, as `tests/test_slash_parse.lua`. **Re-check trigger: the
 next Slash minor that adds parser cases, or 1400 lines**, whichever comes first; at either, the
-parser block peels before the append.
+parser block peels before the append. **Split 2026-09-26**: the parser block is
+`tests/test_slash_parse.lua` and the disabled gate `tests/test_slash_disabled.lua`, and the file is
+848, out of the band.
 
 ## Documentation map
 

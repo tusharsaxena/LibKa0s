@@ -1,7 +1,7 @@
 -- tests/test_slash_refusal.lua — CliSet and CliReset hearing the write seam's refusal (Slash minor 15).
 --
--- A file of its own because tests/test_slash.lua sits in the 1000-1500 band (CLAUDE.md, "Files
--- over the 1500-line cap"): these cases peel on the seam they test, the host's `set` and
+-- A file of its own because tests/test_slash.lua sat in the 1000-1500 band when these were written
+-- (CLAUDE.md, "Files over the 1500-line cap"): these cases peel on the seam they test, the host's `set` and
 -- `applyDefault` answering back.
 --
 -- The seam they pin: LibKa0s-Schema-1.0's S.Set answers `false, err[, why]` with nothing stored
