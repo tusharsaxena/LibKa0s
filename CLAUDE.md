@@ -136,7 +136,7 @@ git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 
 **v1.39.0 peeled the chrome, and the two Options rows survived it.** Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16)
 named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua`, which
-left v1.39.0 at 973 lines and is **1489** today, minor 22's combat lock, minor 23's dispatcher and,
+left v1.39.0 at 973 lines and is **1493** today, minor 22's combat lock, minor 23's dispatcher, minor 5's rail inset (`SR-LK-01`, v1.61.0) and,
 on 2026-09-24, `RenderTabbedSchema` (`LK-28`) having landed in it since; its cases are in
 `tests/test_options_tabs.lua` (1218; 842 before `LK-27` and `LK-28`).
 Both issues are closed and both peels are done. What they did not do is clear the cap, and the
@@ -191,14 +191,14 @@ rather than a second table on purpose: the gate above reads every backticked-pat
 this heading as a census row, so a band table here would be thirteen rows claiming to be breaches.
 Thirteen files, two more than the eleven the band held when it was last written out:
 `tests/test_widgets.lua` (1493),
-`LibKa0s/OptionsTabs.lua` (1489; 1197 at the last write-out, which the write-out before that still
+`LibKa0s/OptionsTabs.lua` (1493 with `SR-LK-01`'s rail inset, 1489 before it; 1197 at the last write-out, which the write-out before that still
 recorded at **973** — v1.39.0's peel figure — two releases after minor 22's combat lock and minor
 23's dispatcher had moved into it; `LK-27`'s page-chrome fix and `LK-28`'s `RenderTabbedSchema` took
 it the rest of the way),
 `testkit/test_prose.lua` (1486; 335 at v1.54.2, and kit revision 25 took it to 1499, one line from
 the cap, until kit revision 26 moved its published lists out to `testkit/prose_lists.lua`; 1464
 after that peel, and `LK-07` / `LK-08` added the rest),
-`LibKa0s/Options.lua` (1457; 1312 at v1.40.0, then 1460 at v1.46.0 with minor 22's combat lock,
+`LibKa0s/Options.lua` (1462 with `SR-LK-01`'s rail inset and attach line, 1457 before it; 1312 at v1.40.0, then 1460 at v1.46.0 with minor 22's combat lock,
 whose event frame and cover geometry went to `LibKa0s/OptionsTabs.lua` to keep it under the cap,
 1465 at v1.46.1 with the dispatcher moved there too, and 1476 at the last write-out; `LK-24` moved
 the font preload out to 1376, `LK-25`'s park took it to 1454 and `LK-26` to 1457),
@@ -225,7 +225,7 @@ until `LK-05`'s shown-by-default frames). They are named so a later reader can t
 the 2026-09-23 audit found with an expired or blank watch-list disposition carry one now (see *The
 band's terminal states* below); the rest need none until they cross, and three are close enough that the next edit to each should
 be a new file rather than an append: `tests/test_widgets.lua` at 1493 has seven lines of room,
-`LibKa0s/OptionsTabs.lua` at 1489 eleven, and `testkit/test_prose.lua` at 1486 fourteen.
+`LibKa0s/OptionsTabs.lua` at 1493 seven, and `testkit/test_prose.lua` at 1486 fourteen.
 v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
 `tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own. v1.33.0's
@@ -256,17 +256,17 @@ Disposition cells point here:
 - `testkit/test_prose.lua` (1486, still in the band after `LK-01` / `LK-07`) — issue
   [#39](https://github.com/tusharsaxena/LibKa0s/issues/39): the narrowing and coverage machinery
   peels to a kit module of its own at the next kit revision that touches the file.
-- `LibKa0s/Options.lua` (1457) — **re-ruled 2026-09-24: accepted.** It passed the old "re-check at
+- `LibKa0s/Options.lua` (1462, measured after `SR-LK-01`) — **re-ruled 2026-09-24: accepted.** It passed the old "re-check at
   1350" at 1476 with nobody re-ruling it. `LK-24` then took the seam that ruling had named, the font
   preload, out to `LibKa0s/OptionsScroll.lua`, and what came back (`LK-25`'s park, `LK-26`) is combat
   handling on the panel builder every host enters through, where a split is a published-surface
   change rather than an internal tidy. **Re-check trigger: the next member added to `Options.lua`,
   or 1475 lines**, whichever comes first; at either, the next member goes to a new file.
-- `LibKa0s/OptionsTabs.lua` (1489, measured after `LK-28`) — **re-ruled 2026-09-24: accepted.** It is
+- `LibKa0s/OptionsTabs.lua` (1493, measured after `SR-LK-01`) — **re-ruled 2026-09-24: accepted.** It is
   the v1.39.0 chrome peel plus minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome
   fix and `LK-28`'s `RenderTabbedSchema`, all of it the tabbed page's own machinery with no second
   seam inside it. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1495 lines**;
-  with eleven lines of room, that member is a new file, not an append.
+  with seven lines of room, that member is a new file, not an append.
 
 The two re-rule triggers sit above the 1450 the plan wrote for them because both files were
 already past 1450 when they were ruled: 1457 and 1489 as measured, not the "about 1416" the plan
