@@ -347,7 +347,7 @@ CCN_WARN=0; CCN_NLOC=0; CCN_FUNCS=0; CCN_AVG=0; CCN_MAX=0; CCN_BAND=0; CCN_OVER=
 # The watch list's own rows, TAB-separated, in `lizard`'s own order. `automated-tests-§4` wants
 # the two tables generated from the run that measured them, so they are captured where the
 # measurement happens rather than re-derived from the counters afterwards.
-CCN_WARN_ROWS=""; CCN_BAND_ROWS=""
+CCN_WARN_ROWS=""; CCN_BAND_ROWS=""; CCN_EXEMPT_ROWS=""
 CCN_AVG_NLOC=0; CCN_AVG_TOKEN=0; CCN_FUN_RT=0; CCN_NLOC_RT=0
 
 # Strip ANSI color before writing. luacheck and the harness color their output when they
@@ -549,6 +549,34 @@ if wants complexity; then
                     p = $2; sub(/^\.\//, "", p)
                     print ($1 + 0 > 1500 ? "> 1500 (over cap)" : "1000–1500 (on notice)") "\t" p "\t" $1
                 }' | sort)"
+        # layout-§1's SECOND carve-out, generated non-shipping data (kit revision 31). The find
+        # above drops the vendored pair and nothing else, so a committed generated dump (Pretty
+        # Chat's 23,842-line `GlobalStrings/GlobalStrings.lua`) was listed as a breach in every run,
+        # which the AUTOMATED_TESTS.md playbook reads as the runner counting what the rule never
+        # bound (ATS-21). Which files are generated is a repository fact no path betrays, so it is
+        # not guessed here: the repo declares it once, as `Kit.layoutCap.exempt` in `tests/run.lua`,
+        # for the cap gate, and this asks that runner which candidates the set covers
+        # (`--layout-cap-exempt`, answered in framework.lua with the rule the cap gate calls). Only a
+        # line carrying the answer's marker and naming a candidate counts, so nothing the runner
+        # prints while it sets up can drop a row. No `tests/run.lua`, no interpreter, or no answer:
+        # nothing is left out, which errs toward listing a file rather than hiding one.
+        if [ -n "$CCN_BAND_ROWS" ] && [ -f tests/run.lua ] && [ -n "$LUA" ]; then
+            band_paths=()
+            while IFS="$(printf '\t')" read -r _ p _; do
+                [ -n "$p" ] && band_paths+=("$p")
+            done <<BANDPATHS
+$CCN_BAND_ROWS
+BANDPATHS
+            CCN_EXEMPT_ROWS="$(bounded $LUA tests/run.lua --layout-cap-exempt "${band_paths[@]}" \
+                2>/dev/null | tr -d '\r' | awk -F '\t' '
+                    NR == FNR { cand[$2] = 1; next }
+                    $1 == "layout-cap-exempt" && ($2 in cand) && !seen[$2]++ { print $2 }' \
+                    <(printf '%s\n' "$CCN_BAND_ROWS") - | LC_ALL=C sort)"
+            if [ -n "$CCN_EXEMPT_ROWS" ]; then
+                CCN_BAND_ROWS="$(awk -F '\t' 'NR == FNR { ex[$0] = 1; next } !($2 in ex)' \
+                    <(printf '%s\n' "$CCN_EXEMPT_ROWS") <(printf '%s\n' "$CCN_BAND_ROWS"))"
+            fi
+        fi
         CCN_BAND=$(printf '%s' "$CCN_BAND_ROWS" | grep -c '^1000' || true)
         CCN_OVER=$(printf '%s' "$CCN_BAND_ROWS" | grep -c '^> 1500' || true)
         [ -z "$CCN_BAND" ] && CCN_BAND=0; [ -z "$CCN_OVER" ] && CCN_OVER=0
@@ -848,6 +876,13 @@ FNROWS
 $CCN_BAND_ROWS
 BANDROWS
         none_if_empty "$CCN_BAND_ROWS"
+        # Said, not silent (kit revision 31): what the generated-data carve-out left out is named in
+        # prose under the table. The line opens with no `|`, so prior_rows never reads it back.
+        if [ -n "$CCN_EXEMPT_ROWS" ]; then
+            printf '\nLeft out as generated non-shipping data (`layout-§1`'"'"'s second carve-out, declared in\n'
+            printf '`Kit.layoutCap.exempt` in `tests/run.lua`, the set the cap gate reads): %s.\n' \
+                "$(printf '%s\n' "$CCN_EXEMPT_ROWS" | sed 's/.*/`&`/' | paste -sd, - | sed 's/,/, /g')"
+        fi
     }
 
     # The Tests cell of every existing row, newest first, reduced to its total — which is the last

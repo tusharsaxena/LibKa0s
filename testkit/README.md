@@ -87,6 +87,14 @@ about it are load-bearing:
   header, and revisions 26 to 29 printed the header alone; from kit revision 30 it is both. The
   blank line keeps GitHub-flavored Markdown from reading `None.` as a row of the table, and the
   runner's own reader of the previous watch list skips it.
+- **The band table leaves out generated non-shipping data** (kit revision 31), `layout-§1`'s second
+  carve-out. Which files are generated is a fact about the repository that no path betrays, so the
+  runner does not guess: it asks the repo's own `tests/run.lua` with
+  `lua tests/run.lua --layout-cap-exempt PATH...`, which `Kit.run` answers from the
+  `Kit.layoutCap.exempt` set the cap gate reads, with the one matching rule both call
+  (`Kit.__layoutCapCovers`), before loading any suite. A file it leaves out is named in a line under
+  the table, and `manifest.json`'s `bandFiles` and `overCapFiles` no longer count it. With no
+  `tests/run.lua`, or no set, every file is listed as before.
 - **The bundle is written to whatever `.gitattributes` declares for it**, read per path with
   `git check-attr text eol` at the end of the run — not assumed. Everything the runner writes goes
   down a plain shell redirect, which bypasses git's filters entirely, so before kit revision 10 every
@@ -388,6 +396,9 @@ Kit.layoutCap = {
 }
 Kit.run{ dir = "tests/", suites = { ..., { name = "test_layout_cap", dir = "tests/_kit/" } } }
 ```
+
+From kit revision 31 the same `exempt` set also keeps those files out of `run-automated-tests.sh`'s
+band table, so it is declared once and read by both.
 
 **A repo that wrote its own retires it by re-vendoring.** Leaving both is a basename collision the
 inventory reports, and the bare declaration wires the local file over the kit's. A repo that tracks

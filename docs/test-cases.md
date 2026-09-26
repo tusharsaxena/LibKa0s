@@ -1857,7 +1857,7 @@ badge and any count quoted in the docs must agree with it.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 30
+- the kit is revision 31
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -1914,7 +1914,7 @@ badge and any count quoted in the docs must agree with it.
 - prose scan-back: a restated kit folder in skipDirs that .pkgmeta ignores passes the refusal
 - prose lists: PUBLISHED_BRITISH == #BRITISH == 92 and PUBLISHED_ALLOWED == #ALLOWED == 33
 
-### test_kit_runner.lua (8)
+### test_kit_runner.lua (10)
 
 - runner perf: a performance-§12 register row records skip reason (2), in the manifest and RESULTS.md
 - runner perf: a library's root CLAUDE.md register is read when there is no docs/ARCHITECTURE.md
@@ -1924,6 +1924,8 @@ badge and any count quoted in the docs must agree with it.
 - runner perf: KA0S_PERF_EXEMPT=1 counts only where no register exists
 - runner complexity: empty watch-list tables print their header rows, then 'None.'
 - runner complexity: a table with rows does not also say 'None.'
+- runner complexity: the band table leaves out what Kit.layoutCap.exempt names, and says so
+- runner complexity: with no exempt set a generated dump is listed like any other file
 
 ### test_eol.lua (2)
 
@@ -2024,8 +2026,8 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_inventory.lua | 38 |
 | test_kit_eol.lua | 16 |
 | test_kit_prose.lua | 15 |
-| test_kit_runner.lua | 8 |
+| test_kit_runner.lua | 10 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 7 |
-| **Total** | **1746** |
+| **Total** | **1748** |

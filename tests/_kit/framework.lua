@@ -17,7 +17,7 @@ local Kit = {}
 --- cannot answer on its own: *which* kit is a given consumer holding? Before this, "AbsorbTracker's
 --- kit is stale" was only reachable by diffing against this repo at the right commit. Now the
 --- consumer can say so itself, and its API document has a name.
-Kit.VERSION = 30
+Kit.VERSION = 31
 
 -- ── the resource guard (kit revision 23) ───────────────────────────────────────────────────────
 --
@@ -423,9 +423,10 @@ end
 
 -- ── the command line ───────────────────────────────────────────────────────────────────────
 --
--- Three flags, all parsed here so `--list` and the shard driver read the same argv the same way:
+-- Four flags, all parsed here so `--list` and the shard driver read the same argv the same way:
 --
 --   --list          render the inventory and exit, running nothing
+--   --layout-cap-exempt PATH...  name the PATHs `Kit.layoutCap.exempt` covers and exit (revision 31)
 --   --jobs N|auto   fan the suites out across N worker processes (`-j` is the short form)
 --   --shard I/N     run only slice I of N. Set by the driver on each child; not for hand use.
 
@@ -836,8 +837,61 @@ local function reportTotals(tally, shardIndex)
   end
 end
 
+-- ── `--layout-cap-exempt` (kit revision 31) ────────────────────────────────────────────────
+--
+-- layout-§1's second carve-out, generated non-shipping data, is a fact about the repository that
+-- no path betrays, so it arrives as `Kit.layoutCap.exempt` in the consumer's `tests/run.lua`, and
+-- `test_layout_cap.lua` reads it there. `run-automated-tests.sh` writes the same rule's band table
+-- and has to leave out the same files; a second list, or a second matching rule typed into the
+-- shell, is a copy that drifts. So the runner asks this file instead:
+--
+--   lua tests/run.lua --layout-cap-exempt PATH...
+--
+-- prints `layout-cap-exempt<TAB>PATH` for each PATH the exempt set covers and exits 0 without
+-- loading a suite. The marker is there so nothing a runner prints while it sets up can be read as
+-- an answer. The matching rule below is the one the cap gate calls, through `Kit.__layoutCapCovers`.
+
+--- True when the exempt entry `entry` covers `path`: the path itself, or a folder containing it.
+---
+--- Globs are not expanded. An entry that would only match through one matches nothing, which errs
+--- toward reporting a breach rather than toward excusing a file nobody meant to excuse.
+local function layoutCapCovers(entry, path)
+  if entry == path then return true end
+  local folder = (entry:sub(-1) == "/") and entry or (entry .. "/")
+  return path:sub(1, #folder) == folder
+end
+
+--- The string entries of `Kit.layoutCap.exempt`, read from an array, a map of path to true, or
+--- both. A malformed table or entry is `test_layout_cap.lua`'s to fail by name; here it covers nothing.
+local function layoutCapEntries()
+  local o = Kit.layoutCap
+  local entries = type(o) == "table" and o.exempt or nil
+  local list = {}
+  if type(entries) ~= "table" then return list end
+  for key, value in pairs(entries) do
+    local entry = (type(key) == "number") and value or (value and key)
+    if type(entry) == "string" then list[#list + 1] = entry end
+  end
+  return list
+end
+
+--- Print, behind the marker, every argument after `--layout-cap-exempt` that an entry covers.
+local function printLayoutCapExempt()
+  local entries, after = layoutCapEntries(), false
+  for _, path in ipairs(argv()) do
+    if after then
+      for _, entry in ipairs(entries) do
+        if layoutCapCovers(entry, path) then print("layout-cap-exempt\t" .. path); break end
+      end
+    elseif path == "--layout-cap-exempt" then
+      after = true
+    end
+  end
+end
+
 --- Load the suites, then either render the inventory or run everything.
 --- opts = { dir = "tests/", suites = { ... }, suiteInventory = true, jobs = 1 }
+--- `--layout-cap-exempt PATH...` answers the runner's carve-out question and exits first (above).
 --- Exits the process: 0 on success, 1 on any failure, so the green gate is a plain shell check.
 ---
 --- A suites entry is a basename, `{ name = ..., pending = "why" }`, or `{ name = ..., dir = ... }`
@@ -855,6 +909,11 @@ end
 --- fails only once it is switched on. That dependency was always a bug; `--jobs` is what makes it
 --- visible, and it should be switched on deliberately, with the run verified green.
 function Kit.run(opts)
+  if hasFlag("--layout-cap-exempt") then
+    printLayoutCapExempt()
+    os.exit(0)
+  end
+
   local dir    = opts.dir or "tests/"
   local suites = opts.suites or {}
 
@@ -893,6 +952,11 @@ end
 --- The shard partitioner, for the kit's own self-tests. An off-by-one here silently drops or
 --- double-runs whole suites while the totals still look plausible, so it is pinned directly.
 Kit.__shardRange = shardRange
+
+--- layout-§1's generated-data matching rule (kit revision 31). Internal like the rest of this block,
+--- but not only for self-tests: `test_layout_cap.lua` calls it, so the gate and the runner's
+--- `--layout-cap-exempt` answer can never match an exempt entry two different ways.
+Kit.__layoutCapCovers = layoutCapCovers
 
 --- The live registry, for the kit's own self-tests.
 function Kit.__tests() return tests end

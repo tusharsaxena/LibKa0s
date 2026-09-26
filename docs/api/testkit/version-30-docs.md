@@ -9,10 +9,10 @@
 | Payload | `testkit/` — `framework.lua`, `asserts.lua`, `inventory.lua`, `loader.lua`, `mock_base.lua`, `mock_record.lua`, `mock_events.lua`, `mock_ids.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, `prose_lists.lua`, `prose_coverage.lua`, `prose_selftests.lua`, `test_layout_cap.lua`, `test_diagnostics_contract.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **30** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.62.0 |
-| Status | **Current** |
+| First released in | unreleased — superseded by revision 31 before v1.62.0 was cut |
+| Status | Superseded |
 | Supersedes | [version 29](version-29-docs.md) — the prose gate's machinery and self-tests beside it |
-| Superseded by | — |
+| Superseded by | [version 31](version-31-docs.md) — generated files out of the band table |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `30` |
 

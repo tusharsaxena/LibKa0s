@@ -6,7 +6,9 @@
 -- `performance-§12` no-combat-path exemption read out of the repo's `## Documented deviations`
 -- register. Second, that an empty watch-list table prints its header row and then `None.` under a
 -- blank line (`automated-tests-§4`, kit revision 30): revision 25 printed `None.` in place of the
--- header, and revisions 26 to 29 printed the header alone.
+-- header, and revisions 26 to 29 printed the header alone. Third, that the band table leaves out
+-- what `layout-§1`'s generated-data carve-out exempts, read from the same `Kit.layoutCap.exempt`
+-- the cap gate reads, through `lua tests/run.lua --layout-cap-exempt` (kit revision 31, ATS-21).
 --
 -- DRIVEN THROUGH THE SCRIPT, NOT AROUND IT. The runner is a shell script and reads the repo it is
 -- started in, so each case builds a throwaway repo in a temporary directory and runs the library's
@@ -229,4 +231,71 @@ test("runner complexity: a table with rows does not also say 'None.'", function(
   assertTrue(fnSection:find("None.", 1, true) == nil, "and its table does not also say None.")
   local bandSection = results:match("### Files by `layout%-§1` band\n\n(.-)\n\n`lizard`") or ""
   assertTrue(bandSection:find("\n\nNone.", 1, true) ~= nil, "the empty band table still does: " .. bandSection)
+end)
+
+--- `n` lines of Lua, so a fixture file lands in whichever `layout-§1` band a case needs.
+local function linesOf(n)
+  local out = {}
+  for i = 1, n do out[i] = ("local _ = %d"):format(i) end
+  return table.concat(out, "\n") .. "\n"
+end
+
+--- A fixture `tests/run.lua` that loads this checkout's kit, runs `body`, and hands `Kit.run` no suites.
+local function fixtureRunner(here, body)
+  return ('local Kit = dofile("%s/testkit/framework.lua")\n'):format(here)
+    .. (body or "") .. "Kit.run{ suites = {} }\n"
+end
+
+--- The band section of a fixture run's RESULTS.md, or a skip where the complexity suite cannot run.
+local function bandSection(files)
+  local lizard = firstLine("command -v lizard 2>/dev/null")
+  if not lizard or lizard == "" then T.skip("lizard is not on PATH, so the complexity suite cannot run") end
+  local out, code, read = runIn(addon(files), "--suite complexity",
+    { read = { "docs/automated-tests/RESULTS.md", "manifest" } })
+  assertEqual(code, 0, out)
+  local results = read["docs/automated-tests/RESULTS.md"] or ""
+  return results:match("### Files by `layout%-§1` band\n\n(.-)\n\n`lizard`") or "", read.manifest or ""
+end
+
+test("runner complexity: the band table leaves out what Kit.layoutCap.exempt names, and says so", function()
+  -- red under: revisions 30 and earlier, whose band table listed every file of 1000 lines or more
+  -- outside the vendored pair, generated dumps included (ATS-21)
+  local here = cwd()
+  if not here then T.skip("no `pwd`, so the fixture runner cannot find the kit by absolute path") end
+  local band, manifest = bandSection{
+    ["Big.lua"] = linesOf(1100),
+    ["Gen/Dump.lua"] = linesOf(1600),
+    ["Gen/Other.lua"] = linesOf(1200),
+    ["Solo.lua"] = linesOf(1050),
+    ["General.lua"] = linesOf(1300),
+    -- The print is setup noise that happens to name a band path; it must not read as an answer.
+    ["tests/run.lua"] = fixtureRunner(here,
+      'print("Big.lua")\nKit.layoutCap = { exempt = { "Gen/", ["Solo.lua"] = true } }\n'),
+  }
+  assertTrue(band:find("| `Big.lua` |", 1, true) ~= nil, "an authored band file is listed: " .. band)
+  assertTrue(band:find("| `General.lua` |", 1, true) ~= nil,
+    "a `Gen/` entry covers the folder, not every path that starts with its letters")
+  for _, gone in ipairs({ "Gen/Dump.lua", "Gen/Other.lua", "Solo.lua" }) do
+    assertTrue(band:find("| `" .. gone .. "` |", 1, true) == nil, gone .. " is exempt and has no row: " .. band)
+  end
+  assertTrue(band:find("Left out as generated non-shipping data", 1, true) ~= nil,
+    "the table says what the carve-out left out: " .. band)
+  assertTrue(band:find("`Gen/Dump.lua`, `Gen/Other.lua`, `Solo.lua`", 1, true) ~= nil,
+    "and names each file, in path order: " .. band)
+  assertTrue(manifest:find('"bandFiles": 2', 1, true) ~= nil, "two authored files are in the band: " .. manifest)
+  assertTrue(manifest:find('"overCapFiles": 0', 1, true) ~= nil, "and the exempt dump is not counted over the cap")
+end)
+
+test("runner complexity: with no exempt set a generated dump is listed like any other file", function()
+  -- red under: a runner that guessed at generated files by path or size instead of asking the repo
+  local here = cwd()
+  if not here then T.skip("no `pwd`, so the fixture runner cannot find the kit by absolute path") end
+  local band, manifest = bandSection{
+    ["Gen/Dump.lua"] = linesOf(1600),
+    ["tests/run.lua"] = fixtureRunner(here),
+  }
+  assertTrue(band:find("| > 1500 (over cap) | `Gen/Dump.lua` |", 1, true) ~= nil,
+    "an undeclared dump is a breach like any other file: " .. band)
+  assertTrue(band:find("Left out", 1, true) == nil, "and nothing claims to have been left out")
+  assertTrue(manifest:find('"overCapFiles": 1', 1, true) ~= nil, "and the manifest counts it: " .. manifest)
 end)

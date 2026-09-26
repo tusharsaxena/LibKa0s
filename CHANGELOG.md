@@ -15,7 +15,7 @@ cannot drift. Release order is in
 Versions in this release so far: **Options minor 26**, **OptionsWidgets minor 32**, **OptionsTabs
 minor 6** and four new files, **OptionsRegistry minor 1**, **OptionsIds minor 1**, **OptionsIdList
 minor 1** and **OptionsCombat minor 1** (`LibKa0s-Options-1.0` **26.1.32.1.1.6.1.7.4.1**), and the
-test kit at **revision 30**. Every other file is unchanged from v1.61.0. The Options major is ten files, so the library is **fifteen
+test kit at **revision 31**. Every other file is unchanged from v1.61.0. The Options major is ten files, so the library is **fifteen
 majors across twenty-seven files**.
 
 ### The id surface leaves OptionsWidgets.lua (issue #32)
@@ -177,6 +177,29 @@ and changes nothing else. `tests/test_kit_runner.lua`'s empty-table case now ass
 `None.` together, a new case pins that a table with rows carries no `None.`, and
 `tests/test_kit_inventory.lua` pins revision 30: 1745 cases before, 1746 after. Documented in
 [`docs/api/testkit/version-30-docs.md`](docs/api/testkit/version-30-docs.md).
+
+### Test kit revision 31: generated files leave the band table
+
+`layout-§1` exempts generated non-shipping data from the line cap, and the `AUTOMATED_TESTS.md`
+playbook reads a generated file in `RESULTS.md`'s band table as the runner counting what the rule
+never bound. The runner's band table dropped the vendored pair and nothing else, so Pretty Chat's
+23,842-line `GlobalStrings/GlobalStrings.lua` was listed over the cap in every run (`ATS-21` of the
+2026-09-26 automated-tests sweep). From revision 31 `testkit/run-automated-tests.sh` asks the repo's
+own `tests/run.lua` which band files are exempt, through a new `--layout-cap-exempt PATH...` flag:
+`Kit.run` answers it before loading any suite, from the `Kit.layoutCap.exempt` set the cap gate
+already reads, with the one matching rule that `test_layout_cap.lua` now calls too
+(`Kit.__layoutCapCovers`, moved out of the gate unchanged). Answers carry a marker, so nothing a
+runner prints while it sets up can drop a row. What is left out is named in a line under the table,
+and `manifest.json`'s `bandFiles` and `overCapFiles` stop counting it. A repo with no exempt set, or
+no `tests/run.lua`, gets the same table as before. `Kit.VERSION` is 31; revision 30 never shipped on
+its own.
+
+No public member, kit case, mock or `manifest.json` field changes. A consumer re-vendors the whole
+folder and changes nothing else. `tests/test_kit_runner.lua` gains two cases, one that an exempt
+folder and an exempt path leave the table while a look-alike path and setup noise do not, one that
+an undeclared dump is still listed; `tests/test_kit_inventory.lua` pins revision 31: 1746 cases
+before, 1748 after. Documented in
+[`docs/api/testkit/version-31-docs.md`](docs/api/testkit/version-31-docs.md).
 
 ## v1.61.0 — 2026-09-26
 
