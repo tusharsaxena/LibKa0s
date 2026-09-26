@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.61.0 — unreleased
+## v1.61.0 — 2026-09-26
 
 Versions in this release: **Options minor 25**, **OptionsTabs minor 5** and a new file,
 **OptionsNav minor 1** (`LibKa0s-Options-1.0` **25.31.5.7.4.1**). Every other file is unchanged
