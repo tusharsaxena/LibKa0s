@@ -842,7 +842,7 @@ misfit as a library gap on first contact.
   but the library's assumptions about what a host would want. If you are the host with non-Ka0s
   chrome that wants it back, you are the first one, and a misfit is a library gap on contact.
 - **`skin` (DebugLog) — ZERO consumers**, the same state as `makeCloseButton` and reached the same
-  way. `DebugLog.lua:195` reads `type(d.skin) == "table" and d.skin or core.SKIN`, so a host that
+  way. `DebugLog.lua:371` reads `type(d.skin) == "table" and d.skin or core.SKIN`, so a host that
   passes nothing gets Core's table — and every host passes nothing. The 2026-08-02 audit recorded
   this as one consumer on the strength of a grep that matched
   `../BankLedger/modules/SessionWindow.lua:456`, which is a file-local
@@ -873,7 +873,7 @@ misfit as a library gap on first contact.
 - **The numeric-enum dropdown (OptionsWidgets minor 5) — two consumers: BankLedger, LootHistory**
   (`../BankLedger/settings/Schema.lua:76,83`, `../LootHistory/settings/Schema.lua:61,70`). The count
   moved; the warning did not, and it is the reason this entry is here. The route is **inferred** from
-  the presence of a `values` list on a `type="number"` row (`LibKa0s/OptionsWidgets.lua:698`, the
+  the presence of a `values` list on a `type="number"` row (`LibKa0s/OptionsWidgets.lua:913`, the
   number arm of `O.RenderField`), not
   opted into. Any existing number row that grows a `values` key silently reclassifies from slider to
   dropdown, with no code change and no test anywhere that would see it. KickCD's 31 number rows all
