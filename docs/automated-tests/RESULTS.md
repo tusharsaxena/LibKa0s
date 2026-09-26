@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260926-160448`](20260926-160448/) | `cf38896` | clean | 1.61.0 | 0/0 | 100 | 1744/1/1745 | skip | 35854 | 5039 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260926-121411`](20260926-121411/) | `7cbe02c` | clean | 1.60.0 → 1.61.0 | 0/0 | 100 | 1744/1/1745 | skip | 35854 | 5039 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260926-034006`](20260926-034006/) | `2fdca6e` | clean | 1.59.0 → 1.60.0 | 0/0 | 98 | 1729/1/1730 | skip | 35354 | 4975 | 6.5 | 2.0 | 15 | 0 | **green** |
 | [`20260925-170346`](20260925-170346/) | `e8faa5d` | clean | 1.58.0 → 1.59.0 | 0/0 | 93 | 1676/1/1677 | skip | 34348 | 4820 | 6.6 | 2.0 | 15 | 0 | **green** |
@@ -116,10 +117,10 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **1745 cases** — 1744 passed, 0 failed, 1 skipped. The generated inventory
-[`20260926-121411/test-cases.md`](20260926-121411/test-cases.md) is the authority on which cases existed at this run;
+[`20260926-160448/test-cases.md`](20260926-160448/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1730 → 1745** since the previous run.
+Unchanged from the previous run at 1745 cases.
 
 **1 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -143,7 +144,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20260926-121411`](20260926-121411/) — **this run's measurement, not its diff.** Max CCN **15** across 5039
+Current as of [`20260926-160448`](20260926-160448/) — **this run's measurement, not its diff.** Max CCN **15** across 5039
 functions, **0** of them warned on; 13 file(s) in the 1000–1500 band and 2 over the 1500 cap
 (`layout-§1`).
 
