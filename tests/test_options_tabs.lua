@@ -40,7 +40,7 @@ end
 
 --- Run `fn` with AceGUI absent, restoring it afterwards.
 ---
---- The instance resolves AceGUI ONCE, at New() time (`LibKa0s/Options.lua:217`), so the library
+--- The instance resolves AceGUI ONCE, at New() time (`LibKa0s/Options.lua:508`), so the library
 --- has to be built INSIDE this: flipping the mock after Fixture.new leaves the instance holding
 --- the handle it already resolved, and the degraded path never runs.
 local function withoutAceGUI(fn)

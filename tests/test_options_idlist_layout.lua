@@ -200,8 +200,8 @@ end)
 -- to leave `cols * 26` behind after taking their 0.90 of the row.
 --
 -- Both are measured against the CONTENT width, which is what the library does know about itself:
--- L.CONTENT_LEFT + L.CONTENT_RIGHT (12 + 28, LibKa0s/Options.lua:187-188) off the panel, and then
--- OptionsScroll.lua's GUTTER of 20 (LibKa0s/OptionsScroll.lua:34) off that. Panel less 60.
+-- L.CONTENT_LEFT + L.CONTENT_RIGHT (12 + 28, LibKa0s/Options.lua:190-191) off the panel, and then
+-- OptionsScroll.lua's GUTTER of 20 (LibKa0s/OptionsScroll.lua:35) off that. Panel less 60.
 local ACEGUI_LABEL_MIN = 200    -- UpdateImageAnchor's threshold
 local ENTRY_ICON_PX    = 16     -- ID_ICON_SIZE, the entry's own icon
 local REMOVE_HIT_PX    = 26     -- ID_REMOVE_HIT, the X's absolute frame

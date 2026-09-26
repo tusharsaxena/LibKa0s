@@ -111,17 +111,17 @@ end)
 -- Nothing in this suite ever CALLED a media row's `values` before these four, and that is how the
 -- collection's only Critical shipped past 764 green cases: the sole `values` assertion here
 -- (MasterControls' visibility list, below) compares a table by identity and never invokes anything.
--- `enumList` (OptionsWidgets.lua:78-79) unwraps a row's `values` exactly ONCE, so what the composer
+-- `enumList` (OptionsWidgets.lua:105) unwraps a row's `values` exactly ONCE, so what the composer
 -- assigns must be the deferred reader itself and not a wrapper around it. These cases call the row
 -- the way the flow engine does and look at what comes back.
 
 test("compose: FontGroup's font row answers a populated list, not a second closure", function()
   -- The list is read AFTER the row is declared, which is the whole point of the deferral
-  -- (Options.lua:759-763): the addons that register fonts have not run at file load. So the fixture
+  -- (Options.lua:1181-1185): the addons that register fonts have not run at file load. So the fixture
   -- gets its media only once the row exists, and the row still has to see it.
   -- red under: wrapping O.LSMValues in an outer `function() ... end`, which hands enumList a
   -- function where it has already unwrapped and gets `{}` -- a dropdown with no options, silently,
-  -- because the empty-list report at OptionsWidgets.lua:1442 is gated on `values == nil`.
+  -- because the empty-list report at OptionsWidgets.lua:784 is gated on `values == nil`.
   local opts, rec = Fixture.new()
   local row = rowAt(opts.FontGroup(spec()), "font")
   assertEqual(type(row.values), "function", "the row must stay a deferred reader")
