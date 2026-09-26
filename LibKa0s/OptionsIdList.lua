@@ -135,7 +135,7 @@ function lib.__AttachIdList(O, d, ids)
   -- control, and a cap that moved with it would hand two lists of the same width two different
   -- maxima over a difference the player cannot see -- and would still be wrong for the entries in
   -- either list that have no icon at all, which are the only ones the 200px rule does not bind.
-  -- tests/test_options_widgets.lua pins both the number and this arithmetic.
+  -- tests/test_options_idlist_layout.lua pins both the number and this arithmetic.
   local ID_COLUMNS_MAX   = 2
   -- AceGUI's own threshold, named so the floors above are DERIVED rather than asserted. A Label
   -- that has been given an image moves the image on top of a wrapped name whenever the frame
@@ -768,7 +768,7 @@ function lib.__AttachIdList(O, d, ids)
   --- addon entirely, because the pool is per-widget-type and shared by everything that loaded
   --- AceGUI. The functional state is already safe without this (the FontString is handed back right
   --- here, and OnAcquire clears the highlight texture); it is the markers that leak, and a leaked
-  --- marker is not a cosmetic wart. tests/test_options_widgets.lua asserts the one-column contract
+  --- marker is not a cosmetic wart. tests/test_options_idlist_layout.lua asserts the one-column contract
   --- as "no marker on the label", so a marker that survived a release turns that case into one that
   --- passes or fails on POOL ORDER rather than on what the render asked for.
   ---

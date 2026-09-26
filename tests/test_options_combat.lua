@@ -2,8 +2,9 @@
 -- OptionsWidgets minor 23, OptionsTabs minor 2): options-ui-§2 and §13 as of the Ka0s WoW Addon
 -- Standard v2.60.0, and anti-pattern #88.
 --
--- Its own suite, for the reason test_options_switched.lua is one: tests/test_options_widgets.lua is
--- over the layout-§1 cap (issue #33), and the lock is one feature that crosses three files.
+-- Its own suite, for the reason test_options_switched.lua is one: tests/test_options_widgets.lua was
+-- over the layout-§1 cap when it was written (issue #33, since split), and the lock is one feature
+-- that crosses three files.
 --
 -- What the lock replaced: through Options minor 21, a page shown in combat closed Blizzard's
 -- settings window from its own OnShow. The AddOns sidebar reaches that OnShow from inside

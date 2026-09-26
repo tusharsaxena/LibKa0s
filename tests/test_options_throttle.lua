@@ -8,8 +8,9 @@
 -- timer and a fresh closure: one commit per frame plus the garbage, with the 50 ms throttle
 -- defeated in silence.
 --
--- WHY A SUITE OF ITS OWN. `tests/test_options_widgets.lua` is a row in CLAUDE.md's census of files
--- over layout-§1's 1500-line cap, and a new case there grows a breach.
+-- WHY A SUITE OF ITS OWN. `tests/test_options_widgets.lua` was a row in CLAUDE.md's census of files
+-- over layout-§1's 1500-line cap when this was written (issue #33, since split), and a new case there
+-- would have grown a breach.
 --
 -- Each host below owns its own timer queue, so what is counted is exactly what the throttle asked
 -- the host for, and `set` counts every write that reached the host.

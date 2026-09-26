@@ -3,9 +3,9 @@
 -- value (or one of a list), its subsection heading with it, and the page re-renders once, on the next
 -- frame, when the selector changes; a row list with no `shownWhen` renders exactly as before.
 --
--- Its own suite rather than more cases in tests/test_options_widgets.lua, which is over layout-§1's
--- cap and tracked by issue #33 (CLAUDE.md, "Files over the 1500-line cap"): new cases on a seam of
--- their own go to a file of their own, as v1.44.0's removeStyle cases did.
+-- Its own suite rather than more cases in tests/test_options_widgets.lua, which was over layout-§1's
+-- cap when this was written (issue #33, since split): new cases on a seam of their own go to a file
+-- of their own, as v1.44.0's removeStyle cases did.
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse, assertNil =

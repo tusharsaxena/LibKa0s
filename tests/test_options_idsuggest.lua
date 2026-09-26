@@ -8,8 +8,8 @@
 -- "No item matches". The dropdown lists every rank as its own row; Enter on a shared name WITHOUT a
 -- pick still refuses it, so one rank is never added silently.
 --
--- A suite of its own rather than more cases in tests/test_options_widgets.lua, which is over
--- layout-§1's cap with issue #8 open on it.
+-- A suite of its own rather than more cases in tests/test_options_widgets.lua, which was over
+-- layout-§1's cap when this was written (since split under issue #33).
 --
 -- The dropdown is a frame of the library's, not an AceGUI widget, so a case finds it among the
 -- frames CreateFrame handed out: the one carrying `rows`. What each row shows is read off the
