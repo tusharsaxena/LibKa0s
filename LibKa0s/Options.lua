@@ -1,14 +1,14 @@
 -- LibKa0s-Options-1.0 — the Blizzard settings-canvas shell: the panel factory, the page registry,
 -- the lazy Defaults button, and the reset/refresh trio every Ka0s addon's options UI runs on.
 --
--- Six files, one major. This one is the shell; OptionsWidgets.lua is the schema-row -> AceGUI
--- translation and the two-column flow engine; OptionsTabs.lua is the page's chrome -- the tab
--- strip, the banner, the header block and the secondary strip; OptionsCompose.lua is the schema
--- composers; OptionsScroll.lua is the always-shown scrollbar patch and the font preload;
--- OptionsNav.lua is the nav rail a page may lead with (minor 25 reads its inset). They are
--- one major because they are one feature: a host that ended up with a shell from one vendored copy
--- and a flow engine from another would build panels that lay out wrong, and there is no version
--- negotiation that would catch it.
+-- Nine files, one major. This one is the shell; OptionsWidgets.lua is the schema-row -> AceGUI
+-- translation and the flow engine; OptionsIds.lua / OptionsIdList.lua the id input and list;
+-- OptionsCombat.lua the combat lock's event frame, dispatcher and cover; OptionsTabs.lua the page's
+-- chrome (tab strip, banner, header block, secondary strip); OptionsCompose.lua the composers;
+-- OptionsScroll.lua the always-shown scrollbar patch and the font preload; OptionsNav.lua the nav
+-- rail a page may lead with (minor 25 reads its inset). They are one major because they are one
+-- feature: a host that ended up with a shell from one vendored copy and a flow engine from another
+-- would build panels that lay out wrong, and there is no version negotiation that would catch it.
 --
 -- The basenames are namespaced (OptionsWidgets, not Widgets) because tests/test_versioning.lua
 -- searches one shared CHANGELOG.md for "<FileBasename> minor <N>". Two majors owning a file called
@@ -347,8 +347,8 @@ end
 -- LIBRARY-LEVEL, because every vendored copy in the session is handed the same `lib`. Each
 -- instance registers one `hook(locked)` in a weak-keyed set and holds it itself (`O.__combatHook`);
 -- the signature is part of the upgrade contract, since a later minor calls hooks an older one
--- registered. The one event frame, its dispatcher and the cover's geometry are OptionsTabs.lua's
--- (the cover is page chrome).
+-- registered. The one event frame, its dispatcher and the cover's geometry are OptionsCombat.lua's
+-- (the cover is page chrome; OptionsTabs.lua carried them until its minor 6).
 
 lib.__combatHooks = lib.__combatHooks or setmetatable({}, { __mode = "k" })
 lib.__combatLocked = lib.__combatLocked and true or false
@@ -360,8 +360,8 @@ function lib.__IsCombatLocked()
   return (InCombatLockdown ~= nil and InCombatLockdown()) and true or false
 end
 
--- The dispatcher, lib.__OnCombatEvent, is OptionsTabs.lua's from minor 23, beside the page-scoped
--- registration it depends on.
+-- The dispatcher, lib.__OnCombatEvent, is OptionsCombat.lua's (OptionsTabs.lua's from minor 23
+-- until OptionsTabs minor 6), beside the page-scoped registration it depends on.
 
 -- ── the registration park (minor 24) ────────────────────────────────────────────────────────
 --
@@ -625,7 +625,7 @@ function lib:New(d)
   --- @return boolean  true when the show was locked
   local function coverOnShow(ctx)
     -- A shown page is what the library watches combat for (minor 23): registered from here, let
-    -- go of when the last page hides (OptionsTabs.lua's lib.__pageShown / __pageHidden).
+    -- go of when the last page hides (OptionsCombat.lua's lib.__pageShown / __pageHidden).
     if lib.__pageShown then lib.__pageShown(ctx) end
     if not lib.__IsCombatLocked() then
       uncoverPage(ctx)
@@ -744,7 +744,7 @@ function lib:New(d)
     renderedPanels[#renderedPanels + 1] = ctx
 
     -- The combat cover (minor 22), built now, out of combat, and hidden until a combat edge or a
-    -- show in combat puts it up. OptionsTabs.lua builds it: it is page chrome.
+    -- show in combat puts it up. OptionsCombat.lua builds it: it is page chrome.
     if O.__buildCover then ctx.__combatCover = O.__buildCover(panel) end
 
     -- The show hook for a page with NO renderer. A ctx that never goes through SetRenderer is still

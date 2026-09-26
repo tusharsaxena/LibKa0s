@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 25.32.1.1.5.7.4.1
+# `LibKa0s-Options-1.0` — version 25.32.1.1.6.1.7.4.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,14 +8,14 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **25** · `OptionsWidgets.lua` **32** · `OptionsIds.lua` **1** · `OptionsIdList.lua` **1** · `OptionsTabs.lua` **5** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **1** |
-| Version key | `<Options>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same eight numbers `lib.MODULES` reports. |
-| Shipped in | — (never released; superseded inside the v1.62.0 wave) |
-| Status | Superseded |
-| Supersedes | [version 25.31.5.7.4.1](./version-25.31.5.7.4.1-docs.md) |
-| Superseded by | [version 25.32.1.1.6.1.7.4.1](./version-25.32.1.1.6.1.7.4.1-docs.md) — the combat lock's page chrome moves to `OptionsCombat.lua` |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsIds.lua` and `OptionsIdList.lua` declare no floor of their own. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 25, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 5, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }` |
+| Files and minors | `Options.lua` **25** · `OptionsWidgets.lua` **32** · `OptionsIds.lua` **1** · `OptionsIdList.lua` **1** · `OptionsTabs.lua` **6** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **1** |
+| Version key | `<Options>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same nine numbers `lib.MODULES` reports. |
+| Shipped in | v1.62.0 |
+| Status | **Current** |
+| Supersedes | [version 25.32.1.1.5.7.4.1](./version-25.32.1.1.5.7.4.1-docs.md) |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 25, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 6, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
@@ -28,11 +28,38 @@ citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.Pag
 moved the same way at **T4**, and so did the id surface at **I1** and **L1**: `O.ResolveId`,
 `O.UnnamedCandidates`, `O.ID_NAME_HINT` and `O.IdInput` are `OptionsIds.lua`'s and `O.IdList` is
 `OptionsIdList.lua`'s from 25.32.1.1.5.7.4.1, and every `W` citation on them still names the minor that
-introduced them. The minor that introduced a
+introduced them. The combat lock's page chrome (`lib.__combatFrame`, `lib.__OnCombatEvent`, the
+page-scoped registration, `lib.__coverLevel`, `lib.__descendsFrom`, `O.__buildCover`,
+`O.__releaseOwnedFocus`) is `OptionsCombat.lua`'s from 25.32.1.1.6.1.7.4.1, and its `T2` / `T3`
+citations still name the `OptionsTabs.lua` minors that introduced it. The minor that introduced a
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**The combat lock's page chrome leaves `OptionsTabs.lua` for a file of its own (LK-ATS-03).** No
+member, descriptor field, row field or drawn pixel changes; a host cannot observe this version
+except through `lib.MODULES` and the version key.
+
+- **`OptionsCombat.lua` minor 1**: the library half of the combat cover that `OptionsTabs.lua` carried
+  from its minors 2 and 3 — the one event frame (`lib.__combatFrame`), the page-scoped registration
+  (`lib.__shownPages`, `lib.__syncCombatEvents`, `lib.__pageShown`, `lib.__pageHidden`), the
+  dispatcher (`lib.__OnCombatEvent`) and the cover's geometry (`lib.__coverLevel`,
+  `lib.__descendsFrom`) — and the instance's two cover members, `O.__buildCover` and
+  `O.__releaseOwnedFocus`, attached per instance by `lib.__AttachCombat(O)`.
+- **`OptionsTabs.lua` minor 6** loses the moved code. `lib.__AttachTabs` calls `lib.__AttachCombat`
+  where the two members used to be defined, so an instance gets its members in the same order as
+  before, and `Options.lua` does not move (its calls into the library half were already guarded).
+  The refusal every tab control asks stays in `OptionsTabs.lua`.
+- **A seam of its own.** Nothing in the moved code read a local of the strip, its art or the tabbed
+  page, and nothing left behind reads a local of the moved code: the two meet only through `lib`
+  fields. The peel takes `OptionsTabs.lua` from 1493 lines to 1293.
+- **Load order and pairing.** `OptionsCombat.lua` loads right after `OptionsTabs.lua`, the
+  file it was peeled from, so the key gains a component there. It carries its own minor and the shell's,
+  `lib.__combatMinor` / `lib.__combatShellMinor`. A copy without it draws no cover and registers no
+  event; the refusal still answers `InCombatLockdown()`.
+
+## Previously, at 25.32.1.1.5.7.4.1
 
 **The id surface leaves `OptionsWidgets.lua` for two files of its own (issue #32).** No member,
 descriptor field, row field or drawn pixel changes; a host cannot observe this version except
@@ -1160,7 +1187,7 @@ lock for the whole process, whichever vendored copy won. A host calls none of th
 |---|---|---|
 | `lib.__IsCombatLocked()` → boolean | O22 | `lib.__combatLocked` or `InCombatLockdown()`. The one predicate every refusal asks. |
 | `lib.__combatLocked` | O22 | `true` from `PLAYER_REGEN_DISABLED` to `PLAYER_REGEN_ENABLED`. Kept across an upgrade; from **T3** cleared too when the last page leaves the screen. |
-| `lib.__OnCombatEvent(event)` | O22 (in OptionsTabs.lua and page-scoped: **T3**) | The dispatcher: re-syncs the registration and returns if no page is on screen; else sets or clears the flag, then calls every registered hook with `locked`, each pcall'd. |
+| `lib.__OnCombatEvent(event)` | O22 (in OptionsTabs.lua and page-scoped: **T3**; in OptionsCombat.lua from 25.32.1.1.6.1.7.4.1) | The dispatcher: re-syncs the registration and returns if no page is on screen; else sets or clears the flag, then calls every registered hook with `locked`, each pcall'd. |
 | `lib.__combatHooks` | O22 | Weak-keyed set of `hook(locked)`, one per instance, each held by its instance as `O.__combatHook`. |
 | `lib.__combatFrame` | T2 (page-scoped: **T3**) | The one frame for both events. Created once, hidden, kept across an upgrade; registered only while a page is on screen (T3). Its `OnEvent` resolves `lib.__OnCombatEvent` at call time and is re-set by each newer copy. |
 | `lib.__shownPages` | **T3** | Weak-keyed set of every ctx on screen, across hosts. |
@@ -2111,12 +2138,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 25.32.1.1.6.1.7.4.1
-
-`OptionsTabs.lua` moves to minor **6**, and one file joins the major, `OptionsCombat.lua` at minor
-**1**, loaded right after `OptionsTabs.lua`, so the key gains a component. The combat lock's page chrome
-(`lib.__combatFrame`, `lib.__OnCombatEvent`, the page-scoped registration, `lib.__coverLevel`,
-`lib.__descendsFrom`, `O.__buildCover`, `O.__releaseOwnedFocus`) is defined in the new file rather
-than in `OptionsTabs.lua`. No member, descriptor field or row field is added, removed or changed,
-and nothing a host draws moves. This version was never tagged: both keys fall inside v1.62.0.

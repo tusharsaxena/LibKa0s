@@ -12,10 +12,10 @@ cannot drift. Release order is in
 
 ## v1.62.0 — unreleased
 
-Versions in this release so far: **OptionsWidgets minor 32** and two new files, **OptionsIds minor
-1** and **OptionsIdList minor 1** (`LibKa0s-Options-1.0` **25.32.1.1.5.7.4.1**). Every other file is
-unchanged from v1.61.0. The Options major is eight files, so the library is **fifteen majors across
-twenty-five files**.
+Versions in this release so far: **OptionsWidgets minor 32**, **OptionsTabs minor 6** and three new
+files, **OptionsIds minor 1**, **OptionsIdList minor 1** and **OptionsCombat minor 1**
+(`LibKa0s-Options-1.0` **25.32.1.1.6.1.7.4.1**). Every other file is unchanged from v1.61.0. The
+Options major is nine files, so the library is **fifteen majors across twenty-six files**.
 
 ### The id surface leaves OptionsWidgets.lua (issue #32)
 
@@ -47,6 +47,28 @@ the tabbed page to `tests/test_options_flow.lua` (801), and `O.TextRow` / `O.Bui
 `tests/test_options_landing.lua` (340), with the bench the four share in `tests/fixture_widgets.lua`.
 `tests/test_options_widgets.lua` keeps the makers (717), and `CLAUDE.md`'s cap census is empty:
 nothing in this repo is over 1500 lines. 1745 cases before and after.
+
+### The combat lock's page chrome leaves OptionsTabs.lua
+
+`LibKa0s/OptionsTabs.lua` was 1493 lines, seven from the cap, and its band entry had been carried as
+*Accepted* past the three-release shelf life (`automated-tests-§4`). The combat lock's page chrome it
+carried from its minors 2 and 3 moves out, unchanged, to a file of its own, and the two end at 1293
+(`OptionsTabs.lua`) and 249 (`OptionsCombat.lua`):
+
+- **OptionsCombat minor 1**: the one event frame (`lib.__combatFrame`), the page-scoped registration
+  (`lib.__shownPages`, `lib.__syncCombatEvents`, `lib.__pageShown`, `lib.__pageHidden`), the
+  dispatcher (`lib.__OnCombatEvent`) and the cover's geometry (`lib.__coverLevel`,
+  `lib.__descendsFrom`), plus `O.__buildCover` and `O.__releaseOwnedFocus`, attached by
+  `lib.__AttachCombat(O)`.
+- **OptionsTabs minor 6** calls `lib.__AttachCombat` where the two members used to be defined, so an
+  instance gets the same members in the same order. `Options.lua` does not move; its comments now
+  name the new file.
+
+A seam of its own: nothing moved reads a local of the strip, its art or the tabbed page, and the
+two halves meet only through `lib` fields. It carries its own minor and the shell's
+(`__combatMinor` / `__combatShellMinor`) and loads right after `OptionsTabs.lua`. No member, descriptor
+field or row field changes, and no case moves: the combat cases were already in
+`tests/test_options_combat.lua`. 1745 cases before and after.
 
 ## v1.61.0 — 2026-09-26
 

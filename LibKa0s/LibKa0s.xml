@@ -19,6 +19,7 @@
 	<Script file="OptionsIds.lua"/>
 	<Script file="OptionsIdList.lua"/>
 	<Script file="OptionsTabs.lua"/>
+	<Script file="OptionsCombat.lua"/>
 	<Script file="OptionsCompose.lua"/>
 	<Script file="OptionsScroll.lua"/>
 	<Script file="OptionsNav.lua"/>

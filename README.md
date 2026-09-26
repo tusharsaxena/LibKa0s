@@ -49,7 +49,7 @@ modules ship today:
 - **`LibKa0s-Options-1.0`** — the Blizzard settings-canvas shell, the schema-row to AceGUI widget
   translation, the page's chrome (the tab strip, the banner, the header block, the secondary
   strip and the nav rail), the two-column flow engine that lays a page out, and the schema composers that expand one
-  declaration into a canonical block. Eight files, one major.
+  declaration into a canonical block. Nine files, one major.
 - **`LibKa0s-Perf-1.0`** — a repeatable A/B performance capture for one host addon.
 
 Every module but Core requires Core, and refuses to register without it.
@@ -63,8 +63,8 @@ modules and points there; it does not restate them.
 1. Copy `LibKa0s/` into `<Addon>/libs/LibKa0s/` — the whole folder, every time. The modules are
    siblings that ship as one released copy, and every file but `Core.lua` returns without
    registering at all when `Core.lua` is missing or older than the minor it needs. When `Options.lua` bails that way, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`,
-   `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` and `OptionsNav.lua` bail too on their own
-   `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole eight-file module is absent rather
+   `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` and `OptionsNav.lua` bail too on their own
+   `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole nine-file module is absent rather
    than half-attached; `WidgetsDragHandle.lua` does the same behind `Widgets.lua`. Since v1.48.0
    the folder carries one more file than it did, which is why the copy is the whole folder and
    never the files you happen to have.
@@ -97,7 +97,7 @@ signature, because a second copy of a contract is a contract that drifts.
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console: movable window, color-coded log, copy box, and the one seam that turns logging on and off, plus the diagnostics report a player sends with a bug report. The library writes the markers, the identity header and the cap, and runs each section an addon supplies under its own pcall. | `DebugLog.lua`, `DebugLogDiagnostics.lua` | [14.1](docs/api/DebugLog/version-14.1-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser — everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [16](docs/api/Slash/version-16-docs.md) |
 | `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice — with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. One `OnClick`, implementing launcher-§2: left-click opens the settings panel, right-click opens the client's context menu of the toggles the host supplies (Enabled, Locked, Test mode, Show window), and one library-drawn status tooltip (launcher-§1); LibDBIcon's own `minimap` table taken from the host. Neither broker library is a dependency: both are resolved with `LibStub(…, true)` at register time and every degradation is named rather than raised. | `Launcher.lua` | [4](docs/api/Launcher/version-4-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, the nav rail a page that edits one instance out of many may lead with, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`, `OptionsTabs.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua` | [25.32.1.1.5.7.4.1](docs/api/Options/version-25.32.1.1.5.7.4.1-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, the nav rail a page that edits one instance out of many may lead with, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block — plus the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`, `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua` | [25.32.1.1.6.1.7.4.1](docs/api/Options/version-25.32.1.1.6.1.7.4.1-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [13.5](docs/api/Perf/version-13.5-docs.md) |
 
 Every major but Core depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and each
@@ -217,13 +217,13 @@ released change that skips its bump reaches no host that already carries the old
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major* —
 there is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.62.0** (unreleased), which moves one major's minors (Options, which also gains the files `OptionsIds` and `OptionsIdList`) and adds no major: `Core = { Core = 8 }`,
+different vendored copy of each. As of **v1.62.0** (unreleased), which moves one major's minors (Options, which also gains the files `OptionsIds`, `OptionsIdList` and `OptionsCombat`) and adds no major: `Core = { Core = 8 }`,
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 2 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
 `Widgets = { Widgets = 10, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 14, DebugLogDiagnostics = 1 }`, `Slash = { Slash = 16 }`,
 `Launcher = { Launcher = 4 }`,
-`Options = { Options = 25, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 5, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }`,
+`Options = { Options = 25, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 6, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }`,
 `Perf = { Perf = 13, PerfPanel = 5 }`. Those numbers move every release — read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), rather than from here.
 That per-major grouping is what answers "which panel is
@@ -276,6 +276,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   OptionsIds.lua     -- id resolution, suggestions and the id input, same module, IDS_MINOR
   OptionsIdList.lua  -- the editable id list, same module, IDLIST_MINOR of its own
   OptionsTabs.lua    -- the page's chrome: strip, banner, header block, sub-strip, TABS_MINOR
+  OptionsCombat.lua  -- the combat lock's event frame, dispatcher and cover, COMBAT_MINOR
   OptionsCompose.lua -- the schema composers, same module, COMPOSE_MINOR of its own
   OptionsScroll.lua  -- the always-shown scrollbar patch, same module, SCROLL_MINOR of its own
   OptionsNav.lua     -- the nav rail a page may lead with, same module, NAV_MINOR of its own

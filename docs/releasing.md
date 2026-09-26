@@ -5,7 +5,7 @@ Two version numbers, one of which is load-bearing at runtime.
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
 | Repo semver (`v1.61.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
-| File minor (integer) | `MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
+| File minor (integer) | `MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
 is offered for a major and discards the rest, so of the copies vendored across every installed addon,
@@ -25,13 +25,13 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   twenty-five, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   twenty-six, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Media.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `DRAG_MINOR` in
    `WidgetsDragHandle.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `WIDGETS_MINOR` in
    `OptionsWidgets.lua`, `IDS_MINOR` in `OptionsIds.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
-   `TABS_MINOR` in `OptionsTabs.lua`, `SCROLL_MINOR`
+   `TABS_MINOR` in `OptionsTabs.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
    in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
    `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
@@ -40,14 +40,14 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 3. **A new module is also a new row in `tests/majors.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
    that table rather than naming files inline, so a module missing from it is a module nothing
-   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of eight and a
-   `paired` array of seven (`{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
+   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of nine and a
+   `paired` array of eight (`{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
    `{ OptionsIds, __idsMinor, __idsShellMinor }`, `{ OptionsIdList, __idListMinor, __idListShellMinor }`,
-   `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`,
+   `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`, `{ OptionsCombat, __combatMinor, __combatShellMinor }`,
    `{ OptionsCompose, __composeMinor, __composeShellMinor }`,
    `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`, `{ OptionsNav, __navMinor, __navShellMinor }`). **A file added to an existing major moves
    that major's version key**, because the key is every file's minor in load order — the Options key
-   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1 and eight from 25.32.1.1.5.7.4.1. The table
+   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1 and nine from 25.32.1.1.6.1.7.4.1. The table
    carries one row per shipped major — fifteen today, since `LibKa0s-Compat-1.0`,
    `LibKa0s-Bus-1.0` and `LibKa0s-Schema-1.0` at v1.55.0.
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
@@ -225,7 +225,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the twenty-five `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the twenty-six `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -336,9 +336,9 @@ Rules, and the reason each exists:
   half-wired. That is the honest failure, not a working one: the host's setup file reports the
   library as missing and falls back. Nothing negotiates the other direction, and the
   paired-minor guards that protect a secondary file within a major (`OptionsWidgets`,
-  `OptionsIds`, `OptionsIdList`, `OptionsTabs`, `OptionsCompose`, `OptionsScroll`, `OptionsNav`, `PerfPanel`) do not generalize across them. Whole-folder copying is the
+  `OptionsIds`, `OptionsIdList`, `OptionsTabs`, `OptionsCombat`, `OptionsCompose`, `OptionsScroll`, `OptionsNav`, `PerfPanel`) do not generalize across them. Whole-folder copying is the
   mitigation.
-- **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** EIGHT files since
+- **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** NINE files since
   v1.62.0 (six from v1.61.0, five from v1.39.0). The other majors
   fail loudly and early; this one does not. If `Options.lua` itself is missing or refused, every
   attach file bails on their own `LibStub("LibKa0s-Options-1.0", true)` lookup and the module is
@@ -354,8 +354,12 @@ Rules, and the reason each exists:
   A copy missing `OptionsIds.lua` or `OptionsIdList.lua` has no id widgets: `lib.__AttachWidgets`
   guards both attach calls (`if ids and lib.__AttachIdList then … end`), so `O.IdInput` or `O.IdList`
   is nil until something calls it.
+  A copy missing `OptionsCombat.lua` has no combat cover: `lib.__AttachTabs` guards its attach call
+  (`if lib.__AttachCombat then … end`) and `Options.lua` guards every call into the library half
+  (`lib.__pageShown`, `lib.__pageHidden`, `lib.__coverLevel`, `O.__buildCover`), so a page registers no
+  combat event and draws no cover, and the refusal still answers `InCombatLockdown()`.
   A copy missing only `OptionsNav.lua` degrades rather than fails at layout: the three inset reads (`anchorScroll`, `placeTabs`, `drawContentPanel`) are guarded, so every page lays out as at v1.60.0 until a host calls `O.NavRail`.
-  Eight files, one major, one copy.
+  Nine files, one major, one copy.
 - **Raising a dependency floor is a breaking change to the vendoring, not to the API.** If a change
   to `Perf.lua` needs something Core only gained this release, `NEEDS_CORE` moves with it — and every
   consumer whose `libs/` still holds the older `Core.lua` loses the whole module until it is
