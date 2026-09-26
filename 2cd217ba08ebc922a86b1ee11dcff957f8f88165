@@ -1,0 +1,1 @@
+fixed: plan-verbatim code, gate green (1744/0/1, luacheck 0/0, lizard clean), 14 nav/combat cases red under 20 targeted mutations; SR-LK-01R fixes NavRail's band-gated scroll re-anchor (bannerless page) and 11 stale #what-changed links in the 25.31.5.7.4.1 doc
