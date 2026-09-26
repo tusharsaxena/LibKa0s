@@ -212,6 +212,10 @@ an undeclared dump is still listed; `tests/test_kit_inventory.lua` pins revision
 before, 1748 after. Documented in
 [`docs/api/testkit/version-31-docs.md`](docs/api/testkit/version-31-docs.md).
 
+Release gate (`docs/automated-tests/20260926-182957/`): lint pass, 0/0 in 122 files;
+tests pass, 1748 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.61.0 — 2026-09-26
 
 Versions in this release: **Options minor 25**, **OptionsTabs minor 5** and a new file,
