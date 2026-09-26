@@ -1200,7 +1200,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: PageBanner's action re-rendering from its own click never hands itself back
 - widgets: PageBanner's action is refused in combat, like its picker
 
-### test_options_nav.lua (13)
+### test_options_nav.lua (14)
 
 - nav: the rail inset is zero with no rail and the rail's width plus its 12px gap with one
 - nav: the rail's top is measured off the ACTIVE tab art, under the banner's band
@@ -1214,6 +1214,7 @@ badge and any count quoted in the docs must agree with it.
 - nav: a re-render reuses the pooled entries and builds no frame; a shorter one hides the surplus
 - nav: a click on another entry hands its key to onSelect; the selected entry and a raising handler do nothing
 - nav: an empty entry list releases the rail and gives the page its full width back
+- nav: a live scroll moves right of the rail at once, and back when the rail is released, with or without a band
 - nav: with OptionsNav.lua absent there is no NavRail and nothing is inset
 
 ### test_options_idsuggest.lua (40)
@@ -1950,7 +1951,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 227 |
 | test_options_tabs.lua | 54 |
-| test_options_nav.lua | 13 |
+| test_options_nav.lua | 14 |
 | test_options_idsuggest.lua | 40 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 9 |
@@ -1982,4 +1983,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 7 |
-| **Total** | **1744** |
+| **Total** | **1745** |

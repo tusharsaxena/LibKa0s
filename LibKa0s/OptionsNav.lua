@@ -212,9 +212,13 @@ function lib.__AttachNav(O)
     return rail
   end
 
-  --- A live scroll moves at once; a strip drawn next reads the inset as it places itself.
+  --- A live scroll moves at once, whether or not the page reserved a band (a bannerless page has
+  --- none); a strip drawn next reads the inset as it places itself. Re-reserving the same band is
+  --- SetChromeHeight's idempotent re-anchor. With no scroll yet, EnsureScroll anchors it later.
   local function reanchor(ctx)
-    if (ctx.chromeHeight or 0) > 0 and O.SetChromeHeight then O.SetChromeHeight(ctx, ctx.chromeHeight) end
+    if (ctx.scroll or (ctx.chromeHeight or 0) > 0) and O.SetChromeHeight then
+      O.SetChromeHeight(ctx, ctx.chromeHeight or 0)
+    end
   end
 
   --- The pinned nav rail (options-ui-§13): the first level of a page that edits one instance out of

@@ -330,6 +330,26 @@ test("nav: an empty entry list releases the rail and gives the page its full wid
   assertNil(O.NavRail(nil, { entries = ENTRIES }), "no ctx draws nothing")
 end)
 
+test("nav: a live scroll moves right of the rail at once, and back when the rail is released, with or without a band", function()
+  -- NavRail re-anchors a live scroll itself, because nothing after it has to: a page may draw the
+  -- rail over an untabbed section, and a page with no banner reserves no band. red under: a
+  -- re-anchor gated on a reserved band (a bannerless page's scroll stays under the rail, and a
+  -- released rail never gives the width back), or no re-anchor at all (a banner's band was reserved
+  -- BEFORE the rail recorded its width).
+  for _, band in ipairs({ 0, 40 }) do
+    local O, _, ctx = bench()
+    local scroll = O.EnsureScroll(ctx)
+    O.SetChromeHeight(ctx, band)
+    local at = {}
+    rawset(scroll.frame, "SetPoint", function(self, point, _, _, x) at[point] = x; return self end)
+    O.NavRail(ctx, { entries = ENTRIES, value = "general" })
+    assertEqual(at.TOPLEFT, L.CONTENT_LEFT + 132, "band " .. band .. ": right of the rail")
+    O.NavRail(ctx, { entries = {} })
+    assertEqual(at.TOPLEFT, L.CONTENT_LEFT, "band " .. band .. ": the full width back")
+    assertEqual(ctx.chromeHeight, band, "band " .. band .. ": the reserved band untouched")
+  end
+end)
+
 test("nav: with OptionsNav.lua absent there is no NavRail and nothing is inset", function()
   -- docs/releasing.md: a partly copied Options major degrades rather than raising at a call site.
   -- red under: an unguarded cross-file call in anchorScroll, placeTabs or drawContentPanel.
