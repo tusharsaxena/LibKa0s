@@ -82,8 +82,11 @@ about it are load-bearing:
   ratified no-combat-path exemption, naming the file it came from, and `RESULTS.md`'s Perf section
   points at `docs/performance.md`. A register the runner cannot read exits 2 before any suite runs.
   `KA0S_PERF_EXEMPT=1` records reason (2) only in a repo that has no register.
-- **An empty watch-list table still prints its header row and separator** (kit revision 26,
-  `automated-tests-§4`), where revision 25 printed `None.`.
+- **An empty watch-list table prints its header row and separator, then `None.`** under a blank
+  line (`automated-tests-§4` and the playbook's Step 3). Revision 25 printed `None.` in place of the
+  header, and revisions 26 to 29 printed the header alone; from kit revision 30 it is both. The
+  blank line keeps GitHub-flavored Markdown from reading `None.` as a row of the table, and the
+  runner's own reader of the previous watch list skips it.
 - **The bundle is written to whatever `.gitattributes` declares for it**, read per path with
   `git check-attr text eol` at the end of the run — not assumed. Everything the runner writes goes
   down a plain shell redirect, which bypasses git's filters entirely, so before kit revision 10 every

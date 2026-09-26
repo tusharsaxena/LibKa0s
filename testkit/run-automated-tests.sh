@@ -803,11 +803,22 @@ if [ "$WRITE_BUNDLE" -eq 1 ]; then
             $i == a && $j == b && (k == 0 || $k == c) { n++ } END { print (n == 1) ? "yes" : "no" }'
     }
 
+    # AN EMPTY TABLE IS HEADED AND THEN SAYS `None.` (kit revision 30). `automated-tests-§4` asks
+    # for two tables with header rows, and the playbook's Step 3 asks for `None.` where a table
+    # would be empty: an empty watch list is a result, not a reason to drop the heading. Through
+    # revision 25 an empty set printed `None.` in place of the header, so the section changed shape
+    # the day a repo reached zero warnings; revisions 26 to 29 printed the header alone, a table
+    # with no rows that reads as unfinished (ATS-20 of the 2026-09-26 sweep). The blank line before
+    # `None.` is load-bearing: GitHub-flavored Markdown reads a pipe-less line straight under a
+    # table as one more row of it, and `prior_rows` skips any line that does not open with `|`, so
+    # the marker is never read back as an entry.
+    none_if_empty() {  # $1 = the rows blob the table was drawn from
+        printf '%s\n' "$1" | grep -q . || printf '\nNone.\n'
+    }
+
     fn_table() {
-        # THE HEADER PRINTS UNCONDITIONALLY (kit revision 26). `automated-tests-§4` asks for a table
-        # with its header row, and an empty set is a table with no data rows under it. Through
-        # revision 25 an empty set printed `None.` instead, so the section changed shape the day a
-        # repo reached zero warnings, which is the day its record matters most.
+        # THE HEADER PRINTS UNCONDITIONALLY (kit revision 26), with `None.` under it when there
+        # is nothing to list (revision 30; see none_if_empty).
         printf '| Function | CCN | Location | Disposition |\n|---|---|---|---|\n'
         while IFS="$(printf '\t')" read -r name ccn file; do
             [ -z "$name" ] && continue
@@ -821,10 +832,11 @@ if [ "$WRITE_BUNDLE" -eq 1 ]; then
         done <<FNROWS
 $CCN_WARN_ROWS
 FNROWS
+        none_if_empty "$CCN_WARN_ROWS"
     }
 
     band_table() {
-        # Headed when empty, for the reason fn_table gives.
+        # Headed when empty, with `None.` under it, for the reason fn_table gives.
         printf '| Band | File | LOC | Disposition |\n|---|---|---|---|\n'
         while IFS="$(printf '\t')" read -r band file loc; do
             [ -z "$band" ] && continue
@@ -835,6 +847,7 @@ FNROWS
         done <<BANDROWS
 $CCN_BAND_ROWS
 BANDROWS
+        none_if_empty "$CCN_BAND_ROWS"
     }
 
     # The Tests cell of every existing row, newest first, reduced to its total — which is the last

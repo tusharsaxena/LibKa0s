@@ -15,7 +15,7 @@ cannot drift. Release order is in
 Versions in this release so far: **Options minor 26**, **OptionsWidgets minor 32**, **OptionsTabs
 minor 6** and four new files, **OptionsRegistry minor 1**, **OptionsIds minor 1**, **OptionsIdList
 minor 1** and **OptionsCombat minor 1** (`LibKa0s-Options-1.0` **26.1.32.1.1.6.1.7.4.1**), and the
-test kit at **revision 29**. Every other file is unchanged from v1.61.0. The Options major is ten files, so the library is **fifteen
+test kit at **revision 30**. Every other file is unchanged from v1.61.0. The Options major is ten files, so the library is **fifteen
 majors across twenty-seven files**.
 
 ### The id surface leaves OptionsWidgets.lua (issue #32)
@@ -159,6 +159,24 @@ unchanged, in its original order, to a suite wired right after the one it left:
   `tests/fixture_idsuggest.lua` (112).
 
 No library file changes. 1745 cases before and after.
+
+### Test kit revision 30: an empty watch-list table says `None.`
+
+`testkit/run-automated-tests.sh` writes `RESULTS.md`'s complexity watch list as two generated
+tables, the functions `lizard` warned on and the files by `layout-§1` band. Since revision 26 an
+empty one printed its header row and separator with nothing under them, which the 2026-09-26
+automated-tests sweep saw in every addon's record (`ATS-20`). From revision 30 an empty table prints
+its header, a blank line and `None.`, as the `AUTOMATED_TESTS.md` playbook's Step 3 asks. The blank
+line keeps GitHub-flavored Markdown from rendering `None.` as a row of the table, and the runner's
+reader of the previous watch list only reads lines that open with `|`, so the marker is never
+carried forward as an entry. A table with rows prints no `None.`. `Kit.VERSION` is 30; revision 29
+never shipped on its own.
+
+No member, kit case, mock or `manifest.json` field changes. A consumer re-vendors the whole folder
+and changes nothing else. `tests/test_kit_runner.lua`'s empty-table case now asserts the header and
+`None.` together, a new case pins that a table with rows carries no `None.`, and
+`tests/test_kit_inventory.lua` pins revision 30: 1745 cases before, 1746 after. Documented in
+[`docs/api/testkit/version-30-docs.md`](docs/api/testkit/version-30-docs.md).
 
 ## v1.61.0 — 2026-09-26
 

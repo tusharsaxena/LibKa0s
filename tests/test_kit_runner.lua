@@ -4,8 +4,9 @@
 -- (kit revision 26). First, which of `automated-tests-§3`'s two sanctioned perf skip reasons a repo
 -- with no `tests/perf.lua` gets: reason (1), *nothing to run*, or reason (2), a ratified
 -- `performance-§12` no-combat-path exemption read out of the repo's `## Documented deviations`
--- register. Second, that an empty watch-list table still prints its header row
--- (`automated-tests-§4`), where revision 25 printed `None.` in its place.
+-- register. Second, that an empty watch-list table prints its header row and then `None.` under a
+-- blank line (`automated-tests-§4`, kit revision 30): revision 25 printed `None.` in place of the
+-- header, and revisions 26 to 29 printed the header alone.
 --
 -- DRIVEN THROUGH THE SCRIPT, NOT AROUND IT. The runner is a shell script and reads the repo it is
 -- started in, so each case builds a throwaway repo in a temporary directory and runs the library's
@@ -195,17 +196,37 @@ test("runner perf: KA0S_PERF_EXEMPT=1 counts only where no register exists", fun
     "a register without the row outranks the flag: " .. withReg)
 end)
 
-test("runner complexity: empty watch-list tables print their header rows, never 'None.'", function()
-  -- red under: revision 25's fn_table/band_table early `printf 'None.'` exits
+test("runner complexity: empty watch-list tables print their header rows, then 'None.'", function()
+  -- red under: revision 25's fn_table/band_table early `printf 'None.'` exits (no header), and
+  -- revisions 26 to 29's header with nothing under it (ATS-20)
   local lizard = firstLine("command -v lizard 2>/dev/null")
   if not lizard or lizard == "" then T.skip("lizard is not on PATH, so the complexity suite cannot run") end
   local out, code, read = runIn(addon{ ["one.lua"] = "local function one()\n  return 1\nend\nreturn one\n" },
     "--suite complexity", { read = { "docs/automated-tests/RESULTS.md" } })
   assertEqual(code, 0, out)
   local results = read["docs/automated-tests/RESULTS.md"] or ""
-  assertTrue(results:find("| Function | CCN | Location | Disposition |\n|---|---|---|---|\n", 1, true) ~= nil,
-    "the functions table keeps its header and separator: " .. results:sub(-1200))
-  assertTrue(results:find("| Band | File | LOC | Disposition |\n|---|---|---|---|\n", 1, true) ~= nil,
-    "the band table keeps its header and separator")
-  assertTrue(results:find("None.", 1, true) == nil, "and 'None.' is gone")
+  assertTrue(results:find("| Function | CCN | Location | Disposition |\n|---|---|---|---|\n\nNone.\n", 1, true) ~= nil,
+    "the functions table keeps its header and separator, then says None.: " .. results:sub(-1200))
+  assertTrue(results:find("| Band | File | LOC | Disposition |\n|---|---|---|---|\n\nNone.\n", 1, true) ~= nil,
+    "the band table keeps its header and separator, then says None.")
+  local _, count = results:gsub("\nNone%.\n", "")
+  assertEqual(count, 2, "exactly one None. per empty table")
+end)
+
+test("runner complexity: a table with rows does not also say 'None.'", function()
+  -- red under: none_if_empty printing whatever the rows, which would put `None.` under a listed entry
+  local lizard = firstLine("command -v lizard 2>/dev/null")
+  if not lizard or lizard == "" then T.skip("lizard is not on PATH, so the complexity suite cannot run") end
+  local src = { "local function busy(x)" }
+  for i = 1, 20 do src[#src + 1] = ("  if x == %d then return %d end"):format(i, i) end
+  src[#src + 1] = "  return 0\nend\nreturn busy\n"
+  local out, _, read = runIn(addon{ ["busy.lua"] = table.concat(src, "\n") },
+    "--suite complexity", { read = { "docs/automated-tests/RESULTS.md" } })
+  local results = read["docs/automated-tests/RESULTS.md"] or ""
+  local fnSection = results:match("### Functions `lizard` warned on\n\n(.-)\n### ") or ""
+  assertTrue(fnSection:find("| `busy` |", 1, true) ~= nil,
+    "the warned function is listed: " .. fnSection .. "\n" .. out:sub(-600))
+  assertTrue(fnSection:find("None.", 1, true) == nil, "and its table does not also say None.")
+  local bandSection = results:match("### Files by `layout%-§1` band\n\n(.-)\n\n`lizard`") or ""
+  assertTrue(bandSection:find("\n\nNone.", 1, true) ~= nil, "the empty band table still does: " .. bandSection)
 end)
