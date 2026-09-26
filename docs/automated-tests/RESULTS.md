@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260926-121411`](20260926-121411/) | `7cbe02c` | clean | 1.60.0 → 1.61.0 | 0/0 | 100 | 1744/1/1745 | skip | 35854 | 5039 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260926-034006`](20260926-034006/) | `2fdca6e` | clean | 1.59.0 → 1.60.0 | 0/0 | 98 | 1729/1/1730 | skip | 35354 | 4975 | 6.5 | 2.0 | 15 | 0 | **green** |
 | [`20260925-170346`](20260925-170346/) | `e8faa5d` | clean | 1.58.0 → 1.59.0 | 0/0 | 93 | 1676/1/1677 | skip | 34348 | 4820 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260924-234934`](20260924-234934/) | `02999d0` | clean | 1.57.0 → 1.58.0 | 0/0 | 93 | 1665/1/1666 | skip | 34110 | 4787 | 6.6 | 2.0 | 15 | 0 | **green** |
@@ -114,18 +115,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**1730 cases** — 1729 passed, 0 failed, 1 skipped. The generated inventory
-[`20260926-034006/test-cases.md`](20260926-034006/test-cases.md) is the authority on which cases existed at this run;
+**1745 cases** — 1744 passed, 0 failed, 1 skipped. The generated inventory
+[`20260926-121411/test-cases.md`](20260926-121411/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1677 → 1730** since the previous run.
+Moved **1730 → 1745** since the previous run.
 
 **1 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 98 files** (`luacheck .`).
+**0 warnings / 0 errors over 100 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -142,7 +143,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20260926-034006`](20260926-034006/) — **this run's measurement, not its diff.** Max CCN **15** across 4975
+Current as of [`20260926-121411`](20260926-121411/) — **this run's measurement, not its diff.** Max CCN **15** across 5039
 functions, **0** of them warned on; 13 file(s) in the 1000–1500 band and 2 over the 1500 cap
 (`layout-§1`).
 
@@ -160,8 +161,8 @@ cell is this file saying something crossed and nobody has ruled on it yet.
 
 | Band | File | LOC | Disposition |
 |---|---|---|---|
-| 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1457 | **Re-ruled 2026-09-24: accepted** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). It passed the old *re-check at 1350* at 1476 with nobody re-ruling it; `LK-24` then moved the font preload, the seam that ruling named, out to `LibKa0s/OptionsScroll.lua`, and what came back (`LK-25`'s combat park, `LK-26`) is combat handling on the panel builder every host enters through. **Re-check trigger: the next member added to `Options.lua`, or 1475 lines**, whichever comes first; at either, the next member goes to a new file. |
-| 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1489 | **Re-ruled 2026-09-24: accepted** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). The v1.39.0 chrome peel plus minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s `RenderTabbedSchema`, all of it the tabbed page's own machinery with no second seam inside it. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1495 lines**; with eleven lines of room, that member is a new file, not an append. |
+| 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1462 | **Re-ruled 2026-09-24: accepted** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). It passed the old *re-check at 1350* at 1476 with nobody re-ruling it; `LK-24` then moved the font preload, the seam that ruling named, out to `LibKa0s/OptionsScroll.lua`, and what came back (`LK-25`'s combat park, `LK-26`) is combat handling on the panel builder every host enters through. **Re-check trigger: the next member added to `Options.lua`, or 1475 lines**, whichever comes first; at either, the next member goes to a new file. |
+| 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1493 | **Re-ruled 2026-09-24: accepted** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). The v1.39.0 chrome peel plus minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s `RenderTabbedSchema`, all of it the tabbed page's own machinery with no second seam inside it. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1495 lines**; with eleven lines of room, that member is a new file, not an append. |
 | 1000–1500 (on notice) | `LibKa0s/Perf.lua` | 1319 | **Tracked as [`#7`](https://github.com/tusharsaxena/LibKa0s/issues/7)** (open; owner: @tusharsaxena). Under the cap; the issue records the decision and its trigger. 1308 → 1319 with `LK-20`'s minor 13 (raw `false` state fields, the depth reset at window edges). Worst function `groupContext` at CCN 11, so this is breadth, not knots; the sampler and the group/scenario bookkeeping are the peel seam if it crosses 1500. |
 | 1000–1500 (on notice) | `LibKa0s/Widgets.lua` | 1266 | **Tracked as [`#36`](https://github.com/tusharsaxena/LibKa0s/issues/36)** (open, filed 2026-09-24 by `LK-32`; `CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*): split into per-widget files, `ReorderList` first. 1232 → 1266 with `LK-21`'s minor 10. Replaces the bare *Accepted* carried since v1.27.0, which had outlived `automated-tests-§4`'s three-release shelf life. |
 | 1000–1500 (on notice) | `testkit/framework.lua` | 1386 | **Accepted 2026-09-24 (`LK-33`), back in the band from the census.** Kit revision 26 moved the assertions and the surface-parity gate out to `testkit/asserts.lua`, taking it 1583 → 1381 and off `CLAUDE.md` § *Files over the 1500-line cap*; `Kit.expose`'s `assertErrorMatches` and `assertLibraryConstant` lines and the section-sign note took it to 1385. The next peel seam, named in `CLAUDE.md`, is the suite inventory. **Re-check trigger: the next kit revision that adds more than 60 lines to it, or 1450 lines**; at either, that revision peels the inventory first. |

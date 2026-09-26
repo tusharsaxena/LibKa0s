@@ -67,6 +67,10 @@ always; the kit does not move (27). Then, in the same commit so the suite stays 
 - **Nothing else.** A page that draws no rail is laid out exactly as at v1.60.0; the load list
   derived from `LibKa0s.xml` picks up `OptionsNav.lua` with no change.
 
+Release gate (`docs/automated-tests/20260926-121411/`): lint pass, 0/0 in 100 files;
+tests pass, 1745 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.60.0 — 2026-09-26
 
 Versions in this release: **DebugLog minor 14** and **DebugLogDiagnostics minor 1**
