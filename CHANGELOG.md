@@ -12,10 +12,11 @@ cannot drift. Release order is in
 
 ## v1.62.0 — unreleased
 
-Versions in this release so far: **OptionsWidgets minor 32**, **OptionsTabs minor 6** and three new
-files, **OptionsIds minor 1**, **OptionsIdList minor 1** and **OptionsCombat minor 1**
-(`LibKa0s-Options-1.0` **25.32.1.1.6.1.7.4.1**). Every other file is unchanged from v1.61.0. The
-Options major is nine files, so the library is **fifteen majors across twenty-six files**.
+Versions in this release so far: **Options minor 26**, **OptionsWidgets minor 32**, **OptionsTabs
+minor 6** and four new files, **OptionsRegistry minor 1**, **OptionsIds minor 1**, **OptionsIdList
+minor 1** and **OptionsCombat minor 1** (`LibKa0s-Options-1.0` **26.1.32.1.1.6.1.7.4.1**). Every
+other file is unchanged from v1.61.0. The Options major is ten files, so the library is **fifteen
+majors across twenty-seven files**.
 
 ### The id surface leaves OptionsWidgets.lua (issue #32)
 
@@ -69,6 +70,27 @@ two halves meet only through `lib` fields. It carries its own minor and the shel
 (`__combatMinor` / `__combatShellMinor`) and loads right after `OptionsTabs.lua`. No member, descriptor
 field or row field changes, and no case moves: the combat cases were already in
 `tests/test_options_combat.lua`. 1745 cases before and after.
+
+### The page registry leaves Options.lua
+
+`LibKa0s/Options.lua` was 1462 lines, and its band entry had been carried as *Accepted* past the
+three-release shelf life (`automated-tests-§4`). The page registry and the registration park move
+out, unchanged, to a file of its own, and the two end at 1261 (`Options.lua`) and 263
+(`OptionsRegistry.lua`):
+
+- **OptionsRegistry minor 1**: `O.RegisterOptionsPage`, `O.__pages`, `O.CreateOptionsPanel` and
+  `O.OpenOptionsPanel`, with the state only they read (the page queue, the built list, the main
+  category and its ID, the parked flag), attached by `lib.__AttachRegistry(O, d)`; and the park's
+  library half (`lib.__parkedPanels`, `lib.__OnParkEvent`, `lib.__parkRegistration`, the private
+  `lib.__parkFrame`), whose one caller is `CreateOptionsPanel`.
+- **Options minor 26** calls `lib.__AttachRegistry` where the four members used to be defined, so an
+  instance gets the same members in the same order.
+
+A seam of its own: nothing left in the shell read the registry's state, and the registry reaches
+the rest of the instance only through members (`O.CreatePanel`, `O.SetRenderer`, `O.AceGUI`,
+`O.__print`) and the descriptor. It carries its own minor and the shell's (`__registryMinor` /
+`__registryShellMinor`) and loads right after `Options.lua`. No member, descriptor field or row field
+changes, and no case moves. 1745 cases before and after.
 
 ## v1.61.0 — 2026-09-26
 

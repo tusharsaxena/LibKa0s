@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 25.32.1.1.6.1.7.4.1
+# `LibKa0s-Options-1.0` — version 26.1.32.1.1.6.1.7.4.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,14 +8,14 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **25** · `OptionsWidgets.lua` **32** · `OptionsIds.lua` **1** · `OptionsIdList.lua` **1** · `OptionsTabs.lua` **6** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **1** |
-| Version key | `<Options>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same nine numbers `lib.MODULES` reports. |
-| Shipped in | — (never released; superseded inside the v1.62.0 wave) |
-| Status | Superseded |
-| Supersedes | [version 25.32.1.1.5.7.4.1](./version-25.32.1.1.5.7.4.1-docs.md) |
-| Superseded by | [version 26.1.32.1.1.6.1.7.4.1](./version-26.1.32.1.1.6.1.7.4.1-docs.md) — the page registry moves to `OptionsRegistry.lua` |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 25, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 6, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }` |
+| Files and minors | `Options.lua` **26** · `OptionsRegistry.lua` **1** · `OptionsWidgets.lua` **32** · `OptionsIds.lua` **1** · `OptionsIdList.lua` **1** · `OptionsTabs.lua` **6** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **1** |
+| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same ten numbers `lib.MODULES` reports. |
+| Shipped in | v1.62.0 |
+| Status | **Current** |
+| Supersedes | [version 25.32.1.1.6.1.7.4.1](./version-25.32.1.1.6.1.7.4.1-docs.md) |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 26, OptionsRegistry = 1, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 6, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
@@ -31,11 +31,38 @@ moved the same way at **T4**, and so did the id surface at **I1** and **L1**: `O
 introduced them. The combat lock's page chrome (`lib.__combatFrame`, `lib.__OnCombatEvent`, the
 page-scoped registration, `lib.__coverLevel`, `lib.__descendsFrom`, `O.__buildCover`,
 `O.__releaseOwnedFocus`) is `OptionsCombat.lua`'s from 25.32.1.1.6.1.7.4.1, and its `T2` / `T3`
-citations still name the `OptionsTabs.lua` minors that introduced it. The minor that introduced a
+citations still name the `OptionsTabs.lua` minors that introduced it. The page registry
+(`RegisterOptionsPage`, `__pages`, `CreateOptionsPanel`, `OpenOptionsPanel`) and the registration
+park's library-level names are `OptionsRegistry.lua`'s from 26.1.32.1.1.6.1.7.4.1, and their `O`
+citations still name the `Options.lua` minors that introduced them. The minor that introduced a
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**The page registry leaves `Options.lua` for a file of its own (LK-ATS-04).** No member,
+descriptor field, row field or drawn pixel changes; a host cannot observe this version except
+through `lib.MODULES` and the version key.
+
+- **`OptionsRegistry.lua` minor 1**: `O.RegisterOptionsPage`, `O.__pages`, `O.CreateOptionsPanel`
+  and `O.OpenOptionsPanel`, with the state only they read (the page queue, the built list, the main
+  category and its ID, the parked flag), attached per instance by `lib.__AttachRegistry(O, d)`; and
+  the registration park's library half (`lib.__parkedPanels`, `lib.__OnParkEvent`,
+  `lib.__parkRegistration`, the private `lib.__parkFrame`), whose one caller is
+  `CreateOptionsPanel`.
+- **`Options.lua` minor 26** loses the moved code. `lib:New` calls `lib.__AttachRegistry` where the
+  four members used to be defined, so an instance gets its members in the same order as before. The
+  sink the registry prints through is the shell's own, `O.__print`.
+- **A seam of its own.** Nothing left in the shell read the registry's state, and the registry
+  reaches the rest of the instance only through members (`O.CreatePanel`, `O.SetRenderer`,
+  `O.AceGUI`, `O.__print`) and the descriptor. The peel takes `Options.lua` from 1462 lines to 1261.
+- **Load order and pairing.** `OptionsRegistry.lua` loads right after `Options.lua`, the file it was
+  peeled from, so the key gains a component there. It carries its own minor and the shell's,
+  `lib.__registryMinor` / `lib.__registryShellMinor`. A copy without it has no
+  `O.CreateOptionsPanel`, and a host fails when it calls it: the call-time failure a partly-copied
+  Options major has always had.
+
+## Previously, at 25.32.1.1.6.1.7.4.1
 
 **The combat lock's page chrome leaves `OptionsTabs.lua` for a file of its own (LK-ATS-03).** No
 member, descriptor field, row field or drawn pixel changes; a host cannot observe this version
@@ -1204,7 +1231,7 @@ every ctx `CreatePanel` returns.
 
 ### The registration park's library-level names (O24)
 
-**Since O24.** Internal for the same reasons as the lock's names above; a host calls none of them.
+**Since O24**, and defined in `OptionsRegistry.lua` from 26.1.32.1.1.6.1.7.4.1. Internal for the same reasons as the lock's names above; a host calls none of them.
 
 | Name | Since | Meaning |
 |---|---|---|
@@ -2138,13 +2165,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 26.1.32.1.1.6.1.7.4.1
-
-`Options.lua` moves to minor **26**, and one file joins the major, `OptionsRegistry.lua` at minor
-**1**, loaded right after `Options.lua`, so the key gains a component. The page registry
-(`O.RegisterOptionsPage`, `O.__pages`, `O.CreateOptionsPanel`, `O.OpenOptionsPanel`) and the
-registration park's library half (`lib.__parkedPanels`, `lib.__OnParkEvent`,
-`lib.__parkRegistration`, `lib.__parkFrame`) are defined in the new file rather than in
-`Options.lua`. No member, descriptor field or row field is added, removed or changed, and nothing a
-host draws moves. This version was never tagged: both keys fall inside v1.62.0.

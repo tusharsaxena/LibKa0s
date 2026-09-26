@@ -77,8 +77,9 @@ from another out of the wild, and LibStub cannot detect that mismatch if it happ
 **A key gains a component when its major gains a file.** The Options key ran three numbers through
 `13.12.3`, four from `14.13.1.3` where `OptionsCompose.lua` joined the major, and five from
 `21.20.1.7.3` where `OptionsTabs.lua` did, six from `25.31.5.7.4.1` where `OptionsNav.lua` did, eight
-from `25.32.1.1.5.7.4.1` where `OptionsIds.lua` and `OptionsIdList.lua` did, and nine from
-`25.32.1.1.6.1.7.4.1` where `OptionsCombat.lua` did. The order is
+from `25.32.1.1.5.7.4.1` where `OptionsIds.lua` and `OptionsIdList.lua` did, nine from
+`25.32.1.1.6.1.7.4.1` where `OptionsCombat.lua` did, and ten from `26.1.32.1.1.6.1.7.4.1` where
+`OptionsRegistry.lua` did. The order is
 load order — `LibKa0s.xml`'s — which is what `tests/test_versioning.lua` derives the expected
 filename from, so the two cannot disagree.
 
@@ -222,7 +223,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [25.32.1.1.6.1.7.4.1](./Options/version-25.32.1.1.6.1.7.4.1-docs.md) | `Options.lua` 25 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 6 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | v1.62.0 | **Current** |
+| [26.1.32.1.1.6.1.7.4.1](./Options/version-26.1.32.1.1.6.1.7.4.1-docs.md) | `Options.lua` 26 · `OptionsRegistry.lua` 1 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 6 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | v1.62.0 | **Current** |
+| [25.32.1.1.6.1.7.4.1](./Options/version-25.32.1.1.6.1.7.4.1-docs.md) | `Options.lua` 25 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 6 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | unreleased | Superseded |
 | [25.32.1.1.5.7.4.1](./Options/version-25.32.1.1.5.7.4.1-docs.md) | `Options.lua` 25 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 5 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | unreleased | Superseded |
 | [25.31.5.7.4.1](./Options/version-25.31.5.7.4.1-docs.md) | `Options.lua` 25 · `OptionsWidgets.lua` 31 · `OptionsTabs.lua` 5 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | v1.61.0 | Superseded |
 | [24.31.4.7.4](./Options/version-24.31.4.7.4-docs.md) | `Options.lua` 24 · `OptionsWidgets.lua` 31 · `OptionsTabs.lua` 4 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 | v1.56.0 – v1.60.0 | Superseded |
