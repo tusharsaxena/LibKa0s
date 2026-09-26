@@ -18,7 +18,8 @@ broken in the other eleven.
 
 | File | What it is |
 |---|---|
-| `framework.lua` | The entry point: the resource guard, the registry, `Kit.skip`, `Kit.expose`, the suite inventory, the runner and the `--list` renderer |
+| `framework.lua` | The entry point: the resource guard, the registry, `Kit.skip`, `Kit.expose`, the suite loader, the runner and the `--list` renderer |
+| `inventory.lua` | The suite inventory (`Kit.assertSuiteInventory`, the gate-rule table, the `## Documented deviations` reader and the decline matcher) and the path helpers it keys on. `framework.lua` loads it from its own folder; nothing else does (kit revision 28) |
 | `asserts.lua` | The assertions (`assertEqual` to `assertError`, `assertErrorMatches` and `assertLibraryConstant`) and the surface-parity gate (`setSurfaceSource`, `publicMembers`, `assertSurfaceParity`). `framework.lua` loads it from its own folder; nothing else does (kit revision 26) |
 | `loader.lua` | Headless source loading into the mocked environment |
 | `mock_base.lua` | The universal half of the WoW-API mock, and the Ace fakes |
@@ -34,7 +35,7 @@ broken in the other eleven.
 | `test_diagnostics_contract.lua` | The diagnostics dump's dispatcher contract (`debug-logging-§14`), a kit suite run against the consumer's own dispatcher (kit revision 27) |
 | `README.md` | This file |
 
-They vendor as one folder. A copy that leaves out `asserts.lua`, `mock_record.lua`,
+They vendor as one folder. A copy that leaves out `asserts.lua`, `inventory.lua`, `mock_record.lua`,
 `mock_events.lua` or `prose_lists.lua` fails at load rather than passing over nothing.
 
 ## `run-automated-tests.sh`

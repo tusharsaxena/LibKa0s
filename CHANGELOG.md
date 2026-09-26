@@ -14,8 +14,8 @@ cannot drift. Release order is in
 
 Versions in this release so far: **Options minor 26**, **OptionsWidgets minor 32**, **OptionsTabs
 minor 6** and four new files, **OptionsRegistry minor 1**, **OptionsIds minor 1**, **OptionsIdList
-minor 1** and **OptionsCombat minor 1** (`LibKa0s-Options-1.0` **26.1.32.1.1.6.1.7.4.1**). Every
-other file is unchanged from v1.61.0. The Options major is ten files, so the library is **fifteen
+minor 1** and **OptionsCombat minor 1** (`LibKa0s-Options-1.0` **26.1.32.1.1.6.1.7.4.1**), and the
+test kit at **revision 28**. Every other file is unchanged from v1.61.0. The Options major is ten files, so the library is **fifteen
 majors across twenty-seven files**.
 
 ### The id surface leaves OptionsWidgets.lua (issue #32)
@@ -91,6 +91,28 @@ the rest of the instance only through members (`O.CreatePanel`, `O.SetRenderer`,
 `O.__print`) and the descriptor. It carries its own minor and the shell's (`__registryMinor` /
 `__registryShellMinor`) and loads right after `Options.lua`. No member, descriptor field or row field
 changes, and no case moves. 1745 cases before and after.
+
+### Test kit revision 28: the suite inventory leaves framework.lua
+
+`testkit/framework.lua` was 1386 lines, in `layout-§1`'s 1000–1500 band, and its entry there had
+been carried as *Accepted* past the three-release shelf life (`automated-tests-§4`). The suite
+inventory, the seam kit revision 26 named for the next peel, moves out unchanged to
+`testkit/inventory.lua` (515) with the path helpers it keys on, which takes `framework.lua` to 920:
+
+- **`testkit/inventory.lua` (new)**: `Kit.assertSuiteInventory`, the gate-rule table, the
+  `## Documented deviations` reader and the decline matcher, the declaration fold and the three
+  collectors, the declines already reported, and `fileExists`, `normDir`, `rootOf`, `resolveDir`,
+  `adviceDir`, `suiteEntry` and `listDir`. It returns `function(Kit, fail)`, the shape
+  `asserts.lua` has, and hands back the helpers `framework.lua`'s suite loader, `--list` renderer
+  and shard partitioner still call.
+- **`testkit/framework.lua`** loads it once, from its own folder, where the helpers used to stand,
+  so `Kit.assertSuiteInventory` is on the kit table exactly when it was. `Kit.VERSION` is 28.
+
+No member, case name, mock or behavior changes, and the `Kit.__` self-test internals name the same
+functions. A consumer re-vendors the whole folder and changes nothing else; a copy without
+`inventory.lua` fails at load. `tests/test_kitsync.lua`'s peeled-files case now names it, and
+`tests/test_kit_inventory.lua` pins revision 28. 1745 cases before and after. Documented in
+[`docs/api/testkit/version-28-docs.md`](docs/api/testkit/version-28-docs.md).
 
 ## v1.61.0 — 2026-09-26
 

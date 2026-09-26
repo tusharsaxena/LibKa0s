@@ -167,18 +167,19 @@ test("kitsync: testkit/ and tests/_kit/ hold the same set of files", function()
   end
 end)
 
-test("kitsync: testkit/asserts.lua and testkit/prose_lists.lua exist in both testkit/ and tests/_kit/", function()
+test("kitsync: testkit/asserts.lua, testkit/inventory.lua and testkit/prose_lists.lua exist in both testkit/ and tests/_kit/", function()
   -- Kit revision 26 peeled framework.lua's assertion and parity families into asserts.lua, and
-  -- test_prose.lua's published lists into prose_lists.lua, to take both files under layout-§1's cap.
-  -- Both are loaded by path from beside their parent, so a copy that drops either one breaks the
+  -- test_prose.lua's published lists into prose_lists.lua, to take both files under layout-§1's cap;
+  -- revision 28 peeled framework.lua's suite inventory and path helpers into inventory.lua.
+  -- All three are loaded by path from beside their parent, so a copy that drops any one breaks the
   -- kit at load. The set-equality case above catches a file missing from ONE side; this one catches
   -- the peel being undone on both.
-  -- red under: either file absent from testkit/ or tests/_kit/
-  for _, name in ipairs({ "asserts.lua", "prose_lists.lua" }) do
+  -- red under: any of the three absent from testkit/ or tests/_kit/
+  for _, name in ipairs({ "asserts.lua", "inventory.lua", "prose_lists.lua" }) do
     for _, dir in ipairs({ SRC, DST }) do
       if readBytes(dir .. "/" .. name) == nil then
-        fail("kit sync: " .. dir .. "/" .. name .. " is missing - kit revision 26 loads it from "
-          .. "beside " .. (name == "asserts.lua" and "framework.lua" or "test_prose.lua")
+        fail("kit sync: " .. dir .. "/" .. name .. " is missing - the kit loads it from "
+          .. "beside " .. (name == "prose_lists.lua" and "test_prose.lua" or "framework.lua")
           .. "; re-vendor with `cp -r testkit/. tests/_kit/`", 2)
       end
     end

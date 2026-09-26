@@ -175,7 +175,9 @@ one: a disposition naming a terminal state that did not exist, which the 2026-09
 `LK-34`. Revision 26 moved the assertions and the surface-parity gate out to `testkit/asserts.lua`,
 a seam that shares no state with the rest of the file, and that left `framework.lua` at 1381 with
 nothing for the row to record, so the row is gone rather than repaired. The seam the row had named
-for a peel, the suite inventory, is still there for the next revision that needs the room.
+for a peel, the suite inventory, was taken on 2026-09-26 by kit revision 28 (the automated-tests
+sweep's `ATS-03`), which moved it and the path helpers it keys on, unchanged, to
+`testkit/inventory.lua` (515) and left `framework.lua` at 920, out of the band.
 
 **The line counts are dated, and nothing asserts them.** What `tests/_kit/test_layout_cap.lua`
 asserts is
@@ -217,7 +219,9 @@ the font preload out to 1376, `LK-25`'s park took it to 1454 and `LK-26` to 1457
 revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that
 reason, and kit 22's recording surveys to `testkit/mock_record.lua` for the same one, which is what
 took it back down),
-`testkit/framework.lua` (1385 with `assertLibraryConstant`'s expose line and LibStub-fallback
+`testkit/framework.lua` (920 after kit revision 28 moved the suite inventory out to
+`testkit/inventory.lua` on 2026-09-26, which takes it out of the band; 1386 before that, with
+`Kit.VERSION` at 27; 1385 with `assertLibraryConstant`'s expose line and LibStub-fallback
 wiring; 1383 with the section-sign note on `KIT_GATE_RULE`; 1382 with `Kit.expose`'s
 `assertErrorMatches` line; 1381 when the peel took it back into the band from the census above),
 `tests/test_options.lua` (1339; 1307 at the last write-out),

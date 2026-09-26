@@ -1800,7 +1800,7 @@ badge and any count quoted in the docs must agree with it.
 - kitsync: the kit revision is indexed in docs/api/README.md as the one Current revision
 - kitsync: the runner is mode 100755 in the git index, in BOTH copies
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
-- kitsync: testkit/asserts.lua and testkit/prose_lists.lua exist in both testkit/ and tests/_kit/
+- kitsync: testkit/asserts.lua, testkit/inventory.lua and testkit/prose_lists.lua exist in both testkit/ and tests/_kit/
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
 - kitsync: vendor_sync checks the runner's recorded mode, and this repo's copy passes
 - kitsync: the runner-mode case fails on a path the index records 100644
@@ -1842,7 +1842,7 @@ badge and any count quoted in the docs must agree with it.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 27
+- the kit is revision 28
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
