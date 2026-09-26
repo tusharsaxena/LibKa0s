@@ -209,9 +209,11 @@ Thirteen files, two more than the eleven the band held when it was last written 
 recorded at **973** — v1.39.0's peel figure — two releases after minor 22's combat lock and minor
 23's dispatcher had moved into it; `LK-27`'s page-chrome fix and `LK-28`'s `RenderTabbedSchema` took
 it the rest of the way),
-`testkit/test_prose.lua` (1486; 335 at v1.54.2, and kit revision 25 took it to 1499, one line from
-the cap, until kit revision 26 moved its published lists out to `testkit/prose_lists.lua`; 1464
-after that peel, and `LK-07` / `LK-08` added the rest),
+`testkit/test_prose.lua` (750 after kit revision 29 moved its narrowing machinery out to
+`testkit/prose_coverage.lua` and its self-tests to `testkit/prose_selftests.lua` on 2026-09-26,
+issue #39, which takes it out of the band; 1486 before that; 335 at v1.54.2, and kit revision 25
+took it to 1499, one line from the cap, until kit revision 26 moved its published lists out to
+`testkit/prose_lists.lua`; 1464 after that peel, and `LK-07` / `LK-08` added the rest),
 `LibKa0s/Options.lua` (1261 after the 2026-09-26 sweep moved its page registry to `LibKa0s/OptionsRegistry.lua`; 1462 with `SR-LK-01`'s rail inset and attach line, 1457 before it; 1312 at v1.40.0, then 1460 at v1.46.0 with minor 22's combat lock,
 whose event frame and cover geometry went to `LibKa0s/OptionsTabs.lua` to keep it under the cap,
 1465 at v1.46.1 with the dispatcher moved there too, and 1476 at the last write-out; `LK-24` moved
@@ -241,10 +243,10 @@ in it; 954 after the 2026-09-26 sweep's split, out of the band), and `tests/test
 (1002, new to the band: 999 at the last write-out, until `LK-05`'s shown-by-default frames; 691 after
 the 2026-09-26 sweep's split, out of the band). They are named so a later reader can tell the band was looked at rather than missed. The seven
 the 2026-09-23 audit found with an expired or blank watch-list disposition carry one now (see *The
-band's terminal states* below); the rest need none until they cross, and one is close enough that the next edit to it should
-be a new file rather than an append: `testkit/test_prose.lua` at 1486 has fourteen lines of room.
-`LibKa0s/OptionsTabs.lua` and `tests/test_widgets.lua` were the other two, at 1493 with seven each,
-until the 2026-09-26 sweep peeled them to 1293 and 861.
+band's terminal states* below); the rest need none until they cross. Three were close enough that
+the next edit to each had to be a new file rather than an append: `testkit/test_prose.lua` at 1486
+with fourteen lines of room, and `LibKa0s/OptionsTabs.lua` and `tests/test_widgets.lua` at 1493 with
+seven each, until the 2026-09-26 sweep peeled them to 750, 1293 and 861.
 v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
 `tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own. v1.33.0's
@@ -315,6 +317,9 @@ Disposition cells point here:
 - `testkit/test_prose.lua` (1486, still in the band after `LK-01` / `LK-07`) — issue
   [#39](https://github.com/tusharsaxena/LibKa0s/issues/39): the narrowing and coverage machinery
   peels to a kit module of its own at the next kit revision that touches the file.
+  **Peeled 2026-09-26** by kit revision 29 (the automated-tests sweep's `ATS-07`): the machinery is
+  `testkit/prose_coverage.lua` (404) and the self-tests `testkit/prose_selftests.lua` (426), and
+  the file is 750, out of the band.
 - `LibKa0s/Options.lua` (1261, measured 2026-09-26 after its peel) — **peeled 2026-09-26, then
   accepted.** Re-ruled *accepted* at 1462 on 2026-09-24 (it had passed the old "re-check at 1350" at
   1476 with nobody re-ruling it; `LK-24` then took the font preload out to

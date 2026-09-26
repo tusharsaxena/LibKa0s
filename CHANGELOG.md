@@ -15,7 +15,7 @@ cannot drift. Release order is in
 Versions in this release so far: **Options minor 26**, **OptionsWidgets minor 32**, **OptionsTabs
 minor 6** and four new files, **OptionsRegistry minor 1**, **OptionsIds minor 1**, **OptionsIdList
 minor 1** and **OptionsCombat minor 1** (`LibKa0s-Options-1.0` **26.1.32.1.1.6.1.7.4.1**), and the
-test kit at **revision 28**. Every other file is unchanged from v1.61.0. The Options major is ten files, so the library is **fifteen
+test kit at **revision 29**. Every other file is unchanged from v1.61.0. The Options major is ten files, so the library is **fifteen
 majors across twenty-seven files**.
 
 ### The id surface leaves OptionsWidgets.lua (issue #32)
@@ -113,6 +113,33 @@ functions. A consumer re-vendors the whole folder and changes nothing else; a co
 `inventory.lua` fails at load. `tests/test_kitsync.lua`'s peeled-files case now names it, and
 `tests/test_kit_inventory.lua` pins revision 28. 1745 cases before and after. Documented in
 [`docs/api/testkit/version-28-docs.md`](docs/api/testkit/version-28-docs.md).
+
+### Test kit revision 29: the prose gate peels on its two seams (issue #39)
+
+`testkit/test_prose.lua` was 1486 lines, fourteen under `layout-§1`'s cap, and issue #39 had named
+its narrowing and coverage machinery for the next kit revision that touched it. That seam alone would
+have left it above 1000, so its fixture-driven self-tests move too, and it ends at 750, out of the
+band:
+
+- **`testkit/prose_coverage.lua` (new, 404)**: the validators for the three lists a repository
+  narrows the gate by, a declared narrowing and its readers, the TOC and `.pkgmeta` readers, the one
+  resolved coverage set, the two refusals that read it and the disclosure line. A chunk taking
+  `fail`, `SCAN_BACK` and `KIT_DIRS`, returning a table of those functions.
+- **`testkit/prose_selftests.lua` (new, 426)**: the thirteen `prose self-test:` cases and their
+  fixtures. Not named `test_*`, so it is not a suite of its own: `test_prose.lua` loads it where the
+  cases stood, and they register under `test_prose` with the same names in the same order.
+- **`testkit/test_prose.lua`** keeps the header, the named exclusions, the live `Kit.prose` readers,
+  the waiver file's reader, the path scan, the matcher and the gate's own cases, and loads both new
+  files from its own folder, the way it loads `prose_lists.lua`. `Kit.VERSION` is 29; revision 28
+  never shipped on its own.
+
+No member, case name, mock or behavior changes. A consumer re-vendors the whole folder and changes
+nothing else; its suites list and `docs/test-cases.md` stay as they are, and a copy without either
+new file fails at load. This repo's own prose gate (`tests/test_prose.lua`) exempts
+`testkit/prose_selftests.lua` by name, as it does `test_prose.lua` and `prose_lists.lua`, because
+its fixtures quote the spellings the gate forbids. `tests/test_kitsync.lua`'s peeled-files case
+names both new files and `tests/test_kit_inventory.lua` pins revision 29. 1745 cases before and
+after. Documented in [`docs/api/testkit/version-29-docs.md`](docs/api/testkit/version-29-docs.md).
 
 ### Four suites leave the 1000–1500 band
 

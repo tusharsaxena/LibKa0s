@@ -31,12 +31,15 @@ broken in the other eleven.
 | `test_eol.lua` | The line-ending gates, a kit suite |
 | `test_prose.lua` | The US-English prose gate, a kit suite |
 | `prose_lists.lua` | The published lists `test_prose.lua` reads: both spelling lists, the folder exclusions and the store-root files read back out of them. `test_prose.lua` loads it from its own folder; nothing else does (kit revision 26) |
+| `prose_coverage.lua` | The prose gate's narrowing machinery: the validators for the three lists a repository narrows the gate by, the one resolved coverage set, the TOC and `.pkgmeta` readers, the two refusals and the disclosure line. `test_prose.lua` loads it from its own folder; nothing else does (kit revision 29) |
+| `prose_selftests.lua` | The prose gate's fixture-driven self-tests. Not a suite of its own: `test_prose.lua` loads it from its own folder and its cases register under `test_prose`, so a consumer wires nothing new (kit revision 29) |
 | `test_layout_cap.lua` | The 1500-line cap gate, a kit suite |
 | `test_diagnostics_contract.lua` | The diagnostics dump's dispatcher contract (`debug-logging-§14`), a kit suite run against the consumer's own dispatcher (kit revision 27) |
 | `README.md` | This file |
 
 They vendor as one folder. A copy that leaves out `asserts.lua`, `inventory.lua`, `mock_record.lua`,
-`mock_events.lua` or `prose_lists.lua` fails at load rather than passing over nothing.
+`mock_events.lua`, `prose_lists.lua`, `prose_coverage.lua` or `prose_selftests.lua` fails at load
+rather than passing over nothing.
 
 ## `run-automated-tests.sh`
 
