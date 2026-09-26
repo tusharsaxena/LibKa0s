@@ -1,0 +1,1 @@
+clean: SR-LK-03 matches the plan; Consumers re-sweep re-run on all eleven masters (156 lookups, every file and host in its row), gate re-run 1744/0/1/1745, luacheck 0/0 in 100, lizard clean, CRLF kept, local tag v1.61.0 on c6183bd
