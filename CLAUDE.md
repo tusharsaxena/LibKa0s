@@ -117,24 +117,29 @@ now nests under, carrying a re-check
 trigger. What the rule refuses is a fourth state — a breach nothing anywhere remarks on, "the count
 sitting in a bundle manifest that no document reads". This repo had precisely that: an `overCapFiles`
 figure in the `docs/automated-tests/` manifests that no document read, and a RESULTS.md watch list
-that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
+that denied it. This section is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
 against a file in it.
 
-One file, measured 2026-09-26 during the automated-tests sweep's id peel, with the command below.
-There were two until that item: `LibKa0s/OptionsWidgets.lua` (3852 on 2026-09-24, after `LK-28`
-moved `RenderTabbedSchema` out to `LibKa0s/OptionsTabs.lua`) left the census when issue #32's id
-surface moved out to `LibKa0s/OptionsIds.lua` and `LibKa0s/OptionsIdList.lua`, which took it to 1422.
-The id surface was about 2460 lines, more than one file under the cap can hold, so it went to two
-files rather than the one #32 named. The rows were earlier measured 2026-09-23 at kit revision 25, at
+**Nothing is over the cap today**, measured 2026-09-26 at the end of the automated-tests sweep's
+suite split, with the command below. There were two rows at the start of that sweep, and both left
+the census in it. `LibKa0s/OptionsWidgets.lua` (3852 on 2026-09-24, after `LK-28` moved
+`RenderTabbedSchema` out to `LibKa0s/OptionsTabs.lua`) left when issue #32's id surface moved out to
+`LibKa0s/OptionsIds.lua` and `LibKa0s/OptionsIdList.lua`, which took it to 1422. The id surface was
+about 2460 lines, more than one file under the cap can hold, so it went to two files rather than the
+one #32 named. `tests/test_options_widgets.lua` (4086) left in two steps under issue #33: its
+`ResolveId` / `IdInput` / `IdList` cases (92 of them, 1834 lines) went with the module's id half, in
+that file's commit, to `tests/test_options_ids.lua`, `tests/test_options_idlist.lua` and
+`tests/test_options_idlist_layout.lua` with their benches in `tests/fixture_ids.lua` (4086 → 2257),
+and the 2257 that were left split on the suite's own case seams, every case moved unchanged:
+`tests/test_options_choicegrid.lua` (425, `O.ChoiceGrid`), `tests/test_options_flow.lua` (801, the
+flow engine and the tabbed page) and `tests/test_options_landing.lua` (340, `O.TextRow` and
+`O.BuildLandingPage`), with the makers staying behind (717) and the shared bench in
+`tests/fixture_widgets.lua`. The rows were earlier measured 2026-09-23 at kit revision 25, at
 v1.55.0 (`06b4051`) and at kit revision 26, with
 
 ```sh
 git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 ```
-
-| File | Lines (2026-09-26) | Disposition |
-|---|---|---|
-| `tests/test_options_widgets.lua` | 2257 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — its first part is done: the `ResolveId` / `IdInput` / `IdList` cases (92 of them, 1834 lines) peeled with `LibKa0s/OptionsWidgets.lua`'s id half, in that file's commit (the 2026-09-26 automated-tests sweep), to `tests/test_options_ids.lua`, `tests/test_options_idlist.lua` and `tests/test_options_idlist_layout.lua`, with their shared benches in `tests/fixture_ids.lua`; 4086 → 2257. What is left is split on its own case seams next, in the same sweep, as #33 says, chosen from the file as it stands now |
 
 **v1.39.0 peeled the chrome, and the two Options rows survived it.** Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16)
 named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua`, which
@@ -146,8 +151,9 @@ arithmetic says why rather than the effort: `OptionsWidgets.lua` was **1989** li
 written and **3700** when it was executed, because Options minor 16's id surface landed in between;
 it was 3922 with everything up to minor 30 in it, and is 3852 now that `RenderTabbedSchema` has
 left it. A peel sized against the file of 2026-09-08 was never
-going to fit the file of 2026-09-16. The rows above are retargeted at what is left rather than
-deleted, which is the whole point of a census a gate reads.
+going to fit the file of 2026-09-16. The rows were retargeted at what was left rather than
+deleted, which is the whole point of a census a gate reads, until the 2026-09-26 sweep's id peel
+and suite split took both under the cap (above).
 
 **Both rows are issues, not register rows.** The sibling repository doing this same work gives
 its *mirror suites* register rows rather than issues, on the argument that a suite has no seam of its
@@ -254,7 +260,10 @@ new.
   of machinery. **Re-check trigger: 1350 lines.**
 
 The suites the id cases went to are out of the band: `tests/test_options_ids.lua` 724,
-`tests/test_options_idlist.lua` 379, `tests/test_options_idlist_layout.lua` 665.
+`tests/test_options_idlist.lua` 379, `tests/test_options_idlist_layout.lua` 665, and so are the
+suites the rest of `tests/test_options_widgets.lua` split into: `tests/test_options_choicegrid.lua`
+425, `tests/test_options_flow.lua` 801, `tests/test_options_landing.lua` 340, and the makers left
+behind at 717.
 `tests/test_options_idsuggest.lua` (1002), whose re-check trigger was "1200 lines, or #32's peel",
 now pairs with `LibKa0s/OptionsIds.lua`, the module the peel gave it; it moved no case and stays
 **accepted**, its trigger now 1200 lines alone.

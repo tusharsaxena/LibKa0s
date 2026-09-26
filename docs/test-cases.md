@@ -913,7 +913,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (135)
+### test_options_widgets.lua (53)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labeled and seeded from the schema
@@ -939,10 +939,38 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a slider does not commit on drag by default
 - widgets: sliderCommit = 'change' commits on drag, throttled, last value wins
 - widgets: commitOn on a row overrides the descriptor default, both ways
-- widgets: a raising row costs that row and no other
-- widgets: RenderGrid lays arbitrary items out two per row
-- widgets: RenderGrid gives a wide item its own full-width row
-- widgets: RenderGrid guards each item the way RenderRows guards each row
+- widgets: a string row asking for an EditBox gets one, not a dropdown
+- widgets: an edit box commits on OnEnterPressed and re-reads on refresh
+- widgets: a color row renders a ColorPicker seeded through the descriptor's codec
+- widgets: a color picker substitutes 1s for a missing or corrupt stored color
+- widgets: the color codec is the descriptor's, so an array-storing host is not translated
+- widgets: disabledIf grays the swatch out while its sibling toggle is on
+- widgets: a function disabledIf disables every maker and is re-evaluated on refresh
+- widgets: a path disabledIf disables every maker while that setting is on
+- widgets: a row with no disabledIf never has its disabled state touched
+- widgets: a disabledIf predicate that raises leaves the row drawn and enabled
+- widgets: RenderRows opts.disabled disables every widget it draws, after-group ones included
+- widgets: a disabled render's flag never leaks into a later render or into its refresh
+- widgets: a render nested inside a disabled render inherits the disable
+- widgets: an afterGroup hook that raises still propagates, and the flag is cleared
+- widgets: OnValueConfirmed commits immediately — cancel must not wait on the throttle
+- widgets: OnValueChanged throttles a drag to ONE timer and commits the LAST value
+- widgets: a color drag does NOT refresh every panel
+- widgets: every other maker's write DOES refresh every panel
+- widgets: RenderField dispatches each schema type to its widget
+- widgets: RenderField returns nil for an unrecognized type instead of erroring
+- widgets: RenderField adds the widget to the parent it was given
+- widgets: a number row carrying a values list renders as a Dropdown, not a Slider
+- widgets: the numeric dropdown lists its entries with their own labels
+- widgets: the numeric dropdown seeds the STORED number, not a stringified copy
+- widgets: choosing an entry writes the number through the host's set
+- widgets: a number row with NO values list still renders as a Slider
+- widgets: a number row whose values function answers empty falls back to a Slider
+- widgets: a string row with no values and no dialogControl prints once and still renders
+- widgets: a values-backed row that is momentarily empty does NOT warn
+
+### test_options_choicegrid.lua (22)
+
 - widgets: ChoiceGrid draws a heading, a header line and one line per row
 - widgets: ChoiceGrid draws skipRender rows, and a custom label header
 - widgets: ChoiceGrid lights the cell holding the stored value and only that one
@@ -965,27 +993,13 @@ badge and any count quoted in the docs must agree with it.
 - widgets: an extraColumn cell with a non-function onClick draws without wiring a handler
 - widgets: an extraColumn narrows the label column, and the line still fits one Flow row
 - widgets: with no extraColumn, ChoiceGrid's line shape is unchanged
-- widgets: a string row asking for an EditBox gets one, not a dropdown
-- widgets: an edit box commits on OnEnterPressed and re-reads on refresh
-- widgets: a color row renders a ColorPicker seeded through the descriptor's codec
-- widgets: a color picker substitutes 1s for a missing or corrupt stored color
-- widgets: the color codec is the descriptor's, so an array-storing host is not translated
-- widgets: disabledIf grays the swatch out while its sibling toggle is on
-- widgets: a function disabledIf disables every maker and is re-evaluated on refresh
-- widgets: a path disabledIf disables every maker while that setting is on
-- widgets: a row with no disabledIf never has its disabled state touched
-- widgets: a disabledIf predicate that raises leaves the row drawn and enabled
-- widgets: RenderRows opts.disabled disables every widget it draws, after-group ones included
-- widgets: a disabled render's flag never leaks into a later render or into its refresh
-- widgets: a render nested inside a disabled render inherits the disable
-- widgets: an afterGroup hook that raises still propagates, and the flag is cleared
-- widgets: OnValueConfirmed commits immediately — cancel must not wait on the throttle
-- widgets: OnValueChanged throttles a drag to ONE timer and commits the LAST value
-- widgets: a color drag does NOT refresh every panel
-- widgets: every other maker's write DOES refresh every panel
-- widgets: RenderField dispatches each schema type to its widget
-- widgets: RenderField returns nil for an unrecognized type instead of erroring
-- widgets: RenderField adds the widget to the parent it was given
+
+### test_options_flow.lua (42)
+
+- widgets: a raising row costs that row and no other
+- widgets: RenderGrid lays arbitrary items out two per row
+- widgets: RenderGrid gives a wide item its own full-width row
+- widgets: RenderGrid guards each item the way RenderRows guards each row
 - widgets: RenderSchema pairs widgets two-to-a-row inside full-width Flow groups
 - widgets: a `solo` row is rendered alone on its own line
 - widgets: a `solo` row flushes the row in progress rather than joining it
@@ -1005,30 +1019,6 @@ badge and any count quoted in the docs must agree with it.
 - widgets: InlineButtonPair lays two inset buttons into one Flow row and pcalls the click
 - widgets: InlineButtonPair tolerates a missing second spec
 - widgets: InlineButtonPair reports a handler-less button once, and draws it anyway
-- widgets: a number row carrying a values list renders as a Dropdown, not a Slider
-- widgets: the numeric dropdown lists its entries with their own labels
-- widgets: the numeric dropdown seeds the STORED number, not a stringified copy
-- widgets: choosing an entry writes the number through the host's set
-- widgets: a number row with NO values list still renders as a Slider
-- widgets: a number row whose values function answers empty falls back to a Slider
-- widgets: TextRow adds a full-width Label carrying the text
-- widgets: TextRow left-justifies by default and honors an explicit justify
-- widgets: TextRow applies a font object by NAME, and only when the global exists
-- widgets: TextRow draws nothing and returns nil when there is no scroll to draw into
-- widgets: BuildLandingPage draws the logo block at its declared size, then a spacer
-- widgets: BuildLandingPage honors an explicit logoSize
-- widgets: a logo whose widget has no backing frame costs the logo, not the page
-- widgets: a POOLED frame gains ONE logo texture, and hides it when released
-- widgets: a spec with no logo draws no logo block
-- widgets: BuildLandingPage calls a notes FUNCTION at render time
-- widgets: an empty one-liner skips the notes Label AND its spacer
-- widgets: BuildLandingPage renders a heading and one row per section entry
-- widgets: a section's rows are re-evaluated on every render
-- widgets: a re-render clears the previous body instead of stacking a second copy
-- widgets: the second landing heading gets a top spacer and the first does not
-- widgets: the gap under a landing heading is emitted once, by Section
-- widgets: BuildLandingPage tolerates a nil spec and an empty one
-- widgets: the landing page's text rows carry the same justify guard TextRow owns
 - widgets: a tabbed page draws ONLY the active group's rows
 - widgets: a tabbed page draws no section heading -- the tab IS the heading
 - widgets: a tabbed page falls back to the untabbed render when OptionsTabs.lua is absent
@@ -1048,8 +1038,27 @@ badge and any count quoted in the docs must agree with it.
 - widgets: `startsLine` flushes a half-full line so a declared pair cannot be split
 - widgets: `startsLine` on a line that is already empty costs nothing
 - widgets: InlineButtonPair with no right-hand button draws one, at the pair's width
-- widgets: a string row with no values and no dialogControl prints once and still renders
-- widgets: a values-backed row that is momentarily empty does NOT warn
+
+### test_options_landing.lua (18)
+
+- widgets: TextRow adds a full-width Label carrying the text
+- widgets: TextRow left-justifies by default and honors an explicit justify
+- widgets: TextRow applies a font object by NAME, and only when the global exists
+- widgets: TextRow draws nothing and returns nil when there is no scroll to draw into
+- widgets: BuildLandingPage draws the logo block at its declared size, then a spacer
+- widgets: BuildLandingPage honors an explicit logoSize
+- widgets: a logo whose widget has no backing frame costs the logo, not the page
+- widgets: a POOLED frame gains ONE logo texture, and hides it when released
+- widgets: a spec with no logo draws no logo block
+- widgets: BuildLandingPage calls a notes FUNCTION at render time
+- widgets: an empty one-liner skips the notes Label AND its spacer
+- widgets: BuildLandingPage renders a heading and one row per section entry
+- widgets: a section's rows are re-evaluated on every render
+- widgets: a re-render clears the previous body instead of stacking a second copy
+- widgets: the second landing heading gets a top spacer and the first does not
+- widgets: the gap under a landing heading is emitted once, by Section
+- widgets: BuildLandingPage tolerates a nil spec and an empty one
+- widgets: the landing page's text rows carry the same justify guard TextRow owns
 
 ### test_options_ids.lua (35)
 
@@ -1958,7 +1967,10 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 85 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 135 |
+| test_options_widgets.lua | 53 |
+| test_options_choicegrid.lua | 22 |
+| test_options_flow.lua | 42 |
+| test_options_landing.lua | 18 |
 | test_options_ids.lua | 35 |
 | test_options_idlist.lua | 24 |
 | test_options_idlist_layout.lua | 33 |

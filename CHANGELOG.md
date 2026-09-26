@@ -41,6 +41,13 @@ The suite peels with it (issue #33, first part): the ResolveId / IdInput / IdLis
 `tests/test_options_idlist.lua` and `tests/test_options_idlist_layout.lua`, with their shared benches
 in `tests/fixture_ids.lua`: 92 cases moved, 1745 in all before and after.
 
+Issue #33's second part splits the 2257 lines left on the suite's own case seams, every case
+moved unchanged: `O.ChoiceGrid` to `tests/test_options_choicegrid.lua` (425), the flow engine and
+the tabbed page to `tests/test_options_flow.lua` (801), and `O.TextRow` / `O.BuildLandingPage` to
+`tests/test_options_landing.lua` (340), with the bench the four share in `tests/fixture_widgets.lua`.
+`tests/test_options_widgets.lua` keeps the makers (717), and `CLAUDE.md`'s cap census is empty:
+nothing in this repo is over 1500 lines. 1745 cases before and after.
+
 ## v1.61.0 — 2026-09-26
 
 Versions in this release: **Options minor 25**, **OptionsTabs minor 5** and a new file,

@@ -8,7 +8,7 @@
 -- with nothing.
 --
 -- WHAT IS HERE. Every case whose subject is chrome. The cases under *the tabbed page* on the
--- four-argument `O.RenderTabbedSchema` stayed in tests/test_options_widgets.lua when it lived there;
+-- four-argument `O.RenderTabbedSchema` stayed with the flow engine's cases (tests/test_options_flow.lua);
 -- it moved to OptionsTabs.lua at minor 4, and those cases are the move's characterization. Its
 -- `opts` fields and the banner's `action` are pinned at the foot of this file.
 --
@@ -26,7 +26,7 @@ local Fixture = dofile("tests/fixture_options.lua")
 -- their raw numbers reads them off the lib table directly, same as tests/test_options.lua does.
 local lib = T.options
 
---- A host, a throwaway panel and a parent container. The same bench tests/test_options_widgets.lua
+--- A host, a throwaway panel and a parent container. The same bench tests/fixture_widgets.lua
 --- keeps, under its own panel name: two suites handing `CreatePanel` the same key would be two
 --- suites sharing one registration.
 local panelSeq = 0
@@ -955,8 +955,8 @@ end)
 -- `O.RenderTabbedSchema` moved here from OptionsWidgets.lua at T4 and took an optional fifth
 -- argument, so a host with bespoke (non-row) tabs, a page drawn disabled or a line above every tab
 -- stops forking the whole render (AuraMaster-R-04: AuraMaster's seven pages, and the same strip
--- hand-built in four more hosts). The cases on the signature every host already calls are still in
--- tests/test_options_widgets.lua and pass unchanged; these pin the new fields.
+-- hand-built in four more hosts). The cases on the signature every host already calls are in
+-- tests/test_options_flow.lua and pass unchanged; these pin the new fields.
 
 --- Every heading, row label and text line in a ctx's scroll, in order.
 local function drawn(ctx)

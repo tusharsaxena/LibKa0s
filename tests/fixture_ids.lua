@@ -27,7 +27,7 @@ return function(prefix)
   end
 
   --- Run `fn` with AceGUI absent, restoring it afterwards. The instance resolves AceGUI once, at
-  --- New() time, so the library has to be built inside this (see tests/test_options_widgets.lua).
+  --- New() time, so the library has to be built inside this (see tests/fixture_widgets.lua).
   local function withoutAceGUI(fn)
     local saved = T.mocks.__libs["AceGUI-3.0"]
     T.mocks.__libs["AceGUI-3.0"] = nil
