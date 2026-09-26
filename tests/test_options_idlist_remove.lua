@@ -2,9 +2,9 @@
 -- (OptionsWidgets minor 21): a small X at the LEFT of every entry in place of the right-hand Remove
 -- button or checkbox, and a list drawn exactly as before when the key is absent.
 --
--- Its own suite rather than more cases in tests/test_options_widgets.lua, which is over layout-§1's
--- cap and tracked by issue #33 (CLAUDE.md, "Files over the 1500-line cap"): new cases on a seam of
--- their own go to a file of their own, as v1.32.0's bulk cases did.
+-- Its own suite rather than more cases in tests/test_options_widgets.lua, which was over layout-§1's
+-- cap when this was written (issue #33, since split): new cases on a seam of their own go to a file
+-- of their own, as v1.32.0's bulk cases did.
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertNil =
@@ -96,7 +96,7 @@ end)
 --- that image plus the HIGHLIGHT-layer texture AceGUI's Icon constructor anchors to it
 --- (`highlight:SetAllPoints(image)`, widgets/AceGUIWidget-Icon.lua). Registered through the fake's
 --- own RegisterWidgetType, run, then taken back off again -- the same shape as
---- tests/test_options_widgets.lua's withRealLabels.
+--- tests/test_options_idlist_layout.lua's withRealLabels.
 local function withRealIcons(fn)
   local gui = T.mocks.__libs["AceGUI-3.0"]
   local function texture(layer)

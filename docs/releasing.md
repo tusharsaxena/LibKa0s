@@ -4,8 +4,8 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.61.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
-| File minor (integer) | `MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `WIDGETS_MINOR` / `TABS_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
+| Repo semver (`v1.62.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| File minor (integer) | `MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
 is offered for a major and discards the rest, so of the copies vendored across every installed addon,
@@ -25,12 +25,13 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   twenty-three, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   twenty-seven, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Media.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
-   `Slash.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `DRAG_MINOR` in
+   `Slash.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `DRAG_MINOR` in
    `WidgetsDragHandle.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `WIDGETS_MINOR` in
-   `OptionsWidgets.lua`, `TABS_MINOR` in `OptionsTabs.lua`, `SCROLL_MINOR`
+   `OptionsWidgets.lua`, `IDS_MINOR` in `OptionsIds.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
+   `TABS_MINOR` in `OptionsTabs.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
    in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
    `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
@@ -39,13 +40,15 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 3. **A new module is also a new row in `tests/majors.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
    that table rather than naming files inline, so a module missing from it is a module nothing
-   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of six and a
-   `paired` array of five (`{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
-   `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`,
+   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of ten and a
+   `paired` array of nine (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
+   `{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
+   `{ OptionsIds, __idsMinor, __idsShellMinor }`, `{ OptionsIdList, __idListMinor, __idListShellMinor }`,
+   `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`, `{ OptionsCombat, __combatMinor, __combatShellMinor }`,
    `{ OptionsCompose, __composeMinor, __composeShellMinor }`,
    `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`, `{ OptionsNav, __navMinor, __navShellMinor }`). **A file added to an existing major moves
    that major's version key**, because the key is every file's minor in load order — the Options key
-   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3 and six from 25.31.5.7.4.1. The table
+   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1 and ten from 26.1.32.1.1.6.1.7.4.1. The table
    carries one row per shipped major — fifteen today, since `LibKa0s-Compat-1.0`,
    `LibKa0s-Bus-1.0` and `LibKa0s-Schema-1.0` at v1.55.0.
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
@@ -223,7 +226,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the twenty-three `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the twenty-seven `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -247,7 +250,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.61.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.62.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -333,11 +336,11 @@ Rules, and the reason each exists:
   before `NewLibrary` if the dependency is missing or older, so the module is **absent** rather than
   half-wired. That is the honest failure, not a working one: the host's setup file reports the
   library as missing and falls back. Nothing negotiates the other direction, and the
-  paired-minor guards that protect a secondary file within a major (`OptionsWidgets`,
-  `OptionsTabs`, `OptionsCompose`, `OptionsScroll`, `OptionsNav`, `PerfPanel`) do not generalize across them. Whole-folder copying is the
+  paired-minor guards that protect a secondary file within a major (`OptionsRegistry`, `OptionsWidgets`,
+  `OptionsIds`, `OptionsIdList`, `OptionsTabs`, `OptionsCombat`, `OptionsCompose`, `OptionsScroll`, `OptionsNav`, `PerfPanel`) do not generalize across them. Whole-folder copying is the
   mitigation.
-- **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** SIX files since
-  v1.61.0 (five from v1.39.0). The other majors
+- **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** TEN files since
+  v1.62.0 (six from v1.61.0, five from v1.39.0). The other majors
   fail loudly and early; this one does not. If `Options.lua` itself is missing or refused, every
   attach file bails on their own `LibStub("LibKa0s-Options-1.0", true)` lookup and the module is
   cleanly absent. But if only one of `OptionsWidgets.lua` / `OptionsTabs.lua` /
@@ -349,8 +352,19 @@ Rules, and the reason each exists:
   cross-file calls between `OptionsWidgets.lua` and `OptionsTabs.lua` are themselves guarded and
   degrade rather than raise (a tabbed page renders untabbed; a banner loses its tooltip), which
   narrows that window without closing it.
+  A copy missing `OptionsIds.lua` or `OptionsIdList.lua` has no id widgets: `lib.__AttachWidgets`
+  guards both attach calls (`if ids and lib.__AttachIdList then … end`), so `O.IdInput` or `O.IdList`
+  is nil until something calls it.
+  A copy missing `OptionsCombat.lua` has no combat cover: `lib.__AttachTabs` guards its attach call
+  (`if lib.__AttachCombat then … end`) and `Options.lua` guards every call into the library half
+  (`lib.__pageShown`, `lib.__pageHidden`, `lib.__coverLevel`, `O.__buildCover`), so a page registers no
+  combat event and draws no cover, and the refusal still answers `InCombatLockdown()`.
+  A copy missing `OptionsRegistry.lua` has no page registry: `lib:New` guards its attach call
+  (`if lib.__AttachRegistry then … end`), so `O.RegisterOptionsPage`, `O.CreateOptionsPanel` and
+  `O.OpenOptionsPanel` are nil and the host's first `RegisterOptionsPage` raises, at file load of its
+  first page file. That is the loudest of these failures, and the earliest.
   A copy missing only `OptionsNav.lua` degrades rather than fails at layout: the three inset reads (`anchorScroll`, `placeTabs`, `drawContentPanel`) are guarded, so every page lays out as at v1.60.0 until a host calls `O.NavRail`.
-  Six files, one major, one copy.
+  Ten files, one major, one copy.
 - **Raising a dependency floor is a breaking change to the vendoring, not to the API.** If a change
   to `Perf.lua` needs something Core only gained this release, `NEEDS_CORE` moves with it — and every
   consumer whose `libs/` still holds the older `Core.lua` loses the whole module until it is
@@ -432,7 +446,24 @@ Core, DebugLog, Slash, Options, Media, Env, Pool and Perf. It does not look up W
 is the host that found the four kit gaps revision 16 closes (#27–#30). **No addon on the standard
 remains unadopted.**
 
-**Where v1.61.0 stands (2026-09-26).** Three LibStub minors move and one file is added:
+**Where v1.62.0 stands (2026-09-26).** Three LibStub minors move and four files are added:
+`Options.lua` 26, `OptionsWidgets.lua` 32 and `OptionsTabs.lua` 6, and the new `OptionsRegistry.lua`,
+`OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` at 1 each (`LibKa0s-Options-1.0`
+26.1.32.1.1.6.1.7.4.1, twenty-seven files now), and the kit moves to **revision 31**; no `NEEDS_*`
+floor rises and no member, descriptor field or row field changes. It is the library's half of the
+2026-09-26 automated-tests sweep: four peels, moves along real seams with no behavior change, that
+empty `layout-§1`'s census (issues #32 and #33) and take the six band entries carried past
+`automated-tests-§4`'s shelf life off notice, the suite splits that go with them, and two runner
+fixes (an empty watch-list table prints `None.`; a file `Kit.layoutCap.exempt` names leaves the band
+table). What a consumer owes is the whole-folder copy of both payloads and the provenance line; a
+copy missing a new Options file fails at call time (see *Re-vendoring consumers* above), and a kit copy
+missing `inventory.lua`, `prose_coverage.lua` or `prose_selftests.lua` fails at load. Built on
+`feat/2026-09-26-automated-tests-sweep`, stacked on v1.61.0 (`cf38896`), and **not merged**: steps
+1–7 are done on that branch, the tag `v1.62.0` exists **locally only**, on it, and the tag's push
+and the branch's merge wait on the sweep's finalize. **Step 8 is every consumer**, one re-vendor item
+each in the sweep (`<P>-ATS-RV`).
+
+**Where v1.61.0 stood (2026-09-26).** Three LibStub minors move and one file is added:
 `Options.lua` 25, `OptionsTabs.lua` 5 and the new `OptionsNav.lua` 1 (`LibKa0s-Options-1.0`
 25.31.5.7.4.1, twenty-three files now), and the kit stays at **revision 27**; no `NEEDS_*` floor
 rises. It is the library's half of the Ka0s WoW Addon Standard v2.69.0's nav rail (`options-ui-§13`,
@@ -647,11 +678,11 @@ The kit stays at **revision 22**, so `tests/test_vendor_sync.lua` pairs the two 
 v1.42.0 tag exactly as it did at v1.41.0 — the kit bytes are identical, but both are resolved from
 the tag the provenance line names, so both are copied.
 
-**Every step 8 through v1.60.0 is done.** All eleven consumers bundle **v1.60.0** on `master`, and
-each `CLAUDE.md` provenance line says so, re-measured on 2026-09-26 for v1.61.0 against each
-consumer's own `master`. What is **not** done is v1.61.0's step 8 beyond AuraMaster: AuraMaster takes
-it on its unmerged `feat/2026-09-26-settings-redesign` (see *Where v1.61.0 stands* above), and the
-other ten stay on v1.60.0 until they take the nav rail or a later release.
+**Every step 8 through v1.61.0 is done.** All eleven consumers bundle **v1.61.0** on `master`, and
+each `CLAUDE.md` provenance line says so, re-measured on 2026-09-26 for v1.62.0 against each
+consumer's own `master`. What is **not** done is v1.62.0's step 8, which is every consumer, one
+`<P>-ATS-RV` item each on its `feat/2026-09-26-automated-tests-sweep` branch (see *Where v1.62.0
+stands* above).
 
 This paragraph says where the consumers stand as of the release being prepared, so it is stale the
 moment it is not rewritten. **Rewrite it at the next release**, in the same commit as step 7's other

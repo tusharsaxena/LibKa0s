@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **25** · `OptionsWidgets.lua` **31** · `OptionsTabs.lua` **5** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **1** |
 | Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same six numbers `lib.MODULES` reports. |
 | Shipped in | v1.61.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 24.31.4.7.4](./version-24.31.4.7.4-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 25.32.1.1.5.7.4.1](./version-25.32.1.1.5.7.4.1-docs.md) — the id surface moves to `OptionsIds.lua` and `OptionsIdList.lua` |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 25, OptionsWidgets = 31, OptionsTabs = 5, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }` |
 
@@ -2075,3 +2075,11 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 25.32.1.1.5.7.4.1
+
+`OptionsWidgets.lua` moves to minor **32**, and two files join the major, `OptionsIds.lua` and
+`OptionsIdList.lua`, each at minor **1**, so the key gains two components. The id surface
+(`O.ResolveId`, `O.UnnamedCandidates`, `O.ID_NAME_HINT`, `O.IdInput`, `O.IdList`) is defined in the
+two new files rather than in `OptionsWidgets.lua`. No member, descriptor field or row field is
+added, removed or changed, and nothing a host draws moves.

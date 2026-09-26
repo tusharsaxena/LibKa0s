@@ -32,7 +32,7 @@ Three tools. Only the first has a version that matters.
 | `lizard` | any recent | 1.24.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). |
 
 The "verified with" column is the toolchain of the last recorded run,
-[`docs/automated-tests/20260922-170122/manifest.json`](docs/automated-tests/20260922-170122/manifest.json)
+[`docs/automated-tests/20260926-193105/manifest.json`](docs/automated-tests/20260926-193105/manifest.json)
 → `host` — evidence, not a pin. `luacheck` and `lizard` are pinned nowhere and pinning them would be
 false precision; `lua5.1` is not a preference. "5.2 will probably work" is **false**, and it costs an
 hour to disprove: 5.2 removed `setfenv`, and the loader is the first thing every suite touches.
@@ -41,8 +41,9 @@ Also assumed present, and not installed separately on any normal WSL2 / Ubuntu b
 
 | Tool | Why it is needed |
 |---|---|
-| `git` | `tests/test_kitsync.lua` shells out to `git ls-files -s` to assert the runner's `100755` mode in **both** kit copies. The exec bit is not in a file's bytes, so no byte-identity check can ever see it. |
-| POSIX `ls` | `Kit.assertSuiteInventory` lists `tests/` with `ls -A` via `io.popen` (`testkit/framework.lua:515`), falling back to `dir /b` under cmd.exe. When neither is available the gate **fails** rather than reporting a pass — an empty listing means "could not look", never "empty directory". |
+| `git` | `tests/test_kitsync.lua` shells out to `git ls-files -s` to assert the runner's `100755` mode in **both** kit copies. The exec bit is not in a file's bytes, so no byte-identity check can ever see it. The kit's line-ending and layout-cap gates list the tracked set with `git ls-files -z` (`testkit/test_eol.lua:130`, `testkit/test_layout_cap.lua:171`), and `tests/test_kit_eol.lua` builds throwaway `git init` repositories as fixtures. |
+| POSIX `ls` | `Kit.assertSuiteInventory` lists `tests/` with `ls -A` via `io.popen` (`testkit/inventory.lua:190`, where kit revision 28 moved the suite inventory), falling back to `dir /b` under cmd.exe. When neither is available the gate **fails** rather than reporting a pass — an empty listing means "could not look", never "empty directory". |
+| POSIX `mktemp`, `mkdir`, `rm`, `pwd` | The kit's own inventory and line-ending suites build scratch repositories on disk through `io.popen` / `os.execute` (`tests/test_kit_inventory.lua:43`, `:58`, `:70`; `tests/test_kit_eol.lua:22`, `:32`, `:81`). |
 | `bash` | `testkit/run-automated-tests.sh` is `#!/usr/bin/env bash` and uses `set -uo pipefail` and arrays. |
 
 ### Install

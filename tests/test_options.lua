@@ -2,9 +2,9 @@
 -- the lazy Defaults button, the reset/refresh trio, the page registry with its combat-refusing
 -- open (the combat lock on a page itself is tests/test_options_combat.lua), the LSM values factory and the always-shown scrollbar patch.
 --
--- The widget makers and the two-column flow engine are next door in tests/test_options_widgets.lua.
--- The split follows the files: this suite is Options.lua and OptionsScroll.lua, that one is
--- OptionsWidgets.lua.
+-- The widget makers and the two-column flow engine are next door in tests/test_options_widgets.lua
+-- and tests/test_options_flow.lua. The split follows the files: this suite is Options.lua and
+-- OptionsScroll.lua, those are OptionsWidgets.lua.
 --
 -- Every case builds its own host through tests/fixture_options.lua, so no case can be made to pass
 -- by another one's leftovers — which matters more here than in most suites, because the panel
@@ -1026,7 +1026,7 @@ end)
 --
 -- Four constants promoted out of three hosts that each carried a private Helpers.BuildMainContent
 -- over the same values. The body is O.BuildLandingPage (tested next door in
--- tests/test_options_widgets.lua); the shell's half is that `d.buildMain` stayed the ONLY main-page
+-- tests/test_options_landing.lua); the shell's half is that `d.buildMain` stayed the ONLY main-page
 -- seam. The promotion is a renderer a host may CALL — not a descriptor field the shell sniffs for
 -- and wires up on the host's behalf — so lib:New answers exactly what it answered at minor 5.
 

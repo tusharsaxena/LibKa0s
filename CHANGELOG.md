@@ -10,6 +10,212 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.62.0 — 2026-09-26
+
+Versions in this release: **Options minor 26**, **OptionsWidgets minor 32**, **OptionsTabs
+minor 6** and four new files, **OptionsRegistry minor 1**, **OptionsIds minor 1**, **OptionsIdList
+minor 1** and **OptionsCombat minor 1** (`LibKa0s-Options-1.0` **26.1.32.1.1.6.1.7.4.1**), and the
+test kit at **revision 31**. Every other file is unchanged from v1.61.0: `Core` 8, `Env` 1,
+`Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Widgets` 10 and
+`WidgetsDragHandle` 3 (key 10.3), `DebugLog` 14 and `DebugLogDiagnostics` 1 (key 14.1), `Slash` 16,
+`Launcher` 4, `OptionsCompose` 7, `OptionsScroll` 4, `OptionsNav` 1, `Perf` 13 and `PerfPanel` 5
+(key 13.5). No `NEEDS_*` floor rises, no major is added, and no member, descriptor field or row field
+changes. The Options major is ten files, so the library is **fifteen majors across twenty-seven
+files**. Built to the Ka0s WoW Addon Standard **v2.69.0**.
+
+This is the library's half of the 2026-09-26 automated-tests sweep (`ATS-03`, `ATS-04`, `ATS-06`,
+`ATS-07`, `ATS-20`, `ATS-21`). After it nothing in this repo is over `layout-§1`'s 1500-line cap,
+and each of the six band entries the sweep found carried as *Accepted* past `automated-tests-§4`'s
+three-release shelf life is peeled or split. A consumer re-vendors both payloads whole, `libs/LibKa0s/`
+and `tests/_kit/`, rolls its provenance line, and changes nothing else.
+
+### The id surface leaves OptionsWidgets.lua (issue #32)
+
+`LibKa0s/OptionsWidgets.lua` was 3852 lines against `layout-§1`'s 1500 cap. Its id surface moves
+out, unchanged, to two files of its own, and the three end at 1422 (`OptionsWidgets.lua`), 1358
+(`OptionsIds.lua`) and 1193 (`OptionsIdList.lua`):
+
+- **OptionsIds minor 1**: the module-scope id resolution and suggestion blocks, and `O.ResolveId`,
+  `O.UnnamedCandidates`, `O.ID_NAME_HINT` and `O.IdInput` with its suggestion dropdown, attached by
+  `lib.__AttachIds(O, w)`.
+- **OptionsIdList minor 1**: `O.IdList` and its entry-line layout, attached by
+  `lib.__AttachIdList(O, d, ids)` with the locals `lib.__AttachIds` returns.
+- **OptionsWidgets minor 32** calls both where the id members used to be defined, handing them its
+  sink, its combat refusal, `startRow` and `renderRowGuarded`, so an instance gets the same members
+  in the same order. `Options.lua` does not move.
+
+Two files rather than one because the id surface, about 2460 lines, does not fit under the cap in
+one. Each carries its own minor and the shell's (`__idsMinor` / `__idsShellMinor`,
+`__idListMinor` / `__idListShellMinor`). No member, descriptor field or row field changes.
+
+The suite peels with it (issue #33, first part): the ResolveId / IdInput / IdList cases leave
+`tests/test_options_widgets.lua` (4086 → 2257) for `tests/test_options_ids.lua`,
+`tests/test_options_idlist.lua` and `tests/test_options_idlist_layout.lua`, with their shared benches
+in `tests/fixture_ids.lua`: 92 cases moved, 1745 in all before and after.
+
+Issue #33's second part splits the 2257 lines left on the suite's own case seams, every case
+moved unchanged: `O.ChoiceGrid` to `tests/test_options_choicegrid.lua` (425), the flow engine and
+the tabbed page to `tests/test_options_flow.lua` (801), and `O.TextRow` / `O.BuildLandingPage` to
+`tests/test_options_landing.lua` (340), with the bench the four share in `tests/fixture_widgets.lua`.
+`tests/test_options_widgets.lua` keeps the makers (717), and `CLAUDE.md`'s cap census is empty:
+nothing in this repo is over 1500 lines. 1745 cases before and after.
+
+### The combat lock's page chrome leaves OptionsTabs.lua
+
+`LibKa0s/OptionsTabs.lua` was 1493 lines, seven from the cap, and its band entry had been carried as
+*Accepted* past the three-release shelf life (`automated-tests-§4`). The combat lock's page chrome it
+carried from its minors 2 and 3 moves out, unchanged, to a file of its own, and the two end at 1293
+(`OptionsTabs.lua`) and 249 (`OptionsCombat.lua`):
+
+- **OptionsCombat minor 1**: the one event frame (`lib.__combatFrame`), the page-scoped registration
+  (`lib.__shownPages`, `lib.__syncCombatEvents`, `lib.__pageShown`, `lib.__pageHidden`), the
+  dispatcher (`lib.__OnCombatEvent`) and the cover's geometry (`lib.__coverLevel`,
+  `lib.__descendsFrom`), plus `O.__buildCover` and `O.__releaseOwnedFocus`, attached by
+  `lib.__AttachCombat(O)`.
+- **OptionsTabs minor 6** calls `lib.__AttachCombat` where the two members used to be defined, so an
+  instance gets the same members in the same order. `Options.lua` does not move; its comments now
+  name the new file.
+
+A seam of its own: nothing moved reads a local of the strip, its art or the tabbed page, and the
+two halves meet only through `lib` fields. It carries its own minor and the shell's
+(`__combatMinor` / `__combatShellMinor`) and loads right after `OptionsTabs.lua`. No member, descriptor
+field or row field changes, and no case moves: the combat cases were already in
+`tests/test_options_combat.lua`. 1745 cases before and after.
+
+### The page registry leaves Options.lua
+
+`LibKa0s/Options.lua` was 1462 lines, and its band entry had been carried as *Accepted* past the
+three-release shelf life (`automated-tests-§4`). The page registry and the registration park move
+out, unchanged, to a file of its own, and the two end at 1261 (`Options.lua`) and 263
+(`OptionsRegistry.lua`):
+
+- **OptionsRegistry minor 1**: `O.RegisterOptionsPage`, `O.__pages`, `O.CreateOptionsPanel` and
+  `O.OpenOptionsPanel`, with the state only they read (the page queue, the built list, the main
+  category and its ID, the parked flag), attached by `lib.__AttachRegistry(O, d)`; and the park's
+  library half (`lib.__parkedPanels`, `lib.__OnParkEvent`, `lib.__parkRegistration`, the private
+  `lib.__parkFrame`), whose one caller is `CreateOptionsPanel`.
+- **Options minor 26** calls `lib.__AttachRegistry` where the four members used to be defined, so an
+  instance gets the same members in the same order.
+
+A seam of its own: nothing left in the shell read the registry's state, and the registry reaches
+the rest of the instance only through members (`O.CreatePanel`, `O.SetRenderer`, `O.AceGUI`,
+`O.__print`) and the descriptor. It carries its own minor and the shell's (`__registryMinor` /
+`__registryShellMinor`) and loads right after `Options.lua`. No member, descriptor field or row field
+changes, and no case moves. 1745 cases before and after.
+
+### Test kit revision 28: the suite inventory leaves framework.lua
+
+`testkit/framework.lua` was 1386 lines, in `layout-§1`'s 1000–1500 band, and its entry there had
+been carried as *Accepted* past the three-release shelf life (`automated-tests-§4`). The suite
+inventory, the seam kit revision 26 named for the next peel, moves out unchanged to
+`testkit/inventory.lua` (515) with the path helpers it keys on, which takes `framework.lua` to 920:
+
+- **`testkit/inventory.lua` (new)**: `Kit.assertSuiteInventory`, the gate-rule table, the
+  `## Documented deviations` reader and the decline matcher, the declaration fold and the three
+  collectors, the declines already reported, and `fileExists`, `normDir`, `rootOf`, `resolveDir`,
+  `adviceDir`, `suiteEntry` and `listDir`. It returns `function(Kit, fail)`, the shape
+  `asserts.lua` has, and hands back the helpers `framework.lua`'s suite loader, `--list` renderer
+  and shard partitioner still call.
+- **`testkit/framework.lua`** loads it once, from its own folder, where the helpers used to stand,
+  so `Kit.assertSuiteInventory` is on the kit table exactly when it was. `Kit.VERSION` is 28.
+
+No member, case name, mock or behavior changes, and the `Kit.__` self-test internals name the same
+functions. A consumer re-vendors the whole folder and changes nothing else; a copy without
+`inventory.lua` fails at load. `tests/test_kitsync.lua`'s peeled-files case now names it, and
+`tests/test_kit_inventory.lua` pins revision 28. 1745 cases before and after. Documented in
+[`docs/api/testkit/version-28-docs.md`](docs/api/testkit/version-28-docs.md).
+
+### Test kit revision 29: the prose gate peels on its two seams (issue #39)
+
+`testkit/test_prose.lua` was 1486 lines, fourteen under `layout-§1`'s cap, and issue #39 had named
+its narrowing and coverage machinery for the next kit revision that touched it. That seam alone would
+have left it above 1000, so its fixture-driven self-tests move too, and it ends at 750, out of the
+band:
+
+- **`testkit/prose_coverage.lua` (new, 404)**: the validators for the three lists a repository
+  narrows the gate by, a declared narrowing and its readers, the TOC and `.pkgmeta` readers, the one
+  resolved coverage set, the two refusals that read it and the disclosure line. A chunk taking
+  `fail`, `SCAN_BACK` and `KIT_DIRS`, returning a table of those functions.
+- **`testkit/prose_selftests.lua` (new, 426)**: the thirteen `prose self-test:` cases and their
+  fixtures. Not named `test_*`, so it is not a suite of its own: `test_prose.lua` loads it where the
+  cases stood, and they register under `test_prose` with the same names in the same order.
+- **`testkit/test_prose.lua`** keeps the header, the named exclusions, the live `Kit.prose` readers,
+  the waiver file's reader, the path scan, the matcher and the gate's own cases, and loads both new
+  files from its own folder, the way it loads `prose_lists.lua`. `Kit.VERSION` is 29; revision 28
+  never shipped on its own.
+
+No member, case name, mock or behavior changes. A consumer re-vendors the whole folder and changes
+nothing else; its suites list and `docs/test-cases.md` stay as they are, and a copy without either
+new file fails at load. This repo's own prose gate (`tests/test_prose.lua`) exempts
+`testkit/prose_selftests.lua` by name, as it does `test_prose.lua` and `prose_lists.lua`, because
+its fixtures quote the spellings the gate forbids. `tests/test_kitsync.lua`'s peeled-files case
+names both new files and `tests/test_kit_inventory.lua` pins revision 29. 1745 cases before and
+after. Documented in [`docs/api/testkit/version-29-docs.md`](docs/api/testkit/version-29-docs.md).
+
+### Four suites leave the 1000–1500 band
+
+Four suites that sat in `layout-§1`'s band, each carried as *Accepted* or tracked past the
+three-release shelf life (`automated-tests-§4`), split on their own case seams. Every case moved
+unchanged, in its original order, to a suite wired right after the one it left:
+
+- `tests/test_widgets.lua` 1493 → 861: the `ReorderList` and row-box cases (24) to
+  `tests/test_widgets_reorderlist.lua` (527), issue #37's split, with the geometry frame factory
+  both suites install in `tests/fixture_geom.lua` (154).
+- `tests/test_slash.lua` 1339 → 848: `ParseBool` and the parser (24) to `tests/test_slash_parse.lua`
+  (225), and the disabled gate (16) to `tests/test_slash_disabled.lua` (298).
+- `tests/test_options_tabs.lua` 1218 → 954: the tabbed page's `opts` and the banner's action (13) to
+  `tests/test_options_tabbed.lua` (291), on `tests/fixture_widgets.lua`'s bench.
+- `tests/test_options_idsuggest.lua` 1002 → 691: the dropdown's frames (11) to
+  `tests/test_options_idsuggest_frames.lua` (254), with the bench both use in
+  `tests/fixture_idsuggest.lua` (112).
+
+No library file changes. 1745 cases before and after.
+
+### Test kit revision 30: an empty watch-list table says `None.`
+
+`testkit/run-automated-tests.sh` writes `RESULTS.md`'s complexity watch list as two generated
+tables, the functions `lizard` warned on and the files by `layout-§1` band. Since revision 26 an
+empty one printed its header row and separator with nothing under them, which the 2026-09-26
+automated-tests sweep saw in every addon's record (`ATS-20`). From revision 30 an empty table prints
+its header, a blank line and `None.`, as the `AUTOMATED_TESTS.md` playbook's Step 3 asks. The blank
+line keeps GitHub-flavored Markdown from rendering `None.` as a row of the table, and the runner's
+reader of the previous watch list only reads lines that open with `|`, so the marker is never
+carried forward as an entry. A table with rows prints no `None.`. `Kit.VERSION` is 30; revision 29
+never shipped on its own.
+
+No member, kit case, mock or `manifest.json` field changes. A consumer re-vendors the whole folder
+and changes nothing else. `tests/test_kit_runner.lua`'s empty-table case now asserts the header and
+`None.` together, a new case pins that a table with rows carries no `None.`, and
+`tests/test_kit_inventory.lua` pins revision 30: 1745 cases before, 1746 after. Documented in
+[`docs/api/testkit/version-30-docs.md`](docs/api/testkit/version-30-docs.md).
+
+### Test kit revision 31: generated files leave the band table
+
+`layout-§1` exempts generated non-shipping data from the line cap, and the `AUTOMATED_TESTS.md`
+playbook reads a generated file in `RESULTS.md`'s band table as the runner counting what the rule
+never bound. The runner's band table dropped the vendored pair and nothing else, so Pretty Chat's
+23,842-line `GlobalStrings/GlobalStrings.lua` was listed over the cap in every run (`ATS-21` of the
+2026-09-26 automated-tests sweep). From revision 31 `testkit/run-automated-tests.sh` asks the repo's
+own `tests/run.lua` which band files are exempt, through a new `--layout-cap-exempt PATH...` flag:
+`Kit.run` answers it before loading any suite, from the `Kit.layoutCap.exempt` set the cap gate
+already reads, with the one matching rule that `test_layout_cap.lua` now calls too
+(`Kit.__layoutCapCovers`, moved out of the gate unchanged). Answers carry a marker, so nothing a
+runner prints while it sets up can drop a row. What is left out is named in a line under the table,
+and `manifest.json`'s `bandFiles` and `overCapFiles` stop counting it. A repo with no exempt set, or
+no `tests/run.lua`, gets the same table as before. `Kit.VERSION` is 31; revision 30 never shipped on
+its own.
+
+No public member, kit case, mock or `manifest.json` field changes. A consumer re-vendors the whole
+folder and changes nothing else. `tests/test_kit_runner.lua` gains two cases, one that an exempt
+folder and an exempt path leave the table while a look-alike path and setup noise do not, one that
+an undeclared dump is still listed; `tests/test_kit_inventory.lua` pins revision 31: 1746 cases
+before, 1748 after. Documented in
+[`docs/api/testkit/version-31-docs.md`](docs/api/testkit/version-31-docs.md).
+
+Release gate (`docs/automated-tests/20260926-182957/`): lint pass, 0/0 in 122 files;
+tests pass, 1748 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.61.0 — 2026-09-26
 
 Versions in this release: **Options minor 25**, **OptionsTabs minor 5** and a new file,

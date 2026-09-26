@@ -10,9 +10,9 @@
 | Version | **27** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.60.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 26](version-26-docs.md) — the two peels, the two assertions and the event fakes |
-| Superseded by | — |
+| Superseded by | [version 28](version-28-docs.md) — the suite inventory in `inventory.lua` |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `27` |
 
