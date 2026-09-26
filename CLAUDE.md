@@ -120,19 +120,21 @@ figure in the `docs/automated-tests/` manifests that no document read, and a RES
 that denied it. This table is the remark, and it is why an audit **MUST NOT** re-file `layout-§1`
 against a file in it.
 
-Two files, measured 2026-09-23 at kit revision 25, re-measured the same day at v1.55.0
-(`06b4051`, the three new majors) and again at kit revision 26 with neither row moving, and on
-2026-09-24 during the remediation's first milestone, where `LibKa0s/OptionsWidgets.lua` had come
-down to 3852 (`LK-28` moved `RenderTabbedSchema` out to `LibKa0s/OptionsTabs.lua`), with
+One file, measured 2026-09-26 during the automated-tests sweep's id peel, with the command below.
+There were two until that item: `LibKa0s/OptionsWidgets.lua` (3852 on 2026-09-24, after `LK-28`
+moved `RenderTabbedSchema` out to `LibKa0s/OptionsTabs.lua`) left the census when issue #32's id
+surface moved out to `LibKa0s/OptionsIds.lua` and `LibKa0s/OptionsIdList.lua`, which took it to 1422.
+The id surface was about 2460 lines, more than one file under the cap can hold, so it went to two
+files rather than the one #32 named. The rows were earlier measured 2026-09-23 at kit revision 25, at
+v1.55.0 (`06b4051`) and at kit revision 26, with
 
 ```sh
 git ls-files '*.lua' | grep -v '^tests/_kit/' | xargs wc -l | sort -rn
 ```
 
-| File | Lines (2026-09-24) | Disposition |
+| File | Lines (2026-09-26) | Disposition |
 |---|---|---|
-| `tests/test_options_widgets.lua` | 4086 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — the `ResolveId` / `IdInput` / `IdList` cases (lines 814–2225 as measured at v1.47.0, 1412 of them, minor 24's `columns` block included) peel with `LibKa0s/OptionsWidgets.lua`'s id half, on that file's seam and in that file's commit. That does **not** clear the cap on its own and #33 says so; the further cut is chosen from the file as it stands after #32, not guessed at now |
-| `LibKa0s/OptionsWidgets.lua` | 3852 | Issue [#32](https://github.com/tusharsaxena/LibKa0s/issues/32) — the id surface out to `OptionsIds.lua`: the module-scope `id resolution` and `suggestions while typing` blocks (lines 386–970, 585 of them) plus the lookup, list and suggestion-dropdown members inside `lib.__AttachWidgets` (lines 1813–3011, 1199 of them) — both ranges as measured at v1.47.0, to be re-derived from the file as it stands when the cut is made. Leaves the makers and the flow engine at 1471, on that measurement |
+| `tests/test_options_widgets.lua` | 2257 | Issue [#33](https://github.com/tusharsaxena/LibKa0s/issues/33) — its first part is done: the `ResolveId` / `IdInput` / `IdList` cases (92 of them, 1834 lines) peeled with `LibKa0s/OptionsWidgets.lua`'s id half, in that file's commit (the 2026-09-26 automated-tests sweep), to `tests/test_options_ids.lua`, `tests/test_options_idlist.lua` and `tests/test_options_idlist_layout.lua`, with their shared benches in `tests/fixture_ids.lua`; 4086 → 2257. What is left is split on its own case seams next, in the same sweep, as #33 says, chosen from the file as it stands now |
 
 **v1.39.0 peeled the chrome, and the two Options rows survived it.** Issue [#16](https://github.com/tusharsaxena/LibKa0s/issues/16)
 named one seam — the tab and page chrome — and that seam is now `LibKa0s/OptionsTabs.lua`, which
@@ -237,6 +239,25 @@ same line from seven under it, so both went to files of their own —
 then, 901 now), neither of them in the band. That is a cut chosen while the seam was still obvious
 rather than one sized against a file three releases older than the peel, which is what the two rows
 above record going wrong.
+
+**The id peel, 2026-09-26 (the automated-tests sweep), puts three source files into the band, and rules each.**
+None was in it before: `LibKa0s/OptionsWidgets.lua` came down from the census, and the other two are
+new.
+
+- `LibKa0s/OptionsWidgets.lua` (1422) — **accepted.** The makers, the choice grid, the landing page
+  and the flow engine, with the id surface gone. **Re-check trigger: 1450 lines, or the next maker
+  added**; the flow engine (`flowRows`, the switched sections) is the seam at either.
+- `LibKa0s/OptionsIds.lua` (1358) — **accepted.** Resolution, suggestions and the input. **Re-check
+  trigger: 1450 lines**; the suggestion half (the module-scope `suggestions while typing` block and
+  the dropdown members) is the seam, to a file of its own.
+- `LibKa0s/OptionsIdList.lua` (1193) — **accepted.** The list and its entry-line layout, one piece
+  of machinery. **Re-check trigger: 1350 lines.**
+
+The suites the id cases went to are out of the band: `tests/test_options_ids.lua` 724,
+`tests/test_options_idlist.lua` 379, `tests/test_options_idlist_layout.lua` 665.
+`tests/test_options_idsuggest.lua` (1002), whose re-check trigger was "1200 lines, or #32's peel",
+now pairs with `LibKa0s/OptionsIds.lua`, the module the peel gave it; it moved no case and stays
+**accepted**, its trigger now 1200 lines alone.
 
 **The band's terminal states, ruled 2026-09-24.** `automated-tests-§4` refuses an "accepted" that
 outlives three consecutive release runs and a newly crossed entry with no disposition, and the

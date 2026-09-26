@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 25.31.5.7.4.1
+# `LibKa0s-Options-1.0` — version 25.32.1.1.5.7.4.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,27 +8,56 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **25** · `OptionsWidgets.lua` **31** · `OptionsTabs.lua` **5** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **1** |
-| Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same six numbers `lib.MODULES` reports. |
-| Shipped in | v1.61.0 |
-| Status | Superseded |
-| Supersedes | [version 24.31.4.7.4](./version-24.31.4.7.4-docs.md) |
-| Superseded by | [version 25.32.1.1.5.7.4.1](./version-25.32.1.1.5.7.4.1-docs.md) — the id surface moves to `OptionsIds.lua` and `OptionsIdList.lua` |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 25, OptionsWidgets = 31, OptionsTabs = 5, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }` |
+| Files and minors | `Options.lua` **25** · `OptionsWidgets.lua` **32** · `OptionsIds.lua` **1** · `OptionsIdList.lua` **1** · `OptionsTabs.lua` **5** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **1** |
+| Version key | `<Options>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same eight numbers `lib.MODULES` reports. |
+| Shipped in | v1.62.0 |
+| Status | **Current** |
+| Supersedes | [version 25.31.5.7.4.1](./version-25.31.5.7.4.1-docs.md) |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsIds.lua` and `OptionsIdList.lua` declare no floor of their own. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 25, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 5, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `C7` for `OptionsCompose.lua` minor 7, `S1` for
-`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1. **A `W`
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `I1` for
+`OptionsIds.lua` minor 1, `L1` for `OptionsIdList.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
 `OptionsTabs.lua`'s from it, with no change to what any of them does; `O.RenderTabbedSchema` (**W9**)
-moved the same way at **T4**. The minor that introduced a
+moved the same way at **T4**, and so did the id surface at **I1** and **L1**: `O.ResolveId`,
+`O.UnnamedCandidates`, `O.ID_NAME_HINT` and `O.IdInput` are `OptionsIds.lua`'s and `O.IdList` is
+`OptionsIdList.lua`'s from 25.32.1.1.5.7.4.1, and every `W` citation on them still names the minor that
+introduced them. The minor that introduced a
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**The id surface leaves `OptionsWidgets.lua` for two files of its own (issue #32).** No member,
+descriptor field, row field or drawn pixel changes; a host cannot observe this version except
+through `lib.MODULES` and the version key.
+
+- **`OptionsIds.lua` minor 1**: the module-scope id resolution and suggestion blocks, and the
+  instance members built on them: `O.ResolveId`, `O.UnnamedCandidates`, `O.ID_NAME_HINT`, `O.IdInput`
+  and its suggestion dropdown. Attached per instance by `lib.__AttachIds(O, w)`.
+- **`OptionsIdList.lua` minor 1**: `O.IdList` and everything its entry lines are laid out with (the
+  delete control, the help mark, `columns` and the floors it is measured against, the
+  uncached-item batches). Attached per instance by `lib.__AttachIdList(O, d, ids)`, where `ids` is what
+  `lib.__AttachIds` returned.
+- **`OptionsWidgets.lua` minor 32** loses the moved code. `lib.__AttachWidgets` calls both attach
+  functions where the id members used to be defined, so an instance gets its members in the same
+  order as before, and `Options.lua` does not move. It hands them the sink, the combat refusal and its
+  two row helpers (`startRow`, `renderRowGuarded`) rather than a restated copy of any of them.
+- **Two files rather than one** because the id surface was about 2460 lines, more than one file may
+  hold under layout-§1's 1500-line cap. The input and the list were already separate halves: the
+  list reaches the input's half only through `drawIdInput`, eight helpers and three layout
+  constants, all passed in the table `lib.__AttachIds` returns.
+- **Pairing.** Each file carries its own minor and the shell's: `lib.__idsMinor` / `lib.__idsShellMinor`
+  and `lib.__idListMinor` / `lib.__idListShellMinor`, the idiom `OptionsTabs.lua` uses. A copy with
+  neither file draws no id widget and raises nothing, the same as a copy with no `OptionsWidgets.lua`.
+
+## Previously, at 25.31.5.7.4.1
 
 **OptionsNav minor 1: the nav rail.**
 
@@ -1337,7 +1366,9 @@ draws nothing.
 
 ## The id input and the id list
 
-New at `OptionsWidgets.lua` minor 16. **From minor 17**, an entry may carry `note = <string>`. The host owns storage. None of these writes a path: the
+New at `OptionsWidgets.lua` minor 16. Defined in `OptionsIds.lua` (`O.ResolveId`, `O.UnnamedCandidates`,
+`O.ID_NAME_HINT`, `O.IdInput`) and `OptionsIdList.lua` (`O.IdList`) from 25.32.1.1.5.7.4.1; in
+`OptionsWidgets.lua` before it. **From minor 17**, an entry may carry `note = <string>`. The host owns storage. None of these writes a path: the
 widgets call back, and the host keeps whatever stored shape it has.
 
 ### `O.ResolveId(kind, text, candidates)` → `id, name, icon` or `nil, reason`
@@ -2024,6 +2055,11 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
+**At 25.32.1.1.5.7.4.1 no member is added, removed or repurposed**: the id surface moved file, which changes
+the version key and `lib.MODULES` and nothing a host calls. A host written against 25.31.5.7.4.1 needs no
+change, and a degradation stub pinned by name is unaffected: the two new attach functions are
+`__`-prefixed, outside surface parity.
+
 **At 24.31.4.7.4 no member is added or removed**: the font preload moved file; the drag throttles
 stop reading `scheduleTimer`'s return value, which a host whose timer answers a handle cannot
 observe; the banner's dropdown is Released and the header frame and divider texture reused, which a
@@ -2075,11 +2111,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 25.32.1.1.5.7.4.1
-
-`OptionsWidgets.lua` moves to minor **32**, and two files join the major, `OptionsIds.lua` and
-`OptionsIdList.lua`, each at minor **1**, so the key gains two components. The id surface
-(`O.ResolveId`, `O.UnnamedCandidates`, `O.ID_NAME_HINT`, `O.IdInput`, `O.IdList`) is defined in the
-two new files rather than in `OptionsWidgets.lua`. No member, descriptor field or row field is
-added, removed or changed, and nothing a host draws moves.

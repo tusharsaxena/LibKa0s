@@ -10,6 +10,37 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.62.0 — unreleased
+
+Versions in this release so far: **OptionsWidgets minor 32** and two new files, **OptionsIds minor
+1** and **OptionsIdList minor 1** (`LibKa0s-Options-1.0` **25.32.1.1.5.7.4.1**). Every other file is
+unchanged from v1.61.0. The Options major is eight files, so the library is **fifteen majors across
+twenty-five files**.
+
+### The id surface leaves OptionsWidgets.lua (issue #32)
+
+`LibKa0s/OptionsWidgets.lua` was 3852 lines against `layout-§1`'s 1500 cap. Its id surface moves
+out, unchanged, to two files of its own, and the three end at 1422 (`OptionsWidgets.lua`), 1358
+(`OptionsIds.lua`) and 1193 (`OptionsIdList.lua`):
+
+- **OptionsIds minor 1**: the module-scope id resolution and suggestion blocks, and `O.ResolveId`,
+  `O.UnnamedCandidates`, `O.ID_NAME_HINT` and `O.IdInput` with its suggestion dropdown, attached by
+  `lib.__AttachIds(O, w)`.
+- **OptionsIdList minor 1**: `O.IdList` and its entry-line layout, attached by
+  `lib.__AttachIdList(O, d, ids)` with the locals `lib.__AttachIds` returns.
+- **OptionsWidgets minor 32** calls both where the id members used to be defined, handing them its
+  sink, its combat refusal, `startRow` and `renderRowGuarded`, so an instance gets the same members
+  in the same order. `Options.lua` does not move.
+
+Two files rather than one because the id surface, about 2460 lines, does not fit under the cap in
+one. Each carries its own minor and the shell's (`__idsMinor` / `__idsShellMinor`,
+`__idListMinor` / `__idListShellMinor`). No member, descriptor field or row field changes.
+
+The suite peels with it (issue #33, first part): the ResolveId / IdInput / IdList cases leave
+`tests/test_options_widgets.lua` (4086 → 2257) for `tests/test_options_ids.lua`,
+`tests/test_options_idlist.lua` and `tests/test_options_idlist_layout.lua`, with their shared benches
+in `tests/fixture_ids.lua`: 92 cases moved, 1745 in all before and after.
+
 ## v1.61.0 — 2026-09-26
 
 Versions in this release: **Options minor 25**, **OptionsTabs minor 5** and a new file,

@@ -81,6 +81,7 @@ Kit.run{
     "test_core", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_slash", "test_slash_refusal",
     "test_launcher",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
+    "test_options_ids", "test_options_idlist", "test_options_idlist_layout",
     "test_options_tabs",
     "test_options_nav",
     "test_options_idsuggest", "test_options_idlist_remove", "test_options_switched", "test_options_combat", "test_options_compose",

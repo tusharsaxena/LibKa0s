@@ -913,7 +913,7 @@ badge and any count quoted in the docs must agree with it.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (227)
+### test_options_widgets.lua (135)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labeled and seeded from the schema
@@ -965,98 +965,6 @@ badge and any count quoted in the docs must agree with it.
 - widgets: an extraColumn cell with a non-function onClick draws without wiring a handler
 - widgets: an extraColumn narrows the label column, and the line still fits one Flow row
 - widgets: with no extraColumn, ChoiceGrid's line shape is unchanged
-- ResolveId: a number is an id, and a known one carries its name and icon
-- ResolveId: every link form resolves, for its own kind only
-- ResolveId: a spell name the client knows resolves to its id
-- ResolveId: a name the client cannot look up is found among the host's candidates
-- ResolveId: two candidates with the name are ambiguous, one listed twice is not
-- ResolveId: nothing typed is empty, and an unknown name is not found
-- ResolveId: a custom kind's resolver is handed everything typed
-- ResolveId: with no client APIs a number still resolves and a name finds nothing
-- IdInput: an edit box and an Add button share a line, with a status line under them
-- IdInput: the Add button is the height of the box it sits beside, not AceGUI's default
-- IdInput: Enter with a valid name adds it once and clears the box
-- IdInput: the Add button submits what was typed
-- IdInput: a name that resolves to nothing says so inline and adds nothing
-- IdInput: an ambiguous name asks for the id, in the kind's own plural
-- IdInput: the host can reword the button and the messages
-- IdInput: a raising onAdd is reported, and the box keeps its text
-- IdInput: the box and status line are cleared before onAdd, so onAdd may redraw the page
-- IdInput: drawn inside a disabled render, or with spec.disabled, it is disabled
-- IdInput: with no AceGUI it draws nothing
-- IdList: one line per entry -- icon, name and gray id, then Remove or a checkbox
-- IdList: an entry's note is drawn under its name, and only when it has one
-- IdList: an empty-string or non-string note draws nothing
-- IdList: an entry's suffix is drawn inside the label, after the gray id and in the same gray
-- IdList: an entry with no suffix renders exactly as it did at minor 24
-- IdList: a suffixed entry still pairs up at two columns -- it is not a full-width row
-- IdList: a suffix and a note on one entry -- the note wins its line, the suffix stays inline
-- IdList: a suffix is concatenated, so a % or a |c in it reaches the client as written
-- IdList: with no columns option each entry has its line to itself, at minor 23's widths
-- IdList: columns = 2 packs entries two to a line, row-major, at half the widths
-- IdList: columns = 2 in the icon style halves the name and leaves the X alone
-- IdList: an odd entry count leaves the last line half filled, not stretched
-- IdList: inside a two-column list a noted entry takes a full-width line of its own
-- IdList: a columns value that is not a usable count is floored, clamped, or read as 1
-- IdList: at two columns a failing entry costs itself, not the entry beside it
-- IdList: at two columns the FIRST entry of a row fails without stranding the row
-- IdList: columns is capped at two, and the cap's arithmetic is the label's and the X's
-- IdList: a content width two columns cannot pay for draws one, not a broken grid
-- IdList: a content width that covers the floor keeps the columns the host asked for
-- IdList: the default style falls back on the LABEL's floor, which is its only one
-- IdList: a width that cannot be measured leaves the column count exactly as it was
-- IdList: the X's frame is wider than its art, absolute, at every column count
-- IdList: a gutter separates each entry from the next, and only at more than one column
-- IdList: at more than one column an entry name is one line tall, never wrapped
-- IdList: a list where nothing carries help draws no marks at all
-- IdList: every entry gets a mark once ANY entry carries help
-- IdList: a mark with nothing to say is dimmed and answers no tooltip
-- IdList: a string help reads as one line
-- IdList: the help mark's width comes out of the NAME
-- IdList: a helped list still gets two columns on a canvas that pays for them
-- IdList: the mark is drawn big enough to read, in a frame with the X's 5px ring
-- IdList: the mark draws this library's own info art when the host names itself
-- IdList: the art ladder falls back, and a host that names its own art keeps it
-- IdList: a help level tints the mark, and an entry that names none keeps its gold
-- IdList: an unknown level draws the default, and a hover leaves a mark its own color
-- IdList: a one-column list still wraps, and now lights too (minor 28)
-- IdList: the no-wrap FontString is put back when AceGUI takes the widget back
-- IdList: release clears the markers, so a pooled label cannot answer for the next list
-- IdList: a label with no FontString still has its markers cleared
-- IdList: at more than one column the hovered entry is lit, so the tooltip has an owner
-- IdList: a multi-column tooltip hangs off the row, not over the column beside it
-- IdList: Remove and a toggle call the host back, and Remove asks for a rebuild
-- IdList: an add through its input reaches onAdd and rebuilds the list
-- IdList: with no ctx.rebuild the library's structural refresh redraws it
-- IdList: an empty list shows the host's empty text
-- IdList: an uncached item asks to load, and the list redraws once its name lands
-- IdList: an item's name is colored by its quality; a spell's and a currency's are not
-- IdList: an item with no quality yet, or no palette for it, is drawn uncolored
-- IdList: uncached items load as one batch -- one timer and one rebuild, however many
-- IdList: an item not cached by the check is asked for again, a bounded number of times
-- IdList: an entry's label shows the client's own tooltip for it
-- IdList: a host kind with base = "item" wears the item kind's color, tooltip and loads
-- IdList: a host kind without base, or with a base no library kind has, is drawn as before
-- IdList: a based spell kind draws as a spell and keeps its own tooltip
-- IdList: a raising entries() is reported and still draws the input
-- IdList: drawn disabled, every Remove and checkbox is disabled
-- IdList: with no AceGUI it draws nothing
-- ResolveId: a client name hit another candidate shares its name with is ambiguous
-- UnnamedCandidates: the item candidates the client cannot name yet, each once, capped
-- IdInput: a name among uncached candidates is looked up, and added once it lands
-- IdInput: a lookup waits for every candidate it asked for, then refuses a shared name
-- IdInput: a lookup that never lands gives up after a bounded wait, with the honest reason
-- IdInput: a second submit, a changed box or a released box drops a pending lookup
-- IdInput and IdList: built with item candidates, they ask for the unnamed ones up front
-- IdInput: a name that finds nothing says where names work, per kind; the hint is exported
-- IdInput: the looking line can be reworded
-- IdInput: a client hit on one rank waits for the uncached ranks, then refuses the name
-- IdInput: a name hit waits on unnamed candidates, then adds; a number or a link never waits
-- IdInput: a host kind with resolve, loads and info is looked up, and refuses a shared name
-- IdInput: a second submit of the same text replaces the pending lookup
-- IdInput: ids a lookup could not load are skipped, so later candidates get their turn
-- IdInput: a lookup runs at most five windows of 200; the next Enter carries on past them
-- IdInput and IdList: pre-warm moves past the ids it has asked for, and reads each id once
 - widgets: a string row asking for an EditBox gets one, not a dropdown
 - widgets: an edit box commits on OnEnterPressed and re-reads on refresh
 - widgets: a color row renders a ColorPicker seeded through the descriptor's codec
@@ -1142,6 +1050,107 @@ badge and any count quoted in the docs must agree with it.
 - widgets: InlineButtonPair with no right-hand button draws one, at the pair's width
 - widgets: a string row with no values and no dialogControl prints once and still renders
 - widgets: a values-backed row that is momentarily empty does NOT warn
+
+### test_options_ids.lua (35)
+
+- ResolveId: a number is an id, and a known one carries its name and icon
+- ResolveId: every link form resolves, for its own kind only
+- ResolveId: a spell name the client knows resolves to its id
+- ResolveId: a name the client cannot look up is found among the host's candidates
+- ResolveId: two candidates with the name are ambiguous, one listed twice is not
+- ResolveId: nothing typed is empty, and an unknown name is not found
+- ResolveId: a custom kind's resolver is handed everything typed
+- ResolveId: with no client APIs a number still resolves and a name finds nothing
+- IdInput: an edit box and an Add button share a line, with a status line under them
+- IdInput: the Add button is the height of the box it sits beside, not AceGUI's default
+- IdInput: Enter with a valid name adds it once and clears the box
+- IdInput: the Add button submits what was typed
+- IdInput: a name that resolves to nothing says so inline and adds nothing
+- IdInput: an ambiguous name asks for the id, in the kind's own plural
+- IdInput: the host can reword the button and the messages
+- IdInput: a raising onAdd is reported, and the box keeps its text
+- IdInput: the box and status line are cleared before onAdd, so onAdd may redraw the page
+- IdInput: drawn inside a disabled render, or with spec.disabled, it is disabled
+- IdInput: with no AceGUI it draws nothing
+- ResolveId: a client name hit another candidate shares its name with is ambiguous
+- UnnamedCandidates: the item candidates the client cannot name yet, each once, capped
+- IdInput: a name among uncached candidates is looked up, and added once it lands
+- IdInput: a lookup waits for every candidate it asked for, then refuses a shared name
+- IdInput: a lookup that never lands gives up after a bounded wait, with the honest reason
+- IdInput: a second submit, a changed box or a released box drops a pending lookup
+- IdInput and IdList: built with item candidates, they ask for the unnamed ones up front
+- IdInput: a name that finds nothing says where names work, per kind; the hint is exported
+- IdInput: the looking line can be reworded
+- IdInput: a client hit on one rank waits for the uncached ranks, then refuses the name
+- IdInput: a name hit waits on unnamed candidates, then adds; a number or a link never waits
+- IdInput: a host kind with resolve, loads and info is looked up, and refuses a shared name
+- IdInput: a second submit of the same text replaces the pending lookup
+- IdInput: ids a lookup could not load are skipped, so later candidates get their turn
+- IdInput: a lookup runs at most five windows of 200; the next Enter carries on past them
+- IdInput and IdList: pre-warm moves past the ids it has asked for, and reads each id once
+
+### test_options_idlist.lua (24)
+
+- IdList: one line per entry -- icon, name and gray id, then Remove or a checkbox
+- IdList: an entry's note is drawn under its name, and only when it has one
+- IdList: an empty-string or non-string note draws nothing
+- IdList: an entry's suffix is drawn inside the label, after the gray id and in the same gray
+- IdList: an entry with no suffix renders exactly as it did at minor 24
+- IdList: a suffixed entry still pairs up at two columns -- it is not a full-width row
+- IdList: a suffix and a note on one entry -- the note wins its line, the suffix stays inline
+- IdList: a suffix is concatenated, so a % or a |c in it reaches the client as written
+- IdList: Remove and a toggle call the host back, and Remove asks for a rebuild
+- IdList: an add through its input reaches onAdd and rebuilds the list
+- IdList: with no ctx.rebuild the library's structural refresh redraws it
+- IdList: an empty list shows the host's empty text
+- IdList: an uncached item asks to load, and the list redraws once its name lands
+- IdList: an item's name is colored by its quality; a spell's and a currency's are not
+- IdList: an item with no quality yet, or no palette for it, is drawn uncolored
+- IdList: uncached items load as one batch -- one timer and one rebuild, however many
+- IdList: an item not cached by the check is asked for again, a bounded number of times
+- IdList: an entry's label shows the client's own tooltip for it
+- IdList: a host kind with base = "item" wears the item kind's color, tooltip and loads
+- IdList: a host kind without base, or with a base no library kind has, is drawn as before
+- IdList: a based spell kind draws as a spell and keeps its own tooltip
+- IdList: a raising entries() is reported and still draws the input
+- IdList: drawn disabled, every Remove and checkbox is disabled
+- IdList: with no AceGUI it draws nothing
+
+### test_options_idlist_layout.lua (33)
+
+- IdList: with no columns option each entry has its line to itself, at minor 23's widths
+- IdList: columns = 2 packs entries two to a line, row-major, at half the widths
+- IdList: columns = 2 in the icon style halves the name and leaves the X alone
+- IdList: an odd entry count leaves the last line half filled, not stretched
+- IdList: inside a two-column list a noted entry takes a full-width line of its own
+- IdList: a columns value that is not a usable count is floored, clamped, or read as 1
+- IdList: at two columns a failing entry costs itself, not the entry beside it
+- IdList: at two columns the FIRST entry of a row fails without stranding the row
+- IdList: columns is capped at two, and the cap's arithmetic is the label's and the X's
+- IdList: a content width two columns cannot pay for draws one, not a broken grid
+- IdList: a content width that covers the floor keeps the columns the host asked for
+- IdList: the default style falls back on the LABEL's floor, which is its only one
+- IdList: a width that cannot be measured leaves the column count exactly as it was
+- IdList: the X's frame is wider than its art, absolute, at every column count
+- IdList: a gutter separates each entry from the next, and only at more than one column
+- IdList: at more than one column an entry name is one line tall, never wrapped
+- IdList: a list where nothing carries help draws no marks at all
+- IdList: every entry gets a mark once ANY entry carries help
+- IdList: a mark with nothing to say is dimmed and answers no tooltip
+- IdList: a string help reads as one line
+- IdList: the help mark's width comes out of the NAME
+- IdList: a helped list still gets two columns on a canvas that pays for them
+- IdList: the mark is drawn big enough to read, in a frame with the X's 5px ring
+- IdList: the mark draws this library's own info art when the host names itself
+- IdList: the art ladder falls back, and a host that names its own art keeps it
+- IdList: a help level tints the mark, and an entry that names none keeps its gold
+- IdList: an unknown level draws the default, and a hover leaves a mark its own color
+- IdList: a one-column list still wraps, and now lights too (minor 28)
+- IdList: the no-wrap FontString is put back when AceGUI takes the widget back
+- IdList: release clears the markers, so a pooled label cannot answer for the next list
+- IdList: a label with no FontString still has its markers cleared
+- IdList: at more than one column the hovered entry is lit, so the tooltip has an owner
+- IdList: a multi-column tooltip hangs off the row, not over the column beside it
 
 ### test_options_tabs.lua (54)
 
@@ -1949,7 +1958,10 @@ badge and any count quoted in the docs must agree with it.
 | test_options.lua | 85 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 227 |
+| test_options_widgets.lua | 135 |
+| test_options_ids.lua | 35 |
+| test_options_idlist.lua | 24 |
+| test_options_idlist_layout.lua | 33 |
 | test_options_tabs.lua | 54 |
 | test_options_nav.lua | 14 |
 | test_options_idsuggest.lua | 40 |
