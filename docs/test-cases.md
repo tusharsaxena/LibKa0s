@@ -1200,6 +1200,22 @@ badge and any count quoted in the docs must agree with it.
 - widgets: PageBanner's action re-rendering from its own click never hands itself back
 - widgets: PageBanner's action is refused in combat, like its picker
 
+### test_options_nav.lua (13)
+
+- nav: the rail inset is zero with no rail and the rail's width plus its 12px gap with one
+- nav: the rail's top is measured off the ACTIVE tab art, under the banner's band
+- nav: the probe's cap is the drawn selected tab's own art, so the rail's top is level with the strip beside it (spec §2, §4; A2)
+- nav: entries stack 20px apart from 8px below the rail's top
+- nav: NavRail draws one entry per spec entry, records railWidth, and disables the selected one
+- nav: the rail hangs in the body at the content column's left edge, from the art's top to the panel's foot
+- nav: with no rail the strip, the content panel and the scroll are anchored exactly as before
+- nav: with a rail the strip, the content panel's left edge and the scroll all move by the one inset
+- nav: the first render's zero-width chrome re-places the strip, inset included, when the width arrives
+- nav: a re-render reuses the pooled entries and builds no frame; a shorter one hides the surplus
+- nav: a click on another entry hands its key to onSelect; the selected entry and a raising handler do nothing
+- nav: an empty entry list releases the rail and gives the page its full width back
+- nav: with OptionsNav.lua absent there is no NavRail and nothing is inset
+
 ### test_options_idsuggest.lua (40)
 
 - IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
@@ -1266,11 +1282,12 @@ badge and any count quoted in the docs must agree with it.
 - switched: a bound (path-less) selector reads and is watched through its record
 - switched: two selectors changing in one frame cost one re-render
 
-### test_options_combat.lua (32)
+### test_options_combat.lua (33)
 
 - combat: a page shown in combat is covered and not drawn, and the window is left alone
 - combat: the cover is built out of combat, hidden, and takes the mouse and the wheel
 - combat: REGEN_DISABLED covers an open tabbed page above its tab strip
+- combat: REGEN_DISABLED covers a page's nav rail, and a rail click in combat is refused
 - combat: a widget write is refused and the widget put back
 - combat: the notice comes back once per combat, not once per session
 - combat: the page's Defaults — header button and footer control — are refused
@@ -1933,10 +1950,11 @@ badge and any count quoted in the docs must agree with it.
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 227 |
 | test_options_tabs.lua | 54 |
+| test_options_nav.lua | 13 |
 | test_options_idsuggest.lua | 40 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 9 |
-| test_options_combat.lua | 32 |
+| test_options_combat.lua | 33 |
 | test_options_compose.lua | 45 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 71 |
@@ -1964,4 +1982,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 7 |
-| **Total** | **1730** |
+| **Total** | **1744** |

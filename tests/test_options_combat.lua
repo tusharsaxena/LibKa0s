@@ -244,6 +244,36 @@ combatCase("combat: REGEN_DISABLED covers an open tabbed page above its tab stri
   end)
 end)
 
+combatCase("combat: REGEN_DISABLED covers a page's nav rail, and a rail click in combat is refused", function()
+  -- options-ui-§2 (v2.69.0): the cover falls over the whole page, the nav rail included, and a rail
+  -- switch is refused with every other structural re-render. red under: the rail parented outside
+  -- the panel's child tree (the cover's level walk would miss it), or a rail OnClick that does not
+  -- ask the lock.
+  withLevels(function()
+    local O = Fixture.new()
+    seq = seq + 1
+    local ctx = O.CreatePanel("CombatPage" .. seq, "Combat " .. seq, { pageKey = "tabbed" })
+    local picked = {}
+    O.SetRenderer(ctx, function(c)
+      O.ClearScroll(c)
+      O.NavRail(c, { value = "a", onSelect = function(k) picked[#picked + 1] = k end,
+        entries = { { key = "a", label = "A" }, { key = "b", label = "B" } } })
+      O.RenderTabbedSchema(c, "tabbed")
+    end)
+    show(ctx)
+    assertEqual(#ctx.__railKids, 2, "the rail was drawn")
+    enterCombat()
+    assertTrue(coverShown(ctx), "the page is covered")
+    local cover = ctx.__combatCover:GetFrameLevel()
+    assertTrue(cover > ctx.__railFrame:GetFrameLevel(), "above the rail")
+    for _, b in ipairs(ctx.__railKids) do
+      assertTrue(cover > b:GetFrameLevel(), "above entry " .. b.__ka0sNavKey)
+    end
+    ctx.__railKids[2]:__fire("OnClick")
+    assertEqual(#picked, 0, "a rail switch is refused in combat")
+  end)
+end)
+
 -- ── refused writes ───────────────────────────────────────────────────────────────────────────
 
 combatCase("combat: a widget write is refused and the widget put back", function()

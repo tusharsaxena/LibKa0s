@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 24.31.4.7.4
+# `LibKa0s-Options-1.0` — version 25.31.5.7.4.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,19 +8,19 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **24** · `OptionsWidgets.lua` **31** · `OptionsTabs.lua` **4** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** |
-| Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>`, in load order — the same five numbers `lib.MODULES` reports. |
-| Shipped in | v1.56.0 |
-| Status | Superseded |
-| Supersedes | [version 23.30.3.7.3](./version-23.30.3.7.3-docs.md) |
-| Superseded by | [version 25.31.5.7.4.1](./version-25.31.5.7.4.1-docs.md) — the nav rail (`OptionsNav.lua`, a sixth file) |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 24, OptionsWidgets = 31, OptionsTabs = 4, OptionsCompose = 7, OptionsScroll = 4 }` |
+| Files and minors | `Options.lua` **25** · `OptionsWidgets.lua` **31** · `OptionsTabs.lua` **5** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **1** |
+| Version key | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same six numbers `lib.MODULES` reports. |
+| Shipped in | v1.61.0 |
+| Status | **Current** |
+| Supersedes | [version 24.31.4.7.4](./version-24.31.4.7.4-docs.md) |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 25, OptionsWidgets = 31, OptionsTabs = 5, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
-for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `C7` for `OptionsCompose.lua` minor 7, `S1` for
-`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4. **A `W`
+for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
 `OptionsTabs.lua`'s from it, with no change to what any of them does; `O.RenderTabbedSchema` (**W9**)
@@ -29,6 +29,37 @@ member is a fact about when a consumer got it, not about which file holds it tod
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**OptionsNav minor 1: the nav rail.**
+
+- **`O.NavRail(ctx, spec)`**, `spec = { entries = { { key, label, tooltip } }, value, onSelect, width }`:
+  a pinned vertical list at the left of the page's body, the first level of a page that edits one
+  instance out of many (options-ui-§13), in AceGUI's TreeGroup tree-pane look (tooltip-border
+  backdrop, 0.1/0.1/0.1/0.5 fill, 0.4 border; gold `GameFontNormal` entries; the selected entry
+  white on the blue `UI-QuestLogTitleHighlight` bar, and disabled, as the active tab is). `width`
+  defaults to 120. Draw it after `O.PageBanner` and before `O.TabStrip`. The selection is the host's
+  (`spec.value` / `spec.onSelect`, as `O.SubTabStrip`'s is); `onSelect` is pcall'd, and a click is
+  refused in combat by the library as a tab click is. Entries are pooled per page and released on
+  every call; an empty list releases the rail and records `ctx.railWidth = 0`.
+- **`lib.__railInset(ctx)`**: the rail's width plus a 12px gap, or 0 with no rail. The one number
+  the strip's placement, the content panel's left edge and the scroll's left anchor read, so the
+  three cannot disagree. Library-level because `drawContentPanel` has no instance in reach.
+- **The rail's top** is level with the selected tab's art top: `-(bannerHeight + TAB_H -
+  activeArtHeight)`, the active cap atlas measured once on a probe texture and cached on success
+  only, falling back to the strip's own pitch. Seams: `O.__railTop`, `O.__railEntryY`,
+  `O.__navArtHeight`, `O.__resetNavArtHeight`, `O.__railInset`.
+
+**Options minor 25: the scroll starts right of a nav rail.** `anchorScroll` adds `lib.__railInset(ctx)` to the scroll's left anchor, and `lib:New` attaches
+`OptionsNav.lua` after `OptionsScroll.lua`. Both reads are guarded: with no rail, or no
+`OptionsNav.lua` in the copy, the scroll is anchored exactly as at minor 24.
+
+**OptionsTabs minor 5: the strip and the content panel start right of a nav rail.** `placeTabs` places every tab `lib.__railInset(ctx)` right of the chrome's left edge and wraps against
+the chrome's width less that inset (never less than `TAB_MIN_W`, so the first render's zero-width
+chrome cannot go negative; `replaceOnResize` re-places with the inset when the width arrives).
+`drawContentPanel` moves the panel's left edge by the same inset. The banner, the header block and
+the chrome divider stay full width. With no rail the numbers are minor 4's.
+
+## Previously, at 24.31.4.7.4
 
 Five changes share this version: `CreateOptionsPanel` parks in combat and `OpenOptionsPanel` answers
 a boolean (below), the font preload moves out of the shell (after them), the two drag throttles
@@ -1126,6 +1157,10 @@ every ctx `CreatePanel` returns.
 | `lib.__parkRegistration(replay)` → boolean | O24 | Append `replay`, (re)set the frame's `OnEvent` and register the event. `false` when no frame can be made, and the caller then registers at once. |
 | `lib.__OnParkEvent(event)` | O24 | Ignores every event but `PLAYER_REGEN_ENABLED`; on it, unregisters, takes the parked list and replays each once, each `pcall`'d, then raises the first error (if any) so it is reported rather than swallowed. A replay that finds the client still locked parks again. |
 
+### `lib.__railInset(ctx)` → number (N1)
+
+**Since N1.** `ctx.railWidth + 12`, or `0` for no rail (`railWidth` nil or `<= 0`, or no `ctx`). It is read by `anchorScroll` (O25), `placeTabs` and `drawContentPanel` (T5), and every read is guarded, so a copy without `OptionsNav.lua` lays out as at 24.31.4.7.4. Library-level because `drawContentPanel` is a file-level local with no instance in reach; `O.__railInset` is the same function.
+
 ## The instance surface
 
 Everything `lib:New(descriptor)` returns on the instance.
@@ -1149,6 +1184,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith, opts)` | **W9** (`opts`: **T4**) | Render one page as a tab strip over its own sections. Defined in `OptionsTabs.lua` from **T4**; `OptionsWidgets.lua` keeps an untabbed stand-in that ignores `opts` for a partial copy without it. `opts` = `{ tabs, cfg, disabledFor, disabledNotice, chrome }`, each optional — see [What changed at this version](#what-changed-at-this-version). The partition is by `row.group`, in declaration order — each group is exactly one tab, and there is no second field naming a group's tab (options-ui-§13); from **T4** `opts.tabs` can add host tabs that own no group, and a host tab keyed by a group name replaces that group's tab. **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first tab in the strip — the first group unless a host tab is placed before it, and a host tab on a page whose tabs are all host tabs. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order, and from **T4** every drawn tab's key in strip order. |
 | `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). **Its geometry is invariant under the selection from W13.** **From W14 the buttons and the content panel are acquired from `LibKa0s-Pool-1.0` pools held on the `ctx` rather than created per click** — see [What changed at this version](#what-changed-at-this-version). Returns the buttons in tab order, or nil having drawn nothing. |
 | `SubTabStrip(ctx, parent, spec)` | **W13** | A **secondary** strip drawn inside the scroll as ordinary page content, parented to a frame the host supplies (options-ui-§13). Same `spec` shape as `TabStrip`, same selection-invariant pitch, its own ledger (`ctx.__subTabKids`) released on entry, and **no** content panel and **no** `SetChromeHeight` — the page already has both. **Not pooled at W14**, unlike the primary strip: its parent is a frame AceGUI takes back, so its buttons are unparented on release and cannot be recycled. Returns the buttons in tab order **and** the total height the strip occupies, so the host can size the frame it handed in, or nil having drawn nothing. The selection is the host's state: `spec.value` and `spec.onSelect` are the whole contract, and the convention for the collection is `ctx.activeSubTab` as a table keyed by the primary tab's key, session-only and never persisted. |
+| `NavRail(ctx, spec)` | **N1** | The pinned nav rail, the first level of a page that edits one instance out of many (options-ui-§13): `spec = { entries = { { key, label, tooltip } }, value, onSelect, width }`, `width` 120 by default. Draw after `PageBanner`, before `TabStrip`. Records `ctx.railWidth`, which `lib.__railInset` turns into the inset the strip, the content panel and the scroll start at. Entries pooled per page, released on every call; the selected entry disabled; a click refused in combat by the library; `onSelect` pcall'd. The selection is the host's, as `SubTabStrip`'s is. Returns the entry buttons in rail order, or nil having drawn nothing (an empty list releases the rail, `railWidth` 0). |
 | `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip, action }`; `action = { text, tooltip, onClick }` (**T4**) draws a `Button` in the band's right half for the picker+create band, pcall'd, refused in combat, and Released like the dropdown. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). From **T4** the previous render's dropdown is Released to AceGUI once the new one exists, rather than hidden and kept. **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing, and the action's `Button` as a second value when there is one. |
 | `PageHeader(ctx, spec)` | **W13** | A host-drawn block pinned in the same band, for controls that apply to **every** tab (options-ui-§14). `spec = { height, build = function(ctx, frame) end, divider = <default true> }`. Anchors a `Frame` across `ctx.chrome`, ledgers it, draws the hairline unless told not to, records the widened band in `ctx.__bannerHeight` via `__bannerBand`, reserves it with `SetChromeHeight`, then calls `build` inside a `pcall` — a raising builder is reported and costs the block, not the page. From **T4** the frame comes from a per-page pool of one, so every render of one page is handed **the same frame**; what `build` draws into it is the host's to release. **A page draws at most one chrome block**: this and `PageBanner` both release the chrome band and both write `ctx.__bannerHeight`, so the second call replaces the first. **Draw it before `TabStrip`.** Returns the frame, or nil having drawn nothing. |
 | `SetChromeHeight(ctx, height)` | **O10** | Reserve `height` pixels of pinned chrome above the scroll, and re-anchor a live scroll to match. Idempotent. `height <= 0` hides `ctx.chrome`. Call only after the wrap of whatever is being reserved is known. |
@@ -2039,11 +2075,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 25.31.5.7.4.1
-
-`Options.lua` moves to minor **25** and `OptionsTabs.lua` to **5**, and a sixth file joins the
-major, `OptionsNav.lua` at minor **1**, so the key gains a component. One instance member is added,
-`O.NavRail`, and one library-level function, `lib.__railInset`. No existing member, descriptor
-field or row field changes. A page that draws no rail is laid out exactly as at this version. A host
-whose degradation stub is pinned by name adds a `NavRail` no-op.
