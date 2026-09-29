@@ -42,7 +42,9 @@ local function newStore(names, current)
   return s
 end
 
-local NAMES = { "Default", "raid", "My Main", "Alt" }
+-- `alpha` is here for the ordering cases: case-insensitively it sorts first, in byte order it sorts
+-- after every capitalized name, so a plain `table.sort` would move it and redden the list pins.
+local NAMES = { "Default", "raid", "My Main", "Alt", "alpha" }
 
 local function host(store, overrides)
   local o = { profiles = function() return store end }
@@ -59,6 +61,7 @@ end
 -- The list as it prints under Default being current: case-insensitive order, two-space rows.
 local LIST = {
   "Profiles",
+  "  alpha",
   "  Alt",
   "  Default (current)",
   "  My Main",
@@ -304,7 +307,7 @@ end)
 
 test("sl profile: lib.ProfileNames answers the sorted names and the current one", function()
   local names, current = slash.ProfileNames(newStore(NAMES, "raid"))
-  assertEqual(table.concat(names, ","), "Alt,Default,My Main,raid")
+  assertEqual(table.concat(names, ","), "alpha,Alt,Default,My Main,raid")
   assertEqual(current, "raid")
 end)
 
