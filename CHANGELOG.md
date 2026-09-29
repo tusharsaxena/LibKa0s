@@ -68,6 +68,10 @@ member manifest, `docs/api/Slash/members-17.json`, gains `ProfileNames`; `CliPro
 `ProfileSwitch` are instance members and a host's Slash degradation stub carries `CliProfile`,
 printing the library-absent line (the document's *The degradation stub*).
 
+Release gate (`docs/automated-tests/20260929-092750/`): lint pass, 0/0 in 123 files;
+tests pass, 1778 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.62.0 — 2026-09-26
 
 Versions in this release: **Options minor 26**, **OptionsWidgets minor 32**, **OptionsTabs
