@@ -760,18 +760,40 @@ moves on re-vendor.
 
 ## Moving to version 17
 
-**Take it; nothing moves unless a host wires the profile verb.** Version 17 adds the `profile` verb's
-behavior: the descriptor field `profiles`, the instance members `CliProfile` and `ProfileSwitch`,
-`lib.ProfileNames` and nine `PROFILE_*` strings. `lib.LIVE_VERBS` is unchanged, `profile` is not
-reserved, and no `NEEDS_*` floor moves. The member manifest gains `ProfileNames`.
+**Take it; no runtime behavior moves unless a host wires the profile verb, but a by-name parity gate
+does.** Version 17 adds the `profile` verb's behavior: the descriptor field `profiles`, the instance
+members `CliProfile` and `ProfileSwitch`, `lib.ProfileNames` and nine `PROFILE_*` strings.
+`lib.LIVE_VERBS` is unchanged, `profile` is not reserved, and no `NEEDS_*` floor moves. The member
+manifest gains `ProfileNames`.
 
 What a host owes on the re-vendor:
 
-- **Nothing, if it does not ship a `profile` verb.**
-- **To ship one:** pass `profiles = function() return NS.db end`, register a
+- **A Slash degradation stub checked by the kit's by-name form against the live dispatcher** —
+  `T.assertSurfaceParity(<stub>, "LibKa0s-Slash-1.0", ignore)`, with the runner mapping that name to
+  the dispatcher instance through `Kit.setSurfaceSource` — **goes red on the re-vendor alone**,
+  whether or not the host ships a `profile` verb. The by-name form compares the stub against
+  `Kit.publicMembers` of the live instance the runner registered, not against the member manifest,
+  and that instance now has two more public functions:
+
+  ```text
+  LibKa0s-Slash-1.0: the degraded stub diverges from the live surface in 2 place(s) —
+  CliProfile is missing (live: function); ProfileSwitch is missing (live: function)
+  ```
+
+  The stub carries **both** `CliProfile` and `ProfileSwitch`, each printing the library-absent line
+  (route (b) of version 17's *The degradation stub*), or names the one it does not carry in that
+  call's `ignore` list. `ProfileSwitch` is the one hosts miss: a stub whose own `profile` row only
+  reaches `CliProfile` still owes it, or an ignore entry saying so. Measured on 2026-09-29 on all
+  eleven consumers, each consumer's `master` cloned into a scratch directory with the v1.63.0
+  payloads dropped in and its provenance line moved: six go red in exactly this case and nowhere
+  else — AbsorbTracker, AuraMaster, KickCD, PartyFrameEnhanced, PrettyChat and WhatGroup, one
+  failed case each. The other five stay green: BankLedger, ConsumableMaster, LootHistory and
+  PanelMaster compare two tables they build themselves (the four-argument form, the host's own
+  `NS.Slash` on both arms), and MultiMeters has no Slash parity case.
+- **To ship the verb:** pass `profiles = function() return NS.db end`, register a
   `{ "profile", <description>, function(rest) cli:CliProfile(rest) end }` row, and add `"profile"`
   to `liveVerbs` if it should answer while disabled.
-- **A degradation stub** that the `profile` row reaches carries `CliProfile`, printing the
-  library-absent line; a stub of the lib-level table carries `ProfileNames`.
+- **A stub of the lib-level table** checked by name against the library table carries
+  `ProfileNames`, for the same reason. None of the eleven consumers has one for Slash.
 
 Everything else in this document is unchanged at version 17.

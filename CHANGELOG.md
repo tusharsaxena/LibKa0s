@@ -22,8 +22,9 @@ Ka0s WoW Addon Standard **v2.69.0**.
 
 This is the library's half of the 2026-09-29 `profile` verb rollout (owner decision D1: the verb's
 logic is shared here, and each addon registers its own `profile` row and routes it to the library).
-A consumer re-vendors both payloads whole, rolls its provenance line, and wires the verb in its own
-item.
+A consumer re-vendors both payloads whole, rolls its provenance line, adds `CliProfile` and
+`ProfileSwitch` to its Slash degradation stub when a by-name parity case checks it (below), and
+wires the verb in its own item.
 
 ### Slash minor 17: the profile verb
 
@@ -65,8 +66,18 @@ did-you-mean, unknown never creating, the combat refusal, a missing `profiles` f
 answering nil or missing a method, the `L` override, and no trailing colon on any line. Documented
 in [the version 17 document](docs/api/Slash/version-17-docs.md); version 16 is Superseded. The
 member manifest, `docs/api/Slash/members-17.json`, gains `ProfileNames`; `CliProfile` and
-`ProfileSwitch` are instance members and a host's Slash degradation stub carries `CliProfile`,
-printing the library-absent line (the document's *The degradation stub*).
+`ProfileSwitch` are instance members, and a host's Slash degradation stub carries **both**, each
+printing the library-absent line (the document's *The degradation stub*), or names the one it does
+not carry in its parity case's `ignore` list.
+
+**The re-vendor alone turns one test red in six consumers.** A suite that runs the kit's by-name
+`T.assertSurfaceParity(<stub>, "LibKa0s-Slash-1.0", ignore)` compares the stub against
+`Kit.publicMembers` of the live dispatcher instance its runner registered with
+`Kit.setSurfaceSource`, not against the member manifest, so it fails with `CliProfile is missing
+(live: function); ProfileSwitch is missing (live: function)` until the stub carries both, whether or
+not the host wires the verb. Measured on 2026-09-29 with the payloads dropped into a scratch clone of
+each consumer's `master`: AbsorbTracker, AuraMaster, KickCD, PartyFrameEnhanced, PrettyChat and
+WhatGroup fail that one case; the other five stay green (the document's *Compatibility*).
 
 Release gate (`docs/automated-tests/20260929-092750/`): lint pass, 0/0 in 123 files;
 tests pass, 1778 tests, 0 failed; complexity pass, 0 over CCN 15. Perf

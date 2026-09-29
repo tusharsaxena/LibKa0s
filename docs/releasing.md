@@ -81,8 +81,11 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    ```
 
    That writes `docs/api/<Major>/members-<version-key>.json` for every major — the public surface as
-   data, which is what the eleven addons' degradation stubs are checked against by
-   `Kit.assertSurfaceParity(stub, majorName)`. It is a generated file and never hand-edited, and
+   data, which is what a stub author reads to learn what a stub of the lib-level table owes. It is
+   not what `Kit.assertSurfaceParity(stub, majorName)` checks: that reads `Kit.publicMembers` of the
+   live surface the consumer's runner registers with `Kit.setSurfaceSource` — the library table, or,
+   for most Slash and Options stubs, the instance `lib:New(descriptor)` returned, whose members no
+   manifest lists (see *Where v1.63.0 stands* below). It is a generated file and never hand-edited, and
    `tests/test_versioning.lua` regenerates and compares it on every run, so a bumped minor whose
    manifest has not been written is red for the same reason a bumped minor with no document is.
 6. **Regenerate the case list**: `lua tests/run.lua --list` into `docs/test-cases.md`, keeping CRLF
@@ -451,8 +454,20 @@ remains unadopted.**
 is added. It is the library's half of the 2026-09-29 `profile` verb rollout: the descriptor field
 `profiles`, `Sl:CliProfile`, `Sl:ProfileSwitch`, `lib.ProfileNames` and nine `PROFILE_*` strings,
 with `profile` kept out of `lib.LIVE_VERBS`. What a consumer owes is the whole-folder copy of both
-payloads and the provenance line; wiring the verb (a COMMANDS row, the `profiles` field, `"profile"`
-in its `liveVerbs`, `CliProfile` on its degradation stub) is its own item. Built on
+payloads and the provenance line, **and, in six of the eleven, two members on its Slash degradation
+stub in the same commit**. A consumer whose suite runs the kit's by-name
+`T.assertSurfaceParity(<stub>, "LibKa0s-Slash-1.0", ignore)` against the live dispatcher goes red
+on the copy alone, whether or not it wires the verb: the by-name form reads `Kit.publicMembers` of
+the live instance its runner registered with `Kit.setSurfaceSource`, not the member manifest, and
+that instance now carries `CliProfile` and `ProfileSwitch`. The stub carries **both**, each
+printing the library-absent line, or names `ProfileSwitch` in that call's `ignore` list. Measured on
+2026-09-29 with each consumer's `master` cloned into a scratch directory and the v1.63.0 payloads
+dropped in: AbsorbTracker, AuraMaster, KickCD, PartyFrameEnhanced, PrettyChat and WhatGroup each fail
+that one case (`CliProfile is missing (live: function); ProfileSwitch is missing (live: function)`)
+and nothing else; BankLedger, ConsumableMaster, LootHistory, MultiMeters and PanelMaster stay green,
+because their Slash parity case compares two tables they build themselves, or they have none. The
+Slash version-17 document's *Compatibility* section has the detail. Wiring the verb itself (a
+COMMANDS row, the `profiles` field, `"profile"` in its `liveVerbs`) is its own item. Built on
 `feat/2026-09-29-smoke-and-profile`, and **not merged**: steps 1–7 are done on that branch, the tag
 `v1.63.0` exists **locally only**, on it, and the tag's push and the branch's merge wait on the
 owner's go-ahead. **Step 8 is every consumer**, one re-vendor item each in the rollout.

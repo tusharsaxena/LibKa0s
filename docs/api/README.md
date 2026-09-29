@@ -31,10 +31,15 @@ never hand-edited, and regenerated and compared on every run by
 It exists because eleven addons in this collection hand-write a degradation stub of a LibKa0s surface,
 and until now the only way a stub author could answer "what am I obliged to carry?" was to read the
 library's source at whatever moment they read it. That is how AbsorbTracker's Options stub came to
-omit `SetRenderer` with every suite in that repository green. The kit's
-`Kit.assertSurfaceParity(stub, majorName)` enforces exactly this list, and
-`Kit.publicMembers` is the one rule both it and the generator apply: no `MAJOR`, no `MINOR`, no
-`MODULES`, no `__`-prefixed internals — a stub owes none of those.
+omit `SetRenderer` with every suite in that repository green. `Kit.publicMembers` is the one rule
+both the generator and the kit's `Kit.assertSurfaceParity(stub, majorName)` apply: no `MAJOR`, no
+`MINOR`, no `MODULES`, no `__`-prefixed internals — a stub owes none of those. The assertion does not
+read this file, though. It applies that rule to the live surface the consumer's runner registers
+with `Kit.setSurfaceSource`, so for a stub of the library table it enforces this list, and for a
+stub of an **instance** — what `lib:New(descriptor)` returned, the usual Slash and Options case — it
+enforces the instance's members, which no manifest lists. An instance member added in a new minor
+(Slash 17's `CliProfile` and `ProfileSwitch`) turns such a stub's parity case red on re-vendor while
+this file shows no instance change at all.
 
 It is keyed by version for the same reason the document is. A single `members.json` describing only
 HEAD answers the wrong question for every consumer that has not re-vendored yet, which is the whole

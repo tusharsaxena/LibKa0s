@@ -779,10 +779,14 @@ the library's composers build, and on a library-absent load there is no row. The
 deviation. Every other verb the stub cannot serve — `get`, `set`, `list` with no schema behind them
 — prints the library-absent line for itself in the same way.
 
-**From version 17 the stub carries `CliProfile`**, because the live instance has it and a host's
-`profile` row calls it. With the library absent there is no store adapter to trust, so the stub's
-`CliProfile` takes route (b): it prints the library-absent line for `<slash> profile` and switches
-nothing. A host whose own sub-tree calls `ProfileSwitch` carries that member on route (b) as well.
+**From version 17 the stub carries `CliProfile` and `ProfileSwitch`**, because the live instance
+has both. With the library absent there is no store adapter to trust, so both take route (b): each
+prints the library-absent line for `<slash> profile` and switches nothing. A stub checked by the
+kit's by-name form, `T.assertSurfaceParity(<stub>, "LibKa0s-Slash-1.0", ignore)`, owes both
+whether or not its own `profile` row or sub-tree calls them, because that form compares the stub
+against every public function on the live dispatcher instance the runner registered. A host whose
+stub never reaches `ProfileSwitch` may name it in the call's `ignore` list instead of carrying it;
+see [Compatibility](#compatibility) for what the re-vendor alone does to that case.
 
 A minimal stub, with route (b) throughout:
 
@@ -810,8 +814,9 @@ end
 -- a composed-row verb on route (b)
 local function degradedEnable() Print(UNAVAILABLE:format(SLASH .. " enable")) end
 
--- the profile verb on route (b), from version 17
+-- the profile verb on route (b), from version 17; both members, because the live instance has both
 function Sl:CliProfile() Print(UNAVAILABLE:format(SLASH .. " profile")) end
+function Sl:ProfileSwitch() Print(UNAVAILABLE:format(SLASH .. " profile")); return false end
 ```
 
 ## The `L` trap
@@ -828,12 +833,42 @@ correct on every minor.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
-**What is added at version 17 is the profile verb, and nothing moves.** A descriptor field
-(`profiles`), two instance members (`CliProfile`, `ProfileSwitch`), one lib-level function
-(`ProfileNames`) and nine strings. A host that passes no `profiles` and registers no `profile` row
-sees no change on re-vendor; `lib.LIVE_VERBS` is unchanged. A host's degradation stub gains
-`CliProfile` when its COMMANDS row calls it, and a stub of the lib-level table gains `ProfileNames`,
-since `Kit.assertSurfaceParity` reads the member manifest.
+**What is added at version 17 is the profile verb, and no runtime behavior moves; one kind of
+parity gate does.** A descriptor field (`profiles`), two instance members (`CliProfile`,
+`ProfileSwitch`), one lib-level function (`ProfileNames`) and nine strings. A host that passes no
+`profiles` and registers no `profile` row sees no change in the client on re-vendor, and
+`lib.LIVE_VERBS` is unchanged.
+
+**Its test suite can go red on the re-vendor alone.** The kit's by-name form,
+`T.assertSurfaceParity(<stub>, "LibKa0s-Slash-1.0", ignore)`, does not read the member manifest. It
+resolves the live half through the surface source the runner registered with
+`Kit.setSurfaceSource`, and compares the stub against `Kit.publicMembers` of that live table. A
+runner that maps the name to the Slash **instance** (`lib:New(descriptor)`'s return) — the usual
+shape, because a host's stub mirrors the instance — now compares against an instance with two more
+public functions, and a stub that has neither fails:
+
+```text
+LibKa0s-Slash-1.0: the degraded stub diverges from the live surface in 2 place(s) —
+CliProfile is missing (live: function); ProfileSwitch is missing (live: function)
+```
+
+It stays red until the stub carries **both** members (route (b), see
+[The degradation stub](#the-degradation-stub)) or the call's `ignore` list names the one it does
+not carry. This does not depend on whether the host ships a `profile` verb or which member its
+`profile` row calls. The member manifest, `members-17.json`, lists only the lib-level table, so it
+gains `ProfileNames` and neither instance member; a runner whose source answers the **library
+table** for the name (`Kit.setSurfaceSource(mocks.LibStub)`) holds a lib-level stub to
+`ProfileNames` the same way.
+
+Measured on 2026-09-29 on all eleven consumers: each consumer's `master`, cloned into a scratch
+directory, with the v1.63.0 payloads dropped in (`LibKa0s/` into `libs/LibKa0s/`, `testkit/` into
+`tests/_kit/`) and the provenance line moved, then `lua tests/run.lua`. Six go red in this case and
+nowhere else, one failed case each, with the message above: AbsorbTracker, AuraMaster, KickCD,
+PartyFrameEnhanced, PrettyChat and WhatGroup, all of which check the dispatcher instance by name.
+Five stay green: BankLedger, ConsumableMaster, LootHistory and PanelMaster compare two tables they
+build themselves (the four-argument form, the host's own Slash table on both arms), and MultiMeters
+has no Slash parity case. No consumer checks a lib-level Slash stub by name, so none goes red on
+`ProfileNames`.
 
 **What moves at version 16 is the default live set, by one verb.** `diagnostics` joins
 `lib.LIVE_VERBS`, so a disabled host that ships the verb and passes no `liveVerbs` (or one built on
