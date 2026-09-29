@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.62.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.63.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -250,7 +250,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.62.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.63.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -446,7 +446,18 @@ Core, DebugLog, Slash, Options, Media, Env, Pool and Perf. It does not look up W
 is the host that found the four kit gaps revision 16 closes (#27–#30). **No addon on the standard
 remains unadopted.**
 
-**Where v1.62.0 stands (2026-09-26).** Three LibStub minors move and four files are added:
+**Where v1.63.0 stands (2026-09-29).** One LibStub minor moves: `Slash.lua` 17
+(`LibKa0s-Slash-1.0` 17), and the kit stays at **revision 31**; no `NEEDS_*` floor rises and no file
+is added. It is the library's half of the 2026-09-29 `profile` verb rollout: the descriptor field
+`profiles`, `Sl:CliProfile`, `Sl:ProfileSwitch`, `lib.ProfileNames` and nine `PROFILE_*` strings,
+with `profile` kept out of `lib.LIVE_VERBS`. What a consumer owes is the whole-folder copy of both
+payloads and the provenance line; wiring the verb (a COMMANDS row, the `profiles` field, `"profile"`
+in its `liveVerbs`, `CliProfile` on its degradation stub) is its own item. Built on
+`feat/2026-09-29-smoke-and-profile`, and **not merged**: steps 1–7 are done on that branch, the tag
+`v1.63.0` exists **locally only**, on it, and the tag's push and the branch's merge wait on the
+owner's go-ahead. **Step 8 is every consumer**, one re-vendor item each in the rollout.
+
+**Where v1.62.0 stood (2026-09-26).** Three LibStub minors move and four files are added:
 `Options.lua` 26, `OptionsWidgets.lua` 32 and `OptionsTabs.lua` 6, and the new `OptionsRegistry.lua`,
 `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` at 1 each (`LibKa0s-Options-1.0`
 26.1.32.1.1.6.1.7.4.1, twenty-seven files now), and the kit moves to **revision 31**; no `NEEDS_*`
@@ -678,11 +689,11 @@ The kit stays at **revision 22**, so `tests/test_vendor_sync.lua` pairs the two 
 v1.42.0 tag exactly as it did at v1.41.0 — the kit bytes are identical, but both are resolved from
 the tag the provenance line names, so both are copied.
 
-**Every step 8 through v1.61.0 is done.** All eleven consumers bundle **v1.61.0** on `master`, and
-each `CLAUDE.md` provenance line says so, re-measured on 2026-09-26 for v1.62.0 against each
-consumer's own `master`. What is **not** done is v1.62.0's step 8, which is every consumer, one
-`<P>-ATS-RV` item each on its `feat/2026-09-26-automated-tests-sweep` branch (see *Where v1.62.0
-stands* above).
+**Every step 8 through v1.62.0 is done.** All eleven consumers bundle **v1.62.0** on `master`, and
+each `CLAUDE.md` provenance line says so, re-measured on 2026-09-29 for v1.63.0 against each
+consumer's own `master`. What is **not** done is v1.63.0's step 8, which is every consumer, one
+re-vendor item each on its `feat/2026-09-29-smoke-and-profile` branch (see *Where v1.63.0 stands*
+above).
 
 This paragraph says where the consumers stand as of the release being prepared, so it is stale the
 moment it is not rewritten. **Rewrite it at the next release**, in the same commit as step 7's other

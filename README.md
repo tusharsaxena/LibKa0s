@@ -42,7 +42,8 @@ LibStub major, and fifteen of them ship today:
 - `LibKa0s-DebugLog-1.0` is the on-screen debug console: the window, the copy window, the two
   formatters, the buffer, and the seam that turns logging on and off.
 - `LibKa0s-Slash-1.0`: the slash dispatcher, the help renderer, the schema CLI
-  (`list`/`get`/`set`/`reset`/`resetall`/`version`) and the type-aware value parser.
+  (`list`/`get`/`set`/`reset`/`resetall`/`version`), the shared `profile` verb and the type-aware
+  value parser.
 - `LibKa0s-Launcher-1.0` builds the minimap button and the broker plugin as ONE LibDataBroker
   object, registered twice. Neither broker library is a dependency.
 - `LibKa0s-Options-1.0` has the most files: ten, under one major. It holds the Blizzard settings-canvas
@@ -95,7 +96,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL). All of it sits inside the payload, along with the paths that reach it and the LibSharedMedia registration. | `Media.lua`, `media/` | [4](docs/api/Media/version-4-docs.md) |
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops, shared process-wide across addons. Then `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, but no row content at all. And `DragHandle`, the labeled strip with a help mark (and optionally a close mark) that a player drags a movable frame by. Widgets takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsDragHandle.lua` | [10.3](docs/api/Widgets/version-10.3-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console (movable window, color-coded log, copy box, and the one seam that turns logging on and off), plus the diagnostics report a player sends with a bug report. The library writes the markers, the identity header and the cap, and runs each section an addon supplies under its own pcall. | `DebugLog.lua`, `DebugLogDiagnostics.lua` | [14.1](docs/api/DebugLog/version-14.1-docs.md) |
-| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser. In other words, everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [16](docs/api/Slash/version-16-docs.md) |
+| `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser. In other words, everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [17](docs/api/Slash/version-17-docs.md) |
 | `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice: with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. It has one `OnClick`, implementing launcher-§2. Left-click opens the settings panel; right-click opens the client's context menu of the toggles the host supplies (Enabled, Locked, Test mode, Show window). There is one library-drawn status tooltip (launcher-§1), and LibDBIcon's own `minimap` table comes from the host. Neither broker library is a dependency. Both are resolved with `LibStub(…, true)` at register time, and every degradation is named, not raised. | `Launcher.lua` | [4](docs/api/Launcher/version-4-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, the nav rail a page that edits one instance out of many may lead with, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block. It also carries the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`, `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua` | [26.1.32.1.1.6.1.7.4.1](docs/api/Options/version-26.1.32.1.1.6.1.7.4.1-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [13.5](docs/api/Perf/version-13.5-docs.md) |
@@ -217,11 +218,11 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.62.0**, which moves one major's minors (Options, which also gains the files `OptionsRegistry`, `OptionsIds`, `OptionsIdList` and `OptionsCombat`) and adds no major: `Core = { Core = 8 }`,
+different vendored copy of each. As of **v1.63.0**, which moves one major's minor (Slash) and adds no major: `Core = { Core = 8 }`,
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 2 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
-`Widgets = { Widgets = 10, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 14, DebugLogDiagnostics = 1 }`, `Slash = { Slash = 16 }`,
+`Widgets = { Widgets = 10, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 14, DebugLogDiagnostics = 1 }`, `Slash = { Slash = 17 }`,
 `Launcher = { Launcher = 4 }`,
 `Options = { Options = 26, OptionsRegistry = 1, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 6, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }`,
 `Perf = { Perf = 13, PerfPanel = 5 }`. Those numbers move every release, so read them from the top of

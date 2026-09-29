@@ -758,6 +758,39 @@ badge and any count quoted in the docs must agree with it.
 - sl refusal: CliReset prints NO_DEFAULT when applyDefault answers exactly false
 - sl refusal: CliReset echoes when applyDefault answers nil or true
 
+### test_slash_profile.lua (30)
+
+- sl profile: every string is a lib.STRINGS key, worded as the spec gives it
+- sl profile: `profile` is neither live while disabled nor added to lib.LIVE_VERBS
+- sl profile: bare `profile` lists every profile sorted case-insensitively, current marked
+- sl profile: whitespace alone, and an empty pair of quotes, list rather than switch
+- sl profile: the list header is colored like the settings list's, and carries no colon
+- sl profile: a store that omits the current profile from GetProfiles still lists it
+- sl profile: an existing name switches, once, and says so
+- sl profile: surrounding double quotes are stripped, and the name inside is trimmed
+- sl profile: surrounding single quotes are stripped too
+- sl profile: inner spaces are kept, so an unquoted name with a space still switches
+- sl profile: only ONE matching pair is stripped; a lone or mismatched quote is part of the name
+- sl profile: case is kept — `alt` is not `Alt`, and is refused with a did-you-mean
+- sl profile: the current profile answers Already, and SetProfile is not called
+- sl profile: an unknown name is refused with the list, and nothing is created
+- sl profile: did-you-mean only when exactly one stored name matches case-insensitively
+- sl profile: in combat an existing name is refused and SetProfile is not called
+- sl profile: combat does not stop the list, Already, or an unknown-name refusal
+- sl profile: a client with no InCombatLockdown switches
+- sl profile: a host with no `profiles` field prints the unavailable line and nothing else
+- sl profile: a `profiles` function answering nil is the same as no field
+- sl profile: a store missing any of the three methods is unavailable, and never half-called
+- sl profile: the store is asked for at call time, never cached at New
+- sl profile: lib.ProfileNames answers the sorted names and the current one
+- sl profile: lib.ProfileNames breaks a case-only tie deterministically
+- sl profile: lib.ProfileNames on no store, or a store without methods, answers an empty list
+- sl profile: ProfileSwitch takes an already-parsed name, keeping its quotes, and answers true on a switch
+- sl profile: ProfileSwitch with no store prints the unavailable line and answers false
+- sl profile: through OnSlash the name keeps its case and its quotes are stripped
+- sl profile: the descriptor's L reaches every profile string
+- sl profile: no line any path prints ends in a colon
+
 ### test_launcher.lua (45)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
@@ -1984,6 +2017,7 @@ badge and any count quoted in the docs must agree with it.
 | test_slash_parse.lua | 24 |
 | test_slash_disabled.lua | 16 |
 | test_slash_refusal.lua | 7 |
+| test_slash_profile.lua | 30 |
 | test_launcher.lua | 45 |
 | test_options.lua | 85 |
 | test_options_bulk.lua | 11 |
@@ -2030,4 +2064,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 7 |
-| **Total** | **1748** |
+| **Total** | **1778** |

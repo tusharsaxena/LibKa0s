@@ -10,6 +10,64 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.63.0 — 2026-09-29
+
+Versions in this release: **Slash minor 17** (`LibKa0s-Slash-1.0` 17). Every other file is
+unchanged from v1.62.0: `Core` 8, `Env` 1, `Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3,
+`Item` 2, `Media` 4, `Widgets` 10 and `WidgetsDragHandle` 3 (key 10.3), `DebugLog` 14 and
+`DebugLogDiagnostics` 1 (key 14.1), `Launcher` 4, `Options` key 26.1.32.1.1.6.1.7.4.1, `Perf` 13 and
+`PerfPanel` 5 (key 13.5), and the test kit stays at **revision 31**. No `NEEDS_*` floor rises and no
+major is added, so the library is still **fifteen majors across twenty-seven files**. Built to the
+Ka0s WoW Addon Standard **v2.69.0**.
+
+This is the library's half of the 2026-09-29 `profile` verb rollout (owner decision D1: the verb's
+logic is shared here, and each addon registers its own `profile` row and routes it to the library).
+A consumer re-vendors both payloads whole, rolls its provenance line, and wires the verb in its own
+item.
+
+### Slash minor 17: the profile verb
+
+Two consumers had hand-written profile verbs and they disagreed. AbsorbTracker's `use <name>` called
+`SetProfile` with no existence check, so a typo silently created a profile; PartyFrameEnhanced's
+refused an unknown name. Nine had none. The behavior now ships once:
+
+- **Descriptor field `profiles`**: a function answering the host's profile store, asked at call
+  time. Duck-typed on AceDB-3.0's shape (`GetProfiles(tbl) -> tbl, n`, `GetCurrentProfile()`,
+  `SetProfile(name)`); the library does not require AceDB. Absent, answering nil, or a store missing
+  a method: `CliProfile` prints `PROFILE_UNAVAILABLE` and does nothing else.
+- **`Sl:CliProfile(rest)`**: `rest` is trimmed, one pair of matching surrounding quotes is stripped,
+  and it is trimmed again; case and inner spaces are kept. Empty lists the profiles (header
+  `Profiles`, no trailing colon; one row each, sorted case-insensitively, the current one marked
+  `(current)`; then `<slash> profile <name> switches profile`). Otherwise the name goes to
+  `ProfileSwitch`.
+- **`Sl:ProfileSwitch(name)`**, for an already-parsed name, answering `true` only when it switched:
+  the current profile prints `Already on profile '%s'.`; an existing profile (exact match) switches
+  and prints `Switched to profile '%s'.`, unless `InCombatLockdown()` answers true, which prints
+  `Can't switch profiles in combat.`; an unknown name prints `No profile named '%s'.`, then
+  `Did you mean '%s'?` when exactly one stored name matches case-insensitively, then the list. An
+  unknown name is never created. AbsorbTracker's and PartyFrameEnhanced's `profile use <name>`
+  sub-verbs route here.
+- **`lib.ProfileNames(store)`** → the names sorted case-insensitively (case-sensitive tie-break) and
+  the current one, which is listed even when the store's `GetProfiles` leaves it out; `{}, nil` for
+  anything that is not a profile store.
+- **Nine `lib.STRINGS` keys**, `PROFILE_UNAVAILABLE`, `PROFILE_LIST_HEADER`, `PROFILE_CURRENT_MARK`,
+  `PROFILE_HINT`, `PROFILE_ALREADY`, `PROFILE_COMBAT`, `PROFILE_SWITCHED`, `PROFILE_UNKNOWN` and
+  `PROFILE_DID_YOU_MEAN`, reachable through the descriptor's `L`. Every line goes through the host's
+  tagged `print`. The library logs nothing: the switch's one debug line is the host's profile
+  handler's (`debug-logging-§10`).
+- **`profile` is not added to `lib.LIVE_VERBS` and is not reserved.** A host that wants it live while
+  disabled widens its own `liveVerbs`, so the thirteen-verb pins several consumers hand-copied stay
+  green.
+
+The cases are a new suite, `tests/test_slash_profile.lua` (30 cases): quotes stripped, case kept,
+spaces kept, list order and the current mark, already-current, unknown with and without a
+did-you-mean, unknown never creating, the combat refusal, a missing `profiles` field, a store
+answering nil or missing a method, the `L` override, and no trailing colon on any line. Documented
+in [the version 17 document](docs/api/Slash/version-17-docs.md); version 16 is Superseded. The
+member manifest, `docs/api/Slash/members-17.json`, gains `ProfileNames`; `CliProfile` and
+`ProfileSwitch` are instance members and a host's Slash degradation stub carries `CliProfile`,
+printing the library-absent line (the document's *The degradation stub*).
+
 ## v1.62.0 — 2026-09-26
 
 Versions in this release: **Options minor 26**, **OptionsWidgets minor 32**, **OptionsTabs
