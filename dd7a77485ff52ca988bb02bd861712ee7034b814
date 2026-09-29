@@ -1,0 +1,1 @@
+OK SP-LIB-01 PASS: S1 behavior matches spec; gate green (1778/0, luacheck 0/0 in 123); 21/21 Slash mutations killed in scratch; v17/v16 docs, api README, releasing.md and CHANGELOG carry the both-members stub guidance; annotated v1.63.0 on dd7a774, bundle 20260929-113624 (release 1.63.0, clean, all-pass, 0 CCN warnings, ANALYSIS present) measures parent ac61f37
