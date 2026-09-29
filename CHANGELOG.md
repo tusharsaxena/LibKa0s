@@ -79,7 +79,7 @@ not the host wires the verb. Measured on 2026-09-29 with the payloads dropped in
 each consumer's `master`: AbsorbTracker, AuraMaster, KickCD, PartyFrameEnhanced, PrettyChat and
 WhatGroup fail that one case; the other five stay green (the document's *Compatibility*).
 
-Release gate (`docs/automated-tests/20260929-111323/`): lint pass, 0/0 in 123 files;
+Release gate (`docs/automated-tests/20260929-113624/`): lint pass, 0/0 in 123 files;
 tests pass, 1778 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
