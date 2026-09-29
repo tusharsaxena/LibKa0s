@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260929-111323`](20260929-111323/) | `626aec0` | clean | 1.63.0 → 1.63.0 | 0/0 | 123 | 1777/1/1778 | skip | 36638 | 5099 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260929-092750`](20260929-092750/) | `576576e` | clean | 1.62.0 → 1.63.0 | 0/0 | 123 | 1777/1/1778 | skip | 36638 | 5099 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260926-193105`](20260926-193105/) | `5dc9f5d` | clean | 1.62.0 | 0/0 | 122 | 1747/1/1748 | skip | 36218 | 5050 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260926-182957`](20260926-182957/) | `e636e9d` | clean | 1.61.0 → 1.62.0 | 0/0 | 122 | 1747/1/1748 | skip | 36218 | 5050 | 6.6 | 2.0 | 15 | 0 | **green** |
@@ -120,10 +121,10 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **1778 cases** — 1777 passed, 0 failed, 1 skipped. The generated inventory
-[`20260929-092750/test-cases.md`](20260929-092750/test-cases.md) is the authority on which cases existed at this run;
+[`20260929-111323/test-cases.md`](20260929-111323/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1748 → 1778** since the previous run.
+Unchanged from the previous run at 1778 cases.
 
 **1 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -147,7 +148,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20260929-092750`](20260929-092750/) — **this run's measurement, not its diff.** Max CCN **15** across 5099
+Current as of [`20260929-111323`](20260929-111323/) — **this run's measurement, not its diff.** Max CCN **15** across 5099
 functions, **0** of them warned on; 10 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
