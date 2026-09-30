@@ -78,7 +78,7 @@ Kit.diagnostics = dofile("tests/fixture_diagnostics.lua")(_G.LK_TEST)
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_core_resize", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_reorderlist", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_debuglog_gates", "test_resize_windows", "test_slash", "test_slash_parse", "test_slash_disabled", "test_slash_refusal", "test_slash_profile", "test_slash_debug",
+    "test_core", "test_core_resize", "test_env", "test_compat", "test_lifecycle", "test_lifecycle_debug", "test_bus", "test_schema", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_reorderlist", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_debuglog_gates", "test_resize_windows", "test_slash", "test_slash_parse", "test_slash_disabled", "test_slash_refusal", "test_slash_profile", "test_slash_debug",
     "test_launcher", "test_atenable",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_choicegrid", "test_options_flow", "test_options_landing",

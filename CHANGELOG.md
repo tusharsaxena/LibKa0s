@@ -16,7 +16,8 @@ Versions in this release so far: **Slash minor 18** (`LibKa0s-Slash-1.0` 18), **
 and the new **DebugLogGates minor 1** (`LibKa0s-DebugLog-1.0` 18.2.1), **Options minor 27**,
 **OptionsRegistry minor 2**, **OptionsWidgets minor 33**, **OptionsIds minor 2**,
 **OptionsIdList minor 2**, **OptionsTabs minor 7** and **OptionsNav minor 2**
-(`LibKa0s-Options-1.0` 27.2.33.2.2.7.1.7.4.2), **Launcher minor 5** (`LibKa0s-Launcher-1.0` 5).
+(`LibKa0s-Options-1.0` 27.2.33.2.2.7.1.7.4.2), **Launcher minor 5** (`LibKa0s-Launcher-1.0` 5),
+**Lifecycle minor 3** (`LibKa0s-Lifecycle-1.0` 3).
 The release step of
 the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now because
 `tests/test_versioning.lua` holds every bump to its changelog entry.
@@ -71,6 +72,15 @@ the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now becau
   `debug`. Absent, the lines go to `debug` as before; with neither, nothing is written. No string,
   text or floor moves. Cases: `tests/test_atenable.lua`. See
   `docs/api/Launcher/version-5-docs.md` and `docs/api/DebugLog/version-18.2.1-docs.md`.
+
+### Lifecycle minor 3: stand-down and stand-up edges reach the host's debug log (G5)
+
+- **Descriptor field `debug(tag, message)`**, as Launcher's and Slash's. Each edge writes one
+  `Lifecycle` line before the host's callback runs, `stood down: added <key> (holds: <set>)` or
+  `stood up: released <key> (holds: none)`; a call that fires no edge writes nothing. The sink is
+  pcall'd so it cannot strand the latch between its recorded edge and the callback. Absent, nothing
+  is written. No member, string, chat line or floor moves. Cases: `tests/test_lifecycle_debug.lua`.
+  See `docs/api/Lifecycle/version-3-docs.md`.
 
 ## v1.64.0 — 2026-09-30
 

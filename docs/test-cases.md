@@ -172,6 +172,23 @@ badge and any count quoted in the docs must agree with it.
 - lifecycle: Hold and Release refuse a key that is not a non-empty string
 - lifecycle: two latches share nothing
 
+### test_lifecycle_debug.lua (14)
+
+- lc debug: Lifecycle is at minor 3
+- lc debug: the first hold writes one stand-down line with the hold and the set, before standDown
+- lc debug: the last release writes one stand-up line with the empty set, before standUp
+- lc debug: Set routes to the same lines as Hold and Release
+- lc debug: a full down-up-down cycle writes one line per edge, in order
+- lc debug: a second hold while down fires no edge and writes no line
+- lc debug: releasing one of two holds fires no edge and writes no line
+- lc debug: no-op calls write nothing (re-hold, release unheld, Reevaluate, PrintHolds)
+- lc debug: a raising standDown still leaves its line in the log
+- lc debug: a nested edge from inside standDown logs in the order the edges ran
+- lc debug: no debug in the descriptor stays silent and the edges still fire
+- lc debug: a non-function debug field is ignored, not called
+- lc debug: a sink that raises does not strand the latch half down
+- lc debug: PrintHolds' chat line is unchanged by the sink
+
 ### test_bus.lua (30)
 
 - bus: the major is registered and reports its file minor
@@ -2149,6 +2166,7 @@ badge and any count quoted in the docs must agree with it.
 | test_env.lua | 10 |
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 22 |
+| test_lifecycle_debug.lua | 14 |
 | test_bus.lua | 30 |
 | test_schema.lua | 73 |
 | test_schema_batch.lua | 22 |
@@ -2219,4 +2237,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1905** |
+| **Total** | **1919** |
