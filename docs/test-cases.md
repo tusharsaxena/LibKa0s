@@ -608,7 +608,7 @@ badge and any count quoted in the docs must agree with it.
 - dbgtime: BUFFER_SLACK is published, and is 128 at minor 14
 - dbgtime: Add reads BUFFER_SLACK at call time, like MAX_BUFFER
 
-### test_debuglog_diagnostics.lua (35)
+### test_debuglog_diagnostics.lua (41)
 
 - diag: the caps are pinned as literals, and the file registers under the major
 - diag: both markers carry the brand, and the end marker counts every line
@@ -645,12 +645,19 @@ badge and any count quoted in the docs must agree with it.
 - diag: DebugVerb answers false for anything else and writes no report
 - diag: the three instance members a consumer's DebugLog stub must carry
 - diag: without the secondary file an instance has no report methods
+- diag link: the console draws it when the instance has RunDiagnostics
+- diag link: its label is a module string the host's L overrides
+- diag link: not drawn when the diagnostics file did not install the report
+- diag link: anchored to the right edge of the Debug On/Off label, with a gap
+- diag link: orange at rest, brighter under the pointer, orange again after
+- diag link: a click runs the report with logging off, and leaves it off
 
-### test_resize_windows.lua (22)
+### test_resize_windows.lua (23)
 
 - resize console: the default size is still 700 x 344
 - resize console: it has a grip and bounds that keep the title bar's controls clear
 - resize console: the icon controls are narrower, and so is the minimum
+- resize console: the Diagnostics link widens the left group, and the minimum grows
 - resize console: a resize resyncs the scrollbar and the line counter, and keeps the buffer
 - resize console: the line counter sits clear of the grip
 - resize console: the size survives a hide and a show
@@ -2064,8 +2071,8 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_reorder.lua | 5 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
-| test_debuglog_diagnostics.lua | 35 |
-| test_resize_windows.lua | 22 |
+| test_debuglog_diagnostics.lua | 41 |
+| test_resize_windows.lua | 23 |
 | test_slash.lua | 70 |
 | test_slash_parse.lua | 24 |
 | test_slash_disabled.lua | 16 |
@@ -2118,4 +2125,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 7 |
-| **Total** | **1820** |
+| **Total** | **1827** |

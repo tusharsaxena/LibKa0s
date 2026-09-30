@@ -186,7 +186,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1](./DebugLog/version-15.1-docs.md) | `DebugLog.lua` 15 · `DebugLogDiagnostics.lua` 1 | v1.64.0 | **Current** |
+| [16.1](./DebugLog/version-16.1-docs.md) | `DebugLog.lua` 16 · `DebugLogDiagnostics.lua` 1 | v1.64.0 | **Current** |
+| [15.1](./DebugLog/version-15.1-docs.md) | `DebugLog.lua` 15 · `DebugLogDiagnostics.lua` 1 | none (superseded inside v1.64.0 before the tag was published) | Superseded |
 | [14.1](./DebugLog/version-14.1-docs.md) | `DebugLog.lua` 14 · `DebugLogDiagnostics.lua` 1 | v1.60.0 – v1.63.0 | Superseded |
 | [13](./DebugLog/version-13-docs.md) | `DebugLog.lua` 13 | v1.56.0 – v1.59.0 | Superseded |
 | [12](./DebugLog/version-12-docs.md) | `DebugLog.lua` 12 | v1.16.0 | Superseded |

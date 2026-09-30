@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 15.1
+# `LibKa0s-DebugLog-1.0` — version 16.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **15** · `DebugLogDiagnostics.lua` minor **1** |
-| Shipped in | never in a published tag: superseded inside v1.64.0, before the tag was published |
-| Status | Superseded |
-| Supersedes | [version 14.1](./version-14.1-docs.md) — a fixed 700 × 344 console |
-| Superseded by | [version 16.1](./version-16.1-docs.md) — a Diagnostics link in the title bar |
+| Files and minors | `DebugLog.lua` minor **16** · `DebugLogDiagnostics.lua` minor **1** |
+| Shipped in | v1.64.0 |
+| Status | **Current** |
+| Supersedes | [version 15.1](./version-15.1-docs.md) — no Diagnostics link in the title bar |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 15, DebugLogDiagnostics = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 16, DebugLogDiagnostics = 1 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared; a `Since` of
 **D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file this version adds. Minors 1 and 2
@@ -46,6 +46,32 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 `NewLibrary` if either is missing or below the minor it needs.
 
 ## What changed at this version
+
+**A Diagnostics link in the title bar.** `DebugLog.lua` moves to minor **16**; `DebugLogDiagnostics.lua`
+stays at **1**, and the floors do not move. `/<prefix> diagnostics` is a must-have in every addon
+(`debug-logging-§14`), so the console puts it one click away: an orange **Diagnostics** control beside
+the Debug On/Off toggle, top left.
+
+| | | Since |
+|---|---|---|
+| The link | Plain text, no button art: `GameFontNormalSmall`, orange at rest (`1, 0.5, 0`), `1, 0.72, 0.28` under the pointer, back to orange on leave. A click runs `D:RunDiagnostics()` with no argument, which is what the slash word runs: ungated, the report lands while logging is off, and the flag is never read or written. | **16** |
+| Its anchor | `LEFT` to the `RIGHT` of the toggle's font string (`frame.debugToggle`), 10 px, not to the toggle's 80-wide button, so the gap after the word holds for both `Debug: ON` and `Debug: OFF`. It sits one frame level above the toggle's button, which runs on under it. | **16** |
+| When it is drawn | Only when the instance has `RunDiagnostics`, which is when `DebugLogDiagnostics.lua` loaded and installed the report. Without it the title bar is version 15.1's. | **16** |
+| `lib.STRINGS.DIAGNOSTICS` | `"Diagnostics"`, the link's label, overridable through the descriptor's `L` as `COPY` and `CLEAR` are. | **16** |
+| `frame.diagnosticsButton` | The link, recorded on the console frame beside `frame.clearButton` and `frame.copyButton`, for a host's own tests; `nil` when it is not drawn. | **16** |
+
+**The minimum width counts it.** The left control group was the toggle's slot (8 + 80); with the link
+it runs to the link's right edge: 8, plus the wider of the two toggle words, plus the 10 px gap, plus
+the link's own width, and never less than the 8 + 80 slot. Each width is the font string's when the
+client can say and 7 px per byte otherwise, so headless it is 8 + 70 + 10 + 77 = 165, wider than
+either right group (118 with the words, 72 with the icons), and the minimum is
+`2 × (165 + 6) + title`. It is still never above 700.
+
+**What a host must change: nothing.** No instance member moves, so no degradation stub does; the
+member manifest gains nothing (`STRINGS` is one table). A host suite that pins the console's minimum
+width, or counts the frames the title bar builds, re-pins with the link in.
+
+## What changed at version 15.1
 
 **The console is resizable.** `DebugLog.lua` moves to minor **15**; `DebugLogDiagnostics.lua` stays at
 **1**, and the floors do not move (`NEEDS_CORE = 1`, `NEEDS_WIDGETS = 7`). No member, descriptor
@@ -470,6 +496,7 @@ version-8 windows down to the pixel, and every existing field behaves exactly as
 | `addonName` | The host's own addon FOLDER name, from its first vararg. Given it, both windows draw the collection's own art — `close`, `copy` and `clear` out of `LibKa0s-Media-1.0` — instead of a multiplication sign and two words. | **9** |
 | Icon title-bar controls | Copy and Clear become 18×18 icon buttons with 12px of art, matching the close control, so the three are one size and one pitch. **No tooltip** — see above; version 9 had one. | **9** |
 | `frame.clearButton` / `frame.copyButton` | The two controls, recorded on the frame the way `titleBarOffsets` and `titleText` already are — the only handle a host's test has on which of the two shapes it got. | **9** |
+| `frame.diagnosticsButton` | The Diagnostics link beside the toggle, recorded the same way; see [What changed at this version](#what-changed-at-this-version). | **16** |
 
 These are the **console** window's controls, and this version does not touch them. The copy window
 has only ever had a close control, and that one is `CopyWindow`'s now.
@@ -518,7 +545,7 @@ rather than paying it with a tooltip over the log. A host that wants the words b
 | `lib.DIAG_MAX_LINES` | **D1** | **1200**. The most lines one diagnostics report writes, markers included; the effective cap is this or `MAX_BUFFER - 100`, whichever is smaller, so 1200 at this version's 3000. |
 | `lib.DIAG_MAX_PER_LIST` | **D1** | **40**. The default cap of `out:list`. |
 | `lib.MakeCloseButton` | 1 | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. Forwards through the `core` table at call time, not captured at load. |
-| `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
+| `lib.STRINGS` | 1 (`DIAGNOSTICS`: **16**) | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
 | `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor> }` — the live minor of every file in this major (the second from D1). |
 | `lib:New(descriptor)` | 1 | Build a console for one host. See below. |
 
@@ -659,6 +686,9 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+Version 16.1 adds one string (`DIAGNOSTICS`) and one control, and changes the console's minimum width
+where the report is installed. Version 15.1 adds nothing to the surface.
+
 Version 14.1 adds four lib-level members, two strings, two descriptor fields and three instance
 members. The one existing behavior it changes is the buffer: **3000 kept lines where version 13 kept
 1500**, and up to 3128 raw entries where it held 1564. A host suite that writes a literal 1500, or
@@ -682,12 +712,3 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
-
-## Moving to version 16.1
-
-**Take it; nothing in a host's code or its degradation stub changes.** The next version is key 16.1:
-`DebugLog.lua` 16, with `DebugLogDiagnostics.lua` still 1. The console's title bar gains an orange
-**Diagnostics** link beside the Debug On/Off toggle, which runs `RunDiagnostics()` on a click, drawn
-when the report is installed; one string (`DIAGNOSTICS`) is added and the minimum width counts the
-link. A host suite that pins the console's minimum width re-pins. See
-[version 16.1](./version-16.1-docs.md).

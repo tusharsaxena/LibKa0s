@@ -223,7 +223,7 @@ different vendored copy of each. As of **v1.64.0**, which moves four files' mino
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 2 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
-`Widgets = { Widgets = 11, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 15, DebugLogDiagnostics = 1 }`, `Slash = { Slash = 17 }`,
+`Widgets = { Widgets = 11, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 16, DebugLogDiagnostics = 1 }`, `Slash = { Slash = 17 }`,
 `Launcher = { Launcher = 4 }`,
 `Options = { Options = 26, OptionsRegistry = 1, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 6, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }`,
 `Perf = { Perf = 13, PerfPanel = 6 }`. Those numbers move every release, so read them from the top of

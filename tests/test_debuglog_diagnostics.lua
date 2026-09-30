@@ -447,3 +447,112 @@ test("diag: without the secondary file an instance has no report methods", funct
   debuglog.__installDiagnostics = saved
   if not ok then error(err, 0) end
 end)
+
+-- ── the title-bar link (DebugLog minor 16) ─────────────────────────────────────────────────
+
+-- Every frame built while `fn` runs, with each SetPoint, SetText and SetTextColor it was given
+-- recorded (and SetPoint still applied). The mock answers CreateFontString with the frame itself,
+-- so a control's label records on the control.
+local function recordFrames(fn)
+  local built = {}
+  local realCreate = mocks.CreateFrame
+  mocks.CreateFrame = function(...)
+    local f = realCreate(...)
+    f.__points, f.__texts, f.__colors = {}, {}, {}
+    local setPoint = f.SetPoint
+    rawset(f, "SetPoint", function(self, ...)
+      table.insert(self.__points, { ... })
+      if type(setPoint) == "function" then return setPoint(self, ...) end
+    end)
+    rawset(f, "SetText", function(self, text) table.insert(self.__texts, text) end)
+    rawset(f, "SetTextColor", function(self, r, g, b) table.insert(self.__colors, { r, g, b }) end)
+    built[#built + 1] = f
+    return f
+  end
+  local ok, err = pcall(fn)
+  mocks.CreateFrame = realCreate
+  if not ok then error(err, 0) end
+  return built
+end
+
+local function lastColor(f) return f.__colors[#f.__colors] end
+
+local function shownLink(overrides)
+  local D, rec
+  recordFrames(function()
+    D, rec = newLog(overrides)
+    D:Show()
+  end)
+  return D, rec, D._frameForTest.diagnosticsButton
+end
+
+test("diag link: the console draws it when the instance has RunDiagnostics", function()
+  -- red under: drop the buildDiagnosticsLink call from EnsureFrame
+  local _, _, link = shownLink()
+  assertTrue(type(link) == "table", "frame.diagnosticsButton is recorded")
+  assertEqual(link.__texts[#link.__texts], "Diagnostics")
+  assertEqual(debuglog.STRINGS.DIAGNOSTICS, "Diagnostics")
+end)
+
+test("diag link: its label is a module string the host's L overrides", function()
+  local _, _, link = shownLink{ L = { DIAGNOSTICS = "Diagnose" } }
+  assertEqual(link.__texts[#link.__texts], "Diagnose")
+end)
+
+test("diag link: not drawn when the diagnostics file did not install the report", function()
+  -- red under: build the link without checking the instance has RunDiagnostics
+  local saved = debuglog.__installDiagnostics
+  debuglog.__installDiagnostics = nil
+  local ok, err = pcall(function()
+    local D = newLog()
+    D:Show()
+    assertEqual(D._frameForTest.diagnosticsButton, nil)
+    assertTrue(D._frameForTest.debugToggle ~= nil, "the toggle is still drawn")
+  end)
+  debuglog.__installDiagnostics = saved
+  if not ok then error(err, 0) end
+end)
+
+test("diag link: anchored to the right edge of the Debug On/Off label, with a gap", function()
+  -- red under: anchor the link to the title bar or to the toggle's button rather than its label
+  local D, _, link = shownLink()
+  local label = D._frameForTest.debugToggle
+  local found
+  for _, pt in ipairs(link.__points) do
+    if pt[2] == label then found = pt end
+  end
+  assertTrue(found ~= nil, "a point relative to the toggle's font string")
+  assertEqual(found[1], "LEFT")
+  assertEqual(found[3], "RIGHT")
+  assertEqual(found[4], 10, "the small gap after the label")
+  assertEqual(found[5], 0)
+end)
+
+test("diag link: orange at rest, brighter under the pointer, orange again after", function()
+  -- red under: draw it in the gray/gold of the other text controls
+  local _, _, link = shownLink()
+  local rest = lastColor(link)
+  assertEqual(rest[1], 1); assertEqual(rest[2], 0.5); assertEqual(rest[3], 0)
+  link:__fire("OnEnter")
+  local hot = lastColor(link)
+  assertEqual(hot[1], 1); assertEqual(hot[2], 0.72); assertEqual(hot[3], 0.28)
+  assertTrue(hot[2] > rest[2] and hot[3] > rest[3], "brighter, and still orange")
+  link:__fire("OnLeave")
+  local back = lastColor(link)
+  assertEqual(back[1], 1); assertEqual(back[2], 0.5); assertEqual(back[3], 0)
+end)
+
+test("diag link: a click runs the report with logging off, and leaves it off", function()
+  -- red under: route the click through SetEnabled, or gate it on IsEnabled
+  local D, rec, link = shownLink()
+  rec.sections = { { "Things", function(out) out:add("Things", "one thing") end } }
+  local expected = #D:BuildDiagnostics().lines
+  link:__fire("OnClick")
+  assertEqual(#D.buffer, expected, "every report line landed while logging was off")
+  assertTrue(has(D.buffer, "diagnostics begin"), "the begin marker")
+  assertTrue(has(D.buffer, "one thing"), "the host's section ran")
+  assertFalse(rec.enabled, "logging is still off")
+  assertEqual(rec.sets, 0, "the flag was never written")
+  assertEqual(rec.chat[#rec.chat],
+    ("Diagnostic report written to the debug console: %d lines. Use Copy to share it."):format(expected))
+end)

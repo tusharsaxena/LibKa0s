@@ -117,9 +117,20 @@ test("resize console: the default size is still 700 x 344", function()
   assertEqual(f.__sizes[1][1], 700); assertEqual(f.__sizes[1][2], 344)
 end)
 
+-- Run `fn` as an instance whose DebugLogDiagnostics.lua did not install the report, so the console
+-- draws no Diagnostics link and the title bar is what it was at minor 15.
+local function withoutDiagnostics(fn)
+  local saved = debuglog.__installDiagnostics
+  debuglog.__installDiagnostics = nil
+  local ok, err = pcall(fn)
+  debuglog.__installDiagnostics = saved
+  if not ok then error(err, 0) end
+end
+
 test("resize console: it has a grip and bounds that keep the title bar's controls clear", function()
   -- red under: drop the core.MakeResizable call from EnsureFrame
-  local D = newConsole("ResizeBounds")
+  local D
+  withoutDiagnostics(function() D = newConsole("ResizeBounds") end)
   D:Show()
   local f = D._frameForTest
   assertTrue(f:IsResizable(), "resizable")
@@ -132,19 +143,42 @@ test("resize console: it has a grip and bounds that keep the title bar's control
   assertTrue(maxW >= 700 and maxH >= 344, "the default is inside the bounds")
 end)
 
-test("resize console: the icon controls are narrower, and so is the minimum", function()
+local function newIconConsole(name)
   local enabled = false
-  local D = debuglog:New{
-    name = "ResizeIcons", title = "Test Host", font = "Interface\\Fonts\\FRIZQT__.TTF",
+  return debuglog:New{
+    name = name, title = "Test Host", font = "Interface\\Fonts\\FRIZQT__.TTF",
     addonName = "TestHost",
     isEnabled = function() return enabled end, setEnabled = function(v) enabled = v end,
     print = function() end,
   }
+end
+
+test("resize console: the icon controls are narrower, and so is the minimum", function()
+  local D
+  withoutDiagnostics(function() D = newIconConsole("ResizeIcons") end)
   D:Show()
   local f = D._frameForTest
   local minW = f:GetResizeBounds()
   -- Icons: Copy's left edge is 54 + 18 = 72, narrower than the toggle's 88, so the toggle sets it.
   assertEqual(minW, 2 * (88 + 6) + 19 * 7)
+end)
+
+test("resize console: the Diagnostics link widens the left group, and the minimum grows", function()
+  -- red under: leave the link out of consoleMinWidth's left group
+  local D = newConsole("ResizeDiagLink")
+  D:Show()
+  local minW = D._frameForTest:GetResizeBounds()
+  -- Headless, every width is 7px per byte: the wider toggle word "Debug: OFF" is 70, the 10px gap,
+  -- "Diagnostics" 77, from x = 8. 165 is wider than the text controls' 118 on the right.
+  assertEqual(minW, 2 * (8 + 70 + 10 + 77 + 6) + 19 * 7)
+  local without
+  withoutDiagnostics(function() without = newConsole("ResizeDiagNone") end)
+  without:Show()
+  assertTrue(minW > without._frameForTest:GetResizeBounds(), "wider than the console without it")
+  -- The icon controls do not change it: the left group is the wider side either way.
+  local icons = newIconConsole("ResizeDiagIcons")
+  icons:Show()
+  assertEqual(icons._frameForTest:GetResizeBounds(), minW)
 end)
 
 test("resize console: a resize resyncs the scrollbar and the line counter, and keeps the buffer", function()

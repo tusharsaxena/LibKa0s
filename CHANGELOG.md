@@ -12,8 +12,8 @@ cannot drift. Release order is in
 
 ## v1.64.0 — 2026-09-30
 
-Versions in this release: **Core minor 9** (`LibKa0s-Core-1.0` 9), **DebugLog minor 15**
-(`LibKa0s-DebugLog-1.0` 15.1, with `DebugLogDiagnostics` 1), **Widgets minor 11**
+Versions in this release: **Core minor 9** (`LibKa0s-Core-1.0` 9), **DebugLog minor 16**
+(`LibKa0s-DebugLog-1.0` 16.1, with `DebugLogDiagnostics` 1), **Widgets minor 11**
 (`LibKa0s-Widgets-1.0` 11.3, with `WidgetsDragHandle` 3) and **PerfPanel minor 6**
 (`LibKa0s-Perf-1.0` 13.6, with `Perf` 13). Every other file is unchanged from v1.63.0: `Env` 1,
 `Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` 17,
@@ -24,6 +24,8 @@ twenty-seven files**. Built to the Ka0s WoW Addon Standard **v2.70.0**.
 This is the library's half of the 2026-09-30 resizable-windows item (090): the debug console, every
 copy window and the perf panel are resizable, the size is kept for the session only and the default
 is today's (owner decisions D2 and D3; `debug-logging-§1` and `performance-§4` at v2.70.0).
+It also carries the console's orange **Diagnostics** link (the rollout's addendum A1), folded in
+before the tag was published: DebugLog went to minor 15 for the resize and to **16** for the link.
 
 ### Core minor 9: `MakeResizable`, one grip for all three windows
 
@@ -48,6 +50,30 @@ is today's (owner decisions D2 and D3; `debug-logging-§1` and `performance-§4`
   not, so no module raised its Core floor (a floor raise is a vendoring break, `docs/releasing.md`).
   Documented in [the version 9 document](docs/api/Core/version-9-docs.md); version 8 is Superseded.
 
+### DebugLog minor 16: a Diagnostics link in the console's title bar
+
+- **`/<prefix> diagnostics` is one click from the console.** The title bar draws an orange
+  **Diagnostics** text control beside the Debug On/Off toggle: plain text with no button art,
+  orange at rest (`1, 0.5, 0`) and brighter under the pointer (`1, 0.72, 0.28`), anchored LEFT to
+  the right edge of the toggle's font string with a 10 px gap, so the gap holds after either word.
+  A click runs `D:RunDiagnostics()`, exactly what the slash word runs: ungated, the report lands
+  with logging off, and the flag is never touched.
+- **Drawn only when the instance has `RunDiagnostics`**, which is when `DebugLogDiagnostics.lua`
+  installed the report; without it the title bar is minor 15's.
+- **The label is a module string**, `lib.STRINGS.DIAGNOSTICS = "Diagnostics"`, overridable through
+  the descriptor's `L` like `COPY` and `CLEAR`. The control is recorded as `frame.diagnosticsButton`,
+  beside `frame.clearButton` and `frame.copyButton`, for a host's own tests.
+- **The minimum width counts it.** The left control group now runs to the link's right edge (the
+  wider of the two toggle words, the gap and the link's own width; the toggle's 8 + 80 slot where
+  that is wider), and the centered title's margin follows the wider group as before.
+- Minor **16**, not a change inside 15: the rollout branch's earlier re-vendors carry 15, and
+  LibStub keeps the highest minor, so a copy with the link wins over one without it wherever the
+  two are loaded together. Documented in
+  [version 16.1](docs/api/DebugLog/version-16.1-docs.md); 15.1 is Superseded without having shipped
+  in a published tag. Cases: six `diag link:` cases in `tests/test_debuglog_diagnostics.lua` (drawn
+  and not drawn, the `L` override, the anchor, both colors, the click with logging off), and
+  `tests/test_resize_windows.lua`'s minimum-width case with the link.
+
 ### DebugLog minor 15, Widgets minor 11, PerfPanel minor 6: the three windows
 
 - **The debug console** opens at 700 × 344 and resizes on both axes. The minimum width is the title
@@ -56,7 +82,8 @@ is today's (owner decisions D2 and D3; `debug-logging-§1` and `performance-§4`
   the line counter; the message frame, the scrollbar and the title-bar controls follow their anchors,
   and the buffer and scroll position are kept. The line counter's right inset moves from 10 to 22 px
   so no digit is drawn under the grip.
-  ([version 15.1](docs/api/DebugLog/version-15.1-docs.md).)
+  ([version 15.1](docs/api/DebugLog/version-15.1-docs.md), carried into
+  [16.1](docs/api/DebugLog/version-16.1-docs.md).)
 - **Every `Widgets.CopyWindow`** (the console's Copy and each host's exports) opens at its
   descriptor's `width` / `height` and resizes on both axes, down to 240 × 140 or its declared size
   where smaller. The edit box, a scroll child, is re-widened on every resize, and `Show` sizes it for
@@ -68,8 +95,8 @@ is today's (owner decisions D2 and D3; `debug-logging-§1` and `performance-§4`
   is fixed), down to today's width; a resize stretches every step row to the new width.
   ([version 13.6](docs/api/Perf/version-13.6-docs.md).)
 
-No member, descriptor field or string moves in any of the three, so their manifests change in the
-version key alone. The cases are three new suites: `tests/test_core_resize.lua` (the helper: grip,
+No member, descriptor field or string moves in any of the three for the resize, so their manifests
+change in the version key alone (DebugLog's one new string is the link's, above). The cases are three new suites: `tests/test_core_resize.lua` (the helper: grip,
 bounds, `widthOnly`, the pre-10.0 guard, both mouse edges, the user-placed flag for an undragged and a
 dragged window, the hooked relayout, the refusals), `tests/test_resize_windows.lua` (each window's
 default size, grip and bounds, reflow, size kept across hide and show, two windows independent, and
@@ -100,6 +127,9 @@ and the client fires it from its layout pass, not inside the setter); a suite fi
 - A host suite that asserted on `IsResizable()`, `IsUserPlaced()` or `GetResizeBounds()` of a mock
   frame reads real values now.
 - An addon MUST NOT save these windows' sizes (`debug-logging-§1`, v2.70.0).
+- Nothing for the Diagnostics link: no instance member moves, so no DebugLog degradation stub does.
+  A host suite that pins the console's minimum width, or counts the frames its title bar builds,
+  re-pins with the link in (it is drawn whenever the report is installed).
 
 Release gate (`docs/automated-tests/20260930-153012/`): lint pass, 0/0 in 127 files;
 tests pass, 1820 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
