@@ -31,10 +31,15 @@ never hand-edited, and regenerated and compared on every run by
 It exists because eleven addons in this collection hand-write a degradation stub of a LibKa0s surface,
 and until now the only way a stub author could answer "what am I obliged to carry?" was to read the
 library's source at whatever moment they read it. That is how AbsorbTracker's Options stub came to
-omit `SetRenderer` with every suite in that repository green. The kit's
-`Kit.assertSurfaceParity(stub, majorName)` enforces exactly this list, and
-`Kit.publicMembers` is the one rule both it and the generator apply: no `MAJOR`, no `MINOR`, no
-`MODULES`, no `__`-prefixed internals — a stub owes none of those.
+omit `SetRenderer` with every suite in that repository green. `Kit.publicMembers` is the one rule
+both the generator and the kit's `Kit.assertSurfaceParity(stub, majorName)` apply: no `MAJOR`, no
+`MINOR`, no `MODULES`, no `__`-prefixed internals — a stub owes none of those. The assertion does not
+read this file, though. It applies that rule to the live surface the consumer's runner registers
+with `Kit.setSurfaceSource`, so for a stub of the library table it enforces this list, and for a
+stub of an **instance** — what `lib:New(descriptor)` returned, the usual Slash and Options case — it
+enforces the instance's members, which no manifest lists. An instance member added in a new minor
+(Slash 17's `CliProfile` and `ProfileSwitch`) turns such a stub's parity case red on re-vendor while
+this file shows no instance change at all.
 
 It is keyed by version for the same reason the document is. A single `members.json` describing only
 HEAD answers the wrong question for every consumer that has not re-vendored yet, which is the whole
@@ -196,7 +201,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [16](./Slash/version-16-docs.md) | `Slash.lua` 16 | v1.60.0 | **Current** |
+| [17](./Slash/version-17-docs.md) | `Slash.lua` 17 | v1.63.0 | **Current** |
+| [16](./Slash/version-16-docs.md) | `Slash.lua` 16 | v1.60.0 – v1.62.0 | Superseded |
 | [15](./Slash/version-15-docs.md) | `Slash.lua` 15 | v1.56.0 – v1.59.0 | Superseded |
 | [14](./Slash/version-14-docs.md) | `Slash.lua` 14 | v1.42.0 | Superseded |
 | [13](./Slash/version-13-docs.md) | `Slash.lua` 13 | v1.41.0 | Superseded |
@@ -293,7 +299,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [31](./testkit/version-31-docs.md) | same files; `run-automated-tests.sh`'s band table leaves out the files `layout-§1`'s generated-data carve-out exempts, asking the repo's own `tests/run.lua` through a new `--layout-cap-exempt PATH...` flag that `Kit.run` answers from `Kit.layoutCap.exempt` with the matching rule `test_layout_cap.lua` now calls too (`Kit.__layoutCapCovers`), names what it left out under the table, and stops counting it in `bandFiles` / `overCapFiles` (the 2026-09-26 sweep's ATS-21). No public member, case name or mock changes | v1.62.0 | **Current** |
+| [32](./testkit/version-32-docs.md) | same files; `README.md` only: its count of the places the file is byte-identical in (thirteen: `testkit/`, this repo's `tests/_kit/` and eleven consumers') and of the repositories that run the kit's gates (twelve), both one short since the collection's eleventh consumer. `Kit.VERSION` is 32. No code, member, case name or mock changes | v1.63.0 | **Current** |
+| [31](./testkit/version-31-docs.md) | same files; `run-automated-tests.sh`'s band table leaves out the files `layout-§1`'s generated-data carve-out exempts, asking the repo's own `tests/run.lua` through a new `--layout-cap-exempt PATH...` flag that `Kit.run` answers from `Kit.layoutCap.exempt` with the matching rule `test_layout_cap.lua` now calls too (`Kit.__layoutCapCovers`), names what it left out under the table, and stops counting it in `bandFiles` / `overCapFiles` (the 2026-09-26 sweep's ATS-21). No public member, case name or mock changes | v1.62.0 | Superseded |
 | [30](./testkit/version-30-docs.md) | same files; `run-automated-tests.sh` prints `None.`, under a blank line, below the header of an empty complexity watch-list table (warned functions, or files by `layout-§1` band) in `RESULTS.md`, where revisions 26 to 29 printed the header alone (the 2026-09-26 sweep's ATS-20). No member, case name or mock changes | unreleased (superseded before v1.62.0) | Superseded |
 | [29](./testkit/version-29-docs.md) | same files **plus `prose_coverage.lua` and `prose_selftests.lua`**, two peels with no behavior change: `test_prose.lua`'s narrowing machinery (the validators for the three lists a repository narrows the gate by, the one resolved coverage set, the TOC and `.pkgmeta` readers, the two refusals and the disclosure line, issue #39) moves to the first and its thirteen fixture-driven self-tests to the second, both loaded from `test_prose.lua`'s own folder, which takes it from 1486 lines to 750, out of `layout-§1`'s 1000–1500 band. The self-tests still register under the `test_prose` suite, so no suites list changes. No member, case name or mock changes | unreleased (superseded before v1.62.0) | Superseded |
 | [28](./testkit/version-28-docs.md) | same files **plus `inventory.lua`**, a peel with no behavior change: `framework.lua`'s suite inventory (`Kit.assertSuiteInventory`, the gate-rule table, the `## Documented deviations` reader and the decline matcher) and the path helpers it keys on move to it, loaded from `framework.lua`'s own folder, which takes `framework.lua` from 1386 lines to 920, out of `layout-§1`'s 1000–1500 band. No member, case name or mock changes | unreleased (superseded before v1.62.0) | Superseded |

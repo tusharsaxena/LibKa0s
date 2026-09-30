@@ -10,9 +10,9 @@
 | Version | **31** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.62.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 30](version-30-docs.md) — `None.` under an empty watch-list table |
-| Superseded by | — |
+| Superseded by | [version 32](version-32-docs.md) — the README's copy and consumer counts |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `31` |
 

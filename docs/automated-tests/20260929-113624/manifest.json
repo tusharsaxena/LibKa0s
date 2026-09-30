@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "addon": "LibKa0s",
+  "addonVersion": "1.63.0",
+  "run": "20260929-113624",
+  "startedAt": "2026-09-29T11:36:24+05:30",
+  "durationMs": 22487,
+  "label": null,
+  "release": "1.63.0",
+  "git": { "sha": "ac61f37a1a2c0ab8d08f354c06c203400074a751", "branch": "feat/2026-09-29-smoke-and-profile", "dirty": false },
+  "host": { "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio", "luacheck": "Luacheck: 1.2.0", "lizard": "1.24.0", "timingSource": "date +%s%3N" },
+  "suites": {
+    "lint": { "status": "pass", "durationMs": 5095, "warnings": 0, "errors": 0, "files": 123, "gating": true, "gates": { "commit": true, "release": true } },
+    "tests": { "status": "pass", "durationMs": 12634, "passed": 1777, "failed": 0, "skipped": 1, "total": 1778, "gating": true, "gates": { "commit": true, "release": true } },
+    "perf": { "status": "skip", "durationMs": 2, "skipReason": "no tests/perf.lua — this addon ships no offline scenarios", "scenarios": 0, "gating": false, "gates": { "commit": false, "release": true } },
+    "complexity": { "status": "pass", "durationMs": 3473, "warnings": 0, "maxCcn": 15, "nloc": 36639, "functions": 5099, "avgCcn": 2.0, "avgNloc": 6.6, "avgToken": 51.7, "warnFunRatio": 0.00, "warnNlocRatio": 0.00, "bandFiles": 10, "overCapFiles": 0, "gating": false, "gates": { "commit": false, "release": true } }
+  },
+  "verdict": "green"
+}

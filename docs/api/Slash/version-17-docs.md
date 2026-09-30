@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 16
+# `LibKa0s-Slash-1.0` — version 17
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **16** |
-| Shipped in | v1.60.0 |
-| Status | Superseded |
-| Supersedes | [version 15](./version-15-docs.md) — whose live set did not include `diagnostics` |
-| Superseded by | [version 17](./version-17-docs.md) |
+| Files and minors | `Slash.lua` minor **17** |
+| Shipped in | v1.63.0 |
+| Status | **Current** |
+| Supersedes | [version 16](./version-16-docs.md) — which had no profile verb |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 16 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 17 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -35,6 +35,35 @@ Like DebugLog, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon fram
 returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
+
+**The `profile` verb's behavior ships here, once, and each host registers its own row for it.**
+Two consumers had hand-written profile verbs and they disagreed: AbsorbTracker's `use <name>` called
+`SetProfile` with no existence check, so a typo silently created a profile, while
+PartyFrameEnhanced's refused an unknown name. The other nine had none. Version 17 gives every host
+the same `profile <name>` and the same list, through the descriptor, without the library requiring
+AceDB (`slash-commands.md:34`).
+
+- **Descriptor field `profiles`** (optional): a function answering the host's profile store, asked
+  at call time. The store is duck-typed on AceDB-3.0's shape: `GetProfiles(tbl) -> tbl, n`,
+  `GetCurrentProfile() -> name`, `SetProfile(name)`. A store missing any of the three is treated
+  as no store.
+- **`Sl:CliProfile(rest)`**: the verb. Bare lists the profiles with the current one marked;
+  `profile <name>` switches to an existing profile. See [The profile verb](#the-profile-verb).
+- **`Sl:ProfileSwitch(name)`**: the switch alone, for an already-parsed name, answering `true` when
+  it switched. A host's own `profile use <name>` sub-verb routes here.
+- **`lib.ProfileNames(store)`**: → the store's names sorted case-insensitively, and the current one.
+- **Nine `lib.STRINGS` keys**, `PROFILE_UNAVAILABLE`, `PROFILE_LIST_HEADER`,
+  `PROFILE_CURRENT_MARK`, `PROFILE_HINT`, `PROFILE_ALREADY`, `PROFILE_COMBAT`, `PROFILE_SWITCHED`,
+  `PROFILE_UNKNOWN` and `PROFILE_DID_YOU_MEAN`, all reachable through `L`.
+- **`profile` is not added to `lib.LIVE_VERBS`, and is not reserved.** It is a host verb
+  (`slash-commands.md:7`). A host that wants it live while disabled widens its own `liveVerbs`, which
+  the descriptor has allowed since 12, so every consumer's hand-copied thirteen-verb pin stays green.
+- **No `NEEDS_*` floor moves.** The member manifest gains `ProfileNames`; the two instance members
+  are not in it, because the manifest lists the lib-level surface.
+
+The cases are in `tests/test_slash_profile.lua`, a suite of its own on the seam it tests.
+
+### Previously, at version 16
 
 **`lib.LIVE_VERBS` gains `diagnostics`, so the live set is the standard's thirteen reserved verbs.**
 The Ka0s WoW Addon Standard v2.68.0 adds the diagnostics dump (`debug-logging-§14`) and reserves
@@ -134,15 +163,17 @@ refuse anything on the live set above.
 | `get` / `set` / `list` / `reset` / `resetall` | **reads and repairs settings** | 13 |
 | `debug` / `perf`, when the host SHIPS them | **runs**, as the diagnostics they are | 13 |
 | `diagnostics`, when the host SHIPS it | **writes the report**, as the standard requires | **16** |
+| `profile`, when the host SHIPS it | dispatched **only if the host lists it in `liveVerbs`**; otherwise the refusal line, as for any host verb | **17** |
 | `enable` / `disable` | dispatched | 12 |
 | `help` | the full index, refusal line under the header | 12 |
 | a host FEATURE verb (`lock`, `show`, `export`, …) | the refusal line | 12 |
 | a typo (no `commands` entry) | `unknown command '<verb>'` + the index | 13 |
 | **a reserved verb the host never registered** (`perf` on an exempt addon) | **`unknown command '<verb>'` + the index** | **14** |
 
-**One row is new at this version: `diagnostics`.** At version 15 a disabled host that shipped
-`diagnostics` and passed no `liveVerbs` answered it with the refusal line; every other row answers
-at 16 exactly what it answered at 15. The last row moved at version 14, where version 13 read *the
+**One row is new at this version: `profile`**, and it states what was already true of any host verb:
+`profile` is not in `lib.LIVE_VERBS`, so a host that wants it answered while disabled widens its own
+`liveVerbs`. At version 16 the `diagnostics` row was new; a disabled host that shipped `diagnostics`
+and passed no `liveVerbs` had answered it with the refusal line at 15. The last row moved at version 14, where version 13 read *the
 refusal line*.
 
 Two rows are worth their own sentence.
@@ -495,7 +526,8 @@ rendered row depends on which instance rendered it.
 | `lib.ParseBool(word)` | **6** | → `true`, `false`, or **`nil` meaning "not a boolean word"** — never "false". Case-insensitive over the exact eight-word set `lib.STRINGS.ERR_BOOL` advertises. |
 | `lib.DISABLED_LINE_FORMAT` | **12** | `"%s is disabled \226\128\148 enable it with \|cFFFFFF00%s\|r"`. Two substitutions: the brand name, and the command **with its leading slash**. Gold `FFFFFF00` on the command — the same gold `lib.FormatRow` gives a command in the help index — an em dash with a single space either side, no trailing colon and no trailing period. |
 | `lib.LIVE_VERBS` | **12** | The verbs that still answer while disabled. **At 16 it is the standard's thirteen reserved verbs** — `help`, `config`, `version`, `enable`, `disable`, `debug`, `perf`, `diagnostics`, `get`, `set`, `list`, `reset`, `resetall`. At 13 to 15 it was the same set without `diagnostics`, and at 12 it read `{ "enable", "help", "disable" }`. A host MAY narrow it to the verbs it ships. The library ships exactly one default, exported so a host that must name the set names THIS one rather than a copy of it. |
-| `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. `NO_DEFAULT` from **15**. |
+| `lib.ProfileNames(store)` | **17** | → the store's profile names sorted case-insensitively, and the current one; `{}, nil` for anything that is not a profile store. See [The profile verb](#the-profile-verb). |
+| `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. `NO_DEFAULT` from **15**; the nine `PROFILE_*` keys from **17**. |
 | `lib.MODULES` | 1 | `{ Slash = <minor> }` — the live minor of every file in this major. |
 | `lib:New(descriptor)` | 1 | Build a dispatcher for one host. |
 
@@ -561,6 +593,76 @@ file load, and holds booleans only, so a miss is unambiguously `nil` rather than
 implement toggle-on-absent (`/xx debug` with no argument flips it, `/xx debug off` sets it) without
 re-reading the raw text to tell the two cases apart.
 
+## The profile verb
+
+New at minor 17. The host owns the COMMANDS row, the description and whether the verb is live while
+disabled; the library owns what the verb does. A host wires it in two lines:
+
+```lua
+-- descriptor
+profiles = function() return NS.db end,
+-- COMMANDS
+{ "profile", L["List profiles, or switch to one: profile <name>"],
+  function(rest) cli:CliProfile(rest) end },
+```
+
+### `Sl:CliProfile(rest)`
+
+1. `rest` is trimmed, **one** pair of matching surrounding quotes (`"x"` or `'x'`) is stripped, and
+   the result is trimmed again. Case and inner spaces are kept, because profile names are
+   case-sensitive user data. A lone or mismatched quote is part of the name.
+2. An empty name prints the list: the header `PROFILE_LIST_HEADER`, green like `LIST_HEADER` and with
+   no trailing colon; one row per profile, indented two spaces, sorted case-insensitively, the
+   current one followed by `PROFILE_CURRENT_MARK`; then `PROFILE_HINT` formatted with the host's
+   `slash`.
+3. Anything else goes to `ProfileSwitch`.
+
+With no `profiles` field, a `profiles` function answering nil, or a store missing a method,
+`CliProfile` prints `PROFILE_UNAVAILABLE` and does nothing else.
+
+### `Sl:ProfileSwitch(name)` → `true` or `false`
+
+The name is used as given: no trimming and no quote stripping, so a host sub-tree that has split its
+own words keeps them. An empty name prints the list and answers `false`.
+
+| The name | What it prints | Answers |
+|---|---|---|
+| the current profile | `PROFILE_ALREADY` | `false` |
+| an existing profile (exact match), `InCombatLockdown()` true | `PROFILE_COMBAT` | `false` |
+| an existing profile (exact match), otherwise | `PROFILE_SWITCHED`, after `store:SetProfile(name)` | `true` |
+| no such profile | `PROFILE_UNKNOWN`; `PROFILE_DID_YOU_MEAN` when exactly one stored name matches case-insensitively; then the list | `false` |
+
+**An unknown name is never created.** `SetProfile` creates a missing profile, which is how a typo
+becomes a stray profile, so the library only calls it for a name the store already lists. A client
+with no `InCombatLockdown` global switches. The combat check covers only the switch itself: the list,
+`PROFILE_ALREADY` and the unknown-name refusal still answer in combat.
+
+**The library logs nothing.** `SetProfile` fires the store's own profile callback, and the one switch
+line `debug-logging-§10` asks for belongs to the host's profile handler, under whatever tag the
+host's profile tracing already uses. Every line goes through the descriptor's `print`, so it carries
+the host's tag (`slash-commands-§4`).
+
+### `lib.ProfileNames(store)` → `names, current`
+
+The store's names sorted case-insensitively, with a case-sensitive tie-break so `Main` and `main`
+always print in the same order, and the current profile. The current profile is in the list even
+when the store's `GetProfiles` leaves it out. Anything that is not a store with all three methods
+answers `{}, nil`, so a host sub-tree can call it without a guard.
+
+### The strings
+
+| Key | English | Since |
+|---|---|---|
+| `PROFILE_UNAVAILABLE` | `Profiles are not available.` | **17** |
+| `PROFILE_LIST_HEADER` | `Profiles` | **17** |
+| `PROFILE_CURRENT_MARK` | `(current)` | **17** |
+| `PROFILE_HINT` | `%s profile <name> switches profile` (the host's `slash`) | **17** |
+| `PROFILE_ALREADY` | `Already on profile '%s'.` | **17** |
+| `PROFILE_COMBAT` | `Can't switch profiles in combat.` | **17** |
+| `PROFILE_SWITCHED` | `Switched to profile '%s'.` | **17** |
+| `PROFILE_UNKNOWN` | `No profile named '%s'.` | **17** |
+| `PROFILE_DID_YOU_MEAN` | `Did you mean '%s'?` | **17** |
+
 ## The dispatcher descriptor
 
 Everything a host supplies to `lib:New(descriptor)`.
@@ -588,6 +690,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `isEnabled` | function | no | **12** | → boolean. **Absent, the gate is off** and the dispatcher behaves exactly as at version 11. Present and answering false, the verbs in `liveVerbs` dispatch as usual — as does the bare command, which opens the panel (**13**) — and every other verb the host SHIPS prints the refusal line. A verb with no `commands` entry behind it is not refused at all (**14**). Asked at dispatch time, never cached. |
 | `brandName` | string | **when `isEnabled` is given** | **12** | The addon's brand name in plain text, `Ka0s <Name>` — the same string the LDB object takes as its `label`. Never derived from the TOC `Title`, which may carry color escapes. Missing it alongside `isEnabled` raises at `New`. |
 | `liveVerbs` | table | no | **12** | Array of the verbs that still answer while disabled. Defaults to `lib.LIVE_VERBS`, which is the standard's reserved verbs from **13**, thirteen of them from **16** (`diagnostics`). It names the verbs that stay live, not the verbs the host registers: from **14** a verb listed here with no `commands` entry behind it is answered as unknown rather than refused. Present so the set is data rather than a hard-coded branch; a host MAY narrow it to the verbs it actually ships. |
+| `profiles` | function | no | **17** | → the host's profile store, or nil. Duck-typed on AceDB-3.0's shape, `GetProfiles(tbl) -> tbl, n`, `GetCurrentProfile()`, `SetProfile(name)`, and never required to be AceDB. Asked at call time, because a host's db is built after its slash file runs. Absent, answering nil, or a store missing a method: `CliProfile` prints `PROFILE_UNAVAILABLE`. |
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **It does not reach the disabled refusal line** (**12**): that wording is the collection's rather than the addon's. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 
 Only `slash` and `commands` are required, and both raise rather than defaulting: a dispatcher with
@@ -614,6 +717,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `CliReset(rest)` | 1 | Reset one setting by path, and echo it. Never annotated. **From 15**, when `applyDefault` answers exactly `false`, prints `NO_DEFAULT` for the path instead of the echo. |
 | `CliResetAll()` | 1 | `applyDefault` over every row, then one acknowledgment. **From 8** the walk runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `"all"`), and the acknowledgment is printed after `bulkEnd` — not at all if the walk raised. |
 | `CliVersion()` | 1 | The host's version. |
+| `CliProfile(rest)` | **17** | The `profile` verb: bare lists the profiles, current marked; a name (quotes stripped, case kept) goes to `ProfileSwitch`. `PROFILE_UNAVAILABLE` with no store. See [The profile verb](#the-profile-verb). |
+| `ProfileSwitch(name)` | **17** | Switch to an already-parsed name: `PROFILE_ALREADY`, `PROFILE_COMBAT`, `PROFILE_SWITCHED`, or `PROFILE_UNKNOWN` with a did-you-mean and the list. Never creates a profile. Answers `true` only when it switched. |
 | `SetRowAnnotator(fn)` | 1 | Install a host suffix appended to a rendered setting — most usefully a note that the stored value is not the one in effect. Applied at exactly three sites: a list row, a get echo and a set echo. Never on reset or resetall, where an explanation of what a value means is noise stapled to an acknowledgment that the value went away. |
 | `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
 
@@ -674,6 +779,15 @@ the library's composers build, and on a library-absent load there is no row. The
 deviation. Every other verb the stub cannot serve — `get`, `set`, `list` with no schema behind them
 — prints the library-absent line for itself in the same way.
 
+**From version 17 the stub carries `CliProfile` and `ProfileSwitch`**, because the live instance
+has both. With the library absent there is no store adapter to trust, so both take route (b): each
+prints the library-absent line for `<slash> profile` and switches nothing. A stub checked by the
+kit's by-name form, `T.assertSurfaceParity(<stub>, "LibKa0s-Slash-1.0", ignore)`, owes both
+whether or not its own `profile` row or sub-tree calls them, because that form compares the stub
+against every public function on the live dispatcher instance the runner registered. A host whose
+stub never reaches `ProfileSwitch` may name it in the call's `ignore` list instead of carrying it;
+see [Compatibility](#compatibility) for what the re-vendor alone does to that case.
+
 A minimal stub, with route (b) throughout:
 
 ```lua
@@ -699,6 +813,10 @@ end
 
 -- a composed-row verb on route (b)
 local function degradedEnable() Print(UNAVAILABLE:format(SLASH .. " enable")) end
+
+-- the profile verb on route (b), from version 17; both members, because the live instance has both
+function Sl:CliProfile() Print(UNAVAILABLE:format(SLASH .. " profile")) end
+function Sl:ProfileSwitch() Print(UNAVAILABLE:format(SLASH .. " profile")); return false end
 ```
 
 ## The `L` trap
@@ -714,6 +832,43 @@ correct on every minor.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
+
+**What is added at version 17 is the profile verb, and no runtime behavior moves; one kind of
+parity gate does.** A descriptor field (`profiles`), two instance members (`CliProfile`,
+`ProfileSwitch`), one lib-level function (`ProfileNames`) and nine strings. A host that passes no
+`profiles` and registers no `profile` row sees no change in the client on re-vendor, and
+`lib.LIVE_VERBS` is unchanged.
+
+**Its test suite can go red on the re-vendor alone.** The kit's by-name form,
+`T.assertSurfaceParity(<stub>, "LibKa0s-Slash-1.0", ignore)`, does not read the member manifest. It
+resolves the live half through the surface source the runner registered with
+`Kit.setSurfaceSource`, and compares the stub against `Kit.publicMembers` of that live table. A
+runner that maps the name to the Slash **instance** (`lib:New(descriptor)`'s return) — the usual
+shape, because a host's stub mirrors the instance — now compares against an instance with two more
+public functions, and a stub that has neither fails:
+
+```text
+LibKa0s-Slash-1.0: the degraded stub diverges from the live surface in 2 place(s) —
+CliProfile is missing (live: function); ProfileSwitch is missing (live: function)
+```
+
+It stays red until the stub carries **both** members (route (b), see
+[The degradation stub](#the-degradation-stub)) or the call's `ignore` list names the one it does
+not carry. This does not depend on whether the host ships a `profile` verb or which member its
+`profile` row calls. The member manifest, `members-17.json`, lists only the lib-level table, so it
+gains `ProfileNames` and neither instance member; a runner whose source answers the **library
+table** for the name (`Kit.setSurfaceSource(mocks.LibStub)`) holds a lib-level stub to
+`ProfileNames` the same way.
+
+Measured on 2026-09-29 on all eleven consumers: each consumer's `master`, cloned into a scratch
+directory, with the v1.63.0 payloads dropped in (`LibKa0s/` into `libs/LibKa0s/`, `testkit/` into
+`tests/_kit/`) and the provenance line moved, then `lua tests/run.lua`. Six go red in this case and
+nowhere else, one failed case each, with the message above: AbsorbTracker, AuraMaster, KickCD,
+PartyFrameEnhanced, PrettyChat and WhatGroup, all of which check the dispatcher instance by name.
+Five stay green: BankLedger, ConsumableMaster, LootHistory and PanelMaster compare two tables they
+build themselves (the four-argument form, the host's own Slash table on both arms), and MultiMeters
+has no Slash parity case. No consumer checks a lib-level Slash stub by name, so none goes red on
+`ProfileNames`.
 
 **What moves at version 16 is the default live set, by one verb.** `diagnostics` joins
 `lib.LIVE_VERBS`, so a disabled host that ships the verb and passes no `liveVerbs` (or one built on
@@ -757,43 +912,3 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
-
-## Moving to version 17
-
-**Take it; no runtime behavior moves unless a host wires the profile verb, but a by-name parity gate
-does.** Version 17 adds the `profile` verb's behavior: the descriptor field `profiles`, the instance
-members `CliProfile` and `ProfileSwitch`, `lib.ProfileNames` and nine `PROFILE_*` strings.
-`lib.LIVE_VERBS` is unchanged, `profile` is not reserved, and no `NEEDS_*` floor moves. The member
-manifest gains `ProfileNames`.
-
-What a host owes on the re-vendor:
-
-- **A Slash degradation stub checked by the kit's by-name form against the live dispatcher** —
-  `T.assertSurfaceParity(<stub>, "LibKa0s-Slash-1.0", ignore)`, with the runner mapping that name to
-  the dispatcher instance through `Kit.setSurfaceSource` — **goes red on the re-vendor alone**,
-  whether or not the host ships a `profile` verb. The by-name form compares the stub against
-  `Kit.publicMembers` of the live instance the runner registered, not against the member manifest,
-  and that instance now has two more public functions:
-
-  ```text
-  LibKa0s-Slash-1.0: the degraded stub diverges from the live surface in 2 place(s) —
-  CliProfile is missing (live: function); ProfileSwitch is missing (live: function)
-  ```
-
-  The stub carries **both** `CliProfile` and `ProfileSwitch`, each printing the library-absent line
-  (route (b) of version 17's *The degradation stub*), or names the one it does not carry in that
-  call's `ignore` list. `ProfileSwitch` is the one hosts miss: a stub whose own `profile` row only
-  reaches `CliProfile` still owes it, or an ignore entry saying so. Measured on 2026-09-29 on all
-  eleven consumers, each consumer's `master` cloned into a scratch directory with the v1.63.0
-  payloads dropped in and its provenance line moved: six go red in exactly this case and nowhere
-  else — AbsorbTracker, AuraMaster, KickCD, PartyFrameEnhanced, PrettyChat and WhatGroup, one
-  failed case each. The other five stay green: BankLedger, ConsumableMaster, LootHistory and
-  PanelMaster compare two tables they build themselves (the four-argument form, the host's own
-  `NS.Slash` on both arms), and MultiMeters has no Slash parity case.
-- **To ship the verb:** pass `profiles = function() return NS.db end`, register a
-  `{ "profile", <description>, function(rest) cli:CliProfile(rest) end }` row, and add `"profile"`
-  to `liveVerbs` if it should answer while disabled.
-- **A stub of the lib-level table** checked by name against the library table carries
-  `ProfileNames`, for the same reason. None of the eleven consumers has one for Slash.
-
-Everything else in this document is unchanged at version 17.

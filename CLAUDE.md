@@ -61,7 +61,7 @@ two things it is:
 
 When in doubt, treat standard conformance as a hard requirement and ask.
 
-**One extra rule this repo carries, because it is upstream of ten others.** Everything in
+**One extra rule this repo carries, because it is upstream of eleven others.** Everything in
 `LibKa0s/` and `testkit/` is **vendored** — into `<Addon>/libs/LibKa0s/` and `<Addon>/tests/_kit/`
 respectively. A defect shipped from here reappears in every consumer, and a fix is only real once it
 is re-vendored. Never patch a vendored copy downstream; fix it here and copy across.
@@ -102,7 +102,7 @@ consumer's copy is exempt. The second carve-out, generated non-shipping data, ha
 **The heading is nested, and the gate is the kit's.** From kit revision 25 the census's parent is
 fixed at `## Documented deviations` in whichever document hosts it, so the level follows that
 register rather than the host — a `##` register takes a `###` census beneath it, here and in the
-ten repos that host theirs in `docs/ARCHITECTURE.md`. This repo owed that one-level move and this
+eleven repos that host theirs in `docs/ARCHITECTURE.md`. This repo owed that one-level move and this
 is it. What reads the table is now `tests/_kit/test_layout_cap.lua`, wired as
 `{ name = "test_layout_cap", dir = "tests/_kit/" }`; the hand-written copy this repo carried is
 deleted, because a twelfth local copy of a gate the kit ships is the drift the kit gate exists to
