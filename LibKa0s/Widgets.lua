@@ -498,6 +498,21 @@ local function copyDescriptor(d)
   return out
 end
 
+--- Resizable on both axes from minor 11, when the Core under it has the grip (Core minor 9);
+--- guarded, so an older Core leaves the fixed window this always was. The descriptor's `width` and
+--- `height` stay the size it opens at, and a named window keeps its own size for the session: the
+--- frame is built once per handle and never resized on a later Show. The scroll frame is anchored
+--- to both corners and follows on its own; the edit box inside it is a scroll CHILD and does not,
+--- so its width is set again on every resize.
+local function makeCopyResizable(f, d, coreLib)
+  if not (coreLib and type(coreLib.MakeResizable) == "function") then return end
+  coreLib.MakeResizable(f, {
+    minWidth  = math.min(COPY_MIN_W, d.width),
+    minHeight = math.min(COPY_MIN_H, d.height),
+    onResize  = function(w) f.edit:SetWidth(copyEditWidth(f, d, w)) end,
+  })
+end
+
 --- Build the frame. Called once, lazily, on the first Show — a modal rebuilt per open leaks a
 --- frame per open for the life of the session, because frames are never destroyed in WoW.
 local function buildCopyFrame(d)
@@ -571,19 +586,7 @@ local function buildCopyFrame(d)
     table.insert(UISpecialFrames, d.name)
   end
 
-  -- Resizable on both axes from minor 11, when the Core under it has the grip (Core minor 9);
-  -- guarded, so an older Core leaves the fixed window this always was. The descriptor's `width` and
-  -- `height` stay the size it opens at, and a named window keeps its own size for the session: the
-  -- frame is built once per handle and never resized on a later Show. The scroll frame is anchored
-  -- to both corners and follows on its own; the edit box inside it is a scroll CHILD and does not,
-  -- so its width is set again on every resize.
-  if coreLib and type(coreLib.MakeResizable) == "function" then
-    coreLib.MakeResizable(f, {
-      minWidth  = math.min(COPY_MIN_W, d.width),
-      minHeight = math.min(COPY_MIN_H, d.height),
-      onResize  = function(w) edit:SetWidth(copyEditWidth(f, d, w)) end,
-    })
-  end
+  makeCopyResizable(f, d, coreLib)
   return f
 end
 

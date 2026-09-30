@@ -224,7 +224,7 @@ the sweep took six out and its id peel brought three in. Largest first:
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
   `RenderTabbedSchema` took it the rest of the way), peeled then accepted, below.
-- `LibKa0s/Widgets.lua` (1295 with minor 11's resizable copy window, measured 2026-09-30; 1266 with
+- `LibKa0s/Widgets.lua` (1298 with minor 11's resizable copy window, measured 2026-09-30; 1266 with
   `LK-21`'s minor 10, 1232 before it), issue #36.
 - `LibKa0s/Options.lua` (1261 after the sweep moved its page registry to
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
