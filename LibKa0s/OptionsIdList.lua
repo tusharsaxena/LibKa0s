@@ -406,7 +406,7 @@ function lib.__AttachIdList(O, d, ids)
       w:SetCallback("OnValueChanged", function(_, _, value)
         -- Refused in combat (minor 23): put it back. Asked here, once, before callHost (minor 2):
         -- asking after it as well wrote the refusal's line twice.
-        if refused("id list toggle " .. tostring(entry.id)) then
+        if refused("id list toggle", entry.id) then
           return w:SetValue(entry.on and true or false)
         end
         callHost(spec.onToggle, entry.id, value and true or false)

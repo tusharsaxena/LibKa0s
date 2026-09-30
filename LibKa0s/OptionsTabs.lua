@@ -466,8 +466,8 @@ function lib.__AttachTabs(O, d)
   if lib.__AttachCombat then lib.__AttachCombat(O) end
 
   --- The refusal every control in this file asks (minor 2): Options.lua's, when the shell has it.
-  local function refused(what)
-    return O.__combatRefused ~= nil and O.__combatRefused(what)
+  local function refused(kind, ...)
+    return O.__combatRefused ~= nil and O.__combatRefused(kind, ...)
   end
 
   --- Pack tab widths into rows that fit `available`. Pure arithmetic and no widgets, so the
@@ -752,7 +752,7 @@ function lib.__AttachTabs(O, d)
       -- Refused in combat (minor 2): options-ui-§13 as of the standard's v2.60.0 -- a tab switch
       -- is a structural re-render, and the lock covers the strip. The library owns the refusal;
       -- a host adds no tab guard of its own.
-      if refused("tab " .. tostring(tab.key)) then return end
+      if refused("tab", tab.key) then return end
       if onSelect then pcall(onSelect, tab.key) end
     end)
     b.__ka0sTabTipLabel, b.__ka0sTabTip = tab.label, tab.tooltip
@@ -850,7 +850,7 @@ function lib.__AttachTabs(O, d)
     btn:SetText(action.text or "")
     btn:SetCallback("OnClick", function()
       -- A create act is a change of subject, so it is refused in combat as the picker is.
-      if refused("banner action " .. tostring(action.text or "?")) then return end
+      if refused("banner action", action.text or "?") then return end
       if type(action.onClick) ~= "function" then return end
       local ok, err = pcall(action.onClick)
       if not ok then print(lib.STRINGS.BUTTON_FAILED:format(tostring(err))) end
@@ -957,7 +957,7 @@ function lib.__AttachTabs(O, d)
       -- into live addon state, and a raise inside AceGUI's own dispatch takes the click handling
       -- of every widget on the frame with it. Refused in combat (minor 2), putting the
       -- dropdown back: a banner's selection is a change of subject, a structural re-render.
-      if refused("banner select " .. tostring(key)) then
+      if refused("banner select", key) then
         dd:SetValue(spec.value)
         return
       end

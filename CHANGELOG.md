@@ -46,7 +46,10 @@ the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now becau
   `button <text>` (*Reset all settings* among them), `toggle <label>`, `tab <key>` and
   `tab <pageKey>/<tabKey>`, `rail <key>`, `banner select <key>`, `banner action <text>`,
   `id list change`, `id list toggle <id>`, and `show <pageKey>` for a page shown under the lock.
-  The chat is unchanged (one gray notice per combat).
+  Each text is written once per combat and re-armed at the combat edge, so a drag's throttled
+  commits (a color, a live slider) are one line, not one a tick. The parts are joined only under the
+  lock and with a `debug` to write to, so an unlocked write builds nothing. The chat is unchanged
+  (one gray notice per combat).
 - **The park's flush line**: a registration parked in combat (`register parked (in combat)`) writes
   `register flushed (combat ended)` when the end of combat replays it.
 - An id list toggle asks the lock once rather than twice, so its refusal is one line. Absent

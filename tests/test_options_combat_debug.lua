@@ -132,6 +132,31 @@ lockCase("opt combat debug: a color commit refused names its row", function()
   assertLines(rec, { "Cfg|write barColor refused (in combat)" }, "color")
 end)
 
+lockCase("opt combat debug: a drag's throttled color and live-slider commits are one line each",
+  function()
+  local _, rec, ctx = host("bar")
+  rec.byPath.barWidth.commitOn = "change"
+  show(ctx)
+  enterCombat()
+  local color, slider = widget(ctx, "Bar Color"), widget(ctx, "Bar Width")
+  for i = 1, 5 do
+    color:__fire("OnValueChanged", 0.1 * i, 0.2, 0.3, 1)
+    rec.fireTimers()
+    slider:__fire("OnValueChanged", 200 + i)
+    rec.fireTimers()
+  end
+  color:__fire("OnValueConfirmed", 0.9, 0.2, 0.3, 1)
+  assertLines(rec, { "Cfg|write barColor refused (in combat)", "Cfg|write barWidth refused (in combat)" },
+    "five ticks of each drag and the confirm: one line per control")
+  assertEqual(#rec.chat, 1, "one gray notice")
+  leaveCombat()
+  enterCombat()
+  slider:__fire("OnValueChanged", 230)
+  rec.fireTimers()
+  assertEqual(#rec.logs, 3, "the next combat re-arms the line")
+  assertEqual(rec.logs[3], "Cfg|write barWidth refused (in combat)")
+end)
+
 lockCase("opt combat debug: the page's Defaults, header button, footer control and RestoreDefaults",
   function()
   local O, rec, ctx = host("general")
@@ -144,9 +169,8 @@ lockCase("opt combat debug: the page's Defaults, header button, footer control a
   local title = ctx.panel.name
   assertLines(rec, {
     "Cfg|defaults " .. title .. " refused (in combat)",
-    "Cfg|defaults " .. title .. " refused (in combat)",
     "Cfg|defaults general refused (in combat)",
-  }, "three refusals, three lines")
+  }, "three refusals; the header button and the footer control share a text, so one line for both")
 end)
 
 lockCase("opt combat debug: a library button (Reset all settings) names its text", function()
@@ -254,6 +278,21 @@ lockCase("opt combat debug: a parked registration writes the parked line, then t
   lib.__parkFrame:__fire("OnEvent", "PLAYER_REGEN_ENABLED")
   assertEqual(#logs, 2)
   assertEqual(logs[2], "Cfg|register flushed (combat ended)", "the flush line when the replay runs")
+end)
+
+lockCase("opt combat debug: the line is built only under the lock and with a debug to write to",
+  function()
+  local built = 0
+  local subject = setmetatable({}, { __tostring = function() built = built + 1; return "s" end })
+  local O = host("general")
+  local Q = host("general", false, true)
+  assertFalse(O.__combatRefused("write", subject), "unlocked, refused nothing")
+  assertEqual(built, 0, "and joined nothing")
+  enterCombat()
+  assertTrue(Q.__combatRefused("write", subject), "locked with no debug, refused")
+  assertEqual(built, 0, "and still joined nothing")
+  assertTrue(O.__combatRefused("write", subject, subject))
+  assertEqual(built, 2, "locked with a debug, the parts are joined")
 end)
 
 -- ── the silent default ───────────────────────────────────────────────────────────────────────

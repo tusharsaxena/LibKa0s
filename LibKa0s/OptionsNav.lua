@@ -195,7 +195,7 @@ local function dressEntry(O, b, entry, selected, onSelect)
     if selected then return end
     -- A rail switch is a structural re-render, refused in combat exactly as a tab click is
     -- (options-ui-§2, §13). The library owns the refusal; a host adds no guard of its own.
-    if O.__combatRefused and O.__combatRefused("rail " .. tostring(entry.key)) then return end
+    if O.__combatRefused and O.__combatRefused("rail", entry.key) then return end
     if onSelect then pcall(onSelect, entry.key) end
   end)
 end

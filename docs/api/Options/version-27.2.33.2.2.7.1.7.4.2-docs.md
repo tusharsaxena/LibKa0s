@@ -45,9 +45,13 @@ debug-gaps run).** No member, row field, string or floor moves, and nothing draw
 chat changes. What changes is what reaches the descriptor's existing `debug(tag, message)` field;
 a host that passes none sees nothing new.
 
-- **One `Cfg` line per refusal (O27)**, `<what> refused (in combat)`, written by
-  `O.__combatRefused(what)` each time the lock refuses, after (and independent of) the one gray chat
-  notice per combat. What each file names:
+- **One `Cfg` line per refused act (O27)**, `<what> refused (in combat)`, written by
+  `O.__combatRefused(kind, subject[, subject2])` when the lock refuses, independent of the one gray
+  chat notice per combat. Each text is written once per combat and re-armed at each combat edge, so
+  a drag's throttled commits (a color's, or a live slider's under `commitOn = "change"`) are one
+  line, not one per throttle tick. The seams pass the parts and `__combatRefused` joins them only
+  when the lock is on and `debug` is a function, so a call out of combat, or with no `debug`, builds
+  no string. What each file names:
   - `Options.lua` 27: `defaults <page title>` (the header Defaults button and the footer control),
     `defaults <pageKey>` (`O.RestoreDefaults`), `tab <pageKey>/<tabKey>` (`O.SelectTab`), and
     `show <pageKey>` (a page shown under the lock, covered instead of drawn).
@@ -1172,7 +1176,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `colorDecode` | function(stored) | no | O1 | → `r, g, b, a`. Defaults to the `{r=,g=,b=,a=}` shape. |
 | `colorEncode` | function(r,g,b,a) | no | O1 | → stored. Defaults to the same. |
 | `sliderCommit` | string | no | O1 | `"change"` makes every slider commit on the drag as well as on release, throttled through `scheduleTimer`. Default is release-only; a single row overrides either way with `commitOn`. |
-| `debug` | function(tag, message) | no | O1 | Developer log line, through the host's gated sink. `Cfg` lines: `opened`, `open refused (in combat)` and `register parked (in combat)` (O24); from **O27** the combat lock's `<what> refused (in combat)`, one per refusal, and the park's `register flushed (combat ended)`. See [What changed at this version](#what-changed-at-this-version). |
+| `debug` | function(tag, message) | no | O1 | Developer log line, through the host's gated sink. `Cfg` lines: `opened`, `open refused (in combat)` and `register parked (in combat)` (O24); from **O27** the combat lock's `<what> refused (in combat)`, once per text per combat, and the park's `register flushed (combat ended)`. See [What changed at this version](#what-changed-at-this-version). |
 
 Unlike Core, DebugLog and Slash, this module performs **no descriptor validation at all** — `d` is
 indexed directly, so only a nil descriptor raises. The fields marked required above are required in
@@ -1254,7 +1258,7 @@ lock for the whole process, whichever vendored copy won. A host calls none of th
 | `lib.STRINGS.COMBAT_LOCKED` | O22 | *Settings are locked during combat.* — the cover's line, the standard's words. |
 | `lib.STRINGS.COMBAT_LOCKED_NOTICE` | O22 | The gray chat line, at most once per combat per host. |
 
-On the instance, equally internal: `O.__combatRefused(what)` (O22, the refusal every file asks; `what`, the refused act the `Cfg` line names, **O27**),
+On the instance, equally internal: `O.__combatRefused(kind, subject[, subject2])` (O22, the refusal every file asks; from **O27** the parts of the refused act the `Cfg` line names, joined only under the lock with a `debug` to write to),
 `O.__buildCover(panel)` (T2) and `O.__releaseOwnedFocus(panels)` (T2), and `ctx.__combatCover` on
 every ctx `CreatePanel` returns.
 
