@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.69.0,
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.71.0,
 as a library repo. That is a scope of its own. What binds here is `library-stack-§7`'s applicability
 list, not the addon rule set, because there is no TOC, no player-facing README, no settings canvas and
 no install. [`CLAUDE.md`](CLAUDE.md) says which sections apply and which do not, and you should read it
@@ -13,9 +13,10 @@ copies it into its own `libs/` folder instead of depending on it at runtime. Eve
 LibStub major, and fifteen of them ship today:
 
 - `LibKa0s-Core-1.0`: the small stateless seams every other module sits on. That means secret-safe
-  stringification, the window skin and its close button, a prefixed chat printer, and
+  stringification, the window skin and its close button, a prefixed chat printer,
   `SafeRegisterEvent`, the pcalled event registration helper that stops one unknown event name from
-  taking the rest of a registration block down with it.
+  taking the rest of a registration block down with it, and `MakeResizable`, the bottom-right grip
+  the debug console, the copy windows and the perf panel resize from.
 - `LibKa0s-Env-1.0` reads the handful of client facts every addon needs, and reads them one way: the
   TOC manifest, the player's map id and the player's zone labels.
 - `LibKa0s-Compat-1.0` holds the version-variant spell and spec readers that two or more addons had
@@ -218,14 +219,14 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.63.0**, which moves one major's minor (Slash) and adds no major: `Core = { Core = 8 }`,
+different vendored copy of each. As of **v1.64.0**, which moves five files' minors (Core, DebugLog, DebugLogDiagnostics, Widgets, PerfPanel) and adds no major: `Core = { Core = 9 }`,
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 2 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
-`Widgets = { Widgets = 10, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 14, DebugLogDiagnostics = 1 }`, `Slash = { Slash = 17 }`,
+`Widgets = { Widgets = 11, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 17, DebugLogDiagnostics = 2 }`, `Slash = { Slash = 17 }`,
 `Launcher = { Launcher = 4 }`,
 `Options = { Options = 26, OptionsRegistry = 1, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 6, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }`,
-`Perf = { Perf = 13, PerfPanel = 5 }`. Those numbers move every release, so read them from the top of
+`Perf = { Perf = 13, PerfPanel = 6 }`. Those numbers move every release, so read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), not from here. Grouping
 by major is what lets you answer "which panel is attached to which probe?" from inside the game, once
 several addons each ship their own vendored copy. `tests/test_versioning.lua` checks that `MODULES`

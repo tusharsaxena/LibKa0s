@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **14** · `DebugLogDiagnostics.lua` minor **1** |
 | Shipped in | v1.60.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 13](./version-13-docs.md) — whose buffer held 1500 lines with a private 64-line slack, whose copy window could not be timed, and which had no diagnostics report |
-| Superseded by | — |
+| Superseded by | [version 15.1](./version-15.1-docs.md) — the console is resizable |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 14, DebugLogDiagnostics = 1 }` |
 
@@ -630,3 +630,12 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
+
+## Moving to version 15.1
+
+**Take it; nothing in a host's code or its degradation stub changes.** The next version is key 15.1:
+`DebugLog.lua` 15, with `DebugLogDiagnostics.lua` still 1. The console opens at the same 700 × 344
+and becomes resizable from a bottom-right grip (Core minor 9's `MakeResizable`), kept for the session
+and never saved; its copy window resizes too. No member, descriptor field or string changes. A host
+suite that asserts the console's size at build still reads 700 × 344. See
+[version 15.1](./version-15.1-docs.md).

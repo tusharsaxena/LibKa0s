@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **10** · `WidgetsDragHandle.lua` minor **3** |
 | Shipped in | v1.59.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 10.2](./version-10.2-docs.md) — a drag handle with a help mark and no close mark |
-| Superseded by | — |
+| Superseded by | [version 11.3](./version-11.3-docs.md) — copy windows are resizable |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 10, WidgetsDragHandle = 3 }` |
 
 ## What changed at 10.3
@@ -815,3 +815,11 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
+
+## Moving to version 11.3
+
+**Take it; nothing in a host's code or its degradation stub changes.** The next version is key 11.3:
+`Widgets.lua` 11, with `WidgetsDragHandle.lua` still 3. Every `CopyWindow` opens at its descriptor's
+size and becomes resizable from a bottom-right grip (Core minor 9's `MakeResizable`), kept for the
+session and never saved, with the edit box's width following a resize. No member, descriptor field
+or handle method changes. See [version 11.3](./version-11.3-docs.md).

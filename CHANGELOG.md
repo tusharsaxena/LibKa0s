@@ -10,6 +10,180 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.64.0 — 2026-09-30
+
+Versions in this release: **Core minor 9** (`LibKa0s-Core-1.0` 9), **DebugLog minor 17**
+(`LibKa0s-DebugLog-1.0` 17.2, with **DebugLogDiagnostics minor 2**), **Widgets minor 11**
+(`LibKa0s-Widgets-1.0` 11.3, with `WidgetsDragHandle` 3) and **PerfPanel minor 6**
+(`LibKa0s-Perf-1.0` 13.6, with `Perf` 13). Every other file is unchanged from v1.63.0: `Env` 1,
+`Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` 17,
+`Launcher` 4, `Options` key 26.1.32.1.1.6.1.7.4.1. The test kit moves to **revision 34**. No
+`NEEDS_*` floor rises and no major is added, so the library is still **fifteen majors across
+twenty-seven files**. Built to the Ka0s WoW Addon Standard **v2.71.0**.
+
+This is the library's half of the 2026-09-30 resizable-windows item (090): the debug console, every
+copy window and the perf panel are resizable, the size is kept for the session only and the default
+is today's (owner decisions D2 and D3; `debug-logging-§1` and `performance-§4` at v2.70.0).
+It also carries the console's orange **Diagnostics** link (the rollout's addendum A1) and the
+owner's follow-up call that running the report turns debug logging on for the session (addendum A2,
+`debug-logging-§14` at v2.71.0), both folded in before the tag was published: DebugLog went to minor
+15 for the resize, to 16 for the link and to **17**, with `DebugLogDiagnostics` 1 → **2**, for the
+run turning logging on.
+
+### DebugLogDiagnostics minor 2, DebugLog minor 17: a report run turns logging on for the session
+
+- **`RunDiagnostics` turns debug logging on first when it is off**, through the flag's one seam,
+  `D:SetEnabled(true)`, and then writes the report. The console therefore holds the
+  `[Debug] logging enabled` line and the descriptor's `[Init]` summary before the begin marker, the
+  report's identity header prints `debug logging: on`, and the chat carries `SetEnabled`'s ack
+  before the report's own line. The session is traced from the report on, so the player's next
+  reproduction lands without a separate `/<prefix> debug on`. The slash word (either form), a host's
+  `DebugVerb("diagnostics")` and the console's Diagnostics link all run the same function.
+- **With logging already on it calls nothing** (no second enable line, no second summary), and a
+  run **never turns logging off**.
+- **Opt-out: `diagnosticsEnablesLogging = false`**, a new descriptor field, read at every run.
+  Opted out, the report lands through the ungated append with logging off and leaves it off, as
+  through minor 1. Only `false` opts out.
+- **Unchanged:** `BuildDiagnostics` writes nothing and never touches the flag, and the sections
+  read state only; `RunDiagnostics` still returns the report's own line count.
+- `DebugLog.lua` 17 changes comments only: the link's (a click runs `RunDiagnostics()`, which turns
+  logging on) and the descriptor's field list (the new field). It moves so that the two files of the
+  major move together on the rollout branch, where copies of 16 are already vendored.
+- Documented in [version 17.2](docs/api/DebugLog/version-17.2-docs.md); 16.1 is Superseded without
+  having shipped in a published tag. Cases in `tests/test_debuglog_diagnostics.lua`: the turn-on
+  (the order of the enable line, the summary and the report; one `setEnabled`; the ack), the opt-out,
+  `true` not opting out, already on, never off, `BuildDiagnostics` never writing the flag,
+  `DebugVerb` and the link turning it on, and the link opted out.
+
+### Core minor 9: `MakeResizable`, one grip for all three windows
+
+- **`Core.MakeResizable(frame, opts)`**: `SetResizable(true)`, bounds through a Compat-style guard
+  (`SetResizeBounds`, else the pre-10.0 `SetMinResize` / `SetMaxResize`), and a 16 × 16 grip in the
+  bottom-right corner wearing the client's chat size-grabber art, ten levels above the window and
+  always shown. `opts`: `minWidth` / `minHeight` (default the current size), `maxWidth` /
+  `maxHeight` (default `UIParent`'s size), `widthOnly` (pins the height), `onResize(w, h)`. Left
+  mouse-down runs `StartSizing("BOTTOMRIGHT")`; mouse-up runs `StopMovingOrSizing()` and then
+  `onResize`; `OnSizeChanged` is hooked and runs it too. Answers the grip (also `frame.resizeGrip`)
+  or `nil` with no `CreateFrame` or no sizing API.
+- **Session only, and kept out of the layout cache.** The size lives on the frame, which every
+  window builds once and keeps, so it survives a hide and a show and nothing reapplies the default;
+  a `/reload` rebuilds at the default. `StartMoving` and `StartSizing` both mark a frame
+  user-placed, and a named user-placed frame has its anchor and size written to `layout-local.txt`.
+  Today's drag (`StartMoving`, flag never cleared) makes a dragged window user-placed, and that is
+  unchanged. The grip reads `IsUserPlaced()` before sizing and restores it after, so a resize alone
+  never makes a window user-placed; each window sets its default size after `CreateFrame`, so a size
+  the cache put back at creation (the dragged case) is replaced before the first show. The in-game
+  check owns when the client applies the cache.
+- **Additive and guarded.** Each caller checks the member exists and keeps today's fixed window if
+  not, so no module raised its Core floor (a floor raise is a vendoring break, `docs/releasing.md`).
+  Documented in [the version 9 document](docs/api/Core/version-9-docs.md); version 8 is Superseded.
+
+### DebugLog minor 16: a Diagnostics link in the console's title bar
+
+- **`/<prefix> diagnostics` is one click from the console.** The title bar draws an orange
+  **Diagnostics** text control beside the Debug On/Off toggle: plain text with no button art,
+  orange at rest (`1, 0.5, 0`) and brighter under the pointer (`1, 0.72, 0.28`), anchored LEFT to
+  the right edge of the toggle's font string with a 10 px gap, so the gap holds after either word.
+  A click runs `D:RunDiagnostics()`, exactly what the slash word runs: ungated, and the report lands
+  with logging off (from `DebugLogDiagnostics` 2, above, the run turns logging on first).
+- **Drawn only when the instance has `RunDiagnostics`**, which is when `DebugLogDiagnostics.lua`
+  installed the report; without it the title bar is minor 15's.
+- **The label is a module string**, `lib.STRINGS.DIAGNOSTICS = "Diagnostics"`, overridable through
+  the descriptor's `L` like `COPY` and `CLEAR`. The control is recorded as `frame.diagnosticsButton`,
+  beside `frame.clearButton` and `frame.copyButton`, for a host's own tests.
+- **The minimum width counts it.** The left control group now runs to the link's right edge (the
+  wider of the two toggle words, the gap and the link's own width; the toggle's 8 + 80 slot where
+  that is wider), and the centered title's margin follows the wider group as before.
+- Minor **16**, not a change inside 15: the rollout branch's earlier re-vendors carry 15, and
+  LibStub keeps the highest minor, so a copy with the link wins over one without it wherever the
+  two are loaded together. Documented in
+  [version 16.1](docs/api/DebugLog/version-16.1-docs.md), itself Superseded by 17.2 above; 15.1 is
+  Superseded without having shipped in a published tag. Cases: six `diag link:` cases in `tests/test_debuglog_diagnostics.lua` (drawn
+  and not drawn, the `L` override, the anchor, both colors, the click with logging off), and
+  `tests/test_resize_windows.lua`'s minimum-width case with the link.
+
+### DebugLog minor 15, Widgets minor 11, PerfPanel minor 6: the three windows
+
+- **The debug console** opens at 700 × 344 and resizes on both axes. The minimum width is the title
+  bar's arithmetic (the centered title plus the wider control group, `PAD` on each side, never above
+  700); the minimum height is the two bars and four lines. A resize resyncs the scrollbar's range and
+  the line counter; the message frame, the scrollbar and the title-bar controls follow their anchors,
+  and the buffer and scroll position are kept. The line counter's right inset moves from 10 to 22 px
+  so no digit is drawn under the grip.
+  ([version 15.1](docs/api/DebugLog/version-15.1-docs.md), carried into
+  [16.1](docs/api/DebugLog/version-16.1-docs.md).)
+- **Every `Widgets.CopyWindow`** (the console's Copy and each host's exports) opens at its
+  descriptor's `width` / `height` and resizes on both axes, down to 240 × 140 or its declared size
+  where smaller. The edit box, a scroll child, is re-widened on every resize, and `Show` sizes it for
+  the window as it is. Each named window keeps its own size. The scroll frame's bottom inset moves
+  from 10 to 18 px so the scroll bar's down button sits above the grip, which had taken clicks on the
+  button's lower part.
+  ([version 11.3](docs/api/Widgets/version-11.3-docs.md).)
+- **The perf panel** opens at its computed 376 × 196 and resizes in **width only** (its row count
+  is fixed), down to today's width; a resize stretches every step row to the new width.
+  ([version 13.6](docs/api/Perf/version-13.6-docs.md).)
+
+No member, descriptor field or string moves in any of the three for the resize, so their manifests
+change in the version key alone (DebugLog's one new string is the link's, above). The cases are three new suites: `tests/test_core_resize.lua` (the helper: grip,
+bounds, `widthOnly`, the pre-10.0 guard, both mouse edges, the user-placed flag for an undragged and a
+dragged window, the hooked relayout, the refusals), `tests/test_resize_windows.lua` (each window's
+default size, grip and bounds, reflow, size kept across hide and show, two windows independent, and
+the helper absent leaving today's fixed window) and `tests/test_mock_resize.lua` (the kit's new
+recorders).
+
+### Test kit revision 34: the diagnostics contract has a run turn logging on
+
+`testkit/test_diagnostics_contract.lua` follows `debug-logging-§14` at v2.71.0. The case
+*the report lands with logging off and leaves it off* is retired; in its place, *the report lands
+with logging off and turns it on for the session* (the flag on afterwards and exactly one
+`[Debug] logging enabled` line, in the instance's own wording, before the begin marker), *an addon
+that opts out lands the report and leaves logging off*, and *with logging already on, the report
+writes no second enable line*. One new optional fact, `Kit.diagnostics.enablesLogging`: `false`
+only for an addon whose descriptor sets `diagnosticsEnablesLogging = false` (the kit cannot read the
+descriptor, so the addon declares it, and the case for the declared choice fails when the report does
+the opposite); the case for the choice not declared is a declared skip. `tests/test_kit_inventory.lua`
+pins revision 34. Documented in
+[`docs/api/testkit/version-34-docs.md`](docs/api/testkit/version-34-docs.md); revision 33 is
+Superseded without having shipped in a published tag.
+
+### Test kit revision 33: mock frames record the resize surface
+
+A new kit file, `testkit/mock_resize.lua`, loaded by `mock_base.lua` beside `mock_events.lua`: every
+tracked frame records `SetResizable` / `IsResizable`, `SetResizeBounds` / `GetResizeBounds` (four
+numbers), `StartSizing` (point and count), `StopMovingOrSizing` (count) and `SetUserPlaced` /
+`IsUserPlaced`, with `StartSizing` and `StartMoving` marking the frame user-placed as the client
+does. Through revision 32 all of them answered the frame from the metatable, so `IsResizable()` and
+`IsUserPlaced()` were truthy whatever the frame had been told. `SetSize` / `SetWidth` / `SetHeight`
+still do not fire `OnSizeChanged` (the setters stay off the frame so a test can rawset a recorder,
+and the client fires it from its layout pass, not inside the setter); a suite fires it with
+`__fire`. `tests/test_kit_inventory.lua` pins revision 33. Documented in
+[`docs/api/testkit/version-33-docs.md`](docs/api/testkit/version-33-docs.md).
+
+### What a consumer owes
+
+- The whole-folder copy of both payloads, `libs/LibKa0s/` and `tests/_kit/` (a kit copy missing
+  `mock_resize.lua` fails at load), and the provenance line, in one commit.
+- **A Core degradation stub under `Kit.assertSurfaceParity` gains `MakeResizable`**, a function
+  answering `nil` (the Core version-9 document's *The degradation stub at version 9*), or names it
+  in that case's `ignore` list. The by-name form reads the live Core table, so the case goes red on
+  the copy alone.
+- A host suite that asserted on `IsResizable()`, `IsUserPlaced()` or `GetResizeBounds()` of a mock
+  frame reads real values now.
+- An addon MUST NOT save these windows' sizes (`debug-logging-§1`, v2.70.0).
+- **Diagnostics turns logging on (DebugLogDiagnostics 2, kit revision 34).** No instance member
+  moves, so no DebugLog degradation stub does. A host suite that asserts the report leaves logging
+  off, or counts the buffer or the chat after a run with logging off, re-pins (two more console
+  lines, one more chat line); the kit's contract case names change, so `docs/test-cases.md` is
+  regenerated. An addon that keeps logging off sets `diagnosticsEnablesLogging = false` in its
+  descriptor and `enablesLogging = false` in `Kit.diagnostics`.
+- Nothing for the Diagnostics link: no instance member moves, so no DebugLog degradation stub does.
+  A host suite that pins the console's minimum width, or counts the frames its title bar builds,
+  re-pins with the link in (it is drawn whenever the report is installed).
+
+Release gate (`docs/automated-tests/20260930-190933/`): lint pass, 0/0 in 127 files;
+tests pass, 1834 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.63.0 — 2026-09-29
 
 Versions in this release: **Slash minor 17** (`LibKa0s-Slash-1.0` 17). Every other file is

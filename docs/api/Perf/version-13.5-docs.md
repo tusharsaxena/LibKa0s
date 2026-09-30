@@ -11,9 +11,9 @@
 | Files and minors | `Perf.lua` **13** · `PerfPanel.lua` **5** |
 | Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
 | Shipped in | v1.56.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 12.5](./version-12.5-docs.md) — whose sampler fields fell through the instance metatable after a nil write, and whose leaked bracket could parent a later window's |
-| Superseded by | — |
+| Superseded by | [version 13.6](./version-13.6-docs.md) — the step panel resizes, width only |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 13, PerfPanel = 5 }` |
@@ -584,3 +584,11 @@ host that passes nothing gets a better-looking button from the same call it alwa
 The two files move as one. A consumer holding `Perf.lua` from one vendored copy and `PerfPanel.lua`
 from another is not a supported state and LibStub cannot detect it — which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 13.6
+
+**Take it; nothing in a host's code or its degradation stub changes.** The next version is key 13.6:
+`PerfPanel.lua` 6, with `Perf.lua` still 13. The step panel opens at the same computed size and
+becomes resizable in width from a bottom-right grip (Core minor 9's `MakeResizable`), its height
+pinned, its rows stretched to the new width, kept for the session and never saved. No member,
+descriptor field or string changes. See [version 13.6](./version-13.6-docs.md).

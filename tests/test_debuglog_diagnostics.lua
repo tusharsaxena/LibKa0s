@@ -1,6 +1,7 @@
 -- tests/test_debuglog_diagnostics.lua — LibKa0s-DebugLog-1.0's diagnostics report
--- (DebugLogDiagnostics.lua, minor 1): RunDiagnostics, BuildDiagnostics, the `out` writer a section
--- is handed, and DebugVerb.
+-- (DebugLogDiagnostics.lua, minor 2): RunDiagnostics, BuildDiagnostics, the `out` writer a section
+-- is handed, and DebugVerb. Minor 2's change: a run turns debug logging on for the session first,
+-- unless the descriptor opts out (debug-logging-§14 at v2.71.0).
 --
 -- The dispatcher-facing half of the contract (both slash forms, while disabled, `debug diag` not
 -- running it) is the kit's shared case, testkit/test_diagnostics_contract.lua, which this repo
@@ -59,7 +60,7 @@ test("diag: the caps are pinned as literals, and the file registers under the ma
   -- Literals on purpose: these are the numbers the standard and every consumer's docs cite.
   assertEqual(debuglog.DIAG_MAX_LINES, 1200)
   assertEqual(debuglog.DIAG_MAX_PER_LIST, 40)
-  assertEqual(debuglog.MODULES.DebugLogDiagnostics, 1)
+  assertEqual(debuglog.MODULES.DebugLogDiagnostics, 2)
   assertEqual(debuglog.__diagShellMinor, debuglog.MINOR, "paired on the live shell")
   assertEqual(debuglog.STRINGS.DIAG_WRITTEN,
     "Diagnostic report written to the debug console: %d lines. Use Copy to share it.")
@@ -93,7 +94,7 @@ test("diag: the identity header names the host, the client, the flags and the ru
     assertTrue(has(t, "debug logging: off"), "the flag, printed")
     assertTrue(has(t, "combat: InCombatLockdown=false UnitAffectingCombat=false"), "both reads")
     assertTrue(has(t, "LibKa0s running: "), "the running minors")
-    assertTrue(has(t, "DebugLogDiagnostics 1"), "this file among them")
+    assertTrue(has(t, "DebugLogDiagnostics 2"), "this file among them")
     assertTrue(has(t, "DebugLog " .. debuglog.MINOR), "and its shell")
   end)
 
@@ -130,6 +131,9 @@ test("diag: BuildDiagnostics writes nothing", function()
   D:BuildDiagnostics()
   assertEqual(#D.buffer, 1, "the buffer is untouched")
   assertEqual(#rec.chat, 0, "and nothing reached chat")
+  -- red under: the run's enable moved into build, where a caller asking for data flips the flag
+  assertEqual(rec.sets, 0, "and the flag was never written")
+  assertFalse(rec.enabled, "so logging is still off")
 end)
 
 test("diag: the report appends, and the trace before it survives", function()
@@ -138,8 +142,8 @@ test("diag: the report appends, and the trace before it survives", function()
   local n = D:RunDiagnostics()
   -- red under: a report that calls Clear() before it writes
   assertTrue(D.buffer[1]:find("[Trace] reproduced the bug", 1, true) ~= nil, "the trace is first")
-  assertEqual(#D.buffer, n + 1, "and the report follows it")
-  assertTrue(D.buffer[2]:find("[Diag] ==== Ka0s Diag Test diagnostics begin ====", 1, true) ~= nil)
+  assertEqual(#D.buffer, n + 3, "then the enable line and the summary, then the report")
+  assertTrue(D.buffer[4]:find("[Diag] ==== Ka0s Diag Test diagnostics begin ====", 1, true) ~= nil)
 end)
 
 test("diag: the report never calls Clear", function()
@@ -151,21 +155,70 @@ test("diag: the report never calls Clear", function()
   assertEqual(cleared, 0)
 end)
 
-test("diag: the report is ungated: it lands with logging off and leaves the flag alone", function()
+test("diag: a run with logging off turns it on first, through the one seam", function()
   local D, rec = newLog()
   rec.enabled = false
   local n = D:RunDiagnostics()
-  -- red under: a report written through the gated D.Debug sink
-  assertTrue(n > 2, "lines landed")
-  assertEqual(#D.buffer, n)
-  assertFalse(rec.enabled, "the flag is still off")
-  assertEqual(rec.sets, 0, "and setEnabled was never called")
+  -- red under: a run that leaves the flag alone (the rule through v2.70.0), or one that writes the
+  -- host's flag behind SetEnabled's back, which drops the enable line, the summary and the ack
+  assertTrue(rec.enabled, "logging is on for the session")
+  assertEqual(rec.sets, 1, "written once, by SetEnabled")
+  assertEqual(#D.buffer, n + 2, "the enable line and the summary, then the report")
+  assertTrue(D.buffer[1]:find("[Debug] logging enabled", 1, true) ~= nil, "the enable line first")
+  assertTrue(D.buffer[2]:find("[Init] Diag Test v1.0.0, schema 3", 1, true) ~= nil,
+    "then the host's summary")
+  assertTrue(D.buffer[3]:find("diagnostics begin", 1, true) ~= nil, "then the report")
+  assertTrue(has(D.buffer, "debug logging: on"), "whose header prints the flag as the run left it")
+  assertEqual(#rec.chat, 2, "the ack, then the report's own line")
+  assertTrue(rec.chat[1]:find("debug logging ", 1, true) == 1, "the ack is SetEnabled's")
+end)
+
+test("diag: opted out, the report is ungated: it lands with logging off and leaves it off",
+  function()
+    local D, rec = newLog{ diagnosticsEnablesLogging = false }
+    rec.enabled = false
+    local n = D:RunDiagnostics()
+    -- red under: a report written through the gated D.Debug sink, or a run that ignores the opt-out
+    assertTrue(n > 2, "lines landed")
+    assertEqual(#D.buffer, n, "the report and nothing else")
+    assertFalse(rec.enabled, "the flag is still off")
+    assertEqual(rec.sets, 0, "and setEnabled was never called")
+    assertTrue(has(D.buffer, "debug logging: off"), "the header prints it off")
+  end)
+
+test("diag: only false opts out; true turns logging on like the default", function()
+  -- red under: an opt-out read as truthiness, so `diagnosticsEnablesLogging = true` keeps it off
+  local D, rec = newLog{ diagnosticsEnablesLogging = true }
+  D:RunDiagnostics()
+  assertTrue(rec.enabled)
+  assertEqual(rec.sets, 1)
+end)
+
+test("diag: with logging already on, the run writes no second enable line", function()
+  local D, rec = newLog()
+  rec.enabled = true
+  local n = D:RunDiagnostics()
+  -- red under: an unconditional SetEnabled(true), which writes the enable line and the summary again
+  assertEqual(rec.sets, 0, "setEnabled was never called")
+  assertTrue(rec.enabled, "logging is still on")
+  assertEqual(#D.buffer, n, "the report and nothing else")
+  assertFalse(has(D.buffer, "logging enabled"), "no enable line")
+end)
+
+test("diag: a run never turns logging off, opted out or not", function()
+  -- red under: an opt-out implemented as SetEnabled(false)
+  local D, rec = newLog{ diagnosticsEnablesLogging = false }
+  rec.enabled = true
+  D:RunDiagnostics()
+  assertTrue(rec.enabled, "still on")
+  assertEqual(rec.sets, 0, "and never written")
 end)
 
 -- ── what the report does ───────────────────────────────────────────────────────────────────
 
 test("diag: RunDiagnostics prints one chat line with the count and returns it", function()
   local D, rec = newLog()
+  rec.enabled = true -- logging already on, so the chat carries the report's line alone
   local n = D:RunDiagnostics()
   assertEqual(#rec.chat, 1)
   assertEqual(rec.chat[1], ("Diagnostic report written to the debug console: %d lines. "
@@ -176,7 +229,7 @@ end)
 test("diag: the chat line is the host's when L overrides it", function()
   local D, rec = newLog{ L = { DIAG_WRITTEN = "report: %d" } }
   local n = D:RunDiagnostics()
-  assertEqual(rec.chat[1], "report: " .. n)
+  assertEqual(rec.chat[#rec.chat], "report: " .. n)
 end)
 
 test("diag: RunDiagnostics shows a hidden console", function()
@@ -189,6 +242,9 @@ end)
 test("diag: the report repaints once, not once per line", function()
   local D, rec = newLog()
   rec.sections = { { "many", many(50) } }
+  -- Logging already on, so the run writes no enable line: that line and the summary are two Adds of
+  -- SetEnabled's own, each with its own paint, and neither is the report's.
+  rec.enabled = true
   -- The console is built first: building it paints its status line once, and that paint belongs to
   -- the window, not to the report.
   D:Add("Trace", "console built")
@@ -395,10 +451,11 @@ end)
 -- ── DebugVerb ──────────────────────────────────────────────────────────────────────────────
 
 test("diag: DebugVerb runs the report for `diagnostics`, in any case", function()
-  local D = newLog()
+  local D, rec = newLog()
   assertTrue(D:DebugVerb("diagnostics"))
   local after = #D.buffer
   assertTrue(after > 0, "a report was written")
+  assertTrue(rec.enabled, "and logging is on: the word runs the same RunDiagnostics")
   assertTrue(D:DebugVerb("  DIAGNOSTICS  "))
   assertTrue(#D.buffer > after, "and again")
 end)
@@ -446,4 +503,124 @@ test("diag: without the secondary file an instance has no report methods", funct
   end)
   debuglog.__installDiagnostics = saved
   if not ok then error(err, 0) end
+end)
+
+-- ── the title-bar link (DebugLog minor 16) ─────────────────────────────────────────────────
+
+-- Every frame built while `fn` runs, with each SetPoint, SetText and SetTextColor it was given
+-- recorded (and SetPoint still applied). The mock answers CreateFontString with the frame itself,
+-- so a control's label records on the control.
+local function recordFrames(fn)
+  local built = {}
+  local realCreate = mocks.CreateFrame
+  mocks.CreateFrame = function(...)
+    local f = realCreate(...)
+    f.__points, f.__texts, f.__colors = {}, {}, {}
+    local setPoint = f.SetPoint
+    rawset(f, "SetPoint", function(self, ...)
+      table.insert(self.__points, { ... })
+      if type(setPoint) == "function" then return setPoint(self, ...) end
+    end)
+    rawset(f, "SetText", function(self, text) table.insert(self.__texts, text) end)
+    rawset(f, "SetTextColor", function(self, r, g, b) table.insert(self.__colors, { r, g, b }) end)
+    built[#built + 1] = f
+    return f
+  end
+  local ok, err = pcall(fn)
+  mocks.CreateFrame = realCreate
+  if not ok then error(err, 0) end
+  return built
+end
+
+local function lastColor(f) return f.__colors[#f.__colors] end
+
+local function shownLink(overrides)
+  local D, rec
+  recordFrames(function()
+    D, rec = newLog(overrides)
+    D:Show()
+  end)
+  return D, rec, D._frameForTest.diagnosticsButton
+end
+
+test("diag link: the console draws it when the instance has RunDiagnostics", function()
+  -- red under: drop the buildDiagnosticsLink call from EnsureFrame
+  local _, _, link = shownLink()
+  assertTrue(type(link) == "table", "frame.diagnosticsButton is recorded")
+  assertEqual(link.__texts[#link.__texts], "Diagnostics")
+  assertEqual(debuglog.STRINGS.DIAGNOSTICS, "Diagnostics")
+end)
+
+test("diag link: its label is a module string the host's L overrides", function()
+  local _, _, link = shownLink{ L = { DIAGNOSTICS = "Diagnose" } }
+  assertEqual(link.__texts[#link.__texts], "Diagnose")
+end)
+
+test("diag link: not drawn when the diagnostics file did not install the report", function()
+  -- red under: build the link without checking the instance has RunDiagnostics
+  local saved = debuglog.__installDiagnostics
+  debuglog.__installDiagnostics = nil
+  local ok, err = pcall(function()
+    local D = newLog()
+    D:Show()
+    assertEqual(D._frameForTest.diagnosticsButton, nil)
+    assertTrue(D._frameForTest.debugToggle ~= nil, "the toggle is still drawn")
+  end)
+  debuglog.__installDiagnostics = saved
+  if not ok then error(err, 0) end
+end)
+
+test("diag link: anchored to the right edge of the Debug On/Off label, with a gap", function()
+  -- red under: anchor the link to the title bar or to the toggle's button rather than its label
+  local D, _, link = shownLink()
+  local label = D._frameForTest.debugToggle
+  local found
+  for _, pt in ipairs(link.__points) do
+    if pt[2] == label then found = pt end
+  end
+  assertTrue(found ~= nil, "a point relative to the toggle's font string")
+  assertEqual(found[1], "LEFT")
+  assertEqual(found[3], "RIGHT")
+  assertEqual(found[4], 10, "the small gap after the label")
+  assertEqual(found[5], 0)
+end)
+
+test("diag link: orange at rest, brighter under the pointer, orange again after", function()
+  -- red under: draw it in the gray/gold of the other text controls
+  local _, _, link = shownLink()
+  local rest = lastColor(link)
+  assertEqual(rest[1], 1); assertEqual(rest[2], 0.5); assertEqual(rest[3], 0)
+  link:__fire("OnEnter")
+  local hot = lastColor(link)
+  assertEqual(hot[1], 1); assertEqual(hot[2], 0.72); assertEqual(hot[3], 0.28)
+  assertTrue(hot[2] > rest[2] and hot[3] > rest[3], "brighter, and still orange")
+  link:__fire("OnLeave")
+  local back = lastColor(link)
+  assertEqual(back[1], 1); assertEqual(back[2], 0.5); assertEqual(back[3], 0)
+end)
+
+test("diag link: a click runs the report with logging off, and turns it on first", function()
+  -- red under: gate the click on IsEnabled, or run anything but RunDiagnostics (a toggle click
+  -- would turn logging on and write no report)
+  local D, rec, link = shownLink()
+  rec.sections = { { "Things", function(out) out:add("Things", "one thing") end } }
+  local expected = #D:BuildDiagnostics().lines
+  link:__fire("OnClick")
+  assertEqual(#D.buffer, expected + 2, "the enable line, the summary, then every report line")
+  assertTrue(D.buffer[1]:find("[Debug] logging enabled", 1, true) ~= nil, "the enable line first")
+  assertTrue(has(D.buffer, "diagnostics begin"), "the begin marker")
+  assertTrue(has(D.buffer, "one thing"), "the host's section ran")
+  assertTrue(rec.enabled, "logging is on for the session")
+  assertEqual(rec.sets, 1, "written once, through SetEnabled")
+  assertEqual(rec.chat[#rec.chat],
+    ("Diagnostic report written to the debug console: %d lines. Use Copy to share it."):format(expected))
+end)
+
+test("diag link: opted out, a click writes the report and leaves logging off", function()
+  local D, rec, link = shownLink{ diagnosticsEnablesLogging = false }
+  local expected = #D:BuildDiagnostics().lines
+  link:__fire("OnClick")
+  assertEqual(#D.buffer, expected, "the report and nothing else")
+  assertFalse(rec.enabled, "logging is still off")
+  assertEqual(rec.sets, 0, "the flag was never written")
 end)

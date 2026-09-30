@@ -205,11 +205,12 @@ backticked-path table row under this heading as a census row, so a band table he
 rows claiming to be breaches. Ten files, three fewer than the thirteen of the 2026-09-24 write-out:
 the sweep took six out and its id peel brought three in. Largest first:
 
-- `testkit/mock_base.lua` (1454; 1452 with the shown-by-default flip's four comment lines, 1448 with
+- `testkit/mock_base.lua` (1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
+  1452 with the shown-by-default flip's four comment lines, 1448 with
   `testkit/mock_events.lua`'s load, hook and install lines, 1446 before them — it was 1499 at kit
   revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that
   reason, and kit 22's recording surveys to `testkit/mock_record.lua` for the same one). The closest
-  file to the cap, with 46 lines of room; its `RESULTS.md` re-check trigger is 1490 lines, or any kit
+  file to the cap, with 44 lines of room; its `RESULTS.md` re-check trigger is 1490 lines, or any kit
   change that adds more than 30 lines here.
 - `LibKa0s/OptionsWidgets.lua` (1422, new to the band: it came down from the census's 3852 when the
   id surface left it), ruled below.
@@ -223,7 +224,8 @@ the sweep took six out and its id peel brought three in. Largest first:
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
   `RenderTabbedSchema` took it the rest of the way), peeled then accepted, below.
-- `LibKa0s/Widgets.lua` (1266 with `LK-21`'s minor 10; 1232 before it), issue #36.
+- `LibKa0s/Widgets.lua` (1303 with DL-LIB-01R's scroll inset cleared of the grip, measured 2026-09-30;
+  1298 with minor 11's resizable copy window; 1266 with `LK-21`'s minor 10, 1232 before it), issue #36.
 - `LibKa0s/Options.lua` (1261 after the sweep moved its page registry to
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then

@@ -1,0 +1,746 @@
+# `LibKa0s-DebugLog-1.0` — version 17.2
+
+> **This document is the source of truth for this version of this major.** Anything else in this
+> repo that describes the DebugLog surface points here rather than restating it. It describes the
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
+
+| | |
+|---|---|
+| Major | `LibKa0s-DebugLog-1.0` |
+| Files and minors | `DebugLog.lua` minor **17** · `DebugLogDiagnostics.lua` minor **2** |
+| Shipped in | v1.64.0 |
+| Status | **Current** |
+| Supersedes | [version 16.1](./version-16.1-docs.md) — a report run left the logging flag alone |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 17, DebugLogDiagnostics = 2 }` |
+
+`Since` in the tables below is the DebugLog minor in which the member first appeared; a `Since` of
+**D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file version 14.1 added, and **D2** its
+minor 2. Minors 1 and 2
+were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
+this major".
+
+## What this major is
+
+The on-screen debug console: a movable window with a color-coded log, a copy box, a plain-text
+buffer, and the one seam that turns logging on and off.
+
+It exists because the console is the most-duplicated thing in the collection — seven hand-transcribed
+copies of a window the standard already specifies down to the hex codes, drifting one digit at a
+time. What is genuinely per-addon is only the *content* of what gets logged, so everything else lives
+here and the host supplies a descriptor.
+
+Two decisions are worth stating up front, because both look like details and neither is:
+
+- **The enable flag is not stored here.** The host owns it, and the library reads and writes it
+  through the required `isEnabled`/`setEnabled` pair. A library keeping its own copy would leave two
+  truths about whether logging is on, and the host's is the one its slash command and its settings
+  panel read.
+- **Every frame is per-instance**, and every frame global is derived from the descriptor's `name`. A
+  lib-level singleton would give two addons one console — and, worse, one `UISpecialFrames`
+  registration, so Esc would close whichever window registered last.
+
+It depends on LibStub and on no addon framework. As of this version it depends on **two** sibling
+majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and returns before
+`NewLibrary` if either is missing or below the minor it needs.
+
+## What changed at this version
+
+**A report run turns debug logging on for the session.** `DebugLogDiagnostics.lua` moves to minor
+**2** and `DebugLog.lua` to minor **17**, and the floors do not move. The owner's call of 2026-09-30,
+made on the AuraMaster preview of the Diagnostics link, is that running the report (the
+`diagnostics` word, either slash form, and the console's link) also turns `/<prefix> debug on` for
+the session, so the player's next reproduction is traced; the Ka0s WoW Addon Standard v2.71.0
+rewrites `debug-logging-§14` to match.
+
+| | | Since |
+|---|---|---|
+| The run | `RunDiagnostics(spec?)`, when the host's flag reads off, first calls `D:SetEnabled(true)`, the flag's one seam, and then builds and writes the report. So the console holds, in order, the `[Debug] logging enabled` line, the descriptor's `[Init]` summary and the report, whose identity header prints `debug logging: on`; the chat carries `SetEnabled`'s color-coded ack before the report's own `DIAG_WRITTEN` line. The returned count is still the report's lines alone. | **D2** |
+| Already on | Nothing is called: no second enable line, no second summary, no ack. | **D2** |
+| Never off | A run never turns logging off, opted out or not. | **D2** |
+| `diagnosticsEnablesLogging` | A new descriptor field. `false` opts the host out: the run writes the report through the ungated append with logging off and leaves it off, as version 16.1 did. Read at every run, not at `New`. Only `false` opts out; `nil`, `true` or anything else keeps the default. | **17** |
+| `BuildDiagnostics(spec?)` and the sections | Unchanged: building the report writes nothing and never touches the flag, and a section reads state only. The enable belongs to the run. | D1 |
+| The link and `DebugVerb("diagnostics")` | Both run `RunDiagnostics()` with no argument, so both turn logging on exactly as the slash word does. Neither changed code; the link's comment in `DebugLog.lua` and the descriptor's field list did, which is why `DebugLog.lua` moves to 17. | **17** |
+
+**What a host must change: nothing in its code.** No instance member is added or removed, so no
+degradation stub changes and the member manifest differs from 16.1's in its version key alone. A host
+suite that asserts a report leaves logging off, or counts `#buffer` or the chat lines after a run with
+logging off, re-pins: two more console lines and one more chat line. The kit's diagnostics contract
+(kit revision 34) says the same through the host's own dispatcher; a host that opts out declares
+`Kit.diagnostics.enablesLogging = false` to match its descriptor.
+
+## What changed at version 16.1
+
+**A Diagnostics link in the title bar.** `DebugLog.lua` moves to minor **16**; `DebugLogDiagnostics.lua`
+stays at **1**, and the floors do not move. `/<prefix> diagnostics` is a must-have in every addon
+(`debug-logging-§14`), so the console puts it one click away: an orange **Diagnostics** control beside
+the Debug On/Off toggle, top left.
+
+| | | Since |
+|---|---|---|
+| The link | Plain text, no button art: `GameFontNormalSmall`, orange at rest (`1, 0.5, 0`), `1, 0.72, 0.28` under the pointer, back to orange on leave. A click runs `D:RunDiagnostics()` with no argument, which is what the slash word runs: ungated, the report lands while logging is off, and at this version the flag is never read or written (from 17.2 the run turns logging on first; see *What changed at this version*). | **16** |
+| Its anchor | `LEFT` to the `RIGHT` of the toggle's font string (`frame.debugToggle`), 10 px, not to the toggle's 80-wide button, so the gap after the word holds for both `Debug: ON` and `Debug: OFF`. It sits one frame level above the toggle's button, which runs on under it. | **16** |
+| When it is drawn | Only when the instance has `RunDiagnostics`, which is when `DebugLogDiagnostics.lua` loaded and installed the report. Without it the title bar is version 15.1's. | **16** |
+| `lib.STRINGS.DIAGNOSTICS` | `"Diagnostics"`, the link's label, overridable through the descriptor's `L` as `COPY` and `CLEAR` are. | **16** |
+| `frame.diagnosticsButton` | The link, recorded on the console frame beside `frame.clearButton` and `frame.copyButton`, for a host's own tests; `nil` when it is not drawn. | **16** |
+
+**The minimum width counts it.** The left control group was the toggle's slot (8 + 80); with the link
+it runs to the link's right edge: 8, plus the wider of the two toggle words, plus the 10 px gap, plus
+the link's own width, and never less than the 8 + 80 slot. Each width is the font string's when the
+client can say and 7 px per byte otherwise, so headless it is 8 + 70 + 10 + 77 = 165, wider than
+either right group (118 with the words, 72 with the icons), and the minimum is
+`2 × (165 + 6) + title`. It is still never above 700.
+
+**What a host must change: nothing.** No instance member moves, so no degradation stub does; the
+member manifest gains nothing (`STRINGS` is one table). A host suite that pins the console's minimum
+width, or counts the frames the title bar builds, re-pins with the link in.
+
+## What changed at version 15.1
+
+**The console is resizable.** `DebugLog.lua` moves to minor **15**; `DebugLogDiagnostics.lua` stays at
+**1**, and the floors do not move (`NEEDS_CORE = 1`, `NEEDS_WIDGETS = 7`). No member, descriptor
+field or string is added or removed, so the member manifest differs from 14.1's in its version key
+alone. The console still opens at **700 × 344**, and a grip in its bottom-right corner, from
+`LibKa0s-Core-1.0`'s `MakeResizable` (Core minor 9), sizes it on both axes. Its copy window resizes
+too, as every `Widgets.CopyWindow` does from Widgets minor 11 (see that major's
+[version 11.3](../Widgets/version-11.3-docs.md)).
+
+- **The minimum width is the title bar's arithmetic**: the centered title and the wider of the two
+  control groups, with `PAD` (6) between them, on both sides. The left group is the header toggle
+  (8 + 80). The right group runs to Copy's left edge: 54 + 18 = 72 with the icon controls, 78 + 40 =
+  118 with the text ones. The title's width is its font string's when the client can say, else 7px
+  per byte. It is never above 700, so a long title cannot leave the window below its own minimum.
+- **The minimum height** is the title bar, the status bar and four lines of the log:
+  `26 + 6 + 4 × (fontSize + 2) + 16 + 4`, which is 100 at the default font size.
+- **The maximum** is the size of `UIParent`, and `SetClampedToScreen` keeps the window on it.
+- **On a resize** the message frame, the scrollbar and the status bar follow their anchors, and the
+  title-bar controls stay where they are (they are anchored to the bar's right edge, the toggle to
+  its left). What does not follow on its own is the scrollbar's range and the line counter, and a
+  resize runs `UpdateScrollBar()` and `UpdateStatus()` for them. The buffer and the scroll position
+  are not touched.
+- **The line counter clears the grip.** The grip is 16 px square, 1 px in from the corner and ten
+  levels above the console, so the counter's right inset moves from 10 to **22** px; at 10 its last
+  digits were drawn under the grip's art. The inset is the same with or without the grip.
+- **Guarded, not floored.** The console calls `MakeResizable` only when the Core it finds has it;
+  on an older Core it is today's fixed window, and the rest of the console is unchanged.
+
+**The size is session state and lives on the frame.** Each window is built once and kept, so a
+size the player drags to survives a hide and a show: nothing stores it and nothing reapplies the
+default on a later show. It is never written to SavedVariables (`debug-logging-§1` forbids a host to
+save it either), and a `/reload` rebuilds the window at its default.
+
+**The client's layout cache, and what was found about it.** The client keeps `layout-local.txt` for
+frames the player moved or sized. `StartMoving` and `StartSizing` both mark a frame *user-placed*,
+and a named user-placed frame has its anchor and its size written to that cache at logout and put
+back when a frame of that name is created again. Every window here is named, and the drag each has
+always had goes through `StartMoving` and never clears the flag, so a **dragged** window is
+user-placed today. That is unchanged: position behaves exactly as it did. What the grip prevents is
+a resize making a window user-placed that a drag had not, which is the one route by which a chosen
+size could reach the next session: it reads `IsUserPlaced()` before `StartSizing` and puts that
+answer back after `StopMovingOrSizing`. A window that was only resized stays out of the cache; one
+that was dragged as well is in it exactly as it is today, and its builder sets the default size
+after `CreateFrame` returns, so a size the cache put back at creation is replaced before the window
+is shown. When the client applies the cache is not something a headless suite can observe, so the
+in-game smoke check (resize, `/reload`, the default size is back, dragged and undragged) is the
+confirmation.
+
+**What a host must change: nothing.** No member moves, so no degradation stub does. A host that
+saves window geometry must not save this one (`debug-logging-§1`).
+
+## What changed at version 14.1
+
+Three things: the diagnostics report, in a new secondary file (below); the buffer, which doubles to
+**3000** lines with its slack doubled to **128** to match; and two lib-level members in `DebugLog.lua`
+14 that change nothing a console does unless someone reaches for them. The first and the last are
+additive. The buffer is the one change a console shows: it keeps twice the lines, and a host suite
+that pins 1500 as a literal moves (see [Compatibility](#compatibility)).
+
+### The diagnostics report (`DebugLogDiagnostics.lua` 1)
+
+The Ka0s WoW Addon Standard v2.68.0 makes a diagnostics dump a MUST for every addon
+(`debug-logging-§14`): `/<slash> diagnostics` and `/<slash> debug diagnostics` write one report
+into the debug console, after whatever trace the player just reproduced, so one Copy carries both.
+The report's content is per-addon; everything around it is here, and a host writes sections.
+
+It is a **secondary file of this major**, not a major of its own, for the reason
+`WidgetsDragHandle.lua` is one of Widgets: `DebugLog.lua` would otherwise have passed the 1000-line
+band. It pairs on the shell's minor (`lib.__diagMinor` / `lib.__diagShellMinor`, the idiom
+`WidgetsDragHandle.lua` uses), and `lib:New` installs its methods on each instance through
+`lib.__installDiagnostics` when it has loaded. Without it an instance has no report methods, which
+is the state a consumer's library-absent stub already answers for.
+
+**One report, in order:**
+
+1. `[Diag] ==== <brandName> diagnostics begin ====`. `brandName` is a new descriptor field and falls
+   back to `title`.
+2. **The identity header**, written by the library: the host's `initSummary()` line (pcall'd,
+   `unreadable` if it raises, so the lines below still land), the client (`GetBuildInfo`:
+   version, build, date, interface), the locale, the debug-logging flag, the two combat reads
+   (`InCombatLockdown()`, `UnitAffectingCombat("player")`, each pcall'd and printed `unreadable`
+   if it raises), and every file of every LibKa0s major **running** in the client, as
+   `File minor`. Running, because under LibStub the winning copy may be another addon's vendor.
+3. **The host's sections**, from the descriptor's `diagnostics()` (called at run time, so a module
+   that loads after the console can still supply one) or from `spec.sections`. Each runs under its
+   own pcall; a raise costs one line, `section <name> failed: <err>`, and the next section runs.
+4. `truncated: N line(s) omitted, per-list caps hit=yes|no`, only when a cap bit.
+5. `[Diag] ==== <brandName> diagnostics end: N line(s) ====`, N counting every report line, both
+   markers included.
+
+**The cap.** At most `min(lib.DIAG_MAX_LINES, lib.MAX_BUFFER - 100)` lines, markers included, so a
+report never evicts itself and always leaves some trace above it. Two lines are kept free for the
+truncated line and the end marker, so a capped report still ends properly. `spec.maxLines` may
+lower the cap and cannot raise it past the clamp.
+
+**What the report never does.** It never calls `Clear()`. It writes through the ungated append, so
+it lands with logging off, and at version 14.1 it never reads or writes the flag beyond printing it
+(from 17.2 a run turns logging on first, unless the descriptor opts out; the sections still only print it). It never reads
+the host's enabled state: whether a disabled addon may run it is the dispatcher's question, which
+Slash 16 answers by putting `diagnostics` on `LIVE_VERBS`. It calls no protected API.
+
+`RunDiagnostics` writes the lines with one scrollbar and status repaint at the end rather than one
+per line, shows the console if it was hidden, and prints one chat line through the descriptor's
+`print`: `lib.STRINGS.DIAG_WRITTEN`, *"Diagnostic report written to the debug console: %d lines.
+Use Copy to share it."*, overridable through `L`. The report body is English diagnostic text and
+does not go through `L`, like every trace line.
+
+**The writer a section is handed.** Each section is called as `fn(out)`:
+
+| Member | Meaning |
+|---|---|
+| `out:add(tag, fmt, ...)` | One line. Every argument goes through the console's `safeToString` before the format sees it; the format is pcall'd, and one the stringified arguments cannot satisfy lands as the format followed by the arguments, space-joined, as the gated sink does. Escapes are stripped. Past the cap the line is dropped and counted, and `false` comes back. |
+| `out:joined(tag, lead, parts, width?)` | `lead` then `parts`, comma-separated, wrapped at `width` (200) onto indented continuation lines. An empty list writes `lead -`. |
+| `out:list(tag, lead, items, cap?)` | `joined` with a cap (`lib.DIAG_MAX_PER_LIST`, 40, by default): past it the rest become `(+N more)` and the per-list flag is set, which the truncated line reports. |
+| `out:section(name, fn, ...)` | `fn(out, ...)` under a pcall of its own, for a part of a section that may raise on its own. |
+| `out:str(v)` / `out:plain(s)` | A value, or text, as plain report text: `safeToString`, then stripped of color, texture, atlas and hyperlink escapes (a hyperlink keeps its display text). |
+| `out:escape(s)` | `\|` doubled to `\|\|`, for a value whose escapes are the evidence (a chat format string). The doubled pipe survives the strip and pastes back into a `/<slash> set` unchanged. |
+| `out:readable(v)` | True only for a number that can be compared and added: the client's `issecretvalue` is asked first where it exists, and the arithmetic is pcall'd either way. |
+| `out:nonDefaults(rows, get, default?, format?, opts?)` | Every schema row whose value differs from its default, as `path = value (default)`. Skips `sessionOnly` rows and rows marked `hidden = true`. `get(row)` reads a value, `default(row)` a default (`row.default` when omitted), `format(row, v)` renders one (a one-line, key-sorted dump of a table when omitted); `opts.always` names paths printed whatever their value, `opts.tag` the tag (`Set`). Returns the number printed. |
+
+`DebugVerb(rest)` is the standard's `debug` words from one place, for a host that wants them:
+`diagnostics` runs the report (tested first, in any case), `on` and `off` set the flag, and
+anything else answers `false` so the host keeps its own fallback: its window toggle, its usage
+line, or its own topic words. It is optional; the standard requires the behavior, not the call. It
+never recognizes `diag` or any other short name.
+
+The library's cases are in `tests/test_debuglog_diagnostics.lua`. The dispatcher half of the rule,
+both slash forms, while disabled, append, ungated, the markers and `diag` not running the report,
+is the kit's shared case `testkit/test_diagnostics_contract.lua` (kit revision 27), which every
+consumer runs against its own dispatcher and which this repo runs against the fixture host in
+`tests/fixture_diagnostics.lua`.
+
+### `DebugLog.lua` 14: the buffer is 3000 lines
+
+`lib.MAX_BUFFER` moves **1500 → 3000**, and `lib.BUFFER_SLACK` **64 → 128**. The message frame's
+`SetMaxLines` reads the same constant, so the visible log and the copied buffer still move together,
+and the copy window, a view of the buffer, now holds up to 3000 lines too.
+
+**Why it moved.** The diagnostics report is written into this buffer after the debug trace, so that
+one Copy carries both. At 1500, a report at its 1200-line cap (`lib.DIAG_MAX_LINES`) would leave as
+little as 300 lines of the trace it is meant to travel with. At 3000 the report's effective cap is
+still 1200 (`min(1200, 3000 - 100)`), and at least 1800 lines of trace survive above a full report.
+
+**Why 3000 and not 5000.** The owner measured the copy window in the live client on 2026-09-26 with
+a throwaway, uncommitted copy bench addon (not `lib.TIME_COPY`, which only prints one `ShowCopy()`'s
+figures). Each figure is the median of three runs of the Copy open (`SetText`, cursor, `Show`,
+`SetFocus`, `HighlightText`) plus the next frame, with the empty-buffer baseline subtracted:
+
+| Line width | 1500 lines | 3000 lines | 5000 lines | Limit |
+|---|---|---|---|---|
+| 120 columns | 112 ms | 246 ms | **378 ms** | 250 ms |
+| 200 columns | 171 ms | 346 ms | 419 ms | 1000 ms |
+
+At 5000 the 120-column case fails its limit, and by hand the copy box at 5000, though it captured
+every line intact, was slow and sluggish. 3000 passes, only just (246 ms against 250 ms), so it is
+the ceiling rather than a starting point: a later increase needs a new measurement first.
+
+**Why the slack moved with it.** A compaction moves about `MAX_BUFFER / (BUFFER_SLACK + 1)` lines per
+line written: 23 at 1500 and 64, and 23 again at 3000 and 128. The raw array may therefore reach
+`MAX_BUFFER + BUFFER_SLACK` = **3128** entries between compactions, where version 13's reached 1564.
+
+`tests/test_debuglog.lua` pins the cap as the literal 3000, deliberately, and reads the constants
+back for the rest: the boundary set is `{cap - 1, cap, cap + 1, cap + 100}`, and the compaction case
+runs `cap + S + 36` adds and asserts a peak of `cap + S`, the first kept line `L(S + 2)` and a final
+length of `cap + 35`. `tests/test_debuglog_copytiming.lua` pins the slack as the literal 128.
+
+### `DebugLog.lua` 14: two lib-level members
+
+| | | Since |
+|---|---|---|
+| `lib.BUFFER_SLACK` | The compaction slack, **128**, published. It was a local of `DebugLog.lua` at version 13, at 64, with the same job; `Add` now reads it from the library at call time, as it already read `MAX_BUFFER`. | **14** |
+| `lib.TIME_COPY` | A session-only switch, `false` at load. While it is `true`, every `ShowCopy()` prints one line through the descriptor's `print` naming what the copy cost. See [Timing the copy window](#timing-the-copy-window). | **14** |
+| `lib.STRINGS.COPY_TIMING` | The text of that line, overridable through `L` like every other string. | **14** |
+
+**Why the slack is published.** The slack and the cap move together: a compaction moves about
+`MAX_BUFFER / (BUFFER_SLACK + 1)` lines per line written, 23 at 1500 and 64, and a larger buffer
+needs a larger slack to keep that ratio. With the slack a private local, a suite that checked the
+compaction had to write `64` as a literal next to a `MAX_BUFFER` it read back from the library, and
+that literal would go stale the day the buffer moved. Now a suite reads both. The buffer moved in
+this same version, and the slack with it, to 128 (above).
+
+### Timing the copy window
+
+`lib.TIME_COPY` exists to measure what the copy window costs at a given buffer size, in the live
+client, before the buffer is made larger. Turn it on by hand:
+
+```lua
+/run LibStub("LibKa0s-DebugLog-1.0").TIME_COPY = true
+```
+
+Every `ShowCopy()` then reads `debugprofilestop` three times around the copy and once more on the
+next frame (`C_Timer.After(0, ...)`), and on that next frame prints one line through the console's
+chat printer, shaped like this (the figures are placeholders, not a measurement):
+
+```text
+copy timing: 3000 lines, 240000 bytes, concat 1.0ms, open+highlight 10.0ms, next frame 100.0ms
+```
+
+| Figure | What it covers |
+|---|---|
+| lines | `BufferSize()`: the kept lines, never the raw array's slack |
+| bytes | the length of the text the window was handed |
+| concat | `CopyText()`, the `table.concat` that builds that text |
+| open+highlight | `CopyWindow`'s `Show`: `SetText`, the cursor, `Show`, `SetFocus`, `HighlightText` |
+| next frame | from the end of the open to the next frame, where the client lays out the `EditBox` |
+
+The line goes through the descriptor's `print`, **never through `Add`**, so a measurement does not
+grow the buffer it measures. The switch is lib-level, not per console: it answers a question about
+the library's window, and one `/run` covers every console loaded. It is never saved; a `/reload`
+turns it off.
+
+With no `debugprofilestop` or no `C_Timer.After` (a headless suite, say), a timed `ShowCopy()`
+opens the window untimed and prints nothing. With the switch off, `ShowCopy()` reads no clock and
+schedules nothing, exactly as at version 13.
+
+The cases are in `tests/test_debuglog_copytiming.lua`, a suite of its own because
+`tests/test_debuglog.lua` was 988 lines: the default and the string pinned as literals, the untimed
+path reading no clock, one exact line on the next frame from a scripted clock, the line never
+reaching the buffer, the timed and untimed paths handing the window the same text, the count being
+the kept lines past the cap, both headless guards, the slack pinned at 128, and `Add` honoring a
+changed slack at call time.
+
+## What version 13 changed
+
+**The buffer trim is batched.** Through version 12 every `Add` past the cap ran
+`table.remove(buffer, 1)`: a shift of all 1500 slots for every line written, for as long as debug
+logging stayed on (review finding `LibKa0s-R-10`). From version 13 the raw array is allowed to run
+**64 lines** past `MAX_BUFFER`, and on the line that would take it to 1565 the newest `MAX_BUFFER`
+lines are moved down to `1..MAX_BUFFER` in one pass and the tail is cleared. One compaction per
+65 lines instead of one shift per line; `table.remove` is no longer called at all.
+
+`buffer` stays a **plain ordered array**, not a ring. Host suites across the collection index it
+directly — `#buffer`, `buffer[#buffer]`, `buffer[1]`, the four-argument `table.concat` — and a ring
+with a head index would have broken every one of them. What moves is only its **length past the
+cap**:
+
+| | Version 12 | Version 13 |
+|---|---|---|
+| `#buffer` after N lines, N ≤ 1500 | N | N — unchanged |
+| `#buffer` after N lines, N > 1500 | always 1500 | between 1500 and **1564**, depending on where the last compaction fell |
+| `buffer[#buffer]` | the newest line | the newest line — unchanged |
+| `buffer[1]` past the cap | the oldest kept line | the oldest line **held**, which may be up to 64 lines older than the oldest kept one |
+| `BufferSize()` | `#buffer` | the newest `MAX_BUFFER` at most: `min(#buffer, MAX_BUFFER)` |
+| `LastLine()` | the newest line | unchanged |
+| `FindLine(substr)` | searches the whole array | searches the newest `MAX_BUFFER` lines only, so it never answers a line already evicted |
+| `CopyText()` | the whole array | the newest `MAX_BUFFER` lines, oldest first |
+| The status line (`UpdateStatus`) | `#buffer / MAX_BUFFER` | `BufferSize() / MAX_BUFFER` — never reads more than 1500 |
+
+**Every public reader answers 1500.** Only a caller that reads `#buffer` (or `buffer[1]`) directly
+past the cap can see the slack. Below the cap nothing is observable, and no member is added,
+removed or repurposed: the member manifest differs from version 12's in the minor alone.
+`MAX_BUFFER` stays **1500** — the standard's number, which the message frame's `SetMaxLines` still
+matches — and the slack was a local of `DebugLog.lua` at version 13, not a member. Version 14
+publishes it as `lib.BUFFER_SLACK` and raises the pair to 3000 and 128, so the figures in this
+section (1500, 1564, the 1501st line) are version 13's.
+
+The cases are in `tests/test_debuglog.lua`: characterization written before the change and green on
+both sides of it (every reader at 1499, 1500, 1501 and 1600 lines, and the 1501st line dropping the
+first), a case that counts `table.remove` calls over 1564 adds (64 through version 12, at most one
+now), a case that pins the peak raw length at exactly 1564 and the compaction's order, and a case
+that pins the status line at `1500 / 1500` while the raw array is past the cap.
+
+## What version 12 changed
+
+**The copy window is now drawn by `LibKa0s-Widgets-1.0`'s `CopyWindow`.** That is the whole change,
+and everything else here follows from it: a new hard dependency floor, one descriptor fallback, one
+behavior gained, and a list of the things that deliberately did not move.
+
+No member was removed and no member was repurposed. A host needs a re-vendor of the **whole**
+`LibKa0s/` folder and no code change.
+
+| | | Since |
+|---|---|---|
+| `NEEDS_WIDGETS = 7` | A hard load-time floor. Absent or older, this module is **absent** rather than half-wired. See [Why the floor is hard](#why-the-floor-is-hard). | **12** |
+| `addonName` falls back to `name` | Only for the copy window's descriptor, which requires one. The field itself is still optional here and still `Since` **9**. See [Why `addonName` gained a fallback](#why-addonname-gained-a-fallback). | fallback at **12** |
+| The copy window re-anchors on every show | It lands over the console wherever the console has since been dragged, instead of wherever the copy window itself was last left. Behavior **gained**. | **12** |
+| `_copyWindowForTest` / `_copyFrameForTest` | Test seams recorded on the instance by `ShowCopy()` — the handle and the frame it built. | **12** |
+
+### Why the copy window moved out of this file
+
+It was **the fifth copy of the same fifty-two lines** in the collection, and the last one living
+outside Widgets. `Widgets.CopyWindow` arrived at Widgets minor 6 and took the other three; this one
+did not go with them, and version 11 recorded why: it was wired to `escClose`, `applySkin` and
+`dragBar`, which are locals of *this* file, and it named its scroll frame, which the shared member
+had no way to express.
+
+Widgets minor 7 closed that last gap. `scrollName` is the field it added, and it exists because of
+this window: `UIPanelScrollFrameTemplate` derives its scrollbar children's names from its parent's,
+so an anonymous scroll frame leaves them unnamed — invisible until somebody tries to skin or find
+one. The debug console had always named it and the three other adopters never had.
+
+The three locals turned out to be descriptor fields, and two of them are the *library's* rather than
+this file's:
+
+| What kept it here | Where it went |
+|---|---|
+| `applySkin` | The descriptor's `applySkin` field — already the host's-or-Core's seam, so it hands over unchanged and still covers both windows. |
+| `escClose` | `CopyWindow` registers `UISpecialFrames` itself, for all four of its callers. |
+| `dragBar` | Nothing to hand over: `CopyWindow` builds its own title bar, the same 26px one. |
+| the named scroll frame | Widgets minor 7's `scrollName`. |
+
+The handle is built lazily on first use and kept, because `CopyWindow` is itself lazy — nothing is
+created until the first `Show`, which matters on a window most sessions never open.
+
+### Why the floor is hard
+
+`DebugLog.lua` now returns **before `NewLibrary`** if `LibKa0s-Widgets-1.0` is absent or below minor
+7, exactly as it has always done for Core. There is no degraded mode and that is deliberate.
+
+**A console whose Copy button silently does nothing is worse than no console.** The host's own
+degradation stub — the one every Ka0s addon writes for the case where the library did not load — only
+fires when the major is genuinely absent. Half-wire the module instead and the stub never runs, the
+host reports a working console, and the user presses Copy on a perf capture and gets nothing, with
+nowhere to look and nothing said. Absence is diagnosable; a dead button is not.
+
+The floor also costs nothing a correct install could trip over. **Both files ship in one payload and
+whole-folder vendoring is mandatory** — `DebugLog.lua` and `Widgets.lua` are never released
+separately and are never meant to be copied separately. A host that trips this floor therefore has a
+**broken** vendored copy rather than an unlucky one, and finding that out at load is the point.
+
+### Why `addonName` gained a fallback
+
+`CopyWindow` **refuses** a descriptor with no string `addonName` — it answers `nil` rather than a
+handle, because it cannot resolve the collection's close art without knowing which addon folder the
+vendored copy sits in. This library has always treated `addonName` as **optional**.
+
+Left alone, those two facts collide: a host that never set `addonName` would have **lost its copy
+window entirely** on this upgrade rather than gained a shared one, and lost it silently, since
+`ShowCopy()` returns on a `nil` handle. So the descriptor handed to `CopyWindow` passes
+`d.addonName or d.name`.
+
+This is the same fallback `PerfPanel`'s own `CopyWindow` descriptor already uses, which is why it is
+a convergence rather than a new idea.
+
+What the fallback does **not** do is change what `addonName` means here. A host that omits it still
+gets the version-8 windows down to the pixel: `d.name` reaches `CopyWindow` only as the string it
+resolves close art from, and where that resolves to nothing, the close control falls back exactly as
+it does anywhere else. The advice in [Why a name and not a boolean](#why-a-name-and-not-a-boolean)
+is unchanged — a host that wants the collection's art passes its real folder name, and passing
+`d.name` deliberately is still the wrong move.
+
+### What the window gained
+
+**It re-anchors to the console on every show.** The hand-rolled window anchored once, at build, to
+`CENTER` — so on the second and every later open it appeared wherever it had last been dragged,
+however far the console had since moved. `CopyWindow` consults its `anchorTo` on **every** `Show`, so
+the popup lands over the window that spawned it. That is what its three other callers already do, and
+it is the one respect in which this window behaves differently from version 11.
+
+The console frame is handed over as `anchorTo = function() return frame end` — a function rather than
+the frame, because the console frame is itself lazy and may not exist when the copy window's
+descriptor is written.
+
+One smaller visual difference comes with the shared member: `CopyWindow` paints its own denser
+backdrop (`0.06, 0.06, 0.08, 0.95`) after the skin runs. It is a wall of small monospace text and the
+world bleeding through costs legibility there in a way it does not on a frame showing four controls.
+
+### What did not change, stated explicitly
+
+These are the things a converged window is most likely to quietly lose, so each is named and each is
+pinned by a test:
+
+| | |
+|---|---|
+| `<name>DebugCopyWindow` | The global frame name is preserved, passed as `CopyWindow`'s `name`. It is what goes into `UISpecialFrames`, and a host test or a skinning addon may hold it. |
+| `<name>DebugCopyScroll` | The scroll frame's global name is preserved, via `scrollName`. Its scrollbar children's names derive from it. |
+| The `applySkin` seam | Still covers **both** windows. The same function object goes to `CopyWindow`, so a host that re-skins one re-skins both and the two cannot drift apart. |
+| The `makeCloseButton` descriptor field | Still covers **both** windows, as it has since minor 4. It is forwarded to `CopyWindow`, which gained the field at Widgets minor 7 for exactly this reason — a hardcoded Core × upstream would have quietly narrowed a contract this library had already published. |
+| 560 × 360 | The copy window is the same size. `CopyWindow`'s own default is 640 × 420; this caller passes its own. |
+| `D:CopyText()` | Unchanged at version 12. It was still `table.concat(buffer, "\n")`, and it is still split out from `ShowCopy` because an `EditBox` is write-only through the frame API. Version 13 bounds it to the newest `MAX_BUFFER` lines — see [What changed at this version](#what-changed-at-this-version). |
+
+The `Show` order — width, then text, then cursor, then show, then focus, then highlight — is also
+unchanged, but it is no longer spelled out here: it is `CopyWindow`'s, and it is load-bearing there
+for the same reasons it was load-bearing here.
+
+### The line cap: 1500 from version 11, 3000 from version 14
+
+`lib.MAX_BUFFER` is **3000** at this version. It was 1500 from version 11 through version 13, and
+[the buffer is 3000 lines](#debugloglua-14-the-buffer-is-3000-lines) says why it doubled here. The
+1500 had a reason of its own, and it still holds:
+
+The cap is not a display preference. **The perf capture workflow pastes out of this buffer**:
+`perf report` prints its summary into the console and `perf dump` writes the whole JSON record as a
+single line, so a capture is read by opening the copy window and pressing Ctrl+C. At 500 a long run
+overflowed the buffer and lost its head — silently, because a buffer that has dropped its oldest
+lines looks exactly like one that was started later.
+
+**The copy window is a view of the buffer, not a second store.** `CopyText()` joins the buffer's
+newest `MAX_BUFFER` lines and the window caps nothing of its own, so the buffer cap *is* the copy
+cap — the slack version 13 introduced (`BUFFER_SLACK`, 128 lines here) lets the raw array run past
+the cap, and the copy never reaches it. That is still true with the window drawn by Widgets: `ShowCopy()` hands `CopyText()` in as
+text, and `CopyWindow` holds no buffer of its own.
+
+What has to move with the cap is the message frame's own `SetMaxLines`: the cap and `SetMaxLines` are
+one decision written in two places, and letting them drift makes the visible log and the copied
+buffer disagree about what happened.
+
+### What version 10 corrected, and why the forwarder carries every argument
+
+Version 10 fixed two things version 9 shipped, and both still hold here.
+
+`lib.MakeCloseButton` forwards onto `Core.MakeCloseButton`, and at version 9 it took **two**
+arguments where Core's had grown a third — so a host that passed `addonName` got copy and clear as
+icons beside a close button that was still a multiplication sign. A forwarder that loses an argument
+is not a failure any layer can report: Core saw no addon name and did exactly what it does without
+one, which is a perfectly good button. The forwarder exists so that a Core upgraded underneath an
+unchanged `DebugLog.lua` is still the one that draws (see
+[The empty `makeCloseButton`](#the-empty-makeclosebutton)), which means it has to carry **every**
+argument Core takes or the upgrade arrives half-applied.
+
+The icon controls also carry **no tooltip**. Version 9's anchored `ANCHOR_BOTTOM`, which put it on
+top of the first line of the log — the thing the window exists to show — every time the pointer
+crossed the title bar. The `label` argument is still passed and still used: it is what the
+**text-button fallback** draws when there is no art.
+
+### The `addonName` field and the icon controls, from versions 9 and 10
+
+**One optional descriptor field, `addonName`.** Additive: a host that does not pass it gets the
+version-8 windows down to the pixel, and every existing field behaves exactly as it did.
+
+| | | Since |
+|---|---|---|
+| `addonName` | The host's own addon FOLDER name, from its first vararg. Given it, both windows draw the collection's own art — `close`, `copy` and `clear` out of `LibKa0s-Media-1.0` — instead of a multiplication sign and two words. | **9** |
+| Icon title-bar controls | Copy and Clear become 18×18 icon buttons with 12px of art, matching the close control, so the three are one size and one pitch. **No tooltip** — see above; version 9 had one. | **9** |
+| `frame.clearButton` / `frame.copyButton` | The two controls, recorded on the frame the way `titleBarOffsets` and `titleText` already are — the only handle a host's test has on which of the two shapes it got. | **9** |
+| `frame.diagnosticsButton` | The Diagnostics link beside the toggle, recorded the same way; see [What changed at this version](#what-changed-at-this-version). | **16** |
+
+These are the **console** window's controls, and this version does not touch them. The copy window
+has only ever had a close control, and that one is `CopyWindow`'s now.
+
+### Why a name and not a boolean
+
+A texture path is absolute from `Interface\AddOns\` and this library is **vendored**: there is no
+one path to it, and a copy cannot know which addon folder it was copied into. The host has that
+string as its first vararg and nothing else does.
+
+**Do not pass `d.name` blindly.** That field seeds the frame globals and only *happens* to equal the
+folder name in most hosts; they are different questions and a host where they differ would get a
+path into nowhere — which draws nothing and raises nothing. The minor-12 fallback does exactly that
+substitution, and only where the alternative was no window at all: it buys a copy window that opens,
+not the collection's art.
+
+### The offsets move when the icons do
+
+Copy and Clear were 42 and 40 wide as words and are 18 each as icons, so with `addonName` the
+derived offsets tighten:
+
+| | Words (no `addonName`) | Icons |
+|---|---|---|
+| `close` | `-6` | `-6` |
+| `clear` | `-30` | `-30` |
+| `copy` | `-78` | `-54` |
+
+`frame.titleBarOffsets` still reports whichever it built, and a host close button wider than 18
+still pushes both out of its way.
+
+### What the marks do not say
+
+Dropping a word for a mark costs the one thing the word was doing, and version 10 accepts that cost
+rather than paying it with a tooltip over the log. A host that wants the words back omits
+`addonName`; there is no third setting.
+
+## Lib-level surface
+
+| Name | Since | Meaning |
+|---|---|---|
+| `lib.FormatPlain(ts, tag, msg)` | 1 | `"<ts> \| [<tag>] <msg>"` — what the buffer holds and the copy window mirrors. Pure and lib-level, so a host's tests call it directly. |
+| `lib.FormatColored(ts, tag, msg)` | 1 | The console view's line: timestamp muted steel-blue (`6f8faf`), `[tag]` muted tan/gold (`c9a66b`), separator and message default white. |
+| `lib.MAX_BUFFER` | 1 | The line cap (**3000** as of minor 14; 1500 from minor 11 through 13; 500 through minor 10). Fixed by the standard rather than by the host: the cap and the message frame's own `SetMaxLines` must move together or the visible log and the copied buffer diverge. 1500 because the perf capture workflow pastes out of this buffer — `perf dump` writes a whole JSON record as one line — and 3000 so a diagnostics report and the trace it travels with fit in one Copy, measured as the most the copy window takes before it turns sluggish. The copy window is a *view* of the buffer rather than a second store, so this one number caps both. |
+| `lib.BUFFER_SLACK` | **14** | How far the raw `buffer` may run past `MAX_BUFFER` before `Add` compacts it: **128**. Read by `Add` at call time. A private local through minor 13, at 64. |
+| `lib.TIME_COPY` | **14** | `false` at load and never saved. While `true`, each `ShowCopy()` prints one `COPY_TIMING` line through the descriptor's `print` on the next frame. See [Timing the copy window](#timing-the-copy-window). |
+| `lib.DIAG_MAX_LINES` | **D1** | **1200**. The most lines one diagnostics report writes, markers included; the effective cap is this or `MAX_BUFFER - 100`, whichever is smaller, so 1200 at this version's 3000. |
+| `lib.DIAG_MAX_PER_LIST` | **D1** | **40**. The default cap of `out:list`. |
+| `lib.MakeCloseButton` | 1 | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. Forwards through the `core` table at call time, not captured at load. |
+| `lib.STRINGS` | 1 (`DIAGNOSTICS`: **16**) | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
+| `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor> }` — the live minor of every file in this major (the second from D1). |
+| `lib:New(descriptor)` | 1 | Build a console for one host. See below. |
+
+## The console descriptor
+
+Everything a host supplies to `lib:New(descriptor)`.
+
+| Field | Type | Required | Since | Meaning |
+|---|---|---|---|---|
+| `name` | string | yes | 1 | Seeds the frame globals `<name>DebugWindow`, `<name>DebugCopyWindow` and `<name>DebugCopyScroll` — all three unchanged at minor 12, the last two now passed to `CopyWindow` as `name` and `scrollName`. Two hosts sharing a name would clobber each other's globals and each other's Esc handler. |
+| `title` | string | yes | 1 | The human title; the library appends its own `" — Debug"`. |
+| `font` | string | yes | 1 | Path to the monospace font the console renders in. Required rather than defaulted because a nil here raises inside `SetFont`, halfway through building a window that is then un-closable. |
+| `fontSize` | number | no | 1 | Defaults to `10`. Applies to both windows, the copy window's via `CopyWindow`'s `fontSize`. |
+| `isEnabled` | function | yes | 1 | Reads the host's logging flag. The library never stores it. |
+| `setEnabled` | function | yes | 1 | Writes it. Always handed a real boolean. |
+| `print` | function(line) | no | 1 | Where the chat acknowledgment goes. Defaults to the chat frame, untagged — a host that wants its own tag passes its printer, which is what every Ka0s addon does. |
+| `safeToString` | function | no | 1 | Defaults to Core's. Every logged value goes through it, so a combat-protected value renders rather than raising downstream. |
+| `initSummary` | function | no | 1 | Returns one line naming version/schema/profile. The library owns *when* it is emitted (on enable, as the `[Init]` line); only the host can know what it says. |
+| `onVisibilityChanged` | function | no | 1 | Fired on both `OnShow` and `OnHide`, so a host can repaint a settings panel whose checkbox mirrors the console's visibility. |
+| `slash` | string | no | 1 | Composes the checkbox tooltip's `"<slash> debug"` reference. |
+| `brandName` | string | no | **D1** | The addon's plain-text brand, `Ka0s <Name>`, named in both diagnostics markers. Falls back to `title`. |
+| `diagnostics` | function | no | **D1** | Returns the host's report sections, `{ { name, fn }, ... }`, each `fn(out)`. Called each time a report runs, never at `New`. |
+| `diagnosticsEnablesLogging` | boolean | no | **17** (D2) | `false` keeps a report run from turning logging on; any other value, or none, lets a run with logging off turn it on through `SetEnabled(true)` first. Read at every run. |
+| `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
+| `skin` | table | no | 1 | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
+| `applySkin` | function | no | **4** | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. Since minor 12 the copy window's half is served by handing this same function to `CopyWindow` as its `applySkin`, which runs it instead of `Core.ApplySkin` — so the two windows still cannot drift apart. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than color, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
+| `addonName` | string | no | **9** | The host's own addon folder name. Given it, both windows draw this collection's art; omitted, they draw the version-8 glyph and words. **As of minor 12 the copy window's descriptor falls back to `name` when this is absent**, because `CopyWindow` refuses a descriptor without one — see [Why `addonName` gained a fallback](#why-addonname-gained-a-fallback). The field itself is still optional and still means the same thing. |
+| `makeCloseButton` | function | no | **4** | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows — since minor 12 the copy window's half is served by forwarding it to `CopyWindow`, which gained the matching field at Widgets minor 7 so that this published contract would not narrow. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. **Rarely the right field, and it has no consumer today** — these are the library's windows, so they wear the library's close glyph, and a host whose own main window closes with something else must not push that difference onto them (`standalone-windows`). Pass it only for a close control genuinely *different in kind*. See [The empty `makeCloseButton`](#the-empty-makeclosebutton). |
+
+## The instance surface
+
+Everything `lib:New(descriptor)` returns on the instance.
+
+| Name | Since | Meaning |
+|---|---|---|
+| `buffer` | 1 | The plain-text lines, a dense array, newest last. **As of minor 13 it may hold up to `MAX_BUFFER + BUFFER_SLACK` raw entries between compactions (3128 as of minor 14; 1564 at minor 13)**; the newest `MAX_BUFFER` are the kept lines and anything older is already evicted. Read directly by host tests across the collection — it is part of the contract, not an internal — so a test that needs the kept count past the cap reads `BufferSize()`, not `#buffer`. |
+| `FormatPlain` / `FormatColored` / `MakeCloseButton` | 1 | The lib-level members, mirrored onto the instance so a host holds one object. |
+| `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
+| `Add(tag, msg)` | 1 | Append one line. **Ungated on purpose**: the enable seam's own bracket lines and a host's perf output both have to land whatever the flag says. |
+| `Debug(tag, fmt, ...)` | 1 (raise-proof format: **7**) | The gated sink, and a plain function rather than a method — hosts bind it bare (`NS.Debug = D.Debug`) and call it from everywhere. Zero-allocation when off: it returns before building the argument table. Every vararg goes through `safeToString`, and **as of minor 7 the `string.format` itself is `pcall`’d**: a format the stringified arguments cannot satisfy (a secret reaching a `%d` slot) lands as the format string followed by those arguments, space-joined, instead of raising inside the sink. |
+| `BufferSize()` | 1 | The number of kept lines: `#buffer`, capped at `MAX_BUFFER` as of minor 13. |
+| `LastLine()` | 1 | The newest buffered line. |
+| `FindLine(substr)` | 1 | The newest kept line containing `substr` — as of minor 13 it searches the newest `MAX_BUFFER` lines only, so it never answers an evicted line still in the slack. Plain search, not a pattern — callers are looking for a tag or a message fragment, neither of which is written as a Lua pattern. |
+| `Clear()` | 1 | Empty the log frame and the buffer, then repaint the scrollbar and the status line. |
+| `UpdateScrollBar()` | 1 | Re-sync the slider with the message frame's scroll offset. The two run in opposite directions, so they are related by `maxOffset - value`. |
+| `UpdateStatus()` | 1 | Repaint the `N / MAX` line counter. `N` is `BufferSize()` as of minor 13, so it never reads past `MAX`. |
+| `CopyText()` | 1 | The kept lines as one newline-joined string, oldest first — as of minor 13 the newest `MAX_BUFFER` only. |
+| `ShowCopy()` | 1 | Open the copy window over the console, filled with the buffer, focused and selected — Ctrl+C, then Esc. As of minor 12 the window is `LibKa0s-Widgets-1.0`'s `CopyWindow`, built lazily on the first call and kept; it re-anchors to the console on **every** call rather than staying where it was last dragged. As of minor 14, with `lib.TIME_COPY` on, it also prints the timing line described in [Timing the copy window](#timing-the-copy-window). |
+| `_copyWindowForTest` | **12** | The `CopyWindow` handle, recorded on the instance by `ShowCopy()`. A test seam: the handle is otherwise a local, and this is what a suite reads to assert which window it got. |
+| `_copyFrameForTest` | **12** | The frame that handle built, from `win:GetFrame()`. The copy window's `EditBox` is write-only through the frame API, which is why `CopyText()` exists — this is for the frame's own properties (its global name, its size, its named scroll child). |
+| `Show()` / `Hide()` / `IsShown()` / `Toggle()` | 1 | Window visibility. `Hide` never builds a frame: a settings panel calls `IsShown` on every refresh, and a `Hide` that constructed a window would build one nobody asked for. |
+| `IsEnabled()` | 1 | The host's flag, read through the descriptor and coerced to a boolean. |
+| `RefreshHeader()` | 1 | Repaint the title-bar toggle — `Debug: ON` green, `Debug: OFF` red. |
+| `SetEnabled(on)` | 1 | The single seam for changing debug state: writes the host's flag, repaints the header, prints the color-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
+| `ConsoleCheckbox()` | 1 | The data contract below. |
+| `RunDiagnostics(spec?)` | **D1** (turns logging on: **D2**) | With logging off, and unless the descriptor sets `diagnosticsEnablesLogging = false`, first turn logging on through `SetEnabled(true)`; then build the report and append it to the console, repaint once, show the console if hidden, print the one `DIAG_WRITTEN` chat line, and return the number of report lines written. Never clears and never turns logging off. `spec` may carry `sections`, `maxLines` and `maxPerList`. |
+| `BuildDiagnostics(spec?)` | **D1** | The same report as data, `{ lines = { { tag, msg }, ... }, dropped = n, capped = bool, capsHit = bool }`, writing nothing anywhere. For tests. |
+| `DebugVerb(rest)` | **D1** | `diagnostics` runs the report (`RunDiagnostics()`, so it turns logging on as a run does), `on` / `off` set the flag, and each answers `true`; anything else answers `false` and does nothing. |
+| `_toggleClickForTest` / `_frameForTest` | 1 | Test seams. A headless mock's `Show`/`Hide` track visibility without firing `OnShow`/`OnHide`, and stub `GetScript`, so the click handler and the visibility callback are only reachable directly. |
+
+## The `ConsoleCheckbox()` data contract
+
+`ConsoleCheckbox()` returns a plain table, and that is the whole point:
+
+```lua
+{ label = "Debug console", tooltip = "…", get = function() … end, set = function(v) … end }
+```
+
+It is **data, not a widget** — a *data contract*, consumed by the Options module and rendered by it,
+with the host assembling the two. Neither library ever reaches for the other: DebugLog does not know
+an options library exists, and the options library never resolves `LibKa0s-DebugLog-1.0`. That is
+deliberate, and it is what keeps a real dependency cycle from forming between two majors that would
+otherwise each need the other at load time.
+
+That is a different relationship from the one this version adds to Widgets, and the difference is
+worth naming. DebugLog *does* resolve `LibKa0s-Widgets-1.0` directly, at load, and refuses to exist
+without it. Widgets never resolves DebugLog, so there is no cycle to form — the dependency runs one
+way, which is exactly the property the Options arrangement cannot have and therefore has to avoid
+having at all.
+
+The checkbox toggles the window's **visibility** only, never the logging flag. Those are separate
+controls, and a user who closes the console does not expect logging to stop — which is exactly what
+the tooltip says, composed from the descriptor's `slash`.
+
+## The `L` trap
+
+`L` must be a **plain table holding only the keys you actually translate** — never an addon-wide
+locale table. Many locale tables carry a metatable whose `__index` answers the key itself, so a
+missing `L["STEP_START"]` answers `"STEP_START"` rather than `nil`, and the library's own default
+never gets a chance to resolve. From DebugLog minor 3 onward the resolver uses `rawget`, so a
+metatable-backed table no longer poisons the lookup — but passing a scoped table is still the
+contract, because it is the only form that is correct on every minor.
+
+## The empty `makeCloseButton`
+
+**No shipped consumer passes it, and that is a recorded decision rather than an oversight.** As of
+v1.5.0 the hook is exercised by nothing outside this library's own suite. It arrived at minor 4
+alongside `applySkin`, both defaulting to what minor 3 did, specifically so BankLedger and LootHistory
+could adopt the module without losing the 24×24 class-colored × their consoles then wore. Both have
+since dropped it deliberately: Core minor 3 made the Ka0s edge the library's own default, at which
+point overriding the close button meant re-specifying what the library already drew. Each seam file
+carries an explicit note where the field used to be — `../BankLedger/core/DebugLogSetup.lua:111-116`
+and `../LootHistory/core/DebugLogSetup.lua:125-130` — and LootHistory records the drop as
+`LIBKA0S-18`/`-19`. `applySkin`, its twin, went the other way: two consumers, both still passing it,
+both for the reason it was added.
+
+The hook is **retained on purpose**, and not merely because `-1.0` forbids removing it. What it is
+for is a host whose console chrome is not Ka0s chrome at all — a close control different in *kind*,
+not in color — and that host does not exist in this collection because every host in this collection
+is a Ka0s addon. A surface with no consumer inside a fleet that shares one visual standard is not
+evidence the surface is wrong; it is evidence the standard is doing its job, which is the same reason
+`applySkin` covers the whole chrome job for every case a Ka0s host has actually had.
+
+Minor 12 is the first time the zero cost something. Converging the copy window onto `CopyWindow`
+meant handing a field with no consumer across a major boundary, and Widgets had to grow
+`makeCloseButton` at its own minor 7 to receive it — a field with no consumer on that side either.
+The alternative was a hardcoded Core × upstream, which would have quietly narrowed a contract this
+document has published since minor 4. An unused published field is still a published field, and the
+cheap thing to do with one is honor it, not discover later which host was relying on it.
+
+What follows for a reader is where the guarantee stops. The hook's behavior on the console window is
+pinned by `tests/test_debuglog.lua` — the factory being called once per window, the `onClick` it is
+handed really hiding the console, a `nil` answer being survivable exactly as Core's own is, and the
+Copy/Clear offsets deriving from the returned button's width in both the wider-button and
+unmeasurable-width arms — and the no-hook default is pinned on both windows. So what is fixed here is
+the library's side of the contract: what the factory is called with, what it may answer, and what the
+title bar does with either. What is *not* fixed by any host is the shape — nothing outside these
+cases has ever asked the library for a close button, so the field's ergonomics are pinned by the
+library's own assumptions about what such a host would want rather than by one. A first host arriving
+later should treat a misfit as a library gap on first contact, the same way `applySkin`'s second host
+did.
+
+Nothing needs doing about this. Pass nothing and both windows close with Core's ×; the zero is
+written down because an unrecorded decision is indistinguishable from a mistake, and a documented,
+tested, unused field otherwise reads as one to every reader who finds it.
+
+## Compatibility
+
+The API is **additive-only**: a member or descriptor field may be added in a later minor, never
+removed or repurposed, so a host written against minor 1 keeps working unmodified here.
+
+Version 17.2 adds one descriptor field (`diagnosticsEnablesLogging`) and changes one behavior: a
+report run with logging off turns it on for the session first, where every earlier version left the
+flag alone. A host that wants the old behavior sets the field to `false`.
+
+Version 16.1 adds one string (`DIAGNOSTICS`) and one control, and changes the console's minimum width
+where the report is installed. Version 15.1 adds nothing to the surface.
+
+Version 14.1 adds four lib-level members, two strings, two descriptor fields and three instance
+members. The one existing behavior it changes is the buffer: **3000 kept lines where version 13 kept
+1500**, and up to 3128 raw entries where it held 1564. A host suite that writes a literal 1500, or
+1500 plus a margin, to push the console past its cap, or asserts the cap as 1500, re-pins at
+re-vendor, preferably on `lib.MAX_BUFFER` and `lib.BUFFER_SLACK` rather than on a new literal.
+Otherwise it changes nothing while `TIME_COPY` is off. **A host's library-absent
+DebugLog stub is an instance surface, so it gains `RunDiagnostics`, `BuildDiagnostics` and
+`DebugVerb`** for its parity case: the stub's `RunDiagnostics` prints the collection's placeholder
+line, `"%s is unavailable: the LibKa0s library did not load."` with `/<slash> diagnostics`, writes
+nothing and returns 0 (`debug-logging-§14`). A host suite that
+hard-codes the slack as `64` reads `lib.BUFFER_SLACK` instead: it is 128 at this version.
+
+The one observable change at version 13 is `#buffer` past the cap, which may read up to 1564 rather
+than 1500. Every method answers as version 12 did. A host suite that writes more than 1500 lines and
+asserts `#D.buffer` or `D.buffer[1]` reads the raw array rather than the kept lines, and moves to
+`D:BufferSize()`, `D:CopyText()` or `D:FindLine()`. On the 2026-09-24 grep of the ten consumers'
+`tests/`, one suite does: PrettyChat's `tests/test_debuglog.lua` ("the buffer is capped and drops
+its oldest lines first", 1520 lines, then `#D.buffer == 1500` and `D.buffer[1]` holding line 21).
+
+The one thing that was *not* additive at version 12 is the **load-time floor**, still in place here,, and it sits below
+the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
+would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
+does not permit. Re-vendor the whole folder and the floor is unobservable.
