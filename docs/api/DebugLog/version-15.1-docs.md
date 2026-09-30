@@ -68,6 +68,9 @@ too, as every `Widgets.CopyWindow` does from Widgets minor 11 (see that major's
   its left). What does not follow on its own is the scrollbar's range and the line counter, and a
   resize runs `UpdateScrollBar()` and `UpdateStatus()` for them. The buffer and the scroll position
   are not touched.
+- **The line counter clears the grip.** The grip is 16 px square, 1 px in from the corner and ten
+  levels above the console, so the counter's right inset moves from 10 to **22** px; at 10 its last
+  digits were drawn under the grip's art. The inset is the same with or without the grip.
 - **Guarded, not floored.** The console calls `MakeResizable` only when the Core it finds has it;
   on an older Core it is today's fixed window, and the rest of the console is unchanged.
 

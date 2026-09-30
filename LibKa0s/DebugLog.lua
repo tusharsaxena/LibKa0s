@@ -173,6 +173,10 @@ end
 local TITLE_H  = 26      -- drag bar height
 local STATUS_H = 16      -- bottom status bar height
 local BAR_W    = 8       -- scrollbar gutter width
+-- The line counter's right inset. Core.MakeResizable's grip is 16 px square at 1 px in from the
+-- bottom-right corner and ten levels above the console, so a counter at the old 10 px drew its last
+-- digits under the grip's art; 22 clears the grip's 17 px with a 5 px gap.
+local COUNT_INSET = 22
 local DEFAULT_FONT_SIZE = 10
 
 -- Title-bar arithmetic. PAD is the one gap between every control and its neighbor; CLOSE_W is what
@@ -617,7 +621,7 @@ function lib:New(d)
     statusDivider:SetColorTexture(0.24, 0.24, 0.27, 0.85)
 
     local lineCount = frame:CreateFontString(nil, "OVERLAY")
-    lineCount:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -10, 3)
+    lineCount:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -COUNT_INSET, 3)
     lineCount:SetFont(d.font, fontSize, "")
     lineCount:SetJustifyH("RIGHT")
     lineCount:SetTextColor(0.6, 0.6, 0.62)

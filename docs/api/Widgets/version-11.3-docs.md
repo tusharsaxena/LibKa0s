@@ -31,6 +31,11 @@ console's Copy and each host's export windows.
   and does not, so a resize sets its width again: the scroll frame's width once the client has laid
   it out, else the window's width less the margin the descriptor's `editWidth` keeps from its `width`
   (50 by default).
+- **The scroll bar's down button clears the grip.** The scroll frame's bottom inset moves from 10 to
+  **18** px. `UIPanelScrollFrameTemplate` hangs its scroll-down button at the scroll frame's bottom
+  edge in the window's right gutter, and the grip covers the window's bottom 17 px there, so at 10 a
+  click on the button's lower part started a resize instead of scrolling. The inset is the same with
+  or without the grip.
 - **`Show` sizes the box for the window as it is.** Through 10.3 it fell back to the declared
   `editWidth`; it now falls back to the same computation from the frame's current width, which is
   identical until the window is resized.

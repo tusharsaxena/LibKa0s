@@ -54,12 +54,15 @@ is today's (owner decisions D2 and D3; `debug-logging-§1` and `performance-§4`
   bar's arithmetic (the centered title plus the wider control group, `PAD` on each side, never above
   700); the minimum height is the two bars and four lines. A resize resyncs the scrollbar's range and
   the line counter; the message frame, the scrollbar and the title-bar controls follow their anchors,
-  and the buffer and scroll position are kept.
+  and the buffer and scroll position are kept. The line counter's right inset moves from 10 to 22 px
+  so no digit is drawn under the grip.
   ([version 15.1](docs/api/DebugLog/version-15.1-docs.md).)
 - **Every `Widgets.CopyWindow`** (the console's Copy and each host's exports) opens at its
   descriptor's `width` / `height` and resizes on both axes, down to 240 × 140 or its declared size
   where smaller. The edit box, a scroll child, is re-widened on every resize, and `Show` sizes it for
-  the window as it is. Each named window keeps its own size.
+  the window as it is. Each named window keeps its own size. The scroll frame's bottom inset moves
+  from 10 to 18 px so the scroll bar's down button sits above the grip, which had taken clicks on the
+  button's lower part.
   ([version 11.3](docs/api/Widgets/version-11.3-docs.md).)
 - **The perf panel** opens at its computed 376 × 196 and resizes in **width only** (its row count
   is fixed), down to today's width; a resize stretches every step row to the new width.

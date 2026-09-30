@@ -646,17 +646,19 @@ badge and any count quoted in the docs must agree with it.
 - diag: the three instance members a consumer's DebugLog stub must carry
 - diag: without the secondary file an instance has no report methods
 
-### test_resize_windows.lua (20)
+### test_resize_windows.lua (22)
 
 - resize console: the default size is still 700 x 344
 - resize console: it has a grip and bounds that keep the title bar's controls clear
 - resize console: the icon controls are narrower, and so is the minimum
 - resize console: a resize resyncs the scrollbar and the line counter, and keeps the buffer
+- resize console: the line counter sits clear of the grip
 - resize console: the size survives a hide and a show
 - resize console: two hosts' consoles resize independently
 - resize console: with no MakeResizable in Core it is today's fixed window
 - resize copy: a copy window opens at its descriptor's size
 - resize copy: it has a grip and a minimum on both axes
+- resize copy: the scroll bar's down button sits above the grip
 - resize copy: a window declared smaller than the minimum is its own minimum
 - resize copy: the edit box width tracks a resize
 - resize copy: the size, and the edit box's width, survive a hide and a show
@@ -2063,7 +2065,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 35 |
-| test_resize_windows.lua | 20 |
+| test_resize_windows.lua | 22 |
 | test_slash.lua | 70 |
 | test_slash_parse.lua | 24 |
 | test_slash_disabled.lua | 16 |
@@ -2116,4 +2118,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 7 |
-| **Total** | **1818** |
+| **Total** | **1820** |

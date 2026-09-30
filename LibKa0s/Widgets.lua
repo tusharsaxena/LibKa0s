@@ -455,6 +455,11 @@ local COPY_DEFAULTS = {
 -- title and close control and a few lines of text. Capped at the descriptor's own size, so a window
 -- declared smaller than this is its own minimum rather than one it could never be built at.
 local COPY_MIN_W, COPY_MIN_H = 240, 140
+-- The scroll frame's bottom inset. UIPanelScrollFrameTemplate hangs its scroll-down button at the
+-- scroll frame's bottom edge, and Core.MakeResizable's grip covers the window's bottom 17 px (16 px
+-- square, 1 px in, ten levels up), so at the old 10 px a click on the button's lower part started a
+-- resize instead of scrolling. 18 puts the whole button above the grip.
+local COPY_SCROLL_BOTTOM = 18
 
 --- The edit box's width for a window `w` wide. The scroll frame's own width once the client has laid
 --- it out; before that (or headless) the window's width less the same margin the descriptor's
@@ -553,7 +558,7 @@ local function buildCopyFrame(d)
 
   local scroll = CreateFrame("ScrollFrame", d.scrollName, f, "UIPanelScrollFrameTemplate")
   scroll:SetPoint("TOPLEFT", 8, -30)
-  scroll:SetPoint("BOTTOMRIGHT", -28, 10)
+  scroll:SetPoint("BOTTOMRIGHT", -28, COPY_SCROLL_BOTTOM)
 
   local edit = CreateFrame("EditBox", nil, scroll)
   edit:SetMultiLine(true)

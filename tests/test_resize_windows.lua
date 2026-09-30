@@ -44,6 +44,43 @@ local function byName(built, name)
   return nil
 end
 
+-- Every frame built while `fn` runs, with each SetPoint and SetSize it was given recorded as
+-- `__points` / `__sizes` (and still applied), so a case can read where a child was anchored.
+local function recordPoints(fn)
+  local realCreate = mocks.CreateFrame
+  mocks.CreateFrame = function(...)
+    local f = realCreate(...)
+    f.__points, f.__sizes = {}, {}
+    local setPoint, setSize = f.SetPoint, f.SetSize
+    rawset(f, "SetPoint", function(self, ...)
+      table.insert(self.__points, { ... })
+      if type(setPoint) == "function" then return setPoint(self, ...) end
+    end)
+    rawset(f, "SetSize", function(self, w, h)
+      table.insert(self.__sizes, { w, h })
+      if type(setSize) == "function" then return setSize(self, w, h) end
+    end)
+    return f
+  end
+  local ok, err = pcall(fn)
+  mocks.CreateFrame = realCreate
+  if not ok then error(err, 0) end
+end
+
+-- A recorded point's point name and its x / y offsets: the last two arguments, which is where they
+-- sit in both the ("BOTTOMRIGHT", x, y) and the ("BOTTOMRIGHT", rel, "BOTTOMRIGHT", x, y) shape.
+local function offsets(pt)
+  return pt[1], pt[#pt - 1], pt[#pt]
+end
+
+-- The grip's footprint measured in from the window's bottom-right corner: how far left and how far
+-- up it reaches (its inset plus its size), read off what Core actually gave it.
+local function gripReach(grip)
+  local _, gx, gy = offsets(grip.__points[1])
+  local size = grip.__sizes[1]
+  return -gx + size[1], gy + size[2]
+end
+
 -- Run `fn` as a host carrying a Core older than minor 9 would: no MakeResizable on the table.
 local function withoutHelper(fn)
   local real = core.MakeResizable
@@ -128,6 +165,30 @@ test("resize console: a resize resyncs the scrollbar and the line counter, and k
   assertEqual(D:BufferSize(), 5, "the buffer is untouched")
 end)
 
+test("resize console: the line counter sits clear of the grip", function()
+  -- red under: put the counter's BOTTOMRIGHT x offset in LibKa0s/DebugLog.lua back to -10
+  local f
+  recordPoints(function()
+    local D = newConsole("ResizeCounter")
+    D:Show()
+    f = D._frameForTest
+  end)
+  local reachX, reachY = gripReach(f.resizeGrip)
+  assertEqual(reachX, 17, "the grip is 16 px square at 1 px in")
+  assertEqual(reachY, 17)
+  -- The mock answers CreateFontString with the frame, so the counter's point lands on the console:
+  -- it is the one bottom-right point below the status divider (which sits at STATUS_H, 16).
+  local counter
+  for _, pt in ipairs(f.__points) do
+    local name, _, y = offsets(pt)
+    if name == "BOTTOMRIGHT" and type(y) == "number" and y < 16 then counter = pt end
+  end
+  assertTrue(counter ~= nil, "the line counter is anchored bottom-right")
+  local _, x, y = offsets(counter)
+  assertTrue(y < reachY, "the counter shares the grip's rows, so only x can keep it clear")
+  assertTrue(-x > reachX, "the counter's right edge is left of the grip: " .. tostring(x))
+end)
+
 test("resize console: the size survives a hide and a show", function()
   -- red under: SetSize(CONSOLE_W, CONSOLE_H) on every Show
   local D = newConsole("ResizeKeep")
@@ -188,6 +249,26 @@ test("resize copy: it has a grip and a minimum on both axes", function()
   assertTrue(type(f.resizeGrip) == "table")
   local minW, minH = f:GetResizeBounds()
   assertEqual(minW, 240); assertEqual(minH, 140)
+end)
+
+test("resize copy: the scroll bar's down button sits above the grip", function()
+  -- red under: put the scroll frame's BOTTOMRIGHT y offset in LibKa0s/Widgets.lua back to 10
+  local f
+  recordPoints(function()
+    local win = newCopy("ResizeCopyInset", 500, 300)
+    win:Show("x")
+    f = win:GetFrame()
+  end)
+  local _, reachY = gripReach(f.resizeGrip)
+  local bottom
+  for _, pt in ipairs(f.scroll.__points) do
+    local name, _, y = offsets(pt)
+    if name == "BOTTOMRIGHT" then bottom = y end
+  end
+  assertTrue(type(bottom) == "number", "the scroll frame is anchored bottom-right")
+  -- UIPanelScrollFrameTemplate's scroll-down button hangs at the scroll frame's bottom edge, and it
+  -- spans the frame's right gutter, which is the grip's column: only the height can clear it.
+  assertTrue(bottom > reachY, "the down button starts above the grip: " .. tostring(bottom))
 end)
 
 test("resize copy: a window declared smaller than the minimum is its own minimum", function()
