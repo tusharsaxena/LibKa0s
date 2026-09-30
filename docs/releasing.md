@@ -450,8 +450,8 @@ is the host that found the four kit gaps revision 16 closes (#27–#30). **No ad
 remains unadopted.**
 
 **Where v1.63.0 stands (2026-09-29).** One LibStub minor moves: `Slash.lua` 17
-(`LibKa0s-Slash-1.0` 17), and the kit stays at **revision 31**; no `NEEDS_*` floor rises and no file
-is added. It is the library's half of the 2026-09-29 `profile` verb rollout: the descriptor field
+(`LibKa0s-Slash-1.0` 17), and the kit moves to **revision 32** (a README-only count correction);
+no `NEEDS_*` floor rises and no file is added. It is the library's half of the 2026-09-29 `profile` verb rollout: the descriptor field
 `profiles`, `Sl:CliProfile`, `Sl:ProfileSwitch`, `lib.ProfileNames` and nine `PROFILE_*` strings,
 with `profile` kept out of `lib.LIVE_VERBS`. What a consumer owes is the whole-folder copy of both
 payloads and the provenance line, **and, in six of the eleven, two members on its Slash degradation

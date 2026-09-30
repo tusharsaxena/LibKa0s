@@ -16,8 +16,8 @@ Versions in this release: **Slash minor 17** (`LibKa0s-Slash-1.0` 17). Every oth
 unchanged from v1.62.0: `Core` 8, `Env` 1, `Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3,
 `Item` 2, `Media` 4, `Widgets` 10 and `WidgetsDragHandle` 3 (key 10.3), `DebugLog` 14 and
 `DebugLogDiagnostics` 1 (key 14.1), `Launcher` 4, `Options` key 26.1.32.1.1.6.1.7.4.1, `Perf` 13 and
-`PerfPanel` 5 (key 13.5), and the test kit stays at **revision 31**. No `NEEDS_*` floor rises and no
-major is added, so the library is still **fifteen majors across twenty-seven files**. Built to the
+`PerfPanel` 5 (key 13.5). The test kit moves to **revision 32**, a README-only correction. No
+`NEEDS_*` floor rises and no major is added, so the library is still **fifteen majors across twenty-seven files**. Built to the
 Ka0s WoW Addon Standard **v2.69.0**.
 
 This is the library's half of the 2026-09-29 `profile` verb rollout (owner decision D1: the verb's
@@ -78,6 +78,17 @@ not carry in its parity case's `ignore` list.
 not the host wires the verb. Measured on 2026-09-29 with the payloads dropped into a scratch clone of
 each consumer's `master`: AbsorbTracker, AuraMaster, KickCD, PartyFrameEnhanced, PrettyChat and
 WhatGroup fail that one case; the other five stay green (the document's *Compatibility*).
+
+### Test kit revision 32: the README counts the eleventh consumer
+
+`testkit/README.md` said it was byte-identical in twelve places, "each of the ten consumers'"
+included, and counted eleven repositories where the kit's gates run. The collection has eleven
+consumers, so it now says thirteen places and twelve repositories. Prose only, and a revision
+because any released change to a file in `testkit/` bumps `Kit.VERSION` (32). No code, member,
+case name or mock changes; a consumer copies the whole folder, as it does for v1.63.0 anyway, and
+moves its own `kit revision 31` citations to 32. `tests/test_kit_inventory.lua` pins revision 32.
+Folded into v1.63.0 before the tag was published (2026-09-30). Documented in
+[`docs/api/testkit/version-32-docs.md`](docs/api/testkit/version-32-docs.md).
 
 Release gate (`docs/automated-tests/20260929-113624/`): lint pass, 0/0 in 123 files;
 tests pass, 1778 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
