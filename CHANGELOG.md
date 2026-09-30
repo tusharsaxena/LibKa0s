@@ -180,8 +180,8 @@ and the client fires it from its layout pass, not inside the setter); a suite fi
   A host suite that pins the console's minimum width, or counts the frames its title bar builds,
   re-pins with the link in (it is drawn whenever the report is installed).
 
-Release gate (`docs/automated-tests/20260930-183150/`): lint pass, 0/0 in 127 files;
-tests pass, 1827 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+Release gate (`docs/automated-tests/20260930-190933/`): lint pass, 0/0 in 127 files;
+tests pass, 1834 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
 ## v1.63.0 — 2026-09-29

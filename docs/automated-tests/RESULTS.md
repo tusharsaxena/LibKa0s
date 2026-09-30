@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260930-190933`](20260930-190933/) | `0a95227` | clean | 1.64.0 → 1.64.0 | 0/0 | 127 | 1832/2/1834 | skip | 37575 | 5254 | 6.6 | 1.9 | 15 | 0 | **green** |
 | [`20260930-183150`](20260930-183150/) | `d1d0824` | clean | 1.64.0 → 1.64.0 | 0/0 | 127 | 1826/1/1827 | skip | 37481 | 5247 | 6.6 | 1.9 | 15 | 0 | **green** |
 | [`20260930-153012`](20260930-153012/) | `7b4fbe8` | clean | 1.64.0 → 1.64.0 | 0/0 | 127 | 1819/1/1820 | skip | 37339 | 5221 | 6.6 | 1.9 | 15 | 0 | **green** |
 | [`20260930-151415`](20260930-151415/) | `db21b60` | clean | 1.63.0 → 1.64.0 | 0/0 | 127 | 1817/1/1818 | skip | 37273 | 5211 | 6.6 | 1.9 | 15 | 0 | **green** |
@@ -125,13 +126,13 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**1827 cases** — 1826 passed, 0 failed, 1 skipped. The generated inventory
-[`20260930-183150/test-cases.md`](20260930-183150/test-cases.md) is the authority on which cases existed at this run;
+**1834 cases** — 1832 passed, 0 failed, 2 skipped. The generated inventory
+[`20260930-190933/test-cases.md`](20260930-190933/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1820 → 1827** since the previous run.
+Moved **1827 → 1834** since the previous run.
 
-**1 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
+**2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
@@ -153,7 +154,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20260930-183150`](20260930-183150/) — **this run's measurement, not its diff.** Max CCN **15** across 5247
+Current as of [`20260930-190933`](20260930-190933/) — **this run's measurement, not its diff.** Max CCN **15** across 5254
 functions, **0** of them warned on; 10 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
