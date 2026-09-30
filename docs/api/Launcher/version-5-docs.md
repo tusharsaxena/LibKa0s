@@ -1,4 +1,4 @@
-# `LibKa0s-Launcher-1.0` — version 4
+# `LibKa0s-Launcher-1.0` — version 5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Launcher surface points here rather than restating it. It describes the
@@ -8,15 +8,35 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Launcher-1.0` |
-| Files and minors | `Launcher.lua` minor **4** |
-| Shipped in | v1.58.0 |
-| Status | Superseded |
-| Supersedes | [version 3](./version-3-docs.md) |
-| Superseded by | [version 5](./version-5-docs.md) |
+| Files and minors | `Launcher.lua` minor **5** |
+| Shipped in | v1.65.0 |
+| Status | **Current** |
+| Supersedes | [version 4](./version-4-docs.md) — whose state lines, written at OnEnable, never reached a console with logging off |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **LibDataBroker-1.1** and **LibDBIcon-1.0** are OPTIONAL and are resolved with `LibStub(…, true)` at `Register` time, never at load. The client's context-menu API (`MenuUtil`, 11.0 and later) is OPTIONAL too, resolved on every right click. |
-| Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 5 }` |
 
 ## What changed at this version
+
+**The launcher's state lines can be held for the enable edge** (`debugAtEnable`). Gap G4 of the
+2026-09-30 debug-gaps run. A host calls `Register` from `OnEnable`, and the session-only logging
+flag is off at login by design, so the lines `Register` writes through `debug` (a broker library
+absent, no minimap table, `registered`) were gated off and never landed, and debug-logging-§8's
+"dependencies once at enable" was not visible anywhere.
+
+- **One new optional descriptor field, `debugAtEnable(tag, message)`**, called with the tag
+  `"Launcher"` for the four **state** lines `Register` writes: `LibDataBroker-1.1 absent; no
+  launcher`, `LibDBIcon-1.0 absent; broker plugin only`, `descriptor.minimap answered no table; no
+  minimap button` and `registered`. A host passes the console's `D.DebugAtEnable`
+  ([DebugLog version 18.2.1](../DebugLog/version-18.2.1-docs.md)), which writes at once when logging
+  is on and otherwise holds the line and writes it when logging is next turned on.
+- **Events stay on `debug`**: `shown`, `hidden`, a menu refusal, a raising accessor or hook, and the
+  degraded right click. An event held for later would land out of time.
+- **Absent `debugAtEnable`, the four lines go to `debug`, exactly as version 4 wrote them.** With
+  neither field, nothing is written, as before. No text, member, string or floor moves, and nothing
+  printed to chat changes.
+
+## What changed at version 4
 
 The owner's M6 ruling of 2026-09-24, made a MUST by the standard's v2.67.0 (`launcher-§2`, WS-11).
 
@@ -134,7 +154,8 @@ addon's face in three places, and left-click **always** opens the panel.
 | `onTooltipShow` | **L1**, meaning changed at **L3** | no | Called **once per show**, handed the tooltip, to **append** the addon's own lines between the status block and the click hints. It draws no title, version, status line or click hint (**anti-pattern #89**). A non-function is dropped; a raising one costs its lines and nothing else. |
 | `version` | **L3** | no | A string (or a function answering one) drawn after the label in the tooltip's title, `<label>  v<version>`. A leading `v` is not doubled; `nil` or `""` draws the label alone. |
 | `print` | **L1** | no | Where this module's own reports go. Defaults to `DEFAULT_CHAT_FRAME`. |
-| `debug` | **L1** | no | `debug(tag, message)` — the host's log seam, called with the tag `"Launcher"`. |
+| `debug` | **L1** | no | `debug(tag, message)` — the host's log seam, called with the tag `"Launcher"`. Every event line, and the state lines too where `debugAtEnable` is absent. |
+| `debugAtEnable` | **L5** | no | `debugAtEnable(tag, message)` — where `Register`'s four state lines go (a broker library absent, no minimap table, `registered`), with the tag `"Launcher"`: the console's `D.DebugAtEnable`, so they land when logging is first turned on rather than being gated off at `OnEnable`. Absent, they go to `debug`. |
 | `L` | **L1** | no | Locale override, keyed to `lib.STRINGS`. Read with `rawget`, so a host table that answers an unknown key **with the key** (which every Ka0s locale table does — **anti-pattern #2**) falls through to the library's English rather than printing `MENU_LOCKED` at the player. |
 
 ### Retired at version 4
@@ -274,6 +295,7 @@ if Launcher then
         toggleWindow = function() NS.ToggleBrowser() end,
         onTooltipShow = function(tt) tt:AddLine(NS.EntryCountLine()) end,  -- the addon's own lines
         debug = NS.Debug,
+        debugAtEnable = NS.DebugAtEnable,                   -- the console's D.DebugAtEnable (version 5)
     }
     NS.Launcher:Register()
 end
@@ -312,6 +334,10 @@ the degraded path and opens the settings panel, which is itself a checkable fact
 
 ## Compatibility
 
+**Version 5 is additive.** One optional descriptor field, `debugAtEnable`; a host that does not pass
+it sees version 4's behavior byte for byte, and no member is added or removed, so no degradation stub
+moves. The next paragraphs are version 4's.
+
 The API was additive-only through version 3. **Version 4 is the first to retire descriptor fields**
 — `onClick`, `leftClickLabel`, `disabledLine` and `slash` — on the owner's ruling and the standard's
 v2.67.0, and it does so without breaking a host that still passes them: they are ignored, and `New`
@@ -347,12 +373,3 @@ listed in the TOC's `# Libraries` section (`toc-file-§4`). They are not part of
 never will be: they are third-party libraries with their own release cadence, and bundling them
 inside a folder that is itself copied into eleven addons would give each of them two copies to
 reconcile. `MenuUtil` is the client's own and needs nothing vendored.
-
-## Moving to version 5
-
-**Take it; nothing moves unless a host passes `debugAtEnable`.** Version 5 adds the optional
-descriptor field `debugAtEnable(tag, message)`, which takes `Register`'s four state lines (a broker
-library absent, no minimap table, `registered`) instead of `debug`. No member, string, text or floor
-moves. To adopt: pass the console's `D.DebugAtEnable` (DebugLog version 18.2.1), so the lines land
-the first time the player turns logging on, and delete any host line that restated them. See
-[version 5](./version-5-docs.md).

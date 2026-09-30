@@ -1,5 +1,6 @@
 -- LibKa0s-DebugLog-1.0 — the change gates: "log this once" and "log this when it changes", on the
--- console instance, re-armed by the console itself.
+-- console instance, re-armed by the console itself; and the at-enable queue, "log this state when
+-- logging is turned on".
 --
 -- ── WHY THIS IS A LIBRARY AND NOT FIVE COPIES ────────────────────────────────────────────────
 --
@@ -31,6 +32,24 @@
 --
 -- Memory is bounded: past `GATE_MAX_KEYS` keys in one gate that gate is wiped, which costs a
 -- repeated line, never growth. Depends on the DebugLog shell, and through it on Core.
+--
+-- ── THE AT-ENABLE QUEUE ──────────────────────────────────────────────────────────────────────
+--
+-- debug-logging-§8 asks for a module's dependencies "once at enable", and the flag is session-only
+-- and off at login by design, so a line written from OnEnable through `D.Debug` is gated off and
+-- never lands. Gap G4 of the same run: the Launcher's LibDataBroker / LibDBIcon lines were exactly
+-- that. `D.DebugAtEnable(tag, fmt, ...)` writes at once when logging is on; while it is off it
+-- builds the line NOW (a state line says what the state was when it was written, which is the one
+-- place this file stringifies with logging off) and holds it, and the shell's `SetEnabled(true)`
+-- writes every held line after its session bracket and the host's summary. The flush is one-shot:
+-- a held line is written once, not on every enable edge. For STATE lines only (a dependency found
+-- or missing, a registration); an event written this way would land out of time.
+--
+-- Bounded at `AT_ENABLE_MAX` lines: the first ones are kept (dependencies are written first, at
+-- enable) and every later line is dropped and counted, and the flush ends with one `[Debug]` line
+-- saying how many. A line identical (tag and text) to one already held is held once, so a Register
+-- retried at login is one line. Clear neither drops nor flushes the queue: nothing in it is on
+-- screen yet.
 
 local lib = LibStub and LibStub("LibKa0s-DebugLog-1.0", true)
 if not lib then return end
@@ -51,6 +70,10 @@ lib.MODULES.DebugLogGates = GATES_MINOR
 -- handful each; 256 is well past any of them and small enough that a key per GUID cannot grow the
 -- table for a whole session.
 lib.GATE_MAX_KEYS = 256
+
+-- The most lines the at-enable queue holds. A host writes a handful at enable (Launcher writes one
+-- or two); 32 is room for every module of a host several times over.
+lib.AT_ENABLE_MAX = 32
 
 -- A nil key cannot index a table. It stands for itself rather than raising, and rather than
 -- sharing a slot with any string a host might pass.
@@ -80,8 +103,9 @@ local function forget(mem, key)
 end
 
 --- Installed by `lib:New` on every instance when this file has loaded. `ctx` carries the one
---- piece of the shell the gates need, `safeToString`. Answers the re-arm the shell calls on Clear
---- and on turning logging on.
+--- piece of the shell the gates need, `safeToString`. Answers two functions: the re-arm the shell
+--- calls on Clear and on turning logging on, and the at-enable flush it calls at the end of
+--- `SetEnabled(true)`.
 function lib.__installGates(D, ctx)
   local safeToString = ctx.safeToString
   local once, changed = newMemory(), newMemory()
@@ -129,5 +153,38 @@ function lib.__installGates(D, ctx)
     forget(changed, key)
   end
 
-  return function() wipeMemory(once); wipeMemory(changed) end
+  -- The at-enable queue: held lines, the tag-and-text of each (for the duplicate hold), and how
+  -- many were dropped past the bound.
+  local held, heldSeen, dropped = {}, {}, 0
+
+  --- A state line: written now when logging is on, held for the next enable edge when it is off.
+  --- Answers true when it wrote.
+  function D.DebugAtEnable(tag, fmt, ...)
+    local msg = build(fmt, ...)
+    if D:IsEnabled() then
+      D:Add(tag, msg)
+      return true
+    end
+    local line = tostring(tag) .. "\31" .. tostring(msg)
+    if heldSeen[line] then return false end
+    if #held >= lib.AT_ENABLE_MAX then
+      dropped = dropped + 1
+      return false
+    end
+    heldSeen[line] = true
+    held[#held + 1] = { tag = tag, msg = msg }
+    return false
+  end
+
+  local function flush()
+    if #held == 0 and dropped == 0 then return end
+    local lines, n = held, dropped
+    held, heldSeen, dropped = {}, {}, 0
+    for i = 1, #lines do D:Add(lines[i].tag, lines[i].msg) end
+    if n > 0 then
+      D:Add("Debug", ("at-enable queue full: %d later line%s dropped"):format(n, n == 1 and "" or "s"))
+    end
+  end
+
+  return function() wipeMemory(once); wipeMemory(changed) end, flush
 end

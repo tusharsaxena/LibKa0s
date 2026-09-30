@@ -454,7 +454,7 @@ function lib:New(d)
   -- wants the copy box. The copy window's own handle lives beside its builder further down, since
   -- minor 12 — it is Widgets' now, and only that one function touches it.
   local D = {}
-  local frame, rearm   -- rearm: the change gates' reset (DebugLogGates.lua), nil without the file
+  local frame, rearm, flushAtEnable   -- DebugLogGates.lua's gate reset and queue flush, or nil
 
   D.buffer = {}
   D.FormatPlain, D.FormatColored = lib.FormatPlain, lib.FormatColored
@@ -959,6 +959,7 @@ function lib:New(d)
       local line = d.initSummary()
       if line ~= nil then D:Add("Init", safeToString(line)) end
     end
+    if on and flushAtEnable then flushAtEnable() end   -- the at-enable queue, after the bracket
   end
 
   -- ── the checkbox data contract ───────────────────────────────────────────────────────────
@@ -982,11 +983,11 @@ function lib:New(d)
   end
 
   -- The secondary files of this major install themselves here when they loaded, each handed only
-  -- what it needs: the change gates (minor 18, DebugLogGates.lua) the stringifier, and the report
+  -- what it needs: the gates and queue (minor 18, DebugLogGates.lua) the stringifier, and the report
   -- (minor 14, DebugLogDiagnostics.lua) the append, repaint, printer, stringifier and descriptor.
   -- Absent, the instance lacks those members, which a host's degradation stub already answers.
   if type(lib.__installGates) == "function" then
-    rearm = lib.__installGates(D, { safeToString = safeToString })
+    rearm, flushAtEnable = lib.__installGates(D, { safeToString = safeToString })
   end
   if type(lib.__installDiagnostics) == "function" then
     lib.__installDiagnostics(D, { d = d, emit = emit, safeToString = safeToString, append = append,

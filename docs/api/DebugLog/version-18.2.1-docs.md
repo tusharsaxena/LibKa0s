@@ -11,7 +11,7 @@
 | Files and minors | `DebugLog.lua` minor **18** · `DebugLogDiagnostics.lua` minor **2** · `DebugLogGates.lua` minor **1** |
 | Shipped in | v1.65.0 |
 | Status | **Current** |
-| Supersedes | [version 17.2](./version-17.2-docs.md) — which had no change gates and no `onClear` hook |
+| Supersedes | [version 17.2](./version-17.2-docs.md) — which had no change gates, no at-enable queue and no `onClear` hook |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 18, DebugLogDiagnostics = 2, DebugLogGates = 1 }` |
@@ -70,12 +70,26 @@ stayed silent until the next change, and a reader took "nothing written" for "no
 | `lib.GATE_MAX_KEYS` | **256**. Past this many keys in one gate, that gate is wiped before the next key is stored: the cost is a repeated line, never growth for a whole session. | **G1** |
 | `onClear` | A new descriptor field, `function()`. `Clear()` calls it after the buffer and the gates are wiped, under `pcall`: a raise costs one `[Debug] onClear raised: <error>` line, not the Clear. Not called by `SetEnabled`. For a host that keeps a gate of its own. | **18** |
 
+**The at-enable queue** (gap G4 of the same run). debug-logging-§8 asks for dependencies "once at
+enable", and the flag is session-only and off at login by design, so a state line written from
+`OnEnable` through `Debug` is gated off and never lands. The Launcher's LibDataBroker / LibDBIcon
+lines were exactly that ([Launcher version 5](../Launcher/version-5-docs.md) now writes them here
+through its `debugAtEnable` field).
+
+| | | Since |
+|---|---|---|
+| `DebugAtEnable(tag, fmt, ...)` | Logging on: writes the line at once and answers `true`. Logging off: builds the line **now**, holds it and answers `false`; `SetEnabled(true)` writes every held line, in the order written, after its `[Debug] logging enabled` bracket and the host's `[Init]` summary. A plain function, bound bare like `Debug`. | **G1** |
+| For state, not events | A dependency found or missing, a registration, a mode chosen at load. The line says what the state was when it was written; an event held this way would land out of time. It is the one member that stringifies with logging off, and it is meant for a handful of calls at enable, not a hot path. | **G1** |
+| One-shot | A held line is written once, at the next enable edge; turning logging off and on again does not repeat it. A line identical (tag and text) to one already held is held once, so a `Register` retried at login is one line. `Clear()` neither drops nor flushes the queue. | **G1** |
+| `lib.AT_ENABLE_MAX` | **32**. The first 32 held lines are kept; every later one is dropped and counted, and the flush ends with one `[Debug] at-enable queue full: <n> later line(s) dropped` line. The count goes with the flush. | **G1** |
+
 **What a host must change: nothing, unless it adopts.** No existing member or behavior moves, and a
 host that passes no `onClear` sees `Clear()` exactly as version 17.2 had it. The instance gains three
-members, so **a host's library-absent DebugLog stub gains `DebugOnce`, `DebugChanged` and
-`DebugForget`** for its surface-parity case (each answering `false`, or nothing). To adopt: replace the
-hand-rolled helper with the gates, or pass `onClear` to re-arm the one kept, and drop any host line
-that only re-armed on the enable edge.
+members, so **a host's library-absent DebugLog stub gains `DebugOnce`, `DebugChanged`,
+`DebugForget` and `DebugAtEnable`** for its surface-parity case (each answering `false`, or nothing).
+To adopt: replace the hand-rolled helper with the gates, or pass `onClear` to re-arm the one kept,
+drop any host line that only re-armed on the enable edge, and route state lines written at enable
+(the Launcher's `debugAtEnable` among them) through `DebugAtEnable`.
 
 ## What changed at version 17.2
 
@@ -605,6 +619,7 @@ rather than paying it with a tooltip over the log. A host that wants the words b
 | `lib.MakeCloseButton` | 1 | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. Forwards through the `core` table at call time, not captured at load. |
 | `lib.STRINGS` | 1 (`DIAGNOSTICS`: **16**) | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
 | `lib.GATE_MAX_KEYS` | **G1** | **256**. The most keys one change gate remembers before it is wiped. |
+| `lib.AT_ENABLE_MAX` | **G1** | **32**. The most lines the at-enable queue holds; later ones are dropped and counted. |
 | `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor>, DebugLogGates = <minor> }` — the live minor of every file in this major (the second from D1, the third from G1). |
 | `lib:New(descriptor)` | 1 | Build a console for one host. See below. |
 
@@ -659,7 +674,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `Show()` / `Hide()` / `IsShown()` / `Toggle()` | 1 | Window visibility. `Hide` never builds a frame: a settings panel calls `IsShown` on every refresh, and a `Hide` that constructed a window would build one nobody asked for. |
 | `IsEnabled()` | 1 | The host's flag, read through the descriptor and coerced to a boolean. |
 | `RefreshHeader()` | 1 | Repaint the title-bar toggle — `Debug: ON` green, `Debug: OFF` red. |
-| `SetEnabled(on)` | 1 | The single seam for changing debug state: writes the host's flag, repaints the header, prints the color-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary and (as of minor 18) wipes the change gates' memory. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
+| `SetEnabled(on)` | 1 | The single seam for changing debug state: writes the host's flag, repaints the header, prints the color-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary and (as of minor 18) wipes the change gates' memory and then writes the at-enable queue's held lines. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
 | `ConsoleCheckbox()` | 1 | The data contract below. |
 | `RunDiagnostics(spec?)` | **D1** (turns logging on: **D2**) | With logging off, and unless the descriptor sets `diagnosticsEnablesLogging = false`, first turn logging on through `SetEnabled(true)`; then build the report and append it to the console, repaint once, show the console if hidden, print the one `DIAG_WRITTEN` chat line, and return the number of report lines written. Never clears and never turns logging off. `spec` may carry `sections`, `maxLines` and `maxPerList`. |
 | `BuildDiagnostics(spec?)` | **D1** | The same report as data, `{ lines = { { tag, msg }, ... }, dropped = n, capped = bool, capsHit = bool }`, writing nothing anywhere. For tests. |
@@ -667,6 +682,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `DebugOnce(key, tag, fmt, ...)` | **G1** | Gated like `Debug`; writes the first time per `key` per arming and answers `true`, otherwise `false`. See [What changed at this version](#what-changed-at-this-version). |
 | `DebugChanged(key, tag, fmt, ...)` | **G1** | Gated like `Debug`; writes when the line differs from the last one written for `key` and answers `true`, otherwise `false`. |
 | `DebugForget(key)` | **G1** | Re-arm one key in both gates. |
+| `DebugAtEnable(tag, fmt, ...)` | **G1** | A state line: written at once with logging on (`true`), held for the next `SetEnabled(true)` with logging off (`false`). See [What changed at this version](#what-changed-at-this-version). |
 | `_toggleClickForTest` / `_frameForTest` | 1 | Test seams. A headless mock's `Show`/`Hide` track visibility without firing `OnShow`/`OnHide`, and stub `GetScript`, so the click handler and the visibility callback are only reachable directly. |
 
 ## The `ConsoleCheckbox()` data contract
@@ -750,10 +766,11 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
-Version 18.2.1 adds one file, one lib-level member (`GATE_MAX_KEYS`), one descriptor field
-(`onClear`) and three instance members (`DebugOnce`, `DebugChanged`, `DebugForget`), and changes no
-existing behavior: `Clear()` and `SetEnabled(true)` additionally wipe memory only the new members
-keep. A host's library-absent stub gains the three members for its parity case.
+Version 18.2.1 adds one file, two lib-level members (`GATE_MAX_KEYS`, `AT_ENABLE_MAX`), one
+descriptor field (`onClear`) and four instance members (`DebugOnce`, `DebugChanged`, `DebugForget`,
+`DebugAtEnable`), and changes no existing behavior: `Clear()` and `SetEnabled(true)` additionally
+wipe memory only the new members keep, and `SetEnabled(true)` writes lines only `DebugAtEnable`
+holds. A host's library-absent stub gains the four members for its parity case.
 
 Version 17.2 adds one descriptor field (`diagnosticsEnablesLogging`) and changes one behavior: a
 report run with logging off turns it on for the session first, where every earlier version left the

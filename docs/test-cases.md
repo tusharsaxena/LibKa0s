@@ -903,7 +903,7 @@ badge and any count quoted in the docs must agree with it.
 - launcher: a raising tooltip accessor or host hook costs its own line, not the tooltip
 - launcher: a tooltip argument with no AddLine is left alone
 - launcher: every tooltip string goes through the descriptor's L, rawget-guarded
-- launcher: minor 4 is live
+- launcher: minor 5 is live
 - launcher: left-click opens the settings panel, enabled or disabled
 - launcher: onClick, leftClickLabel, disabledLine and slash are retired and ignored
 - launcher: right-click opens the client's context menu, titled with the label
@@ -932,6 +932,28 @@ badge and any count quoted in the docs must agree with it.
 - launcher: a name LibDataBroker already holds takes that object rather than none
 - launcher: a host locale overrides a report, and a key-echoing fallback does not
 - launcher: with no descriptor print, a report reaches the chat frame
+
+### test_atenable.lua (19)
+
+- atenable: the instance carries DebugAtEnable, with its bound pinned
+- atenable: logging on, the line is written at once, formatted as D.Debug formats
+- atenable: logging off, nothing is written; turning logging on writes it after the bracket
+- atenable: held lines flush in the order they were written
+- atenable: the flush is one-shot, a second enable edge does not repeat it
+- atenable: an identical line already held is held once
+- atenable: past AT_ENABLE_MAX the later lines are dropped, and one line says how many
+- atenable: Clear neither drops nor flushes a held line
+- atenable: turning logging off does not flush
+- atenable: a held line is secret-safe, and an unsatisfiable format still lands
+- atenable: plain function, bound bare as hosts bind D.Debug
+- atenable: nothing held, turning logging on writes only the bracket (the silent default)
+- atenable: an instance built without DebugLogGates.lua has no queue, and enabling still works
+- launcher: neither debug nor debugAtEnable passed, Register is silent and does not raise
+- launcher: with debugAtEnable, the registration line goes to it, not to debug
+- launcher: with debug alone, the registration line goes to debug, as before minor 5
+- launcher: a missing minimap table is a state line, held for enable
+- launcher: event lines (shown / hidden) stay on debug when debugAtEnable is passed
+- launcher: end to end, a Register at OnEnable lands the first time logging is turned on
 
 ### test_options.lua (85)
 
@@ -2147,6 +2169,7 @@ badge and any count quoted in the docs must agree with it.
 | test_slash_profile.lua | 30 |
 | test_slash_debug.lua | 14 |
 | test_launcher.lua | 45 |
+| test_atenable.lua | 19 |
 | test_options.lua | 85 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
@@ -2194,4 +2217,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1884** |
+| **Total** | **1903** |

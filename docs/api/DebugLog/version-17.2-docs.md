@@ -749,8 +749,10 @@ does not permit. Re-vendor the whole folder and the floor is unobservable.
 
 **Take it; nothing moves unless a host adopts.** Version 18.2.1 adds `DebugLogGates.lua` and, on the
 instance, the change gates `DebugOnce(key, tag, fmt, ...)`, `DebugChanged(key, tag, fmt, ...)` and
-`DebugForget(key)`, which `Clear()` and turning logging on re-arm, plus the descriptor field
+`DebugForget(key)`, which `Clear()` and turning logging on re-arm, the at-enable queue
+`DebugAtEnable(tag, fmt, ...)`, which `SetEnabled(true)` writes, plus the descriptor field
 `onClear`. No existing behavior changes and no `NEEDS_*` floor moves. A host's library-absent stub
-gains the three members for its parity case. To adopt: replace a hand-rolled "log once" or "log on
-change" helper with the gates, or pass `onClear` to re-arm the one kept. See
+gains the four members for its parity case. To adopt: replace a hand-rolled "log once" or "log on
+change" helper with the gates, or pass `onClear` to re-arm the one kept, and route state lines
+written at enable through `DebugAtEnable`. See
 [version 18.2.1](./version-18.2.1-docs.md).

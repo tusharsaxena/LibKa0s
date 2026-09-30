@@ -16,7 +16,8 @@ Versions in this release so far: **Slash minor 18** (`LibKa0s-Slash-1.0` 18), **
 and the new **DebugLogGates minor 1** (`LibKa0s-DebugLog-1.0` 18.2.1), **Options minor 27**,
 **OptionsRegistry minor 2**, **OptionsWidgets minor 33**, **OptionsIds minor 2**,
 **OptionsIdList minor 2**, **OptionsTabs minor 7** and **OptionsNav minor 2**
-(`LibKa0s-Options-1.0` 27.2.33.2.2.7.1.7.4.2). The release step of
+(`LibKa0s-Options-1.0` 27.2.33.2.2.7.1.7.4.2), **Launcher minor 5** (`LibKa0s-Launcher-1.0` 5).
+The release step of
 the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now because
 `tests/test_versioning.lua` holds every bump to its changelog entry.
 
@@ -56,6 +57,20 @@ the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now becau
   `debug`, nothing is written. No member, string or floor moves. Cases:
   `tests/test_options_combat_debug.lua`. See
   `docs/api/Options/version-27.2.33.2.2.7.1.7.4.2-docs.md`.
+
+### DebugLogGates minor 1 and Launcher minor 5: state lines written at enable land (G4)
+
+- **`D.DebugAtEnable(tag, fmt, ...)`** in `DebugLogGates.lua`: with logging on it writes at once;
+  with logging off it builds and holds the line, and `SetEnabled(true)` writes every held line
+  after the session bracket and the `[Init]` summary. One-shot, an identical held line is held
+  once, and `Clear()` leaves the queue alone. Bounded at `lib.AT_ENABLE_MAX` (32): later lines are
+  dropped and counted in one `[Debug] at-enable queue full` line. For state lines, not events.
+- **Launcher descriptor field `debugAtEnable(tag, message)`**: `Register`'s four state lines
+  (LibDataBroker-1.1 or LibDBIcon-1.0 absent, no minimap table, `registered`) go to it, so they
+  land the first time logging is turned on instead of being gated off at `OnEnable`. Events stay on
+  `debug`. Absent, the lines go to `debug` as before; with neither, nothing is written. No string,
+  text or floor moves. Cases: `tests/test_atenable.lua`. See
+  `docs/api/Launcher/version-5-docs.md` and `docs/api/DebugLog/version-18.2.1-docs.md`.
 
 ## v1.64.0 — 2026-09-30
 
