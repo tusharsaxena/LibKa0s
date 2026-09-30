@@ -98,6 +98,10 @@ and the client fires it from its layout pass, not inside the setter); a suite fi
   frame reads real values now.
 - An addon MUST NOT save these windows' sizes (`debug-logging-§1`, v2.70.0).
 
+Release gate (`docs/automated-tests/20260930-151415/`): lint pass, 0/0 in 127 files;
+tests pass, 1818 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.63.0 — 2026-09-29
 
 Versions in this release: **Slash minor 17** (`LibKa0s-Slash-1.0` 17). Every other file is
