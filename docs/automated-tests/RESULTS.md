@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261001-001312`](20261001-001312/) | `0b1dfeb` | clean | 1.64.0 → 1.65.0 | 0/0 | 133 | 1917/2/1919 | skip | 38730 | 5444 | 6.5 | 1.9 | 15 | 0 | **green** |
 | [`20261001-000959`](20261001-000959/) | `efd520a` | clean | 1.64.0 → 1.65.0 | 0/0 | 133 | 1917/2/1919 | skip | 38729 | 5444 | 6.5 | 1.9 | 16 | 1 | **green** |
 | [`20260930-190933`](20260930-190933/) | `0a95227` | clean | 1.64.0 → 1.64.0 | 0/0 | 127 | 1832/2/1834 | skip | 37575 | 5254 | 6.6 | 1.9 | 15 | 0 | **green** |
 | [`20260930-183150`](20260930-183150/) | `d1d0824` | clean | 1.64.0 → 1.64.0 | 0/0 | 127 | 1826/1/1827 | skip | 37481 | 5247 | 6.6 | 1.9 | 15 | 0 | **green** |
@@ -128,10 +129,10 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **1919 cases** — 1917 passed, 0 failed, 2 skipped. The generated inventory
-[`20261001-000959/test-cases.md`](20261001-000959/test-cases.md) is the authority on which cases existed at this run;
+[`20261001-001312/test-cases.md`](20261001-001312/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1834 → 1919** since the previous run.
+Unchanged from the previous run at 1919 cases.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -155,8 +156,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261001-000959`](20261001-000959/) — **this run's measurement, not its diff.** Max CCN **16** across 5444
-functions, **1** of them warned on; 10 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261001-001312`](20261001-001312/) — **this run's measurement, not its diff.** Max CCN **15** across 5444
+functions, **0** of them warned on; 10 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -168,13 +169,14 @@ cell is this file saying something crossed and nobody has ruled on it yet.
 
 | Function | CCN | Location | Disposition |
 |---|---|---|---|
-| `Sl` | 16 | `LibKa0s/Slash.lua` |  |
+
+None.
 
 ### Files by `layout-§1` band
 
 | Band | File | LOC | Disposition |
 |---|---|---|---|
-| 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1282 | **Peeled 2026-09-26 (`LK-ATS-04`), then accepted at 1261** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). The 2026-09-24 *Accepted* had outlived its shelf life (`ATS-03`); the page registry and its combat park (one caller, state nothing else in the shell reads) were a seam, and moved unchanged to `LibKa0s/OptionsRegistry.lua` (263) at Options minor 26. **Re-check trigger: the next member added to `Options.lua`, or 1400 lines**; the reset walk is the next seam. |
+| 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1282 | **Peeled 2026-09-26 (`LK-ATS-04`), then accepted at 1261** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). The 2026-09-24 *Accepted* had outlived its shelf life (`ATS-03`); the page registry and its combat park (one caller, state nothing else in the shell reads) were a seam, and moved unchanged to `LibKa0s/OptionsRegistry.lua` (263) at Options minor 26. **Re-check trigger: the next member added to `Options.lua`, or 1400 lines**; the reset walk is the next seam. **Re-ruled 2026-10-01 at v1.65.0 (`DG-LIB-01`): accepted** at 1282; the member the trigger caught is the private `O.__combatRefused` (G3's refusal line), which sits with the combat edges, and the trigger stands, counted from this release. |
 | 1000–1500 (on notice) | `LibKa0s/OptionsIdList.lua` | 1197 | **Accepted 2026-09-26 (`LK-ATS-01`, issue [`#32`](https://github.com/tusharsaxena/LibKa0s/issues/32); `CLAUDE.md` § *Files over the 1500-line cap*, the id peel's rulings).** New file, moved unchanged out of `LibKa0s/OptionsWidgets.lua`: `O.IdList` and its entry-line layout, one piece of machinery. **Re-check trigger: 1350 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsIds.lua` | 1359 | **Accepted 2026-09-26 (`LK-ATS-01`, issue [`#32`](https://github.com/tusharsaxena/LibKa0s/issues/32); `CLAUDE.md` § *Files over the 1500-line cap*, the id peel's rulings).** New file, moved unchanged out of `LibKa0s/OptionsWidgets.lua`: id resolution, suggestions and the input. **Re-check trigger: 1450 lines**; the suggestion half (the module-scope suggestions-while-typing block and the dropdown members) is the seam, to a file of its own. |
 | 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1294 | **Peeled 2026-09-26 (`LK-ATS-03`), then accepted at 1293** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). The 2026-09-24 *Accepted* ("no second seam inside it") had outlived its shelf life (`ATS-03`, `ATS-06`); the combat lock's page chrome was that seam, and moved unchanged to `LibKa0s/OptionsCombat.lua` (249) at OptionsTabs minor 6. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1400 lines**; the tabbed page is the next seam. |
