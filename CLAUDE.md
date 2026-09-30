@@ -212,25 +212,25 @@ the sweep took six out and its id peel brought three in. Largest first:
   reason, and kit 22's recording surveys to `testkit/mock_record.lua` for the same one). The closest
   file to the cap, with 44 lines of room; its `RESULTS.md` re-check trigger is 1490 lines, or any kit
   change that adds more than 30 lines here.
-- `LibKa0s/OptionsWidgets.lua` (1422, new to the band: it came down from the census's 3852 when the
-  id surface left it), ruled below.
-- `LibKa0s/OptionsIds.lua` (1358, new: the id peel), ruled below.
+- `LibKa0s/OptionsWidgets.lua` (1423 with v1.65.0's combat-refusal line, measured 2026-10-01; 1422
+  new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
+- `LibKa0s/OptionsIds.lua` (1359 at v1.65.0; 1358 new: the id peel), ruled below.
 - `tests/test_options.lua` (1339; 1307 at the 2026-09-23 write-out), issue #35.
 - `tests/test_schema.lua` (1335; 1101 when it was new at v1.55.0 with the Schema major, 1233 before
   `LK-22` and `LK-23`), issue #38.
 - `LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0),
   issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7).
-- `LibKa0s/OptionsTabs.lua` (1293 after the sweep moved its combat half to
+- `LibKa0s/OptionsTabs.lua` (1294 at v1.65.0; 1293 after the sweep moved its combat half to
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
   `RenderTabbedSchema` took it the rest of the way), peeled then accepted, below.
 - `LibKa0s/Widgets.lua` (1303 with DL-LIB-01R's scroll inset cleared of the grip, measured 2026-09-30;
   1298 with minor 11's resizable copy window; 1266 with `LK-21`'s minor 10, 1232 before it), issue #36.
-- `LibKa0s/Options.lua` (1261 after the sweep moved its page registry to
+- `LibKa0s/Options.lua` (1282 with v1.65.0's combat-refusal lines and their one private member, `O.__combatRefused`, which fires the re-check trigger below and is re-ruled there; 1261 after the sweep moved its page registry to
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
   accepted, below.
-- `LibKa0s/OptionsIdList.lua` (1193, new: the id peel), ruled below.
+- `LibKa0s/OptionsIdList.lua` (1197 at v1.65.0; 1193 new: the id peel), ruled below.
 
 Six left the band in the sweep, each on a seam named below: `testkit/test_prose.lua` 1486 → 750
 (issue #39, kit revision 29), `testkit/framework.lua` 1386 → 920 (kit revision 28; 984 at kit
@@ -331,6 +331,10 @@ Disposition cells point here:
   `Options.lua`, or 1400 lines**; the reset walk (`runBulk`, `O.RestoreDefaults`,
   `O.RestoreAllDefaults`, about 140 lines, reached only through members and the descriptor) is the
   next seam.
+  **Re-ruled 2026-10-01 at v1.65.0: accepted** (1282). The member the trigger caught is the private
+  `O.__combatRefused`, the combat lock's refusal line (gap G3), which sits with the instance's
+  combat edges that re-arm it rather than in the reset walk, so the seam and the trigger stand as written,
+  counted from this release.
 - `LibKa0s/OptionsTabs.lua` (1293, measured 2026-09-26 after its peel) — **peeled 2026-09-26,
   then accepted.** Re-ruled *accepted* at 1493 on 2026-09-24 as "the tabbed page's own machinery
   with no second seam inside it", and carried that way past `automated-tests-§4`'s shelf life (the

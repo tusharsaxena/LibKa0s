@@ -67,9 +67,12 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-DebugLog-1.0",
-    files = { "DebugLog", "DebugLogDiagnostics" },
+    files = { "DebugLog", "DebugLogDiagnostics", "DebugLogGates" },
     primary = "DebugLog",
-    paired = { { file = "DebugLogDiagnostics", minorField = "__diagMinor", probeField = "__diagShellMinor" } },
+    paired = {
+      { file = "DebugLogDiagnostics", minorField = "__diagMinor",  probeField = "__diagShellMinor" },
+      { file = "DebugLogGates",       minorField = "__gatesMinor", probeField = "__gatesShellMinor" },
+    },
   },
   {
     major = "LibKa0s-Slash-1.0",

@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 17.2
+# `LibKa0s-DebugLog-1.0` — version 18.2.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,17 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **17** · `DebugLogDiagnostics.lua` minor **2** |
-| Shipped in | v1.64.0 |
-| Status | Superseded |
-| Supersedes | [version 16.1](./version-16.1-docs.md) — a report run left the logging flag alone |
-| Superseded by | [version 18.2.1](./version-18.2.1-docs.md) |
+| Files and minors | `DebugLog.lua` minor **18** · `DebugLogDiagnostics.lua` minor **2** · `DebugLogGates.lua` minor **1** |
+| Shipped in | v1.65.0 |
+| Status | **Current** |
+| Supersedes | [version 17.2](./version-17.2-docs.md) — which had no change gates, no at-enable queue and no `onClear` hook |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 17, DebugLogDiagnostics = 2 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 18, DebugLogDiagnostics = 2, DebugLogGates = 1 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared; a `Since` of
 **D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file version 14.1 added, and **D2** its
-minor 2. Minors 1 and 2
+minor 2; a `Since` of **G1** is `DebugLogGates.lua` minor 1, the secondary file this version adds.
+Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
 this major".
 
@@ -47,6 +48,50 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 `NewLibrary` if either is missing or below the minor it needs.
 
 ## What changed at this version
+
+**Change gates on the instance, re-armed by the console, and an `onClear` hook.** `DebugLog.lua`
+moves to minor **18** and a third file joins the major, `DebugLogGates.lua` minor **1**, loaded after
+`DebugLogDiagnostics.lua` (so the version key gains a component: 17.2 → 18.2.1). No floor moves. Gap
+G2 of the 2026-09-30 debug-gaps run: five hosts had hand-rolled a "log once" or "log on change"
+helper for timer-driven paths (MultiMeters' `NS.DebugSteady`, PanelMaster's `NS.DebugOnce`, KickCD's
+list signatures, PartyFrameEnhanced's memos, ConsumableMaster's `KCM.DebugQuiet`), and none of them
+was re-armed by the console's Clear, because Clear offered the host no hook. A cleared console
+stayed silent until the next change, and a reader took "nothing written" for "nothing happening".
+
+| | | Since |
+|---|---|---|
+| `DebugOnce(key, tag, fmt, ...)` | Writes the line the first time per `key` per arming, and answers `true`; every later call with that key writes nothing and answers `false`. | **G1** |
+| `DebugChanged(key, tag, fmt, ...)` | Writes the line when it (tag and formatted text) differs from the last line written for `key`, and answers `true`; an identical line is held and answers `false`. Going back to an earlier value is a change. | **G1** |
+| `DebugForget(key)` | Re-arms one key in both gates, so its next `DebugOnce` and its next `DebugChanged` both write. The others keep their memory. | **G1** |
+| Gated as `Debug` is | Logging off, both gates return `false` at once, stringify nothing and **remember nothing**, so a key is never spent on a line nobody saw. Logging on, they format exactly as `Debug` does: every argument through the descriptor's `safeToString`, a `pcall`'d format and the same fallback line. | **G1** |
+| Re-armed by the console | `Clear()` and turning logging on (`SetEnabled(true)`) wipe both gates' memory, so a fresh console or a fresh session hears every gated line again. Turning logging off does not; nothing is remembered while off anyway. | **18** |
+| Plain functions | Like `Debug`, not methods: a host binds them bare (`NS.DebugOnce = D.DebugOnce`) and calls them with the key first. Calling one with a colon passes the instance as the key. | **G1** |
+| Keys | Any value the host owns (a window id, a frame, a list name). A `nil` key is a key of its own rather than a raise. A key must not be a combat secret, since it indexes a table. | **G1** |
+| `lib.GATE_MAX_KEYS` | **256**. Past this many keys in one gate, that gate is wiped before the next key is stored: the cost is a repeated line, never growth for a whole session. | **G1** |
+| `onClear` | A new descriptor field, `function()`. `Clear()` calls it after the buffer and the gates are wiped, under `pcall`: a raise costs one `[Debug] onClear raised: <error>` line, not the Clear. Not called by `SetEnabled`. For a host that keeps a gate of its own. | **18** |
+
+**The at-enable queue** (gap G4 of the same run). debug-logging-§8 asks for dependencies "once at
+enable", and the flag is session-only and off at login by design, so a state line written from
+`OnEnable` through `Debug` is gated off and never lands. The Launcher's LibDataBroker / LibDBIcon
+lines were exactly that ([Launcher version 5](../Launcher/version-5-docs.md) now writes them here
+through its `debugAtEnable` field).
+
+| | | Since |
+|---|---|---|
+| `DebugAtEnable(tag, fmt, ...)` | Logging on: writes the line at once and answers `true`. Logging off: builds the line **now**, holds it and answers `false`; `SetEnabled(true)` writes every held line, in the order written, after its `[Debug] logging enabled` bracket and the host's `[Init]` summary. A plain function, bound bare like `Debug`. | **G1** |
+| For state, not events | A dependency found or missing, a registration, a mode chosen at load. The line says what the state was when it was written; an event held this way would land out of time. It is the one member that stringifies with logging off, and it is meant for a handful of calls at enable, not a hot path. | **G1** |
+| One-shot | A held line is written once, at the next enable edge; turning logging off and on again does not repeat it. A line identical (tag and text) to one already held is held once, so a `Register` retried at login is one line. `Clear()` neither drops nor flushes the queue. | **G1** |
+| `lib.AT_ENABLE_MAX` | **32**. The first 32 held lines are kept; every later one is dropped and counted, and the flush ends with one `[Debug] at-enable queue full: <n> later line(s) dropped` line. The count goes with the flush. | **G1** |
+
+**What a host must change: nothing, unless it adopts.** No existing member or behavior moves, and a
+host that passes no `onClear` sees `Clear()` exactly as version 17.2 had it. The instance gains four
+members, so **a host's library-absent DebugLog stub gains `DebugOnce`, `DebugChanged`,
+`DebugForget` and `DebugAtEnable`** for its surface-parity case (each answering `false`, or nothing).
+To adopt: replace the hand-rolled helper with the gates, or pass `onClear` to re-arm the one kept,
+drop any host line that only re-armed on the enable edge, and route state lines written at enable
+(the Launcher's `debugAtEnable` among them) through `DebugAtEnable`.
+
+## What changed at version 17.2
 
 **A report run turns debug logging on for the session.** `DebugLogDiagnostics.lua` moves to minor
 **2** and `DebugLog.lua` to minor **17**, and the floors do not move. The owner's call of 2026-09-30,
@@ -573,7 +618,9 @@ rather than paying it with a tooltip over the log. A host that wants the words b
 | `lib.DIAG_MAX_PER_LIST` | **D1** | **40**. The default cap of `out:list`. |
 | `lib.MakeCloseButton` | 1 | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. Forwards through the `core` table at call time, not captured at load. |
 | `lib.STRINGS` | 1 (`DIAGNOSTICS`: **16**) | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
-| `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor> }` — the live minor of every file in this major (the second from D1). |
+| `lib.GATE_MAX_KEYS` | **G1** | **256**. The most keys one change gate remembers before it is wiped. |
+| `lib.AT_ENABLE_MAX` | **G1** | **32**. The most lines the at-enable queue holds; later ones are dropped and counted. |
+| `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor>, DebugLogGates = <minor> }` — the live minor of every file in this major (the second from D1, the third from G1). |
 | `lib:New(descriptor)` | 1 | Build a console for one host. See below. |
 
 ## The console descriptor
@@ -595,6 +642,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `slash` | string | no | 1 | Composes the checkbox tooltip's `"<slash> debug"` reference. |
 | `brandName` | string | no | **D1** | The addon's plain-text brand, `Ka0s <Name>`, named in both diagnostics markers. Falls back to `title`. |
 | `diagnostics` | function | no | **D1** | Returns the host's report sections, `{ { name, fn }, ... }`, each `fn(out)`. Called each time a report runs, never at `New`. |
+| `onClear` | function | no | **18** | Called by `Clear()` after the buffer and the change gates are wiped, under `pcall` (a raise costs one `[Debug]` line). For a host that re-arms a change gate of its own. |
 | `diagnosticsEnablesLogging` | boolean | no | **17** (D2) | `false` keeps a report run from turning logging on; any other value, or none, lets a run with logging off turn it on through `SetEnabled(true)` first. Read at every run. |
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 | `skin` | table | no | 1 | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
@@ -616,7 +664,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `BufferSize()` | 1 | The number of kept lines: `#buffer`, capped at `MAX_BUFFER` as of minor 13. |
 | `LastLine()` | 1 | The newest buffered line. |
 | `FindLine(substr)` | 1 | The newest kept line containing `substr` — as of minor 13 it searches the newest `MAX_BUFFER` lines only, so it never answers an evicted line still in the slack. Plain search, not a pattern — callers are looking for a tag or a message fragment, neither of which is written as a Lua pattern. |
-| `Clear()` | 1 | Empty the log frame and the buffer, then repaint the scrollbar and the status line. |
+| `Clear()` | 1 (re-arms the gates and calls `onClear`: **18**) | Empty the log frame and the buffer, wipe the change gates' memory, call the descriptor's `onClear` under `pcall`, then repaint the scrollbar and the status line. |
 | `UpdateScrollBar()` | 1 | Re-sync the slider with the message frame's scroll offset. The two run in opposite directions, so they are related by `maxOffset - value`. |
 | `UpdateStatus()` | 1 | Repaint the `N / MAX` line counter. `N` is `BufferSize()` as of minor 13, so it never reads past `MAX`. |
 | `CopyText()` | 1 | The kept lines as one newline-joined string, oldest first — as of minor 13 the newest `MAX_BUFFER` only. |
@@ -626,11 +674,15 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `Show()` / `Hide()` / `IsShown()` / `Toggle()` | 1 | Window visibility. `Hide` never builds a frame: a settings panel calls `IsShown` on every refresh, and a `Hide` that constructed a window would build one nobody asked for. |
 | `IsEnabled()` | 1 | The host's flag, read through the descriptor and coerced to a boolean. |
 | `RefreshHeader()` | 1 | Repaint the title-bar toggle — `Debug: ON` green, `Debug: OFF` red. |
-| `SetEnabled(on)` | 1 | The single seam for changing debug state: writes the host's flag, repaints the header, prints the color-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
+| `SetEnabled(on)` | 1 | The single seam for changing debug state: writes the host's flag, repaints the header, prints the color-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary and (as of minor 18) wipes the change gates' memory and then writes the at-enable queue's held lines. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
 | `ConsoleCheckbox()` | 1 | The data contract below. |
 | `RunDiagnostics(spec?)` | **D1** (turns logging on: **D2**) | With logging off, and unless the descriptor sets `diagnosticsEnablesLogging = false`, first turn logging on through `SetEnabled(true)`; then build the report and append it to the console, repaint once, show the console if hidden, print the one `DIAG_WRITTEN` chat line, and return the number of report lines written. Never clears and never turns logging off. `spec` may carry `sections`, `maxLines` and `maxPerList`. |
 | `BuildDiagnostics(spec?)` | **D1** | The same report as data, `{ lines = { { tag, msg }, ... }, dropped = n, capped = bool, capsHit = bool }`, writing nothing anywhere. For tests. |
 | `DebugVerb(rest)` | **D1** | `diagnostics` runs the report (`RunDiagnostics()`, so it turns logging on as a run does), `on` / `off` set the flag, and each answers `true`; anything else answers `false` and does nothing. |
+| `DebugOnce(key, tag, fmt, ...)` | **G1** | Gated like `Debug`; writes the first time per `key` per arming and answers `true`, otherwise `false`. See [What changed at this version](#what-changed-at-this-version). |
+| `DebugChanged(key, tag, fmt, ...)` | **G1** | Gated like `Debug`; writes when the line differs from the last one written for `key` and answers `true`, otherwise `false`. |
+| `DebugForget(key)` | **G1** | Re-arm one key in both gates. |
+| `DebugAtEnable(tag, fmt, ...)` | **G1** | A state line: written at once with logging on (`true`), held for the next `SetEnabled(true)` with logging off (`false`). See [What changed at this version](#what-changed-at-this-version). |
 | `_toggleClickForTest` / `_frameForTest` | 1 | Test seams. A headless mock's `Show`/`Hide` track visibility without firing `OnShow`/`OnHide`, and stub `GetScript`, so the click handler and the visibility callback are only reachable directly. |
 
 ## The `ConsoleCheckbox()` data contract
@@ -714,6 +766,12 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+Version 18.2.1 adds one file, two lib-level members (`GATE_MAX_KEYS`, `AT_ENABLE_MAX`), one
+descriptor field (`onClear`) and four instance members (`DebugOnce`, `DebugChanged`, `DebugForget`,
+`DebugAtEnable`), and changes no existing behavior: `Clear()` and `SetEnabled(true)` additionally
+wipe memory only the new members keep, and `SetEnabled(true)` writes lines only `DebugAtEnable`
+holds. A host's library-absent stub gains the four members for its parity case.
+
 Version 17.2 adds one descriptor field (`diagnosticsEnablesLogging`) and changes one behavior: a
 report run with logging off turns it on for the session first, where every earlier version left the
 flag alone. A host that wants the old behavior sets the field to `false`.
@@ -744,15 +802,3 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
-
-## Moving to version 18.2.1
-
-**Take it; nothing moves unless a host adopts.** Version 18.2.1 adds `DebugLogGates.lua` and, on the
-instance, the change gates `DebugOnce(key, tag, fmt, ...)`, `DebugChanged(key, tag, fmt, ...)` and
-`DebugForget(key)`, which `Clear()` and turning logging on re-arm, the at-enable queue
-`DebugAtEnable(tag, fmt, ...)`, which `SetEnabled(true)` writes, plus the descriptor field
-`onClear`. No existing behavior changes and no `NEEDS_*` floor moves. A host's library-absent stub
-gains the four members for its parity case. To adopt: replace a hand-rolled "log once" or "log on
-change" helper with the gates, or pass `onClear` to re-arm the one kept, and route state lines
-written at enable through `DebugAtEnable`. See
-[version 18.2.1](./version-18.2.1-docs.md).

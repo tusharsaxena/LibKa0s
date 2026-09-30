@@ -10,6 +10,121 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.65.0 — 2026-10-01
+
+Versions in this release: **Slash minor 18** (`LibKa0s-Slash-1.0` 18), **DebugLog minor 18**
+and the new **DebugLogGates minor 1** (`LibKa0s-DebugLog-1.0` 18.2.1, with `DebugLogDiagnostics` 2),
+**Options minor 27**, **OptionsRegistry minor 2**, **OptionsWidgets minor 33**,
+**OptionsIds minor 2**, **OptionsIdList minor 2**, **OptionsTabs minor 7** and **OptionsNav minor 2**
+(`LibKa0s-Options-1.0` 27.2.33.2.2.7.1.7.4.2, with `OptionsCombat` 1, `OptionsCompose` 7 and
+`OptionsScroll` 4), **Launcher minor 5** (`LibKa0s-Launcher-1.0` 5) and **Lifecycle minor 3**
+(`LibKa0s-Lifecycle-1.0` 3). Every other file is unchanged from v1.64.0: `Core` 9, `Env` 1,
+`Compat` 1, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Widgets` key 11.3, `Perf` key
+13.6. The test kit stays at **revision 34**. No `NEEDS_*` floor rises and no major is added; one
+payload file is added (`DebugLogGates.lua`, loaded by `LibKa0s.xml` after `DebugLogDiagnostics.lua`),
+so the library is **fifteen majors across twenty-eight files**. Built to the Ka0s WoW Addon Standard
+**v2.72.0**.
+
+This is the library's half of the 2026-09-30 debug-gaps run: five places where a LibKa0s module
+decides something a support read of the log needs, and the host could not log it (gaps G1 to G5).
+Every module takes the host's gated sink the same way, as the descriptor's `debug(tag, message)`
+field Launcher already had; a descriptor without it keeps the module silent, as through v1.64.0.
+Nothing printed to chat moves.
+
+### Slash minor 18: the dispatcher's own refusals reach the host's debug log (G1)
+
+- **Descriptor field `debug(tag, message)`**, as Launcher's. Each refusal the dispatcher decides
+  writes one `Cmd` line after its chat line, `refused <verb>[ <arg>]: <guard>`: the disabled gate,
+  an unknown verb, `get` / `set` / `reset` usage and not-found, a parse or write refusal, a reset
+  with no default, and the profile verb's unavailable, already-current, in-combat and unknown-profile
+  refusals. Absent, nothing is written; the chat is unchanged either way. No member, string or floor
+  moves. Cases: `tests/test_slash_debug.lua`. See `docs/api/Slash/version-18-docs.md`.
+
+### DebugLog minor 18, DebugLogGates minor 1: change gates the console re-arms (G2)
+
+- **`D.DebugOnce(key, tag, fmt, ...)`, `D.DebugChanged(key, tag, fmt, ...)`, `D.DebugForget(key)`**
+  in the new secondary file `DebugLogGates.lua`: log once per key, or only when the line changes,
+  gated and formatted as `D.Debug`; nothing is remembered while logging is off. `Clear()` and
+  turning logging on re-arm both. Bounded at `lib.GATE_MAX_KEYS` (256) keys per gate.
+- **Descriptor field `onClear()`**, called by `Clear()` after the wipe, under `pcall`, for a host
+  that keeps a gate of its own. Absent, `Clear()` is unchanged. No floor moves. Cases:
+  `tests/test_debuglog_gates.lua`. See `docs/api/DebugLog/version-18.2.1-docs.md`.
+
+### Options minor 27 and six secondary files: the combat lock's refusals reach the host's debug log (G3)
+
+- **One `Cfg` line per refusal** through the descriptor's existing `debug(tag, message)`,
+  `<what> refused (in combat)`, naming the act: `write <path>`, `defaults <page>`,
+  `button <text>` (*Reset all settings* among them), `toggle <label>`, `tab <key>` and
+  `tab <pageKey>/<tabKey>`, `rail <key>`, `banner select <key>`, `banner action <text>`,
+  `id list change`, `id list toggle <id>`, and `show <pageKey>` for a page shown under the lock.
+  Each text is written once per combat and re-armed at the combat edge, so a drag's throttled
+  commits (a color, a live slider) are one line, not one a tick. The parts are joined only under the
+  lock and with a `debug` to write to, so an unlocked write builds nothing. The chat is unchanged
+  (one gray notice per combat).
+- **The park's flush line**: a registration parked in combat (`register parked (in combat)`) writes
+  `register flushed (combat ended)` when the end of combat replays it.
+- An id list toggle asks the lock once rather than twice, so its refusal is one line. Absent
+  `debug`, nothing is written. No member, string or floor moves. Cases:
+  `tests/test_options_combat_debug.lua`. See
+  `docs/api/Options/version-27.2.33.2.2.7.1.7.4.2-docs.md`.
+
+### DebugLogGates minor 1 and Launcher minor 5: state lines written at enable land (G4)
+
+- **`D.DebugAtEnable(tag, fmt, ...)`** in `DebugLogGates.lua`: with logging on it writes at once;
+  with logging off it builds and holds the line, and `SetEnabled(true)` writes every held line
+  after the session bracket and the `[Init]` summary. One-shot, an identical held line is held
+  once, and `Clear()` leaves the queue alone. Bounded at `lib.AT_ENABLE_MAX` (32): later lines are
+  dropped and counted in one `[Debug] at-enable queue full` line. For state lines, not events.
+- **Launcher descriptor field `debugAtEnable(tag, message)`**: `Register`'s four state lines
+  (LibDataBroker-1.1 or LibDBIcon-1.0 absent, no minimap table, `registered`) go to it, so they
+  land the first time logging is turned on instead of being gated off at `OnEnable`. Events stay on
+  `debug`. Absent, the lines go to `debug` as before; with neither, nothing is written. No string,
+  text or floor moves. Cases: `tests/test_atenable.lua`. See
+  `docs/api/Launcher/version-5-docs.md` and `docs/api/DebugLog/version-18.2.1-docs.md`.
+
+### Lifecycle minor 3: stand-down and stand-up edges reach the host's debug log (G5)
+
+- **Descriptor field `debug(tag, message)`**, as Launcher's and Slash's. Each edge writes one
+  `Lifecycle` line before the host's callback runs, `stood down: added <key> (holds: <set>)` or
+  `stood up: released <key> (holds: none)`; a call that fires no edge writes nothing. The sink is
+  pcall'd so it cannot strand the latch between its recorded edge and the callback. Absent, nothing
+  is written. No member, string, chat line or floor moves. Cases: `tests/test_lifecycle_debug.lua`.
+  See `docs/api/Lifecycle/version-3-docs.md`.
+
+### What a consumer owes
+
+- The whole-folder copy of both payloads, `libs/LibKa0s/` and `tests/_kit/`, and the provenance
+  line, in one commit. A copy missing `DebugLogGates.lua` builds a console with no gates and no
+  at-enable queue (`DebugLog.lua` guards the attach), and a host's first `D.DebugOnce` raises, so
+  copy the folder, never the files you already had.
+- **Pass `debug` to every descriptor that takes it**: Slash (new), Lifecycle (new), Options and
+  Launcher (already taken), each the host's gated sink, `function(tag, msg) NS.Debug(tag, msg) end`
+  or its equivalent. Without it the library-owned lines are not written, and a support read of the
+  log misses the refusals and the edges.
+- **Delete the host lines the library now writes**, so each refusal or edge is one line, not two:
+  a host's own stand-down / stand-up line from its Lifecycle callbacks, a Slash refusal the host
+  logged or matched from the chat (AbsorbTracker's `DisabledLine` match).
+- **Prefer the console's change gate over a hand-rolled one**: `D.DebugOnce` and `D.DebugChanged`
+  replace the "log once" and "log on change" helpers (MultiMeters' `NS.DebugSteadyReset`,
+  PanelMaster's `NS.DebugOnce`, KickCD's list signatures, PartyFrameEnhanced's memos,
+  ConsumableMaster's `KCM.DebugQuiet`), which a Clear never re-armed. A host that keeps its own passes
+  `onClear` to the DebugLog descriptor and re-arms there.
+- **Prefer the at-enable queue for state lines written at load**: pass
+  `debugAtEnable = function(tag, msg) D.DebugAtEnable(tag, "%s", msg) end` (or the host's wrapper)
+  to the Launcher descriptor, and route any dependency or mode line the host writes at `OnEnable`
+  through `D.DebugAtEnable`, so it lands the first time the player turns logging on.
+- **A DebugLog degradation stub under `Kit.assertSurfaceParity` gains `DebugOnce`, `DebugChanged`,
+  `DebugForget` and `DebugAtEnable`** (each answering `false`, or nothing), or names them in that
+  case's `ignore` list: the by-name form reads the live instance, so the case goes red on the copy
+  alone. No Slash, Options, Launcher or Lifecycle member moves, so those stubs do not.
+- A host suite that counted the lines in its console after a Slash refusal, a Lifecycle edge, a
+  combat-locked write or a Launcher `Register` with a `debug` passed re-pins with the library's line
+  in, and `docs/test-cases.md` is regenerated when its own cases move.
+
+Release gate (`docs/automated-tests/20261001-001312/`): lint pass, 0/0 in 133 files;
+tests pass, 1919 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.64.0 — 2026-09-30
 
 Versions in this release: **Core minor 9** (`LibKa0s-Core-1.0` 9), **DebugLog minor 17**

@@ -1,4 +1,4 @@
-# `LibKa0s-Lifecycle-1.0` — version 2
+# `LibKa0s-Lifecycle-1.0` — version 3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Lifecycle surface points here rather than restating it. It describes the
@@ -8,21 +8,23 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Lifecycle-1.0` |
-| Files and minors | `Lifecycle.lua` minor **2** |
-| Shipped in | v1.56.0 |
-| Status | Superseded |
-| Supersedes | [version 1](./version-1-docs.md) |
-| Superseded by | [version 3](./version-3-docs.md) |
-| Confirm in-game | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` → `{ Lifecycle = 2 }` |
+| Files and minors | `Lifecycle.lua` minor **3** |
+| Shipped in | v1.65.0 |
+| Status | **Current** |
+| Supersedes | [version 2](./version-2-docs.md) |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` → `{ Lifecycle = 3 }` |
 
 ## What changed at this version
 
-**Nothing the code does.** Version 2 documents a rule version 1 left unsaid — a `standDown` or
-`standUp` callback must not take or release a hold on its own latch — and pins what happens when one
-does anyway (see *Re-entrancy* below, review finding `LibKa0s-R-17`). The only change to
-`Lifecycle.lua` is that comment, but a comment still changes the file's bytes, and a released change
-to a file moves its LibStub minor. No member is added or removed, so the manifest differs from
-version 1's only in the minor, and a host needs no code change.
+**The edges reach the host's debug log.** Version 3 adds the optional descriptor field
+`debug(tag, message)`, the shape `LibKa0s-Launcher-1.0` and `LibKa0s-Slash-1.0` already take (gap
+G5 of the 2026-09-30 LibKa0s debug-gaps run). Each stand-down and each stand-up edge writes **one**
+`Lifecycle` line naming the hold that caused it and the resulting set; a call that fires no edge
+writes nothing. Before version 3 the latch said nothing about its edges, so several hosts wrote
+their own line inside `standDown`; a host that passes `debug` drops that line (one line per edge,
+not two). Without `debug` nothing is written, exactly as at version 2. No member, string, chat
+line or floor moves, so the manifest differs from version 2's only in the minor.
 
 ## What this major is
 
@@ -98,6 +100,7 @@ takes one, and nothing here reserves it.
 | `standDown` | function | yes | Called with **no arguments** when the hold set goes EMPTY → NON-EMPTY. |
 | `standUp` | function | yes | Called with **no arguments** when the hold set goes NON-EMPTY → EMPTY. |
 | `print` | function | no | The host's tagged printer. Used **only** by `:PrintHolds()`. |
+| `debug` | function | no (since 3) | `debug(tag, message)`, the host's gated log seam. One `Lifecycle` line per edge; see *The edge lines*. |
 
 `standDown` is where the host does its teardown: every `RegisterEvent`, `RegisterUnitEvent`,
 `RegisterMessage`, `RegisterBucketEvent` and raw `frame:RegisterEvent` it owns actually
@@ -109,8 +112,28 @@ on a combat transition, a target swap or a settings change.
 can be changed while the addon is down, and the rebuild has to reflect the setting as it is now
 (`performance-§6`).
 
-**The library prints nothing unless a line is asked for.** A latch that announced every edge would
-narrate a perf run and a profile switch into a player's chat.
+**The library prints nothing to chat unless a line is asked for.** A latch that announced every edge
+would narrate a perf run and a profile switch into a player's chat. The debug log is the host's own
+gated seam, not chat, which is why the edges go there (and only when the host passes `debug`).
+
+### The edge lines
+
+Written with tag `Lifecycle`, after the edge is recorded and **before** the host's callback runs:
+
+```
+stood down: added disabled (holds: disabled)
+stood up: released perf (holds: none)
+```
+
+- **One line per edge, none otherwise.** A second hold while down, a release that leaves the set
+  non-empty, a re-hold, a release of a key not held, `Reevaluate` with no edge and `PrintHolds`
+  write nothing. The line names the edge, not every change to the set.
+- **Before the callback**, so a raising `standDown` or `standUp` still leaves its edge in the log, and
+  a nested edge (see *Re-entrancy*) logs in the order the edges ran.
+- **pcall'd.** A sink that raises cannot stand between the recorded edge and the host's callback, so
+  it cannot leave the latch recorded down with the host never told.
+- The string is built only when `debug` is a function; the host's sink does its own gating
+  (`D.Debug` drops the line while logging is off).
 
 ## Instance surface
 
@@ -123,7 +146,7 @@ narrate a perf run and a profile switch into a player's chat.
 | `lc:IsDown()` | 1 | Is the hold set non-empty — is the addon stood down. |
 | `lc:Holds()` | 1 | A **fresh sorted array** of held keys. Never the internal table. |
 | `lc:Reevaluate()` | 1 | Re-runs the empty/non-empty decision, firing a callback only on an actual edge. Idempotent. |
-| `lc:PrintHolds()` | 1 | The one line this library ever prints, through `descriptor.print`. Answers `false` with no printer. |
+| `lc:PrintHolds()` | 1 | The one line this library ever prints to chat, through `descriptor.print`. Answers `false` with no printer. |
 | `lc.name` | 1 | The descriptor's `name`. |
 
 `:Set` is what a host binds its enable path's `onChange` to:
@@ -146,7 +169,8 @@ not an order — a suite asserting on an unsorted list passes or fails on somebo
 
 ## Hard invariants
 
-Each of these has a case in `tests/test_lifecycle.lua`.
+Each of these has a case in `tests/test_lifecycle.lua`; the edge lines have theirs in
+`tests/test_lifecycle_debug.lua`.
 
 1. `standDown` and `standUp` are each called **at most once per edge**, and never on a non-edge.
 2. `Hold("a"); Hold("b"); Release("a")` calls `standDown` **once** and `standUp` **never**.
@@ -202,6 +226,7 @@ NS.lifecycle = Lifecycle:New{
   standDown = NS.StandDown,     -- unregister everything, cancel everything, hide at the source
   standUp   = NS.StandUp,       -- rebuild from the settings as they are NOW
   print     = NS.Print,
+  debug     = NS.Debug,       -- the console's gated sink, as Launcher's descriptor takes it
 }
 
 -- At load, from the stored path. Not a special case: it is the same call the checkbox makes.
@@ -235,11 +260,3 @@ still has to be reachable by the player who wants to enable it again.
 The one sanctioned exception on the teardown side is a hook that cannot be undone:
 `hooksecurefunc` has no un-hook, so such a hook gates its own body and returns. A raw hook or an
 AceHook hook **must** be un-hooked, because it can be.
-
-## Moving to version 3
-
-**Take it; nothing moves unless a host passes `debug`.** Version 3 adds the optional descriptor
-field `debug(tag, message)`: each stand-down and stand-up edge writes one `Lifecycle` line with the
-hold that caused it and the resulting set. No member, string, chat line or floor moves. To adopt:
-pass the console's gated sink as `debug`, and delete any host line in `standDown` / `standUp` that
-restated the edge and its holds. See [version 3](./version-3-docs.md).

@@ -67,10 +67,10 @@ the file you need:
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsDragHandle>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
-| `LibKa0s-DebugLog-1.0` | `<DebugLog>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
+| `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
-| `LibKa0s-Options-1.0` | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
+| `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
 | `LibKa0s-Perf-1.0` | `<Perf>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
 
 A multi-file major gets a composite key because its files carry **independent** minors that really do
@@ -122,7 +122,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2](./Lifecycle/version-2-docs.md) | `Lifecycle.lua` 2 | v1.56.0 | **Current** |
+| [3](./Lifecycle/version-3-docs.md) | `Lifecycle.lua` 3 | v1.65.0 | **Current** |
+| [2](./Lifecycle/version-2-docs.md) | `Lifecycle.lua` 2 | v1.56.0 – v1.64.0 | Superseded |
 | [1](./Lifecycle/version-1-docs.md) | `Lifecycle.lua` 1 | v1.40.0 | Superseded |
 
 ### `LibKa0s-Bus-1.0`
@@ -186,7 +187,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [17.2](./DebugLog/version-17.2-docs.md) | `DebugLog.lua` 17 · `DebugLogDiagnostics.lua` 2 | v1.64.0 | **Current** |
+| [18.2.1](./DebugLog/version-18.2.1-docs.md) | `DebugLog.lua` 18 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.65.0 | **Current** |
+| [17.2](./DebugLog/version-17.2-docs.md) | `DebugLog.lua` 17 · `DebugLogDiagnostics.lua` 2 | v1.64.0 | Superseded |
 | [16.1](./DebugLog/version-16.1-docs.md) | `DebugLog.lua` 16 · `DebugLogDiagnostics.lua` 1 | none (superseded inside v1.64.0 before the tag was published) | Superseded |
 | [15.1](./DebugLog/version-15.1-docs.md) | `DebugLog.lua` 15 · `DebugLogDiagnostics.lua` 1 | none (superseded inside v1.64.0 before the tag was published) | Superseded |
 | [14.1](./DebugLog/version-14.1-docs.md) | `DebugLog.lua` 14 · `DebugLogDiagnostics.lua` 1 | v1.60.0 – v1.63.0 | Superseded |
@@ -206,7 +208,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [17](./Slash/version-17-docs.md) | `Slash.lua` 17 | v1.63.0 | **Current** |
+| [18](./Slash/version-18-docs.md) | `Slash.lua` 18 | v1.65.0 | **Current** |
+| [17](./Slash/version-17-docs.md) | `Slash.lua` 17 | v1.63.0 – v1.64.0 | Superseded |
 | [16](./Slash/version-16-docs.md) | `Slash.lua` 16 | v1.60.0 – v1.62.0 | Superseded |
 | [15](./Slash/version-15-docs.md) | `Slash.lua` 15 | v1.56.0 – v1.59.0 | Superseded |
 | [14](./Slash/version-14-docs.md) | `Slash.lua` 14 | v1.42.0 | Superseded |
@@ -225,7 +228,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [4](./Launcher/version-4-docs.md) | `Launcher.lua` 4 | v1.58.0 | **Current** |
+| [5](./Launcher/version-5-docs.md) | `Launcher.lua` 5 | v1.65.0 | **Current** |
+| [4](./Launcher/version-4-docs.md) | `Launcher.lua` 4 | v1.58.0 – v1.64.0 | Superseded |
 | [3](./Launcher/version-3-docs.md) | `Launcher.lua` 3 | v1.57.0 | Superseded |
 | [2](./Launcher/version-2-docs.md) | `Launcher.lua` 2 | v1.56.0 | Superseded |
 | [1](./Launcher/version-1-docs.md) | `Launcher.lua` 1 | v1.39.0 | Superseded |
@@ -234,7 +238,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [26.1.32.1.1.6.1.7.4.1](./Options/version-26.1.32.1.1.6.1.7.4.1-docs.md) | `Options.lua` 26 · `OptionsRegistry.lua` 1 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 6 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | v1.62.0 | **Current** |
+| [27.2.33.2.2.7.1.7.4.2](./Options/version-27.2.33.2.2.7.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 33 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 7 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.65.0 | **Current** |
+| [26.1.32.1.1.6.1.7.4.1](./Options/version-26.1.32.1.1.6.1.7.4.1-docs.md) | `Options.lua` 26 · `OptionsRegistry.lua` 1 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 6 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | v1.62.0 – v1.64.0 | Superseded |
 | [25.32.1.1.6.1.7.4.1](./Options/version-25.32.1.1.6.1.7.4.1-docs.md) | `Options.lua` 25 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 6 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | unreleased | Superseded |
 | [25.32.1.1.5.7.4.1](./Options/version-25.32.1.1.5.7.4.1-docs.md) | `Options.lua` 25 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 5 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | unreleased | Superseded |
 | [25.31.5.7.4.1](./Options/version-25.31.5.7.4.1-docs.md) | `Options.lua` 25 · `OptionsWidgets.lua` 31 · `OptionsTabs.lua` 5 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | v1.61.0 | Superseded |

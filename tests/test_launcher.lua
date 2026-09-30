@@ -470,10 +470,11 @@ test("launcher: every tooltip string goes through the descriptor's L, rawget-gua
   end
 end)
 
-test("launcher: minor 4 is live", function()
-  -- red under: a click change that forgot its bump, which reaches no host holding minor 3.
-  assertEqual(lib.MINOR, 4)
-  assertEqual(lib.MODULES.Launcher, 4)
+test("launcher: minor 5 is live", function()
+  -- red under: a change that forgot its bump, which reaches no host holding an older minor.
+  -- Minor 5 is the at-enable queue's `debugAtEnable` (tests/test_atenable.lua).
+  assertEqual(lib.MINOR, 5)
+  assertEqual(lib.MODULES.Launcher, 5)
 end)
 
 -- ── click behavior (minor 4, launcher-§2 as of standard v2.67.0) ─────────────────────────────
