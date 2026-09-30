@@ -143,10 +143,13 @@ test("resize: OnSizeChanged runs the relayout, after any script the frame alread
   -- red under: SetScript rather than HookScript, which would drop the host's own handler
   local f = newWindow()
   local order = {}
-  f:SetScript("OnSizeChanged", function() order[#order + 1] = "host" end)
+  local function note(what)
+    order[#order + 1] = what
+  end
+  f:SetScript("OnSizeChanged", function() note("host") end)
   core.MakeResizable(f, {
     minWidth = 200, minHeight = 100,
-    onResize = function(w, h) order[#order + 1] = "relayout " .. w .. "x" .. h end,
+    onResize = function(w, h) note("relayout " .. w .. "x" .. h) end,
   })
   f:__fire("OnSizeChanged", 500, 250)
   assertEqual(table.concat(order, ","), "host,relayout 500x250")

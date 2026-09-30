@@ -314,7 +314,9 @@ local function consoleMinWidth(offsets, copyBtn, title, titleText)
   local right = -offsets.copy + copyW
   local left = TOGGLE_X + TOGGLE_W
   local titleW = title.GetStringWidth and title:GetStringWidth()
-  if type(titleW) ~= "number" or titleW <= 0 then titleW = #titleText * TITLE_CHAR_W end
+  if type(titleW) ~= "number" or titleW <= 0 then
+    titleW = string.len(titleText) * TITLE_CHAR_W
+  end
   local w = 2 * (math.max(left, right) + PAD) + titleW
   return math.min(math.ceil(w), CONSOLE_W)
 end

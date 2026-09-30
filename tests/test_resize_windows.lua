@@ -25,7 +25,9 @@ local function recordBuilds(fn)
   mocks.CreateFrame = function(...)
     local f = realCreate(...)
     f.__sizes = {}
-    rawset(f, "SetSize", function(self, w, h) self.__sizes[#self.__sizes + 1] = { w, h } end)
+    rawset(f, "SetSize", function(self, w, h)
+      table.insert(self.__sizes, { w, h })
+    end)
     built[#built + 1] = f
     return f
   end
