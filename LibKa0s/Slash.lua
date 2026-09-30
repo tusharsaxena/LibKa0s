@@ -760,8 +760,9 @@ function lib:New(d)
 
     local v, err = parse(row, value or "")
     if v == nil then
-      refuse(self:Text("INVALID"):format(row.path), "set " .. row.path, "parse" .. ((err and err ~= "") and (" (" .. tostring(err) .. ")") or ""))
-      if err and err ~= "" then emit("  " .. err) end
+      local said = err and err ~= ""
+      refuse(self:Text("INVALID"):format(row.path), "set " .. row.path, "parse" .. (said and (" (" .. tostring(err) .. ")") or ""))
+      if said then emit("  " .. err) end
       return
     end
 
