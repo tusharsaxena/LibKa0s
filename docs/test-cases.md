@@ -933,7 +933,7 @@ badge and any count quoted in the docs must agree with it.
 - launcher: a host locale overrides a report, and a key-echoing fallback does not
 - launcher: with no descriptor print, a report reaches the chat frame
 
-### test_atenable.lua (19)
+### test_atenable.lua (21)
 
 - atenable: the instance carries DebugAtEnable, with its bound pinned
 - atenable: logging on, the line is written at once, formatted as D.Debug formats
@@ -952,6 +952,8 @@ badge and any count quoted in the docs must agree with it.
 - launcher: with debugAtEnable, the registration line goes to it, not to debug
 - launcher: with debug alone, the registration line goes to debug, as before minor 5
 - launcher: a missing minimap table is a state line, held for enable
+- launcher: a missing LibDataBroker is a state line, held for enable
+- launcher: a missing LibDBIcon is a state line, held for enable
 - launcher: event lines (shown / hidden) stay on debug when debugAtEnable is passed
 - launcher: end to end, a Register at OnEnable lands the first time logging is turned on
 
@@ -2169,7 +2171,7 @@ badge and any count quoted in the docs must agree with it.
 | test_slash_profile.lua | 30 |
 | test_slash_debug.lua | 14 |
 | test_launcher.lua | 45 |
-| test_atenable.lua | 19 |
+| test_atenable.lua | 21 |
 | test_options.lua | 85 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
@@ -2217,4 +2219,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1903** |
+| **Total** | **1905** |

@@ -249,6 +249,41 @@ test("launcher: a missing minimap table is a state line, held for enable", funct
   assertEqual(#rec.logs, 0)
 end)
 
+--- Run `fn` with the named LibStub majors invisible (tests/test_launcher.lua's helper, cut down to
+--- the silent lookup the module makes), then put the registry back.
+local function withoutLibs(blockedNames, fn)
+  local blocked = {}
+  for _, n in ipairs(blockedNames) do blocked[n] = true end
+  local original = mocks.LibStub
+  mocks.LibStub = setmetatable({
+    GetLibrary = function(_, major, silent)
+      if blocked[major] then return nil end
+      return original:GetLibrary(major, silent)
+    end,
+  }, { __call = function(self, major, silent) return self:GetLibrary(major, silent) end })
+  local ok, err = pcall(fn)
+  mocks.LibStub = original
+  if not ok then error(err, 0) end
+end
+
+test("launcher: a missing LibDataBroker is a state line, held for enable", function()
+  local rec = launcherFixture()
+  withoutLibs({ "LibDataBroker-1.1", "LibDBIcon-1.0" }, function()
+    assertFalse(launcher:New(rec.d):Register())
+  end)
+  assertTrue(table.concat(rec.held, "|"):find("LibDataBroker-1.1 absent; no launcher", 1, true) ~= nil)
+  assertEqual(#rec.logs, 0)
+end)
+
+test("launcher: a missing LibDBIcon is a state line, held for enable", function()
+  local rec = launcherFixture()
+  withoutLibs({ "LibDBIcon-1.0" }, function()
+    assertFalse(launcher:New(rec.d):Register())
+  end)
+  assertTrue(table.concat(rec.held, "|"):find("LibDBIcon-1.0 absent; broker plugin only", 1, true) ~= nil)
+  assertEqual(#rec.logs, 0)
+end)
+
 test("launcher: event lines (shown / hidden) stay on debug when debugAtEnable is passed", function()
   local rec = launcherFixture()
   local L = launcher:New(rec.d)

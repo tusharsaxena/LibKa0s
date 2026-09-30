@@ -84,7 +84,7 @@ through its `debugAtEnable` field).
 | `lib.AT_ENABLE_MAX` | **32**. The first 32 held lines are kept; every later one is dropped and counted, and the flush ends with one `[Debug] at-enable queue full: <n> later line(s) dropped` line. The count goes with the flush. | **G1** |
 
 **What a host must change: nothing, unless it adopts.** No existing member or behavior moves, and a
-host that passes no `onClear` sees `Clear()` exactly as version 17.2 had it. The instance gains three
+host that passes no `onClear` sees `Clear()` exactly as version 17.2 had it. The instance gains four
 members, so **a host's library-absent DebugLog stub gains `DebugOnce`, `DebugChanged`,
 `DebugForget` and `DebugAtEnable`** for its surface-parity case (each answering `false`, or nothing).
 To adopt: replace the hand-rolled helper with the gates, or pass `onClear` to re-arm the one kept,
