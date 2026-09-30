@@ -1479,6 +1479,23 @@ badge and any count quoted in the docs must agree with it.
 - combat: an event other than REGEN_ENABLED leaves the park armed
 - combat: OpenOptionsPanel answers false in combat, true when opened, nil with no category
 
+### test_options_combat_debug.lua (14)
+
+- opt combat debug: Options is at 27, with the six files the lines touch bumped
+- opt combat debug: every refused write is one line naming the row; the notice stays once
+- opt combat debug: a color commit refused names its row
+- opt combat debug: the page's Defaults, header button, footer control and RestoreDefaults
+- opt combat debug: a library button (Reset all settings) names its text
+- opt combat debug: a session checkbox names its label
+- opt combat debug: a tab click and SelectTab name the tab
+- opt combat debug: a nav rail click names the entry
+- opt combat debug: a page banner's selection and action name themselves
+- opt combat debug: a page shown under the lock writes one line naming it
+- opt combat debug: an id list toggle and remove are one line each
+- opt combat debug: a parked registration writes the parked line, then the flush line
+- opt combat debug: no debug on the descriptor is silent, and the chat is unchanged
+- opt combat debug: a debug that is not a function is ignored
+
 ### test_options_compose.lua (45)
 
 - compose: the instance carries every composer and every published constant
@@ -2146,6 +2163,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 9 |
 | test_options_combat.lua | 33 |
+| test_options_combat_debug.lua | 14 |
 | test_options_compose.lua | 45 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 71 |
@@ -2174,4 +2192,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1868** |
+| **Total** | **1882** |

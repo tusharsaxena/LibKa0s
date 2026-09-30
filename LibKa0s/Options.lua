@@ -26,7 +26,9 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Options-1.0", 26
+-- Minor 27: each combat-lock refusal writes one Cfg line naming what it refused, through the
+-- descriptor's `debug` (gap G3 of the 2026-09-30 debug-gaps run); nothing moves without one.
+local MAJOR, MINOR = "LibKa0s-Options-1.0", 27
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -540,11 +542,16 @@ function lib:New(d)
   -- Reset at each edge of combat, so a host prints at most one notice per combat.
   local combatNoticed = false
 
-  --- The refusal every write seam asks, here and in the two files that attach to it: true, having
+  --- The refusal every write seam asks, here and in the files that attach to it: true, having
   --- printed the gray notice if this combat has not had it yet, when locked; false otherwise.
   --- `__`-prefixed: the library talking to itself across a file boundary, as `O.__print` is.
-  function O.__combatRefused()
+  --- `what` (minor 27) names the refused act; each refusal writes one `Cfg` line through the
+  --- descriptor's `debug`, "<what> refused (in combat)". No `debug`, no line.
+  function O.__combatRefused(what)
     if not lib.__IsCombatLocked() then return false end
+    if type(d.debug) == "function" then
+      d.debug("Cfg", tostring(what or "change") .. " refused (in combat)")
+    end
     if not combatNoticed then
       combatNoticed = true
       print(lib.STRINGS.COMBAT_LOCKED_NOTICE)
@@ -580,7 +587,7 @@ function lib:New(d)
     end
     coverPage(ctx, true)
     if not ctx._rendered then ctx._dirty = true end
-    O.__combatRefused()
+    O.__combatRefused("show " .. tostring(ctx.pageKey or ctx.panel.name or "?"))
     return true
   end
 
@@ -654,7 +661,7 @@ function lib:New(d)
     -- control is not per-page and can be clicked while such a page is open.
     panel.OnDefault = function()
       -- Refused in combat (minor 22, options-ui-§2): the footer control is the page's Defaults.
-      if O.__combatRefused() then return end
+      if O.__combatRefused("defaults " .. tostring(title)) then return end
       if panel.defaultsOnClick then panel.defaultsOnClick() end
     end
 
@@ -766,7 +773,7 @@ function lib:New(d)
     if panel.defaultsOnClick then
       local onClick = panel.defaultsOnClick
       btn:SetCallback("OnClick", function(...)
-        if O.__combatRefused() then return end
+        if O.__combatRefused("defaults " .. tostring(panel.name)) then return end
         return onClick(...)
       end)
     end
@@ -942,7 +949,7 @@ function lib:New(d)
     -- settings window reaches. RestoreAllDefaults is NOT refused here, because a host's slash reset
     -- verb calls it too, and the lock covers the settings window only; its button on the Master
     -- controls tab is refused at the button, like every library-drawn button.
-    if O.__combatRefused() then return end
+    if O.__combatRefused("defaults " .. tostring(pageKey)) then return end
     runBulk("reset", pageKey, function(write)
       for _, row in ipairs(d.rowsForPage(pageKey) or {}) do
         write(row)
@@ -1237,7 +1244,7 @@ function lib:New(d)
   ---
   --- Refused in combat (minor 22): a tab switch is a structural re-render (options-ui-§13).
   function O.SelectTab(pageKey, tabKey)
-    if O.__combatRefused() then return false end
+    if O.__combatRefused("tab " .. tostring(pageKey) .. "/" .. tostring(tabKey)) then return false end
     local ctx = O.__panelFor(pageKey)
     if not ctx then return false end
     ctx.activeTab = tabKey

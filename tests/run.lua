@@ -85,7 +85,7 @@ Kit.run{
     "test_options_ids", "test_options_idlist", "test_options_idlist_layout",
     "test_options_tabs", "test_options_tabbed",
     "test_options_nav",
-    "test_options_idsuggest", "test_options_idsuggest_frames", "test_options_idlist_remove", "test_options_switched", "test_options_combat", "test_options_compose",
+    "test_options_idsuggest", "test_options_idsuggest_frames", "test_options_idlist_remove", "test_options_switched", "test_options_combat", "test_options_combat_debug", "test_options_compose",
     "test_options_throttle",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
     "test_loader", "test_parallel", "test_kit_limits", "test_kit_asserts",

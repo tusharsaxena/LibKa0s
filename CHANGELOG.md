@@ -13,7 +13,10 @@ cannot drift. Release order is in
 ## v1.65.0 — in progress
 
 Versions in this release so far: **Slash minor 18** (`LibKa0s-Slash-1.0` 18), **DebugLog minor 18**
-and the new **DebugLogGates minor 1** (`LibKa0s-DebugLog-1.0` 18.2.1). The release step of
+and the new **DebugLogGates minor 1** (`LibKa0s-DebugLog-1.0` 18.2.1), **Options minor 27**,
+**OptionsRegistry minor 2**, **OptionsWidgets minor 33**, **OptionsIds minor 2**,
+**OptionsIdList minor 2**, **OptionsTabs minor 7** and **OptionsNav minor 2**
+(`LibKa0s-Options-1.0` 27.2.33.2.2.7.1.7.4.2). The release step of
 the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now because
 `tests/test_versioning.lua` holds every bump to its changelog entry.
 
@@ -35,6 +38,21 @@ the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now becau
 - **Descriptor field `onClear()`**, called by `Clear()` after the wipe, under `pcall`, for a host
   that keeps a gate of its own. Absent, `Clear()` is unchanged. No floor moves. Cases:
   `tests/test_debuglog_gates.lua`. See `docs/api/DebugLog/version-18.2.1-docs.md`.
+
+### Options minor 27 and six secondary files: the combat lock's refusals reach the host's debug log (G3)
+
+- **One `Cfg` line per refusal** through the descriptor's existing `debug(tag, message)`,
+  `<what> refused (in combat)`, naming the act: `write <path>`, `defaults <page>`,
+  `button <text>` (*Reset all settings* among them), `toggle <label>`, `tab <key>` and
+  `tab <pageKey>/<tabKey>`, `rail <key>`, `banner select <key>`, `banner action <text>`,
+  `id list change`, `id list toggle <id>`, and `show <pageKey>` for a page shown under the lock.
+  The chat is unchanged (one gray notice per combat).
+- **The park's flush line**: a registration parked in combat (`register parked (in combat)`) writes
+  `register flushed (combat ended)` when the end of combat replays it.
+- An id list toggle asks the lock once rather than twice, so its refusal is one line. Absent
+  `debug`, nothing is written. No member, string or floor moves. Cases:
+  `tests/test_options_combat_debug.lua`. See
+  `docs/api/Options/version-27.2.33.2.2.7.1.7.4.2-docs.md`.
 
 ## v1.64.0 — 2026-09-30
 

@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 26.1.32.1.1.6.1.7.4.1
+# `LibKa0s-Options-1.0` — version 27.2.33.2.2.7.1.7.4.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,17 +8,17 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **26** · `OptionsRegistry.lua` **1** · `OptionsWidgets.lua` **32** · `OptionsIds.lua` **1** · `OptionsIdList.lua` **1** · `OptionsTabs.lua` **6** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **1** |
+| Files and minors | `Options.lua` **27** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **33** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **2** · `OptionsTabs.lua` **7** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same ten numbers `lib.MODULES` reports. |
-| Shipped in | v1.62.0 |
-| Status | Superseded |
-| Supersedes | [version 25.32.1.1.6.1.7.4.1](./version-25.32.1.1.6.1.7.4.1-docs.md) |
-| Superseded by | [version 27.2.33.2.2.7.1.7.4.2](./version-27.2.33.2.2.7.1.7.4.2-docs.md) |
+| Shipped in | v1.65.0 |
+| Status | **Current** |
+| Supersedes | [version 26.1.32.1.1.6.1.7.4.1](./version-26.1.32.1.1.6.1.7.4.1-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 26, OptionsRegistry = 1, OptionsWidgets = 32, OptionsIds = 1, OptionsIdList = 1, OptionsTabs = 6, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 27, OptionsRegistry = 2, OptionsWidgets = 33, OptionsIds = 2, OptionsIdList = 2, OptionsTabs = 7, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
-for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
+for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `I1` for
 `OptionsIds.lua` minor 1, `L1` for `OptionsIdList.lua` minor 1. **A `W`
@@ -39,6 +39,35 @@ member is a fact about when a consumer got it, not about which file holds it tod
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**The combat lock tells the host's debug log what it refused (gap G3 of the 2026-09-30 LibKa0s
+debug-gaps run).** No member, row field, string or floor moves, and nothing drawn or printed to
+chat changes. What changes is what reaches the descriptor's existing `debug(tag, message)` field;
+a host that passes none sees nothing new.
+
+- **One `Cfg` line per refusal (O27)**, `<what> refused (in combat)`, written by
+  `O.__combatRefused(what)` each time the lock refuses, after (and independent of) the one gray chat
+  notice per combat. What each file names:
+  - `Options.lua` 27: `defaults <page title>` (the header Defaults button and the footer control),
+    `defaults <pageKey>` (`O.RestoreDefaults`), `tab <pageKey>/<tabKey>` (`O.SelectTab`), and
+    `show <pageKey>` (a page shown under the lock, covered instead of drawn).
+  - `OptionsWidgets.lua` 33: `write <path>` (every widget write and a color commit),
+    `button <text>` (a library button, *Reset all settings* among them, and a choice grid's extra
+    cell), `toggle <label>` (`O.SessionCheckbox`).
+  - `OptionsTabs.lua` 7: `tab <key>` (a tab click), `banner select <key>` and
+    `banner action <text>` (`O.PageBanner`).
+  - `OptionsNav.lua` 2: `rail <key>` (a nav rail click).
+  - `OptionsIds.lua` 2: `id list change` (an add, a remove or a rebuild the lock refused).
+  - `OptionsIdList.lua` 2: `id list toggle <id>`. The toggle now asks the lock once, before the
+    host callback, where it asked twice (inside `callHost` and again after it), which would have
+    written the line twice; what it does when refused (put the box back, call nothing) is unchanged.
+- **The park's flush line (`OptionsRegistry.lua` 2).** A registration parked in combat already
+  wrote `register parked (in combat)`; the end-of-combat replay now writes
+  `register flushed (combat ended)` before it runs `CreateOptionsPanel`.
+- **Silent default.** Absent `debug`, or a `debug` that is not a function, nothing is written.
+  Cases: `tests/test_options_combat_debug.lua`.
+
+## Previously, at 26.1.32.1.1.6.1.7.4.1
 
 **The page registry leaves `Options.lua` for a file of its own (LK-ATS-04).** No member,
 descriptor field, row field or drawn pixel changes; a host cannot observe this version except
@@ -1143,7 +1172,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `colorDecode` | function(stored) | no | O1 | → `r, g, b, a`. Defaults to the `{r=,g=,b=,a=}` shape. |
 | `colorEncode` | function(r,g,b,a) | no | O1 | → stored. Defaults to the same. |
 | `sliderCommit` | string | no | O1 | `"change"` makes every slider commit on the drag as well as on release, throttled through `scheduleTimer`. Default is release-only; a single row overrides either way with `commitOn`. |
-| `debug` | function(tag, fmt, …) | no | O1 | Developer log line. |
+| `debug` | function(tag, message) | no | O1 | Developer log line, through the host's gated sink. `Cfg` lines: `opened`, `open refused (in combat)` and `register parked (in combat)` (O24); from **O27** the combat lock's `<what> refused (in combat)`, one per refusal, and the park's `register flushed (combat ended)`. See [What changed at this version](#what-changed-at-this-version). |
 
 Unlike Core, DebugLog and Slash, this module performs **no descriptor validation at all** — `d` is
 indexed directly, so only a nil descriptor raises. The fields marked required above are required in
@@ -1225,7 +1254,7 @@ lock for the whole process, whichever vendored copy won. A host calls none of th
 | `lib.STRINGS.COMBAT_LOCKED` | O22 | *Settings are locked during combat.* — the cover's line, the standard's words. |
 | `lib.STRINGS.COMBAT_LOCKED_NOTICE` | O22 | The gray chat line, at most once per combat per host. |
 
-On the instance, equally internal: `O.__combatRefused()` (O22, the refusal every file asks),
+On the instance, equally internal: `O.__combatRefused(what)` (O22, the refusal every file asks; `what`, the refused act the `Cfg` line names, **O27**),
 `O.__buildCover(panel)` (T2) and `O.__releaseOwnedFocus(panels)` (T2), and `ctx.__combatCover` on
 every ctx `CreatePanel` returns.
 
@@ -2165,14 +2194,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 27.2.33.2.2.7.1.7.4.2
-
-**Take it; nothing moves unless a host passes `debug`.** `Options.lua` moves to minor **27**,
-`OptionsRegistry.lua` to **2**, `OptionsWidgets.lua` to **33**, `OptionsIds.lua` and
-`OptionsIdList.lua` to **2**, `OptionsTabs.lua` to **7** and `OptionsNav.lua` to **2**. Each refusal
-the combat lock decides writes one `Cfg` line, `<what> refused (in combat)`, through the
-descriptor's existing `debug(tag, message)`, and the replay of a registration parked in combat
-writes `register flushed (combat ended)`. No member, row field, string or floor moves, and the
-chat is unchanged. To adopt: pass the host's gated sink (the one the Launcher descriptor already
-takes) and delete any host line that duplicates one of these. See [version 27.2.33.2.2.7.1.7.4.2](./version-27.2.33.2.2.7.1.7.4.2-docs.md).
