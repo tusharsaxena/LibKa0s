@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.63.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.64.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -253,7 +253,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.63.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.64.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -449,7 +449,23 @@ Core, DebugLog, Slash, Options, Media, Env, Pool and Perf. It does not look up W
 is the host that found the four kit gaps revision 16 closes (#27–#30). **No addon on the standard
 remains unadopted.**
 
-**Where v1.63.0 stands (2026-09-29).** One LibStub minor moves: `Slash.lua` 17
+**Where v1.64.0 stands (2026-09-30).** Four LibStub minors move: `Core.lua` 9
+(`LibKa0s-Core-1.0` 9), `DebugLog.lua` 15 (`LibKa0s-DebugLog-1.0` 15.1), `Widgets.lua` 11
+(`LibKa0s-Widgets-1.0` 11.3) and `PerfPanel.lua` 6 (`LibKa0s-Perf-1.0` 13.6), and the kit moves to
+**revision 33**, which adds one file, `testkit/mock_resize.lua`; no `NEEDS_*` floor rises and no
+payload file is added. It is the library's half of the 2026-09-30 resizable-windows item: one
+guarded Core helper, `MakeResizable`, and the debug console, every copy window and the perf panel
+(width only) resizable from a bottom-right grip, the size kept on the frame for the session and
+today's defaults unchanged. What a consumer owes is the whole-folder copy of both payloads and the
+provenance line, **and a `MakeResizable` member on any Core degradation stub a by-name
+`assertSurfaceParity` case checks** (a function answering nil), in the same commit; the
+`CHANGELOG.md` block's *What a consumer owes* has the rest. Built on
+`feat/2026-09-30-debug-logs-and-resize`, and **not merged**: steps 1–7 are done on that branch, the
+tag `v1.64.0` exists **locally only**, on it, and the tag's push and the branch's merge wait on the
+owner's go-ahead. **Step 8 is every consumer**, one re-vendor item each in the rollout
+(`DL-<XX>-01`).
+
+**Where v1.63.0 stood (2026-09-29).** One LibStub minor moves: `Slash.lua` 17
 (`LibKa0s-Slash-1.0` 17), and the kit moves to **revision 32** (a README-only count correction);
 no `NEEDS_*` floor rises and no file is added. It is the library's half of the 2026-09-29 `profile` verb rollout: the descriptor field
 `profiles`, `Sl:CliProfile`, `Sl:ProfileSwitch`, `lib.ProfileNames` and nine `PROFILE_*` strings,
@@ -704,10 +720,10 @@ The kit stays at **revision 22**, so `tests/test_vendor_sync.lua` pairs the two 
 v1.42.0 tag exactly as it did at v1.41.0 — the kit bytes are identical, but both are resolved from
 the tag the provenance line names, so both are copied.
 
-**Every step 8 through v1.62.0 is done.** All eleven consumers bundle **v1.62.0** on `master`, and
-each `CLAUDE.md` provenance line says so, re-measured on 2026-09-29 for v1.63.0 against each
-consumer's own `master`. What is **not** done is v1.63.0's step 8, which is every consumer, one
-re-vendor item each on its `feat/2026-09-29-smoke-and-profile` branch (see *Where v1.63.0 stands*
+**Every step 8 through v1.63.0 is done.** All eleven consumers bundle **v1.63.0** on `master`, and
+each `CLAUDE.md` provenance line says so, re-measured on 2026-09-30 for v1.64.0 against each
+consumer's own `master`. What is **not** done is v1.64.0's step 8, which is every consumer, one
+re-vendor item each on its `feat/2026-09-30-debug-logs-and-resize` branch (see *Where v1.64.0 stands*
 above).
 
 This paragraph says where the consumers stand as of the release being prepared, so it is stale the
