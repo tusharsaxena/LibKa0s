@@ -12,20 +12,48 @@ cannot drift. Release order is in
 
 ## v1.64.0 — 2026-09-30
 
-Versions in this release: **Core minor 9** (`LibKa0s-Core-1.0` 9), **DebugLog minor 16**
-(`LibKa0s-DebugLog-1.0` 16.1, with `DebugLogDiagnostics` 1), **Widgets minor 11**
+Versions in this release: **Core minor 9** (`LibKa0s-Core-1.0` 9), **DebugLog minor 17**
+(`LibKa0s-DebugLog-1.0` 17.2, with **DebugLogDiagnostics minor 2**), **Widgets minor 11**
 (`LibKa0s-Widgets-1.0` 11.3, with `WidgetsDragHandle` 3) and **PerfPanel minor 6**
 (`LibKa0s-Perf-1.0` 13.6, with `Perf` 13). Every other file is unchanged from v1.63.0: `Env` 1,
 `Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` 17,
-`Launcher` 4, `Options` key 26.1.32.1.1.6.1.7.4.1. The test kit moves to **revision 33**. No
+`Launcher` 4, `Options` key 26.1.32.1.1.6.1.7.4.1. The test kit moves to **revision 34**. No
 `NEEDS_*` floor rises and no major is added, so the library is still **fifteen majors across
-twenty-seven files**. Built to the Ka0s WoW Addon Standard **v2.70.0**.
+twenty-seven files**. Built to the Ka0s WoW Addon Standard **v2.71.0**.
 
 This is the library's half of the 2026-09-30 resizable-windows item (090): the debug console, every
 copy window and the perf panel are resizable, the size is kept for the session only and the default
 is today's (owner decisions D2 and D3; `debug-logging-§1` and `performance-§4` at v2.70.0).
-It also carries the console's orange **Diagnostics** link (the rollout's addendum A1), folded in
-before the tag was published: DebugLog went to minor 15 for the resize and to **16** for the link.
+It also carries the console's orange **Diagnostics** link (the rollout's addendum A1) and the
+owner's follow-up call that running the report turns debug logging on for the session (addendum A2,
+`debug-logging-§14` at v2.71.0), both folded in before the tag was published: DebugLog went to minor
+15 for the resize, to 16 for the link and to **17**, with `DebugLogDiagnostics` 1 → **2**, for the
+run turning logging on.
+
+### DebugLogDiagnostics minor 2, DebugLog minor 17: a report run turns logging on for the session
+
+- **`RunDiagnostics` turns debug logging on first when it is off**, through the flag's one seam,
+  `D:SetEnabled(true)`, and then writes the report. The console therefore holds the
+  `[Debug] logging enabled` line and the descriptor's `[Init]` summary before the begin marker, the
+  report's identity header prints `debug logging: on`, and the chat carries `SetEnabled`'s ack
+  before the report's own line. The session is traced from the report on, so the player's next
+  reproduction lands without a separate `/<prefix> debug on`. The slash word (either form), a host's
+  `DebugVerb("diagnostics")` and the console's Diagnostics link all run the same function.
+- **With logging already on it calls nothing** (no second enable line, no second summary), and a
+  run **never turns logging off**.
+- **Opt-out: `diagnosticsEnablesLogging = false`**, a new descriptor field, read at every run.
+  Opted out, the report lands through the ungated append with logging off and leaves it off, as
+  through minor 1. Only `false` opts out.
+- **Unchanged:** `BuildDiagnostics` writes nothing and never touches the flag, and the sections
+  read state only; `RunDiagnostics` still returns the report's own line count.
+- `DebugLog.lua` 17 changes comments only: the link's (a click runs `RunDiagnostics()`, which turns
+  logging on) and the descriptor's field list (the new field). It moves so that the two files of the
+  major move together on the rollout branch, where copies of 16 are already vendored.
+- Documented in [version 17.2](docs/api/DebugLog/version-17.2-docs.md); 16.1 is Superseded without
+  having shipped in a published tag. Cases in `tests/test_debuglog_diagnostics.lua`: the turn-on
+  (the order of the enable line, the summary and the report; one `setEnabled`; the ack), the opt-out,
+  `true` not opting out, already on, never off, `BuildDiagnostics` never writing the flag,
+  `DebugVerb` and the link turning it on, and the link opted out.
 
 ### Core minor 9: `MakeResizable`, one grip for all three windows
 
@@ -56,8 +84,8 @@ before the tag was published: DebugLog went to minor 15 for the resize and to **
   **Diagnostics** text control beside the Debug On/Off toggle: plain text with no button art,
   orange at rest (`1, 0.5, 0`) and brighter under the pointer (`1, 0.72, 0.28`), anchored LEFT to
   the right edge of the toggle's font string with a 10 px gap, so the gap holds after either word.
-  A click runs `D:RunDiagnostics()`, exactly what the slash word runs: ungated, the report lands
-  with logging off, and the flag is never touched.
+  A click runs `D:RunDiagnostics()`, exactly what the slash word runs: ungated, and the report lands
+  with logging off (from `DebugLogDiagnostics` 2, above, the run turns logging on first).
 - **Drawn only when the instance has `RunDiagnostics`**, which is when `DebugLogDiagnostics.lua`
   installed the report; without it the title bar is minor 15's.
 - **The label is a module string**, `lib.STRINGS.DIAGNOSTICS = "Diagnostics"`, overridable through
@@ -69,8 +97,8 @@ before the tag was published: DebugLog went to minor 15 for the resize and to **
 - Minor **16**, not a change inside 15: the rollout branch's earlier re-vendors carry 15, and
   LibStub keeps the highest minor, so a copy with the link wins over one without it wherever the
   two are loaded together. Documented in
-  [version 16.1](docs/api/DebugLog/version-16.1-docs.md); 15.1 is Superseded without having shipped
-  in a published tag. Cases: six `diag link:` cases in `tests/test_debuglog_diagnostics.lua` (drawn
+  [version 16.1](docs/api/DebugLog/version-16.1-docs.md), itself Superseded by 17.2 above; 15.1 is
+  Superseded without having shipped in a published tag. Cases: six `diag link:` cases in `tests/test_debuglog_diagnostics.lua` (drawn
   and not drawn, the `L` override, the anchor, both colors, the click with logging off), and
   `tests/test_resize_windows.lua`'s minimum-width case with the link.
 
@@ -103,6 +131,21 @@ default size, grip and bounds, reflow, size kept across hide and show, two windo
 the helper absent leaving today's fixed window) and `tests/test_mock_resize.lua` (the kit's new
 recorders).
 
+### Test kit revision 34: the diagnostics contract has a run turn logging on
+
+`testkit/test_diagnostics_contract.lua` follows `debug-logging-§14` at v2.71.0. The case
+*the report lands with logging off and leaves it off* is retired; in its place, *the report lands
+with logging off and turns it on for the session* (the flag on afterwards and exactly one
+`[Debug] logging enabled` line, in the instance's own wording, before the begin marker), *an addon
+that opts out lands the report and leaves logging off*, and *with logging already on, the report
+writes no second enable line*. One new optional fact, `Kit.diagnostics.enablesLogging`: `false`
+only for an addon whose descriptor sets `diagnosticsEnablesLogging = false` (the kit cannot read the
+descriptor, so the addon declares it, and the case for the declared choice fails when the report does
+the opposite); the case for the choice not declared is a declared skip. `tests/test_kit_inventory.lua`
+pins revision 34. Documented in
+[`docs/api/testkit/version-34-docs.md`](docs/api/testkit/version-34-docs.md); revision 33 is
+Superseded without having shipped in a published tag.
+
 ### Test kit revision 33: mock frames record the resize surface
 
 A new kit file, `testkit/mock_resize.lua`, loaded by `mock_base.lua` beside `mock_events.lua`: every
@@ -127,6 +170,12 @@ and the client fires it from its layout pass, not inside the setter); a suite fi
 - A host suite that asserted on `IsResizable()`, `IsUserPlaced()` or `GetResizeBounds()` of a mock
   frame reads real values now.
 - An addon MUST NOT save these windows' sizes (`debug-logging-§1`, v2.70.0).
+- **Diagnostics turns logging on (DebugLogDiagnostics 2, kit revision 34).** No instance member
+  moves, so no DebugLog degradation stub does. A host suite that asserts the report leaves logging
+  off, or counts the buffer or the chat after a run with logging off, re-pins (two more console
+  lines, one more chat line); the kit's contract case names change, so `docs/test-cases.md` is
+  regenerated. An addon that keeps logging off sets `diagnosticsEnablesLogging = false` in its
+  descriptor and `enablesLogging = false` in `Kit.diagnostics`.
 - Nothing for the Diagnostics link: no instance member moves, so no DebugLog degradation stub does.
   A host suite that pins the console's minimum width, or counts the frames its title bar builds,
   re-pins with the link in (it is drawn whenever the report is installed).

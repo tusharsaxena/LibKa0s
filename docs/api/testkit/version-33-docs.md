@@ -9,10 +9,10 @@
 | Payload | `testkit/` — `framework.lua`, `asserts.lua`, `inventory.lua`, `loader.lua`, `mock_base.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`, `mock_ids.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, `prose_lists.lua`, `prose_coverage.lua`, `prose_selftests.lua`, `test_layout_cap.lua`, `test_diagnostics_contract.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **33** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.64.0 |
-| Status | **Current** |
+| First released in | never in a published tag: superseded inside v1.64.0, before the tag was published |
+| Status | Superseded |
 | Supersedes | [version 32](version-32-docs.md) — the README's copy and consumer counts |
-| Superseded by | — |
+| Superseded by | [version 34](version-34-docs.md) — the diagnostics contract has a run turn logging on |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `33` |
 

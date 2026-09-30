@@ -449,17 +449,20 @@ Core, DebugLog, Slash, Options, Media, Env, Pool and Perf. It does not look up W
 is the host that found the four kit gaps revision 16 closes (#27–#30). **No addon on the standard
 remains unadopted.**
 
-**Where v1.64.0 stands (2026-09-30).** Four LibStub minors move: `Core.lua` 9
-(`LibKa0s-Core-1.0` 9), `DebugLog.lua` 16 (`LibKa0s-DebugLog-1.0` 16.1), `Widgets.lua` 11
-(`LibKa0s-Widgets-1.0` 11.3) and `PerfPanel.lua` 6 (`LibKa0s-Perf-1.0` 13.6), and the kit moves to
-**revision 33**, which adds one file, `testkit/mock_resize.lua`; no `NEEDS_*` floor rises and no
+**Where v1.64.0 stands (2026-09-30).** Five LibStub minors move: `Core.lua` 9
+(`LibKa0s-Core-1.0` 9), `DebugLog.lua` 17 and `DebugLogDiagnostics.lua` 2 (`LibKa0s-DebugLog-1.0`
+17.2), `Widgets.lua` 11 (`LibKa0s-Widgets-1.0` 11.3) and `PerfPanel.lua` 6 (`LibKa0s-Perf-1.0`
+13.6), and the kit moves to **revision 34**, which adds one file, `testkit/mock_resize.lua` (revision
+33), and has the diagnostics contract expect a run to turn logging on (34); no `NEEDS_*` floor rises and no
 payload file is added. It is the library's half of the 2026-09-30 resizable-windows item: one
 guarded Core helper, `MakeResizable`, and the debug console, every copy window and the perf panel
 (width only) resizable from a bottom-right grip, the size kept on the frame for the session and
 today's defaults unchanged. It also carries, folded in before the tag was published, the
 orange **Diagnostics** link in the console's title bar (addendum A1): DebugLog went to 15 for the
 resize and on to 16 for the link, so a copy at 16 wins over the 15 an earlier re-vendor on the
-rollout branch carries. What a consumer owes is the whole-folder copy of both payloads and the
+rollout branch carries; and then the owner's call that running the report turns debug logging on
+for the session (addendum A2, `debug-logging-§14` at v2.71.0): `DebugLogDiagnostics` went to 2 and
+DebugLog to 17, so that pair wins over the 16.1 the AuraMaster preview carries. What a consumer owes is the whole-folder copy of both payloads and the
 provenance line, **and a `MakeResizable` member on any Core degradation stub a by-name
 `assertSurfaceParity` case checks** (a function answering nil), in the same commit; the
 `CHANGELOG.md` block's *What a consumer owes* has the rest. Built on

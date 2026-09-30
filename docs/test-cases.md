@@ -608,7 +608,7 @@ badge and any count quoted in the docs must agree with it.
 - dbgtime: BUFFER_SLACK is published, and is 128 at minor 14
 - dbgtime: Add reads BUFFER_SLACK at call time, like MAX_BUFFER
 
-### test_debuglog_diagnostics.lua (41)
+### test_debuglog_diagnostics.lua (46)
 
 - diag: the caps are pinned as literals, and the file registers under the major
 - diag: both markers carry the brand, and the end marker counts every line
@@ -619,7 +619,11 @@ badge and any count quoted in the docs must agree with it.
 - diag: BuildDiagnostics writes nothing
 - diag: the report appends, and the trace before it survives
 - diag: the report never calls Clear
-- diag: the report is ungated: it lands with logging off and leaves the flag alone
+- diag: a run with logging off turns it on first, through the one seam
+- diag: opted out, the report is ungated: it lands with logging off and leaves it off
+- diag: only false opts out; true turns logging on like the default
+- diag: with logging already on, the run writes no second enable line
+- diag: a run never turns logging off, opted out or not
 - diag: RunDiagnostics prints one chat line with the count and returns it
 - diag: the chat line is the host's when L overrides it
 - diag: RunDiagnostics shows a hidden console
@@ -650,7 +654,8 @@ badge and any count quoted in the docs must agree with it.
 - diag link: not drawn when the diagnostics file did not install the report
 - diag link: anchored to the right edge of the Debug On/Off label, with a gap
 - diag link: orange at rest, brighter under the pointer, orange again after
-- diag link: a click runs the report with logging off, and leaves it off
+- diag link: a click runs the report with logging off, and turns it on first
+- diag link: opted out, a click writes the report and leaves logging off
 
 ### test_resize_windows.lua (23)
 
@@ -1948,7 +1953,7 @@ badge and any count quoted in the docs must agree with it.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 33
+- the kit is revision 34
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -2039,13 +2044,15 @@ badge and any count quoted in the docs must agree with it.
 - layoutcap self-test: a census that states nothing is told apart from one that states none
 - layoutcap self-test: the exempt set takes folders as well as paths
 
-### test_diagnostics_contract.lua (7)
+### test_diagnostics_contract.lua (9)
 
 - diagnostics contract: both forms run the report
 - diagnostics contract: the debug word is matched in any case
 - diagnostics contract: both markers carry the brand and the end counts the report
 - diagnostics contract: the report appends after what the console already holds
-- diagnostics contract: the report lands with logging off and leaves it off
+- diagnostics contract: the report lands with logging off and turns it on for the session
+- diagnostics contract: an addon that opts out lands the report and leaves logging off (skipped: this addon keeps the default (Kit.diagnostics.enablesLogging is not false), so its report turns logging on; the case above holds it)
+- diagnostics contract: with logging already on, the report writes no second enable line
 - diagnostics contract: both forms run while the addon is disabled
 - diagnostics contract: no other name runs the report
 
@@ -2071,7 +2078,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_reorder.lua | 5 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
-| test_debuglog_diagnostics.lua | 41 |
+| test_debuglog_diagnostics.lua | 46 |
 | test_resize_windows.lua | 23 |
 | test_slash.lua | 70 |
 | test_slash_parse.lua | 24 |
@@ -2124,5 +2131,5 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_runner.lua | 10 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| test_diagnostics_contract.lua | 7 |
-| **Total** | **1827** |
+| test_diagnostics_contract.lua | 9 |
+| **Total** | **1834** |

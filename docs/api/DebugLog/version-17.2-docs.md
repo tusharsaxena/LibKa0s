@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 16.1
+# `LibKa0s-DebugLog-1.0` — version 17.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,16 +8,17 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **16** · `DebugLogDiagnostics.lua` minor **1** |
-| Shipped in | never in a published tag: superseded inside v1.64.0, before the tag was published |
-| Status | Superseded |
-| Supersedes | [version 15.1](./version-15.1-docs.md) — no Diagnostics link in the title bar |
-| Superseded by | [version 17.2](./version-17.2-docs.md) — a report run turns logging on for the session |
+| Files and minors | `DebugLog.lua` minor **17** · `DebugLogDiagnostics.lua` minor **2** |
+| Shipped in | v1.64.0 |
+| Status | **Current** |
+| Supersedes | [version 16.1](./version-16.1-docs.md) — a report run left the logging flag alone |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 16, DebugLogDiagnostics = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 17, DebugLogDiagnostics = 2 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared; a `Since` of
-**D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file this version adds. Minors 1 and 2
+**D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file version 14.1 added, and **D2** its
+minor 2. Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
 this major".
 
@@ -47,6 +48,31 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 
 ## What changed at this version
 
+**A report run turns debug logging on for the session.** `DebugLogDiagnostics.lua` moves to minor
+**2** and `DebugLog.lua` to minor **17**, and the floors do not move. The owner's call of 2026-09-30,
+made on the AuraMaster preview of the Diagnostics link, is that running the report (the
+`diagnostics` word, either slash form, and the console's link) also turns `/<prefix> debug on` for
+the session, so the player's next reproduction is traced; the Ka0s WoW Addon Standard v2.71.0
+rewrites `debug-logging-§14` to match.
+
+| | | Since |
+|---|---|---|
+| The run | `RunDiagnostics(spec?)`, when the host's flag reads off, first calls `D:SetEnabled(true)`, the flag's one seam, and then builds and writes the report. So the console holds, in order, the `[Debug] logging enabled` line, the descriptor's `[Init]` summary and the report, whose identity header prints `debug logging: on`; the chat carries `SetEnabled`'s color-coded ack before the report's own `DIAG_WRITTEN` line. The returned count is still the report's lines alone. | **D2** |
+| Already on | Nothing is called: no second enable line, no second summary, no ack. | **D2** |
+| Never off | A run never turns logging off, opted out or not. | **D2** |
+| `diagnosticsEnablesLogging` | A new descriptor field. `false` opts the host out: the run writes the report through the ungated append with logging off and leaves it off, as version 16.1 did. Read at every run, not at `New`. Only `false` opts out; `nil`, `true` or anything else keeps the default. | **17** |
+| `BuildDiagnostics(spec?)` and the sections | Unchanged: building the report writes nothing and never touches the flag, and a section reads state only. The enable belongs to the run. | D1 |
+| The link and `DebugVerb("diagnostics")` | Both run `RunDiagnostics()` with no argument, so both turn logging on exactly as the slash word does. Neither changed code; the link's comment in `DebugLog.lua` and the descriptor's field list did, which is why `DebugLog.lua` moves to 17. | **17** |
+
+**What a host must change: nothing in its code.** No instance member is added or removed, so no
+degradation stub changes and the member manifest differs from 16.1's in its version key alone. A host
+suite that asserts a report leaves logging off, or counts `#buffer` or the chat lines after a run with
+logging off, re-pins: two more console lines and one more chat line. The kit's diagnostics contract
+(kit revision 34) says the same through the host's own dispatcher; a host that opts out declares
+`Kit.diagnostics.enablesLogging = false` to match its descriptor.
+
+## What changed at version 16.1
+
 **A Diagnostics link in the title bar.** `DebugLog.lua` moves to minor **16**; `DebugLogDiagnostics.lua`
 stays at **1**, and the floors do not move. `/<prefix> diagnostics` is a must-have in every addon
 (`debug-logging-§14`), so the console puts it one click away: an orange **Diagnostics** control beside
@@ -54,7 +80,7 @@ the Debug On/Off toggle, top left.
 
 | | | Since |
 |---|---|---|
-| The link | Plain text, no button art: `GameFontNormalSmall`, orange at rest (`1, 0.5, 0`), `1, 0.72, 0.28` under the pointer, back to orange on leave. A click runs `D:RunDiagnostics()` with no argument, which is what the slash word runs: ungated, the report lands while logging is off, and the flag is never read or written. | **16** |
+| The link | Plain text, no button art: `GameFontNormalSmall`, orange at rest (`1, 0.5, 0`), `1, 0.72, 0.28` under the pointer, back to orange on leave. A click runs `D:RunDiagnostics()` with no argument, which is what the slash word runs: ungated, the report lands while logging is off, and at this version the flag is never read or written (from 17.2 the run turns logging on first; see *What changed at this version*). | **16** |
 | Its anchor | `LEFT` to the `RIGHT` of the toggle's font string (`frame.debugToggle`), 10 px, not to the toggle's 80-wide button, so the gap after the word holds for both `Debug: ON` and `Debug: OFF`. It sits one frame level above the toggle's button, which runs on under it. | **16** |
 | When it is drawn | Only when the instance has `RunDiagnostics`, which is when `DebugLogDiagnostics.lua` loaded and installed the report. Without it the title bar is version 15.1's. | **16** |
 | `lib.STRINGS.DIAGNOSTICS` | `"Diagnostics"`, the link's label, overridable through the descriptor's `L` as `COPY` and `CLEAR` are. | **16** |
@@ -168,7 +194,8 @@ truncated line and the end marker, so a capped report still ends properly. `spec
 lower the cap and cannot raise it past the clamp.
 
 **What the report never does.** It never calls `Clear()`. It writes through the ungated append, so
-it lands with logging off, and it never reads or writes the flag beyond printing it. It never reads
+it lands with logging off, and at version 14.1 it never reads or writes the flag beyond printing it
+(from 17.2 a run turns logging on first, unless the descriptor opts out; the sections still only print it). It never reads
 the host's enabled state: whether a disabled addon may run it is the dispatcher's question, which
 Slash 16 answers by putting `diagnostics` on `LIVE_VERBS`. It calls no protected API.
 
@@ -568,6 +595,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `slash` | string | no | 1 | Composes the checkbox tooltip's `"<slash> debug"` reference. |
 | `brandName` | string | no | **D1** | The addon's plain-text brand, `Ka0s <Name>`, named in both diagnostics markers. Falls back to `title`. |
 | `diagnostics` | function | no | **D1** | Returns the host's report sections, `{ { name, fn }, ... }`, each `fn(out)`. Called each time a report runs, never at `New`. |
+| `diagnosticsEnablesLogging` | boolean | no | **17** (D2) | `false` keeps a report run from turning logging on; any other value, or none, lets a run with logging off turn it on through `SetEnabled(true)` first. Read at every run. |
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 | `skin` | table | no | 1 | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
 | `applySkin` | function | no | **4** | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. Since minor 12 the copy window's half is served by handing this same function to `CopyWindow` as its `applySkin`, which runs it instead of `Core.ApplySkin` — so the two windows still cannot drift apart. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than color, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
@@ -600,9 +628,9 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshHeader()` | 1 | Repaint the title-bar toggle — `Debug: ON` green, `Debug: OFF` red. |
 | `SetEnabled(on)` | 1 | The single seam for changing debug state: writes the host's flag, repaints the header, prints the color-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
 | `ConsoleCheckbox()` | 1 | The data contract below. |
-| `RunDiagnostics(spec?)` | **D1** | Build the report and append it to the console, repaint once, show the console if hidden, print the one `DIAG_WRITTEN` chat line, and return the number of lines written. Never clears and never touches the flag. `spec` may carry `sections`, `maxLines` and `maxPerList`. |
+| `RunDiagnostics(spec?)` | **D1** (turns logging on: **D2**) | With logging off, and unless the descriptor sets `diagnosticsEnablesLogging = false`, first turn logging on through `SetEnabled(true)`; then build the report and append it to the console, repaint once, show the console if hidden, print the one `DIAG_WRITTEN` chat line, and return the number of report lines written. Never clears and never turns logging off. `spec` may carry `sections`, `maxLines` and `maxPerList`. |
 | `BuildDiagnostics(spec?)` | **D1** | The same report as data, `{ lines = { { tag, msg }, ... }, dropped = n, capped = bool, capsHit = bool }`, writing nothing anywhere. For tests. |
-| `DebugVerb(rest)` | **D1** | `diagnostics` runs the report, `on` / `off` set the flag, and each answers `true`; anything else answers `false` and does nothing. |
+| `DebugVerb(rest)` | **D1** | `diagnostics` runs the report (`RunDiagnostics()`, so it turns logging on as a run does), `on` / `off` set the flag, and each answers `true`; anything else answers `false` and does nothing. |
 | `_toggleClickForTest` / `_frameForTest` | 1 | Test seams. A headless mock's `Show`/`Hide` track visibility without firing `OnShow`/`OnHide`, and stub `GetScript`, so the click handler and the visibility callback are only reachable directly. |
 
 ## The `ConsoleCheckbox()` data contract
@@ -686,6 +714,10 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+Version 17.2 adds one descriptor field (`diagnosticsEnablesLogging`) and changes one behavior: a
+report run with logging off turns it on for the session first, where every earlier version left the
+flag alone. A host that wants the old behavior sets the field to `false`.
+
 Version 16.1 adds one string (`DIAGNOSTICS`) and one control, and changes the console's minimum width
 where the report is installed. Version 15.1 adds nothing to the surface.
 
@@ -712,14 +744,3 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
-
-## Moving to version 17.2
-
-**Take it; nothing in a host's code or its degradation stub changes.** The next version is key 17.2:
-`DebugLog.lua` 17, `DebugLogDiagnostics.lua` 2. A report run (the slash word, `DebugVerb`, the
-title-bar link) with logging off now turns it on for the session first, through `SetEnabled(true)`,
-so the enable line and the `[Init]` summary precede the report; with logging on it calls nothing, and
-it never turns logging off. A host opts out with the new descriptor field
-`diagnosticsEnablesLogging = false`. A host suite that asserts the report leaves logging off, or
-counts the buffer or the chat after a run with logging off, re-pins. See
-[version 17.2](./version-17.2-docs.md).
