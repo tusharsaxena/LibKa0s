@@ -120,6 +120,7 @@ Nothing printed to chat moves.
 - A host suite that counted the lines in its console after a Slash refusal, a Lifecycle edge, a
   combat-locked write or a Launcher `Register` with a `debug` passed re-pins with the library's line
   in, and `docs/test-cases.md` is regenerated when its own cases move.
+
 Release gate (`docs/automated-tests/20261001-001312/`): lint pass, 0/0 in 133 files;
 tests pass, 1919 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
