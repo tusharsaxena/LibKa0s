@@ -90,7 +90,7 @@ moves its own `kit revision 31` citations to 32. `tests/test_kit_inventory.lua` 
 Folded into v1.63.0 before the tag was published (2026-09-30). Documented in
 [`docs/api/testkit/version-32-docs.md`](docs/api/testkit/version-32-docs.md).
 
-Release gate (`docs/automated-tests/20260929-113624/`): lint pass, 0/0 in 123 files;
+Release gate (`docs/automated-tests/20260930-084657/`): lint pass, 0/0 in 123 files;
 tests pass, 1778 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 

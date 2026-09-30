@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20260930-084657`](20260930-084657/) | `06cc010` | clean | 1.63.0 → 1.63.0 | 0/0 | 123 | 1777/1/1778 | skip | 36639 | 5099 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260929-113624`](20260929-113624/) | `ac61f37` | clean | 1.63.0 → 1.63.0 | 0/0 | 123 | 1777/1/1778 | skip | 36639 | 5099 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260929-111323`](20260929-111323/) | `626aec0` | clean | 1.63.0 → 1.63.0 | 0/0 | 123 | 1777/1/1778 | skip | 36638 | 5099 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20260929-092750`](20260929-092750/) | `576576e` | clean | 1.62.0 → 1.63.0 | 0/0 | 123 | 1777/1/1778 | skip | 36638 | 5099 | 6.6 | 2.0 | 15 | 0 | **green** |
@@ -122,10 +123,10 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **1778 cases** — 1777 passed, 0 failed, 1 skipped. The generated inventory
-[`20260929-113624/test-cases.md`](20260929-113624/test-cases.md) is the authority on which cases existed at this run;
+[`20260930-084657/test-cases.md`](20260930-084657/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-The count has been **flat at 1778 across the last 3 runs**. A suite that stopped growing while
+The count has been **flat at 1778 across the last 4 runs**. A suite that stopped growing while
 the addon did is a coverage gap, and it is the one thing the table above cannot show.
 
 **1 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
@@ -150,7 +151,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20260929-113624`](20260929-113624/) — **this run's measurement, not its diff.** Max CCN **15** across 5099
+Current as of [`20260930-084657`](20260930-084657/) — **this run's measurement, not its diff.** Max CCN **15** across 5099
 functions, **0** of them warned on; 10 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
