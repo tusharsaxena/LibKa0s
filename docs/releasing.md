@@ -25,11 +25,11 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   twenty-seven, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   twenty-eight, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Media.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `DRAG_MINOR` in
-   `WidgetsDragHandle.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `WIDGETS_MINOR` in
+   `WidgetsDragHandle.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WIDGETS_MINOR` in
    `OptionsWidgets.lua`, `IDS_MINOR` in `OptionsIds.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
    `TABS_MINOR` in `OptionsTabs.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
    in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,

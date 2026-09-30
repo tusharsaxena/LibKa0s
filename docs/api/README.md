@@ -67,7 +67,7 @@ the file you need:
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsDragHandle>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
-| `LibKa0s-DebugLog-1.0` | `<DebugLog>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
+| `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
@@ -186,7 +186,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [17.2](./DebugLog/version-17.2-docs.md) | `DebugLog.lua` 17 · `DebugLogDiagnostics.lua` 2 | v1.64.0 | **Current** |
+| [18.2.1](./DebugLog/version-18.2.1-docs.md) | `DebugLog.lua` 18 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.65.0 | **Current** |
+| [17.2](./DebugLog/version-17.2-docs.md) | `DebugLog.lua` 17 · `DebugLogDiagnostics.lua` 2 | v1.64.0 | Superseded |
 | [16.1](./DebugLog/version-16.1-docs.md) | `DebugLog.lua` 16 · `DebugLogDiagnostics.lua` 1 | none (superseded inside v1.64.0 before the tag was published) | Superseded |
 | [15.1](./DebugLog/version-15.1-docs.md) | `DebugLog.lua` 15 · `DebugLogDiagnostics.lua` 1 | none (superseded inside v1.64.0 before the tag was published) | Superseded |
 | [14.1](./DebugLog/version-14.1-docs.md) | `DebugLog.lua` 14 · `DebugLogDiagnostics.lua` 1 | v1.60.0 – v1.63.0 | Superseded |

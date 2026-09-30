@@ -12,7 +12,8 @@ cannot drift. Release order is in
 
 ## v1.65.0 — in progress
 
-Versions in this release so far: **Slash minor 18** (`LibKa0s-Slash-1.0` 18). The release step of
+Versions in this release so far: **Slash minor 18** (`LibKa0s-Slash-1.0` 18), **DebugLog minor 18**
+and the new **DebugLogGates minor 1** (`LibKa0s-DebugLog-1.0` 18.2.1). The release step of
 the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now because
 `tests/test_versioning.lua` holds every bump to its changelog entry.
 
@@ -24,6 +25,16 @@ the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now becau
   with no default, and the profile verb's unavailable, already-current, in-combat and unknown-profile
   refusals. Absent, nothing is written; the chat is unchanged either way. No member, string or floor
   moves. Cases: `tests/test_slash_debug.lua`. See `docs/api/Slash/version-18-docs.md`.
+
+### DebugLog minor 18, DebugLogGates minor 1: change gates the console re-arms (G2)
+
+- **`D.DebugOnce(key, tag, fmt, ...)`, `D.DebugChanged(key, tag, fmt, ...)`, `D.DebugForget(key)`**
+  in the new secondary file `DebugLogGates.lua`: log once per key, or only when the line changes,
+  gated and formatted as `D.Debug`; nothing is remembered while logging is off. `Clear()` and
+  turning logging on re-arm both. Bounded at `lib.GATE_MAX_KEYS` (256) keys per gate.
+- **Descriptor field `onClear()`**, called by `Clear()` after the wipe, under `pcall`, for a host
+  that keeps a gate of its own. Absent, `Clear()` is unchanged. No floor moves. Cases:
+  `tests/test_debuglog_gates.lua`. See `docs/api/DebugLog/version-18.2.1-docs.md`.
 
 ## v1.64.0 — 2026-09-30
 

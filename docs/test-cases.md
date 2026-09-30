@@ -657,6 +657,29 @@ badge and any count quoted in the docs must agree with it.
 - diag link: a click runs the report with logging off, and turns it on first
 - diag link: opted out, a click writes the report and leaves logging off
 
+### test_debuglog_gates.lua (20)
+
+- gates: the file registers under the major, paired on the live shell, with its bound pinned
+- onClear: absent, Clear empties the buffer and writes nothing (the silent default)
+- onClear: a non-function field is ignored, as every optional descriptor field is
+- onClear: called once per Clear, after the buffer is empty, and its own line lands
+- onClear: a raising hook costs one line, not the Clear
+- onClear: not called by turning logging on or off
+- DebugOnce: the first call per key writes, formatted as D.Debug formats, and the rest do not
+- DebugOnce: logging off writes nothing, remembers nothing and builds nothing
+- DebugOnce: Clear re-arms every key
+- DebugOnce: turning logging on re-arms every key
+- DebugChanged: writes the first line, holds a repeat, and writes a change
+- DebugChanged: keys are independent, and a new tag is a change
+- DebugChanged: logging off writes nothing, remembers nothing and builds nothing
+- DebugChanged: Clear and turning logging on both re-arm it
+- DebugForget: re-arms one key in both gates and leaves the others
+- gates: a nil key is a key of its own, not a raise
+- gates: past GATE_MAX_KEYS keys the memory is wiped rather than grown
+- gates: plain functions, bound bare as hosts bind D.Debug
+- gates: secret-safe, and an unsatisfiable format still lands as D.Debug's does
+- gates: an instance built without DebugLogGates.lua has no gates, and onClear still fires
+
 ### test_resize_windows.lua (23)
 
 - resize console: the default size is still 700 x 344
@@ -2096,6 +2119,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 46 |
+| test_debuglog_gates.lua | 20 |
 | test_resize_windows.lua | 23 |
 | test_slash.lua | 70 |
 | test_slash_parse.lua | 24 |
@@ -2150,4 +2174,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1848** |
+| **Total** | **1868** |
