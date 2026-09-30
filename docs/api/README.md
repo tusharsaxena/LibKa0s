@@ -97,7 +97,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 | **Current** |
+| [9](./Core/version-9-docs.md) | `Core.lua` 9 | v1.64.0 | **Current** |
+| [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 – v1.63.0 | Superseded |
 | [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 – v1.55.0 | Superseded |
 | [6](./Core/version-6-docs.md) | `Core.lua` 6 | v1.10.0 – v1.23.0 | Superseded |
 | [5](./Core/version-5-docs.md) | `Core.lua` 5 | v1.8.0 – v1.9.2 | Superseded |
@@ -166,7 +167,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [10.3](./Widgets/version-10.3-docs.md) | `Widgets.lua` 10 · `WidgetsDragHandle.lua` 3 | v1.59.0 | **Current** |
+| [11.3](./Widgets/version-11.3-docs.md) | `Widgets.lua` 11 · `WidgetsDragHandle.lua` 3 | v1.64.0 | **Current** |
+| [10.3](./Widgets/version-10.3-docs.md) | `Widgets.lua` 10 · `WidgetsDragHandle.lua` 3 | v1.59.0 – v1.63.0 | Superseded |
 | [10.2](./Widgets/version-10.2-docs.md) | `Widgets.lua` 10 · `WidgetsDragHandle.lua` 2 | v1.56.0 – v1.58.0 | Superseded |
 | [9.2](./Widgets/version-9.2-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 2 | v1.48.1 – v1.55.0 | Superseded |
 | [9.1](./Widgets/version-9.1-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 1 | v1.48.0 | Superseded |
@@ -184,7 +186,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [14.1](./DebugLog/version-14.1-docs.md) | `DebugLog.lua` 14 · `DebugLogDiagnostics.lua` 1 | v1.60.0 | **Current** |
+| [15.1](./DebugLog/version-15.1-docs.md) | `DebugLog.lua` 15 · `DebugLogDiagnostics.lua` 1 | v1.64.0 | **Current** |
+| [14.1](./DebugLog/version-14.1-docs.md) | `DebugLog.lua` 14 · `DebugLogDiagnostics.lua` 1 | v1.60.0 – v1.63.0 | Superseded |
 | [13](./DebugLog/version-13-docs.md) | `DebugLog.lua` 13 | v1.56.0 – v1.59.0 | Superseded |
 | [12](./DebugLog/version-12-docs.md) | `DebugLog.lua` 12 | v1.16.0 | Superseded |
 | [11](./DebugLog/version-11-docs.md) | `DebugLog.lua` 11 | v1.15.0 | Superseded |
@@ -279,7 +282,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [13.5](./Perf/version-13.5-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 5 | v1.56.0 | **Current** |
+| [13.6](./Perf/version-13.6-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 6 | v1.64.0 | **Current** |
+| [13.5](./Perf/version-13.5-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 5 | v1.56.0 – v1.63.0 | Superseded |
 | [12.5](./Perf/version-12.5-docs.md) | `Perf.lua` 12 · `PerfPanel.lua` 5 | v1.40.0 – v1.55.0 | Superseded |
 | [11.5](./Perf/version-11.5-docs.md) | `Perf.lua` 11 · `PerfPanel.lua` 5 | v1.31.0 | Superseded |
 | [10.5](./Perf/version-10.5-docs.md) | `Perf.lua` 10 · `PerfPanel.lua` 5 | v1.29.0 – v1.30.0 | Superseded |
@@ -299,7 +303,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [32](./testkit/version-32-docs.md) | same files; `README.md` only: its count of the places the file is byte-identical in (thirteen: `testkit/`, this repo's `tests/_kit/` and eleven consumers') and of the repositories that run the kit's gates (twelve), both one short since the collection's eleventh consumer. `Kit.VERSION` is 32. No code, member, case name or mock changes | v1.63.0 | **Current** |
+| [33](./testkit/version-33-docs.md) | same files **plus `mock_resize.lua`**: every tracked mock frame records the resize surface (`SetResizable` / `IsResizable`, `SetResizeBounds` / `GetResizeBounds` answering four numbers, `StartSizing` recording its point, `StopMovingOrSizing` counted, `SetUserPlaced` / `IsUserPlaced`), with `StartSizing` and `StartMoving` marking a frame user-placed as the client does; `mock_base.lua` loads the file and passes each frame through it. `Kit.VERSION` is 33. No member, case name or runner output changes | v1.64.0 | **Current** |
+| [32](./testkit/version-32-docs.md) | same files; `README.md` only: its count of the places the file is byte-identical in (thirteen: `testkit/`, this repo's `tests/_kit/` and eleven consumers') and of the repositories that run the kit's gates (twelve), both one short since the collection's eleventh consumer. `Kit.VERSION` is 32. No code, member, case name or mock changes | v1.63.0 | Superseded |
 | [31](./testkit/version-31-docs.md) | same files; `run-automated-tests.sh`'s band table leaves out the files `layout-§1`'s generated-data carve-out exempts, asking the repo's own `tests/run.lua` through a new `--layout-cap-exempt PATH...` flag that `Kit.run` answers from `Kit.layoutCap.exempt` with the matching rule `test_layout_cap.lua` now calls too (`Kit.__layoutCapCovers`), names what it left out under the table, and stops counting it in `bandFiles` / `overCapFiles` (the 2026-09-26 sweep's ATS-21). No public member, case name or mock changes | v1.62.0 | Superseded |
 | [30](./testkit/version-30-docs.md) | same files; `run-automated-tests.sh` prints `None.`, under a blank line, below the header of an empty complexity watch-list table (warned functions, or files by `layout-§1` band) in `RESULTS.md`, where revisions 26 to 29 printed the header alone (the 2026-09-26 sweep's ATS-20). No member, case name or mock changes | unreleased (superseded before v1.62.0) | Superseded |
 | [29](./testkit/version-29-docs.md) | same files **plus `prose_coverage.lua` and `prose_selftests.lua`**, two peels with no behavior change: `test_prose.lua`'s narrowing machinery (the validators for the three lists a repository narrows the gate by, the one resolved coverage set, the TOC and `.pkgmeta` readers, the two refusals and the disclosure line, issue #39) moves to the first and its thirteen fixture-driven self-tests to the second, both loaded from `test_prose.lua`'s own folder, which takes it from 1486 lines to 750, out of `layout-§1`'s 1000–1500 band. The self-tests still register under the `test_prose` suite, so no suites list changes. No member, case name or mock changes | unreleased (superseded before v1.62.0) | Superseded |

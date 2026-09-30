@@ -10,6 +10,94 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.64.0 — 2026-09-30
+
+Versions in this release: **Core minor 9** (`LibKa0s-Core-1.0` 9), **DebugLog minor 15**
+(`LibKa0s-DebugLog-1.0` 15.1, with `DebugLogDiagnostics` 1), **Widgets minor 11**
+(`LibKa0s-Widgets-1.0` 11.3, with `WidgetsDragHandle` 3) and **PerfPanel minor 6**
+(`LibKa0s-Perf-1.0` 13.6, with `Perf` 13). Every other file is unchanged from v1.63.0: `Env` 1,
+`Compat` 1, `Lifecycle` 2, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` 17,
+`Launcher` 4, `Options` key 26.1.32.1.1.6.1.7.4.1. The test kit moves to **revision 33**. No
+`NEEDS_*` floor rises and no major is added, so the library is still **fifteen majors across
+twenty-seven files**. Built to the Ka0s WoW Addon Standard **v2.70.0**.
+
+This is the library's half of the 2026-09-30 resizable-windows item (090): the debug console, every
+copy window and the perf panel are resizable, the size is kept for the session only and the default
+is today's (owner decisions D2 and D3; `debug-logging-§1` and `performance-§4` at v2.70.0).
+
+### Core minor 9: `MakeResizable`, one grip for all three windows
+
+- **`Core.MakeResizable(frame, opts)`**: `SetResizable(true)`, bounds through a Compat-style guard
+  (`SetResizeBounds`, else the pre-10.0 `SetMinResize` / `SetMaxResize`), and a 16 × 16 grip in the
+  bottom-right corner wearing the client's chat size-grabber art, ten levels above the window and
+  always shown. `opts`: `minWidth` / `minHeight` (default the current size), `maxWidth` /
+  `maxHeight` (default `UIParent`'s size), `widthOnly` (pins the height), `onResize(w, h)`. Left
+  mouse-down runs `StartSizing("BOTTOMRIGHT")`; mouse-up runs `StopMovingOrSizing()` and then
+  `onResize`; `OnSizeChanged` is hooked and runs it too. Answers the grip (also `frame.resizeGrip`)
+  or `nil` with no `CreateFrame` or no sizing API.
+- **Session only, and kept out of the layout cache.** The size lives on the frame, which every
+  window builds once and keeps, so it survives a hide and a show and nothing reapplies the default;
+  a `/reload` rebuilds at the default. `StartMoving` and `StartSizing` both mark a frame
+  user-placed, and a named user-placed frame has its anchor and size written to `layout-local.txt`.
+  Today's drag (`StartMoving`, flag never cleared) makes a dragged window user-placed, and that is
+  unchanged. The grip reads `IsUserPlaced()` before sizing and restores it after, so a resize alone
+  never makes a window user-placed; each window sets its default size after `CreateFrame`, so a size
+  the cache put back at creation (the dragged case) is replaced before the first show. The in-game
+  check owns when the client applies the cache.
+- **Additive and guarded.** Each caller checks the member exists and keeps today's fixed window if
+  not, so no module raised its Core floor (a floor raise is a vendoring break, `docs/releasing.md`).
+  Documented in [the version 9 document](docs/api/Core/version-9-docs.md); version 8 is Superseded.
+
+### DebugLog minor 15, Widgets minor 11, PerfPanel minor 6: the three windows
+
+- **The debug console** opens at 700 × 344 and resizes on both axes. The minimum width is the title
+  bar's arithmetic (the centered title plus the wider control group, `PAD` on each side, never above
+  700); the minimum height is the two bars and four lines. A resize resyncs the scrollbar's range and
+  the line counter; the message frame, the scrollbar and the title-bar controls follow their anchors,
+  and the buffer and scroll position are kept.
+  ([version 15.1](docs/api/DebugLog/version-15.1-docs.md).)
+- **Every `Widgets.CopyWindow`** (the console's Copy and each host's exports) opens at its
+  descriptor's `width` / `height` and resizes on both axes, down to 240 × 140 or its declared size
+  where smaller. The edit box, a scroll child, is re-widened on every resize, and `Show` sizes it for
+  the window as it is. Each named window keeps its own size.
+  ([version 11.3](docs/api/Widgets/version-11.3-docs.md).)
+- **The perf panel** opens at its computed 376 × 196 and resizes in **width only** (its row count
+  is fixed), down to today's width; a resize stretches every step row to the new width.
+  ([version 13.6](docs/api/Perf/version-13.6-docs.md).)
+
+No member, descriptor field or string moves in any of the three, so their manifests change in the
+version key alone. The cases are three new suites: `tests/test_core_resize.lua` (the helper: grip,
+bounds, `widthOnly`, the pre-10.0 guard, both mouse edges, the user-placed flag for an undragged and a
+dragged window, the hooked relayout, the refusals), `tests/test_resize_windows.lua` (each window's
+default size, grip and bounds, reflow, size kept across hide and show, two windows independent, and
+the helper absent leaving today's fixed window) and `tests/test_mock_resize.lua` (the kit's new
+recorders).
+
+### Test kit revision 33: mock frames record the resize surface
+
+A new kit file, `testkit/mock_resize.lua`, loaded by `mock_base.lua` beside `mock_events.lua`: every
+tracked frame records `SetResizable` / `IsResizable`, `SetResizeBounds` / `GetResizeBounds` (four
+numbers), `StartSizing` (point and count), `StopMovingOrSizing` (count) and `SetUserPlaced` /
+`IsUserPlaced`, with `StartSizing` and `StartMoving` marking the frame user-placed as the client
+does. Through revision 32 all of them answered the frame from the metatable, so `IsResizable()` and
+`IsUserPlaced()` were truthy whatever the frame had been told. `SetSize` / `SetWidth` / `SetHeight`
+still do not fire `OnSizeChanged` (the setters stay off the frame so a test can rawset a recorder,
+and the client fires it from its layout pass, not inside the setter); a suite fires it with
+`__fire`. `tests/test_kit_inventory.lua` pins revision 33. Documented in
+[`docs/api/testkit/version-33-docs.md`](docs/api/testkit/version-33-docs.md).
+
+### What a consumer owes
+
+- The whole-folder copy of both payloads, `libs/LibKa0s/` and `tests/_kit/` (a kit copy missing
+  `mock_resize.lua` fails at load), and the provenance line, in one commit.
+- **A Core degradation stub under `Kit.assertSurfaceParity` gains `MakeResizable`**, a function
+  answering `nil` (the Core version-9 document's *The degradation stub at version 9*), or names it
+  in that case's `ignore` list. The by-name form reads the live Core table, so the case goes red on
+  the copy alone.
+- A host suite that asserted on `IsResizable()`, `IsUserPlaced()` or `GetResizeBounds()` of a mock
+  frame reads real values now.
+- An addon MUST NOT save these windows' sizes (`debug-logging-§1`, v2.70.0).
+
 ## v1.63.0 — 2026-09-29
 
 Versions in this release: **Slash minor 17** (`LibKa0s-Slash-1.0` 17). Every other file is

@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 10.3
+# `LibKa0s-Widgets-1.0` — version 11.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,12 +8,58 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **10** · `WidgetsDragHandle.lua` minor **3** |
-| Shipped in | v1.59.0 |
-| Status | Superseded |
-| Supersedes | [version 10.2](./version-10.2-docs.md) — a drag handle with a help mark and no close mark |
-| Superseded by | [version 11.3](./version-11.3-docs.md) — copy windows are resizable |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 10, WidgetsDragHandle = 3 }` |
+| Files and minors | `Widgets.lua` minor **11** · `WidgetsDragHandle.lua` minor **3** |
+| Shipped in | v1.64.0 |
+| Status | **Current** |
+| Supersedes | [version 10.3](./version-10.3-docs.md) — a fixed-size copy window |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 11, WidgetsDragHandle = 3 }` |
+
+## What changed at 11.3
+
+**Every copy window is resizable.** `Widgets.lua` moves to minor **11**; `WidgetsDragHandle.lua`
+stays at **3**. No member, descriptor field or handle method is added or removed, so the member
+manifest lists the same surface as 10.3's. A `CopyWindow` still opens at its descriptor's `width` and
+`height` (640 × 420 by default), and a grip in its bottom-right corner, from `LibKa0s-Core-1.0`'s
+`MakeResizable` (Core minor 9), sizes it on both axes. That covers every caller at once: the debug
+console's Copy and each host's export windows.
+
+- **The minimum** is 240 × 140, or the descriptor's own size on an axis where that is smaller, so a
+  window declared small is its own minimum rather than one it could never be built at. **The maximum**
+  is the size of `UIParent`.
+- **On a resize** the scroll frame follows its anchors. The `EditBox` inside it is a scroll *child*
+  and does not, so a resize sets its width again: the scroll frame's width once the client has laid
+  it out, else the window's width less the margin the descriptor's `editWidth` keeps from its `width`
+  (50 by default).
+- **`Show` sizes the box for the window as it is.** Through 10.3 it fell back to the declared
+  `editWidth`; it now falls back to the same computation from the frame's current width, which is
+  identical until the window is resized.
+- **Each named window has its own size.** The frame is built once per handle and kept, and nothing
+  resizes it on a later `Show`, so a size survives a hide and a show and two windows never share one.
+- **Guarded, not floored.** An older Core, with no `MakeResizable`, leaves the fixed window this
+  always was.
+
+**The size is session state and lives on the frame.** Each window is built once and kept, so a
+size the player drags to survives a hide and a show: nothing stores it and nothing reapplies the
+default on a later show. It is never written to SavedVariables (`debug-logging-§1` forbids a host to
+save it either), and a `/reload` rebuilds the window at its default.
+
+**The client's layout cache, and what was found about it.** The client keeps `layout-local.txt` for
+frames the player moved or sized. `StartMoving` and `StartSizing` both mark a frame *user-placed*,
+and a named user-placed frame has its anchor and its size written to that cache at logout and put
+back when a frame of that name is created again. Every window here is named, and the drag each has
+always had goes through `StartMoving` and never clears the flag, so a **dragged** window is
+user-placed today. That is unchanged: position behaves exactly as it did. What the grip prevents is
+a resize making a window user-placed that a drag had not, which is the one route by which a chosen
+size could reach the next session: it reads `IsUserPlaced()` before `StartSizing` and puts that
+answer back after `StopMovingOrSizing`. A window that was only resized stays out of the cache; one
+that was dragged as well is in it exactly as it is today, and its builder sets the default size
+after `CreateFrame` returns, so a size the cache put back at creation is replaced before the window
+is shown. When the client applies the cache is not something a headless suite can observe, so the
+in-game smoke check (resize, `/reload`, the default size is back, dragged and undragged) is the
+confirmation.
+
+**What a host must change: nothing.** No member moves, so no degradation stub does.
 
 ## What changed at 10.3
 
@@ -345,7 +391,7 @@ defaults are filled into a copy.
 |---|---|---|---|
 | `addonName` | 6 | **Required.** The consuming addon's name, used to resolve the close control's art. | — |
 | `name` | 6 | The frame's **global** name. It is what goes into `UISpecialFrames`, so it must be unique across the client. | `"<addonName>CopyWindow"` |
-| `width` / `height` | 6 | Frame size in px. | `640` / `420` |
+| `width` / `height` | 6 | Frame size in px: the size the window opens at. Resizable from 11, down to 240 × 140 (or this size, where smaller) and up to `UIParent`'s size, for the session only. | `640` / `420` |
 | `title` | 6 | The title-bar text. | `"Export"` |
 | `font` | 6 | A resolved **font path** for the `EditBox`. Not a LibSharedMedia name — `SetFont` does not take one — and a CSV is columns of digits that line up only in a fixed-width face. | Unset: the `EditBox` keeps the client's default face |
 | `fontSize` | 6 | Point size, applied only when `font` is given. | `10` |
@@ -815,11 +861,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 11.3
-
-**Take it; nothing in a host's code or its degradation stub changes.** The next version is key 11.3:
-`Widgets.lua` 11, with `WidgetsDragHandle.lua` still 3. Every `CopyWindow` opens at its descriptor's
-size and becomes resizable from a bottom-right grip (Core minor 9's `MakeResizable`), kept for the
-session and never saved, with the edit box's width following a resize. No member, descriptor field
-or handle method changes. See [version 11.3](./version-11.3-docs.md).

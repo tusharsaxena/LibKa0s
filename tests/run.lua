@@ -78,7 +78,7 @@ Kit.diagnostics = dofile("tests/fixture_diagnostics.lua")(_G.LK_TEST)
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_reorderlist", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_slash", "test_slash_parse", "test_slash_disabled", "test_slash_refusal", "test_slash_profile",
+    "test_core", "test_core_resize", "test_env", "test_compat", "test_lifecycle", "test_bus", "test_schema", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_reorderlist", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_resize_windows", "test_slash", "test_slash_parse", "test_slash_disabled", "test_slash_refusal", "test_slash_profile",
     "test_launcher",
     "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_choicegrid", "test_options_flow", "test_options_landing",
@@ -89,7 +89,7 @@ Kit.run{
     "test_options_throttle",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
     "test_loader", "test_parallel", "test_kit_limits", "test_kit_asserts",
-    "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events",
+    "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events", "test_mock_resize",
     "test_surface_parity",
     "test_versioning", "test_kitsync", "test_prose",
     "test_register", "test_kit_inventory", "test_kit_eol", "test_kit_prose", "test_kit_runner",

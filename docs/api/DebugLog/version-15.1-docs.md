@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 14.1
+# `LibKa0s-DebugLog-1.0` — version 15.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **14** · `DebugLogDiagnostics.lua` minor **1** |
-| Shipped in | v1.60.0 |
-| Status | Superseded |
-| Supersedes | [version 13](./version-13-docs.md) — whose buffer held 1500 lines with a private 64-line slack, whose copy window could not be timed, and which had no diagnostics report |
-| Superseded by | [version 15.1](./version-15.1-docs.md) — the console is resizable |
+| Files and minors | `DebugLog.lua` minor **15** · `DebugLogDiagnostics.lua` minor **1** |
+| Shipped in | v1.64.0 |
+| Status | **Current** |
+| Supersedes | [version 14.1](./version-14.1-docs.md) — a fixed 700 × 344 console |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 14, DebugLogDiagnostics = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 15, DebugLogDiagnostics = 1 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared; a `Since` of
 **D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file this version adds. Minors 1 and 2
@@ -46,6 +46,55 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 `NewLibrary` if either is missing or below the minor it needs.
 
 ## What changed at this version
+
+**The console is resizable.** `DebugLog.lua` moves to minor **15**; `DebugLogDiagnostics.lua` stays at
+**1**, and the floors do not move (`NEEDS_CORE = 1`, `NEEDS_WIDGETS = 7`). No member, descriptor
+field or string is added or removed, so the member manifest differs from 14.1's in its version key
+alone. The console still opens at **700 × 344**, and a grip in its bottom-right corner, from
+`LibKa0s-Core-1.0`'s `MakeResizable` (Core minor 9), sizes it on both axes. Its copy window resizes
+too, as every `Widgets.CopyWindow` does from Widgets minor 11 (see that major's
+[version 11.3](../Widgets/version-11.3-docs.md)).
+
+- **The minimum width is the title bar's arithmetic**: the centered title and the wider of the two
+  control groups, with `PAD` (6) between them, on both sides. The left group is the header toggle
+  (8 + 80). The right group runs to Copy's left edge: 54 + 18 = 72 with the icon controls, 78 + 40 =
+  118 with the text ones. The title's width is its font string's when the client can say, else 7px
+  per byte. It is never above 700, so a long title cannot leave the window below its own minimum.
+- **The minimum height** is the title bar, the status bar and four lines of the log:
+  `26 + 6 + 4 × (fontSize + 2) + 16 + 4`, which is 100 at the default font size.
+- **The maximum** is the size of `UIParent`, and `SetClampedToScreen` keeps the window on it.
+- **On a resize** the message frame, the scrollbar and the status bar follow their anchors, and the
+  title-bar controls stay where they are (they are anchored to the bar's right edge, the toggle to
+  its left). What does not follow on its own is the scrollbar's range and the line counter, and a
+  resize runs `UpdateScrollBar()` and `UpdateStatus()` for them. The buffer and the scroll position
+  are not touched.
+- **Guarded, not floored.** The console calls `MakeResizable` only when the Core it finds has it;
+  on an older Core it is today's fixed window, and the rest of the console is unchanged.
+
+**The size is session state and lives on the frame.** Each window is built once and kept, so a
+size the player drags to survives a hide and a show: nothing stores it and nothing reapplies the
+default on a later show. It is never written to SavedVariables (`debug-logging-§1` forbids a host to
+save it either), and a `/reload` rebuilds the window at its default.
+
+**The client's layout cache, and what was found about it.** The client keeps `layout-local.txt` for
+frames the player moved or sized. `StartMoving` and `StartSizing` both mark a frame *user-placed*,
+and a named user-placed frame has its anchor and its size written to that cache at logout and put
+back when a frame of that name is created again. Every window here is named, and the drag each has
+always had goes through `StartMoving` and never clears the flag, so a **dragged** window is
+user-placed today. That is unchanged: position behaves exactly as it did. What the grip prevents is
+a resize making a window user-placed that a drag had not, which is the one route by which a chosen
+size could reach the next session: it reads `IsUserPlaced()` before `StartSizing` and puts that
+answer back after `StopMovingOrSizing`. A window that was only resized stays out of the cache; one
+that was dragged as well is in it exactly as it is today, and its builder sets the default size
+after `CreateFrame` returns, so a size the cache put back at creation is replaced before the window
+is shown. When the client applies the cache is not something a headless suite can observe, so the
+in-game smoke check (resize, `/reload`, the default size is back, dragged and undragged) is the
+confirmation.
+
+**What a host must change: nothing.** No member moves, so no degradation stub does. A host that
+saves window geometry must not save this one (`debug-logging-§1`).
+
+## What changed at version 14.1
 
 Three things: the diagnostics report, in a new secondary file (below); the buffer, which doubles to
 **3000** lines with its slack doubled to **128** to match; and two lib-level members in `DebugLog.lua`
@@ -630,12 +679,3 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
-
-## Moving to version 15.1
-
-**Take it; nothing in a host's code or its degradation stub changes.** The next version is key 15.1:
-`DebugLog.lua` 15, with `DebugLogDiagnostics.lua` still 1. The console opens at the same 700 × 344
-and becomes resizable from a bottom-right grip (Core minor 9's `MakeResizable`), kept for the session
-and never saved; its copy window resizes too. No member, descriptor field or string changes. A host
-suite that asserts the console's size at build still reads 700 × 344. See
-[version 15.1](./version-15.1-docs.md).

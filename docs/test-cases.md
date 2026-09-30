@@ -65,6 +65,23 @@ badge and any count quoted in the docs must agree with it.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
+### test_core_resize.lua (14)
+
+- resize: MakeResizable makes the frame resizable and answers the grip it built
+- resize: the bounds are the options' minimum and the screen's size
+- resize: explicit maxima win over the screen
+- resize: with no minimum the frame's current size is the minimum
+- resize: widthOnly pins the height at the minimum
+- resize: a client without SetResizeBounds gets SetMinResize and SetMaxResize
+- resize: a left mouse-down on the grip starts sizing from the bottom-right
+- resize: any other button does not start sizing
+- resize: mouse-up stops sizing and hands the new size to onResize
+- resize: a resize alone leaves the frame out of the client's layout cache
+- resize: a window dragged before the resize stays user-placed, exactly as a drag leaves it
+- resize: OnSizeChanged runs the relayout, after any script the frame already had
+- resize: no onResize is fine
+- resize: without CreateFrame, or on a frame with no sizing API, nothing changes
+
 ### test_env.lua (10)
 
 - env: GetAddOnMetadata reads the TOC through C_AddOns
@@ -628,6 +645,29 @@ badge and any count quoted in the docs must agree with it.
 - diag: DebugVerb answers false for anything else and writes no report
 - diag: the three instance members a consumer's DebugLog stub must carry
 - diag: without the secondary file an instance has no report methods
+
+### test_resize_windows.lua (20)
+
+- resize console: the default size is still 700 x 344
+- resize console: it has a grip and bounds that keep the title bar's controls clear
+- resize console: the icon controls are narrower, and so is the minimum
+- resize console: a resize resyncs the scrollbar and the line counter, and keeps the buffer
+- resize console: the size survives a hide and a show
+- resize console: two hosts' consoles resize independently
+- resize console: with no MakeResizable in Core it is today's fixed window
+- resize copy: a copy window opens at its descriptor's size
+- resize copy: it has a grip and a minimum on both axes
+- resize copy: a window declared smaller than the minimum is its own minimum
+- resize copy: the edit box width tracks a resize
+- resize copy: the size, and the edit box's width, survive a hide and a show
+- resize copy: two named copy windows resize independently
+- resize copy: the debug console's copy window resizes too
+- resize copy: with no MakeResizable in Core it is today's fixed window
+- resize panel: the panel opens at today's computed size
+- resize panel: width only, with today's width the minimum
+- resize panel: a resize stretches every step row
+- resize panel: the width survives a hide and a show
+- resize panel: with no MakeResizable in Core it is today's fixed panel
 
 ### test_slash.lua (70)
 
@@ -1819,6 +1859,15 @@ badge and any count quoted in the docs must agree with it.
 - events: C_EventUtils.IsEventValid answers false for a bad name and true otherwise
 - events: a suite may remove C_EventUtils to model an older client
 
+### test_mock_resize.lua (6)
+
+- resize mock: a new frame is neither resizable nor user-placed
+- resize mock: SetResizable is answered back by IsResizable
+- resize mock: GetResizeBounds answers the four numbers SetResizeBounds was given
+- resize mock: StartSizing records the point and marks the frame user-placed
+- resize mock: StartMoving marks the frame user-placed, and SetUserPlaced clears it
+- resize mock: a frame's own stub (M.__stubFrame) carries the surface too
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -1890,7 +1939,7 @@ badge and any count quoted in the docs must agree with it.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 32
+- the kit is revision 33
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -1997,6 +2046,7 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | the runner | 1 |
 | test_core.lua | 52 |
+| test_core_resize.lua | 14 |
 | test_env.lua | 10 |
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 22 |
@@ -2013,6 +2063,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 35 |
+| test_resize_windows.lua | 20 |
 | test_slash.lua | 70 |
 | test_slash_parse.lua | 24 |
 | test_slash_disabled.lua | 16 |
@@ -2052,6 +2103,7 @@ badge and any count quoted in the docs must agree with it.
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 37 |
 | test_mock_events.lua | 14 |
+| test_mock_resize.lua | 6 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 12 |
@@ -2064,4 +2116,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 7 |
-| **Total** | **1778** |
+| **Total** | **1818** |
