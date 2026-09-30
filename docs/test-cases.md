@@ -845,6 +845,23 @@ badge and any count quoted in the docs must agree with it.
 - sl profile: the descriptor's L reaches every profile string
 - sl profile: no line any path prints ends in a colon
 
+### test_slash_debug.lua (14)
+
+- sl debug: Slash is at minor 18
+- sl debug: the disabled gate refusing a feature verb writes one Cmd line
+- sl debug: an unknown verb writes one Cmd line
+- sl debug: an unknown verb while disabled is still an unknown verb, not the gate
+- sl debug: get's usage and not-found refusals
+- sl debug: set's usage, not-found and parse refusals
+- sl debug: a write the host's set refuses names the reason
+- sl debug: reset's usage, not-found and no-default refusals
+- sl debug: the profile verb's refusals, combat included
+- sl debug: a command that is answered writes no line
+- sl debug: a live verb while disabled writes no line
+- sl debug: with no debug passed, every refusal still answers and nothing raises
+- sl debug: a non-function debug field is ignored
+- sl debug: the chat is byte for byte the same with and without a debug sink
+
 ### test_launcher.lua (45)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
@@ -2085,6 +2102,7 @@ badge and any count quoted in the docs must agree with it.
 | test_slash_disabled.lua | 16 |
 | test_slash_refusal.lua | 7 |
 | test_slash_profile.lua | 30 |
+| test_slash_debug.lua | 14 |
 | test_launcher.lua | 45 |
 | test_options.lua | 85 |
 | test_options_bulk.lua | 11 |
@@ -2132,4 +2150,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1834** |
+| **Total** | **1848** |

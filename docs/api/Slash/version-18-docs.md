@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 17
+# `LibKa0s-Slash-1.0` — version 18
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **17** |
-| Shipped in | v1.63.0 |
-| Status | Superseded |
-| Supersedes | [version 16](./version-16-docs.md) — which had no profile verb |
-| Superseded by | [version 18](./version-18-docs.md) |
+| Files and minors | `Slash.lua` minor **18** |
+| Shipped in | v1.65.0 |
+| Status | **Current** |
+| Supersedes | [version 17](./version-17-docs.md) — whose refusals reached chat only |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 17 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 18 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -35,6 +35,38 @@ Like DebugLog, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon fram
 returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
+
+**The dispatcher's own refusals reach the host's debug log.** Every refusal Slash decides itself
+reached chat and nothing else, so a support read of the log could not see that a verb was refused, or
+why; AbsorbTracker matched the disabled gate's chat line to find them. Version 18 takes the host's
+gated log seam on the descriptor, exactly as `LibKa0s-Launcher-1.0` does, and writes one line per
+refusal (gap G1 of the 2026-09-30 LibKa0s debug-gaps run).
+
+- **Descriptor field `debug`** (optional): `debug(tag, message)`, the host's gated sink. Absent, or
+  not a function, the module writes nothing, exactly as at version 17.
+- **One `Cmd` line per refusal, after the chat line**, shaped `refused <verb>[ <arg>]: <guard>`:
+
+  | Refusal | Line |
+  |---|---|
+  | The disabled gate refusing a shipped feature verb | `refused <verb>: disabled` |
+  | An unknown verb (enabled or disabled) | `refused <verb>: unknown verb` |
+  | `get` / `set` / `reset` with no path | `refused get: usage` (and `set`, `reset`) |
+  | A path with no row | `refused get <path>: not found` (and `set`, `reset`) |
+  | A value the parser refuses | `refused set <path>: parse (<reason>)`, or `parse` alone with no reason |
+  | A write the host's `set` refuses | `refused set <path>: write refused (<reason>)`, or `write refused` alone |
+  | `applyDefault` answering `false` | `refused reset <path>: no default` |
+  | No profile store | `refused profile: unavailable` |
+  | The current profile named | `refused profile <name>: already current` |
+  | A switch in combat | `refused profile <name>: in combat` |
+  | A name the store does not list | `refused profile <name>: unknown profile` |
+
+- **Nothing a command answers writes a line**, and the chat is byte for byte version 17's with or
+  without a sink. No member, no string and no `NEEDS_*` floor moves; the member manifest is
+  unchanged apart from its version key.
+
+The cases are in `tests/test_slash_debug.lua`, including the silent default.
+
+### Previously, at version 17
 
 **The `profile` verb's behavior ships here, once, and each host registers its own row for it.**
 Two consumers had hand-written profile verbs and they disagreed: AbsorbTracker's `use <name>` called
@@ -637,9 +669,10 @@ becomes a stray profile, so the library only calls it for a name the store alrea
 with no `InCombatLockdown` global switches. The combat check covers only the switch itself: the list,
 `PROFILE_ALREADY` and the unknown-name refusal still answer in combat.
 
-**The library logs nothing.** `SetProfile` fires the store's own profile callback, and the one switch
-line `debug-logging-§10` asks for belongs to the host's profile handler, under whatever tag the
-host's profile tracing already uses. Every line goes through the descriptor's `print`, so it carries
+**The library logs its refusals only** (from **18**, through the descriptor's `debug`: unavailable,
+already current, in combat, unknown profile). `SetProfile` fires the store's own profile callback,
+and the one switch line `debug-logging-§10` asks for belongs to the host's profile handler, under
+whatever tag the host's profile tracing already uses. Every line goes through the descriptor's `print`, so it carries
 the host's tag (`slash-commands-§4`).
 
 ### `lib.ProfileNames(store)` → `names, current`
@@ -691,6 +724,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `brandName` | string | **when `isEnabled` is given** | **12** | The addon's brand name in plain text, `Ka0s <Name>` — the same string the LDB object takes as its `label`. Never derived from the TOC `Title`, which may carry color escapes. Missing it alongside `isEnabled` raises at `New`. |
 | `liveVerbs` | table | no | **12** | Array of the verbs that still answer while disabled. Defaults to `lib.LIVE_VERBS`, which is the standard's reserved verbs from **13**, thirteen of them from **16** (`diagnostics`). It names the verbs that stay live, not the verbs the host registers: from **14** a verb listed here with no `commands` entry behind it is answered as unknown rather than refused. Present so the set is data rather than a hard-coded branch; a host MAY narrow it to the verbs it actually ships. |
 | `profiles` | function | no | **17** | → the host's profile store, or nil. Duck-typed on AceDB-3.0's shape, `GetProfiles(tbl) -> tbl, n`, `GetCurrentProfile()`, `SetProfile(name)`, and never required to be AceDB. Asked at call time, because a host's db is built after its slash file runs. Absent, answering nil, or a store missing a method: `CliProfile` prints `PROFILE_UNAVAILABLE`. |
+| `debug` | function(tag, message) | no | **18** | The host's gated log seam, as Launcher's. Each refusal this module decides writes one `Cmd` line after its chat line: see [What changed at this version](#what-changed-at-this-version). Absent or not a function: no line. |
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **It does not reach the disabled refusal line** (**12**): that wording is the collection's rather than the addon's. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 
 Only `slash` and `commands` are required, and both raise rather than defaulting: a dispatcher with
@@ -833,6 +867,11 @@ correct on every minor.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+**What is added at version 18 is one descriptor field, `debug`, and no chat moves.** A host that
+passes none sees no change on re-vendor; one that passes its gated sink gains a `Cmd` line per
+refusal and SHOULD delete any host line that duplicates it (AbsorbTracker's DisabledLine match). No
+instance or lib-level member is added, so no parity gate moves.
+
 **What is added at version 17 is the profile verb, and no runtime behavior moves; one kind of
 parity gate does.** A descriptor field (`profiles`), two instance members (`CliProfile`,
 `ProfileSwitch`), one lib-level function (`ProfileNames`) and nine strings. A host that passes no
@@ -912,11 +951,3 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
-
-## Moving to version 18
-
-**Take it; nothing moves unless a host passes `debug`.** Version 18 adds the descriptor field
-`debug(tag, message)`, and each refusal the dispatcher decides writes one `Cmd` line through it. The
-chat is unchanged, no member is added and no `NEEDS_*` floor moves. To adopt: pass the host's gated
-sink (the one the Launcher descriptor already takes) and delete any host line that duplicates a
-library refusal line. See [version 18](./version-18-docs.md).

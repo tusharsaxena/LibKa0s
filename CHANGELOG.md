@@ -10,6 +10,21 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.65.0 — in progress
+
+Versions in this release so far: **Slash minor 18** (`LibKa0s-Slash-1.0` 18). The release step of
+the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now because
+`tests/test_versioning.lua` holds every bump to its changelog entry.
+
+### Slash minor 18: the dispatcher's own refusals reach the host's debug log (G1)
+
+- **Descriptor field `debug(tag, message)`**, as Launcher's. Each refusal the dispatcher decides
+  writes one `Cmd` line after its chat line, `refused <verb>[ <arg>]: <guard>`: the disabled gate,
+  an unknown verb, `get` / `set` / `reset` usage and not-found, a parse or write refusal, a reset
+  with no default, and the profile verb's unavailable, already-current, in-combat and unknown-profile
+  refusals. Absent, nothing is written; the chat is unchanged either way. No member, string or floor
+  moves. Cases: `tests/test_slash_debug.lua`. See `docs/api/Slash/version-18-docs.md`.
+
 ## v1.64.0 — 2026-09-30
 
 Versions in this release: **Core minor 9** (`LibKa0s-Core-1.0` 9), **DebugLog minor 17**
