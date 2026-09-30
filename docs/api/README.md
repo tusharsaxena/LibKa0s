@@ -70,7 +70,7 @@ the file you need:
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
-| `LibKa0s-Options-1.0` | `<Options>.<OptionsWidgets>.<OptionsTabs>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
+| `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
 | `LibKa0s-Perf-1.0` | `<Perf>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
 
 A multi-file major gets a composite key because its files carry **independent** minors that really do

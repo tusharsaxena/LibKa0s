@@ -10,17 +10,26 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.65.0 — in progress
+## v1.65.0 — 2026-10-01
 
-Versions in this release so far: **Slash minor 18** (`LibKa0s-Slash-1.0` 18), **DebugLog minor 18**
-and the new **DebugLogGates minor 1** (`LibKa0s-DebugLog-1.0` 18.2.1), **Options minor 27**,
-**OptionsRegistry minor 2**, **OptionsWidgets minor 33**, **OptionsIds minor 2**,
-**OptionsIdList minor 2**, **OptionsTabs minor 7** and **OptionsNav minor 2**
-(`LibKa0s-Options-1.0` 27.2.33.2.2.7.1.7.4.2), **Launcher minor 5** (`LibKa0s-Launcher-1.0` 5),
-**Lifecycle minor 3** (`LibKa0s-Lifecycle-1.0` 3).
-The release step of
-the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now because
-`tests/test_versioning.lua` holds every bump to its changelog entry.
+Versions in this release: **Slash minor 18** (`LibKa0s-Slash-1.0` 18), **DebugLog minor 18**
+and the new **DebugLogGates minor 1** (`LibKa0s-DebugLog-1.0` 18.2.1, with `DebugLogDiagnostics` 2),
+**Options minor 27**, **OptionsRegistry minor 2**, **OptionsWidgets minor 33**,
+**OptionsIds minor 2**, **OptionsIdList minor 2**, **OptionsTabs minor 7** and **OptionsNav minor 2**
+(`LibKa0s-Options-1.0` 27.2.33.2.2.7.1.7.4.2, with `OptionsCombat` 1, `OptionsCompose` 7 and
+`OptionsScroll` 4), **Launcher minor 5** (`LibKa0s-Launcher-1.0` 5) and **Lifecycle minor 3**
+(`LibKa0s-Lifecycle-1.0` 3). Every other file is unchanged from v1.64.0: `Core` 9, `Env` 1,
+`Compat` 1, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Widgets` key 11.3, `Perf` key
+13.6. The test kit stays at **revision 34**. No `NEEDS_*` floor rises and no major is added; one
+payload file is added (`DebugLogGates.lua`, loaded by `LibKa0s.xml` after `DebugLogDiagnostics.lua`),
+so the library is **fifteen majors across twenty-eight files**. Built to the Ka0s WoW Addon Standard
+**v2.72.0**.
+
+This is the library's half of the 2026-09-30 debug-gaps run: five places where a LibKa0s module
+decides something a support read of the log needs, and the host could not log it (gaps G1 to G5).
+Every module takes the host's gated sink the same way, as the descriptor's `debug(tag, message)`
+field Launcher already had; a descriptor without it keeps the module silent, as through v1.64.0.
+Nothing printed to chat moves.
 
 ### Slash minor 18: the dispatcher's own refusals reach the host's debug log (G1)
 
@@ -81,6 +90,36 @@ the 2026-09-30 LibKa0s debug-gaps run completes this block; it is here now becau
   pcall'd so it cannot strand the latch between its recorded edge and the callback. Absent, nothing
   is written. No member, string, chat line or floor moves. Cases: `tests/test_lifecycle_debug.lua`.
   See `docs/api/Lifecycle/version-3-docs.md`.
+
+### What a consumer owes
+
+- The whole-folder copy of both payloads, `libs/LibKa0s/` and `tests/_kit/`, and the provenance
+  line, in one commit. A copy missing `DebugLogGates.lua` builds a console with no gates and no
+  at-enable queue (`DebugLog.lua` guards the attach), and a host's first `D.DebugOnce` raises, so
+  copy the folder, never the files you already had.
+- **Pass `debug` to every descriptor that takes it**: Slash (new), Lifecycle (new), Options and
+  Launcher (already taken), each the host's gated sink, `function(tag, msg) NS.Debug(tag, msg) end`
+  or its equivalent. Without it the library-owned lines are not written, and a support read of the
+  log misses the refusals and the edges.
+- **Delete the host lines the library now writes**, so each refusal or edge is one line, not two:
+  a host's own stand-down / stand-up line from its Lifecycle callbacks, a Slash refusal the host
+  logged or matched from the chat (AbsorbTracker's `DisabledLine` match).
+- **Prefer the console's change gate over a hand-rolled one**: `D.DebugOnce` and `D.DebugChanged`
+  replace the "log once" and "log on change" helpers (MultiMeters' `NS.DebugSteadyReset`,
+  PanelMaster's `NS.DebugOnce`, KickCD's list signatures, PartyFrameEnhanced's memos,
+  ConsumableMaster's `KCM.DebugQuiet`), which a Clear never re-armed. A host that keeps its own passes
+  `onClear` to the DebugLog descriptor and re-arms there.
+- **Prefer the at-enable queue for state lines written at load**: pass
+  `debugAtEnable = function(tag, msg) D.DebugAtEnable(tag, "%s", msg) end` (or the host's wrapper)
+  to the Launcher descriptor, and route any dependency or mode line the host writes at `OnEnable`
+  through `D.DebugAtEnable`, so it lands the first time the player turns logging on.
+- **A DebugLog degradation stub under `Kit.assertSurfaceParity` gains `DebugOnce`, `DebugChanged`,
+  `DebugForget` and `DebugAtEnable`** (each answering `false`, or nothing), or names them in that
+  case's `ignore` list: the by-name form reads the live instance, so the case goes red on the copy
+  alone. No Slash, Options, Launcher or Lifecycle member moves, so those stubs do not.
+- A host suite that counted the lines in its console after a Slash refusal, a Lifecycle edge, a
+  combat-locked write or a Launcher `Register` with a `debug` passed re-pins with the library's line
+  in, and `docs/test-cases.md` is regenerated when its own cases move.
 
 ## v1.64.0 — 2026-09-30
 
