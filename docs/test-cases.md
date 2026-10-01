@@ -702,6 +702,16 @@ badge and any count quoted in the docs must agree with it.
 - gates: secret-safe, and an unsatisfiable format still lands as D.Debug's does
 - gates: an instance built without DebugLogGates.lua has no gates, and onClear still fires
 
+### test_debuglog_descriptor.lua (7)
+
+- dbg descriptor: a non-table descriptor is refused like an empty one, naming the first field
+- dbg descriptor: fontSize defaults to 10 and a non-number reads as absent
+- dbg descriptor: an empty slash is no slash, so the tooltip names none
+- dbg descriptor: an L that is not a table reads as absent
+- dbg descriptor: with no print the acknowledgment reaches DEFAULT_CHAT_FRAME
+- dbg descriptor: a safeToString that is not a function falls back to Core's
+- dbg descriptor: a skin that is not a table falls back to Core.SKIN, and a table is handed on
+
 ### test_resize_windows.lua (23)
 
 - resize console: the default size is still 700 x 344
@@ -728,7 +738,7 @@ badge and any count quoted in the docs must agree with it.
 - resize panel: the width survives a hide and a show
 - resize panel: with no MakeResizable in Core it is today's fixed panel
 
-### test_slash.lua (70)
+### test_slash.lua (74)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
 - sl: whitespace-only input is treated as empty
@@ -800,6 +810,10 @@ badge and any count quoted in the docs must agree with it.
 - slash: a host with no format hook renders exactly as it always did
 - slash: the format hook takes precedence over the color codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
+- sl: New refuses a non-table descriptor, an empty slash and non-table commands, in its own words
+- sl: with no print the dispatcher writes to DEFAULT_CHAT_FRAME
+- sl: with no groupKey the list groups rows by page, and a row with none under 'settings'
+- sl: an L, aliases or liveVerbs that is not a table, and a parse that is not a function, read as absent
 
 ### test_slash_parse.lua (29)
 
@@ -1620,7 +1634,7 @@ badge and any count quoted in the docs must agree with it.
 - throttle: the window re-arms after it fires, for a nil-returning host
 - throttle: a host whose timer answers a handle is unchanged
 
-### test_perf_core.lua (74)
+### test_perf_core.lua (78)
 
 - lib: registers under its major with a schema and a default ring
 - lib: New requires a name, an sv global and a lifecycle latch
@@ -1696,6 +1710,10 @@ badge and any count quoted in the docs must agree with it.
 - perf: an L whose metatable synthesizes every key does NOT mask the module's strings
 - perf: a step label is never its own SCREAMING_SNAKE_CASE key
 - perf: a REAL entry in an L that also has a fallback still overrides
+- lib: Context captures the class name, not the token
+- lib: Context keeps every field's default where its client reader is absent
+- lib: Context keeps every field's default where its client reader answers nil
+- lib: Context's spec is '?' with no spec index, and with an index reader but no info reader
 
 ### test_perf_run.lua (40)
 
@@ -1873,7 +1891,7 @@ badge and any count quoted in the docs must agree with it.
 - kit limits: the heap budget names the case that crossed it
 - kit limits: the leak gate counts what is still held, not garbage waiting to be swept
 
-### test_kit_asserts.lua (7)
+### test_kit_asserts.lua (11)
 
 - kit: assertErrorMatches passes on a raise that carries the needle, and returns the error
 - kit: assertErrorMatches fails when fn raises something else, naming both strings
@@ -1882,6 +1900,10 @@ badge and any count quoted in the docs must agree with it.
 - kit: assertLibraryConstant fails on a one-byte difference, naming both strings
 - kit: assertLibraryConstant fails clearly on an unknown major or member
 - kit: assertLibraryConstant falls back to LibStub when the source maps the name to an instance
+- kit: assertSurfaceParity's table form passes on a matching stub and compares private keys
+- kit: assertSurfaceParity's table form reports every divergence once, under the default label
+- kit: assertSurfaceParity's table form honors ignore as a set or an array
+- kit: assertSurfaceParity refuses a live or degraded surface that is not a table
 
 ### test_mock_base.lua (33)
 
@@ -2118,7 +2140,7 @@ badge and any count quoted in the docs must agree with it.
 - characterization: a decline over a collision names the file that runs instead
 - characterization: a decline with an empty rule cell, and a reason clipped at 200 bytes
 
-### test_kit_eol.lua (16)
+### test_kit_eol.lua (26)
 
 - eol repo kind: a root .toc is the evidence even when a nested one sorts first
 - eol repo kind: with no root .toc, the first nested one in tracked order
@@ -2136,6 +2158,16 @@ badge and any count quoted in the docs must agree with it.
 - eol lone CR: every lone CR is named, including one at end of file
 - eol lone CR: a file with a NUL byte is skipped
 - eol lone CR: clean CRLF and clean LF files pass
+- eol case two: the canonical body passes
+- eol case two: a second pin is refused, counted
+- eol case two: the wrong pin is refused, naming both
+- eol case two: a missing shebang carve-out is named
+- eol case two: a short body is refused, with both lengths
+- eol case two: an edited comment is reported as a diff
+- eol case two: an unterminated last line is one byte short
+- eol case two: a line below the body without the delimiter is refused
+- eol case two: an appendix's bad entries are each reported
+- eol case two: a conforming appendix passes
 
 ### test_kit_prose.lua (15)
 
@@ -2240,8 +2272,9 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 46 |
 | test_debuglog_gates.lua | 20 |
+| test_debuglog_descriptor.lua | 7 |
 | test_resize_windows.lua | 23 |
-| test_slash.lua | 70 |
+| test_slash.lua | 74 |
 | test_slash_parse.lua | 29 |
 | test_slash_disabled.lua | 16 |
 | test_slash_refusal.lua | 7 |
@@ -2271,7 +2304,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 45 |
 | test_options_throttle.lua | 4 |
-| test_perf_core.lua | 74 |
+| test_perf_core.lua | 78 |
 | test_perf_run.lua | 40 |
 | test_perf_panel.lua | 45 |
 | test_perf_command.lua | 22 |
@@ -2280,7 +2313,7 @@ badge and any count quoted in the docs must agree with it.
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
-| test_kit_asserts.lua | 7 |
+| test_kit_asserts.lua | 11 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 37 |
@@ -2292,11 +2325,11 @@ badge and any count quoted in the docs must agree with it.
 | test_prose.lua | 6 |
 | test_register.lua | 1 |
 | test_kit_inventory.lua | 38 |
-| test_kit_eol.lua | 16 |
+| test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 12 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **1965** |
+| **Total** | **1994** |

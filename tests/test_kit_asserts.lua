@@ -113,3 +113,44 @@ test("kit: assertLibraryConstant falls back to LibStub when the source maps the 
   assertTrue(has(errOther, ("%q"):format(T.slash.DISABLED_LINE_FORMAT)),
     "and names the library's bytes: " .. tostring(errOther))
 end)
+
+-- ── assertSurfaceParity's table form (characterization, GI-LK-11) ──────────────────────────────
+--
+-- `tests/test_surface_parity.lua` pins the by-name form. These pin the `(live, degraded, label,
+-- ignore)` form before the function was split into helpers (the sighted complexity gate measured it
+-- at CCN 19): every live key is compared, private ones included, the default label is `surface`,
+-- and both divergences land in one message.
+
+local function parityError(...)
+  local args, n = { ... }, select("#", ...)
+  local ok, err = pcall(function() T.assertSurfaceParity(unpack(args, 1, n)) end)
+  if ok then return nil end
+  return tostring(err)
+end
+
+test("kit: assertSurfaceParity's table form passes on a matching stub and compares private keys", function()
+  local f = function() end
+  assertEqual(parityError({ A = f, __b = f }, { A = f, __b = f }, "x"), nil, "a match passes")
+  local err = parityError({ A = f, __b = f }, { A = f }, "x")
+  assertTrue(has(err, "x: the degraded stub diverges from the live surface in 1 place(s)"), tostring(err))
+  assertTrue(has(err, "__b is missing (live: function)"), "a private key is compared in this form")
+end)
+
+test("kit: assertSurfaceParity's table form reports every divergence once, under the default label", function()
+  local f = function() end
+  local err = parityError({ A = f, B = f, C = 1 }, { B = false })
+  assertTrue(has(err, "surface: the degraded stub diverges from the live surface in 3 place(s)"), tostring(err))
+  assertTrue(has(err, "A is missing (live: function); B is a function live but boolean degraded; "
+    .. "C is missing (live: number)"), "sorted, all three: " .. tostring(err))
+end)
+
+test("kit: assertSurfaceParity's table form honors ignore as a set or an array", function()
+  local f = function() end
+  assertEqual(parityError({ A = f, B = f }, { A = f }, "x", { B = true }), nil, "a set")
+  assertEqual(parityError({ A = f, B = f }, { A = f }, "x", { "B" }), nil, "an array")
+end)
+
+test("kit: assertSurfaceParity refuses a live or degraded surface that is not a table", function()
+  assertTrue(has(parityError(nil, {}, "x"), "x: the live surface is not a table"), "live")
+  assertTrue(has(parityError({}, 7, "x"), "x: the degraded surface is not a table"), "degraded")
+end)

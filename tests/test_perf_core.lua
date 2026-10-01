@@ -864,3 +864,54 @@ test("perf: a REAL entry in an L that also has a fallback still overrides", func
     end
   end
 end)
+
+-- ── Context's fallbacks (characterization, GI-LK-11) ─────────────────────────────────────────
+--
+-- Pinned before P.Context's guarded reads became a table of readers (the sighted complexity gate
+-- measured it at CCN 19): every field keeps its default when its client reader is absent, and when
+-- the reader answers nil.
+
+local CONTEXT_READERS = { "UnitName", "GetRealmName", "UnitClass", "UnitLevel", "GetZoneText",
+  "GetSubZoneText", "GetSpecialization", "GetSpecializationInfo", "C_SpecializationInfo" }
+
+local function contextWith(replace)
+  local saved = {}
+  for _, name in ipairs(CONTEXT_READERS) do saved[name] = T.mocks[name] end
+  for name, v in pairs(replace) do
+    if v == false then T.mocks[name] = nil else T.mocks[name] = v end
+  end
+  local ok, ctx = pcall(function() return Fixture.new().Context() end)
+  for _, name in ipairs(CONTEXT_READERS) do T.mocks[name] = saved[name] end
+  if not ok then error(ctx, 0) end
+  return ctx
+end
+
+local DEFAULTS = { character = "?", realm = "?", class = "?", spec = "?", level = 0, zone = "?", subZone = "" }
+
+test("lib: Context captures the class name, not the token", function()
+  local fixture = T.mocks.__context
+  T.assertTrue(fixture.class ~= fixture.classToken, "the fixture's two strings differ, or this proves nothing")
+  assertEqual(Fixture.new().Context().class, fixture.class)
+end)
+
+test("lib: Context keeps every field's default where its client reader is absent", function()
+  local absent = {}
+  for _, name in ipairs(CONTEXT_READERS) do absent[name] = false end
+  local ctx = contextWith(absent)
+  for field, want in pairs(DEFAULTS) do assertEqual(ctx[field], want, field) end
+  assertEqual(ctx.group, "solo", "the group reader is not one of them")
+end)
+
+test("lib: Context keeps every field's default where its client reader answers nil", function()
+  local function none() return nil end
+  local ctx = contextWith({ UnitName = none, GetRealmName = none, UnitClass = none, UnitLevel = none,
+    GetZoneText = none, GetSubZoneText = none, C_SpecializationInfo = false,
+    GetSpecialization = function() return 2 end, GetSpecializationInfo = function() return 250, nil end })
+  for field, want in pairs(DEFAULTS) do assertEqual(ctx[field], want, field) end
+end)
+
+test("lib: Context's spec is '?' with no spec index, and with an index reader but no info reader", function()
+  assertEqual(contextWith({ C_SpecializationInfo = false, GetSpecialization = function() return nil end }).spec,
+    "?", "no index yet (a fresh character, or a loading screen)")
+  assertEqual(contextWith({ GetSpecializationInfo = false }).spec, "?", "no info reader")
+end)
