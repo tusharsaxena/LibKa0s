@@ -1,0 +1,1 @@
+OK CA-LK-03 independent re-run at 0bccf4c: lint 0/0 in 144 files; tests 2013 passed/0 failed/2 skipped (2015); complexity pass, 0 over CCN 15, max 15, blindFiles 0, overCap 0; perf skip (no tests/perf.lua). Release bundle 20261002-012529 release=1.67.0 dirty=false sha=7e07c83; annotated tag v1.67.0 -> 0bccf4c local only; README pointer v2.75.0 matches STANDARDS.md
