@@ -1,0 +1,1 @@
+OK GI-LK-09 — budget validated in readBuckets (correct error levels), copied per record, report-only addBudgetLines + guarded finish line via lib.__budgetOver; no output change without budgets; 9 of 11 tests verified red against 975ca50^ code; gate 1953/0/2, luacheck 0/0
