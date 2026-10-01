@@ -203,8 +203,8 @@ same command on **2026-09-26 at v1.62.0's release, kit revision 31**, after the 
 sweep. It is prose rather than a second table on purpose: the gate above reads every
 backticked-path table row under this heading as a census row, so a band table here would be ten
 rows claiming to be breaches. Ten files at that write-out, three fewer than the thirteen of the
-2026-09-24 write-out: the sweep took six out and its id peel brought three in. Nine now, since
-`tests/test_options.lua` left on 2026-10-01 (below). Largest first:
+2026-09-24 write-out: the sweep took six out and its id peel brought three in. Eight now, since
+`tests/test_options.lua` and `tests/test_schema.lua` left on 2026-10-01 (below). Largest first:
 
 - `testkit/mock_base.lua` (1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
   1452 with the shown-by-default flip's four comment lines, 1448 with
@@ -216,8 +216,6 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
 - `LibKa0s/OptionsWidgets.lua` (1423 with v1.65.0's combat-refusal line, measured 2026-10-01; 1422
   new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
 - `LibKa0s/OptionsIds.lua` (1359 at v1.65.0; 1358 new: the id peel), ruled below.
-- `tests/test_schema.lua` (1335; 1101 when it was new at v1.55.0 with the Schema major, 1233 before
-  `LK-22` and `LK-23`), issue #38.
 - `LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0),
   issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7).
 - `LibKa0s/OptionsTabs.lua` (1294 at v1.65.0; 1293 after the sweep moved its combat half to
@@ -236,7 +234,11 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
 registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to
 `tests/test_options_render.lua` (373), the render/refresh seam the issue named plus the page-registry
 section beside it and `RefreshAllPanels`' fan-out case, without which the suite would have sat at
-1000, still on the band's edge.
+1000, still on the band's edge. `tests/test_schema.lua` left the same day, 1335 → 705, closing
+issue #38: the write stage onward (the write seam, defaults, the bulk bracket and the profile
+reset's count), 41 of 73 cases, moved unchanged to `tests/test_schema_write.lua` (506), with the
+fixture constructors both suites read in `tests/fixture_schema.lua` (179). The reference
+degradation stub stays in `tests/test_schema.lua` beside the cases that pin it.
 
 Six left the band in the sweep, each on a seam named below: `testkit/test_prose.lua` 1486 → 750
 (issue #39, kit revision 29), `testkit/framework.lua` 1386 → 920 (kit revision 28; 984 at kit
@@ -316,7 +318,9 @@ Disposition cells point here:
   **Split 2026-09-26**: those cases are `tests/test_widgets_reorderlist.lua`, and the
   file is 861, out of the band.
 - `tests/test_schema.lua` (1335) — issue [#38](https://github.com/tusharsaxena/LibKa0s/issues/38):
-  split by pipeline stage, the write stage onward first.
+  split by pipeline stage, the write stage onward first. **Split 2026-10-01**: those cases are
+  `tests/test_schema_write.lua`, the shared constructors `tests/fixture_schema.lua`, and the file is
+  705, out of the band.
 - `testkit/test_prose.lua` (1486, still in the band after `LK-01` / `LK-07`) — issue
   [#39](https://github.com/tusharsaxena/LibKa0s/issues/39): the narrowing and coverage machinery
   peels to a kit module of its own at the next kit revision that touches the file.

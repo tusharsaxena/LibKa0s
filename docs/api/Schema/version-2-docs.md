@@ -336,7 +336,8 @@ it never refuses.
 
 ## Hard invariants
 
-Each of these has a case in `tests/test_schema.lua`.
+Each of these has a case in `tests/test_schema.lua` or, from the write seam onward,
+`tests/test_schema_write.lua`.
 
 1. An unknown path is refused, and a refused write — unknown path, `validate`, missing root — stores
    nothing and calls nothing.

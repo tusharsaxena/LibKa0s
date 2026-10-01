@@ -17,6 +17,10 @@ Test-only changes; no file minor moves and nothing reaches a consumer's `libs/`.
 - **`tests/test_options.lua` peeled** (issue #35): the page registry, its combat-refusing open and
   the two refresh tiers, 24 of its 85 cases, moved unchanged to `tests/test_options_render.lua`.
   The suite is 988 lines, out of `layout-§1`'s 1000–1500 band. Suite totals unchanged (1919).
+- **`tests/test_schema.lua` split by pipeline stage** (issue #38): the write stage onward (the write
+  seam, defaults, the bulk bracket and the profile reset's count), 41 of its 73 cases, moved
+  unchanged to `tests/test_schema_write.lua`, and the fixture constructors both suites read to
+  `tests/fixture_schema.lua`. The suite is 705 lines, out of the band. Suite totals unchanged (1919).
 
 ## v1.65.0 — 2026-10-01
 

@@ -222,7 +222,7 @@ badge and any count quoted in the docs must agree with it.
 - bus: Catalog refuses each malformed declaration, naming what is wrong
 - bus: the catalog is strict on read and on write
 
-### test_schema.lua (73)
+### test_schema.lua (32)
 
 - schema: the major is registered and reports its own live version
 - schema: the module refuses to register without Core, and registers with it
@@ -246,6 +246,19 @@ badge and any count quoted in the docs must agree with it.
 - schema: AddRows appends, inserts at the head in order, and clamps past the end
 - schema: a head insert re-indexes, so a new duplicate becomes the first
 - schema: a host's in-place removal is seen after Reindex and not before
+- schema: a healthy schema validates to zero errors and resolves every stored row
+- schema: each shape error is counted and printed once
+- schema: an unresolvable path is missing; sessionOnly, nil roots and bound rows are exempt
+- schema: types defaults to the four widget types and a host set replaces it
+- schema: Validate with no print still counts, silently
+- schema: one row's errors print in field order, and its missing line prints after them
+- schema: a non-string or empty path is labeled as given and is never a stored path
+- schema: defaultsRoot gets the split parts and the row, and its first may be a string
+- schema: a malformed spec falls back field by field
+- schema: two instances share nothing
+
+### test_schema_write.lua (41)
+
 - schema: an unknown path is refused and nothing is stored or called
 - schema: a write logs, then reacts, then announces, once each, and copies a table
 - schema: a validate refusal names the path and carries why, and nothing happens
@@ -287,16 +300,6 @@ badge and any count quoted in the docs must agree with it.
 - schema: ResetCounted leaves the count pending for exactly one consumer
 - schema: ResetCounted re-raises unchanged and clears the pending count
 - schema: ConsumeResetCount while a bracket is open closes it with no line
-- schema: a healthy schema validates to zero errors and resolves every stored row
-- schema: each shape error is counted and printed once
-- schema: an unresolvable path is missing; sessionOnly, nil roots and bound rows are exempt
-- schema: types defaults to the four widget types and a host set replaces it
-- schema: Validate with no print still counts, silently
-- schema: one row's errors print in field order, and its missing line prints after them
-- schema: a non-string or empty path is labeled as given and is never a stored path
-- schema: defaultsRoot gets the split parts and the row, and its first may be a string
-- schema: a malformed spec falls back field by field
-- schema: two instances share nothing
 
 ### test_schema_batch.lua (22)
 
@@ -2171,7 +2174,8 @@ badge and any count quoted in the docs must agree with it.
 | test_lifecycle.lua | 22 |
 | test_lifecycle_debug.lua | 14 |
 | test_bus.lua | 30 |
-| test_schema.lua | 73 |
+| test_schema.lua | 32 |
+| test_schema_write.lua | 41 |
 | test_schema_batch.lua | 22 |
 | test_pool.lua | 23 |
 | test_item.lua | 15 |
