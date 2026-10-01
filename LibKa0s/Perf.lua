@@ -396,10 +396,6 @@ local function armStates(P, completed)
   return a, b, fin, finished
 end
 
--- The descriptor's optional host sinks, resolved once so the hot-ish paths do not re-branch on
--- presence. At file level rather than inside lib:New, so the four presence tests are this
--- function's branches and not the closure's: a sighted lizard run counted every `and`/`or` in
--- them against lib:New (issue #7).
 -- P.Context's client reads, at file level so the function is a loop over them (it measured CCN 19
 -- sighted, WowAddonStandards#6). Each asks one global, existence-checked, so the headless harness
 -- (and any client that renames one) degrades to the field's default rather than erroring.
@@ -433,6 +429,10 @@ local CONTEXT_READS = {
     { "subZone",   function() return GetSubZoneText and GetSubZoneText() end },
 }
 
+-- The descriptor's optional host sinks, resolved once so the hot-ish paths do not re-branch on
+-- presence. At file level rather than inside lib:New, so the four presence tests are this
+-- function's branches and not the closure's: a sighted lizard run counted every `and`/`or` in
+-- them against lib:New (issue #7).
 local function noop() end
 local function printLine(line) print(line) end
 
