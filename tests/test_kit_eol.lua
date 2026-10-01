@@ -191,3 +191,90 @@ test("eol lone CR: clean CRLF and clean LF files pass", function()
   local lf = caseOne({ LF_PIN, { "ok.lua", "a\nb\n" } })
   assertEqual(lf:match("RESULT %u+"), "RESULT OK", "a clean LF file under an LF pin")
 end)
+
+-- ── case two's verdicts (characterization, GI-LK-11) ────────────────────────────────────────
+--
+-- Pinned before case two's body was split into one helper per check (the sighted complexity gate
+-- measured it at CCN 34). The client-bound canonical body is this repository's own
+-- `.gitattributes`, which the live run already holds to line-endings-§5; each case edits one thing.
+
+local CASE_TWO = "canonical body"
+local PAYLOAD = { "Lib/Lib.xml", "Lib/a.lua" }
+
+--- The repo's own `.gitattributes`, as lines with no terminators.
+local function canonicalLines()
+  local f = assert(io.open(".gitattributes", "rb"))
+  local text = f:read("*a")
+  f:close()
+  local lines = {}
+  for line in text:gsub("\r\n", "\n"):gmatch("([^\n]*)\n") do lines[#lines + 1] = line end
+  return lines
+end
+
+--- Case two's verdict, whitespace collapsed, for a library payload whose `.gitattributes` is `body`.
+local function caseTwo(body)
+  local files = { { ".gitattributes", body } }
+  for _, p in ipairs(PAYLOAD) do files[#files + 1] = p end
+  local out = gateVerdict(files, CASE_TWO)
+  if not out:find("RESULT ", 1, true) then
+    T.skip("the child produced no verdict, so this host cannot drive the gate: "
+      .. out:gsub("%s+", " "):sub(1, 160))
+  end
+  return out
+end
+
+local function joined(lines, extra) return table.concat(lines, "\n") .. "\n" .. (extra or "") end
+
+local function edited(fn)
+  local lines = canonicalLines()
+  fn(lines)
+  return lines
+end
+
+local function indexOf(lines, pattern)
+  for i, line in ipairs(lines) do if line:match(pattern) then return i end end
+  error("no line matches " .. pattern)
+end
+
+local CASE_TWO_VERDICTS = {
+  { "the canonical body passes", function(l) return joined(l) end, "RESULT OK" },
+  { "a second pin is refused, counted", function(l) return joined(l, "* text=auto eol=lf\n") end,
+    "carries 2 `* text=auto` pin(s)" },
+  { "the wrong pin is refused, naming both", function()
+      return joined(edited(function(x) x[indexOf(x, "^%* text=auto")] = "* text=auto eol=lf" end))
+    end, "pins `* text=auto eol=lf`, but line-endings-§2 gives this repo `* text=auto eol=crlf`" },
+  { "a missing shebang carve-out is named", function()
+      return joined(edited(function(x) table.remove(x, indexOf(x, "^%*%.sh text eol=lf$")) end))
+    end, "is missing 1 line(s) line-endings-§3 and line-endings-§4 require" },
+  { "a short body is refused, with both lengths", function()
+      return joined(edited(function(x) x[#x] = nil end))
+    end, "line-endings-§5's canonical body for this repo kind (crlf," },
+  { "an edited comment is reported as a diff", function()
+      return joined(edited(function(x) x[1] = "# edited" end))
+    end, "differs from line-endings-§5's canonical body on 1 line(s)" },
+  { "an unterminated last line is one byte short", function(l)
+      return table.concat(l, "\n")
+    end, "its final line has no terminator" },
+  { "a line below the body without the delimiter is refused", function(l)
+      return joined(l, "\nfoo binary\n")
+    end, "the first non-blank one is not the appendix delimiter" },
+  { "an appendix's bad entries are each reported", function(l)
+      return joined(l, "# --- line-endings-§5 appendix ---\n# a vendored binary\nbin/tool binary\n"
+        .. "bin/x -text\n# glob\nbin/* binary\nbin/naked binary\n# --- line-endings-§5 appendix ---\n")
+    end, "does not conform to line-endings-§5, on 4 line(s)" },
+  { "a conforming appendix passes", function(l)
+      return joined(l, "\n# --- line-endings-§5 appendix ---\n\n# a vendored binary with no extension\n"
+        .. "bin/tool binary\n")
+    end, "RESULT OK" },
+}
+
+for _, c in ipairs(CASE_TWO_VERDICTS) do
+  local label, build, needle = c[1], c[2], c[3]
+  test("eol case two: " .. label, function()
+    local out = caseTwo(build(canonicalLines()))
+    T.assertTrue(out:find(needle, 1, true) ~= nil, "expected `" .. needle .. "` in: " .. out:sub(1, 600))
+    if needle ~= "RESULT OK" then
+      T.assertTrue(out:find("RESULT FAIL", 1, true) ~= nil, "and a failure: " .. out:sub(1, 200))
+    end
+  end)
+end

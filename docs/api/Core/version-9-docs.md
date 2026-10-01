@@ -319,6 +319,11 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `MODULES` | 1 | `{ Core = <minor> }` — the live minor of every file in this major. The in-game answer to "which version am I actually running?", and the value that picks this document. |
 | `lib:New(descriptor)` | 1 | Build a prefixed chat printer for one host. See below. |
 
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `lib.MakeResizable`: no consumer as of v1.66.0, kept because the library's own console, copy window and perf panel size through it (Core minor 9), and three hosts still hand-roll the same grip. (BankLedger#21, LootHistory#33, MultiMeters#58; contract: LibKa0s#41)
+- `lib.SECRET`: no consumer as of v1.66.0, kept because it is the one spelling of the secret sentinel every Core stringifier answers, and three hosts restate the literal outside their degradation stubs. (AbsorbTracker#33, KickCD#36, MultiMeters#58)
+
 ### The skin table
 
 `lib.SKIN` at minor 3. The values are part of the contract: a host that hard-codes a matching

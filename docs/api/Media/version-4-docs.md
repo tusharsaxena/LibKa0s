@@ -130,6 +130,14 @@ Read straight off the LibStub table. Every function is stateless.
 | `VENDOR_PATH` | 1 | `"libs\\LibKa0s"` — where the collection vendors this library, and the default third argument above. |
 | `MODULES` | 1 | `{ Media = <minor> }` — the live minor, and the value that picks this document. |
 
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `lib.FONTS`: no consumer as of v1.66.0, kept because it is the catalog `Font` and `RegisterLSM` read; all eleven hosts reach it through those two.
+- `lib.ICONS`: no consumer as of v1.66.0, kept because it is the catalog `Icon` reads; all eleven hosts reach it through `Icon`.
+- `lib.TEXTURES`: no consumer as of v1.66.0, kept because it is the catalog `Texture` and `RegisterLSM` read, and `RegisterLSM` registers every entry for LibSharedMedia pickers.
+- `lib.Texture`: no consumer as of v1.66.0, kept because `RegisterLSM` publishes the same textures to LibSharedMedia, which is how hosts offer them; a host drawing one directly needs a path.
+- `lib.VENDOR_PATH`: no consumer as of v1.66.0, kept because it is the default every Media reader falls back to when `vendorPath` is omitted, which every host does.
+
 ### An unknown name answers `nil`, deliberately
 
 Because the failure it replaces is invisible. A misspelt name built into a path yields a texture that

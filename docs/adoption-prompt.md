@@ -749,19 +749,13 @@ up front because they cut against the obvious instinct:
 Open shortfalls, so you do not rediscover them mid-adoption or design a page around a surface that
 cannot reach where you need it:
 
-- **`RenderGrid` takes no `parent` and never calls `DoLayout()`.** It renders into
-  `EnsureScroll(ctx)`, which anchors flush to the whole of `ctx.body`. If your addon owns its own
-  scroll container — a list with a hand-anchored header above it — `RenderGrid` cannot draw into it,
-  and calling it there silently creates a second, overlapping full-body scroll frame. Every sibling
-  maker takes a `parent`; this one does not. It also ends without the `scroll:DoLayout()` that
-  `RenderRows` ends with, so a page rendered through `RenderGrid` **alone** must call it itself.
-  Tracked at <https://github.com/tusharsaxena/KickCD/issues/10>. If your list needs either, say so
-  and fix it upstream rather than working around it — that issue exists because a recon concluded
-  "not expressible", which was the correct and useful answer.
-- **`RenderGrid` offers two cell widths only** — `HALF` (0.5) or full-width via `wide = true` — and
-  emits `AddSpacer(ROW_VSPACER)` after every flushed row with no opt-out. A dense multi-column strip,
-  or a contiguous block of text lines with no gutter, is not expressible today without changing its
-  appearance.
+- **`RenderGrid` never calls `DoLayout()`**, by decision: it ends without the `scroll:DoLayout()`
+  that `RenderRows` ends with, so a page rendered through `RenderGrid` **alone** must call it itself.
+  Since OptionsWidgets minor 34 it takes a `parent` (draw into a container your addon owns) and
+  `opts.gap` (`false` or `0` for no spacer between rows), which close
+  the two other gaps <https://github.com/tusharsaxena/KickCD/issues/10> named.
+- **`RenderGrid` offers two cell widths only** — `HALF` (0.5) or full-width via `wide = true`. A
+  dense multi-column strip is not expressible today without changing its appearance.
 
 - **Closed at Slash minor 10 (v1.34.0): a free-text `string` row could not hold a value containing a
   space.** Through minor 9, `lib.ParseValue` split the remainder on whitespace and a `string` row took
@@ -818,75 +812,89 @@ A gap is a contract that cannot express what a host needs. These are the opposit
 that **can** express what one or two hosts needed, because one or two hosts are all that have ever
 used them. Every surface v1.2.0 added was driven by BankLedger. `-1.0` is frozen additive-only, so
 there is no deprecation available inside it — an assumption baked in here can be worked around later
-but never renamed. Every entry below carries its consumer count as of v1.5.0, deliberately, so that
-the next drift shows up as a wrong number rather than as a heading nobody re-reads. If you are about
-to become the second host on a one-consumer surface — or the first on a zero-consumer one — treat a
-misfit as a library gap on first contact.
+but never renamed. Every entry below carries its consumer count **as of v1.66.0**, measured across
+all eleven hosts by the census in [`api/CONSUMERS.md`](api/CONSUMERS.md), so that the next drift
+shows up as a wrong number rather than as a heading nobody re-reads. The counts were stamped v1.5.0
+until then, and four of the seven had drifted. If you are about to become the second host on a
+one-consumer surface — or the first on a zero-consumer one — treat a misfit as a library gap on
+first contact.
 
-- **`applySkin` (DebugLog minor 4) — two consumers: BankLedger, LootHistory.** The contract is that
-  you are handed a **fully built** frame with `frame.title` and `frame.divider` already assigned;
-  that it tolerates a missing divider is an accident of BankLedger's helper, not a promise. If your
-  chrome helper needs anything else on the frame, say so rather than reaching for a global. The
-  second-host instruction has already been **discharged** here: LootHistory *was* the second host,
-  and it asserted the derived title-bar offsets rather than assuming them — which is the shape that
-  turned this from one host's arrangement into a contract. A ninth host would be the third, not the
-  second.
+**The zero-consumer set is in the census, not here.** At v1.66.0, 106 of 409 public exports have no
+host consumer. Eight of them have a host duplicate behind them, and each host has one adoption
+issue covering its duplicates: AbsorbTracker#33, BankLedger#21, ConsumableMaster#44, KickCD#36,
+LootHistory#33, MultiMeters#58 and PanelMaster#56. The duplicates are `Core.MakeResizable`,
+`Core.SECRET`, Slash's `SplitVerb` / `FindCommand` / `CommandRows` / `ProfileNames`, and Options'
+`lib.LAYOUT` and `O.PADDING_X`. Two exports have a contract to settle before a first host adopts
+them: `Core.MakeResizable` has no lock gate (LibKa0s#41), and nothing passes the Options
+descriptor's `addonName` (LibKa0s#42). Each of the rest carries a "no consumer as of v1.66.0, kept
+because ..." line in its major's live document. If you are about to hand-roll something, look there
+first.
+
+- **`applySkin` (DebugLog minor 4) — two consumers: BankLedger, LootHistory**
+  (`../BankLedger/core/DebugLogSetup.lua:142`, `../LootHistory/core/DebugLogSetup.lua:159`). The
+  count has not moved since v1.5.0. The contract is that you are handed a **fully built** frame with
+  `frame.title` and `frame.divider` already assigned. That it tolerates a missing divider is an
+  accident of BankLedger's helper, not a promise. If your chrome helper needs anything else on the
+  frame, say so rather than reaching for a global. The second-host instruction has already been
+  **discharged**: LootHistory *was* the second host, and it asserted the derived title-bar offsets
+  rather than assuming them, which turned this from one host's arrangement into a contract. The
+  same function name on `Widgets.CopyWindow`'s descriptor is a separate contract with three
+  consumers (BankLedger, LootHistory and MultiMeters, each from its export window). Do not count the
+  two together.
 - **`makeCloseButton` (DebugLog minor 4) — zero consumers.** It shipped in the same minor as
-  `applySkin` and for the same hosts, and it is no longer the same story. Both hosts that once passed
-  it **dropped it deliberately** once Core minor 3 made the Ka0s edge the library's own default, at
-  which point overriding the close button meant re-specifying what the library already did. The
-  rationale is written into both seam files where the key used to be
-  (`../BankLedger/core/DebugLogSetup.lua:111-116`, `../LootHistory/core/DebugLogSetup.lua:125-130`)
-  and recorded at LootHistory's `LIBKA0S-18` / `-19`. The override path is still live code in a
-  frozen major and is exercised by the library's own suite, but its *shape* is now pinned by nothing
-  but the library's assumptions about what a host would want. If you are the host with non-Ka0s
-  chrome that wants it back, you are the first one, and a misfit is a library gap on contact.
-- **`skin` (DebugLog) — ZERO consumers**, the same state as `makeCloseButton` and reached the same
-  way. `DebugLog.lua:371` reads `type(d.skin) == "table" and d.skin or core.SKIN`, so a host that
-  passes nothing gets Core's table — and every host passes nothing. The 2026-08-02 audit recorded
-  this as one consumer on the strength of a grep that matched
-  `../BankLedger/modules/SessionWindow.lua:456`, which is a file-local
-  `local skin = (NS.Browser and NS.Browser.SKIN) or …` reading BankLedger's *own* skin table, not
-  the library's descriptor field. A grep for a bare key name finds locals; only reading the
+  `applySkin` and for the same hosts, and it has had a different history. Both hosts that once
+  passed it **dropped it deliberately**, because the console and the copy window are the library's
+  windows and wear the library's close. The reasoning is written where the key used to be
+  (`../BankLedger/core/DebugLogSetup.lua:146-151`, `../LootHistory/core/DebugLogSetup.lua:163-169`).
+  Its forward onto `CopyWindow`'s matching field (Widgets minor 7) has no consumer either. The
+  override path is still live code in a frozen major and is exercised by the library's own suite.
+  Its *shape*, though, is pinned only by the library's assumptions about what a host would want. If
+  yours is the host with a close control different in kind, you are the first one, and a misfit is
+  a library gap on contact.
+- **`skin` (DebugLog) — ZERO consumers**, the same state as `makeCloseButton`, reached the same way.
+  `DebugLog.lua:449` reads `field(d.skin, "table", core.SKIN)`, so a host that passes nothing gets
+  Core's table, and every host passes nothing. The 2026-08-02 audit recorded this as one consumer on
+  the strength of a grep that matched a file-local in BankLedger's session window (today
+  `../BankLedger/modules/SessionWindow.lua:490`). That local is
+  `local skin = (NS.Browser and NS.Browser.SKIN) or …`, which reads BankLedger's *own* skin table,
+  not the library's descriptor field. The census found the same trap a second time: MultiMeters'
+  `skin = L["Ka0s skin"]` is a locale key. A grep for a bare key name finds locals. Only reading the
   descriptor tells you who passes one.
 - **`sliderCommit` (OptionsWidgets minor 4) — one consumer: ConsumableMaster**, at
-  `../ConsumableMaster/settings/Panel.lua:226`, with the rationale recorded beside it: the surface
-  exists at all so the Macro Bar page keeps its live drag.
-- **`pairWith` (OptionsWidgets) — one consumer: PrettyChat**, at
-  `../PrettyChat/settings/Panel.lua:77`, where the General page is drawn through `RenderRows` plus
-  this seam.
-- **The Slash `format` hook (Slash minor 5) — three consumers: BankLedger, LootHistory, PrettyChat.**
-  The second motivating case has been tried: PrettyChat doubles `\|` to `\|\|` on rows the library
-  renders perfectly well, delegating to `lib.FormatValue` first so only the string arm is
-  post-processed and the empty-string `(none)` case stays the library's. What is still unsettled is
-  the documented precedence over `colorDecode`, and this run establishes why it will stay that way.
-  The three hosts that pass `format` and the three that pass the colour codecs (AbsorbTracker,
-  ConsumableMaster, KickCD) are **disjoint sets** that partition six of the eight consumers; the
-  remaining two, PanelMaster and WhatGroup, pass neither. No host is anywhere near the boundary —
-  PrettyChat passes no codecs because it has **no colour rows at all**, and the three codec hosts
-  render nothing set-valued or escape-doubling that would want `format`. With no adoption targets
-  remaining there is no ninth consumer coming to supply the first host that passes both, so the
-  ordering will not be exercised by a host at all, and the library's own suite is the only place left
-  that can pin it. `tests/test_slash.lua` now does exactly that: a descriptor passing both, asserting
-  `format` wins. If a future host does pass both and the behaviour surprises it, that is a finding
-  about the ordering, not about the host.
-- **The numeric-enum dropdown (OptionsWidgets minor 5) — two consumers: BankLedger, LootHistory**
-  (`../BankLedger/settings/Schema.lua:76,83`, `../LootHistory/settings/Schema.lua:61,70`). The count
-  moved; the warning did not, and it is the reason this entry is here. The route is **inferred** from
-  the presence of a `values` list on a `type="number"` row (`LibKa0s/OptionsWidgets.lua:913`, the
-  number arm of `O.RenderField`), not
-  opted into. Any existing number row that grows a `values` key silently reclassifies from slider to
-  dropdown, with no code change and no test anywhere that would see it. KickCD's 31 number rows all
-  carry min/max/step today; the first one to gain a list flips. It has also never been rendered
-  alongside `sliderCommit`: ConsumableMaster is the one `sliderCommit` host, has 22 number rows, and
-  **zero** carry a `values` list. And the inference itself remains untested by any host — both
-  consumers spell a `Dropdown` widget key on those rows *as well as* `values`, and the library reads
-  only `values`, so neither has ever exercised the route the way an unsuspecting number row would
-  reach it.
+  `../ConsumableMaster/settings/OptionsSetup.lua:265`. The surface exists so the Macro Bar page keeps
+  its live drag.
+- **`pairWith` (OptionsWidgets) — one consumer: AuraMaster**. The consumer has changed.
+  `../AuraMaster/settings/Filters.lua:751` and `../AuraMaster/settings/Layout.lua:636` declare
+  pairs, which `../AuraMaster/settings/OptionsSetup.lua:521` routes into `RenderTabbedSchema`.
+  PrettyChat, the consumer this entry named at v1.5.0, now draws its General page through
+  `RenderTabbedSchema` with `nil` in that argument (`../PrettyChat/settings/Panel.lua:141`). The
+  surface has had exactly one host at every count, so the second host is still the one that turns
+  it into a contract.
+- **The Slash `format` hook (Slash minor 5) — six consumers: AuraMaster, BankLedger,
+  ConsumableMaster, LootHistory, MultiMeters, PrettyChat.** The precedence over `colorDecode` was
+  unexercised at v1.5.0. It is exercised now. The hosts that pass the color codecs to Slash are
+  AuraMaster and ConsumableMaster, and **both also pass `format`**, so the old claim that the two
+  sets were disjoint is out of date. Both `format` hooks decode a color row themselves before
+  delegating to `lib.FormatValue` (`../ConsumableMaster/settings/Slash.lua:519-521`,
+  `../AuraMaster/settings/Slash.lua:510`). That is the shape the documented ordering expects, and
+  `tests/test_slash.lua` ("the format hook takes precedence over the color codec") pins it.
+  AbsorbTracker and KickCD, the other two former codec hosts, no longer pass a codec to Slash at
+  all. `lib.FormatValue` reads their named-key colors directly. If a host passes both and the
+  output surprises it, that is a finding about the ordering, not about the host.
+- **The numeric-enum dropdown (OptionsWidgets minor 5) — three consumers: AuraMaster, BankLedger,
+  LootHistory** (`../AuraMaster/settings/Layout.lua:337-339`,
+  `../BankLedger/settings/Schema.lua:53,127`, `../LootHistory/settings/Schema.lua:279,393`). The
+  route is **inferred** from a `values` list on a `type="number"` row (the number arm of
+  `O.RenderField`, `LibKa0s/OptionsWidgets.lua:922`), not opted into. Any number row that grows a
+  `values` key silently reclassifies from slider to dropdown, with no code change and no test that
+  would see it. That warning stands. What has changed is that the inference is now exercised by a
+  host. BankLedger and LootHistory spell a `widget = "Dropdown"` key beside `values`, which the
+  library does not read. AuraMaster's parent-container row carries `values` and **no** widget key,
+  so it is the first host to reach the route the way an unsuspecting number row would.
 
 The fourth v1.2.0 addition, `CreatePanel` stamping `OnCommit`/`OnRefresh`/`OnDefault`, is **not** in
-this list for the opposite reason: it is not opt-in, so every consumer gained it at once and all
-eight take Options. It is guarded in the library's own suite and in six of the eight hosts' suites;
-LootHistory and WhatGroup describe the `OnDefault` forwarder in their settings documents but name
-none of the three callbacks anywhere under `tests/`, which is worth knowing before you assume a
-change to that stamp would be caught fleet-wide.
+this list, for the opposite reason: it is not opt-in, so every consumer gained it at once, and all
+eleven take Options. It is guarded in the library's own suite and in eight of the eleven hosts'
+suites. AuraMaster, PartyFrameEnhanced and WhatGroup name none of the three callbacks anywhere
+under `tests/`. Know that before you assume a change to that stamp would be caught across the whole
+fleet.

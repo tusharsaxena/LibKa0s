@@ -78,16 +78,16 @@ Kit.diagnostics = dofile("tests/fixture_diagnostics.lua")(_G.LK_TEST)
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_core_resize", "test_env", "test_compat", "test_lifecycle", "test_lifecycle_debug", "test_bus", "test_schema", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_reorderlist", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_debuglog_gates", "test_resize_windows", "test_slash", "test_slash_parse", "test_slash_disabled", "test_slash_refusal", "test_slash_profile", "test_slash_debug",
+    "test_core", "test_core_resize", "test_env", "test_compat", "test_lifecycle", "test_lifecycle_debug", "test_bus", "test_schema", "test_schema_write", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_reorderlist", "test_widgets_draghandle", "test_widgets_reorder", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_debuglog_gates", "test_debuglog_descriptor", "test_resize_windows", "test_slash", "test_slash_parse", "test_slash_disabled", "test_slash_refusal", "test_slash_profile", "test_slash_debug",
     "test_launcher", "test_atenable",
-    "test_options", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
+    "test_options", "test_options_render", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_choicegrid", "test_options_flow", "test_options_landing",
     "test_options_ids", "test_options_idlist", "test_options_idlist_layout",
     "test_options_tabs", "test_options_tabbed",
     "test_options_nav",
     "test_options_idsuggest", "test_options_idsuggest_frames", "test_options_idlist_remove", "test_options_switched", "test_options_combat", "test_options_combat_debug", "test_options_compose",
     "test_options_throttle",
-    "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_isolation",
+    "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_budget", "test_perf_isolation",
     "test_loader", "test_parallel", "test_kit_limits", "test_kit_asserts",
     "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events", "test_mock_resize",
     "test_surface_parity",
@@ -103,5 +103,6 @@ Kit.run{
     { name = "test_eol", dir = "tests/_kit/" },
     { name = "test_layout_cap", dir = "tests/_kit/" },
     { name = "test_diagnostics_contract", dir = "tests/_kit/" },
+    { name = "test_lizard_sighted", dir = "tests/_kit/" },
   },
 }

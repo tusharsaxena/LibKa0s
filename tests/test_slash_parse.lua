@@ -223,3 +223,148 @@ test("sl: an unknown row type is rejected by name", function()
   T.assertNil(v)
   T.assertTrue(err:find("wibble", 1, true) ~= nil, err)
 end)
+
+-- ── the host's L reaches the parser (minor 19, issue #40) ──────────────────────────────────
+--
+-- Through minor 18 the file-level parsers and the empty-string formatter read lib.STRINGS
+-- directly, so a host's `L` overrode the dispatcher's own lines but never the parse refusals or
+-- the "(none)" a `get` prints. ConsumableMaster carried ERR_BOOL, ERR_ALLOWED and ERR_COLOR in its
+-- table, marked dead for exactly that reason. The instance now hands Sl:Text to the parsers.
+
+local OVERRIDES = {
+  ERR_BOOL = "B!", ERR_ALLOWED = "A:%s", ERR_COLOR = "C!", ERR_NUMBER = "N!",
+  ERR_STRING = "S!", ERR_TYPE = "T:%s", NONE = "--",
+}
+
+local function withRows(Sl, rec, extra)
+  for _, row in ipairs(extra) do
+    rec.rows[#rec.rows + 1] = row
+    rec.byPath[row.path] = row
+  end
+  return Sl, rec
+end
+
+local function overriddenHost(L)
+  local Sl, rec = F.new({ L = L })
+  return withRows(Sl, rec, {
+    { path = "weird", page = "general", type = "weird" },
+    { path = "freeText", page = "general", type = "string" },
+    { path = "steps", page = "general", type = "number", values = { 1, 2, 3 } },
+  })
+end
+
+-- The reason line `set` prints under INVALID, for one bad input.
+local function reasonFor(Sl, rec, input)
+  local before = #rec.chat
+  Sl:CliSet(input)
+  assertEqual(#rec.chat, before + 2, "INVALID and one reason line for: " .. input)
+  return plain(rec.chat[before + 2])
+end
+
+test("sl: the host's L reaches every parse refusal through set", function()
+  -- red under: Slash minor 18, whose parsers read lib.STRINGS and never the host's L
+  local Sl, rec = overriddenHost(OVERRIDES)
+  assertEqual(reasonFor(Sl, rec, "showOnlyInCombat maybe"), "  B!", "ERR_BOOL")
+  assertEqual(reasonFor(Sl, rec, "units.player.barWidth wide"), "  N!", "ERR_NUMBER")
+  assertEqual(reasonFor(Sl, rec, "steps 9"), "  A:1, 2, 3", "ERR_ALLOWED, number row")
+  assertEqual(reasonFor(Sl, rec, "freeText    "), "  S!", "ERR_STRING")
+  assertEqual(reasonFor(Sl, rec, "labelText nope"), "  A:none, short", "ERR_ALLOWED, string row")
+  assertEqual(reasonFor(Sl, rec, "units.player.barColor 1 2"), "  C!", "ERR_COLOR")
+  assertEqual(reasonFor(Sl, rec, "weird x"), "  T:weird", "ERR_TYPE")
+end)
+
+test("sl: the host's L reaches the empty-string formatter through get", function()
+  -- red under: Slash minor 18, whose FORMATTERS.string read lib.STRINGS.NONE
+  local Sl, rec = overriddenHost(OVERRIDES)
+  Sl:CliGet("emptyLabel")
+  assertEqual(plain(rec.chat[#rec.chat]), "emptyLabel = --")
+end)
+
+test("sl: a key-echoing L still falls through to the library's parse strings", function()
+  -- The rawget rule Sl:Text keeps: a locale table that answers every key with the key must not
+  -- turn a parse refusal into the bare key name.
+  local Sl, rec = overriddenHost(setmetatable({}, { __index = function(_, k) return k end }))
+  assertEqual(reasonFor(Sl, rec, "showOnlyInCombat maybe"), "  " .. slash.STRINGS.ERR_BOOL)
+  assertEqual(reasonFor(Sl, rec, "units.player.barColor 1"), "  " .. slash.STRINGS.ERR_COLOR)
+  Sl:CliGet("emptyLabel")
+  assertEqual(plain(rec.chat[#rec.chat]), "emptyLabel = " .. slash.STRINGS.NONE)
+end)
+
+test("sl: ParseValue and FormatValue take an optional resolver, and default to the library's strings", function()
+  local textOf = function(k) return OVERRIDES[k] end
+  local _, err = slash.ParseValue({ type = "bool" }, "maybe")
+  assertEqual(err, slash.STRINGS.ERR_BOOL, "two arguments: unchanged")
+  _, err = slash.ParseValue({ type = "bool" }, "maybe", textOf)
+  assertEqual(err, "B!", "a resolver is read")
+  _, err = slash.ParseValue({ type = "nope" }, "x", textOf)
+  assertEqual(err, "T:nope")
+  assertEqual(slash.FormatValue({ type = "string" }, ""), slash.STRINGS.NONE, "two arguments: unchanged")
+  assertEqual(slash.FormatValue({ type = "string" }, "", textOf), "--")
+end)
+
+test("sl: a host's own parse is handed the instance's resolver as a third argument", function()
+  local seen
+  local Sl = F.new({
+    L = { ERR_BOOL = "nope!" },
+    parse = function(row, text, textOf)
+      seen = textOf
+      return slash.ParseValue(row, text, textOf)
+    end,
+  })
+  Sl:CliSet("showOnlyInCombat maybe")
+  assertEqual(type(seen), "function", "the resolver reached the host's parse")
+  assertEqual(seen("ERR_BOOL"), "nope!", "and it resolves through the host's L")
+  assertEqual(seen("ERR_COLOR"), slash.STRINGS.ERR_COLOR, "falling through where L is silent")
+end)
+-- ── the file it lives in (addendum A2) ────────────────────────────────────────────────────────
+--
+-- The parser block (lib.ParseBool through lib.ParseValue, with enumList and allowedText) left
+-- Slash.lua for LibKa0s/SlashParse.lua, a secondary file of the same major paired on the shell's
+-- minor, so Slash.lua leaves `layout-§1`'s 1000-1500 band. Every case above runs unchanged against
+-- the moved code; these two pin the pairing and the partial payload.
+
+test("sl: the parser lives in SlashParse.lua at minor 1, paired on the live shell", function()
+  -- red under: the parser written into Slash.lua, which publishes no SlashParse minor
+  assertEqual(slash.MODULES.SlashParse, 1)
+  assertEqual(slash.__parseMinor, 1)
+  assertEqual(slash.__parseShellMinor, slash.MINOR, "attached to the shell that is live")
+  assertEqual(type(slash.ParseValue), "function")
+  assertEqual(type(slash.ParseBool), "function")
+end)
+
+test("sl: a payload without SlashParse.lua loads whole, and set refuses naming the file", function()
+  -- red under: the parser written into Slash.lua, which a shell-only payload still carries
+  local Loader     = dofile("tests/_kit/loader.lua")
+  local buildMocks = dofile("tests/wow_mock.lua")
+  local env = buildMocks()
+  Loader.load("LibKa0s/Core.lua", nil, env)
+  Loader.load("LibKa0s/Slash.lua", nil, env)
+  local lib = env.LibStub("LibKa0s-Slash-1.0")
+  T.assertNil(lib.ParseValue, "no parser without its file")
+  T.assertNil(lib.ParseBool)
+  T.assertNil(lib.MODULES.SlashParse)
+  assertEqual(type(lib.FormatValue), "function", "the rest of the major is unaffected")
+
+  local chat, wrote = {}, 0
+  local row = { path = "width", type = "number", default = 1 }
+  local store = { width = 1 }
+  local sl
+  sl = lib:New({
+    slash = "/np",
+    print = function(line) chat[#chat + 1] = line end,
+    get = function(path) return store[path] end,
+    set = function() wrote = wrote + 1 end,
+    findRow = function(path) return path == "width" and row or nil end,
+    allRows = function() return { row } end,
+    commands = { { "set", "Change a setting", function(rest) sl:CliSet(rest) end } },
+  })
+  sl:CliSet("width 5")
+  assertEqual(wrote, 0, "nothing is written")
+  assertEqual(#chat, 2, "the refusal and its reason")
+  assertEqual(plain(chat[1]), "Invalid value for width")
+  T.assertTrue(chat[2]:find("SlashParse.lua", 1, true) ~= nil, "the reason names the missing file")
+
+  Loader.load("LibKa0s/SlashParse.lua", nil, env)
+  assertEqual(type(lib.ParseValue), "function", "and the file adds the parser when it arrives")
+  assertEqual(lib.__parseShellMinor, lib.MINOR)
+end)

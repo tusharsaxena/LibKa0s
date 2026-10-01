@@ -227,3 +227,56 @@ test("cmd: clicking a locked panel row does nothing", function()
   p.__panel().buttons.finish:__fire("OnClick")
   assertFalse(p.run, "a step that runs out of order corrupts the run it was meant to protect")
 end)
+
+-- ── the file it lives in (issue #7) ───────────────────────────────────────────────────────────
+--
+-- The command surface (P.Usage, the sub-verb handlers, P.StatusLines, P.OnCommand) left Perf.lua
+-- for LibKa0s/PerfCommands.lua, a secondary file of the same major paired on the probe's minor as
+-- PerfPanel.lua is, so Perf.lua leaves `layout-§1`'s 1000-1500 band. Every case above runs
+-- unchanged against the moved code; these two pin the pairing and the partial payload.
+
+test("cmd: the command surface lives in PerfCommands.lua at minor 1, paired on the live probe", function()
+  -- red under: the command surface written into Perf.lua, which publishes no PerfCommands minor
+  local lib = T.lib
+  assertEqual(lib.MODULES.PerfCommands, 1)
+  assertEqual(lib.__commandsMinor, 1)
+  assertEqual(lib.__commandsShellMinor, lib.MINOR, "attached to the probe that is live")
+  assertEqual(type(lib.__installCommands), "function")
+end)
+
+test("cmd: a probe without PerfCommands.lua answers every command with one line saying so", function()
+  -- red under: the command surface written into Perf.lua, which a probe-only payload still carries
+  local Loader     = dofile("tests/_kit/loader.lua")
+  local buildMocks = dofile("tests/wow_mock.lua")
+  local env = buildMocks()
+  Loader.load("LibKa0s/Core.lua", nil, env)
+  Loader.load("LibKa0s/Lifecycle.lua", nil, env)
+  Loader.load("LibKa0s/Perf.lua", nil, env)
+  Loader.load("LibKa0s/PerfSampler.lua", nil, env)
+  Loader.load("LibKa0s/PerfPanel.lua", nil, env)
+  local lib = env.LibStub("LibKa0s-Perf-1.0")
+  T.assertNil(lib.__installCommands, "no installer without its file")
+  T.assertNil(lib.MODULES.PerfCommands)
+  local printed = {}
+  local p = lib:New({
+    name = "NoCommands", sv = "NoCommandsPerfDB",
+    print = function(line) printed[#printed + 1] = line end,
+    log = function() end,
+    lifecycle = env.LibStub("LibKa0s-Lifecycle-1.0"):New{
+      name = "NoCommands", standDown = function() end, standUp = function() end },
+  })
+  for _, args in ipairs({ "", "start", "finish", "nonsense" }) do
+    local out = p.OnCommand(args)
+    assertEqual(type(out), "table", "OnCommand still never returns nil (" .. args .. ")")
+    assertEqual(#out, 1, "one line (" .. args .. ")")
+    assertTrue(out[1]:find("PerfCommands.lua", 1, true) ~= nil, "naming the missing file")
+  end
+  assertFalse(p.run, "and nothing ran")
+  assertEqual(#p.Usage(), 1, "Usage answers the same line")
+  assertEqual(#p.StatusLines(), 1, "and so does StatusLines")
+  -- The panel's click path prints what OnCommand returns, so a click prints that one line too.
+  p.ShowPanel()
+  p.__panel().buttons.start:__fire("OnClick")
+  assertEqual(#printed, 1, "a click prints the one line")
+  p.HidePanel()
+end)

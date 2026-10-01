@@ -95,15 +95,15 @@ end
 
 -- ── the version ────────────────────────────────────────────────────────────────────────────
 
-test("opt combat debug: Options is at 27, with the six files the lines touch bumped", function()
-  assertEqual(lib.MINOR, 27)
-  assertEqual(lib.MODULES.Options, 27)
-  assertEqual(lib.MODULES.OptionsRegistry, 2)
-  assertEqual(lib.MODULES.OptionsWidgets, 33)
-  assertEqual(lib.MODULES.OptionsIds, 2)
-  assertEqual(lib.MODULES.OptionsIdList, 2)
-  assertEqual(lib.MODULES.OptionsTabs, 7)
-  assertEqual(lib.MODULES.OptionsNav, 2)
+test("opt combat debug: Options is at 27 or later, with the six files the lines touch at their floor", function()
+  -- Floors rather than exact minors (the seam arrived at these), so a later bump of any of these
+  -- files for another reason does not need an edit here.
+  local floors = { Options = 27, OptionsRegistry = 2, OptionsWidgets = 33, OptionsIds = 2,
+    OptionsIdList = 2, OptionsTabs = 7, OptionsNav = 2 }
+  assertTrue(lib.MINOR >= 27, "Options.lua minor " .. tostring(lib.MINOR))
+  for file, floor in pairs(floors) do
+    assertTrue((lib.MODULES[file] or 0) >= floor, file .. " minor " .. tostring(lib.MODULES[file]))
+  end
 end)
 
 -- ── refused writes ───────────────────────────────────────────────────────────────────────────

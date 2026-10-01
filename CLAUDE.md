@@ -73,7 +73,7 @@ is re-vendored. Never patch a vendored copy downstream; fix it here and copy acr
 | `localization-§5` | `testkit/mock_base.lua` and `testkit/mock_record.lua` reproduce AceTimer-3.0's handle field, read as a member access (`.cancelled`), and the `IsCancelled` method of Blizzard's `C_Timer` handles, verbatim; `tests/test_mock_ace.lua`, the suite that pins those fakes, reads both as the fakes spell them | Third-party API identifiers, not prose. The kit's AceTimer fake hands out AceTimer's own handle table, and a suite written against the real field reads `handle.cancelled`; a kit that renamed it would answer nil there and pass, which is fidelity rule 1's failure (`testkit/mock_base.lua`'s header). The same for `IsCancelled`, which a `C_Timer.NewTimer` handle answers in the client. `tests/test_prose.lua`'s `RATIFIED` carries exactly these spellings for exactly these two files, matched as `.cancelled` and `iscancelled`, and its `AUTHORED_RATIFIED` the same two for `tests/test_mock_ace.lua` and for this register, which names them, so prose in the same files is still held to US English. Filed by the v1.31.0 review (commit `1f1790c`, recorded in `docs/api/testkit/version-17-docs.md`); the second path arrived with kit revision 22, which peeled the timer queue and both handle kinds out to `testkit/mock_record.lua`, and the suite's path with the US-English sweep of `tests/` (`LK-29`). | 2026-09-12, owner decision on the v1.31.0 review; extended to `tests/test_mock_ace.lua` 2026-09-24, executing `LK-29` | AceTimer renames the field, or the kit stops modeling the handle (and `C_Timer` renames `IsCancelled`, or the kit stops modeling `NewTimer` handles). `tests/test_prose.lua` reddens on its own if any of these exemptions stops matching. |
 | `localization-§5` | `lib.ICONS` keeps `minimise`, the one British spelling left in the shipped payload | The key is not prose. `lib.Icon` (`LibKa0s/Media.lua:202`) builds the texture path **from** the key — `base .. ICON_DIR .. "\\" .. name` — and the file on disk is `minimise.tga`, vendored into every consumer's `libs/LibKa0s/media/icons/`. Renaming the key alone points at a texture that does not exist, and `Media.lua:190-196` records what that costs: a texture that fails to load draws nothing and raises nothing, so the icon simply disappears from every consumer's title bar with no error anywhere. Renaming it safely needs a second `.tga` or an alias map, which is a change to `Media.lua`'s surface, not a spelling fix. Filed as `LK-06` in `docs/audits/2026-09-07/`, which names the key as "a key consumers bind against" and asks for an alias rather than a rename. | 2026-09-07, executing `M1-LK-11` | A `minimize.tga` shipped beside the current file, or an alias map in `lib.Icon` — either ends this row, and the key moves in the same change as the eleven consumers' re-vendor. `tests/test_prose.lua` reddens on its own if the exemption ever stops matching, so a dead row cannot sit here unnoticed. |
 | `localization-§5` | The kit ships a US-English gate (`tests/_kit/test_prose.lua`) and this repo leaves it unwired, running its own `tests/test_prose.lua` instead. `testing-§9` and `localization-§5` between them permit exactly that — wire the kit's copy, or wire your own and record why the kit's is unwired — and this row is the record. The suite inventory reads it and reports the kit's copy once, as a declared skip carrying this reason, so the decline appears in `docs/test-cases.md` and in every run's output rather than as a gate nobody knows is not running. | The kit's copy is the broader gate over the same rule and the narrower one over this repo. Broader: it reads the whole tracked set, where this repo's reads only the two folders whose bytes ship. Narrower: this repo's copy carries two cases the kit's has no equivalent for — no non-ASCII byte reaches a player from the shipped library, the em dash excepted, and no retired `§N.M` section reference survives in the shipped library or the shipped kit — and wiring the kit's copy alone would retire both over the payloads eleven consumers receive by copy and cannot fix for themselves. The ASCII case reads `LibKa0s/` only: the kit prints to a terminal and `tests/_kit/` never ships, so from kit revision 26 kit strings carry the section sign in their citations. What the extra breadth would cost was measured on 2026-09-23 at kit revision 25: the kit's copy reports **1121 lines across 147 files** here. **Twelve of them are in the shipped payload outside the gate's own source, and all twelve are the two rows above** — the gate this repo runs is already green over everything it ships. The other 1109 are records this repo must not rewrite or does not write at all: 560 in `docs/api/`'s frozen per-version documents, 150 under `tests/`, 118 under `docs/adoption/`, 107 under `docs/superpowers/`, 63 in `CHANGELOG.md`'s entries, 46 in the generated `docs/test-cases.md`, 21 in `docs/adoption-prompt.md`, and 23 in `testkit/test_prose.lua` itself, which quotes every forbidden spelling in order to forbid it and gained six more with kit revision 25's carve-out fixtures. Re-measured 2026-09-23 after the revision-25 fix passes, with the kit's gate wired in a throwaway copy of this checkout; the figures before that re-measurement were 1115 / 143 / 17. The kit's exclusion list named five frozen-bundle folders at revision 25 and this repo has three more of its own. Revision 26 takes one of the three, `docs/superpowers/`, into the kit's list with `docs/investigations/` (which this repo does not have), so the 107 lines there leave the count, and reads the two `docs/automated-tests/` store-root files back in, which this repo's own gate now reads as well; closing the gap with per-file waivers is the whole-file waiver `localization-§5` forbids, and closing it with `skipDirs` would leave 150 real hits under `tests/`, which is a US-English sweep and not an integration. That sweep landed on 2026-09-24 (`LK-29`, resolving the 2026-09-23 audit's `LibKa0s-A-07`): `tests/`, the live document of every major under `docs/api/` and that folder's README, `docs/releasing.md`, `README.md`, `DEPENDENCIES.md`, this file and `tools/artwork/` carry **0** prose hits, and `tests/test_prose.lua` now gates them in a case of its own. | 2026-09-23, integrating kit revision 25 | The kit's copy grows the non-ASCII and retired-section cases, **or** `docs/api/`, `docs/adoption/`, `docs/superpowers/` and released changelog entries join the kit's own frozen-bundle exclusions and this repo's `tests/` prose is swept to US English. Either ends this row. The sweep half is done (0 prose hits under `tests/` and in the live docs since 2026-09-24), so what is left of the second is the kit's own frozen-bundle exclusions. |
-| `compat` | `LibKa0s/Perf.lua` reads the specialization globals inline (`P.Context`, `LibKa0s/Perf.lua:707-715`), duplicating `LibKa0s-Compat-1.0`'s spec pair (`lib.GetSpecialization`, `LibKa0s/Compat.lua:270`, and `lib.GetSpecializationInfo`, `:289`). The copies are not identical: Perf's takes the namespaced rung for the index reader only and calls the `GetSpecializationInfo` global directly, where Compat's ladders both. | Raising Perf's floor to Compat is a vendoring break for eleven consumers (`ls -d ../*/libs/LibKa0s/Perf.lua \| wc -l` from this checkout, 11 on 2026-09-23) in a release declared additive: v1.55.0 moves no existing file's minor, and a new floor is the change to the vendoring `library-stack-§7` treats as breaking. Ruled as reading A of the Compat major's open question on this read; [the Compat document](docs/api/Compat/version-1-docs.md) states the same decision under *The library's own inline spec read*. This row supersedes `LK-31` in the frozen `docs/audits/2026-09-08/` bundle (`04_TECHNICAL_DESIGN.md`, `05_EXECUTION_PLAN.md` step 5), which asked for one owner of the spec reader and proposed `Core.lua`, with `Env.lua` as the alternative. Neither was taken; Compat now exists as that owner, and the only open question is when Perf floors on it. The bundle is not edited. | 2026-09-23 | The next Perf floor raise made for any other reason. |
+| `compat` | `LibKa0s/Perf.lua` reads the specialization globals inline (`P.Context`'s `C_SpecializationInfo.GetSpecialization` / `GetSpecializationInfo` read in `LibKa0s/Perf.lua`, in the file-level `specName` P.Context's reader table calls since `GI-LK-11`, cited by function rather than line because Perf's line numbers move with every peel), duplicating `LibKa0s-Compat-1.0`'s spec pair (`lib.GetSpecialization`, `LibKa0s/Compat.lua:270`, and `lib.GetSpecializationInfo`, `:289`). The copies are not identical: Perf's takes the namespaced rung for the index reader only and calls the `GetSpecializationInfo` global directly, where Compat's ladders both. | Raising Perf's floor to Compat is a vendoring break for eleven consumers (`ls -d ../*/libs/LibKa0s/Perf.lua \| wc -l` from this checkout, 11 on 2026-09-23) in a release declared additive: v1.55.0 moves no existing file's minor, and a new floor is the change to the vendoring `library-stack-§7` treats as breaking. Ruled as reading A of the Compat major's open question on this read; [the Compat document](docs/api/Compat/version-1-docs.md) states the same decision under *The library's own inline spec read*. This row supersedes `LK-31` in the frozen `docs/audits/2026-09-08/` bundle (`04_TECHNICAL_DESIGN.md`, `05_EXECUTION_PLAN.md` step 5), which asked for one owner of the spec reader and proposed `Core.lua`, with `Env.lua` as the alternative. Neither was taken; Compat now exists as that owner, and the only open question is when Perf floors on it. The bundle is not edited. | 2026-09-23 | The next Perf floor raise made for any other reason. |
 | `events-frames-taint-§1` | Three widget-owned private frames call `RegisterEvent` raw, with no pcall'd per-event helper, no player-reachable rejected-name record and no AceEvent: `LibKa0s/OptionsCombat.lua`'s combat lock (`PLAYER_REGEN_DISABLED` / `PLAYER_REGEN_ENABLED` on `lib.__combatFrame`, in `lib.__syncCombatEvents` and `lib.__pageShown`; `LibKa0s/OptionsTabs.lua`'s until the 2026-09-26 automated-tests sweep moved it there, unchanged), `LibKa0s/Widgets.lua`'s popup-menu dismiss (`GLOBAL_MOUSE_DOWN` on the shared dropdown menu, in the dropdown button's `OnClick`), and `LibKa0s/OptionsRegistry.lua`'s park frame (`PLAYER_REGEN_ENABLED` on `lib.__parkFrame`, in `lib.__parkRegistration`, from Options minor 24 and `LK-25`; `LibKa0s/Options.lua`'s until the same sweep moved it there, unchanged). | The section is written against an addon's event traffic (`addon:RegisterEvent`, a module's disable path, the player-facing debug verb), and these frames carry one widget's UI state, not the host's. Its per-event isolation exists so that one retired or misspelled name cannot deafen a registration block; the names here are stable core client events, so that failure has no route in. This row is **not** justified by "the library cannot use AceEvent": `LibKa0s/Bus.lua` already resolves AceEvent-3.0 at call time, and `lib.SafeRegisterEvent` (`LibKa0s/Core.lua`) is the pcall'd helper the section asks for, available to any of these sites. Filed as `LibKa0s-A-10` by the 2026-09-23 audit, which chose a register row over that helper route: three minors and a re-vendor for no reachable benefit. | 2026-09-24, executing `LK-30` of the 2026-09-23 remediation plan | Any of these frames registers an event newer than the current expansion, or a fourth private registration site appears in `LibKa0s/`. Either reopens the choice between this row and routing every site through `lib.SafeRegisterEvent`. |
 
 **Five rows.** Two are not prose at all — a path fragment and two third-party API identifiers. The
@@ -202,39 +202,72 @@ cycle's deliverable was the disposition; this cycle executed it.
 same command on **2026-09-26 at v1.62.0's release, kit revision 31**, after the automated-tests
 sweep. It is prose rather than a second table on purpose: the gate above reads every
 backticked-path table row under this heading as a census row, so a band table here would be ten
-rows claiming to be breaches. Ten files, three fewer than the thirteen of the 2026-09-24 write-out:
-the sweep took six out and its id peel brought three in. Largest first:
+rows claiming to be breaches. Ten files at that write-out, three fewer than the thirteen of the
+2026-09-24 write-out: the sweep took six out and its id peel brought three in. Six now:
+`tests/test_options.lua`, `tests/test_schema.lua`, `LibKa0s/Widgets.lua` and `LibKa0s/Perf.lua`
+left on 2026-10-01 (below), and `LibKa0s/Slash.lua` came in and left again the same day. Largest
+first:
 
-- `testkit/mock_base.lua` (1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
+- `testkit/mock_base.lua` (1456, unchanged by kit revision 35, whose GetHeight comment rewrite
+  retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
   1452 with the shown-by-default flip's four comment lines, 1448 with
   `testkit/mock_events.lua`'s load, hook and install lines, 1446 before them — it was 1499 at kit
   revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that
   reason, and kit 22's recording surveys to `testkit/mock_record.lua` for the same one). The closest
   file to the cap, with 44 lines of room; its `RESULTS.md` re-check trigger is 1490 lines, or any kit
   change that adds more than 30 lines here.
-- `LibKa0s/OptionsWidgets.lua` (1423 with v1.65.0's combat-refusal line, measured 2026-10-01; 1422
-  new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
+- `LibKa0s/OptionsWidgets.lua` (1444 with minor 34's `RenderGrid` parent and gap, KickCD#10,
+  measured 2026-10-01, six under its 1450 re-check trigger; 1423 with v1.65.0's combat-refusal line;
+  1422 new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
 - `LibKa0s/OptionsIds.lua` (1359 at v1.65.0; 1358 new: the id peel), ruled below.
-- `tests/test_options.lua` (1339; 1307 at the 2026-09-23 write-out), issue #35.
-- `tests/test_schema.lua` (1335; 1101 when it was new at v1.55.0 with the Schema major, 1233 before
-  `LK-22` and `LK-23`), issue #38.
-- `LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0),
-  issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7).
-- `LibKa0s/OptionsTabs.lua` (1294 at v1.65.0; 1293 after the sweep moved its combat half to
+- `LibKa0s/OptionsTabs.lua` (1349 with minor 8's three `RenderTabbedSchema` opts, AbsorbTracker#32,
+  measured 2026-10-01, no member added and under its 1400 re-check trigger; 1294 at v1.65.0; 1293 after the sweep moved its combat half to
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
   `RenderTabbedSchema` took it the rest of the way), peeled then accepted, below.
-- `LibKa0s/Widgets.lua` (1303 with DL-LIB-01R's scroll inset cleared of the grip, measured 2026-09-30;
-  1298 with minor 11's resizable copy window; 1266 with `LK-21`'s minor 10, 1232 before it), issue #36.
 - `LibKa0s/Options.lua` (1282 with v1.65.0's combat-refusal lines and their one private member, `O.__combatRefused`, which fires the re-check trigger below and is re-ruled there; 1261 after the sweep moved its page registry to
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
   accepted, below.
 - `LibKa0s/OptionsIdList.lua` (1197 at v1.65.0; 1193 new: the id peel), ruled below.
 
+`LibKa0s/Perf.lua` left the band on 2026-10-01, 1307 → 975, closing issue
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7) in two peels at minor 14. The first moved the
+command surface, unchanged, to `LibKa0s/PerfCommands.lua` (230): 1319 → 1170, then 22 lines for #12's
+zero-count ancestors, 100 for #1's budgets and 15 for `GI-LK-11`'s `P.Context` reader table took it
+back to 1307. The second (`GI-LK-07R`, the addendum's A2) moved the issue's own seam, the capture,
+unchanged, to `LibKa0s/PerfSampler.lua` (418): the Shape B brackets and their free list, the
+measurement windows and the FPS sampler, `P.Start` through `P.Cancel`, and `P.Suspend` / `P.Resume`,
+paired on the probe's minor like the other two. The open depth went with the brackets, so the window
+edges reset it in their own file and `P.Reset` zeroes it through the function the installer hands
+back; the FPS arms and the completion pair are read through getters because `P.Reset` replaces
+them. What is left is the probe, the record and the report. **Re-check trigger: 1000 lines**; the
+report sections (`addFpsLines` through `lib.__budgetOver`, file-level already) are the next seam.
+`LibKa0s/Slash.lua` came into the band on 2026-10-01 and left it the same day, 1030 → 877: 999 at
+v1.65.0, 1006 with minor 19's resolver (issue #40), 1030 with `GI-LK-11`'s file-level descriptor
+helpers. `GI-LK-03R` (the addendum's A2) moved the seam its entry named, the parser block
+(`lib.ParseBool` through `lib.ParseValue`, with `enumList` and `allowedText`), unchanged, to
+`LibKa0s/SlashParse.lua` (195), a secondary file paired on the shell's minor; the cut
+`tests/test_slash_parse.lua` had already made on the suite side. **Re-check trigger: 1000 lines**;
+the profile verb (`lib.ProfileNames`, `Sl:ProfileSwitch`, `Sl:CliProfile`) is the next seam.
+`LibKa0s/Widgets.lua` left the band on 2026-10-01, 1303 → 655, closing issue #36: `ReorderList`,
+the row box and their machinery moved unchanged to `LibKa0s/WidgetsReorder.lua` (680) at Widgets
+minor 12, a secondary file paired on the shell's minor as `LibKa0s/WidgetsDragHandle.lua` is. The
+dropdown and the copy window stay; the copy window is the next seam if the file grows back.
+`tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page
+registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to
+`tests/test_options_render.lua` (373), the render/refresh seam the issue named plus the page-registry
+section beside it and `RefreshAllPanels`' fan-out case, without which the suite would have sat at
+1000, still on the band's edge. `tests/test_schema.lua` left the same day, 1335 → 705, closing
+issue #38: the write stage onward (the write seam, defaults, the bulk bracket and the profile
+reset's count), 41 of 73 cases, moved unchanged to `tests/test_schema_write.lua` (506), with the
+fixture constructors both suites read in `tests/fixture_schema.lua` (179). The reference
+degradation stub stays in `tests/test_schema.lua` beside the cases that pin it.
+
 Six left the band in the sweep, each on a seam named below: `testkit/test_prose.lua` 1486 → 750
 (issue #39, kit revision 29), `testkit/framework.lua` 1386 → 920 (kit revision 28; 984 at kit
-revision 31, with the runner's `--layout-cap-exempt` answer, sixteen under the band), and four
+revision 31, with the runner's `--layout-cap-exempt` answer; 994 at kit revision 35, whose
+inventory renderer split into helpers, six under the band), and four
 suites, `tests/test_widgets.lua` 1493 → 861 (issue #37), `tests/test_slash.lua` 1339 → 848,
 `tests/test_options_tabs.lua` 1218 → 954 and `tests/test_options_idsuggest.lua` 1002 → 691. The
 three that sat within fifteen lines of the cap, `testkit/test_prose.lua` and, at 1493,
@@ -300,15 +333,20 @@ Disposition cells point here:
 
 - `tests/test_options.lua` (1339) — issue [#35](https://github.com/tusharsaxena/LibKa0s/issues/35):
   the render/refresh block peels to `tests/test_options_render.lua`. This is the "owed a tracked ID"
-  the watch list carried with no ID.
+  the watch list carried with no ID. **Peeled 2026-10-01**: that block, the page-registry section
+  beside it and `RefreshAllPanels`' fan-out case are `tests/test_options_render.lua`, and the file is
+  988, out of the band.
 - `LibKa0s/Widgets.lua` (1266) — issue [#36](https://github.com/tusharsaxena/LibKa0s/issues/36):
-  per-widget files, `ReorderList` first.
+  per-widget files, `ReorderList` first. **Peeled 2026-10-01**: `ReorderList` is
+  `LibKa0s/WidgetsReorder.lua`, and the file is 655, out of the band.
 - `tests/test_widgets.lua` (1493) — issue [#37](https://github.com/tusharsaxena/LibKa0s/issues/37):
   split by widget family, the `ReorderList` and row-box cases first; its trigger is *any* new case.
   **Split 2026-09-26**: those cases are `tests/test_widgets_reorderlist.lua`, and the
   file is 861, out of the band.
 - `tests/test_schema.lua` (1335) — issue [#38](https://github.com/tusharsaxena/LibKa0s/issues/38):
-  split by pipeline stage, the write stage onward first.
+  split by pipeline stage, the write stage onward first. **Split 2026-10-01**: those cases are
+  `tests/test_schema_write.lua`, the shared constructors `tests/fixture_schema.lua`, and the file is
+  705, out of the band.
 - `testkit/test_prose.lua` (1486, still in the band after `LK-01` / `LK-07`) — issue
   [#39](https://github.com/tusharsaxena/LibKa0s/issues/39): the narrowing and coverage machinery
   peels to a kit module of its own at the next kit revision that touches the file.
@@ -388,6 +426,7 @@ never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests
 |---|---|
 | [`README.md`](README.md) | What each module is, how to install and re-vendor, the repo layout |
 | [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Compat`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
+| [`docs/api/CONSUMERS.md`](docs/api/CONSUMERS.md) | The consumer census: for every public export, which hosts call it (file:line), each textual hit classified as call / host duplicate / degradation stub, and a verdict on every zero-consumer export. Stamped with the version it measured; re-run with the tool it names after a release that adds a surface |
 | [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
 | [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-analysis/README.md` points at rather than restating |
 | [`docs/adoption-prompt.md`](docs/adoption-prompt.md) | The brief handed to a consumer repo adopting a major: what to wire, what to delete, and what must not be hand-rolled |

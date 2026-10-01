@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **27** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **33** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **2** · `OptionsTabs.lua` **7** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same ten numbers `lib.MODULES` reports. |
 | Shipped in | v1.65.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 26.1.32.1.1.6.1.7.4.1](./version-26.1.32.1.1.6.1.7.4.1-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 27.2.34.2.2.7.1.7.4.2](./version-27.2.34.2.2.7.1.7.4.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 27, OptionsRegistry = 2, OptionsWidgets = 33, OptionsIds = 2, OptionsIdList = 2, OptionsTabs = 7, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }` |
 
@@ -2198,3 +2198,11 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 27.2.34.2.2.7.1.7.4.2
+
+**Take it; nothing moves for a two-argument `RenderGrid` call.** `OptionsWidgets.lua` moves to minor
+**34**. `RenderGrid` gains an optional `parent` (the container, defaulting to the page scroll) and
+an optional `opts.gap` (the spacer after each row, `false` or `0` for none). A wide item that raised,
+or a `make` that answers exactly `false`, now leaves no blank row and no gap. No other member, row
+field, string or floor moves. See [version 27.2.34.2.2.7.1.7.4.2](./version-27.2.34.2.2.7.1.7.4.2-docs.md).

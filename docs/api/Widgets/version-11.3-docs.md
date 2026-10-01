@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **11** · `WidgetsDragHandle.lua` minor **3** |
 | Shipped in | v1.64.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 10.3](./version-10.3-docs.md) — a fixed-size copy window |
-| Superseded by | — |
+| Superseded by | [version 12.1.3](./version-12.1.3-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 11, WidgetsDragHandle = 3 }` |
 
 ## What changed at 11.3
@@ -866,3 +866,11 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
+
+## Moving to version 12.1.3
+
+**Take it; nothing in a host's code or its degradation stub changes.** The next version is key
+12.1.3: `Widgets.lua` 12, the new `WidgetsReorder.lua` 1 and `WidgetsDragHandle.lua` still 3.
+`ReorderList` and `ROW_BOX` moved unchanged from `Widgets.lua` to `WidgetsReorder.lua`, paired on the
+shell's minor. No member, `opts` field or controller method changes. Re-vendor the whole folder, as
+always; the load list derives from `LibKa0s.xml`. See [version 12.1.3](./version-12.1.3-docs.md).

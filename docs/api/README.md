@@ -68,10 +68,10 @@ the file you need:
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsDragHandle>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
-| `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
+| `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
-| `LibKa0s-Perf-1.0` | `<Perf>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
+| `LibKa0s-Perf-1.0` | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
 
 A multi-file major gets a composite key because its files carry **independent** minors that really do
 diverge — the Options major has passed through `O3/W2`, `O3/W3`, `O4/W4` and `O4/W5`. Keying on one
@@ -168,7 +168,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [11.3](./Widgets/version-11.3-docs.md) | `Widgets.lua` 11 · `WidgetsDragHandle.lua` 3 | v1.64.0 | **Current** |
+| [12.1.3](./Widgets/version-12.1.3-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 3 | v1.66.0 | **Current** |
+| [11.3](./Widgets/version-11.3-docs.md) | `Widgets.lua` 11 · `WidgetsDragHandle.lua` 3 | v1.64.0 – v1.65.0 | Superseded |
 | [10.3](./Widgets/version-10.3-docs.md) | `Widgets.lua` 10 · `WidgetsDragHandle.lua` 3 | v1.59.0 – v1.63.0 | Superseded |
 | [10.2](./Widgets/version-10.2-docs.md) | `Widgets.lua` 10 · `WidgetsDragHandle.lua` 2 | v1.56.0 – v1.58.0 | Superseded |
 | [9.2](./Widgets/version-9.2-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 2 | v1.48.1 – v1.55.0 | Superseded |
@@ -187,7 +188,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [18.2.1](./DebugLog/version-18.2.1-docs.md) | `DebugLog.lua` 18 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.65.0 | **Current** |
+| [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 | **Current** |
+| [18.2.1](./DebugLog/version-18.2.1-docs.md) | `DebugLog.lua` 18 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.65.0 | Superseded |
 | [17.2](./DebugLog/version-17.2-docs.md) | `DebugLog.lua` 17 · `DebugLogDiagnostics.lua` 2 | v1.64.0 | Superseded |
 | [16.1](./DebugLog/version-16.1-docs.md) | `DebugLog.lua` 16 · `DebugLogDiagnostics.lua` 1 | none (superseded inside v1.64.0 before the tag was published) | Superseded |
 | [15.1](./DebugLog/version-15.1-docs.md) | `DebugLog.lua` 15 · `DebugLogDiagnostics.lua` 1 | none (superseded inside v1.64.0 before the tag was published) | Superseded |
@@ -208,7 +210,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [18](./Slash/version-18-docs.md) | `Slash.lua` 18 | v1.65.0 | **Current** |
+| [19.1](./Slash/version-19.1-docs.md) | `Slash.lua` 19 · `SlashParse.lua` 1 | v1.66.0 | **Current** |
+| [18](./Slash/version-18-docs.md) | `Slash.lua` 18 | v1.65.0 | Superseded |
 | [17](./Slash/version-17-docs.md) | `Slash.lua` 17 | v1.63.0 – v1.64.0 | Superseded |
 | [16](./Slash/version-16-docs.md) | `Slash.lua` 16 | v1.60.0 – v1.62.0 | Superseded |
 | [15](./Slash/version-15-docs.md) | `Slash.lua` 15 | v1.56.0 – v1.59.0 | Superseded |
@@ -238,7 +241,9 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [27.2.33.2.2.7.1.7.4.2](./Options/version-27.2.33.2.2.7.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 33 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 7 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.65.0 | **Current** |
+| [27.2.34.2.2.8.1.7.4.2](./Options/version-27.2.34.2.2.8.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.66.0 | **Current** |
+| [27.2.34.2.2.7.1.7.4.2](./Options/version-27.2.34.2.2.7.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 7 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | none (superseded inside v1.66.0 before the tag was published) | Superseded |
+| [27.2.33.2.2.7.1.7.4.2](./Options/version-27.2.33.2.2.7.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 33 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 7 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.65.0 | Superseded |
 | [26.1.32.1.1.6.1.7.4.1](./Options/version-26.1.32.1.1.6.1.7.4.1-docs.md) | `Options.lua` 26 · `OptionsRegistry.lua` 1 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 6 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | v1.62.0 – v1.64.0 | Superseded |
 | [25.32.1.1.6.1.7.4.1](./Options/version-25.32.1.1.6.1.7.4.1-docs.md) | `Options.lua` 25 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 6 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | unreleased | Superseded |
 | [25.32.1.1.5.7.4.1](./Options/version-25.32.1.1.5.7.4.1-docs.md) | `Options.lua` 25 · `OptionsWidgets.lua` 32 · `OptionsIds.lua` 1 · `OptionsIdList.lua` 1 · `OptionsTabs.lua` 5 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 1 | unreleased | Superseded |
@@ -289,7 +294,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [13.6](./Perf/version-13.6-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 6 | v1.64.0 | **Current** |
+| [14.1.1.6](./Perf/version-14.1.1.6-docs.md) | `Perf.lua` 14 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.66.0 | **Current** |
+| [13.6](./Perf/version-13.6-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 6 | v1.64.0 – v1.65.0 | Superseded |
 | [13.5](./Perf/version-13.5-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 5 | v1.56.0 – v1.63.0 | Superseded |
 | [12.5](./Perf/version-12.5-docs.md) | `Perf.lua` 12 · `PerfPanel.lua` 5 | v1.40.0 – v1.55.0 | Superseded |
 | [11.5](./Perf/version-11.5-docs.md) | `Perf.lua` 11 · `PerfPanel.lua` 5 | v1.31.0 | Superseded |
@@ -310,7 +316,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [34](./testkit/version-34-docs.md) | same files; `test_diagnostics_contract.lua` follows `debug-logging-§14` at v2.71.0: the case "the report lands with logging off and leaves it off" is retired for "the report lands with logging off and turns it on for the session" (one `[Debug] logging enabled` line, before the begin marker), an opt-out case (the flag stays off, no enable line) and an already-on case (no second enable line), with one new optional fact, `Kit.diagnostics.enablesLogging = false`, for an addon whose descriptor opts out; the case for the choice not declared is a declared skip. `Kit.VERSION` is 34. No member, mock or runner output changes | v1.64.0 | **Current** |
+| [35](./testkit/version-35-docs.md) | same files **plus `lizard_sighted.lua` and `test_lizard_sighted.lua`**: `run-automated-tests.sh`'s complexity suite runs the fixed lizard command over a sanitized shadow of the tree (`#` blanked, the Ruby-like reader's `it` / `class` / `module` / `begin` / `unless` renamed, `function a:b(` rewritten to `function a.b(self, `, line numbers kept), then compares each file's `function` tokens with the functions lizard listed: any mismatch records `complexity` as `fail` (verdict `amber`, never red), names the files, and counts them in the new `suites.complexity.blindFiles`; with no Lua to build the shadow the suite is a skip. The kit's fifth suite pins the sanitizer, and `inventory.lua`'s gate-rule table gains its row. `mock_base.lua`'s geometry comment retires the planned GetHeight flip (LibKa0s#17–#20), with no line added. `Kit.VERSION` is 35. No member or mock behavior changes | v1.66.0 | **Current** |
+| [34](./testkit/version-34-docs.md) | same files; `test_diagnostics_contract.lua` follows `debug-logging-§14` at v2.71.0: the case "the report lands with logging off and leaves it off" is retired for "the report lands with logging off and turns it on for the session" (one `[Debug] logging enabled` line, before the begin marker), an opt-out case (the flag stays off, no enable line) and an already-on case (no second enable line), with one new optional fact, `Kit.diagnostics.enablesLogging = false`, for an addon whose descriptor opts out; the case for the choice not declared is a declared skip. `Kit.VERSION` is 34. No member, mock or runner output changes | v1.64.0 – v1.65.0 | Superseded |
 | [33](./testkit/version-33-docs.md) | same files **plus `mock_resize.lua`**: every tracked mock frame records the resize surface (`SetResizable` / `IsResizable`, `SetResizeBounds` / `GetResizeBounds` answering four numbers, `StartSizing` recording its point, `StopMovingOrSizing` counted, `SetUserPlaced` / `IsUserPlaced`), with `StartSizing` and `StartMoving` marking a frame user-placed as the client does; `mock_base.lua` loads the file and passes each frame through it. `Kit.VERSION` is 33. No member, case name or runner output changes | none (superseded inside v1.64.0 before the tag was published) | Superseded |
 | [32](./testkit/version-32-docs.md) | same files; `README.md` only: its count of the places the file is byte-identical in (thirteen: `testkit/`, this repo's `tests/_kit/` and eleven consumers') and of the repositories that run the kit's gates (twelve), both one short since the collection's eleventh consumer. `Kit.VERSION` is 32. No code, member, case name or mock changes | v1.63.0 | Superseded |
 | [31](./testkit/version-31-docs.md) | same files; `run-automated-tests.sh`'s band table leaves out the files `layout-§1`'s generated-data carve-out exempts, asking the repo's own `tests/run.lua` through a new `--layout-cap-exempt PATH...` flag that `Kit.run` answers from `Kit.layoutCap.exempt` with the matching rule `test_layout_cap.lua` now calls too (`Kit.__layoutCapCovers`), names what it left out under the table, and stops counting it in `bandFiles` / `overCapFiles` (the 2026-09-26 sweep's ATS-21). No public member, case name or mock changes | v1.62.0 | Superseded |
@@ -389,6 +396,7 @@ adopter on an old copy reads what their copy actually does.
 | Document | What it covers | Compatibility rule |
 |---|---|---|
 | [`../record-schema.md`](../record-schema.md) | The Perf capture record persisted to SavedVariables | **Clean break allowed** — schema 2 discarded schema 1 with no migration |
+| [`CONSUMERS.md`](CONSUMERS.md) | Who calls each public export, per host, with every zero-consumer export's verdict | A census, stamped with the version it measured; restamped, never versioned by folder |
 | [`../releasing.md`](../releasing.md) | Version numbering, release order, the re-vendor rule, the Consumers table | — |
 | [`../../testkit/README.md`](../../testkit/README.md) | What the test kit *is* and how to vendor it — its surface is [above](#testkit) | Never ships; byte-identity enforced |
 

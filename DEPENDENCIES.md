@@ -29,12 +29,12 @@ Three tools. Only the first has a version that matters.
 |---|---|---|---|
 | `lua5.1` | **5.1 exactly — a hard requirement** | Lua 5.1.5 | The headless harness sets each chunk's environment with **`setfenv`** (`testkit/loader.lua:72` and `:91`), which exists only in Lua 5.1. |
 | `luacheck` | any recent | 1.2.0 | The `lint` suite — `luacheck .`, the gating half of the green gate. |
-| `lizard` | any recent | 1.24.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). |
+| `lizard` | 1.24.0 | 1.24.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). The kit's sighted shadow (`testkit/lizard_sighted.lua`, kit revision 35) is written against 1.24.0's Lua reader; another version still runs, and its own blind spots surface as parity failures rather than as a quiet undercount. |
 
 The "verified with" column is the toolchain of the last recorded run,
-[`docs/automated-tests/20261001-001312/manifest.json`](docs/automated-tests/20261001-001312/manifest.json)
-→ `host` — evidence, not a pin. `luacheck` and `lizard` are pinned nowhere and pinning them would be
-false precision; `lua5.1` is not a preference. "5.2 will probably work" is **false**, and it costs an
+[`docs/automated-tests/20261001-133255/manifest.json`](docs/automated-tests/20261001-133255/manifest.json)
+→ `host` — evidence, not a pin. `luacheck` is pinned nowhere and pinning it would be false precision;
+`lizard` is named rather than pinned (see its row); `lua5.1` is not a preference. "5.2 will probably work" is **false**, and it costs an
 hour to disprove: 5.2 removed `setfenv`, and the loader is the first thing every suite touches.
 
 Also assumed present, and not installed separately on any normal WSL2 / Ubuntu box:
@@ -123,7 +123,7 @@ From the repo root, with the development set installed:
 ```sh
 lua5.1 tests/run.lua                                # the headless suite — 0 failed
 luacheck .                                          # 0 warnings / 0 errors (file count: RESULTS.md)
-lizard -l lua -x "./libs/*" -x "./tests/_kit/*" .   # recorded; 0 functions above CCN 15
+tests/_kit/run-automated-tests.sh --no-bundle --suite complexity   # sighted lizard; 0 functions above CCN 15
 tests/_kit/run-automated-tests.sh                   # all of the above, frozen into a bundle
 ```
 

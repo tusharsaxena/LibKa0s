@@ -97,6 +97,10 @@ All pure; none holds per-host state. Lib-level so a host that keeps its own seam
 | `lib.STRINGS` | 1 | `NOT_FOUND = "Setting not found: %s"`, `INVALID = "Invalid value for %s"`, `NO_ROOT = "Setting has nowhere to be stored yet: %s"`. |
 | `lib:New(descriptor)` | 1 | One runtime for one host. Raises `LibKa0s-Schema-1.0: descriptor.rows must be a table`. |
 
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `lib.STRINGS`: no consumer as of v1.66.0, kept because it is the English fallback every refusal resolves through; hosts override by key through the descriptor's `L`.
+
 `pathOrParts` is a path string (split through `SplitPath`) or an already-split array, which is what
 lets a host whose resolver consumed a leading `container.` segment pass its parts and a `first` of 2.
 
@@ -336,7 +340,8 @@ it never refuses.
 
 ## Hard invariants
 
-Each of these has a case in `tests/test_schema.lua`.
+Each of these has a case in `tests/test_schema.lua` or, from the write seam onward,
+`tests/test_schema_write.lua`.
 
 1. An unknown path is refused, and a refused write — unknown path, `validate`, missing root — stores
    nothing and calls nothing.

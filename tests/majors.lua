@@ -61,9 +61,12 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Widgets-1.0",
-    files = { "Widgets", "WidgetsDragHandle" },
+    files = { "Widgets", "WidgetsReorder", "WidgetsDragHandle" },
     primary = "Widgets",
-    paired = { { file = "WidgetsDragHandle", minorField = "__dragMinor", probeField = "__dragShellMinor" } },
+    paired = {
+      { file = "WidgetsReorder",    minorField = "__reorderMinor", probeField = "__reorderShellMinor" },
+      { file = "WidgetsDragHandle", minorField = "__dragMinor",    probeField = "__dragShellMinor" },
+    },
   },
   {
     major = "LibKa0s-DebugLog-1.0",
@@ -76,8 +79,9 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Slash-1.0",
-    files = { "Slash" },
+    files = { "Slash", "SlashParse" },
     primary = "Slash",
+    paired = { { file = "SlashParse", minorField = "__parseMinor", probeField = "__parseShellMinor" } },
   },
   {
     major = "LibKa0s-Launcher-1.0",
@@ -102,9 +106,13 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Perf-1.0",
-    files = { "Perf", "PerfPanel" },
+    files = { "Perf", "PerfSampler", "PerfCommands", "PerfPanel" },
     primary = "Perf",
-    paired = { { file = "PerfPanel", minorField = "__panelMinor", probeField = "__panelProbeMinor" } },
+    paired = {
+      { file = "PerfSampler",  minorField = "__samplerMinor",  probeField = "__samplerShellMinor" },
+      { file = "PerfCommands", minorField = "__commandsMinor", probeField = "__commandsShellMinor" },
+      { file = "PerfPanel",    minorField = "__panelMinor",    probeField = "__panelProbeMinor" },
+    },
   },
 }
 return MAJORS

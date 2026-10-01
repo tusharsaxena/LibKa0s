@@ -141,7 +141,10 @@ end)
 test("widgets: disabledFor false draws no notice and live rows; a raising one reads as enabled",
 function()
   -- red under: drawing the notice unconditionally, or calling the predicate unguarded.
-  for _, pred in ipairs({ function() return false end, function() error("predicate bug") end }) do
+  -- Hoisted out of the `for` header: lizard 1.24.0 lists no function literal written there, and the
+  -- sighted complexity suite's parity check reads that as a blind file (kit revision 35).
+  local predicates = { function() return false end, function() error("predicate bug") end }
+  for _, pred in ipairs(predicates) do
     local O, _, ctx = bench()
     O.RenderTabbedSchema(ctx, "tabbed", nil, nil,
       { disabledFor = pred, disabledNotice = "never shown" })
@@ -187,6 +190,140 @@ test("widgets: chrome is called once per render, after the strip and before the 
   ctx.__tabKids[2]:__fire("OnClick")
   assertEqual(#calls, 2, "a tab click is a render, and it calls chrome once more")
   assertEqual(drawn(ctx)[1], "TEXT:above every tab")
+end)
+
+-- ── minor 8: untabbedSkipRender, disabledReplaces, rerender (AbsorbTracker#32) ──────────────
+--
+-- All three are off by default, and the default cases below pin today's behavior for the ten
+-- consumers that pass none of them: BankLedger's Filters group is all skipRender and drawn by an
+-- afterGroup hook, and LootHistory's skipRender row keeps its subgroup heading.
+
+--- A page with an all-skipRender group ("Link") between two drawable ones; Beta mixes a drawn row
+--- with a skipRender one.
+local function linkPage()
+  local rows = {
+    { path = "tabAlpha", page = "linked", group = "Alpha", type = "bool", label = "Alpha one" },
+    { path = "mirror",   page = "linked", group = "Link",  type = "bool", label = "Mirror",
+      skipRender = true },
+    { path = "tabBeta",  page = "linked", group = "Beta",  type = "bool", label = "Beta one" },
+    { path = "betaOwn",  page = "linked", group = "Beta",  type = "bool", label = "Beta own",
+      skipRender = true },
+  }
+  return bench({ rowsForPage = function() return rows end })
+end
+
+test("widgets: without untabbedSkipRender an all-skipRender group is still a tab (default)", function()
+  local O, _, ctx = linkPage()
+  local groups, keys = O.RenderTabbedSchema(ctx, "linked")
+  assertEqual(table.concat(groups, "|"), "Alpha|Link|Beta")
+  assertEqual(table.concat(keys, "|"), "Alpha|Link|Beta", "today's strip, unchanged")
+end)
+
+test("widgets: untabbedSkipRender drops an all-skipRender group's tab and keeps a mixed one",
+function()
+  -- red under: minor 7, which ignores the flag and draws a Link tab.
+  local O, _, ctx = linkPage()
+  local opts = { untabbedSkipRender = true }
+  local groups, keys = O.RenderTabbedSchema(ctx, "linked", nil, nil, opts)
+  assertEqual(table.concat(keys, "|"), "Alpha|Beta", "no Link tab")
+  assertEqual(table.concat(groups, "|"), "Alpha|Link|Beta", "the groups are still the groups")
+  ctx.__tabKids[2]:__fire("OnClick")
+  assertEqual(ctx.activeTab, "Beta")
+  local labels = table.concat(drawn(ctx), "|")
+  assertTrue(labels:find("Beta one", 1, true) ~= nil, "the mixed group's drawable row is drawn")
+  assertNil(labels:find("Beta own", 1, true), "and its skipRender row still is not")
+end)
+
+test("widgets: untabbedSkipRender keeps an all-skipRender group a hook or host tab claims", function()
+  -- red under: dropping every all-skipRender group, which would cost BankLedger its Filters tab.
+  local O, _, ctx = linkPage()
+  local hook = { Link = function(c) O.TextRow(c, "link hook") end }
+  local _, keys = O.RenderTabbedSchema(ctx, "linked", hook, nil, { untabbedSkipRender = true })
+  assertEqual(table.concat(keys, "|"), "Alpha|Link|Beta", "an afterGroup hook keeps it, in place")
+
+  local O2, _, ctx2 = linkPage()
+  local host = { key = "Link", label = "Linked", render = function() end }
+  local _, keys2 = O2.RenderTabbedSchema(ctx2, "linked", nil, nil,
+    { untabbedSkipRender = true, tabs = { host } })
+  assertEqual(table.concat(keys2, "|"), "Alpha|Link|Beta", "a host tab keyed by it keeps it, in place")
+end)
+
+--- O.TextRow spied, so a case can read the font each line was asked for.
+local function spyTextRow(O)
+  local fonts, real = {}, O.TextRow
+  O.TextRow = function(c, text, o)
+    fonts[#fonts + 1] = { text = text, font = o and o.fontObject }
+    return real(c, text, o)
+  end
+  return fonts
+end
+
+test("widgets: disabledReplaces draws the notice instead of the rows and host tab", function()
+  -- red under: minor 7, which draws the notice above rows that are still drawn.
+  local O, _, ctx = bench()
+  local fonts = spyTextRow(O)
+  O.RenderTabbedSchema(ctx, "tabbed", nil, nil, {
+    disabledFor = function() return true end, disabledNotice = "linked",
+    disabledReplaces = true, disabledNoticeFont = "GameFontNormal",
+  })
+  assertEqual(table.concat(drawn(ctx), "|"), "TEXT:linked", "the notice and nothing else")
+  assertEqual(fonts[1].font, "GameFontNormal", "in the font the host asked for")
+
+  local O2, _, ctx2 = bench()
+  local rendered = 0
+  ctx2.activeTab = "Custom"
+  O2.RenderTabbedSchema(ctx2, "tabbed", nil, nil, {
+    tabs = { { key = "Custom", label = "Custom", render = function() rendered = rendered + 1 end } },
+    disabledFor = function() return true end, disabledNotice = "linked", disabledReplaces = true,
+  })
+  assertEqual(rendered, 0, "the active host tab is not rendered either")
+end)
+
+test("widgets: without disabledReplaces the notice is small and the rows still draw (default)",
+function()
+  local O, _, ctx = bench()
+  local fonts = spyTextRow(O)
+  O.RenderTabbedSchema(ctx, "tabbed", nil, nil,
+    { disabledFor = function() return true end, disabledNotice = "linked" })
+  assertEqual(fonts[1].font, "GameFontHighlightSmall", "the notice's font is unchanged")
+  local labels = table.concat(drawn(ctx), "|")
+  assertTrue(labels:find("Alpha one", 1, true) ~= nil, "the rows are still drawn under it")
+end)
+
+test("widgets: rerender takes over a tab click: activeTab set, no ClearScroll, refreshers kept",
+function()
+  -- red under: minor 7, which clears the scroll (and with it ctx.refreshers) and re-renders itself.
+  local O, _, ctx = bench()
+  local calls = {}
+  O.RenderTabbedSchema(ctx, "tabbed", nil, nil,
+    { rerender = function(c) calls[#calls + 1] = { c = c, tab = c.activeTab } end })
+  local mine = function() end
+  ctx.refreshers[#ctx.refreshers + 1] = mine
+  local cleared = 0
+  local realClear = O.ClearScroll
+  O.ClearScroll = function(...) cleared = cleared + 1; return realClear(...) end
+  ctx.__tabKids[2]:__fire("OnClick")
+  O.ClearScroll = realClear
+  assertEqual(#calls, 1, "the host redraws, once")
+  assertTrue(calls[1].c == ctx, "handed the page's ctx")
+  assertEqual(calls[1].tab, "Beta", "with activeTab already set to the clicked tab")
+  assertEqual(cleared, 0, "the library did not clear the scroll itself")
+  assertTrue(ctx.refreshers[#ctx.refreshers] == mine, "a refresher the host appended survives")
+end)
+
+test("widgets: a raising rerender is reported and the strip stays usable", function()
+  -- red under: calling rerender unguarded, which raises out of the tab button's OnClick.
+  local O, rec, ctx = bench()
+  local calls = 0
+  O.RenderTabbedSchema(ctx, "tabbed", nil, nil,
+    { rerender = function() calls = calls + 1; error("host redraw bug") end })
+  rec.chat = {}
+  local ok, err = pcall(ctx.__tabKids[2].__fire, ctx.__tabKids[2], "OnClick")
+  assertTrue(ok, "the click did not raise: " .. tostring(err))
+  assertTrue(table.concat(rec.chat, "\n"):find("host redraw bug", 1, true) ~= nil, "reported")
+  ctx.__tabKids[3]:__fire("OnClick")
+  assertEqual(ctx.activeTab, "Gamma", "a later click still switches")
+  assertEqual(calls, 2)
 end)
 
 test("widgets: with OptionsTabs.lua absent RenderTabbedSchema takes opts and renders untabbed",

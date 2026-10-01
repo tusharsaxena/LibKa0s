@@ -227,6 +227,7 @@ test("the rule each kit gate serves is written down", function()
   assertEqual(Kit.__kitGateRule.test_prose, "localization-§5")
   assertEqual(Kit.__kitGateRule.test_eol, "line-endings-§7")
   assertEqual(Kit.__kitGateRule.test_layout_cap, "layout-§1")
+  assertEqual(Kit.__kitGateRule.test_lizard_sighted, "automated-tests-§3")
 end)
 
 -- documentation-§6 spells a citation `<section-file>-§<N>`, and a kit string is printed into a
@@ -336,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 34", function()
-  assertEqual(Kit.VERSION, 34, "v1.64.0 ships revision 34, whose diagnostics run turns logging on")
-  assertEqual(T.KIT_VERSION, 34, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 35", function()
+  assertEqual(Kit.VERSION, 35, "v1.66.0 ships revision 35, whose complexity suite measures a sighted shadow")
+  assertEqual(T.KIT_VERSION, 35, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

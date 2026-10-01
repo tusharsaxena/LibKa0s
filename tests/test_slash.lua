@@ -846,3 +846,65 @@ test("slash: format beats colorDecode at the get, set and reset echoes, and colo
   end)
 
 -- The disabled gate (minor 12) is in tests/test_slash_disabled.lua.
+
+-- ── the descriptor's defaults (characterization, GI-LK-11) ─────────────────────────────────
+--
+-- Pinned before `lib:New`'s descriptor reads moved to file-level helpers, so the move is held to
+-- every default it had: a field of the wrong type is read as absent, never raised on.
+
+test("sl: New refuses a non-table descriptor, an empty slash and non-table commands, in its own words", function()
+  local function refusal(d)
+    return tostring(T.assertError(function() slash:New(d) end, "must be refused"))
+  end
+  T.assertTrue(refusal("not a table"):find("descriptor.slash", 1, true) ~= nil, "a non-table reads as empty")
+  T.assertTrue(refusal({ slash = "", commands = {} }):find("descriptor.slash", 1, true) ~= nil, "empty slash")
+  T.assertTrue(refusal({ slash = "/th", commands = "x" }):find("descriptor.commands", 1, true) ~= nil,
+    "commands must be a table")
+  T.assertTrue(refusal({ slash = "/th", commands = {}, isEnabled = function() end, brandName = "" })
+    :find("brandName", 1, true) ~= nil, "an empty brandName is no brandName")
+  T.assertTrue(slash:New({ slash = "/th", commands = {}, isEnabled = true }) ~= nil,
+    "an isEnabled that is not a function is no gate, so no brandName is owed")
+end)
+
+test("sl: with no print the dispatcher writes to DEFAULT_CHAT_FRAME", function()
+  local saved, seen = T.mocks.DEFAULT_CHAT_FRAME, {}
+  T.mocks.DEFAULT_CHAT_FRAME = { AddMessage = function(_, line) seen[#seen + 1] = line end }
+  local ok, err = pcall(function() F.new({ print = false }):OnSlash("bogus") end)
+  T.mocks.DEFAULT_CHAT_FRAME = saved
+  assertEqual(ok, true, tostring(err))
+  T.assertTrue(#seen > 0 and seen[1]:find("unknown command 'bogus'", 1, true) ~= nil,
+    "the refusal reached the chat frame: " .. tostring(seen[1]))
+end)
+
+test("sl: with no groupKey the list groups rows by page, and a row with none under 'settings'", function()
+  local rows = {
+    { path = "a", type = "bool", default = false },
+    { path = "b", page = "general", type = "bool", default = true },
+  }
+  local out = {}
+  local Sl = slash:New({
+    slash = "/th", commands = {}, groupKey = "not a function",
+    print = function(line) out[#out + 1] = line end,
+    allRows = function() return rows end, get = function() return false end,
+  })
+  Sl:CliList()
+  local text = plain(table.concat(out, "\n"))
+  T.assertTrue(text:find("[settings]", 1, true) ~= nil, "the page-less row's heading: " .. text)
+  T.assertTrue(text:find("[general]", 1, true) ~= nil, "the paged row's heading: " .. text)
+end)
+
+test("sl: an L, aliases or liveVerbs that is not a table, and a parse that is not a function, read as absent", function()
+  local Sl, rec = F.new({ L = "x", aliases = "x", parse = "x" })
+  assertEqual(Sl:Text("UNKNOWN_COMMAND"), slash.STRINGS.UNKNOWN_COMMAND, "the library's own wording")
+  Sl:OnSlash("options")
+  T.assertTrue(rec.chat[1]:find("unknown command 'options'", 1, true) ~= nil,
+    "the fixture's `options` alias is gone: " .. tostring(rec.chat[1]))
+  rec.chat = {}
+  Sl:CliSet("units.player.barWidth 300")
+  assertEqual(rec.store["units.player.barWidth"], 300, "the library's parser read the value")
+  local down, downRec = F.new({ isEnabled = function() return false end, brandName = "Ka0s Test Host",
+    liveVerbs = "x" })
+  down:OnSlash("version")
+  T.assertTrue(plain(downRec.chat[1] or ""):find("1.2.3", 1, true) ~= nil,
+    "the library's LIVE_VERBS still lets `version` run while disabled: " .. tostring(downRec.chat[1]))
+end)

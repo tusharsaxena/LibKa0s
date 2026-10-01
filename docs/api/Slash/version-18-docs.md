@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Slash-1.0` |
 | Files and minors | `Slash.lua` minor **18** |
 | Shipped in | v1.65.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 17](./version-17-docs.md) — whose refusals reached chat only |
-| Superseded by | — |
+| Superseded by | [version 19.1](./version-19.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 18 }` |
 
@@ -951,3 +951,13 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
+
+## Moving to version 19.1
+
+**Take it; the wording moves only where a host's `L` asked for it.** Version 19.1 (`Slash.lua` 19,
+the new `SlashParse.lua` 1, which holds the parser, moved unchanged) hands the instance's
+`Sl:Text` to `lib.ParseValue` and `lib.FormatValue` as an optional third argument, so a host's `L`
+reaches every parse refusal (`ERR_BOOL`, `ERR_NUMBER`, `ERR_STRING`, `ERR_ALLOWED`, `ERR_COLOR`,
+`ERR_TYPE`) and the empty-string `NONE`. A two-argument call answers exactly as here. A host `parse`
+is handed the resolver as a third argument; one that delegates to `lib.ParseValue` should pass it on.
+Un-mark any of those keys a host's table kept as dead. See [version 19.1](./version-19.1-docs.md).

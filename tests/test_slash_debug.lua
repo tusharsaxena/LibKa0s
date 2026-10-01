@@ -54,9 +54,9 @@ end
 
 -- ── the version ────────────────────────────────────────────────────────────────────────────
 
-test("sl debug: Slash is at minor 18", function()
-  assertEqual(slash.MINOR, 18)
-  assertEqual(slash.MODULES.Slash, 18)
+test("sl debug: Slash is at minor 18 or later", function()
+  T.assertTrue(slash.MINOR >= 18, "the debug seam arrived at minor 18")
+  assertEqual(slash.MODULES.Slash, slash.MINOR)
 end)
 
 -- ── one line per refusal ───────────────────────────────────────────────────────────────────

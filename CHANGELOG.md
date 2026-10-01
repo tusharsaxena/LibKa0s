@@ -10,6 +10,244 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.66.0 — 2026-10-01
+
+Versions in this release: **Slash minor 19** and the new **SlashParse minor 1** (`LibKa0s-Slash-1.0`
+19.1), **Widgets minor 12** and the
+new **WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragHandle` 3),
+**DebugLog minor 19** (`LibKa0s-DebugLog-1.0` 19.2.1, with `DebugLogDiagnostics` 2 and
+`DebugLogGates` 1), **OptionsWidgets minor 34** and **OptionsTabs minor 8**
+(`LibKa0s-Options-1.0` 27.2.34.2.2.8.1.7.4.2, with `Options` 27, `OptionsRegistry` 2, `OptionsIds` 2,
+`OptionsIdList` 2, `OptionsCombat` 1, `OptionsCompose` 7, `OptionsScroll` 4 and `OptionsNav` 2), and
+**Perf minor 14** and the new **PerfSampler minor 1** and **PerfCommands minor 1** (`LibKa0s-Perf-1.0`
+14.1.1.6, with `PerfPanel` 6).
+Every other file is unchanged from v1.65.0: `Core` 9, `Env` 1, `Compat` 1, `Lifecycle` 3, `Bus` 2,
+`Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Launcher` 5. The test kit moves to **revision 35**. No
+`NEEDS_*` floor rises and no major is added; four payload files are added (`WidgetsReorder.lua`,
+loaded by `LibKa0s.xml` after `Widgets.lua`, `SlashParse.lua` after `Slash.lua`, and `PerfSampler.lua`
+and `PerfCommands.lua`, in that order after `Perf.lua`), so the library is **fifteen majors across
+thirty-two files**. Built to the Ka0s WoW Addon Standard **v2.74.0**, the version whose
+`automated-tests-§3` makes the sighted complexity gate a MUST (WowAddonStandards#6) and reads a
+complexity warning as a function above CCN 15 alone, the length threshold sitting at `layout-§1`'s
+file cap.
+
+This is the library's half of the 2026-10-01 GitHub issue pass. It closes LibKa0s#1 (report-only
+Perf budgets), LibKa0s#7 (the Perf command surface and capture peeled), LibKa0s#12 (a declared parent that never
+fired is in the record), LibKa0s#35 and LibKa0s#38 (two test suites split out of the 1000–1500
+band), LibKa0s#36 (`ReorderList` peeled) and LibKa0s#40 (the host's `L` reaches every parse
+refusal); it carries the library changes KickCD#10 (`RenderGrid`'s `parent` and `opts.gap`) and
+AbsorbTracker#32 (three opt-in `RenderTabbedSchema` fields) need before those hosts adopt them; and
+it ships kit revision 35's sighted complexity suite for WowAddonStandards#6, with every function
+that suite revealed here brought to CCN 15 or under. Every new field is opt-in: a host that changes
+nothing draws, prints and records what it did on v1.65.0.
+
+### Slash minor 19: the host's `L` reaches every parse refusal and the empty-string `(none)` (issue #40)
+
+- **`lib.ParseValue(row, text, textOf)` and `lib.FormatValue(row, v, textOf)`** take an optional
+  key -> string resolver. The instance passes `Sl:Text`, so a host's `L` now reaches `ERR_BOOL`,
+  `ERR_NUMBER`, `ERR_STRING`, `ERR_ALLOWED`, `ERR_COLOR`, `ERR_TYPE` and `NONE`, which the
+  file-level parsers and the `string` formatter read straight from `lib.STRINGS` through minor 18.
+  A host's own `parse` is handed the resolver as a third argument. A two-argument call answers as
+  before, and a key-echoing locale still falls through to the library's strings. No member, string
+  or floor moves. Cases: `tests/test_slash_parse.lua`. See `docs/api/Slash/version-19.1-docs.md`.
+- **What a consumer owes:** nothing, unless its Slash `L` carries those keys; then its wording
+  appears where the library's did. ConsumableMaster un-marks its three dead keys after re-vendor.
+
+### SlashParse minor 1: the parser peeled to a file of its own
+
+- **`lib.ParseBool`, `lib.ParseValue` and the row type parsers behind them** moved unchanged from
+  `Slash.lua` to the new secondary file `SlashParse.lua`, loaded by `LibKa0s.xml` after `Slash.lua`
+  and paired on the shell's minor (`lib.__parseMinor` / `lib.__parseShellMinor`). Minor 19's
+  resolver took `Slash.lua` from 999 to 1006 and `GI-LK-11`'s descriptor helpers to 1030, into
+  `layout-§1`'s 1000–1500 band; it is 877 lines now. No member moves; the member manifest lists
+  19's surface under key 19.1.
+- **A payload without the new file** loads whole with no `ParseBool` and no `ParseValue`, and an
+  instance's default `set` refuses with one line naming the file rather than calling a nil. Cases:
+  `tests/test_slash_parse.lua`.
+- **What a consumer owes:** a whole-folder re-vendor, as always.
+
+### Widgets minor 12, WidgetsReorder minor 1: `ReorderList` peeled to a file of its own (issue #36)
+
+- **`ReorderList`, `ROW_BOX` and their machinery** (the ghost, the handle and box pools, the row box
+  and the drag) moved unchanged from `Widgets.lua` to the new secondary file `WidgetsReorder.lua`,
+  loaded by `LibKa0s.xml` after `Widgets.lua` and before `WidgetsDragHandle.lua`, and paired on the
+  shell's minor (`lib.__reorderMinor` / `lib.__reorderShellMinor`) as `WidgetsDragHandle.lua` is.
+  `Widgets.lua` is 655 lines, out of `layout-§1`'s 1000–1500 band. No member, `opts` field or
+  controller method moves; the member manifest lists 11.3's surface. A payload without the new file
+  loads whole with no `ReorderList`. Cases: `tests/test_widgets_reorder.lua`. See
+  `docs/api/Widgets/version-12.1.3-docs.md`.
+- **What a consumer owes:** a whole-folder re-vendor, as always, and the in-game drag-reorder smoke
+  check in every consumer that draws a reorderable list.
+
+### OptionsWidgets minor 34: `RenderGrid` takes a `parent` and `opts.gap` (KickCD#10)
+
+- **`O.RenderGrid(ctx, items, parent, opts)`**: `parent` is the container (absent, the page scroll,
+  as before); `opts.gap` is the spacer after each flushed or wide row (absent, `ROW_VSPACER`, as
+  before; `false` or `0`, none, for a list stacked at a fixed stride such as a `ReorderList`'s).
+- **A failed item takes no space**: a wide item that raised is released with no spacer, where it
+  left a blank full-width row and a gap; a `make` that answers exactly `false` drew nothing and is
+  treated the same. A `make` answering nil still counts as drawn.
+- **No automatic layout**, documented rather than changed: `RenderGrid` does not call `DoLayout()`;
+  the caller lays out after its last render, as `RenderRows` does for itself. Cases:
+  `tests/test_options_flow.lua`. See `docs/api/Options/version-27.2.34.2.2.7.1.7.4.2-docs.md`.
+- **What a consumer owes:** nothing; a two-argument call draws what it drew. KickCD adopts it for
+  its Spells list (`{ gap = false }`) after the re-vendor.
+
+### OptionsTabs minor 8: three opt-in `RenderTabbedSchema` fields (AbsorbTracker#32)
+
+- **`opts.untabbedSkipRender`**: a group whose rows are all `skipRender` is no tab unless a host tab
+  or an `afterGroup` hook is keyed by it; the rows stay in their bucket, so a mixed group's
+  `skipRender` row and its subgroup heading behave as before.
+- **`opts.disabledReplaces`** (with **`opts.disabledNoticeFont`**, default `GameFontHighlightSmall`):
+  a disabled page draws the notice and nothing under it, no rows and no host tab.
+- **`opts.rerender(ctx)`**: a tab click sets `ctx.activeTab` and calls the host's redraw instead of
+  `ClearScroll` and a render of its own, so chrome above the strip and refreshers registered after
+  the body survive the click; a raise is reported as `RENDER_FAILED`.
+- All off by default: BankLedger's all-`skipRender` Filters group (drawn by an `afterGroup` hook),
+  LootHistory's `skipRender` subgroup row and every other consumer draw what they drew. Cases:
+  `tests/test_options_tabbed.lua`. See `docs/api/Options/version-27.2.34.2.2.8.1.7.4.2-docs.md`.
+- **What a consumer owes:** nothing. AbsorbTracker adopts all four on its Appearance page after the
+  re-vendor and deletes its hand-composed strip.
+
+### Perf minor 14, PerfSampler minor 1, PerfCommands minor 1: the capture and the command surface peeled to files of their own (issue #7)
+
+- **`Usage`, the sub-verb handlers, `StatusLines` and `OnCommand`** moved unchanged from `Perf.lua`
+  to the new secondary file `PerfCommands.lua`, loaded by `LibKa0s.xml` after `Perf.lua` and before
+  `PerfPanel.lua`, and paired on the probe's minor (`lib.__commandsMinor` /
+  `lib.__commandsShellMinor`) as `PerfPanel.lua` is. `lib:New` installs them through
+  `lib.__installCommands(P, ctx)`.
+- **The capture** — `Open` and `Close` with their free list, the combat-gated measurement windows,
+  the FPS sampler, `Start`, `Measure`, `Stop`, `Cancel`, `Suspend` and `Resume` — moved unchanged
+  to the new secondary file `PerfSampler.lua`, the seam the issue named, loaded after `Perf.lua` and
+  before `PerfCommands.lua` and paired the same way (`lib.__samplerMinor` /
+  `lib.__samplerShellMinor`). `lib:New` installs it through `lib.__installSampler(P, ctx)`, which
+  hands back what `P.Reset` calls to zero the open depth; the tables `P.Reset` replaces are read
+  through getters. `Perf.lua` is 975 lines, out of `layout-§1`'s 1000–1500 band.
+- **A payload without either new file** still builds instances. Without `PerfCommands.lua`,
+  `OnCommand`, `Usage` and `StatusLines` answer one line naming it rather than nil; without
+  `PerfSampler.lua`, they answer one line naming that file, the brackets are inert, `Start` logs the
+  line and runs nothing, and `Stop` hands back an empty record.
+- **The descriptor's optional sinks are resolved at file level** (`resolveHooks`), out of
+  `lib:New`'s complexity; every default is unchanged. No member moves; the member manifest lists
+  13.6's surface. Cases: `tests/test_perf_command.lua` and `tests/test_perf_run.lua`. See
+  `docs/api/Perf/version-14.1.1.6-docs.md`.
+- **What a consumer owes:** a whole-folder re-vendor, as always, and the in-game perf run smoke
+  check (typed and clicked) in every consumer that wires a Perf module.
+
+### Perf minor 14: a declared parent that never fired is in the record (issue #12)
+
+- **`P.BuildRecord`** emits every declared ancestor of a recorded bucket, with `calls`, `totalMs`
+  and `maxMs` at `0` where it never fired, its own declared `within` and no `observedWithin`, so a
+  `within` in the record always names a key in `buckets`. A declared bucket with no recorded
+  descendant stays absent. The report prints the parent as a zero row with its children under it.
+  Additive within schema 2. Cases: `tests/test_perf_core.lua`. See `docs/record-schema.md`.
+- **What a consumer owes:** nothing; a re-vendor brings it. A reader of `dump.json` that resolved a
+  missing parent through the descriptor no longer needs to.
+
+### Perf minor 14: report-only per-bucket budgets (issue #1)
+
+- **`budget = { msPerSec = <n>, maxMs = <n> }`** on a descriptor `buckets` entry, either key
+  optional but not both, validated in `lib:New` (a non-table budget, a ceiling that is not a
+  positive number, or a budget naming neither is refused in the library's own words), copied onto
+  the bucket in the record as `budget` (additive within schema 2), and reported by a new last
+  section of `FormatReport`, `budget (report-only)`: `ok` or `OVER` with observed / ceiling per
+  declared axis, or `not exercised`. `finish` adds one line, `N bucket(s) over budget`.
+- **Nothing gates**, by decision (D5 of the 2026-10-01 issue pass): an in-game capture is noisy and
+  the offline counters already gate releases. A host that declares no budget gets a byte-identical
+  report and finish acknowledgment. Cases: `tests/test_perf_budget.lua`. See
+  `docs/record-schema.md` and `docs/api/Perf/version-14.1.1.6-docs.md`.
+- **What a consumer owes:** nothing to keep working. The six wired consumers declare their own
+  ceilings in `PerfSetup.lua` after the re-vendor, from their committed captures.
+
+### Kit revision 35: the complexity suite is sighted (WowAddonStandards#6)
+
+- **`run-automated-tests.sh` measures a sanitized shadow of the tree.** lizard 1.24.0 loses whole
+  functions over `#` (read as a preprocessor line) and over its Ruby-like reader's `it`, `class`,
+  `module`, `begin` and `unless`, and reported "no function above CCN 15" over about 1,600
+  functions it never listed across the collection. The new `testkit/lizard_sighted.lua` copies
+  every measured file into a temporary tree with each hazard neutralized and every
+  `function a:b(` rewritten to `function a.b(self, `, keeping every line where it was, and the fixed
+  lizard command runs there: same paths, same line numbers, methods listed as `a.b`.
+- **Parity:** every file's `function` tokens are compared with the functions lizard listed for it.
+  A mismatch is a file lizard was still blind in: `complexity` records `fail` (verdict `amber`,
+  never red, never a blocked commit; at the tag it blocks like a skip), the console and `RESULTS.md`
+  name the files, and `manifest.json` gains `suites.complexity.blindFiles`. With no Lua to build the
+  shadow the suite is a skip. Cases: `tests/test_kit_runner.lua`.
+- **lizard runs with `-L 1500`**: its function-length threshold is `layout-§1`'s file cap instead of
+  its default 1000, so a closure wrapping a long file is not a complexity warning and
+  `suites.complexity.warnings` counts CCN above 15 alone. Case: `tests/test_kit_runner.lua`.
+- **A fifth kit suite, `testkit/test_lizard_sighted.lua`**, pins the sanitizer and the parity
+  reader, and runs lizard end to end on a hazard fixture when it is on PATH. `inventory.lua`'s
+  gate-rule table gains `test_lizard_sighted = "automated-tests-§3"`.
+- **`testkit/mock_base.lua`'s geometry comment** retires the GetHeight flip it had promised since
+  revision 15, and points at the selection-invariance cases in `tests/test_options_tabs.lua` that
+  pin LibKa0s#17–#20 instead; no line is added. See `docs/api/testkit/version-35-docs.md`.
+- **What a consumer owes:** the whole-folder kit copy, `{ name = "test_lizard_sighted", dir =
+  "tests/_kit/" }` in `tests/run.lua`, and a refactor or a ruling for every function the sighted
+  suite newly reports above CCN 15 before its next release.
+
+### DebugLog minor 19, and what else the sighted complexity gate revealed (WowAddonStandards#6)
+
+Kit revision 35's sighted complexity suite found seven functions above CCN 15 in this repository
+that lizard had never listed, and one file it was still blind in. Each is now at or under 15, with
+no behavior change; characterization cases were written first and pass before and after.
+
+- **`DebugLog.lua` minor 19**: `lib:New`'s required-field refusals and optional-field defaults moved,
+  unchanged, to file-level helpers (CCN 27 → 3). A refusal is still raised at the host's call. No
+  member, field, default or string moves; the minor moves so a copy at 19 wins over v1.65.0's 18.
+  See `docs/api/DebugLog/version-19.2.1-docs.md`.
+- **`Slash.lua`** (already minor 19 this release): `lib:New`'s descriptor reads, the same way
+  (CCN 24 → 1).
+- **`Perf.lua`** (already minor 14 this release): `P.Context`'s guarded client reads are a table of
+  readers it loops over, the spec read a file-level `specName` (CCN 19 → 3). `lib:New` itself left
+  the list with #7's `resolveHooks` (CCN 109 before that).
+- **The kit**, folded into revision 35: the eol gate's case two is one helper per check (CCN 34 →
+  1, `checkPin` 8 and `checkAppendix` 8 the largest), `Kit.assertSurfaceParity` three helpers
+  (19 → 5), and the `--list` renderer four (17 → 2; `docs/test-cases.md` byte-identical).
+- **`tests/test_options_tabbed.lua`**: one table of predicates hoisted out of a `for ... in` header,
+  where lizard lists no function literal. Parity residue over this repository is now zero.
+- **What a consumer owes:** nothing; a whole-folder re-vendor brings it.
+
+### Test-only changes
+
+No file minor moves for these, and nothing reaches a consumer's `libs/`.
+
+- **`tests/test_options.lua` peeled** (issue #35): the page registry, its combat-refusing open and
+  the two refresh tiers, 24 of its 85 cases, moved unchanged to `tests/test_options_render.lua`.
+  The suite is 988 lines, out of `layout-§1`'s 1000–1500 band. Suite totals unchanged (1919).
+- **`tests/test_schema.lua` split by pipeline stage** (issue #38): the write stage onward (the write
+  seam, defaults, the bulk bracket and the profile reset's count), 41 of its 73 cases, moved
+  unchanged to `tests/test_schema_write.lua`, and the fixture constructors both suites read to
+  `tests/fixture_schema.lua`. The suite is 705 lines, out of the band. Suite totals unchanged (1919).
+
+### What a consumer owes
+
+- The whole-folder copy of both payloads, `libs/LibKa0s/` and `tests/_kit/`, and the provenance
+  line, in one commit. A copy missing `WidgetsReorder.lua` builds a Widgets major with no
+  `ReorderList`; one missing `SlashParse.lua` builds Slash instances whose default `set` refuses
+  with one line naming the file; one missing `PerfSampler.lua` or `PerfCommands.lua` builds Perf
+  instances whose `OnCommand`, `Usage` and `StatusLines` answer one line naming the missing file,
+  and without the sampler the brackets are inert. Copy the folder, never the files you already had.
+- **Wire the kit's fifth suite**: `{ name = "test_lizard_sighted", dir = "tests/_kit/" }` in
+  `tests/run.lua`, and quote `bash tests/_kit/run-automated-tests.sh --suite complexity` rather than
+  raw `lizard` in any green-gate line. Before the host's next release, refactor or rule every
+  function the sighted suite newly lists above CCN 15, and clear every blind file it names.
+- No member is removed and no Slash, Options, Launcher, Lifecycle, DebugLog or Perf member is
+  added, so no degradation stub under `Kit.assertSurfaceParity` moves.
+- Smoke checks in game, in each consumer that has the surface: a drag-reorder of a reorderable
+  list (#36), a typed and a clicked perf run (#7), a typed `set` that writes and one that is
+  refused (the parser's peel to `SlashParse.lua`), and a parse refusal in the host's own wording
+  where its Slash `L` carries the keys (#40).
+- To adopt, optionally: KickCD passes `{ gap = false }` to `RenderGrid` for its Spells list
+  (KickCD#10); AbsorbTracker passes `untabbedSkipRender`, `disabledReplaces` (with
+  `disabledNoticeFont`) and `rerender` on its Appearance page (AbsorbTracker#32); each wired Perf
+  host may declare `budget` ceilings on its buckets (#1); ConsumableMaster un-marks its three dead
+  Slash keys (#40). A host suite whose own cases move regenerates `docs/test-cases.md`.
+
+Release gate (`docs/automated-tests/20261001-133255/`): lint pass, 0/0 in 144 files;
+tests pass, 1999 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.65.0 — 2026-10-01
 
 Versions in this release: **Slash minor 18** (`LibKa0s-Slash-1.0` 18), **DebugLog minor 18**

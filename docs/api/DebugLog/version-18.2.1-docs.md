@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **18** · `DebugLogDiagnostics.lua` minor **2** · `DebugLogGates.lua` minor **1** |
 | Shipped in | v1.65.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 17.2](./version-17.2-docs.md) — which had no change gates, no at-enable queue and no `onClear` hook |
-| Superseded by | — |
+| Superseded by | [version 19.2.1](./version-19.2.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 18, DebugLogDiagnostics = 2, DebugLogGates = 1 }` |
 
@@ -802,3 +802,10 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
+
+## Moving to version 19.2.1
+
+**Take it; nothing moves.** Version 19.2.1 is this surface and this behavior, with `lib:New`'s
+descriptor reads moved out of the instance's closure to file-level helpers (the sighted complexity
+gate measured the closure at CCN 27). No member, field, default or string changes. See
+[version 19.2.1](./version-19.2.1-docs.md).
