@@ -1216,6 +1216,11 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `sliderCommit` | string | no | O1 | `"change"` makes every slider commit on the drag as well as on release, throttled through `scheduleTimer`. Default is release-only; a single row overrides either way with `commitOn`. |
 | `debug` | function(tag, message) | no | O1 | Developer log line, through the host's gated sink. `Cfg` lines: `opened`, `open refused (in combat)` and `register parked (in combat)` (O24); from **O27** the combat lock's `<what> refused (in combat)`, once per text per combat, and the park's `register flushed (combat ended)`. See [What changed at this version](#what-changed-at-this-version). |
 
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `addonName`: no consumer as of v1.66.0, kept because it is the only route to the shipped `info` art for `IdList` help marks, and no host passes it, so every help mark draws the client fallback. (LibKa0s#42)
+- `afterRestoreAll`: no consumer as of v1.66.0, kept because it is the hook for reset state in neither the schema nor the profile; since window positions moved into the profile no host has any.
+
 Unlike Core, DebugLog and Slash, this module performs **no descriptor validation at all** — `d` is
 indexed directly, so only a nil descriptor raises. The fields marked required above are required in
 practice rather than enforced: a missing `parentTitle` silently becomes `""`, and a missing
@@ -1228,6 +1233,12 @@ keeps for you.
 Almost everything this major publishes hangs off the instance `lib:New(descriptor)` returns. Two
 members do not, and cannot. A widget-registry entry is per **process**, and so is a loaded font
 file, so the thing that writes either has to be per library rather than per host.
+
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `lib.LAYOUT`: no consumer as of v1.66.0, kept because it holds the panel geometry the library draws to; KickCD still carries copies of two of its entries, unread outside its own suite. (KickCD#36)
+- `lib.PatchAlwaysShowScrollbar`: no consumer as of v1.66.0, kept because `EnsureScroll` applies it to every scroll the library builds; a host calls it only for a scroll frame of its own.
+- `lib.STRINGS`: no consumer as of v1.66.0, kept because it is the English fallback for the combat lock and the other library strings.
 
 ### `lib.__PatchLSM30Border()` → boolean
 
@@ -1388,6 +1399,19 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `chromeHeight` (on `ctx`) | **O10** | The pixels of chrome the page has reserved, starting at `0`. Set only through `SetChromeHeight` — never write it directly, or the scroll's anchor and the frame's actual height will disagree. |
 | `AceGUI` | O1 | The resolved AceGUI-3.0, or nil. Filled in at `:New` and re-resolved at `CreateOptionsPanel`, which is the copy `onAceGUI` hands the host. |
 | `__panels()` / `__panelFor(pageKey)` | O1 | Test seams, following Perf's `__buckets()` idiom. The registry is private, so a host suite otherwise has no handle on a live ctx — and a real bug once shipped precisely because one page's ctx was unreachable. |
+
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `CHROME_GAP`: no consumer as of v1.66.0, kept because it is published for a host that draws bespoke chrome of its own and has to know where the band ends.
+- `FONT_FLAGS`: no consumer as of v1.66.0, kept because `O.FontGroup` offers it on every composed font row; MultiMeters keeps its own localized list, keyed `NONE` rather than `""`.
+- `FONT_FLAGS_SORT`: no consumer as of v1.66.0, kept because the declared order of `FONT_FLAGS`, read by `O.FontGroup`.
+- `PADDING_X`: no consumer as of v1.66.0, kept because it is the inset the library draws header, divider and body to, published so a host aligns a bespoke widget without restating it. (PanelMaster#56)
+- `PatchAlwaysShowScrollbar`: no consumer as of v1.66.0, kept because the instance mirror of the lib-level patch, reached through `EnsureScroll`.
+- `RenderSchema`: no consumer as of v1.66.0, kept because every host moved to `RenderTabbedSchema` and `RenderRows`; the untabbed wrapper is permanent under `-1.0`.
+- `SetChromeHeight`: no consumer as of v1.66.0, kept because `TabStrip`, `PageBanner` and `PageHeader` reserve their band through it; a host calls it only for chrome of its own.
+- `TAB_H`: no consumer as of v1.66.0, kept because it is published for a host that measures its own strip; every host draws the library's.
+- `VISIBILITY_SORT`: no consumer as of v1.66.0, kept because `O.MasterControls` offers it on every General page; MultiMeters keeps the library's keys with its own localized labels.
+- `VISIBILITY_VALUES`: no consumer as of v1.66.0, kept because `O.MasterControls` offers it on every General page; MultiMeters keeps the library's keys with its own localized labels.
 
 ## The landing page
 
@@ -1574,6 +1598,8 @@ local kind = setmetatable({
 
 ### `O.UnnamedCandidates(kind, candidates)` → ids
 
+`UnnamedCandidates`: no consumer as of v1.66.0, kept because `IdInput` calls it to ask the client for names; it is pure and published for tests.
+
 Pure, and needs no ctx. It returns the ids `candidates()` returns that the client cannot name
 yet: numbers only, each once, in the host's order, at most **200** (`ID_LOOKUP_CAP`). The cap
 exists because a host's candidate list can be a whole bag or an expansion's consumables, and asking
@@ -1588,6 +1614,8 @@ for a raising or absent
 named, so it is not asked for.
 
 ### `O.ID_NAME_HINT`
+
+`ID_NAME_HINT`: no consumer as of v1.66.0, kept because `IdInput` reads it for its tooltip; it is published for a host's own tooltip.
 
 A table of the default name hints, one per named kind, for a host to reuse in the input's tooltip:
 

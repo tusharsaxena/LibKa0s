@@ -396,6 +396,7 @@ adopter on an old copy reads what their copy actually does.
 | Document | What it covers | Compatibility rule |
 |---|---|---|
 | [`../record-schema.md`](../record-schema.md) | The Perf capture record persisted to SavedVariables | **Clean break allowed** — schema 2 discarded schema 1 with no migration |
+| [`CONSUMERS.md`](CONSUMERS.md) | Who calls each public export, per host, with every zero-consumer export's verdict | A census, stamped with the version it measured; restamped, never versioned by folder |
 | [`../releasing.md`](../releasing.md) | Version numbering, release order, the re-vendor rule, the Consumers table | — |
 | [`../../testkit/README.md`](../../testkit/README.md) | What the test kit *is* and how to vendor it — its surface is [above](#testkit) | Never ships; byte-identity enforced |
 

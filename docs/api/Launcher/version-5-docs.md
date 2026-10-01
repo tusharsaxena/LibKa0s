@@ -158,6 +158,11 @@ addon's face in three places, and left-click **always** opens the panel.
 | `debugAtEnable` | **L5** | no | `debugAtEnable(tag, message)` — where `Register`'s four state lines go (a broker library absent, no minimap table, `registered`), with the tag `"Launcher"`: the console's `D.DebugAtEnable`, so they land when logging is first turned on rather than being gated off at `OnEnable`. Absent, they go to `debug`. |
 | `L` | **L1** | no | Locale override, keyed to `lib.STRINGS`. Read with `rawget`, so a host table that answers an unknown key **with the key** (which every Ka0s locale table does — **anti-pattern #2**) falls through to the library's English rather than printing `MENU_LOCKED` at the player. |
 
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `lib.STRINGS`: no consumer as of v1.66.0, kept because it is the English fallback for the menu and tooltip; a host overrides by key through the descriptor's `L`.
+- `L`: no consumer as of v1.66.0, kept because no host localizes the launcher's strings yet; it is the only route for one that does.
+
 ### Retired at version 4
 
 Ignored if passed; `New` raises on none of them, so a host that has not yet re-vendored its setup
@@ -247,6 +252,10 @@ version 1.
 | `Lb:Object()` | **L1** | The one LDB object, or `nil` before `Register` (or where LibDataBroker is absent). Published so a host with a live value to show can update the object's own fields, and so a suite can drive the one click both surfaces share. It is **not** an invitation to register a second one, or to replace its `OnClick` or `OnTooltipShow`. |
 | `Lb:IsShown()` | **L1** | Whether the button is shown — `not minimap.hide`. Answers from the **store**, so it is still right on a host where LibDBIcon never loaded, and the Master-controls checkbox reflects what the player chose. |
 | `Lb:SetShown(shown)` | **L1** | Writes `minimap.hide` and calls LibDBIcon's `Show` / `Hide`, so the button follows the checkbox immediately rather than at the next reload. Returns whether the **button** could be moved; the store is updated either way. |
+
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `Object`: no consumer as of v1.66.0, kept because it is published for a suite to drive the shared click, and for a host with a live value to show.
 
 `lib.STRINGS` carries the four reports (`NO_BROKER`, `NO_ICON`, `NO_MINIMAP`, `CLICK_FAILED`); the
 twelve tooltip strings (`TOOLTIP_TITLE_VERSION`, `TOOLTIP_ENABLED`, `TOOLTIP_LOCKED`,

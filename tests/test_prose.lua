@@ -335,9 +335,9 @@ end)
 -- The case above reads the payloads. This one reads everything else this repo AUTHORS and still
 -- maintains: every `tests/*.lua` (not `tests/_kit/`, the vendored copy of `testkit/`, which the
 -- case above already reads at its source), the live document of every major under `docs/api/`,
--- that folder's README, `docs/releasing.md`, the root `README.md`, `DEPENDENCIES.md` and
--- `CLAUDE.md`, and the artwork tools under `tools/artwork/`. It was the 2026-09-23 audit's
--- `LibKa0s-A-07`: 210 lines across 33 of these files, which no gate read.
+-- that folder's README and consumer census, `docs/releasing.md`, the root `README.md`,
+-- `DEPENDENCIES.md` and `CLAUDE.md`, and the artwork tools under `tools/artwork/`. It was the
+-- 2026-09-23 audit's `LibKa0s-A-07`: 210 lines across 33 of these files, which no gate read.
 --
 -- THE LIVE DOCUMENT ONLY. A superseded `docs/api/` document is a record of what an older copy did
 -- and `docs/api/README.md` forbids editing it, so this case reads the highest version key in each
@@ -345,7 +345,8 @@ end)
 -- `10.2` is newer than `9.2`. Released `CHANGELOG.md` entries stay out for the same reason, and so
 -- do the frozen `docs/audits/`, `docs/reviews/`, `docs/adoption/` and `docs/superpowers/` stores.
 local AUTHORED_FILES = {
-  "docs/api/README.md", "docs/releasing.md", "README.md", "DEPENDENCIES.md", "CLAUDE.md",
+  "docs/api/README.md", "docs/api/CONSUMERS.md", "docs/releasing.md", "README.md",
+  "DEPENDENCIES.md", "CLAUDE.md",
 }
 
 -- `tests/test_prose.lua` is this gate: it copies localization-§5's lists whole, so every entry in

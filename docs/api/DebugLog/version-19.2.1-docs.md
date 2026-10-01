@@ -623,6 +623,18 @@ rather than paying it with a tooltip over the log. A host that wants the words b
 | `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor>, DebugLogGates = <minor> }` — the live minor of every file in this major (the second from D1, the third from G1). |
 | `lib:New(descriptor)` | 1 | Build a console for one host. See below. |
 
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `lib.AT_ENABLE_MAX`: no consumer as of v1.66.0, kept because it names the at-enable queue's cap (32) so tests and documents cite the number rather than restating it.
+- `lib.BUFFER_SLACK`: no consumer as of v1.66.0, kept because it names the compaction slack (128) that `Add` reads at call time.
+- `lib.DIAG_MAX_LINES`: no consumer as of v1.66.0, kept because it names the diagnostics report's line cap (1200).
+- `lib.DIAG_MAX_PER_LIST`: no consumer as of v1.66.0, kept because it names `out:list`'s default cap (40).
+- `lib.GATE_MAX_KEYS`: no consumer as of v1.66.0, kept because it names the change gate's key cap (256).
+- `lib.MAX_BUFFER`: no consumer as of v1.66.0, kept because the standard fixes the line cap (3000) and host suites read it to assert the cap; no host code needs it.
+- `lib.MakeCloseButton`: no consumer as of v1.66.0, kept because it forwards to `Core.MakeCloseButton`, which every host calls directly; the forwarder is permanent under `-1.0`'s additive-only rule.
+- `lib.STRINGS`: no consumer as of v1.66.0, kept because it is the English fallback for every console string; hosts override by key through the descriptor's `L`.
+- `lib.TIME_COPY`: no consumer as of v1.66.0, kept because it is a session-only switch for timing the copy window, flipped by hand from the client.
+
 ## The console descriptor
 
 Everything a host supplies to `lib:New(descriptor)`.
@@ -649,6 +661,12 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `applySkin` | function | no | **4** | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. Since minor 12 the copy window's half is served by handing this same function to `CopyWindow` as its `applySkin`, which runs it instead of `Core.ApplySkin` — so the two windows still cannot drift apart. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than color, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
 | `addonName` | string | no | **9** | The host's own addon folder name. Given it, both windows draw this collection's art; omitted, they draw the version-8 glyph and words. **As of minor 12 the copy window's descriptor falls back to `name` when this is absent**, because `CopyWindow` refuses a descriptor without one — see [Why `addonName` gained a fallback](#why-addonname-gained-a-fallback). The field itself is still optional and still means the same thing. |
 | `makeCloseButton` | function | no | **4** | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows — since minor 12 the copy window's half is served by forwarding it to `CopyWindow`, which gained the matching field at Widgets minor 7 so that this published contract would not narrow. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. **Rarely the right field, and it has no consumer today** — these are the library's windows, so they wear the library's close glyph, and a host whose own main window closes with something else must not push that difference onto them (`standalone-windows`). Pass it only for a close control genuinely *different in kind*. See [The empty `makeCloseButton`](#the-empty-makeclosebutton). |
+
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `diagnosticsEnablesLogging`: no consumer as of v1.66.0, kept because it is the opt-out for a host that must not let a report turn logging on; every host keeps the default.
+- `makeCloseButton`: no consumer as of v1.66.0, kept because both former callers dropped it on purpose once the library's close became the collection's mark; the override stays for a close control different in kind.
+- `skin`: no consumer as of v1.66.0, kept because every host takes Core's skin; the field is the override for chrome that differs in shape.
 
 ## The instance surface
 
@@ -684,6 +702,17 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `DebugForget(key)` | **G1** | Re-arm one key in both gates. |
 | `DebugAtEnable(tag, fmt, ...)` | **G1** | A state line: written at once with logging on (`true`), held for the next `SetEnabled(true)` with logging off (`false`). See [What changed at this version](#what-changed-at-this-version). |
 | `_toggleClickForTest` / `_frameForTest` | 1 | Test seams. A headless mock's `Show`/`Hide` track visibility without firing `OnShow`/`OnHide`, and stub `GetScript`, so the click handler and the visibility callback are only reachable directly. |
+
+**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `BufferSize`: no consumer as of v1.66.0, kept because host suites read it to assert the kept count past the cap.
+- `BuildDiagnostics`: no consumer as of v1.66.0, kept because it is the diagnostics report as data, for tests; hosts run the report through `RunDiagnostics`/`DebugVerb`.
+- `CopyText`: no consumer as of v1.66.0, kept because host suites read it because the copy window's EditBox is write-only through the frame API.
+- `FindLine`: no consumer as of v1.66.0, kept because host suites use it to assert a logged line.
+- `LastLine`: no consumer as of v1.66.0, kept because host suites use it to assert the newest logged line.
+- `MakeCloseButton`: no consumer as of v1.66.0, kept because it mirrors the lib-level forwarder onto the instance so a host holds one object.
+- `Text`: no consumer as of v1.66.0, kept because the console resolves its own strings through it; hosts resolve theirs through their own locale.
+- `buffer`: no consumer as of v1.66.0, kept because host suites read it directly; the document calls it part of the contract.
 
 ## The `ConsoleCheckbox()` data contract
 
