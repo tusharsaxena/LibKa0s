@@ -10,6 +10,14 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## Unreleased
+
+Test-only changes; no file minor moves and nothing reaches a consumer's `libs/`.
+
+- **`tests/test_options.lua` peeled** (issue #35): the page registry, its combat-refusing open and
+  the two refresh tiers, 24 of its 85 cases, moved unchanged to `tests/test_options_render.lua`.
+  The suite is 988 lines, out of `layout-§1`'s 1000–1500 band. Suite totals unchanged (1919).
+
 ## v1.65.0 — 2026-10-01
 
 Versions in this release: **Slash minor 18** (`LibKa0s-Slash-1.0` 18), **DebugLog minor 18**

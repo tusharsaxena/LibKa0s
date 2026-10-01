@@ -202,8 +202,9 @@ cycle's deliverable was the disposition; this cycle executed it.
 same command on **2026-09-26 at v1.62.0's release, kit revision 31**, after the automated-tests
 sweep. It is prose rather than a second table on purpose: the gate above reads every
 backticked-path table row under this heading as a census row, so a band table here would be ten
-rows claiming to be breaches. Ten files, three fewer than the thirteen of the 2026-09-24 write-out:
-the sweep took six out and its id peel brought three in. Largest first:
+rows claiming to be breaches. Ten files at that write-out, three fewer than the thirteen of the
+2026-09-24 write-out: the sweep took six out and its id peel brought three in. Nine now, since
+`tests/test_options.lua` left on 2026-10-01 (below). Largest first:
 
 - `testkit/mock_base.lua` (1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
   1452 with the shown-by-default flip's four comment lines, 1448 with
@@ -215,7 +216,6 @@ the sweep took six out and its id peel brought three in. Largest first:
 - `LibKa0s/OptionsWidgets.lua` (1423 with v1.65.0's combat-refusal line, measured 2026-10-01; 1422
   new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
 - `LibKa0s/OptionsIds.lua` (1359 at v1.65.0; 1358 new: the id peel), ruled below.
-- `tests/test_options.lua` (1339; 1307 at the 2026-09-23 write-out), issue #35.
 - `tests/test_schema.lua` (1335; 1101 when it was new at v1.55.0 with the Schema major, 1233 before
   `LK-22` and `LK-23`), issue #38.
 - `LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0),
@@ -231,6 +231,12 @@ the sweep took six out and its id peel brought three in. Largest first:
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
   accepted, below.
 - `LibKa0s/OptionsIdList.lua` (1197 at v1.65.0; 1193 new: the id peel), ruled below.
+
+`tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page
+registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to
+`tests/test_options_render.lua` (373), the render/refresh seam the issue named plus the page-registry
+section beside it and `RefreshAllPanels`' fan-out case, without which the suite would have sat at
+1000, still on the band's edge.
 
 Six left the band in the sweep, each on a seam named below: `testkit/test_prose.lua` 1486 → 750
 (issue #39, kit revision 29), `testkit/framework.lua` 1386 → 920 (kit revision 28; 984 at kit
@@ -300,7 +306,9 @@ Disposition cells point here:
 
 - `tests/test_options.lua` (1339) — issue [#35](https://github.com/tusharsaxena/LibKa0s/issues/35):
   the render/refresh block peels to `tests/test_options_render.lua`. This is the "owed a tracked ID"
-  the watch list carried with no ID.
+  the watch list carried with no ID. **Peeled 2026-10-01**: that block, the page-registry section
+  beside it and `RefreshAllPanels`' fan-out case are `tests/test_options_render.lua`, and the file is
+  988, out of the band.
 - `LibKa0s/Widgets.lua` (1266) — issue [#36](https://github.com/tusharsaxena/LibKa0s/issues/36):
   per-widget files, `ReorderList` first.
 - `tests/test_widgets.lua` (1493) — issue [#37](https://github.com/tusharsaxena/LibKa0s/issues/37):

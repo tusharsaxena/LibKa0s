@@ -974,7 +974,7 @@ badge and any count quoted in the docs must agree with it.
 - launcher: event lines (shown / hidden) stay on debug when debugAtEnable is passed
 - launcher: end to end, a Register at OnEnable lands the first time logging is turned on
 
-### test_options.lua (85)
+### test_options.lua (61)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -1004,30 +1004,6 @@ badge and any count quoted in the docs must agree with it.
 - options: with NO resetProfile the reset is exactly what it always was
 - options: RestoreAllDefaults fires afterRestoreAll BEFORE refreshing the panels
 - options: RestoreAllDefaults honors the host's skipRestoreAll veto
-- options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower
-- options: registered page builders run in registration order, once, at CreateOptionsPanel
-- options: CreateOptionsPanel hands the host the AceGUI it resolved
-- options: CreateOptionsPanel says so and returns when AceGUI is missing
-- options: the main canvas is registered under the host's brand
-- options: the main page's body is deferred to its first OnShow, and built once
-- options: a raising page builder costs that page and no other
-- options: a page registered after the build is built immediately
-- options: SetRenderer draws on first show, and not again
-- options: a panel shown during combat is covered, not drawn, and the window is NOT closed
-- options: a raising renderer is reported, not propagated
-- options: RefreshScalars re-syncs a shown page and flags a hidden one dirty
-- options: a dirty hidden page re-renders on its next show
-- options: the two tiers differ — one re-renders, the other only re-syncs
-- options: RefreshPanel touches ONE page, on both tiers
-- options: RefreshPanel defers a hidden page to its next show
-- options: RefreshPanel ignores a non-ctx rather than raising
-- options: a ctx that never went through SetRenderer keeps the old ungated behavior
-- options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay
-- options: OpenOptionsPanel opens the registered category out of combat
-- options: :New refuses a descriptor with no mainPanelName
-- options: a host that omits print still sees the combat refusal in the chat frame
-- options: CreateOptionsPanel is idempotent in both the category and the refreshers
-- options: OpenOptionsPanel is a silent no-op before CreateOptionsPanel has run
 - options: LSMValues returns a DEFERRED closure, not a snapshot
 - options: LSMValues offers a None placeholder rather than an empty list
 - options: __PatchLSM30Border is published on the library, not on an instance
@@ -1061,6 +1037,33 @@ badge and any count quoted in the docs must agree with it.
 - options: reserving chrome AFTER the scroll exists re-anchors the live scroll
 - options: ClearScroll leaves the reserved band alone
 - options: ClearScroll resets BOTH heading trackers
+
+### test_options_render.lua (24)
+
+- options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower
+- options: registered page builders run in registration order, once, at CreateOptionsPanel
+- options: CreateOptionsPanel hands the host the AceGUI it resolved
+- options: CreateOptionsPanel says so and returns when AceGUI is missing
+- options: the main canvas is registered under the host's brand
+- options: the main page's body is deferred to its first OnShow, and built once
+- options: a raising page builder costs that page and no other
+- options: a page registered after the build is built immediately
+- options: SetRenderer draws on first show, and not again
+- options: a panel shown during combat is covered, not drawn, and the window is NOT closed
+- options: a raising renderer is reported, not propagated
+- options: RefreshScalars re-syncs a shown page and flags a hidden one dirty
+- options: a dirty hidden page re-renders on its next show
+- options: the two tiers differ — one re-renders, the other only re-syncs
+- options: RefreshPanel touches ONE page, on both tiers
+- options: RefreshPanel defers a hidden page to its next show
+- options: RefreshPanel ignores a non-ctx rather than raising
+- options: a ctx that never went through SetRenderer keeps the old ungated behavior
+- options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay
+- options: OpenOptionsPanel opens the registered category out of combat
+- options: :New refuses a descriptor with no mainPanelName
+- options: a host that omits print still sees the combat refusal in the chat frame
+- options: CreateOptionsPanel is idempotent in both the category and the refreshers
+- options: OpenOptionsPanel is a silent no-op before CreateOptionsPanel has run
 
 ### test_options_bulk.lua (11)
 
@@ -2190,7 +2193,8 @@ badge and any count quoted in the docs must agree with it.
 | test_slash_debug.lua | 14 |
 | test_launcher.lua | 45 |
 | test_atenable.lua | 21 |
-| test_options.lua | 85 |
+| test_options.lua | 61 |
+| test_options_render.lua | 24 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 53 |
