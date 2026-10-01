@@ -1,0 +1,1 @@
+OK GI-LK-03 — Slash 19 threads an optional resolver through every parser and FORMATTERS.string; 2-arg calls unchanged; lib:New passes Sl:Text (rawget kept) to default parse, host d.parse and both FormatValue sites; 4 new cases verified red against minor 18; no consumer d.parse takes a 3rd arg; docs/CHANGELOG moved; gate 1924/0/2, luacheck 0/0, lizard clean
