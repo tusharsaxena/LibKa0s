@@ -2098,7 +2098,7 @@ badge and any count quoted in the docs must agree with it.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 34
+- the kit is revision 35
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -2155,7 +2155,7 @@ badge and any count quoted in the docs must agree with it.
 - prose scan-back: a restated kit folder in skipDirs that .pkgmeta ignores passes the refusal
 - prose lists: PUBLISHED_BRITISH == #BRITISH == 92 and PUBLISHED_ALLOWED == #ALLOWED == 33
 
-### test_kit_runner.lua (10)
+### test_kit_runner.lua (12)
 
 - runner perf: a performance-§12 register row records skip reason (2), in the manifest and RESULTS.md
 - runner perf: a library's root CLAUDE.md register is read when there is no docs/ARCHITECTURE.md
@@ -2167,6 +2167,8 @@ badge and any count quoted in the docs must agree with it.
 - runner complexity: a table with rows does not also say 'None.'
 - runner complexity: the band table leaves out what Kit.layoutCap.exempt names, and says so
 - runner complexity: with no exempt set a generated dump is listed like any other file
+- runner complexity: functions lizard's reader drops are measured, methods under their own name
+- runner complexity: a file lizard stays blind in fails complexity, names the file, never fails the run
 
 ### test_eol.lua (2)
 
@@ -2200,6 +2202,17 @@ badge and any count quoted in the docs must agree with it.
 - diagnostics contract: with logging already on, the report writes no second enable line
 - diagnostics contract: both forms run while the addon is disabled
 - diagnostics contract: no other name runs the report
+
+### test_lizard_sighted.lua (8)
+
+- lizard sighted: every hazard lizard loses a function over is neutralized
+- lizard sighted: fields, strings, comments and look-alike names come through unchanged
+- lizard sighted: a method definition is rewritten to its dot form with self
+- lizard sighted: no line is added or removed, CRLF included
+- lizard sighted: countFunctions counts the keyword, not strings, comments or longer names
+- lizard sighted: listedCounts reads the per-file table, once per file
+- lizard sighted: parity names every file whose counts differ, and only those
+- lizard sighted: lizard lists every function of a hazard fixture once it is sanitized
 
 ## Totals
 
@@ -2281,8 +2294,9 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_inventory.lua | 38 |
 | test_kit_eol.lua | 16 |
 | test_kit_prose.lua | 15 |
-| test_kit_runner.lua | 10 |
+| test_kit_runner.lua | 12 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1955** |
+| test_lizard_sighted.lua | 8 |
+| **Total** | **1965** |

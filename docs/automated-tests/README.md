@@ -32,7 +32,7 @@ differently at each. The columns name both.
 | `lint` | `luacheck .` | **yes** (`testing-§4`) | **yes** |
 | `tests` | `lua tests/run.lua` | **yes** (`testing-§4`) | **yes** |
 | `perf` | `lua tests/perf.lua` | no — recorded only | **yes** |
-| `complexity` | `lizard -l lua -x "./libs/*" -x "./tests/_kit/*" .` | no — recorded only | **yes**, plus zero functions above CCN 15 |
+| `complexity` | `lizard -l lua -x "./libs/*" -x "./tests/_kit/*" .`, over the kit's sanitized shadow, with function-count parity (kit revision 35) | no — recorded only | **yes**, plus zero functions above CCN 15; a parity mismatch is `fail` |
 
 `perf` and `complexity` are **measured, recorded and diffed — never used to fail a run, and never
 used to block a commit.** A threshold that fails a run teaches everyone to reach for `--no-verify`,

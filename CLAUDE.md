@@ -207,7 +207,8 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
 `tests/test_options.lua`, `tests/test_schema.lua` and `LibKa0s/Widgets.lua` left on 2026-10-01
 (below), and `LibKa0s/Slash.lua` came in the same day with minor 19. Largest first:
 
-- `testkit/mock_base.lua` (1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
+- `testkit/mock_base.lua` (1456, unchanged by kit revision 35, whose GetHeight comment rewrite
+  retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
   1452 with the shown-by-default flip's four comment lines, 1448 with
   `testkit/mock_events.lua`'s load, hook and install lines, 1446 before them — it was 1499 at kit
   revision 21, one line from the cap; kit 20's id lookups went to `testkit/mock_ids.lua` for that

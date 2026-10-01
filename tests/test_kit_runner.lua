@@ -299,3 +299,56 @@ test("runner complexity: with no exempt set a generated dump is listed like any 
   assertTrue(band:find("Left out", 1, true) == nil, "and nothing claims to have been left out")
   assertTrue(manifest:find('"overCapFiles": 1', 1, true) ~= nil, "and the manifest counts it: " .. manifest)
 end)
+
+--- A function of `n` decisions after a first line carrying `hazard`, over which raw lizard loses
+--- the whole function (kit revision 35).
+local function busyWith(head, hazard, n)
+  local src = { head, "  " .. hazard }
+  for i = 1, n do src[#src + 1] = ("  if x == %d then return %d end"):format(i, i) end
+  src[#src + 1] = "  return 0\nend"
+  return table.concat(src, "\n")
+end
+
+test("runner complexity: functions lizard's reader drops are measured, methods under their own name", function()
+  -- red under: revision 34's raw `lizard` over the tree, which drops a function over `#` or a bare
+  -- `class` and names `function M:go()` as `M`
+  local lizard = firstLine("command -v lizard 2>/dev/null")
+  if not lizard or lizard == "" then T.skip("lizard is not on PATH, so the complexity suite cannot run") end
+  local src = "local M = {}\n" .. busyWith("local function hashed(x, t)", "if #t > 99 then return -1 end", 20) .. "\n"
+    .. busyWith("function M:go(x)", "local c = { class = x }", 18) .. "\nreturn M, hashed\n"
+  local out, code, read = runIn(addon{ ["busy.lua"] = src }, "--suite complexity",
+    { read = { "docs/automated-tests/RESULTS.md", "manifest" } })
+  assertEqual(code, 0, out)
+  local results = read["docs/automated-tests/RESULTS.md"] or ""
+  local fnSection = results:match("### Functions `lizard` warned on\n\n(.-)\n### ") or ""
+  assertTrue(fnSection:find("| `hashed` | 22 | `busy.lua` |", 1, true) ~= nil,
+    "the function whose `#` shares a line with `end` is measured: " .. fnSection .. "\n" .. out:sub(-600))
+  assertTrue(fnSection:find("| `M.go` | 19 | `busy.lua` |", 1, true) ~= nil,
+    "the method is measured, under its own name: " .. fnSection)
+  local manifest = read.manifest or ""
+  assertTrue(manifest:find('"complexity": { "status": "pass"', 1, true) ~= nil, "parity holds: " .. manifest)
+  assertTrue(manifest:find('"blindFiles": 0', 1, true) ~= nil, "and the manifest says so: " .. manifest)
+end)
+
+test("runner complexity: a file lizard stays blind in fails complexity, names the file, never fails the run", function()
+  -- red under: revision 34, which recorded `pass` over a function lizard never listed
+  local lizard = firstLine("command -v lizard 2>/dev/null")
+  if not lizard or lizard == "" then T.skip("lizard is not on PATH, so the complexity suite cannot run") end
+  -- A function literal in a `for ... in` header at file scope: lizard 1.24.0 lists nothing for it,
+  -- and the sanitizer does not rewrite it, so only parity can see it.
+  local out, code, read = runIn(addon{
+    ["blind.lua"] = "for _, p in ipairs({ function() return 1 end }) do p() end\n",
+    ["fine.lua"] = "local function one() return 1 end\nreturn one\n",
+  }, "--suite complexity", { read = { "docs/automated-tests/RESULTS.md", "manifest" } })
+  assertEqual(code, 0, "a blind file never fails the run: " .. out)
+  assertTrue(out:find("complexity  fail", 1, true) ~= nil, "the console records the suite as failed: " .. out)
+  assertTrue(out:find("lizard blind in 1 file(s): `blind.lua` (0 of 1 functions listed)", 1, true) ~= nil,
+    "and names the file with both counts: " .. out)
+  assertTrue(out:find("verdict: amber", 1, true) ~= nil, "the verdict is amber, not red: " .. out)
+  local manifest = read.manifest or ""
+  assertTrue(manifest:find('"complexity": { "status": "fail"', 1, true) ~= nil, "the manifest: " .. manifest)
+  assertTrue(manifest:find('"blindFiles": 1', 1, true) ~= nil, "counts the blind file: " .. manifest)
+  local results = read["docs/automated-tests/RESULTS.md"] or ""
+  assertTrue(results:find("**Not sighted — complexity did not pass**", 1, true) ~= nil,
+    "the watch list says it was not sighted: " .. results:sub(-2000))
+end)

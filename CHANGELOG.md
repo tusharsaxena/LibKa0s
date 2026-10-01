@@ -17,8 +17,8 @@ Minors moved so far: **Slash minor 19** (`LibKa0s-Slash-1.0` 19), **Widgets mino
 **OptionsWidgets minor 34** and **OptionsTabs minor 8** (`LibKa0s-Options-1.0`
 27.2.34.2.2.8.1.7.4.2), **Perf minor 14** and the new **PerfCommands minor 1**
 (`LibKa0s-Perf-1.0` 14.1.6, with `PerfPanel` 6). Two payload files are added so far
-(`WidgetsReorder.lua`, `PerfCommands.lua`). The repo version is stamped when this block is
-released.
+(`WidgetsReorder.lua`, `PerfCommands.lua`). The kit moves to **revision 35**. The repo version is
+stamped when this block is released.
 
 ### Slash minor 19: the host's `L` reaches every parse refusal and the empty-string `(none)` (issue #40)
 
@@ -115,6 +115,30 @@ released.
   `docs/record-schema.md` and `docs/api/Perf/version-14.1.6-docs.md`.
 - **What a consumer owes:** nothing to keep working. The six wired consumers declare their own
   ceilings in `PerfSetup.lua` after the re-vendor, from their committed captures.
+
+### Kit revision 35: the complexity suite is sighted (WowAddonStandards#6)
+
+- **`run-automated-tests.sh` measures a sanitized shadow of the tree.** lizard 1.24.0 loses whole
+  functions over `#` (read as a preprocessor line) and over its Ruby-like reader's `it`, `class`,
+  `module`, `begin` and `unless`, and reported "no function above CCN 15" over about 1,600
+  functions it never listed across the collection. The new `testkit/lizard_sighted.lua` copies
+  every measured file into a temporary tree with each hazard neutralized and every
+  `function a:b(` rewritten to `function a.b(self, `, keeping every line where it was, and the fixed
+  lizard command runs there: same paths, same line numbers, methods listed as `a.b`.
+- **Parity:** every file's `function` tokens are compared with the functions lizard listed for it.
+  A mismatch is a file lizard was still blind in: `complexity` records `fail` (verdict `amber`,
+  never red, never a blocked commit; at the tag it blocks like a skip), the console and `RESULTS.md`
+  name the files, and `manifest.json` gains `suites.complexity.blindFiles`. With no Lua to build the
+  shadow the suite is a skip. Cases: `tests/test_kit_runner.lua`.
+- **A fifth kit suite, `testkit/test_lizard_sighted.lua`**, pins the sanitizer and the parity
+  reader, and runs lizard end to end on a hazard fixture when it is on PATH. `inventory.lua`'s
+  gate-rule table gains `test_lizard_sighted = "automated-tests-§3"`.
+- **`testkit/mock_base.lua`'s geometry comment** retires the GetHeight flip it had promised since
+  revision 15, and points at the selection-invariance cases in `tests/test_options_tabs.lua` that
+  pin LibKa0s#17–#20 instead; no line is added. See `docs/api/testkit/version-35-docs.md`.
+- **What a consumer owes:** the whole-folder kit copy, `{ name = "test_lizard_sighted", dir =
+  "tests/_kit/" }` in `tests/run.lua`, and a refactor or a ruling for every function the sighted
+  suite newly reports above CCN 15 before its next release.
 
 ### Test-only changes
 
