@@ -1,0 +1,1 @@
+OK GI-LK-10R — addendum A1: runner lizard -L 1500 (testkit and tests/_kit byte-identical, LF kept), real-runner fixture test red-first (raw lizard warns 1 on an 1100-line CCN-1 fn, 0 with -L 1500), kit-35 doc/CHANGELOG/README/test-cases moved with code; gate 1997/0/2 of 1999, luacheck 0/0 in 144, sighted complexity pass, 0 warnings, max CCN 15
