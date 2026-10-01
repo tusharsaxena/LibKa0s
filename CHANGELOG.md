@@ -244,6 +244,10 @@ No file minor moves for these, and nothing reaches a consumer's `libs/`.
   host may declare `budget` ceilings on its buckets (#1); ConsumableMaster un-marks its three dead
   Slash keys (#40). A host suite whose own cases move regenerates `docs/test-cases.md`.
 
+Release gate (`docs/automated-tests/20261001-133255/`): lint pass, 0/0 in 144 files;
+tests pass, 1999 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.65.0 — 2026-10-01
 
 Versions in this release: **Slash minor 18** (`LibKa0s-Slash-1.0` 18), **DebugLog minor 18**
