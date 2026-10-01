@@ -76,6 +76,10 @@ pointer moves v2.74.0 -> v2.75.0.
   draws help marks today**: BankLedger and LootHistory build id lists with no `help`, and the other
   eight have no id list, so for them the change is latent.
 
+Release gate (`docs/automated-tests/20261002-012529/`): lint pass, 0/0 in 144 files;
+tests pass, 2015 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.66.0 — 2026-10-01
 
 Versions in this release: **Slash minor 19** and the new **SlashParse minor 1** (`LibKa0s-Slash-1.0`
