@@ -13,7 +13,8 @@ cannot drift. Release order is in
 ## Unreleased
 
 Minors moved so far: **Slash minor 19** (`LibKa0s-Slash-1.0` 19), **Widgets minor 12** and the new
-**WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragHandle` 3). One payload
+**WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragHandle` 3),
+**OptionsWidgets minor 34** (`LibKa0s-Options-1.0` 27.2.34.2.2.7.1.7.4.2). One payload
 file is added so far (`WidgetsReorder.lua`). The repo version is stamped when this block is
 released.
 
@@ -41,6 +42,20 @@ released.
   `docs/api/Widgets/version-12.1.3-docs.md`.
 - **What a consumer owes:** a whole-folder re-vendor, as always, and the in-game drag-reorder smoke
   check in every consumer that draws a reorderable list.
+
+### OptionsWidgets minor 34: `RenderGrid` takes a `parent` and `opts.gap` (KickCD#10)
+
+- **`O.RenderGrid(ctx, items, parent, opts)`**: `parent` is the container (absent, the page scroll,
+  as before); `opts.gap` is the spacer after each flushed or wide row (absent, `ROW_VSPACER`, as
+  before; `false` or `0`, none, for a list stacked at a fixed stride such as a `ReorderList`'s).
+- **A failed item takes no space**: a wide item that raised is released with no spacer, where it
+  left a blank full-width row and a gap; a `make` that answers exactly `false` drew nothing and is
+  treated the same. A `make` answering nil still counts as drawn.
+- **No automatic layout**, documented rather than changed: `RenderGrid` does not call `DoLayout()`;
+  the caller lays out after its last render, as `RenderRows` does for itself. Cases:
+  `tests/test_options_flow.lua`. See `docs/api/Options/version-27.2.34.2.2.7.1.7.4.2-docs.md`.
+- **What a consumer owes:** nothing; a two-argument call draws what it drew. KickCD adopts it for
+  its Spells list (`{ gap = false }`) after the re-vendor.
 
 ### Test-only changes
 

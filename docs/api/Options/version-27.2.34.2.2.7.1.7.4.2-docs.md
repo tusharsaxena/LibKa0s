@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 27.2.33.2.2.7.1.7.4.2
+# `LibKa0s-Options-1.0` — version 27.2.34.2.2.7.1.7.4.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **27** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **33** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **2** · `OptionsTabs.lua` **7** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** |
+| Files and minors | `Options.lua` **27** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **2** · `OptionsTabs.lua` **7** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same ten numbers `lib.MODULES` reports. |
-| Shipped in | v1.65.0 |
-| Status | Superseded |
-| Supersedes | [version 26.1.32.1.1.6.1.7.4.1](./version-26.1.32.1.1.6.1.7.4.1-docs.md) |
-| Superseded by | [version 27.2.34.2.2.7.1.7.4.2](./version-27.2.34.2.2.7.1.7.4.2-docs.md) |
+| Shipped in | unreleased |
+| Status | **Current** |
+| Supersedes | [version 27.2.33.2.2.7.1.7.4.2](./version-27.2.33.2.2.7.1.7.4.2-docs.md) |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 27, OptionsRegistry = 2, OptionsWidgets = 33, OptionsIds = 2, OptionsIdList = 2, OptionsTabs = 7, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 27, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 2, OptionsTabs = 7, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `I1` for
 `OptionsIds.lua` minor 1, `L1` for `OptionsIdList.lua` minor 1. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
@@ -39,6 +39,28 @@ member is a fact about when a consumer got it, not about which file holds it tod
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
 ## What changed at this version
+
+**`RenderGrid` takes a `parent` and an `opts.gap`, and a failed item leaves no row (W34,
+[KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10)).** Additive: a two-argument call
+draws exactly what it drew at 27.2.33.2.2.7.1.7.4.2, apart from the failed-item fix below.
+
+- **`parent`**, the third argument: the container the rows go into. Absent, the page scroll
+  (`EnsureScroll(ctx)`), as before; given, no page scroll is created behind it.
+- **`opts.gap`**, on a fourth argument: the spacer height after each flushed or wide row. Absent,
+  `lib.LAYOUT.ROW_VSPACER` (8), as before. `false` or `0` draws no spacer, for a list stacked at a
+  fixed stride (a `ReorderList`'s, whose drop math assumes rows touch); any other number is that
+  height.
+- **A failed item takes no space.** A wide item whose render raised used to leave a blank
+  full-width row and a gap behind it; its row is now released and nothing is added. A `make` that
+  answers exactly `false` drew nothing and is treated the same way (a half item takes no cell). A
+  `make` answering nil or anything else still counts as drawn, which is what every consumer's does.
+- **Still no layout pass.** `RenderGrid` does not call `DoLayout()`, by decision rather than
+  omission: hosts render several grids into one page and lay out once. Call
+  `container:DoLayout()` after the last render, as `RenderRows` does for you.
+
+Cases: `tests/test_options_flow.lua`.
+
+## Previously, at 27.2.33.2.2.7.1.7.4.2
 
 **The combat lock tells the host's debug log what it refused (gap G3 of the 2026-09-30 LibKa0s
 debug-gaps run).** No member, row field, string or floor moves, and nothing drawn or printed to
@@ -1323,7 +1345,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RefreshPanel(ctx, structural)` | O8 | **One page, either tier.** `structural` true re-runs that ctx's renderer; false runs its refreshers in place. A hidden page is flagged dirty and repaints on its next show, so the caller never has to ask whether it is on screen. For a host whose page repaints off its own message bus rather than off a widget's `set()`. |
 | `SelectTab(pageKey, tabKey)` | **O19** | Move an already-rendered page to one tab and refresh **only** that page, through `RefreshPanel(ctx, true)`. Returns `false`, storing no intent, for a page that has not been rendered — the caller opens the page. See [What changed at this version](#previously-at-24314774). **From O22** answers `false` in combat and moves nothing. |
 | `__pages()` | O1 | The pages that actually built. A raising builder is reported by key and costs only itself. |
-| `RenderGrid(ctx, items)` | **W4** | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually. **Two asymmetries with `RenderRows`, both deliberate today and both tracked:** it does **not** call `scroll:DoLayout()` at the end, so a page rendered through `RenderGrid` alone must call it itself; and it renders into `EnsureScroll(ctx)` with no `parent` override, so it cannot draw into a container the host owns. See [KickCD#10](https://github.com/tusharsaxena/KickCD/issues/10). |
+| `RenderGrid(ctx, items, parent, opts)` | **W4** (`parent`, `opts`: **W34**) | Lay arbitrary widgets out two per row, caller-ordered. The sibling of `RenderRows`: that one walks schema rows and emits sections, this one takes whatever the caller hands it — a schema row, or `{ make = fn }` for a bespoke widget, or `wide = true` for its own line. For a list whose length is not in the schema (one checkbox per macro, per unit, per spell). Items are guarded individually; from **W34** an item that raised, or whose `make` answered exactly `false`, takes no cell, and a wide one no row and no gap. `parent` (**W34**) is the container, defaulting to `EnsureScroll(ctx)`; `opts.gap` (**W34**) is the spacer after each row, defaulting to `lib.LAYOUT.ROW_VSPACER`, with `false` or `0` for none. **It does not call `scroll:DoLayout()`**, unlike `RenderRows`, and that is a decision: call `container:DoLayout()` after your last render. |
 | `ChoiceGrid(ctx, spec)` | W16 (checkbox cells, `extraColumn`: **W17**) | A matrix of one-choice-per-row cells over rows that share one value list: a header line of column labels, then per row one checkbox per column (a yellow fill, not an AceGUI radio, from **W17**) and the row's label with its tooltip. Reads and writes through the maker seam and re-syncs on `RefreshScalars`. **From W17** an optional `spec.extraColumn` draws a per-row link after the label. Returns the row lines. See [The choice grid](#the-choice-grid). |
 | `ResolveId(kind, text, candidates)` | **W16** | Pure. Typed text → `id, name, icon`, or `nil, reason` (`"empty"`, `"notFound"`, `"ambiguous"`): a number, a link of the kind's own type, the client's name lookup, then the host's candidates by name. A name two distinct ids carry is ambiguous. See [The id input and the id list](#the-id-input-and-the-id-list). |
 | `IdInput(ctx, parent, spec)` | **W16** | One add-by-id line — an edit box, an Add button and a status line — into `parent`, default the page's scroll. Resolves through `ResolveId` and calls `spec.onAdd(id)`; never writes a path and redraws nothing. With item `candidates`, pre-warms the unnamed ones and looks a name up among them before refusing it. While the player types, lists up to ten matching entries under the box, every rank its own row, to pick with a click or the keys. Returns the group, the edit box, the button and the status label. |
@@ -2142,6 +2164,12 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
+**At 27.2.34.2.2.7.1.7.4.2 two optional arguments are added and nothing is removed**: `RenderGrid`'s
+`parent` and `opts`. A call that passes neither draws what it drew, with one deliberate exception a
+host can see only when an item fails: a wide item that raised no longer leaves a blank row and a gap.
+No consumer's `make` answers `false` at this version, so the `false` arm changes nothing already
+shipped. A degradation stub that names `RenderGrid` needs no change: a no-op ignores extra arguments.
+
 **At 25.32.1.1.5.7.4.1 no member is added, removed or repurposed**: the id surface moved file, which changes
 the version key and `lib.MODULES` and nothing a host calls. A host written against 25.31.5.7.4.1 needs no
 change, and a degradation stub pinned by name is unaffected: the two new attach functions are
@@ -2198,11 +2226,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 27.2.34.2.2.7.1.7.4.2
-
-**Take it; nothing moves for a two-argument `RenderGrid` call.** `OptionsWidgets.lua` moves to minor
-**34**. `RenderGrid` gains an optional `parent` (the container, defaulting to the page scroll) and
-an optional `opts.gap` (the spacer after each row, `false` or `0` for none). A wide item that raised,
-or a `make` that answers exactly `false`, now leaves no blank row and no gap. No other member, row
-field, string or floor moves. See [version 27.2.34.2.2.7.1.7.4.2](./version-27.2.34.2.2.7.1.7.4.2-docs.md).

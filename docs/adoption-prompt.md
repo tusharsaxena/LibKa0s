@@ -749,19 +749,13 @@ up front because they cut against the obvious instinct:
 Open shortfalls, so you do not rediscover them mid-adoption or design a page around a surface that
 cannot reach where you need it:
 
-- **`RenderGrid` takes no `parent` and never calls `DoLayout()`.** It renders into
-  `EnsureScroll(ctx)`, which anchors flush to the whole of `ctx.body`. If your addon owns its own
-  scroll container — a list with a hand-anchored header above it — `RenderGrid` cannot draw into it,
-  and calling it there silently creates a second, overlapping full-body scroll frame. Every sibling
-  maker takes a `parent`; this one does not. It also ends without the `scroll:DoLayout()` that
-  `RenderRows` ends with, so a page rendered through `RenderGrid` **alone** must call it itself.
-  Tracked at <https://github.com/tusharsaxena/KickCD/issues/10>. If your list needs either, say so
-  and fix it upstream rather than working around it — that issue exists because a recon concluded
-  "not expressible", which was the correct and useful answer.
-- **`RenderGrid` offers two cell widths only** — `HALF` (0.5) or full-width via `wide = true` — and
-  emits `AddSpacer(ROW_VSPACER)` after every flushed row with no opt-out. A dense multi-column strip,
-  or a contiguous block of text lines with no gutter, is not expressible today without changing its
-  appearance.
+- **`RenderGrid` never calls `DoLayout()`**, by decision: it ends without the `scroll:DoLayout()`
+  that `RenderRows` ends with, so a page rendered through `RenderGrid` **alone** must call it itself.
+  Since OptionsWidgets minor 34 it takes a `parent` (draw into a container your addon owns) and
+  `opts.gap` (`false` or `0` for no spacer between rows), which close
+  the two other gaps <https://github.com/tusharsaxena/KickCD/issues/10> named.
+- **`RenderGrid` offers two cell widths only** — `HALF` (0.5) or full-width via `wide = true`. A
+  dense multi-column strip is not expressible today without changing its appearance.
 
 - **Closed at Slash minor 10 (v1.34.0): a free-text `string` row could not hold a value containing a
   space.** Through minor 9, `lib.ParseValue` split the remainder on whitespace and a `string` row took

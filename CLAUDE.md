@@ -214,8 +214,9 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
   reason, and kit 22's recording surveys to `testkit/mock_record.lua` for the same one). The closest
   file to the cap, with 44 lines of room; its `RESULTS.md` re-check trigger is 1490 lines, or any kit
   change that adds more than 30 lines here.
-- `LibKa0s/OptionsWidgets.lua` (1423 with v1.65.0's combat-refusal line, measured 2026-10-01; 1422
-  new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
+- `LibKa0s/OptionsWidgets.lua` (1444 with minor 34's `RenderGrid` parent and gap, KickCD#10,
+  measured 2026-10-01, six under its 1450 re-check trigger; 1423 with v1.65.0's combat-refusal line;
+  1422 new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
 - `LibKa0s/OptionsIds.lua` (1359 at v1.65.0; 1358 new: the id peel), ruled below.
 - `LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0),
   issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7).

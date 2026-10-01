@@ -1184,12 +1184,18 @@ badge and any count quoted in the docs must agree with it.
 - widgets: an extraColumn narrows the label column, and the line still fits one Flow row
 - widgets: with no extraColumn, ChoiceGrid's line shape is unchanged
 
-### test_options_flow.lua (42)
+### test_options_flow.lua (48)
 
 - widgets: a raising row costs that row and no other
 - widgets: RenderGrid lays arbitrary items out two per row
 - widgets: RenderGrid gives a wide item its own full-width row
 - widgets: RenderGrid guards each item the way RenderRows guards each row
+- widgets: RenderGrid's default gap is one ROW_VSPACER after every flushed and every wide row
+- widgets: RenderGrid draws into a host-owned parent and leaves the page scroll alone
+- widgets: RenderGrid's opts.gap: false and 0 draw no spacer, a number sets its height
+- widgets: a wide RenderGrid item that raised leaves no blank row and no gap
+- widgets: a RenderGrid make that answers false drew nothing and takes no row or cell
+- widgets: RenderGrid does not lay out; the caller calls DoLayout after its last render
 - widgets: RenderSchema pairs widgets two-to-a-row inside full-width Flow groups
 - widgets: a `solo` row is rendered alone on its own line
 - widgets: a `solo` row flushes the row in progress rather than joining it
@@ -1535,7 +1541,7 @@ badge and any count quoted in the docs must agree with it.
 
 ### test_options_combat_debug.lua (16)
 
-- opt combat debug: Options is at 27, with the six files the lines touch bumped
+- opt combat debug: Options is at 27 or later, with the six files the lines touch at their floor
 - opt combat debug: every refused write is one line naming the row; the notice stays once
 - opt combat debug: a color commit refused names its row
 - opt combat debug: a drag's throttled color and live-slider commits are one line each
@@ -2210,7 +2216,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 53 |
 | test_options_choicegrid.lua | 22 |
-| test_options_flow.lua | 42 |
+| test_options_flow.lua | 48 |
 | test_options_landing.lua | 18 |
 | test_options_ids.lua | 35 |
 | test_options_idlist.lua | 24 |
@@ -2252,4 +2258,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1926** |
+| **Total** | **1932** |

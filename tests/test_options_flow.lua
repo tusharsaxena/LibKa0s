@@ -90,6 +90,103 @@ test("widgets: RenderGrid guards each item the way RenderRows guards each row", 
   assertTrue(table.concat(rec.chat, "\n"):find("exploded", 1, true) ~= nil)
 end)
 
+-- RenderGrid's parent, gap and failed-item cases (OptionsWidgets minor 34, KickCD#10). The shape
+-- of what lands in the container is read as a string of row / spacer marks, so a case states the
+-- whole layout rather than a count that two different layouts could share.
+local function gridShape(container)
+  local marks = {}
+  for _, child in ipairs(container.children or {}) do
+    if child.type == "SimpleGroup" and child.layout == "Flow" then
+      marks[#marks + 1] = "row"
+    elseif child.type == "SimpleGroup" and child.layout == nil then
+      marks[#marks + 1] = "gap" .. tostring(child.height)
+    else
+      marks[#marks + 1] = tostring(child.type)
+    end
+  end
+  return table.concat(marks, " ")
+end
+
+local function gridCell(O, wide)
+  return { wide = wide, make = function(_, parent) parent:AddChild(O.AceGUI:Create("CheckBox")) end }
+end
+
+test("widgets: RenderGrid's default gap is one ROW_VSPACER after every flushed and every wide row", function()
+  -- Characterization of the two-argument call every consumer makes today: minor 34 must not move it.
+  local O, _, ctx = bench()
+  O.RenderGrid(ctx, { gridCell(O), gridCell(O), gridCell(O, true), gridCell(O) })
+  local g = "gap" .. lib.LAYOUT.ROW_VSPACER
+  assertEqual(gridShape(ctx.scroll), ("row %s row %s row %s"):format(g, g, g))
+end)
+
+test("widgets: RenderGrid draws into a host-owned parent and leaves the page scroll alone", function()
+  local O, _, ctx = bench()
+  local host = O.AceGUI:Create("SimpleGroup")
+  O.RenderGrid(ctx, { gridCell(O), gridCell(O) }, host)
+  assertEqual(gridShape(host), "row gap" .. lib.LAYOUT.ROW_VSPACER, "the rows land in the parent")
+  assertNil(ctx.scroll, "no page scroll was created behind the host's container")
+end)
+
+test("widgets: RenderGrid's opts.gap: false and 0 draw no spacer, a number sets its height", function()
+  local O, _, ctx = bench()
+  local items = { gridCell(O, true), gridCell(O), gridCell(O), gridCell(O, true) }
+  local a, b, c = O.AceGUI:Create("SimpleGroup"), O.AceGUI:Create("SimpleGroup"),
+    O.AceGUI:Create("SimpleGroup")
+  O.RenderGrid(ctx, items, a, { gap = false })
+  O.RenderGrid(ctx, items, b, { gap = 0 })
+  O.RenderGrid(ctx, items, c, { gap = 3 })
+  assertEqual(gridShape(a), "row row row", "gap = false")
+  assertEqual(gridShape(b), "row row row", "gap = 0")
+  assertEqual(gridShape(c), "row gap3 row gap3 row gap3", "gap = 3")
+  -- A nil parent with opts still falls back to the page scroll.
+  O.RenderGrid(ctx, { gridCell(O, true) }, nil, { gap = false })
+  assertEqual(gridShape(ctx.scroll), "row")
+end)
+
+test("widgets: a wide RenderGrid item that raised leaves no blank row and no gap", function()
+  local O, rec, ctx = bench()
+  local failedRow
+  rec.chat = {}
+  O.RenderGrid(ctx, {
+    gridCell(O, true),
+    { wide = true, path = "boom", make = function(_, parent) failedRow = parent; error("wide exploded") end },
+    gridCell(O, true),
+  })
+  local g = "gap" .. lib.LAYOUT.ROW_VSPACER
+  assertEqual(gridShape(ctx.scroll), ("row %s row %s"):format(g, g))
+  assertTrue(failedRow and failedRow.__released, "the failed item's row is given back to AceGUI")
+  assertTrue(table.concat(rec.chat, "\n"):find("boom", 1, true) ~= nil, "and the failure is still named")
+end)
+
+test("widgets: a RenderGrid make that answers false drew nothing and takes no row or cell", function()
+  -- KickCD's row builder answers nil for an entry it cannot draw; its make answers false then, and
+  -- the list must close up rather than leave a blank row. Only an explicit false: a make answering
+  -- nothing (every consumer today) still counts as drawn.
+  local O, _, ctx = bench()
+  local released
+  local function nothing(wide)
+    return { wide = wide, make = function(_, parent) released = parent; return false end }
+  end
+  local function half()
+    return { make = function(_, parent) parent:AddChild(O.AceGUI:Create("CheckBox")) end }
+  end
+  O.RenderGrid(ctx, { gridCell(O, true), nothing(true), half(), nothing(false), half() }, nil,
+    { gap = false })
+  assertEqual(gridShape(ctx.scroll), "row row", "the wide row closed up and the halves share one row")
+  assertEqual(#ctx.scroll.children[2].children, 2, "the false half item took no cell")
+  assertTrue(released ~= nil)
+end)
+
+test("widgets: RenderGrid does not lay out; the caller calls DoLayout after its last render", function()
+  -- Documented, not automatic: a page that renders several grids lays out once.
+  local O, _, ctx = bench()
+  local scroll = O.EnsureScroll(ctx)
+  local laid = 0
+  scroll.DoLayout = function() laid = laid + 1 end
+  O.RenderGrid(ctx, { gridCell(O), gridCell(O, true) })
+  assertEqual(laid, 0)
+end)
+
 -- ── the two-column flow engine ─────────────────────────────────────────────────────────────
 
 test("widgets: RenderSchema pairs widgets two-to-a-row inside full-width Flow groups", function()
