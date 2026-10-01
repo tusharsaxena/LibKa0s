@@ -1347,7 +1347,7 @@ badge and any count quoted in the docs must agree with it.
 - IdList: drawn disabled, every Remove and checkbox is disabled
 - IdList: with no AceGUI it draws nothing
 
-### test_options_idlist_layout.lua (33)
+### test_options_idlist_layout.lua (39)
 
 - IdList: with no columns option each entry has its line to itself, at minor 23's widths
 - IdList: columns = 2 packs entries two to a line, row-major, at half the widths
@@ -1374,6 +1374,12 @@ badge and any count quoted in the docs must agree with it.
 - IdList: the mark is drawn big enough to read, in a frame with the X's 5px ring
 - IdList: the mark draws this library's own info art when the host names itself
 - IdList: the art ladder falls back, and a host that names its own art keeps it
+- IdList: a loaded host's name draws the library art
+- IdList: a name the client has not loaded falls back, not to a dead path
+- IdList: the deprecated global IsAddOnLoaded is the second rung
+- IdList: a raising IsAddOnLoaded is not fatal and trusts the name
+- IdList: a fall-through says why, once per instance
+- IdList: no help, no question
 - IdList: a help level tints the mark, and an entry that names none keeps its gold
 - IdList: an unknown level draws the default, and a hover leaves a mark its own color
 - IdList: a one-column list still wraps, and now lights too (minor 28)
@@ -2307,7 +2313,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_landing.lua | 18 |
 | test_options_ids.lua | 35 |
 | test_options_idlist.lua | 24 |
-| test_options_idlist_layout.lua | 33 |
+| test_options_idlist_layout.lua | 39 |
 | test_options_tabs.lua | 41 |
 | test_options_tabbed.lua | 20 |
 | test_options_nav.lua | 14 |
@@ -2347,4 +2353,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **2009** |
+| **Total** | **2015** |
