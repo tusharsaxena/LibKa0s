@@ -1,4 +1,4 @@
-# `LibKa0s-Perf-1.0` — version 14.1.6
+# `LibKa0s-Perf-1.0` — version 14.1.1.6
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Perf surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **14** · `PerfCommands.lua` **1** · `PerfPanel.lua` **6** |
-| Version key | `<Perf>.<PerfCommands>.<PerfPanel>`, in load order — the same three numbers `lib.MODULES` reports |
+| Files and minors | `Perf.lua` **14** · `PerfSampler.lua` **1** · `PerfCommands.lua` **1** · `PerfPanel.lua` **6** |
+| Version key | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>`, in load order — the same four numbers `lib.MODULES` reports |
 | Shipped in | v1.66.0 |
 | Status | **Current** |
-| Supersedes | [version 13.6](./version-13.6-docs.md) — the command surface inside `Perf.lua` |
+| Supersedes | [version 13.6](./version-13.6-docs.md) — the capture and the command surface inside `Perf.lua` |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 14, PerfCommands = 1, PerfPanel = 6 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 14, PerfSampler = 1, PerfCommands = 1, PerfPanel = 6 }` |
 
 `Since` names the file and minor a member first appeared in — `P13` for `Perf.lua` minor 13, `PP5`
-for `PerfPanel.lua` minor 5, `PC1` for `PerfCommands.lua` minor 1. It is `1` for nearly everything: this major did not move at all between
+for `PerfPanel.lua` minor 5, `PC1` for `PerfCommands.lua` minor 1, `PS1` for `PerfSampler.lua` minor 1. It is `1` for nearly everything: this major did not move at all between
 the first tag and minor 6, so every adopter before that version is on the same one.
 
 Adopters today: **AbsorbTracker** (`core/PerfSetup.lua`), **KickCD** (`core/PerfSetup.lua`),
@@ -30,26 +30,40 @@ Adopters today: **AbsorbTracker** (`core/PerfSetup.lua`), **KickCD** (`core/Perf
 A repeatable A/B performance capture for one host addon: the probe, the guided run, the record
 it writes, and the clickable step panel that drives it.
 
-Three files, one major — `Perf.lua` (the probe and the run), `PerfCommands.lua` (the command
-surface a host wires into its slash table) and `PerfPanel.lua` (the step panel). One major for the
-same reason Options is one: a probe and its commands or its panel from different vendored copies is
-not a state LibStub can detect. **This is why the version key above has three components.**
+Four files, one major — `Perf.lua` (the probe, the record and the report), `PerfSampler.lua` (the
+capture: the Shape B brackets, the combat-gated windows, the FPS sampler and the perf hold),
+`PerfCommands.lua` (the command surface a host wires into its slash table) and `PerfPanel.lua` (the
+step panel). One major for the same reason Options is one: a probe and its capture, its commands or
+its panel from different vendored copies is not a state LibStub can detect. **This is why the
+version key above has four components.**
 
 ## What changed at this version
 
-**`Perf.lua` minor 14 and the new `PerfCommands.lua` minor 1 — the command surface moved to a file
-of its own** (issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), **a `within` in the
+**`Perf.lua` minor 14 and the new `PerfSampler.lua` minor 1 and `PerfCommands.lua` minor 1 — the
+capture and the command surface moved to files of their own** (issue
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), **a `within` in the
 record never dangles** (issue [#12](https://github.com/tusharsaxena/LibKa0s/issues/12)), and
 **report-only per-bucket budgets** (issue [#1](https://github.com/tusharsaxena/LibKa0s/issues/1)).
-`PerfPanel.lua` stays 6 and the floors do not move. The version key gains a component, 13.6 → 14.1.6, because the key is
-every file's minor in load order.
+`PerfPanel.lua` stays 6 and the floors do not move. The version key gains two components, 13.6 → 14.1.1.6, because the key
+is every file's minor in load order.
 
 - **`Usage`, the sub-verb handlers, `StatusLines` and `OnCommand` moved unchanged** from `Perf.lua`
   to `LibKa0s/PerfCommands.lua`, loaded by `LibKa0s.xml` after `Perf.lua` and before
   `PerfPanel.lua`. `lib:New` calls `lib.__installCommands(P, ctx)` where the block used to be, with
   the descriptor and the host's `showLog` sink, the two closure values the block read. The issue
-  named the sampler as the seam; the sampler reads about ten of `lib:New`'s closure locals and the
-  command surface reads two, so the command surface is what moved.
+  named the sampler as the seam; the command surface, which reads two closure values, moved first.
+- **The capture moved unchanged too**, to `LibKa0s/PerfSampler.lua`, loaded by `LibKa0s.xml` after
+  `Perf.lua` and before `PerfCommands.lua`: `Open` and `Close` with their free list, the
+  measurement windows and the FPS sampler, `Start`, `Measure`, `Stop` and `Cancel`, and `Suspend`
+  and `Resume`. `lib:New` calls `lib.__installSampler(P, ctx)`, which hands back what `P.Reset`
+  calls to zero the open depth; the FPS arms and the completion pair, which `P.Reset` replaces, are
+  read through getters, so every read sees the live table as it did inside the closure. It records
+  `lib.__samplerMinor` and `lib.__samplerShellMinor`. `Perf.lua` is 975 lines, out of
+  `layout-§1`'s 1000–1500 band.
+- **A payload without `PerfSampler.lua`** still builds instances: `Open` and `Close` are inert,
+  every command answers one line naming the missing file, `Start` logs that line and runs nothing,
+  `Measure` answers `nil, "no experiment"`, `Stop` hands back an empty record, and `Cancel`,
+  `Suspend` and `Resume` answer `false`.
 - **The same multi-file idiom as `PerfPanel.lua`.** The file attaches to the live probe and records
   `lib.__commandsMinor` and `lib.__commandsShellMinor`, so a command surface from one vendored copy
   never pairs with a probe from another without saying so; `tests/test_versioning.lua`'s pairing
@@ -80,7 +94,7 @@ every file's minor in load order.
   declares no budget gets the report and the finish acknowledgment it always got, byte for byte.
   The ceilings are each host's to set from its own captures; the library supplies no default.
 - **No lib-level or instance member is added, removed or resignatured.** The member manifest lists
-  13.6's surface; `lib.MODULES` gains `PerfCommands`. The instance gains the data field
+  13.6's surface; `lib.MODULES` gains `PerfSampler` and `PerfCommands`. The instance gains the data field
   `BUCKET_BUDGET` (key → the validated budget), beside `BUCKET_ORDER` and `BUCKET_WITHIN`.
 
 **What a host must change: nothing.** No member moves, so no degradation stub does.
@@ -272,7 +286,7 @@ so there is nothing here for them to measure yet.
 | `lib.SCHEMA` | 1 | The record schema version this build emits — **2** here. See [`docs/record-schema.md`](../../record-schema.md). |
 | `lib.DEFAULT_RING` | 1 | Default depth of the SavedVariables capture ring (**10**), used when the descriptor omits `ring`. |
 | `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. |
-| `lib.MODULES` | 1 | `{ Perf = <minor>, PerfCommands = <minor>, PerfPanel = <minor> }` — the live minor of every file in this major (`PerfCommands` from **P14**). |
+| `lib.MODULES` | 1 | `{ Perf = <minor>, PerfSampler = <minor>, PerfCommands = <minor>, PerfPanel = <minor> }` — the live minor of every file in this major (`PerfSampler` and `PerfCommands` from **P14**). |
 | `lib:New(descriptor)` | 1 | Build a probe for one host. |
 
 ## The descriptor
@@ -486,7 +500,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `BuildRecord(label)` | 1 · **14** | Assemble the current capture into the record schema (`docs/record-schema.md`). From **P14** every declared ancestor of a recorded bucket is in the record, at zero counts if it never fired. |
 | `Save(record)` | 1 (prune trace: **P11**) | Append a record to the host's SavedVariables ring, trimming past `ring`. A save that trims logs one line through `P.Log` naming the cap and how many records it dropped. |
 | `FormatReport(record)` | 1 · **14** | Render a record as plain lines, for `Log`/testing. From **P14** it ends with the `budget (report-only)` section when any bucket declares a budget. |
-| `Start(label)` | 1 | Begin an experiment. Samples nothing until a window is armed. |
+| `Start(label)` | 1 | Begin an experiment. Samples nothing until a window is armed. In `PerfSampler.lua` from **P14**, like `Open`, `Close` and everything down to `Resume`. |
 | `Measure(token)` | 1 | Arm window `"a"` or `"b"`; sets suspend state as the independent variable. |
 | `Stop()` | 1 | End the experiment, detach the sampler, return the record. **Does not resume.** If Experiment B ran, the host is still inert when `Stop()` returns and stays that way until something calls `Resume()` — a host driving this API directly owns that call. The asymmetry is deliberate: `OnCommand("finish")` resumes *before* it saves, so that an error in `Save` or `FormatReport` cannot strand the addon dead for the session, and it can only order it that way because `Stop()` leaves the suspend state alone. |
 | `Cancel()` | 1 | Abandon a run in flight; discards everything, restores the host if suspended. |
@@ -639,7 +653,7 @@ records are discarded rather than converted. See [`docs/record-schema.md`](../..
 `PerfPanel.lua` minor 4 is additive in both directions: `addonName` is a new optional field, and a
 host that passes nothing gets a better-looking button from the same call it always made.
 
-The three files move as one. A consumer holding `Perf.lua` from one vendored copy and
-`PerfCommands.lua` or `PerfPanel.lua` from another is not a supported state; each secondary file is
+The four files move as one. A consumer holding `Perf.lua` from one vendored copy and
+`PerfSampler.lua`, `PerfCommands.lua` or `PerfPanel.lua` from another is not a supported state; each secondary file is
 paired on the probe's minor so a mismatch re-attaches rather than persisting silently, which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.

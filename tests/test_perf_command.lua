@@ -252,6 +252,7 @@ test("cmd: a probe without PerfCommands.lua answers every command with one line 
   Loader.load("LibKa0s/Core.lua", nil, env)
   Loader.load("LibKa0s/Lifecycle.lua", nil, env)
   Loader.load("LibKa0s/Perf.lua", nil, env)
+  Loader.load("LibKa0s/PerfSampler.lua", nil, env)
   Loader.load("LibKa0s/PerfPanel.lua", nil, env)
   local lib = env.LibStub("LibKa0s-Perf-1.0")
   T.assertNil(lib.__installCommands, "no installer without its file")

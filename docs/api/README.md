@@ -71,7 +71,7 @@ the file you need:
 | `LibKa0s-Slash-1.0` | `<Slash>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
-| `LibKa0s-Perf-1.0` | `<Perf>.<PerfCommands>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
+| `LibKa0s-Perf-1.0` | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
 
 A multi-file major gets a composite key because its files carry **independent** minors that really do
 diverge — the Options major has passed through `O3/W2`, `O3/W3`, `O4/W4` and `O4/W5`. Keying on one
@@ -294,7 +294,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [14.1.6](./Perf/version-14.1.6-docs.md) | `Perf.lua` 14 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.66.0 | **Current** |
+| [14.1.1.6](./Perf/version-14.1.1.6-docs.md) | `Perf.lua` 14 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.66.0 | **Current** |
 | [13.6](./Perf/version-13.6-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 6 | v1.64.0 – v1.65.0 | Superseded |
 | [13.5](./Perf/version-13.5-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 5 | v1.56.0 – v1.63.0 | Superseded |
 | [12.5](./Perf/version-12.5-docs.md) | `Perf.lua` 12 · `PerfPanel.lua` 5 | v1.40.0 – v1.55.0 | Superseded |

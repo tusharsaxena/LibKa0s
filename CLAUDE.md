@@ -203,9 +203,9 @@ same command on **2026-09-26 at v1.62.0's release, kit revision 31**, after the 
 sweep. It is prose rather than a second table on purpose: the gate above reads every
 backticked-path table row under this heading as a census row, so a band table here would be ten
 rows claiming to be breaches. Ten files at that write-out, three fewer than the thirteen of the
-2026-09-24 write-out: the sweep took six out and its id peel brought three in. Eight now:
-`tests/test_options.lua`, `tests/test_schema.lua` and `LibKa0s/Widgets.lua` left on 2026-10-01
-(below), and `LibKa0s/Slash.lua` came in the same day with minor 19. Largest first:
+2026-09-24 write-out: the sweep took six out and its id peel brought three in. Seven now:
+`tests/test_options.lua`, `tests/test_schema.lua`, `LibKa0s/Widgets.lua` and `LibKa0s/Perf.lua`
+left on 2026-10-01 (below), and `LibKa0s/Slash.lua` came in the same day with minor 19. Largest first:
 
 - `testkit/mock_base.lua` (1456, unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
@@ -224,17 +224,6 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
   `RenderTabbedSchema` took it the rest of the way), peeled then accepted, below.
-- `LibKa0s/Perf.lua` (1307 at minor 14 with `GI-LK-11`'s `P.Context` reader table, measured
-  2026-10-01, no member added; 1292 before it: 1170 after issue
-  [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)'s peel moved the command surface, unchanged,
-  to `LibKa0s/PerfCommands.lua` (230 with the budget line), then 22 for #12's zero-count ancestors
-  and 100 for #1's budgets; 1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at
-  v1.39.0) — **peeled, still in the band.** The peel took the seam whose closure dependencies could
-  be passed in (the descriptor and one sink); it was never going to clear 1000 alone.
-  **Re-check trigger: 1350 lines, or the next member added to the instance**; the next seam is the
-  issue's own, the measurement windows and the sampler (`ensureSampler` through `P.Cancel`, about
-  230 lines), which reads the bucket, arm and open-depth state through closure locals that would
-  have to be passed in first.
 - `LibKa0s/Options.lua` (1282 with v1.65.0's combat-refusal lines and their one private member, `O.__combatRefused`, which fires the re-check trigger below and is re-ruled there; 1261 after the sweep moved its page registry to
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
@@ -248,6 +237,18 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
   `lib.ParseValue`, with `enumList` and `allowedText`, about 150 lines) is the seam, to a secondary
   file of its own, the cut `tests/test_slash_parse.lua` already made on the suite side.
 
+`LibKa0s/Perf.lua` left the band on 2026-10-01, 1307 → 975, closing issue
+[#7](https://github.com/tusharsaxena/LibKa0s/issues/7) in two peels at minor 14. The first moved the
+command surface, unchanged, to `LibKa0s/PerfCommands.lua` (230): 1319 → 1170, then 22 lines for #12's
+zero-count ancestors, 100 for #1's budgets and 15 for `GI-LK-11`'s `P.Context` reader table took it
+back to 1307. The second (`GI-LK-07R`, the addendum's A2) moved the issue's own seam, the capture,
+unchanged, to `LibKa0s/PerfSampler.lua` (418): the Shape B brackets and their free list, the
+measurement windows and the FPS sampler, `P.Start` through `P.Cancel`, and `P.Suspend` / `P.Resume`,
+paired on the probe's minor like the other two. The open depth went with the brackets, so the window
+edges reset it in their own file and `P.Reset` zeroes it through the function the installer hands
+back; the FPS arms and the completion pair are read through getters because `P.Reset` replaces
+them. What is left is the probe, the record and the report. **Re-check trigger: 1000 lines**; the
+report sections (`addFpsLines` through `lib.__budgetOver`, file-level already) are the next seam.
 `LibKa0s/Widgets.lua` left the band on 2026-10-01, 1303 → 655, closing issue #36: `ReorderList`,
 the row box and their machinery moved unchanged to `LibKa0s/WidgetsReorder.lua` (680) at Widgets
 minor 12, a secondary file paired on the shell's minor as `LibKa0s/WidgetsDragHandle.lua` is. The

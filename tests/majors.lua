@@ -105,9 +105,10 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Perf-1.0",
-    files = { "Perf", "PerfCommands", "PerfPanel" },
+    files = { "Perf", "PerfSampler", "PerfCommands", "PerfPanel" },
     primary = "Perf",
     paired = {
+      { file = "PerfSampler",  minorField = "__samplerMinor",  probeField = "__samplerShellMinor" },
       { file = "PerfCommands", minorField = "__commandsMinor", probeField = "__commandsShellMinor" },
       { file = "PerfPanel",    minorField = "__panelMinor",    probeField = "__panelProbeMinor" },
     },

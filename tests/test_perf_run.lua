@@ -500,3 +500,64 @@ test("latch: the perf hold is session-only and reaches no SavedVariables", funct
   assertEqual(table.concat(rec.lifecycle:Holds(), ","), "perf")
   p.Resume()
 end)
+-- ── the file it lives in (issue #7, the second peel) ─────────────────────────────────────────
+--
+-- The capture itself (the Shape B brackets, the combat-gated windows, the FPS sampler and the
+-- perf hold's Suspend / Resume) left Perf.lua for LibKa0s/PerfSampler.lua, a secondary file of the
+-- same major paired on the probe's minor as PerfCommands.lua and PerfPanel.lua are, so Perf.lua
+-- leaves `layout-§1`'s 1000-1500 band. Every case above runs unchanged against the moved code;
+-- these two pin the pairing and the partial payload.
+
+test("sampler: the capture lives in PerfSampler.lua at minor 1, paired on the live probe", function()
+  -- red under: the capture written into Perf.lua, which publishes no PerfSampler minor
+  local lib = T.lib
+  assertEqual(lib.MODULES.PerfSampler, 1)
+  assertEqual(lib.__samplerMinor, 1)
+  assertEqual(lib.__samplerShellMinor, lib.MINOR, "attached to the probe that is live")
+  assertEqual(type(lib.__installSampler), "function")
+end)
+
+test("sampler: a probe without PerfSampler.lua builds, records nothing and says why", function()
+  -- red under: the capture written into Perf.lua, which a probe-only payload still carries
+  local Loader     = dofile("tests/_kit/loader.lua")
+  local buildMocks = dofile("tests/wow_mock.lua")
+  local env = buildMocks()
+  Loader.load("LibKa0s/Core.lua", nil, env)
+  Loader.load("LibKa0s/Lifecycle.lua", nil, env)
+  Loader.load("LibKa0s/Perf.lua", nil, env)
+  Loader.load("LibKa0s/PerfCommands.lua", nil, env)
+  Loader.load("LibKa0s/PerfPanel.lua", nil, env)
+  local lib = env.LibStub("LibKa0s-Perf-1.0")
+  T.assertNil(lib.__installSampler, "no installer without its file")
+  T.assertNil(lib.MODULES.PerfSampler)
+  local logged = {}
+  local p = lib:New({
+    name = "NoSampler", sv = "NoSamplerPerfDB",
+    print = function() end,
+    log = function(line) logged[#logged + 1] = line end,
+    lifecycle = env.LibStub("LibKa0s-Lifecycle-1.0"):New{
+      name = "NoSampler", standDown = function() end, standUp = function() end },
+  })
+  -- The brackets are callable and inert: a host's Shape B call sites never meet a nil.
+  p.Open("outer")
+  p.Close("outer")
+  T.assertNil(p.__buckets().outer, "a bracket records nothing")
+  -- Every command answers one line naming the missing file, as a probe without PerfCommands.lua does.
+  for _, args in ipairs({ "", "start", "measure a", "finish" }) do
+    local out = p.OnCommand(args)
+    assertEqual(#out, 1, "one line (" .. args .. ")")
+    assertTrue(out[1]:find("PerfSampler.lua", 1, true) ~= nil, "naming the missing file")
+  end
+  -- A host driving the API directly gets the same answer in its log, and nothing runs.
+  p.Start("direct")
+  assertFalse(p.run, "nothing ran")
+  assertTrue(logged[#logged]:find("PerfSampler.lua", 1, true) ~= nil, "the log says why")
+  local arm, err = p.Measure("a")
+  T.assertNil(arm)
+  assertEqual(err, "no experiment")
+  assertEqual(type(p.Stop()), "table", "Stop still hands back a record")
+  assertFalse(p.Cancel())
+  assertFalse(p.Suspend())
+  assertFalse(p.Resume())
+  T.assertNil(p.__sampler(), "and no frame was made")
+end)

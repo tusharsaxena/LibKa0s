@@ -1715,7 +1715,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: Context keeps every field's default where its client reader answers nil
 - lib: Context's spec is '?' with no spec index, and with an index reader but no info reader
 
-### test_perf_run.lua (40)
+### test_perf_run.lua (42)
 
 - lib: suspend returns false when already suspended
 - lib: resume returns false when not suspended
@@ -1757,6 +1757,8 @@ badge and any count quoted in the docs must agree with it.
 - latch: the resume log line follows what actually happened
 - latch: finish releases the hold before saving, and says which of the two happened
 - latch: the perf hold is session-only and reaches no SavedVariables
+- sampler: the capture lives in PerfSampler.lua at minor 1, paired on the live probe
+- sampler: a probe without PerfSampler.lua builds, records nothing and says why
 
 ### test_perf_panel.lua (45)
 
@@ -2305,7 +2307,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_compose.lua | 45 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
-| test_perf_run.lua | 40 |
+| test_perf_run.lua | 42 |
 | test_perf_panel.lua | 45 |
 | test_perf_command.lua | 22 |
 | test_perf_budget.lua | 11 |
@@ -2332,4 +2334,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **1994** |
+| **Total** | **1996** |

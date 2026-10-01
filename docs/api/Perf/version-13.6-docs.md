@@ -13,7 +13,7 @@
 | Shipped in | v1.64.0 |
 | Status | Superseded |
 | Supersedes | [version 13.5](./version-13.5-docs.md) — a fixed-size step panel |
-| Superseded by | [version 14.1.6](./version-14.1.6-docs.md) |
+| Superseded by | [version 14.1.1.6](./version-14.1.1.6-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 13, PerfPanel = 6 }` |
@@ -627,10 +627,11 @@ The two files move as one. A consumer holding `Perf.lua` from one vendored copy 
 from another is not a supported state and LibStub cannot detect it — which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
 
-## Moving to version 14.1.6
+## Moving to version 14.1.1.6
 
 **Take it; nothing in a host's code or its degradation stub changes.** The next version is key
-14.1.6: `Perf.lua` 14, the new `PerfCommands.lua` 1 and `PerfPanel.lua` still 6. `Usage`, the
-sub-verb handlers, `StatusLines` and `OnCommand` moved unchanged from `Perf.lua` to
-`PerfCommands.lua`, paired on the probe's minor. No member changes. Re-vendor the whole folder, as
-always; the load list derives from `LibKa0s.xml`. See [version 14.1.6](./version-14.1.6-docs.md).
+14.1.1.6: `Perf.lua` 14, the new `PerfSampler.lua` 1 and `PerfCommands.lua` 1, and `PerfPanel.lua`
+still 6. The brackets, the windows, the sampler and `Suspend` / `Resume` moved unchanged from
+`Perf.lua` to `PerfSampler.lua`, and `Usage`, the sub-verb handlers, `StatusLines` and `OnCommand`
+to `PerfCommands.lua`, each paired on the probe's minor. No member changes. Re-vendor the whole folder, as
+always; the load list derives from `LibKa0s.xml`. See [version 14.1.1.6](./version-14.1.1.6-docs.md).

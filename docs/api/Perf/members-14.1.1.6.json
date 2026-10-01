@@ -1,9 +1,10 @@
 {
   "major": "LibKa0s-Perf-1.0",
-  "versionKey": "14.1.6",
+  "versionKey": "14.1.1.6",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Perf", "minor": 14 },
+    { "file": "PerfSampler", "minor": 1 },
     { "file": "PerfCommands", "minor": 1 },
     { "file": "PerfPanel", "minor": 6 }
   ],

@@ -18,16 +18,17 @@ new **WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragH
 `DebugLogGates` 1), **OptionsWidgets minor 34** and **OptionsTabs minor 8**
 (`LibKa0s-Options-1.0` 27.2.34.2.2.8.1.7.4.2, with `Options` 27, `OptionsRegistry` 2, `OptionsIds` 2,
 `OptionsIdList` 2, `OptionsCombat` 1, `OptionsCompose` 7, `OptionsScroll` 4 and `OptionsNav` 2), and
-**Perf minor 14** and the new **PerfCommands minor 1** (`LibKa0s-Perf-1.0` 14.1.6, with `PerfPanel` 6).
+**Perf minor 14** and the new **PerfSampler minor 1** and **PerfCommands minor 1** (`LibKa0s-Perf-1.0`
+14.1.1.6, with `PerfPanel` 6).
 Every other file is unchanged from v1.65.0: `Core` 9, `Env` 1, `Compat` 1, `Lifecycle` 3, `Bus` 2,
 `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Launcher` 5. The test kit moves to **revision 35**. No
-`NEEDS_*` floor rises and no major is added; two payload files are added (`WidgetsReorder.lua`,
-loaded by `LibKa0s.xml` after `Widgets.lua`, and `PerfCommands.lua`, after `Perf.lua`), so the library
-is **fifteen majors across thirty files**. Built to the Ka0s WoW Addon Standard **v2.73.0**; the
+`NEEDS_*` floor rises and no major is added; three payload files are added (`WidgetsReorder.lua`,
+loaded by `LibKa0s.xml` after `Widgets.lua`, and `PerfSampler.lua` and `PerfCommands.lua`, in that
+order after `Perf.lua`), so the library is **fifteen majors across thirty-one files**. Built to the Ka0s WoW Addon Standard **v2.73.0**; the
 standard's sighted-complexity MUST (WowAddonStandards#6) lands in its next version, after this tag.
 
 This is the library's half of the 2026-10-01 GitHub issue pass. It closes LibKa0s#1 (report-only
-Perf budgets), LibKa0s#7 (the Perf command surface peeled), LibKa0s#12 (a declared parent that never
+Perf budgets), LibKa0s#7 (the Perf command surface and capture peeled), LibKa0s#12 (a declared parent that never
 fired is in the record), LibKa0s#35 and LibKa0s#38 (two test suites split out of the 1000–1500
 band), LibKa0s#36 (`ReorderList` peeled) and LibKa0s#40 (the host's `L` reaches every parse
 refusal); it carries the library changes KickCD#10 (`RenderGrid`'s `parent` and `opts.gap`) and
@@ -91,19 +92,28 @@ nothing draws, prints and records what it did on v1.65.0.
 - **What a consumer owes:** nothing. AbsorbTracker adopts all four on its Appearance page after the
   re-vendor and deletes its hand-composed strip.
 
-### Perf minor 14, PerfCommands minor 1: the command surface peeled to a file of its own (issue #7)
+### Perf minor 14, PerfSampler minor 1, PerfCommands minor 1: the capture and the command surface peeled to files of their own (issue #7)
 
 - **`Usage`, the sub-verb handlers, `StatusLines` and `OnCommand`** moved unchanged from `Perf.lua`
   to the new secondary file `PerfCommands.lua`, loaded by `LibKa0s.xml` after `Perf.lua` and before
   `PerfPanel.lua`, and paired on the probe's minor (`lib.__commandsMinor` /
   `lib.__commandsShellMinor`) as `PerfPanel.lua` is. `lib:New` installs them through
-  `lib.__installCommands(P, ctx)`. The issue named the sampler as the seam; it reads about ten of
-  `lib:New`'s closure locals where the command surface reads two, so the command surface moved.
-- **A payload without the new file** still builds instances, and `OnCommand`, `Usage` and
-  `StatusLines` answer one line naming the missing file rather than nil.
+  `lib.__installCommands(P, ctx)`.
+- **The capture** — `Open` and `Close` with their free list, the combat-gated measurement windows,
+  the FPS sampler, `Start`, `Measure`, `Stop`, `Cancel`, `Suspend` and `Resume` — moved unchanged
+  to the new secondary file `PerfSampler.lua`, the seam the issue named, loaded after `Perf.lua` and
+  before `PerfCommands.lua` and paired the same way (`lib.__samplerMinor` /
+  `lib.__samplerShellMinor`). `lib:New` installs it through `lib.__installSampler(P, ctx)`, which
+  hands back what `P.Reset` calls to zero the open depth; the tables `P.Reset` replaces are read
+  through getters. `Perf.lua` is 975 lines, out of `layout-§1`'s 1000–1500 band.
+- **A payload without either new file** still builds instances. Without `PerfCommands.lua`,
+  `OnCommand`, `Usage` and `StatusLines` answer one line naming it rather than nil; without
+  `PerfSampler.lua`, they answer one line naming that file, the brackets are inert, `Start` logs the
+  line and runs nothing, and `Stop` hands back an empty record.
 - **The descriptor's optional sinks are resolved at file level** (`resolveHooks`), out of
   `lib:New`'s complexity; every default is unchanged. No member moves; the member manifest lists
-  13.6's surface. Cases: `tests/test_perf_command.lua`. See `docs/api/Perf/version-14.1.6-docs.md`.
+  13.6's surface. Cases: `tests/test_perf_command.lua` and `tests/test_perf_run.lua`. See
+  `docs/api/Perf/version-14.1.1.6-docs.md`.
 - **What a consumer owes:** a whole-folder re-vendor, as always, and the in-game perf run smoke
   check (typed and clicked) in every consumer that wires a Perf module.
 
@@ -128,7 +138,7 @@ nothing draws, prints and records what it did on v1.65.0.
 - **Nothing gates**, by decision (D5 of the 2026-10-01 issue pass): an in-game capture is noisy and
   the offline counters already gate releases. A host that declares no budget gets a byte-identical
   report and finish acknowledgment. Cases: `tests/test_perf_budget.lua`. See
-  `docs/record-schema.md` and `docs/api/Perf/version-14.1.6-docs.md`.
+  `docs/record-schema.md` and `docs/api/Perf/version-14.1.1.6-docs.md`.
 - **What a consumer owes:** nothing to keep working. The six wired consumers declare their own
   ceilings in `PerfSetup.lua` after the re-vendor, from their committed captures.
 
