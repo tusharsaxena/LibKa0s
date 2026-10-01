@@ -1,0 +1,1 @@
+OK GI-LK-06 — untabbedSkipRender (claimed groups kept, rows stay bucketed), disabledReplaces(+font), guarded rerender all opt-in; defaults characterized (BankLedger/LootHistory shapes); NO_GROUPS change unreachable without flag; TABS_MINOR 8; docs moved; CRLF; gate 1937/0/2, luacheck 0/0, lizard clean
