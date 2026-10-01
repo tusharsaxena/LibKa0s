@@ -1,0 +1,1 @@
+OK GI-LK-01 — pure move verified (removed lines all in test_options_render.lua, header only rewritten); 61+24=85 cases, test_options.lua 988 <1000; suite 1917/0/2/1919, luacheck 0/0, lizard clean, test-cases.md matches --list, CRLF/LF preserved. Nit: tests/test_options_fontpreload.lua:12 still says test_options.lua is in the band.
