@@ -1,0 +1,1 @@
+OK GI-LK-05 — RenderGrid parent/opts.gap/failed-wide release match spec; 2-arg call unchanged (characterized); make==false arm justified by KickCD#10 design, no shipped make returns false; tests red-first; WIDGETS_MINOR 34; docs moved; CRLF; gate 1937/0/2, luacheck 0/0, lizard clean
