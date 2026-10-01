@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 18
+# `LibKa0s-Slash-1.0` — version 19
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **18** |
-| Shipped in | v1.65.0 |
-| Status | Superseded |
-| Supersedes | [version 17](./version-17-docs.md) — whose refusals reached chat only |
-| Superseded by | [version 19](./version-19-docs.md) |
+| Files and minors | `Slash.lua` minor **19** |
+| Shipped in | v1.66.0 |
+| Status | **Current** |
+| Supersedes | [version 18](./version-18-docs.md) — whose parse refusals and `(none)` ignored the host's `L` |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 18 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 19 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
@@ -35,6 +35,29 @@ Like DebugLog, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon fram
 returns before `NewLibrary` if Core is missing or below the minor it needs.
 
 ## What changed at this version
+
+**The host's `L` reaches every parse refusal and the empty-string `(none)`** (issue #40). Through
+version 18 the file-level parsers behind `set` and the `string` formatter behind every echo read
+`lib.STRINGS` directly, while the instance resolved its own lines through `Sl:Text`. So a host's `L`
+overrode `INVALID` but never the reason printed under it: `ERR_BOOL`, `ERR_NUMBER`, `ERR_STRING`,
+`ERR_ALLOWED`, `ERR_COLOR` and `ERR_TYPE` were unreachable, and so was `NONE`. ConsumableMaster
+carried three of them in its table, marked dead for exactly that reason.
+
+- **`lib.ParseValue(row, text, textOf)` and `lib.FormatValue(row, v, textOf)`** take an optional
+  third argument, a key → string resolver. Absent, each reads `lib.STRINGS` as before, so a
+  two-argument call answers byte for byte what version 18 answered.
+- **The instance passes `Sl:Text`**, so its default parse and every echo read the host's `L` first,
+  with the same `rawget` rule (a key-echoing locale still falls through to the library's string).
+- **A host's own `parse` is handed the resolver as a third argument**, to pass on to
+  `lib.ParseValue`. A `parse` that takes two arguments ignores it. A host's `format` replaces
+  `lib.FormatValue` outright and is called exactly as before.
+- The disabled refusal line still does not read `L`. No member, string or `NEEDS_*` floor moves;
+  the member manifest is unchanged apart from its version key.
+
+The cases are in `tests/test_slash_parse.lua`, including the two-argument default and the
+key-echoing locale.
+
+### Previously, at version 18
 
 **The dispatcher's own refusals reach the host's debug log.** Every refusal Slash decides itself
 reached chat and nothing else, so a support read of the log could not see that a verb was refused, or
@@ -550,8 +573,8 @@ rendered row depends on which instance rendered it.
 |---|---|---|
 | `lib.FormatRow(command, description)` | 1 | One command row: `\|cFFFFFF00` command, an em dash with a single space either side, `\|cFFFFFFFF` description. **Not** indented — the indent belongs to whoever renders, because a chat line sits under a header and a settings-panel label does not. This is the one command-row formatter in the collection; the `/at list` header, its group headings and any host annotation are a different, lower-case-hex family and stay that way. |
 | `lib.FormatKV(path, valueStr)` | 1 | One `key = value` pair, gold key and white value, no trailing colon. Used by the list rows and by the get/set echo, so a setting reads identically wherever it is printed. |
-| `lib.FormatValue(row, v)` | 1 | Render a stored value by the row's declared type — a color as `{r, g, b, a}` to two places, a number through the row's `fmt`, an empty string as `STRINGS.NONE`, anything else through Core's `SafeToString`. At this minor the descriptor's `format` hook, when present, takes precedence over this entirely. |
-| `lib.ParseValue(row, text)` | 1 | The type-aware parser. Returns the value, or `nil` plus a reason. A `string` row reads the whole of `text`, trimmed at both ends, and an enum is matched on that full string (**10**); every other type reads whitespace-separated tokens. |
+| `lib.FormatValue(row, v, textOf)` | 1 | Render a stored value by the row's declared type — a color as `{r, g, b, a}` to two places, a number through the row's `fmt`, an empty string as `NONE`, anything else through Core's `SafeToString`. `textOf` (**19**, optional) resolves `NONE`; absent, it is `lib.STRINGS`'. At this minor the descriptor's `format` hook, when present, takes precedence over this entirely. |
+| `lib.ParseValue(row, text, textOf)` | 1 | The type-aware parser. Returns the value, or `nil` plus a reason. A `string` row reads the whole of `text`, trimmed at both ends, and an enum is matched on that full string (**10**); every other type reads whitespace-separated tokens. `textOf` (**19**, optional) is a key → string resolver for the reason; absent, the reason is `lib.STRINGS`'. |
 | `lib.SplitVerb(rest)` | **6** | → `verb, remainder`. The verb **lowercased**, the remainder's case *and* internal spacing preserved. The asymmetry is the contract, not an oversight — see below. Both default to `""`. |
 | `lib.FindCommand(list, name)` | **6** | → the matched `{ name, description, handler }` entry, or `nil`. Linear scan, compared verbatim; callers lowercase through `lib.SplitVerb` first. |
 | `lib.CommandRows(prefix, commands, indent)` | **6** | → an array of rendered rows, one per entry: `indent .. lib.FormatRow(prefix .. " " .. entry[1], entry[2])`. `indent` defaults to `""`. |
@@ -715,7 +738,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `applyDefault` | function(row) | no | 1 | Restore one row to its default. **From 15**, answering exactly `false` (as `S.ApplyDefault` does for a row with no default) makes `CliReset` print `NO_DEFAULT` instead of the echo. |
 | `bulkBegin` | function(act, scope) | no | **8** | Called once before `CliResetAll` writes its first row: act `"reset"`, scope `"all"`. Mute the host seam's per-row `[Set]` line here — `debug-logging-§10`. Same field as the Options descriptor's. See [The two fields](#the-two-fields). |
 | `bulkEnd` | function(act, scope, count, err, info) | no | **8** | The fifth argument is the Options major's `info` table, whose `profileReset` is always `false` here. The host emits `[Set] reset all: N rows` when its outermost bracket closes, with N its own tally of writes that changed a stored value — **not** `count`, which includes rows already at their default. A host that mutes in `bulkBegin` MUST supply this field. Called once after the walk, **always** when the bracket was begun — even if a row or `bulkBegin` raised. `count` is the number of rows `applyDefault` returned for, including rows already at their default — the host logs its own tally of changed writes instead; `err` is the raised value or `nil` (a raise of `nil`/`false` also arrives as `nil`), re-raised unchanged after this returns. Unmute here, and emit the one summary line only when the outermost bracket closes. A host supplying neither runs version 7's walk exactly. |
-| `parse` | function(row, text) | no | 1 | Defaults to `lib.ParseValue`. Called with the row and everything after the path, untrimmed. |
+| `parse` | function(row, text, textOf) | no | 1 | Defaults to `lib.ParseValue`. Called with the row and everything after the path, untrimmed. From **19** also handed the instance's key → string resolver (`Sl:Text`), to pass on to `lib.ParseValue` so the host's `L` reaches its refusals. |
 | `format` | function(row, stored) | no | **5** | Renders a value for display, replacing `lib.FormatValue` outright, at every list/get/set/reset echo. The counterpart of `parse`: for a row type this library does not know — a set, a pattern needing its pipes doubled. Handed the value **as stored**, and taking precedence over `colorDecode`. |
 | `groupKey` | function(row) | no | 1 | Row → the heading it lists under. Defaults to `row.page or "settings"` — a row with no page still lists somewhere. |
 | `colorDecode` | function(stored) | no | 4 | → `r, g, b, a`. Same field name as the Options descriptor's, so a host passes one pair to both majors. Defaults to reading the named-key form, then the positional one. |
@@ -725,7 +748,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `liveVerbs` | table | no | **12** | Array of the verbs that still answer while disabled. Defaults to `lib.LIVE_VERBS`, which is the standard's reserved verbs from **13**, thirteen of them from **16** (`diagnostics`). It names the verbs that stay live, not the verbs the host registers: from **14** a verb listed here with no `commands` entry behind it is answered as unknown rather than refused. Present so the set is data rather than a hard-coded branch; a host MAY narrow it to the verbs it actually ships. |
 | `profiles` | function | no | **17** | → the host's profile store, or nil. Duck-typed on AceDB-3.0's shape, `GetProfiles(tbl) -> tbl, n`, `GetCurrentProfile()`, `SetProfile(name)`, and never required to be AceDB. Asked at call time, because a host's db is built after its slash file runs. Absent, answering nil, or a store missing a method: `CliProfile` prints `PROFILE_UNAVAILABLE`. |
 | `debug` | function(tag, message) | no | **18** | The host's gated log seam, as Launcher's. Each refusal this module decides writes one `Cmd` line after its chat line: see [What changed at this version](#what-changed-at-this-version). Absent or not a function: no line. |
-| `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **It does not reach the disabled refusal line** (**12**): that wording is the collection's rather than the addon's. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
+| `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. From **19** it reaches every parse refusal and the empty-string `NONE` as well. **It does not reach the disabled refusal line** (**12**): that wording is the collection's rather than the addon's. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 
 Only `slash` and `commands` are required, and both raise rather than defaulting: a dispatcher with
 no prefix has nothing to compose usage lines from, and one with no verb table answers every input
@@ -867,6 +890,12 @@ correct on every minor.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+**What moves at version 19 is wording, and only for a host that asked for it.** A host whose `L`
+carries `ERR_BOOL`, `ERR_NUMBER`, `ERR_STRING`, `ERR_ALLOWED`, `ERR_COLOR`, `ERR_TYPE` or `NONE` now
+sees its own text where it saw the library's. A host with no such keys sees no change. A host
+`parse` taking a third positional argument for something else would now receive the resolver there;
+no consumer's did when this was written.
+
 **What is added at version 18 is one descriptor field, `debug`, and no chat moves.** A host that
 passes none sees no change on re-vendor; one that passes its gated sink gains a `Cmd` line per
 refusal and SHOULD delete any host line that duplicates it (AbsorbTracker's DisabledLine match). No
@@ -951,12 +980,3 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
-
-## Moving to version 19
-
-**Take it; the wording moves only where a host's `L` asked for it.** Version 19 hands the instance's
-`Sl:Text` to `lib.ParseValue` and `lib.FormatValue` as an optional third argument, so a host's `L`
-reaches every parse refusal (`ERR_BOOL`, `ERR_NUMBER`, `ERR_STRING`, `ERR_ALLOWED`, `ERR_COLOR`,
-`ERR_TYPE`) and the empty-string `NONE`. A two-argument call answers exactly as here. A host `parse`
-is handed the resolver as a third argument; one that delegates to `lib.ParseValue` should pass it on.
-Un-mark any of those keys a host's table kept as dead. See [version 19](./version-19-docs.md).

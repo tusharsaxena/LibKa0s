@@ -18,7 +18,7 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Slash-1.0", 18
+local MAJOR, MINOR = "LibKa0s-Slash-1.0", 19
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -176,7 +176,9 @@ end
 -- enforced nowhere: a host whose `d.get` returns a derived or live value (an absorb total, a
 -- health fraction) hands us a secret, and a secret RAISES inside `string.format` exactly as it
 -- does inside `table.concat`. Guarding the input rather than the output keeps every rendered
--- byte of an ordinary value identical.
+-- byte of an ordinary value identical. `S` resolves a string key (minor 19): Sl:Text, or this.
+local function libText(key) return lib.STRINGS[key] end
+
 local FORMATTERS = {
   color = function(_, v)
     if type(v) ~= "table" then return nil end
@@ -196,19 +198,19 @@ local FORMATTERS = {
 
   bool = function(_, v) return v and "true" or "false" end,
 
-  string = function(_, v)
-    if v == "" then return lib.STRINGS.NONE end
+  string = function(_, v, S)
+    if v == "" then return S("NONE") end
     return nil
   end,
 }
 
---- Render a stored value for display, by the row's declared type.
-function lib.FormatValue(row, v)
+--- Render a stored value for display, by the row's declared type; `textOf` as in lib.ParseValue.
+function lib.FormatValue(row, v, textOf)
   row = row or {}
   if v == nil then return "nil" end
   local f = FORMATTERS[row.type]
   -- No formatter can return false, so the `and` is a plain "call it if there is one".
-  local s = f and f(row, v)
+  local s = f and f(row, v, textOf or libText)
   if s ~= nil then return s end
   return core.SafeToString(v)
 end
@@ -335,9 +337,9 @@ function lib.ParseBool(word)
   return BOOL_WORDS[word:lower()]
 end
 
-local function parseBool(args)
+local function parseBool(args, S)
   local v = lib.ParseBool(args[1])
-  if v == nil then return nil, lib.STRINGS.ERR_BOOL end
+  if v == nil then return nil, S("ERR_BOOL") end
   return v
 end
 
@@ -401,9 +403,9 @@ local function allowedText(list)
   return table.concat(parts, ", ")
 end
 
-local function parseNumber(args, row)
+local function parseNumber(args, row, S)
   local n = tonumber(args[1])
-  if not n then return nil, lib.STRINGS.ERR_NUMBER end
+  if not n then return nil, S("ERR_NUMBER") end
   -- A NUMERIC dropdown constrains rather than clamps. Clamping a value that is merely outside the
   -- list lands BETWEEN two entries, and the renderer then has no label for what is stored — the
   -- row reads as blank and the user cannot tell what they set.
@@ -412,7 +414,7 @@ local function parseNumber(args, row)
     for _, item in ipairs(allowed) do
       if tonumber(item.value) == n then return n end
     end
-    return nil, lib.STRINGS.ERR_ALLOWED:format(allowedText(allowed))
+    return nil, S("ERR_ALLOWED"):format(allowedText(allowed))
   end
   if row.min then n = math.max(row.min, n) end
   if row.max then n = math.min(row.max, n) end
@@ -425,9 +427,9 @@ end
 -- font flag -- could not be named at all. The truncation was silent: the value was stored, nothing
 -- was raised, and only the echo showed it. Internal spacing is kept verbatim, because it is the
 -- user's data; only the edges are trimmed.
-local function parseString(text, row)
+local function parseString(text, row, S)
   local v = (text or ""):match("^%s*(.-)%s*$")
-  if v == "" then return nil, lib.STRINGS.ERR_STRING end
+  if v == "" then return nil, S("ERR_STRING") end
   local allowed = enumList(row)
   -- Only CONSTRAINED when the row declares a list. A free-text row (dialogControl = "EditBox")
   -- carries no `values` at all, and the old code walked an empty list and therefore refused every
@@ -437,13 +439,13 @@ local function parseString(text, row)
   for _, item in ipairs(allowed) do
     if tostring(item.value) == v then return v end
   end
-  return nil, lib.STRINGS.ERR_ALLOWED:format(allowedText(allowed))
+  return nil, S("ERR_ALLOWED"):format(allowedText(allowed))
 end
 
-local function parseColor(args)
+local function parseColor(args, S)
   local r, g, b = tonumber(args[1]), tonumber(args[2]), tonumber(args[3])
   local a = tonumber(args[4]) or 1
-  if not (r and g and b) then return nil, lib.STRINGS.ERR_COLOR end
+  if not (r and g and b) then return nil, S("ERR_COLOR") end
   -- Rescaled JOINTLY, not per channel: "255 128 0" is one color expressed in one scale, and
   -- dividing only the channels that happen to exceed 1 would mangle the others.
   if r > 1 or g > 1 or b > 1 then r, g, b = r / 255, g / 255, b / 255 end
@@ -456,18 +458,19 @@ end
 ---
 --- A `string` row reads the whole of `text`, trimmed at both ends (minor 10); every other type
 --- reads whitespace-separated tokens exactly as before — a bool and a number their first, a color
---- its first four.
-function lib.ParseValue(row, text)
+--- its first four. `textOf` (minor 19, optional) resolves each refusal's key; else lib.STRINGS.
+function lib.ParseValue(row, text, textOf)
   row = row or {}
-  if row.type == "string" then return parseString(text, row) end
+  local S = textOf or libText
+  if row.type == "string" then return parseString(text, row, S) end
 
   local args = {}
   for w in (text or ""):gmatch("%S+") do args[#args + 1] = w end
 
-  if row.type == "bool"   then return parseBool(args)        end
-  if row.type == "number" then return parseNumber(args, row) end
-  if row.type == "color"  then return parseColor(args)       end
-  return nil, lib.STRINGS.ERR_TYPE:format(tostring(row.type))
+  if row.type == "bool"   then return parseBool(args, S)        end
+  if row.type == "number" then return parseNumber(args, row, S) end
+  if row.type == "color"  then return parseColor(args, S)       end
+  return nil, S("ERR_TYPE"):format(tostring(row.type))
 end
 
 -- ── the instance ───────────────────────────────────────────────────────────────────────────
@@ -510,7 +513,8 @@ end
 ---                          writes that changed a stored value, never `count`.
 ---   parse        function  optional, defaults to lib.ParseValue. Handed the row and the whole
 ---                          remainder after the path, untrimmed; lib.ParseValue gives a `string`
----                          row all of it (minor 10).
+---                          row all of it (minor 10). From minor 19 also handed a third argument,
+---                          the instance's key -> string resolver, to pass on to lib.ParseValue.
 ---   format       function  optional, minor 5. function(row, storedValue) -> string. Renders a
 ---                          value for display, replacing lib.FormatValue outright, at every one
 ---                          of the list/get/set/reset echoes. The counterpart of `parse`, for a
@@ -521,8 +525,9 @@ end
 ---                          form, then the positional one. Same field name as the Options
 ---                          descriptor's, so a host passes one pair to both majors.
 ---   colorEncode  function  optional. r, g, b, a -> stored. Defaults to { r =, g =, b =, a = }.
----   L            table     optional. Locale override, keyed to lib.STRINGS. It does NOT reach the
----                          disabled refusal line: that wording is the collection's rather than the
+---   L            table     optional. Locale override, keyed to lib.STRINGS. From minor 19 it reaches
+---                          every parse refusal and the empty-string "(none)" as well. It does NOT
+---                          reach the disabled refusal line: that wording is the collection's, not the
 ---                          addon's, and a locale table is the obvious place for eleven addons to
 ---                          each grow their own version of it.
 ---   isEnabled    function  optional, minor 12. -> boolean. ABSENT means the gate is OFF and this
@@ -575,7 +580,6 @@ function lib:New(d)
   end
 
   local strings = type(d.L) == "table" and d.L or nil
-  local parse   = type(d.parse) == "function" and d.parse or lib.ParseValue
   local aliases = type(d.aliases) == "table" and d.aliases or {}
   local groupKey = type(d.groupKey) == "function" and d.groupKey
     or function(row) return row.page or "settings" end
@@ -603,6 +607,9 @@ function lib:New(d)
     if type(v) == "string" then return v end
     return lib.STRINGS[key]
   end
+  local function textOf(key) return Sl:Text(key) end   -- minor 19: L reaches parse and format
+  local hostParse = type(d.parse) == "function" and d.parse or lib.ParseValue
+  local function parse(row, text) return hostParse(row, text, textOf) end
 
   --- Whatever the host wants appended to a rendered setting — a note that a value is not the one
   --- actually in effect, most usefully. Applied at exactly three sites: a list row, a get echo and
@@ -634,9 +641,9 @@ function lib:New(d)
     if row and row.type == "color" and type(d.colorDecode) == "function"
         and type(value) == "table" then
       local r, g, b, a = d.colorDecode(value)
-      return lib.FormatValue(row, { r = r, g = g, b = b, a = a })
+      return lib.FormatValue(row, { r = r, g = g, b = b, a = a }, textOf)
     end
-    return lib.FormatValue(row, value)
+    return lib.FormatValue(row, value, textOf)
   end
 
   local function kv(row, value)

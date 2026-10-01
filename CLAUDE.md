@@ -203,8 +203,9 @@ same command on **2026-09-26 at v1.62.0's release, kit revision 31**, after the 
 sweep. It is prose rather than a second table on purpose: the gate above reads every
 backticked-path table row under this heading as a census row, so a band table here would be ten
 rows claiming to be breaches. Ten files at that write-out, three fewer than the thirteen of the
-2026-09-24 write-out: the sweep took six out and its id peel brought three in. Eight now, since
-`tests/test_options.lua` and `tests/test_schema.lua` left on 2026-10-01 (below). Largest first:
+2026-09-24 write-out: the sweep took six out and its id peel brought three in. Nine now:
+`tests/test_options.lua` and `tests/test_schema.lua` left on 2026-10-01 (below), and
+`LibKa0s/Slash.lua` came in the same day with minor 19. Largest first:
 
 - `testkit/mock_base.lua` (1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
   1452 with the shown-by-default flip's four comment lines, 1448 with
@@ -229,6 +230,12 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
   accepted, below.
 - `LibKa0s/OptionsIdList.lua` (1197 at v1.65.0; 1193 new: the id peel), ruled below.
+- `LibKa0s/Slash.lua` (1006 with minor 19's resolver, issue #40, measured 2026-10-01; 999 at
+  v1.65.0, 866 at v1.60.0) — **accepted** on entry. The resolver threads one argument through the
+  file-level parsers and the instance, and nothing in it is a seam of its own. **Re-check trigger:
+  1100 lines, or the next row type the parser learns**; the parser block (`lib.ParseBool` through
+  `lib.ParseValue`, with `enumList` and `allowedText`, about 150 lines) is the seam, to a secondary
+  file of its own, the cut `tests/test_slash_parse.lua` already made on the suite side.
 
 `tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page
 registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to

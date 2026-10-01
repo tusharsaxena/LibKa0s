@@ -799,7 +799,7 @@ badge and any count quoted in the docs must agree with it.
 - slash: the format hook takes precedence over the color codec, and gets the raw stored value
 - slash: format beats colorDecode at the get, set and reset echoes, and colorEncode still runs
 
-### test_slash_parse.lua (24)
+### test_slash_parse.lua (29)
 
 - sl: ParseBool accepts the same eight words the error string advertises
 - sl: ParseBool answers nil, never false, for a non-boolean word
@@ -825,6 +825,11 @@ badge and any count quoted in the docs must agree with it.
 - sl: a color given in 0-255 is rescaled, and all three channels together
 - sl: a color missing a channel is rejected with the expected form
 - sl: an unknown row type is rejected by name
+- sl: the host's L reaches every parse refusal through set
+- sl: the host's L reaches the empty-string formatter through get
+- sl: a key-echoing L still falls through to the library's parse strings
+- sl: ParseValue and FormatValue take an optional resolver, and default to the library's strings
+- sl: a host's own parse is handed the instance's resolver as a third argument
 
 ### test_slash_disabled.lua (16)
 
@@ -890,7 +895,7 @@ badge and any count quoted in the docs must agree with it.
 
 ### test_slash_debug.lua (14)
 
-- sl debug: Slash is at minor 18
+- sl debug: Slash is at minor 18 or later
 - sl debug: the disabled gate refusing a feature verb writes one Cmd line
 - sl debug: an unknown verb writes one Cmd line
 - sl debug: an unknown verb while disabled is still an unknown verb, not the gate
@@ -2190,7 +2195,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog_gates.lua | 20 |
 | test_resize_windows.lua | 23 |
 | test_slash.lua | 70 |
-| test_slash_parse.lua | 24 |
+| test_slash_parse.lua | 29 |
 | test_slash_disabled.lua | 16 |
 | test_slash_refusal.lua | 7 |
 | test_slash_profile.lua | 30 |
@@ -2245,4 +2250,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1919** |
+| **Total** | **1924** |

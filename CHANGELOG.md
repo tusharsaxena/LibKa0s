@@ -12,7 +12,24 @@ cannot drift. Release order is in
 
 ## Unreleased
 
-Test-only changes; no file minor moves and nothing reaches a consumer's `libs/`.
+Minors moved so far: **Slash minor 19** (`LibKa0s-Slash-1.0` 19). The repo version is stamped when
+this block is released.
+
+### Slash minor 19: the host's `L` reaches every parse refusal and the empty-string `(none)` (issue #40)
+
+- **`lib.ParseValue(row, text, textOf)` and `lib.FormatValue(row, v, textOf)`** take an optional
+  key -> string resolver. The instance passes `Sl:Text`, so a host's `L` now reaches `ERR_BOOL`,
+  `ERR_NUMBER`, `ERR_STRING`, `ERR_ALLOWED`, `ERR_COLOR`, `ERR_TYPE` and `NONE`, which the
+  file-level parsers and the `string` formatter read straight from `lib.STRINGS` through minor 18.
+  A host's own `parse` is handed the resolver as a third argument. A two-argument call answers as
+  before, and a key-echoing locale still falls through to the library's strings. No member, string
+  or floor moves. Cases: `tests/test_slash_parse.lua`. See `docs/api/Slash/version-19-docs.md`.
+- **What a consumer owes:** nothing, unless its Slash `L` carries those keys; then its wording
+  appears where the library's did. ConsumableMaster un-marks its three dead keys after re-vendor.
+
+### Test-only changes
+
+No file minor moves for these, and nothing reaches a consumer's `libs/`.
 
 - **`tests/test_options.lua` peeled** (issue #35): the page registry, its combat-refusing open and
   the two refresh tiers, 24 of its 85 cases, moved unchanged to `tests/test_options_render.lua`.
