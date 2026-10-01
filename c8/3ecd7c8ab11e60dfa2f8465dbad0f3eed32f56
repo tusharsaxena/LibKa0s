@@ -1,0 +1,1 @@
+OK GI-LK-07R — capture moved verbatim to PerfSampler.lua (paired minor 1, xml/majors rows), getters keep P.Reset's live tables, load-without stub inert and tested; Perf.lua 975; gate 1996/0/2, luacheck 0/0, max CCN 15
