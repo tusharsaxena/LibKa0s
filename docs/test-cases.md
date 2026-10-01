@@ -65,7 +65,7 @@ badge and any count quoted in the docs must agree with it.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
-### test_core_resize.lua (14)
+### test_core_resize.lua (24)
 
 - resize: MakeResizable makes the frame resizable and answers the grip it built
 - resize: the bounds are the options' minimum and the screen's size
@@ -81,6 +81,16 @@ badge and any count quoted in the docs must agree with it.
 - resize: OnSizeChanged runs the relayout, after any script the frame already had
 - resize: no onResize is fine
 - resize: without CreateFrame, or on a frame with no sizing API, nothing changes
+- resize: canResize answering false refuses the mouse-down, and the mouse-up after it is inert
+- resize: canResize is read at every mouse-down, not once at build
+- resize: canResize is handed the frame being sized
+- resize: a sizing already started finishes even if canResize turns false mid-drag
+- resize: canResize never changes the grip's visibility
+- resize: a canResize that is not a function is ignored
+- resize: onResizeStop runs once per completed sizing, after onResize, and never from OnSizeChanged
+- resize: onResizeStop does not run for a right-click or a stray mouse-up
+- resize: gripParent builds the grip on another frame while sizing stays on frame
+- resize: gripParent that is not a table falls back to the frame
 
 ### test_env.lua (10)
 
@@ -2257,7 +2267,7 @@ badge and any count quoted in the docs must agree with it.
 |-------|------:|
 | the runner | 1 |
 | test_core.lua | 52 |
-| test_core_resize.lua | 14 |
+| test_core_resize.lua | 24 |
 | test_env.lua | 10 |
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 22 |
@@ -2337,4 +2347,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **1999** |
+| **Total** | **2009** |

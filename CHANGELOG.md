@@ -10,6 +10,41 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.67.0 — 2026-10-02
+
+Versions in this release: **Core minor 10** (`LibKa0s-Core-1.0` 10). Every other file is unchanged
+from v1.66.0: `Env` 1, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2,
+`Media` 4, `Slash` key 19.1, `Widgets` key 12.1.3, `DebugLog` key 19.2.1, `Launcher` 5, `Options`
+key 27.2.34.2.2.8.1.7.4.2 and `Perf` key 14.1.1.6. The test kit stays at **revision 35**. No
+`NEEDS_*` floor rises, no major is added and no payload file is added, so the library is still
+**fifteen majors across thirty-two files**.
+
+This is the library's half of the 2026-10-02 census adoption: it settles the `MakeResizable`
+contract the three hand-rolled grips need before they can adopt the library's (LibKa0s#41).
+
+### Core minor 10: a lock gate, a stop callback and a grip parent for MakeResizable (issue #41)
+
+- **`opts.canResize`**: `function(frame) -> truthy/falsy`, read fresh at every left mouse-down,
+  before `StartSizing`. Falsy refuses: nothing starts, and the next mouse-up is inert (no stop, no
+  user-placed restore, no `onResize`, no `onResizeStop`). A drag already under way finishes even if
+  the answer flips. It never touches the grip's visibility: the library shows the grip once and
+  never hides or dims it, so a host may keep a locked grip visible and inert (LootHistory) or hide
+  it itself (MultiMeters).
+- **`opts.onResizeStop`**: `function(width, height)`, run once per mouse-up that ends a sizing the
+  grip started, after `onResize`, and never from `OnSizeChanged`. This is where a host persists
+  geometry; `onResize` runs on every size tick and is for relayout.
+- **`opts.gripParent`**: the frame the grip is built on, anchored to and leveled from (default
+  `frame`). Sizing, the bounds, the user-placed flag and `frame.resizeGrip` stay on the sized frame,
+  so a host that sizes a clean anchor can draw the grip on its art frame.
+- A value of the wrong type for any of the three is ignored, and none is wrapped in `pcall`, the
+  same as `onResize`. No member is added, so the member manifest and every Core degradation stub
+  are unchanged. Every existing caller, the library's own console, copy window and perf panel
+  included, passes none of them and behaves exactly as on v1.66.0. Cases:
+  `tests/test_core_resize.lua`. Documented in
+  [the version 10 document](docs/api/Core/version-10-docs.md); version 9 is Superseded.
+- **What a consumer owes:** nothing; LootHistory (`canResize`, `onResizeStop`), BankLedger (both
+  windows, `onResizeStop`) and MultiMeters (`gripParent`, `onResizeStop`) adopt.
+
 ## v1.66.0 — 2026-10-01
 
 Versions in this release: **Slash minor 19** and the new **SlashParse minor 1** (`LibKa0s-Slash-1.0`

@@ -1,7 +1,8 @@
 -- tests/test_core_resize.lua — Core.MakeResizable, the grip every Ka0s diagnostic window resizes
--- from (Core minor 9). The windows that use it are pinned in tests/test_resize_windows.lua; this
--- suite pins the helper's own contract: the grip, the bounds, the two mouse edges, the relayout and
--- the user-placed flag that keeps a resize out of the client's layout cache.
+-- from (Core minor 9; minor 10 adds the canResize gate, the onResizeStop callback and gripParent).
+-- The windows that use it are pinned in tests/test_resize_windows.lua; this suite pins the helper's
+-- own contract: the grip, the bounds, the two mouse edges, the relayout, the user-placed flag that
+-- keeps a resize out of the client's layout cache, and minor 10's three optional fields.
 
 local T = _G.LK_TEST
 local core, mocks = T.core, T.mocks
@@ -175,4 +176,184 @@ test("resize: without CreateFrame, or on a frame with no sizing API, nothing cha
   assertFalse(f:IsResizable(), "and the frame is untouched")
   assertNil(core.MakeResizable({}, { minWidth = 200 }), "a table with no sizing API is refused")
   assertNil(core.MakeResizable(nil), "and so is nil")
+end)
+
+-- ── Core minor 10: canResize, onResizeStop, gripParent (LibKa0s#41) ─────────────────────────
+
+-- Run `fn` with every frame built while it runs recording its SetPoint arguments as `__points`
+-- and its SetFrameLevel argument as `__level` (both still applied), so a case can read where the
+-- library anchored the grip and at what level.
+local function recordGrip(fn)
+  local realCreate = mocks.CreateFrame
+  mocks.CreateFrame = function(...)
+    local f = realCreate(...)
+    f.__points = {}
+    local setPoint, setLevel = f.SetPoint, f.SetFrameLevel
+    rawset(f, "SetPoint", function(self, ...)
+      table.insert(self.__points, { ... })
+      if type(setPoint) == "function" then return setPoint(self, ...) end
+    end)
+    rawset(f, "SetFrameLevel", function(self, level)
+      self.__level = level
+      if type(setLevel) == "function" then return setLevel(self, level) end
+    end)
+    return f
+  end
+  local ok, err = pcall(fn)
+  mocks.CreateFrame = realCreate
+  if not ok then error(err, 0) end
+end
+
+test("resize: canResize answering false refuses the mouse-down, and the mouse-up after it is inert", function()
+  -- red under: drop the canResize check from wireGrip in LibKa0s/Core.lua
+  local f = newWindow()
+  local resized, stopped = 0, 0
+  local grip = core.MakeResizable(f, {
+    minWidth = 200, minHeight = 100,
+    canResize = function() return false end,
+    onResize = function() resized = resized + 1 end,
+    onResizeStop = function() stopped = stopped + 1 end,
+  })
+  grip:__fire("OnMouseDown", "LeftButton")
+  grip:__fire("OnMouseUp", "LeftButton")
+  assertEqual(f.__sizingCount, 0, "no sizing started")
+  assertEqual(f.__stopCount, 0, "and nothing was stopped")
+  assertEqual(resized, 0, "onResize did not run")
+  assertEqual(stopped, 0, "onResizeStop did not run")
+  assertFalse(f:IsUserPlaced(), "the user-placed flag is untouched")
+end)
+
+test("resize: canResize is read at every mouse-down, not once at build", function()
+  -- red under: cache canResize()'s answer at MakeResizable time
+  local f = newWindow()
+  local locked = true
+  local grip = core.MakeResizable(f, {
+    minWidth = 200, minHeight = 100, canResize = function() return not locked end,
+  })
+  grip:__fire("OnMouseDown", "LeftButton")
+  grip:__fire("OnMouseUp", "LeftButton")
+  assertEqual(f.__sizingCount, 0, "locked: refused")
+  locked = false
+  grip:__fire("OnMouseDown", "LeftButton")
+  grip:__fire("OnMouseUp", "LeftButton")
+  assertEqual(f.__sizingCount, 1, "unlocked: the next mouse-down sizes")
+  assertEqual(f.__stopCount, 1)
+end)
+
+test("resize: canResize is handed the frame being sized", function()
+  -- red under: hand canResize the grip, or the grip's parent
+  local f = newWindow()
+  local seen
+  local grip = core.MakeResizable(f, { canResize = function(frame) seen = frame; return true end })
+  grip:__fire("OnMouseDown", "LeftButton")
+  assertEqual(seen, f, "the sized frame")
+
+  local anchor = newWindow()
+  local art = mocks.CreateFrame("Frame", nil, mocks.UIParent)
+  seen = nil
+  grip = core.MakeResizable(anchor, {
+    gripParent = art, canResize = function(frame) seen = frame; return true end,
+  })
+  grip:__fire("OnMouseDown", "LeftButton")
+  assertEqual(seen, anchor, "the sized frame, not the grip's parent")
+end)
+
+test("resize: a sizing already started finishes even if canResize turns false mid-drag", function()
+  -- red under: re-check canResize in OnMouseUp
+  local f = newWindow()
+  local allow, stopped = true, 0
+  local grip = core.MakeResizable(f, {
+    canResize = function() return allow end,
+    onResizeStop = function() stopped = stopped + 1 end,
+  })
+  grip:__fire("OnMouseDown", "LeftButton")
+  allow = false
+  grip:__fire("OnMouseUp", "LeftButton")
+  assertEqual(f.__stopCount, 1, "the drag was stopped")
+  assertEqual(stopped, 1, "and onResizeStop ran once")
+end)
+
+test("resize: canResize never changes the grip's visibility", function()
+  -- red under: hide or show the grip from the canResize gate
+  local f = newWindow()
+  local allow = false
+  local grip = core.MakeResizable(f, { canResize = function() return allow end })
+  grip:__fire("OnMouseDown", "LeftButton")
+  grip:__fire("OnMouseUp", "LeftButton")
+  assertTrue(grip:IsShown(), "shown after a refused mouse-down")
+  allow = true
+  grip:__fire("OnMouseDown", "LeftButton")
+  grip:__fire("OnMouseUp", "LeftButton")
+  assertTrue(grip:IsShown(), "and after an allowed one")
+end)
+
+test("resize: a canResize that is not a function is ignored", function()
+  -- red under: treat any non-nil canResize as a gate
+  for _, value in ipairs({ false, "no" }) do
+    local f = newWindow()
+    local grip = core.MakeResizable(f, { canResize = value })
+    grip:__fire("OnMouseDown", "LeftButton")
+    assertEqual(f.__sizingCount, 1, "sizes with canResize = " .. tostring(value))
+  end
+end)
+
+test("resize: onResizeStop runs once per completed sizing, after onResize, and never from OnSizeChanged", function()
+  -- red under: call onStop from the OnSizeChanged hook
+  local f = newWindow()
+  local order, stops = {}, 0
+  local grip = core.MakeResizable(f, {
+    minWidth = 200, minHeight = 100,
+    onResize = function(w, h) order[#order + 1] = "resize " .. w .. "x" .. h end,
+    onResizeStop = function(w, h)
+      stops = stops + 1
+      order[#order + 1] = "stop " .. w .. "x" .. h
+    end,
+  })
+  for _ = 1, 3 do f:__fire("OnSizeChanged", 500, 250) end
+  grip:__fire("OnMouseDown", "LeftButton")
+  f:__setGeom(820, 410)
+  grip:__fire("OnMouseUp", "LeftButton")
+  assertEqual(table.concat(order, ","),
+    "resize 500x250,resize 500x250,resize 500x250,resize 820x410,stop 820x410")
+  assertEqual(stops, 1)
+end)
+
+test("resize: onResizeStop does not run for a right-click or a stray mouse-up", function()
+  -- red under: run onStop on every mouse-up rather than only one that ends a sizing
+  local f = newWindow()
+  local stops = 0
+  local grip = core.MakeResizable(f, { onResizeStop = function() stops = stops + 1 end })
+  grip:__fire("OnMouseDown", "RightButton")
+  grip:__fire("OnMouseUp", "RightButton")
+  grip:__fire("OnMouseUp", "LeftButton")
+  assertEqual(stops, 0)
+end)
+
+test("resize: gripParent builds the grip on another frame while sizing stays on frame", function()
+  -- red under: buildGrip ignoring its parent argument
+  recordGrip(function()
+    local anchor = newWindow()
+    local art = mocks.CreateFrame("Frame", nil, mocks.UIParent)
+    rawset(art, "GetFrameLevel", function() return 7 end)
+    local grip = core.MakeResizable(anchor, { minWidth = 200, minHeight = 100, gripParent = art })
+    assertEqual(grip.__parent, art, "the grip is the art frame's child")
+    local pt = grip.__points[1]
+    assertEqual(pt[1], "BOTTOMRIGHT"); assertEqual(pt[2], art, "anchored to the art frame")
+    assertEqual(pt[3], "BOTTOMRIGHT"); assertEqual(pt[4], -1); assertEqual(pt[5], 1)
+    assertEqual(grip.__level, 17, "leveled from the art frame")
+    assertEqual(anchor.resizeGrip, grip, "and still kept on the sized frame")
+    assertNil(rawget(art, "resizeGrip"), "not on the art frame")
+    grip:__fire("OnMouseDown", "LeftButton")
+    assertEqual(anchor.__sizing, "BOTTOMRIGHT", "the sized frame sizes from its corner")
+    grip:__fire("OnMouseUp", "LeftButton")
+    assertEqual(anchor.__stopCount, 1, "the sized frame was sized")
+    assertEqual(art.__sizingCount or 0, 0, "the art frame was not")
+  end)
+end)
+
+test("resize: gripParent that is not a table falls back to the frame", function()
+  -- red under: use opts.gripParent unchecked
+  local f = newWindow()
+  local grip = core.MakeResizable(f, { gripParent = "art" })
+  assertEqual(grip.__parent, f)
 end)
