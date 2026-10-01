@@ -1,0 +1,1 @@
+OK GI-LK-10 — kit 35 sighted shadow + parity verified: sanitizer keeps lines/CRLF, parity fails complexity amber with blindFiles, red-first runner fixtures, kit synced; gate 1992/0/2, luacheck 0/0, sighted complexity pass max CCN 15 (advisory: shadow-builder exit status unchecked, parity reads the shadow copy)
