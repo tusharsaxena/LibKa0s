@@ -26,8 +26,10 @@ Every other file is unchanged from v1.65.0: `Core` 9, `Env` 1, `Compat` 1, `Life
 `NEEDS_*` floor rises and no major is added; four payload files are added (`WidgetsReorder.lua`,
 loaded by `LibKa0s.xml` after `Widgets.lua`, `SlashParse.lua` after `Slash.lua`, and `PerfSampler.lua`
 and `PerfCommands.lua`, in that order after `Perf.lua`), so the library is **fifteen majors across
-thirty-two files**. Built to the Ka0s WoW Addon Standard **v2.73.0**; the
-standard's sighted-complexity MUST (WowAddonStandards#6) lands in its next version, after this tag.
+thirty-two files**. Built to the Ka0s WoW Addon Standard **v2.74.0**, the version whose
+`automated-tests-§3` makes the sighted complexity gate a MUST (WowAddonStandards#6) and reads a
+complexity warning as a function above CCN 15 alone, the length threshold sitting at `layout-§1`'s
+file cap.
 
 This is the library's half of the 2026-10-01 GitHub issue pass. It closes LibKa0s#1 (report-only
 Perf budgets), LibKa0s#7 (the Perf command surface and capture peeled), LibKa0s#12 (a declared parent that never
@@ -222,9 +224,10 @@ No file minor moves for these, and nothing reaches a consumer's `libs/`.
 
 - The whole-folder copy of both payloads, `libs/LibKa0s/` and `tests/_kit/`, and the provenance
   line, in one commit. A copy missing `WidgetsReorder.lua` builds a Widgets major with no
-  `ReorderList`, and one missing `PerfCommands.lua` builds Perf instances whose `OnCommand`,
-  `Usage` and `StatusLines` answer one line naming the missing file, so copy the folder, never the
-  files you already had.
+  `ReorderList`; one missing `SlashParse.lua` builds Slash instances whose default `set` refuses
+  with one line naming the file; one missing `PerfSampler.lua` or `PerfCommands.lua` builds Perf
+  instances whose `OnCommand`, `Usage` and `StatusLines` answer one line naming the missing file,
+  and without the sampler the brackets are inert. Copy the folder, never the files you already had.
 - **Wire the kit's fifth suite**: `{ name = "test_lizard_sighted", dir = "tests/_kit/" }` in
   `tests/run.lua`, and quote `bash tests/_kit/run-automated-tests.sh --suite complexity` rather than
   raw `lizard` in any green-gate line. Before the host's next release, refactor or rule every
@@ -232,8 +235,9 @@ No file minor moves for these, and nothing reaches a consumer's `libs/`.
 - No member is removed and no Slash, Options, Launcher, Lifecycle, DebugLog or Perf member is
   added, so no degradation stub under `Kit.assertSurfaceParity` moves.
 - Smoke checks in game, in each consumer that has the surface: a drag-reorder of a reorderable
-  list (#36), a typed and a clicked perf run (#7), and a parse refusal in the host's own wording where
-  its Slash `L` carries the keys (#40).
+  list (#36), a typed and a clicked perf run (#7), a typed `set` that writes and one that is
+  refused (the parser's peel to `SlashParse.lua`), and a parse refusal in the host's own wording
+  where its Slash `L` carries the keys (#40).
 - To adopt, optionally: KickCD passes `{ gap = false }` to `RenderGrid` for its Spells list
   (KickCD#10); AbsorbTracker passes `untabbedSkipRender`, `disabledReplaces` (with
   `disabledNoticeFont`) and `rerender` on its Appearance page (AbsorbTracker#32); each wired Perf
