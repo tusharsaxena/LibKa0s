@@ -17,10 +17,12 @@
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `35` |
 
 Everything revision 34 describes is unchanged here except what follows. Two files are added,
-`lizard_sighted.lua` and `test_lizard_sighted.lua`. Five change: `run-automated-tests.sh` (the
-complexity suite), `inventory.lua` (one gate-rule row), `framework.lua` (`Kit.VERSION` is 35 and
-nothing else), `mock_base.lua` (a comment, no line added) and `README.md`. No public member, mock
-behavior or existing case name changes. WowAddonStandards#6, LibKa0s#17–#20.
+`lizard_sighted.lua` and `test_lizard_sighted.lua`. Seven change: `run-automated-tests.sh` (the
+complexity suite), `inventory.lua` (one gate-rule row), `framework.lua` (`Kit.VERSION` is 35, and
+the `--list` renderer split into helpers), `asserts.lua` (`assertSurfaceParity` split into
+helpers), `test_eol.lua` (case two split into one helper per check), `mock_base.lua` (a comment, no
+line added) and `README.md`. No public member, mock behavior, rendered inventory byte or existing
+case name changes. WowAddonStandards#6, LibKa0s#17–#20.
 
 ## What changed
 
@@ -99,6 +101,16 @@ file; parity naming exactly the files that differ. When lizard is on PATH, one m
 fixture holding every hazard, runs lizard on it and asserts full parity and the method's own name;
 without lizard it is a declared skip. It needs no consumer facts. `inventory.lua`'s gate-rule table
 gains `test_lizard_sighted = "automated-tests-§3"`.
+
+### Three kit functions the sighted suite found above CCN 15
+
+Measured sighted for the first time, three kit functions were over the line: `test_eol.lua`'s case
+two body (34), `Kit.assertSurfaceParity` (19) and `framework.lua`'s inventory renderer (17). Each is
+split into helpers with no behavior change: every failure message is the same string, raised at the
+same level; `assertSurfaceParity`'s two forms compare the same keys in the same order; and
+`lua tests/run.lua --list` renders byte-identical output. LibKa0s's `tests/test_kit_eol.lua` and
+`tests/test_kit_asserts.lua` gained characterization cases for case two's ten verdicts and the
+table form's contract first, green before and after.
 
 ### `mock_base.lua`: the geometry flip is retired
 

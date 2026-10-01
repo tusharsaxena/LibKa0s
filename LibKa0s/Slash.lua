@@ -475,6 +475,52 @@ end
 
 -- ── the instance ───────────────────────────────────────────────────────────────────────────
 
+-- `lib:New`'s descriptor reads, at file level so the instance's closure carries none of their
+-- decisions (WowAddonStandards#6: lizard counts every `and`/`or`, and the sighted complexity gate
+-- measured the closure at CCN 24). Every default is the one the inline reads gave.
+
+--- `v` when it is a `kind`, else `fallback`: how an optional descriptor field is read. A field of
+--- the wrong type is read as absent, never raised on.
+local function field(v, kind, fallback)
+  if type(v) == kind then return v end
+  return fallback
+end
+
+--- Where lines go when the host passes no `print`.
+local function chatPrint(line)
+  if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage(line) end
+end
+
+--- The heading a row lists under when the host passes no `groupKey`.
+local function pageOf(row) return row.page or "settings" end
+
+--- The set of verbs that answer while disabled, lowercased.
+local function verbSet(verbs)
+  local set = {}
+  for _, verb in ipairs(verbs) do set[tostring(verb):lower()] = true end
+  return set
+end
+
+--- `lib:New`'s refusals, raised at the host's call: level 3 is this helper, then New, then the host.
+local function checkDescriptor(d)
+  if type(d.slash) ~= "string" or d.slash == "" then
+    error(MAJOR .. ":New requires descriptor.slash — the command prefix, e.g. \"/at\"", 3)
+  end
+  if type(d.commands) ~= "table" then
+    error(MAJOR .. ":New requires descriptor.commands — the host's own verb table", 3)
+  end
+  if type(d.isEnabled) == "function" and (type(d.brandName) ~= "string" or d.brandName == "") then
+    -- Refused at construction rather than rendered as "nil is disabled" at the one moment a
+    -- confused player is reading the line. `brandName` is the plain-text `Ka0s <Name>` a host
+    -- already MUSTs as its LDB object's label, and the reuse is load-bearing rather than tidy:
+    -- that field already forbids escape sequences, which is what makes it safe to drop into a
+    -- colored line, and it means an addon has ONE brand spelling rather than a second one invented
+    -- for this message. It MUST NOT be derived from the TOC Title, which may carry color escapes.
+    error(MAJOR .. ":New requires descriptor.brandName alongside isEnabled — the plain-text "
+      .. "`Ka0s <Name>`, the same string the LDB object takes as its label", 3)
+  end
+end
+
 --- Build a dispatcher for one host. Bare /slash runs the host's `config` verb when it has one
 --- (minor 11, slash-commands-§4); `help` prints the index.
 ---
@@ -552,41 +598,19 @@ end
 ---   debug        function  optional, minor 18. debug(tag, message), the host's gated log seam, as
 ---                          Launcher's. Each refusal this module decides writes one `Cmd` line.
 function lib:New(d)
-  d = type(d) == "table" and d or {}
-  if type(d.slash) ~= "string" or d.slash == "" then
-    error(MAJOR .. ":New requires descriptor.slash — the command prefix, e.g. \"/at\"", 2)
-  end
-  if type(d.commands) ~= "table" then
-    error(MAJOR .. ":New requires descriptor.commands — the host's own verb table", 2)
-  end
+  d = field(d, "table", {})
+  checkDescriptor(d)
 
   -- The gate is OFF when `isEnabled` is absent, and that is the whole of the migration story: a
   -- host that has not adopted the stand-down latch yet passes no `isEnabled`, and its dispatcher
   -- behaves byte for byte as it did at minor 11. There is no half-adopted state to reason about.
-  local isEnabled = type(d.isEnabled) == "function" and d.isEnabled or nil
-  if isEnabled and (type(d.brandName) ~= "string" or d.brandName == "") then
-    -- Refused at construction rather than rendered as "nil is disabled" at the one moment a
-    -- confused player is reading the line. `brandName` is the plain-text `Ka0s <Name>` a host
-    -- already MUSTs as its LDB object's label, and the reuse is load-bearing rather than tidy:
-    -- that field already forbids escape sequences, which is what makes it safe to drop into a
-    -- colored line, and it means an addon has ONE brand spelling rather than a second one invented
-    -- for this message. It MUST NOT be derived from the TOC Title, which may carry color escapes.
-    error(MAJOR .. ":New requires descriptor.brandName alongside isEnabled — the plain-text "
-      .. "`Ka0s <Name>`, the same string the LDB object takes as its label", 2)
-  end
-  local liveVerbs = {}
-  for _, verb in ipairs(type(d.liveVerbs) == "table" and d.liveVerbs or lib.LIVE_VERBS) do
-    liveVerbs[tostring(verb):lower()] = true
-  end
+  local isEnabled = field(d.isEnabled, "function", nil)
+  local liveVerbs = verbSet(field(d.liveVerbs, "table", lib.LIVE_VERBS))
 
-  local strings = type(d.L) == "table" and d.L or nil
-  local aliases = type(d.aliases) == "table" and d.aliases or {}
-  local groupKey = type(d.groupKey) == "function" and d.groupKey
-    or function(row) return row.page or "settings" end
-
-  local emit = type(d.print) == "function" and d.print or function(line)
-    if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage(line) end
-  end
+  local strings = field(d.L, "table", nil)
+  local aliases = field(d.aliases, "table", {})
+  local groupKey = field(d.groupKey, "function", pageOf)
+  local emit = field(d.print, "function", chatPrint)
 
   -- A refusal this module decides (minor 18): the chat line exactly as before, then ONE `Cmd` line
   -- to the host's `debug` naming the verb and the guard. No `debug`, no line (Launcher's shape).
@@ -608,7 +632,7 @@ function lib:New(d)
     return lib.STRINGS[key]
   end
   local function textOf(key) return Sl:Text(key) end   -- minor 19: L reaches parse and format
-  local hostParse = type(d.parse) == "function" and d.parse or lib.ParseValue
+  local hostParse = field(d.parse, "function", lib.ParseValue)
   local function parse(row, text) return hostParse(row, text, textOf) end
 
   --- Whatever the host wants appended to a rendered setting — a note that a value is not the one

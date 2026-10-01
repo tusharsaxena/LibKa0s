@@ -400,6 +400,39 @@ end
 -- presence. At file level rather than inside lib:New, so the four presence tests are this
 -- function's branches and not the closure's: a sighted lizard run counted every `and`/`or` in
 -- them against lib:New (issue #7).
+-- P.Context's client reads, at file level so the function is a loop over them (it measured CCN 19
+-- sighted, WowAddonStandards#6). Each asks one global, existence-checked, so the headless harness
+-- (and any client that renames one) degrades to the field's default rather than erroring.
+
+--- The player's specialization name, or nil. Namespaced rung first, deprecated global second, nil
+--- where neither is there — the shape `Env.lua`'s C_AddOns shim models, applied here because the
+--- spec reader moved the same way. The global still answers on today's client, which is exactly why
+--- this was easy to miss: the day it stops, every saved record names the spec "?" and a record is
+--- read weeks later, when there is nothing left to go and look at. `GetSpecializationInfo` keeps its
+--- own guard on the global rather than being paired with a namespaced rung, because the reader that
+--- moved is the INDEX one and this shim claims no more than it has checked.
+local function specName()
+    local specIndex = C_SpecializationInfo and C_SpecializationInfo.GetSpecialization
+        or GetSpecialization
+    if not (specIndex and GetSpecializationInfo) then return nil end
+    local index = specIndex()
+    if not index then return nil end
+    local _, name = GetSpecializationInfo(index)
+    return name
+end
+
+--- { field, reader } in the order P.Context always read them. A reader answering nil (or false)
+--- leaves the field at its default.
+local CONTEXT_READS = {
+    { "character", function() return UnitName and UnitName("player") end },
+    { "realm",     function() return GetRealmName and GetRealmName() end },
+    { "class",     function() return UnitClass and (UnitClass("player")) end },
+    { "level",     function() return UnitLevel and UnitLevel("player") end },
+    { "spec",      specName },
+    { "zone",      function() return GetZoneText and GetZoneText() end },
+    { "subZone",   function() return GetSubZoneText and GetSubZoneText() end },
+}
+
 local function noop() end
 local function printLine(line) print(line) end
 
@@ -843,28 +876,10 @@ function lib:New(descriptor)
           character = "?", realm = "?", class = "?", spec = "?",
           level = 0, zone = "?", subZone = "", group = "solo",
       }
-      if UnitName then ctx.character = UnitName("player") or "?" end
-      if GetRealmName then ctx.realm = GetRealmName() or "?" end
-      if UnitClass then ctx.class = (UnitClass("player")) or "?" end
-      if UnitLevel then ctx.level = UnitLevel("player") or 0 end
-      -- Namespaced rung first, deprecated global second, nil where neither is there — the shape
-      -- `Env.lua`'s C_AddOns shim models, applied here because the spec reader moved the same way.
-      -- The global still answers on today's client, which is exactly why this was easy to miss:
-      -- the day it stops, every saved record names the spec "?" and a record is read weeks later,
-      -- when there is nothing left to go and look at. `GetSpecializationInfo` keeps its own guard
-      -- on the global below rather than being paired with a namespaced rung here, because the
-      -- reader that moved is the INDEX one and this shim claims no more than it has checked.
-      local specIndex = C_SpecializationInfo and C_SpecializationInfo.GetSpecialization
-          or GetSpecialization
-      if specIndex and GetSpecializationInfo then
-          local index = specIndex()
-          if index then
-              local _, name = GetSpecializationInfo(index)
-              ctx.spec = name or "?"
-          end
+      for _, read in ipairs(CONTEXT_READS) do
+          local value = read[2]()
+          if value then ctx[read[1]] = value end
       end
-      if GetZoneText then ctx.zone = GetZoneText() or "?" end
-      if GetSubZoneText then ctx.subZone = GetSubZoneText() or "" end
       ctx.group = groupContext()
       return ctx
   end

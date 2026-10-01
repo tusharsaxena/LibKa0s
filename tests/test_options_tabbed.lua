@@ -141,7 +141,10 @@ end)
 test("widgets: disabledFor false draws no notice and live rows; a raising one reads as enabled",
 function()
   -- red under: drawing the notice unconditionally, or calling the predicate unguarded.
-  for _, pred in ipairs({ function() return false end, function() error("predicate bug") end }) do
+  -- Hoisted out of the `for` header: lizard 1.24.0 lists no function literal written there, and the
+  -- sighted complexity suite's parity check reads that as a blind file (kit revision 35).
+  local predicates = { function() return false end, function() error("predicate bug") end }
+  for _, pred in ipairs(predicates) do
     local O, _, ctx = bench()
     O.RenderTabbedSchema(ctx, "tabbed", nil, nil,
       { disabledFor = pred, disabledNotice = "never shown" })

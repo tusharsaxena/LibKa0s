@@ -16,7 +16,8 @@ Minors moved so far: **Slash minor 19** (`LibKa0s-Slash-1.0` 19), **Widgets mino
 **WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragHandle` 3),
 **OptionsWidgets minor 34** and **OptionsTabs minor 8** (`LibKa0s-Options-1.0`
 27.2.34.2.2.8.1.7.4.2), **Perf minor 14** and the new **PerfCommands minor 1**
-(`LibKa0s-Perf-1.0` 14.1.6, with `PerfPanel` 6). Two payload files are added so far
+(`LibKa0s-Perf-1.0` 14.1.6, with `PerfPanel` 6), and **DebugLog minor 19**
+(`LibKa0s-DebugLog-1.0` 19.2.1, with `DebugLogDiagnostics` 2 and `DebugLogGates` 1). Two payload files are added so far
 (`WidgetsReorder.lua`, `PerfCommands.lua`). The kit moves to **revision 35**. The repo version is
 stamped when this block is released.
 
@@ -139,6 +140,28 @@ stamped when this block is released.
 - **What a consumer owes:** the whole-folder kit copy, `{ name = "test_lizard_sighted", dir =
   "tests/_kit/" }` in `tests/run.lua`, and a refactor or a ruling for every function the sighted
   suite newly reports above CCN 15 before its next release.
+
+### DebugLog minor 19, and what else the sighted complexity gate revealed (WowAddonStandards#6)
+
+Kit revision 35's sighted complexity suite found seven functions above CCN 15 in this repository
+that lizard had never listed, and one file it was still blind in. Each is now at or under 15, with
+no behavior change; characterization cases were written first and pass before and after.
+
+- **`DebugLog.lua` minor 19**: `lib:New`'s required-field refusals and optional-field defaults moved,
+  unchanged, to file-level helpers (CCN 27 → 3). A refusal is still raised at the host's call. No
+  member, field, default or string moves; the minor moves so a copy at 19 wins over v1.65.0's 18.
+  See `docs/api/DebugLog/version-19.2.1-docs.md`.
+- **`Slash.lua`** (already minor 19 this release): `lib:New`'s descriptor reads, the same way
+  (CCN 24 → 1).
+- **`Perf.lua`** (already minor 14 this release): `P.Context`'s guarded client reads are a table of
+  readers it loops over, the spec read a file-level `specName` (CCN 19 → 3). `lib:New` itself left
+  the list with #7's `resolveHooks` (CCN 109 before that).
+- **The kit**, folded into revision 35: the eol gate's case two is one helper per check (CCN 34 →
+  1, `checkPin` 8 and `checkAppendix` 8 the largest), `Kit.assertSurfaceParity` three helpers
+  (19 → 5), and the `--list` renderer four (17 → 2; `docs/test-cases.md` byte-identical).
+- **`tests/test_options_tabbed.lua`**: one table of predicates hoisted out of a `for ... in` header,
+  where lizard lists no function literal. Parity residue over this repository is now zero.
+- **What a consumer owes:** nothing; a whole-folder re-vendor brings it.
 
 ### Test-only changes
 

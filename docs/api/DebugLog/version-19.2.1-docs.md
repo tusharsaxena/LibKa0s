@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 18.2.1
+# `LibKa0s-DebugLog-1.0` — version 19.2.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **18** · `DebugLogDiagnostics.lua` minor **2** · `DebugLogGates.lua` minor **1** |
-| Shipped in | v1.65.0 |
-| Status | Superseded |
-| Supersedes | [version 17.2](./version-17.2-docs.md) — which had no change gates, no at-enable queue and no `onClear` hook |
-| Superseded by | [version 19.2.1](./version-19.2.1-docs.md) |
+| Files and minors | `DebugLog.lua` minor **19** · `DebugLogDiagnostics.lua` minor **2** · `DebugLogGates.lua` minor **1** |
+| Shipped in | v1.66.0 |
+| Status | **Current** |
+| Supersedes | [version 18.2.1](./version-18.2.1-docs.md) — the same surface and behavior; `lib:New`'s descriptor reads were inline |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 18, DebugLogDiagnostics = 2, DebugLogGates = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared; a `Since` of
 **D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file version 14.1 added, and **D2** its
@@ -766,6 +766,13 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+Version 19.2.1 changes nothing a host can observe. `lib:New`'s descriptor reads (the required-field
+refusals and every optional field's default) moved, unchanged, out of the instance's closure to
+file-level helpers, because the sighted complexity gate (kit revision 35, WowAddonStandards#6)
+measured the closure at CCN 27. A field of the wrong type still reads as absent, and a refusal is
+still raised at the host's call. The minor moves only so a copy at 19 wins over the 18 every v1.65.0
+consumer carries.
+
 Version 18.2.1 adds one file, two lib-level members (`GATE_MAX_KEYS`, `AT_ENABLE_MAX`), one
 descriptor field (`onClear`) and four instance members (`DebugOnce`, `DebugChanged`, `DebugForget`,
 `DebugAtEnable`), and changes no existing behavior: `Clear()` and `SetEnabled(true)` additionally
@@ -802,10 +809,3 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
-
-## Moving to version 19.2.1
-
-**Take it; nothing moves.** Version 19.2.1 is this surface and this behavior, with `lib:New`'s
-descriptor reads moved out of the instance's closure to file-level helpers (the sighted complexity
-gate measured the closure at CCN 27). No member, field, default or string changes. See
-[version 19.2.1](./version-19.2.1-docs.md).

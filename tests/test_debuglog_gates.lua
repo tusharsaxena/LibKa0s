@@ -47,8 +47,10 @@ end
 -- ── registration ─────────────────────────────────────────────────────────────────────────
 
 test("gates: the file registers under the major, paired on the live shell, with its bound pinned", function()
-  assertEqual(debuglog.MINOR, 18)
-  assertEqual(debuglog.MODULES.DebugLog, 18)
+  -- The gates' floor, not the exact shell minor, so the case stops needing an edit on every DebugLog
+  -- bump (19 moved only lib:New's descriptor reads).
+  assertTrue(debuglog.MINOR >= 18, "the shell carries the gates' install seam")
+  assertEqual(debuglog.MODULES.DebugLog, debuglog.MINOR)
   assertEqual(debuglog.MODULES.DebugLogGates, 1)
   assertEqual(debuglog.__gatesShellMinor, debuglog.MINOR, "paired on the live shell")
   assertEqual(debuglog.GATE_MAX_KEYS, 256, "the literal the api document cites")
