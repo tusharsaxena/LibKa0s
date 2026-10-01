@@ -38,8 +38,10 @@ not a state LibStub can detect. **This is why the version key above has three co
 ## What changed at this version
 
 **`Perf.lua` minor 14 and the new `PerfCommands.lua` minor 1 — the command surface moved to a file
-of its own** (issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)). `PerfPanel.lua` stays
-6 and the floors do not move. The version key gains a component, 13.6 → 14.1.6, because the key is
+of its own** (issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)), **a `within` in the
+record never dangles** (issue [#12](https://github.com/tusharsaxena/LibKa0s/issues/12)), and
+**report-only per-bucket budgets** (issue [#1](https://github.com/tusharsaxena/LibKa0s/issues/1)).
+`PerfPanel.lua` stays 6 and the floors do not move. The version key gains a component, 13.6 → 14.1.6, because the key is
 every file's minor in load order.
 
 - **`Usage`, the sub-verb handlers, `StatusLines` and `OnCommand` moved unchanged** from `Perf.lua`
@@ -65,8 +67,21 @@ every file's minor in load order.
   stays absent. The report prints such a parent as a zero row, in declared order, with its children
   indented under it. Additive within schema 2: see
   [`docs/record-schema.md`](../../record-schema.md).
+- **Report-only budgets** (issue [#1](https://github.com/tusharsaxena/LibKa0s/issues/1)). A
+  `buckets` entry may carry `budget = { msPerSec = <n>, maxMs = <n> }`, either key optional but not
+  both. `lib:New` refuses a budget that is not a table, a ceiling that is not a positive number,
+  and a budget naming neither, in the library's own words (`descriptor.buckets[N].budget...`).
+  `BuildRecord` copies it onto that bucket as `budget`. `FormatReport` ends with a
+  `budget (report-only)` section, one row per budgeted bucket in declared order: `ok` or `OVER`
+  with observed / ceiling for each declared axis (ms/s over the active seconds, and max ms), or
+  `not exercised` for a bucket with no calls. The record's own budget is read first, so a capture
+  off the ring is judged against the ceiling it was built with. `finish` adds one line,
+  `N bucket(s) over budget`. **Nothing gates**: no refusal, no error, no exit code. A host that
+  declares no budget gets the report and the finish acknowledgment it always got, byte for byte.
+  The ceilings are each host's to set from its own captures; the library supplies no default.
 - **No lib-level or instance member is added, removed or resignatured.** The member manifest lists
-  13.6's surface; `lib.MODULES` gains `PerfCommands`.
+  13.6's surface; `lib.MODULES` gains `PerfCommands`. The instance gains the data field
+  `BUCKET_BUDGET` (key → the validated budget), beside `BUCKET_ORDER` and `BUCKET_WITHIN`.
 
 **What a host must change: nothing.** No member moves, so no degradation stub does.
 
@@ -282,7 +297,7 @@ written against minor 1 keeps working unmodified against any later minor.
 | `slash` | string | no | 1 | The command prefix shown in the panel's command column and in `Usage()`/`StatusLines()`. Defaults to `"/" .. name:lower()`. |
 | `title` | string | no | 1 | Panel title (before the `— Perf Run` suffix). Defaults to `name`. |
 | `ring` | number | no | 1 | Depth of the SavedVariables capture ring. Defaults to `lib.DEFAULT_RING` (10). |
-| `buckets` | array of `{ key, within }` | no | 1 | Declares report order and nesting for `Note()` buckets. `within` names the parent bucket key for buckets that nest (e.g. `paintBar` runs inside `repaintPass`). A bracket calling `Note()` with an undeclared key still records, it just doesn't appear in the report. **`within` is a claim, and from `Perf.lua` minor 7 the record says whether the capture confirmed it** — see [Verifiable containment](#verifiable-containment). |
+| `buckets` | array of `{ key, within, budget }` | no | 1 · `budget` **P14** | Declares report order and nesting for `Note()` buckets, and from **P14** an optional report-only `budget = { msPerSec, maxMs }` per bucket (see [What changed](#what-changed-at-this-version)). `within` names the parent bucket key for buckets that nest (e.g. `paintBar` runs inside `repaintPass`). A bracket calling `Note()` with an undeclared key still records, it just doesn't appear in the report. **`within` is a claim, and from `Perf.lua` minor 7 the record says whether the capture confirmed it** — see [Verifiable containment](#verifiable-containment). |
 | `version` | string | no | 1 | Host addon version, stamped into `BuildRecord`. Defaults to `"?"`. |
 | `decorate` | function(frame, api) | no | 1 | Panel chrome hook, called once at frame creation with the frame and `{ Show, Hide, Toggle, TITLE_H, PAD, ROW_W }`. Takes precedence over the lib's own chrome: a host that supplies it draws its own close button and divider, and a host that omits it gets `Core.MakeCloseButton` on the title bar rather than nothing — drawn with `addonName or name`, so it wears the collection's mark rather than the fallback glyph (`PerfPanel.lua` minor 4). The two paths are exclusive — running both would stack two close controls on the same corner. |
 
@@ -470,7 +485,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `ContextLines(ctx)` | 1 | `Context()` rendered as display lines, shared by the chat ack and the report. |
 | `BuildRecord(label)` | 1 · **14** | Assemble the current capture into the record schema (`docs/record-schema.md`). From **P14** every declared ancestor of a recorded bucket is in the record, at zero counts if it never fired. |
 | `Save(record)` | 1 (prune trace: **P11**) | Append a record to the host's SavedVariables ring, trimming past `ring`. A save that trims logs one line through `P.Log` naming the cap and how many records it dropped. |
-| `FormatReport(record)` | 1 | Render a record as plain lines, for `Log`/testing. |
+| `FormatReport(record)` | 1 · **14** | Render a record as plain lines, for `Log`/testing. From **P14** it ends with the `budget (report-only)` section when any bucket declares a budget. |
 | `Start(label)` | 1 | Begin an experiment. Samples nothing until a window is armed. |
 | `Measure(token)` | 1 | Arm window `"a"` or `"b"`; sets suspend state as the independent variable. |
 | `Stop()` | 1 | End the experiment, detach the sampler, return the record. **Does not resume.** If Experiment B ran, the host is still inert when `Stop()` returns and stays that way until something calls `Resume()` — a host driving this API directly owns that call. The asymmetry is deliberate: `OnCommand("finish")` resumes *before* it saves, so that an error in `Save` or `FormatReport` cannot strand the addon dead for the session, and it can only order it that way because `Stop()` leaves the suspend state alone. |

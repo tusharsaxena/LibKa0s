@@ -101,6 +101,21 @@ released.
 - **What a consumer owes:** nothing; a re-vendor brings it. A reader of `dump.json` that resolved a
   missing parent through the descriptor no longer needs to.
 
+### Perf minor 14: report-only per-bucket budgets (issue #1)
+
+- **`budget = { msPerSec = <n>, maxMs = <n> }`** on a descriptor `buckets` entry, either key
+  optional but not both, validated in `lib:New` (a non-table budget, a ceiling that is not a
+  positive number, or a budget naming neither is refused in the library's own words), copied onto
+  the bucket in the record as `budget` (additive within schema 2), and reported by a new last
+  section of `FormatReport`, `budget (report-only)`: `ok` or `OVER` with observed / ceiling per
+  declared axis, or `not exercised`. `finish` adds one line, `N bucket(s) over budget`.
+- **Nothing gates**, by decision (D5 of the 2026-10-01 issue pass): an in-game capture is noisy and
+  the offline counters already gate releases. A host that declares no budget gets a byte-identical
+  report and finish acknowledgment. Cases: `tests/test_perf_budget.lua`. See
+  `docs/record-schema.md` and `docs/api/Perf/version-14.1.6-docs.md`.
+- **What a consumer owes:** nothing to keep working. The six wired consumers declare their own
+  ceilings in `PerfSetup.lua` after the re-vendor, from their committed captures.
+
 ### Test-only changes
 
 No file minor moves for these, and nothing reaches a consumer's `libs/`.

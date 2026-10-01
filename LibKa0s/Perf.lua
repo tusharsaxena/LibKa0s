@@ -305,6 +305,65 @@ local function addNestingNote(add, P, record)
   end
 end
 
+-- Per-bucket budgets (issue #1): REPORT-ONLY, by decision. An in-game capture is noisy, and the
+-- deterministic offline counters already gate releases, so a budget states a ceiling and the
+-- report says whether the capture stayed inside it. Nothing refuses, raises or exits on OVER.
+--
+-- The record's own budget first, so a capture read back off the ring is judged against the
+-- ceiling it was built with; the live descriptor's for a budgeted bucket the record never got.
+-- `secs` is the active seconds, as for the bucket table. Returns nil when no bucket declares a
+-- budget, which is what keeps an un-adopted host's report and finish ack exactly as they were.
+local function axis(parts, label, observed, ceiling)
+  if not ceiling then return false end
+  local over = observed > ceiling
+  parts[#parts + 1] = ("%s %.3f / %.3f %s"):format(label, observed, ceiling, over and "OVER" or "ok")
+  return over
+end
+
+local function budgetRows(P, record, secs)
+  local rows, over = {}, 0
+  for _, key in ipairs(P.BUCKET_ORDER) do
+    local b = record.buckets[key]
+    local budget = b and b.budget or P.BUCKET_BUDGET[key]
+    if budget then
+      local row = { key = key, parts = {} }
+      if not b or b.calls == 0 then
+        row.status = "not exercised"
+      else
+        local rate = secs > 0 and (b.totalMs / secs) or 0
+        local hot = axis(row.parts, "ms/s", rate, budget.msPerSec)
+        hot = axis(row.parts, "max ms", b.maxMs, budget.maxMs) or hot
+        row.status = hot and "OVER" or "ok"
+        if hot then over = over + 1 end
+      end
+      rows[#rows + 1] = row
+    end
+  end
+  if #rows == 0 then return nil end
+  return rows, over
+end
+
+local function addBudgetLines(add, P, record, secs)
+  local rows = budgetRows(P, record, secs)
+  if not rows then return end
+  add("")
+  add("budget (report-only): observed / ceiling")
+  for _, row in ipairs(rows) do
+    if row.status == "not exercised" then
+      add("  %-14s not exercised", row.key)
+    else
+      add("  %-14s %-4s  %s", row.key, row.status, table.concat(row.parts, ", "))
+    end
+  end
+end
+
+--- How many budgeted buckets a record went over, or nil when no bucket declares a budget. For the
+--- finish acknowledgment in PerfCommands.lua, which says one line about it and gates on nothing.
+function lib.__budgetOver(P, record)
+  local _, over = budgetRows(P, record, record.fps.active.seconds)
+  return over
+end
+
 -- ── Instances ──────────────────────────────────────────────────────────────────────────────
 
 -- One step's state, at the one precedence the panel encodes: busy > done > ready > locked.
@@ -363,6 +422,54 @@ local function installCommandStub(P)
       .. "this copy of LibKa0s; re-vendor the whole folder" }
   end
   P.Usage, P.StatusLines, P.OnCommand = missing, missing, missing
+end
+
+-- The descriptor's `buckets`, validated per entry rather than trusted: an entry with no `key` used
+-- to raise a raw "table index is nil" from inside the loop, which tells a host nothing about which
+-- of its buckets is wrong. A `budget` is refused the same way, naming the entry and the field
+-- (issue #1). The levels blame lib:New's caller, the descriptor's author. The budget is copied, so
+-- a host that edits its descriptor table later does not move a ceiling under a live instance.
+local function ceiling(i, budget, field)
+  local v = budget[field]
+  if v ~= nil and (type(v) ~= "number" or v ~= v or v <= 0) then   -- v ~= v: NaN
+    error(("LibKa0s-Perf: descriptor.buckets[%d].budget.%s must be a positive number")
+      :format(i, field), 5)
+  end
+  return v
+end
+
+local function readBudget(i, budget)
+  if budget == nil then return nil end
+  if type(budget) ~= "table" then
+    error(("LibKa0s-Perf: descriptor.buckets[%d].budget must be a table"):format(i), 4)
+  end
+  local out = { msPerSec = ceiling(i, budget, "msPerSec"), maxMs = ceiling(i, budget, "maxMs") }
+  if not (out.msPerSec or out.maxMs) then
+    error(("LibKa0s-Perf: descriptor.buckets[%d].budget must name msPerSec or maxMs"):format(i), 4)
+  end
+  return out
+end
+
+local function readBuckets(d)
+  local order, within, budgets = {}, {}, {}
+  for i, b in ipairs(d.buckets or {}) do
+    if type(b) ~= "table" or type(b.key) ~= "string" then
+      error(("LibKa0s-Perf: descriptor.buckets[%d].key must be a string"):format(i), 3)
+    end
+    order[#order + 1] = b.key
+    if b.within then within[b.key] = b.within end
+    budgets[b.key] = readBudget(i, b.budget)
+  end
+  return order, within, budgets
+end
+
+-- The declared budget onto each emitted bucket, a copy per record so editing a saved record cannot
+-- move the host's ceiling. Additive within schema 2: an unbudgeted bucket carries no `budget` key.
+local function attachBudgets(out, budgets)
+  for key, b in pairs(out) do
+    local g = budgets[key]
+    if g then b.budget = { msPerSec = g.msPerSec, maxMs = g.maxMs } end
+  end
 end
 
 local function required(d, key, wanted)
@@ -428,19 +535,10 @@ function lib:New(descriptor)
   local ring = tonumber(d.ring) or lib.DEFAULT_RING
   P.ringMax = ring >= 1 and ring or 1
 
-  -- Report order, and the declared nesting. Membership controls only PRESENTATION — Note() accepts
-  -- any key, so a bracket nobody declared still records, it just does not print.
-  --
-  -- Validated per entry rather than trusted: an entry with no `key` used to raise a raw "table index
-  -- is nil" from inside the loop, which tells a host nothing about which of its buckets is wrong.
-  P.BUCKET_ORDER, P.BUCKET_WITHIN = {}, {}
-  for i, b in ipairs(d.buckets or {}) do
-    if type(b) ~= "table" or type(b.key) ~= "string" then
-      error(("LibKa0s-Perf: descriptor.buckets[%d].key must be a string"):format(i), 2)
-    end
-    P.BUCKET_ORDER[#P.BUCKET_ORDER + 1] = b.key
-    if b.within then P.BUCKET_WITHIN[b.key] = b.within end
-  end
+  -- Report order, the declared nesting and the declared budgets (readBuckets). Membership controls
+  -- only PRESENTATION — Note() accepts any key, so a bracket nobody declared still records, it just
+  -- does not print.
+  P.BUCKET_ORDER, P.BUCKET_WITHIN, P.BUCKET_BUDGET = readBuckets(d)
 
   -- Capture running? Read directly by every bracket call site, so it must stay a plain boolean RAW
   -- field — no accessor. The instance does carry a metatable (below), but it exists only for
@@ -814,6 +912,7 @@ function lib:New(descriptor)
       }
     end
     fillAncestors(out, P.BUCKET_WITHIN)
+    attachBudgets(out, P.BUCKET_BUDGET)
 
     return {
       schema    = lib.SCHEMA,
@@ -881,6 +980,7 @@ function lib:New(descriptor)
     addFpsLines(add, f)
     addBucketLines(add, P, record, f.active.seconds)
     addNestingNote(add, P, record)
+    addBudgetLines(add, P, record, f.active.seconds)
 
     return lines
   end

@@ -68,7 +68,10 @@ is not re-read or re-migrated by the addon after adopting the library.
     "repaintPass": { "calls": 118, "totalMs": 42.6, "maxMs": 1.8 },
     // `within` is what the DESCRIPTOR declared; `observedWithin` is what the capture actually saw.
     "paintBar":    { "calls": 1869, "totalMs": 98.1, "maxMs": 0.92,
-                     "within": "repaintPass", "observedWithin": "repaintPass" }
+                     "within": "repaintPass", "observedWithin": "repaintPass" },
+    // `budget` is the descriptor's report-only ceiling, present only on a budgeted bucket.
+    "spellPoll":   { "calls": 9120, "totalMs": 402.7, "maxMs": 9.64,
+                     "budget": { "msPerSec": 13, "maxMs": 20 } }
   },
 
   // Frame sampling, one arm per suspend state.
@@ -114,6 +117,13 @@ the encoder.
   bucket was observed under two *different* parents, in which case `observedWithin` holds the first.
   Records written before minor 7 carry neither key and are read unchanged — which is why this did not
   cost a schema bump and did not discard anyone's ring.
+- **`buckets[*].budget`** is **additive within schema 2**, new at `Perf.lua` minor 14 (issue #1):
+  `{ "msPerSec": <n>, "maxMs": <n> }`, either key absent when the descriptor declared only the
+  other, copied from the descriptor's bucket entry so a reader of `dump.json` can judge the capture
+  without the addon's source. It is **report-only**: `msPerSec` is compared with the bucket's
+  `totalMs` over the **active** arm's `fps.active.seconds`, `maxMs` with its `maxMs`, and the report
+  prints `ok`, `OVER` or `not exercised` (no calls). Nothing gates on it. An unbudgeted bucket
+  carries no `budget` key, and a zero-count ancestor carries its own declared budget, if any.
 - **`context`** is the one **optional** top-level field, and it is absent entirely rather than
   empty when it is missing. It is snapshotted by `Start()`, so a record built before any run — which
   `report` and `dump` will happily do on a fresh instance — carries no `"context"` key at all, and

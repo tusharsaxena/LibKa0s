@@ -168,6 +168,13 @@ function lib.__installCommands(P, ctx)
     -- is buried under combat output and the numbers scroll past unread.
     P.Announce("perf run |cffff4040FINISHED|r \226\128\148 saved; `Report` or `Dump` in the panel "
       .. "to read it, `/reload` to flush it to SavedVariables")
+    -- One line about the budgets (issue #1), and only for a host that declares any: an un-adopted
+    -- host's acknowledgment is unchanged. Report-only — the run is already saved and nothing here
+    -- refuses or raises on OVER; `report` names which buckets and by how much.
+    local over = lib.__budgetOver and lib.__budgetOver(P, record)
+    if over then
+      out[#out + 1] = ("%d bucket(s) over budget \226\128\148 `report` for which"):format(over)
+    end
   end
 
   -- ONE STEP, TWO ARTIFACTS. `dump` was a verb and a panel step of its own until 2026-09-09. Both

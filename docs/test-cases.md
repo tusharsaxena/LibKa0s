@@ -1813,6 +1813,20 @@ badge and any count quoted in the docs must agree with it.
 - cmd: the command surface lives in PerfCommands.lua at minor 1, paired on the live probe
 - cmd: a probe without PerfCommands.lua answers every command with one line saying so
 
+### test_perf_budget.lua (11)
+
+- budget: a malformed budget is refused in the library's own words
+- budget: a well-formed budget is accepted, and a bucket may declare one axis
+- budget: the declared budget travels onto its bucket in the record and the JSON
+- budget: the record's budget is a copy, not the descriptor's table
+- budget: a bucket over its ms/s ceiling and over its max ms reports OVER on both
+- budget: a bucket inside both ceilings reports ok, and one axis over reports OVER
+- budget: a budgeted bucket that recorded no calls reports not exercised
+- budget: a host with no budgets gets a byte-identical report
+- budget: a record read back off the ring reports the budget it was built with
+- budget: finish says how many buckets went over budget, and nothing gates
+- budget: finish with budgets all inside says zero, and with none declared says nothing
+
 ### test_perf_isolation.lua (12)
 
 - iso: two instances create separate sampler frames
@@ -2248,6 +2262,7 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_run.lua | 40 |
 | test_perf_panel.lua | 45 |
 | test_perf_command.lua | 22 |
+| test_perf_budget.lua | 11 |
 | test_perf_isolation.lua | 12 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
@@ -2270,4 +2285,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1944** |
+| **Total** | **1955** |

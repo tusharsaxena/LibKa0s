@@ -223,12 +223,13 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
   `RenderTabbedSchema` took it the rest of the way), peeled then accepted, below.
-- `LibKa0s/Perf.lua` (1170 at minor 14, measured 2026-10-01, after issue
+- `LibKa0s/Perf.lua` (1292 at minor 14, measured 2026-10-01: 1170 after issue
   [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)'s peel moved the command surface, unchanged,
-  to `LibKa0s/PerfCommands.lua` (223); 1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231
-  at v1.39.0) — **peeled, still in the band.** The peel took the seam whose closure dependencies
-  could be passed in (the descriptor and one sink); it was never going to clear 1000 alone.
-  **Re-check trigger: 1250 lines, or the next member added to the instance**; the next seam is the
+  to `LibKa0s/PerfCommands.lua` (230 with the budget line), then 22 for #12's zero-count ancestors
+  and 100 for #1's budgets; 1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at
+  v1.39.0) — **peeled, still in the band.** The peel took the seam whose closure dependencies could
+  be passed in (the descriptor and one sink); it was never going to clear 1000 alone.
+  **Re-check trigger: 1350 lines, or the next member added to the instance**; the next seam is the
   issue's own, the measurement windows and the sampler (`ensureSampler` through `P.Cancel`, about
   230 lines), which reads the bucket, arm and open-depth state through closure locals that would
   have to be passed in first.
