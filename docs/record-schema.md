@@ -95,6 +95,16 @@ the encoder.
   descriptor never declared still appears here, just without a `within` key — membership in
   `buckets` (the descriptor field) controls only *presentation order and nesting*, never whether a
   measurement is captured.
+- **Every `within` names a key present in `buckets`** (from `Perf.lua` minor 14, issue #12). Buckets
+  are created on their first `Note()`, so through minor 13 a declared parent that recorded no calls
+  was absent while its child's `within` named it, and an offline reader had nothing to resolve the
+  name against. `BuildRecord` now emits every declared **ancestor** of a recorded bucket, walking
+  the descriptor's `within` chain, with `calls`, `totalMs` and `maxMs` all `0` where it never
+  fired, its own declared `within`, and no `observedWithin`. So **a zero-call bucket may appear**,
+  and it appears only as some recorded bucket's ancestor: a declared bucket with no recorded
+  descendant stays absent. Zero rows add nothing to a sum, so totals are unchanged; the rule
+  against summing a parent with its children still holds. Additive within schema 2; records
+  written before minor 14 may still carry a dangling `within`, and are read unchanged.
 - **`buckets[*].observedWithin`** and **`buckets[*].observedMixed`** are **additive within schema 2**,
   new at `Perf.lua` minor 7. `within` is a **claim** the descriptor makes; `observedWithin` is the
   parent a call site actually **passed** — `Perf.Note(key, ms, parentKey)`, or the enclosing

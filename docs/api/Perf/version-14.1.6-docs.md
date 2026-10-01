@@ -58,6 +58,13 @@ every file's minor in load order.
   derives from `LibKa0s.xml`, so this arises only from a hand-trimmed copy.
 - **The descriptor's four optional sinks are resolved at file level** (`resolveHooks`), so their
   presence tests no longer count against `lib:New`'s complexity. What each defaults to is unchanged.
+- **A `within` in the record never dangles** (issue
+  [#12](https://github.com/tusharsaxena/LibKa0s/issues/12)). `BuildRecord` emits every declared
+  ancestor of a recorded bucket, with `calls`, `totalMs` and `maxMs` at `0` where it never fired,
+  its own declared `within` and no `observedWithin`; a declared bucket with no recorded descendant
+  stays absent. The report prints such a parent as a zero row, in declared order, with its children
+  indented under it. Additive within schema 2: see
+  [`docs/record-schema.md`](../../record-schema.md).
 - **No lib-level or instance member is added, removed or resignatured.** The member manifest lists
   13.6's surface; `lib.MODULES` gains `PerfCommands`.
 
@@ -461,7 +468,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `Progress()` | 1 | The run as a table of step states (`ready`/`busy`/`done`/`locked`/`used`/`cancel`), for a panel to render. |
 | `Context()` | 1 | Who / where / what, snapshotted once at `Start()`. Reads the spec through `C_SpecializationInfo.GetSpecialization` first, the deprecated global second, as of **P8**. |
 | `ContextLines(ctx)` | 1 | `Context()` rendered as display lines, shared by the chat ack and the report. |
-| `BuildRecord(label)` | 1 | Assemble the current capture into the record schema (`docs/record-schema.md`). |
+| `BuildRecord(label)` | 1 · **14** | Assemble the current capture into the record schema (`docs/record-schema.md`). From **P14** every declared ancestor of a recorded bucket is in the record, at zero counts if it never fired. |
 | `Save(record)` | 1 (prune trace: **P11**) | Append a record to the host's SavedVariables ring, trimming past `ring`. A save that trims logs one line through `P.Log` naming the cap and how many records it dropped. |
 | `FormatReport(record)` | 1 | Render a record as plain lines, for `Log`/testing. |
 | `Start(label)` | 1 | Begin an experiment. Samples nothing until a window is armed. |

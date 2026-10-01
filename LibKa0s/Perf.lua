@@ -172,6 +172,27 @@ local function deriveArm(a)
     }
 end
 
+-- Emit every declared ancestor a recorded bucket names, with zero counts where it never fired
+-- (issue #12). Buckets are created lazily, on the first Note, so a parent that recorded no calls
+-- was absent from the record while its child's `within` named it, and a reader of dump.json had
+-- no descriptor to fall back on. Only ANCESTORS are added: a declared bucket with no fired
+-- descendant stays absent, so a record does not grow by every idle bucket a host declares. An
+-- added parent claims no observation. The depth guard is addBucketLines' own, against a malformed
+-- descriptor whose `within` chain loops.
+local function fillAncestors(out, withinMap)
+  local named = {}
+  for _, b in pairs(out) do
+    if b.within then named[#named + 1] = b.within end
+  end
+  for _, parent in ipairs(named) do
+    local depth = 0
+    while parent and not out[parent] and depth < 8 do
+      out[parent] = { calls = 0, totalMs = 0, maxMs = 0, within = withinMap[parent] }
+      parent, depth = withinMap[parent], depth + 1
+    end
+  end
+end
+
 -- The interface version this capture was taken on, as a number.
 --
 -- GetBuildInfo's FOURTH return, NOT GetAddOnMetadata(name, "Interface"). Blizzard does not serve
@@ -792,6 +813,7 @@ function lib:New(descriptor)
         observedMixed  = b.observedMixed,
       }
     end
+    fillAncestors(out, P.BUCKET_WITHIN)
 
     return {
       schema    = lib.SCHEMA,

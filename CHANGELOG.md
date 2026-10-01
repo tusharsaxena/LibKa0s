@@ -91,6 +91,16 @@ released.
 - **What a consumer owes:** a whole-folder re-vendor, as always, and the in-game perf run smoke
   check (typed and clicked) in every consumer that wires a Perf module.
 
+### Perf minor 14: a declared parent that never fired is in the record (issue #12)
+
+- **`P.BuildRecord`** emits every declared ancestor of a recorded bucket, with `calls`, `totalMs`
+  and `maxMs` at `0` where it never fired, its own declared `within` and no `observedWithin`, so a
+  `within` in the record always names a key in `buckets`. A declared bucket with no recorded
+  descendant stays absent. The report prints the parent as a zero row with its children under it.
+  Additive within schema 2. Cases: `tests/test_perf_core.lua`. See `docs/record-schema.md`.
+- **What a consumer owes:** nothing; a re-vendor brings it. A reader of `dump.json` that resolved a
+  missing parent through the descriptor no longer needs to.
+
 ### Test-only changes
 
 No file minor moves for these, and nothing reaches a consumer's `libs/`.

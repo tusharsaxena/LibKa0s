@@ -388,6 +388,64 @@ test("lib: a nested bucket carries its parent into the record", function()
   assertEqual(r.buckets.outer.within, nil, "a top-level bucket carries none")
 end)
 
+-- ── a `within` never dangles (issue #12) ──────────────────────────────────────────────────────
+--
+-- Buckets are created lazily, on the first Note, so a declared parent that recorded no calls used
+-- to be absent from the record while its child's `within` named it. In-process readers fell back to
+-- the live descriptor; a reader of dump.json had nothing to fall back to. Every ancestor a recorded
+-- bucket names is now emitted, with zero counts when it never fired.
+
+local function nestedHost()
+  return Fixture.new({ buckets = {
+    { key = "appearance" },
+    { key = "visibility", within = "appearance" },
+    { key = "repaint", within = "visibility" },
+    { key = "idle" },
+  } })
+end
+
+test("lib: a declared parent that never fired is emitted with zero counts when its child fired", function()
+  -- red under: BuildRecord emitting only the buckets Note created
+  local p = nestedHost()
+  p.Note("visibility", 2)
+  local r = p.BuildRecord("cap")
+  T.assertTrue(r.buckets.appearance ~= nil, "the parent the child names is in the record")
+  assertEqual(r.buckets.appearance.calls, 0, "with zero calls")
+  assertEqual(r.buckets.appearance.totalMs, 0, "zero total")
+  assertEqual(r.buckets.appearance.maxMs, 0, "and zero max")
+  assertEqual(r.buckets.appearance.within, nil, "a top-level parent carries no within")
+  assertEqual(r.buckets.appearance.observedWithin, nil, "and claims no observation")
+  assertEqual(r.buckets.visibility.within, "appearance", "the child still names it")
+end)
+
+test("lib: every ancestor of a fired leaf is emitted, and an unrelated idle bucket is not", function()
+  -- red under: BuildRecord emitting only the buckets Note created
+  local p = nestedHost()
+  p.Note("repaint", 1)
+  local r = p.BuildRecord("cap")
+  assertEqual(r.buckets.visibility.calls, 0, "the middle of the chain")
+  assertEqual(r.buckets.visibility.within, "appearance", "carrying its own declared parent")
+  assertEqual(r.buckets.appearance.calls, 0, "and the top")
+  assertEqual(r.buckets.idle, nil, "a declared bucket with no fired descendant stays absent")
+  for key, b in pairs(r.buckets) do
+    if b.within then
+      T.assertTrue(r.buckets[b.within] ~= nil, key .. "'s within names a key in the record")
+    end
+  end
+end)
+
+test("lib: the zero-count parent travels into the JSON and prints as a zero row", function()
+  -- red under: BuildRecord emitting only the buckets Note created
+  local p = nestedHost()
+  p.Note("visibility", 2)
+  local r = p.BuildRecord("cap")
+  T.assertTrue(lib.EncodeJSON(r):find('"appearance":{"calls":0,"maxMs":0,"totalMs":0}', 1, true)
+    ~= nil, "the parent key is in the encoded record")
+  local lines = table.concat(p.FormatReport(r), "\n")
+  T.assertTrue(lines:find("\nappearance%s+0%s") ~= nil, "a zero row for the parent")
+  T.assertTrue(lines:find("\n  visibility", 1, true) ~= nil, "with the child indented under it")
+end)
+
 test("lib: a record stamps the host's interface version and the capture time", function()
   -- Both are read off the client through existence-checked accessors, so both have a degraded path
   -- that nothing was pinning: an `interface` silently stuck at 0 makes every archived capture

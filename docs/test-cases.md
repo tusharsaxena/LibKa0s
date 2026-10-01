@@ -1620,7 +1620,7 @@ badge and any count quoted in the docs must agree with it.
 - throttle: the window re-arms after it fires, for a nil-returning host
 - throttle: a host whose timer answers a handle is unchanged
 
-### test_perf_core.lua (71)
+### test_perf_core.lua (74)
 
 - lib: registers under its major with a schema and a default ring
 - lib: New requires a name, an sv global and a lifecycle latch
@@ -1659,6 +1659,9 @@ badge and any count quoted in the docs must agree with it.
 - lib: BuildRecord snapshots buckets rather than aliasing them
 - lib: a record names the addon that produced it
 - lib: a nested bucket carries its parent into the record
+- lib: a declared parent that never fired is emitted with zero counts when its child fired
+- lib: every ancestor of a fired leaf is emitted, and an unrelated idle bucket is not
+- lib: the zero-count parent travels into the JSON and prints as a zero row
 - lib: a record stamps the host's interface version and the capture time
 - lib: the record's context names the character's class
 - lib: a canceled run takes its context stamp with it
@@ -2241,7 +2244,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 45 |
 | test_options_throttle.lua | 4 |
-| test_perf_core.lua | 71 |
+| test_perf_core.lua | 74 |
 | test_perf_run.lua | 40 |
 | test_perf_panel.lua | 45 |
 | test_perf_command.lua | 22 |
@@ -2267,4 +2270,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1941** |
+| **Total** | **1944** |
