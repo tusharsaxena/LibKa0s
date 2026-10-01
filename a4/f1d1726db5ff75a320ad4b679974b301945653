@@ -1,0 +1,1 @@
+OK CA-LK-01 tests 2007 passed/0 failed/2 skipped (2009); luacheck 0/0 in 144 files; sighted complexity 0 warnings (max CCN 15); reverting Core.lua to minor 9 reddens 6 new resize cases; test-cases.md regen no drift; Core MINOR 10
