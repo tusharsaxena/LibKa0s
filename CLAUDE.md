@@ -203,9 +203,9 @@ same command on **2026-09-26 at v1.62.0's release, kit revision 31**, after the 
 sweep. It is prose rather than a second table on purpose: the gate above reads every
 backticked-path table row under this heading as a census row, so a band table here would be ten
 rows claiming to be breaches. Ten files at that write-out, three fewer than the thirteen of the
-2026-09-24 write-out: the sweep took six out and its id peel brought three in. Nine now:
-`tests/test_options.lua` and `tests/test_schema.lua` left on 2026-10-01 (below), and
-`LibKa0s/Slash.lua` came in the same day with minor 19. Largest first:
+2026-09-24 write-out: the sweep took six out and its id peel brought three in. Eight now:
+`tests/test_options.lua`, `tests/test_schema.lua` and `LibKa0s/Widgets.lua` left on 2026-10-01
+(below), and `LibKa0s/Slash.lua` came in the same day with minor 19. Largest first:
 
 - `testkit/mock_base.lua` (1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
   1452 with the shown-by-default flip's four comment lines, 1448 with
@@ -223,8 +223,6 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
   `RenderTabbedSchema` took it the rest of the way), peeled then accepted, below.
-- `LibKa0s/Widgets.lua` (1303 with DL-LIB-01R's scroll inset cleared of the grip, measured 2026-09-30;
-  1298 with minor 11's resizable copy window; 1266 with `LK-21`'s minor 10, 1232 before it), issue #36.
 - `LibKa0s/Options.lua` (1282 with v1.65.0's combat-refusal lines and their one private member, `O.__combatRefused`, which fires the re-check trigger below and is re-ruled there; 1261 after the sweep moved its page registry to
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
@@ -237,6 +235,10 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
   `lib.ParseValue`, with `enumList` and `allowedText`, about 150 lines) is the seam, to a secondary
   file of its own, the cut `tests/test_slash_parse.lua` already made on the suite side.
 
+`LibKa0s/Widgets.lua` left the band on 2026-10-01, 1303 → 655, closing issue #36: `ReorderList`,
+the row box and their machinery moved unchanged to `LibKa0s/WidgetsReorder.lua` (680) at Widgets
+minor 12, a secondary file paired on the shell's minor as `LibKa0s/WidgetsDragHandle.lua` is. The
+dropdown and the copy window stay; the copy window is the next seam if the file grows back.
 `tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page
 registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to
 `tests/test_options_render.lua` (373), the render/refresh seam the issue named plus the page-registry
@@ -319,7 +321,8 @@ Disposition cells point here:
   beside it and `RefreshAllPanels`' fan-out case are `tests/test_options_render.lua`, and the file is
   988, out of the band.
 - `LibKa0s/Widgets.lua` (1266) — issue [#36](https://github.com/tusharsaxena/LibKa0s/issues/36):
-  per-widget files, `ReorderList` first.
+  per-widget files, `ReorderList` first. **Peeled 2026-10-01**: `ReorderList` is
+  `LibKa0s/WidgetsReorder.lua`, and the file is 655, out of the band.
 - `tests/test_widgets.lua` (1493) — issue [#37](https://github.com/tusharsaxena/LibKa0s/issues/37):
   split by widget family, the `ReorderList` and row-box cases first; its trigger is *any* new case.
   **Split 2026-09-26**: those cases are `tests/test_widgets_reorderlist.lua`, and the

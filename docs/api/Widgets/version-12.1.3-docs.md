@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 11.3
+# `LibKa0s-Widgets-1.0` — version 12.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,12 +8,37 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **11** · `WidgetsDragHandle.lua` minor **3** |
-| Shipped in | v1.64.0 |
-| Status | Superseded |
-| Supersedes | [version 10.3](./version-10.3-docs.md) — a fixed-size copy window |
-| Superseded by | [version 12.1.3](./version-12.1.3-docs.md) |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 11, WidgetsDragHandle = 3 }` |
+| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **3** |
+| Shipped in | v1.66.0 |
+| Status | **Current** |
+| Supersedes | [version 11.3](./version-11.3-docs.md) — `ReorderList` inside `Widgets.lua` |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 3 }` |
+
+## What changed at 12.1.3
+
+**`ReorderList` moved to a file of its own, and nothing about it changed** (issue #36).
+`Widgets.lua` held three widgets at 1303 lines, in `layout-§1`'s 1000–1500 band, and the issue named
+the seam: one file per widget, `ReorderList` first. The list, its ghost, the handle and box pools,
+the row box and the drag moved unchanged to `LibKa0s/WidgetsReorder.lua` at minor **1**, loaded by
+`LibKa0s.xml` after `Widgets.lua` and before `WidgetsDragHandle.lua`. `Widgets.lua` moves to minor
+**12** and is 655 lines, out of the band; `WidgetsDragHandle.lua` stays at **3**. The version key
+gains a component, 11.3 → 12.1.3, because the key is every file's minor in load order.
+
+- **The same multi-file idiom as `WidgetsDragHandle.lua`.** The file attaches to the live shell and
+  records `lib.__reorderMinor` and `lib.__reorderShellMinor`, so a list from one vendored copy never
+  pairs with a shell from another without saying so; `tests/test_versioning.lua`'s pairing guard
+  reads both through `tests/majors.lua`.
+- **No member, `opts` field or controller method is added or removed**, so the member manifest
+  lists the same surface as 11.3's. `lib.ReorderList` and `lib.ROW_BOX` are published by the new
+  file. The handle's fallback art, the one file-level value it shared with the dropdown, is restated
+  there.
+- **A payload without `WidgetsReorder.lua`** loads whole: the dropdown, the copy window and the drag
+  handle work, and `lib.ReorderList` and `lib.ROW_BOX` are `nil`. A consumer re-vendors the whole
+  folder and its load list derives from `LibKa0s.xml`, so this arises only from a hand-trimmed copy.
+
+**What a host must change: nothing.** No member moves, so no degradation stub does. The drag
+reorder in every consumer that draws one is the in-game smoke check after the re-vendor.
 
 ## What changed at 11.3
 
@@ -467,7 +492,7 @@ is a widget whose degraded behavior nobody has tested.
 
 ## The reorderable list
 
-`ReorderList(opts)` returns a **controller for one render**. It holds the rows of the pass that
+In `LibKa0s/WidgetsReorder.lua` from 12.1.3. `ReorderList(opts)` returns a **controller for one render**. It holds the rows of the pass that
 built it, so a repaint builds a new one — and `Cancel()` on the old one is what stops a drag
 outliving the list it was describing.
 
@@ -826,8 +851,9 @@ change exists to remove.
 
 With `LibKa0s-Widgets-1.0` absent — no vendored copy, or a copy whose `NEEDS_CORE` floor the host's
 `LibKa0s-Core-1.0` does not meet — `LibStub("LibKa0s-Widgets-1.0", true)` answers `nil`, exactly as
-for any other major. There is no partial module here to leave half-wired: this is a single-file
-major, so the host either gets the whole surface or none of it. The host must have a plan for `nil`
+for any other major. The secondary files cannot half-attach: each is paired on the shell's minor,
+and one that is missing leaves only its own members `nil` (`ReorderList` and `ROW_BOX` without
+`WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`). The host must have a plan for `nil`
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
 non-click close path must itself become a no-op alongside the rest of the degraded surface. The same
@@ -866,11 +892,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 12.1.3
-
-**Take it; nothing in a host's code or its degradation stub changes.** The next version is key
-12.1.3: `Widgets.lua` 12, the new `WidgetsReorder.lua` 1 and `WidgetsDragHandle.lua` still 3.
-`ReorderList` and `ROW_BOX` moved unchanged from `Widgets.lua` to `WidgetsReorder.lua`, paired on the
-shell's minor. No member, `opts` field or controller method changes. Re-vendor the whole folder, as
-always; the load list derives from `LibKa0s.xml`. See [version 12.1.3](./version-12.1.3-docs.md).

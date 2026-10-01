@@ -9,6 +9,7 @@
 	<Script file="Item.lua"/>
 	<Script file="Media.lua"/>
 	<Script file="Widgets.lua"/>
+	<Script file="WidgetsReorder.lua"/>
 	<Script file="WidgetsDragHandle.lua"/>
 	<Script file="DebugLog.lua"/>
 	<Script file="DebugLogDiagnostics.lua"/>

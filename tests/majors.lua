@@ -61,9 +61,12 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Widgets-1.0",
-    files = { "Widgets", "WidgetsDragHandle" },
+    files = { "Widgets", "WidgetsReorder", "WidgetsDragHandle" },
     primary = "Widgets",
-    paired = { { file = "WidgetsDragHandle", minorField = "__dragMinor", probeField = "__dragShellMinor" } },
+    paired = {
+      { file = "WidgetsReorder",    minorField = "__reorderMinor", probeField = "__reorderShellMinor" },
+      { file = "WidgetsDragHandle", minorField = "__dragMinor",    probeField = "__dragShellMinor" },
+    },
   },
   {
     major = "LibKa0s-DebugLog-1.0",

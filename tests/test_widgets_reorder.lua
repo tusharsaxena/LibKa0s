@@ -8,7 +8,7 @@
 --
 -- ── WHAT THESE CASES PIN ──────────────────────────────────────────────────────────────────────
 --
--- The pooled-frame invariant Widgets.lua states over its handle pool, applied to the two things a
+-- The pooled-frame invariant WidgetsReorder.lua states over its handle pool, applied to the two things a
 -- drag borrowed from the host until minor 9 and did not give back:
 --
 --   the POLL, which was `row.frame:SetScript("OnUpdate", ...)` on the host's own row frame and was
@@ -224,4 +224,41 @@ test("reorder: the drop line goes back at the drop, and the next drag reuses it"
   release()
   list:Cancel()
   next:Cancel()
+end)
+
+-- ── the file it lives in (issue #36) ──────────────────────────────────────────────────────────
+--
+-- ReorderList left Widgets.lua for LibKa0s/WidgetsReorder.lua, a secondary file of the same major
+-- paired on the shell's minor as WidgetsDragHandle.lua is, so Widgets.lua leaves `layout-§1`'s
+-- 1000-1500 band. These two cases pin the pairing and the partial payload.
+
+rawTest("reorder: ReorderList lives in WidgetsReorder.lua at minor 1, paired on the live shell", function()
+  -- red under: ReorderList written into Widgets.lua, which publishes no WidgetsReorder minor
+  assertEqual(W.MODULES.WidgetsReorder, 1)
+  assertEqual(W.__reorderMinor, 1)
+  assertEqual(W.__reorderShellMinor, W.MINOR, "attached to the shell that is live")
+  assertEqual(type(W.ReorderList), "function")
+  assertEqual(type(W.ROW_BOX), "table")
+end)
+
+rawTest("reorder: a payload without WidgetsReorder.lua loads whole, with no ReorderList", function()
+  -- red under: ReorderList written into Widgets.lua, which a shell-only payload still carries
+  local Loader     = dofile("tests/_kit/loader.lua")
+  local buildMocks = dofile("tests/wow_mock.lua")
+  local fresh = buildMocks()
+  local ok, err = pcall(function()
+    Loader.load("LibKa0s/Core.lua", nil, fresh)
+    Loader.load("LibKa0s/Widgets.lua", nil, fresh)
+    Loader.load("LibKa0s/WidgetsDragHandle.lua", nil, fresh)
+  end)
+  assertTrue(ok, tostring(err))
+  local lib = fresh.LibStub("LibKa0s-Widgets-1.0")
+  T.assertNil(lib.ReorderList, "no ReorderList without its file")
+  T.assertNil(lib.MODULES.WidgetsReorder)
+  assertEqual(type(lib.Dropdown), "function", "the rest of the major is unaffected")
+  assertEqual(type(lib.DragHandle), "function")
+
+  Loader.load("LibKa0s/WidgetsReorder.lua", nil, fresh)
+  assertEqual(type(lib.ReorderList), "function", "and the file adds it when it arrives")
+  assertEqual(lib.__reorderShellMinor, lib.MINOR)
 end)

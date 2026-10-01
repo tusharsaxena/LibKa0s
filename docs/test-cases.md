@@ -529,13 +529,15 @@ badge and any count quoted in the docs must agree with it.
 - draghandle: an X with no closeTooltip shows the strip's, and follows a cursor owner
 - draghandle: an X on a strip whose '?' could not be built sits where the '?' would
 
-### test_widgets_reorder.lua (5)
+### test_widgets_reorder.lua (7)
 
 - reorder: a host OnUpdate on a row frame survives a drag start and end
 - reorder: a row frame with no OnUpdate is never given one
 - reorder: two lists with different lineColor show their own color on one pooled container
 - reorder: the drop line is released after Cancel
 - reorder: the drop line goes back at the drop, and the next drag reuses it
+- reorder: ReorderList lives in WidgetsReorder.lua at minor 1, paired on the live shell
+- reorder: a payload without WidgetsReorder.lua loads whole, with no ReorderList
 
 ### test_debuglog.lua (75)
 
@@ -2188,7 +2190,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets.lua | 57 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
-| test_widgets_reorder.lua | 5 |
+| test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 46 |
@@ -2250,4 +2252,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1924** |
+| **Total** | **1926** |

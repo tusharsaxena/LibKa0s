@@ -12,8 +12,10 @@ cannot drift. Release order is in
 
 ## Unreleased
 
-Minors moved so far: **Slash minor 19** (`LibKa0s-Slash-1.0` 19). The repo version is stamped when
-this block is released.
+Minors moved so far: **Slash minor 19** (`LibKa0s-Slash-1.0` 19), **Widgets minor 12** and the new
+**WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragHandle` 3). One payload
+file is added so far (`WidgetsReorder.lua`). The repo version is stamped when this block is
+released.
 
 ### Slash minor 19: the host's `L` reaches every parse refusal and the empty-string `(none)` (issue #40)
 
@@ -26,6 +28,19 @@ this block is released.
   or floor moves. Cases: `tests/test_slash_parse.lua`. See `docs/api/Slash/version-19-docs.md`.
 - **What a consumer owes:** nothing, unless its Slash `L` carries those keys; then its wording
   appears where the library's did. ConsumableMaster un-marks its three dead keys after re-vendor.
+
+### Widgets minor 12, WidgetsReorder minor 1: `ReorderList` peeled to a file of its own (issue #36)
+
+- **`ReorderList`, `ROW_BOX` and their machinery** (the ghost, the handle and box pools, the row box
+  and the drag) moved unchanged from `Widgets.lua` to the new secondary file `WidgetsReorder.lua`,
+  loaded by `LibKa0s.xml` after `Widgets.lua` and before `WidgetsDragHandle.lua`, and paired on the
+  shell's minor (`lib.__reorderMinor` / `lib.__reorderShellMinor`) as `WidgetsDragHandle.lua` is.
+  `Widgets.lua` is 655 lines, out of `layout-§1`'s 1000–1500 band. No member, `opts` field or
+  controller method moves; the member manifest lists 11.3's surface. A payload without the new file
+  loads whole with no `ReorderList`. Cases: `tests/test_widgets_reorder.lua`. See
+  `docs/api/Widgets/version-12.1.3-docs.md`.
+- **What a consumer owes:** a whole-folder re-vendor, as always, and the in-game drag-reorder smoke
+  check in every consumer that draws a reorderable list.
 
 ### Test-only changes
 

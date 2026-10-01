@@ -168,7 +168,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [11.3](./Widgets/version-11.3-docs.md) | `Widgets.lua` 11 · `WidgetsDragHandle.lua` 3 | v1.64.0 | **Current** |
+| [12.1.3](./Widgets/version-12.1.3-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 3 | v1.66.0 | **Current** |
+| [11.3](./Widgets/version-11.3-docs.md) | `Widgets.lua` 11 · `WidgetsDragHandle.lua` 3 | v1.64.0 – v1.65.0 | Superseded |
 | [10.3](./Widgets/version-10.3-docs.md) | `Widgets.lua` 10 · `WidgetsDragHandle.lua` 3 | v1.59.0 – v1.63.0 | Superseded |
 | [10.2](./Widgets/version-10.2-docs.md) | `Widgets.lua` 10 · `WidgetsDragHandle.lua` 2 | v1.56.0 – v1.58.0 | Superseded |
 | [9.2](./Widgets/version-9.2-docs.md) | `Widgets.lua` 9 · `WidgetsDragHandle.lua` 2 | v1.48.1 – v1.55.0 | Superseded |
