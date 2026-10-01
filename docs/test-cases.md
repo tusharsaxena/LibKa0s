@@ -1401,7 +1401,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: a wrapped SUB strip's geometry is invariant under the selected sub tab
 - widgets: SubTabStrip refuses politely with no AceGUI, no parent and no tabs
 
-### test_options_tabbed.lua (13)
+### test_options_tabbed.lua (20)
 
 - widgets: a host tab sits before the group it names and renders through its callback
 - widgets: a host tab keyed by a group takes that group's place and is handed its rows
@@ -1410,6 +1410,13 @@ badge and any count quoted in the docs must agree with it.
 - widgets: disabledFor false draws no notice and live rows; a raising one reads as enabled
 - widgets: a host tab renders under the page's disable, and the flag never outlives it
 - widgets: chrome is called once per render, after the strip and before the rows
+- widgets: without untabbedSkipRender an all-skipRender group is still a tab (default)
+- widgets: untabbedSkipRender drops an all-skipRender group's tab and keeps a mixed one
+- widgets: untabbedSkipRender keeps an all-skipRender group a hook or host tab claims
+- widgets: disabledReplaces draws the notice instead of the rows and host tab
+- widgets: without disabledReplaces the notice is small and the rows still draw (default)
+- widgets: rerender takes over a tab click: activeTab set, no ClearScroll, refreshers kept
+- widgets: a raising rerender is reported and the strip stays usable
 - widgets: with OptionsTabs.lua absent RenderTabbedSchema takes opts and renders untabbed
 - widgets: the tab half alone does not define RenderTabbedSchema over no flow engine
 - widgets: PageBanner's action draws a Button whose click calls onClick
@@ -2222,7 +2229,7 @@ badge and any count quoted in the docs must agree with it.
 | test_options_idlist.lua | 24 |
 | test_options_idlist_layout.lua | 33 |
 | test_options_tabs.lua | 41 |
-| test_options_tabbed.lua | 13 |
+| test_options_tabbed.lua | 20 |
 | test_options_nav.lua | 14 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 11 |
@@ -2258,4 +2265,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1932** |
+| **Total** | **1939** |

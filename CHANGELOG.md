@@ -14,7 +14,8 @@ cannot drift. Release order is in
 
 Minors moved so far: **Slash minor 19** (`LibKa0s-Slash-1.0` 19), **Widgets minor 12** and the new
 **WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragHandle` 3),
-**OptionsWidgets minor 34** (`LibKa0s-Options-1.0` 27.2.34.2.2.7.1.7.4.2). One payload
+**OptionsWidgets minor 34** and **OptionsTabs minor 8** (`LibKa0s-Options-1.0`
+27.2.34.2.2.8.1.7.4.2). One payload
 file is added so far (`WidgetsReorder.lua`). The repo version is stamped when this block is
 released.
 
@@ -56,6 +57,22 @@ released.
   `tests/test_options_flow.lua`. See `docs/api/Options/version-27.2.34.2.2.7.1.7.4.2-docs.md`.
 - **What a consumer owes:** nothing; a two-argument call draws what it drew. KickCD adopts it for
   its Spells list (`{ gap = false }`) after the re-vendor.
+
+### OptionsTabs minor 8: three opt-in `RenderTabbedSchema` fields (AbsorbTracker#32)
+
+- **`opts.untabbedSkipRender`**: a group whose rows are all `skipRender` is no tab unless a host tab
+  or an `afterGroup` hook is keyed by it; the rows stay in their bucket, so a mixed group's
+  `skipRender` row and its subgroup heading behave as before.
+- **`opts.disabledReplaces`** (with **`opts.disabledNoticeFont`**, default `GameFontHighlightSmall`):
+  a disabled page draws the notice and nothing under it, no rows and no host tab.
+- **`opts.rerender(ctx)`**: a tab click sets `ctx.activeTab` and calls the host's redraw instead of
+  `ClearScroll` and a render of its own, so chrome above the strip and refreshers registered after
+  the body survive the click; a raise is reported as `RENDER_FAILED`.
+- All off by default: BankLedger's all-`skipRender` Filters group (drawn by an `afterGroup` hook),
+  LootHistory's `skipRender` subgroup row and every other consumer draw what they drew. Cases:
+  `tests/test_options_tabbed.lua`. See `docs/api/Options/version-27.2.34.2.2.8.1.7.4.2-docs.md`.
+- **What a consumer owes:** nothing. AbsorbTracker adopts all four on its Appearance page after the
+  re-vendor and deletes its hand-composed strip.
 
 ### Test-only changes
 

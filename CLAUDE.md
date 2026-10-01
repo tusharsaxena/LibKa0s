@@ -218,12 +218,13 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
   measured 2026-10-01, six under its 1450 re-check trigger; 1423 with v1.65.0's combat-refusal line;
   1422 new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
 - `LibKa0s/OptionsIds.lua` (1359 at v1.65.0; 1358 new: the id peel), ruled below.
-- `LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0),
-  issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7).
-- `LibKa0s/OptionsTabs.lua` (1294 at v1.65.0; 1293 after the sweep moved its combat half to
+- `LibKa0s/OptionsTabs.lua` (1349 with minor 8's three `RenderTabbedSchema` opts, AbsorbTracker#32,
+  measured 2026-10-01, no member added and under its 1400 re-check trigger; 1294 at v1.65.0; 1293 after the sweep moved its combat half to
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
   `RenderTabbedSchema` took it the rest of the way), peeled then accepted, below.
+- `LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0),
+  issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7).
 - `LibKa0s/Options.lua` (1282 with v1.65.0's combat-refusal lines and their one private member, `O.__combatRefused`, which fires the re-check trigger below and is re-ruled there; 1261 after the sweep moved its page registry to
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
