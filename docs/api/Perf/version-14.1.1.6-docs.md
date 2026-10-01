@@ -289,12 +289,12 @@ so there is nothing here for them to measure yet.
 | `lib.MODULES` | 1 | `{ Perf = <minor>, PerfSampler = <minor>, PerfCommands = <minor>, PerfPanel = <minor> }` — the live minor of every file in this major (`PerfSampler` and `PerfCommands` from **P14**). |
 | `lib:New(descriptor)` | 1 | Build a probe for one host. |
 
-**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
 
-- `lib.DEFAULT_RING`: no consumer as of v1.66.0, kept because it is the capture ring's depth (10) when the descriptor omits `ring`, which every host does.
-- `lib.EncodeJSON`: no consumer as of v1.66.0, kept because `dump` encodes through it; host suites call it to assert a record round-trips.
-- `lib.SCHEMA`: no consumer as of v1.66.0, kept because it stamps every record and is what `docs/record-schema.md` versions; host suites assert it.
-- `lib.STRINGS`: no consumer as of v1.66.0, kept because it is the English fallback for every perf string.
+- `lib.DEFAULT_RING`: no consumer as of v1.67.0, kept because it is the capture ring's depth (10) when the descriptor omits `ring`, which every host does.
+- `lib.EncodeJSON`: no consumer as of v1.67.0, kept because `dump` encodes through it; host suites call it to assert a record round-trips.
+- `lib.SCHEMA`: no consumer as of v1.67.0, kept because it stamps every record and is what `docs/record-schema.md` versions; host suites assert it.
+- `lib.STRINGS`: no consumer as of v1.67.0, kept because it is the English fallback for every perf string.
 
 ## The descriptor
 
@@ -322,12 +322,12 @@ written against minor 1 keeps working unmodified against any later minor.
 | `version` | string | no | 1 | Host addon version, stamped into `BuildRecord`. Defaults to `"?"`. |
 | `decorate` | function(frame, api) | no | 1 | Panel chrome hook, called once at frame creation with the frame and `{ Show, Hide, Toggle, TITLE_H, PAD, ROW_W }`. Takes precedence over the lib's own chrome: a host that supplies it draws its own close button and divider, and a host that omits it gets `Core.MakeCloseButton` on the title bar rather than nothing — drawn with `addonName or name`, so it wears the collection's mark rather than the fallback glyph (`PerfPanel.lua` minor 4). The two paths are exclusive — running both would stack two close controls on the same corner. |
 
-**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
 
-- `L`: no consumer as of v1.66.0, kept because no host localizes the perf strings yet; it is the only route for one that does.
-- `decorate`: no consumer as of v1.66.0, kept because every host takes the library's panel chrome; the hook is for a host that draws its own.
-- `onChange`: no consumer as of v1.66.0, kept because it is the hook for a host that republishes perf state on its own bus; none does.
-- `ring`: no consumer as of v1.66.0, kept because every host takes the default depth of 10.
+- `L`: no consumer as of v1.67.0, kept because no host localizes the perf strings yet; it is the only route for one that does.
+- `decorate`: no consumer as of v1.67.0, kept because every host takes the library's panel chrome; the hook is for a host that draws its own.
+- `onChange`: no consumer as of v1.67.0, kept because it is the hook for a host that republishes perf state on its own bus; none does.
+- `ring`: no consumer as of v1.67.0, kept because every host takes the default depth of 10.
 
 `slash`, `title` and `showLog` exist specifically because this library serves more than one host.
 The addon this was extracted from hardcoded `/at perf` into its usage text, `"AbsorbTracker"` into
@@ -537,46 +537,46 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `suspended` | 1 · **12** | The one the host contract above tells a show-decision to consult. **From 12 it is a VIEW of the latch** (`lifecycle:IsHeld("perf")`), not a stored boolean, and **assigning to it raises** — take or release the hold instead. `Stop()` still leaves the hold alone. |
 | `__buckets()` / `__fpsArms()` / `__completed()` / `__reviewed()` / `__sampler()` / `__panel()` | 1 | Test seams over state that is otherwise private. A host suite asserting that a declared bucket was actually reached has no other handle on it. |
 
-**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
 
-- `Announce`: no consumer as of v1.66.0, kept because the perf verbs announce through it; hosts announce through their own printer.
-- `BuildRecord`: no consumer as of v1.66.0, kept because `finish` and `dump` build the record through it; host suites call it.
-- `Cancel`: no consumer as of v1.66.0, kept because the `cancel` verb runs it.
-- `Close`: no consumer as of v1.66.0, kept because Shape B's bracket close; every host instruments with `Note` (Shape A) instead.
-- `Context`: no consumer as of v1.66.0, kept because `start` snapshots it and `report` prints it.
-- `ContextLines`: no consumer as of v1.66.0, kept because the chat ack and the report render `Context()` through it.
-- `EXPERIMENTS`: no consumer as of v1.66.0, kept because `Measure` maps `a`/`b` to an arm through it.
-- `EncodeJSON`: no consumer as of v1.66.0, kept because the instance mirror of `lib.EncodeJSON`.
-- `FormatReport`: no consumer as of v1.66.0, kept because `report` renders through it; host suites call it.
-- `HidePanel`: no consumer as of v1.66.0, kept because the panel's own close and the perf verbs hide through it.
-- `IsPanelShown`: no consumer as of v1.66.0, kept because the perf verbs read it; host suites assert it.
-- `LABELS`: no consumer as of v1.66.0, kept because the sampler prints an arm's letter through it.
-- `Log`: no consumer as of v1.66.0, kept because the perf verbs log through it.
-- `MarkReviewed`: no consumer as of v1.66.0, kept because `report` and `dump` mark themselves through it.
-- `Measure`: no consumer as of v1.66.0, kept because the `a`/`b` verbs arm a window through it.
-- `Open`: no consumer as of v1.66.0, kept because Shape B's bracket open; every host instruments with `Note` (Shape A) instead.
-- `PanelIsActionable`: no consumer as of v1.66.0, kept because published for a host drawing its own chrome in `decorate`; no host does.
-- `PanelStateOf`: no consumer as of v1.66.0, kept because published for a host drawing its own chrome in `decorate`; no host does.
-- `Progress`: no consumer as of v1.66.0, kept because the panel renders it.
-- `RefreshPanel`: no consumer as of v1.66.0, kept because every state change repaints through it.
-- `Reset`: no consumer as of v1.66.0, kept because the `reset` verb runs it.
-- `Resume`: no consumer as of v1.66.0, kept because `finish` and `cancel` release the `perf` hold through it.
-- `SCHEMA`: no consumer as of v1.66.0, kept because the instance mirror of `lib.SCHEMA`.
-- `STEPS`: no consumer as of v1.66.0, kept because the panel's rows; published for a `decorate` host.
-- `Save`: no consumer as of v1.66.0, kept because `finish` saves through it.
-- `ShowPanel`: no consumer as of v1.66.0, kept because the `panel` verb and `start` show it.
-- `Start`: no consumer as of v1.66.0, kept because the `start` verb runs it.
-- `StatusLines`: no consumer as of v1.66.0, kept because a bare `perf` prints it.
-- `Stop`: no consumer as of v1.66.0, kept because `finish` runs it.
-- `Suspend`: no consumer as of v1.66.0, kept because the `b` arm takes the `perf` hold through it.
-- `TogglePanel`: no consumer as of v1.66.0, kept because the `panel` verb toggles through it.
-- `Usage`: no consumer as of v1.66.0, kept because `StatusLines` and the help verb print it.
-- `context`: no consumer as of v1.66.0, kept because the snapshot `Start` took, read by `report` and `BuildRecord`.
-- `descriptor`: no consumer as of v1.66.0, kept because the descriptor the probe was built from, read by the sibling files of the major.
-- `name`: no consumer as of v1.66.0, kept because the descriptor's `name`, read by the sibling files of the major.
-- `ringMax`: no consumer as of v1.66.0, kept because `Save` trims the ring to it.
-- `slash`: no consumer as of v1.66.0, kept because the panel and `Usage` print commands with it.
-- `title`: no consumer as of v1.66.0, kept because the panel title.
+- `Announce`: no consumer as of v1.67.0, kept because the perf verbs announce through it; hosts announce through their own printer.
+- `BuildRecord`: no consumer as of v1.67.0, kept because `finish` and `dump` build the record through it; host suites call it.
+- `Cancel`: no consumer as of v1.67.0, kept because the `cancel` verb runs it.
+- `Close`: no consumer as of v1.67.0, kept because Shape B's bracket close; every host instruments with `Note` (Shape A) instead.
+- `Context`: no consumer as of v1.67.0, kept because `start` snapshots it and `report` prints it.
+- `ContextLines`: no consumer as of v1.67.0, kept because the chat ack and the report render `Context()` through it.
+- `EXPERIMENTS`: no consumer as of v1.67.0, kept because `Measure` maps `a`/`b` to an arm through it.
+- `EncodeJSON`: no consumer as of v1.67.0, kept because the instance mirror of `lib.EncodeJSON`.
+- `FormatReport`: no consumer as of v1.67.0, kept because `report` renders through it; host suites call it.
+- `HidePanel`: no consumer as of v1.67.0, kept because the panel's own close and the perf verbs hide through it.
+- `IsPanelShown`: no consumer as of v1.67.0, kept because the perf verbs read it; host suites assert it.
+- `LABELS`: no consumer as of v1.67.0, kept because the sampler prints an arm's letter through it.
+- `Log`: no consumer as of v1.67.0, kept because the perf verbs log through it.
+- `MarkReviewed`: no consumer as of v1.67.0, kept because `report` and `dump` mark themselves through it.
+- `Measure`: no consumer as of v1.67.0, kept because the `a`/`b` verbs arm a window through it.
+- `Open`: no consumer as of v1.67.0, kept because Shape B's bracket open; every host instruments with `Note` (Shape A) instead.
+- `PanelIsActionable`: no consumer as of v1.67.0, kept because published for a host drawing its own chrome in `decorate`; no host does.
+- `PanelStateOf`: no consumer as of v1.67.0, kept because published for a host drawing its own chrome in `decorate`; no host does.
+- `Progress`: no consumer as of v1.67.0, kept because the panel renders it.
+- `RefreshPanel`: no consumer as of v1.67.0, kept because every state change repaints through it.
+- `Reset`: no consumer as of v1.67.0, kept because the `reset` verb runs it.
+- `Resume`: no consumer as of v1.67.0, kept because `finish` and `cancel` release the `perf` hold through it.
+- `SCHEMA`: no consumer as of v1.67.0, kept because the instance mirror of `lib.SCHEMA`.
+- `STEPS`: no consumer as of v1.67.0, kept because the panel's rows; published for a `decorate` host.
+- `Save`: no consumer as of v1.67.0, kept because `finish` saves through it.
+- `ShowPanel`: no consumer as of v1.67.0, kept because the `panel` verb and `start` show it.
+- `Start`: no consumer as of v1.67.0, kept because the `start` verb runs it.
+- `StatusLines`: no consumer as of v1.67.0, kept because a bare `perf` prints it.
+- `Stop`: no consumer as of v1.67.0, kept because `finish` runs it.
+- `Suspend`: no consumer as of v1.67.0, kept because the `b` arm takes the `perf` hold through it.
+- `TogglePanel`: no consumer as of v1.67.0, kept because the `panel` verb toggles through it.
+- `Usage`: no consumer as of v1.67.0, kept because `StatusLines` and the help verb print it.
+- `context`: no consumer as of v1.67.0, kept because the snapshot `Start` took, read by `report` and `BuildRecord`.
+- `descriptor`: no consumer as of v1.67.0, kept because the descriptor the probe was built from, read by the sibling files of the major.
+- `name`: no consumer as of v1.67.0, kept because the descriptor's `name`, read by the sibling files of the major.
+- `ringMax`: no consumer as of v1.67.0, kept because `Save` trims the ring to it.
+- `slash`: no consumer as of v1.67.0, kept because the panel and `Usage` print commands with it.
+- `title`: no consumer as of v1.67.0, kept because the panel title.
 
 ## Verifiable containment
 

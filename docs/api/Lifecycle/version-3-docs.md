@@ -149,12 +149,12 @@ stood up: released perf (holds: none)
 | `lc:PrintHolds()` | 1 | The one line this library ever prints to chat, through `descriptor.print`. Answers `false` with no printer. |
 | `lc.name` | 1 | The descriptor's `name`. |
 
-**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
 
-- `Hold`: no consumer as of v1.66.0, kept because every host drives the latch through `Set(key, on)`, which calls `Hold`/`Release`; the two remain the primitive pair `Set` is defined by.
-- `PrintHolds`: no consumer as of v1.66.0, kept because it is the latch's chat readout for a host verb that wants one; hosts report holds through their diagnostics sections instead.
-- `Release`: no consumer as of v1.66.0, kept because every host drives the latch through `Set(key, on)`, which calls `Hold`/`Release`; LibKa0s-Perf-1.0 releases its `perf` hold through it.
-- `name`: no consumer as of v1.66.0, kept because it is the descriptor's `name` mirrored for the edge lines and for a suite to assert identity.
+- `Hold`: no consumer as of v1.67.0, kept because every host drives the latch through `Set(key, on)`, which calls `Hold`/`Release`; the two remain the primitive pair `Set` is defined by.
+- `PrintHolds`: no consumer as of v1.67.0, kept because it is the latch's chat readout for a host verb that wants one; hosts report holds through their diagnostics sections instead.
+- `Release`: no consumer as of v1.67.0, kept because every host drives the latch through `Set(key, on)`, which calls `Hold`/`Release`; LibKa0s-Perf-1.0 releases its `perf` hold through it.
+- `name`: no consumer as of v1.67.0, kept because it is the descriptor's `name` mirrored for the edge lines and for a suite to assert identity.
 
 `:Set` is what a host binds its enable path's `onChange` to:
 

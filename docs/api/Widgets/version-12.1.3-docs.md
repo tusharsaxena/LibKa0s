@@ -432,11 +432,11 @@ defaults are filled into a copy.
 | `scrollName` | **7** | A **global** name for the window's `ScrollFrame`. `UIPanelScrollFrameTemplate` derives its scrollbar children's names from their parent's, so naming the scroll frame is what makes those children findable and skinnable; leaving it anonymous leaves them unnamed. Must be unique across the client, like `name`. | Unset: the scroll frame is anonymous, exactly as at version 6 |
 | `makeCloseButton` | **7** | `function(parent, onClick, addonName) → button\|nil`. Builds the title bar's close control. What it returns is anchored to the bar's right edge; a `nil` return draws no control. Present because `LibKa0s-DebugLog-1.0` has published this field on its own descriptor since its minor 4, for both of its windows. | `Core.MakeCloseButton`, when Core offers it |
 
-**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
 
-- `backdrop`: no consumer as of v1.66.0, kept because `CopyWindow` defaults to Core's skin; the field is the escape hatch for a window that must not wear it.
-- `makeCloseButton`: no consumer as of v1.66.0, kept because DebugLog forwards its own `makeCloseButton` here so that published contract did not narrow (Widgets minor 7).
-- `scrollName`: no consumer as of v1.66.0, kept because DebugLog passes it from inside the library, so the copy window keeps its `<name>DebugCopyScroll` global.
+- `backdrop`: no consumer as of v1.67.0, kept because `CopyWindow` defaults to Core's skin; the field is the escape hatch for a window that must not wear it.
+- `makeCloseButton`: no consumer as of v1.67.0, kept because DebugLog forwards its own `makeCloseButton` here so that published contract did not narrow (Widgets minor 7).
+- `scrollName`: no consumer as of v1.67.0, kept because DebugLog passes it from inside the library, so the copy window keeps its `<name>DebugCopyScroll` global.
 
 ### The handle
 

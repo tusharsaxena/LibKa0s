@@ -362,10 +362,11 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `MODULES` | 1 | `{ Core = <minor> }` — the live minor of every file in this major. The in-game answer to "which version am I actually running?", and the value that picks this document. |
 | `lib:New(descriptor)` | 1 | Build a prefixed chat printer for one host. See below. |
 
-**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). Every Core export has a host consumer.
+Two left the zero-consumer list at v1.67.0:
 
-- `lib.MakeResizable`: no consumer as of v1.66.0, kept because the library's own console, copy window and perf panel size through it (Core minor 9), and three hosts still hand-roll the same grip. Its contract is settled at Core 10 (LibKa0s#41). Adopters: LootHistory#33, BankLedger#21, MultiMeters#58 on v1.67.0, each named here as it lands.
-- `lib.SECRET`: no consumer as of v1.66.0, kept because it is the one spelling of the secret sentinel every Core stringifier answers, and three hosts restate the literal outside their degradation stubs. (AbsorbTracker#33, KickCD#36, MultiMeters#58)
+- `lib.MakeResizable`: three hosts, BankLedger, LootHistory and MultiMeters, each from its own `core/CoreSetup.lua` (BankLedger#21, LootHistory#33, MultiMeters#58), on the contract settled here (LibKa0s#41).
+- `lib.SECRET`: three hosts, AbsorbTracker, KickCD and MultiMeters, each from its own `core/CoreSetup.lua` (AbsorbTracker#33, KickCD#36, MultiMeters#58).
 
 ### The skin table
 
