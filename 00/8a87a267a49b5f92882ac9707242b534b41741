@@ -1,0 +1,1 @@
+OK CA-LK-02 lua tests/run.lua 2013 passed/0 failed/2 skipped (2015); luacheck 0/0 in 144 files; sighted lizard max CCN 8 in new helpers, none >15, parity clean; 3 new cases red on minor-2 revert
