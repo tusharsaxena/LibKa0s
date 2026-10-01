@@ -1,0 +1,1 @@
+OK GI-LK-02 — pure move verified (removed lines all in test_schema_write.lua + fixture_schema.lua); 32+41=73 cases, test_schema.lua 705; stub kept beside its cases (reasonable deviation); suite 1917/0/2/1919, luacheck 0/0, lizard clean, test-cases.md matches --list, Schema v2 doc pointer updated, line endings preserved.
