@@ -815,7 +815,7 @@ badge and any count quoted in the docs must agree with it.
 - sl: with no groupKey the list groups rows by page, and a row with none under 'settings'
 - sl: an L, aliases or liveVerbs that is not a table, and a parse that is not a function, read as absent
 
-### test_slash_parse.lua (29)
+### test_slash_parse.lua (31)
 
 - sl: ParseBool accepts the same eight words the error string advertises
 - sl: ParseBool answers nil, never false, for a non-boolean word
@@ -846,6 +846,8 @@ badge and any count quoted in the docs must agree with it.
 - sl: a key-echoing L still falls through to the library's parse strings
 - sl: ParseValue and FormatValue take an optional resolver, and default to the library's strings
 - sl: a host's own parse is handed the instance's resolver as a third argument
+- sl: the parser lives in SlashParse.lua at minor 1, paired on the live shell
+- sl: a payload without SlashParse.lua loads whole, and set refuses naming the file
 
 ### test_slash_disabled.lua (16)
 
@@ -2277,7 +2279,7 @@ badge and any count quoted in the docs must agree with it.
 | test_debuglog_descriptor.lua | 7 |
 | test_resize_windows.lua | 23 |
 | test_slash.lua | 74 |
-| test_slash_parse.lua | 29 |
+| test_slash_parse.lua | 31 |
 | test_slash_disabled.lua | 16 |
 | test_slash_refusal.lua | 7 |
 | test_slash_profile.lua | 30 |
@@ -2334,4 +2336,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **1996** |
+| **Total** | **1998** |

@@ -5,7 +5,7 @@ Two version numbers, one of which is load-bearing at runtime.
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
 | Repo semver (`v1.66.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
-| File minor (integer) | `MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
+| File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
 is offered for a major and discards the rest, so of the copies vendored across every installed addon,
@@ -25,10 +25,10 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   thirty-one, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   thirty-two, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Media.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
-   `Slash.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `REORDER_MINOR` in
+   `Slash.lua`, `PARSE_MINOR` in `SlashParse.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `REORDER_MINOR` in
    `WidgetsReorder.lua`, `DRAG_MINOR` in
    `WidgetsDragHandle.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WIDGETS_MINOR` in
    `OptionsWidgets.lua`, `IDS_MINOR` in `OptionsIds.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
@@ -230,7 +230,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the thirty-one `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the thirty-two `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -340,7 +340,7 @@ Rules, and the reason each exists:
   before `NewLibrary` if the dependency is missing or older, so the module is **absent** rather than
   half-wired. That is the honest failure, not a working one: the host's setup file reports the
   library as missing and falls back. Nothing negotiates the other direction, and the
-  paired-minor guards that protect a secondary file within a major (`OptionsRegistry`, `OptionsWidgets`,
+  paired-minor guards that protect a secondary file within a major (`SlashParse`, `OptionsRegistry`, `OptionsWidgets`,
   `OptionsIds`, `OptionsIdList`, `OptionsTabs`, `OptionsCombat`, `OptionsCompose`, `OptionsScroll`, `OptionsNav`, `PerfSampler`, `PerfCommands`, `PerfPanel`) do not generalize across them. Whole-folder copying is the
   mitigation.
 - **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** TEN files since
@@ -450,11 +450,11 @@ Core, DebugLog, Slash, Options, Media, Env, Pool and Perf. It does not look up W
 is the host that found the four kit gaps revision 16 closes (#27–#30). **No addon on the standard
 remains unadopted.**
 
-**Where v1.66.0 stands (2026-10-01).** Six LibStub minors move and three files are added:
-`Slash.lua` 19 (`LibKa0s-Slash-1.0` 19), `Widgets.lua` 12 and the new `WidgetsReorder.lua` 1
+**Where v1.66.0 stands (2026-10-01).** Six LibStub minors move and four files are added:
+`Slash.lua` 19 and the new `SlashParse.lua` 1 (`LibKa0s-Slash-1.0` 19.1), `Widgets.lua` 12 and the new `WidgetsReorder.lua` 1
 (`LibKa0s-Widgets-1.0` 12.1.3), `DebugLog.lua` 19 (`LibKa0s-DebugLog-1.0` 19.2.1), `OptionsWidgets.lua`
 34 and `OptionsTabs.lua` 8 (`LibKa0s-Options-1.0` 27.2.34.2.2.8.1.7.4.2), and `Perf.lua` 14 and the new
-`PerfSampler.lua` 1 and `PerfCommands.lua` 1 (`LibKa0s-Perf-1.0` 14.1.1.6), thirty-one files now. The kit moves to **revision 35**,
+`PerfSampler.lua` 1 and `PerfCommands.lua` 1 (`LibKa0s-Perf-1.0` 14.1.1.6), thirty-two files now. The kit moves to **revision 35**,
 which adds `testkit/lizard_sighted.lua` and `testkit/test_lizard_sighted.lua`: the complexity suite
 measures a sanitized shadow of the tree and fails on a function-count parity mismatch
 (WowAddonStandards#6). No `NEEDS_*` floor rises and no member is added or removed. It is the library's

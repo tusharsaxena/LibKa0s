@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 19
+# `LibKa0s-Slash-1.0` — version 19.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,15 +8,17 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` minor **19** |
+| Files and minors | `Slash.lua` **19** · `SlashParse.lua` **1** |
+| Version key | `<Slash>.<SlashParse>`, in load order — the same two numbers `lib.MODULES` reports |
 | Shipped in | v1.66.0 |
 | Status | **Current** |
-| Supersedes | [version 18](./version-18-docs.md) — whose parse refusals and `(none)` ignored the host's `L` |
+| Supersedes | [version 18](./version-18-docs.md) — one file, whose parse refusals and `(none)` ignored the host's `L` |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 19 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 19, SlashParse = 1 }` |
 
-`Since` in the tables below is the Slash minor in which the member first appeared. Minors 1–3 were
+`Since` in the tables below is the Slash minor in which the member first appeared; `lib.ParseBool`
+and `lib.ParseValue` live in `SlashParse.lua` from 19, and their `Since` is still the Slash minor. Minors 1–3 were
 never tagged, so a `Since` of 1, 2 or 3 means "present for as long as any consumer could have had
 this major".
 
@@ -33,6 +35,12 @@ worse than one that refuses.
 
 Like DebugLog, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and it
 returns before `NewLibrary` if Core is missing or below the minor it needs.
+
+Two files, one major, from this version — `Slash.lua` (the strings, the formatters, the command
+primitives, profiles and the instance) and `SlashParse.lua` (`lib.ParseBool`, `lib.ParseValue` and
+the row type parsers behind them). One major for the same reason Perf is one: a shell and a parser
+from different vendored copies is not a state LibStub can detect. **This is why the version key above
+has two components.**
 
 ## What changed at this version
 
@@ -53,9 +61,19 @@ carried three of them in its table, marked dead for exactly that reason.
   `lib.FormatValue` outright and is called exactly as before.
 - The disabled refusal line still does not read `L`. No member, string or `NEEDS_*` floor moves;
   the member manifest is unchanged apart from its version key.
+- **The parser moved, unchanged, to a file of its own**, `LibKa0s/SlashParse.lua` minor 1, loaded
+  by `LibKa0s.xml` after `Slash.lua`: `lib.ParseBool`, `lib.ParseValue` and the row type parsers
+  (`parseBool`, `enumList`, `allowedText`, `parseNumber`, `parseString`, `parseColor`). It attaches
+  to the live shell and records `lib.__parseMinor` and `lib.__parseShellMinor`, so a parser from one
+  vendored copy never pairs with a shell from another without saying so. `Slash.lua` is 877 lines,
+  out of `layout-§1`'s 1000–1500 band. The version key gains a component, 19 → 19.1.
+- **A payload without `SlashParse.lua`** loads whole, with no `lib.ParseBool` and no
+  `lib.ParseValue`. An instance whose host passes no `parse` answers `set` with its `INVALID` line
+  and, under it, one line naming the missing file; nothing is written. A consumer re-vendors the
+  whole folder, so this arises only from a hand-trimmed copy.
 
-The cases are in `tests/test_slash_parse.lua`, including the two-argument default and the
-key-echoing locale.
+The cases are in `tests/test_slash_parse.lua`, including the two-argument default, the
+key-echoing locale, the file's pairing and the payload without it.
 
 ### Previously, at version 18
 

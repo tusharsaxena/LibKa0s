@@ -15,6 +15,7 @@
 	<Script file="DebugLogDiagnostics.lua"/>
 	<Script file="DebugLogGates.lua"/>
 	<Script file="Slash.lua"/>
+	<Script file="SlashParse.lua"/>
 	<Script file="Launcher.lua"/>
 	<Script file="Options.lua"/>
 	<Script file="OptionsRegistry.lua"/>

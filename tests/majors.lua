@@ -79,8 +79,9 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Slash-1.0",
-    files = { "Slash" },
+    files = { "Slash", "SlashParse" },
     primary = "Slash",
+    paired = { { file = "SlashParse", minorField = "__parseMinor", probeField = "__parseShellMinor" } },
   },
   {
     major = "LibKa0s-Launcher-1.0",

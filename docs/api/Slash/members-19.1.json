@@ -1,9 +1,10 @@
 {
   "major": "LibKa0s-Slash-1.0",
-  "versionKey": "19",
+  "versionKey": "19.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "Slash", "minor": 19 }
+    { "file": "Slash", "minor": 19 },
+    { "file": "SlashParse", "minor": 1 }
   ],
   "members": [
     { "name": "CommandRows", "kind": "function" },

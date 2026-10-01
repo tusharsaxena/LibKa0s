@@ -12,7 +12,8 @@ cannot drift. Release order is in
 
 ## v1.66.0 — 2026-10-01
 
-Versions in this release: **Slash minor 19** (`LibKa0s-Slash-1.0` 19), **Widgets minor 12** and the
+Versions in this release: **Slash minor 19** and the new **SlashParse minor 1** (`LibKa0s-Slash-1.0`
+19.1), **Widgets minor 12** and the
 new **WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragHandle` 3),
 **DebugLog minor 19** (`LibKa0s-DebugLog-1.0` 19.2.1, with `DebugLogDiagnostics` 2 and
 `DebugLogGates` 1), **OptionsWidgets minor 34** and **OptionsTabs minor 8**
@@ -22,9 +23,10 @@ new **WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragH
 14.1.1.6, with `PerfPanel` 6).
 Every other file is unchanged from v1.65.0: `Core` 9, `Env` 1, `Compat` 1, `Lifecycle` 3, `Bus` 2,
 `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Launcher` 5. The test kit moves to **revision 35**. No
-`NEEDS_*` floor rises and no major is added; three payload files are added (`WidgetsReorder.lua`,
-loaded by `LibKa0s.xml` after `Widgets.lua`, and `PerfSampler.lua` and `PerfCommands.lua`, in that
-order after `Perf.lua`), so the library is **fifteen majors across thirty-one files**. Built to the Ka0s WoW Addon Standard **v2.73.0**; the
+`NEEDS_*` floor rises and no major is added; four payload files are added (`WidgetsReorder.lua`,
+loaded by `LibKa0s.xml` after `Widgets.lua`, `SlashParse.lua` after `Slash.lua`, and `PerfSampler.lua`
+and `PerfCommands.lua`, in that order after `Perf.lua`), so the library is **fifteen majors across
+thirty-two files**. Built to the Ka0s WoW Addon Standard **v2.73.0**; the
 standard's sighted-complexity MUST (WowAddonStandards#6) lands in its next version, after this tag.
 
 This is the library's half of the 2026-10-01 GitHub issue pass. It closes LibKa0s#1 (report-only
@@ -45,9 +47,22 @@ nothing draws, prints and records what it did on v1.65.0.
   file-level parsers and the `string` formatter read straight from `lib.STRINGS` through minor 18.
   A host's own `parse` is handed the resolver as a third argument. A two-argument call answers as
   before, and a key-echoing locale still falls through to the library's strings. No member, string
-  or floor moves. Cases: `tests/test_slash_parse.lua`. See `docs/api/Slash/version-19-docs.md`.
+  or floor moves. Cases: `tests/test_slash_parse.lua`. See `docs/api/Slash/version-19.1-docs.md`.
 - **What a consumer owes:** nothing, unless its Slash `L` carries those keys; then its wording
   appears where the library's did. ConsumableMaster un-marks its three dead keys after re-vendor.
+
+### SlashParse minor 1: the parser peeled to a file of its own
+
+- **`lib.ParseBool`, `lib.ParseValue` and the row type parsers behind them** moved unchanged from
+  `Slash.lua` to the new secondary file `SlashParse.lua`, loaded by `LibKa0s.xml` after `Slash.lua`
+  and paired on the shell's minor (`lib.__parseMinor` / `lib.__parseShellMinor`). Minor 19's
+  resolver took `Slash.lua` from 999 to 1006 and `GI-LK-11`'s descriptor helpers to 1030, into
+  `layout-§1`'s 1000–1500 band; it is 877 lines now. No member moves; the member manifest lists
+  19's surface under key 19.1.
+- **A payload without the new file** loads whole with no `ParseBool` and no `ParseValue`, and an
+  instance's default `set` refuses with one line naming the file rather than calling a nil. Cases:
+  `tests/test_slash_parse.lua`.
+- **What a consumer owes:** a whole-folder re-vendor, as always.
 
 ### Widgets minor 12, WidgetsReorder minor 1: `ReorderList` peeled to a file of its own (issue #36)
 

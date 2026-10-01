@@ -98,7 +98,7 @@ end
 -- Evaluated at call time, not at load: a host's media list is populated by another addon and is
 -- not knowable when the schema row is declared.
 --
--- Duplicated verbatim in Slash.lua and OptionsWidgets.lua rather than hoisted into Core. The two
+-- Duplicated verbatim in SlashParse.lua and OptionsWidgets.lua rather than hoisted into Core. The two
 -- readers MUST agree — a CLI that accepts a value the dropdown cannot display is worse than
 -- either being wrong alone — but hoisting would raise NEEDS_CORE in two majors, and
 -- docs/releasing.md is explicit that a floor raise is a breaking change to the VENDORING: every

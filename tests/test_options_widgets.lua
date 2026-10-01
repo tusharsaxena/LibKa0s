@@ -234,7 +234,7 @@ end)
 
 test("widgets: the dropdown's options and the CLI's allowed values agree, in both shapes",
   function()
-  -- The cross-major parity case. enumList is duplicated verbatim in Slash.lua and
+  -- The cross-major parity case. enumList is duplicated verbatim in SlashParse.lua and
   -- OptionsWidgets.lua rather than hoisted into Core (hoisting would raise NEEDS_CORE in two
   -- majors, which docs/releasing.md calls a breaking change to the vendoring). This is the
   -- guarantee that buys instead: a CLI that accepts a value the dropdown cannot display, or a
@@ -618,7 +618,7 @@ end)
 
 -- ── numeric enums render as dropdowns (WIDGETS_MINOR 5) ────────────────────────────────────
 --
--- The two majors used to disagree about what one schema row IS. Slash.lua's parseNumber has always
+-- The two majors used to disagree about what one schema row IS. SlashParse.lua's parseNumber has always
 -- treated `type = "number"` carrying a `values` list as a constrained ENUM — it refuses a value
 -- outside the list rather than clamping, and its own comment calls the shape "a NUMERIC dropdown"
 -- and warns that clamping "lands BETWEEN two entries, and the renderer then has no label for what

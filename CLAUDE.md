@@ -203,9 +203,10 @@ same command on **2026-09-26 at v1.62.0's release, kit revision 31**, after the 
 sweep. It is prose rather than a second table on purpose: the gate above reads every
 backticked-path table row under this heading as a census row, so a band table here would be ten
 rows claiming to be breaches. Ten files at that write-out, three fewer than the thirteen of the
-2026-09-24 write-out: the sweep took six out and its id peel brought three in. Seven now:
+2026-09-24 write-out: the sweep took six out and its id peel brought three in. Six now:
 `tests/test_options.lua`, `tests/test_schema.lua`, `LibKa0s/Widgets.lua` and `LibKa0s/Perf.lua`
-left on 2026-10-01 (below), and `LibKa0s/Slash.lua` came in the same day with minor 19. Largest first:
+left on 2026-10-01 (below), and `LibKa0s/Slash.lua` came in and left again the same day. Largest
+first:
 
 - `testkit/mock_base.lua` (1456, unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
@@ -229,13 +230,6 @@ left on 2026-10-01 (below), and `LibKa0s/Slash.lua` came in the same day with mi
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
   accepted, below.
 - `LibKa0s/OptionsIdList.lua` (1197 at v1.65.0; 1193 new: the id peel), ruled below.
-- `LibKa0s/Slash.lua` (1030 with `GI-LK-11`'s file-level descriptor helpers, measured 2026-10-01,
-  no member added; 1006 with minor 19's resolver, issue #40; 999 at
-  v1.65.0, 866 at v1.60.0) — **accepted** on entry. The resolver threads one argument through the
-  file-level parsers and the instance, and nothing in it is a seam of its own. **Re-check trigger:
-  1100 lines, or the next row type the parser learns**; the parser block (`lib.ParseBool` through
-  `lib.ParseValue`, with `enumList` and `allowedText`, about 150 lines) is the seam, to a secondary
-  file of its own, the cut `tests/test_slash_parse.lua` already made on the suite side.
 
 `LibKa0s/Perf.lua` left the band on 2026-10-01, 1307 → 975, closing issue
 [#7](https://github.com/tusharsaxena/LibKa0s/issues/7) in two peels at minor 14. The first moved the
@@ -249,6 +243,13 @@ edges reset it in their own file and `P.Reset` zeroes it through the function th
 back; the FPS arms and the completion pair are read through getters because `P.Reset` replaces
 them. What is left is the probe, the record and the report. **Re-check trigger: 1000 lines**; the
 report sections (`addFpsLines` through `lib.__budgetOver`, file-level already) are the next seam.
+`LibKa0s/Slash.lua` came into the band on 2026-10-01 and left it the same day, 1030 → 877: 999 at
+v1.65.0, 1006 with minor 19's resolver (issue #40), 1030 with `GI-LK-11`'s file-level descriptor
+helpers. `GI-LK-03R` (the addendum's A2) moved the seam its entry named, the parser block
+(`lib.ParseBool` through `lib.ParseValue`, with `enumList` and `allowedText`), unchanged, to
+`LibKa0s/SlashParse.lua` (195), a secondary file paired on the shell's minor; the cut
+`tests/test_slash_parse.lua` had already made on the suite side. **Re-check trigger: 1000 lines**;
+the profile verb (`lib.ProfileNames`, `Sl:ProfileSwitch`, `Sl:CliProfile`) is the next seam.
 `LibKa0s/Widgets.lua` left the band on 2026-10-01, 1303 → 655, closing issue #36: `ReorderList`,
 the row box and their machinery moved unchanged to `LibKa0s/WidgetsReorder.lua` (680) at Widgets
 minor 12, a secondary file paired on the shell's minor as `LibKa0s/WidgetsDragHandle.lua` is. The
