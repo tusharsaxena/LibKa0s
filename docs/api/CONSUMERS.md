@@ -34,7 +34,7 @@ The 98 zero-consumer exports:
 
 | Split | Exports | What happens |
 |---|---|---|
-| host duplicate | 0 | All eight from v1.66.0 were adopted (see [What moved since v1.66.0](#what-moved-since-v1660)) |
+| host duplicate | 0 | None left: seven of the eight from v1.66.0 were adopted, and the eighth, Options `lib.LAYOUT`, left the split when KickCD deleted its two header copies instead of reading them; it is now documented (see [What moved since v1.66.0](#what-moved-since-v1660)) |
 | suspect shape | 0 | Both from v1.66.0 were settled at v1.67.0: Core 10 gave `MakeResizable` its lock gate ([#41](https://github.com/tusharsaxena/LibKa0s/issues/41)), and every host now passes the Options descriptor's `addonName` ([#42](https://github.com/tusharsaxena/LibKa0s/issues/42)) |
 | deliberate host copy | 5 | A host keeps its own copy on purpose, with the reason recorded beside it. Listed, not re-opened |
 | documented | 93 | No duplicate and no host waiting for it. Each gets a "no consumer as of v1.67.0, kept because ..." line in its major's live document |
