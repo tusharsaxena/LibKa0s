@@ -1,4 +1,4 @@
-# `LibKa0s-Perf-1.0` — version 13.6
+# `LibKa0s-Perf-1.0` — version 14.1.6
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Perf surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Perf-1.0` |
-| Files and minors | `Perf.lua` **13** · `PerfPanel.lua` **6** |
-| Version key | `<Perf>.<PerfPanel>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.64.0 |
-| Status | Superseded |
-| Supersedes | [version 13.5](./version-13.5-docs.md) — a fixed-size step panel |
-| Superseded by | [version 14.1.6](./version-14.1.6-docs.md) |
+| Files and minors | `Perf.lua` **14** · `PerfCommands.lua` **1** · `PerfPanel.lua` **6** |
+| Version key | `<Perf>.<PerfCommands>.<PerfPanel>`, in load order — the same three numbers `lib.MODULES` reports |
+| Shipped in | v1.66.0 |
+| Status | **Current** |
+| Supersedes | [version 13.6](./version-13.6-docs.md) — the command surface inside `Perf.lua` |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
-| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 13, PerfPanel = 6 }` |
+| Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 14, PerfCommands = 1, PerfPanel = 6 }` |
 
 `Since` names the file and minor a member first appeared in — `P13` for `Perf.lua` minor 13, `PP5`
-for `PerfPanel.lua` minor 5. It is `1` for nearly everything: this major did not move at all between
+for `PerfPanel.lua` minor 5, `PC1` for `PerfCommands.lua` minor 1. It is `1` for nearly everything: this major did not move at all between
 the first tag and minor 6, so every adopter before that version is on the same one.
 
 Adopters today: **AbsorbTracker** (`core/PerfSetup.lua`), **KickCD** (`core/PerfSetup.lua`),
@@ -30,51 +30,45 @@ Adopters today: **AbsorbTracker** (`core/PerfSetup.lua`), **KickCD** (`core/Perf
 A repeatable A/B performance capture for one host addon: the probe, the guided run, the record
 it writes, and the clickable step panel that drives it.
 
-Two files, one major — `Perf.lua` (the probe and the run) and `PerfPanel.lua` (the step panel). One
-major for the same reason Options is one: a shell and a panel from different vendored copies is not
-a state LibStub can detect. **This is why the version key above is a pair.**
+Three files, one major — `Perf.lua` (the probe and the run), `PerfCommands.lua` (the command
+surface a host wires into its slash table) and `PerfPanel.lua` (the step panel). One major for the
+same reason Options is one: a probe and its commands or its panel from different vendored copies is
+not a state LibStub can detect. **This is why the version key above has three components.**
 
 ## What changed at this version
 
-**`PerfPanel.lua` minor 6 — the step panel is resizable, width only.** One file moves, 5 → 6.
-`Perf.lua` stays 13, the floors do not move, and nothing is added, removed or resignatured, so the
-member manifest differs from 13.5's in its version key alone. The panel still opens at its computed
-size (376 × 196: `ROW_W` 360 plus `PAD` 8 on each side, by the title bar, the padding and six rows),
-and a grip in its bottom-right corner, from `LibKa0s-Core-1.0`'s `MakeResizable` (Core minor 9),
-widens it.
+**`Perf.lua` minor 14 and the new `PerfCommands.lua` minor 1 — the command surface moved to a file
+of its own** (issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)). `PerfPanel.lua` stays
+6 and the floors do not move. The version key gains a component, 13.6 → 14.1.6, because the key is
+every file's minor in load order.
 
-- **Width only.** The row count is fixed, so height the player added would be empty space: the
-  height is pinned at the computed one (`widthOnly`). **Today's width is the minimum**, and the
-  maximum is the width of `UIParent`.
-- **On a resize every step row is stretched** to the panel's width less its padding. The rows are
-  anchored at their top-left and sized, so the relayout sets each one's width; the command column is
-  anchored to its row's right edge and follows it.
-- **A `decorate` host gets the grip too.** It is built after the host's chrome, ten frame levels
-  above the panel in the bottom-right corner, and the `ROW_W` the `decorate` API hands over is still today's row
-  width.
-- **Guarded, not floored.** An older Core, with no `MakeResizable`, leaves today's fixed panel.
-
-**The size is session state and lives on the frame.** Each window is built once and kept, so a
-size the player drags to survives a hide and a show: nothing stores it and nothing reapplies the
-default on a later show. It is never written to SavedVariables (`debug-logging-§1` forbids a host to
-save it either), and a `/reload` rebuilds the window at its default.
-
-**The client's layout cache, and what was found about it.** The client keeps `layout-local.txt` for
-frames the player moved or sized. `StartMoving` and `StartSizing` both mark a frame *user-placed*,
-and a named user-placed frame has its anchor and its size written to that cache at logout and put
-back when a frame of that name is created again. Every window here is named, and the drag each has
-always had goes through `StartMoving` and never clears the flag, so a **dragged** window is
-user-placed today. That is unchanged: position behaves exactly as it did. What the grip prevents is
-a resize making a window user-placed that a drag had not, which is the one route by which a chosen
-size could reach the next session: it reads `IsUserPlaced()` before `StartSizing` and puts that
-answer back after `StopMovingOrSizing`. A window that was only resized stays out of the cache; one
-that was dragged as well is in it exactly as it is today, and its builder sets the default size
-after `CreateFrame` returns, so a size the cache put back at creation is replaced before the window
-is shown. When the client applies the cache is not something a headless suite can observe, so the
-in-game smoke check (resize, `/reload`, the default size is back, dragged and undragged) is the
-confirmation.
+- **`Usage`, the sub-verb handlers, `StatusLines` and `OnCommand` moved unchanged** from `Perf.lua`
+  to `LibKa0s/PerfCommands.lua`, loaded by `LibKa0s.xml` after `Perf.lua` and before
+  `PerfPanel.lua`. `lib:New` calls `lib.__installCommands(P, ctx)` where the block used to be, with
+  the descriptor and the host's `showLog` sink, the two closure values the block read. The issue
+  named the sampler as the seam; the sampler reads about ten of `lib:New`'s closure locals and the
+  command surface reads two, so the command surface is what moved.
+- **The same multi-file idiom as `PerfPanel.lua`.** The file attaches to the live probe and records
+  `lib.__commandsMinor` and `lib.__commandsShellMinor`, so a command surface from one vendored copy
+  never pairs with a probe from another without saying so; `tests/test_versioning.lua`'s pairing
+  guard reads both through `tests/majors.lua`.
+- **A payload without `PerfCommands.lua`** still builds instances. `OnCommand`, `Usage` and
+  `StatusLines` each answer one line naming the missing file, `OnCommand` still never answers nil,
+  and a panel click prints that line. A consumer re-vendors the whole folder and its load list
+  derives from `LibKa0s.xml`, so this arises only from a hand-trimmed copy.
+- **The descriptor's four optional sinks are resolved at file level** (`resolveHooks`), so their
+  presence tests no longer count against `lib:New`'s complexity. What each defaults to is unchanged.
+- **No lib-level or instance member is added, removed or resignatured.** The member manifest lists
+  13.6's surface; `lib.MODULES` gains `PerfCommands`.
 
 **What a host must change: nothing.** No member moves, so no degradation stub does.
+
+### Previously, at 13.6
+
+**`PerfPanel.lua` minor 6 — the step panel is resizable, width only.** One file moved, 5 → 6.
+Nothing was added, removed or resignatured. The panel opens at its computed size and a grip in its
+bottom-right corner, from `LibKa0s-Core-1.0`'s `MakeResizable`, widens it; the height is pinned and
+the size is session state on the frame, never saved. See [version 13.6](./version-13.6-docs.md).
 
 ### Previously, at 13.5
 
@@ -256,7 +250,7 @@ so there is nothing here for them to measure yet.
 | `lib.SCHEMA` | 1 | The record schema version this build emits — **2** here. See [`docs/record-schema.md`](../../record-schema.md). |
 | `lib.DEFAULT_RING` | 1 | Default depth of the SavedVariables capture ring (**10**), used when the descriptor omits `ring`. |
 | `lib.STRINGS` | 1 | Every user-visible string, keyed for the descriptor's `L` override. |
-| `lib.MODULES` | 1 | `{ Perf = <minor>, PerfPanel = <minor> }` — the live minor of every file in this major. |
+| `lib.MODULES` | 1 | `{ Perf = <minor>, PerfCommands = <minor>, PerfPanel = <minor> }` — the live minor of every file in this major (`PerfCommands` from **P14**). |
 | `lib:New(descriptor)` | 1 | Build a probe for one host. |
 
 ## The descriptor
@@ -476,7 +470,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `Cancel()` | 1 | Abandon a run in flight; discards everything, restores the host if suspended. |
 | `Suspend()` | 1 · **12** | Take the `perf` hold. From 12 the host's teardown runs through the latch, and only if this is the first hold taken. Answers `false` when the hold is already held. |
 | `Resume()` | 1 · **12** | Release the `perf` hold. From 12 that is all it does: the latch decides whether the addon stands up, and says no while another hold is still taken. Answers `false` when the hold is not held. |
-| `Usage()` | 1 | Help text lines for the host to print. |
+| `Usage()` | 1 | Help text lines for the host to print. In `PerfCommands.lua` from **P14**, like the next two. |
 | `OnCommand(args)` | 1 | Run one perf sub-command; returns the chat lines to print. |
 | `StatusLines()` | 1 | Phase summary plus `Usage()`, for a bare `perf` with no sub-verb. |
 | `ShowPanel()` / `HidePanel()` / `TogglePanel()` | 1 | Show, hide, or toggle the step panel. |
@@ -623,14 +617,7 @@ records are discarded rather than converted. See [`docs/record-schema.md`](../..
 `PerfPanel.lua` minor 4 is additive in both directions: `addonName` is a new optional field, and a
 host that passes nothing gets a better-looking button from the same call it always made.
 
-The two files move as one. A consumer holding `Perf.lua` from one vendored copy and `PerfPanel.lua`
-from another is not a supported state and LibStub cannot detect it — which is why
+The three files move as one. A consumer holding `Perf.lua` from one vendored copy and
+`PerfCommands.lua` or `PerfPanel.lua` from another is not a supported state; each secondary file is
+paired on the probe's minor so a mismatch re-attaches rather than persisting silently, which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
-
-## Moving to version 14.1.6
-
-**Take it; nothing in a host's code or its degradation stub changes.** The next version is key
-14.1.6: `Perf.lua` 14, the new `PerfCommands.lua` 1 and `PerfPanel.lua` still 6. `Usage`, the
-sub-verb handlers, `StatusLines` and `OnCommand` moved unchanged from `Perf.lua` to
-`PerfCommands.lua`, paired on the probe's minor. No member changes. Re-vendor the whole folder, as
-always; the load list derives from `LibKa0s.xml`. See [version 14.1.6](./version-14.1.6-docs.md).

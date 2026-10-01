@@ -1785,7 +1785,7 @@ badge and any count quoted in the docs must agree with it.
 - lib: every step label names what it acts on
 - lib: a panel-less instance answers STEPS, PanelStateOf and PanelIsActionable safely
 
-### test_perf_command.lua (20)
+### test_perf_command.lua (22)
 
 - cmd: OnCommand always returns a line table, never nil
 - cmd: start begins a run and shows the panel
@@ -1807,6 +1807,8 @@ badge and any count quoted in the docs must agree with it.
 - cmd: clicking a ready panel row takes the same path as typing it
 - cmd: a panel click prints exactly what typing the command prints
 - cmd: clicking a locked panel row does nothing
+- cmd: the command surface lives in PerfCommands.lua at minor 1, paired on the live probe
+- cmd: a probe without PerfCommands.lua answers every command with one line saying so
 
 ### test_perf_isolation.lua (12)
 
@@ -2242,7 +2244,7 @@ badge and any count quoted in the docs must agree with it.
 | test_perf_core.lua | 71 |
 | test_perf_run.lua | 40 |
 | test_perf_panel.lua | 45 |
-| test_perf_command.lua | 20 |
+| test_perf_command.lua | 22 |
 | test_perf_isolation.lua | 12 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
@@ -2265,4 +2267,4 @@ badge and any count quoted in the docs must agree with it.
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
-| **Total** | **1939** |
+| **Total** | **1941** |

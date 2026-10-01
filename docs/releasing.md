@@ -5,7 +5,7 @@ Two version numbers, one of which is load-bearing at runtime.
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
 | Repo semver (`v1.65.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
-| File minor (integer) | `MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
+| File minor (integer) | `MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
 is offered for a major and discards the rest, so of the copies vendored across every installed addon,
@@ -25,7 +25,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   twenty-nine, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   thirty, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Media.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `REORDER_MINOR` in
@@ -34,7 +34,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `OptionsWidgets.lua`, `IDS_MINOR` in `OptionsIds.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
    `TABS_MINOR` in `OptionsTabs.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
    in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
-   `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`. The secondary files carry
+   `COMMANDS_MINOR` in `PerfCommands.lua`, `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
    file you did not touch does not move. Bumping the whole lib in lockstep would discard the
    narrow-skew property that made one major per module worth having.
@@ -230,7 +230,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the twenty-nine `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the thirty `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -341,7 +341,7 @@ Rules, and the reason each exists:
   half-wired. That is the honest failure, not a working one: the host's setup file reports the
   library as missing and falls back. Nothing negotiates the other direction, and the
   paired-minor guards that protect a secondary file within a major (`OptionsRegistry`, `OptionsWidgets`,
-  `OptionsIds`, `OptionsIdList`, `OptionsTabs`, `OptionsCombat`, `OptionsCompose`, `OptionsScroll`, `OptionsNav`, `PerfPanel`) do not generalize across them. Whole-folder copying is the
+  `OptionsIds`, `OptionsIdList`, `OptionsTabs`, `OptionsCombat`, `OptionsCompose`, `OptionsScroll`, `OptionsNav`, `PerfCommands`, `PerfPanel`) do not generalize across them. Whole-folder copying is the
   mitigation.
 - **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** TEN files since
   v1.62.0 (six from v1.61.0, five from v1.39.0). The other majors

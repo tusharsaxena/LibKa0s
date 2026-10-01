@@ -15,8 +15,9 @@ cannot drift. Release order is in
 Minors moved so far: **Slash minor 19** (`LibKa0s-Slash-1.0` 19), **Widgets minor 12** and the new
 **WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragHandle` 3),
 **OptionsWidgets minor 34** and **OptionsTabs minor 8** (`LibKa0s-Options-1.0`
-27.2.34.2.2.8.1.7.4.2). One payload
-file is added so far (`WidgetsReorder.lua`). The repo version is stamped when this block is
+27.2.34.2.2.8.1.7.4.2), **Perf minor 14** and the new **PerfCommands minor 1**
+(`LibKa0s-Perf-1.0` 14.1.6, with `PerfPanel` 6). Two payload files are added so far
+(`WidgetsReorder.lua`, `PerfCommands.lua`). The repo version is stamped when this block is
 released.
 
 ### Slash minor 19: the host's `L` reaches every parse refusal and the empty-string `(none)` (issue #40)
@@ -73,6 +74,22 @@ released.
   `tests/test_options_tabbed.lua`. See `docs/api/Options/version-27.2.34.2.2.8.1.7.4.2-docs.md`.
 - **What a consumer owes:** nothing. AbsorbTracker adopts all four on its Appearance page after the
   re-vendor and deletes its hand-composed strip.
+
+### Perf minor 14, PerfCommands minor 1: the command surface peeled to a file of its own (issue #7)
+
+- **`Usage`, the sub-verb handlers, `StatusLines` and `OnCommand`** moved unchanged from `Perf.lua`
+  to the new secondary file `PerfCommands.lua`, loaded by `LibKa0s.xml` after `Perf.lua` and before
+  `PerfPanel.lua`, and paired on the probe's minor (`lib.__commandsMinor` /
+  `lib.__commandsShellMinor`) as `PerfPanel.lua` is. `lib:New` installs them through
+  `lib.__installCommands(P, ctx)`. The issue named the sampler as the seam; it reads about ten of
+  `lib:New`'s closure locals where the command surface reads two, so the command surface moved.
+- **A payload without the new file** still builds instances, and `OnCommand`, `Usage` and
+  `StatusLines` answer one line naming the missing file rather than nil.
+- **The descriptor's optional sinks are resolved at file level** (`resolveHooks`), out of
+  `lib:New`'s complexity; every default is unchanged. No member moves; the member manifest lists
+  13.6's surface. Cases: `tests/test_perf_command.lua`. See `docs/api/Perf/version-14.1.6-docs.md`.
+- **What a consumer owes:** a whole-folder re-vendor, as always, and the in-game perf run smoke
+  check (typed and clicked) in every consumer that wires a Perf module.
 
 ### Test-only changes
 

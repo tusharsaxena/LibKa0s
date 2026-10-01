@@ -223,8 +223,15 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
   `RenderTabbedSchema` took it the rest of the way), peeled then accepted, below.
-- `LibKa0s/Perf.lua` (1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231 at v1.39.0),
-  issue [#7](https://github.com/tusharsaxena/LibKa0s/issues/7).
+- `LibKa0s/Perf.lua` (1170 at minor 14, measured 2026-10-01, after issue
+  [#7](https://github.com/tusharsaxena/LibKa0s/issues/7)'s peel moved the command surface, unchanged,
+  to `LibKa0s/PerfCommands.lua` (223); 1319 with `LK-20`'s minor 13; 1308 with minor 12's latch, 1231
+  at v1.39.0) — **peeled, still in the band.** The peel took the seam whose closure dependencies
+  could be passed in (the descriptor and one sink); it was never going to clear 1000 alone.
+  **Re-check trigger: 1250 lines, or the next member added to the instance**; the next seam is the
+  issue's own, the measurement windows and the sampler (`ensureSampler` through `P.Cancel`, about
+  230 lines), which reads the bucket, arm and open-depth state through closure locals that would
+  have to be passed in first.
 - `LibKa0s/Options.lua` (1282 with v1.65.0's combat-refusal lines and their one private member, `O.__combatRefused`, which fires the re-check trigger below and is re-ruled there; 1261 after the sweep moved its page registry to
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then

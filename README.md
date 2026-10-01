@@ -68,7 +68,7 @@ modules and points you there. It does not restate them.
    `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` and `OptionsNav.lua`
    bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole ten-file module
    is absent instead of half-attached. `WidgetsReorder.lua` and `WidgetsDragHandle.lua` do the same
-   behind `Widgets.lua`.
+   behind `Widgets.lua`, and `PerfCommands.lua` and `PerfPanel.lua` behind `Perf.lua`.
    Since v1.48.0 the folder has carried one more file than it used to. That is why you copy the whole
    folder, and never just the files you happen to have.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
@@ -101,7 +101,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser. In other words, everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua` | [19](docs/api/Slash/version-19-docs.md) |
 | `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice: with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. It has one `OnClick`, implementing launcher-§2. Left-click opens the settings panel; right-click opens the client's context menu of the toggles the host supplies (Enabled, Locked, Test mode, Show window). There is one library-drawn status tooltip (launcher-§1), and LibDBIcon's own `minimap` table comes from the host. Neither broker library is a dependency. Both are resolved with `LibStub(…, true)` at register time, and every degradation is named, not raised. | `Launcher.lua` | [5](docs/api/Launcher/version-5-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, the nav rail a page that edits one instance out of many may lead with, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block. It also carries the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`, `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua` | [27.2.34.2.2.8.1.7.4.2](docs/api/Options/version-27.2.34.2.2.8.1.7.4.2-docs.md) |
-| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfPanel.lua` | [13.6](docs/api/Perf/version-13.6-docs.md) |
+| `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfCommands.lua`, `PerfPanel.lua` | [14.1.6](docs/api/Perf/version-14.1.6-docs.md) |
 
 Every major except Core depends on LibStub and `LibKa0s-Core-1.0`, and on no addon framework. Each
 one returns before `NewLibrary` if Core is missing or below the minor it needs. So a consumer that
@@ -291,6 +291,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   OptionsScroll.lua  -- the always-shown scrollbar patch, same module, SCROLL_MINOR of its own
   OptionsNav.lua     -- the nav rail a page may lead with, same module, NAV_MINOR of its own
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
+  PerfCommands.lua   -- the perf command surface a host wires in, same module, COMMANDS_MINOR of its own
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
   LICENSE            -- ships INSIDE the payload, so every vendored copy carries the MIT notice
 tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json from the LIVE
