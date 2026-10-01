@@ -2191,7 +2191,7 @@ badge and any count quoted in the docs must agree with it.
 - prose scan-back: a restated kit folder in skipDirs that .pkgmeta ignores passes the refusal
 - prose lists: PUBLISHED_BRITISH == #BRITISH == 92 and PUBLISHED_ALLOWED == #ALLOWED == 33
 
-### test_kit_runner.lua (12)
+### test_kit_runner.lua (13)
 
 - runner perf: a performance-§12 register row records skip reason (2), in the manifest and RESULTS.md
 - runner perf: a library's root CLAUDE.md register is read when there is no docs/ARCHITECTURE.md
@@ -2205,6 +2205,7 @@ badge and any count quoted in the docs must agree with it.
 - runner complexity: with no exempt set a generated dump is listed like any other file
 - runner complexity: functions lizard's reader drops are measured, methods under their own name
 - runner complexity: a file lizard stays blind in fails complexity, names the file, never fails the run
+- runner complexity: a function longer than lizard's default 1000 lines is not a warning (-L 1500)
 
 ### test_eol.lua (2)
 
@@ -2331,9 +2332,9 @@ badge and any count quoted in the docs must agree with it.
 | test_kit_inventory.lua | 38 |
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
-| test_kit_runner.lua | 12 |
+| test_kit_runner.lua | 13 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **1998** |
+| **Total** | **1999** |

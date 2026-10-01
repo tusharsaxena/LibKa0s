@@ -74,6 +74,16 @@ The suite is a **`skip`** when the shadow cannot be built: no Lua interpreter, n
 `lizard_sighted.lua` beside the runner, or no `mktemp`. lizard alone is blind in Lua, so a raw run
 would be a pass that measured less than it says.
 
+### lizard's length threshold is the file cap: `-L 1500` (`automated-tests-§3`)
+
+The command is now `lizard -l lua -L 1500 -x "./libs/*" -x "./tests/_kit/*" .`. lizard warns on a
+function longer than 1000 lines by default, and the sighted shadow listed two for the first time in
+this repository: closures that wrap their whole file (`lib.__AttachIdList`, CCN 1, and
+`lib.__AttachWidgets`, CCN 6). A function cannot be longer than its file, so `-L 1500` sets the
+length threshold to `layout-§1`'s file cap and leaves length to that rule alone.
+**`suites.complexity.warnings` now counts functions above CCN 15 and nothing else.** Case:
+`tests/test_kit_runner.lua`, an 1100-line CCN-1 function records 0 warnings.
+
 ### `lizard_sighted.lua`
 
 Pure Lua 5.1, no dependencies. `dofile` returns the module; run as a script it is the runner's CLI.

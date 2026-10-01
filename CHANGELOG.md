@@ -171,6 +171,9 @@ nothing draws, prints and records what it did on v1.65.0.
   never red, never a blocked commit; at the tag it blocks like a skip), the console and `RESULTS.md`
   name the files, and `manifest.json` gains `suites.complexity.blindFiles`. With no Lua to build the
   shadow the suite is a skip. Cases: `tests/test_kit_runner.lua`.
+- **lizard runs with `-L 1500`**: its function-length threshold is `layout-§1`'s file cap instead of
+  its default 1000, so a closure wrapping a long file is not a complexity warning and
+  `suites.complexity.warnings` counts CCN above 15 alone. Case: `tests/test_kit_runner.lua`.
 - **A fifth kit suite, `testkit/test_lizard_sighted.lua`**, pins the sanitizer and the parity
   reader, and runs lizard end to end on a hazard fixture when it is on PATH. `inventory.lua`'s
   gate-rule table gains `test_lizard_sighted = "automated-tests-§3"`.

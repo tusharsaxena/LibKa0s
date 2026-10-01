@@ -8,7 +8,7 @@
 #   lint        luacheck .                     GATING
 #   tests       lua tests/run.lua              GATING
 #   perf        lua tests/perf.lua             recorded — gates the TAG, never the run or the commit
-#   complexity  lizard -l lua -x ... .         recorded — gates the TAG, never the run or the commit
+#   complexity  lizard -l lua -L 1500 -x ... . recorded — gates the TAG, never the run or the commit
 #               (measured over the sighted shadow, with function-count parity; kit revision 35)
 #
 # WHY perf AND complexity DO NOT GATE THE RUN OR THE COMMIT. `performance-§9`/`§10`: a threshold that
@@ -501,10 +501,11 @@ if wants complexity; then
         # the invocation itself (performance-§10): do not add flags, re-tune thresholds or narrow
         # the path, because a locally "improved" command produces a report nothing can be diffed
         # against. The two `-x` switches have nothing left to exclude in the shadow and stay anyway.
+        # `-L 1500` is part of that fixed command: length is layout-§1's file cap, so a warning is CCN.
         find . -name '*.lua' -not -path './libs/*' -not -path './tests/_kit/*' | sed 's|^\./||' \
             | LC_ALL=C sort > "$CX_TMP/files"
         mkdir -p "$CX_TMP/src" && $LUA "$SIGHTED" shadow "$CX_TMP/src" < "$CX_TMP/files"
-        raw="$(cd "$CX_TMP/src" && bounded lizard -l lua -x "./libs/*" -x "./tests/_kit/*" . 2>&1)"
+        raw="$(cd "$CX_TMP/src" && bounded lizard -l lua -L 1500 -x "./libs/*" -x "./tests/_kit/*" . 2>&1)"
         # PARITY: a file whose `function` tokens and listed functions differ is a file lizard was
         # still blind in, through a spot the sanitizer does not know. Its functions went unmeasured,
         # so complexity does not pass: `fail`, which blocks the tag and never the run or the commit.

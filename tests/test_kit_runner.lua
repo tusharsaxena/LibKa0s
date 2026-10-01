@@ -352,3 +352,20 @@ test("runner complexity: a file lizard stays blind in fails complexity, names th
   assertTrue(results:find("**Not sighted — complexity did not pass**", 1, true) ~= nil,
     "the watch list says it was not sighted: " .. results:sub(-2000))
 end)
+
+test("runner complexity: a function longer than lizard's default 1000 lines is not a warning (-L 1500)", function()
+  -- red under: kit 35 before GI-LK-10R, whose lizard ran at its default length threshold (1000), so a
+  -- CCN-1 closure wrapping a 1100-line file was a complexity warning; length is layout-§1's to govern
+  local lizard = firstLine("command -v lizard 2>/dev/null")
+  if not lizard or lizard == "" then T.skip("lizard is not on PATH, so the complexity suite cannot run") end
+  local src = { "local function attach(lib)" }
+  for i = 1, 1100 do src[#src + 1] = ("  lib.v%d = %d"):format(i, i) end
+  src[#src + 1] = "end\nreturn attach\n"
+  local out, code, read = runIn(addon{ ["long.lua"] = table.concat(src, "\n") }, "--suite complexity",
+    { read = { "manifest" } })
+  assertEqual(code, 0, out)
+  local manifest = read.manifest or ""
+  assertTrue(manifest:find('"complexity": { "status": "pass"', 1, true) ~= nil, "the suite passes: " .. manifest)
+  assertTrue(manifest:find('"warnings": 0, "maxCcn": 1,', 1, true) ~= nil,
+    "an 1100-line CCN-1 function is no complexity warning: " .. manifest .. "\n" .. out:sub(-600))
+end)
