@@ -1,0 +1,1 @@
+OK GI-LK-03R — parser block moved verbatim to SlashParse.lua (paired minor 1, xml/majors rows), parseMissing fallback without a new lib:New branch, load-without test meaningful; Slash.lua 877; gate 1996/0/2, luacheck 0/0, max CCN 15
