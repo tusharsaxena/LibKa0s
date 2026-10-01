@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **27** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **2** · `OptionsTabs.lua` **7** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same ten numbers `lib.MODULES` reports. |
-| Shipped in | unreleased |
+| Shipped in | none (superseded inside v1.66.0 before the tag was published) |
 | Status | Superseded |
 | Supersedes | [version 27.2.33.2.2.7.1.7.4.2](./version-27.2.33.2.2.7.1.7.4.2-docs.md) |
 | Superseded by | [version 27.2.34.2.2.8.1.7.4.2](./version-27.2.34.2.2.8.1.7.4.2-docs.md) |

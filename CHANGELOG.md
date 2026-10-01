@@ -10,16 +10,31 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## Unreleased
+## v1.66.0 — 2026-10-01
 
-Minors moved so far: **Slash minor 19** (`LibKa0s-Slash-1.0` 19), **Widgets minor 12** and the new
-**WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragHandle` 3),
-**OptionsWidgets minor 34** and **OptionsTabs minor 8** (`LibKa0s-Options-1.0`
-27.2.34.2.2.8.1.7.4.2), **Perf minor 14** and the new **PerfCommands minor 1**
-(`LibKa0s-Perf-1.0` 14.1.6, with `PerfPanel` 6), and **DebugLog minor 19**
-(`LibKa0s-DebugLog-1.0` 19.2.1, with `DebugLogDiagnostics` 2 and `DebugLogGates` 1). Two payload files are added so far
-(`WidgetsReorder.lua`, `PerfCommands.lua`). The kit moves to **revision 35**. The repo version is
-stamped when this block is released.
+Versions in this release: **Slash minor 19** (`LibKa0s-Slash-1.0` 19), **Widgets minor 12** and the
+new **WidgetsReorder minor 1** (`LibKa0s-Widgets-1.0` 12.1.3, with `WidgetsDragHandle` 3),
+**DebugLog minor 19** (`LibKa0s-DebugLog-1.0` 19.2.1, with `DebugLogDiagnostics` 2 and
+`DebugLogGates` 1), **OptionsWidgets minor 34** and **OptionsTabs minor 8**
+(`LibKa0s-Options-1.0` 27.2.34.2.2.8.1.7.4.2, with `Options` 27, `OptionsRegistry` 2, `OptionsIds` 2,
+`OptionsIdList` 2, `OptionsCombat` 1, `OptionsCompose` 7, `OptionsScroll` 4 and `OptionsNav` 2), and
+**Perf minor 14** and the new **PerfCommands minor 1** (`LibKa0s-Perf-1.0` 14.1.6, with `PerfPanel` 6).
+Every other file is unchanged from v1.65.0: `Core` 9, `Env` 1, `Compat` 1, `Lifecycle` 3, `Bus` 2,
+`Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Launcher` 5. The test kit moves to **revision 35**. No
+`NEEDS_*` floor rises and no major is added; two payload files are added (`WidgetsReorder.lua`,
+loaded by `LibKa0s.xml` after `Widgets.lua`, and `PerfCommands.lua`, after `Perf.lua`), so the library
+is **fifteen majors across thirty files**. Built to the Ka0s WoW Addon Standard **v2.73.0**; the
+standard's sighted-complexity MUST (WowAddonStandards#6) lands in its next version, after this tag.
+
+This is the library's half of the 2026-10-01 GitHub issue pass. It closes LibKa0s#1 (report-only
+Perf budgets), LibKa0s#7 (the Perf command surface peeled), LibKa0s#12 (a declared parent that never
+fired is in the record), LibKa0s#35 and LibKa0s#38 (two test suites split out of the 1000–1500
+band), LibKa0s#36 (`ReorderList` peeled) and LibKa0s#40 (the host's `L` reaches every parse
+refusal); it carries the library changes KickCD#10 (`RenderGrid`'s `parent` and `opts.gap`) and
+AbsorbTracker#32 (three opt-in `RenderTabbedSchema` fields) need before those hosts adopt them; and
+it ships kit revision 35's sighted complexity suite for WowAddonStandards#6, with every function
+that suite revealed here brought to CCN 15 or under. Every new field is opt-in: a host that changes
+nothing draws, prints and records what it did on v1.65.0.
 
 ### Slash minor 19: the host's `L` reaches every parse refusal and the empty-string `(none)` (issue #40)
 
@@ -174,6 +189,28 @@ No file minor moves for these, and nothing reaches a consumer's `libs/`.
   seam, defaults, the bulk bracket and the profile reset's count), 41 of its 73 cases, moved
   unchanged to `tests/test_schema_write.lua`, and the fixture constructors both suites read to
   `tests/fixture_schema.lua`. The suite is 705 lines, out of the band. Suite totals unchanged (1919).
+
+### What a consumer owes
+
+- The whole-folder copy of both payloads, `libs/LibKa0s/` and `tests/_kit/`, and the provenance
+  line, in one commit. A copy missing `WidgetsReorder.lua` builds a Widgets major with no
+  `ReorderList`, and one missing `PerfCommands.lua` builds Perf instances whose `OnCommand`,
+  `Usage` and `StatusLines` answer one line naming the missing file, so copy the folder, never the
+  files you already had.
+- **Wire the kit's fifth suite**: `{ name = "test_lizard_sighted", dir = "tests/_kit/" }` in
+  `tests/run.lua`, and quote `bash tests/_kit/run-automated-tests.sh --suite complexity` rather than
+  raw `lizard` in any green-gate line. Before the host's next release, refactor or rule every
+  function the sighted suite newly lists above CCN 15, and clear every blind file it names.
+- No member is removed and no Slash, Options, Launcher, Lifecycle, DebugLog or Perf member is
+  added, so no degradation stub under `Kit.assertSurfaceParity` moves.
+- Smoke checks in game, in each consumer that has the surface: a drag-reorder of a reorderable
+  list (#36), a typed and a clicked perf run (#7), and a parse refusal in the host's own wording where
+  its Slash `L` carries the keys (#40).
+- To adopt, optionally: KickCD passes `{ gap = false }` to `RenderGrid` for its Spells list
+  (KickCD#10); AbsorbTracker passes `untabbedSkipRender`, `disabledReplaces` (with
+  `disabledNoticeFont`) and `rerender` on its Appearance page (AbsorbTracker#32); each wired Perf
+  host may declare `budget` ceilings on its buckets (#1); ConsumableMaster un-marks its three dead
+  Slash keys (#40). A host suite whose own cases move regenerates `docs/test-cases.md`.
 
 ## v1.65.0 — 2026-10-01
 
