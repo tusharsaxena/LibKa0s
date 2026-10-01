@@ -1,1 +1,1 @@
-OK GI-LK-08 — fillAncestors emits only declared ancestors at zero counts (depth guard 8, no observedWithin); 3 tests verified red against e907508^ code; record-schema guarantee documented; gate 1953/0/2, luacheck 0/0
+OK GI-LK-08 — file-level fillAncestors emits zero-count declared ancestors only (depth guard 8, no observedWithin), idle buckets stay absent; three meaningful red-first tests incl. JSON and report row; record-schema guarantee documented; gate 1953/0/2
