@@ -1,0 +1,1 @@
+OK GI-LK-12 — v1.66.0 release: README/CHANGELOG at standard v2.74.0, consumer-owes degradation lines match SlashParse/PerfSampler stubs, green release bundle 20261001-133255 at clean a964c5a (warnings 0, blindFiles 0, perf skip stated per releasing.md), RESULTS/DEPENDENCIES rolled, CRLF kept, local tag only; gate re-run 1997/0/2, luacheck 0/0, max CCN 15
