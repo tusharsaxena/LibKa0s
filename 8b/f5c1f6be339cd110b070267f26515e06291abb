@@ -1,0 +1,1 @@
+OK GI-LK-04 — ReorderList block moved byte-identical (one comment) to WidgetsReorder.lua with the DragHandle pairing idiom (REORDER_MINOR 1, shell 12); HANDLE_FALLBACK restated; XML order and majors.lua paired row right; 2 new cases verified red against the single-file shell; Widgets.lua 655; CRLF preserved; docs moved; gate 1924/0/2, luacheck 0/0, lizard clean
