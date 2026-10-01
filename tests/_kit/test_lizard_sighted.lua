@@ -48,6 +48,7 @@ local POSITIVE = {
   { "x:class()", "x:class_()" },
   { "local y = x.it", "local y = x.it_" },
   { "if unless then", "if unless_ then" },
+  { "local y = x.unless", "local y = x.unless_" },
 }
 
 test("lizard sighted: every hazard lizard loses a function over is neutralized", function()
@@ -58,7 +59,7 @@ end)
 
 local NEGATIVE = {
   "local c = u.class",
-  "local m = x.module .. y.begin .. z.unless",
+  "local m = x.module .. y.begin",
   "local s = '#' .. \"# it class\"",
   "local n = 1 -- it class # module",
   "local s = [[ # it class ]] .. [==[ begin # ]==]",

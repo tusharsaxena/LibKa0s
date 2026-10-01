@@ -21,8 +21,9 @@
 -- the fixed lizard command there, so `complexity.txt` paths read exactly as before:
 --
 --   * `#` becomes a space;
---   * a bare `it` / `class` / `module` / `begin` / `unless` becomes `it_` and so on — not after `.`
---     or `:`, where it is a field or method name and the reader already reads it as one;
+--   * `it` and `unless` become `it_` and `unless_` everywhere, field and method names included;
+--     `class` / `module` / `begin` become `class_` and so on everywhere but after `.`, where the
+--     reader already reads them as a field name (after `:` too: `x:begin()` loses its function);
 --   * `function a:b(` becomes `function a.b(self, ` (`function a.b(self)` with no parameters), so a
 --     method is listed under its own name, `a.b`, rather than lizard's `a`.
 --
@@ -51,11 +52,13 @@ S.HAZARDS = { it = true, class = true, module = true, begin = true, unless = tru
 
 --- `word` as the shadow spells it, given the last significant character before it. Measured against
 --- lizard 1.24.0 on 2026-10-01: `it` loses its function wherever it stands, field and method names
---- included (`x.it`, `x:it()`); the other four only when bare or after `:` (`x:begin()`), never
---- after `.` (`u.class`). A field renamed needlessly would cost nothing but a name, but a method
---- name renamed needlessly would show up in the watch list, so `.` keeps the four.
+--- included (`x.it`, `x:it()`); `unless` the same, since `u.unless` loses the next function when
+--- both sit on one line; `class` / `module` / `begin` only when bare or after `:` (`x:begin()`),
+--- never after `.` (`u.class`). A field renamed needlessly would cost nothing but a name, but a
+--- method name renamed needlessly would show up in the watch list, so `.` keeps those three.
 function S.renamed(word, prev)
-  if not S.HAZARDS[word] or (prev == "." and word ~= "it") then return word end
+  if not S.HAZARDS[word] then return word end
+  if prev == "." and word ~= "it" and word ~= "unless" then return word end
   return word .. "_"
 end
 

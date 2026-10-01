@@ -38,15 +38,15 @@ blind spots, each measured against 1.24.0:
 | `#` | reads it as a C preprocessor line, which swallows the rest of the line, `end` included | `local function len(t) return #t end` |
 | `it` | enters the Ruby-like reader's RSpec state, wherever it stands, field and method names included | `for _, it in ipairs(t) do`, `x.it`, `x:it()` |
 | `class`, `module`, `begin` | open a block that wants an `end`, bare or after `:`; never after `.` | `{ class = "?" }`, `local module = m`, `x:begin()` |
-| `unless` | opens a block in a table constructor | `{ unless = 1 }` |
+| `unless` | opens a block wherever it stands, field names included: after `.` it loses the next function on the same line | `{ unless = 1 }`, `local function a(u) return u.unless end local function b() return 1 end` |
 
 The runner no longer runs lizard over the tree. It copies every file the fixed command would read
 into a temporary directory, through `lizard_sighted.lua`, and runs the same command there, so
 `complexity.txt`'s paths and line numbers are the real files':
 
 - `#` becomes a space;
-- `it` becomes `it_` everywhere, and `class` / `module` / `begin` / `unless` become `class_` and so
-  on everywhere but after `.`;
+- `it` and `unless` become `it_` and `unless_` everywhere, and `class` / `module` / `begin` become
+  `class_` and so on everywhere but after `.`;
 - `function a:b(x)` becomes `function a.b(self, x)` (`function a.b(self)` with no parameters), so a
   method is listed under its own name, `a.b`, where lizard listed `a`. **Watch-list names of methods
   change once** in every consumer's next `RESULTS.md`, and a carried Disposition does not follow a
