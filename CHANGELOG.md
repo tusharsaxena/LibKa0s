@@ -22,7 +22,9 @@ key 14.1.1.6. The test kit stays at **revision 35**. No
 
 This is the library's half of the 2026-10-02 census adoption: it settles the `MakeResizable`
 contract the three hand-rolled grips need before they can adopt the library's (LibKa0s#41), and it
-guards the Options descriptor's `addonName` before every host starts passing it (LibKa0s#42).
+guards the Options descriptor's `addonName` before every host starts passing it (LibKa0s#42). It is built
+to standard v2.75.0, whose `options-ui-§1` names that descriptor field; the README's standards
+pointer moves v2.74.0 -> v2.75.0.
 
 ### Core minor 10: a lock gate, a stop callback and a grip parent for MakeResizable (issue #41)
 

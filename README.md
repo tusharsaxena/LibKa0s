@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.74.0,
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.75.0,
 as a library repo. That is a scope of its own. What binds here is `library-stack-§7`'s applicability
 list, not the addon rule set, because there is no TOC, no player-facing README, no settings canvas and
 no install. [`CLAUDE.md`](CLAUDE.md) says which sections apply and which do not, and you should read it
@@ -225,13 +225,13 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.66.0**, which moves six files' minors (Slash, Widgets, DebugLog, OptionsWidgets, OptionsTabs, Perf), adds four files (WidgetsReorder, SlashParse, PerfSampler, PerfCommands) and adds no major: `Core = { Core = 9 }`,
+different vendored copy of each. As of **v1.67.0**, which moves three files' minors (Core 10, Options 28, OptionsIdList 3) and adds no file and no major: `Core = { Core = 10 }`,
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 3 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
 `Widgets = { Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }`, `Slash = { Slash = 19, SlashParse = 1 }`,
 `Launcher = { Launcher = 5 }`,
-`Options = { Options = 27, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 2, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }`,
+`Options = { Options = 28, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 3, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }`,
 `Perf = { Perf = 14, PerfSampler = 1, PerfCommands = 1, PerfPanel = 6 }`. Those numbers move every release, so read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), not from here. Grouping
 by major is what lets you answer "which panel is attached to which probe?" from inside the game, once
