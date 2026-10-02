@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261002-231003`](20261002-231003/) | `1382135` | clean | 1.67.0 → 1.68.0 | 0/0 | 144 | 2023/2/2025 | skip | 40783 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261002-012529`](20261002-012529/) | `7e07c83` | clean | 1.66.0 → 1.67.0 | 0/0 | 144 | 2013/2/2015 | skip | 40568 | 6095 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261001-133255`](20261001-133255/) | `a964c5a` | clean | 1.65.0 → 1.66.0 | 0/0 | 144 | 1997/2/1999 | skip | 40283 | 6041 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261001-122702`](20261001-122702/) | `b68583a` | clean | 1.65.0 → 1.66.0 | 0/0 | 142 | 1992/2/1994 | skip | 40125 | 6014 | 6.8 | 2.0 | 15 | 2 | **green** |
@@ -131,11 +132,11 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**2015 cases** — 2013 passed, 0 failed, 2 skipped. The generated inventory
-[`20261002-012529/test-cases.md`](20261002-012529/test-cases.md) is the authority on which cases existed at this run;
+**2025 cases** — 2023 passed, 0 failed, 2 skipped. The generated inventory
+[`20261002-231003/test-cases.md`](20261002-231003/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1999 → 2015** since the previous run.
+Moved **2015 → 2025** since the previous run.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -159,8 +160,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261002-012529`](20261002-012529/) — **this run's measurement, not its diff.** Max CCN **15** across 6095
-functions, **0** of them warned on; 6 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261002-231003`](20261002-231003/) — **this run's measurement, not its diff.** Max CCN **15** across 6132
+functions, **0** of them warned on; 7 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -185,6 +186,7 @@ None.
 | 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1349 | **Peeled 2026-09-26 (`LK-ATS-03`), then accepted at 1293** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). The 2026-09-24 *Accepted* ("no second seam inside it") had outlived its shelf life (`ATS-03`, `ATS-06`); the combat lock's page chrome was that seam, and moved unchanged to `LibKa0s/OptionsCombat.lua` (249) at OptionsTabs minor 6. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1400 lines**; the tabbed page is the next seam. |
 | 1000–1500 (on notice) | `LibKa0s/OptionsWidgets.lua` | 1444 | **Accepted 2026-09-26 (`LK-ATS-01`, issue [`#32`](https://github.com/tusharsaxena/LibKa0s/issues/32); `CLAUDE.md` § *Files over the 1500-line cap*, the id peel's rulings).** New to the band: it came off the census (3852) when the id surface moved out to `LibKa0s/OptionsIds.lua` and `LibKa0s/OptionsIdList.lua`. What is left is the makers, the choice grid, the landing page and the flow engine. **Re-check trigger: 1450 lines, or the next maker added**; the flow engine (`flowRows`, the switched sections) is the seam at either. |
 | 1000–1500 (on notice) | `testkit/mock_base.lua` | 1456 | **On notice, re-read 2026-09-30 (`DL-LIB-01`): 44 lines from breach.** 1446 → 1454 at kit revision 26 (`testkit/mock_events.lua`'s load, hook and install lines, and the shown-by-default flip's comment), 1454 → 1456 at kit revision 33 (`testkit/mock_resize.lua`'s load and decorate lines; the recorders themselves went to that file, following the rule below). Kit revisions 20, 22, 26 and 33 each put a family of fakes in its own file (`mock_ids.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`) rather than appending, and that is the rule for the next one. The peel seam is the Ace fakes, the CallbackHandler registry through AceGUI. **Re-check trigger: 1490 lines, or any kit change that adds more than 30 lines here**; either peels first or opens an issue naming that seam before it crosses. |
+| 1000–1500 (on notice) | `tests/test_widgets_draghandle.lua` | 1123 | **Peeled before the v1.68.0 tag (`DA-LK-04`).** New to the band at this run: 901 → 1123 with WidgetsDragHandle minor 4's ten placement-hook cases. Those cases move to a suite of their own, `tests/test_widgets_draghandle_place.lua`, with the shared bench in `tests/fixture_draghandle.lua`, the exit v1.48.0 took for this suite itself; this run is therefore not the one the tag is cut from. |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of
 `t.k = rec.k or D.k` defaulting lines scores high with no visible branching at all: a large CCN
