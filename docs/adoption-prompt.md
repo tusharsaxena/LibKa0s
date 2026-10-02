@@ -812,23 +812,24 @@ A gap is a contract that cannot express what a host needs. These are the opposit
 that **can** express what one or two hosts needed, because one or two hosts are all that have ever
 used them. Every surface v1.2.0 added was driven by BankLedger. `-1.0` is frozen additive-only, so
 there is no deprecation available inside it — an assumption baked in here can be worked around later
-but never renamed. Every entry below carries its consumer count **as of v1.66.0**, measured across
+but never renamed. Every entry below carries its consumer count **as of v1.67.0**, measured across
 all eleven hosts by the census in [`api/CONSUMERS.md`](api/CONSUMERS.md), so that the next drift
 shows up as a wrong number rather than as a heading nobody re-reads. The counts were stamped v1.5.0
-until then, and four of the seven had drifted. If you are about to become the second host on a
+until v1.66.0, and four of the seven had drifted by then. None of the seven moved between v1.66.0
+and v1.67.0. If you are about to become the second host on a
 one-consumer surface — or the first on a zero-consumer one — treat a misfit as a library gap on
 first contact.
 
-**The zero-consumer set is in the census, not here.** At v1.66.0, 106 of 409 public exports have no
-host consumer. Eight of them have a host duplicate behind them, and each host has one adoption
-issue covering its duplicates: AbsorbTracker#33, BankLedger#21, ConsumableMaster#44, KickCD#36,
-LootHistory#33, MultiMeters#58 and PanelMaster#56. The duplicates are `Core.MakeResizable`,
-`Core.SECRET`, Slash's `SplitVerb` / `FindCommand` / `CommandRows` / `ProfileNames`, and Options'
-`lib.LAYOUT` and `O.PADDING_X`. Two exports have a contract to settle before a first host adopts
-them: `Core.MakeResizable` has no lock gate (LibKa0s#41), and nothing passes the Options
-descriptor's `addonName` (LibKa0s#42). Each of the rest carries a "no consumer as of v1.66.0, kept
-because ..." line in its major's live document. If you are about to hand-roll something, look there
-first.
+**The zero-consumer set is in the census, not here.** At v1.67.0, 98 of 409 public exports have no
+host consumer, and none of them has a host duplicate or an unsettled contract behind it. At v1.66.0
+there were 106, and the eight host duplicates and two suspect shapes among them were cleared by the
+issues that census filed: `Core.MakeResizable` (its lock gate is Core 10, LibKa0s#41) and
+`Core.SECRET` now have three hosts each; Slash's `SplitVerb` has three, `FindCommand` and
+`CommandRows` two, and `ProfileNames` one; `O.PADDING_X` has one; every host passes the Options
+descriptor's `addonName` (LibKa0s#42); and KickCD deleted its copies of `lib.LAYOUT`'s internal
+header keys rather than re-reading them (KickCD#36). Five are deliberate host copies with the reason
+recorded beside them. Each of the rest carries a "no consumer as of v1.67.0, kept because ..." line
+in its major's live document. If you are about to hand-roll something, look there first.
 
 - **`applySkin` (DebugLog minor 4) — two consumers: BankLedger, LootHistory**
   (`../BankLedger/core/DebugLogSetup.lua:142`, `../LootHistory/core/DebugLogSetup.lua:159`). The
@@ -855,17 +856,17 @@ first.
   `DebugLog.lua:449` reads `field(d.skin, "table", core.SKIN)`, so a host that passes nothing gets
   Core's table, and every host passes nothing. The 2026-08-02 audit recorded this as one consumer on
   the strength of a grep that matched a file-local in BankLedger's session window (today
-  `../BankLedger/modules/SessionWindow.lua:490`). That local is
+  `../BankLedger/modules/SessionWindow.lua:484`). That local is
   `local skin = (NS.Browser and NS.Browser.SKIN) or …`, which reads BankLedger's *own* skin table,
   not the library's descriptor field. The census found the same trap a second time: MultiMeters'
   `skin = L["Ka0s skin"]` is a locale key. A grep for a bare key name finds locals. Only reading the
   descriptor tells you who passes one.
 - **`sliderCommit` (OptionsWidgets minor 4) — one consumer: ConsumableMaster**, at
-  `../ConsumableMaster/settings/OptionsSetup.lua:265`. The surface exists so the Macro Bar page keeps
+  `../ConsumableMaster/settings/OptionsSetup.lua:271`. The surface exists so the Macro Bar page keeps
   its live drag.
 - **`pairWith` (OptionsWidgets) — one consumer: AuraMaster**. The consumer has changed.
   `../AuraMaster/settings/Filters.lua:751` and `../AuraMaster/settings/Layout.lua:636` declare
-  pairs, which `../AuraMaster/settings/OptionsSetup.lua:521` routes into `RenderTabbedSchema`.
+  pairs, which `../AuraMaster/settings/OptionsSetup.lua:524` routes into `RenderTabbedSchema`.
   PrettyChat, the consumer this entry named at v1.5.0, now draws its General page through
   `RenderTabbedSchema` with `nil` in that argument (`../PrettyChat/settings/Panel.lua:141`). The
   surface has had exactly one host at every count, so the second host is still the one that turns

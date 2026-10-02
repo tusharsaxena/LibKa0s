@@ -513,6 +513,140 @@ test("IdList: the art ladder falls back, and a host that names its own art keeps
     "the host's own art still wins over the library's default")
 end)
 
+-- ── the loaded-addon rung (OptionsIdList minor 3, LibKa0s#42) ─────────────────────────────────
+--
+-- `Media.Icon` checks only that the name is a non-empty string, so a WRONG folder name -- the
+-- MasterControls display label "Aura Master", or a typo -- builds a well-formed path to a file that
+-- does not exist, and the client draws nothing (or a green box) with nothing raised anywhere. From
+-- minor 3 the name is taken only when the client says that addon is loaded, and a list whose ladder
+-- falls past that rung says why, once, through the descriptor's `debug`. The kit stubs neither
+-- loaded-addon API, so these cases install them on the mock environment and put it back.
+
+local HELP_FALLBACK = "Interface\\FriendsFrame\\InformationIcon"
+local HELP_ART = "Interface\\AddOns\\TestHost\\libs\\LibKa0s\\media\\icons\\info"
+
+--- Run `fn` with the client's two loaded-addon readers replaced: `namespaced` becomes
+--- `C_AddOns.IsAddOnLoaded` (nil removes `C_AddOns` altogether) and `global` the deprecated
+--- `IsAddOnLoaded`. Both are put back however `fn` ends.
+local function withLoadedApi(namespaced, global, fn)
+  local savedNs, savedGlobal = mocks.C_AddOns, mocks.IsAddOnLoaded
+  if namespaced then
+    local ns = {}
+    for k, v in pairs(savedNs or {}) do ns[k] = v end
+    ns.IsAddOnLoaded = namespaced
+    mocks.C_AddOns = ns
+  else
+    mocks.C_AddOns = nil
+  end
+  mocks.IsAddOnLoaded = global
+  local ok, err = pcall(fn)
+  mocks.C_AddOns, mocks.IsAddOnLoaded = savedNs, savedGlobal
+  if not ok then error(err, 0) end
+end
+
+local function onlyTestHost(name) return name == "TestHost" end
+
+--- A `debug` that records `tag|message`.
+local function debugSink()
+  local logs = {}
+  return logs, function(tag, message) logs[#logs + 1] = tostring(tag) .. "|" .. tostring(message) end
+end
+
+--- The recorded lines that are this ladder's: Cfg lines about the help art.
+local function artLines(logs)
+  local out = {}
+  for _, line in ipairs(logs) do
+    if line:find("^Cfg|help art: ") then out[#out + 1] = line end
+  end
+  return out
+end
+
+test("IdList: a loaded host's name draws the library art", function()
+  withLoadedApi(onlyTestHost, nil, function()
+    local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
+      { addonName = "TestHost" })
+    assertEqual(helpMarks(O, ctx)[1].__helpIcon, HELP_ART,
+      "the client says TestHost is loaded, so its vendored info art is the mark")
+  end)
+end)
+
+test("IdList: a name the client has not loaded falls back, not to a dead path", function()
+  -- red under minor 2, which built Interface\AddOns\Aura Master\... from the display label and
+  -- drew a texture that does not exist.
+  withLoadedApi(onlyTestHost, nil, function()
+    local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
+      { addonName = "Aura Master" })
+    local icon = helpMarks(O, ctx)[1].__helpIcon
+    assertEqual(icon, HELP_FALLBACK, "the client's glyph, not the library art")
+    assertFalse(icon:find("^Interface\\AddOns\\") ~= nil, "and no path into an addon folder")
+  end)
+end)
+
+test("IdList: the deprecated global IsAddOnLoaded is the second rung", function()
+  withLoadedApi(nil, function() return false end, function()
+    local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
+      { addonName = "TestHost" })
+    assertEqual(helpMarks(O, ctx)[1].__helpIcon, HELP_FALLBACK,
+      "no C_AddOns: the global answers, and its no is a no")
+  end)
+  withLoadedApi(nil, onlyTestHost, function()
+    local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
+      { addonName = "TestHost" })
+    assertEqual(helpMarks(O, ctx)[1].__helpIcon, HELP_ART, "and its yes is a yes")
+  end)
+end)
+
+test("IdList: a raising IsAddOnLoaded is not fatal and trusts the name", function()
+  withLoadedApi(function() error("boom") end, nil, function()
+    local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
+      { addonName = "TestHost" })
+    local marks = helpMarks(O, ctx)
+    assertEqual(#marks, 1, "the list still draws its mark")
+    assertEqual(marks[1].__helpIcon, HELP_ART, "and a check that cannot answer does not veto")
+  end)
+end)
+
+test("IdList: a fall-through says why, once per instance", function()
+  local entries = { { id = 21562, help = { "x" } }, { id = 774, help = { "y" } } }
+  local function renderTwice(overrides)
+    local O, _, ctx = listBench(entries, nil, nil, overrides)
+    O.ClearScroll(ctx)
+    O.IdList(ctx, { kind = "spell", entries = function() return entries end })
+    assertEqual(#helpMarks(O, ctx), 2, "the second render drew both marks again")
+  end
+  withLoadedApi(onlyTestHost, nil, function()
+    local logs, debug = debugSink()
+    renderTwice({ debug = debug })
+    local lines = artLines(logs)
+    assertEqual(#lines, 1, "one line for four marks over two renders")
+    assertEqual(lines[1], "Cfg|help art: no addonName on the Options descriptor; drawing the client glyph")
+
+    local logs2, debug2 = debugSink()
+    renderTwice({ addonName = "Aura Master", debug = debug2 })
+    local lines2 = artLines(logs2)
+    assertEqual(#lines2, 1, "one line for a name the client has not loaded")
+    assertEqual(lines2[1],
+      "Cfg|help art: addonName \"Aura Master\" is not a loaded addon; drawing the client glyph")
+
+    local logs3, debug3 = debugSink()
+    renderTwice({ addonName = "TestHost", debug = debug3 })
+    assertEqual(#artLines(logs3), 0, "a loaded name says nothing")
+
+    local logs4, debug4 = debugSink()
+    local O4, _, ctx4 = listBench(entries, { helpIcon = "Interface\\Custom\\Mark" }, nil,
+      { debug = debug4 })
+    assertEqual(helpMarks(O4, ctx4)[1].__helpIcon, "Interface\\Custom\\Mark")
+    assertEqual(#artLines(logs4), 0, "a host that names its own art is never asked about the ladder")
+  end)
+end)
+
+test("IdList: no help, no question", function()
+  local logs, debug = debugSink()
+  local O, _, ctx = listBench({ { id = 21562 }, { id = 774 } }, nil, nil, { debug = debug })
+  assertEqual(#helpMarks(O, ctx), 0, "no marks")
+  assertEqual(#artLines(logs), 0, "and the art ladder is never reached, so nothing is logged")
+end)
+
 test("IdList: a help level tints the mark, and an entry that names none keeps its gold", function()
   local O, _, ctx = listBench({
     { id = 21562, help = { level = "blocked", "This aura can never match." } },

@@ -1,4 +1,4 @@
-# `LibKa0s-Core-1.0` — version 9
+# `LibKa0s-Core-1.0` — version 10
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Core surface points here rather than restating it. It describes the
@@ -8,12 +8,12 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
-| Files and minors | `Core.lua` minor **9** |
-| Shipped in | v1.64.0 |
-| Status | Superseded |
-| Supersedes | [version 8](./version-8-docs.md) — no resize grip |
-| Superseded by | [version 10](./version-10-docs.md) — `canResize`, `onResizeStop` and `gripParent` on `MakeResizable` |
-| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 9 }` |
+| Files and minors | `Core.lua` minor **10** |
+| Shipped in | v1.67.0 |
+| Status | **Current** |
+| Supersedes | [version 9](./version-9-docs.md) — no lock gate, no stop callback, grip always on the sized frame |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 10 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
 were never tagged, so they have no document of their own — a `Since` of 1 or 2 means "present for
@@ -21,25 +21,26 @@ as long as any consumer could have had this major".
 
 ## What changed at this version
 
-**One lib-level member arrives: `MakeResizable`, the resize grip the collection's diagnostic
-windows share.** Nothing is removed, no existing member changes, and no descriptor field changes.
-It is additive and guarded from the caller's side: `LibKa0s-DebugLog-1.0` 15, `LibKa0s-Widgets-1.0`
-11 and `PerfPanel.lua` 6 call it only when it exists and keep their fixed windows when it does not,
-so no module raises its Core floor for it (a floor raise would make those modules absent in a host
-still carrying Core 8).
+**No member is added: `MakeResizable` gains three optional `opts` fields** (LibKa0s#41), so the
+three hosts that hand-roll the same grip can adopt the library's: a lock gate, a once-per-release
+callback for persisting, and a parent for the grip. Nothing is removed, no existing field changes,
+and every existing caller (the library's own debug console, copy window and perf panel included)
+passes none of them and behaves exactly as at version 9.
 
-| | | Since |
+| `opts` field on `MakeResizable` | | Since |
 |---|---|---|
-| `MakeResizable(frame[, opts])` | A bottom-right grip that resizes `frame`, with bounds, a relayout callback and the user-placed flag handled. Answers the grip, or `nil`. | **9** |
+| `canResize` | `function(frame)`, read at every left mouse-down; falsy refuses the resize and leaves the grip visible. | **10** |
+| `onResizeStop` | `function(width, height)`, once per completed grip sizing, after `onResize`; never from `OnSizeChanged`. | **10** |
+| `gripParent` | The frame the grip is drawn on and anchored to; sizing still acts on `frame`. | **10** |
 
 ### The resize grip
 
 `MakeResizable(frame, opts)` makes `frame` resizable (`SetResizable(true)`), bounds it, and builds a
-16 × 16 `Button` in its bottom-right corner, one pixel inside the edge and ten frame levels above
-the window so no content child covers it, wearing the client's own chat size-grabber art
+16 × 16 `Button` in its bottom-right corner (of `opts.gripParent` when one is given, else of `frame`),
+one pixel inside the edge and ten frame levels above that frame so no content child covers it, wearing the client's own chat size-grabber art
 (`Interface\ChatFrame\UI-ChatIM-SizeGrabber-Up`, `-Highlight`, `-Down`). The art is stock rather
 than a collection icon because it ships with every client and needs no addon folder to resolve,
-which is the reason `MakeCloseButton` needs one. The grip is always shown. It is answered and kept
+which is the reason `MakeCloseButton` needs one. The grip is shown once, at build. It is answered and kept
 as `frame.resizeGrip`. Call it once, after the frame has its default size.
 
 | `opts` field | Meaning | Default |
@@ -47,14 +48,29 @@ as `frame.resizeGrip`. Call it once, after the frame has its default size.
 | `minWidth`, `minHeight` | The smallest the window may be. | The frame's current size |
 | `maxWidth`, `maxHeight` | The largest. | The size of `UIParent` (4096 where it cannot say, which is headless only) |
 | `widthOnly` | Pin the height: min and max height are both `minHeight`, or the current height when `minHeight` is not given. | `false` |
-| `onResize` | `function(width, height)`, run on mouse-up after sizing and on every `OnSizeChanged`. Either argument may be `nil` where the frame cannot say; relayout from the frame when it matters. | none |
+| `onResize` | `function(width, height)`, run on mouse-up after sizing and on every `OnSizeChanged`. Either argument may be `nil` where the frame cannot say; relayout from the frame when it matters. It runs on every size tick, so it is for **relayout**, never for persisting. | none |
+| `canResize` (**10**) | `function(frame) -> truthy/falsy`, handed the sized frame and read fresh at every left mouse-down, before `StartSizing`. Falsy refuses: nothing starts, and the next mouse-up is inert (no stop, no user-placed restore, no `onResize`, no `onResizeStop`). A drag already under way finishes even if the answer flips mid-drag; it is never read at mouse-up. It never touches the grip's visibility. Not a function: ignored, and the grip always resizes. | none (always resizes) |
+| `onResizeStop` (**10**) | `function(width, height)`, run exactly once per mouse-up that ends a sizing the grip started, after `StopMovingOrSizing`, the user-placed restore and `onResize`, with the same size. Never from `OnSizeChanged`, never after a refused mouse-down or a stray mouse-up. This is where a host **persists** geometry. Not a function: ignored. | none |
+| `gripParent` (**10**) | The frame the grip is built on, anchored to and leveled from. Sizing, the bounds, the user-placed flag, the `OnSizeChanged` hook and `frame.resizeGrip` all stay on `frame`. For a host that sizes a clean anchor and draws on an art frame laid over it, so the grip takes the art frame's strata, alpha and visibility. Not a table: ignored. | `frame` |
 
 - **Bounds through a Compat-style guard.** `SetResizeBounds(minW, minH, maxW, maxH)` where the frame
   has it, else the pre-10.0 `SetMinResize` / `SetMaxResize` pair, else nothing.
-- **Mouse-down** with the left button (or no button named) runs `StartSizing("BOTTOMRIGHT")`; any
-  other button does nothing. **Mouse-up** after a sizing it started runs `StopMovingOrSizing()`,
-  restores the user-placed flag (below) and calls `onResize` with the frame's size. A mouse-up with no
-  sizing in progress does nothing, so a stray one cannot rewrite the flag.
+- **Mouse-down** with the left button (or no button named) asks `canResize` when one is given and,
+  unless it refuses, runs `StartSizing("BOTTOMRIGHT")`; any other button does nothing. **Mouse-up**
+  after a sizing it started runs `StopMovingOrSizing()`, restores the user-placed flag (below), calls
+  `onResize` with the frame's size and then `onResizeStop` with it. A mouse-up with no sizing in
+  progress does nothing, so a stray one cannot rewrite the flag or fire either callback.
+- **`onResize` versus `onResizeStop`.** `onResize` runs on every `OnSizeChanged` as well as on
+  mouse-up, so a drag calls it once per frame and a programmatic `SetSize` calls it too: relayout
+  there. `onResizeStop` runs once, on release: save there. A host that maps its SavedVariables write
+  onto `onResize` writes on every frame of a drag.
+- **The library shows the grip once and never hides or dims it.** A host that hides a locked grip
+  owns every `SetShown` writer for it, and `canResize` is the gate either way. Both patterns the
+  collection uses are valid: LootHistory keeps its grip visible and inert while locked
+  (`canResize = function() return not locked end`), and MultiMeters hides it (and may pass
+  `canResize` as well, so a later change that shows the grip cannot make a locked window resizable).
+- **No callback is wrapped in `pcall`**, the same as `onResize`: a `canResize` or `onResizeStop` that
+  raises is a host bug, and it reaches the error handler from the grip's script handler.
 - **`OnSizeChanged` is hooked, not set**, so a script the frame already had keeps running, first.
 - **It answers `nil` and changes nothing** where there is no `CreateFrame`, or the frame has no
   `SetResizable` / `StartSizing`.
@@ -78,6 +94,33 @@ after `CreateFrame` returns, so a size the cache put back at creation is replace
 is shown. When the client applies the cache is not something a headless suite can observe, so the
 in-game smoke check (resize, `/reload`, the default size is back, dragged and undragged) is the
 confirmation.
+
+### The degradation stub at version 10
+
+Unchanged from version 9, and no new member is owed: the member manifest is the same, so a host's
+Core degradation stub keeps the one line it already has. A host that passes the new fields to the
+stub gets `nil`, which every caller reads as "no grip".
+
+```lua
+Core.MakeResizable = function() return nil end
+```
+
+## What changed at version 9
+
+**One lib-level member arrives: `MakeResizable`, the resize grip the collection's diagnostic
+windows share.** Nothing is removed, no existing member changes, and no descriptor field changes.
+It is additive and guarded from the caller's side: `LibKa0s-DebugLog-1.0` 15, `LibKa0s-Widgets-1.0`
+11 and `PerfPanel.lua` 6 call it only when it exists and keep their fixed windows when it does not,
+so no module raises its Core floor for it (a floor raise would make those modules absent in a host
+still carrying Core 8).
+
+| | | Since |
+|---|---|---|
+| `MakeResizable(frame[, opts])` | A bottom-right grip that resizes `frame`, with bounds, a relayout callback and the user-placed flag handled. Answers the grip, or `nil`. | **9** |
+
+The grip is described as it is now, minor 10's three fields included, under
+[The resize grip](#the-resize-grip). At version 9 it had none of them: every left mouse-down sized,
+`onResize` was the only callback, and the grip was always the sized frame's child.
 
 ### The degradation stub at version 9
 
@@ -293,7 +336,7 @@ Core depends on LibStub and nothing else — no Ace3 — which is what keeps `Li
 adoptable by addons that are not on the Ace substrate even now that Perf requires it.
 
 Everything on the cross-module path is a lib-level function, never a handed-around instance: a
-stateless function that exists at minor 1 still exists at minor 9, which makes "a Core from any
+stateless function that exists at minor 1 still exists at minor 10, which makes "a Core from any
 vendored copy works with a caller from any other" true by construction.
 
 ## Lib-level surface
@@ -314,15 +357,16 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `SafeRegisterUnitEvent(frame, event, rejected, unit1[, unit2])` | **8** | The same through `frame:RegisterUnitEvent`; the unit tokens pass through as given. |
 | `SafeRegisterEvents(target, events[, handler[, rejected]])` | **8** | `SafeRegisterEvent` over each name in the array `events`, one refusal costing only itself. Answers the number that registered. |
 | `__ResetClassColor()` | **7** | Forget the memoized player color. A suite seam — `__`-prefixed, and a live session cannot need it. |
-| `MakeResizable(frame[, opts])` | **9** | Make `frame` resizable from a bottom-right grip, bounded (min from `opts` or the current size, max `UIParent`'s size, `widthOnly` pins the height), relayout through `opts.onResize` on mouse-up and on every `OnSizeChanged`, and the user-placed flag put back so a resize alone never reaches the client's layout cache. Answers the grip (also `frame.resizeGrip`) or `nil`. See [The resize grip](#the-resize-grip). |
+| `MakeResizable(frame[, opts])` | **9** (`canResize`, `onResizeStop`, `gripParent`: **10**) | Make `frame` resizable from a bottom-right grip, bounded (min from `opts` or the current size, max `UIParent`'s size, `widthOnly` pins the height), relayout through `opts.onResize` on mouse-up and on every `OnSizeChanged`, persist through `opts.onResizeStop` once per release, gated by `opts.canResize` at every mouse-down, drawn on `opts.gripParent` when given, and the user-placed flag put back so a resize alone never reaches the client's layout cache. Answers the grip (also `frame.resizeGrip`) or `nil`. See [The resize grip](#the-resize-grip). |
 | `MakeCloseButton(parent, onClick[, addonName])` | 1 (3rd arg: **6**) | The close control a Ka0s window closes with, returned unanchored for the caller to place. Returns `nil` where `CreateFrame` is unavailable (headless harness, or a load path with no UI). With `addonName` it draws the collection's own `close` icon; without, the multiplication sign. See [Which close control you get](#which-close-control-you-get). |
 | `MODULES` | 1 | `{ Core = <minor> }` — the live minor of every file in this major. The in-game answer to "which version am I actually running?", and the value that picks this document. |
 | `lib:New(descriptor)` | 1 | Build a prefixed chat printer for one host. See below. |
 
-**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). Every Core export has a host consumer.
+Two left the zero-consumer list at v1.67.0:
 
-- `lib.MakeResizable`: no consumer as of v1.66.0, kept because the library's own console, copy window and perf panel size through it (Core minor 9), and three hosts still hand-roll the same grip. (BankLedger#21, LootHistory#33, MultiMeters#58; contract: LibKa0s#41)
-- `lib.SECRET`: no consumer as of v1.66.0, kept because it is the one spelling of the secret sentinel every Core stringifier answers, and three hosts restate the literal outside their degradation stubs. (AbsorbTracker#33, KickCD#36, MultiMeters#58)
+- `lib.MakeResizable`: three hosts, BankLedger, LootHistory and MultiMeters, each from its own `core/CoreSetup.lua` (BankLedger#21, LootHistory#33, MultiMeters#58), on the contract settled here (LibKa0s#41).
+- `lib.SECRET`: three hosts, AbsorbTracker, KickCD and MultiMeters, each from its own `core/CoreSetup.lua` (AbsorbTracker#33, KickCD#36, MultiMeters#58).
 
 ### The skin table
 
@@ -433,13 +477,3 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
-
-## Moving to version 10
-
-Nothing is added to the member list and the degradation stub is unchanged: a host's Core stub keeps
-`MakeResizable = function() return nil end`. Version 10 adds three optional `opts` fields to
-`MakeResizable`: `canResize`, a gate read at every left mouse-down; `onResizeStop`, run once per
-completed grip sizing, where a host persists geometry; and `gripParent`, the frame the grip is drawn
-on while sizing stays on `frame`. A caller that passes none of them sees no change. A host that
-passes them to a Core 9 copy gets an always-resizable grip on the sized frame and no stop callback,
-so a host that relies on them takes v1.67.0 or later.

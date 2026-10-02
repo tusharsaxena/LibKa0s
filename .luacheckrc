@@ -6,6 +6,7 @@ read_globals = {
   "LibStub", "CreateFrame", "UIParent", "UISpecialFrames", "DEFAULT_CHAT_FRAME",
   "time", "date", "debugprofilestop", "UnitAffectingCombat", "InCombatLockdown",
   "C_AddOns", "GetAddOnMetadata",
+  "IsAddOnLoaded",   -- the deprecated rung of the id list help-art guard (OptionsIdList minor 3)
   "C_Map",   -- the player's map id, read by LibKa0s-Env-1.0
   "C_Item", "C_Timer", "ITEM_QUALITY_COLORS",   -- read by LibKa0s-Item-1.0
   -- An id list's name lookups (LibKa0s-Options-1.0's ResolveId / IdInput / IdList, minor 16), each

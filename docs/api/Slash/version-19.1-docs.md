@@ -630,7 +630,7 @@ hosts that run a second command level under a verb (`/kcd debug <verb>`, `/cm pr
 
 ### `lib.SplitVerb(rest)` → `verb, remainder`
 
-`lib.SplitVerb`: no consumer as of v1.66.0, kept because it is the verb split two hosts copied byte for byte as `lowerFirst`, and a third inlines. (AbsorbTracker#33, ConsumableMaster#44, KickCD#36)
+`lib.SplitVerb`: three consumers as of v1.67.0, AbsorbTracker, ConsumableMaster and KickCD, which retired their `lowerFirst` copies and the inline split (AbsorbTracker#33, ConsumableMaster#44, KickCD#36). See [`CONSUMERS.md`](../CONSUMERS.md).
 
 `("^(%S*)%s*(.*)$")`, with the verb **lowercased** and the remainder returned untouched. The
 asymmetry is the whole point: a verb is an identifier, while the remainder is **user data** — AceDB
@@ -641,7 +641,7 @@ callable.
 
 ### `lib.FindCommand(list, name)` → entry or `nil`
 
-`lib.FindCommand`: no consumer as of v1.66.0, kept because it is the sub-command lookup two hosts copied byte for byte before it existed, and still carry. (ConsumableMaster#44, KickCD#36)
+`lib.FindCommand`: two consumers as of v1.67.0, ConsumableMaster and KickCD, which retired the copies they carried from before it existed (ConsumableMaster#44, KickCD#36). See [`CONSUMERS.md`](../CONSUMERS.md).
 
 A linear scan of an ordered `{ name, description, handler }` array — **the same row shape the
 `commands` descriptor field has always taken**, so a sub level reuses this major's existing
@@ -650,7 +650,7 @@ vocabulary rather than inventing one. `entry[1]` is compared verbatim; lowercase
 
 ### `lib.CommandRows(prefix, commands, indent)` → array of strings
 
-`lib.CommandRows`: no consumer as of v1.66.0, kept because it is the sub-level half of the one row formatter, and two hosts still hand-roll a second row format beside it. (ConsumableMaster#44, KickCD#36)
+`lib.CommandRows`: two consumers as of v1.67.0, ConsumableMaster and KickCD, which retired the second row format they hand-rolled beside it (ConsumableMaster#44, KickCD#36). See [`CONSUMERS.md`](../CONSUMERS.md).
 
 One rendered row per entry, `indent .. lib.FormatRow(prefix .. " " .. entry[1], entry[2])`, with
 `indent` defaulting to `""` — the indent belongs to whoever renders, for the same reason it does in
@@ -724,7 +724,7 @@ the host's tag (`slash-commands-§4`).
 
 ### `lib.ProfileNames(store)` → `names, current`
 
-`lib.ProfileNames`: no consumer as of v1.66.0, kept because `Sl:CliProfile` lists through it in every host, and AbsorbTracker's `/at profile list` still prints its own unsorted list beside it. (AbsorbTracker#33)
+`lib.ProfileNames`: one consumer as of v1.67.0, AbsorbTracker, whose `/at profile list` now lists through it instead of printing its own unsorted list (AbsorbTracker#33). `Sl:CliProfile` lists through it in every host. See [`CONSUMERS.md`](../CONSUMERS.md).
 
 The store's names sorted case-insensitively, with a case-sensitive tie-break so `Main` and `main`
 always print in the same order, and the current profile. The current profile is in the list even
@@ -805,9 +805,9 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `SetRowAnnotator(fn)` | 1 | Install a host suffix appended to a rendered setting — most usefully a note that the stored value is not the one in effect. Applied at exactly three sites: a list row, a get echo and a set echo. Never on reset or resetall, where an explanation of what a value means is noise stapled to an acknowledgment that the value went away. |
 | `Text(key)` | 1 | Resolve one user-visible string, the descriptor's `L` first, then `lib.STRINGS`. |
 
-**Consumer census, v1.66.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
 
-- `CliResetAll`: no consumer as of v1.66.0, kept because the library's `resetall` verb runs it in every host that does not replace it; BankLedger and LootHistory replace it on purpose with a confirmed profile reset.
+- `CliResetAll`: no consumer as of v1.67.0, kept because the library's `resetall` verb runs it in every host that does not replace it; BankLedger and LootHistory replace it on purpose with a confirmed profile reset.
 
 ## The degradation stub
 

@@ -10,6 +10,76 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.67.0 — 2026-10-02
+
+Versions in this release: **Core minor 10** (`LibKa0s-Core-1.0` 10), **Options minor 28** and
+**OptionsIdList minor 3** (`LibKa0s-Options-1.0` key 28.2.34.2.3.8.1.7.4.2). Every other file is
+unchanged from v1.66.0: `Env` 1, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2,
+`Media` 4, `Slash` key 19.1, `Widgets` key 12.1.3, `DebugLog` key 19.2.1, `Launcher` 5 and `Perf`
+key 14.1.1.6. The test kit stays at **revision 35**. No
+`NEEDS_*` floor rises, no major is added and no payload file is added, so the library is still
+**fifteen majors across thirty-two files**.
+
+This is the library's half of the 2026-10-02 census adoption: it settles the `MakeResizable`
+contract the three hand-rolled grips need before they can adopt the library's (LibKa0s#41), and it
+guards the Options descriptor's `addonName` before every host starts passing it (LibKa0s#42). It is built
+to standard v2.75.0, whose `options-ui-§1` names that descriptor field; the README's standards
+pointer moves v2.74.0 -> v2.75.0.
+
+### Core minor 10: a lock gate, a stop callback and a grip parent for MakeResizable (issue #41)
+
+- **`opts.canResize`**: `function(frame) -> truthy/falsy`, read fresh at every left mouse-down,
+  before `StartSizing`. Falsy refuses: nothing starts, and the next mouse-up is inert (no stop, no
+  user-placed restore, no `onResize`, no `onResizeStop`). A drag already under way finishes even if
+  the answer flips. It never touches the grip's visibility: the library shows the grip once and
+  never hides or dims it, so a host may keep a locked grip visible and inert (LootHistory) or hide
+  it itself (MultiMeters).
+- **`opts.onResizeStop`**: `function(width, height)`, run once per mouse-up that ends a sizing the
+  grip started, after `onResize`, and never from `OnSizeChanged`. This is where a host persists
+  geometry; `onResize` runs on every size tick and is for relayout.
+- **`opts.gripParent`**: the frame the grip is built on, anchored to and leveled from (default
+  `frame`). Sizing, the bounds, the user-placed flag and `frame.resizeGrip` stay on the sized frame,
+  so a host that sizes a clean anchor can draw the grip on its art frame.
+- A value of the wrong type for any of the three is ignored, and none is wrapped in `pcall`, the
+  same as `onResize`. No member is added, so the member manifest and every Core degradation stub
+  are unchanged. Every existing caller, the library's own console, copy window and perf panel
+  included, passes none of them and behaves exactly as on v1.66.0. Cases:
+  `tests/test_core_resize.lua`. Documented in
+  [the version 10 document](docs/api/Core/version-10-docs.md); version 9 is Superseded.
+- **What a consumer owes:** nothing; LootHistory (`canResize`, `onResizeStop`), BankLedger (both
+  windows, `onResizeStop`) and MultiMeters (`gripParent`, `onResizeStop`) adopt.
+
+### OptionsIdList minor 3 and Options minor 28: the help art checks the name it is given (closes #42)
+
+- **The loaded-addon rung.** An `O.IdList` help mark's default art comes from the Options
+  descriptor's `addonName` only when the client reports that addon loaded:
+  `C_AddOns.IsAddOnLoaded`, else the deprecated global `IsAddOnLoaded`, in a `pcall`. The name is
+  trusted when neither API exists, as in a headless harness, and when the check raises.
+  `Media.Icon` validates only that the name is a non-empty string, so before this a wrong name (the
+  MasterControls compose spec's display label `"Aura Master"`, or a misspelled folder) built a path
+  to a file that does not exist and the client drew nothing, with nothing raised. Now it draws the
+  client's information glyph. `spec.helpIcon` still wins over every rung.
+- **One `Cfg` line per instance when the ladder falls past that rung**, through the descriptor's
+  `debug`: `help art: no addonName on the Options descriptor; drawing the client glyph`, or
+  `help art: addonName "<name>" is not a loaded addon; drawing the client glyph`. A list with no
+  helped entry never asks and writes nothing. Players see nothing.
+- **Options minor 28 is a docblock correction**: the descriptor's `addonName` is read by
+  `OptionsIdList.lua` (not `OptionsWidgets.lua`), is recommended for every host, is the host's
+  folder name passed as its first vararg, and is not the MasterControls display label.
+- No member, field, string or floor moves; the Options member manifest moves to the new key
+  unchanged. Cases: `tests/test_options_idlist_layout.lua`. Documented in
+  [the 28.2.34.2.3.8.1.7.4.2 document](docs/api/Options/version-28.2.34.2.3.8.1.7.4.2-docs.md);
+  27.2.34.2.2.8.1.7.4.2 is Superseded. `.luacheckrc` declares `IsAddOnLoaded` as a read global.
+- **What a consumer owes:** pass `addonName = addonName` on the Options descriptor, with
+  `local addonName, NS = ...` in the file that builds it; all eleven hosts do in this adoption. The
+  issue said every help mark in all three id-list hosts drew the fallback, but **only AuraMaster
+  draws help marks today**: BankLedger and LootHistory build id lists with no `help`, and the other
+  eight have no id list, so for them the change is latent.
+
+Release gate (`docs/automated-tests/20261002-012529/`): lint pass, 0/0 in 144 files;
+tests pass, 2015 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.66.0 — 2026-10-01
 
 Versions in this release: **Slash minor 19** and the new **SlashParse minor 1** (`LibKa0s-Slash-1.0`
