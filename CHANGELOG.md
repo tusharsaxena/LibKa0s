@@ -45,7 +45,10 @@ standards pointer does not move.
   and draw (`dhDrawTooltip`), and a host that sets neither field gets minor 3's calls in minor 3's
   order: one `SetOwner`, the lines, one `Show`, for the cursor owner and the frame owner alike. No
   member, `DRAG_HANDLE` field or handle method is added, so the member manifest moves to the new key
-  unchanged and no degradation stub moves. Cases: `tests/test_widgets_draghandle.lua` (ten new).
+  unchanged and no degradation stub moves. Cases: `tests/test_widgets_draghandle_place.lua`, a new
+  suite of ten, with the drag-handle bench moved to `tests/fixture_draghandle.lua` so
+  `tests/test_widgets_draghandle.lua` stays out of the `layout-§1` band (it would have been 1123
+  lines; it is 814, and the old minor-3 pin there now reads `>= 3`).
   Documented in [the 12.1.4 document](docs/api/Widgets/version-12.1.4-docs.md); 12.1.3 is
   Superseded.
 - **What a consumer owes:** nothing; AuraMaster adopts `tooltipPlace` in `modules/Anchors.lua`
