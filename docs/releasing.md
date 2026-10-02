@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.67.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.68.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -254,7 +254,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.67.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.68.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -450,7 +450,20 @@ Core, DebugLog, Slash, Options, Media, Env, Pool and Perf. It does not look up W
 is the host that found the four kit gaps revision 16 closes (#27–#30). **No addon on the standard
 remains unadopted.**
 
-**Where v1.67.0 stands (2026-10-02).** Three LibStub minors move and no file is added: `Core.lua` 10
+**Where v1.68.0 stands (2026-10-02).** One LibStub minor moves and no file is added:
+`WidgetsDragHandle.lua` 4 (`LibKa0s-Widgets-1.0` 12.1.4), so the payload is still fifteen majors across
+thirty-two files. The kit stays at **revision 35**; no `NEEDS_*` floor rises and no member is added or
+removed. It is the library's half of AuraMaster#22: the drag handle's spec gains `tooltipPlace` (and its
+tooltip descriptor `place`), a host hook that owns the tooltip by `UIParent` at `"ANCHOR_NONE"`, shows it,
+and lets the host anchor it beside the strip, falling back to the cursor owner when the hook raises or
+does not answer `true`. A host that sets neither field draws exactly as on v1.67.0. What a consumer owes
+is the whole-folder copy of both payloads and the provenance line; AuraMaster's adoption of the hook is
+its own item. Built on `feat/2026-10-02-drag-attach`, and **not merged**: steps 1-7 are done on that
+branch, the tag `v1.68.0` exists **locally only**, on it, and the tag's push and the branch's merge wait
+on the owner's go-ahead. **Step 8 is every consumer**; AuraMaster's re-vendor rides on its own
+`feat/2026-10-02-drag-attach` branch with the adoption, and the other ten are owed theirs.
+
+**Where v1.67.0 stood (2026-10-02).** Three LibStub minors move and no file is added: `Core.lua` 10
 (`LibKa0s-Core-1.0` 10), and `Options.lua` 28 with `OptionsIdList.lua` 3 (`LibKa0s-Options-1.0`
 28.2.34.2.3.8.1.7.4.2), so the payload is still fifteen majors across thirty-two files. The kit stays at
 **revision 35**; no `NEEDS_*` floor rises and no member is added or removed. It is the library's half of
@@ -780,11 +793,11 @@ The kit stays at **revision 22**, so `tests/test_vendor_sync.lua` pairs the two 
 v1.42.0 tag exactly as it did at v1.41.0 — the kit bytes are identical, but both are resolved from
 the tag the provenance line names, so both are copied.
 
-**Every step 8 through v1.66.0 is done.** All eleven consumers bundle **v1.66.0** on `master`, and
-each `CLAUDE.md` provenance line says so, re-measured on 2026-10-02 for v1.67.0 against each
-consumer's own `master`. What is **not** done is v1.67.0's step 8, which is every consumer, one
-re-vendor item each on its `feat/2026-10-02-libka0s-census-adoption` branch (see *Where v1.67.0
-stands* above).
+**Every step 8 through v1.67.0 is done.** All eleven consumers bundle **v1.67.0** on `master`, and
+each `CLAUDE.md` provenance line says so, re-measured on 2026-10-02 for v1.68.0 against each
+consumer's own `master`. What is **not** done is v1.68.0's step 8, which is every consumer: AuraMaster
+on its `feat/2026-10-02-drag-attach` branch with the `tooltipPlace` adoption, and the other ten, which
+gain nothing they call and are owed the copy all the same (see *Where v1.68.0 stands* above).
 
 This paragraph says where the consumers stand as of the release being prepared, so it is stale the
 moment it is not rewritten. **Rewrite it at the next release**, in the same commit as step 7's other

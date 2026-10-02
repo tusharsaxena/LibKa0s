@@ -225,11 +225,11 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.67.0**, which moves three files' minors (Core 10, Options 28, OptionsIdList 3) and adds no file and no major: `Core = { Core = 10 }`,
+different vendored copy of each. As of **v1.68.0**, which moves one file's minor (WidgetsDragHandle 4) and adds no file and no major: `Core = { Core = 10 }`,
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 3 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
-`Widgets = { Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 3 }`, `DebugLog = { DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }`, `Slash = { Slash = 19, SlashParse = 1 }`,
+`Widgets = { Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4 }`, `DebugLog = { DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }`, `Slash = { Slash = 19, SlashParse = 1 }`,
 `Launcher = { Launcher = 5 }`,
 `Options = { Options = 28, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 3, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }`,
 `Perf = { Perf = 14, PerfSampler = 1, PerfCommands = 1, PerfPanel = 6 }`. Those numbers move every release, so read them from the top of

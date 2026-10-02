@@ -22,7 +22,8 @@ thirty-two files**.
 
 This is the library's half of AuraMaster#22: the owner asked for a container's drag-strip tooltip to
 appear beside the strip, to its right, or to its left when the strip is too close to the right edge
-of the screen, instead of at the cursor.
+of the screen, instead of at the cursor. It is built to standard v2.75.0, as v1.67.0 was; the README's
+standards pointer does not move.
 
 ### WidgetsDragHandle minor 4: the host can place the strip's tooltip (`tooltipPlace`)
 
