@@ -55,6 +55,10 @@ standards pointer does not move.
   (AuraMaster#22). The other drag-handle hosts (AbsorbTracker, ConsumableMaster, KickCD) pass no
   hook and draw exactly as before.
 
+Release gate (`docs/automated-tests/20261002-231513/`): lint pass, 0/0 in 146 files;
+tests pass, 2025 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.67.0 — 2026-10-02
 
 Versions in this release: **Core minor 10** (`LibKa0s-Core-1.0` 10), **Options minor 28** and
