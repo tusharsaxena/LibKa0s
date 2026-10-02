@@ -490,7 +490,7 @@ badge and any count quoted in the docs must agree with it.
 - widgets: the handle owns the collection's 30px gutter unless the host says otherwise
 - widgets: a box frame that cannot make textures is skipped rather than raising
 
-### test_widgets_draghandle.lua (46)
+### test_widgets_draghandle.lua (56)
 
 - draghandle: it builds a named strip of the published height, hidden, with a label and a mark
 - draghandle: with no parent, and in a process with no CreateFrame, it answers nil
@@ -524,10 +524,20 @@ badge and any count quoted in the docs must agree with it.
 - draghandle: the owner is the host's call, because for one host it is not a style choice
 - draghandle: a second descriptor gives the mark its own tooltip, owner and anchor
 - draghandle: a descriptor may own by the cursor while its neighbor owns by the frame
+- draghandle: without tooltipPlace the call sequence is exactly minor 3's, for both owners
+- draghandle: tooltipPlace owns by UIParent at ANCHOR_NONE, draws, shows, then places
+- draghandle: tooltipPlace runs after Show, so the tooltip is measured when it is placed
+- draghandle: the mark and the X hand tooltipPlace the frame hovered, not the strip
+- draghandle: a tooltipPlace that raises falls back to the cursor and redraws the same lines
+- draghandle: a tooltipPlace that answers anything but true falls back to the cursor
+- draghandle: a descriptor's own place wins over the spec's, as owner and anchor do
+- draghandle: a descriptor may place while the spec does not, and its neighbor is untouched
+- draghandle: a tooltipPlace that is not a function is ignored, not called
+- draghandle: DragHandle is at minor 4, the placement hook's minor
 - draghandle: a line may carry its own color, so a gold line in a white band stays gold
 - draghandle: the strip is a plain Button with a fill, never a BackdropTemplate
 - draghandle: a host with its own edge painter gets its own pixels
-- draghandle: DragHandle is at minor 3, the close mark's minor
+- draghandle: DragHandle is at minor 3 or later, the close mark's minor
 - draghandle: a spec with no onClose draws exactly the minor-2 strip, number for number
 - draghandle: onClose builds an X the same frame and art size as the '?', immediately left of it
 - draghandle: with no closeIcon the X falls to Blizzard's stop button
@@ -2287,7 +2297,7 @@ badge and any count quoted in the docs must agree with it.
 | test_media.lua | 20 |
 | test_widgets.lua | 57 |
 | test_widgets_reorderlist.lua | 24 |
-| test_widgets_draghandle.lua | 46 |
+| test_widgets_draghandle.lua | 56 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
@@ -2353,4 +2363,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **2015** |
+| **Total** | **2025** |

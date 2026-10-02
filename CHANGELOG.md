@@ -10,6 +10,47 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.68.0 — 2026-10-02
+
+Versions in this release: **WidgetsDragHandle minor 4** (`LibKa0s-Widgets-1.0` key 12.1.4). Every
+other file is unchanged from v1.67.0: `Core` 10, `Env` 1, `Compat` 1, `Lifecycle` 3, `Bus` 2,
+`Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 19.1, `DebugLog` key 19.2.1, `Launcher` 5,
+`Options` key 28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6; within Widgets, `Widgets` stays at 12
+and `WidgetsReorder` at 1. The test kit stays at **revision 35**. No `NEEDS_*` floor rises, no
+major is added and no payload file is added, so the library is still **fifteen majors across
+thirty-two files**.
+
+This is the library's half of AuraMaster#22: the owner asked for a container's drag-strip tooltip to
+appear beside the strip, to its right, or to its left when the strip is too close to the right edge
+of the screen, instead of at the cursor.
+
+### WidgetsDragHandle minor 4: the host can place the strip's tooltip (`tooltipPlace`)
+
+- **`spec.tooltipPlace`**: `function(tip, frame) -> true`, and a descriptor's own **`place`**, which
+  wins over the spec's as `owner` and `anchor` do. With one in force, a hover owns `GameTooltip` by
+  `UIParent` at `"ANCHOR_NONE"`, draws the lines exactly as without it, calls `Show`, then calls
+  `place(tip, frame)` under `pcall` with the frame hovered (the strip, the help mark or the close
+  mark). `Show` comes first so the host can read the tooltip's measured width when it picks a side.
+  The owner and anchor fields are not read while a hook is in force.
+- **Only a literal `true` means placed.** A raise or any other answer falls back to the `"cursor"`
+  owner: owned again by `UIParent` at `"ANCHOR_CURSOR"`, the same lines drawn again, shown again.
+  The lines are evaluated once per hover, so a function entry is called once even when the fallback
+  redraws. A value that is not a function is ignored.
+- **Why a hook and not a mode.** AuraMaster's anchor inherits `DisableUntrustedLayoutScriptsTemplate`,
+  so the client refuses `SetOwner` on the strip or its marks and the frame-owner path is closed to
+  it. Owning by `UIParent` with no anchor and letting the host anchor the tooltip is the one route
+  that works there, and the side the tooltip fits on is the host's to compute.
+- **Without a hook nothing changes.** The tooltip drawing is split into evaluate (`dhTooltipLines`)
+  and draw (`dhDrawTooltip`), and a host that sets neither field gets minor 3's calls in minor 3's
+  order: one `SetOwner`, the lines, one `Show`, for the cursor owner and the frame owner alike. No
+  member, `DRAG_HANDLE` field or handle method is added, so the member manifest moves to the new key
+  unchanged and no degradation stub moves. Cases: `tests/test_widgets_draghandle.lua` (ten new).
+  Documented in [the 12.1.4 document](docs/api/Widgets/version-12.1.4-docs.md); 12.1.3 is
+  Superseded.
+- **What a consumer owes:** nothing; AuraMaster adopts `tooltipPlace` in `modules/Anchors.lua`
+  (AuraMaster#22). The other drag-handle hosts (AbsorbTracker, ConsumableMaster, KickCD) pass no
+  hook and draw exactly as before.
+
 ## v1.67.0 — 2026-10-02
 
 Versions in this release: **Core minor 10** (`LibKa0s-Core-1.0` 10), **Options minor 28** and

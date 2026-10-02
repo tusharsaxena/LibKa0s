@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 12.1.3
+# `LibKa0s-Widgets-1.0` — version 12.1.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,12 +8,44 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **3** |
-| Shipped in | v1.66.0 |
-| Status | Superseded |
-| Supersedes | [version 11.3](./version-11.3-docs.md) — `ReorderList` inside `Widgets.lua` |
-| Superseded by | [version 12.1.4](./version-12.1.4-docs.md) — `tooltipPlace` on the drag handle's spec and `place` on its tooltip descriptor |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 3 }` |
+| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** |
+| Shipped in | v1.68.0 |
+| Status | **Current** |
+| Supersedes | [version 12.1.3](./version-12.1.3-docs.md) — no tooltip placement hook |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4 }` |
+
+## What changed at 12.1.4
+
+**The drag handle's tooltip can be placed by the host** (AuraMaster#22). `WidgetsDragHandle.lua`
+moves to minor **4**; `Widgets.lua` stays at **12** and `WidgetsReorder.lua` at **1**. The spec
+gains one optional field, `tooltipPlace`, and the tooltip descriptor one, `place`, both **Since 4**.
+No member, `DRAG_HANDLE` field or handle method is added or removed, so the member manifest lists
+the same surface as 12.1.3's.
+
+- **Why it exists.** AuraMaster's anchor inherits `DisableUntrustedLayoutScriptsTemplate`, so the
+  client refuses `SetOwner` on the strip or its marks, and through minor 3 the only owner open to it
+  was `UIParent` at the cursor. The owner asked for the tooltip beside the strip instead: to its
+  right, or to its left when the strip is too close to the right edge of the screen. The widget
+  cannot compute that side for every host, and the host cannot own by its own frame, so the widget
+  owns by `UIParent` with no anchor and hands the host the placement.
+- **The sequence.** With a hook set, a hover owns `GameTooltip` by `UIParent` at `"ANCHOR_NONE"`,
+  draws the lines exactly as without one, calls `Show`, and then calls `place(tip, frame)` under
+  `pcall`, where `frame` is the frame hovered (the strip, the help mark or the close mark). `Show`
+  comes first so the host can read the tooltip's measured width when it picks a side.
+- **Only a literal `true` means placed.** A raise, `nil`, `false` or any other value falls back to
+  the `"cursor"` owner: the tooltip is owned again by `UIParent` at `"ANCHOR_CURSOR"`, the same lines
+  are drawn again, and it is shown again. The lines are evaluated once per hover, so a function
+  entry is called once even when the fallback redraws. The fallback exists for a host whose
+  geometry read can raise, such as a secret width under an attached anchor.
+- **Precedence mirrors `owner` and `anchor`.** A descriptor's own `place` wins over the spec's
+  `tooltipPlace`. With a hook in force, the descriptor's and the spec's owner and anchor are not
+  read. A value that is not a function is ignored, so the tooltip keeps the owner it had.
+- **Without a hook nothing changes.** A host that sets neither field gets minor 3's calls in minor 3's
+  order (one `SetOwner`, the lines, one `Show`), for the cursor owner and the frame owner alike.
+
+**What a host must change: nothing.** No member moves, so no degradation stub does. A host that
+passes `tooltipPlace` to a minor-3 copy gets its old owner; the field is ignored there.
 
 ## What changed at 12.1.3
 
@@ -657,6 +689,7 @@ also spends it in its clamp reach, `HEIGHT + GAP`.
 | `helpTooltip` | a **second** descriptor of the same shape, shown by the help mark alone | the mark shows `tooltip` |
 | `tooltipOwner` | the default for both descriptors: `"cursor"` owns by `UIParent` at `ANCHOR_CURSOR`; anything else owns by the frame hovered | by the frame hovered |
 | `tooltipAnchor` | the default anchor point used when owning by the frame | `"ANCHOR_TOP"` |
+| `tooltipPlace` | **Since 4.** `function(tip, frame) -> true` when it placed the tooltip. Set, every hover owns by `UIParent` at `"ANCHOR_NONE"`, draws the lines, shows, then calls it under `pcall` with the frame hovered; a raise or any answer but `true` falls back to the `"cursor"` owner with the same lines redrawn. Owner and anchor are not read while it is in force. A descriptor's own `place` wins; a non-function is ignored | the owner and anchor above |
 | `edge` | `function(frame, size, r, g, b, a)` — the host's own 1px edge painter | the widget's four strips |
 | `number` | `function(v, fallback) -> number` — a secret-safe numeric guard | `tonumber(v) or fallback` |
 | `labelFont` | the font object the label is **drawn in and measured in** | `"GameFontNormalSmall"` |
@@ -689,6 +722,28 @@ all cases; the code is what changed. `owner` and `anchor` may also be set on a d
 which is what lets ConsumableMaster's two anchors differ, and a descriptor's own value wins over the
 spec-level default.
 
+**`tooltipPlace` (Since 4) puts the tooltip where the host says, without owning by a restricted
+frame.** It is the third option beside the frame owner and the cursor owner, for a host that can
+use neither as it wants: the tooltip is owned by `UIParent` at `"ANCHOR_NONE"`, drawn, shown, and
+handed to `tooltipPlace(tip, frame)`, which anchors it (typically `tip:ClearAllPoints()` and one
+`tip:SetPoint` beside the strip, choosing the side from the strip's and the tooltip's screen
+positions) and returns `true`. The call is under `pcall`. If it raises or answers anything but
+`true`, the widget falls back to the cursor owner and redraws the same lines, so a placement that
+cannot be computed costs the position and never the tooltip. A sketch of AuraMaster's use, the
+host's code and not the library's:
+
+```lua
+tooltipPlace = function(tip, frame)
+  local strip = frame.help and frame or frame:GetParent()          -- a mark's parent is the strip
+  local right = strip:GetRight()                                    -- may raise on a secret value
+  local fits = right + tip:GetWidth() + 4 <= UIParent:GetRight()
+  tip:ClearAllPoints()
+  if fits then tip:SetPoint("TOPLEFT", strip, "TOPRIGHT", 4, 0)
+  else tip:SetPoint("TOPRIGHT", strip, "TOPLEFT", -4, 0) end
+  return true
+end
+```
+
 ### The tooltip descriptor
 
 ```lua
@@ -698,6 +753,7 @@ tooltip = {
   footer = { <entry>, … },       -- gray, after one blank line
   owner  = <"cursor" | nil>,     -- overrides spec.tooltipOwner for this descriptor
   anchor = <string | nil>,       -- overrides spec.tooltipAnchor for this descriptor
+  place  = <function | nil>,     -- Since 4. overrides spec.tooltipPlace for this descriptor
 }
 
 -- <entry> is any of:
@@ -898,14 +954,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 12.1.4
-
-**Take it; nothing in a host's code or its degradation stub changes.** The next version is key
-12.1.4: `Widgets.lua` 12, `WidgetsReorder.lua` 1 and `WidgetsDragHandle.lua` 4. The drag handle's
-spec gains `tooltipPlace` and its tooltip descriptor `place`, a host hook that owns the tooltip by
-`UIParent` at `"ANCHOR_NONE"` and lets the host anchor it, with a fallback to the cursor owner when
-the hook raises or does not answer `true`. A host that sets neither sees the same calls in the same
-order. No member, `DRAG_HANDLE` field or handle method changes. A host that relies on the hook takes
-v1.68.0 or later; on this version the field is ignored. Re-vendor the whole folder, as always. See
-[version 12.1.4](./version-12.1.4-docs.md).
