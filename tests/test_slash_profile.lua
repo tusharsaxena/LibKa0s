@@ -3,7 +3,7 @@
 --
 -- A file of its own on the seam it tests, as tests/test_slash_refusal.lua is: the host's profile
 -- store answering back. The store here is a duck-typed fake with AceDB-3.0's three methods and
--- nothing else, because the library must not require AceDB (slash-commands.md:34) and a case that
+-- nothing else, because the library must not require AceDB (slash-commands-§1) and a case that
 -- passed only against the real AceDB would not show that.
 --
 -- What the verb promises, and what these cases pin: `profile <name>` switches to a profile that
