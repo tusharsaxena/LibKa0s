@@ -32,6 +32,9 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261002-232612`](20261002-232612/) | `6ffa4ca` | clean | 1.68.0 → 1.68.0 | 0/0 | 146 | 2023/2/2025 | skip | 40807 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
+| [`20261002-231513`](20261002-231513/) | `3cd411d` | clean | 1.67.0 → 1.68.0 | 0/0 | 146 | 2023/2/2025 | skip | 40807 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
+| [`20261002-231003`](20261002-231003/) | `1382135` | clean | 1.67.0 → 1.68.0 | 0/0 | 144 | 2023/2/2025 | skip | 40783 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261002-012529`](20261002-012529/) | `7e07c83` | clean | 1.66.0 → 1.67.0 | 0/0 | 144 | 2013/2/2015 | skip | 40568 | 6095 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261001-133255`](20261001-133255/) | `a964c5a` | clean | 1.65.0 → 1.66.0 | 0/0 | 144 | 1997/2/1999 | skip | 40283 | 6041 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261001-122702`](20261001-122702/) | `b68583a` | clean | 1.65.0 → 1.66.0 | 0/0 | 142 | 1992/2/1994 | skip | 40125 | 6014 | 6.8 | 2.0 | 15 | 2 | **green** |
@@ -131,18 +134,19 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**2015 cases** — 2013 passed, 0 failed, 2 skipped. The generated inventory
-[`20261002-012529/test-cases.md`](20261002-012529/test-cases.md) is the authority on which cases existed at this run;
+**2025 cases** — 2023 passed, 0 failed, 2 skipped. The generated inventory
+[`20261002-232612/test-cases.md`](20261002-232612/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **1999 → 2015** since the previous run.
+The count has been **flat at 2025 across the last 3 runs**. A suite that stopped growing while
+the addon did is a coverage gap, and it is the one thing the table above cannot show.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 144 files** (`luacheck .`).
+**0 warnings / 0 errors over 146 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -159,7 +163,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261002-012529`](20261002-012529/) — **this run's measurement, not its diff.** Max CCN **15** across 6095
+Current as of [`20261002-232612`](20261002-232612/) — **this run's measurement, not its diff.** Max CCN **15** across 6132
 functions, **0** of them warned on; 6 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
