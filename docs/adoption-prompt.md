@@ -470,7 +470,7 @@ to land once the other four are green.
     status as a **label** — `state:triaged` for real work accepted but not being done now (open),
     `state:will-not-do` for a decline (closed), `state:done` for an adoption that landed (closed) —
     plus a `severity:` label (`critical`/`high`/`medium`/`low`), the vocabulary
-    `/wow-addon:issue-audit` reads. Leave the **title** plain: the `[status]` title prefix that
+    `/dev-copilot:issue-audit` reads. Leave the **title** plain: the `[status]` title prefix that
     briefly held this is retired, as is `docs/pending/LEDGER.md` before it.
     ConsumableMaster's `LIBKA0S-01` … `-08` entries — superseded rows preserved rather than
     deleted — are the model, and the reason its adoption is auditable where the others' are only

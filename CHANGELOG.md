@@ -10,6 +10,48 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.68.1 — 2026-10-04
+
+Versions in this release: **test kit revision 36**. Every library file is unchanged from v1.68.0:
+`Core` 10, `Env` 1, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4,
+`Widgets` key 12.1.4, `Slash` key 19.1, `DebugLog` key 19.2.1, `Launcher` 5, `Options` key
+28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6. No LibStub minor moves, no `NEEDS_*` floor rises,
+no member is added or removed, and the library is still **fifteen majors across thirty-two files**.
+Built to standard v2.76.0, the rename-only bump that names `dev-copilot` (no rule this library
+implements changed between v2.75.0 and v2.76.0); the README's standards pointer moves with it.
+
+This is the library's half of the `wow-addon` → `dev-copilot` rename. The `wow-addon` Claude Code
+plugin was merged into `dev-copilot` (v2.0.0): `/wow-addon:<x>` is now `/dev-copilot:<x>` for the
+shared commands and `/dev-copilot:wow-<x>` for the addon-only ones, and the plugin's state moved from
+`~/.claude/wow-addon/` to `~/.claude/dev-copilot/`.
+
+### Test kit revision 36: the kit names the dev-copilot plugin's commands
+
+- **`run-automated-tests.sh`** prints `/dev-copilot:bump-version` in the `RESULTS.md` lead-in, as the
+  command that evaluates the release gate, where revision 35 printed `/wow-addon:bump-version`. A
+  consumer's next run rewrites that one line of its `RESULTS.md`. Three comments follow the rename
+  (two naming the same command, one naming the hook's `dev-copilot/scripts/normalize-eol.sh`).
+- **`test_eol.lua`**: one header comment names `/dev-copilot:wow-automated-tests` as the agent that
+  writes `ANALYSIS.md`.
+- `Kit.VERSION` is 36. No member, case name, mock or manifest field changes, so a consumer's
+  `docs/test-cases.md` does not change. `tests/test_kit_inventory.lua` pins revision 36. Documented
+  in [`docs/api/testkit/version-36-docs.md`](docs/api/testkit/version-36-docs.md); revision 35 is
+  Superseded.
+- **What a consumer owes:** the whole-folder copy of both payloads and the provenance line, as for
+  any release; its own prose that names `kit revision 35` moves to 36.
+
+### Live documents follow the rename
+
+`docs/releasing.md`, `docs/record-schema.md`, `docs/adoption-prompt.md`,
+`docs/fast-gate-adoption-prompt.md`, `docs/automated-tests/README.md` and `docs/api/CONSUMERS.md`'s
+re-run command name the dev-copilot commands and path. Released `CHANGELOG.md` entries, superseded
+per-version API documents and the frozen bundles under `docs/audits/`, `docs/reviews/`,
+`docs/automated-tests/<stamp>/` and `docs/superpowers/` keep the names they were written with.
+
+Release gate (`docs/automated-tests/20261004-143758/`): lint pass, 0/0 in 146 files;
+tests pass, 2025 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.68.0 — 2026-10-02
 
 Versions in this release: **WidgetsDragHandle minor 4** (`LibKa0s-Widgets-1.0` key 12.1.4). Every

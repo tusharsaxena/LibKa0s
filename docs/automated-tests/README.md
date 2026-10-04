@@ -41,7 +41,7 @@ signal rather than a stop.
 
 At the tag they are not decoration. **The release gate requires all four suites at `pass` plus zero
 functions above CCN 15** (`automated-tests-§3`, *The release gate*), evaluated by
-`/wow-addon:bump-version` from the release run's `manifest.json` — not by this script, whose exit
+`/dev-copilot:bump-version` from the release run's `manifest.json` — not by this script, whose exit
 code is unchanged by either suite. Saying "`perf` and `complexity` do not gate" without naming the
 checkpoint is the half-truth this section used to carry; `RESULTS.md` carries the same correction in
 its runner-emitted lead-in.

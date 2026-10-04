@@ -10,9 +10,9 @@
 | Version | **35** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.66.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 34](version-34-docs.md) — the diagnostics contract has a run turn logging on |
-| Superseded by | — |
+| Superseded by | [version 36](version-36-docs.md) — the kit names the dev-copilot plugin's commands |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `35` |
 

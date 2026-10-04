@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 35", function()
-  assertEqual(Kit.VERSION, 35, "v1.66.0 ships revision 35, whose complexity suite measures a sighted shadow")
-  assertEqual(T.KIT_VERSION, 35, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 36", function()
+  assertEqual(Kit.VERSION, 36, "v1.68.1 ships revision 36, whose runner names the dev-copilot plugin's commands")
+  assertEqual(T.KIT_VERSION, 36, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

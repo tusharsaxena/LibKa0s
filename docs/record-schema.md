@@ -11,7 +11,7 @@ stamp — this document covers **schema 2**.
 >
 > One thing about that other record is worth stating where a reader looking for "the schema" will
 > land: its `suites.<name>.gating` boolean and its `suites.<name>.gates` object are **descriptive
-> only**. `/wow-addon:bump-version` evaluates the release gate from `suites.<name>.status` and
+> only**. `/dev-copilot:bump-version` evaluates the release gate from `suites.<name>.status` and
 > `suites.complexity.warnings`, and reads neither field. Nothing should be built on them.
 
 ## Schema 2 vs. schema 1
