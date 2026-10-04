@@ -457,8 +457,9 @@ where it named `/wow-addon:bump-version`, and three runner comments and one `tes
 follow the same rename (the `wow-addon` plugin was merged into `dev-copilot`). No `NEEDS_*` floor
 rises, no member is added or removed and no kit case is renamed. What a consumer owes is the
 whole-folder copy of both payloads and the provenance line. Built on
-`feat/2026-10-04-dev-copilot-rename`, and **not merged**: steps 1-7 are done on that branch up to the
-tag, which is not cut; the tag, the branch's merge and the tag's push wait on the owner's go-ahead.
+`feat/2026-10-04-dev-copilot-rename`, and **not merged**: steps 1-6 and step 7's version-bearing
+lines are done on that branch; step 7's release record (the `--release 1.68.1` run, its `ANALYSIS.md`,
+the release-notes line) and the tag wait on the owner's go-ahead, with the merge and the tag's push.
 **Step 8 is every consumer**, one re-vendor item each in the rename's Stage B.
 
 **Where v1.68.0 stood (2026-10-02).** One LibStub minor moves and no file is added:
