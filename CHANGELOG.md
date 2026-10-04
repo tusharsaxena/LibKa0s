@@ -17,7 +17,8 @@ Versions in this release: **test kit revision 36**. Every library file is unchan
 `Widgets` key 12.1.4, `Slash` key 19.1, `DebugLog` key 19.2.1, `Launcher` 5, `Options` key
 28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6. No LibStub minor moves, no `NEEDS_*` floor rises,
 no member is added or removed, and the library is still **fifteen majors across thirty-two files**.
-Built to standard v2.75.0, as v1.68.0 was; the README's standards pointer does not move.
+Built to standard v2.76.0, the rename-only bump that names `dev-copilot` (no rule this library
+implements changed between v2.75.0 and v2.76.0); the README's standards pointer moves with it.
 
 This is the library's half of the `wow-addon` → `dev-copilot` rename. The `wow-addon` Claude Code
 plugin was merged into `dev-copilot` (v2.0.0): `/wow-addon:<x>` is now `/dev-copilot:<x>` for the
