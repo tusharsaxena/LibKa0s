@@ -98,7 +98,7 @@ Keep all of it. It is the "before" in your report, and there is no second chance
 
 ### Step 2 — Re-vendor from the tag
 
-Prefer **`/wow-addon:revendor-libka0s`** if it is available: it copies both payloads, rolls the
+Prefer **`/dev-copilot:wow-revendor-libka0s`** if it is available: it copies both payloads, rolls the
 provenance line in the same commit, and reports the delta properly.
 
 By hand, from this repo's root, with the LibKa0s checkout as a sibling at tag v1.14.0 or newer:

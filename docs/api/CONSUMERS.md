@@ -652,7 +652,7 @@ here are uncapped.
 From this repo's root, with every addon checked out as a sibling:
 
 ```sh
-/home/tushar/.claude/wow-addon/bin/ka0s-bounded \
+/home/tushar/.claude/dev-copilot/bin/ka0s-bounded \
   lua ../Ka0sAddonsCommonTasks/docs/2026-10-02-LIBKA0S_CENSUS_ADOPTION/plan-data/census.lua \
       .. ../Ka0sAddonsCommonTasks/docs/2026-10-02-LIBKA0S_CENSUS_ADOPTION/plan-data/census-v1.67.0
 ```

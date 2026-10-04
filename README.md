@@ -225,7 +225,7 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.68.0**, which moves one file's minor (WidgetsDragHandle 4) and adds no file and no major: `Core = { Core = 10 }`,
+different vendored copy of each. As of **v1.68.1**, which moves no file's minor (it is a test-kit release, revision 36) and adds no file and no major: `Core = { Core = 10 }`,
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 3 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
