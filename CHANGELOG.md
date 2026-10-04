@@ -48,6 +48,10 @@ re-run command name the dev-copilot commands and path. Released `CHANGELOG.md` e
 per-version API documents and the frozen bundles under `docs/audits/`, `docs/reviews/`,
 `docs/automated-tests/<stamp>/` and `docs/superpowers/` keep the names they were written with.
 
+Release gate (`docs/automated-tests/20261004-143758/`): lint pass, 0/0 in 146 files;
+tests pass, 2025 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.68.0 — 2026-10-02
 
 Versions in this release: **WidgetsDragHandle minor 4** (`LibKa0s-Widgets-1.0` key 12.1.4). Every

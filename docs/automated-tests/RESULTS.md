@@ -12,7 +12,7 @@ the analysis of a given run is its `ANALYSIS.md`.
 read and compared, not thresholded (`performance-§9`, `performance-§10`).
 
 **The tag is gated on all four suites at `pass`, plus zero functions above CCN 15**
-(`automated-tests-§3`, *The release gate*), evaluated by `/wow-addon:bump-version` from the
+(`automated-tests-§3`, *The release gate*), evaluated by `/dev-copilot:bump-version` from the
 `manifest.json` the release run writes — not by this script, whose exit code is unchanged.
 
 A `skip` is a suite that did not run at all. It is never a pass, and at the release gate it is
@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261004-143758`](20261004-143758/) | `84cd24a` | clean | 1.68.0 → 1.68.1 | 0/0 | 146 | 2023/2/2025 | skip | 40807 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261002-232612`](20261002-232612/) | `6ffa4ca` | clean | 1.68.0 → 1.68.0 | 0/0 | 146 | 2023/2/2025 | skip | 40807 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261002-231513`](20261002-231513/) | `3cd411d` | clean | 1.67.0 → 1.68.0 | 0/0 | 146 | 2023/2/2025 | skip | 40807 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261002-231003`](20261002-231003/) | `1382135` | clean | 1.67.0 → 1.68.0 | 0/0 | 144 | 2023/2/2025 | skip | 40783 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
@@ -135,10 +136,10 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **2025 cases** — 2023 passed, 0 failed, 2 skipped. The generated inventory
-[`20261002-232612/test-cases.md`](20261002-232612/test-cases.md) is the authority on which cases existed at this run;
+[`20261004-143758/test-cases.md`](20261004-143758/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-The count has been **flat at 2025 across the last 3 runs**. A suite that stopped growing while
+The count has been **flat at 2025 across the last 4 runs**. A suite that stopped growing while
 the addon did is a coverage gap, and it is the one thing the table above cannot show.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
@@ -163,7 +164,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261002-232612`](20261002-232612/) — **this run's measurement, not its diff.** Max CCN **15** across 6132
+Current as of [`20261004-143758`](20261004-143758/) — **this run's measurement, not its diff.** Max CCN **15** across 6132
 functions, **0** of them warned on; 6 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
