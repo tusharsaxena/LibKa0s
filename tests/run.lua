@@ -89,7 +89,7 @@ Kit.run{
     "test_options_throttle",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_budget", "test_perf_isolation",
     "test_loader", "test_parallel", "test_kit_limits", "test_kit_asserts",
-    "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events", "test_mock_resize",
+    "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events", "test_mock_resize", "test_mock_lines",
     "test_surface_parity",
     "test_versioning", "test_kitsync", "test_prose",
     "test_register", "test_kit_inventory", "test_kit_eol", "test_kit_prose", "test_kit_runner",

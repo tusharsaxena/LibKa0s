@@ -2082,6 +2082,14 @@ badge and any count quoted in the docs must agree with it.
 - resize mock: StartMoving marks the frame user-placed, and SetUserPlaced clears it
 - resize mock: a frame's own stub (M.__stubFrame) carries the surface too
 
+### test_mock_lines.lua (5)
+
+- line mock: CreateLine answers a distinct object per call, recorded on its frame
+- line mock: start, end, thickness and color are answered back
+- line mock: a new line is shown, and Hide / Show / SetShown are tracked
+- line mock: ClearAllPoints forgets both ends
+- line mock: an unmodeled method raises instead of silently succeeding
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -2153,7 +2161,7 @@ badge and any count quoted in the docs must agree with it.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 36
+- the kit is revision 37
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -2354,6 +2362,7 @@ badge and any count quoted in the docs must agree with it.
 | test_mock_record.lua | 37 |
 | test_mock_events.lua | 14 |
 | test_mock_resize.lua | 6 |
+| test_mock_lines.lua | 5 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 9 |
 | test_kitsync.lua | 12 |
@@ -2367,4 +2376,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **2025** |
+| **Total** | **2030** |

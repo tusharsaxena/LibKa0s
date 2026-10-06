@@ -10,6 +10,19 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.69.0 — 2026-10-06
+
+Versions in this release: **test kit revision 37**.
+
+### Test kit revision 37: Line regions
+
+- **`mock_lines.lua`** (new): `CreateLine` on every tracked frame answers a distinct Line that
+  records both ends, thickness, color and shown state, listed on its frame as `__madeLines`; a
+  method a Line does not have raises. `mock_base.lua` loads it (two lines).
+- `Kit.VERSION` is 37. Documented in [`docs/api/testkit/version-37-docs.md`](docs/api/testkit/version-37-docs.md);
+  revision 36 is Superseded.
+- **What a consumer owes:** the whole-folder copy of both payloads and the provenance line.
+
 ## v1.68.1 — 2026-10-04
 
 Versions in this release: **test kit revision 36**. Every library file is unchanged from v1.68.0:
