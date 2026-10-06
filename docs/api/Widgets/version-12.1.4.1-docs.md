@@ -1090,11 +1090,28 @@ What `chart:SetData(data)` takes. Every field is **Since 1**.
   a line it wants read as provisional; a single-point series draws a 2px tick at the point.
 - **Markers outside `[xMin, xMax]` draw nothing.**
 - **`onHover` fires only on an index change**, and with `nil` when the hover clears: `ClearHover`,
-  `OnLeave`, `OnHide` and `Clear` all clear it.
+  `OnLeave`, `OnHide` and `Clear` all clear it. `SetData` and `Render` do not, so a host that
+  repaints new data under a resting cursor calls `ClearHover` before `SetData`; the armed `OnUpdate`
+  then hovers again against the new data on the next frame. Without it the host's tooltip keeps the
+  old data's values until the cursor reaches a different index.
 - **Scripts the chart owns:** `OnEnter` arms an `OnUpdate` that reads `GetCursorPosition` and calls
   `HoverAtPixel`; `OnLeave` and `OnHide` disarm it and clear the hover; `OnSizeChanged` re-renders at
   the new size. A host that replaces one of them takes over that job.
 - **The chart is `EnableMouse(true)`**, so it takes the mouse over its whole rectangle.
+
+**Consumer census, v1.69.0** ([`CONSUMERS.md`](../CONSUMERS.md)). `lib.LineChart` has one host,
+LootHistory's `NS.MakeLineChart` seam. No host calls, reads or passes by name the ten below:
+
+- `lib.ChartMath`: no consumer as of v1.69.0, kept because a host that draws decorations against the plot needs the chart's own tick, budget and nearest-index math; LootHistory aligns its in/out strip through the instance's `XToPixel` instead.
+- `lib.LINE_CHART`: no consumer as of v1.69.0, kept because it is the published chrome a host reads to line anything up with the plot rather than restating the paddings.
+- `hoverXs`: no consumer as of v1.69.0, kept because it is the only way a host turns the hover on; LootHistory builds it in `TimelineModel.lua` and hands it through the seam's table, which the census scan cannot see as a literal pass.
+- `integer`: no consumer as of v1.69.0, kept because a count axis needs a y step of 1 or more; passed as `hoverXs` is.
+- `markers`: no consumer as of v1.69.0, kept because a vertical rule (LootHistory's ledger-start marker) has no other route into the chart; passed as `hoverXs` is.
+- `series`: no consumer as of v1.69.0, kept because it is the chart's data; passed as `hoverXs` is.
+- `xMax`: no consumer as of v1.69.0, kept because the chart draws nothing without the x domain; passed as `hoverXs` is.
+- `xMin`: no consumer as of v1.69.0, kept for the same reason as `xMax`; passed as `hoverXs` is.
+- `yMax`: no consumer as of v1.69.0, kept because a host may pin the y range instead of taking the data's; LootHistory takes the data's range and does not pass it.
+- `yMin`: no consumer as of v1.69.0, kept for the same reason as `yMax`; LootHistory does not pass it either.
 
 ## Degraded
 
