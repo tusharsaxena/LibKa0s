@@ -12,7 +12,17 @@ cannot drift. Release order is in
 
 ## v1.69.0 — 2026-10-06
 
-Versions in this release: **test kit revision 37**.
+Versions in this release: **WidgetsLineChart minor 1**, a new file (`LibKa0s-Widgets-1.0` key 12.1.4.1), and **test kit revision 37**.
+
+### WidgetsLineChart minor 1: the line chart's math
+
+- **A new secondary file of `LibKa0s-Widgets-1.0`**, paired on the shell's minor like
+  `WidgetsDragHandle.lua`. `Widgets.lua` stays at minor 12; the key is 12.1.4.1.
+- **`lib.LINE_CHART`** (chrome constants) and **`lib.ChartMath`**: `NiceTicks`, `Budget`,
+  `Downsample` (LTTB, at most one point per 2px, endpoints kept), `TimeTicks` (day steps on local
+  midnight), `NearestIndex`, `Dashes`. Cases: `tests/test_widgets_linechart_math.lua`.
+- **One consumer at release** (LootHistory). `library-stack-§7` asks two; the owner's ruling to
+  build it here anyway is a row in `CLAUDE.md` → `## Documented deviations`.
 
 ### Test kit revision 37: Line regions
 

@@ -552,6 +552,23 @@ badge and any count quoted in the docs must agree with it.
 - draghandle: a tooltipPlace that is not a function is ignored, not called
 - draghandle: DragHandle is at minor 4, the placement hook's minor
 
+### test_widgets_linechart_math.lua (14)
+
+- chart math: the file attaches to the Widgets shell and records its minor
+- chart math: NiceTicks picks a 1-2-2.5-5 step and covers the data
+- chart math: NiceTicks widens a flat or empty range instead of dividing by zero
+- chart math: NiceTicks with integer=true never steps below 1
+- chart math: NiceTicks handles a range that crosses zero
+- chart math: Downsample keeps at most one point per 2px and both endpoints
+- chart math: Downsample hands a series that already fits back untouched
+- chart math: Downsample keeps a one-point spike
+- chart math: Budget never answers fewer than three points
+- chart math: TimeTicks lands day steps on local midnight
+- chart math: TimeTicks uses hour steps inside one day
+- chart math: TimeTicks answers nothing for an empty span
+- chart math: NearestIndex snaps to the closest x and clamps at the ends
+- chart math: Dashes cuts a segment into dash-gap pieces along its length
+
 ### test_widgets_reorder.lua (7)
 
 - reorder: a host OnUpdate on a row frame survives a drag start and end
@@ -2310,6 +2327,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_draghandle_place.lua | 10 |
+| test_widgets_linechart_math.lua | 14 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
@@ -2376,4 +2394,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **2030** |
+| **Total** | **2044** |

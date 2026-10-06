@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 12.1.4
+# `LibKa0s-Widgets-1.0` — version 12.1.4.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,12 +8,37 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** |
-| Shipped in | v1.68.0 |
-| Status | Superseded |
-| Supersedes | [version 12.1.3](./version-12.1.3-docs.md) — no tooltip placement hook |
-| Superseded by | [version 12.1.4.1](./version-12.1.4.1-docs.md) — `WidgetsLineChart.lua`: `LINE_CHART` and `ChartMath` |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4 }` |
+| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **1** |
+| Shipped in | v1.69.0 |
+| Status | **Current** |
+| Supersedes | [version 12.1.4](./version-12.1.4-docs.md) — no line chart |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 1 }` |
+
+## What changed at 12.1.4.1
+
+**A line chart, in a new file** (`WidgetsLineChart.lua`, minor **1**). `Widgets.lua` stays at
+**12**, `WidgetsReorder.lua` at **1** and `WidgetsDragHandle.lua` at **4**; the version key gains a
+fourth component and becomes 12.1.4.1. No existing member, field or method moves.
+
+- **A secondary file paired on the shell's minor**, exactly as `WidgetsDragHandle.lua` is. It records
+  `lib.__chartMinor` and `lib.__chartShellMinor`, and steps aside only when both its own minor is
+  already met and the shell it would attach to is the shell it attached to before, so a chart from
+  one vendored copy cannot sit beside a shell from another without saying so.
+- **What this version publishes** is the chart's chrome and its math: `lib.LINE_CHART` and
+  `lib.ChartMath`, both **Since 1**. Everything the chart decides without a frame (the tick ladder,
+  the thinning, the time labels, the nearest x, the dash cutting) is pinned headless by
+  `tests/test_widgets_linechart_math.lua`. See *The line chart* below.
+- **Why it is not a major of its own.** A new major costs a setup seam in every consumer, and only
+  one draws a chart today.
+- **One consumer at release.** `library-stack-§7` asks two or more consumers of the same semantics
+  before a surface is promoted into a Ka0s-owned library; this one has one, LootHistory's Timeline.
+  The owner ruled on 2026-10-06 to build it here from the start (LootHistory's timeline-ledger
+  spec, F3), and the gap is recorded as a row in this repo's `CLAUDE.md` → `## Documented
+  deviations`, with its re-check trigger.
+
+**What a host must change: nothing.** A host that draws no chart owes nothing; the new members are
+`nil` on an older copy, so a host that does draw one checks for them first.
 
 ## What changed at 12.1.4
 
@@ -904,6 +929,98 @@ already vendored and loaded in both addons, so adoption is one
 `LibStub("LibKa0s-Widgets-1.0", true)` at the module that draws a strip, plus a nil-tolerant
 fallback — and the honest fallback is that a build with no library draws no handle.
 
+## The line chart
+
+`WidgetsLineChart.lua`, **Since 1**. One file of the Widgets major, paired on the shell's minor
+(see *What changed at 12.1.4.1*). This version publishes the chart's chrome constants and its pure
+math; nothing in this section needs a frame, a client or a geometry stub.
+
+### `lib.LINE_CHART`
+
+The chart's published chrome. Read it, never restate it: a host that lines anything up with the plot
+reads the paddings here, so a later minor that moves them moves the host too. Every field is
+**Since 1**.
+
+| Field | Value | Meaning |
+|---|---|---|
+| `PAD_LEFT` | `52` | Pixels between the chart's left edge and the plot, room for the y labels. |
+| `PAD_RIGHT` | `8` | Pixels between the plot and the chart's right edge. |
+| `PAD_TOP` | `8` | Pixels between the chart's top edge and the plot. |
+| `PAD_BOTTOM` | `18` | Pixels between the plot and the chart's bottom edge, room for the x labels. |
+| `PX_PER_POINT` | `2` | The thinning budget: at most one drawn point per this many plot pixels (`ChartMath.Budget`). |
+| `DASH` | `4` | Default dash length in pixels (`ChartMath.Dashes`). |
+| `GAP` | `3` | Default gap between dashes in pixels (`ChartMath.Dashes`). |
+| `Y_TICKS` | `5` | Default target tick count for `ChartMath.NiceTicks`. |
+| `X_TICKS` | `6` | Default tick budget for `ChartMath.TimeTicks`. |
+| `LABEL_GAP` | `4` | Pixels between an axis and its labels. |
+| `AXIS` | `{ 0.45, 0.45, 0.5, 0.8 }` | RGBA of the axis lines. |
+| `GRID` | `{ 1, 1, 1, 0.07 }` | RGBA of the horizontal grid lines. |
+| `CROSSHAIR` | `{ 1, 1, 1, 0.35 }` | RGBA of the hover crosshair. |
+| `MARKER` | `{ 0.8, 0.8, 0.8, 0.6 }` | RGBA of a dashed vertical marker. |
+| `LINE` | `{ 0.4, 0.6, 0.95, 1 }` | RGBA of a series that names no color of its own. |
+
+### `lib.ChartMath`
+
+Six pure functions, every one **Since 1**. They read `lib.LINE_CHART` for their defaults and the
+client's `date` and `time` for the time axis, and nothing else.
+
+#### `ChartMath.NiceTicks(lo, hi, maxTicks, integer)` → `ticks, niceLo, niceHi, step`
+
+The y axis. Picks a step from the 1 / 2 / 2.5 / 5 / 10 ladder (times a power of ten) that divides
+`hi - lo` into at most about `maxTicks` intervals (default `LINE_CHART.Y_TICKS`), widens the range
+outward to multiples of that step, and returns the ticks from `niceLo` to `niceHi` inclusive.
+
+- `0, 97, 5` answers step 20 over 0..100 (six ticks); `13, 47, 5` answers step 10 over 10..50;
+  `-30, 70, 5` answers step 20 over -40..80. A range that crosses zero is covered on both sides.
+- A `nil` bound reads as 0, and swapped bounds are swapped back.
+- **A flat range is widened, never divided by zero.** A positive flat value is drawn from 0 (`5, 5`
+  answers 0..5), a negative one up to 0, and an all-zero one (or both `nil`) over 0..1.
+- `integer = true` never steps below 1 (`0, 2, 5` steps 0.5 without it and 1 with it), for a count
+  that has no fractions.
+
+#### `ChartMath.Budget(plotWidth)` → `maxPoints`
+
+`max(3, floor(plotWidth / LINE_CHART.PX_PER_POINT))`: at most one point per two pixels of plot. A
+`nil` or zero width answers 3, never fewer.
+
+#### `ChartMath.Downsample(points, maxPoints)` → `points`
+
+Thins a series for drawing with Largest-Triangle-Three-Buckets. `points` is an array of `{ x =, y = }`
+sorted by `x`. The answer holds exactly `maxPoints` of the input's own point tables, in order.
+
+- **The input table itself comes back**, with no copy, when it already fits (`maxPoints >= #points`)
+  or when `maxPoints` is under 3.
+- The first and the last point always survive, and `x` stays strictly increasing when the input's is.
+- **A one-point spike survives.** Each bucket keeps the point that spans the largest triangle with
+  its neighbors, rather than an average or every Nth point, because a spike in a balance is what a
+  player is looking for.
+
+#### `ChartMath.TimeTicks(xMin, xMax, maxTicks)` → `ticks, step`
+
+The time axis, in epoch seconds. Picks the first step from the ladder 1 h, 3 h, 6 h, 12 h, 1 d,
+2 d, 7 d, 14 d, 30 d, 91 d, 182 d, 365 d that fits the span in `maxTicks` (default
+`LINE_CHART.X_TICKS`) intervals, and answers the ticks inside `[xMin, xMax]`, at most `maxTicks + 1`
+of them.
+
+- **Day steps land on local midnight**, the first one at or after `xMin`. Each next tick re-anchors
+  on midnight, with a two-hour nudge, so a 23- or 25-hour day (a daylight-saving change) cannot walk
+  the labels off midnight. Thirty days at 6 ticks steps 7 days.
+- Hour steps sit on multiples of the step counted from local midnight: one day at 6 ticks steps 6
+  hours, at 00:00, 06:00, 12:00, 18:00 and the next 00:00.
+- An empty or inverted span, or a `nil` bound, answers an empty table and a `nil` step.
+
+#### `ChartMath.NearestIndex(xs, x)` → `index` or `nil`
+
+The index in the sorted array `xs` whose value is nearest `x`, by binary search. Clamps to 1 below
+the first value and to `#xs` above the last; an exact tie between two neighbors picks the lower
+index. An empty `xs` answers `nil`.
+
+#### `ChartMath.Dashes(x1, y1, x2, y2, dash, gap)` → `{ { x1, y1, x2, y2 }, ... }`
+
+Cuts the segment from `(x1, y1)` to `(x2, y2)` into dashes of `dash` pixels separated by `gap`
+pixels along its length (defaults `LINE_CHART.DASH` and `LINE_CHART.GAP`), any direction. The last
+dash is clipped at the segment's end. A zero-length segment has no dashes and answers an empty table.
+
 ## Degraded
 
 **With the major absent there is no reorder handle, no row box and — from this version — no drag
@@ -915,7 +1032,8 @@ With `LibKa0s-Widgets-1.0` absent — no vendored copy, or a copy whose `NEEDS_C
 `LibKa0s-Core-1.0` does not meet — `LibStub("LibKa0s-Widgets-1.0", true)` answers `nil`, exactly as
 for any other major. The secondary files cannot half-attach: each is paired on the shell's minor,
 and one that is missing leaves only its own members `nil` (`ReorderList` and `ROW_BOX` without
-`WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`). The host must have a plan for `nil`
+`WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`, `LINE_CHART` and `ChartMath` without
+`WidgetsLineChart.lua`). The host must have a plan for `nil`
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
 non-click close path must itself become a no-op alongside the rest of the degraded surface. The same
@@ -954,10 +1072,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 12.1.4.1
-
-**Copy the folder whole. Nothing a host calls moves; a host that draws no chart owes nothing.** The
-next version is key 12.1.4.1: `Widgets.lua` 12, `WidgetsReorder.lua` 1, `WidgetsDragHandle.lua` 4
-and a new file, `WidgetsLineChart.lua` 1, paired on the shell's minor, which publishes
-`lib.LINE_CHART` and `lib.ChartMath`. See [version 12.1.4.1](./version-12.1.4.1-docs.md).
