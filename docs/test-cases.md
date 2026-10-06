@@ -569,6 +569,21 @@ badge and any count quoted in the docs must agree with it.
 - chart math: NearestIndex snaps to the closest x and clamps at the ends
 - chart math: Dashes cuts a segment into dash-gap pieces along its length
 
+### test_widgets_linechart.lua (12)
+
+- line chart: Render draws the axis, one grid rule per y tick and one line per segment
+- line chart: a second Render of the same data creates no new Line objects
+- line chart: a smaller render hides the leftovers instead of leaving them drawn
+- line chart: the plot never gets more than one point per 2px
+- line chart: a series maps its first point onto the plot's bottom-left corner
+- line chart: a dashed range draws dashes, an undashed series one line per segment
+- line chart: a marker inside the domain draws a dashed rule; outside it draws nothing
+- line chart: HoverAtPixel snaps to the nearest x and calls onHover once per change
+- line chart: OnLeave clears the hover the way ClearHover does
+- line chart: Clear hides every line
+- line chart: Render before SetData or at zero size draws nothing and does not raise
+- line chart: a one-point series still draws a visible mark
+
 ### test_widgets_reorder.lua (7)
 
 - reorder: a host OnUpdate on a row frame survives a drag start and end
@@ -2328,6 +2343,7 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_draghandle_place.lua | 10 |
 | test_widgets_linechart_math.lua | 14 |
+| test_widgets_linechart.lua | 12 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
@@ -2394,4 +2410,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **2044** |
+| **Total** | **2056** |

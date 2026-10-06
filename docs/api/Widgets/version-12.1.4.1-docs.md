@@ -25,10 +25,12 @@ fourth component and becomes 12.1.4.1. No existing member, field or method moves
   `lib.__chartMinor` and `lib.__chartShellMinor`, and steps aside only when both its own minor is
   already met and the shell it would attach to is the shell it attached to before, so a chart from
   one vendored copy cannot sit beside a shell from another without saying so.
-- **What this version publishes** is the chart's chrome and its math: `lib.LINE_CHART` and
-  `lib.ChartMath`, both **Since 1**. Everything the chart decides without a frame (the tick ladder,
-  the thinning, the time labels, the nearest x, the dash cutting) is pinned headless by
-  `tests/test_widgets_linechart_math.lua`. See *The line chart* below.
+- **What this version publishes** is the chart, its chrome and its math: `lib.LineChart`,
+  `lib.LINE_CHART` and `lib.ChartMath`, all **Since 1**. Everything the chart decides without a
+  frame (the tick ladder, the thinning, the time labels, the nearest x, the dash cutting) is pinned
+  headless by `tests/test_widgets_linechart_math.lua`; the drawn half (the pool, the mapping, the
+  dashes, the markers, the hover) by `tests/test_widgets_linechart.lua` on kit revision 37's Line
+  regions. See *The line chart* below.
 - **Why it is not a major of its own.** A new major costs a setup seam in every consumer, and only
   one draws a chart today.
 - **One consumer at release.** `library-stack-§7` asks two or more consumers of the same semantics
@@ -339,6 +341,7 @@ library's.
 | `CopyWindow(descriptor)` | **6** | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
 | `ReorderList(opts)` | **8** | Builds a drag-to-reorder controller for one render of a list. Returns the controller. See *The reorderable list*. |
+| `LineChart(parent, opts)` | `WidgetsLineChart` **1** | Builds one pooled line chart, a `Frame` parented to `parent`. Returns the chart. See *The line chart*. |
 | `MODULES` | 1 | `{ Widgets = <minor> }` — the live minor, and the value that picks this document. |
 
 ### `Dropdown(parent, width, opts)`
@@ -932,8 +935,8 @@ fallback — and the honest fallback is that a build with no library draws no ha
 ## The line chart
 
 `WidgetsLineChart.lua`, **Since 1**. One file of the Widgets major, paired on the shell's minor
-(see *What changed at 12.1.4.1*). This version publishes the chart's chrome constants and its pure
-math; nothing in this section needs a frame, a client or a geometry stub.
+(see *What changed at 12.1.4.1*). This version publishes the widget (`lib.LineChart`), its chrome
+constants and its pure math; the constants and the math need no frame, no client and no geometry stub.
 
 ### `lib.LINE_CHART`
 
@@ -1021,6 +1024,78 @@ Cuts the segment from `(x1, y1)` to `(x2, y2)` into dashes of `dash` pixels sepa
 pixels along its length (defaults `LINE_CHART.DASH` and `LINE_CHART.GAP`), any direction. The last
 dash is clipped at the segment's end. A zero-length segment has no dashes and answers an empty table.
 
+### `lib.LineChart(parent, opts)` → `chart`
+
+**Since 1.** Builds one line chart, a `Frame` parented to `parent`, and returns it. The chart draws
+nothing until the host hands it data (`SetData`) and a size (`Render`, or the frame's own size
+change). Every segment, grid rule, marker dash and the crosshair is a `Line` region on the chart
+frame; every axis label is a `FontString` on it.
+
+The crosshair is the chart's **first** `CreateLine`, made at construction and kept out of the pool,
+so the chart's lines in creation order are the crosshair, then the pool.
+
+### `opts`
+
+Read on every render and every hover, never written. Every field is optional and **Since 1**.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `font` | `"GameFontDisableSmall"` | FontObject name the axis labels are created with. Read when a label is first made, so a change reaches only labels the pool has not made yet. |
+| `onHover` | none | `onHover(chart, index, x)` when the hovered index changes, and `onHover(chart, nil, nil)` when a hover clears. `index` is into `data.hoverXs`, `x` is `hoverXs[index]`. The host draws its own tooltip. |
+| `formatY` | integer as-is, otherwise `%.2f` | `formatY(v) → string` for each y tick label. |
+| `formatX` | `date("%H:%M")` under a day step, otherwise `date("%d %b")` | `formatX(x, step) → string` for each x tick label; `step` is `ChartMath.TimeTicks`'s step in seconds. |
+
+### `data`
+
+What `chart:SetData(data)` takes. Every field is **Since 1**.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `xMin`, `xMax` | required | The x domain, epoch seconds. Without both the chart draws nothing. |
+| `yMin`, `yMax` | the data's | The y range before `ChartMath.NiceTicks` widens it. Used only when both are given; otherwise the lowest and highest `y` across every series. |
+| `integer` | `false` | Passed to `NiceTicks`: the y step never goes below 1. |
+| `series` | `{}` | Array of series, drawn in order (a later series over an earlier one). |
+| `series[i].points` | `{}` | Array of `{ x =, y = }`, sorted by `x`. Thinned with `ChartMath.Downsample` to `ChartMath.Budget(plot width)` before drawing. |
+| `series[i].color` | `LINE_CHART.LINE` | RGBA array; a missing alpha reads as 1. |
+| `series[i].thickness` | `1.5` | Line thickness in pixels. |
+| `series[i].dashFrom`, `series[i].dashTo` | none | The x range drawn dashed. `dashTo` absent means "to the end". |
+| `markers` | none | Array of vertical rules: `{ x =, color = LINE_CHART.MARKER, dashed = true }`. `dashed = false` draws a solid rule. |
+| `hoverXs` | none | Sorted array of the x values a hover can snap to. Without it the chart never hovers. |
+
+### Instance methods
+
+| Method | Since | Meaning |
+|---|---|---|
+| `chart:SetData(data)` | 1 | Stores the reference. Does not draw. |
+| `chart:Render(w, h)` | 1 | Draws `data` at `w` × `h` (default `GetWidth()` / `GetHeight()`), reusing every Line and label from the last render and hiding what this one did not use. A zero size, or no data, draws nothing. |
+| `chart:Clear()` | 1 | Forgets the data, clears the hover and hides every line and label. |
+| `chart:GetPlotRect()` | 1 | `left, bottom, width, height` of the plot in chart-local pixels (BOTTOMLEFT origin). `nil` before the first render that drew. |
+| `chart:XToPixel(x)` | 1 | Chart-local x pixel of a domain `x`. `0` before a render. |
+| `chart:YToPixel(y)` | 1 | Chart-local y pixel of a value `y`, on the widened tick range. `0` before a render. |
+| `chart:PixelToX(px)` | 1 | Domain `x` at chart-local pixel `px`, the inverse of `XToPixel`. |
+| `chart:HoverAtPixel(px)` | 1 | Snaps to the `hoverXs` entry nearest `PixelToX(px)` (`ChartMath.NearestIndex`), moves the crosshair there and answers the index; calls `opts.onHover` only when the index changed. `nil` with no render or no `hoverXs`. |
+| `chart:ClearHover()` | 1 | Hides the crosshair and, when a hover was up, calls `opts.onHover(chart, nil, nil)`. |
+| `chart:HoverIndex()` | 1 | The hovered index, or `nil`. |
+
+### Behavior a host must know
+
+- **Pooled by index.** A render hands out Lines and labels in order and hides the leftovers, so the
+  same data drawn twice creates no region and a smaller drawing leaves nothing stale. Regions are
+  never destroyed in the client; the pool only grows to the largest drawing the chart has made.
+- **`SetData` stores a reference.** The host must not mutate `data` between `SetData` and `Render`
+  (or a resize, which re-renders); build a new table instead.
+- **The y range is the data's** unless both `yMin` and `yMax` are given, then widened outward to
+  nice ticks by `ChartMath.NiceTicks`; `integer` keeps the y step at 1 or more.
+- **A segment is dashed when its midpoint is in `[dashFrom, dashTo]`.** The host marks the part of
+  a line it wants read as provisional; a single-point series draws a 2px tick at the point.
+- **Markers outside `[xMin, xMax]` draw nothing.**
+- **`onHover` fires only on an index change**, and with `nil` when the hover clears: `ClearHover`,
+  `OnLeave`, `OnHide` and `Clear` all clear it.
+- **Scripts the chart owns:** `OnEnter` arms an `OnUpdate` that reads `GetCursorPosition` and calls
+  `HoverAtPixel`; `OnLeave` and `OnHide` disarm it and clear the hover; `OnSizeChanged` re-renders at
+  the new size. A host that replaces one of them takes over that job.
+- **The chart is `EnableMouse(true)`**, so it takes the mouse over its whole rectangle.
+
 ## Degraded
 
 **With the major absent there is no reorder handle, no row box and — from this version — no drag
@@ -1032,7 +1107,7 @@ With `LibKa0s-Widgets-1.0` absent — no vendored copy, or a copy whose `NEEDS_C
 `LibKa0s-Core-1.0` does not meet — `LibStub("LibKa0s-Widgets-1.0", true)` answers `nil`, exactly as
 for any other major. The secondary files cannot half-attach: each is paired on the shell's minor,
 and one that is missing leaves only its own members `nil` (`ReorderList` and `ROW_BOX` without
-`WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`, `LINE_CHART` and `ChartMath` without
+`WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`, `LineChart`, `LINE_CHART` and `ChartMath` without
 `WidgetsLineChart.lua`). The host must have a plan for `nil`
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
@@ -1040,6 +1115,10 @@ non-click close path must itself become a no-op alongside the rest of the degrad
 holds for `CopyWindow`: with the major absent there is nothing to call, and with the major present in
 a host that has no UI at all the call answers `nil` rather than raising — a host must be ready for a
 `nil` handle and simply not offer the export.
+
+A host with no Widgets copy, or one without `WidgetsLineChart.lua`, gets no chart: `LineChart` is
+`nil` and there is nothing to draw with. LootHistory's `NS.MakeLineChart` seam answers `nil` in that
+case and its Timeline tab says why, rather than drawing a host-side chart.
 
 ## Cross-consumer smoke check — recorded, NOT run
 

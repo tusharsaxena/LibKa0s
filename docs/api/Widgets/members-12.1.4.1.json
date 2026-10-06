@@ -16,6 +16,7 @@
     { "name": "DragHandle", "kind": "function" },
     { "name": "Dropdown", "kind": "function" },
     { "name": "LINE_CHART", "kind": "table" },
+    { "name": "LineChart", "kind": "function" },
     { "name": "ROW_BOX", "kind": "table" },
     { "name": "ReorderList", "kind": "function" }
   ]

@@ -14,13 +14,18 @@ cannot drift. Release order is in
 
 Versions in this release: **WidgetsLineChart minor 1**, a new file (`LibKa0s-Widgets-1.0` key 12.1.4.1), and **test kit revision 37**.
 
-### WidgetsLineChart minor 1: the line chart's math
+### WidgetsLineChart minor 1: the line chart
 
 - **A new secondary file of `LibKa0s-Widgets-1.0`**, paired on the shell's minor like
   `WidgetsDragHandle.lua`. `Widgets.lua` stays at minor 12; the key is 12.1.4.1.
 - **`lib.LINE_CHART`** (chrome constants) and **`lib.ChartMath`**: `NiceTicks`, `Budget`,
   `Downsample` (LTTB, at most one point per 2px, endpoints kept), `TimeTicks` (day steps on local
   midnight), `NearestIndex`, `Dashes`. Cases: `tests/test_widgets_linechart_math.lua`.
+- **`lib.LineChart(parent, opts)`**: the widget. Series, grid rules, dashed markers, dashed ranges
+  and a hover crosshair drawn as Line regions pooled by index (a second render creates nothing, a
+  smaller one hides the leftovers), LTTB-thinned to one point per 2px, auto-scaled y, time x axis;
+  `opts.onHover` fires on an index change and with `nil` on leave/hide; the chart re-renders on
+  `OnSizeChanged`. Cases: `tests/test_widgets_linechart.lua`.
 - **One consumer at release** (LootHistory). `library-stack-§7` asks two; the owner's ruling to
   build it here anyway is a row in `CLAUDE.md` → `## Documented deviations`.
 

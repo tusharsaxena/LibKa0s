@@ -214,3 +214,250 @@ function Math.Dashes(x1, y1, x2, y2, dash, gap)
   end
   return out
 end
+
+-- -- the widget ----------------------------------------------------------------------------------
+--
+-- POOLED BY INDEX. A render hands out Lines and labels from two arrays in order and hides whatever
+-- it did not reach, so the same data drawn twice creates nothing new and a smaller drawing leaves
+-- nothing stale on screen. Regions are never destroyed in the client, so a chart that created per
+-- render would grow for the life of the session.
+
+local function plotRect(w, h)
+  return LC.PAD_LEFT, LC.PAD_BOTTOM,
+    max(0, w - LC.PAD_LEFT - LC.PAD_RIGHT), max(0, h - LC.PAD_TOP - LC.PAD_BOTTOM)
+end
+
+local function acquireLine(c)
+  c.__lineUsed = c.__lineUsed + 1
+  local l = c.__linePool[c.__lineUsed]
+  if not l then
+    l = c:CreateLine(nil, "ARTWORK")
+    c.__linePool[c.__lineUsed] = l
+  end
+  l:Show()
+  return l
+end
+
+local function seg(c, x1, y1, x2, y2, color, thickness)
+  local l = acquireLine(c)
+  l:SetThickness(thickness or 1)
+  l:SetColorTexture(color[1], color[2], color[3], color[4] or 1)
+  l:SetStartPoint("BOTTOMLEFT", c, x1, y1)
+  l:SetEndPoint("BOTTOMLEFT", c, x2, y2)
+  return l
+end
+
+local function dashed(c, x1, y1, x2, y2, color, thickness)
+  for _, d in ipairs(Math.Dashes(x1, y1, x2, y2)) do
+    seg(c, d[1], d[2], d[3], d[4], color, thickness)
+  end
+end
+
+local function acquireLabel(c)
+  c.__labelUsed = c.__labelUsed + 1
+  local fs = c.__labelPool[c.__labelUsed]
+  if not fs then
+    -- Created WITH a template: a FontString with no face raises on its first SetText in the client.
+    fs = c:CreateFontString(nil, "OVERLAY", c.__opts.font or "GameFontDisableSmall")
+    c.__labelPool[c.__labelUsed] = fs
+  end
+  fs:ClearAllPoints()
+  fs:Show()
+  return fs
+end
+
+local function hideUnused(c)
+  for i = c.__lineUsed + 1, #c.__linePool do c.__linePool[i]:Hide() end
+  for i = c.__labelUsed + 1, #c.__labelPool do c.__labelPool[i]:Hide() end
+end
+
+local function dataRange(series)
+  local lo, hi
+  for _, s in ipairs(series or {}) do
+    for _, p in ipairs(s.points or {}) do
+      if not lo or p.y < lo then lo = p.y end
+      if not hi or p.y > hi then hi = p.y end
+    end
+  end
+  return lo, hi
+end
+
+local function xToPixel(s, x)
+  if s.x1 == s.x0 then return s.left end
+  return s.left + (x - s.x0) / (s.x1 - s.x0) * s.w
+end
+
+local function yToPixel(s, y)
+  if s.y1 == s.y0 then return s.bottom end
+  return s.bottom + (y - s.y0) / (s.y1 - s.y0) * s.h
+end
+
+local function defaultFormatY(v)
+  if v == floor(v) then return tostring(v) end
+  return string.format("%.2f", v)
+end
+
+local function defaultFormatX(x, step)
+  if step and step < DAY then return date("%H:%M", x) end
+  return date("%d %b", x)
+end
+
+local function drawXAxis(c, s)
+  seg(c, s.left, s.bottom, s.left + s.w, s.bottom, LC.AXIS, 1)
+  local ticks, step = Math.TimeTicks(s.x0, s.x1, LC.X_TICKS)
+  local fmt = c.__opts.formatX or defaultFormatX
+  for _, t in ipairs(ticks) do
+    local fs = acquireLabel(c)
+    fs:SetPoint("TOP", c, "BOTTOMLEFT", xToPixel(s, t), s.bottom - 2)
+    fs:SetText(fmt(t, step))
+  end
+end
+
+local function drawYAxis(c, s, ticks)
+  local fmt = c.__opts.formatY or defaultFormatY
+  for _, t in ipairs(ticks) do
+    local y = yToPixel(s, t)
+    seg(c, s.left, y, s.left + s.w, y, LC.GRID, 1)
+    local fs = acquireLabel(c)
+    fs:SetPoint("RIGHT", c, "BOTTOMLEFT", s.left - LC.LABEL_GAP, y)
+    fs:SetText(fmt(t))
+  end
+end
+
+local function drawMarkers(c, s, markers)
+  for _, m in ipairs(markers or {}) do
+    if m.x and m.x >= s.x0 and m.x <= s.x1 then
+      local x = xToPixel(s, m.x)
+      if m.dashed == false then
+        seg(c, x, s.bottom, x, s.bottom + s.h, m.color or LC.MARKER, 1)
+      else
+        dashed(c, x, s.bottom, x, s.bottom + s.h, m.color or LC.MARKER, 1)
+      end
+    end
+  end
+end
+
+-- A segment is drawn dashed when its midpoint lies in the series' dashed range. The host uses the
+-- range for the part of a line it wants read as provisional.
+local function inDash(sr, xa, xb)
+  if not sr.dashFrom then return false end
+  local mid = (xa + xb) / 2
+  return mid >= sr.dashFrom and mid <= (sr.dashTo or math.huge)
+end
+
+local function drawSeries(c, s, sr)
+  local pts = Math.Downsample(sr.points or {}, Math.Budget(s.w))
+  local color, th = sr.color or LC.LINE, sr.thickness or 1.5
+  if #pts == 1 then
+    local x, y = xToPixel(s, pts[1].x), yToPixel(s, pts[1].y)
+    seg(c, x - 1, y, x + 1, y, color, th)
+    return
+  end
+  for i = 2, #pts do
+    local a, b = pts[i - 1], pts[i]
+    local x1, y1 = xToPixel(s, a.x), yToPixel(s, a.y)
+    local x2, y2 = xToPixel(s, b.x), yToPixel(s, b.y)
+    if inDash(sr, a.x, b.x) then dashed(c, x1, y1, x2, y2, color, th) else seg(c, x1, y1, x2, y2, color, th) end
+  end
+end
+
+local function scaleFor(d, w, h)
+  local left, bottom, pw, ph = plotRect(w, h)
+  local lo, hi = d.yMin, d.yMax
+  if lo == nil or hi == nil then lo, hi = dataRange(d.series) end
+  local ticks, y0, y1 = Math.NiceTicks(lo, hi, LC.Y_TICKS, d.integer)
+  return { x0 = d.xMin, x1 = d.xMax, y0 = y0, y1 = y1, left = left, bottom = bottom, w = pw, h = ph }, ticks
+end
+
+local function render(c, w, h)
+  c.__lineUsed, c.__labelUsed = 0, 0
+  local d = c.__data
+  if d and d.xMin and d.xMax and w > 0 and h > 0 then
+    local s, ticks = scaleFor(d, w, h)
+    c.__scale = s
+    drawXAxis(c, s)
+    drawYAxis(c, s, ticks)
+    drawMarkers(c, s, d.markers)
+    for _, sr in ipairs(d.series or {}) do drawSeries(c, s, sr) end
+  else
+    c.__scale = nil
+  end
+  hideUnused(c)
+end
+
+local function moveCross(c, x)
+  local s = c.__scale
+  local px = xToPixel(s, x)
+  c.__cross:SetStartPoint("BOTTOMLEFT", c, px, s.bottom)
+  c.__cross:SetEndPoint("BOTTOMLEFT", c, px, s.bottom + s.h)
+  c.__cross:Show()
+end
+
+-- The pointer read, armed only while the cursor is over the chart. Every value is type-checked
+-- because a headless frame answers its own table for any getter it does not model.
+local function hoverTick(self)
+  if not GetCursorPosition then return end
+  local cx = GetCursorPosition()
+  local scale, left = self:GetEffectiveScale(), self:GetLeft()
+  if type(cx) ~= "number" or type(scale) ~= "number" or type(left) ~= "number" or scale == 0 then return end
+  self:HoverAtPixel(cx / scale - left)
+end
+
+local function attachMethods(c)
+  function c:SetData(data) self.__data = data end
+  function c:Render(w, h) render(self, w or self:GetWidth() or 0, h or self:GetHeight() or 0) end
+  function c:Clear() self.__data = nil; self:ClearHover(); render(self, 0, 0) end
+  function c:GetPlotRect()
+    local s = self.__scale
+    if not s then return nil end
+    return s.left, s.bottom, s.w, s.h
+  end
+  function c:XToPixel(x) return self.__scale and xToPixel(self.__scale, x) or 0 end
+  function c:YToPixel(y) return self.__scale and yToPixel(self.__scale, y) or 0 end
+  function c:PixelToX(px)
+    local s = self.__scale
+    if not s or s.w == 0 then return s and s.x0 or 0 end
+    return s.x0 + (px - s.left) / s.w * (s.x1 - s.x0)
+  end
+  function c:HoverIndex() return self.__hoverIndex end
+  function c:HoverAtPixel(px)
+    local d, s = self.__data, self.__scale
+    local xs = d and d.hoverXs
+    if not (s and xs and #xs > 0) then return nil end
+    local i = Math.NearestIndex(xs, self:PixelToX(px))
+    if i ~= self.__hoverIndex then
+      self.__hoverIndex = i
+      moveCross(self, xs[i])
+      if self.__opts.onHover then self.__opts.onHover(self, i, xs[i]) end
+    end
+    return i
+  end
+  function c:ClearHover()
+    self.__cross:Hide()
+    if self.__hoverIndex == nil then return end
+    self.__hoverIndex = nil
+    if self.__opts.onHover then self.__opts.onHover(self, nil, nil) end
+  end
+end
+
+--- One line chart, parented to `parent`. See the API document for `opts` and `data`.
+function lib.LineChart(parent, opts)
+  local c = CreateFrame("Frame", nil, parent)
+  c.__opts = opts or {}
+  c.__linePool, c.__lineUsed, c.__labelPool, c.__labelUsed = {}, 0, {}, 0
+  -- The crosshair is the chart's FIRST CreateLine, made here before any render draws from the pool.
+  -- It lives outside the pool so a render never hands it out or hides it mid-hover, and suites
+  -- (and any host that inspects the chart's lines) rely on that order: keep it first.
+  local cross = c:CreateLine(nil, "OVERLAY")
+  cross:SetThickness(1)
+  cross:SetColorTexture(LC.CROSSHAIR[1], LC.CROSSHAIR[2], LC.CROSSHAIR[3], LC.CROSSHAIR[4])
+  cross:Hide()
+  c.__cross = cross
+  attachMethods(c)
+  c:EnableMouse(true)
+  c:SetScript("OnEnter", function(self) self:SetScript("OnUpdate", hoverTick) end)
+  c:SetScript("OnLeave", function(self) self:SetScript("OnUpdate", nil); self:ClearHover() end)
+  c:SetScript("OnHide", function(self) self:SetScript("OnUpdate", nil); self:ClearHover() end)
+  c:SetScript("OnSizeChanged", function(self, w, h) self:Render(w, h) end)
+  return c
+end
