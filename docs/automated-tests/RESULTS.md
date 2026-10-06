@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261006-134107`](20261006-134107/) | `37d4916` | clean | 1.68.1 → 1.69.0 | 0/0 | 151 | 2054/2/2056 | skip | 41483 | 6243 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261004-143758`](20261004-143758/) | `84cd24a` | clean | 1.68.0 → 1.68.1 | 0/0 | 146 | 2023/2/2025 | skip | 40807 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261002-232612`](20261002-232612/) | `6ffa4ca` | clean | 1.68.0 → 1.68.0 | 0/0 | 146 | 2023/2/2025 | skip | 40807 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261002-231513`](20261002-231513/) | `3cd411d` | clean | 1.67.0 → 1.68.0 | 0/0 | 146 | 2023/2/2025 | skip | 40807 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
@@ -135,19 +136,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**2025 cases** — 2023 passed, 0 failed, 2 skipped. The generated inventory
-[`20261004-143758/test-cases.md`](20261004-143758/test-cases.md) is the authority on which cases existed at this run;
+**2056 cases** — 2054 passed, 0 failed, 2 skipped. The generated inventory
+[`20261006-134107/test-cases.md`](20261006-134107/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-The count has been **flat at 2025 across the last 4 runs**. A suite that stopped growing while
-the addon did is a coverage gap, and it is the one thing the table above cannot show.
+Moved **2025 → 2056** since the previous run.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 146 files** (`luacheck .`).
+**0 warnings / 0 errors over 151 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -164,7 +164,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261004-143758`](20261004-143758/) — **this run's measurement, not its diff.** Max CCN **15** across 6132
+Current as of [`20261006-134107`](20261006-134107/) — **this run's measurement, not its diff.** Max CCN **15** across 6243
 functions, **0** of them warned on; 6 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
@@ -189,7 +189,7 @@ None.
 | 1000–1500 (on notice) | `LibKa0s/OptionsIds.lua` | 1359 | **Accepted 2026-09-26 (`LK-ATS-01`, issue [`#32`](https://github.com/tusharsaxena/LibKa0s/issues/32); `CLAUDE.md` § *Files over the 1500-line cap*, the id peel's rulings).** New file, moved unchanged out of `LibKa0s/OptionsWidgets.lua`: id resolution, suggestions and the input. **Re-check trigger: 1450 lines**; the suggestion half (the module-scope suggestions-while-typing block and the dropdown members) is the seam, to a file of its own. |
 | 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1349 | **Peeled 2026-09-26 (`LK-ATS-03`), then accepted at 1293** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). The 2026-09-24 *Accepted* ("no second seam inside it") had outlived its shelf life (`ATS-03`, `ATS-06`); the combat lock's page chrome was that seam, and moved unchanged to `LibKa0s/OptionsCombat.lua` (249) at OptionsTabs minor 6. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1400 lines**; the tabbed page is the next seam. |
 | 1000–1500 (on notice) | `LibKa0s/OptionsWidgets.lua` | 1444 | **Accepted 2026-09-26 (`LK-ATS-01`, issue [`#32`](https://github.com/tusharsaxena/LibKa0s/issues/32); `CLAUDE.md` § *Files over the 1500-line cap*, the id peel's rulings).** New to the band: it came off the census (3852) when the id surface moved out to `LibKa0s/OptionsIds.lua` and `LibKa0s/OptionsIdList.lua`. What is left is the makers, the choice grid, the landing page and the flow engine. **Re-check trigger: 1450 lines, or the next maker added**; the flow engine (`flowRows`, the switched sections) is the seam at either. |
-| 1000–1500 (on notice) | `testkit/mock_base.lua` | 1456 | **On notice, re-read 2026-09-30 (`DL-LIB-01`): 44 lines from breach.** 1446 → 1454 at kit revision 26 (`testkit/mock_events.lua`'s load, hook and install lines, and the shown-by-default flip's comment), 1454 → 1456 at kit revision 33 (`testkit/mock_resize.lua`'s load and decorate lines; the recorders themselves went to that file, following the rule below). Kit revisions 20, 22, 26 and 33 each put a family of fakes in its own file (`mock_ids.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`) rather than appending, and that is the rule for the next one. The peel seam is the Ace fakes, the CallbackHandler registry through AceGUI. **Re-check trigger: 1490 lines, or any kit change that adds more than 30 lines here**; either peels first or opens an issue naming that seam before it crosses. |
+| 1000–1500 (on notice) | `testkit/mock_base.lua` | 1458 | **On notice, re-read 2026-09-30 (`DL-LIB-01`): 44 lines from breach.** 1446 → 1454 at kit revision 26 (`testkit/mock_events.lua`'s load, hook and install lines, and the shown-by-default flip's comment), 1454 → 1456 at kit revision 33 (`testkit/mock_resize.lua`'s load and decorate lines; the recorders themselves went to that file, following the rule below), 1456 → 1458 at kit revision 37 (`testkit/mock_lines.lua`'s load and decorate lines, the same shape). Kit revisions 20, 22, 26, 33 and 37 each put a family of fakes in its own file (`mock_ids.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`, `mock_lines.lua`) rather than appending, and that is the rule for the next one. The peel seam is the Ace fakes, the CallbackHandler registry through AceGUI. **Re-check trigger: 1490 lines, or any kit change that adds more than 30 lines here**; either peels first or opens an issue naming that seam before it crosses. |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of
 `t.k = rec.k or D.k` defaulting lines scores high with no visible branching at all: a large CCN

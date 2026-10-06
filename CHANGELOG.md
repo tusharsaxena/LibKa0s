@@ -55,6 +55,10 @@ README's standards pointer does not move.
   recount in WowAddonStandards for the thirty-third file. It is recorded as a follow-up and is not
   part of this release.
 
+Release gate (`docs/automated-tests/20261006-134107/`): lint pass, 0/0 in 151 files;
+tests pass, 2056 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.68.1 — 2026-10-04
 
 Versions in this release: **test kit revision 36**. Every library file is unchanged from v1.68.0:
