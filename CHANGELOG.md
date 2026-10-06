@@ -12,7 +12,14 @@ cannot drift. Release order is in
 
 ## v1.69.0 — 2026-10-06
 
-Versions in this release: **WidgetsLineChart minor 1**, a new file (`LibKa0s-Widgets-1.0` key 12.1.4.1), and **test kit revision 37**.
+Versions in this release: **WidgetsLineChart minor 1**, a new file (`LibKa0s-Widgets-1.0` key
+12.1.4.1), and **test kit revision 37**. Every other file is unchanged from v1.68.1: `Core` 10, `Env`
+1, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 19.1,
+`DebugLog` key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6;
+within Widgets, `Widgets` stays at 12, `WidgetsReorder` at 1 and `WidgetsDragHandle` at 4. No
+`NEEDS_*` floor rises and no major is added; one payload file is added, so the library is now
+**fifteen majors across thirty-three files**. Built to standard v2.76.0, as v1.68.1 was; the
+README's standards pointer does not move.
 
 ### WidgetsLineChart minor 1: the line chart
 
@@ -36,7 +43,17 @@ Versions in this release: **WidgetsLineChart minor 1**, a new file (`LibKa0s-Wid
   method a Line does not have raises. `mock_base.lua` loads it (two lines).
 - `Kit.VERSION` is 37. Documented in [`docs/api/testkit/version-37-docs.md`](docs/api/testkit/version-37-docs.md);
   revision 36 is Superseded.
-- **What a consumer owes:** the whole-folder copy of both payloads and the provenance line.
+
+### What a consumer owes
+
+- **What a consumer owes:** the whole-folder copy of both payloads and the provenance line. The
+  owner's ruling is that **every consumer re-vendors** (S3), each on its own
+  `feat/2026-10-06-revendor-libka0s-v1.69.0` branch, and each runs its own suite: AuraMaster, KickCD
+  and MultiMeters model `CreateLine` in their own mocks. LootHistory is the one consumer that adopts
+  `LineChart`; the others take the bytes and nothing more.
+- **Upstream follow-up (S2):** the standard's `library-stack-§7` counts of majors and files need a
+  recount in WowAddonStandards for the thirty-third file. It is recorded as a follow-up and is not
+  part of this release.
 
 ## v1.68.1 — 2026-10-04
 
