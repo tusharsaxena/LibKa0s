@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 12.1.4.3.1
+# `LibKa0s-Widgets-1.0` — version 12.1.4.3.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,20 +8,22 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **1** |
+| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **2** |
 | Shipped in | v1.71.0 |
 | Status | **Current** |
-| Supersedes | [version 12.1.4.2.1](./version-12.1.4.2.1-docs.md) — chart segments not clipped to the plot; a re-render does not re-sync the hover |
+| Supersedes | [version 12.1.4.2.1](./version-12.1.4.2.1-docs.md) — chart segments not clipped to the plot; a re-render does not re-sync the hover; autocomplete hooks installed once per box |
 | Superseded by | — |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }` |
 
-## What changed at 12.1.4.3.1
+## What changed at 12.1.4.3.2
 
-**The chart clips what it draws to the plot, and re-syncs its hover on every render.**
-`WidgetsLineChart.lua` moves from **2** to **3**; `Widgets.lua` stays at **12**, `WidgetsReorder.lua`
-at **1**, `WidgetsDragHandle.lua` at **4** and `WidgetsAutocomplete.lua` at **1**, so the key is
-12.1.4.3.1. One member is added and none is removed or renamed. From LibKa0s's 2026-10-07 review
-(`LK-R-01`, `LK-R-03`, `LK-R-10`).
+**The chart clips what it draws to the plot and re-syncs its hover on every render, and the
+autocomplete can be re-hooked.** `WidgetsLineChart.lua` moves from **2** to **3** and
+`WidgetsAutocomplete.lua` from **1** to **2**; `Widgets.lua` stays at **12**, `WidgetsReorder.lua`
+at **1** and `WidgetsDragHandle.lua` at **4**, so the key is 12.1.4.3.2. One member is added and
+none is removed or renamed. From LibKa0s's 2026-10-07 review (`LK-R-01`, `LK-R-03`, `LK-R-10` for
+the chart; `LK-R-02`, `LK-R-07`, `LK-R-08`, `LK-R-09` for the autocomplete). The chart's half was
+briefly keyed 12.1.4.3.1 on the release branch; no release carried that key.
 
 - **Every series segment is clipped to the plot rectangle before it is drawn** (`WidgetsLineChart`
   **Since 3**). A host that pins `yMin`/`yMax` (or `xMin`/`xMax`) inside its data used to get a
@@ -44,9 +46,24 @@ at **1**, `WidgetsDragHandle.lua` at **4** and `WidgetsAutocomplete.lua` at **1*
   idempotent. Under 12.1.4.2.1 a pane resized under a resting cursor left the crosshair at the old
   size's pixel.
 - **The `formatX` default is documented as C-runtime English** (no behavior change). See *`opts`*.
+- **Calling `lib.Autocomplete` again re-installs the box's hooks** (`WidgetsAutocomplete`
+  **Since 2**). A host `SetScript` on a hooked script drops the hooks with the old script; under
+  minor 1 the hooks were installed once per box, so a re-call could not bring them back and the
+  list stayed dead (a replaced `OnTextChanged`) or stuck up (a replaced `OnEditFocusLost` or
+  `OnHide`). Every call now stamps the box with a new generation and installs a fresh set of hooks
+  that dispatch only while that generation is current, so the wrappers of an older call stay in
+  the chain but do nothing, and a re-call with no `SetScript` between never dispatches twice. The
+  set-scripts-first rule is now stated. See *Behavior a host must know* under *The autocomplete*.
+- **`opts.maxRows` is an integer** (**Since 2**). A fraction is floored, and one that floors below 1
+  falls back to `AUTOCOMPLETE.MAX_ROWS`. Under minor 1, `maxRows = 2.5` drew 2 rows in a list
+  2.5 rows tall.
+- **The list's backdrop is set once, when the list is built** (**Since 2**; no visible change). Its
+  border and background colors are still read from the box on every show, so a restyled box still
+  restyles its list.
 
 **What a host must change: nothing.** A host that called `ClearHover` before `SetData` may keep the
-call or drop it. A host that relied on a segment being drawn off the plot has nothing to rely on: it
+call or drop it. A host that sets its box's scripts before calling `lib.Autocomplete`, as both
+adopters do, sees no autocomplete change. A host that relied on a segment being drawn off the plot has nothing to rely on: it
 was drawn outside the chart's own rectangle.
 
 ## What changed at 12.1.4.2.1
@@ -404,7 +421,7 @@ library's.
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
 | `ReorderList(opts)` | **8** | Builds a drag-to-reorder controller for one render of a list. Returns the controller. See *The reorderable list*. |
 | `LineChart(parent, opts)` | `WidgetsLineChart` **1** (`opts.pxPerPoint` **Since 2**; clipping and the hover re-sync **Since 3**) | Builds one pooled line chart, a `Frame` parented to `parent`. Returns the chart. See *The line chart*. |
-| `Autocomplete(editBox, opts)` | `WidgetsAutocomplete` **1** | Hangs a suggestion list under `editBox`. Returns a handle, or `nil` with no client, a box that cannot be hooked, or no `opts.provider`. See *The autocomplete*. |
+| `Autocomplete(editBox, opts)` | `WidgetsAutocomplete` **1** (re-hook on every call, floored `maxRows` **Since 2**) | Hangs a suggestion list under `editBox`. Returns a handle, or `nil` with no client, a box that cannot be hooked, or no `opts.provider`. See *The autocomplete*. |
 | `AUTOCOMPLETE` | `WidgetsAutocomplete` **1** | The list's chrome and timing constants. See *The autocomplete*. |
 | `MODULES` | 1 | `{ Widgets = <minor> }` — the live minor, and the value that picks this document. |
 
@@ -1219,7 +1236,7 @@ version and no census has run since.
 
 ## The autocomplete
 
-**`WidgetsAutocomplete.lua`, minor 1.** A suggestion list that hangs directly under a host's
+**`WidgetsAutocomplete.lua`, minor 2.** A suggestion list that hangs directly under a host's
 `EditBox` and reads as part of it: the box's width, the box's own border and background, one row per
 suggestion with an optional icon and the suggestion's own color (an item's quality color, say). The
 host supplies what the rows say and what a pick does; the widget owns the list, the debounce, the
@@ -1231,7 +1248,7 @@ Read, never restated. Every field is **Since 1**.
 
 | Field | Value | Meaning |
 |---|---|---|
-| `MAX_ROWS` | `8` | Rows shown when `opts.maxRows` is absent. |
+| `MAX_ROWS` | `8` | Rows shown when `opts.maxRows` is absent, or floors below 1. |
 | `ROW_H` | `18` | Row height when `opts.rowHeight` is absent. |
 | `DEBOUNCE` | `0.15` | Seconds after the last keystroke before the provider is asked; also the floor for `opts.debounce`. |
 | `MIN_CHARS` | `1` | Trimmed characters the text needs before the provider is asked, when `opts.minChars` is absent. |
@@ -1249,7 +1266,8 @@ Read, never restated. Every field is **Since 1**.
 ### `lib.Autocomplete(editBox, opts)` → `handle`
 
 **Since 1.** Hooks `editBox` (never replaces a script it has) and answers a handle. The list frame is
-built on the first list that shows. Answers `nil` with no `CreateFrame`, an `editBox` without
+built on the first list that shows. **Since 2**, every call installs a fresh set of hooks and the
+older call's hooks go inert, so calling it again after a host `SetScript` restores the list. Answers `nil` with no `CreateFrame`, an `editBox` without
 `HookScript`, or no `opts.provider`.
 
 ### `opts`
@@ -1260,7 +1278,7 @@ Read when the handle is made. Every field is **Since 1**.
 |---|---|---|
 | `provider` | required | `provider(text) → { item, ... }`, asked `DEBOUNCE` after the last keystroke with the box's text as typed. An `item` is `{ text =, value =, color =, icon = }`: `text` is the row's label, `color` is `{ r, g, b }` or a table with `.r .g .b`, `icon` is a file id or path; `value` and any other field are the host's and come back untouched in `onPick`. A bare string reads as `{ text = string }`. `nil` or an empty table closes the list. |
 | `onPick` | none | `onPick(item)`, after the list has closed, with the item exactly as the provider answered it. The widget never writes the box's text; a host that wants the text replaced or cleared does it here. |
-| `maxRows` | `AUTOCOMPLETE.MAX_ROWS` | The most rows shown; the rest of the provider's answer is dropped. |
+| `maxRows` | `AUTOCOMPLETE.MAX_ROWS` | The most rows shown, an integer; the rest of the provider's answer is dropped. **Since 2** a fraction is floored, and a value that floors below 1 (or is not a positive number) falls back to the default. |
 | `rowHeight` | `AUTOCOMPLETE.ROW_H` | Row height in pixels. |
 | `minChars` | `AUTOCOMPLETE.MIN_CHARS` | Trimmed characters before the provider is asked. |
 | `debounce` | `AUTOCOMPLETE.DEBOUNCE` | Seconds; never below `AUTOCOMPLETE.DEBOUNCE`. |
@@ -1280,9 +1298,16 @@ Read when the handle is made. Every field is **Since 1**.
 ### Behavior a host must know
 
 - **Hooks, never scripts.** `OnTextChanged`, `OnArrowPressed`, `OnEnterPressed`, `OnTabPressed`,
-  `OnEscapePressed`, `OnEditFocusLost`, `OnEditFocusGained` and `OnHide` are hooked once per box, so
-  the host's own handler runs first and keeps running. A second `Autocomplete` on the same box
-  releases the first; the hooks dispatch to the newest handle.
+  `OnEscapePressed`, `OnEditFocusLost`, `OnEditFocusGained` and `OnHide` are hooked, so the host's
+  own handler runs first and keeps running. A second `Autocomplete` on the same box releases the
+  first; the hooks dispatch to the newest handle. **Set the box's scripts before calling
+  `Autocomplete`.** A later `SetScript` on a hooked script replaces the hooks along with the old
+  script, and that script's part of the list stops: a replaced `OnTextChanged` never opens it, a
+  replaced `OnEditFocusLost` or `OnHide` leaves it up. **Since 2**, calling `lib.Autocomplete` on
+  the box again re-installs every hook (the new handle replaces the old, as above); under minor 1
+  the hooks were installed once per box and a re-call could not restore them. Each call's hooks
+  dispatch only while that call is the box's newest, so a re-call with no `SetScript` between never
+  runs a script twice; the older hooks stay on the box, inert, because hooks cannot be removed.
 - **Typing is `OnTextChanged` with `userInput` true.** The host's own `SetText` (a box cleared after
   a pick, a restored saved view) closes the list rather than asking the provider.
 - **The keyboard.** Down selects the first row, then the next, stopping at the last; Up goes back,
@@ -1300,9 +1325,10 @@ Read when the handle is made. Every field is **Since 1**.
   anchored `TOPLEFT` → box `BOTTOMLEFT` and `TOPRIGHT` → box `BOTTOMRIGHT`, `OVERLAP` up, so it is
   the box's width and follows every resize with no handler. Its height is the shown rows times the
   row height plus the padding.
-- **Skin.** Read from the box on every show: `GetBackdropBorderColor` for the border and
-  `GetBackdropColor` for the background (alpha raised to `MIN_BG_ALPHA`), each falling back to the
-  house flat skin when the box answers no numbers.
+- **Skin.** The backdrop (a 1px flat edge over a flat fill) is set once, when the list is built
+  (**Since 2**; minor 1 set it on every show). Its colors are read from the box on every show:
+  `GetBackdropBorderColor` for the border and `GetBackdropColor` for the background (alpha raised
+  to `MIN_BG_ALPHA`), each falling back to the house flat skin when the box answers no numbers.
 - **Pooled rows.** A row is built for an index that has none and reused for every later list; a
   shorter list hides the leftovers. Every field of a row is repainted on every show.
 - **No events, no OnUpdate.** The only timers are the debounce and the one-frame focus checks, all

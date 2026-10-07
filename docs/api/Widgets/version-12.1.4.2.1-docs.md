@@ -12,7 +12,7 @@
 | Shipped in | v1.70.0 |
 | Status | Superseded |
 | Supersedes | [version 12.1.4.1](./version-12.1.4.1-docs.md) — no autocomplete |
-| Superseded by | [version 12.1.4.3.1](./version-12.1.4.3.1-docs.md) — `WidgetsLineChart.lua` 3: segments clipped to the plot (`ChartMath.ClipSegment`), the hover re-synced on every render |
+| Superseded by | [version 12.1.4.3.2](./version-12.1.4.3.2-docs.md) — `WidgetsLineChart.lua` 3: segments clipped to the plot (`ChartMath.ClipSegment`), the hover re-synced on every render; `WidgetsAutocomplete.lua` 2: hooks re-installed on every call, `maxRows` floored |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 2, WidgetsAutocomplete = 1 }` |
 
 ## What changed at 12.1.4.2.1
@@ -1313,13 +1313,17 @@ comparison across all four has no single host to live in, so it is recorded here
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
 
-## Moving to version 12.1.4.3.1
+## Moving to version 12.1.4.3.2
 
 **Copy the folder whole. Nothing a host calls moves or is removed.** The next version is key
-12.1.4.3.1: `Widgets.lua` 12, `WidgetsReorder.lua` 1, `WidgetsDragHandle.lua` 4,
-`WidgetsLineChart.lua` 3 and `WidgetsAutocomplete.lua` 1. `WidgetsLineChart.lua` 3 clips every
+12.1.4.3.2: `Widgets.lua` 12, `WidgetsReorder.lua` 1, `WidgetsDragHandle.lua` 4,
+`WidgetsLineChart.lua` 3 and `WidgetsAutocomplete.lua` 2. `WidgetsLineChart.lua` 3 clips every
 series segment to the plot rectangle before drawing it, so a point outside a host-pinned range no
 longer draws across the UI or, in a dashed range, makes an unbounded number of Lines; it adds
 `ChartMath.ClipSegment`; and a render re-syncs the hover on the next frame, so the `ClearHover`
-before `SetData` this document asks of a host is no longer needed (keeping it is harmless). See
-[version 12.1.4.3.1](./version-12.1.4.3.1-docs.md).
+before `SetData` this document asks of a host is no longer needed (keeping it is harmless).
+`WidgetsAutocomplete.lua` 2 installs a fresh set of hooks on every `lib.Autocomplete` call, so
+calling it again after a host `SetScript` dropped the hooks brings the list back; it floors a
+fractional `maxRows`; and it sets the list's backdrop once rather than on every show. A host that
+sets its scripts before the call, as this document already implies, changes nothing. See
+[version 12.1.4.3.2](./version-12.1.4.3.2-docs.md).

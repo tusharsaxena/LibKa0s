@@ -12,9 +12,9 @@ cannot drift. Release order is in
 
 ## v1.71.0 — unreleased
 
-Versions in this release: **WidgetsLineChart minor 3** (`LibKa0s-Widgets-1.0` key 12.1.4.3.1:
-`Widgets` 12, `WidgetsReorder` 1, `WidgetsDragHandle` 4, `WidgetsLineChart` 3,
-`WidgetsAutocomplete` 1), and every other file at its v1.70.0 minor — `Core` 10, `Env` 1, `Compat`
+Versions in this release: **WidgetsLineChart minor 3** and **WidgetsAutocomplete minor 2**
+(`LibKa0s-Widgets-1.0` key 12.1.4.3.2: `Widgets` 12, `WidgetsReorder` 1, `WidgetsDragHandle` 4,
+`WidgetsLineChart` 3, `WidgetsAutocomplete` 2), and every other file at its v1.70.0 minor — `Core` 10, `Env` 1, `Compat`
 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 19.1, `DebugLog`
 key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6 — and **test
 kit revision 38**.
@@ -38,7 +38,24 @@ kit revision 38**.
 - **The API document states the `formatX` default is C-runtime English** (`date("%d %b")`), so a
   localized host passes `formatX` (`LK-R-10`; no code change).
 - Cases in `tests/test_widgets_linechart_math.lua` and `tests/test_widgets_linechart.lua`.
-  [Widgets version 12.1.4.3.1](docs/api/Widgets/version-12.1.4.3.1-docs.md).
+  [Widgets version 12.1.4.3.2](docs/api/Widgets/version-12.1.4.3.2-docs.md).
+
+### WidgetsAutocomplete minor 2: hooks re-installed on every call, `maxRows` floored
+
+- **Calling `lib.Autocomplete` again re-installs the box's hooks.** A host `SetScript` on a hooked
+  script drops the hooks with the old script, and minor 1 hooked each box only once, so a re-call
+  could not bring the list back. Every call now stamps the box with a new generation and installs
+  a fresh set of hooks that dispatch only while that generation is current: an older call's hooks
+  stay on the box but do nothing, and a re-call with no `SetScript` between never dispatches twice.
+  The API document now states that a host sets its box's scripts before calling `Autocomplete`.
+  From the 2026-10-07 review (`LK-R-02`); the comment on the weak-keyed tables now says `owners`
+  entries persist until Release or replacement, Lua 5.1 having no ephemerons (`LK-R-07`).
+- **`opts.maxRows` is floored**, and a value that floors below 1 falls back to
+  `AUTOCOMPLETE.MAX_ROWS`, so the list is never taller than the rows it draws (`LK-R-08`).
+- **The list's backdrop is set once, when the list is built**; its colors are still read from the
+  box on every show (`LK-R-09`).
+- Five cases in `tests/test_widgets_autocomplete.lua`.
+  [Widgets version 12.1.4.3.2](docs/api/Widgets/version-12.1.4.3.2-docs.md).
 
 ### Test kit revision 38: `--list` Totals count only the cases that run
 

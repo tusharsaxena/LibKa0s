@@ -435,3 +435,78 @@ test("autocomplete: Release leaves the hooks inert, and a second Autocomplete on
   assertFalse(h2:IsShown())
   assertEqual(shownRows(h3), 4)
 end)
+
+-- ── re-hooking, maxRows and the backdrop (minor 2) ──
+
+test("autocomplete: calling it again after a host SetScript dropped the hooks brings the list back", function()
+  -- red under: minor 1, whose once-per-box guard never re-hooked, so the list never opened again.
+  local _, box = setup(function() return items(2) end)
+  local hostRan = 0
+  box:SetScript("OnTextChanged", function() hostRan = hostRan + 1 end)
+  local h2 = W.Autocomplete(box, { provider = function() return items(3) end })
+  typed(box, "a")
+  assertEqual(hostRan, 1, "the host's new handler runs")
+  assertTrue(h2:IsShown(), "the re-installed hook opens the list")
+  assertEqual(shownRows(h2), 3)
+end)
+
+test("autocomplete: calling it twice without a SetScript dispatches each script once", function()
+  -- red under: a re-hook on every call with no generation guard (two hook sets, two dispatches).
+  local _, box = setup(function() return items(2) end)
+  local calls, picked = 0, 0
+  local h2 = W.Autocomplete(box, {
+    provider = function() calls = calls + 1; return items(3) end,
+    onPick = function() picked = picked + 1 end,
+  })
+  typed(box, "a")
+  assertEqual(calls, 1, "one keystroke asks the provider once")
+  box:__fire("OnArrowPressed", "DOWN")
+  assertEqual(h2.__sel, 1, "one Down moves one row")
+  box:__fire("OnEnterPressed")
+  assertEqual(picked, 1, "one Enter picks once")
+  assertFalse(h2:IsShown())
+end)
+
+test("autocomplete: a fractional maxRows is floored, and the list is exactly that many rows tall", function()
+  -- red under: minor 1, which drew 2 rows in a list 2.5 rows tall.
+  recording(function()
+    local h, box = setup(function() return items(8) end, { maxRows = 2.5 })
+    local heights = {}
+    typed(box, "a")
+    rawset(h.__list, "SetHeight", function(_, v) heights[#heights + 1] = v end)
+    typed(box, "ab")
+    assertEqual(shownRows(h), 2)
+    assertEqual(#h.__items, 2)
+    assertEqual(heights[#heights], 2 * AC.ROW_H + 2 * AC.PAD)
+  end)
+end)
+
+test("autocomplete: a maxRows that floors below 1 falls back to MAX_ROWS", function()
+  -- red under: minor 1, which took 0.5 as the row count and drew no row at all.
+  local h, box = setup(function() return items(20) end, { maxRows = 0.5 })
+  typed(box, "a")
+  assertEqual(shownRows(h), AC.MAX_ROWS)
+end)
+
+test("autocomplete: the backdrop is set once, and its colors follow a restyled box on every show", function()
+  -- red under: minor 1, which called SetBackdrop on every render.
+  local saved, backdrops = mocks.CreateFrame, 0
+  recording(function()
+    local inner = mocks.CreateFrame
+    mocks.CreateFrame = function(...)
+      local f = inner(...)
+      rawset(f, "SetBackdrop", function() backdrops = backdrops + 1 end)
+      return f
+    end
+    local h, box = setup(function() return items(2) end)
+    typed(box, "a")
+    typed(box, "ab")
+    rawset(box, "GetBackdropColor", function() return 0.3, 0.2, 0.1, 1 end)
+    rawset(box, "GetBackdropBorderColor", function() return 0.5, 0.5, 0.5, 1 end)
+    typed(box, "abc")
+    mocks.CreateFrame = saved
+    assertEqual(backdrops, 1, "one SetBackdrop across three renders")
+    assertEqual(table.concat(h.__list.__bg, ","), "0.3,0.2,0.1,1")
+    assertEqual(table.concat(h.__list.__border, ","), "0.5,0.5,0.5,1")
+  end)
+end)

@@ -599,7 +599,7 @@ Total.
 - line chart: a render under a resting cursor re-fires onHover and moves the crosshair to the new scale
 - line chart: a render that leaves no scale hides the crosshair, and a later clear still tells the host
 
-### test_widgets_autocomplete.lua (30)
+### test_widgets_autocomplete.lua (35)
 
 - autocomplete: answers nil without a provider or without a box it can hook
 - autocomplete: publishes its chrome, with the 0.15 s debounce floor and 8 rows by default
@@ -631,6 +631,11 @@ Total.
 - autocomplete: Close hides the list and drops a waiting update
 - autocomplete: SetEnabled(false) closes and ignores typing until enabled again
 - autocomplete: Release leaves the hooks inert, and a second Autocomplete on the box replaces the first
+- autocomplete: calling it again after a host SetScript dropped the hooks brings the list back
+- autocomplete: calling it twice without a SetScript dispatches each script once
+- autocomplete: a fractional maxRows is floored, and the list is exactly that many rows tall
+- autocomplete: a maxRows that floors below 1 falls back to MAX_ROWS
+- autocomplete: the backdrop is set once, and its colors follow a restyled box on every show
 
 ### test_widgets_reorder.lua (7)
 
@@ -2428,7 +2433,7 @@ Total.
 | test_widgets_draghandle_place.lua | 10 |
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 18 |
-| test_widgets_autocomplete.lua | 30 |
+| test_widgets_autocomplete.lua | 35 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
@@ -2497,4 +2502,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2131** |
+| **Total** | **2136** |
