@@ -42,7 +42,7 @@ changed yet.
 - **New file `testkit/secrets.lua`**, loaded once by `framework.lua` beside `asserts.lua` and
   `inventory.lua`, with five members on the kit table: `Kit.secret(v)` (a wrapper whose metatable
   raises an error carrying `Kit.SECRET_ERROR`, the fixed marker `secret value`, from arithmetic with
-  the secret on either side, `..`, indexing, field assignment, calling, `#`, and `<`, `<=` and `==`
+  the secret on either side, `..`, indexing, field assignment, calling, and `<`, `<=` and `==`
   between two wrappers), `Kit.isSecret(v)`, `Kit.reveal(v)` and `Kit.installSecretValue()`, which
   sets the global `issecretvalue` and returns a restore function that puts back whatever was there,
   `nil` included. The registry is one process-wide weak-keyed table, so a secret minted under one
