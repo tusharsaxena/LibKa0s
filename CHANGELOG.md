@@ -153,6 +153,10 @@ wording, not the inventory this release keeps.
   `feat/2026-10-07-review-audit-remediation`; consumers re-vendor from the local tag, and the push,
   the merge to `master` and the GitHub release wait on the owner's go-ahead.
 
+Release gate (`docs/automated-tests/20261007-193954/`): lint pass, 0/0 in 155 files;
+tests pass, 2141 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.70.0 — 2026-10-07
 
 Versions in this release: **WidgetsAutocomplete minor 1**, a new file, and **WidgetsLineChart minor

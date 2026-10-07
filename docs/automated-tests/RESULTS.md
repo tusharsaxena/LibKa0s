@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261007-193954`](20261007-193954/) | `fae715e` | clean | 1.70.0 → 1.71.0 | 0/0 | 155 | 2139/2/2141 | skip | 42644 | 6483 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261007-102304`](20261007-102304/) | `6b401e1` | clean | 1.69.0 → 1.70.0 | 0/0 | 153 | 2087/2/2089 | skip | 42163 | 6382 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261006-134107`](20261006-134107/) | `37d4916` | clean | 1.68.1 → 1.69.0 | 0/0 | 151 | 2054/2/2056 | skip | 41483 | 6243 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261004-143758`](20261004-143758/) | `84cd24a` | clean | 1.68.0 → 1.68.1 | 0/0 | 146 | 2023/2/2025 | skip | 40807 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
@@ -137,18 +138,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**2089 cases** — 2087 passed, 0 failed, 2 skipped. The generated inventory
-[`20261007-102304/test-cases.md`](20261007-102304/test-cases.md) is the authority on which cases existed at this run;
+**2141 cases** — 2139 passed, 0 failed, 2 skipped. The generated inventory
+[`20261007-193954/test-cases.md`](20261007-193954/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **2056 → 2089** since the previous run.
+Moved **2089 → 2141** since the previous run.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 153 files** (`luacheck .`).
+**0 warnings / 0 errors over 155 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -165,7 +166,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261007-102304`](20261007-102304/) — **this run's measurement, not its diff.** Max CCN **15** across 6382
+Current as of [`20261007-193954`](20261007-193954/) — **this run's measurement, not its diff.** Max CCN **15** across 6483
 functions, **0** of them warned on; 6 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
@@ -186,7 +187,7 @@ None.
 | Band | File | LOC | Disposition |
 |---|---|---|---|
 | 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1288 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-04`) to `LibKa0s/OptionsRegistry.lua`, then accepted at 1261 and re-ruled at v1.65.0; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. Seam: the reset walk. **Re-check trigger: the next member added to `Options.lua`, or 1400 lines.** |
-| 1000–1500 (on notice) | `LibKa0s/OptionsIdList.lua` | 1246 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: `O.IdList` and its entry-line layout, one piece of machinery, so a seam is named before the append at the trigger. **Re-check trigger: 1350 lines.** |
+| 1000–1500 (on notice) | `LibKa0s/OptionsIdList.lua` | 1247 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: `O.IdList` and its entry-line layout, one piece of machinery, so a seam is named before the append at the trigger. **Re-check trigger: 1350 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsIds.lua` | 1359 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: id resolution, suggestions and the input. Seam: the suggestion half (the module-scope suggestions-while-typing block and the dropdown members), to a file of its own. **Re-check trigger: 1450 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1349 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-03`) to `LibKa0s/OptionsCombat.lua`, then accepted at 1293; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. Seam: the tabbed page. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1400 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsWidgets.lua` | 1444 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Came off the census (3852) when the id surface moved out; what is left is the makers, the choice grid, the landing page and the flow engine. Seam: the flow engine (`flowRows`, the switched sections). **Re-check trigger: 1450 lines, or the next maker added.** |
