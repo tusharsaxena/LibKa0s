@@ -12,12 +12,33 @@ cannot drift. Release order is in
 
 ## v1.71.0 — unreleased
 
-Versions in this release: every file at its v1.70.0 minor — `Core` 10, `Env` 1, `Compat` 1,
-`Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 19.1, `DebugLog` key
-19.2.1, `Launcher` 5, `Options` key 28.2.34.2.3.8.1.7.4.2, `Perf` key 14.1.1.6 and `Widgets` key
-12.1.4.2.1 (`Widgets` 12, `WidgetsReorder` 1, `WidgetsDragHandle` 4, `WidgetsLineChart` 2,
-`WidgetsAutocomplete` 1) — and **test kit revision 38**. No payload file under `LibKa0s/` has
-changed yet.
+Versions in this release: **WidgetsLineChart minor 3** (`LibKa0s-Widgets-1.0` key 12.1.4.3.1:
+`Widgets` 12, `WidgetsReorder` 1, `WidgetsDragHandle` 4, `WidgetsLineChart` 3,
+`WidgetsAutocomplete` 1), and every other file at its v1.70.0 minor — `Core` 10, `Env` 1, `Compat`
+1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 19.1, `DebugLog`
+key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6 — and **test
+kit revision 38**.
+
+### WidgetsLineChart minor 3: segments clipped to the plot, the hover re-synced on every render
+
+- **Every series segment is clipped to the plot rectangle before it is drawn**, in one place, before
+  it is dashed or drawn solid. A point far outside a host-pinned `yMin`/`yMax` used to draw its
+  segments across the host's UI, and in a dashed range `ChartMath.Dashes` cut the whole unclipped
+  length into one session-lifetime Line per dash (a point at `1e6` on a 0..10 axis was some 2.5
+  million). The Lines one dashed segment can make are now bounded by the plot's diagonal. A segment
+  wholly off the plot draws nothing, and a one-point series draws its tick only on the plot. Values
+  are not clamped and markers are unchanged. From the 2026-10-07 review (`LK-R-01`).
+- **`ChartMath.ClipSegment(x1, y1, x2, y2, left, bottom, right, top)`**, new: the pure Liang-Barsky
+  clip the chart uses, answering the inside part in the segment's direction or `nil`.
+- **A render re-syncs the hover.** `Render` (and `SetData` + `Render`, and a resize) marks the hover
+  stale, and the armed `OnUpdate` re-fires `onHover` and moves the crosshair against the new scale
+  on the next frame, even for the same index; a render that leaves no scale hides the crosshair. A
+  host no longer needs `ClearHover` before repainting (it stays idempotent, and a clear that arrives
+  first still reports `nil`). From the 2026-10-07 review (`LK-R-03`).
+- **The API document states the `formatX` default is C-runtime English** (`date("%d %b")`), so a
+  localized host passes `formatX` (`LK-R-10`; no code change).
+- Cases in `tests/test_widgets_linechart_math.lua` and `tests/test_widgets_linechart.lua`.
+  [Widgets version 12.1.4.3.1](docs/api/Widgets/version-12.1.4.3.1-docs.md).
 
 ### Test kit revision 38: `--list` Totals count only the cases that run
 
@@ -60,6 +81,8 @@ changed yet.
 
 - **The whole-folder copy of `tests/_kit/`, and `docs/test-cases.md` regenerated in the same
   commit**, so its Total equals the README badge. `Kit.secret` and its siblings are opt-in.
+- **The whole-folder copy of `libs/LibKa0s/`** for `WidgetsLineChart` 3. A host that draws no chart
+  owes nothing more; a host that calls `ClearHover` before repainting its chart may keep or drop it.
 
 ## v1.70.0 — 2026-10-07
 

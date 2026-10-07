@@ -169,3 +169,100 @@ test("line chart: a one-point series still draws a visible mark", function()
   c:Render(400, 200)
   assertEqual(shownLines(c), 1 + #yTicks(0, 5) + 1)
 end)
+
+-- -- minor 3: segments clipped to the plot, hover re-synced on every render -----------------------
+
+local function spike()
+  -- One point a hundred thousand plot heights above a host-pinned 0..10 range.
+  return { { x = 0, y = 0 }, { x = 50, y = 1e6 }, { x = 100, y = 5 } }
+end
+
+local function assertInsidePlot(c, label)
+  local left, bottom, w, h = c:GetPlotRect()
+  local eps = 1e-6
+  for _, l in ipairs(c.__madeLines) do
+    if l:IsShown() then
+      for _, get in ipairs({ l.GetStartPoint, l.GetEndPoint }) do
+        local _, _, x, y = get(l)
+        assertTrue(x >= left - eps and x <= left + w + eps and y >= bottom - eps and y <= bottom + h + eps,
+          label .. ": an endpoint at " .. tostring(x) .. ", " .. tostring(y) .. " is outside the plot")
+      end
+    end
+  end
+end
+
+test("line chart: a dashed range through a far off-plot point makes a bounded number of Lines", function()
+  -- red under: drawSeries dashing the unclipped segment (minor 2): ~2.5 million dashes for this data
+  local c = newChart()
+  c:SetData({ xMin = 0, xMax = 100, yMin = 0, yMax = 10,
+    series = { { points = spike(), dashFrom = 0, dashTo = 100 } } })
+  c:Render(400, 200)
+  local _, _, w, h = c:GetPlotRect()
+  local perSegment = math.ceil(math.sqrt(w * w + h * h) / (W.LINE_CHART.DASH + W.LINE_CHART.GAP))
+  local bound = 1 + 1 + #yTicks(0, 10) + 2 * perSegment  -- crosshair, axis, grid, two dashed segments
+  assertTrue(#c.__madeLines <= bound, "made " .. #c.__madeLines .. " Lines, the plot bounds it at " .. bound)
+  assertInsidePlot(c, "dashed")
+end)
+
+test("line chart: a solid series through a far off-plot point is clipped to the plot rectangle", function()
+  -- red under: drawSeries handing seg() the unclipped pixels (minor 2)
+  local c = newChart()
+  c:SetData({ xMin = 0, xMax = 100, yMin = 0, yMax = 10, series = { { points = spike() } } })
+  c:Render(400, 200)
+  assertEqual(shownLines(c), 1 + #yTicks(0, 10) + 2, "both segments still draw, clipped")
+  assertInsidePlot(c, "solid")
+end)
+
+test("line chart: a segment wholly outside the plot draws nothing, and so does a one-point series there", function()
+  -- red under: drawing a segment ClipSegment answered nil for, or the tick without the inside test
+  local c = newChart()
+  c:SetData({ xMin = 0, xMax = 100, yMin = 0, yMax = 10, series = {
+    { points = { { x = 0, y = 50 }, { x = 100, y = 60 } } },
+    { points = { { x = 50, y = -40 } } },
+  } })
+  c:Render(400, 200)
+  assertEqual(shownLines(c), 1 + #yTicks(0, 10), "the axis and the grid only")
+end)
+
+local function hoverBench(onHover)
+  local c = newChart({ onHover = onHover })
+  c.GetEffectiveScale = function() return 1 end
+  c.GetLeft = function() return 0 end
+  c:SetData({ xMin = 100, xMax = 300, series = { { points = ramp(3, 0, 1) } }, hoverXs = { 100, 200, 300 } })
+  c:Render(400, 200)
+  c:__fire("OnEnter")
+  return c
+end
+
+test("line chart: a render under a resting cursor re-fires onHover and moves the crosshair to the new scale", function()
+  -- red under: render() leaving the hover alone (minor 2): the same index never re-fires and the
+  -- crosshair stays at the old size's pixel
+  local calls = {}
+  local c = hoverBench(function(_, i, x) calls[#calls + 1] = { i, x } end)
+  mocks.setCursor(c:XToPixel(200), 0)
+  c:__fire("OnUpdate")
+  assertEqual(#calls, 1); assertEqual(calls[1][1], 2)
+  local oldPx = select(3, c.__madeLines[1]:GetStartPoint())
+  c:Render(450, 200)  -- the pane is resized; the cursor has not moved
+  c:__fire("OnUpdate")
+  assertEqual(#calls, 2, "the next frame re-fires onHover against the new scale")
+  assertEqual(calls[2][1], 2, "the same point is still nearest")
+  local newPx = select(3, c.__madeLines[1]:GetStartPoint())
+  assertTrue(newPx ~= oldPx, "the crosshair moved")
+  assertEqual(newPx, c:XToPixel(200), "onto the point's pixel at the new size")
+  assertTrue(c.__madeLines[1]:IsShown())
+end)
+
+test("line chart: a render that leaves no scale hides the crosshair, and a later clear still tells the host", function()
+  -- red under: render() keeping the crosshair up with no data under it (minor 2)
+  local last = "unset"
+  local c = hoverBench(function(_, i) last = i end)
+  mocks.setCursor(c:XToPixel(300), 0)
+  c:__fire("OnUpdate")
+  assertEqual(last, 3)
+  c:SetData(nil)
+  c:Render(400, 200)
+  assertFalse(c.__madeLines[1]:IsShown(), "no data, no crosshair")
+  c:__fire("OnLeave")
+  assertEqual(last, nil, "the host's tooltip is still told the hover ended")
+end)

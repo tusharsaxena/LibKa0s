@@ -554,7 +554,7 @@ Total.
 - draghandle: a tooltipPlace that is not a function is ignored, not called
 - draghandle: DragHandle is at minor 4, the placement hook's minor
 
-### test_widgets_linechart_math.lua (16)
+### test_widgets_linechart_math.lua (21)
 
 - chart math: the file attaches to the Widgets shell and records its minor
 - chart math: NiceTicks picks a 1-2-2.5-5 step and covers the data
@@ -572,8 +572,13 @@ Total.
 - chart math: TimeTicks answers nothing for an empty span
 - chart math: NearestIndex snaps to the closest x and clamps at the ends
 - chart math: Dashes cuts a segment into dash-gap pieces along its length
+- chart math: ClipSegment answers a segment inside the rectangle unchanged
+- chart math: ClipSegment answers nil for a segment wholly outside
+- chart math: ClipSegment cuts a segment at each edge it crosses, keeping its direction
+- chart math: ClipSegment handles vertical and horizontal segments on either side
+- chart math: ClipSegment keeps a degenerate point inside and drops one outside
 
-### test_widgets_linechart.lua (13)
+### test_widgets_linechart.lua (18)
 
 - line chart: Render draws the axis, one grid rule per y tick and one line per segment
 - line chart: a second Render of the same data creates no new Line objects
@@ -588,6 +593,11 @@ Total.
 - line chart: Clear hides every line
 - line chart: Render before SetData or at zero size draws nothing and does not raise
 - line chart: a one-point series still draws a visible mark
+- line chart: a dashed range through a far off-plot point makes a bounded number of Lines
+- line chart: a solid series through a far off-plot point is clipped to the plot rectangle
+- line chart: a segment wholly outside the plot draws nothing, and so does a one-point series there
+- line chart: a render under a resting cursor re-fires onHover and moves the crosshair to the new scale
+- line chart: a render that leaves no scale hides the crosshair, and a later clear still tells the host
 
 ### test_widgets_autocomplete.lua (30)
 
@@ -2416,8 +2426,8 @@ Total.
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_draghandle_place.lua | 10 |
-| test_widgets_linechart_math.lua | 16 |
-| test_widgets_linechart.lua | 13 |
+| test_widgets_linechart_math.lua | 21 |
+| test_widgets_linechart.lua | 18 |
 | test_widgets_autocomplete.lua | 30 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
@@ -2487,4 +2497,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2121** |
+| **Total** | **2131** |

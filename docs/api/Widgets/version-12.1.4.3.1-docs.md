@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 12.1.4.2.1
+# `LibKa0s-Widgets-1.0` — version 12.1.4.3.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,12 +8,46 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **2** · `WidgetsAutocomplete.lua` minor **1** |
-| Shipped in | v1.70.0 |
-| Status | Superseded |
-| Supersedes | [version 12.1.4.1](./version-12.1.4.1-docs.md) — no autocomplete |
-| Superseded by | [version 12.1.4.3.1](./version-12.1.4.3.1-docs.md) — `WidgetsLineChart.lua` 3: segments clipped to the plot (`ChartMath.ClipSegment`), the hover re-synced on every render |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 2, WidgetsAutocomplete = 1 }` |
+| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **1** |
+| Shipped in | v1.71.0 |
+| Status | **Current** |
+| Supersedes | [version 12.1.4.2.1](./version-12.1.4.2.1-docs.md) — chart segments not clipped to the plot; a re-render does not re-sync the hover |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 1 }` |
+
+## What changed at 12.1.4.3.1
+
+**The chart clips what it draws to the plot, and re-syncs its hover on every render.**
+`WidgetsLineChart.lua` moves from **2** to **3**; `Widgets.lua` stays at **12**, `WidgetsReorder.lua`
+at **1**, `WidgetsDragHandle.lua` at **4** and `WidgetsAutocomplete.lua` at **1**, so the key is
+12.1.4.3.1. One member is added and none is removed or renamed. From LibKa0s's 2026-10-07 review
+(`LK-R-01`, `LK-R-03`, `LK-R-10`).
+
+- **Every series segment is clipped to the plot rectangle before it is drawn** (`WidgetsLineChart`
+  **Since 3**). A host that pins `yMin`/`yMax` (or `xMin`/`xMax`) inside its data used to get a
+  segment to a far point drawn straight across the rest of its UI, and, in a dashed range,
+  `ChartMath.Dashes` cut the whole unclipped length into one pooled Line per dash: a point at
+  `1e6` on a 0..10 axis was some 2.5 million session-lifetime Line regions. The clip runs in one
+  place, before the segment is dashed or drawn solid, so a dashed range can now make at most about
+  plot diagonal / (`DASH` + `GAP`) Lines per segment. A segment wholly off the plot draws nothing,
+  and a one-point series draws its tick only when the point is on the plot. Input values are not
+  clamped (a clipped segment keeps the slope of its data) and markers are unchanged: they already
+  draw only inside `[xMin, xMax]`, from the plot's bottom to its top.
+- **`ChartMath.ClipSegment`** (**Since 3**), the pure Liang-Barsky clip the chart uses, published
+  beside `ChartMath.Dashes` so a host drawing its own decorations against the plot can clip the same
+  way. See *`lib.ChartMath`* below.
+- **A render re-syncs the hover** (**Since 3**). `Render`, and so `SetData` + `Render` and a resize,
+  marks the hover stale: the armed `OnUpdate` re-evaluates it against the new scale and data on the
+  next frame, moves the crosshair to the point's new pixel and fires `onHover` again, even for the
+  same index. A render that leaves no scale (no data, or a zero size) hides the crosshair at once.
+  A host's explicit `ClearHover` before repainting is no longer needed; it still works and is still
+  idempotent. Under 12.1.4.2.1 a pane resized under a resting cursor left the crosshair at the old
+  size's pixel.
+- **The `formatX` default is documented as C-runtime English** (no behavior change). See *`opts`*.
+
+**What a host must change: nothing.** A host that called `ClearHover` before `SetData` may keep the
+call or drop it. A host that relied on a segment being drawn off the plot has nothing to rely on: it
+was drawn outside the chart's own rectangle.
 
 ## What changed at 12.1.4.2.1
 
@@ -369,7 +403,7 @@ library's.
 | `CopyWindow(descriptor)` | **6** | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
 | `ReorderList(opts)` | **8** | Builds a drag-to-reorder controller for one render of a list. Returns the controller. See *The reorderable list*. |
-| `LineChart(parent, opts)` | `WidgetsLineChart` **1** (`opts.pxPerPoint` **Since 2**) | Builds one pooled line chart, a `Frame` parented to `parent`. Returns the chart. See *The line chart*. |
+| `LineChart(parent, opts)` | `WidgetsLineChart` **1** (`opts.pxPerPoint` **Since 2**; clipping and the hover re-sync **Since 3**) | Builds one pooled line chart, a `Frame` parented to `parent`. Returns the chart. See *The line chart*. |
 | `Autocomplete(editBox, opts)` | `WidgetsAutocomplete` **1** | Hangs a suggestion list under `editBox`. Returns a handle, or `nil` with no client, a box that cannot be hooked, or no `opts.provider`. See *The autocomplete*. |
 | `AUTOCOMPLETE` | `WidgetsAutocomplete` **1** | The list's chrome and timing constants. See *The autocomplete*. |
 | `MODULES` | 1 | `{ Widgets = <minor> }` — the live minor, and the value that picks this document. |
@@ -994,7 +1028,7 @@ reads the paddings here, so a later minor that moves them moves the host too. Ev
 
 ### `lib.ChartMath`
 
-Six pure functions, every one **Since 1**. They read `lib.LINE_CHART` for their defaults and the
+Seven pure functions: six **Since 1** and `ClipSegment` **Since 3**. They read `lib.LINE_CHART` for their defaults and the
 client's `date` and `time` for the time axis, and nothing else.
 
 #### `ChartMath.NiceTicks(lo, hi, maxTicks, integer)` → `ticks, niceLo, niceHi, step`
@@ -1055,6 +1089,23 @@ index. An empty `xs` answers `nil`.
 Cuts the segment from `(x1, y1)` to `(x2, y2)` into dashes of `dash` pixels separated by `gap`
 pixels along its length (defaults `LINE_CHART.DASH` and `LINE_CHART.GAP`), any direction. The last
 dash is clipped at the segment's end. A zero-length segment has no dashes and answers an empty table.
+It is not bounded: it cuts whatever length it is handed, which is why the chart clips every segment
+with `ClipSegment` first (**Since 3**).
+
+#### `ChartMath.ClipSegment(x1, y1, x2, y2, left, bottom, right, top)` → `x1, y1, x2, y2` or `nil`
+
+**Since 3.** Clips the segment from `(x1, y1)` to `(x2, y2)` to the rectangle `[left, right]` ×
+`[bottom, top]` (Liang-Barsky), and answers the part inside it, in the segment's own direction, or
+`nil` when no part of it is inside. Edges count as inside.
+
+- **An end the clip did not move comes back exactly as given**, so a segment wholly inside answers
+  its own four numbers bit-for-bit. A cut end is computed, so it can sit a rounding error (about
+  `1e-14`) off the edge.
+- Vertical and horizontal segments are handled (no division by a zero component): one outside the
+  rectangle answers `nil`, one across it is cut at both edges.
+- A degenerate segment (a point) answers itself when the point is inside and `nil` when it is not.
+- The chart calls it with the plot rectangle, `left, bottom, left + width, bottom + height` from
+  `chart:GetPlotRect()`.
 
 ### `lib.LineChart(parent, opts)` → `chart`
 
@@ -1073,10 +1124,10 @@ Read on every render and every hover, never written. Every field is optional and
 | Field | Default | Meaning |
 |---|---|---|
 | `font` | `"GameFontDisableSmall"` | FontObject name the axis labels are created with. Read when a label is first made, so a change reaches only labels the pool has not made yet. |
-| `onHover` | none | `onHover(chart, index, x)` when the hovered index changes, and `onHover(chart, nil, nil)` when a hover clears. `index` is into `data.hoverXs`, `x` is `hoverXs[index]`. The host draws its own tooltip. |
+| `onHover` | none | `onHover(chart, index, x)` when the hovered index changes, again on the first hover after a render (**Since 3**, even for the same index), and `onHover(chart, nil, nil)` when a hover clears. `index` is into `data.hoverXs`, `x` is `hoverXs[index]`. The host draws its own tooltip. |
 | `pxPerPoint` | `LINE_CHART.PX_PER_POINT` (2) | **Since 2.** Plot pixels per drawn point: the thinning budget is `floor(plot width / pxPerPoint)`. Larger is smoother and draws fewer segments. A non-positive or non-number value falls to the default. Read on every render. |
 | `formatY` | integer as-is, otherwise `%.2f` | `formatY(v) → string` for each y tick label. |
-| `formatX` | `date("%H:%M")` under a day step, otherwise `date("%d %b")` | `formatX(x, step) → string` for each x tick label; `step` is `ChartMath.TimeTicks`'s step in seconds. |
+| `formatX` | `date("%H:%M")` under a day step, otherwise `date("%d %b")` | `formatX(x, step) → string` for each x tick label; `step` is `ChartMath.TimeTicks`'s step in seconds. The day-step default is `date("%d %b")`, whose `%b` is the C runtime's month abbreviation (English), so a localized host should pass `formatX`. |
 
 ### `data`
 
@@ -1100,13 +1151,13 @@ What `chart:SetData(data)` takes. Every field is **Since 1**.
 | Method | Since | Meaning |
 |---|---|---|
 | `chart:SetData(data)` | 1 | Stores the reference. Does not draw. |
-| `chart:Render(w, h)` | 1 | Draws `data` at `w` × `h` (default `GetWidth()` / `GetHeight()`), reusing every Line and label from the last render and hiding what this one did not use. A zero size, or no data, draws nothing. |
+| `chart:Render(w, h)` | 1 | Draws `data` at `w` × `h` (default `GetWidth()` / `GetHeight()`), reusing every Line and label from the last render and hiding what this one did not use. A zero size, or no data, draws nothing. **Since 3**: every series segment is clipped to the plot rectangle, and the hover is re-synced on the next frame (see *Behavior a host must know*); a render that draws nothing also hides the crosshair. |
 | `chart:Clear()` | 1 | Forgets the data, clears the hover and hides every line and label. |
 | `chart:GetPlotRect()` | 1 | `left, bottom, width, height` of the plot in chart-local pixels (BOTTOMLEFT origin). `nil` before the first render that drew. |
 | `chart:XToPixel(x)` | 1 | Chart-local x pixel of a domain `x`. `0` before a render. |
 | `chart:YToPixel(y)` | 1 | Chart-local y pixel of a value `y`, on the widened tick range. `0` before a render. |
 | `chart:PixelToX(px)` | 1 | Domain `x` at chart-local pixel `px`, the inverse of `XToPixel`. |
-| `chart:HoverAtPixel(px)` | 1 | Snaps to the `hoverXs` entry nearest `PixelToX(px)` (`ChartMath.NearestIndex`), moves the crosshair there and answers the index; calls `opts.onHover` only when the index changed. `nil` with no render or no `hoverXs`. |
+| `chart:HoverAtPixel(px)` | 1 | Snaps to the `hoverXs` entry nearest `PixelToX(px)` (`ChartMath.NearestIndex`), moves the crosshair there and answers the index; calls `opts.onHover` only when the index changed, or (**Since 3**) when it is the first hover since a render. `nil` with no render or no `hoverXs`. |
 | `chart:ClearHover()` | 1 | Hides the crosshair and, when a hover was up, calls `opts.onHover(chart, nil, nil)`. |
 | `chart:HoverIndex()` | 1 | The hovered index, or `nil`. |
 
@@ -1121,12 +1172,23 @@ What `chart:SetData(data)` takes. Every field is **Since 1**.
   nice ticks by `ChartMath.NiceTicks`; `integer` keeps the y step at 1 or more.
 - **A segment is dashed when its midpoint is in `[dashFrom, dashTo]`.** The host marks the part of
   a line it wants read as provisional; a single-point series draws a 2px tick at the point.
+- **Nothing a series draws leaves the plot** (**Since 3**). Every segment is clipped to the plot
+  rectangle with `ChartMath.ClipSegment` before it is dashed or drawn solid, so a point far outside
+  a host-pinned `yMin`/`yMax` (or outside `[xMin, xMax]`) draws its segments only to the plot's edge,
+  and the dashes one segment can make are bounded by the plot's diagonal. A segment wholly off the
+  plot draws nothing, and a one-point series off the plot draws no tick. Values are not clamped.
 - **Markers outside `[xMin, xMax]` draw nothing.**
-- **`onHover` fires only on an index change**, and with `nil` when the hover clears: `ClearHover`,
-  `OnLeave`, `OnHide` and `Clear` all clear it. `SetData` and `Render` do not, so a host that
-  repaints new data under a resting cursor calls `ClearHover` before `SetData`; the armed `OnUpdate`
-  then hovers again against the new data on the next frame. Without it the host's tooltip keeps the
-  old data's values until the cursor reaches a different index.
+- **`onHover` fires on an index change**, and with `nil` when the hover clears: `ClearHover`,
+  `OnLeave`, `OnHide` and `Clear` all clear it.
+- **Re-rendering re-syncs the hover** (**Since 3**). Every render (`Render`, `SetData` followed by
+  `Render`, a resize through `OnSizeChanged`) marks the hover stale, and the armed `OnUpdate` hovers
+  again against the new scale and data on the next frame: the crosshair moves to the point's new
+  pixel and `onHover` fires again, even when the nearest index did not change. The hovered index is
+  kept until then, so a `ClearHover` (or `OnLeave`, `OnHide`) arriving first still calls
+  `onHover(chart, nil, nil)`. A render that leaves no scale (no data, or a zero size) hides the
+  crosshair at once. **A host no longer needs to call `ClearHover` before repainting**; under
+  12.1.4.2.1 it had to, and a resize under a resting cursor left the crosshair at the old size's
+  pixel. A host that still calls it is unaffected: `ClearHover` is idempotent.
 - **Scripts the chart owns:** `OnEnter` arms an `OnUpdate` that reads `GetCursorPosition` and calls
   `HoverAtPixel`; `OnLeave` and `OnHide` disarm it and clear the hover; `OnSizeChanged` re-renders at
   the new size. A host that replaces one of them takes over that job.
@@ -1150,6 +1212,10 @@ LootHistory's `NS.MakeLineChart` seam. No host calls, reads or passes by name th
 `core/WidgetsSetup.lua`, so its line above no longer holds; the other nine stand. `opts.pxPerPoint`
 is outside the scan (it is read off the chart's stored options, not a descriptor literal);
 LootHistory is its planned first host.
+
+**`ChartMath.ClipSegment`, v1.71.0:** no consumer, kept because a host that draws its own
+decorations against the plot clips them the way the chart clips its series. It is new at this
+version and no census has run since.
 
 ## The autocomplete
 
@@ -1312,14 +1378,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 12.1.4.3.1
-
-**Copy the folder whole. Nothing a host calls moves or is removed.** The next version is key
-12.1.4.3.1: `Widgets.lua` 12, `WidgetsReorder.lua` 1, `WidgetsDragHandle.lua` 4,
-`WidgetsLineChart.lua` 3 and `WidgetsAutocomplete.lua` 1. `WidgetsLineChart.lua` 3 clips every
-series segment to the plot rectangle before drawing it, so a point outside a host-pinned range no
-longer draws across the UI or, in a dashed range, makes an unbounded number of Lines; it adds
-`ChartMath.ClipSegment`; and a render re-syncs the hover on the next frame, so the `ClearHover`
-before `SetData` this document asks of a host is no longer needed (keeping it is harmless). See
-[version 12.1.4.3.1](./version-12.1.4.3.1-docs.md).
