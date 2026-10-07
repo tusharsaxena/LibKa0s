@@ -1146,6 +1146,11 @@ LootHistory's `NS.MakeLineChart` seam. No host calls, reads or passes by name th
 - `yMax`: no consumer as of v1.69.0, kept because a host may pin the y range instead of taking the data's; LootHistory takes the data's range and does not pass it.
 - `yMin`: no consumer as of v1.69.0, kept for the same reason as `yMax`; LootHistory does not pass it either.
 
+**Consumer census, v1.70.0.** `lib.LINE_CHART` now has one host, LootHistory's
+`core/WidgetsSetup.lua`, so its line above no longer holds; the other nine stand. `opts.pxPerPoint`
+is outside the scan (it is read off the chart's stored options, not a descriptor literal);
+LootHistory is its planned first host.
+
 ## The autocomplete
 
 **`WidgetsAutocomplete.lua`, minor 1.** A suggestion list that hangs directly under a host's
@@ -1240,6 +1245,12 @@ Read when the handle is made. Every field is **Since 1**.
 - **Headless.** The base test kit hands back the frame itself for `CreateTexture` and
   `CreateFontString`, so a row's icon is shown or hidden before the row is shown, and a suite reads
   a row's text and selection from its `__text` and `__selected` fields rather than from its label.
+
+**Consumer census, v1.70.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls either member at the
+tag; the two named adopters land after it.
+
+- `lib.Autocomplete`: no consumer as of v1.70.0, a host duplicate: LootHistory's Timeline still hand-rolls the list (`makeSuggestRow` / `RenderSuggestions` in `modules/Timeline.lua`). LootHistory adopts it on every tab and deletes the local list, and BankLedger adopts it on its search box (the timeline-ledger plan's tasks B2 and C2).
+- `lib.AUTOCOMPLETE`: no consumer as of v1.70.0, kept because it is the published chrome and timing constants, so a host cites the list's defaults (debounce, row height, overlap) rather than restating them.
 
 ## Degraded
 
