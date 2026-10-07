@@ -26,6 +26,8 @@ test("chart math: NiceTicks picks a 1-2-2.5-5 step and covers the data", functio
 end)
 
 test("chart math: NiceTicks widens a flat or empty range instead of dividing by zero", function()
+  -- red under: NiceTicks skipping widenFlat (a zero span reaches log10(0)), and equally under
+  -- dropping the `or 0` default for a nil end (a nil compare raises).
   local ticks, lo, hi = M().NiceTicks(5, 5, 5)
   assertEqual(lo, 0); assertEqual(hi, 5); assertEqual(#ticks, 6)
   ticks, lo, hi = M().NiceTicks(0, 0, 5, true)
@@ -35,6 +37,7 @@ test("chart math: NiceTicks widens a flat or empty range instead of dividing by 
 end)
 
 test("chart math: NiceTicks with integer=true never steps below 1", function()
+  -- red under: dropping the `integer and step < 1` floor, which answers a 0.5 step.
   local _, _, _, step = M().NiceTicks(0, 2, 5)
   assertEqual(step, 0.5)
   _, _, _, step = M().NiceTicks(0, 2, 5, true)
@@ -73,10 +76,12 @@ test("chart math: Downsample keeps a one-point spike", function()
 end)
 
 test("chart math: Budget never answers fewer than three points", function()
+  -- red under: `max(0, ...)` in place of `max(3, ...)`, which answers 0 points for a 0px plot.
   assertEqual(M().Budget(0), 3); assertEqual(M().Budget(3), 3)
 end)
 
 test("chart math: Budget takes a per-chart spacing and falls to the default for a bad one", function()
+  -- red under: `px < 0` in place of `px <= 0`, which divides by a zero spacing and answers inf.
   assertEqual(M().Budget(200, 4), 50)
   assertEqual(M().Budget(200, 2), 100)
   assertEqual(M().Budget(200), 100)
@@ -123,11 +128,15 @@ test("chart math: TimeTicks uses hour steps inside one day", function()
 end)
 
 test("chart math: TimeTicks answers nothing for an empty span", function()
+  -- red under: `xMax < xMin` in place of `xMax <= xMin`, which ticks a span of zero length.
   local ticks, step = M().TimeTicks(100, 100, 6)
   assertEqual(#ticks, 0); assertEqual(step, nil)
 end)
 
 test("chart math: NearestIndex snaps to the closest x and clamps at the ends", function()
+  -- red under: answering nil for a cursor beyond either end instead of clamping (each end on its
+  -- own), dropping the `n == 0` guard (a nil compare raises), and a tiebreak that always takes the
+  -- lower neighbor.
   local xs = { 0, 10, 20, 30 }
   assertEqual(M().NearestIndex(xs, -5), 1)
   assertEqual(M().NearestIndex(xs, 14), 2)
@@ -137,6 +146,8 @@ test("chart math: NearestIndex snaps to the closest x and clamps at the ends", f
 end)
 
 test("chart math: Dashes cuts a segment into dash-gap pieces along its length", function()
+  -- red under: a zero-length segment answering one dash instead of none, and `e = s + dash` with
+  -- no `min(..., len)`, which runs the last dash past the segment's end.
   local d = M().Dashes(0, 0, 20, 0, 4, 3)
   assertEqual(#d, 3)
   assertEqual(d[1][1], 0); assertEqual(d[1][3], 4)

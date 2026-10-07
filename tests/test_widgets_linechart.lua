@@ -109,6 +109,7 @@ test("line chart: a dashed range draws dashes, an undashed series one line per s
 end)
 
 test("line chart: a marker inside the domain draws a dashed rule; outside it draws nothing", function()
+  -- red under: dropping the `m.x >= s.x0 and m.x <= s.x1` domain test, which draws the outside marker.
   local inside, outside = newChart(), newChart()
   local base = { xMin = 0, xMax = 100, yMin = 0, yMax = 1, series = {} }
   inside:SetData({ xMin = 0, xMax = 100, yMin = 0, yMax = 1, series = {}, markers = { { x = 50 } } })
@@ -136,6 +137,7 @@ test("line chart: HoverAtPixel snaps to the nearest x and calls onHover once per
 end)
 
 test("line chart: OnLeave clears the hover the way ClearHover does", function()
+  -- red under: an OnLeave that only disarms the OnUpdate and never calls ClearHover.
   local last = "unset"
   local c = newChart({ onHover = function(_, i) last = i end })
   c:SetData({ xMin = 0, xMax = 10, series = {}, hoverXs = { 0, 10 } })
@@ -146,6 +148,7 @@ test("line chart: OnLeave clears the hover the way ClearHover does", function()
 end)
 
 test("line chart: Clear hides every line", function()
+  -- red under: a Clear that drops the data and the hover but never re-renders.
   local c = newChart()
   c:SetData({ xMin = 100, xMax = 300, series = { { points = ramp(3, 0, 50) } } })
   c:Render(400, 200)
@@ -154,6 +157,8 @@ test("line chart: Clear hides every line", function()
 end)
 
 test("line chart: Render before SetData or at zero size draws nothing and does not raise", function()
+  -- red under: dropping the `w > 0 and h > 0` test (a 0x0 render draws the axis), and equally
+  -- dropping the `d and` nil-data test (a render before SetData raises).
   local c = newChart()
   c:Render(400, 200)
   assertEqual(shownLines(c), 0)
@@ -161,6 +166,24 @@ test("line chart: Render before SetData or at zero size draws nothing and does n
   c:Render(0, 0)
   assertEqual(shownLines(c), 0)
   assertEqual(c:GetPlotRect(), nil)
+end)
+
+test("line chart: HoverAtPixel with no scale or no hoverXs answers nil and tells the host nothing", function()
+  -- red under: dropping `#xs > 0` (an empty hoverXs reaches xToPixel with a nil x), and equally
+  -- dropping the `s and` scale test (a hover before any render moves a crosshair with no scale).
+  local calls = 0
+  local c = newChart({ onHover = function() calls = calls + 1 end })
+  c:SetData({ xMin = 100, xMax = 300, series = { { points = ramp(3, 0, 1) } }, hoverXs = { 100, 200 } })
+  assertEqual(c:HoverAtPixel(60), nil, "before any render there is no scale to point at")
+  c:SetData({ xMin = 100, xMax = 300, series = { { points = ramp(3, 0, 1) } } })
+  c:Render(400, 200)
+  assertEqual(c:HoverAtPixel(c:XToPixel(200)), nil, "no hoverXs")
+  c:SetData({ xMin = 100, xMax = 300, series = { { points = ramp(3, 0, 1) } }, hoverXs = {} })
+  c:Render(400, 200)
+  assertEqual(c:HoverAtPixel(c:XToPixel(200)), nil, "an empty hoverXs")
+  assertEqual(calls, 0, "onHover never fires")
+  assertFalse(c.__madeLines[1]:IsShown(), "the crosshair stays down")
+  assertEqual(c:HoverIndex(), nil)
 end)
 
 test("line chart: a one-point series still draws a visible mark", function()

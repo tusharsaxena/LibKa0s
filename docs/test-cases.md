@@ -577,7 +577,7 @@ Total.
 - chart math: ClipSegment handles vertical and horizontal segments on either side
 - chart math: ClipSegment keeps a degenerate point inside and drops one outside
 
-### test_widgets_linechart.lua (18)
+### test_widgets_linechart.lua (19)
 
 - line chart: Render draws the axis, one grid rule per y tick and one line per segment
 - line chart: a second Render of the same data creates no new Line objects
@@ -591,6 +591,7 @@ Total.
 - line chart: OnLeave clears the hover the way ClearHover does
 - line chart: Clear hides every line
 - line chart: Render before SetData or at zero size draws nothing and does not raise
+- line chart: HoverAtPixel with no scale or no hoverXs answers nil and tells the host nothing
 - line chart: a one-point series still draws a visible mark
 - line chart: a dashed range through a far off-plot point makes a bounded number of Lines
 - line chart: a solid series through a far off-plot point is clipped to the plot rectangle
@@ -598,13 +599,14 @@ Total.
 - line chart: a render under a resting cursor re-fires onHover and moves the crosshair to the new scale
 - line chart: a render that leaves no scale hides the crosshair, and a later clear still tells the host
 
-### test_widgets_autocomplete.lua (35)
+### test_widgets_autocomplete.lua (36)
 
 - autocomplete: answers nil without a provider or without a box it can hook
 - autocomplete: publishes its chrome, with the 0.15 s debounce floor and 8 rows by default
 - autocomplete: typing asks the provider only after the debounce, once for a burst
 - autocomplete: an opts.debounce under the floor is raised to it
 - autocomplete: empty or blank text closes without asking the provider
+- autocomplete: opts.minChars holds the list back until the trimmed text is that long
 - autocomplete: an empty or nil provider answer hides the list and never raises
 - autocomplete: at most maxRows rows, 8 by default
 - autocomplete: Refresh asks the provider at once for the box's text
@@ -2433,8 +2435,8 @@ Total.
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_draghandle_place.lua | 10 |
 | test_widgets_linechart_math.lua | 21 |
-| test_widgets_linechart.lua | 18 |
-| test_widgets_autocomplete.lua | 35 |
+| test_widgets_linechart.lua | 19 |
+| test_widgets_autocomplete.lua | 36 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
@@ -2503,4 +2505,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2137** |
+| **Total** | **2139** |

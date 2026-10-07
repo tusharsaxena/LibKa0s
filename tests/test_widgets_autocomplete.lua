@@ -122,6 +122,7 @@ test("autocomplete: typing asks the provider only after the debounce, once for a
 end)
 
 test("autocomplete: an opts.debounce under the floor is raised to it", function()
+  -- red under: `max(0, opts.debounce)` in place of `max(AC.DEBOUNCE, opts.debounce)`.
   local _, box = setup(function() return items(1) end, { debounce = 0.01 })
   box:type("a")
   assertTrue(mocks.__timers[#mocks.__timers].delay >= 0.15)
@@ -129,6 +130,7 @@ test("autocomplete: an opts.debounce under the floor is raised to it", function(
 end)
 
 test("autocomplete: empty or blank text closes without asking the provider", function()
+  -- red under: longEnough counting the untrimmed text, which asks the provider about "   ".
   local h, box, calls = setup(function() return items(2) end)
   typed(box, "x")
   assertTrue(h:IsShown())
@@ -137,6 +139,23 @@ test("autocomplete: empty or blank text closes without asking the provider", fun
   assertEqual(#calls, 1, "the provider is not asked about blank text")
   typed(box, "")
   assertFalse(h:IsShown())
+  assertEqual(#calls, 1)
+end)
+
+test("autocomplete: opts.minChars holds the list back until the trimmed text is that long", function()
+  -- red under: ignoring opts.minChars for MIN_CHARS, `#trimmed > minChars` in place of `>=` (the
+  -- exact-length case), and longEnough counting the untrimmed text (the padded case).
+  local h, box, calls = setup(function() return items(2) end, { minChars = 3 })
+  typed(box, "ab")
+  assertFalse(h:IsShown(), "two characters are below a minChars of 3")
+  typed(box, " ab ")
+  assertFalse(h:IsShown(), "padding does not count toward minChars")
+  assertEqual(#calls, 0, "the provider is not asked below minChars")
+  typed(box, "abc")
+  assertTrue(h:IsShown(), "exactly minChars opens the list")
+  assertEqual(calls[1], "abc")
+  typed(box, "ab")
+  assertFalse(h:IsShown(), "dropping back below minChars closes it")
   assertEqual(#calls, 1)
 end)
 
@@ -303,6 +322,8 @@ test("autocomplete: Tab picks the selected row, or the first", function()
 end)
 
 test("autocomplete: Esc closes and keeps the typed text", function()
+  -- red under: an OnEscapePressed hook that does nothing, leaving the close to the next frame's
+  -- focus-lost check.
   local h, box, _, picked = setup(function() return items(3) end,
     { hostScripts = { OnEscapePressed = function(self) self:ClearFocus() end } })
   typed(box, "abc")
@@ -336,6 +357,7 @@ test("autocomplete: a click on a row picks it and closes", function()
 end)
 
 test("autocomplete: focus lost elsewhere closes on the next frame", function()
+  -- red under: a focus-lost check that never closes.
   local h, box = setup(function() return items(3) end)
   typed(box, "a")
   box:ClearFocus()
@@ -358,6 +380,7 @@ test("autocomplete: focus lost to a press on the list keeps it, gives the box th
 end)
 
 test("autocomplete: focus regained before the next frame keeps the list", function()
+  -- red under: a focus-lost check that closes without re-reading HasFocus.
   local h, box = setup(function() return items(3) end)
   typed(box, "a")
   box:ClearFocus()
@@ -367,6 +390,7 @@ test("autocomplete: focus regained before the next frame keeps the list", functi
 end)
 
 test("autocomplete: a debounce still waiting when focus goes shows nothing", function()
+  -- red under: an onFocusLost with no cancelPending, so the waiting debounce opens the list.
   local h, box, calls = setup(function() return items(3) end)
   box:type("a")
   box:ClearFocus()
@@ -408,6 +432,8 @@ test("autocomplete: Close hides the list and drops a waiting update", function()
 end)
 
 test("autocomplete: SetEnabled(false) closes and ignores typing until enabled again", function()
+  -- red under: live() reading only the released flag (typing still asks the provider), and equally
+  -- a SetEnabled(false) that does not close.
   local h, box, calls = setup(function() return items(2) end)
   typed(box, "a")
   h:SetEnabled(false)
@@ -421,12 +447,21 @@ test("autocomplete: SetEnabled(false) closes and ignores typing until enabled ag
 end)
 
 test("autocomplete: Release leaves the hooks inert, and a second Autocomplete on the box replaces the first", function()
+  -- red under: a Release that never sets the released flag (Refresh calls the nil provider). The
+  -- typing half alone stayed green under it, because Release also drops the box's owner entry and
+  -- the hook then finds no handle; the two Refresh lines are what make the flag observable.
   local h, box, calls = setup(function() return items(2) end)
   typed(box, "a")
   h:Release()
   assertFalse(h:IsShown())
   typed(box, "ab")
   assertEqual(#calls, 1, "a released handle never asks its provider again")
+  box.__text = "abc"
+  h:Refresh()
+  assertFalse(h:IsShown(), "Refresh on a released handle is inert")
+  h:SetEnabled(true)
+  h:Refresh()
+  assertFalse(h:IsShown(), "and SetEnabled(true) does not bring it back")
   local calls2 = 0
   local h2 = W.Autocomplete(box, { provider = function() calls2 = calls2 + 1; return items(1) end })
   local h3 = W.Autocomplete(box, { provider = function() return items(4) end })
