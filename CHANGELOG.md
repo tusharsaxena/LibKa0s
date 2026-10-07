@@ -69,6 +69,10 @@ files**. Built to standard v2.76.0, as v1.69.0 was; the README's standards point
 - **Tagged locally, not published.** `v1.70.0` is an annotated tag on `feat/2026-10-06-line-chart`;
   the push, the merge to `master` and the GitHub release wait on the owner's go-ahead.
 
+Release gate (`docs/automated-tests/20261007-102304/`): lint pass, 0/0 in 153 files;
+tests pass, 2089 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.69.0 — 2026-10-06
 
 Versions in this release: **WidgetsLineChart minor 1**, a new file (`LibKa0s-Widgets-1.0` key
