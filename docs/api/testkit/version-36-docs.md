@@ -10,9 +10,9 @@
 | Version | **36** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.68.1 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 35](version-35-docs.md) — the complexity suite measures a sighted shadow, with parity |
-| Superseded by | — |
+| Superseded by | [version 37](version-37-docs.md) — the mock answers Line regions |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `36` |
 
@@ -58,3 +58,8 @@ git update-index --chmod=+x tests/_kit/run-automated-tests.sh
 Nothing else. The suites list does not change and no kit case name changes, so a consumer's
 `docs/test-cases.md` does not change. A consumer's own prose that names the revision it holds
 (`kit revision 35`) moves to 36 in the same commit.
+
+## Moving to 37
+
+Copy the kit whole. A suite that counts frames is unaffected: a Line is not a frame and is not
+tracked as one.

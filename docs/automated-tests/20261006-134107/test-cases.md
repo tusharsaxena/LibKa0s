@@ -552,7 +552,7 @@ badge and any count quoted in the docs must agree with it.
 - draghandle: a tooltipPlace that is not a function is ignored, not called
 - draghandle: DragHandle is at minor 4, the placement hook's minor
 
-### test_widgets_linechart_math.lua (16)
+### test_widgets_linechart_math.lua (14)
 
 - chart math: the file attaches to the Widgets shell and records its minor
 - chart math: NiceTicks picks a 1-2-2.5-5 step and covers the data
@@ -563,21 +563,18 @@ badge and any count quoted in the docs must agree with it.
 - chart math: Downsample hands a series that already fits back untouched
 - chart math: Downsample keeps a one-point spike
 - chart math: Budget never answers fewer than three points
-- chart math: Budget takes a per-chart spacing and falls to the default for a bad one
-- chart math: a larger spacing draws fewer points yet keeps the series' global min and max
 - chart math: TimeTicks lands day steps on local midnight
 - chart math: TimeTicks uses hour steps inside one day
 - chart math: TimeTicks answers nothing for an empty span
 - chart math: NearestIndex snaps to the closest x and clamps at the ends
 - chart math: Dashes cuts a segment into dash-gap pieces along its length
 
-### test_widgets_linechart.lua (13)
+### test_widgets_linechart.lua (12)
 
 - line chart: Render draws the axis, one grid rule per y tick and one line per segment
 - line chart: a second Render of the same data creates no new Line objects
 - line chart: a smaller render hides the leftovers instead of leaving them drawn
 - line chart: the plot never gets more than one point per 2px
-- line chart: opts.pxPerPoint sets the point budget per chart; the default is unchanged
 - line chart: a series maps its first point onto the plot's bottom-left corner
 - line chart: a dashed range draws dashes, an undashed series one line per segment
 - line chart: a marker inside the domain draws a dashed rule; outside it draws nothing
@@ -586,39 +583,6 @@ badge and any count quoted in the docs must agree with it.
 - line chart: Clear hides every line
 - line chart: Render before SetData or at zero size draws nothing and does not raise
 - line chart: a one-point series still draws a visible mark
-
-### test_widgets_autocomplete.lua (30)
-
-- autocomplete: answers nil without a provider or without a box it can hook
-- autocomplete: publishes its chrome, with the 0.15 s debounce floor and 8 rows by default
-- autocomplete: typing asks the provider only after the debounce, once for a burst
-- autocomplete: an opts.debounce under the floor is raised to it
-- autocomplete: empty or blank text closes without asking the provider
-- autocomplete: an empty or nil provider answer hides the list and never raises
-- autocomplete: at most maxRows rows, 8 by default
-- autocomplete: Refresh asks the provider at once for the box's text
-- autocomplete: the list hangs from the box's bottom corners, the box's width, in its own strata
-- autocomplete: the list wears the box's own border and background
-- autocomplete: a box with no backdrop colors gets the house flat skin
-- autocomplete: each row takes its item's color, in either shape, and plain text without one
-- autocomplete: rows are pooled, and a shorter list hides the leftovers
-- autocomplete: Down and Up move the selection, Up from the first row goes back to the text
-- autocomplete: Enter picks the selected row, closes, and hands the host the item as provided
-- autocomplete: Enter still picks when the host's own Enter clears focus first
-- autocomplete: Enter with nothing selected closes and picks nothing
-- autocomplete: Tab picks the selected row, or the first
-- autocomplete: Esc closes and keeps the typed text
-- autocomplete: a new keystroke drops the selection at once
-- autocomplete: a click on a row picks it and closes
-- autocomplete: focus lost elsewhere closes on the next frame
-- autocomplete: focus lost to a press on the list keeps it, gives the box the keys back, and the row's click picks
-- autocomplete: focus regained before the next frame keeps the list
-- autocomplete: a debounce still waiting when focus goes shows nothing
-- autocomplete: focus gained with text in the box offers the list again
-- autocomplete: the host's own SetText closes the list, and the box hiding closes it
-- autocomplete: Close hides the list and drops a waiting update
-- autocomplete: SetEnabled(false) closes and ignores typing until enabled again
-- autocomplete: Release leaves the hooks inert, and a second Autocomplete on the box replaces the first
 
 ### test_widgets_reorder.lua (7)
 
@@ -2378,9 +2342,8 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_draghandle_place.lua | 10 |
-| test_widgets_linechart_math.lua | 16 |
-| test_widgets_linechart.lua | 13 |
-| test_widgets_autocomplete.lua | 30 |
+| test_widgets_linechart_math.lua | 14 |
+| test_widgets_linechart.lua | 12 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
@@ -2447,4 +2410,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **2089** |
+| **Total** | **2056** |

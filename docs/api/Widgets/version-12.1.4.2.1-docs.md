@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 12.1.4
+# `LibKa0s-Widgets-1.0` — version 12.1.4.2.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,12 +8,67 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** |
-| Shipped in | v1.68.0 |
-| Status | Superseded |
-| Supersedes | [version 12.1.3](./version-12.1.3-docs.md) — no tooltip placement hook |
-| Superseded by | [version 12.1.4.1](./version-12.1.4.1-docs.md) — `WidgetsLineChart.lua`: `LINE_CHART` and `ChartMath` |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4 }` |
+| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **2** · `WidgetsAutocomplete.lua` minor **1** |
+| Shipped in | v1.70.0 |
+| Status | **Current** |
+| Supersedes | [version 12.1.4.1](./version-12.1.4.1-docs.md) — no autocomplete |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 2, WidgetsAutocomplete = 1 }` |
+
+## What changed at 12.1.4.2.1
+
+**An autocomplete, in a new file** (`WidgetsAutocomplete.lua`, minor **1**). `Widgets.lua` stays at
+**12**, `WidgetsReorder.lua` at **1** and `WidgetsDragHandle.lua` at **4**; `WidgetsLineChart.lua`
+moves from **1** to **2** (one new option, below); the version key gains a fifth component and
+becomes 12.1.4.2.1. No existing member, field or method moves.
+
+- **`opts.pxPerPoint`, per chart** (`WidgetsLineChart` **Since 2**). The thinning budget is
+  `floor(plot width / pxPerPoint)`; a chart that sets it to 4 draws half the points, so fewer and
+  longer segments and a smoother-looking line. Absent, zero, negative or not a number, the chart
+  falls to `LINE_CHART.PX_PER_POINT` (2), so an existing chart draws as before. `ChartMath.Budget`
+  takes the spacing as an optional second argument. Thinning is still LTTB, which keeps the first
+  and last points and a spike; values are never altered.
+
+- **A secondary file paired on the shell's minor**, exactly as `WidgetsLineChart.lua` is. It records
+  `lib.__autocompleteMinor` and `lib.__autocompleteShellMinor`, and steps aside only when both its
+  own minor is already met and the shell it would attach to is the shell it attached to before.
+- **What this version publishes**: `lib.Autocomplete` and `lib.AUTOCOMPLETE`, both
+  `WidgetsAutocomplete` **Since 1**. A suggestion list that hangs directly under a host's `EditBox`,
+  the box's width and in the box's own skin, filled by a host provider as the player types and
+  picked from with the mouse, Up/Down, Enter or Tab. Pinned by `tests/test_widgets_autocomplete.lua`.
+  See *The autocomplete* below.
+- **Two consumers at promotion**, LootHistory's search box (every tab) and BankLedger's search box,
+  with the same semantics, which is `library-stack-§7`'s promotion bar; no deviation row.
+
+**What a host must change: nothing.** A host that hangs no list owes nothing; the new members are
+`nil` on an older copy, so a host that does hang one checks for them first.
+
+## What changed at 12.1.4.1
+
+**A line chart, in a new file** (`WidgetsLineChart.lua`, minor **1**). `Widgets.lua` stays at
+**12**, `WidgetsReorder.lua` at **1** and `WidgetsDragHandle.lua` at **4**; the version key gains a
+fourth component and becomes 12.1.4.1. No existing member, field or method moves.
+
+- **A secondary file paired on the shell's minor**, exactly as `WidgetsDragHandle.lua` is. It records
+  `lib.__chartMinor` and `lib.__chartShellMinor`, and steps aside only when both its own minor is
+  already met and the shell it would attach to is the shell it attached to before, so a chart from
+  one vendored copy cannot sit beside a shell from another without saying so.
+- **What this version publishes** is the chart, its chrome and its math: `lib.LineChart`,
+  `lib.LINE_CHART` and `lib.ChartMath`, all **Since 1**. Everything the chart decides without a
+  frame (the tick ladder, the thinning, the time labels, the nearest x, the dash cutting) is pinned
+  headless by `tests/test_widgets_linechart_math.lua`; the drawn half (the pool, the mapping, the
+  dashes, the markers, the hover) by `tests/test_widgets_linechart.lua` on kit revision 37's Line
+  regions. See *The line chart* below.
+- **Why it is not a major of its own.** A new major costs a setup seam in every consumer, and only
+  one draws a chart today.
+- **One consumer at release.** `library-stack-§7` asks two or more consumers of the same semantics
+  before a surface is promoted into a Ka0s-owned library; this one has one, LootHistory's Timeline.
+  The owner ruled on 2026-10-06 to build it here from the start (LootHistory's timeline-ledger
+  spec, F3), and the gap is recorded as a row in this repo's `CLAUDE.md` → `## Documented
+  deviations`, with its re-check trigger.
+
+**What a host must change: nothing.** A host that draws no chart owes nothing; the new members are
+`nil` on an older copy, so a host that does draw one checks for them first.
 
 ## What changed at 12.1.4
 
@@ -314,6 +369,9 @@ library's.
 | `CopyWindow(descriptor)` | **6** | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
 | `ReorderList(opts)` | **8** | Builds a drag-to-reorder controller for one render of a list. Returns the controller. See *The reorderable list*. |
+| `LineChart(parent, opts)` | `WidgetsLineChart` **1** (`opts.pxPerPoint` **Since 2**) | Builds one pooled line chart, a `Frame` parented to `parent`. Returns the chart. See *The line chart*. |
+| `Autocomplete(editBox, opts)` | `WidgetsAutocomplete` **1** | Hangs a suggestion list under `editBox`. Returns a handle, or `nil` with no client, a box that cannot be hooked, or no `opts.provider`. See *The autocomplete*. |
+| `AUTOCOMPLETE` | `WidgetsAutocomplete` **1** | The list's chrome and timing constants. See *The autocomplete*. |
 | `MODULES` | 1 | `{ Widgets = <minor> }` — the live minor, and the value that picks this document. |
 
 ### `Dropdown(parent, width, opts)`
@@ -904,6 +962,296 @@ already vendored and loaded in both addons, so adoption is one
 `LibStub("LibKa0s-Widgets-1.0", true)` at the module that draws a strip, plus a nil-tolerant
 fallback — and the honest fallback is that a build with no library draws no handle.
 
+## The line chart
+
+`WidgetsLineChart.lua`, **Since 1**. One file of the Widgets major, paired on the shell's minor
+(see *What changed at 12.1.4.1*). This version publishes the widget (`lib.LineChart`), its chrome
+constants and its pure math; the constants and the math need no frame, no client and no geometry stub.
+
+### `lib.LINE_CHART`
+
+The chart's published chrome. Read it, never restate it: a host that lines anything up with the plot
+reads the paddings here, so a later minor that moves them moves the host too. Every field is
+**Since 1**.
+
+| Field | Value | Meaning |
+|---|---|---|
+| `PAD_LEFT` | `52` | Pixels between the chart's left edge and the plot, room for the y labels. |
+| `PAD_RIGHT` | `8` | Pixels between the plot and the chart's right edge. |
+| `PAD_TOP` | `8` | Pixels between the chart's top edge and the plot. |
+| `PAD_BOTTOM` | `18` | Pixels between the plot and the chart's bottom edge, room for the x labels. |
+| `PX_PER_POINT` | `2` | The default thinning budget: at most one drawn point per this many plot pixels (`ChartMath.Budget`), unless a chart sets `opts.pxPerPoint`. |
+| `DASH` | `4` | Default dash length in pixels (`ChartMath.Dashes`). |
+| `GAP` | `3` | Default gap between dashes in pixels (`ChartMath.Dashes`). |
+| `Y_TICKS` | `5` | Default target tick count for `ChartMath.NiceTicks`. |
+| `X_TICKS` | `6` | Default tick budget for `ChartMath.TimeTicks`. |
+| `LABEL_GAP` | `4` | Pixels between an axis and its labels. |
+| `AXIS` | `{ 0.45, 0.45, 0.5, 0.8 }` | RGBA of the axis lines. |
+| `GRID` | `{ 1, 1, 1, 0.07 }` | RGBA of the horizontal grid lines. |
+| `CROSSHAIR` | `{ 1, 1, 1, 0.35 }` | RGBA of the hover crosshair. |
+| `MARKER` | `{ 0.8, 0.8, 0.8, 0.6 }` | RGBA of a dashed vertical marker. |
+| `LINE` | `{ 0.4, 0.6, 0.95, 1 }` | RGBA of a series that names no color of its own. |
+
+### `lib.ChartMath`
+
+Six pure functions, every one **Since 1**. They read `lib.LINE_CHART` for their defaults and the
+client's `date` and `time` for the time axis, and nothing else.
+
+#### `ChartMath.NiceTicks(lo, hi, maxTicks, integer)` → `ticks, niceLo, niceHi, step`
+
+The y axis. Picks a step from the 1 / 2 / 2.5 / 5 / 10 ladder (times a power of ten) that divides
+`hi - lo` into at most about `maxTicks` intervals (default `LINE_CHART.Y_TICKS`), widens the range
+outward to multiples of that step, and returns the ticks from `niceLo` to `niceHi` inclusive.
+
+- `0, 97, 5` answers step 20 over 0..100 (six ticks); `13, 47, 5` answers step 10 over 10..50;
+  `-30, 70, 5` answers step 20 over -40..80. A range that crosses zero is covered on both sides.
+- A `nil` bound reads as 0, and swapped bounds are swapped back.
+- **A flat range is widened, never divided by zero.** A positive flat value is drawn from 0 (`5, 5`
+  answers 0..5), a negative one up to 0, and an all-zero one (or both `nil`) over 0..1.
+- `integer = true` never steps below 1 (`0, 2, 5` steps 0.5 without it and 1 with it), for a count
+  that has no fractions.
+
+#### `ChartMath.Budget(plotWidth [, pxPerPoint])` → `maxPoints`
+
+`max(3, floor(plotWidth / pxPerPoint))`: at most one point per `pxPerPoint` pixels of plot, which is
+`LINE_CHART.PX_PER_POINT` (2) when the argument is absent or not a positive number (**Since 2**; the
+argument is the only change, so a one-argument call answers what it did at 1). A `nil` or zero width
+answers 3, never fewer.
+
+#### `ChartMath.Downsample(points, maxPoints)` → `points`
+
+Thins a series for drawing with Largest-Triangle-Three-Buckets. `points` is an array of `{ x =, y = }`
+sorted by `x`. The answer holds exactly `maxPoints` of the input's own point tables, in order.
+
+- **The input table itself comes back**, with no copy, when it already fits (`maxPoints >= #points`)
+  or when `maxPoints` is under 3.
+- The first and the last point always survive, and `x` stays strictly increasing when the input's is.
+- **A one-point spike survives.** Each bucket keeps the point that spans the largest triangle with
+  its neighbors, rather than an average or every Nth point, because a spike in a balance is what a
+  player is looking for.
+
+#### `ChartMath.TimeTicks(xMin, xMax, maxTicks)` → `ticks, step`
+
+The time axis, in epoch seconds. Picks the first step from the ladder 1 h, 3 h, 6 h, 12 h, 1 d,
+2 d, 7 d, 14 d, 30 d, 91 d, 182 d, 365 d that fits the span in `maxTicks` (default
+`LINE_CHART.X_TICKS`) intervals, and answers the ticks inside `[xMin, xMax]`, at most `maxTicks + 1`
+of them.
+
+- **Day steps land on local midnight**, the first one at or after `xMin`. Each next tick re-anchors
+  on midnight, with a two-hour nudge, so a 23- or 25-hour day (a daylight-saving change) cannot walk
+  the labels off midnight. Thirty days at 6 ticks steps 7 days.
+- Hour steps sit on multiples of the step counted from local midnight: one day at 6 ticks steps 6
+  hours, at 00:00, 06:00, 12:00, 18:00 and the next 00:00.
+- An empty or inverted span, or a `nil` bound, answers an empty table and a `nil` step.
+
+#### `ChartMath.NearestIndex(xs, x)` → `index` or `nil`
+
+The index in the sorted array `xs` whose value is nearest `x`, by binary search. Clamps to 1 below
+the first value and to `#xs` above the last; an exact tie between two neighbors picks the lower
+index. An empty `xs` answers `nil`.
+
+#### `ChartMath.Dashes(x1, y1, x2, y2, dash, gap)` → `{ { x1, y1, x2, y2 }, ... }`
+
+Cuts the segment from `(x1, y1)` to `(x2, y2)` into dashes of `dash` pixels separated by `gap`
+pixels along its length (defaults `LINE_CHART.DASH` and `LINE_CHART.GAP`), any direction. The last
+dash is clipped at the segment's end. A zero-length segment has no dashes and answers an empty table.
+
+### `lib.LineChart(parent, opts)` → `chart`
+
+**Since 1.** Builds one line chart, a `Frame` parented to `parent`, and returns it. The chart draws
+nothing until the host hands it data (`SetData`) and a size (`Render`, or the frame's own size
+change). Every segment, grid rule, marker dash and the crosshair is a `Line` region on the chart
+frame; every axis label is a `FontString` on it.
+
+The crosshair is the chart's **first** `CreateLine`, made at construction and kept out of the pool,
+so the chart's lines in creation order are the crosshair, then the pool.
+
+### `opts`
+
+Read on every render and every hover, never written. Every field is optional and **Since 1**.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `font` | `"GameFontDisableSmall"` | FontObject name the axis labels are created with. Read when a label is first made, so a change reaches only labels the pool has not made yet. |
+| `onHover` | none | `onHover(chart, index, x)` when the hovered index changes, and `onHover(chart, nil, nil)` when a hover clears. `index` is into `data.hoverXs`, `x` is `hoverXs[index]`. The host draws its own tooltip. |
+| `pxPerPoint` | `LINE_CHART.PX_PER_POINT` (2) | **Since 2.** Plot pixels per drawn point: the thinning budget is `floor(plot width / pxPerPoint)`. Larger is smoother and draws fewer segments. A non-positive or non-number value falls to the default. Read on every render. |
+| `formatY` | integer as-is, otherwise `%.2f` | `formatY(v) → string` for each y tick label. |
+| `formatX` | `date("%H:%M")` under a day step, otherwise `date("%d %b")` | `formatX(x, step) → string` for each x tick label; `step` is `ChartMath.TimeTicks`'s step in seconds. |
+
+### `data`
+
+What `chart:SetData(data)` takes. Every field is **Since 1**.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `xMin`, `xMax` | required | The x domain, epoch seconds. Without both the chart draws nothing. |
+| `yMin`, `yMax` | the data's | The y range before `ChartMath.NiceTicks` widens it. Used only when both are given; otherwise the lowest and highest `y` across every series. |
+| `integer` | `false` | Passed to `NiceTicks`: the y step never goes below 1. |
+| `series` | `{}` | Array of series, drawn in order (a later series over an earlier one). |
+| `series[i].points` | `{}` | Array of `{ x =, y = }`, sorted by `x`. Thinned with `ChartMath.Downsample` to `ChartMath.Budget(plot width)` before drawing. |
+| `series[i].color` | `LINE_CHART.LINE` | RGBA array; a missing alpha reads as 1. |
+| `series[i].thickness` | `1.5` | Line thickness in pixels. |
+| `series[i].dashFrom`, `series[i].dashTo` | none | The x range drawn dashed. `dashTo` absent means "to the end". |
+| `markers` | none | Array of vertical rules: `{ x =, color = LINE_CHART.MARKER, dashed = true }`. `dashed = false` draws a solid rule. |
+| `hoverXs` | none | Sorted array of the x values a hover can snap to. Without it the chart never hovers. |
+
+### Instance methods
+
+| Method | Since | Meaning |
+|---|---|---|
+| `chart:SetData(data)` | 1 | Stores the reference. Does not draw. |
+| `chart:Render(w, h)` | 1 | Draws `data` at `w` × `h` (default `GetWidth()` / `GetHeight()`), reusing every Line and label from the last render and hiding what this one did not use. A zero size, or no data, draws nothing. |
+| `chart:Clear()` | 1 | Forgets the data, clears the hover and hides every line and label. |
+| `chart:GetPlotRect()` | 1 | `left, bottom, width, height` of the plot in chart-local pixels (BOTTOMLEFT origin). `nil` before the first render that drew. |
+| `chart:XToPixel(x)` | 1 | Chart-local x pixel of a domain `x`. `0` before a render. |
+| `chart:YToPixel(y)` | 1 | Chart-local y pixel of a value `y`, on the widened tick range. `0` before a render. |
+| `chart:PixelToX(px)` | 1 | Domain `x` at chart-local pixel `px`, the inverse of `XToPixel`. |
+| `chart:HoverAtPixel(px)` | 1 | Snaps to the `hoverXs` entry nearest `PixelToX(px)` (`ChartMath.NearestIndex`), moves the crosshair there and answers the index; calls `opts.onHover` only when the index changed. `nil` with no render or no `hoverXs`. |
+| `chart:ClearHover()` | 1 | Hides the crosshair and, when a hover was up, calls `opts.onHover(chart, nil, nil)`. |
+| `chart:HoverIndex()` | 1 | The hovered index, or `nil`. |
+
+### Behavior a host must know
+
+- **Pooled by index.** A render hands out Lines and labels in order and hides the leftovers, so the
+  same data drawn twice creates no region and a smaller drawing leaves nothing stale. Regions are
+  never destroyed in the client; the pool only grows to the largest drawing the chart has made.
+- **`SetData` stores a reference.** The host must not mutate `data` between `SetData` and `Render`
+  (or a resize, which re-renders); build a new table instead.
+- **The y range is the data's** unless both `yMin` and `yMax` are given, then widened outward to
+  nice ticks by `ChartMath.NiceTicks`; `integer` keeps the y step at 1 or more.
+- **A segment is dashed when its midpoint is in `[dashFrom, dashTo]`.** The host marks the part of
+  a line it wants read as provisional; a single-point series draws a 2px tick at the point.
+- **Markers outside `[xMin, xMax]` draw nothing.**
+- **`onHover` fires only on an index change**, and with `nil` when the hover clears: `ClearHover`,
+  `OnLeave`, `OnHide` and `Clear` all clear it. `SetData` and `Render` do not, so a host that
+  repaints new data under a resting cursor calls `ClearHover` before `SetData`; the armed `OnUpdate`
+  then hovers again against the new data on the next frame. Without it the host's tooltip keeps the
+  old data's values until the cursor reaches a different index.
+- **Scripts the chart owns:** `OnEnter` arms an `OnUpdate` that reads `GetCursorPosition` and calls
+  `HoverAtPixel`; `OnLeave` and `OnHide` disarm it and clear the hover; `OnSizeChanged` re-renders at
+  the new size. A host that replaces one of them takes over that job.
+- **The chart is `EnableMouse(true)`**, so it takes the mouse over its whole rectangle.
+
+**Consumer census, v1.69.0** ([`CONSUMERS.md`](../CONSUMERS.md)). `lib.LineChart` has one host,
+LootHistory's `NS.MakeLineChart` seam. No host calls, reads or passes by name the ten below:
+
+- `lib.ChartMath`: no consumer as of v1.69.0, kept because a host that draws decorations against the plot needs the chart's own tick, budget and nearest-index math; LootHistory aligns its in/out strip through the instance's `XToPixel` instead.
+- `lib.LINE_CHART`: no consumer as of v1.69.0, kept because it is the published chrome a host reads to line anything up with the plot rather than restating the paddings.
+- `hoverXs`: no consumer as of v1.69.0, kept because it is the only way a host turns the hover on; LootHistory builds it in `TimelineModel.lua` and hands it through the seam's table, which the census scan cannot see as a literal pass.
+- `integer`: no consumer as of v1.69.0, kept because a count axis needs a y step of 1 or more; passed as `hoverXs` is.
+- `markers`: no consumer as of v1.69.0, kept because a vertical rule (LootHistory's ledger-start marker) has no other route into the chart; passed as `hoverXs` is.
+- `series`: no consumer as of v1.69.0, kept because it is the chart's data; passed as `hoverXs` is.
+- `xMax`: no consumer as of v1.69.0, kept because the chart draws nothing without the x domain; passed as `hoverXs` is.
+- `xMin`: no consumer as of v1.69.0, kept for the same reason as `xMax`; passed as `hoverXs` is.
+- `yMax`: no consumer as of v1.69.0, kept because a host may pin the y range instead of taking the data's; LootHistory takes the data's range and does not pass it.
+- `yMin`: no consumer as of v1.69.0, kept for the same reason as `yMax`; LootHistory does not pass it either.
+
+**Consumer census, v1.70.0.** `lib.LINE_CHART` now has one host, LootHistory's
+`core/WidgetsSetup.lua`, so its line above no longer holds; the other nine stand. `opts.pxPerPoint`
+is outside the scan (it is read off the chart's stored options, not a descriptor literal);
+LootHistory is its planned first host.
+
+## The autocomplete
+
+**`WidgetsAutocomplete.lua`, minor 1.** A suggestion list that hangs directly under a host's
+`EditBox` and reads as part of it: the box's width, the box's own border and background, one row per
+suggestion with an optional icon and the suggestion's own color (an item's quality color, say). The
+host supplies what the rows say and what a pick does; the widget owns the list, the debounce, the
+keyboard and the focus rules.
+
+### `lib.AUTOCOMPLETE`
+
+Read, never restated. Every field is **Since 1**.
+
+| Field | Value | Meaning |
+|---|---|---|
+| `MAX_ROWS` | `8` | Rows shown when `opts.maxRows` is absent. |
+| `ROW_H` | `18` | Row height when `opts.rowHeight` is absent. |
+| `DEBOUNCE` | `0.15` | Seconds after the last keystroke before the provider is asked; also the floor for `opts.debounce`. |
+| `MIN_CHARS` | `1` | Trimmed characters the text needs before the provider is asked, when `opts.minChars` is absent. |
+| `PAD` | `1` | Inset of the rows inside the list's 1px border. |
+| `OVERLAP` | `1` | The list's top edge sits this many pixels up into the box, so the two borders draw as one line. |
+| `ICON` | `14` | Icon size, when a row has one. |
+| `TEXT_INSET` | `6` | The label's left and right inset. |
+| `STRATA` | `"FULLSCREEN_DIALOG"` | The list's strata, when `opts.strata` is absent. |
+| `MIN_BG_ALPHA` | `0.95` | The list's background alpha is the box's or this, whichever is higher, so rows read over what the list covers. |
+| `FONT` | `"GameFontHighlightSmall"` | The row label's font object, when `opts.font` is absent. |
+| `BORDER`, `BG` | the house flat skin | Used only when the box answers no `GetBackdropBorderColor` / `GetBackdropColor` of its own. |
+| `TEXT` | `{ 0.9, 0.9, 0.9 }` | A row's color when its item has none. |
+| `HIGHLIGHT` | gold, alpha `0.15` | The row highlight, for the hovered row and the keyboard-selected one. |
+
+### `lib.Autocomplete(editBox, opts)` → `handle`
+
+**Since 1.** Hooks `editBox` (never replaces a script it has) and answers a handle. The list frame is
+built on the first list that shows. Answers `nil` with no `CreateFrame`, an `editBox` without
+`HookScript`, or no `opts.provider`.
+
+### `opts`
+
+Read when the handle is made. Every field is **Since 1**.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `provider` | required | `provider(text) → { item, ... }`, asked `DEBOUNCE` after the last keystroke with the box's text as typed. An `item` is `{ text =, value =, color =, icon = }`: `text` is the row's label, `color` is `{ r, g, b }` or a table with `.r .g .b`, `icon` is a file id or path; `value` and any other field are the host's and come back untouched in `onPick`. A bare string reads as `{ text = string }`. `nil` or an empty table closes the list. |
+| `onPick` | none | `onPick(item)`, after the list has closed, with the item exactly as the provider answered it. The widget never writes the box's text; a host that wants the text replaced or cleared does it here. |
+| `maxRows` | `AUTOCOMPLETE.MAX_ROWS` | The most rows shown; the rest of the provider's answer is dropped. |
+| `rowHeight` | `AUTOCOMPLETE.ROW_H` | Row height in pixels. |
+| `minChars` | `AUTOCOMPLETE.MIN_CHARS` | Trimmed characters before the provider is asked. |
+| `debounce` | `AUTOCOMPLETE.DEBOUNCE` | Seconds; never below `AUTOCOMPLETE.DEBOUNCE`. |
+| `font` | `AUTOCOMPLETE.FONT` | Font object the row labels are created with. |
+| `strata` | `AUTOCOMPLETE.STRATA` | The list's frame strata. |
+
+### Handle methods
+
+| Method | Since | Meaning |
+|---|---|---|
+| `handle:Refresh()` | 1 | Asks the provider now, for the box's text now, and shows the answer (or closes on nothing). Drops a waiting debounce. |
+| `handle:Close()` | 1 | Hides the list, drops the selection and any waiting debounce. The box's text is untouched. |
+| `handle:IsShown()` | 1 | `true` while the list is up. |
+| `handle:SetEnabled(on)` | 1 | `false` closes the list and ignores the box until `true`. |
+| `handle:Release()` | 1 | Closes the list and makes the handle inert for good: its hooks do nothing and its provider and `onPick` are dropped. Hooks cannot be removed in the client, so they stay on the box, inert. |
+
+### Behavior a host must know
+
+- **Hooks, never scripts.** `OnTextChanged`, `OnArrowPressed`, `OnEnterPressed`, `OnTabPressed`,
+  `OnEscapePressed`, `OnEditFocusLost`, `OnEditFocusGained` and `OnHide` are hooked once per box, so
+  the host's own handler runs first and keeps running. A second `Autocomplete` on the same box
+  releases the first; the hooks dispatch to the newest handle.
+- **Typing is `OnTextChanged` with `userInput` true.** The host's own `SetText` (a box cleared after
+  a pick, a restored saved view) closes the list rather than asking the provider.
+- **The keyboard.** Down selects the first row, then the next, stopping at the last; Up goes back,
+  and from the first row back to the typed text (no row selected). Enter picks the selected row, or
+  with none selected closes the list and picks nothing. Tab picks the selected row, or the first.
+  Esc closes and keeps the typed text. A new keystroke drops the selection at once, before the
+  debounce, so Enter can never take a row the new text no longer matches.
+- **The focus.** The list never takes keyboard focus. Focus lost to anywhere but the list closes it
+  on the next frame (so an Enter or Tab hook that runs after a host's `ClearFocus` still has the
+  selected row); focus regained before then keeps it. Focus lost to a press on the list keeps it and
+  hands the box the keys back on the next frame; the row's click, on the release, picks and closes.
+  A debounce still waiting when focus goes shows nothing. Focus gained with enough text in the box
+  offers the list again.
+- **Placement.** The list is parented to the box (it takes the box's scale and hides with it) and
+  anchored `TOPLEFT` → box `BOTTOMLEFT` and `TOPRIGHT` → box `BOTTOMRIGHT`, `OVERLAP` up, so it is
+  the box's width and follows every resize with no handler. Its height is the shown rows times the
+  row height plus the padding.
+- **Skin.** Read from the box on every show: `GetBackdropBorderColor` for the border and
+  `GetBackdropColor` for the background (alpha raised to `MIN_BG_ALPHA`), each falling back to the
+  house flat skin when the box answers no numbers.
+- **Pooled rows.** A row is built for an index that has none and reused for every later list; a
+  shorter list hides the leftovers. Every field of a row is repainted on every show.
+- **No events, no OnUpdate.** The only timers are the debounce and the one-frame focus checks, all
+  through `C_Timer.After` (read at call time; without it they run at once).
+- **Combat.** Plain frames, nothing protected: nothing here is refused in combat.
+- **Headless.** The base test kit hands back the frame itself for `CreateTexture` and
+  `CreateFontString`, so a row's icon is shown or hidden before the row is shown, and a suite reads
+  a row's text and selection from its `__text` and `__selected` fields rather than from its label.
+
+**Consumer census, v1.70.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls either member at the
+tag; the two named adopters land after it.
+
+- `lib.Autocomplete`: no consumer as of v1.70.0, a host duplicate: LootHistory's Timeline still hand-rolls the list (`makeSuggestRow` / `RenderSuggestions` in `modules/Timeline.lua`). LootHistory adopts it on every tab and deletes the local list, and BankLedger adopts it on its search box (the timeline-ledger plan's tasks B2 and C2).
+- `lib.AUTOCOMPLETE`: no consumer as of v1.70.0, kept because it is the published chrome and timing constants, so a host cites the list's defaults (debounce, row height, overlap) rather than restating them.
+
 ## Degraded
 
 **With the major absent there is no reorder handle, no row box and — from this version — no drag
@@ -915,13 +1263,23 @@ With `LibKa0s-Widgets-1.0` absent — no vendored copy, or a copy whose `NEEDS_C
 `LibKa0s-Core-1.0` does not meet — `LibStub("LibKa0s-Widgets-1.0", true)` answers `nil`, exactly as
 for any other major. The secondary files cannot half-attach: each is paired on the shell's minor,
 and one that is missing leaves only its own members `nil` (`ReorderList` and `ROW_BOX` without
-`WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`). The host must have a plan for `nil`
+`WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`, `LineChart`, `LINE_CHART` and `ChartMath` without
+`WidgetsLineChart.lua`, `Autocomplete` and `AUTOCOMPLETE` without `WidgetsAutocomplete.lua`).
+The host must have a plan for `nil`
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
 non-click close path must itself become a no-op alongside the rest of the degraded surface. The same
 holds for `CopyWindow`: with the major absent there is nothing to call, and with the major present in
 a host that has no UI at all the call answers `nil` rather than raising — a host must be ready for a
 `nil` handle and simply not offer the export.
+
+A host with no Widgets copy, or one without `WidgetsAutocomplete.lua`, gets no autocomplete:
+`Autocomplete` and `AUTOCOMPLETE` are `nil`, and the host's box keeps working as a plain search box
+with no list under it.
+
+A host with no Widgets copy, or one without `WidgetsLineChart.lua`, gets no chart: `LineChart` is
+`nil` and there is nothing to draw with. LootHistory's `NS.MakeLineChart` seam answers `nil` in that
+case and its Timeline tab says why, rather than drawing a host-side chart.
 
 ## Cross-consumer smoke check — recorded, NOT run
 
@@ -954,10 +1312,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 12.1.4.1
-
-**Copy the folder whole. Nothing a host calls moves; a host that draws no chart owes nothing.** The
-next version is key 12.1.4.1: `Widgets.lua` 12, `WidgetsReorder.lua` 1, `WidgetsDragHandle.lua` 4
-and a new file, `WidgetsLineChart.lua` 1, paired on the shell's minor, which publishes
-`lib.LINE_CHART` and `lib.ChartMath`. See [version 12.1.4.1](./version-12.1.4.1-docs.md).

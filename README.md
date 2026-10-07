@@ -38,8 +38,9 @@ LibStub major, and fifteen of them ship today:
 - `LibKa0s-Media-1.0` carries the art and type the collection draws with, inside the payload, along
   with the paths that reach them and the LibSharedMedia registration.
 - `LibKa0s-Widgets-1.0` has the flat-skin dropdown button, the reorderable-list drag, the unlocked
-  drag handle a player moves a frame by, and the one popup menu that every instance of the dropdown
-  drops, shared process-wide.
+  drag handle a player moves a frame by, a pooled line chart over a time axis, an autocomplete list
+  hung under a search box, and the one popup menu that every instance of the dropdown drops, shared
+  process-wide.
 - `LibKa0s-DebugLog-1.0` is the on-screen debug console: the window, the copy window, the two
   formatters, the buffer, and the seam that turns logging on and off.
 - `LibKa0s-Slash-1.0`: the slash dispatcher, the help renderer, the schema CLI
@@ -67,7 +68,7 @@ modules and points you there. It does not restate them.
    bails that way, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`,
    `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua` and `OptionsNav.lua`
    bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole ten-file module
-   is absent instead of half-attached. `WidgetsReorder.lua` and `WidgetsDragHandle.lua` do the same
+   is absent instead of half-attached. `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua` and `WidgetsAutocomplete.lua` do the same
    behind `Widgets.lua`, `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
    `PerfPanel.lua` behind `Perf.lua`.
    Since v1.48.0 the folder has carried one more file than it used to. That is why you copy the whole
@@ -97,7 +98,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass. The keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
 | `LibKa0s-Item-1.0` | Item identity as four primitives and no policy: read an item link, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree about it in writing. | `Item.lua` | [2](docs/api/Item/version-2-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL). All of it sits inside the payload, along with the paths that reach it and the LibSharedMedia registration. | `Media.lua`, `media/` | [4](docs/api/Media/version-4-docs.md) |
-| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops, shared process-wide across addons. Then `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, but no row content at all. And `DragHandle`, the labeled strip with a help mark (and optionally a close mark) that a player drags a movable frame by. Widgets takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua` | [12.1.4](docs/api/Widgets/version-12.1.4-docs.md) |
+| `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops, shared process-wide across addons. Then `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, but no row content at all. And `DragHandle`, the labeled strip with a help mark (and optionally a close mark) that a player drags a movable frame by. And `LineChart`, a pooled line chart over a time axis with markers, dashed ranges and a hover crosshair. And `Autocomplete`, a suggestion list hung directly under a host's `EditBox`, in the box's own width and skin, with a debounced provider and keyboard picking. Widgets takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua` | [12.1.4.2.1](docs/api/Widgets/version-12.1.4.2.1-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console (movable window, color-coded log, copy box, and the one seam that turns logging on and off), plus the diagnostics report a player sends with a bug report, the change gates (log once, log on change) the console re-arms on Clear and on enable, and the at-enable queue that holds a state line written while logging is off until it is turned on. The library writes the markers, the identity header and the cap, and runs each section an addon supplies under its own pcall. | `DebugLog.lua`, `DebugLogDiagnostics.lua`, `DebugLogGates.lua` | [19.2.1](docs/api/DebugLog/version-19.2.1-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser. In other words, everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua`, `SlashParse.lua` | [19.1](docs/api/Slash/version-19.1-docs.md) |
 | `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice: with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. It has one `OnClick`, implementing launcher-§2. Left-click opens the settings panel; right-click opens the client's context menu of the toggles the host supplies (Enabled, Locked, Test mode, Show window). There is one library-drawn status tooltip (launcher-§1), and LibDBIcon's own `minimap` table comes from the host. Neither broker library is a dependency. Both are resolved with `LibStub(…, true)` at register time, and every degradation is named, not raised. | `Launcher.lua` | [5](docs/api/Launcher/version-5-docs.md) |
@@ -225,11 +226,11 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.68.1**, which moves no file's minor (it is a test-kit release, revision 36) and adds no file and no major: `Core = { Core = 10 }`,
+different vendored copy of each. As of **v1.70.0**, which adds one file (`WidgetsAutocomplete.lua`, minor 1), moves one existing file's minor (`WidgetsLineChart.lua`, 1 to 2) and adds no major: `Core = { Core = 10 }`,
 `Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 3 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
-`Widgets = { Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4 }`, `DebugLog = { DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }`, `Slash = { Slash = 19, SlashParse = 1 }`,
+`Widgets = { Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 2, WidgetsAutocomplete = 1 }`, `DebugLog = { DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }`, `Slash = { Slash = 19, SlashParse = 1 }`,
 `Launcher = { Launcher = 5 }`,
 `Options = { Options = 28, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 3, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }`,
 `Perf = { Perf = 14, PerfSampler = 1, PerfCommands = 1, PerfPanel = 6 }`. Those numbers move every release, so read them from the top of
@@ -276,6 +277,8 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Widgets.lua        -- LibKa0s-Widgets-1.0, MINOR at the top of the file; needs Core
   WidgetsReorder.lua -- ReorderList and the row box, same module, REORDER_MINOR of its own
   WidgetsDragHandle.lua -- the unlocked drag handle, same module, DRAG_MINOR of its own
+  WidgetsLineChart.lua -- the line chart, same module, CHART_MINOR of its own
+  WidgetsAutocomplete.lua -- the autocomplete list, same module, AUTOCOMPLETE_MINOR of its own
   DebugLog.lua       -- LibKa0s-DebugLog-1.0, MINOR at the top of the file; needs Core
   DebugLogDiagnostics.lua -- the diagnostics report, same module, DIAG_MINOR of its own
   DebugLogGates.lua  -- the change gates and the at-enable queue, same module, GATES_MINOR

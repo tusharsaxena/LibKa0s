@@ -10,6 +10,118 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.70.0 — 2026-10-07
+
+Versions in this release: **WidgetsAutocomplete minor 1**, a new file, and **WidgetsLineChart minor
+2** (`LibKa0s-Widgets-1.0` key 12.1.4.2.1). Within Widgets, `Widgets` stays at 12, `WidgetsReorder` at
+1 and `WidgetsDragHandle` at 4. Every other file is unchanged from v1.69.0: `Core` 10, `Env` 1,
+`Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 19.1,
+`DebugLog` key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6. The
+test kit stays at **revision 37**. No `NEEDS_*` floor rises, no major is added and no existing member
+is removed; one payload file is added, so the library is now **fifteen majors across thirty-four
+files**. Built to standard v2.76.0, as v1.69.0 was; the README's standards pointer does not move.
+
+### WidgetsLineChart minor 2: per-chart point spacing
+
+- **`opts.pxPerPoint`**: plot pixels per drawn point, per chart. The thinning budget becomes
+  `floor(plot width / pxPerPoint)`; a larger value draws fewer, longer segments, a smoother line.
+  Absent or not a positive number it falls to `LINE_CHART.PX_PER_POINT` (2), so existing charts draw
+  as before. `ChartMath.Budget(plotWidth, pxPerPoint)` takes it as an optional second argument.
+  Thinning is still LTTB: the first and last points and a spike survive, values are never altered.
+  Cases in `tests/test_widgets_linechart.lua` and `tests/test_widgets_linechart_math.lua`.
+
+### WidgetsAutocomplete minor 1: the autocomplete
+
+- **A new secondary file of `LibKa0s-Widgets-1.0`**, paired on the shell's minor like
+  `WidgetsLineChart.lua`. `Widgets.lua` stays at minor 12; the key is 12.1.4.2.1.
+- **`lib.Autocomplete(editBox, opts)`**: a suggestion list hung directly under a host's `EditBox`,
+  anchored to both of its bottom corners (its width, following resizes) and in the box's own border
+  and background. `opts.provider(text)` is asked 0.15 s after the last keystroke (at least one
+  character) and answers `{ text, value, color, icon }` rows; `opts.onPick(item)` gets the pick.
+  Pooled rows, quality color per row, a hover and keyboard highlight; Up/Down/Enter/Tab/Esc; closes
+  on a pick, on Esc, on focus loss (one frame later, after Enter/Tab and a row click are handled),
+  on the box hiding and on `handle:Close()`. `handle:Refresh()`, `SetEnabled`, `Release`,
+  `IsShown`. Every box script is hooked, never replaced. No event, no OnUpdate. Cases:
+  `tests/test_widgets_autocomplete.lua`.
+- **`lib.AUTOCOMPLETE`**: the list's chrome and timing constants.
+- **Two consumers at promotion** (LootHistory's and BankLedger's search boxes), so
+  `library-stack-§7`'s bar is met and no deviation row is added.
+
+### What a consumer owes
+
+- **The whole-folder copy of both payloads and the provenance line.** The kit bytes are unchanged
+  from v1.69.0, but `tests/test_vendor_sync.lua` resolves both payloads from the tag the provenance
+  line names, so both are copied. The owner's ruling is that **every consumer re-vendors** (S3): the
+  nine that take the bytes and nothing more add one commit to their existing
+  `feat/2026-10-06-revendor-libka0s-v1.69.0` branches; LootHistory re-vendors on
+  `feat/2026-10-06-timeline-ledger` and BankLedger on `feat/2026-10-07-autocomplete-typesubtype`.
+- **The two Autocomplete adopters.** LootHistory hangs it under its search box on every tab
+  (History, Insights, Timeline, Holdings) and passes `pxPerPoint` to its Timeline chart; BankLedger
+  hangs it under its browser's search box. Both adoptions land after this tag, on the branches above.
+  A host that hangs no list and draws no chart owes nothing in its own code.
+- **The line chart's deviation row reaches its re-check trigger.** `LineChart` still has one
+  consumer (LootHistory), and `CLAUDE.md`'s `library-stack-§7` row reopens its choice when "one
+  release passes after v1.69.0 with no second consumer named". This is that release. The row is left
+  as written and the choice (keep the row, or move the chart back into LootHistory) is the owner's.
+- **Upstream follow-up (S2):** the standard's `library-stack-§7` counts of majors and files need a
+  recount in WowAddonStandards for the thirty-fourth file. It is recorded as a follow-up and is not
+  part of this release.
+- **Tagged locally, not published.** `v1.70.0` is an annotated tag on `feat/2026-10-06-line-chart`;
+  the push, the merge to `master` and the GitHub release wait on the owner's go-ahead.
+
+Release gate (`docs/automated-tests/20261007-102304/`): lint pass, 0/0 in 153 files;
+tests pass, 2089 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+## v1.69.0 — 2026-10-06
+
+Versions in this release: **WidgetsLineChart minor 1**, a new file (`LibKa0s-Widgets-1.0` key
+12.1.4.1), and **test kit revision 37**. Every other file is unchanged from v1.68.1: `Core` 10, `Env`
+1, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 19.1,
+`DebugLog` key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6;
+within Widgets, `Widgets` stays at 12, `WidgetsReorder` at 1 and `WidgetsDragHandle` at 4. No
+`NEEDS_*` floor rises and no major is added; one payload file is added, so the library is now
+**fifteen majors across thirty-three files**. Built to standard v2.76.0, as v1.68.1 was; the
+README's standards pointer does not move.
+
+### WidgetsLineChart minor 1: the line chart
+
+- **A new secondary file of `LibKa0s-Widgets-1.0`**, paired on the shell's minor like
+  `WidgetsDragHandle.lua`. `Widgets.lua` stays at minor 12; the key is 12.1.4.1.
+- **`lib.LINE_CHART`** (chrome constants) and **`lib.ChartMath`**: `NiceTicks`, `Budget`,
+  `Downsample` (LTTB, at most one point per 2px, endpoints kept), `TimeTicks` (day steps on local
+  midnight), `NearestIndex`, `Dashes`. Cases: `tests/test_widgets_linechart_math.lua`.
+- **`lib.LineChart(parent, opts)`**: the widget. Series, grid rules, dashed markers, dashed ranges
+  and a hover crosshair drawn as Line regions pooled by index (a second render creates nothing, a
+  smaller one hides the leftovers), LTTB-thinned to one point per 2px, auto-scaled y, time x axis;
+  `opts.onHover` fires on an index change and with `nil` on leave/hide; the chart re-renders on
+  `OnSizeChanged`. Cases: `tests/test_widgets_linechart.lua`.
+- **One consumer at release** (LootHistory). `library-stack-§7` asks two; the owner's ruling to
+  build it here anyway is a row in `CLAUDE.md` → `## Documented deviations`.
+
+### Test kit revision 37: Line regions
+
+- **`mock_lines.lua`** (new): `CreateLine` on every tracked frame answers a distinct Line that
+  records both ends, thickness, color and shown state, listed on its frame as `__madeLines`; a
+  method a Line does not have raises. `mock_base.lua` loads it (two lines).
+- `Kit.VERSION` is 37. Documented in [`docs/api/testkit/version-37-docs.md`](docs/api/testkit/version-37-docs.md);
+  revision 36 is Superseded.
+
+### What a consumer owes
+
+- **What a consumer owes:** the whole-folder copy of both payloads and the provenance line. The
+  owner's ruling is that **every consumer re-vendors** (S3), each on its own
+  `feat/2026-10-06-revendor-libka0s-v1.69.0` branch, and each runs its own suite: AuraMaster, KickCD
+  and MultiMeters model `CreateLine` in their own mocks. LootHistory is the one consumer that adopts
+  `LineChart`; the others take the bytes and nothing more.
+- **Upstream follow-up (S2):** the standard's `library-stack-§7` counts of majors and files need a
+  recount in WowAddonStandards for the thirty-third file. It is recorded as a follow-up and is not
+  part of this release.
+
+Release gate (`docs/automated-tests/20261006-134107/`): lint pass, 0/0 in 151 files;
+tests pass, 2056 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.68.1 — 2026-10-04
 
 Versions in this release: **test kit revision 36**. Every library file is unchanged from v1.68.0:
