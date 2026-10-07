@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 12.1.4.1
+# `LibKa0s-Widgets-1.0` — version 12.1.4.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,12 +8,33 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **1** |
-| Shipped in | v1.69.0 |
-| Status | Superseded |
-| Supersedes | [version 12.1.4](./version-12.1.4-docs.md) — no line chart |
-| Superseded by | [version 12.1.4.1.1](./version-12.1.4.1.1-docs.md) — `WidgetsAutocomplete.lua`: `Autocomplete` and `AUTOCOMPLETE` |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 1 }` |
+| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **1** · `WidgetsAutocomplete.lua` minor **1** |
+| Shipped in | v1.70.0 |
+| Status | **Current** |
+| Supersedes | [version 12.1.4.1](./version-12.1.4.1-docs.md) — no autocomplete |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 1, WidgetsAutocomplete = 1 }` |
+
+## What changed at 12.1.4.1.1
+
+**An autocomplete, in a new file** (`WidgetsAutocomplete.lua`, minor **1**). `Widgets.lua` stays at
+**12**, `WidgetsReorder.lua` at **1**, `WidgetsDragHandle.lua` at **4** and `WidgetsLineChart.lua`
+at **1**; the version key gains a fifth component and becomes 12.1.4.1.1. No existing member, field
+or method moves.
+
+- **A secondary file paired on the shell's minor**, exactly as `WidgetsLineChart.lua` is. It records
+  `lib.__autocompleteMinor` and `lib.__autocompleteShellMinor`, and steps aside only when both its
+  own minor is already met and the shell it would attach to is the shell it attached to before.
+- **What this version publishes**: `lib.Autocomplete` and `lib.AUTOCOMPLETE`, both
+  `WidgetsAutocomplete` **Since 1**. A suggestion list that hangs directly under a host's `EditBox`,
+  the box's width and in the box's own skin, filled by a host provider as the player types and
+  picked from with the mouse, Up/Down, Enter or Tab. Pinned by `tests/test_widgets_autocomplete.lua`.
+  See *The autocomplete* below.
+- **Two consumers at promotion**, LootHistory's search box (every tab) and BankLedger's search box,
+  with the same semantics, which is `library-stack-§7`'s promotion bar; no deviation row.
+
+**What a host must change: nothing.** A host that hangs no list owes nothing; the new members are
+`nil` on an older copy, so a host that does hang one checks for them first.
 
 ## What changed at 12.1.4.1
 
@@ -342,6 +363,8 @@ library's.
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
 | `ReorderList(opts)` | **8** | Builds a drag-to-reorder controller for one render of a list. Returns the controller. See *The reorderable list*. |
 | `LineChart(parent, opts)` | `WidgetsLineChart` **1** | Builds one pooled line chart, a `Frame` parented to `parent`. Returns the chart. See *The line chart*. |
+| `Autocomplete(editBox, opts)` | `WidgetsAutocomplete` **1** | Hangs a suggestion list under `editBox`. Returns a handle, or `nil` with no client, a box that cannot be hooked, or no `opts.provider`. See *The autocomplete*. |
+| `AUTOCOMPLETE` | `WidgetsAutocomplete` **1** | The list's chrome and timing constants. See *The autocomplete*. |
 | `MODULES` | 1 | `{ Widgets = <minor> }` — the live minor, and the value that picks this document. |
 
 ### `Dropdown(parent, width, opts)`
@@ -1113,6 +1136,101 @@ LootHistory's `NS.MakeLineChart` seam. No host calls, reads or passes by name th
 - `yMax`: no consumer as of v1.69.0, kept because a host may pin the y range instead of taking the data's; LootHistory takes the data's range and does not pass it.
 - `yMin`: no consumer as of v1.69.0, kept for the same reason as `yMax`; LootHistory does not pass it either.
 
+## The autocomplete
+
+**`WidgetsAutocomplete.lua`, minor 1.** A suggestion list that hangs directly under a host's
+`EditBox` and reads as part of it: the box's width, the box's own border and background, one row per
+suggestion with an optional icon and the suggestion's own color (an item's quality color, say). The
+host supplies what the rows say and what a pick does; the widget owns the list, the debounce, the
+keyboard and the focus rules.
+
+### `lib.AUTOCOMPLETE`
+
+Read, never restated. Every field is **Since 1**.
+
+| Field | Value | Meaning |
+|---|---|---|
+| `MAX_ROWS` | `8` | Rows shown when `opts.maxRows` is absent. |
+| `ROW_H` | `18` | Row height when `opts.rowHeight` is absent. |
+| `DEBOUNCE` | `0.15` | Seconds after the last keystroke before the provider is asked; also the floor for `opts.debounce`. |
+| `MIN_CHARS` | `1` | Trimmed characters the text needs before the provider is asked, when `opts.minChars` is absent. |
+| `PAD` | `1` | Inset of the rows inside the list's 1px border. |
+| `OVERLAP` | `1` | The list's top edge sits this many pixels up into the box, so the two borders draw as one line. |
+| `ICON` | `14` | Icon size, when a row has one. |
+| `TEXT_INSET` | `6` | The label's left and right inset. |
+| `STRATA` | `"FULLSCREEN_DIALOG"` | The list's strata, when `opts.strata` is absent. |
+| `MIN_BG_ALPHA` | `0.95` | The list's background alpha is the box's or this, whichever is higher, so rows read over what the list covers. |
+| `FONT` | `"GameFontHighlightSmall"` | The row label's font object, when `opts.font` is absent. |
+| `BORDER`, `BG` | the house flat skin | Used only when the box answers no `GetBackdropBorderColor` / `GetBackdropColor` of its own. |
+| `TEXT` | `{ 0.9, 0.9, 0.9 }` | A row's color when its item has none. |
+| `HIGHLIGHT` | gold, alpha `0.15` | The row highlight, for the hovered row and the keyboard-selected one. |
+
+### `lib.Autocomplete(editBox, opts)` → `handle`
+
+**Since 1.** Hooks `editBox` (never replaces a script it has) and answers a handle. The list frame is
+built on the first list that shows. Answers `nil` with no `CreateFrame`, an `editBox` without
+`HookScript`, or no `opts.provider`.
+
+### `opts`
+
+Read when the handle is made. Every field is **Since 1**.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `provider` | required | `provider(text) → { item, ... }`, asked `DEBOUNCE` after the last keystroke with the box's text as typed. An `item` is `{ text =, value =, color =, icon = }`: `text` is the row's label, `color` is `{ r, g, b }` or a table with `.r .g .b`, `icon` is a file id or path; `value` and any other field are the host's and come back untouched in `onPick`. A bare string reads as `{ text = string }`. `nil` or an empty table closes the list. |
+| `onPick` | none | `onPick(item)`, after the list has closed, with the item exactly as the provider answered it. The widget never writes the box's text; a host that wants the text replaced or cleared does it here. |
+| `maxRows` | `AUTOCOMPLETE.MAX_ROWS` | The most rows shown; the rest of the provider's answer is dropped. |
+| `rowHeight` | `AUTOCOMPLETE.ROW_H` | Row height in pixels. |
+| `minChars` | `AUTOCOMPLETE.MIN_CHARS` | Trimmed characters before the provider is asked. |
+| `debounce` | `AUTOCOMPLETE.DEBOUNCE` | Seconds; never below `AUTOCOMPLETE.DEBOUNCE`. |
+| `font` | `AUTOCOMPLETE.FONT` | Font object the row labels are created with. |
+| `strata` | `AUTOCOMPLETE.STRATA` | The list's frame strata. |
+
+### Handle methods
+
+| Method | Since | Meaning |
+|---|---|---|
+| `handle:Refresh()` | 1 | Asks the provider now, for the box's text now, and shows the answer (or closes on nothing). Drops a waiting debounce. |
+| `handle:Close()` | 1 | Hides the list, drops the selection and any waiting debounce. The box's text is untouched. |
+| `handle:IsShown()` | 1 | `true` while the list is up. |
+| `handle:SetEnabled(on)` | 1 | `false` closes the list and ignores the box until `true`. |
+| `handle:Release()` | 1 | Closes the list and makes the handle inert for good: its hooks do nothing and its provider and `onPick` are dropped. Hooks cannot be removed in the client, so they stay on the box, inert. |
+
+### Behavior a host must know
+
+- **Hooks, never scripts.** `OnTextChanged`, `OnArrowPressed`, `OnEnterPressed`, `OnTabPressed`,
+  `OnEscapePressed`, `OnEditFocusLost`, `OnEditFocusGained` and `OnHide` are hooked once per box, so
+  the host's own handler runs first and keeps running. A second `Autocomplete` on the same box
+  releases the first; the hooks dispatch to the newest handle.
+- **Typing is `OnTextChanged` with `userInput` true.** The host's own `SetText` (a box cleared after
+  a pick, a restored saved view) closes the list rather than asking the provider.
+- **The keyboard.** Down selects the first row, then the next, stopping at the last; Up goes back,
+  and from the first row back to the typed text (no row selected). Enter picks the selected row, or
+  with none selected closes the list and picks nothing. Tab picks the selected row, or the first.
+  Esc closes and keeps the typed text. A new keystroke drops the selection at once, before the
+  debounce, so Enter can never take a row the new text no longer matches.
+- **The focus.** The list never takes keyboard focus. Focus lost to anywhere but the list closes it
+  on the next frame (so an Enter or Tab hook that runs after a host's `ClearFocus` still has the
+  selected row); focus regained before then keeps it. Focus lost to a press on the list keeps it and
+  hands the box the keys back on the next frame; the row's click, on the release, picks and closes.
+  A debounce still waiting when focus goes shows nothing. Focus gained with enough text in the box
+  offers the list again.
+- **Placement.** The list is parented to the box (it takes the box's scale and hides with it) and
+  anchored `TOPLEFT` → box `BOTTOMLEFT` and `TOPRIGHT` → box `BOTTOMRIGHT`, `OVERLAP` up, so it is
+  the box's width and follows every resize with no handler. Its height is the shown rows times the
+  row height plus the padding.
+- **Skin.** Read from the box on every show: `GetBackdropBorderColor` for the border and
+  `GetBackdropColor` for the background (alpha raised to `MIN_BG_ALPHA`), each falling back to the
+  house flat skin when the box answers no numbers.
+- **Pooled rows.** A row is built for an index that has none and reused for every later list; a
+  shorter list hides the leftovers. Every field of a row is repainted on every show.
+- **No events, no OnUpdate.** The only timers are the debounce and the one-frame focus checks, all
+  through `C_Timer.After` (read at call time; without it they run at once).
+- **Combat.** Plain frames, nothing protected: nothing here is refused in combat.
+- **Headless.** The base test kit hands back the frame itself for `CreateTexture` and
+  `CreateFontString`, so a row's icon is shown or hidden before the row is shown, and a suite reads
+  a row's text and selection from its `__text` and `__selected` fields rather than from its label.
+
 ## Degraded
 
 **With the major absent there is no reorder handle, no row box and — from this version — no drag
@@ -1132,6 +1250,10 @@ non-click close path must itself become a no-op alongside the rest of the degrad
 holds for `CopyWindow`: with the major absent there is nothing to call, and with the major present in
 a host that has no UI at all the call answers `nil` rather than raising — a host must be ready for a
 `nil` handle and simply not offer the export.
+
+A host with no Widgets copy, or one without `WidgetsAutocomplete.lua`, gets no autocomplete:
+`Autocomplete` and `AUTOCOMPLETE` are `nil`, and the host's box keeps working as a plain search box
+with no list under it.
 
 A host with no Widgets copy, or one without `WidgetsLineChart.lua`, gets no chart: `LineChart` is
 `nil` and there is nothing to draw with. LootHistory's `NS.MakeLineChart` seam answers `nil` in that
@@ -1168,11 +1290,3 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
-
-## Moving to version 12.1.4.1.1
-
-**Copy the folder whole. Nothing a host calls moves; a host that hangs no autocomplete owes
-nothing.** The next version is key 12.1.4.1.1: `Widgets.lua` 12, `WidgetsReorder.lua` 1,
-`WidgetsDragHandle.lua` 4, `WidgetsLineChart.lua` 1 and a new file, `WidgetsAutocomplete.lua` 1,
-paired on the shell's minor, which publishes `lib.Autocomplete` and `lib.AUTOCOMPLETE`. See
-[version 12.1.4.1.1](./version-12.1.4.1.1-docs.md).

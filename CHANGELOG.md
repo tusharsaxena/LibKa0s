@@ -10,6 +10,29 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.70.0 — 2026-10-07
+
+Versions in this release: **WidgetsAutocomplete minor 1**, a new file (`LibKa0s-Widgets-1.0` key
+12.1.4.1.1). Within Widgets, `Widgets` stays at 12, `WidgetsReorder` at 1, `WidgetsDragHandle` at 4
+and `WidgetsLineChart` at 1. The rest of this block is written at release.
+
+### WidgetsAutocomplete minor 1: the autocomplete
+
+- **A new secondary file of `LibKa0s-Widgets-1.0`**, paired on the shell's minor like
+  `WidgetsLineChart.lua`. `Widgets.lua` stays at minor 12; the key is 12.1.4.1.1.
+- **`lib.Autocomplete(editBox, opts)`**: a suggestion list hung directly under a host's `EditBox`,
+  anchored to both of its bottom corners (its width, following resizes) and in the box's own border
+  and background. `opts.provider(text)` is asked 0.15 s after the last keystroke (at least one
+  character) and answers `{ text, value, color, icon }` rows; `opts.onPick(item)` gets the pick.
+  Pooled rows, quality color per row, a hover and keyboard highlight; Up/Down/Enter/Tab/Esc; closes
+  on a pick, on Esc, on focus loss (one frame later, after Enter/Tab and a row click are handled),
+  on the box hiding and on `handle:Close()`. `handle:Refresh()`, `SetEnabled`, `Release`,
+  `IsShown`. Every box script is hooked, never replaced. No event, no OnUpdate. Cases:
+  `tests/test_widgets_autocomplete.lua`.
+- **`lib.AUTOCOMPLETE`**: the list's chrome and timing constants.
+- **Two consumers at promotion** (LootHistory's and BankLedger's search boxes), so
+  `library-stack-§7`'s bar is met and no deviation row is added.
+
 ## v1.69.0 — 2026-10-06
 
 Versions in this release: **WidgetsLineChart minor 1**, a new file (`LibKa0s-Widgets-1.0` key

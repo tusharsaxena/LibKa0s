@@ -66,7 +66,7 @@ the file you need:
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
-| `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
+| `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
@@ -169,7 +169,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12.1.4.1](./Widgets/version-12.1.4.1-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 1 | v1.69.0 | **Current** |
+| [12.1.4.1.1](./Widgets/version-12.1.4.1.1-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 1 · `WidgetsAutocomplete.lua` 1 | v1.70.0 | **Current** |
+| [12.1.4.1](./Widgets/version-12.1.4.1-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 1 | v1.69.0 | Superseded |
 | [12.1.4](./Widgets/version-12.1.4-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 | v1.68.0 – v1.68.1 | Superseded |
 | [12.1.3](./Widgets/version-12.1.3-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 3 | v1.66.0 – v1.67.0 | Superseded |
 | [11.3](./Widgets/version-11.3-docs.md) | `Widgets.lua` 11 · `WidgetsDragHandle.lua` 3 | v1.64.0 – v1.65.0 | Superseded |
