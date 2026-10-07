@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.70.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.71.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -254,7 +254,7 @@ cd <Addon> && lua tests/run.lua && luacheck .
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.70.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.71.0 (MIT).
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -449,6 +449,20 @@ table** and not in step 9's loop, although it had shipped carrying v1.29.0. It t
 Core, DebugLog, Slash, Options, Media, Env, Pool and Perf. It does not look up Widgets or Item. It
 is the host that found the four kit gaps revision 16 closes (#27–#30). **No addon on the standard
 remains unadopted.**
+
+**Where v1.71.0 stands (2026-10-07).** No file is added and six files' minors move, all from the
+2026-10-07 review and standards audit: `WidgetsLineChart.lua` 3 and `WidgetsAutocomplete.lua` 2
+(`LibKa0s-Widgets-1.0` key 12.1.4.3.2), `Slash.lua` 20 and `SlashParse.lua` 2 (`LibKa0s-Slash-1.0`
+key 20.2), `Env.lua` 2, and `OptionsIdList.lua` 4 (`LibKa0s-Options-1.0` key
+28.2.34.2.4.8.1.7.4.2), so the payload is still fifteen majors across thirty-four files. The kit
+moves to **revision 38**: `--list`'s Totals count only the cases that run, and the new
+`testkit/secrets.lua` publishes `Kit.secret`. No `NEEDS_*` floor rises and no existing member is
+removed. What a consumer owes is the whole-folder copy of both payloads, the provenance line, and
+`docs/test-cases.md` regenerated in the same commit (revision 38 changes its Totals table);
+WhatGroup also adopts `Kit.secret`. Built to standard v2.77.0. Built on
+`feat/2026-10-07-review-audit-remediation`, tagged locally, **not merged or pushed**; push, merge
+and tag push wait on the owner's go-ahead. **Step 8 is every consumer**, each on its own
+`feat/2026-10-07-review-audit-remediation`, re-vendoring from the local tag.
 
 **Where v1.70.0 stands (2026-10-07).** One file is added and one existing file's minor moves:
 `WidgetsAutocomplete.lua` 1 (`lib.Autocomplete` and `lib.AUTOCOMPLETE`) and `WidgetsLineChart.lua`
@@ -835,14 +849,11 @@ The kit stays at **revision 22**, so `tests/test_vendor_sync.lua` pairs the two 
 v1.42.0 tag exactly as it did at v1.41.0 — the kit bytes are identical, but both are resolved from
 the tag the provenance line names, so both are copied.
 
-**Every step 8 through v1.68.1 is done on `master`.** All eleven consumers bundle **v1.68.1** on
-`master`, and each `CLAUDE.md` provenance line says so, re-measured on 2026-10-07 for v1.70.0
-against each consumer's own `master`. v1.69.0's step 8 is done on branches only: ten consumers carry
-it on `feat/2026-10-06-revendor-libka0s-v1.69.0` and LootHistory on
-`feat/2026-10-06-timeline-ledger`, none merged, because the v1.69.0 tag itself is local and
-unpublished. What is **not** done is v1.70.0's step 8, which is every consumer: the new
-`WidgetsAutocomplete.lua` and `WidgetsLineChart.lua` minor 2 arrive in every copy, and the copy is
-owed all the same (see *Where v1.70.0 stands* above).
+**Every step 8 through v1.70.0 is done on `master`.** All eleven consumers bundle **v1.70.0** on
+`master`, and each `CLAUDE.md` provenance line says so, re-measured on 2026-10-07 for v1.71.0
+against each consumer's own `master`. What is **not** done is v1.71.0's step 8, which is every
+consumer: the six moved minors and kit revision 38 arrive in every copy, and each consumer's
+`docs/test-cases.md` is regenerated with it (see *Where v1.71.0 stands* above).
 
 This paragraph says where the consumers stand as of the release being prepared, so it is stale the
 moment it is not rewritten. **Rewrite it at the next release**, in the same commit as step 7's other

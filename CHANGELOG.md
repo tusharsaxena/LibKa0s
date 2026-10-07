@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.71.0 — unreleased
+## v1.71.0 — 2026-10-07
 
 Versions in this release: **WidgetsLineChart minor 3** and **WidgetsAutocomplete minor 2**
 (`LibKa0s-Widgets-1.0` key 12.1.4.3.2: `Widgets` 12, `WidgetsReorder` 1, `WidgetsDragHandle` 4,
@@ -20,7 +20,14 @@ key 28.2.34.2.4.8.1.7.4.2: `Options` 28, `OptionsRegistry` 2, `OptionsWidgets` 3
 `OptionsIdList` 4, `OptionsTabs` 8, `OptionsCombat` 1, `OptionsCompose` 7, `OptionsScroll` 4,
 `OptionsNav` 2), and every other file at its v1.70.0 minor — `Core` 10, `Compat` 1, `Lifecycle` 3,
 `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `DebugLog` key 19.2.1, `Launcher` 5 and `Perf`
-key 14.1.1.6 — and **test kit revision 38**.
+key 14.1.1.6 — and **test kit revision 38**. No `NEEDS_*` floor rises, no major is added and no
+existing member is removed; no payload file is added, so the library stays at **fifteen majors
+across thirty-four files** (the kit gains `testkit/secrets.lua`). Built to standard **v2.77.0**; the
+README's standards pointer moves from v2.76.0. Read against v2.77.0's entry, nothing in it binds the
+payload: its addon-facing moves (toc-file-§5's whole-listing check, versioning-git's same-named
+feature branch, events-frames-taint-§8's spell-cooldown fields, documentation-§6's cross-repo
+citation SHOULD) bind the consumers, and its library-stack-§7 edits correct the section's own
+wording, not the inventory this release keeps.
 
 ### WidgetsLineChart minor 3: segments clipped to the plot, the hover re-synced on every render
 
@@ -138,6 +145,13 @@ key 14.1.1.6 — and **test kit revision 38**.
   owes nothing more; a host that calls `ClearHover` before repainting its chart may keep or drop it.
 - **Nothing for Slash 20.2** beyond the same copy: a `set` on a number row now refuses `nan` and
   the infinities, and no consumer test pinned their acceptance.
+- **The provenance line rolls to v1.71.0** in each consumer's `CLAUDE.md`, in the same commit as
+  the copy, as `tests/test_vendor_sync.lua` resolves both payloads from the tag it names.
+- **WhatGroup adopts `Kit.secret`** in place of its local secret-value simulator (WhatGroup's
+  2026-10-07 review, `WG-R-09`). Every other consumer may adopt it and owes nothing if it does not.
+- **Tagged locally, not published.** `v1.71.0` is an annotated tag on
+  `feat/2026-10-07-review-audit-remediation`; consumers re-vendor from the local tag, and the push,
+  the merge to `master` and the GitHub release wait on the owner's go-ahead.
 
 ## v1.70.0 — 2026-10-07
 

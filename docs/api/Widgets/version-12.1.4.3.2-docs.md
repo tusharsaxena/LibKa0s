@@ -1231,8 +1231,9 @@ is outside the scan (it is read off the chart's stored options, not a descriptor
 LootHistory is its planned first host.
 
 **`ChartMath.ClipSegment`, v1.71.0:** no consumer, kept because a host that draws its own
-decorations against the plot clips them the way the chart clips its series. It is new at this
-version and no census has run since.
+decorations against the plot clips them the way the chart clips its series. The v1.71.0 census
+([`CONSUMERS.md`](../CONSUMERS.md)) counts `lib.ChartMath` as one export and finds no host call on
+it, so its line above stands.
 
 ## The autocomplete
 
@@ -1343,6 +1344,11 @@ tag; the two named adopters land after it.
 
 - `lib.Autocomplete`: no consumer as of v1.70.0, a host duplicate: LootHistory's Timeline still hand-rolls the list (`makeSuggestRow` / `RenderSuggestions` in `modules/Timeline.lua`). LootHistory adopts it on every tab and deletes the local list, and BankLedger adopts it on its search box (the timeline-ledger plan's tasks B2 and C2).
 - `lib.AUTOCOMPLETE`: no consumer as of v1.70.0, kept because it is the published chrome and timing constants, so a host cites the list's defaults (debounce, row height, overlap) rather than restating them.
+
+**Consumer census, v1.71.0.** `lib.Autocomplete` now has two hosts, BankLedger's search-box seam
+in `modules/Browser.lua` and LootHistory's `NS.MakeAutocomplete` seam in `core/WidgetsSetup.lua`,
+so its line above no longer holds; LootHistory's Timeline no longer hand-rolls its own list.
+`lib.AUTOCOMPLETE`'s line stands.
 
 ## Degraded
 
