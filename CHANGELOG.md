@@ -63,6 +63,9 @@ files**. Built to standard v2.76.0, as v1.69.0 was; the README's standards point
   consumer (LootHistory), and `CLAUDE.md`'s `library-stack-§7` row reopens its choice when "one
   release passes after v1.69.0 with no second consumer named". This is that release. The row is left
   as written and the choice (keep the row, or move the chart back into LootHistory) is the owner's.
+  **Outcome (2026-10-07):** the owner kept the chart in LibKa0s and accepted the row as a
+  deviation; its re-check trigger is now "a second addon draws a chart (then the row is retired),
+  or the chart's API needs a breaking change".
 - **Upstream follow-up (S2):** the standard's `library-stack-§7` counts of majors and files need a
   recount in WowAddonStandards for the thirty-fourth file. It is recorded as a follow-up and is not
   part of this release.
