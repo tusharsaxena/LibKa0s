@@ -15,10 +15,12 @@ cannot drift. Release order is in
 Versions in this release: **WidgetsLineChart minor 3** and **WidgetsAutocomplete minor 2**
 (`LibKa0s-Widgets-1.0` key 12.1.4.3.2: `Widgets` 12, `WidgetsReorder` 1, `WidgetsDragHandle` 4,
 `WidgetsLineChart` 3, `WidgetsAutocomplete` 2), **Slash minor 20** and **SlashParse minor 2**
-(`LibKa0s-Slash-1.0` key 20.2), and every other file at its v1.70.0 minor — `Core` 10, `Env` 1, `Compat`
-1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `DebugLog`
-key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6 — and **test
-kit revision 38**.
+(`LibKa0s-Slash-1.0` key 20.2), **Env minor 2**, **OptionsIdList minor 4** (`LibKa0s-Options-1.0`
+key 28.2.34.2.4.8.1.7.4.2: `Options` 28, `OptionsRegistry` 2, `OptionsWidgets` 34, `OptionsIds` 2,
+`OptionsIdList` 4, `OptionsTabs` 8, `OptionsCombat` 1, `OptionsCompose` 7, `OptionsScroll` 4,
+`OptionsNav` 2), and every other file at its v1.70.0 minor — `Core` 10, `Compat` 1, `Lifecycle` 3,
+`Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `DebugLog` key 19.2.1, `Launcher` 5 and `Perf`
+key 14.1.1.6 — and **test kit revision 38**.
 
 ### WidgetsLineChart minor 3: segments clipped to the plot, the hover re-synced on every render
 
@@ -72,6 +74,24 @@ kit revision 38**.
   moves; the minor moves because the payload did.
 - Two cases in `tests/test_slash_parse.lua`.
   [Slash version 20.2](docs/api/Slash/version-20.2-docs.md).
+
+### Env minor 2 and OptionsIdList minor 4: the dead bare-global addon-API rungs are gone
+
+- **`Env.GetAddOnMetadata` never reads the bare `GetAddOnMetadata` global.** It answers
+  `C_AddOns.GetAddOnMetadata(addonName, field)` where that exists and `nil` where it does not, so
+  `Version` answers its `fallback` on a client with no `C_AddOns`. Minor 1 fell back to the bare
+  global, the standard's compat section's own worked case of a dead fallback rung, and its doc
+  comment said the global was still present. Every supported client has `C_AddOns`, so a live host
+  sees no difference. [Env version 2](docs/api/Env/version-2-docs.md).
+- **`O.IdList`'s help-art guard never reads the bare `IsAddOnLoaded` global.** It asks
+  `C_AddOns.IsAddOnLoaded` only, and with no `C_AddOns` reader it trusts the descriptor's
+  `addonName`, as minor 3 did when neither API existed.
+  [Options version 28.2.34.2.4.8.1.7.4.2](docs/api/Options/version-28.2.34.2.4.8.1.7.4.2-docs.md).
+- **`.luacheckrc` drops both names from `read_globals`**, so lint proves no payload file reads them.
+- From the 2026-10-07 standards audit (`LK-A-04`). One case each in `tests/test_env.lua` and
+  `tests/test_options_idlist_layout.lua` plants the bare global with `C_AddOns` absent and pins
+  that it is never called; the Env case that removed both readers is folded into it, and the
+  id-list case that drove the bare global as a second rung is replaced.
 
 ### Test kit revision 38: `--list` Totals count only the cases that run
 

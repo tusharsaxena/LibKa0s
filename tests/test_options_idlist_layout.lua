@@ -525,11 +525,10 @@ end)
 local HELP_FALLBACK = "Interface\\FriendsFrame\\InformationIcon"
 local HELP_ART = "Interface\\AddOns\\TestHost\\libs\\LibKa0s\\media\\icons\\info"
 
---- Run `fn` with the client's two loaded-addon readers replaced: `namespaced` becomes
---- `C_AddOns.IsAddOnLoaded` (nil removes `C_AddOns` altogether) and `global` the deprecated
---- `IsAddOnLoaded`. Both are put back however `fn` ends.
-local function withLoadedApi(namespaced, global, fn)
-  local savedNs, savedGlobal = mocks.C_AddOns, mocks.IsAddOnLoaded
+--- Run `fn` with the client's loaded-addon reader replaced: `namespaced` becomes
+--- `C_AddOns.IsAddOnLoaded`, and nil removes `C_AddOns` altogether. Put back however `fn` ends.
+local function withLoadedApi(namespaced, fn)
+  local savedNs = mocks.C_AddOns
   if namespaced then
     local ns = {}
     for k, v in pairs(savedNs or {}) do ns[k] = v end
@@ -538,9 +537,8 @@ local function withLoadedApi(namespaced, global, fn)
   else
     mocks.C_AddOns = nil
   end
-  mocks.IsAddOnLoaded = global
   local ok, err = pcall(fn)
-  mocks.C_AddOns, mocks.IsAddOnLoaded = savedNs, savedGlobal
+  mocks.C_AddOns = savedNs
   if not ok then error(err, 0) end
 end
 
@@ -562,7 +560,7 @@ local function artLines(logs)
 end
 
 test("IdList: a loaded host's name draws the library art", function()
-  withLoadedApi(onlyTestHost, nil, function()
+  withLoadedApi(onlyTestHost, function()
     local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
       { addonName = "TestHost" })
     assertEqual(helpMarks(O, ctx)[1].__helpIcon, HELP_ART,
@@ -573,7 +571,7 @@ end)
 test("IdList: a name the client has not loaded falls back, not to a dead path", function()
   -- red under minor 2, which built Interface\AddOns\Aura Master\... from the display label and
   -- drew a texture that does not exist.
-  withLoadedApi(onlyTestHost, nil, function()
+  withLoadedApi(onlyTestHost, function()
     local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
       { addonName = "Aura Master" })
     local icon = helpMarks(O, ctx)[1].__helpIcon
@@ -582,22 +580,25 @@ test("IdList: a name the client has not loaded falls back, not to a dead path", 
   end)
 end)
 
-test("IdList: the deprecated global IsAddOnLoaded is the second rung", function()
-  withLoadedApi(nil, function() return false end, function()
+test("IdList: the removed bare IsAddOnLoaded is never read; no C_AddOns trusts the name", function()
+  -- red under minor 3, which fell back to the bare global when C_AddOns was absent and took its
+  -- no as a no. The global is gone on every supported client (the compat section's worked case),
+  -- so with no C_AddOns rung the guard trusts the name and a planted global is never consulted.
+  local savedGlobal, calls = mocks.IsAddOnLoaded, 0
+  mocks.IsAddOnLoaded = function() calls = calls + 1; return false end
+  local ok, err = pcall(withLoadedApi, nil, function()
     local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
       { addonName = "TestHost" })
-    assertEqual(helpMarks(O, ctx)[1].__helpIcon, HELP_FALLBACK,
-      "no C_AddOns: the global answers, and its no is a no")
+    assertEqual(helpMarks(O, ctx)[1].__helpIcon, HELP_ART,
+      "no C_AddOns: the name is trusted and the library art is the mark")
   end)
-  withLoadedApi(nil, onlyTestHost, function()
-    local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
-      { addonName = "TestHost" })
-    assertEqual(helpMarks(O, ctx)[1].__helpIcon, HELP_ART, "and its yes is a yes")
-  end)
+  mocks.IsAddOnLoaded = savedGlobal
+  if not ok then error(err, 0) end
+  assertEqual(calls, 0, "the bare global is never called")
 end)
 
 test("IdList: a raising IsAddOnLoaded is not fatal and trusts the name", function()
-  withLoadedApi(function() error("boom") end, nil, function()
+  withLoadedApi(function() error("boom") end, function()
     local O, _, ctx = listBench({ { id = 21562, help = { "x" } } }, nil, nil,
       { addonName = "TestHost" })
     local marks = helpMarks(O, ctx)
@@ -614,7 +615,7 @@ test("IdList: a fall-through says why, once per instance", function()
     O.IdList(ctx, { kind = "spell", entries = function() return entries end })
     assertEqual(#helpMarks(O, ctx), 2, "the second render drew both marks again")
   end
-  withLoadedApi(onlyTestHost, nil, function()
+  withLoadedApi(onlyTestHost, function()
     local logs, debug = debugSink()
     renderTwice({ debug = debug })
     local lines = artLines(logs)

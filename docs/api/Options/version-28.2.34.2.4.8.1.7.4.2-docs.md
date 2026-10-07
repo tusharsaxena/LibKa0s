@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 28.2.34.2.3.8.1.7.4.2
+# `LibKa0s-Options-1.0` — version 28.2.34.2.4.8.1.7.4.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,20 +8,20 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **28** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **3** · `OptionsTabs.lua` **8** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** |
+| Files and minors | `Options.lua` **28** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **4** · `OptionsTabs.lua` **8** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same ten numbers `lib.MODULES` reports. |
-| Shipped in | v1.67.0 |
-| Status | Superseded |
-| Supersedes | [version 27.2.34.2.2.8.1.7.4.2](./version-27.2.34.2.2.8.1.7.4.2-docs.md) |
-| Superseded by | [version 28.2.34.2.4.8.1.7.4.2](./version-28.2.34.2.4.8.1.7.4.2-docs.md) — the help-art guard never reads the removed bare `IsAddOnLoaded` global |
+| Shipped in | v1.71.0 |
+| Status | **Current** |
+| Supersedes | [version 28.2.34.2.3.8.1.7.4.2](./version-28.2.34.2.3.8.1.7.4.2-docs.md) — whose help-art guard fell back to the removed bare `IsAddOnLoaded` global |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 28, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 3, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 28, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 4, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `C7` for `OptionsCompose.lua` minor 7, `S1` for
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `I1` for
-`OptionsIds.lua` minor 1, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3. **A `W`
+`OptionsIds.lua` minor 1, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
 `OptionsTabs.lua`'s from it, with no change to what any of them does; `O.RenderTabbedSchema` (**W9**)
@@ -40,6 +40,19 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
+**The help-art guard never reads the removed bare `IsAddOnLoaded` global (L4).**
+`OptionsIdList.lua` 3 -> **4**; every other file of the major is unchanged. At L3 the guard on the
+descriptor's `addonName` asked `C_AddOns.IsAddOnLoaded`, else the bare global `IsAddOnLoaded`. That
+global is gone on every client this library supports — the standard's compat section deletes such
+a dead fallback rung rather than shimming it — so from **L4** rung 2 of the help-art ladder below
+reads `C_AddOns.IsAddOnLoaded(name)` only, in a `pcall`. With no `C_AddOns` reader the name is
+**trusted**, exactly as it was at L3 when neither API existed; a planted bare global is never
+called. On a live client nothing changes. From the 2026-10-07 standards audit (`LK-A-04`).
+`.luacheckrc` no longer lists `IsAddOnLoaded` as a read global, so lint proves the payload never
+reads it. Cases: `tests/test_options_idlist_layout.lua`.
+
+## Previously, at 28.2.34.2.3.8.1.7.4.2
+
 **The help mark's art checks the name it is given, and says when it cannot use it (L3 and O28,
 [LibKa0s#42](https://github.com/tusharsaxena/LibKa0s/issues/42)).** `OptionsIdList.lua` 2 -> **3**
 and `Options.lua` 27 -> **28**; every other file of the major is unchanged.
@@ -52,8 +65,9 @@ instance at the first helped mark:
 
 1. `spec.helpIcon`, when it is a non-empty string.
 2. The descriptor's `addonName`, **only when the client reports that addon loaded**:
-   `C_AddOns.IsAddOnLoaded(name)`, else the deprecated global `IsAddOnLoaded(name)`, in a `pcall`.
-   The name is **trusted** when neither API exists (a headless harness) and when the check raises,
+   `C_AddOns.IsAddOnLoaded(name)`, in a `pcall` (at L3, else the bare global `IsAddOnLoaded(name)`,
+   which **L4** never reads). The name is **trusted** when there is no `C_AddOns` reader (a headless
+   harness; at L3, when neither API existed) and when the check raises,
    so the guard catches a wrong name and never vetoes a right one on a client that cannot answer.
 3. `Media.Icon(addonName, "info")`, the library's own white `info` art.
 4. The client's `Interface\FriendsFrame\InformationIcon`.
@@ -459,7 +473,7 @@ seam, so Options stays vendorable without Media. **Without Media, without `addon
 name Media does not know, the mark falls back to the client's information glyph at the new size** --
 what W28 drew. `spec.helpIcon` still wins over everything. (From **L3** the name is also checked
 against the client's loaded addons before Media is asked; see
-[What changed at this version](#what-changed-at-this-version).)
+[Previously, at 28.2.34.2.3.8.1.7.4.2](#previously-at-282342381742).)
 
 **A severity, host-supplied, on the help table itself.** The library reads the lines as opaque
 strings and cannot know that one means "this can never match" and another means "also in two other
@@ -1237,7 +1251,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 |---|---|---|---|---|
 | `parentTitle` | string | yes | O1 | The brand. Shown on the main page and as the breadcrumb prefix on every sub-page. |
 | `mainPanelName` | string | yes | O1 | Frame name for the main canvas, so `/framestack` attributes it to the host and two addons cannot collide. |
-| `addonName` | string | recommended | **W29** (checked from **L3**) | The host's addon **folder** name, its first vararg (`local addonName, NS = ...`). The route to the shipped `info` art for `O.IdList` help marks, through `LibKa0s-Media-1.0`'s `Icon`. From **L3** it is used only when `C_AddOns.IsAddOnLoaded` (else the global `IsAddOnLoaded`) reports it loaded, trusted when neither exists; otherwise the mark draws the client glyph and `debug` gets one `Cfg` line. **Not** the MasterControls compose spec's `addonName`, which is a display label. |
+| `addonName` | string | recommended | **W29** (checked from **L3**) | The host's addon **folder** name, its first vararg (`local addonName, NS = ...`). The route to the shipped `info` art for `O.IdList` help marks, through `LibKa0s-Media-1.0`'s `Icon`. From **L3** it is used only when `C_AddOns.IsAddOnLoaded` reports it loaded, trusted when there is no `C_AddOns` reader (from **L4** the removed bare global `IsAddOnLoaded` is never read); otherwise the mark draws the client glyph and `debug` gets one `Cfg` line. **Not** the MasterControls compose spec's `addonName`, which is a display label. |
 | `print` | function(line) | no | O1 | Where a user-facing line goes. Hosts pass their prefixed printer. |
 | `get` | function(path) | yes | O1 | Read one stored value. |
 | `set` | function(path, v) | yes | O1 | Write one. Route it through the host's single write seam, so a panel change takes the same path a slash command does — same debug line, same `onChange`, same refresh. |
@@ -1258,7 +1272,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `colorDecode` | function(stored) | no | O1 | → `r, g, b, a`. Defaults to the `{r=,g=,b=,a=}` shape. |
 | `colorEncode` | function(r,g,b,a) | no | O1 | → stored. Defaults to the same. |
 | `sliderCommit` | string | no | O1 | `"change"` makes every slider commit on the drag as well as on release, throttled through `scheduleTimer`. Default is release-only; a single row overrides either way with `commitOn`. |
-| `debug` | function(tag, message) | no | O1 | Developer log line, through the host's gated sink. `Cfg` lines: `opened`, `open refused (in combat)` and `register parked (in combat)` (O24); from **O27** the combat lock's `<what> refused (in combat)`, once per text per combat, and the park's `register flushed (combat ended)`; from **L3** one `help art: ...` line per instance when an id list's help art falls past the loaded-addon rung. See [Previously, at 27.2.33.2.2.7.1.7.4.2](#previously-at-272332271742) and [What changed at this version](#what-changed-at-this-version). |
+| `debug` | function(tag, message) | no | O1 | Developer log line, through the host's gated sink. `Cfg` lines: `opened`, `open refused (in combat)` and `register parked (in combat)` (O24); from **O27** the combat lock's `<what> refused (in combat)`, once per text per combat, and the park's `register flushed (combat ended)`; from **L3** one `help art: ...` line per instance when an id list's help art falls past the loaded-addon rung. See [Previously, at 27.2.33.2.2.7.1.7.4.2](#previously-at-272332271742) and [Previously, at 28.2.34.2.3.8.1.7.4.2](#previously-at-282342381742). |
 
 **Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
 
@@ -1391,7 +1405,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `SessionCheckbox(ctx, parent, relWidth, spec)` | W1 (disabled render: **W16**) | A checkbox wired to caller-supplied `get`/`set` instead of a settings path, for runtime-only toggles that must never persist. From W16 it is drawn disabled when drawn inside a disabled render. |
 | `RenderRows(ctx, rows, afterGroup, pairWith, opts)` | W1 (`opts.noHeadings`: **W9**; `opts.disabled`: **W16**; `shownWhen`: **W22**) | The flow engine, over an **explicit** row list — which is what lets a host render a filtered subset through the same code. `opts = { noHeadings = true }` suppresses the automatic `Section` heading, for a page whose sections are drawn as tabs instead (options-ui-§13); the row-boundary flush and `ctx.lastGroup` advance still happen. Omitted by every untabbed caller. **`opts.disabled = true` (W16)** draws every widget of the call disabled, the widgets an `afterGroup` or `pairWith` hook draws included, through `ctx.__renderDisabled` held for the call alone. A nested call inherits it, and the outer value is restored on a raise, which is re-raised unchanged — see [What changed at this version](#previously-at-24314774). |
 | `RenderSchema(ctx, pageKey, afterGroup, pairWith)` | W1 | The per-page wrapper. |
-| `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith, opts)` | **W9** (`opts`: **T4**, **T8**) | Render one page as a tab strip over its own sections. Defined in `OptionsTabs.lua` from **T4**; `OptionsWidgets.lua` keeps an untabbed stand-in that ignores `opts` for a partial copy without it. `opts` = `{ tabs, cfg, disabledFor, disabledNotice, chrome }` (**T4**, see [24.31.4.7.4](#previously-at-24314774)) and `{ untabbedSkipRender, disabledReplaces, disabledNoticeFont, rerender }` (**T8**, see [What changed at this version](#what-changed-at-this-version)), each optional and off by default. The partition is by `row.group`, in declaration order — each group is exactly one tab, and there is no second field naming a group's tab (options-ui-§13); from **T4** `opts.tabs` can add host tabs that own no group, and a host tab keyed by a group name replaces that group's tab. **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first tab in the strip — the first group unless a host tab is placed before it, and a host tab on a page whose tabs are all host tabs. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order, and from **T4** every drawn tab's key in strip order. |
+| `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith, opts)` | **W9** (`opts`: **T4**, **T8**) | Render one page as a tab strip over its own sections. Defined in `OptionsTabs.lua` from **T4**; `OptionsWidgets.lua` keeps an untabbed stand-in that ignores `opts` for a partial copy without it. `opts` = `{ tabs, cfg, disabledFor, disabledNotice, chrome }` (**T4**, see [24.31.4.7.4](#previously-at-24314774)) and `{ untabbedSkipRender, disabledReplaces, disabledNoticeFont, rerender }` (**T8**, see [Previously, at 27.2.34.2.2.8.1.7.4.2](#previously-at-272342281742)), each optional and off by default. The partition is by `row.group`, in declaration order — each group is exactly one tab, and there is no second field naming a group's tab (options-ui-§13); from **T4** `opts.tabs` can add host tabs that own no group, and a host tab keyed by a group name replaces that group's tab. **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first tab in the strip — the first group unless a host tab is placed before it, and a host tab on a page whose tabs are all host tabs. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order, and from **T4** every drawn tab's key in strip order. |
 | `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). **Its geometry is invariant under the selection from W13.** **From W14 the buttons and the content panel are acquired from `LibKa0s-Pool-1.0` pools held on the `ctx` rather than created per click** — see [What changed at this version](#previously-at-24314774). Returns the buttons in tab order, or nil having drawn nothing. |
 | `SubTabStrip(ctx, parent, spec)` | **W13** | A **secondary** strip drawn inside the scroll as ordinary page content, parented to a frame the host supplies (options-ui-§13). Same `spec` shape as `TabStrip`, same selection-invariant pitch, its own ledger (`ctx.__subTabKids`) released on entry, and **no** content panel and **no** `SetChromeHeight` — the page already has both. **Not pooled at W14**, unlike the primary strip: its parent is a frame AceGUI takes back, so its buttons are unparented on release and cannot be recycled. Returns the buttons in tab order **and** the total height the strip occupies, so the host can size the frame it handed in, or nil having drawn nothing. The selection is the host's state: `spec.value` and `spec.onSelect` are the whole contract, and the convention for the collection is `ctx.activeSubTab` as a table keyed by the primary tab's key, session-only and never persisted. |
 | `NavRail(ctx, spec)` | **N1** | The pinned nav rail, the first level of a page that edits one instance out of many (options-ui-§13): `spec = { entries = { { key, label, tooltip } }, value, onSelect, width }`, `width` 120 by default. Draw after `PageBanner`, before `TabStrip`. Records `ctx.railWidth`, which `lib.__railInset` turns into the inset the strip, the content panel and the scroll start at. Entries pooled per page, released on every call; the selected entry disabled; a click refused in combat by the library; `onSelect` pcall'd. The selection is the host's, as `SubTabStrip`'s is. Returns the entry buttons in rail order, or nil having drawn nothing (an empty list releases the rail, `railWidth` 0). |
@@ -2254,6 +2268,11 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
+**At 28.2.34.2.4.8.1.7.4.2 no member, field or string is added or removed.** The help-art guard stops reading the
+bare `IsAddOnLoaded` global, which no supported client has. On a client with no `C_AddOns` reader
+the name is trusted, as it was at 28.2.34.2.3.8.1.7.4.2 when neither API existed; on every live client the guard
+answers exactly as before.
+
 **At 28.2.34.2.3.8.1.7.4.2 no member, field or string is added or removed.** The help mark's default art is
 taken from `addonName` only when the client reports that addon loaded; a host that passes its real
 folder name draws what it drew, and a host that passes a wrong one now draws the client glyph rather
@@ -2326,11 +2345,3 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
-
-## Moving to version 28.2.34.2.4.8.1.7.4.2
-
-**Copy the folder whole. Nothing a host calls moves or is removed.** `OptionsIdList.lua` moves to
-minor **4**: the help-art guard reads `C_AddOns.IsAddOnLoaded` only and never the removed bare
-`IsAddOnLoaded` global, and with no `C_AddOns` reader it trusts the name, as this version did when
-neither API existed. Every supported client has `C_AddOns`, so a live host sees no difference. See
-[version 28.2.34.2.4.8.1.7.4.2](./version-28.2.34.2.4.8.1.7.4.2-docs.md).

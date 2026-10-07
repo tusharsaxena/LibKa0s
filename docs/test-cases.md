@@ -94,11 +94,10 @@ Total.
 - resize: gripParent builds the grip on another frame while sizing stays on frame
 - resize: gripParent that is not a table falls back to the frame
 
-### test_env.lua (10)
+### test_env.lua (9)
 
 - env: GetAddOnMetadata reads the TOC through C_AddOns
-- env: GetAddOnMetadata falls back to the deprecated bare global
-- env: GetAddOnMetadata answers nil when neither reader exists
+- env: GetAddOnMetadata never reads the removed bare global
 - env: Version answers the TOC version
 - env: Version prefers the TOC over the fallback
 - env: Version returns the fallback when the TOC cannot be read
@@ -1476,7 +1475,7 @@ Total.
 - IdList: the art ladder falls back, and a host that names its own art keeps it
 - IdList: a loaded host's name draws the library art
 - IdList: a name the client has not loaded falls back, not to a dead path
-- IdList: the deprecated global IsAddOnLoaded is the second rung
+- IdList: the removed bare IsAddOnLoaded is never read; no C_AddOns trusts the name
 - IdList: a raising IsAddOnLoaded is not fatal and trusts the name
 - IdList: a fall-through says why, once per instance
 - IdList: no help, no question
@@ -2418,7 +2417,7 @@ Total.
 |-------|------:|
 | test_core.lua | 52 |
 | test_core_resize.lua | 24 |
-| test_env.lua | 10 |
+| test_env.lua | 9 |
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 22 |
 | test_lifecycle_debug.lua | 14 |
@@ -2504,4 +2503,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2138** |
+| **Total** | **2137** |

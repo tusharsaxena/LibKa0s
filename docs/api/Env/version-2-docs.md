@@ -1,4 +1,4 @@
-# `LibKa0s-Env-1.0` — version 1
+# `LibKa0s-Env-1.0` — version 2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Env surface points here rather than restating it. It describes the
@@ -8,12 +8,25 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Env-1.0` |
-| Files and minors | `Env.lua` minor **1** |
-| Shipped in | v1.15.0 |
-| Status | Superseded |
-| Supersedes | — (first version) |
-| Superseded by | [version 2](./version-2-docs.md) — `GetAddOnMetadata` never reads the removed bare global |
-| Confirm in-game | `LibStub("LibKa0s-Env-1.0").MODULES` → `{ Env = 1 }` |
+| Files and minors | `Env.lua` minor **2** |
+| Shipped in | v1.71.0 |
+| Status | **Current** |
+| Supersedes | [version 1](./version-1-docs.md) — whose `GetAddOnMetadata` fell back to the removed bare global |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Env-1.0").MODULES` → `{ Env = 2 }` |
+
+## What changed at this version
+
+**`GetAddOnMetadata` no longer reads the bare `GetAddOnMetadata` global.** The reader lives under
+`C_AddOns` on every client this library supports; the bare global it moved from in 10.x is gone, and
+the standard's compat section names exactly this rung as its worked case of a dead fallback that is
+deleted rather than shimmed. Version 1 still fell back to it when `C_AddOns` was absent, so a client
+that never exists exercised a rung no live client reached. From minor 2 the function answers
+`C_AddOns.GetAddOnMetadata(addonName, field)` where that exists and `nil` where it does not; a
+planted bare global is never called. `Version` inherits the change: with no `C_AddOns` it answers
+`fallback`. Nothing a host calls is added, renamed or removed. From the 2026-10-07 standards audit
+(`LK-A-04`). `.luacheckrc` no longer lists `GetAddOnMetadata` as a read global, so lint proves the
+payload never reads it.
 
 ## What this major is
 
@@ -58,7 +71,7 @@ Read straight off the LibStub table. Every function is stateless.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `GetAddOnMetadata(addonName, field)` | 1 | One field of an addon's TOC manifest, or `nil`. Reads `C_AddOns.GetAddOnMetadata` where it exists, the deprecated bare global where it does not, and answers `nil` where neither does. |
+| `GetAddOnMetadata(addonName, field)` | 1; the bare-global rung removed at 2 | One field of an addon's TOC manifest, or `nil`. Reads `C_AddOns.GetAddOnMetadata` where it exists and answers `nil` where it does not. **Since 2** the removed bare `GetAddOnMetadata` global is never read. |
 | `Version(addonName[, fallback])` | 1 | The addon's own version string. The TOC's `Version` when it can be read and is non-empty, otherwise `fallback` (which may be `nil`). |
 | `GetPlayerMapID()` | 1 | The player's current UI map id via `C_Map.GetBestMapForUnit("player")`, or `nil`. |
 | `GetZone()` | 1 | Two values: zone and subzone. **Always two strings** — `""`, never `nil`. |
@@ -103,8 +116,8 @@ Both returns are strings on every path, including the one where neither `GetZone
 
 ## Degraded clients
 
-Every function is a two-rung ladder over an API Blizzard has already moved once, and the rung a live
-client exercises is the top one — so the bottom rung is the half that ships untested unless a test
+Every function reads one API and answers an empty value where it is missing. The read a live client
+exercises is the present one, so the absent case is the half that ships untested unless a test
 removes the API. `tests/test_env.lua` reaches each one by **removing the global from the mock
 environment** rather than by stubbing the function under test, so the case is genuinely "this client
 does not have that API".
@@ -112,8 +125,7 @@ does not have that API".
 | Missing | `GetAddOnMetadata` | `Version` | `GetPlayerMapID` | `GetZone` |
 |---|---|---|---|---|
 | nothing | the TOC value | the TOC value | the map id | zone, subzone |
-| `C_AddOns` | the bare global's value | the bare global's value | — | — |
-| `C_AddOns` and `GetAddOnMetadata` | `nil` | `fallback` | — | — |
+| `C_AddOns` | `nil` (a bare `GetAddOnMetadata` global, if planted, is never called) | `fallback` | — | — |
 | `C_Map` | — | — | `nil` | — |
 | `GetZoneText` / `GetSubZoneText` | — | — | — | `""` for the missing one |
 
@@ -150,9 +162,9 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 `Env.lua` is a new entry in `LibKa0s.xml`, so a consumer whose test harness derives its load list
 from that XML picks it up with no edit; a consumer that re-types the list adds one row.
 
-## Moving to version 2
+## Compatibility with version 1
 
-**Copy the folder whole. Nothing a host calls moves or is removed.** Version 2 (`Env.lua` 2) deletes
-`GetAddOnMetadata`'s bare-global fallback rung: with no `C_AddOns` it answers `nil` (and `Version`
-its `fallback`) instead of consulting the removed global. Every supported client has `C_AddOns`, so a
-live host sees no difference. See [version 2](./version-2-docs.md).
+**Copy the folder whole. Nothing a host calls moves.** The only behavior change is on a client with
+no `C_AddOns`, which no supported client is: there `GetAddOnMetadata` answers `nil` and `Version`
+answers its `fallback`, where version 1 consulted the bare global. A host's own library-absent stub
+deletes the same rung under the compat section's rule; it does not need this version to do so.
