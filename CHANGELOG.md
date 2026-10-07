@@ -37,10 +37,29 @@ changed yet.
   recorded decline and the diagnostics contract's opt-out case) leave the count rows for the
   `Skipped` row. [testkit version 38](docs/api/testkit/version-38-docs.md).
 
+### Test kit revision 38: `Kit.secret`, a shared secret-value simulator
+
+- **New file `testkit/secrets.lua`**, loaded once by `framework.lua` beside `asserts.lua` and
+  `inventory.lua`, with five members on the kit table: `Kit.secret(v)` (a wrapper whose metatable
+  raises an error carrying `Kit.SECRET_ERROR`, the fixed marker `secret value`, from arithmetic with
+  the secret on either side, `..`, indexing, field assignment, calling, `#`, and `<`, `<=` and `==`
+  between two wrappers), `Kit.isSecret(v)`, `Kit.reveal(v)` and `Kit.installSecretValue()`, which
+  sets the global `issecretvalue` and returns a restore function that puts back whatever was there,
+  `nil` included. The registry is one process-wide weak-keyed table, so a secret minted under one
+  mock build or one load of the kit is still a secret under the next. The file header states what
+  Lua 5.1 cannot trap: a boolean test, `==` against a non-table, `tostring`, `#` on a table, and a
+  secret compared with a plain value (which raises with Lua's own text). From WhatGroup's
+  2026-10-07 review (`WG-R-09`).
+- **Nothing installs `issecretvalue` by default.** `mock_base.lua` is untouched and `Kit.expose`
+  copies none of the new members, so no consumer's behavior changes on re-vendor. No consumer's
+  local simulator is migrated in this release.
+- This repo gains `tests/test_kit_secrets.lua` (not a kit suite), and `tests/test_kitsync.lua`
+  checks `secrets.lua` exists on both sides.
+
 ### What a consumer owes
 
 - **The whole-folder copy of `tests/_kit/`, and `docs/test-cases.md` regenerated in the same
-  commit**, so its Total equals the README badge.
+  commit**, so its Total equals the README badge. `Kit.secret` and its siblings are opt-in.
 
 ## v1.70.0 — 2026-10-07
 

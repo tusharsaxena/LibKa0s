@@ -2008,6 +2008,39 @@ Total.
 - kit: assertSurfaceParity's table form honors ignore as a set or an array
 - kit: assertSurfaceParity refuses a live or degraded surface that is not a table
 
+### test_kit_secrets.lua (30)
+
+- kit: Kit.SECRET_ERROR is the fixed marker `secret value`
+- kit: Kit.secret raises Kit.SECRET_ERROR on + (secret on the left)
+- kit: Kit.secret raises Kit.SECRET_ERROR on + (secret on the right)
+- kit: Kit.secret raises Kit.SECRET_ERROR on - (secret on the left)
+- kit: Kit.secret raises Kit.SECRET_ERROR on - (secret on the right)
+- kit: Kit.secret raises Kit.SECRET_ERROR on * (secret on the left)
+- kit: Kit.secret raises Kit.SECRET_ERROR on * (secret on the right)
+- kit: Kit.secret raises Kit.SECRET_ERROR on / (secret on the left)
+- kit: Kit.secret raises Kit.SECRET_ERROR on / (secret on the right)
+- kit: Kit.secret raises Kit.SECRET_ERROR on % (secret on the left)
+- kit: Kit.secret raises Kit.SECRET_ERROR on % (secret on the right)
+- kit: Kit.secret raises Kit.SECRET_ERROR on ^ (secret on the left)
+- kit: Kit.secret raises Kit.SECRET_ERROR on ^ (secret on the right)
+- kit: Kit.secret raises Kit.SECRET_ERROR on unary -
+- kit: Kit.secret raises Kit.SECRET_ERROR on .. (secret on the left)
+- kit: Kit.secret raises Kit.SECRET_ERROR on .. (secret on the right)
+- kit: Kit.secret raises Kit.SECRET_ERROR on indexing
+- kit: Kit.secret raises Kit.SECRET_ERROR on field assignment
+- kit: Kit.secret raises Kit.SECRET_ERROR on call
+- kit: Kit.secret raises Kit.SECRET_ERROR on < between two secrets
+- kit: Kit.secret raises Kit.SECRET_ERROR on <= between two secrets
+- kit: Kit.secret raises Kit.SECRET_ERROR on == between two secrets
+- kit: a secret compared against a plain value still raises (the VM's own text)
+- kit: what Lua 5.1 cannot trap is documented, not pretended
+- kit: Kit.reveal returns the plain value, and is the identity on a non-secret
+- kit: Kit.isSecret is true for a wrapper and false for 5, nil and a plain table
+- kit: installSecretValue sets issecretvalue, and restore puts back an absent global
+- kit: installSecretValue's restore puts back a present global
+- kit: a secret minted before a second kit load and mock build is still a secret after
+- kit: nothing installs issecretvalue by default
+
 ### test_mock_base.lua (33)
 
 - mock: a frame that was never armed answers zero, dressed or not
@@ -2189,7 +2222,7 @@ Total.
 - kitsync: the kit revision is indexed in docs/api/README.md as the one Current revision
 - kitsync: the runner is mode 100755 in the git index, in BOTH copies
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
-- kitsync: testkit/asserts.lua, inventory.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
+- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
 - kitsync: vendor_sync checks the runner's recorded mode, and this repo's copy passes
 - kitsync: the runner-mode case fails on a path the index records 100644
@@ -2433,6 +2466,7 @@ Total.
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
 | test_kit_asserts.lua | 11 |
+| test_kit_secrets.lua | 30 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 37 |
@@ -2453,4 +2487,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2091** |
+| **Total** | **2121** |

@@ -82,4 +82,6 @@ names the revision it holds (`kit revision 36`) moves to 37 in the same commit.
 
 Copy the kit whole and regenerate `docs/test-cases.md` in the same commit: the `## Totals` table's
 count rows and Total stop counting declared skips, which move to a `| Skipped | N |` row of their
-own, so Total equals the README badge. No suite and no case name changes.
+own, so Total equals the README badge. No suite and no case name changes. Revision 38 also adds
+`secrets.lua` (`Kit.secret` and its siblings), which is opt-in: nothing installs `issecretvalue` by
+default.

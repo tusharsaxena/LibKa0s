@@ -238,6 +238,7 @@ local function kitFolder()
 end
 
 local asserts = dofile(kitFolder() .. "asserts.lua")(Kit)
+dofile(kitFolder() .. "secrets.lua")(Kit)   -- Kit.secret and its siblings (kit revision 38)
 local fail = asserts.fail
 
 --- Merge the registry and assertions into the host's `_G.<X>_TEST` table and return it, so a repo
