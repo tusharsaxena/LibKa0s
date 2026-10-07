@@ -1,8 +1,10 @@
 # Test Cases
 
 The full inventory of every headless test case in this repo, grouped by the suite file it
-lives in. The `## Totals` table below is the **authoritative pass count** — the README test
-badge and any count quoted in the docs must agree with it.
+lives in. The `## Totals` table below counts the cases that run: its **Total** is the
+authoritative pass count, and the README test badge and any count quoted in the docs must equal
+it. A declared skip is listed by name in its group and counted on the `Skipped` row, never in
+Total.
 
 **Generated — do not hand-edit.** Regenerate with `lua tests/run.lua --list > docs/test-cases.md`.
 
@@ -2208,7 +2210,7 @@ badge and any count quoted in the docs must agree with it.
 
 - every deviation id the register cites is assigned by a bundle in docs/audits/
 
-### test_kit_inventory.lua (38)
+### test_kit_inventory.lua (42)
 
 - a kit suite declared with its directory is covered
 - a bare declaration does not cover the kit's file of the same name
@@ -2229,7 +2231,7 @@ badge and any count quoted in the docs must agree with it.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 37
+- the kit is revision 38
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -2248,6 +2250,10 @@ badge and any count quoted in the docs must agree with it.
 - characterization: a decline's name and reason, word for word
 - characterization: a decline over a collision names the file that runs instead
 - characterization: a decline with an empty rule cell, and a reason clipped at 200 bytes
+- --list Totals: Total counts the cases that run; a declared skip has its own row
+- --list Totals: a group whose only case is a declared skip has no count row
+- --list Totals: with no declared skip there is no Skipped row
+- --list preamble: the badge must equal Total, and declared skips are counted apart
 
 ### test_kit_eol.lua (26)
 
@@ -2360,7 +2366,6 @@ badge and any count quoted in the docs must agree with it.
 
 | Suite | Cases |
 |-------|------:|
-| the runner | 1 |
 | test_core.lua | 52 |
 | test_core_resize.lua | 24 |
 | test_env.lua | 10 |
@@ -2439,12 +2444,13 @@ badge and any count quoted in the docs must agree with it.
 | test_kitsync.lua | 12 |
 | test_prose.lua | 6 |
 | test_register.lua | 1 |
-| test_kit_inventory.lua | 38 |
+| test_kit_inventory.lua | 42 |
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 13 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
-| test_diagnostics_contract.lua | 9 |
+| test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **2089** |
+| Skipped | 2 |
+| **Total** | **2091** |

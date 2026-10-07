@@ -10,9 +10,9 @@
 | Version | **37** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.69.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 36](version-36-docs.md) — no Line regions |
-| Superseded by | — |
+| Superseded by | [version 38](version-38-docs.md) — `--list` Totals count only the cases that run |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `37` |
 
@@ -77,3 +77,9 @@ Nothing else. The suites list does not change and no kit case name changes, so a
 `docs/test-cases.md` does not change. A copy that leaves out `mock_lines.lua` fails at load, like
 one missing `mock_record.lua`, `mock_events.lua` or `mock_resize.lua`. A consumer's own prose that
 names the revision it holds (`kit revision 36`) moves to 37 in the same commit.
+
+## Moving to 38
+
+Copy the kit whole and regenerate `docs/test-cases.md` in the same commit: the `## Totals` table's
+count rows and Total stop counting declared skips, which move to a `| Skipped | N |` row of their
+own, so Total equals the README badge. No suite and no case name changes.

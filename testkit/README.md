@@ -18,8 +18,8 @@ broken in the other twelve.
 
 | File | What it is |
 |---|---|
-| `framework.lua` | The entry point: the resource guard, the registry, `Kit.skip`, `Kit.expose`, the suite loader, the runner and the `--list` renderer |
-| `inventory.lua` | The suite inventory (`Kit.assertSuiteInventory`, the gate-rule table, the `## Documented deviations` reader and the decline matcher) and the path helpers it keys on. `framework.lua` loads it from its own folder; nothing else does (kit revision 28) |
+| `framework.lua` | The entry point: the resource guard, the registry, `Kit.skip`, `Kit.expose`, the suite loader and the runner |
+| `inventory.lua` | The suite inventory (`Kit.assertSuiteInventory`, the gate-rule table, the `## Documented deviations` reader and the decline matcher) and the path helpers it keys on, and the `--list` renderer, which `Kit.run` hands the registry (kit revision 38). `framework.lua` loads it from its own folder; nothing else does (kit revision 28). The `## Totals` table it prints counts only the cases that run: a declared skip is listed by name in its group and counted on a `\| Skipped \| N \|` row of its own, never in a count row or in **Total**, so Total equals the README badge (`testing-§5`; kit revision 38) |
 | `asserts.lua` | The assertions (`assertEqual` to `assertError`, `assertErrorMatches` and `assertLibraryConstant`) and the surface-parity gate (`setSurfaceSource`, `publicMembers`, `assertSurfaceParity`). `framework.lua` loads it from its own folder; nothing else does (kit revision 26) |
 | `loader.lua` | Headless source loading into the mocked environment |
 | `mock_base.lua` | The universal half of the WoW-API mock, and the Ace fakes |

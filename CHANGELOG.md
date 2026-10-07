@@ -10,6 +10,38 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.71.0 — unreleased
+
+Versions in this release: every file at its v1.70.0 minor — `Core` 10, `Env` 1, `Compat` 1,
+`Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 19.1, `DebugLog` key
+19.2.1, `Launcher` 5, `Options` key 28.2.34.2.3.8.1.7.4.2, `Perf` key 14.1.1.6 and `Widgets` key
+12.1.4.2.1 (`Widgets` 12, `WidgetsReorder` 1, `WidgetsDragHandle` 4, `WidgetsLineChart` 2,
+`WidgetsAutocomplete` 1) — and **test kit revision 38**. No payload file under `LibKa0s/` has
+changed yet.
+
+### Test kit revision 38: `--list` Totals count only the cases that run
+
+- **The `## Totals` table no longer counts declared skips.** Each suite row and `the runner` row
+  count the registered cases that are not declared skips (a row at 0 is omitted, as before); a
+  `| Skipped | N |` row is printed immediately before Total when N > 0 declared skips are registered;
+  and `| **Total** |` is the registered non-skipped count, the sum of the count rows and the number
+  the README badge carries. Revision 37 printed the whole registry as Total, so every consumer with
+  a declared skip shipped an inventory one above its badge, against `testing-§5` (a skip MUST NOT be
+  folded into passed or total). The preamble now says Total counts the cases that run and that a
+  declared skip is counted on the `Skipped` row. Skipped cases stay listed by name in their groups.
+  From AuraMaster's 2026-10-07 review (`AM-R-03`).
+- **The renderer moves from `framework.lua` to `inventory.lua`**, unchanged apart from the Totals,
+  so `framework.lua` stays under 1000 lines (916). Four cases in `tests/test_kit_inventory.lua`
+  drive a fixture repository's `--list` and pin the table.
+- This repo's own `docs/test-cases.md` is regenerated: its two declared skips (the kit prose gate's
+  recorded decline and the diagnostics contract's opt-out case) leave the count rows for the
+  `Skipped` row. [testkit version 38](docs/api/testkit/version-38-docs.md).
+
+### What a consumer owes
+
+- **The whole-folder copy of `tests/_kit/`, and `docs/test-cases.md` regenerated in the same
+  commit**, so its Total equals the README badge.
+
 ## v1.70.0 — 2026-10-07
 
 Versions in this release: **WidgetsAutocomplete minor 1**, a new file, and **WidgetsLineChart minor
