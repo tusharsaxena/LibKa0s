@@ -12,7 +12,7 @@
 | Shipped in | v1.69.0 |
 | Status | Superseded |
 | Supersedes | [version 12.1.4](./version-12.1.4-docs.md) — no line chart |
-| Superseded by | [version 12.1.4.2.1](./version-12.1.4.2.1-docs.md) — `WidgetsAutocomplete.lua`: `Autocomplete` and `AUTOCOMPLETE` |
+| Superseded by | [version 12.1.4.2.1](./version-12.1.4.2.1-docs.md) — `WidgetsAutocomplete.lua`: `Autocomplete` and `AUTOCOMPLETE`; `WidgetsLineChart.lua` 2: the opt-in `opts.pxPerPoint` |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 1 }` |
 
 ## What changed at 12.1.4.1
@@ -1173,6 +1173,8 @@ visual fidelity as unverified.
 
 **Copy the folder whole. Nothing a host calls moves; a host that hangs no autocomplete owes
 nothing.** The next version is key 12.1.4.2.1: `Widgets.lua` 12, `WidgetsReorder.lua` 1,
-`WidgetsDragHandle.lua` 4, `WidgetsLineChart.lua` 1 and a new file, `WidgetsAutocomplete.lua` 1,
-paired on the shell's minor, which publishes `lib.Autocomplete` and `lib.AUTOCOMPLETE`. See
+`WidgetsDragHandle.lua` 4, `WidgetsLineChart.lua` 2 and a new file, `WidgetsAutocomplete.lua` 1,
+paired on the shell's minor, which publishes `lib.Autocomplete` and `lib.AUTOCOMPLETE`.
+`WidgetsLineChart.lua` 2 adds one option, `opts.pxPerPoint`; an existing chart that does not pass
+it draws exactly as it did here, so adopting the spacing is opt-in. See
 [version 12.1.4.2.1](./version-12.1.4.2.1-docs.md).

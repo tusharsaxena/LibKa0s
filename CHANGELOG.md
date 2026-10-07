@@ -14,7 +14,12 @@ cannot drift. Release order is in
 
 Versions in this release: **WidgetsAutocomplete minor 1**, a new file, and **WidgetsLineChart minor
 2** (`LibKa0s-Widgets-1.0` key 12.1.4.2.1). Within Widgets, `Widgets` stays at 12, `WidgetsReorder` at
-1 and `WidgetsDragHandle` at 4. The rest of this block is written at release.
+1 and `WidgetsDragHandle` at 4. Every other file is unchanged from v1.69.0: `Core` 10, `Env` 1,
+`Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 19.1,
+`DebugLog` key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6. The
+test kit stays at **revision 37**. No `NEEDS_*` floor rises, no major is added and no existing member
+is removed; one payload file is added, so the library is now **fifteen majors across thirty-four
+files**. Built to standard v2.76.0, as v1.69.0 was; the README's standards pointer does not move.
 
 ### WidgetsLineChart minor 2: per-chart point spacing
 
@@ -41,6 +46,28 @@ Versions in this release: **WidgetsAutocomplete minor 1**, a new file, and **Wid
 - **`lib.AUTOCOMPLETE`**: the list's chrome and timing constants.
 - **Two consumers at promotion** (LootHistory's and BankLedger's search boxes), so
   `library-stack-§7`'s bar is met and no deviation row is added.
+
+### What a consumer owes
+
+- **The whole-folder copy of both payloads and the provenance line.** The kit bytes are unchanged
+  from v1.69.0, but `tests/test_vendor_sync.lua` resolves both payloads from the tag the provenance
+  line names, so both are copied. The owner's ruling is that **every consumer re-vendors** (S3): the
+  nine that take the bytes and nothing more add one commit to their existing
+  `feat/2026-10-06-revendor-libka0s-v1.69.0` branches; LootHistory re-vendors on
+  `feat/2026-10-06-timeline-ledger` and BankLedger on `feat/2026-10-07-autocomplete-typesubtype`.
+- **The two Autocomplete adopters.** LootHistory hangs it under its search box on every tab
+  (History, Insights, Timeline, Holdings) and passes `pxPerPoint` to its Timeline chart; BankLedger
+  hangs it under its browser's search box. Both adoptions land after this tag, on the branches above.
+  A host that hangs no list and draws no chart owes nothing in its own code.
+- **The line chart's deviation row reaches its re-check trigger.** `LineChart` still has one
+  consumer (LootHistory), and `CLAUDE.md`'s `library-stack-§7` row reopens its choice when "one
+  release passes after v1.69.0 with no second consumer named". This is that release. The row is left
+  as written and the choice (keep the row, or move the chart back into LootHistory) is the owner's.
+- **Upstream follow-up (S2):** the standard's `library-stack-§7` counts of majors and files need a
+  recount in WowAddonStandards for the thirty-fourth file. It is recorded as a follow-up and is not
+  part of this release.
+- **Tagged locally, not published.** `v1.70.0` is an annotated tag on `feat/2026-10-06-line-chart`;
+  the push, the merge to `master` and the GitHub release wait on the owner's go-ahead.
 
 ## v1.69.0 — 2026-10-06
 

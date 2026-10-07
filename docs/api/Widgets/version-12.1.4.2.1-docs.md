@@ -1253,7 +1253,8 @@ With `LibKa0s-Widgets-1.0` absent — no vendored copy, or a copy whose `NEEDS_C
 for any other major. The secondary files cannot half-attach: each is paired on the shell's minor,
 and one that is missing leaves only its own members `nil` (`ReorderList` and `ROW_BOX` without
 `WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`, `LineChart`, `LINE_CHART` and `ChartMath` without
-`WidgetsLineChart.lua`). The host must have a plan for `nil`
+`WidgetsLineChart.lua`, `Autocomplete` and `AUTOCOMPLETE` without `WidgetsAutocomplete.lua`).
+The host must have a plan for `nil`
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
 non-click close path must itself become a no-op alongside the rest of the degraded surface. The same
