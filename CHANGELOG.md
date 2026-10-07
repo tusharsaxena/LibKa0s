@@ -12,14 +12,23 @@ cannot drift. Release order is in
 
 ## v1.70.0 — 2026-10-07
 
-Versions in this release: **WidgetsAutocomplete minor 1**, a new file (`LibKa0s-Widgets-1.0` key
-12.1.4.1.1). Within Widgets, `Widgets` stays at 12, `WidgetsReorder` at 1, `WidgetsDragHandle` at 4
-and `WidgetsLineChart` at 1. The rest of this block is written at release.
+Versions in this release: **WidgetsAutocomplete minor 1**, a new file, and **WidgetsLineChart minor
+2** (`LibKa0s-Widgets-1.0` key 12.1.4.2.1). Within Widgets, `Widgets` stays at 12, `WidgetsReorder` at
+1 and `WidgetsDragHandle` at 4. The rest of this block is written at release.
+
+### WidgetsLineChart minor 2: per-chart point spacing
+
+- **`opts.pxPerPoint`**: plot pixels per drawn point, per chart. The thinning budget becomes
+  `floor(plot width / pxPerPoint)`; a larger value draws fewer, longer segments, a smoother line.
+  Absent or not a positive number it falls to `LINE_CHART.PX_PER_POINT` (2), so existing charts draw
+  as before. `ChartMath.Budget(plotWidth, pxPerPoint)` takes it as an optional second argument.
+  Thinning is still LTTB: the first and last points and a spike survive, values are never altered.
+  Cases in `tests/test_widgets_linechart.lua` and `tests/test_widgets_linechart_math.lua`.
 
 ### WidgetsAutocomplete minor 1: the autocomplete
 
 - **A new secondary file of `LibKa0s-Widgets-1.0`**, paired on the shell's minor like
-  `WidgetsLineChart.lua`. `Widgets.lua` stays at minor 12; the key is 12.1.4.1.1.
+  `WidgetsLineChart.lua`. `Widgets.lua` stays at minor 12; the key is 12.1.4.2.1.
 - **`lib.Autocomplete(editBox, opts)`**: a suggestion list hung directly under a host's `EditBox`,
   anchored to both of its bottom corners (its width, following resizes) and in the box's own border
   and background. `opts.provider(text)` is asked 0.15 s after the last keystroke (at least one

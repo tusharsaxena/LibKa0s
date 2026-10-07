@@ -552,7 +552,7 @@ badge and any count quoted in the docs must agree with it.
 - draghandle: a tooltipPlace that is not a function is ignored, not called
 - draghandle: DragHandle is at minor 4, the placement hook's minor
 
-### test_widgets_linechart_math.lua (14)
+### test_widgets_linechart_math.lua (16)
 
 - chart math: the file attaches to the Widgets shell and records its minor
 - chart math: NiceTicks picks a 1-2-2.5-5 step and covers the data
@@ -563,18 +563,21 @@ badge and any count quoted in the docs must agree with it.
 - chart math: Downsample hands a series that already fits back untouched
 - chart math: Downsample keeps a one-point spike
 - chart math: Budget never answers fewer than three points
+- chart math: Budget takes a per-chart spacing and falls to the default for a bad one
+- chart math: a larger spacing draws fewer points yet keeps the series' global min and max
 - chart math: TimeTicks lands day steps on local midnight
 - chart math: TimeTicks uses hour steps inside one day
 - chart math: TimeTicks answers nothing for an empty span
 - chart math: NearestIndex snaps to the closest x and clamps at the ends
 - chart math: Dashes cuts a segment into dash-gap pieces along its length
 
-### test_widgets_linechart.lua (12)
+### test_widgets_linechart.lua (13)
 
 - line chart: Render draws the axis, one grid rule per y tick and one line per segment
 - line chart: a second Render of the same data creates no new Line objects
 - line chart: a smaller render hides the leftovers instead of leaving them drawn
 - line chart: the plot never gets more than one point per 2px
+- line chart: opts.pxPerPoint sets the point budget per chart; the default is unchanged
 - line chart: a series maps its first point onto the plot's bottom-left corner
 - line chart: a dashed range draws dashes, an undashed series one line per segment
 - line chart: a marker inside the domain draws a dashed rule; outside it draws nothing
@@ -2375,8 +2378,8 @@ badge and any count quoted in the docs must agree with it.
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_draghandle_place.lua | 10 |
-| test_widgets_linechart_math.lua | 14 |
-| test_widgets_linechart.lua | 12 |
+| test_widgets_linechart_math.lua | 16 |
+| test_widgets_linechart.lua | 13 |
 | test_widgets_autocomplete.lua | 30 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
@@ -2444,4 +2447,4 @@ badge and any count quoted in the docs must agree with it.
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 9 |
 | test_lizard_sighted.lua | 8 |
-| **Total** | **2086** |
+| **Total** | **2089** |

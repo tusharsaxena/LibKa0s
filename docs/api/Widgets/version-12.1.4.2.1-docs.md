@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 12.1.4.1.1
+# `LibKa0s-Widgets-1.0` — version 12.1.4.2.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,19 +8,26 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **1** · `WidgetsAutocomplete.lua` minor **1** |
+| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **2** · `WidgetsAutocomplete.lua` minor **1** |
 | Shipped in | v1.70.0 |
 | Status | **Current** |
 | Supersedes | [version 12.1.4.1](./version-12.1.4.1-docs.md) — no autocomplete |
 | Superseded by | — |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 1, WidgetsAutocomplete = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 2, WidgetsAutocomplete = 1 }` |
 
-## What changed at 12.1.4.1.1
+## What changed at 12.1.4.2.1
 
 **An autocomplete, in a new file** (`WidgetsAutocomplete.lua`, minor **1**). `Widgets.lua` stays at
-**12**, `WidgetsReorder.lua` at **1**, `WidgetsDragHandle.lua` at **4** and `WidgetsLineChart.lua`
-at **1**; the version key gains a fifth component and becomes 12.1.4.1.1. No existing member, field
-or method moves.
+**12**, `WidgetsReorder.lua` at **1** and `WidgetsDragHandle.lua` at **4**; `WidgetsLineChart.lua`
+moves from **1** to **2** (one new option, below); the version key gains a fifth component and
+becomes 12.1.4.2.1. No existing member, field or method moves.
+
+- **`opts.pxPerPoint`, per chart** (`WidgetsLineChart` **Since 2**). The thinning budget is
+  `floor(plot width / pxPerPoint)`; a chart that sets it to 4 draws half the points, so fewer and
+  longer segments and a smoother-looking line. Absent, zero, negative or not a number, the chart
+  falls to `LINE_CHART.PX_PER_POINT` (2), so an existing chart draws as before. `ChartMath.Budget`
+  takes the spacing as an optional second argument. Thinning is still LTTB, which keeps the first
+  and last points and a spike; values are never altered.
 
 - **A secondary file paired on the shell's minor**, exactly as `WidgetsLineChart.lua` is. It records
   `lib.__autocompleteMinor` and `lib.__autocompleteShellMinor`, and steps aside only when both its
@@ -362,7 +369,7 @@ library's.
 | `CopyWindow(descriptor)` | **6** | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
 | `ReorderList(opts)` | **8** | Builds a drag-to-reorder controller for one render of a list. Returns the controller. See *The reorderable list*. |
-| `LineChart(parent, opts)` | `WidgetsLineChart` **1** | Builds one pooled line chart, a `Frame` parented to `parent`. Returns the chart. See *The line chart*. |
+| `LineChart(parent, opts)` | `WidgetsLineChart` **1** (`opts.pxPerPoint` **Since 2**) | Builds one pooled line chart, a `Frame` parented to `parent`. Returns the chart. See *The line chart*. |
 | `Autocomplete(editBox, opts)` | `WidgetsAutocomplete` **1** | Hangs a suggestion list under `editBox`. Returns a handle, or `nil` with no client, a box that cannot be hooked, or no `opts.provider`. See *The autocomplete*. |
 | `AUTOCOMPLETE` | `WidgetsAutocomplete` **1** | The list's chrome and timing constants. See *The autocomplete*. |
 | `MODULES` | 1 | `{ Widgets = <minor> }` — the live minor, and the value that picks this document. |
@@ -973,7 +980,7 @@ reads the paddings here, so a later minor that moves them moves the host too. Ev
 | `PAD_RIGHT` | `8` | Pixels between the plot and the chart's right edge. |
 | `PAD_TOP` | `8` | Pixels between the chart's top edge and the plot. |
 | `PAD_BOTTOM` | `18` | Pixels between the plot and the chart's bottom edge, room for the x labels. |
-| `PX_PER_POINT` | `2` | The thinning budget: at most one drawn point per this many plot pixels (`ChartMath.Budget`). |
+| `PX_PER_POINT` | `2` | The default thinning budget: at most one drawn point per this many plot pixels (`ChartMath.Budget`), unless a chart sets `opts.pxPerPoint`. |
 | `DASH` | `4` | Default dash length in pixels (`ChartMath.Dashes`). |
 | `GAP` | `3` | Default gap between dashes in pixels (`ChartMath.Dashes`). |
 | `Y_TICKS` | `5` | Default target tick count for `ChartMath.NiceTicks`. |
@@ -1004,10 +1011,12 @@ outward to multiples of that step, and returns the ticks from `niceLo` to `niceH
 - `integer = true` never steps below 1 (`0, 2, 5` steps 0.5 without it and 1 with it), for a count
   that has no fractions.
 
-#### `ChartMath.Budget(plotWidth)` → `maxPoints`
+#### `ChartMath.Budget(plotWidth [, pxPerPoint])` → `maxPoints`
 
-`max(3, floor(plotWidth / LINE_CHART.PX_PER_POINT))`: at most one point per two pixels of plot. A
-`nil` or zero width answers 3, never fewer.
+`max(3, floor(plotWidth / pxPerPoint))`: at most one point per `pxPerPoint` pixels of plot, which is
+`LINE_CHART.PX_PER_POINT` (2) when the argument is absent or not a positive number (**Since 2**; the
+argument is the only change, so a one-argument call answers what it did at 1). A `nil` or zero width
+answers 3, never fewer.
 
 #### `ChartMath.Downsample(points, maxPoints)` → `points`
 
@@ -1065,6 +1074,7 @@ Read on every render and every hover, never written. Every field is optional and
 |---|---|---|
 | `font` | `"GameFontDisableSmall"` | FontObject name the axis labels are created with. Read when a label is first made, so a change reaches only labels the pool has not made yet. |
 | `onHover` | none | `onHover(chart, index, x)` when the hovered index changes, and `onHover(chart, nil, nil)` when a hover clears. `index` is into `data.hoverXs`, `x` is `hoverXs[index]`. The host draws its own tooltip. |
+| `pxPerPoint` | `LINE_CHART.PX_PER_POINT` (2) | **Since 2.** Plot pixels per drawn point: the thinning budget is `floor(plot width / pxPerPoint)`. Larger is smoother and draws fewer segments. A non-positive or non-number value falls to the default. Read on every render. |
 | `formatY` | integer as-is, otherwise `%.2f` | `formatY(v) → string` for each y tick label. |
 | `formatX` | `date("%H:%M")` under a day step, otherwise `date("%d %b")` | `formatX(x, step) → string` for each x tick label; `step` is `ChartMath.TimeTicks`'s step in seconds. |
 

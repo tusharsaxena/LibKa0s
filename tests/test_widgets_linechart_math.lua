@@ -12,8 +12,8 @@ local W = T.widgets
 local function M() return W.ChartMath end
 
 test("chart math: the file attaches to the Widgets shell and records its minor", function()
-  assertEqual(W.MODULES.WidgetsLineChart, 1)
-  assertEqual(W.__chartMinor, 1)
+  assertEqual(W.MODULES.WidgetsLineChart, 2)
+  assertEqual(W.__chartMinor, 2)
   assertEqual(W.__chartShellMinor, W.MINOR, "paired on the shell's minor, as WidgetsDragHandle is")
 end)
 
@@ -74,6 +74,36 @@ end)
 
 test("chart math: Budget never answers fewer than three points", function()
   assertEqual(M().Budget(0), 3); assertEqual(M().Budget(3), 3)
+end)
+
+test("chart math: Budget takes a per-chart spacing and falls to the default for a bad one", function()
+  assertEqual(M().Budget(200, 4), 50)
+  assertEqual(M().Budget(200, 2), 100)
+  assertEqual(M().Budget(200), 100)
+  assertEqual(M().Budget(200, 0), 100, "zero spacing falls to the default")
+  assertEqual(M().Budget(200, -3), 100)
+  assertEqual(M().Budget(200, "x"), 100)
+  assertEqual(M().Budget(8, 4), 3, "still never fewer than three")
+end)
+
+test("chart math: a larger spacing draws fewer points yet keeps the series' global min and max", function()
+  local pts = {}
+  for i = 1, 2000 do pts[i] = { x = i, y = 500 + ((i * 37) % 41) } end  -- bounded noise 500..540
+  pts[613].y = 9000   -- the global max, mid-bucket
+  pts[1402].y = -7000 -- the global min
+  local wide = M().Downsample(pts, M().Budget(400, 2))
+  local wider = M().Downsample(pts, M().Budget(400, 5))
+  assertTrue(#wider < #wide, "a larger spacing keeps fewer points")
+  for _, out in ipairs({ wide, wider }) do
+    local lo, hi = math.huge, -math.huge
+    for _, p in ipairs(out) do
+      if p.y < lo then lo = p.y end
+      if p.y > hi then hi = p.y end
+    end
+    assertEqual(hi, 9000, "the global max survives thinning")
+    assertEqual(lo, -7000, "the global min survives thinning")
+    assertTrue(out[1] == pts[1] and out[#out] == pts[2000], "both endpoints survive")
+  end
 end)
 
 test("chart math: TimeTicks lands day steps on local midnight", function()

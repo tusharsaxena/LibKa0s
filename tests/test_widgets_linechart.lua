@@ -70,6 +70,22 @@ test("line chart: the plot never gets more than one point per 2px", function()
   assertEqual(shownLines(c), 1 + #yTicks(0, 999) + (budget - 1))
 end)
 
+test("line chart: opts.pxPerPoint sets the point budget per chart; the default is unchanged", function()
+  local function draw(opts)
+    local c = newChart(opts)
+    c:SetData({ xMin = 100, xMax = 100000, series = { { points = ramp(1000, 0, 1) } } })
+    c:Render(208, 120)
+    local _, _, pw = c:GetPlotRect()
+    return shownLines(c), pw
+  end
+  local base, pw = draw(nil)
+  local explicit = draw({ pxPerPoint = 2 })
+  local wide = draw({ pxPerPoint = 4 })
+  assertEqual(explicit, base, "an explicit 2 is the default")
+  assertEqual(wide - base, W.ChartMath.Budget(pw, 4) - W.ChartMath.Budget(pw), "segments follow the budget")
+  assertTrue(wide < base, "a larger spacing draws fewer segments")
+end)
+
 test("line chart: a series maps its first point onto the plot's bottom-left corner", function()
   local c = newChart()
   c:SetData({ xMin = 100, xMax = 300, series = { { points = ramp(3, 0, 50), thickness = 3 } } })

@@ -12,7 +12,7 @@
 | Shipped in | v1.69.0 |
 | Status | Superseded |
 | Supersedes | [version 12.1.4](./version-12.1.4-docs.md) — no line chart |
-| Superseded by | [version 12.1.4.1.1](./version-12.1.4.1.1-docs.md) — `WidgetsAutocomplete.lua`: `Autocomplete` and `AUTOCOMPLETE` |
+| Superseded by | [version 12.1.4.2.1](./version-12.1.4.2.1-docs.md) — `WidgetsAutocomplete.lua`: `Autocomplete` and `AUTOCOMPLETE` |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 1 }` |
 
 ## What changed at 12.1.4.1
@@ -1169,10 +1169,10 @@ comparison across all four has no single host to live in, so it is recorded here
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
 
-## Moving to version 12.1.4.1.1
+## Moving to version 12.1.4.2.1
 
 **Copy the folder whole. Nothing a host calls moves; a host that hangs no autocomplete owes
-nothing.** The next version is key 12.1.4.1.1: `Widgets.lua` 12, `WidgetsReorder.lua` 1,
+nothing.** The next version is key 12.1.4.2.1: `Widgets.lua` 12, `WidgetsReorder.lua` 1,
 `WidgetsDragHandle.lua` 4, `WidgetsLineChart.lua` 1 and a new file, `WidgetsAutocomplete.lua` 1,
 paired on the shell's minor, which publishes `lib.Autocomplete` and `lib.AUTOCOMPLETE`. See
-[version 12.1.4.1.1](./version-12.1.4.1.1-docs.md).
+[version 12.1.4.2.1](./version-12.1.4.2.1-docs.md).
