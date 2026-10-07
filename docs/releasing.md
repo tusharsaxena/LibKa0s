@@ -466,6 +466,9 @@ locally, **not merged or pushed**; push, merge and GitHub release wait on the ow
 LootHistory re-vendors on `feat/2026-10-06-timeline-ledger` and BankLedger on
 `feat/2026-10-07-autocomplete-typesubtype`. Since merged to `master` (`a8b008f`) and the tag pushed,
 on the owner's go-ahead (2026-10-07); the GitHub release is not used for this library (tags only).
+The owner has since ruled on the line chart (2026-10-07): it stays in LibKa0s, the `library-stack-§7`
+row is an accepted deviation, and its re-check trigger is now "a second addon draws a chart (then
+the row is retired), or the chart's API needs a breaking change".
 
 **Where v1.69.0 stands (2026-10-06).** One file is added and no existing file's minor moves:
 `WidgetsLineChart.lua` 1 (`LibKa0s-Widgets-1.0` 12.1.4.1), the line chart (`lib.LINE_CHART`,
