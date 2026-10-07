@@ -12,8 +12,8 @@ local W = T.widgets
 local function M() return W.ChartMath end
 
 test("chart math: the file attaches to the Widgets shell and records its minor", function()
-  assertEqual(W.MODULES.WidgetsLineChart, 2)
-  assertEqual(W.__chartMinor, 2)
+  assertEqual(W.MODULES.WidgetsLineChart, 3)
+  assertEqual(W.__chartMinor, 3)
   assertEqual(W.__chartShellMinor, W.MINOR, "paired on the shell's minor, as WidgetsDragHandle is")
 end)
 
@@ -26,6 +26,8 @@ test("chart math: NiceTicks picks a 1-2-2.5-5 step and covers the data", functio
 end)
 
 test("chart math: NiceTicks widens a flat or empty range instead of dividing by zero", function()
+  -- red under: NiceTicks skipping widenFlat (a zero span reaches log10(0)), and equally under
+  -- dropping the `or 0` default for a nil end (a nil compare raises).
   local ticks, lo, hi = M().NiceTicks(5, 5, 5)
   assertEqual(lo, 0); assertEqual(hi, 5); assertEqual(#ticks, 6)
   ticks, lo, hi = M().NiceTicks(0, 0, 5, true)
@@ -35,6 +37,7 @@ test("chart math: NiceTicks widens a flat or empty range instead of dividing by 
 end)
 
 test("chart math: NiceTicks with integer=true never steps below 1", function()
+  -- red under: dropping the `integer and step < 1` floor, which answers a 0.5 step.
   local _, _, _, step = M().NiceTicks(0, 2, 5)
   assertEqual(step, 0.5)
   _, _, _, step = M().NiceTicks(0, 2, 5, true)
@@ -73,10 +76,12 @@ test("chart math: Downsample keeps a one-point spike", function()
 end)
 
 test("chart math: Budget never answers fewer than three points", function()
+  -- red under: `max(0, ...)` in place of `max(3, ...)`, which answers 0 points for a 0px plot.
   assertEqual(M().Budget(0), 3); assertEqual(M().Budget(3), 3)
 end)
 
 test("chart math: Budget takes a per-chart spacing and falls to the default for a bad one", function()
+  -- red under: `px < 0` in place of `px <= 0`, which divides by a zero spacing and answers inf.
   assertEqual(M().Budget(200, 4), 50)
   assertEqual(M().Budget(200, 2), 100)
   assertEqual(M().Budget(200), 100)
@@ -123,11 +128,15 @@ test("chart math: TimeTicks uses hour steps inside one day", function()
 end)
 
 test("chart math: TimeTicks answers nothing for an empty span", function()
+  -- red under: `xMax < xMin` in place of `xMax <= xMin`, which ticks a span of zero length.
   local ticks, step = M().TimeTicks(100, 100, 6)
   assertEqual(#ticks, 0); assertEqual(step, nil)
 end)
 
 test("chart math: NearestIndex snaps to the closest x and clamps at the ends", function()
+  -- red under: answering nil for a cursor beyond either end instead of clamping (each end on its
+  -- own), dropping the `n == 0` guard (a nil compare raises), and a tiebreak that always takes the
+  -- lower neighbor.
   local xs = { 0, 10, 20, 30 }
   assertEqual(M().NearestIndex(xs, -5), 1)
   assertEqual(M().NearestIndex(xs, 14), 2)
@@ -137,6 +146,8 @@ test("chart math: NearestIndex snaps to the closest x and clamps at the ends", f
 end)
 
 test("chart math: Dashes cuts a segment into dash-gap pieces along its length", function()
+  -- red under: a zero-length segment answering one dash instead of none, and `e = s + dash` with
+  -- no `min(..., len)`, which runs the last dash past the segment's end.
   local d = M().Dashes(0, 0, 20, 0, 4, 3)
   assertEqual(#d, 3)
   assertEqual(d[1][1], 0); assertEqual(d[1][3], 4)
@@ -145,4 +156,54 @@ test("chart math: Dashes cuts a segment into dash-gap pieces along its length", 
   assertEqual(#v, 2)
   assertEqual(v[2][4], 10, "the last dash is clipped at the segment's end")
   assertEqual(#M().Dashes(5, 5, 5, 5, 4, 3), 0, "a zero-length segment has no dashes")
+end)
+
+-- -- ClipSegment (minor 3): Liang-Barsky against the plot rectangle ------------------------------
+
+local function clip(...) return { M().ClipSegment(...) } end
+-- To within float noise: a cut point is computed (x1 + t * dx), so it can land 1e-14 off the edge.
+local function sameSeg(got, want, msg)
+  assertEqual(#got, 4, msg)
+  for k = 1, 4 do
+    assertTrue(math.abs(got[k] - want[k]) < 1e-9, msg .. ": component " .. k .. " is " .. tostring(got[k])
+      .. ", expected " .. tostring(want[k]))
+  end
+end
+
+test("chart math: ClipSegment answers a segment inside the rectangle unchanged", function()
+  -- red under: ClipSegment missing (minor 2 has no such member)
+  local x1, y1, x2, y2 = M().ClipSegment(0.1, 0.2, 9.7, 9.3, 0, 0, 10, 10)
+  assertTrue(x1 == 0.1 and y1 == 0.2 and x2 == 9.7 and y2 == 9.3, "inside comes back bit-for-bit")
+  sameSeg(clip(0, 0, 10, 10, 0, 0, 10, 10), { 0, 0, 10, 10 }, "corner to corner, on the edges")
+end)
+
+test("chart math: ClipSegment answers nil for a segment wholly outside", function()
+  -- red under: return the segment unclipped when it misses the rectangle
+  assertEqual(M().ClipSegment(11, 0, 20, 5, 0, 0, 10, 10), nil, "right of it")
+  assertEqual(M().ClipSegment(-5, 12, 15, 30, 0, 0, 10, 10), nil, "above it")
+  assertEqual(M().ClipSegment(-5, 4, 4, -5, 0, 0, 10, 10), nil, "past the bottom-left corner")
+end)
+
+test("chart math: ClipSegment cuts a segment at each edge it crosses, keeping its direction", function()
+  -- red under: skip any edge in the Liang-Barsky loop, or swap t0 and t1 on the way out
+  sameSeg(clip(-5, 5, 5, 5, 0, 0, 10, 10), { 0, 5, 5, 5 }, "left edge")
+  sameSeg(clip(5, 5, 15, 5, 0, 0, 10, 10), { 5, 5, 10, 5 }, "right edge")
+  sameSeg(clip(5, -5, 5, 5, 0, 0, 10, 10), { 5, 0, 5, 5 }, "bottom edge")
+  sameSeg(clip(5, 5, 5, 15, 0, 0, 10, 10), { 5, 5, 5, 10 }, "top edge")
+  sameSeg(clip(15, 5, 5, 5, 0, 0, 10, 10), { 10, 5, 5, 5 }, "right to left keeps its direction")
+  sameSeg(clip(-10, -10, 20, 20, 0, 0, 10, 10), { 0, 0, 10, 10 }, "through two corners")
+end)
+
+test("chart math: ClipSegment handles vertical and horizontal segments on either side", function()
+  -- red under: divide by a zero dx or dy instead of testing the parallel edge
+  assertEqual(M().ClipSegment(-1, 0, -1, 10, 0, 0, 10, 10), nil, "vertical, left of it")
+  assertEqual(M().ClipSegment(0, 11, 10, 11, 0, 0, 10, 10), nil, "horizontal, above it")
+  sameSeg(clip(3, -100, 3, 1e6, 0, 0, 10, 10), { 3, 0, 3, 10 }, "vertical through it")
+  sameSeg(clip(-100, 7, 100, 7, 0, 0, 10, 10), { 0, 7, 10, 7 }, "horizontal through it")
+end)
+
+test("chart math: ClipSegment keeps a degenerate point inside and drops one outside", function()
+  -- red under: treat a zero-length segment as always outside, or always inside
+  sameSeg(clip(3, 3, 3, 3, 0, 0, 10, 10), { 3, 3, 3, 3 }, "a point inside")
+  assertEqual(M().ClipSegment(12, 3, 12, 3, 0, 0, 10, 10), nil, "a point outside")
 end)

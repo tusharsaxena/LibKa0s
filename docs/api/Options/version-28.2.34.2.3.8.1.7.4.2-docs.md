@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **28** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **3** · `OptionsTabs.lua` **8** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>`, in load order — the same ten numbers `lib.MODULES` reports. |
 | Shipped in | v1.67.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 27.2.34.2.2.8.1.7.4.2](./version-27.2.34.2.2.8.1.7.4.2-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 28.2.34.2.4.8.1.7.4.2](./version-28.2.34.2.4.8.1.7.4.2-docs.md) — the help-art guard never reads the removed bare `IsAddOnLoaded` global |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 28, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 3, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }` |
 
@@ -2326,3 +2326,11 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 28.2.34.2.4.8.1.7.4.2
+
+**Copy the folder whole. Nothing a host calls moves or is removed.** `OptionsIdList.lua` moves to
+minor **4**: the help-art guard reads `C_AddOns.IsAddOnLoaded` only and never the removed bare
+`IsAddOnLoaded` global, and with no `C_AddOns` reader it trusts the name, as this version did when
+neither API existed. Every supported client has `C_AddOns`, so a live host sees no difference. See
+[version 28.2.34.2.4.8.1.7.4.2](./version-28.2.34.2.4.8.1.7.4.2-docs.md).

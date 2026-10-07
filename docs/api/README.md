@@ -111,7 +111,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Env/version-1-docs.md) | `Env.lua` 1 | v1.15.0 | **Current** |
+| [2](./Env/version-2-docs.md) | `Env.lua` 2 | v1.71.0 | **Current** |
+| [1](./Env/version-1-docs.md) | `Env.lua` 1 | v1.15.0 – v1.70.0 | Superseded |
 
 ### `LibKa0s-Compat-1.0`
 
@@ -169,7 +170,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12.1.4.2.1](./Widgets/version-12.1.4.2.1-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 2 · `WidgetsAutocomplete.lua` 1 | v1.70.0 | **Current** |
+| [12.1.4.3.2](./Widgets/version-12.1.4.3.2-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.71.0 | **Current** |
+| [12.1.4.2.1](./Widgets/version-12.1.4.2.1-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 2 · `WidgetsAutocomplete.lua` 1 | v1.70.0 | Superseded |
 | [12.1.4.1](./Widgets/version-12.1.4.1-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 1 | v1.69.0 | Superseded |
 | [12.1.4](./Widgets/version-12.1.4-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 | v1.68.0 – v1.68.1 | Superseded |
 | [12.1.3](./Widgets/version-12.1.3-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 3 | v1.66.0 – v1.67.0 | Superseded |
@@ -214,7 +216,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [19.1](./Slash/version-19.1-docs.md) | `Slash.lua` 19 · `SlashParse.lua` 1 | v1.66.0 | **Current** |
+| [20.2](./Slash/version-20.2-docs.md) | `Slash.lua` 20 · `SlashParse.lua` 2 | v1.71.0 | **Current** |
+| [19.1](./Slash/version-19.1-docs.md) | `Slash.lua` 19 · `SlashParse.lua` 1 | v1.66.0 – v1.70.0 | Superseded |
 | [18](./Slash/version-18-docs.md) | `Slash.lua` 18 | v1.65.0 | Superseded |
 | [17](./Slash/version-17-docs.md) | `Slash.lua` 17 | v1.63.0 – v1.64.0 | Superseded |
 | [16](./Slash/version-16-docs.md) | `Slash.lua` 16 | v1.60.0 – v1.62.0 | Superseded |
@@ -245,7 +248,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [28.2.34.2.3.8.1.7.4.2](./Options/version-28.2.34.2.3.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 3 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.67.0 | **Current** |
+| [28.2.34.2.4.8.1.7.4.2](./Options/version-28.2.34.2.4.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.71.0 | **Current** |
+| [28.2.34.2.3.8.1.7.4.2](./Options/version-28.2.34.2.3.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 3 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.67.0 – v1.70.0 | Superseded |
 | [27.2.34.2.2.8.1.7.4.2](./Options/version-27.2.34.2.2.8.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.66.0 | Superseded |
 | [27.2.34.2.2.7.1.7.4.2](./Options/version-27.2.34.2.2.7.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 7 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | none (superseded inside v1.66.0 before the tag was published) | Superseded |
 | [27.2.33.2.2.7.1.7.4.2](./Options/version-27.2.33.2.2.7.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 33 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 7 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.65.0 | Superseded |
@@ -321,7 +325,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [37](./testkit/version-37-docs.md) | same files **plus `mock_lines.lua`**: `CreateLine` on every tracked mock frame answers a distinct Line, recorded in creation order as `__madeLines` on its frame, whose two ends (`GetStartPoint` / `GetEndPoint`), thickness, color, alpha, draw layer and shown state are answered back, and any capitalized method a Line does not have raises naming itself, where revision 36 answered `CreateLine` with the frame itself; `mock_base.lua` loads the file and passes each frame through it (two lines). `Kit.VERSION` is 37. No member is renamed or removed, and no kit case or runner output changes | v1.69.0 | **Current** |
+| [38](./testkit/version-38-docs.md) | adds `secrets.lua`: `Kit.secret`, `Kit.isSecret`, `Kit.reveal`, `Kit.SECRET_ERROR` and the opt-in `Kit.installSecretValue` (sets the global `issecretvalue` and returns its restore; nothing installs it by default), one process-wide weak-keyed registry; `--list`'s `## Totals` table counts only the cases that run: each suite row and `the runner` row leave declared skips out (a row at 0 is omitted), a `\| Skipped \| N \|` row precedes Total when N > 0 declared skips are registered, and Total is the registered non-skipped count, equal to the README badge (`testing-§5`), where revision 37 counted the whole registry; the preamble says so, and skipped cases stay listed in their groups. The renderer moves from `framework.lua` to `inventory.lua`, keeping `framework.lua` under 1000 lines. `Kit.VERSION` is 38. No member is renamed or removed, and no case name or mock changes; a consumer regenerates `docs/test-cases.md` | v1.71.0 | **Current** |
+| [37](./testkit/version-37-docs.md) | same files **plus `mock_lines.lua`**: `CreateLine` on every tracked mock frame answers a distinct Line, recorded in creation order as `__madeLines` on its frame, whose two ends (`GetStartPoint` / `GetEndPoint`), thickness, color, alpha, draw layer and shown state are answered back, and any capitalized method a Line does not have raises naming itself, where revision 36 answered `CreateLine` with the frame itself; `mock_base.lua` loads the file and passes each frame through it (two lines). `Kit.VERSION` is 37. No member is renamed or removed, and no kit case or runner output changes | v1.69.0 – v1.70.0 | Superseded |
 | [36](./testkit/version-36-docs.md) | same files; `run-automated-tests.sh`'s `RESULTS.md` lead-in names `/dev-copilot:bump-version` as the command that evaluates the release gate, where revision 35 named `/wow-addon:bump-version` (the `wow-addon` plugin was merged into `dev-copilot`), and three runner comments and one `test_eol.lua` comment follow the rename. `Kit.VERSION` is 36. No member, case name, mock or manifest field changes | v1.68.1 | Superseded |
 | [35](./testkit/version-35-docs.md) | same files **plus `lizard_sighted.lua` and `test_lizard_sighted.lua`**: `run-automated-tests.sh`'s complexity suite runs the fixed lizard command over a sanitized shadow of the tree (`#` blanked, the Ruby-like reader's `it` / `class` / `module` / `begin` / `unless` renamed, `function a:b(` rewritten to `function a.b(self, `, line numbers kept), then compares each file's `function` tokens with the functions lizard listed: any mismatch records `complexity` as `fail` (verdict `amber`, never red), names the files, and counts them in the new `suites.complexity.blindFiles`; with no Lua to build the shadow the suite is a skip. The kit's fifth suite pins the sanitizer, and `inventory.lua`'s gate-rule table gains its row. `mock_base.lua`'s geometry comment retires the planned GetHeight flip (LibKa0s#17–#20), with no line added. `Kit.VERSION` is 35. No member or mock behavior changes | v1.66.0 – v1.68.0 | Superseded |
 | [34](./testkit/version-34-docs.md) | same files; `test_diagnostics_contract.lua` follows `debug-logging-§14` at v2.71.0: the case "the report lands with logging off and leaves it off" is retired for "the report lands with logging off and turns it on for the session" (one `[Debug] logging enabled` line, before the begin marker), an opt-out case (the flag stays off, no enable line) and an already-on case (no second enable line), with one new optional fact, `Kit.diagnostics.enablesLogging = false`, for an addon whose descriptor opts out; the case for the choice not declared is a declared skip. `Kit.VERSION` is 34. No member, mock or runner output changes | v1.64.0 – v1.65.0 | Superseded |

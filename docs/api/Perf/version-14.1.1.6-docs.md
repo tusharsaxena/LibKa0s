@@ -348,8 +348,9 @@ local lib = LibStub and LibStub("LibKa0s-Perf-1.0", true)
 if not lib then
     -- A missing vendored lib must degrade, not error at load: the addon's own function is unaffected
     -- by the absence of a diagnostics harness. The stub therefore has to cover EVERY member the
-    -- addon calls, not just the bracket idiom (`on`/`Note`) and the show-decision ladder
-    -- (`suspended`) — `/at perf` is registered unconditionally, so OnCommand has to answer too, and
+    -- addon calls, not just the bracket idiom (`on`/`Note`) and the instance's `suspended` view (a
+    -- host whose show ladder reads it needs it; AT's ladder asks the lifecycle latch, NS.IsStoodDown,
+    -- instead) — `/at perf` is registered unconditionally, so OnCommand has to answer too, and
     -- an honest "it is not installed" beats a Lua error in exactly the install this branch exists
     -- for.
     NS.Perf = {
@@ -383,9 +384,10 @@ NS.Perf = lib:New({
 
     --- Make the addon inert without a /reload.
     ---
-    --- Visibility is NOT enforced by hiding frames here. NS.ShouldShowBar checks NS.Perf.suspended
-    --- as step 0 of its ladder, so publishing VISIBILITY is enough and nothing — a combat
-    --- transition, a target swap, a settings change — can re-show a bar behind suspend's back.
+    --- Visibility is NOT enforced by hiding frames here. NS.ShouldShowBar's step 0 asks the lifecycle
+    --- latch (NS.IsStoodDown), which is down while the perf hold is taken, so publishing VISIBILITY
+    --- is enough and nothing — a combat transition, a target swap, a settings change — can re-show
+    --- a bar behind suspend's back.
     suspend = function()
         local addon = NS.addon
         if addon then
@@ -493,7 +495,9 @@ capture doesn't error — it silently lies:
    having `suspend` reach in and imperatively hide frames itself. Imperative hiding is a snapshot: the
    next combat transition, target swap, or settings change re-shows the frame behind suspend's back,
    because nothing is stopping it from being shown again. A check at the source holds for the whole
-   suspended window, not just the instant `suspend` ran.
+   suspended window, not just the instant `suspend` ran. A host that keeps a lifecycle latch may ask
+   its latch instead of `perf.suspended` (AbsorbTracker's `NS.IsStoodDown()`): the latch is down
+   whenever the `perf` hold is taken, which is exactly when `perf.suspended` reads `true`.
 
 ## The instance surface
 

@@ -167,19 +167,20 @@ test("kitsync: testkit/ and tests/_kit/ hold the same set of files", function()
   end
 end)
 
-test("kitsync: testkit/asserts.lua, inventory.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/", function()
+test("kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/", function()
   -- Kit revision 26 peeled framework.lua's assertion and parity families into asserts.lua, and
   -- test_prose.lua's published lists into prose_lists.lua, to take both files under layout-§1's cap;
   -- revision 28 peeled framework.lua's suite inventory and path helpers into inventory.lua, and
   -- revision 29 test_prose.lua's narrowing machinery into prose_coverage.lua and its self-tests
-  -- into prose_selftests.lua (issue #39).
-  -- All five are loaded by path from beside their parent, so a copy that drops any one breaks the
+  -- into prose_selftests.lua (issue #39); revision 38 added secrets.lua, Kit.secret and its
+  -- siblings, which framework.lua loads beside asserts.lua.
+  -- All six are loaded by path from beside their parent, so a copy that drops any one breaks the
   -- kit at load. The set-equality case above catches a file missing from ONE side; this one catches
   -- the peel being undone on both.
-  -- red under: any of the five absent from testkit/ or tests/_kit/
+  -- red under: any of the six absent from testkit/ or tests/_kit/
   local PROSE = { ["prose_lists.lua"] = true, ["prose_coverage.lua"] = true, ["prose_selftests.lua"] = true }
-  for _, name in ipairs({ "asserts.lua", "inventory.lua", "prose_lists.lua", "prose_coverage.lua",
-                          "prose_selftests.lua" }) do
+  for _, name in ipairs({ "asserts.lua", "inventory.lua", "secrets.lua", "prose_lists.lua",
+                          "prose_coverage.lua", "prose_selftests.lua" }) do
     for _, dir in ipairs({ SRC, DST }) do
       if readBytes(dir .. "/" .. name) == nil then
         fail("kit sync: " .. dir .. "/" .. name .. " is missing - the kit loads it from "

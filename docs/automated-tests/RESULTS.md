@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261007-193954`](20261007-193954/) | `fae715e` | clean | 1.70.0 → 1.71.0 | 0/0 | 155 | 2139/2/2141 | skip | 42644 | 6483 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261007-102304`](20261007-102304/) | `6b401e1` | clean | 1.69.0 → 1.70.0 | 0/0 | 153 | 2087/2/2089 | skip | 42163 | 6382 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261006-134107`](20261006-134107/) | `37d4916` | clean | 1.68.1 → 1.69.0 | 0/0 | 151 | 2054/2/2056 | skip | 41483 | 6243 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261004-143758`](20261004-143758/) | `84cd24a` | clean | 1.68.0 → 1.68.1 | 0/0 | 146 | 2023/2/2025 | skip | 40807 | 6132 | 6.7 | 2.0 | 15 | 0 | **green** |
@@ -137,18 +138,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**2089 cases** — 2087 passed, 0 failed, 2 skipped. The generated inventory
-[`20261007-102304/test-cases.md`](20261007-102304/test-cases.md) is the authority on which cases existed at this run;
+**2141 cases** — 2139 passed, 0 failed, 2 skipped. The generated inventory
+[`20261007-193954/test-cases.md`](20261007-193954/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **2056 → 2089** since the previous run.
+Moved **2089 → 2141** since the previous run.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 153 files** (`luacheck .`).
+**0 warnings / 0 errors over 155 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -165,7 +166,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261007-102304`](20261007-102304/) — **this run's measurement, not its diff.** Max CCN **15** across 6382
+Current as of [`20261007-193954`](20261007-193954/) — **this run's measurement, not its diff.** Max CCN **15** across 6483
 functions, **0** of them warned on; 6 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
@@ -185,12 +186,12 @@ None.
 
 | Band | File | LOC | Disposition |
 |---|---|---|---|
-| 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1288 | **Peeled 2026-09-26 (`LK-ATS-04`), then accepted at 1261** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). The 2026-09-24 *Accepted* had outlived its shelf life (`ATS-03`); the page registry and its combat park (one caller, state nothing else in the shell reads) were a seam, and moved unchanged to `LibKa0s/OptionsRegistry.lua` (263) at Options minor 26. **Re-check trigger: the next member added to `Options.lua`, or 1400 lines**; the reset walk is the next seam. **Re-ruled 2026-10-01 at v1.65.0 (`DG-LIB-01`): accepted** at 1282; the member the trigger caught is the private `O.__combatRefused` (G3's refusal line), which sits with the combat edges, and the trigger stands, counted from this release. |
-| 1000–1500 (on notice) | `LibKa0s/OptionsIdList.lua` | 1246 | **Accepted 2026-09-26 (`LK-ATS-01`, issue [`#32`](https://github.com/tusharsaxena/LibKa0s/issues/32); `CLAUDE.md` § *Files over the 1500-line cap*, the id peel's rulings).** New file, moved unchanged out of `LibKa0s/OptionsWidgets.lua`: `O.IdList` and its entry-line layout, one piece of machinery. **Re-check trigger: 1350 lines.** |
-| 1000–1500 (on notice) | `LibKa0s/OptionsIds.lua` | 1359 | **Accepted 2026-09-26 (`LK-ATS-01`, issue [`#32`](https://github.com/tusharsaxena/LibKa0s/issues/32); `CLAUDE.md` § *Files over the 1500-line cap*, the id peel's rulings).** New file, moved unchanged out of `LibKa0s/OptionsWidgets.lua`: id resolution, suggestions and the input. **Re-check trigger: 1450 lines**; the suggestion half (the module-scope suggestions-while-typing block and the dropdown members) is the seam, to a file of its own. |
-| 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1349 | **Peeled 2026-09-26 (`LK-ATS-03`), then accepted at 1293** (`CLAUDE.md` § *The band's terminal states, ruled 2026-09-24*). The 2026-09-24 *Accepted* ("no second seam inside it") had outlived its shelf life (`ATS-03`, `ATS-06`); the combat lock's page chrome was that seam, and moved unchanged to `LibKa0s/OptionsCombat.lua` (249) at OptionsTabs minor 6. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1400 lines**; the tabbed page is the next seam. |
-| 1000–1500 (on notice) | `LibKa0s/OptionsWidgets.lua` | 1444 | **Accepted 2026-09-26 (`LK-ATS-01`, issue [`#32`](https://github.com/tusharsaxena/LibKa0s/issues/32); `CLAUDE.md` § *Files over the 1500-line cap*, the id peel's rulings).** New to the band: it came off the census (3852) when the id surface moved out to `LibKa0s/OptionsIds.lua` and `LibKa0s/OptionsIdList.lua`. What is left is the makers, the choice grid, the landing page and the flow engine. **Re-check trigger: 1450 lines, or the next maker added**; the flow engine (`flowRows`, the switched sections) is the seam at either. |
-| 1000–1500 (on notice) | `testkit/mock_base.lua` | 1458 | **On notice, re-read 2026-09-30 (`DL-LIB-01`): 44 lines from breach.** 1446 → 1454 at kit revision 26 (`testkit/mock_events.lua`'s load, hook and install lines, and the shown-by-default flip's comment), 1454 → 1456 at kit revision 33 (`testkit/mock_resize.lua`'s load and decorate lines; the recorders themselves went to that file, following the rule below), 1456 → 1458 at kit revision 37 (`testkit/mock_lines.lua`'s load and decorate lines, the same shape). Kit revisions 20, 22, 26, 33 and 37 each put a family of fakes in its own file (`mock_ids.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`, `mock_lines.lua`) rather than appending, and that is the rule for the next one. The peel seam is the Ace fakes, the CallbackHandler registry through AceGUI. **Re-check trigger: 1490 lines, or any kit change that adds more than 30 lines here**; either peels first or opens an issue naming that seam before it crosses. |
+| 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1288 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-04`) to `LibKa0s/OptionsRegistry.lua`, then accepted at 1261 and re-ruled at v1.65.0; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. Seam: the reset walk. **Re-check trigger: the next member added to `Options.lua`, or 1400 lines.** |
+| 1000–1500 (on notice) | `LibKa0s/OptionsIdList.lua` | 1247 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: `O.IdList` and its entry-line layout, one piece of machinery, so a seam is named before the append at the trigger. **Re-check trigger: 1350 lines.** |
+| 1000–1500 (on notice) | `LibKa0s/OptionsIds.lua` | 1359 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: id resolution, suggestions and the input. Seam: the suggestion half (the module-scope suggestions-while-typing block and the dropdown members), to a file of its own. **Re-check trigger: 1450 lines.** |
+| 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1349 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-03`) to `LibKa0s/OptionsCombat.lua`, then accepted at 1293; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. Seam: the tabbed page. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1400 lines.** |
+| 1000–1500 (on notice) | `LibKa0s/OptionsWidgets.lua` | 1444 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Came off the census (3852) when the id surface moved out; what is left is the makers, the choice grid, the landing page and the flow engine. Seam: the flow engine (`flowRows`, the switched sections). **Re-check trigger: 1450 lines, or the next maker added.** |
+| 1000–1500 (on notice) | `testkit/mock_base.lua` | 1458 | **On notice, re-read 2026-09-30 (`DL-LIB-01`).** 1446 → 1454 at kit revision 26 (`testkit/mock_events.lua`'s load, hook and install lines, and the shown-by-default flip's comment), 1454 → 1456 at kit revision 33 (`testkit/mock_resize.lua`'s load and decorate lines; the recorders themselves went to that file, following the rule below), 1456 → 1458 at kit revision 37 (`testkit/mock_lines.lua`'s load and decorate lines, the same shape). Kit revisions 20, 22, 26, 33 and 37 each put a family of fakes in its own file (`mock_ids.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`, `mock_lines.lua`) rather than appending, and that is the rule for the next one. The peel seam is the Ace fakes, the CallbackHandler registry through AceGUI. **Re-check trigger: 1490 lines, or any kit change that adds more than 30 lines here**; either peels first or opens an issue naming that seam before it crosses. |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of
 `t.k = rec.k or D.k` defaulting lines scores high with no visible branching at all: a large CCN

@@ -1,0 +1,26 @@
+{
+  "major": "LibKa0s-Widgets-1.0",
+  "versionKey": "12.1.4.3.2",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Widgets", "minor": 12 },
+    { "file": "WidgetsReorder", "minor": 1 },
+    { "file": "WidgetsDragHandle", "minor": 4 },
+    { "file": "WidgetsLineChart", "minor": 3 },
+    { "file": "WidgetsAutocomplete", "minor": 2 }
+  ],
+  "members": [
+    { "name": "AUTOCOMPLETE", "kind": "table" },
+    { "name": "Autocomplete", "kind": "function" },
+    { "name": "ChartMath", "kind": "table" },
+    { "name": "CloseMenu", "kind": "function" },
+    { "name": "CopyWindow", "kind": "function" },
+    { "name": "DRAG_HANDLE", "kind": "table" },
+    { "name": "DragHandle", "kind": "function" },
+    { "name": "Dropdown", "kind": "function" },
+    { "name": "LINE_CHART", "kind": "table" },
+    { "name": "LineChart", "kind": "function" },
+    { "name": "ROW_BOX", "kind": "table" },
+    { "name": "ReorderList", "kind": "function" }
+  ]
+}

@@ -62,6 +62,29 @@ test("sl: a non-numeric value for a number row is rejected", function()
   T.assertTrue(err:find("expected a number", 1, true) ~= nil, err)
 end)
 
+-- Lua 5.1's tonumber reads "nan", "inf" and "-inf" as numbers, and "1e400" overflows to inf. An
+-- unbounded row has no clamp to absorb them, so through SlashParse minor 1 the shared write seam
+-- stored them (2026-10-07 review, LK-R-06).
+test("sl: a number row refuses nan and infinities with the not-a-number reason", function()
+  -- red under: SlashParse minor 1, whose parseNumber took any tonumber result
+  for _, row in ipairs({ { type = "number" }, { type = "number", min = -100, max = 100 } }) do
+    for _, input in ipairs({ "nan", "inf", "-inf", "1e400", "-1e400" }) do
+      local v, err = slash.ParseValue(row, input)
+      T.assertNil(v, input .. " is refused")
+      assertEqual(err, slash.STRINGS.ERR_NUMBER, input .. " answers ERR_NUMBER")
+    end
+  end
+end)
+
+test("sl: a finite number still parses, on an unbounded and a bounded row", function()
+  -- red under: a guard that refused every non-integer, or ran after the clamp
+  assertEqual(slash.ParseValue({ type = "number" }, "12.5"), 12.5)
+  assertEqual(slash.ParseValue({ type = "number" }, "-3"), -3)
+  assertEqual(slash.ParseValue({ type = "number", min = -100, max = 100 }, "12.5"), 12.5)
+  assertEqual(slash.ParseValue({ type = "number", min = -100, max = 100 }, "1e300"), 100,
+    "a huge but finite number still clamps")
+end)
+
 test("sl: a string is validated against its enum, case-sensitively", function()
   local row = { type = "string", values = { none = true, short = true } }
   assertEqual(slash.ParseValue(row, "short"), "short")
@@ -323,10 +346,10 @@ end)
 -- minor, so Slash.lua leaves `layout-§1`'s 1000-1500 band. Every case above runs unchanged against
 -- the moved code; these two pin the pairing and the partial payload.
 
-test("sl: the parser lives in SlashParse.lua at minor 1, paired on the live shell", function()
+test("sl: the parser lives in SlashParse.lua at minor 2, paired on the live shell", function()
   -- red under: the parser written into Slash.lua, which publishes no SlashParse minor
-  assertEqual(slash.MODULES.SlashParse, 1)
-  assertEqual(slash.__parseMinor, 1)
+  assertEqual(slash.MODULES.SlashParse, 2)
+  assertEqual(slash.__parseMinor, 2)
   assertEqual(slash.__parseShellMinor, slash.MINOR, "attached to the shell that is live")
   assertEqual(type(slash.ParseValue), "function")
   assertEqual(type(slash.ParseBool), "function")

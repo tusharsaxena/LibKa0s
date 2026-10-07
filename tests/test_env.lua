@@ -28,19 +28,18 @@ test("env: GetAddOnMetadata reads the TOC through C_AddOns", function()
   assertEqual(env.GetAddOnMetadata("TestHost", "Title"), "Test Host")
 end)
 
-test("env: GetAddOnMetadata falls back to the deprecated bare global", function()
+test("env: GetAddOnMetadata never reads the removed bare global", function()
+  -- red under Env minor 1, which fell back to the bare global when C_AddOns was absent. The reader
+  -- lives under C_AddOns on every supported client and the global is gone (the compat section's worked case),
+  -- so a client without C_AddOns answers nil and a planted global is never consulted.
   without("C_AddOns", function()
-    mocks.GetAddOnMetadata = function(_, field) return field == "Version" and "9.9.9" or nil end
-    assertEqual(env.GetAddOnMetadata("TestHost", "Version"), "9.9.9")
+    local calls = 0
+    mocks.GetAddOnMetadata = function() calls = calls + 1; return "9.9.9" end
+    local ok, v = pcall(env.GetAddOnMetadata, "TestHost", "Version")
     mocks.GetAddOnMetadata = nil
-  end)
-end)
-
-test("env: GetAddOnMetadata answers nil when neither reader exists", function()
-  without("C_AddOns", function()
-    without("GetAddOnMetadata", function()
-      assertEqual(env.GetAddOnMetadata("TestHost", "Version"), nil)
-    end)
+    assertTrue(ok, "the read does not raise")
+    assertEqual(calls, 0, "the bare global is never called")
+    assertEqual(v, nil, "no C_AddOns: the answer is nil")
   end)
 end)
 

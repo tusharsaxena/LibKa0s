@@ -1,9 +1,10 @@
 # Who calls what: the LibKa0s consumer census
 
-**Stamped v1.70.0** (tag `v1.70.0`, local), re-measured 2026-10-07 across the eleven addons in
+**Stamped v1.71.0** (tag `v1.71.0`, local), re-measured 2026-10-07 across the eleven addons in
 `WowAddonStandards/standards/ADDONS.md`, as their sibling working trees stood that day. Only
-LootHistory has adopted anything new since v1.67.0 (`LineChart` at v1.69.0, and `lib.LINE_CHART`
-since). The v1.69.0 run was taken 2026-10-06 the same way. The v1.67.0 run was taken on the
+LootHistory and BankLedger have adopted anything new since v1.67.0 (`LineChart` at v1.69.0,
+`lib.LINE_CHART` since, and `Autocomplete` after v1.70.0). The v1.70.0 run was taken earlier the
+same day, and the v1.69.0 run on 2026-10-06, the same way. The v1.67.0 run was taken on the
 same branch with v1.67.0 vendored, by item `CA-LK-04` of
 `Ka0sAddonsCommonTasks/docs/2026-10-02-LIBKA0S_CENSUS_ADOPTION`, after the nine issues the first run
 filed were fixed. The first run was taken at v1.66.0 for
@@ -29,14 +30,14 @@ descriptor fields.
 | Verdict | Exports | Meaning |
 |---|---|---|
 | consumed | 244 | Called, or passed, by three or more hosts |
-| thin | 69 | One or two hosts. A misfit found by the next host is a library gap on first contact |
-| **zero** | **109** | No host calls it. Each one is split below |
+| thin | 70 | One or two hosts. A misfit found by the next host is a library gap on first contact |
+| **zero** | **108** | No host calls it. Each one is split below |
 
-The 109 zero-consumer exports:
+The 108 zero-consumer exports:
 
 | Split | Exports | What happens |
 |---|---|---|
-| host duplicate | 1 | Widgets `lib.Autocomplete` (v1.70.0): LootHistory's Timeline keeps its own suggestion list (`makeSuggestRow` / `RenderSuggestions` in `modules/Timeline.lua`), and the widget was promoted to replace it. LootHistory's plan task B2 adopts it on every tab and deletes the local list; BankLedger's task C2 adopts it on its search box. Both land after the tag. None of the eight from v1.66.0 is left: seven were adopted, and Options `lib.LAYOUT` left the split when KickCD deleted its two header copies instead of reading them; it is now documented (see [What moved since v1.66.0](#what-moved-since-v1660)) |
+| host duplicate | 0 | Widgets `lib.Autocomplete` (v1.70.0), the one at the v1.70.0 tag, is thin (2) at v1.71.0: LootHistory and BankLedger both adopted it, and LootHistory's Timeline no longer hand-rolls its own list. None of the eight from v1.66.0 is left either: seven were adopted, and Options `lib.LAYOUT` left the split when KickCD deleted its two header copies instead of reading them; it is now documented (see [What moved since v1.66.0](#what-moved-since-v1660)) |
 | suspect shape | 0 | Both from v1.66.0 were settled at v1.67.0: Core 10 gave `MakeResizable` its lock gate ([#41](https://github.com/tusharsaxena/LibKa0s/issues/41)), and every host now passes the Options descriptor's `addonName` ([#42](https://github.com/tusharsaxena/LibKa0s/issues/42)) |
 | deliberate host copy | 5 | A host keeps its own copy on purpose, with the reason recorded beside it. Listed, not re-opened |
 | documented | 103 | No duplicate and no host waiting for it. Each gets a "no consumer as of vX, kept because ..." line in its major's live document, stamped with the census that first recorded it: v1.67.0 for the earlier ones, v1.69.0 for the line-chart exports, v1.70.0 for `lib.AUTOCOMPLETE` |
@@ -56,6 +57,13 @@ Most of the 103 fall into four groups. The rows below give each export's own rea
   `makeCloseButton`, Perf's `decorate`, `ring`, `onChange` and `L`, and Launcher's `L`.
 
 ## What moved since v1.66.0
+
+**v1.71.0 re-run (2026-10-07).** One verdict moved: `lib.Autocomplete` goes from zero (host
+duplicate) to thin (2), through BankLedger's search-box seam in `modules/Browser.lua` and
+LootHistory's `NS.MakeAutocomplete` seam in `core/WidgetsSetup.lua`. No export is new. The release
+adds `ChartMath.ClipSegment`, but the scan counts `lib.ChartMath` as one lib-level export (still
+zero, documented), and `Kit.secret` is a test-kit member, outside the census. Hit counts moved on
+other rows because the hosts' code changed around them; no other host set changed.
 
 **v1.70.0 re-run (2026-10-07).** One verdict moved: `lib.LINE_CHART` goes from zero to thin (1),
 because LootHistory's `core/WidgetsSetup.lua` now reads it. Two exports are new, both from
@@ -101,6 +109,14 @@ The tool is `Ka0sAddonsCommonTasks/docs/2026-10-02-LIBKA0S_CENSUS_ADOPTION/plan-
 `census-v1.70.0/verdicts.tsv` and the issues the v1.66.0 run filed (plus the v1.70.0 adoption tasks) are `census-v1.70.0/issues.tsv`.
 The tables on this page are rendered from those files by `census-render.lua`. The v1.66.0 data stays
 in `docs/2026-10-01-GITHUB_ISSUE_PASS/plan-data/census/`.
+
+**The v1.71.0 run** used the same tool with one fix to its roster read: WowAddonStandards v2.77.0
+turned `ADDONS.md`'s Folder column from links into plain code text, and the tool's row pattern
+required the link, so unpatched it searched no files at all. The patched pattern takes either form.
+The fix was made to a scratch copy, so the tool beside the v1.70.0 data still carries the old
+pattern; its raw output was not kept beside it, and the v1.70.0 `verdicts.tsv` carried forward
+unchanged, as no hand-read verdict moved (the one moved verdict is mechanical: a zero-consumer
+export gained hosts).
 
 1. **What is enumerated.**
    - *lib*: every member of each major's live library table, loaded through this repo's mock
@@ -153,8 +169,8 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 |---|---|---|---|---|
 | Lifecycle | `Hold` (instance) | stubs only (18 stub lines across 6 hosts) | call 0 · stub 18 · test 48 | zero — kept, documented |
 | Lifecycle | `PrintHolds` (instance) | stubs only | call 0 · stub 9 · test 5 | zero — kept, documented |
-| Lifecycle | `Release` (instance) | stubs only; the 7 name hits are other tables' `Release` | call 0 · name-only 7 · def 2 · stub 17 · test 80 | zero — kept, documented |
-| Lifecycle | `name` (instance) | instance data field | call 0 · name-only 228 · def 3 · stub 84 · test 5441 | zero — kept, documented |
+| Lifecycle | `Release` (instance) | stubs only; the 7 name hits are other tables' `Release` | call 0 · name-only 7 · def 2 · stub 17 · test 82 | zero — kept, documented |
+| Lifecycle | `name` (instance) | instance data field | call 0 · name-only 230 · def 3 · stub 84 · test 5468 | zero — kept, documented |
 | Schema | `lib.STRINGS` | no host reads the table by name | call 0 · name-only 1 · stub 4 · test 147 | zero — kept, documented |
 | Media | `lib.FONTS` | no host reads the table by name | call 0 · test 29 | zero — kept, documented |
 | Media | `lib.ICONS` | no host reads the table by name | call 0 · test 30 | zero — kept, documented |
@@ -162,8 +178,7 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 | Media | `lib.Texture` | ConsumableMaster's two `Texture` hits are its own `MacroDisplay.Texture` | call 0 · name-only 2 · def 1 · test 41 | zero — kept, documented |
 | Media | `lib.VENDOR_PATH` | default value | call 0 · test 1 | zero — kept, documented |
 | Widgets | `lib.AUTOCOMPLETE` | no host reads it | call 0 | zero — kept, documented |
-| Widgets | `lib.Autocomplete` | LootHistory keeps a local suggestion list in `modules/Timeline.lua`; BankLedger has none yet | call 0 | zero — host duplicate → LootHistory P9 B2, BankLedger P9 C2 (timeline-ledger plan tasks) |
-| Widgets | `lib.ChartMath` | no host calls it; LootHistory aligns its in/out strip through the chart instance's `XToPixel` instead | call 0 · test 1 | zero — kept, documented |
+| Widgets | `lib.ChartMath` | no host calls it; LootHistory aligns its in/out strip through the chart instance's `XToPixel` instead | call 0 · test 2 | zero — kept, documented |
 | Widgets | `backdrop` (descriptor) | no `CopyWindow` descriptor passes it | call 0 | zero — kept, documented |
 | Widgets | `hoverXs` (descriptor) | hit scan sees no descriptor literal naming it | call 0 | zero — kept, documented |
 | Widgets | `integer` (descriptor) | hit scan sees no descriptor literal naming it | call 0 | zero — kept, documented |
@@ -221,7 +236,7 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 | Perf | `Announce` (instance) | reached through `OnCommand` | call 0 · name-only 3 · def 1 · test 4 | zero — kept, documented |
 | Perf | `BuildRecord` (instance) | reached through `OnCommand` | call 0 · name-only 1 · def 1 · test 14 | zero — kept, documented |
 | Perf | `Cancel` (instance) | reached through `OnCommand` | call 0 · name-only 24 · test 30 | zero — kept, documented |
-| Perf | `Close` (instance) | no host brackets with `Open`/`Close` | call 0 · name-only 4 · def 1 · stub 2 · test 62 | zero — kept, documented |
+| Perf | `Close` (instance) | no host brackets with `Open`/`Close` | call 0 · name-only 8 · def 1 · stub 2 · test 66 | zero — kept, documented |
 | Perf | `Context` (instance) | reached through `OnCommand` | call 0 · name-only 10 · test 6 | zero — kept, documented |
 | Perf | `ContextLines` (instance) | reached through `OnCommand` | call 0 | zero — kept, documented |
 | Perf | `EXPERIMENTS` (instance) | library-internal table (not in the instance table) | call 0 | zero — kept, documented |
@@ -238,11 +253,11 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 | Perf | `PanelStateOf` (instance) | no `decorate` host | call 0 · test 2 | zero — kept, documented |
 | Perf | `Progress` (instance) | reached through the panel | call 0 | zero — kept, documented |
 | Perf | `RefreshPanel` (instance) | reached through the library's own transitions | call 0 · name-only 25 · stub 8 · test 24 | zero — kept, documented |
-| Perf | `Reset` (instance) | reached through `OnCommand` | call 0 · name-only 4 · def 3 · stub 8 · test 376 | zero — kept, documented |
+| Perf | `Reset` (instance) | reached through `OnCommand` | call 0 · name-only 4 · def 3 · stub 8 · test 399 | zero — kept, documented |
 | Perf | `Resume` (instance) | reached through `OnCommand` | call 0 · name-only 8 · def 14 · test 70 | zero — kept, documented |
 | Perf | `SCHEMA` (instance) | read by host tests only | call 0 · stub 1 · test 24 | zero — kept, documented |
 | Perf | `STEPS` (instance) | reached through the panel | call 0 · test 13 | zero — kept, documented |
-| Perf | `Save` (instance) | reached through `OnCommand` | call 0 · name-only 1 · def 1 · test 24 | zero — kept, documented |
+| Perf | `Save` (instance) | reached through `OnCommand` | call 0 · name-only 1 · def 1 · test 37 | zero — kept, documented |
 | Perf | `ShowPanel` (instance) | reached through `OnCommand` | call 0 · test 5 | zero — kept, documented |
 | Perf | `Start` (instance) | reached through `OnCommand` | call 0 · name-only 4 · def 2 · test 77 | zero — kept, documented |
 | Perf | `StatusLines` (instance) | reached through `OnCommand` | call 0 · test 1 | zero — kept, documented |
@@ -252,10 +267,10 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 | Perf | `Usage` (instance) | reached through `OnCommand` | call 0 · test 46 | zero — kept, documented |
 | Perf | `context` (instance) | instance data field (not in the instance table) | call 0 · name-only 2 · def 1 · test 167 | zero — kept, documented |
 | Perf | `descriptor` (instance) | instance data field (not in the instance table) | call 0 · stub 10 · test 733 | zero — kept, documented |
-| Perf | `name` (instance) | instance data field (not in the instance table) | call 0 · name-only 228 · def 3 · stub 84 · test 5441 | zero — kept, documented |
+| Perf | `name` (instance) | instance data field (not in the instance table) | call 0 · name-only 230 · def 3 · stub 84 · test 5468 | zero — kept, documented |
 | Perf | `ringMax` (instance) | instance data field (not in the instance table) | call 0 | zero — kept, documented |
 | Perf | `slash` (instance) | instance data field (not in the instance table) | call 0 · stub 63 · test 1216 | zero — kept, documented |
-| Perf | `title` (instance) | instance data field (not in the instance table) | call 0 · name-only 38 · def 2 · stub 2 · test 383 | zero — kept, documented |
+| Perf | `title` (instance) | instance data field (not in the instance table) | call 0 · name-only 39 · def 2 · stub 2 · test 388 | zero — kept, documented |
 | Perf | `L` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
 | Perf | `decorate` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
 | Perf | `onChange` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
@@ -264,7 +279,7 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 ## Every export
 
 Consumers lists each calling host with its first production call when there are three or fewer,
-and the host names otherwise. Every hit with its file and line is in `census-v1.70.0/hits.tsv`. Hits for an
+and the host names otherwise. Every hit with its file and line is in a run's `hits.tsv` (the v1.70.0 run's is `census-v1.70.0/hits.tsv`; the v1.71.0 run's was not kept, see [Method](#method)). Hits for an
 export called by three or more hosts are capped there at five per host per class, and the counts
 here are uncapped.
 
@@ -275,7 +290,7 @@ here are uncapped.
 | Core | `lib.IsConcatSafe` | 10: AbsorbTracker, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | call 10 · name-only 10 · stub 21 · test 78 | consumed (10) |
 | Core | `lib.MakeCloseButton` | 9: AuraMaster, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | call 9 · name-only 12 · def 11 · stub 19 · test 109 | consumed (9) |
 | Core | `lib.MakeResizable` | BankLedger `core/CoreSetup.lua:184`; LootHistory `core/CoreSetup.lua:284`; MultiMeters `core/CoreSetup.lua:306` | call 3 · name-only 4 · stub 4 · test 39 | consumed (3) |
-| Core | `lib.New` | all 11 | call 11 · name-only 124 · def 16 · stub 16 · test 723 | consumed (11) |
+| Core | `lib.New` | all 11 | call 11 · name-only 123 · def 16 · stub 16 · test 725 | consumed (11) |
 | Core | `lib.RGBA` | ConsumableMaster `core/CoreSetup.lua:163`; MultiMeters `core/CoreSetup.lua:243` | call 2 · name-only 8 · stub 2 · test 35 | thin (2) |
 | Core | `lib.ResolveColor` | 6: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, PanelMaster, PartyFrameEnhanced | call 7 · name-only 30 · def 1 · stub 4 · test 17 | consumed (6) |
 | Core | `lib.SECRET` | AbsorbTracker `core/CoreSetup.lua:124`; KickCD `core/CoreSetup.lua:194`; MultiMeters `core/CoreSetup.lua:236` | call 3 · name-only 3 · stub 10 · test 297 | consumed (3) |
@@ -302,32 +317,32 @@ here are uncapped.
 | Compat | `lib.IsSecret` | 5: AuraMaster, ConsumableMaster, KickCD, MultiMeters, PartyFrameEnhanced | call 5 · name-only 47 · test 70 | consumed (5) |
 | Lifecycle | `lib.HOLD_DISABLED` | all 11 | call 13 · name-only 18 · stub 6 · test 23 | consumed (11) |
 | Lifecycle | `lib.HOLD_PERF` | 5: AuraMaster, LootHistory, PanelMaster, PrettyChat, WhatGroup | call 5 · stub 6 · test 48 | consumed (5) |
-| Lifecycle | `lib.New` | 9: AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | call 9 · name-only 126 · def 16 · stub 16 · test 723 | consumed (9) |
+| Lifecycle | `lib.New` | 9: AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | call 9 · name-only 125 · def 16 · stub 16 · test 725 | consumed (9) |
 | Lifecycle | `Hold` (instance) | none | call 0 · stub 18 · test 48 | zero — kept, documented |
 | Lifecycle | `Holds` (instance) | all 11 | call 21 · stub 9 · test 21 | consumed (11) |
 | Lifecycle | `IsDown` (instance) | all 11 | call 22 · name-only 10 · def 1 · stub 9 · test 48 | consumed (11) |
 | Lifecycle | `IsHeld` (instance) | 4: AuraMaster, BankLedger, ConsumableMaster, MultiMeters | call 4 · stub 9 · test 23 | consumed (4) |
 | Lifecycle | `PrintHolds` (instance) | none | call 0 · stub 9 · test 5 | zero — kept, documented |
 | Lifecycle | `Reevaluate` (instance) | 9: AuraMaster, BankLedger, ConsumableMaster, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | call 9 · name-only 11 · def 2 · stub 9 · test 12 | consumed (9) |
-| Lifecycle | `Release` (instance) | none | call 0 · name-only 7 · def 2 · stub 17 · test 80 | zero — kept, documented |
-| Lifecycle | `Set` (instance) | all 11 | call 18 · name-only 77 · def 10 · stub 29 · test 1852 | consumed (11) |
-| Lifecycle | `name` (instance) | none | call 0 · name-only 228 · def 3 · stub 84 · test 5441 | zero — kept, documented |
+| Lifecycle | `Release` (instance) | none | call 0 · name-only 7 · def 2 · stub 17 · test 82 | zero — kept, documented |
+| Lifecycle | `Set` (instance) | all 11 | call 18 · name-only 77 · def 10 · stub 29 · test 1854 | consumed (11) |
+| Lifecycle | `name` (instance) | none | call 0 · name-only 230 · def 3 · stub 84 · test 5468 | zero — kept, documented |
 | Lifecycle | `debug` (descriptor) | all 11 | call 11 | consumed (11) |
 | Lifecycle | `name` (descriptor) | all 11 | call 11 | consumed (11) |
 | Lifecycle | `print` (descriptor) | all 11 | call 11 | consumed (11) |
 | Lifecycle | `standDown` (descriptor) | all 11 | call 11 | consumed (11) |
 | Lifecycle | `standUp` (descriptor) | all 11 | call 11 | consumed (11) |
 | Bus | `lib.Catalog` | 9: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced | call 10 · name-only 6 · def 1 · stub 7 · test 65 | consumed (9) |
-| Bus | `lib.New` | 4: AbsorbTracker, ConsumableMaster, MultiMeters, PartyFrameEnhanced | call 4 · name-only 131 · def 16 · stub 16 · test 723 | consumed (4) |
+| Bus | `lib.New` | 4: AbsorbTracker, ConsumableMaster, MultiMeters, PartyFrameEnhanced | call 4 · name-only 130 · def 16 · stub 16 · test 725 | consumed (4) |
 | Bus | `NewTarget` (instance) | ConsumableMaster `core/Bus.lua:95`; PartyFrameEnhanced `core/Bus.lua:75` | call 2 · name-only 2 · stub 5 · test 8 | thin (2) |
 | Bus | `StandDown` (instance) | ConsumableMaster `core/Bus.lua:107`; PartyFrameEnhanced `core/Bus.lua:78` | call 2 · name-only 18 · def 13 · stub 12 · test 64 | thin (2) |
 | Bus | `StandUp` (instance) | ConsumableMaster `core/Bus.lua:115`; PartyFrameEnhanced `core/Bus.lua:84` | call 2 · name-only 21 · def 13 · stub 14 · test 52 | thin (2) |
 | Bus | `isDown` (descriptor) | 4: AbsorbTracker, ConsumableMaster, MultiMeters, PartyFrameEnhanced | call 4 | consumed (4) |
 | Bus | `name` (descriptor) | 4: AbsorbTracker, ConsumableMaster, MultiMeters, PartyFrameEnhanced | call 4 | consumed (4) |
-| Schema | `lib.New` | all 11 | call 11 · name-only 124 · def 16 · stub 16 · test 723 | consumed (11) |
-| Schema | `lib.Read` | 6: AbsorbTracker, AuraMaster, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced | call 9 · name-only 9 · def 8 · stub 7 · test 88 | consumed (6) |
+| Schema | `lib.New` | all 11 | call 11 · name-only 123 · def 16 · stub 16 · test 725 | consumed (11) |
+| Schema | `lib.Read` | 6: AbsorbTracker, AuraMaster, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced | call 9 · name-only 9 · def 8 · stub 7 · test 89 | consumed (6) |
 | Schema | `lib.STRINGS` | none | call 0 · name-only 1 · stub 4 · test 147 | zero — kept, documented |
-| Schema | `lib.SameValue` | AuraMaster `settings/Schema.lua:566`; BankLedger `settings/Schema.lua:716` | call 2 · name-only 9 · def 8 · stub 4 · test 16 | thin (2) |
+| Schema | `lib.SameValue` | AuraMaster `settings/Schema.lua:566`; BankLedger `settings/Schema.lua:717` | call 2 · name-only 9 · def 8 · stub 4 · test 16 | thin (2) |
 | Schema | `lib.SplitPath` | AuraMaster `settings/Schema.lua:181`; KickCD `settings/Slash.lua:156`; MultiMeters `settings/Schema_Paths.lua:824` | call 3 · name-only 22 · def 10 · stub 6 · test 11 | consumed (3) |
 | Schema | `lib.Write` | 5: AbsorbTracker, AuraMaster, KickCD, PanelMaster, PartyFrameEnhanced | call 6 · name-only 16 · def 9 · stub 4 · test 17 | consumed (5) |
 | Schema | `AddRows` (instance) | 9: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 13 · name-only 4 · def 9 · stub 2 · test 16 | consumed (9) |
@@ -339,29 +354,29 @@ here are uncapped.
 | Schema | `BulkRun` (instance) | 7: AbsorbTracker, AuraMaster, ConsumableMaster, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 9 · name-only 4 · def 8 · stub 6 · test 10 | consumed (7) |
 | Schema | `ConsumeResetCount` (instance) | AbsorbTracker `settings/Schema.lua:453`; KickCD `core/Database.lua:622`; PartyFrameEnhanced `settings/Schema.lua:337` | call 3 · name-only 6 · def 8 · stub 2 · test 6 | consumed (3) |
 | Schema | `CountOffDefault` (instance) | AbsorbTracker `settings/Schema.lua:447`; PartyFrameEnhanced `settings/Schema.lua:331`; PrettyChat `settings/Schema.lua:852` | call 3 · def 8 · stub 2 · test 4 | consumed (3) |
-| Schema | `Default` (instance) | BankLedger `settings/Schema.lua:741`; PanelMaster `settings/Schema.lua:803` | call 2 · name-only 4 · def 8 · stub 2 · test 625 | thin (2) |
+| Schema | `Default` (instance) | BankLedger `settings/Schema.lua:742`; PanelMaster `settings/Schema.lua:803` | call 2 · name-only 4 · def 8 · stub 2 · test 636 | thin (2) |
 | Schema | `FindRow` (instance) | 9: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 28 · name-only 26 · def 8 · stub 8 · test 147 | consumed (9) |
 | Schema | `Get` (instance) | 8: AbsorbTracker, BankLedger, ConsumableMaster, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 15 · name-only 127 · def 15 · stub 11 · test 847 | consumed (8) |
 | Schema | `InBulk` (instance) | AuraMaster `settings/Schema.lua:548` | call 1 · name-only 1 · def 8 · stub 2 · test 15 | thin (1) |
 | Schema | `Reindex` (instance) | AuraMaster `settings/Schema.lua:284` | call 1 · def 8 · stub 2 · test 13 | thin (1) |
 | Schema | `ResetCounted` (instance) | AbsorbTracker `settings/Schema.lua:450`; KickCD `settings/OptionsSetup.lua:130`; PartyFrameEnhanced `settings/Schema.lua:334` | call 3 · name-only 3 · def 8 · stub 2 · test 4 | consumed (3) |
-| Schema | `Set` (instance) | 8: AbsorbTracker, BankLedger, ConsumableMaster, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 21 · name-only 74 · def 10 · stub 29 · test 1852 | consumed (8) |
+| Schema | `Set` (instance) | 8: AbsorbTracker, BankLedger, ConsumableMaster, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 21 · name-only 74 · def 10 · stub 29 · test 1854 | consumed (8) |
 | Schema | `SetMany` (instance) | 4: ConsumableMaster, MultiMeters, PanelMaster, PrettyChat | call 4 · name-only 5 · def 8 · stub 5 · test 93 | consumed (4) |
 | Schema | `Validate` (instance) | 6: AbsorbTracker, AuraMaster, BankLedger, KickCD, PanelMaster, PartyFrameEnhanced | call 6 · name-only 3 · def 9 · stub 2 · test 23 | consumed (6) |
 | Schema | `L` (descriptor) | 4: BankLedger, LootHistory, MultiMeters, PanelMaster | call 4 | consumed (4) |
 | Schema | `resetExempt` (descriptor) | 8: AbsorbTracker, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced, WhatGroup | call 8 | consumed (8) |
 | Schema | `rows` (descriptor) | all 11 | call 11 | consumed (11) |
 | Schema | `writeThrough` (descriptor) | 8: AbsorbTracker, AuraMaster, BankLedger, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced | call 8 | consumed (8) |
-| Pool | `lib.Acquire` | 4: AuraMaster, BankLedger, LootHistory, MultiMeters | call 16 · name-only 9 · def 5 · test 39 | consumed (4) |
+| Pool | `lib.Acquire` | 4: AuraMaster, BankLedger, LootHistory, MultiMeters | call 15 · name-only 9 · def 5 · test 39 | consumed (4) |
 | Pool | `lib.AcquireKeyed` | KickCD `modules/IconGrid.lua:205` | call 1 · def 1 · test 2 | thin (1) |
-| Pool | `lib.Counts` | LootHistory `modules/Diagnostics.lua:329` | call 2 · def 4 · test 36 | thin (1) |
+| Pool | `lib.Counts` | LootHistory `modules/Diagnostics.lua:336` | call 2 · def 4 · test 36 | thin (1) |
 | Pool | `lib.CountsKeyed` | KickCD `modules/Diagnostics.lua:183` | call 1 · def 1 · test 2 | thin (1) |
-| Pool | `lib.New` | 4: AuraMaster, BankLedger, LootHistory, MultiMeters | call 31 · name-only 104 · def 16 · stub 16 · test 723 | consumed (4) |
+| Pool | `lib.New` | 4: AuraMaster, BankLedger, LootHistory, MultiMeters | call 30 · name-only 104 · def 16 · stub 16 · test 725 | consumed (4) |
 | Pool | `lib.NewKeyed` | KickCD `modules/IconGrid.lua:107` | call 1 · def 1 · test 1 | thin (1) |
-| Pool | `lib.ReleaseAll` | 4: AuraMaster, BankLedger, LootHistory, MultiMeters | call 15 · name-only 2 · def 5 · test 23 | consumed (4) |
+| Pool | `lib.ReleaseAll` | 4: AuraMaster, BankLedger, LootHistory, MultiMeters | call 14 · name-only 2 · def 5 · test 23 | consumed (4) |
 | Pool | `lib.ReleaseAllKeyed` | KickCD `modules/IconGrid.lua:222` | call 1 · def 1 · test 1 | thin (1) |
-| Item | `lib.ItemIDFromLink` | BankLedger `core/Compat.lua:100`; ConsumableMaster `settings/CategoryAddByID.lua:157`; LootHistory `core/Database.lua:439` | call 3 · def 3 · test 29 | consumed (3) |
-| Item | `lib.LoadItem` | BankLedger `modules/Backfill.lua:158`; LootHistory `core/Database.lua:439` | call 3 · def 2 · test 19 | thin (2) |
+| Item | `lib.ItemIDFromLink` | BankLedger `core/Compat.lua:100`; ConsumableMaster `settings/CategoryAddByID.lua:157`; LootHistory `core/Database.lua:474` | call 3 · def 3 · test 29 | consumed (3) |
+| Item | `lib.LoadItem` | BankLedger `modules/Backfill.lua:158`; LootHistory `core/Database.lua:474` | call 3 · def 2 · test 19 | thin (2) |
 | Item | `lib.QualityFromLink` | LootHistory `core/Compat.lua:171` | call 1 · def 2 · test 9 | thin (1) |
 | Item | `lib.QualityLabel` | BankLedger `core/Constants.lua:198`; LootHistory `core/Constants.lua:178` | call 20 · def 2 · test 26 | thin (2) |
 | Media | `lib.FONTS` | none | call 0 · test 29 | zero — kept, documented |
@@ -373,17 +388,17 @@ here are uncapped.
 | Media | `lib.Texture` | none | call 0 · name-only 2 · def 1 · test 41 | zero — kept, documented |
 | Media | `lib.VENDOR_PATH` | none | call 0 · test 1 | zero — kept, documented |
 | Widgets | `lib.AUTOCOMPLETE` | none | call 0 | zero — kept, documented |
-| Widgets | `lib.Autocomplete` | none | call 0 | zero — host duplicate → LootHistory P9 B2, BankLedger P9 C2 (timeline-ledger plan tasks) |
-| Widgets | `lib.ChartMath` | none | call 0 · test 1 | zero — kept, documented |
-| Widgets | `lib.CloseMenu` | BankLedger `modules/Browser.lua:1118`; LootHistory `core/WidgetsSetup.lua:129`; MultiMeters `modules/Export_Modal.lua:850` | call 5 · name-only 5 · def 1 · test 22 | consumed (3) |
-| Widgets | `lib.CopyWindow` | BankLedger `modules/Export.lua:281`; LootHistory `core/WidgetsSetup.lua:188`; MultiMeters `modules/Export_Modal.lua:364` | call 5 · name-only 2 · def 1 · test 9 | consumed (3) |
+| Widgets | `lib.Autocomplete` | BankLedger `modules/Browser.lua:310`; LootHistory `core/WidgetsSetup.lua:242` | call 4 · test 40 | thin (2) |
+| Widgets | `lib.ChartMath` | none | call 0 · test 2 | zero — kept, documented |
+| Widgets | `lib.CloseMenu` | BankLedger `modules/Browser.lua:1321`; LootHistory `core/WidgetsSetup.lua:133`; MultiMeters `modules/Export_Modal.lua:850` | call 5 · name-only 5 · def 1 · test 22 | consumed (3) |
+| Widgets | `lib.CopyWindow` | BankLedger `modules/Export.lua:281`; LootHistory `core/WidgetsSetup.lua:192`; MultiMeters `modules/Export_Modal.lua:364` | call 5 · name-only 2 · def 1 · test 9 | consumed (3) |
 | Widgets | `lib.DRAG_HANDLE` | AbsorbTracker `modules/Bar.lua:180`; AuraMaster `modules/Anchors.lua:465`; KickCD `modules/Castbar_Handle.lua:120` | call 5 · test 7 | consumed (3) |
 | Widgets | `lib.DragHandle` | 4: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD | call 9 · test 15 | consumed (4) |
-| Widgets | `lib.Dropdown` | BankLedger `modules/Browser.lua:276`; LootHistory `core/WidgetsSetup.lua:103`; MultiMeters `modules/Export_Modal.lua:715` | call 3 · name-only 1 · test 133 | consumed (3) |
-| Widgets | `lib.LINE_CHART` | LootHistory `core/WidgetsSetup.lua:220` | call 1 · test 1 | thin (1) |
-| Widgets | `lib.LineChart` | LootHistory `core/WidgetsSetup.lua:208` | call 3 · test 3 | thin (1) |
-| Widgets | `lib.ROW_BOX` | ConsumableMaster `settings/Category.lua:581`; KickCD `settings/Spells_Rows.lua:292`; LootHistory `core/WidgetsSetup.lua:167` | call 5 · test 11 | consumed (3) |
-| Widgets | `lib.ReorderList` | ConsumableMaster `settings/Category.lua:80`; KickCD `settings/Spells.lua:596`; LootHistory `core/WidgetsSetup.lua:156` | call 10 · name-only 1 · test 40 | consumed (3) |
+| Widgets | `lib.Dropdown` | BankLedger `modules/Browser.lua:293`; LootHistory `core/WidgetsSetup.lua:107`; MultiMeters `modules/Export_Modal.lua:715` | call 3 · name-only 1 · test 133 | consumed (3) |
+| Widgets | `lib.LINE_CHART` | LootHistory `core/WidgetsSetup.lua:224` | call 1 · test 1 | thin (1) |
+| Widgets | `lib.LineChart` | LootHistory `core/WidgetsSetup.lua:212` | call 3 · test 3 | thin (1) |
+| Widgets | `lib.ROW_BOX` | ConsumableMaster `settings/Category.lua:581`; KickCD `settings/Spells_Rows.lua:292`; LootHistory `core/WidgetsSetup.lua:171` | call 5 · test 11 | consumed (3) |
+| Widgets | `lib.ReorderList` | ConsumableMaster `settings/Category.lua:80`; KickCD `settings/Spells.lua:596`; LootHistory `core/WidgetsSetup.lua:160` | call 10 · name-only 1 · test 40 | consumed (3) |
 | Widgets | `addonName` (descriptor) | BankLedger `modules/Export.lua:283`; LootHistory `modules/Export.lua:388`; MultiMeters `modules/Export_Modal.lua:367` | call 3 | consumed (3) |
 | Widgets | `anchorTo` (descriptor) | BankLedger `modules/Export.lua:290`; LootHistory `modules/Export.lua:396`; MultiMeters `modules/Export_Modal.lua:381` | call 3 | consumed (3) |
 | Widgets | `applySkin` (descriptor) | BankLedger `modules/Export.lua:287`; LootHistory `modules/Export.lua:393`; MultiMeters `modules/Export_Modal.lua:375` | call 3 | consumed (3) |
@@ -414,31 +429,31 @@ here are uncapped.
 | DebugLog | `lib.GATE_MAX_KEYS` | none | call 0 | zero — kept, documented |
 | DebugLog | `lib.MAX_BUFFER` | none | call 0 · test 8 | zero — kept, documented |
 | DebugLog | `lib.MakeCloseButton` | none | call 0 · name-only 21 · def 11 · stub 19 · test 109 | zero — kept, documented |
-| DebugLog | `lib.New` | all 11 | call 11 · name-only 124 · def 16 · stub 16 · test 723 | consumed (11) |
+| DebugLog | `lib.New` | all 11 | call 11 · name-only 123 · def 16 · stub 16 · test 725 | consumed (11) |
 | DebugLog | `lib.STRINGS` | none | call 0 · name-only 1 · stub 4 · test 147 | zero — kept, documented |
 | DebugLog | `lib.TIME_COPY` | none | call 0 | zero — kept, documented |
-| DebugLog | `Add` (instance) | 9: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced, PrettyChat | call 25 · name-only 5 · def 2 · stub 14 · test 169 | consumed (9) |
+| DebugLog | `Add` (instance) | 9: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced, PrettyChat | call 25 · name-only 5 · def 2 · stub 14 · test 172 | consumed (9) |
 | DebugLog | `BufferSize` (instance) | none | call 0 · stub 9 · test 62 | zero — kept, documented |
 | DebugLog | `BuildDiagnostics` (instance) | none | call 0 · stub 15 · test 31 | zero — kept, documented |
-| DebugLog | `Clear` (instance) | ConsumableMaster `core/DebugLogSetup.lua:286` | call 1 · name-only 13 · def 2 · stub 11 · test 304 | thin (1) |
+| DebugLog | `Clear` (instance) | ConsumableMaster `core/DebugLogSetup.lua:286` | call 1 · name-only 13 · def 2 · stub 11 · test 327 | thin (1) |
 | DebugLog | `ConsoleCheckbox` (instance) | 4: AbsorbTracker, AuraMaster, PartyFrameEnhanced, WhatGroup | call 5 · stub 8 · test 31 | consumed (4) |
 | DebugLog | `CopyText` (instance) | none | call 0 · stub 3 · test 22 | zero — kept, documented |
-| DebugLog | `Debug` (instance) | all 11 | call 11 · name-only 602 · stub 40 · test 520 | consumed (11) |
+| DebugLog | `Debug` (instance) | all 11 | call 11 · name-only 602 · stub 40 · test 523 | consumed (11) |
 | DebugLog | `DebugAtEnable` (instance) | all 11 | call 14 · name-only 14 · def 1 · stub 16 · test 9 | consumed (11) |
 | DebugLog | `DebugChanged` (instance) | 8: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, LootHistory, PartyFrameEnhanced, PrettyChat, WhatGroup | call 16 · name-only 16 · def 1 · stub 12 · test 21 | consumed (8) |
 | DebugLog | `DebugForget` (instance) | 7: AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, PartyFrameEnhanced, WhatGroup | call 10 · name-only 7 · def 1 · stub 12 · test 2 | consumed (7) |
 | DebugLog | `DebugOnce` (instance) | 8: AbsorbTracker, AuraMaster, ConsumableMaster, LootHistory, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | call 14 · name-only 22 · def 3 · stub 14 · test 42 | consumed (8) |
 | DebugLog | `DebugVerb` (instance) | PanelMaster `settings/Slash.lua:415` | call 1 · stub 15 · test 28 | thin (1) |
 | DebugLog | `FindLine` (instance) | none | call 0 · stub 9 · test 88 | zero — kept, documented |
-| DebugLog | `Hide` (instance) | 7: BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PrettyChat | call 9 · name-only 397 · def 9 · stub 14 · test 576 | consumed (7) |
+| DebugLog | `Hide` (instance) | 7: BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PrettyChat | call 9 · name-only 395 · def 9 · stub 14 · test 587 | consumed (7) |
 | DebugLog | `IsEnabled` (instance) | AuraMaster `core/DebugLogSetup.lua:27`; ConsumableMaster `core/DebugLogSetup.lua:283`; PrettyChat `core/Util.lua:66` | call 3 · name-only 27 · def 3 · stub 12 · test 95 | consumed (3) |
-| DebugLog | `IsShown` (instance) | 10: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 23 · name-only 78 · def 3 · stub 23 · test 914 | consumed (10) |
+| DebugLog | `IsShown` (instance) | 10: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 23 · name-only 79 · def 3 · stub 23 · test 925 | consumed (10) |
 | DebugLog | `LastLine` (instance) | none | call 0 · stub 9 · test 50 | zero — kept, documented |
 | DebugLog | `MakeCloseButton` (instance) | none | call 0 · name-only 21 · def 11 · stub 19 · test 109 | zero — kept, documented |
 | DebugLog | `RefreshHeader` (instance) | ConsumableMaster `core/DebugLogSetup.lua:290` | call 1 · stub 11 · test 9 | thin (1) |
 | DebugLog | `RunDiagnostics` (instance) | all 11 | call 17 · name-only 4 · stub 17 · test 68 | consumed (11) |
 | DebugLog | `SetEnabled` (instance) | 9: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, LootHistory, MultiMeters, PartyFrameEnhanced, PrettyChat, WhatGroup | call 14 · name-only 16 · def 4 · stub 20 · test 335 | consumed (9) |
-| DebugLog | `Show` (instance) | 10: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 27 · name-only 247 · def 5 · stub 13 · test 798 | consumed (10) |
+| DebugLog | `Show` (instance) | 10: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 27 · name-only 248 · def 5 · stub 13 · test 806 | consumed (10) |
 | DebugLog | `ShowCopy` (instance) | ConsumableMaster `core/DebugLogSetup.lua:289` | call 1 · def 1 · stub 11 · test 16 | thin (1) |
 | DebugLog | `Text` (instance) | none | call 0 · name-only 15 · stub 6 · test 209 | zero — kept, documented |
 | DebugLog | `Toggle` (instance) | 10: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | call 12 · name-only 5 · def 7 · stub 12 · test 78 | consumed (10) |
@@ -472,7 +487,7 @@ here are uncapped.
 | Slash | `lib.FormatRow` | AbsorbTracker `settings/Slash.lua:43`; PartyFrameEnhanced `settings/Slash.lua:275` | call 2 · stub 5 · test 23 | thin (2) |
 | Slash | `lib.FormatValue` | 9: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, LootHistory, MultiMeters, PartyFrameEnhanced, PrettyChat, WhatGroup | call 11 · name-only 10 · def 3 · stub 2 · test 21 | consumed (9) |
 | Slash | `lib.LIVE_VERBS` | 9: AbsorbTracker, AuraMaster, BankLedger, KickCD, LootHistory, MultiMeters, PanelMaster, PrettyChat, WhatGroup | call 9 · stub 4 · test 36 | consumed (9) |
-| Slash | `lib.New` | all 11 | call 11 · name-only 124 · def 16 · stub 16 · test 723 | consumed (11) |
+| Slash | `lib.New` | all 11 | call 11 · name-only 123 · def 16 · stub 16 · test 725 | consumed (11) |
 | Slash | `lib.ParseBool` | ConsumableMaster `settings/Slash.lua:492`; MultiMeters `settings/Slash.lua:479` | call 2 · name-only 1 · def 1 · stub 1 · test 12 | thin (2) |
 | Slash | `lib.ParseValue` | 5: AuraMaster, BankLedger, ConsumableMaster, KickCD, PanelMaster | call 5 · stub 6 · test 6 | consumed (5) |
 | Slash | `lib.ProfileNames` | AbsorbTracker `settings/Slash.lua:527` | call 2 · test 2 | thin (1) |
@@ -519,13 +534,13 @@ here are uncapped.
 | Slash | `slash` (descriptor) | all 11 | call 11 | consumed (11) |
 | Slash | `slashAliases` (descriptor) | all 11 | call 11 | consumed (11) |
 | Slash | `version` (descriptor) | all 11 | call 11 | consumed (11) |
-| Launcher | `lib.New` | all 11 | call 11 · name-only 124 · def 16 · stub 16 · test 723 | consumed (11) |
+| Launcher | `lib.New` | all 11 | call 11 · name-only 123 · def 16 · stub 16 · test 725 | consumed (11) |
 | Launcher | `lib.STRINGS` | none | call 0 · name-only 1 · stub 4 · test 147 | zero — kept, documented |
 | Launcher | `IsRegistered` (instance) | AbsorbTracker `modules/Diagnostics.lua:299`; PrettyChat `modules/Diagnostics.lua:257`; WhatGroup `modules/Diagnostics.lua:210` | call 3 · name-only 1 · stub 7 · test 51 | consumed (3) |
-| Launcher | `IsShown` (instance) | AbsorbTracker `modules/Diagnostics.lua:299`; BankLedger `settings/Schema.lua:350`; WhatGroup `modules/Diagnostics.lua:211` | call 3 · name-only 98 · def 3 · stub 23 · test 914 | consumed (3) |
+| Launcher | `IsShown` (instance) | AbsorbTracker `modules/Diagnostics.lua:299`; BankLedger `settings/Schema.lua:350`; WhatGroup `modules/Diagnostics.lua:211` | call 3 · name-only 99 · def 3 · stub 23 · test 925 | consumed (3) |
 | Launcher | `Object` (instance) | none | call 0 · stub 7 · test 110 | zero — kept, documented |
 | Launcher | `Register` (instance) | all 11 | call 11 · name-only 30 · def 15 · stub 18 · test 335 | consumed (11) |
-| Launcher | `SetShown` (instance) | all 11 | call 11 · name-only 61 · stub 16 · test 59 | consumed (11) |
+| Launcher | `SetShown` (instance) | all 11 | call 11 · name-only 60 · stub 16 · test 59 | consumed (11) |
 | Launcher | `L` (descriptor) | none | call 0 | zero — kept, documented |
 | Launcher | `debug` (descriptor) | all 11 | call 11 | consumed (11) |
 | Launcher | `debugAtEnable` (descriptor) | all 11 | call 11 | consumed (11) |
@@ -542,7 +557,7 @@ here are uncapped.
 | Launcher | `setEnabled` (descriptor) | all 11 | call 11 | consumed (11) |
 | Launcher | `version` (descriptor) | all 11 | call 11 | consumed (11) |
 | Options | `lib.LAYOUT` | none | call 0 · name-only 7 · test 86 | zero — kept, documented |
-| Options | `lib.New` | all 11 | call 11 · name-only 124 · def 16 · stub 16 · test 723 | consumed (11) |
+| Options | `lib.New` | all 11 | call 11 · name-only 123 · def 16 · stub 16 · test 725 | consumed (11) |
 | Options | `lib.PatchAlwaysShowScrollbar` | none | call 0 · stub 8 · test 20 | zero — kept, documented |
 | Options | `lib.STRINGS` | none | call 0 · name-only 1 · stub 4 · test 147 | zero — kept, documented |
 | Options | `AceGUI` (instance) | 4: BankLedger, KickCD, PanelMaster, WhatGroup | call 19 · name-only 41 · stub 12 · test 589 | consumed (4) |
@@ -593,7 +608,7 @@ here are uncapped.
 | Options | `RestoreDefaults` (instance) | 5: AbsorbTracker, AuraMaster, KickCD, MultiMeters, PartyFrameEnhanced | call 10 · name-only 3 · def 3 · stub 8 · test 145 | consumed (5) |
 | Options | `SECTION_HEADING_H` (instance) | BankLedger `settings/Panel.lua:528`; LootHistory `settings/Panel.lua:903`; PanelMaster `settings/Panel.lua:58` | call 3 · name-only 2 · stub 6 · test 21 | consumed (3) |
 | Options | `Section` (instance) | 4: AuraMaster, ConsumableMaster, MultiMeters, WhatGroup | call 15 · name-only 4 · def 1 · stub 10 · test 34 | consumed (4) |
-| Options | `SelectTab` (instance) | AuraMaster `settings/Filters.lua:362`; KickCD `settings/Panel_Render.lua:404`; MultiMeters `settings/OptionsSetup.lua:660` | call 4 · name-only 6 · def 5 · stub 18 · test 44 | consumed (3) |
+| Options | `SelectTab` (instance) | AuraMaster `settings/Filters.lua:362`; KickCD `settings/Panel_Render.lua:404`; MultiMeters `settings/OptionsSetup.lua:660` | call 4 · name-only 6 · def 5 · stub 18 · test 98 | consumed (3) |
 | Options | `SessionCheckbox` (instance) | ConsumableMaster `settings/Panel.lua:702`; KickCD `settings/Panel_Widgets.lua:43` | call 2 · stub 10 · test 18 | thin (2) |
 | Options | `SetChromeHeight` (instance) | none | call 0 · stub 12 · test 3 | zero — kept, documented |
 | Options | `SetRenderer` (instance) | 10: AbsorbTracker, AuraMaster, BankLedger, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup | call 29 · name-only 6 · def 1 · stub 13 · test 39 | consumed (10) |
@@ -629,13 +644,13 @@ here are uncapped.
 | Options | `validate` (descriptor) | 9: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced, WhatGroup | call 9 | consumed (9) |
 | Perf | `lib.DEFAULT_RING` | none | call 0 · test 2 | zero — kept, documented |
 | Perf | `lib.EncodeJSON` | none | call 0 · test 12 | zero — kept, documented |
-| Perf | `lib.New` | 7: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced | call 7 · name-only 128 · def 16 · stub 16 · test 723 | consumed (7) |
+| Perf | `lib.New` | 7: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced | call 7 · name-only 127 · def 16 · stub 16 · test 725 | consumed (7) |
 | Perf | `lib.SCHEMA` | none | call 0 · stub 1 · test 24 | zero — kept, documented |
 | Perf | `lib.STRINGS` | none | call 0 · name-only 1 · stub 4 · test 147 | zero — kept, documented |
 | Perf | `Announce` (instance) | none | call 0 · name-only 3 · def 1 · test 4 | zero — kept, documented |
 | Perf | `BuildRecord` (instance) | none | call 0 · name-only 1 · def 1 · test 14 | zero — kept, documented |
 | Perf | `Cancel` (instance) | none | call 0 · name-only 24 · test 30 | zero — kept, documented |
-| Perf | `Close` (instance) | none | call 0 · name-only 4 · def 1 · stub 2 · test 62 | zero — kept, documented |
+| Perf | `Close` (instance) | none | call 0 · name-only 8 · def 1 · stub 2 · test 66 | zero — kept, documented |
 | Perf | `Context` (instance) | none | call 0 · name-only 10 · test 6 | zero — kept, documented |
 | Perf | `ContextLines` (instance) | none | call 0 | zero — kept, documented |
 | Perf | `EXPERIMENTS` (instance) | none | call 0 | zero — kept, documented |
@@ -654,11 +669,11 @@ here are uncapped.
 | Perf | `PanelStateOf` (instance) | none | call 0 · test 2 | zero — kept, documented |
 | Perf | `Progress` (instance) | none | call 0 | zero — kept, documented |
 | Perf | `RefreshPanel` (instance) | none | call 0 · name-only 25 · stub 8 · test 24 | zero — kept, documented |
-| Perf | `Reset` (instance) | none | call 0 · name-only 4 · def 3 · stub 8 · test 376 | zero — kept, documented |
+| Perf | `Reset` (instance) | none | call 0 · name-only 4 · def 3 · stub 8 · test 399 | zero — kept, documented |
 | Perf | `Resume` (instance) | none | call 0 · name-only 8 · def 14 · test 70 | zero — kept, documented |
 | Perf | `SCHEMA` (instance) | none | call 0 · stub 1 · test 24 | zero — kept, documented |
 | Perf | `STEPS` (instance) | none | call 0 · test 13 | zero — kept, documented |
-| Perf | `Save` (instance) | none | call 0 · name-only 1 · def 1 · test 24 | zero — kept, documented |
+| Perf | `Save` (instance) | none | call 0 · name-only 1 · def 1 · test 37 | zero — kept, documented |
 | Perf | `ShowPanel` (instance) | none | call 0 · test 5 | zero — kept, documented |
 | Perf | `Start` (instance) | none | call 0 · name-only 4 · def 2 · test 77 | zero — kept, documented |
 | Perf | `StatusLines` (instance) | none | call 0 · test 1 | zero — kept, documented |
@@ -669,14 +684,14 @@ here are uncapped.
 | Perf | `armed` (instance) | ConsumableMaster `core/Diagnostics.lua:137` | call 1 · name-only 5 · def 1 · stub 1 · test 378 | thin (1) |
 | Perf | `context` (instance) | none | call 0 · name-only 2 · def 1 · test 167 | zero — kept, documented |
 | Perf | `descriptor` (instance) | none | call 0 · stub 10 · test 733 | zero — kept, documented |
-| Perf | `label` (instance) | ConsumableMaster `core/Diagnostics.lua:137` | call 1 · name-only 283 · stub 10 · test 2005 | thin (1) |
-| Perf | `name` (instance) | none | call 0 · name-only 228 · def 3 · stub 84 · test 5441 | zero — kept, documented |
-| Perf | `on` (instance) | 7: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced | call 59 · name-only 3 · def 1 · stub 264 · test 7959 | consumed (7) |
+| Perf | `label` (instance) | ConsumableMaster `core/Diagnostics.lua:137` | call 1 · name-only 286 · stub 10 · test 2030 | thin (1) |
+| Perf | `name` (instance) | none | call 0 · name-only 230 · def 3 · stub 84 · test 5468 | zero — kept, documented |
+| Perf | `on` (instance) | 7: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced | call 59 · name-only 3 · def 1 · stub 264 · test 8004 | consumed (7) |
 | Perf | `recording` (instance) | ConsumableMaster `core/Diagnostics.lua:137` | call 1 · stub 3 · test 131 | thin (1) |
 | Perf | `ringMax` (instance) | none | call 0 | zero — kept, documented |
-| Perf | `run` (instance) | ConsumableMaster `core/Diagnostics.lua:137` | call 1 · name-only 7 · def 6 · stub 14 · test 1152 | thin (1) |
+| Perf | `run` (instance) | ConsumableMaster `core/Diagnostics.lua:137` | call 1 · name-only 7 · def 6 · stub 14 · test 1157 | thin (1) |
 | Perf | `slash` (instance) | none | call 0 · stub 63 · test 1216 | zero — kept, documented |
-| Perf | `title` (instance) | none | call 0 · name-only 38 · def 2 · stub 2 · test 383 | zero — kept, documented |
+| Perf | `title` (instance) | none | call 0 · name-only 39 · def 2 · stub 2 · test 388 | zero — kept, documented |
 | Perf | `L` (descriptor) | none | call 0 | zero — kept, documented |
 | Perf | `addonName` (descriptor) | 7: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced | call 7 | consumed (7) |
 | Perf | `buckets` (descriptor) | 7: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced | call 7 | consumed (7) |

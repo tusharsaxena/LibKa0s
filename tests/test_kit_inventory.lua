@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 37", function()
-  assertEqual(Kit.VERSION, 37, "v1.69.0 ships revision 37, whose mock answers Line regions")
-  assertEqual(T.KIT_VERSION, 37, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 38", function()
+  assertEqual(Kit.VERSION, 38, "v1.71.0 ships revision 38, whose --list Total counts only cases that run")
+  assertEqual(T.KIT_VERSION, 38, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────
@@ -623,4 +623,69 @@ test("characterization: a decline with an empty rule cell, and a reason clipped 
     assertEqual(added.skip, root .. "CLAUDE.md carries a `## Documented deviations` row keyed "
       .. "(no rule cell): " .. folded:sub(1, 200) .. " ...")
   end)
+end)
+
+-- ── the `--list` Totals table (kit revision 38) ──────────────────────────────────────────────
+--
+-- Driven through a child `lua tests/run.lua --list` in a fixture repo, because the table is what a
+-- consumer's docs/test-cases.md carries and its README badge must equal: `testing-§5` says a skip
+-- MUST NOT be folded into passed or total, and revision 37 printed the whole registry as Total, so
+-- every consumer with a declared skip shipped an inventory one above its badge.
+
+--- The `## Totals` table of a fixture repo's `--list`, or a skip where this host cannot drive one.
+--- `loose` is Lua the fixture runner executes before `Kit.run` (a case it registers is the
+--- runner's own); `suite` is the body of the one declared suite, `tests/test_a.lua`.
+local function totalsOf(loose, suite)
+  local interpreter, here = (rawget(_G, "arg") or {})[-1], cwd()
+  if type(interpreter) ~= "string" or not here then
+    T.skip("no interpreter path (arg[-1]) or no `pwd`, so a fixture `--list` cannot be driven")
+  end
+  local root = tempRoot()
+  os.execute(('mkdir -p "%stests"'):format(root))
+  write(root .. "tests/run.lua", ('local Kit = dofile([[%s/tests/_kit/framework.lua]])\n'):format(here)
+    .. loose .. '\nKit.run{ suites = { "test_a" } }\n')
+  write(root .. "tests/test_a.lua", "local Kit = ...\n" .. suite .. "\n")
+  local p = io.popen(("cd '%s' && KA0S_KIT_GUARD=off '%s' tests/run.lua --list 2>&1"):format(root, interpreter))
+  local text = p and p:read("*a") or ""
+  if p then p:close() end
+  os.execute(('rm -rf "%s"'):format(root))
+  local totals = text:gsub("\r", ""):match("## Totals\n(.*)$")
+  if not totals then T.skip("the fixture `--list` printed no Totals table: " .. text:sub(1, 160)) end
+  return totals, text
+end
+
+local TWO_AND_A_SKIP = 'Kit.test("one", function() end)\nKit.test("two", function() end)\n'
+  .. 'Kit.test("three", nil, "not evaluated here")'
+
+test("--list Totals: Total counts the cases that run; a declared skip has its own row", function()
+  -- red under: revision 37, whose Total was #tests (3 here) and which printed no Skipped row
+  local totals = totalsOf("", TWO_AND_A_SKIP)
+  assertTrue(totals:find("| test_a.lua | 2 |", 1, true) ~= nil, "the suite row leaves the skip out: " .. totals)
+  assertTrue(totals:find("| Skipped | 1 |\n| **Total** | **2** |", 1, true) ~= nil,
+    "the Skipped row stands immediately before a Total of the cases that run: " .. totals)
+end)
+
+test("--list Totals: a group whose only case is a declared skip has no count row", function()
+  -- red under: revision 37, which printed `| the runner | 1 |` and a Total of 3
+  local totals, text = totalsOf('Kit.test("declined gate", nil, "recorded decline")',
+    'Kit.test("one", function() end)\nKit.test("two", function() end)')
+  assertTrue(totals:find("| the runner |", 1, true) == nil, "a skip-only group is not a count row: " .. totals)
+  assertTrue(totals:find("| Skipped | 1 |\n| **Total** | **2** |", 1, true) ~= nil, "Total = 2: " .. totals)
+  assertTrue(text:find("- declined gate (skipped: recorded decline)", 1, true) ~= nil,
+    "the skip is still listed by name in its group")
+end)
+
+test("--list Totals: with no declared skip there is no Skipped row", function()
+  local totals = totalsOf("", 'Kit.test("one", function() end)\nKit.test("two", function() end)')
+  assertTrue(totals:find("Skipped", 1, true) == nil, "no Skipped row at zero: " .. totals)
+  assertTrue(totals:find("| test_a.lua | 2 |\n| **Total** | **2** |", 1, true) ~= nil, "Total = 2: " .. totals)
+end)
+
+test("--list preamble: the badge must equal Total, and declared skips are counted apart", function()
+  -- red under: revision 37's preamble, which called the whole registry the authoritative pass count
+  local _, text = totalsOf("", TWO_AND_A_SKIP)
+  text = text:gsub("\r", ""):gsub("\n", " ")
+  assertTrue(text:find("counts the cases that run", 1, true) ~= nil, "the preamble says what Total counts")
+  assertTrue(text:find("`Skipped` row", 1, true) ~= nil, "and where a declared skip is counted")
+  assertTrue(text:find("must equal", 1, true) ~= nil, "and that the README badge must equal it")
 end)

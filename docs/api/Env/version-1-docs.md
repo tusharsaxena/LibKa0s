@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Env-1.0` |
 | Files and minors | `Env.lua` minor **1** |
 | Shipped in | v1.15.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2](./version-2-docs.md) — `GetAddOnMetadata` never reads the removed bare global |
 | Confirm in-game | `LibStub("LibKa0s-Env-1.0").MODULES` → `{ Env = 1 }` |
 
 ## What this major is
@@ -149,3 +149,10 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 
 `Env.lua` is a new entry in `LibKa0s.xml`, so a consumer whose test harness derives its load list
 from that XML picks it up with no edit; a consumer that re-types the list adds one row.
+
+## Moving to version 2
+
+**Copy the folder whole. Nothing a host calls moves or is removed.** Version 2 (`Env.lua` 2) deletes
+`GetAddOnMetadata`'s bare-global fallback rung: with no `C_AddOns` it answers `nil` (and `Version`
+its `fallback`) instead of consulting the removed global. Every supported client has `C_AddOns`, so a
+live host sees no difference. See [version 2](./version-2-docs.md).

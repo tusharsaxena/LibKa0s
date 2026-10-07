@@ -10,6 +10,153 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.71.0 — 2026-10-07
+
+Versions in this release: **WidgetsLineChart minor 3** and **WidgetsAutocomplete minor 2**
+(`LibKa0s-Widgets-1.0` key 12.1.4.3.2: `Widgets` 12, `WidgetsReorder` 1, `WidgetsDragHandle` 4,
+`WidgetsLineChart` 3, `WidgetsAutocomplete` 2), **Slash minor 20** and **SlashParse minor 2**
+(`LibKa0s-Slash-1.0` key 20.2), **Env minor 2**, **OptionsIdList minor 4** (`LibKa0s-Options-1.0`
+key 28.2.34.2.4.8.1.7.4.2: `Options` 28, `OptionsRegistry` 2, `OptionsWidgets` 34, `OptionsIds` 2,
+`OptionsIdList` 4, `OptionsTabs` 8, `OptionsCombat` 1, `OptionsCompose` 7, `OptionsScroll` 4,
+`OptionsNav` 2), and every other file at its v1.70.0 minor — `Core` 10, `Compat` 1, `Lifecycle` 3,
+`Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `DebugLog` key 19.2.1, `Launcher` 5 and `Perf`
+key 14.1.1.6 — and **test kit revision 38**. No `NEEDS_*` floor rises, no major is added and no
+existing member is removed; no payload file is added, so the library stays at **fifteen majors
+across thirty-four files** (the kit gains `testkit/secrets.lua`). Built to standard **v2.77.0**; the
+README's standards pointer moves from v2.76.0. Read against v2.77.0's entry, nothing in it binds the
+payload: its addon-facing moves (toc-file-§5's whole-listing check, versioning-git's same-named
+feature branch, events-frames-taint-§8's spell-cooldown fields, documentation-§6's cross-repo
+citation SHOULD) bind the consumers, and its library-stack-§7 edits correct the section's own
+wording, not the inventory this release keeps.
+
+### WidgetsLineChart minor 3: segments clipped to the plot, the hover re-synced on every render
+
+- **Every series segment is clipped to the plot rectangle before it is drawn**, in one place, before
+  it is dashed or drawn solid. A point far outside a host-pinned `yMin`/`yMax` used to draw its
+  segments across the host's UI, and in a dashed range `ChartMath.Dashes` cut the whole unclipped
+  length into one session-lifetime Line per dash (a point at `1e6` on a 0..10 axis was some 2.5
+  million). The Lines one dashed segment can make are now bounded by the plot's diagonal. A segment
+  wholly off the plot draws nothing, and a one-point series draws its tick only on the plot. Values
+  are not clamped and markers are unchanged. From the 2026-10-07 review (`LK-R-01`).
+- **`ChartMath.ClipSegment(x1, y1, x2, y2, left, bottom, right, top)`**, new: the pure Liang-Barsky
+  clip the chart uses, answering the inside part in the segment's direction or `nil`.
+- **A render re-syncs the hover.** `Render` (and `SetData` + `Render`, and a resize) marks the hover
+  stale, and the armed `OnUpdate` re-fires `onHover` and moves the crosshair against the new scale
+  on the next frame, even for the same index; a render that leaves no scale hides the crosshair. A
+  host no longer needs `ClearHover` before repainting (it stays idempotent, and a clear that arrives
+  first still reports `nil`). From the 2026-10-07 review (`LK-R-03`).
+- **The API document states the `formatX` default is C-runtime English** (`date("%d %b")`), so a
+  localized host passes `formatX` (`LK-R-10`; no code change).
+- Cases in `tests/test_widgets_linechart_math.lua` and `tests/test_widgets_linechart.lua`.
+  [Widgets version 12.1.4.3.2](docs/api/Widgets/version-12.1.4.3.2-docs.md).
+
+### WidgetsAutocomplete minor 2: hooks re-installed on every call, `maxRows` floored
+
+- **Calling `lib.Autocomplete` again re-installs the box's hooks.** A host `SetScript` on a hooked
+  script drops the hooks with the old script, and minor 1 hooked each box only once, so a re-call
+  could not bring the list back. Every call now stamps the box with a new generation and installs
+  a fresh set of hooks that dispatch only while that generation is current: an older call's hooks
+  stay on the box but do nothing, and a re-call with no `SetScript` between never dispatches twice.
+  The API document now states that a host sets its box's scripts before calling `Autocomplete`.
+  From the 2026-10-07 review (`LK-R-02`); the comment on the weak-keyed tables now says `owners`
+  entries persist until Release or replacement, Lua 5.1 having no ephemerons (`LK-R-07`).
+- **`opts.maxRows` is floored**, and a value that floors below 1 falls back to
+  `AUTOCOMPLETE.MAX_ROWS`, so the list is never taller than the rows it draws (`LK-R-08`).
+- **The list's backdrop is set once, when the list is built**; its colors are still read from the
+  box on every show (`LK-R-09`).
+- Five cases in `tests/test_widgets_autocomplete.lua`.
+  [Widgets version 12.1.4.3.2](docs/api/Widgets/version-12.1.4.3.2-docs.md).
+
+### SlashParse minor 2: a number row refuses `nan` and the infinities; Slash minor 20
+
+- **`lib.ParseValue` refuses `nan`, `inf`, `-inf` and an overflowing literal such as `1e400` on a
+  number row**, with the existing `ERR_NUMBER` reason, before the enum and the clamp. Lua's
+  `tonumber` reads all of them as numbers, and an unbounded row has no clamp, so
+  `/<slash> set <path> nan` stored a NaN through the shared write seam. A finite number parses and
+  clamps as before. A comment at the clamp now records why `n` is the second argument to
+  `math.max` / `math.min` (Lua 5.1's `math.max(0/0, -100)` answers NaN). `Schema.Set` stays
+  type-agnostic. From the 2026-10-07 review (`LK-R-06`).
+- **`Slash.lua` 20 changes one comment**: the profile-store note cites `slash-commands-§1` where it
+  cited `slash-commands.md:34` (LibKa0s#43, the 2026-10-07 audit's `LK-A-06`). Nothing that runs
+  moves; the minor moves because the payload did.
+- Two cases in `tests/test_slash_parse.lua`.
+  [Slash version 20.2](docs/api/Slash/version-20.2-docs.md).
+
+### Env minor 2 and OptionsIdList minor 4: the dead bare-global addon-API rungs are gone
+
+- **`Env.GetAddOnMetadata` never reads the bare `GetAddOnMetadata` global.** It answers
+  `C_AddOns.GetAddOnMetadata(addonName, field)` where that exists and `nil` where it does not, so
+  `Version` answers its `fallback` on a client with no `C_AddOns`. Minor 1 fell back to the bare
+  global, the standard's compat section's own worked case of a dead fallback rung, and its doc
+  comment said the global was still present. Every supported client has `C_AddOns`, so a live host
+  sees no difference. [Env version 2](docs/api/Env/version-2-docs.md).
+- **`O.IdList`'s help-art guard never reads the bare `IsAddOnLoaded` global.** It asks
+  `C_AddOns.IsAddOnLoaded` only, and with no `C_AddOns` reader it trusts the descriptor's
+  `addonName`, as minor 3 did when neither API existed.
+  [Options version 28.2.34.2.4.8.1.7.4.2](docs/api/Options/version-28.2.34.2.4.8.1.7.4.2-docs.md).
+- **`.luacheckrc` drops both names from `read_globals`**, so lint proves no payload file reads them.
+- From the 2026-10-07 standards audit (`LK-A-04`). One case each in `tests/test_env.lua` and
+  `tests/test_options_idlist_layout.lua` plants the bare global with `C_AddOns` absent and pins
+  that it is never called; the Env case that removed both readers is folded into it, and the
+  id-list case that drove the bare global as a second rung is replaced.
+
+### Test kit revision 38: `--list` Totals count only the cases that run
+
+- **The `## Totals` table no longer counts declared skips.** Each suite row and `the runner` row
+  count the registered cases that are not declared skips (a row at 0 is omitted, as before); a
+  `| Skipped | N |` row is printed immediately before Total when N > 0 declared skips are registered;
+  and `| **Total** |` is the registered non-skipped count, the sum of the count rows and the number
+  the README badge carries. Revision 37 printed the whole registry as Total, so every consumer with
+  a declared skip shipped an inventory one above its badge, against `testing-§5` (a skip MUST NOT be
+  folded into passed or total). The preamble now says Total counts the cases that run and that a
+  declared skip is counted on the `Skipped` row. Skipped cases stay listed by name in their groups.
+  From AuraMaster's 2026-10-07 review (`AM-R-03`).
+- **The renderer moves from `framework.lua` to `inventory.lua`**, unchanged apart from the Totals,
+  so `framework.lua` stays under 1000 lines (916). Four cases in `tests/test_kit_inventory.lua`
+  drive a fixture repository's `--list` and pin the table.
+- This repo's own `docs/test-cases.md` is regenerated: its two declared skips (the kit prose gate's
+  recorded decline and the diagnostics contract's opt-out case) leave the count rows for the
+  `Skipped` row. [testkit version 38](docs/api/testkit/version-38-docs.md).
+
+### Test kit revision 38: `Kit.secret`, a shared secret-value simulator
+
+- **New file `testkit/secrets.lua`**, loaded once by `framework.lua` beside `asserts.lua` and
+  `inventory.lua`, with five members on the kit table: `Kit.secret(v)` (a wrapper whose metatable
+  raises an error carrying `Kit.SECRET_ERROR`, the fixed marker `secret value`, from arithmetic with
+  the secret on either side, `..`, indexing, field assignment, calling, and `<`, `<=` and `==`
+  between two wrappers), `Kit.isSecret(v)`, `Kit.reveal(v)` and `Kit.installSecretValue()`, which
+  sets the global `issecretvalue` and returns a restore function that puts back whatever was there,
+  `nil` included. The registry is one process-wide weak-keyed table, so a secret minted under one
+  mock build or one load of the kit is still a secret under the next. The file header states what
+  Lua 5.1 cannot trap: a boolean test, `==` against a non-table, `tostring`, `#` on a table, and a
+  secret compared with a plain value (which raises with Lua's own text). From WhatGroup's
+  2026-10-07 review (`WG-R-09`).
+- **Nothing installs `issecretvalue` by default.** `mock_base.lua` is untouched and `Kit.expose`
+  copies none of the new members, so no consumer's behavior changes on re-vendor. No consumer's
+  local simulator is migrated in this release.
+- This repo gains `tests/test_kit_secrets.lua` (not a kit suite), and `tests/test_kitsync.lua`
+  checks `secrets.lua` exists on both sides.
+
+### What a consumer owes
+
+- **The whole-folder copy of `tests/_kit/`, and `docs/test-cases.md` regenerated in the same
+  commit**, so its Total equals the README badge. `Kit.secret` and its siblings are opt-in.
+- **The whole-folder copy of `libs/LibKa0s/`** for `WidgetsLineChart` 3. A host that draws no chart
+  owes nothing more; a host that calls `ClearHover` before repainting its chart may keep or drop it.
+- **Nothing for Slash 20.2** beyond the same copy: a `set` on a number row now refuses `nan` and
+  the infinities, and no consumer test pinned their acceptance.
+- **The provenance line rolls to v1.71.0** in each consumer's `CLAUDE.md`, in the same commit as
+  the copy, as `tests/test_vendor_sync.lua` resolves both payloads from the tag it names.
+- **WhatGroup adopts `Kit.secret`** in place of its local secret-value simulator (WhatGroup's
+  2026-10-07 review, `WG-R-09`). Every other consumer may adopt it and owes nothing if it does not.
+- **Tagged locally, not published.** `v1.71.0` is an annotated tag on
+  `feat/2026-10-07-review-audit-remediation`; consumers re-vendor from the local tag, and the push,
+  the merge to `master` and the GitHub release wait on the owner's go-ahead.
+
+Release gate (`docs/automated-tests/20261007-193954/`): lint pass, 0/0 in 155 files;
+tests pass, 2141 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.70.0 — 2026-10-07
 
 Versions in this release: **WidgetsAutocomplete minor 1**, a new file, and **WidgetsLineChart minor

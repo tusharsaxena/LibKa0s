@@ -11,9 +11,9 @@
 | Files and minors | `Slash.lua` **19** · `SlashParse.lua` **1** |
 | Version key | `<Slash>.<SlashParse>`, in load order — the same two numbers `lib.MODULES` reports |
 | Shipped in | v1.66.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 18](./version-18-docs.md) — one file, whose parse refusals and `(none)` ignored the host's `L` |
-| Superseded by | — |
+| Superseded by | [version 20.2](./version-20.2-docs.md) — `SlashParse.lua` 2: a number row refuses `nan` and the infinities; `Slash.lua` 20: one comment's citation |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 19, SlashParse = 1 }` |
 
@@ -1010,3 +1010,11 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
+
+## Moving to version 20.2
+
+**Copy the folder whole. Nothing a host calls moves or is removed.** Version 20.2 (`Slash.lua` 20,
+`SlashParse.lua` 2) refuses `nan`, `inf`, `-inf` and an overflowing literal such as `1e400` on a
+number row with `ERR_NUMBER`, before the enum and the clamp, where this version stored them on an
+unbounded row. `Slash.lua` 20 changes a comment only. A host whose `L` carries `ERR_NUMBER` sees
+its own text for the new refusal. See [version 20.2](./version-20.2-docs.md).

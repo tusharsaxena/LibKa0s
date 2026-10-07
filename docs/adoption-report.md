@@ -145,7 +145,7 @@ section 5 reports a convergence, and be strict about the third state:
   all. Four consumers are genuinely in that state for the color surfaces; do not report them as
   declines.
 
-Three checks need no judgement and are worth running fleet-wide:
+Three checks need no judgment and are worth running fleet-wide:
 
 ```
 grep -rn 'LSM30_Font\|LSM30_Border\|LSM30_Statusbar' ../<Addon>/settings --include='*.lua'
@@ -174,7 +174,7 @@ because nothing stops the next edit from reintroducing it.
 
 ### 7. The green gate, actually run
 
-In this repo and in every consumer. Paste real output; never summarise a run you did not do.
+In this repo and in every consumer. Paste real output; never summarize a run you did not do.
 
 ```
 lua tests/run.lua
@@ -194,7 +194,7 @@ makes "the change was additive" checkable rather than asserted.
 Cheap, usually skipped, and the reason a stale vendor survives:
 
 - Does the consumer's README or release notes name LibKa0s or the version it carries?
-- Does the vendored folder carry the licence the library ships under?
+- Does the vendored folder carry the license the library ships under?
 
 ```
 grep -c -i copyright LibKa0s/*.lua
@@ -232,7 +232,7 @@ Conventions that keep the bundle trustworthy:
 
 - **Every claim carries its evidence.** A finding in `03` cites a block in `05`.
 - **Separate "is wrong" from "is undocumented".** They have different fixes and different urgency.
-- **Name what you did not check.** In-game behaviour, anything a headless suite cannot reach, and
+- **Name what you did not check.** In-game behavior, anything a headless suite cannot reach, and
   any consumer you could not run. An unchecked area silently omitted reads as a clean one.
 - Dates are the run date. `docs/` in this repo is CRLF like everything else — see `.gitattributes`,
   and mind the `sed -i` hazard in `docs/adoption-prompt.md`.

@@ -1,0 +1,1412 @@
+# `LibKa0s-Widgets-1.0` — version 12.1.4.3.2
+
+> **This document is the source of truth for this version of this major.** Anything else in this
+> repo that describes the Widgets surface points here rather than restating it. It describes the
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
+
+| | |
+|---|---|
+| Major | `LibKa0s-Widgets-1.0` |
+| Files and minors | `Widgets.lua` minor **12** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **2** |
+| Shipped in | v1.71.0 |
+| Status | **Current** |
+| Supersedes | [version 12.1.4.2.1](./version-12.1.4.2.1-docs.md) — chart segments not clipped to the plot; a re-render does not re-sync the hover; autocomplete hooks installed once per box |
+| Superseded by | — |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }` |
+
+## What changed at 12.1.4.3.2
+
+**The chart clips what it draws to the plot and re-syncs its hover on every render, and the
+autocomplete can be re-hooked.** `WidgetsLineChart.lua` moves from **2** to **3** and
+`WidgetsAutocomplete.lua` from **1** to **2**; `Widgets.lua` stays at **12**, `WidgetsReorder.lua`
+at **1** and `WidgetsDragHandle.lua` at **4**, so the key is 12.1.4.3.2. One member is added and
+none is removed or renamed. From LibKa0s's 2026-10-07 review (`LK-R-01`, `LK-R-03`, `LK-R-10` for
+the chart; `LK-R-02`, `LK-R-07`, `LK-R-08`, `LK-R-09` for the autocomplete). The chart's half was
+briefly keyed 12.1.4.3.1 on the release branch; no release carried that key.
+
+- **Every series segment is clipped to the plot rectangle before it is drawn** (`WidgetsLineChart`
+  **Since 3**). A host that pins `yMin`/`yMax` (or `xMin`/`xMax`) inside its data used to get a
+  segment to a far point drawn straight across the rest of its UI, and, in a dashed range,
+  `ChartMath.Dashes` cut the whole unclipped length into one pooled Line per dash: a point at
+  `1e6` on a 0..10 axis was some 2.5 million session-lifetime Line regions. The clip runs in one
+  place, before the segment is dashed or drawn solid, so a dashed range can now make at most about
+  plot diagonal / (`DASH` + `GAP`) Lines per segment. A segment wholly off the plot draws nothing,
+  and a one-point series draws its tick only when the point is on the plot. Input values are not
+  clamped (a clipped segment keeps the slope of its data) and markers are unchanged: they already
+  draw only inside `[xMin, xMax]`, from the plot's bottom to its top.
+- **`ChartMath.ClipSegment`** (**Since 3**), the pure Liang-Barsky clip the chart uses, published
+  beside `ChartMath.Dashes` so a host drawing its own decorations against the plot can clip the same
+  way. See *`lib.ChartMath`* below.
+- **A render re-syncs the hover** (**Since 3**). `Render`, and so `SetData` + `Render` and a resize,
+  marks the hover stale: the armed `OnUpdate` re-evaluates it against the new scale and data on the
+  next frame, moves the crosshair to the point's new pixel and fires `onHover` again, even for the
+  same index. A render that leaves no scale (no data, or a zero size) hides the crosshair at once.
+  A host's explicit `ClearHover` before repainting is no longer needed; it still works and is still
+  idempotent. Under 12.1.4.2.1 a pane resized under a resting cursor left the crosshair at the old
+  size's pixel.
+- **The `formatX` default is documented as C-runtime English** (no behavior change). See *`opts`*.
+- **Calling `lib.Autocomplete` again re-installs the box's hooks** (`WidgetsAutocomplete`
+  **Since 2**). A host `SetScript` on a hooked script drops the hooks with the old script; under
+  minor 1 the hooks were installed once per box, so a re-call could not bring them back and the
+  list stayed dead (a replaced `OnTextChanged`) or stuck up (a replaced `OnEditFocusLost` or
+  `OnHide`). Every call now stamps the box with a new generation and installs a fresh set of hooks
+  that dispatch only while that generation is current, so the wrappers of an older call stay in
+  the chain but do nothing, and a re-call with no `SetScript` between never dispatches twice. The
+  set-scripts-first rule is now stated. See *Behavior a host must know* under *The autocomplete*.
+- **`opts.maxRows` is an integer** (**Since 2**). A fraction is floored, and one that floors below 1
+  falls back to `AUTOCOMPLETE.MAX_ROWS`. Under minor 1, `maxRows = 2.5` drew 2 rows in a list
+  2.5 rows tall.
+- **The list's backdrop is set once, when the list is built** (**Since 2**; no visible change). Its
+  border and background colors are still read from the box on every show, so a restyled box still
+  restyles its list.
+
+**What a host must change: nothing.** A host that called `ClearHover` before `SetData` may keep the
+call or drop it. A host that sets its box's scripts before calling `lib.Autocomplete`, as both
+adopters do, sees no autocomplete change. A host that relied on a segment being drawn off the plot has nothing to rely on: it
+was drawn outside the chart's own rectangle.
+
+## What changed at 12.1.4.2.1
+
+**An autocomplete, in a new file** (`WidgetsAutocomplete.lua`, minor **1**). `Widgets.lua` stays at
+**12**, `WidgetsReorder.lua` at **1** and `WidgetsDragHandle.lua` at **4**; `WidgetsLineChart.lua`
+moves from **1** to **2** (one new option, below); the version key gains a fifth component and
+becomes 12.1.4.2.1. No existing member, field or method moves.
+
+- **`opts.pxPerPoint`, per chart** (`WidgetsLineChart` **Since 2**). The thinning budget is
+  `floor(plot width / pxPerPoint)`; a chart that sets it to 4 draws half the points, so fewer and
+  longer segments and a smoother-looking line. Absent, zero, negative or not a number, the chart
+  falls to `LINE_CHART.PX_PER_POINT` (2), so an existing chart draws as before. `ChartMath.Budget`
+  takes the spacing as an optional second argument. Thinning is still LTTB, which keeps the first
+  and last points and a spike; values are never altered.
+
+- **A secondary file paired on the shell's minor**, exactly as `WidgetsLineChart.lua` is. It records
+  `lib.__autocompleteMinor` and `lib.__autocompleteShellMinor`, and steps aside only when both its
+  own minor is already met and the shell it would attach to is the shell it attached to before.
+- **What this version publishes**: `lib.Autocomplete` and `lib.AUTOCOMPLETE`, both
+  `WidgetsAutocomplete` **Since 1**. A suggestion list that hangs directly under a host's `EditBox`,
+  the box's width and in the box's own skin, filled by a host provider as the player types and
+  picked from with the mouse, Up/Down, Enter or Tab. Pinned by `tests/test_widgets_autocomplete.lua`.
+  See *The autocomplete* below.
+- **Two consumers at promotion**, LootHistory's search box (every tab) and BankLedger's search box,
+  with the same semantics, which is `library-stack-§7`'s promotion bar; no deviation row.
+
+**What a host must change: nothing.** A host that hangs no list owes nothing; the new members are
+`nil` on an older copy, so a host that does hang one checks for them first.
+
+## What changed at 12.1.4.1
+
+**A line chart, in a new file** (`WidgetsLineChart.lua`, minor **1**). `Widgets.lua` stays at
+**12**, `WidgetsReorder.lua` at **1** and `WidgetsDragHandle.lua` at **4**; the version key gains a
+fourth component and becomes 12.1.4.1. No existing member, field or method moves.
+
+- **A secondary file paired on the shell's minor**, exactly as `WidgetsDragHandle.lua` is. It records
+  `lib.__chartMinor` and `lib.__chartShellMinor`, and steps aside only when both its own minor is
+  already met and the shell it would attach to is the shell it attached to before, so a chart from
+  one vendored copy cannot sit beside a shell from another without saying so.
+- **What this version publishes** is the chart, its chrome and its math: `lib.LineChart`,
+  `lib.LINE_CHART` and `lib.ChartMath`, all **Since 1**. Everything the chart decides without a
+  frame (the tick ladder, the thinning, the time labels, the nearest x, the dash cutting) is pinned
+  headless by `tests/test_widgets_linechart_math.lua`; the drawn half (the pool, the mapping, the
+  dashes, the markers, the hover) by `tests/test_widgets_linechart.lua` on kit revision 37's Line
+  regions. See *The line chart* below.
+- **Why it is not a major of its own.** A new major costs a setup seam in every consumer, and only
+  one draws a chart today.
+- **One consumer at release.** `library-stack-§7` asks two or more consumers of the same semantics
+  before a surface is promoted into a Ka0s-owned library; this one has one, LootHistory's Timeline.
+  The owner ruled on 2026-10-06 to build it here from the start (LootHistory's timeline-ledger
+  spec, F3), and the gap is recorded as a row in this repo's `CLAUDE.md` → `## Documented
+  deviations`, with its re-check trigger.
+
+**What a host must change: nothing.** A host that draws no chart owes nothing; the new members are
+`nil` on an older copy, so a host that does draw one checks for them first.
+
+## What changed at 12.1.4
+
+**The drag handle's tooltip can be placed by the host** (AuraMaster#22). `WidgetsDragHandle.lua`
+moves to minor **4**; `Widgets.lua` stays at **12** and `WidgetsReorder.lua` at **1**. The spec
+gains one optional field, `tooltipPlace`, and the tooltip descriptor one, `place`, both **Since 4**.
+No member, `DRAG_HANDLE` field or handle method is added or removed, so the member manifest lists
+the same surface as 12.1.3's.
+
+- **Why it exists.** AuraMaster's anchor inherits `DisableUntrustedLayoutScriptsTemplate`, so the
+  client refuses `SetOwner` on the strip or its marks, and through minor 3 the only owner open to it
+  was `UIParent` at the cursor. The owner asked for the tooltip beside the strip instead: to its
+  right, or to its left when the strip is too close to the right edge of the screen. The widget
+  cannot compute that side for every host, and the host cannot own by its own frame, so the widget
+  owns by `UIParent` with no anchor and hands the host the placement.
+- **The sequence.** With a hook set, a hover owns `GameTooltip` by `UIParent` at `"ANCHOR_NONE"`,
+  draws the lines exactly as without one, calls `Show`, and then calls `place(tip, frame)` under
+  `pcall`, where `frame` is the frame hovered (the strip, the help mark or the close mark). `Show`
+  comes first so the host can read the tooltip's measured width when it picks a side.
+- **Only a literal `true` means placed.** A raise, `nil`, `false` or any other value falls back to
+  the `"cursor"` owner: the tooltip is owned again by `UIParent` at `"ANCHOR_CURSOR"`, the same lines
+  are drawn again, and it is shown again. The lines are evaluated once per hover, so a function
+  entry is called once even when the fallback redraws. The fallback exists for a host whose
+  geometry read can raise, such as a secret width under an attached anchor.
+- **Precedence mirrors `owner` and `anchor`.** A descriptor's own `place` wins over the spec's
+  `tooltipPlace`. With a hook in force, the descriptor's and the spec's owner and anchor are not
+  read. A value that is not a function is ignored, so the tooltip keeps the owner it had.
+- **Without a hook nothing changes.** A host that sets neither field gets minor 3's calls in minor 3's
+  order (one `SetOwner`, the lines, one `Show`), for the cursor owner and the frame owner alike.
+
+**What a host must change: nothing.** No member moves, so no degradation stub does. A host that
+passes `tooltipPlace` to a minor-3 copy gets its old owner; the field is ignored there.
+
+## What changed at 12.1.3
+
+**`ReorderList` moved to a file of its own, and nothing about it changed** (issue #36).
+`Widgets.lua` held three widgets at 1303 lines, in `layout-§1`'s 1000–1500 band, and the issue named
+the seam: one file per widget, `ReorderList` first. The list, its ghost, the handle and box pools,
+the row box and the drag moved unchanged to `LibKa0s/WidgetsReorder.lua` at minor **1**, loaded by
+`LibKa0s.xml` after `Widgets.lua` and before `WidgetsDragHandle.lua`. `Widgets.lua` moves to minor
+**12** and is 655 lines, out of the band; `WidgetsDragHandle.lua` stays at **3**. The version key
+gains a component, 11.3 → 12.1.3, because the key is every file's minor in load order.
+
+- **The same multi-file idiom as `WidgetsDragHandle.lua`.** The file attaches to the live shell and
+  records `lib.__reorderMinor` and `lib.__reorderShellMinor`, so a list from one vendored copy never
+  pairs with a shell from another without saying so; `tests/test_versioning.lua`'s pairing guard
+  reads both through `tests/majors.lua`.
+- **No member, `opts` field or controller method is added or removed**, so the member manifest
+  lists the same surface as 11.3's. `lib.ReorderList` and `lib.ROW_BOX` are published by the new
+  file. The handle's fallback art, the one file-level value it shared with the dropdown, is restated
+  there.
+- **A payload without `WidgetsReorder.lua`** loads whole: the dropdown, the copy window and the drag
+  handle work, and `lib.ReorderList` and `lib.ROW_BOX` are `nil`. A consumer re-vendors the whole
+  folder and its load list derives from `LibKa0s.xml`, so this arises only from a hand-trimmed copy.
+
+**What a host must change: nothing.** No member moves, so no degradation stub does. The drag
+reorder in every consumer that draws one is the in-game smoke check after the re-vendor.
+
+## What changed at 11.3
+
+**Every copy window is resizable.** `Widgets.lua` moves to minor **11**; `WidgetsDragHandle.lua`
+stays at **3**. No member, descriptor field or handle method is added or removed, so the member
+manifest lists the same surface as 10.3's. A `CopyWindow` still opens at its descriptor's `width` and
+`height` (640 × 420 by default), and a grip in its bottom-right corner, from `LibKa0s-Core-1.0`'s
+`MakeResizable` (Core minor 9), sizes it on both axes. That covers every caller at once: the debug
+console's Copy and each host's export windows.
+
+- **The minimum** is 240 × 140, or the descriptor's own size on an axis where that is smaller, so a
+  window declared small is its own minimum rather than one it could never be built at. **The maximum**
+  is the size of `UIParent`.
+- **On a resize** the scroll frame follows its anchors. The `EditBox` inside it is a scroll *child*
+  and does not, so a resize sets its width again: the scroll frame's width once the client has laid
+  it out, else the window's width less the margin the descriptor's `editWidth` keeps from its `width`
+  (50 by default).
+- **The scroll bar's down button clears the grip.** The scroll frame's bottom inset moves from 10 to
+  **18** px. `UIPanelScrollFrameTemplate` hangs its scroll-down button at the scroll frame's bottom
+  edge in the window's right gutter, and the grip covers the window's bottom 17 px there, so at 10 a
+  click on the button's lower part started a resize instead of scrolling. The inset is the same with
+  or without the grip.
+- **`Show` sizes the box for the window as it is.** Through 10.3 it fell back to the declared
+  `editWidth`; it now falls back to the same computation from the frame's current width, which is
+  identical until the window is resized.
+- **Each named window has its own size.** The frame is built once per handle and kept, and nothing
+  resizes it on a later `Show`, so a size survives a hide and a show and two windows never share one.
+- **Guarded, not floored.** An older Core, with no `MakeResizable`, leaves the fixed window this
+  always was.
+
+**The size is session state and lives on the frame.** Each window is built once and kept, so a
+size the player drags to survives a hide and a show: nothing stores it and nothing reapplies the
+default on a later show. It is never written to SavedVariables (`debug-logging-§1` forbids a host to
+save it either), and a `/reload` rebuilds the window at its default.
+
+**The client's layout cache, and what was found about it.** The client keeps `layout-local.txt` for
+frames the player moved or sized. `StartMoving` and `StartSizing` both mark a frame *user-placed*,
+and a named user-placed frame has its anchor and its size written to that cache at logout and put
+back when a frame of that name is created again. Every window here is named, and the drag each has
+always had goes through `StartMoving` and never clears the flag, so a **dragged** window is
+user-placed today. That is unchanged: position behaves exactly as it did. What the grip prevents is
+a resize making a window user-placed that a drag had not, which is the one route by which a chosen
+size could reach the next session: it reads `IsUserPlaced()` before `StartSizing` and puts that
+answer back after `StopMovingOrSizing`. A window that was only resized stays out of the cache; one
+that was dragged as well is in it exactly as it is today, and its builder sets the default size
+after `CreateFrame` returns, so a size the cache put back at creation is replaced before the window
+is shown. When the client applies the cache is not something a headless suite can observe, so the
+in-game smoke check (resize, `/reload`, the default size is back, dragged and undragged) is the
+confirmation.
+
+**What a host must change: nothing.** No member moves, so no degradation stub does.
+
+## What changed at 10.3
+
+**`DragHandle` can draw a close mark, and only for a host that asks for one.** `WidgetsDragHandle.lua`
+moves to minor **3**; `Widgets.lua` stays at **10**. No lib-level member is added or removed, so the
+member manifest lists the same surface as 10.2's. What is new is three `spec` fields, one
+`DRAG_HANDLE` field, one instance method and one readable field, all **Since 3**:
+
+- **`spec.onClose`** builds an X immediately left of the help mark and calls this function on its
+  left click. **Without it nothing is built and the strip is exactly 10.2's**: the same two frames,
+  the same `RESERVE` of 29 on each side of the label, the same `Measure()`. A suite case pins every
+  one of those numbers as a literal (`a spec with no onClose draws exactly the minor-2 strip`).
+- **`spec.closeIcon`** is the X's art, a resolved path (a host's `Icon("close")`); with none it
+  falls back to `Interface\Buttons\UI-StopButton`.
+- **`spec.closeTooltip`** is a descriptor of the usual shape, shown by the X alone; with none the X
+  shows `tooltip`.
+- **`DRAG_HANDLE.CLOSE_GAP = 0`**, the px between the X's frame and the help mark's frame.
+- **`handle:Reserve()`** answers what each side of the label keeps clear on this strip, and
+  **`handle.close`** (with `handle.close.icon`) is readable, `nil` on a strip without one.
+
+The X is the help mark's twin, which is what the owner asked for (AuraMaster feedback batch 8,
+`CX-1`): the same `HELP_HIT` frame around the same `HELP` art, the same resting tint and the same
+full-white hover, and the strip's own drag scripts, so a drag that starts on it moves the frame. The
+label stays centered, because the reserve grows on **both** sides by `HELP_HIT + CLOSE_GAP` — 47
+rather than 29, so a strip with an X is 36px wider than one without. See [The close
+mark](#the-close-mark).
+
+**What a host must change: nothing, unless it wants an X.** A host that passes no `onClose` draws
+the same pixels and registers the same clicks as at 10.2.
+
+## What changed at 10.2
+
+**A `ReorderList` drag no longer borrows anything from the host but the frames it was handed to
+draw on, and gives back everything it parents there.** `Widgets.lua` moves to minor **10**;
+`WidgetsDragHandle.lua` stays at **2**. No lib-level member is added or removed, and every `opts`
+field and `AddRow` `spec` field means what it meant at 9.2. Two internals moved, and one method's
+return with them.
+
+- **The poll runs on the ghost.** At 9.2 `beginDrag` called `row.frame:SetScript("OnUpdate", ...)`
+  on the frame the host handed to `AddRow`, and the drop and `Cancel()` cleared it with nil, which
+  wiped any `OnUpdate` the host had set on that frame. At 10.2 the poll is the ghost's own
+  `OnUpdate` — the process-wide carried copy, a frame this library builds and owns — and it reads the
+  row being dragged at fire time, the way a handle reads `__row`. The ghost is shown for exactly as
+  long as a drag is in flight, so the client polls it for exactly that long. **A host row frame's
+  scripts are never written.**
+- **The insertion line comes from a free list, per drag.** At 9.2 `Finish` built one line per
+  container and cached it there as `__ka0sDropLine`. Both shipped consumers hand over an
+  AceGUI-pooled container, so the line rode back into AceGUI's pool painted in whichever list's
+  `lineColor` first drew on it, and a second list handed the same container drew in the first list's
+  color. At 10.2 the line is taken when a drag starts, parented to the container `Finish` named,
+  repainted in the dragging list's `lineColor` on every take, and given back at the drop and on
+  `Cancel()` — hidden, unanchored and reparented off the container, through the same reclaim the
+  handles and row boxes use. Nothing of this library's is left on a container between drags.
+- **`Finish(container)` returns nothing.** At 9.2 it returned the line it had built. It now only
+  names the container; no shipped consumer read the return.
+
+**What a host suite must change.** One that drives a drag by firing the row frame's `OnUpdate` —
+the way a suite reaches the poll without a client — must fire the ghost's instead:
+`LibStub("LibKa0s-Widgets-1.0").__DragGhost:__fire("OnUpdate", ...)` (or its mock's equivalent).
+The ghost exists from the first grab. MultiMeters' `tests/test_columnblocks.lua` is the one such
+suite on the 2026-09-24 grep. A suite reading `controller.line` after a drop or a `Cancel()` reads
+`nil`: the line is only held while a drag is in flight.
+
+## What changed at 9.2
+
+**The help mark brightens on hover only where a click is wired.** At 9.1 `dhBuildHelp` tinted the
+mark to `HELP_TINT_OVER` on `OnEnter` unconditionally, while `dhSetClick` registers no click at all
+for a host that passes no `onRightClick`. A host without a right-click therefore shipped a mark that
+lit up under the cursor and then did nothing — a control advertising itself and then declining.
+The over-tint is now `spec.onRightClick and HELP_TINT_OVER or HELP_TINT`: a host with a click gets
+the full-white response unchanged, and a host without one gets a mark that holds its resting gray.
+
+Nothing else moved. A host that passes `onRightClick` sees 9.1's behavior exactly.
+
+## What changed at 9.1
+
+**A second file joins the major, and one new lib-level member comes with it: `lib.DragHandle`.**
+`Dropdown`, `CloseMenu`, `CopyWindow`, `ReorderList`, `lib.ROW_BOX` and every instance method are
+byte-for-byte unchanged, and `Widgets.lua` does not move — it stays at minor **9**. What is new is
+`LibKa0s/WidgetsDragHandle.lua` at minor **1**, carrying `lib.DragHandle`, `lib.DRAG_HANDLE` and
+`lib.__DragHandleMeasurer`. A file added to an existing major moves that major's version key, which
+is why this document is `9.1` and its predecessor was `9`.
+
+**Why a second file rather than more of `Widgets.lua`:** `layout-§1`'s 1500-line cap, and nothing
+else. The surface written into `Widgets.lua` took that file to 1540 lines, which is a breach needing
+a disposition; the file was already in the 1000–1500 band at 1232. It is guarded with the same
+multi-file idiom the Options family uses — `lib.__dragMinor` paired against `lib.__dragShellMinor ==
+lib.MINOR` — so a handle from one vendored copy can never attach to a shell from another in silence.
+It is **not** a major of its own, which would have cost a `core/<Name>Setup.lua` seam in all eleven
+consumers, nine of which will never draw a handle.
+
+### The drag handle, and why it is the widget's
+
+AuraMaster drew one per container (`modules/Anchors.lua`) and ConsumableMaster drew one over its
+macro bar (`modules/MacroBar.lua`), and the two were the same widget twice. Byte-identical in both:
+`HANDLE_H = 18`, `HANDLE_GAP = 2`, `HANDLE_PAD = 24`, `HANDLE_HELP = 14`; a centered
+`GameFontNormalSmall` label at `1, 0.82, 0`; a help `Button` anchored `RIGHT, -4`; the icon taken
+from the host's `help` art with `Interface\FriendsFrame\InformationIcon` as the last rung; and the
+width `textW + HANDLE_PAD + HANDLE_HELP * 2`. That is the same argument the dropdown was lifted
+under and the same argument `lib.ROW_BOX` was published under — a drag handle over a frame the
+player moves is a draggable row's sentence one frame up.
+
+**The mark's art is 8px, not 14 — and it matches the chevron in ink, not in box.** It is a fixed
+number, derived from nothing at runtime. The precedent is the dropdown's chevron,
+`arrow:SetSize(12, 12)` at the same `RIGHT, -4` inset (`LibKa0s/Widgets.lua:331-333`) — but a box is
+not a weight. The chevron's art is the catalog's `chevron-down`, whose glyph inks 44 of its 64 rows,
+so a 12px box of it draws **8.25px** of mark. This mark's art is `help`, whose `?` inks all 64, and
+the Blizzard fallback is a filled disc and is certainly no more inset: a 12px box draws **12px**.
+Both measurements are of the catalog TGAs, which is what both hosts resolve `help` to. Against
+the small label face's cap height — FRIZQT\_\_ at 10px, a cap of roughly 7px — that is about
+**1.7×** the text the mark annotates, where the chevron is about **1.1×**. At 8 the ink is the
+chevron's ink. 8 is a floor rather than a direction of travel: below it the `?` loses the gap
+between its hook and its dot at 100% UI scale, and the click target never moved with the art.
+
+> **An intermediate draft shipped 12 and was wrong for a subtler reason than 14 was.** It cited the
+> chevron and matched it in the one dimension that does not reach the player's eye, while leaving
+> the mark at full white beside a gold label — so the annotation was both larger and brighter than
+> the text it annotates. Size was only half the lever; see **the mark's tint** below.
+
+> An earlier draft of this surface computed the art from the label's font height —
+> `round(labelHeight × 1.2)`, floored at 10 and capped at `HEIGHT - 6` — and described it as a size
+> that grows with a larger face. It was a derivation in name only. The cap equalled the default, so
+> the arithmetic could only ever move the size **down**, and the `GameFontNormalSmall is 10px` fact
+> the whole thing rested on had no evidence in this repo and is locale-dependent. The number is the
+> same 12; what changed is that it no longer claims to have been computed.
+
+**The mark's tint is the chevron's own, and it brightens under the cursor.** Both copies drew the
+mark at full white — the brightest element on a strip whose label is gold `1, 0.82, 0` on a dark
+fill. The chevron does not: it carries `arrow:SetVertexColor(0.7, 0.7, 0.72)`
+(`LibKa0s/Widgets.lua:335`), set by the widget rather than by the host, which is what makes shared
+white art wear the widget's gray instead of its own. The mark takes the same tint from the same
+place, at **alpha 1** — vertex color multiplies white art, which is what the catalog's art is built
+for, where alpha would fade the mark toward the fill behind it. Unlike the chevron the mark is its
+own `Button`, so it goes to full white on `OnEnter` and back on `OnLeave`; a mark dimmed at rest
+with no response to the cursor reads as decoration rather than as a control.
+
+**The mark's frame is 18px — the full strip height — and that is a different number from its art.**
+The art shrank; the click target did not. This control is a destructive-adjacent one on
+ConsumableMaster and the only right-click affordance on AuraMaster's strip, so an 8×8 button was
+not acceptable. `HELP_HIT` is the `Button`, `HELP` is the texture centered inside it, and
+`HELP_GUTTER` is the `(18 - 8) / 2 = 5px` that separates them on all four sides. It is the same
+shape `O.IdList`'s remove icon took one layer down — `ID_REMOVE_SIZE = 16` of atlas inside an
+`ID_REMOVE_HIT = 26` frame — rather than a second answer to the same question.
+
+**The clearance beside the label is 12px, where both copies spent 8.** That gap was the actual
+complaint, and shrinking the art alone did not touch it: both copies reserved
+`PAD / 2 + HELP - HELP_INSET` on the label's right, and because `HELP` sat on both sides of that
+expression, 14 → 12 left the 8 exactly where it was. `HELP_CLEAR` names the gap so it can be moved
+on its own, and it is also the label's own right **bound** — the label is anchored `LEFT` and
+`RIGHT` at `RESERVE`, with word wrap off, so a label longer than the strip truncates inside its half
+instead of running under the mark, and `RESERVE` — what each side of the label gives up — is computed from
+`HELP_INSET + HELP_HIT - HELP_GUTTER + HELP_CLEAR`, never typed.
+
+**The reserve feeds the layout, which is why `Measure()` is on the widget.** `RESERVE` is spent
+**twice**: once on the right, where it pays for the inset, the frame and the clearance in front of
+the art, and once on the left as the matching empty gap that keeps the label optically centered. At
+29 per side against the copies' 26, a strip's natural width grows by **6px**. Invisible wherever
+the strip is floored by something wider (ConsumableMaster's bar, AuraMaster's element size); visible
+on a narrow strip, which is exactly where the crowding was. Because the arithmetic lives beside the
+constants, the two cannot drift apart again — and a host that keeps a local copy of the formula
+reintroduces the drift the move exists to remove.
+
+## What this major is
+
+The collection's flat-skin dropdown button, and the one popup menu every instance of it drops.
+BankLedger had one, local to `modules/Browser.lua`, and MultiMeters was about to grow a second copy
+of the same widget — two skins to keep in step, and the collection stops reading as one author's
+work the first time one copy is restyled and the other is not. `Widgets.Dropdown` builds the
+dropdown; `Widgets.CloseMenu` closes the shared popup behind every dropdown any host has built. Since
+version 6 it also owns `Widgets.CopyWindow`, the collection's one selectable-text export frame — see
+*The copy window* below.
+
+Depends on LibStub and `LibKa0s-Core-1.0` (minor 1 or newer), and on no addon framework.
+
+## Why it takes no dependency on `LibKa0s-Media-1.0`
+
+Because it cannot. `Media.Icon` builds a path from the *consuming addon's own name*, and this file is
+vendored — every consumer has its own copy at its own path, and a copy cannot know which addon folder
+it was copied into. So every piece of art this widget draws arrives as a parameter: `opts.chevron`
+and `opts.check` are resolved paths the host already has, each falling to a Blizzard texture when the
+host has none. The same reasoning applies to `opts.glyphFont` — the optional leading glyph is a
+*character* in a monospace face, and which face a host draws in is that host's decision, not this
+library's.
+
+## Lib-level surface
+
+| Name | Since | Meaning |
+|---|---|---|
+| `Dropdown(parent, width, opts)` | 1 | Builds one flat-skin dropdown button parented to `parent`, `width` px wide and 20px tall, that opens the shared popup menu on click. Returns the dropdown frame. |
+| `CopyWindow(descriptor)` | **6** | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
+| `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
+| `ReorderList(opts)` | **8** | Builds a drag-to-reorder controller for one render of a list. Returns the controller. See *The reorderable list*. |
+| `LineChart(parent, opts)` | `WidgetsLineChart` **1** (`opts.pxPerPoint` **Since 2**; clipping and the hover re-sync **Since 3**) | Builds one pooled line chart, a `Frame` parented to `parent`. Returns the chart. See *The line chart*. |
+| `Autocomplete(editBox, opts)` | `WidgetsAutocomplete` **1** (re-hook on every call, floored `maxRows` **Since 2**) | Hangs a suggestion list under `editBox`. Returns a handle, or `nil` with no client, a box that cannot be hooked, or no `opts.provider`. See *The autocomplete*. |
+| `AUTOCOMPLETE` | `WidgetsAutocomplete` **1** | The list's chrome and timing constants. See *The autocomplete*. |
+| `MODULES` | 1 | `{ Widgets = <minor> }` — the live minor, and the value that picks this document. |
+
+### `Dropdown(parent, width, opts)`
+
+`opts` is optional; every field inside it is optional too, and each has an explicit fallback:
+
+| `opts` field | Since | Meaning | Fallback with no value |
+|---|---|---|---|
+| `chevron` | 1 | Resolved texture path for the collapsed button's ▼ affordance. | `Interface\Buttons\Arrow-Down-Up` (Blizzard's own arrow) |
+| `check` | 1 | Resolved texture path for the tick a multi-select row draws in front of a selected value. Built once per dropdown into inline `\|T…:0\|t ` markup and stored on `dd.__check`. | `Interface\Buttons\UI-CheckBox-Check` |
+| `glyphFont` | 1 | Resolved font path for the optional leading glyph a row may carry (`opt.glyph`). **A precondition for any option carrying `glyph`** — see *Behavior a host must know* below. | No glyph column is drawn at all: the glyph `FontString` is hidden on every row regardless of whether that row's option has a `glyph`. |
+
+### `CloseMenu()`
+
+Takes no arguments and returns nothing. **A host cannot do this itself**: the popup is a
+process-wide singleton, built lazily by the first dropdown any addon in the process opens and
+parented to `UIParent`, not to any one host's frame — it outlives every window that ever opened it,
+and no host holds a reference to it. Call it from every place a host closes its own window by a
+route that is not a click on the dropdown — an `OnHide` handler, an Escape binding, a slash command
+that hides the frame — so the shared menu never outlives the window it dropped from.
+
+## Option rows
+
+Every row handed to `dd:SetOptions` is a table. `value` and `label` are expected; the rest are
+optional and each is inert when absent.
+
+| Field | Since | Meaning |
+|---|---|---|
+| `value` | 1 | What this row selects. For an ordinary row it is also what lands in `_selected` (multi) or `_value` (single). The sentinel `"all"` is special-cased by `ToggleSelected` and `UpdateMultiLabel`. |
+| `label` | 1 | The row's text, and the collapsed button's text when this row is the single selection. Inline `\|T…\|t` texture markup is allowed and is measured — a class icon folded into a label is the supported way to put art on a row. |
+| `color` | 1 | `{ r, g, b }`. The row's text color when the row is not selected; a selected row is gold regardless. |
+| `glyph` | 1 | A single character drawn in a leading column, in `opts.glyphFont`. **Requires `opts.glyphFont`** — see *Behavior a host must know*. |
+| `isActive` | **4** | `function(dd) → boolean`. When present it decides this row's highlight **instead of** the selection set, and its label becomes the collapsed button's label while it reports true. A row that selects something other than its own value has no other way to report itself active. Called on every paint and on every label refresh, so it must be cheap and must not mutate the dropdown. |
+
+## Instance methods
+
+Every method below is a member of the frame `Dropdown` returns, and every one of them has
+existed since minor 1. Behavior added to a method at a later minor is marked in that method's own
+row rather than by a `Since` column.
+
+| Method | Parameters | Meaning |
+|---|---|---|
+| `dd:SetOptions(opts)` | `opts` — array of `{ value, label, glyph?, color?, isActive? }` rows | Sets the row list the popup menu populates from. If the dropdown is in multi-select mode, also refreshes the collapsed button's summary label. |
+| `dd:SetValue(v, label)` | `v` — the value to store; `label` — text to show on the collapsed button | Single-select only. Stores `v` on `dd._value` and sets the collapsed button's text to `label` (or blank if `label` is nil). Does not consult `_options`. |
+| `dd:SelectValue(v)` | `v` — a value expected to appear in the current `_options` | Single-select only. Looks `v` up in `_options` and calls `SetValue` with the matching row's own label; if no row matches, calls `SetValue(v, tostring(v))`. |
+| `dd:SetMulti(on)` | `on` — truthy/falsy | Switches the dropdown between single-select (falsy) and multi-select (truthy). Stored as the boolean `dd.multi`. |
+| `dd:SetSelected(set)` | `set` — a table of `value = true` pairs, or any non-table (treated as empty) | Multi-select only. Replaces `dd._selected` with a fresh copy of the truthy keys in `set`, then refreshes the collapsed label. |
+| `dd:ToggleSelected(value)` | `value` — one option's value, or the sentinel `"all"` | Multi-select only. A value with a handler in `dd.presets` has that handler run instead (**since 4**, and asked before the sentinel); otherwise `"all"` clears the whole selection (the empty set *is* "All") and any other value toggles its membership in `dd._selected`. Refreshes the collapsed label. |
+| `dd:UpdateMultiLabel()` | — | Multi-select only. Recomputes the collapsed button's summary text. **Since 4**: the label of the first option whose `isActive` reports true, if any; otherwise the `"all"` row's own label when nothing is picked, the one picked value's label when exactly one is picked, or `"<Prefix>: N selected"` (the prefix is the `"all"` row's label, up to its first `:`) otherwise — counting **every value in `_selected`**, labeled from its option row when there is one and from the raw value when there is not. Called automatically by the methods above; a host that mutates `_selected` directly must call it explicitly. |
+
+## `dd.onSelect` / `dd.onMultiSelect`
+
+Both are plain fields on the dropdown frame, unset by default — a host wires either or both after
+building the dropdown:
+
+| Field | Since | Called | Signature |
+|---|---|---|---|
+| `dd.onSelect` | 1 | Single-select only, after a row click sets the value and the menu closes. | `function(value)` |
+| `dd.onMultiSelect` | 1 | Multi-select only, after a row click toggles membership; the menu stays open. | `function(selectedSet)` — the live `dd._selected` table, `value = true` for every chosen row |
+
+## Fields a host may read, and one it may write
+
+| Field | Since | Meaning |
+|---|---|---|
+| `dd.text` | 1 | The collapsed button's label `FontString`. Read-only from outside; written by `SetValue` / `UpdateMultiLabel`. |
+| `dd.arrow` | 1 | The ▼ affordance `Texture`. Kept for the out-of-game art suite; nothing at runtime reads it back. |
+| `dd._value` | 1 | Single-select only. The currently stored value, or nil before one is set. |
+| `dd._selected` | 1 | Multi-select only. The live selection set, `value = true` for each chosen row. Empty means "All". |
+| `dd.multi` | 1 | Boolean, set by `SetMulti`. Whether this dropdown is in multi-select mode. |
+| `dd.presets` | **4** | Writable by the host: `{ [value] = function(dd) end }`. A value with a handler has that handler run by `ToggleSelected` in place of the toggle; the handler owns `dd._selected` and is responsible for writing it. Unset by default. It is a field rather than an `opts` entry because the closure it carries usually needs the dropdown the host is still in the middle of building. |
+
+## `__`-prefixed instance fields are INTERNAL
+
+`dd.__check` and `dd.__glyphFont` are implementation state, not contract. This library's own test
+suite reads them, because a suite pinning behavior needs some seam to pin it through — but that is
+the suite exercising its own library from the inside, not a precedent for a host. **A host may not
+read or write a `__`-prefixed field on a dropdown.** This major has no deprecation mechanism: once
+published, a field that a host has come to depend on cannot be removed or reshaped without breaking
+someone silently. Keeping the internal/contract line explicit here is what keeps the surface above
+this line — and only that surface — permanent.
+
+## Behavior a host must know
+
+- **The popup menu is a process-wide singleton.** One shared frame, built lazily on the first click
+  of any dropdown in the process, drops for every dropdown built by every addon that has adopted this
+  major. Exactly one dropdown is open at a time across the whole client — opening a second closes the
+  first, the way a native game menu does. It outlives any one host's window, which is exactly why a
+  host cannot reach it through its own frame and must call `CloseMenu()` instead — see below.
+- **A host must call `CloseMenu()` from every non-click close path it has.** Because the popup does
+  not belong to any one host's frame, hiding a host's window — by `OnHide`, by Escape, by a slash
+  command — does not hide the menu. Without the call, closing the host window by any route other
+  than a click on the dropdown leaves the menu orphaned: still shown at `FULLSCREEN_DIALOG`, floating
+  over the game with nothing left to hide it. **Since version 5 the menu closes itself on a mouse
+  press anywhere outside it, and that narrows the window without closing it** — a host window hidden
+  by Escape or by a slash command is hidden with no click at all, so there is nothing for the menu
+  to hear. The call is still required from every non-click close path.
+- **Rows are pooled across dropdowns, and every field is repainted on every pass.** The popup's row
+  buttons are reused rather than rebuilt, and they are shared by every dropdown that has ever opened
+  in this process, not just the one currently open. Every visible field of a row — its text, its
+  color, its glyph, the glyph's own font — is written on every `Populate`, including the fields that
+  are blank for this row's option, precisely so that nothing leaks from whichever dropdown last
+  painted that pooled row button.
+- **A preset row's own value never enters the selection.** `dd.presets[value]` runs *instead of*
+  the toggle, so unless the handler puts it there, the row's value is not in `_selected` afterwards
+  — which is why such a row needs `isActive` to light up and why its label, not the selection
+  count, is what the collapsed button shows. The two seams are independent and each is useful
+  alone: a row may report itself active without being a preset (a synthetic "everything matching
+  the search" row), and a preset may run without lighting up.
+- **The glyph column is absent unless `opts.glyphFont` is given.** Without a face to draw it in, an
+  option's `glyph` is silently dropped: the glyph `FontString` stays hidden — it keeps the font
+  template it was built with, so nothing raises — and the row's label
+  starts at the plain margin rather than indented past a glyph slot. `opts.glyphFont` is therefore a
+  **precondition** for any option that will carry `glyph`, not an optional decoration — raising at
+  draw time inside a UI widget would be worse than drawing one column less, and this library carries
+  no printer to warn a host through. A host that wants glyphed rows must supply the face; a host that
+  never sets `glyph` on any option needs never know the field exists.
+
+## The copy window
+
+`Widgets.CopyWindow(descriptor)` answers a **handle**, not a frame. Nothing is created until the
+first `Show`, because a host builds this at file load and most sessions never open it.
+
+It answers `nil` in two cases: with no `CreateFrame` (a host with no UI loaded at all), and with a
+descriptor that is not a table or carries no string `addonName`. The name is required rather than
+optional because the close control — `Core.MakeCloseButton` by default, or whatever `makeCloseButton`
+names since version 7 — resolves the collection's own art out of the *consuming addon's* folder, and
+a vendored copy cannot know which folder it sits in. That is the same bargain
+`LibKa0s-Media-1.0` already strikes, and it is why `addonName` is handed to the close-control
+builder as its third argument rather than assumed by it.
+
+### The descriptor
+
+Every field but `addonName` is optional, and the descriptor a host passes is never mutated — the
+defaults are filled into a copy.
+
+| Field | Since | Meaning | Default |
+|---|---|---|---|
+| `addonName` | 6 | **Required.** The consuming addon's name, used to resolve the close control's art. | — |
+| `name` | 6 | The frame's **global** name. It is what goes into `UISpecialFrames`, so it must be unique across the client. | `"<addonName>CopyWindow"` |
+| `width` / `height` | 6 | Frame size in px: the size the window opens at. Resizable from 11, down to 240 × 140 (or this size, where smaller) and up to `UIParent`'s size, for the session only. | `640` / `420` |
+| `title` | 6 | The title-bar text. | `"Export"` |
+| `font` | 6 | A resolved **font path** for the `EditBox`. Not a LibSharedMedia name — `SetFont` does not take one — and a CSV is columns of digits that line up only in a fixed-width face. | Unset: the `EditBox` keeps the client's default face |
+| `fontSize` | 6 | Point size, applied only when `font` is given. | `10` |
+| `editWidth` | 6 | Fallback `EditBox` width, used when the scroll frame cannot report one. | `width - 50` |
+| `applySkin` | 6 | `function(frame)`. Runs **instead of** `Core.ApplySkin` for hosts that skin their own way. | Unset: `Core.ApplySkin` is used when Core offers it |
+| `backdrop` | 6 | `{ r, g, b, a }` applied after the skin. Denser than the shared skin on purpose: this frame is a wall of small text, and the world bleeding through costs legibility. | `{ 0.06, 0.06, 0.08, 0.95 }` |
+| `anchorTo` | 6 | `function() → frame\|nil`. Consulted on **every** `Show`, never once at build, so the popup follows a window the user has since dragged. A frame that is not shown, or a `nil`, anchors to `UIParent` instead. | Unset: always centered on `UIParent` |
+| `scrollName` | **7** | A **global** name for the window's `ScrollFrame`. `UIPanelScrollFrameTemplate` derives its scrollbar children's names from their parent's, so naming the scroll frame is what makes those children findable and skinnable; leaving it anonymous leaves them unnamed. Must be unique across the client, like `name`. | Unset: the scroll frame is anonymous, exactly as at version 6 |
+| `makeCloseButton` | **7** | `function(parent, onClick, addonName) → button\|nil`. Builds the title bar's close control. What it returns is anchored to the bar's right edge; a `nil` return draws no control. Present because `LibKa0s-DebugLog-1.0` has published this field on its own descriptor since its minor 4, for both of its windows. | `Core.MakeCloseButton`, when Core offers it |
+
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `backdrop`: no consumer as of v1.67.0, kept because `CopyWindow` defaults to Core's skin; the field is the escape hatch for a window that must not wear it.
+- `makeCloseButton`: no consumer as of v1.67.0, kept because DebugLog forwards its own `makeCloseButton` here so that published contract did not narrow (Widgets minor 7).
+- `scrollName`: no consumer as of v1.67.0, kept because DebugLog passes it from inside the library, so the copy window keeps its `<name>DebugCopyScroll` global.
+
+### The handle
+
+| Method | Meaning |
+|---|---|
+| `win:Show(text)` | Re-anchors, sizes the box, sets `text` (or `""`), sends the cursor to the top, shows the frame, focuses and selects. Builds the frame on first call. Returns the frame. |
+| `win:Hide()` | Hides the frame if one has been built. A no-op before the first `Show`. |
+| `win:GetText()` | The `EditBox`'s current text, or `nil` before the frame exists. |
+| `win:GetFrame()` | The frame, **building it if this is the first call**. The escape hatch for a host that needs to reposition or re-parent it. |
+
+### Behavior a host must know
+
+- **The order inside `Show` is load-bearing**: width, then text, then cursor, then show, then focus,
+  then highlight. Highlighting before the frame is shown selects nothing, and focusing before the
+  text is set leaves the cursor wherever the last export left it. All four hand-rolled copies had
+  found this out separately.
+- **The frame is built once and reused.** Frames are never destroyed in WoW, so a modal rebuilt per
+  open leaks one frame per open for the life of the session.
+- **Esc closes it, via `UISpecialFrames`.** The frame's `name` is appended to that list at build,
+  guarded on the list actually being a table, so `name` must be globally unique.
+- **It sits at `FULLSCREEN` strata**, above the `DIALOG`-strata modal that usually opens it, so the
+  modal stays visible underneath and "copy this, then pick a different set" is one trip.
+- **Nothing is written back.** The `EditBox` is not read-only in the client's sense — a player can
+  type into it — but the handle never consults what they typed, and the next `Show` overwrites it.
+- **The scroll frame is anonymous unless `scrollName` says otherwise.** Its scrollbar, and that
+  scrollbar's up and down buttons, take their names from it, so with no `scrollName` none of them
+  has a name for a skin or a `_G` lookup to reach. A host that never asks for one loses nothing it
+  had — which is why the field defaults to absent rather than to a name derived from `name`.
+- **The close control is resolved when the frame is built, not at file load.** `makeCloseButton`, or
+  `Core.MakeCloseButton` when the host names none, is looked up on the first `Show`, because
+  `MakeCloseButton` itself resolves Media at call time and one rule about when the payload is
+  resolvable is easier to keep than two.
+
+## Known and intentional absences
+
+Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 7 is a
+decision, not an oversight, and every one of these is reachable later without a major bump:
+
+- **No per-row disable**, still — an `isActive` predicate reports a state, it does not gate a
+  click. A row that must not be clickable is not expressible at this version.
+- **No setters to restyle a dropdown after it is built.** `chevron`, `check` and `glyphFont` are
+  read once, at construction, from `opts`; there is no `dd:SetChevron(...)` or equivalent to change
+  them on a live instance.
+- **No "is the menu open" query.** `CloseMenu()` is a command, not a toggle, and neither shipped
+  consumer needs to ask the question before issuing it — a query added on spec ahead of a caller is
+  a surface nobody has tested.
+- **No search box.**
+- **No keyboard navigation.**
+- **No scrolling for a long option list** — every row in `_options` gets a row in the menu, and the
+  menu grows to fit them.
+- **No sub-menus.**
+- **No "save to file" on the copy window**, because the client has no file I/O — Ctrl+C is the
+  whole mechanism.
+- **No `win:Destroy()`.** Frames are not destroyable in WoW; a handle whose frame is built stays
+  built for the session.
+
+None of these is wanted by either shipped consumer, and a widget that grows features nobody asked for
+is a widget whose degraded behavior nobody has tested.
+
+## The reorderable list
+
+In `LibKa0s/WidgetsReorder.lua` from 12.1.3. `ReorderList(opts)` returns a **controller for one render**. It holds the rows of the pass that
+built it, so a repaint builds a new one — and `Cancel()` on the old one is what stops a drag
+outliving the list it was describing.
+
+### `opts`
+
+Every field is optional except the ones a working list needs.
+
+| Field | Meaning | Fallback |
+|---|---|---|
+| `stride` | Row top to next row top, in pixels. The drop target is **arithmetic on this**, never a hit test, so nothing depends on the rows having been laid out yet, on the scroll position, or on a layout pass having finished — all three of which are true at different moments during a drag. | `30` |
+| `onMove` | `function(from, to)`. Called **once** when a drag lands somewhere new. Never called for a drag that lands where it started, because that would have the host rewrite its list and repaint for no change. | no callback; the drag is inert |
+| `boundary` | How many rows are in the **first** group. `nil` or `0` means one flat list. With a boundary, a row may not be dragged out of its own group — the drop clamps at the divide. | `nil`, one flat list |
+| `handleIcon` | Resolved texture path for the handle art. A vendored copy cannot know which addon folder it sits in, so art arrives as a parameter — the same reason `chevron` and `check` do. | `Interface\Buttons\UI-SortArrow` |
+| `handleSize` | The handle's hit width. Its height is the row's. **The default moved at minor 9** — 30 is the gutter every list in the collection gives its handle, and MultiMeters was already passing it by hand. | `lib.ROW_BOX.HANDLE_W`, **30** |
+| `handleInset` | Pixels from the parent's left edge. | `0` |
+| `handleColor` | `{ r, g, b }` for the handle at rest. | a neutral gray, `{ 0.7, 0.7, 0.7 }` |
+| `handleHoverColor` | `{ r, g, b }` under the pointer. A host whose list has its own palette says so; one that says nothing matches every other list in the collection. | gold, `{ 1, 0.82, 0 }` |
+| `handleTooltip` | One line shown on hover, e.g. "Drag to reorder". | no tooltip at all |
+| `iconSize` | The art drawn inside the handle. | `16` |
+| `rowBox` | **New at 9.** `false` suppresses the bounded box behind every row. Defaults **ON**: the box is half of what makes a list read as blocks you can pick up, and a host that draws its own has to say so — and should instead delete its own, or the two fills stack. | `true` |
+| `rowBoxInset` | **New at 9.** Pixels the box is inset from the row frame's edges. | `0` |
+| `lineColor` | `{ r, g, b, a }` for the insertion line. | gold, `{ 1, 0.82, 0, 0.9 }` |
+| `debug` | `function(fmt, ...)`, called on grab and on drop. | no logging |
+
+### Controller methods
+
+| Method | Meaning |
+|---|---|
+| `AddRow(frame, spec)` | Registers one row, **in display order** — the index is the call order. Creates the handle as a child of `spec.parent or frame`, anchored `LEFT`, and returns it so the host may re-anchor it. |
+| `Finish(container)` | Names the frame the insertion line lives on during a drag — normally the scroll's content frame, or whatever the rows share as a parent. Call once, after the rows. **Builds nothing and returns nothing from 10**: the line is taken when a drag starts and given back when it ends. |
+| `Cancel()` | Stops any drag in flight, puts the chrome away, and **gives every handle and every row box back**. Idempotent. **A host must call this before it renders anything** — see below. |
+
+`spec` on `AddRow`, all optional: `ghostText`, `ghostIcon`, `ghostIconColor`, `ghostTextColor`,
+`height`, `parent`, `draggable`, and **`dimmed`** (new at 9).
+
+**`draggable = false` registers the row with no handle.** It still counts for indices and still
+anchors the insertion line — it is a place a drag can *land*, not one a drag can start from. Use it
+for rows that have an order nothing can act on.
+
+**`dimmed = true` paints that row's box in the muted variant**, for a row that is present but inert —
+MultiMeters' hidden columns, LootHistory's sources it is not collecting. The box is drawn for **every**
+registered row, draggable or not, and before the handle: a row you cannot pick up is still one of the
+blocks the list is made of, and a stack where only some rows have an edge reads as a rendering fault
+rather than as a rule.
+
+### Behavior a host must know
+
+**The library owns its handles and its row boxes, and `Cancel()` must run before the host renders anything.** Both come from free lists here and are parented to the host's frame only while live; `Cancel()` hides, unanchors and reparents them away in one step, through one shared reclaim so neither can be forgotten without the other.
+
+They are **not** cached on the host's frames, and that distinction cost a release. Both consumers hand over containers their UI framework pools — and AceGUI's pool is process-wide, so a released container goes to whatever asks next. A handle left parented and shown turned up on an unrelated part of the page: on a *Drag to action bar* row, on an ID entry box, on a dropdown. A frame's identity is not the host's to lend, so a cache keyed on it is a cache keyed on nothing.
+
+The same reasoning fixes the timing: a `Cancel()` that runs after the page has begun rebuilding runs after some other widget may already hold the frame. **Cancel at the very top of the render, before the first `AceGUI:Create`.**
+
+**Nothing about a drag closes over anything.** Both shipped consumers hand over a frame
+their UI framework *pools*, so `AddRow` caches the handle on it and re-points it rather than building
+a new one. It also reads `handle.__row` at fire time, and `beginDrag`/`finishDrag` reach the
+controller through `row.list` rather than closing over it. **All three are needed.** A handle built
+fresh each render piles up on a recycled frame; one that closes over its row drives the wrong row;
+one that closes over its *controller* drives a controller that was `Cancel()`led on the last render
+— and that last one is a drag that works exactly once and then freezes, while still passing a test
+written against the first two.
+
+**The handle is the library's, deliberately.** It is what a player has to recognize as "drag me",
+and a collection whose lists each invented their own affordance would defeat the point of sharing
+this. The host still decides where it sits and how big it is; it does not decide what it is.
+
+**Only the handle starts a drag.** Rows in these lists carry other controls — a remove button, a
+score button, a toggle glyph — and a row that was draggable anywhere would swallow presses aimed at
+those. They sit a few pixels apart.
+
+**Every input path can start the drag and every path can end it.** `OnMouseDown` and `OnDragStart`
+both begin it; `OnMouseUp`, `OnDragStop` and a poll of `IsMouseButtonDown` all end it. Both helpers
+are idempotent, so whichever order a client delivers them in, one grab begins once and completes
+once. This redundancy is not belt-and-braces for its own sake: which of these a client actually
+sends inside a Settings canvas turned out not to be something worth betting on, and two earlier
+implementations that each picked one pair shipped a drag that did nothing at all.
+
+**The poll may not act alone**, and it has to see the button *held* before it may act on it being
+released. If `IsMouseButtonDown` is unavailable, protected, or simply not true yet on the first
+frame, a poll that ended on `not held` would finish the drag with zero rows traveled — no error, no
+message, and indistinguishable from a press that was never received.
+
+**The ghost is a process-wide singleton on `UIParent`**, and from 10 it carries the drag's poll. It must escape whatever scroll frame the
+list sits in to follow the cursor past the ends of the list, which a child of that scroll cannot do.
+Its mouse is disabled, and that is load-bearing rather than tidy: a frame sitting under the pointer
+that accepts the mouse eats the very button-release that ends the drag it is drawing.
+
+**The insertion line is a frame carrying a texture**, not a bare texture. A texture belongs to its
+own frame's draw layers, so one created on the container draws *under* every row — a parent's
+`OVERLAY` still loses to a child frame. **From 10 it is the library's, from a free list, for one
+drag at a time**: taken when a drag starts, parented to the container `Finish` named, painted in
+that list's `lineColor`, and given back at the drop and on `Cancel()` exactly as a handle is. It is
+never cached on the container, because the container is a frame the host's framework pools and a
+line left on it is a line the next list handed that container inherits, color and all.
+
+**The poll is the ghost's, never the row's.** A drag is polled from the ghost's `OnUpdate`, so this
+library writes no script to any frame the host handed it. A host is free to run its own `OnUpdate`
+on a row frame, and a drag leaves it where it was.
+
+**A clamped drag still shows the line**, stopped at the divide. A drop that clamps writes nothing,
+so the line stopping is the only feedback there is; without it a working clamp is indistinguishable
+from a broken drag.
+
+## The unlocked drag handle
+
+**`lib.DragHandle(parent, spec)` → `handle` or `nil`.** A labeled strip with a help mark in its far
+end, shown while a movable frame is unlocked and dragged to move it. A plain constructor with
+everything per-instance: AuraMaster calls it once per container and ConsumableMaster exactly once,
+and nothing in the file is shared between instances but the measuring FontStrings.
+
+It answers `nil` with no `parent`, and `nil` in a process with no `CreateFrame` — a host must be
+ready for that and simply not draw a strip, the same posture every other member here takes.
+
+### `lib.DRAG_HANDLE`
+
+The canonical values, published for the reason `lib.ROW_BOX`'s are: a host that copies them into its
+own constants file is the drift this replaces. Read them off the table.
+
+| Field | Value | Meaning |
+|---|---|---|
+| `HEIGHT` | `18` | the strip's height |
+| `GAP` | `2` | the gap a host leaves between the strip and the frame it moves |
+| `HELP` | `8` | the mark's **art**: the texture's edge — **14 in both copies before this version** |
+| `HELP_HIT` | `18` | the mark's **frame**: the click target, the strip's full height |
+| `HELP_INSET` | `4` | px from the strip's right edge to the mark's frame |
+| `HELP_CLEAR` | `12` | px of empty space between the label's bound and the mark's art — **8 in both copies** |
+| `HELP_GUTTER` | `5` | computed: `(HELP_HIT - HELP) / 2` exactly, never floored, the margin the art is centered in |
+| `RESERVE` | `29` | computed: `HELP_INSET + HELP_HIT - HELP_GUTTER + HELP_CLEAR`, what each side of the label keeps clear on a strip **without** a close mark |
+| `CLOSE_GAP` | `0` | **Since 3.** px between the close mark's frame and the help mark's frame; at `0` the two arts sit `2 * HELP_GUTTER = 10px` apart |
+
+`HELP_GUTTER` and `RESERVE` are computed at load from the four fields above them rather than typed,
+so a host reading them can never be reading a stale copy of the arithmetic. `PAD` is gone: it was
+`24` of "horizontal padding around the label" that in fact carried the clearance, the inset and half
+the mark, and splitting it is what made the clearance changeable on its own.
+
+`GAP` is published rather than used: the widget never places itself, so the host spends it. AuraMaster
+also spends it in its clamp reach, `HEIGHT + GAP`.
+
+### `spec`
+
+`label` and `moveFrame` are the only required fields.
+
+| Field | Meaning | Absent |
+|---|---|---|
+| `label` **(required)** | the strip's centered text, already localized | empty |
+| `moveFrame` **(required)** | the frame `StartMoving` / `StopMovingOrSizing` are called on | the drag moves nothing |
+| `name` | global frame name (`"KCMMacroBarHandle"`) | anonymous |
+| `helpIcon` | resolved texture path for the mark, the host's `Icon("help")` | `Interface\FriendsFrame\InformationIcon` |
+| `canDrag` | `function() -> boolean`, asked at `OnDragStart` | always allowed |
+| `onDragStart` / `onDragStop` | called once the move has started / stopped; a host saves its position in the second | no-op |
+| `onRightClick` | `function()`; **without it neither the strip nor the mark registers for clicks at all** (a close mark registers its left click alone) | no right-click |
+| `onClose` | **Since 3.** `function()`, called on a left click of the close mark; its presence is what builds the mark | no close mark; the strip is 10.2's exactly |
+| `closeIcon` | **Since 3.** resolved texture path for the close mark, the host's `Icon("close")` | `Interface\Buttons\UI-StopButton` |
+| `closeTooltip` | **Since 3.** a descriptor of the tooltip shape, shown by the close mark alone | the close mark shows `tooltip` |
+| `tooltip` | the descriptor below — shown by the strip, and by the mark unless `helpTooltip` says otherwise | no tooltip |
+| `helpTooltip` | a **second** descriptor of the same shape, shown by the help mark alone | the mark shows `tooltip` |
+| `tooltipOwner` | the default for both descriptors: `"cursor"` owns by `UIParent` at `ANCHOR_CURSOR`; anything else owns by the frame hovered | by the frame hovered |
+| `tooltipAnchor` | the default anchor point used when owning by the frame | `"ANCHOR_TOP"` |
+| `tooltipPlace` | **Since 4.** `function(tip, frame) -> true` when it placed the tooltip. Set, every hover owns by `UIParent` at `"ANCHOR_NONE"`, draws the lines, shows, then calls it under `pcall` with the frame hovered; a raise or any answer but `true` falls back to the `"cursor"` owner with the same lines redrawn. Owner and anchor are not read while it is in force. A descriptor's own `place` wins; a non-function is ignored | the owner and anchor above |
+| `edge` | `function(frame, size, r, g, b, a)` — the host's own 1px edge painter | the widget's four strips |
+| `number` | `function(v, fallback) -> number` — a secret-safe numeric guard | `tonumber(v) or fallback` |
+| `labelFont` | the font object the label is **drawn in and measured in** | `"GameFontNormalSmall"` |
+
+**`labelFont` sets both or neither, and that is the whole point of the field.** An earlier draft
+drew the label in a hardcoded face and measured it through a separate `measureFont`, so a host that
+set one and not the other measured a width the strip never drew — and a label measured narrower than
+it renders runs into the mark. One face, read by `dhBuildLabel` and by `lib.__DragHandleMeasurer`.
+
+**One tooltip or two.** The common case is one descriptor for both frames and stays one field:
+AuraMaster shows the container's name and the same two lines whichever of the two the cursor is
+over. ConsumableMaster does not — its strip is titled *"Consumable Master"* with a one-line body and
+its mark is titled *"Macro bar"* with three body lines, a gray footer and a different anchor
+(`MacroBar.lua`). A shape with one descriptor for both frames would have merged those two tooltips
+on adoption, silently, in the host this widget exists for. `helpTooltip` is absent in the simple
+case and costs the simple host nothing.
+
+**`tooltipOwner` is a correctness knob, not a style one, and it is why the field exists.**
+AuraMaster's anchor inherits `DisableUntrustedLayoutScriptsTemplate` and the restriction reaches
+every frame anchored under it, so the client **refuses** `GameTooltip:SetOwner` on the strip or the
+mark — *"Anchoring disallowed as dependent object would inherit forbidden aspects:
+UntrustedLayoutScriptExecution"*. That host must own by `UIParent` at the cursor, which depends on
+nothing under the anchor. ConsumableMaster owns by the frame hovered — `ANCHOR_TOP` off the strip,
+`ANCHOR_TOPRIGHT` off the mark. A widget that hard-coded either would leave the other host with no
+tooltip at all, and only in-game — the headless suite cannot see it.
+
+**"The frame hovered" means the frame the cursor is actually on**: the strip owns by the strip and
+the mark owns by the mark. An earlier draft documented that in four places and owned by the strip in
+all cases; the code is what changed. `owner` and `anchor` may also be set on a descriptor itself,
+which is what lets ConsumableMaster's two anchors differ, and a descriptor's own value wins over the
+spec-level default.
+
+**`tooltipPlace` (Since 4) puts the tooltip where the host says, without owning by a restricted
+frame.** It is the third option beside the frame owner and the cursor owner, for a host that can
+use neither as it wants: the tooltip is owned by `UIParent` at `"ANCHOR_NONE"`, drawn, shown, and
+handed to `tooltipPlace(tip, frame)`, which anchors it (typically `tip:ClearAllPoints()` and one
+`tip:SetPoint` beside the strip, choosing the side from the strip's and the tooltip's screen
+positions) and returns `true`. The call is under `pcall`. If it raises or answers anything but
+`true`, the widget falls back to the cursor owner and redraws the same lines, so a placement that
+cannot be computed costs the position and never the tooltip. A sketch of AuraMaster's use, the
+host's code and not the library's:
+
+```lua
+tooltipPlace = function(tip, frame)
+  local strip = frame.help and frame or frame:GetParent()          -- a mark's parent is the strip
+  local right = strip:GetRight()                                    -- may raise on a secret value
+  local fits = right + tip:GetWidth() + 4 <= UIParent:GetRight()
+  tip:ClearAllPoints()
+  if fits then tip:SetPoint("TOPLEFT", strip, "TOPRIGHT", 4, 0)
+  else tip:SetPoint("TOPRIGHT", strip, "TOPLEFT", -4, 0) end
+  return true
+end
+```
+
+### The tooltip descriptor
+
+```lua
+tooltip = {
+  title  = <entry>,              -- gold, 1, 0.82, 0
+  body   = { <entry>, … },       -- white, wrapped
+  footer = { <entry>, … },       -- gray, after one blank line
+  owner  = <"cursor" | nil>,     -- overrides spec.tooltipOwner for this descriptor
+  anchor = <string | nil>,       -- overrides spec.tooltipAnchor for this descriptor
+  place  = <function | nil>,     -- Since 4. overrides spec.tooltipPlace for this descriptor
+}
+
+-- <entry> is any of:
+--   "text"                     used as it stands, in its band's color
+--   function() -> string|nil   called on every hover; a nil return drops the line
+--   { <either>, r, g, b }      the same, in a color of its own rather than its band's
+```
+
+Three bands, and the host supplies the strings. **Every entry may be a function, and it is called on
+every hover** — a string is used as it stands, a function is called and a `nil` return drops that
+line entirely. That single rule covers both hosts: ConsumableMaster's last line reads
+*"Locked. Unlock the bar…"* or *"Lock the bar…"* off the live config, and AuraMaster's
+*"Attached — set its offsets on the Layout page."* appears only while the container is attached. A
+descriptor whose strings were resolved once, in the constructor, would tell a player to unlock a bar
+they had already unlocked, forever.
+
+The blank spacer is emitted from **what survived the hover**, not from the descriptor: a `footer`
+whose every entry answers `nil` draws no spacer either.
+
+**An entry may carry its own color**, which exists for one live line. AuraMaster draws its
+conditional *"Attached — set its offsets on the Layout page."* gold, in the body, with no blank line
+above it. Bands that were each one color would have recolored that line white or pushed it into the
+gray footer behind a spacer — a visual change nobody asked for, arriving under a refactor. Written
+as `{ fn, 1, 0.82, 0 }` it is the pixels the host draws today. A `nil` return still drops the line,
+colored or not.
+
+### Instance methods
+
+| Member | Meaning |
+|---|---|
+| `handle:SetLabel(text)` | re-texts the strip. It does **not** re-apply the width |
+| `handle:Measure()` | the natural width: `labelWidth + handle:Reserve() * 2` |
+| `handle:Reserve()` | **Since 3.** what each side of the label keeps clear: `DRAG_HANDLE.RESERVE` without a close mark, `RESERVE + HELP_HIT + CLOSE_GAP` with one |
+| `handle:ApplyWidth(minWidth)` | sets the width to `max(Measure(), minWidth or 0)` and returns it |
+
+`handle.label`, `handle.help`, `handle.help.icon`, `handle.bg` and, since 3, `handle.close` and
+`handle.close.icon` (`nil` without `onClose`) are readable; the strip itself is a
+`Button` and the host shows, hides, anchors and levels it.
+
+**`SetLabel` deliberately touches no geometry**, and `ApplyWidth` is a method the host calls rather
+than a pass the widget runs. Both hosts parent this strip beside a protected frame — AuraMaster's
+anchor parents an aura engine, ConsumableMaster's bar holds `SecureActionButtonTemplate` slots — and
+both defer layout work to `PLAYER_REGEN_ENABLED`. **After the constructor returns**, nothing here
+calls `SetPoint`, `SetShown`, `Show`, `Hide` or `SetWidth` of its own accord, and nothing here
+listens to an event or runs an `OnUpdate`. A widget that re-measured itself on either would poke a
+protected frame mid-fight from inside the library, where neither host's combat contract can see it.
+
+The one exception is birth: **the constructor ends on `handle:Hide()`**, and the handle comes back
+hidden. A strip is born with no width and no anchor point, because placing and sizing it are the
+host's calls, so a handle that returned visible would flash a zero-width box at its parent's center
+until the host's first pass. AuraMaster's own copy hid its handle in the same breath it built it.
+Nothing shows it again; the host says when.
+
+### `lib.__DragHandleMeasurer(face)`
+
+The hidden, **unanchored** FontString a label is measured on, one per face — `spec.labelFont`, and
+`GameFontNormalSmall` by default: the same face the label is drawn in. A test replaces this function to measure on a stand-in; that is what the `__` says.
+
+It is not tidiness. AuraMaster's label hangs off the strip, the strip off an anchor, and an anchor
+attached to an engine container inherits its **secret** geometry — reading the label's own width
+answered a secret number and the width arithmetic raised *"attempt to perform arithmetic on a secret
+number value"* out of combat. That host had already paid for this once; measuring on a string
+parented to a hidden frame on `UIParent` is what it had to do, and it is the widget's now. A host
+whose frames can read secret must also pass `number`, or the guard is decorative in the one place it
+matters.
+
+### Chrome: a plain `Button`, never a `BackdropTemplate`
+
+A fill texture at `0, 0, 0, 0.75` and four 1px edge strips at `1, 0.82, 0, 0.6`. Under an anchor
+attached to another frame the strip's size can read secret, and `SetBackdrop` does arithmetic on the
+size on every set and every resize; four rectangles read nothing. ConsumableMaster's handle **was** a
+`BackdropTemplate` and loses it on adoption — the pixels are the same, the hazard is not, and
+anything downstream that called `SetBackdropColor` on `bar.handle` would break. Nothing in the
+collection does. `spec.name` exists so the frame's global name survives the move, because a named
+frame is reachable from a player macro.
+
+### The mark is a big frame around a small texture
+
+The `Button` is `HELP_HIT` square — 18px, the strip's full height — and the texture is `HELP` square
+at 8px, centered, leaving `HELP_GUTTER = 5px` on every side. `handle.help` is the frame and
+`handle.help.icon` is the art; a host that reads a size back wants one or the other and they are not
+the same number. Both copies sized the button to its art, which on this widget's smaller art would
+have left an 8×8 click target on a control that opens a settings page.
+
+**`HELP_GUTTER` is exact, never floored**, and that is what keeps the published clearance honest:
+the art is placed by `SetPoint("CENTER")`, which splits `HELP_HIT - HELP` in half whatever its
+parity, so a floored term in `RESERVE` would advertise a clearance the layout does not draw the
+moment those two values differ by an odd amount.
+
+### The label is bounded, not only centered
+
+The label is anchored `LEFT` at `+handle:Reserve()` and `RIGHT` at `-handle:Reserve()` — `RESERVE`
+on a strip without a close mark — with `SetJustifyH("CENTER")`,
+`SetWordWrap(false)` and `SetMaxLines(1)`. Equal bounds and a centered justify draw exactly where a
+lone `CENTER` point drew, and the difference only shows on a label longer than the strip: a
+`FontString` with one center point has no width of its own and grows both ways, under the mark and
+out past the gold edge. `Measure()` normally sizes the strip to its own label, so the ways to get
+there are the ways the strip stops tracking the label — a host floors the width at something
+narrower (`ApplyWidth(minWidth)`), a host calls `SetLabel` and does not call `ApplyWidth` again,
+which `SetLabel` deliberately leaves to the host, or a client that cannot build a measurer measures
+`0` while still drawing the real string. Bounded, every one of them truncates inside the label's own
+half and the mark keeps its `HELP_CLEAR`.
+
+### The mark takes the strip's drag scripts
+
+A left-drag that starts on the `?` moves the frame, rather than landing in a dead zone. AuraMaster's
+copy did this and ConsumableMaster's did not; both get it from here.
+
+### The close mark
+
+**Since 3, and only for a host that passes `onClose`.** An X immediately left of the help mark: a
+`Button` `HELP_HIT` square anchored `RIGHT` to the help mark's `LEFT` at `-CLOSE_GAP`, holding an
+`OVERLAY` texture `HELP` square at `CENTER` — the same big-frame-around-small-art geometry as the
+`?`, so the X and the `?` are the same size and the same click target. On a strip whose help mark
+could not be built it takes the mark's own place, `RIGHT` at `-HELP_INSET`.
+
+- **Tint and hover are the help mark's.** `0.7, 0.7, 0.72` at rest and full white under the cursor.
+  Unlike the `?` the X always brightens, because it always has a click behind it.
+- **The click.** A left click calls `onClose`. A right click is passed to `onRightClick` when the
+  host wired one, as the `?` passes it, so the X is not a dead zone for the strip's own right-click;
+  with no `onRightClick` the X registers `LeftButtonUp` alone. A press that becomes a drag is not a
+  click — the client fires no `OnClick` for it.
+- **The drag passes through.** The X takes the strip's `OnDragStart` / `OnDragStop`, as the `?` does,
+  so a left-drag that starts on it moves the frame and closes nothing.
+- **The tooltip** is `closeTooltip`, read on every hover, falling back to `tooltip`; it is owned by
+  the X itself, or by `UIParent` at the cursor under `tooltipOwner = "cursor"`.
+- **The label stays centered.** `handle:Reserve()` is `RESERVE + HELP_HIT + CLOSE_GAP` (47) on
+  **each** side, so `Measure()` grows by 36px and the label's bounds move in by 18px on both sides.
+  The clearance between the label's right bound and the X's ink is then `HELP_CLEAR`, exactly what
+  the `?` keeps on a strip without an X. A host whose clamp or overhang reads `ApplyWidth` gets the
+  wider strip without a change of its own.
+
+What the X **does** is the host's: the library calls `onClose` and nothing else. AuraMaster's
+disables the container through its settings write seam.
+
+### What the host keeps
+
+Everything about **what it says and where it sits**: every string, the placement and the side, the
+frame level, the clamp, when the strip shows, whether a drag is allowed, what a right-click does, and
+where the moved position is saved. AuraMaster keeps `openSettings` and its combat refusal,
+`SavePosition` and its `Secrets` guards, `handleLevel` / `placeHandle` / `clampToHandle`, and one
+handle per container. ConsumableMaster keeps `savePosition`, the lock model, `applyLock`'s
+`SetShown`, the bar's `moveHint` and its own `OnDragStart`, and passes `bar:GetWidth()` to
+`ApplyWidth`.
+
+**Neither host needs a `core/…Setup.lua` seam.** Both files are in `LibKa0s.xml` and therefore
+already vendored and loaded in both addons, so adoption is one
+`LibStub("LibKa0s-Widgets-1.0", true)` at the module that draws a strip, plus a nil-tolerant
+fallback — and the honest fallback is that a build with no library draws no handle.
+
+## The line chart
+
+`WidgetsLineChart.lua`, **Since 1**. One file of the Widgets major, paired on the shell's minor
+(see *What changed at 12.1.4.1*). This version publishes the widget (`lib.LineChart`), its chrome
+constants and its pure math; the constants and the math need no frame, no client and no geometry stub.
+
+### `lib.LINE_CHART`
+
+The chart's published chrome. Read it, never restate it: a host that lines anything up with the plot
+reads the paddings here, so a later minor that moves them moves the host too. Every field is
+**Since 1**.
+
+| Field | Value | Meaning |
+|---|---|---|
+| `PAD_LEFT` | `52` | Pixels between the chart's left edge and the plot, room for the y labels. |
+| `PAD_RIGHT` | `8` | Pixels between the plot and the chart's right edge. |
+| `PAD_TOP` | `8` | Pixels between the chart's top edge and the plot. |
+| `PAD_BOTTOM` | `18` | Pixels between the plot and the chart's bottom edge, room for the x labels. |
+| `PX_PER_POINT` | `2` | The default thinning budget: at most one drawn point per this many plot pixels (`ChartMath.Budget`), unless a chart sets `opts.pxPerPoint`. |
+| `DASH` | `4` | Default dash length in pixels (`ChartMath.Dashes`). |
+| `GAP` | `3` | Default gap between dashes in pixels (`ChartMath.Dashes`). |
+| `Y_TICKS` | `5` | Default target tick count for `ChartMath.NiceTicks`. |
+| `X_TICKS` | `6` | Default tick budget for `ChartMath.TimeTicks`. |
+| `LABEL_GAP` | `4` | Pixels between an axis and its labels. |
+| `AXIS` | `{ 0.45, 0.45, 0.5, 0.8 }` | RGBA of the axis lines. |
+| `GRID` | `{ 1, 1, 1, 0.07 }` | RGBA of the horizontal grid lines. |
+| `CROSSHAIR` | `{ 1, 1, 1, 0.35 }` | RGBA of the hover crosshair. |
+| `MARKER` | `{ 0.8, 0.8, 0.8, 0.6 }` | RGBA of a dashed vertical marker. |
+| `LINE` | `{ 0.4, 0.6, 0.95, 1 }` | RGBA of a series that names no color of its own. |
+
+### `lib.ChartMath`
+
+Seven pure functions: six **Since 1** and `ClipSegment` **Since 3**. They read `lib.LINE_CHART` for their defaults and the
+client's `date` and `time` for the time axis, and nothing else.
+
+#### `ChartMath.NiceTicks(lo, hi, maxTicks, integer)` → `ticks, niceLo, niceHi, step`
+
+The y axis. Picks a step from the 1 / 2 / 2.5 / 5 / 10 ladder (times a power of ten) that divides
+`hi - lo` into at most about `maxTicks` intervals (default `LINE_CHART.Y_TICKS`), widens the range
+outward to multiples of that step, and returns the ticks from `niceLo` to `niceHi` inclusive.
+
+- `0, 97, 5` answers step 20 over 0..100 (six ticks); `13, 47, 5` answers step 10 over 10..50;
+  `-30, 70, 5` answers step 20 over -40..80. A range that crosses zero is covered on both sides.
+- A `nil` bound reads as 0, and swapped bounds are swapped back.
+- **A flat range is widened, never divided by zero.** A positive flat value is drawn from 0 (`5, 5`
+  answers 0..5), a negative one up to 0, and an all-zero one (or both `nil`) over 0..1.
+- `integer = true` never steps below 1 (`0, 2, 5` steps 0.5 without it and 1 with it), for a count
+  that has no fractions.
+
+#### `ChartMath.Budget(plotWidth [, pxPerPoint])` → `maxPoints`
+
+`max(3, floor(plotWidth / pxPerPoint))`: at most one point per `pxPerPoint` pixels of plot, which is
+`LINE_CHART.PX_PER_POINT` (2) when the argument is absent or not a positive number (**Since 2**; the
+argument is the only change, so a one-argument call answers what it did at 1). A `nil` or zero width
+answers 3, never fewer.
+
+#### `ChartMath.Downsample(points, maxPoints)` → `points`
+
+Thins a series for drawing with Largest-Triangle-Three-Buckets. `points` is an array of `{ x =, y = }`
+sorted by `x`. The answer holds exactly `maxPoints` of the input's own point tables, in order.
+
+- **The input table itself comes back**, with no copy, when it already fits (`maxPoints >= #points`)
+  or when `maxPoints` is under 3.
+- The first and the last point always survive, and `x` stays strictly increasing when the input's is.
+- **A one-point spike survives.** Each bucket keeps the point that spans the largest triangle with
+  its neighbors, rather than an average or every Nth point, because a spike in a balance is what a
+  player is looking for.
+
+#### `ChartMath.TimeTicks(xMin, xMax, maxTicks)` → `ticks, step`
+
+The time axis, in epoch seconds. Picks the first step from the ladder 1 h, 3 h, 6 h, 12 h, 1 d,
+2 d, 7 d, 14 d, 30 d, 91 d, 182 d, 365 d that fits the span in `maxTicks` (default
+`LINE_CHART.X_TICKS`) intervals, and answers the ticks inside `[xMin, xMax]`, at most `maxTicks + 1`
+of them.
+
+- **Day steps land on local midnight**, the first one at or after `xMin`. Each next tick re-anchors
+  on midnight, with a two-hour nudge, so a 23- or 25-hour day (a daylight-saving change) cannot walk
+  the labels off midnight. Thirty days at 6 ticks steps 7 days.
+- Hour steps sit on multiples of the step counted from local midnight: one day at 6 ticks steps 6
+  hours, at 00:00, 06:00, 12:00, 18:00 and the next 00:00.
+- An empty or inverted span, or a `nil` bound, answers an empty table and a `nil` step.
+
+#### `ChartMath.NearestIndex(xs, x)` → `index` or `nil`
+
+The index in the sorted array `xs` whose value is nearest `x`, by binary search. Clamps to 1 below
+the first value and to `#xs` above the last; an exact tie between two neighbors picks the lower
+index. An empty `xs` answers `nil`.
+
+#### `ChartMath.Dashes(x1, y1, x2, y2, dash, gap)` → `{ { x1, y1, x2, y2 }, ... }`
+
+Cuts the segment from `(x1, y1)` to `(x2, y2)` into dashes of `dash` pixels separated by `gap`
+pixels along its length (defaults `LINE_CHART.DASH` and `LINE_CHART.GAP`), any direction. The last
+dash is clipped at the segment's end. A zero-length segment has no dashes and answers an empty table.
+It is not bounded: it cuts whatever length it is handed, which is why the chart clips every segment
+with `ClipSegment` first (**Since 3**).
+
+#### `ChartMath.ClipSegment(x1, y1, x2, y2, left, bottom, right, top)` → `x1, y1, x2, y2` or `nil`
+
+**Since 3.** Clips the segment from `(x1, y1)` to `(x2, y2)` to the rectangle `[left, right]` ×
+`[bottom, top]` (Liang-Barsky), and answers the part inside it, in the segment's own direction, or
+`nil` when no part of it is inside. Edges count as inside.
+
+- **An end the clip did not move comes back exactly as given**, so a segment wholly inside answers
+  its own four numbers bit-for-bit. A cut end is computed, so it can sit a rounding error (about
+  `1e-14`) off the edge.
+- Vertical and horizontal segments are handled (no division by a zero component): one outside the
+  rectangle answers `nil`, one across it is cut at both edges.
+- A degenerate segment (a point) answers itself when the point is inside and `nil` when it is not.
+- The chart calls it with the plot rectangle, `left, bottom, left + width, bottom + height` from
+  `chart:GetPlotRect()`.
+
+### `lib.LineChart(parent, opts)` → `chart`
+
+**Since 1.** Builds one line chart, a `Frame` parented to `parent`, and returns it. The chart draws
+nothing until the host hands it data (`SetData`) and a size (`Render`, or the frame's own size
+change). Every segment, grid rule, marker dash and the crosshair is a `Line` region on the chart
+frame; every axis label is a `FontString` on it.
+
+The crosshair is the chart's **first** `CreateLine`, made at construction and kept out of the pool,
+so the chart's lines in creation order are the crosshair, then the pool.
+
+### `opts`
+
+Read on every render and every hover, never written. Every field is optional and **Since 1**.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `font` | `"GameFontDisableSmall"` | FontObject name the axis labels are created with. Read when a label is first made, so a change reaches only labels the pool has not made yet. |
+| `onHover` | none | `onHover(chart, index, x)` when the hovered index changes, again on the first hover after a render (**Since 3**, even for the same index), and `onHover(chart, nil, nil)` when a hover clears. `index` is into `data.hoverXs`, `x` is `hoverXs[index]`. The host draws its own tooltip. |
+| `pxPerPoint` | `LINE_CHART.PX_PER_POINT` (2) | **Since 2.** Plot pixels per drawn point: the thinning budget is `floor(plot width / pxPerPoint)`. Larger is smoother and draws fewer segments. A non-positive or non-number value falls to the default. Read on every render. |
+| `formatY` | integer as-is, otherwise `%.2f` | `formatY(v) → string` for each y tick label. |
+| `formatX` | `date("%H:%M")` under a day step, otherwise `date("%d %b")` | `formatX(x, step) → string` for each x tick label; `step` is `ChartMath.TimeTicks`'s step in seconds. The day-step default is `date("%d %b")`, whose `%b` is the C runtime's month abbreviation (English), so a localized host should pass `formatX`. |
+
+### `data`
+
+What `chart:SetData(data)` takes. Every field is **Since 1**.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `xMin`, `xMax` | required | The x domain, epoch seconds. Without both the chart draws nothing. |
+| `yMin`, `yMax` | the data's | The y range before `ChartMath.NiceTicks` widens it. Used only when both are given; otherwise the lowest and highest `y` across every series. |
+| `integer` | `false` | Passed to `NiceTicks`: the y step never goes below 1. |
+| `series` | `{}` | Array of series, drawn in order (a later series over an earlier one). |
+| `series[i].points` | `{}` | Array of `{ x =, y = }`, sorted by `x`. Thinned with `ChartMath.Downsample` to `ChartMath.Budget(plot width)` before drawing. |
+| `series[i].color` | `LINE_CHART.LINE` | RGBA array; a missing alpha reads as 1. |
+| `series[i].thickness` | `1.5` | Line thickness in pixels. |
+| `series[i].dashFrom`, `series[i].dashTo` | none | The x range drawn dashed. `dashTo` absent means "to the end". |
+| `markers` | none | Array of vertical rules: `{ x =, color = LINE_CHART.MARKER, dashed = true }`. `dashed = false` draws a solid rule. |
+| `hoverXs` | none | Sorted array of the x values a hover can snap to. Without it the chart never hovers. |
+
+### Instance methods
+
+| Method | Since | Meaning |
+|---|---|---|
+| `chart:SetData(data)` | 1 | Stores the reference. Does not draw. |
+| `chart:Render(w, h)` | 1 | Draws `data` at `w` × `h` (default `GetWidth()` / `GetHeight()`), reusing every Line and label from the last render and hiding what this one did not use. A zero size, or no data, draws nothing. **Since 3**: every series segment is clipped to the plot rectangle, and the hover is re-synced on the next frame (see *Behavior a host must know*); a render that draws nothing also hides the crosshair. |
+| `chart:Clear()` | 1 | Forgets the data, clears the hover and hides every line and label. |
+| `chart:GetPlotRect()` | 1 | `left, bottom, width, height` of the plot in chart-local pixels (BOTTOMLEFT origin). `nil` before the first render that drew. |
+| `chart:XToPixel(x)` | 1 | Chart-local x pixel of a domain `x`. `0` before a render. |
+| `chart:YToPixel(y)` | 1 | Chart-local y pixel of a value `y`, on the widened tick range. `0` before a render. |
+| `chart:PixelToX(px)` | 1 | Domain `x` at chart-local pixel `px`, the inverse of `XToPixel`. |
+| `chart:HoverAtPixel(px)` | 1 | Snaps to the `hoverXs` entry nearest `PixelToX(px)` (`ChartMath.NearestIndex`), moves the crosshair there and answers the index; calls `opts.onHover` only when the index changed, or (**Since 3**) when it is the first hover since a render. `nil` with no render or no `hoverXs`. |
+| `chart:ClearHover()` | 1 | Hides the crosshair and, when a hover was up, calls `opts.onHover(chart, nil, nil)`. |
+| `chart:HoverIndex()` | 1 | The hovered index, or `nil`. |
+
+### Behavior a host must know
+
+- **Pooled by index.** A render hands out Lines and labels in order and hides the leftovers, so the
+  same data drawn twice creates no region and a smaller drawing leaves nothing stale. Regions are
+  never destroyed in the client; the pool only grows to the largest drawing the chart has made.
+- **`SetData` stores a reference.** The host must not mutate `data` between `SetData` and `Render`
+  (or a resize, which re-renders); build a new table instead.
+- **The y range is the data's** unless both `yMin` and `yMax` are given, then widened outward to
+  nice ticks by `ChartMath.NiceTicks`; `integer` keeps the y step at 1 or more.
+- **A segment is dashed when its midpoint is in `[dashFrom, dashTo]`.** The host marks the part of
+  a line it wants read as provisional; a single-point series draws a 2px tick at the point.
+- **Nothing a series draws leaves the plot** (**Since 3**). Every segment is clipped to the plot
+  rectangle with `ChartMath.ClipSegment` before it is dashed or drawn solid, so a point far outside
+  a host-pinned `yMin`/`yMax` (or outside `[xMin, xMax]`) draws its segments only to the plot's edge,
+  and the dashes one segment can make are bounded by the plot's diagonal. A segment wholly off the
+  plot draws nothing, and a one-point series off the plot draws no tick. Values are not clamped.
+- **Markers outside `[xMin, xMax]` draw nothing.**
+- **`onHover` fires on an index change**, and with `nil` when the hover clears: `ClearHover`,
+  `OnLeave`, `OnHide` and `Clear` all clear it.
+- **Re-rendering re-syncs the hover** (**Since 3**). Every render (`Render`, `SetData` followed by
+  `Render`, a resize through `OnSizeChanged`) marks the hover stale, and the armed `OnUpdate` hovers
+  again against the new scale and data on the next frame: the crosshair moves to the point's new
+  pixel and `onHover` fires again, even when the nearest index did not change. The hovered index is
+  kept until then, so a `ClearHover` (or `OnLeave`, `OnHide`) arriving first still calls
+  `onHover(chart, nil, nil)`. A render that leaves no scale (no data, or a zero size) hides the
+  crosshair at once. **A host no longer needs to call `ClearHover` before repainting**; under
+  12.1.4.2.1 it had to, and a resize under a resting cursor left the crosshair at the old size's
+  pixel. A host that still calls it is unaffected: `ClearHover` is idempotent.
+- **Scripts the chart owns:** `OnEnter` arms an `OnUpdate` that reads `GetCursorPosition` and calls
+  `HoverAtPixel`; `OnLeave` and `OnHide` disarm it and clear the hover; `OnSizeChanged` re-renders at
+  the new size. A host that replaces one of them takes over that job.
+- **The chart is `EnableMouse(true)`**, so it takes the mouse over its whole rectangle.
+
+**Consumer census, v1.69.0** ([`CONSUMERS.md`](../CONSUMERS.md)). `lib.LineChart` has one host,
+LootHistory's `NS.MakeLineChart` seam. No host calls, reads or passes by name the ten below:
+
+- `lib.ChartMath`: no consumer as of v1.69.0, kept because a host that draws decorations against the plot needs the chart's own tick, budget and nearest-index math; LootHistory aligns its in/out strip through the instance's `XToPixel` instead.
+- `lib.LINE_CHART`: no consumer as of v1.69.0, kept because it is the published chrome a host reads to line anything up with the plot rather than restating the paddings.
+- `hoverXs`: no consumer as of v1.69.0, kept because it is the only way a host turns the hover on; LootHistory builds it in `TimelineModel.lua` and hands it through the seam's table, which the census scan cannot see as a literal pass.
+- `integer`: no consumer as of v1.69.0, kept because a count axis needs a y step of 1 or more; passed as `hoverXs` is.
+- `markers`: no consumer as of v1.69.0, kept because a vertical rule (LootHistory's ledger-start marker) has no other route into the chart; passed as `hoverXs` is.
+- `series`: no consumer as of v1.69.0, kept because it is the chart's data; passed as `hoverXs` is.
+- `xMax`: no consumer as of v1.69.0, kept because the chart draws nothing without the x domain; passed as `hoverXs` is.
+- `xMin`: no consumer as of v1.69.0, kept for the same reason as `xMax`; passed as `hoverXs` is.
+- `yMax`: no consumer as of v1.69.0, kept because a host may pin the y range instead of taking the data's; LootHistory takes the data's range and does not pass it.
+- `yMin`: no consumer as of v1.69.0, kept for the same reason as `yMax`; LootHistory does not pass it either.
+
+**Consumer census, v1.70.0.** `lib.LINE_CHART` now has one host, LootHistory's
+`core/WidgetsSetup.lua`, so its line above no longer holds; the other nine stand. `opts.pxPerPoint`
+is outside the scan (it is read off the chart's stored options, not a descriptor literal);
+LootHistory is its planned first host.
+
+**`ChartMath.ClipSegment`, v1.71.0:** no consumer, kept because a host that draws its own
+decorations against the plot clips them the way the chart clips its series. The v1.71.0 census
+([`CONSUMERS.md`](../CONSUMERS.md)) counts `lib.ChartMath` as one export and finds no host call on
+it, so its line above stands.
+
+## The autocomplete
+
+**`WidgetsAutocomplete.lua`, minor 2.** A suggestion list that hangs directly under a host's
+`EditBox` and reads as part of it: the box's width, the box's own border and background, one row per
+suggestion with an optional icon and the suggestion's own color (an item's quality color, say). The
+host supplies what the rows say and what a pick does; the widget owns the list, the debounce, the
+keyboard and the focus rules.
+
+### `lib.AUTOCOMPLETE`
+
+Read, never restated. Every field is **Since 1**.
+
+| Field | Value | Meaning |
+|---|---|---|
+| `MAX_ROWS` | `8` | Rows shown when `opts.maxRows` is absent, or floors below 1. |
+| `ROW_H` | `18` | Row height when `opts.rowHeight` is absent. |
+| `DEBOUNCE` | `0.15` | Seconds after the last keystroke before the provider is asked; also the floor for `opts.debounce`. |
+| `MIN_CHARS` | `1` | Trimmed characters the text needs before the provider is asked, when `opts.minChars` is absent. |
+| `PAD` | `1` | Inset of the rows inside the list's 1px border. |
+| `OVERLAP` | `1` | The list's top edge sits this many pixels up into the box, so the two borders draw as one line. |
+| `ICON` | `14` | Icon size, when a row has one. |
+| `TEXT_INSET` | `6` | The label's left and right inset. |
+| `STRATA` | `"FULLSCREEN_DIALOG"` | The list's strata, when `opts.strata` is absent. |
+| `MIN_BG_ALPHA` | `0.95` | The list's background alpha is the box's or this, whichever is higher, so rows read over what the list covers. |
+| `FONT` | `"GameFontHighlightSmall"` | The row label's font object, when `opts.font` is absent. |
+| `BORDER`, `BG` | the house flat skin | Used only when the box answers no `GetBackdropBorderColor` / `GetBackdropColor` of its own. |
+| `TEXT` | `{ 0.9, 0.9, 0.9 }` | A row's color when its item has none. |
+| `HIGHLIGHT` | gold, alpha `0.15` | The row highlight, for the hovered row and the keyboard-selected one. |
+
+### `lib.Autocomplete(editBox, opts)` → `handle`
+
+**Since 1.** Hooks `editBox` (never replaces a script it has) and answers a handle. The list frame is
+built on the first list that shows. **Since 2**, every call installs a fresh set of hooks and the
+older call's hooks go inert, so calling it again after a host `SetScript` restores the list. Answers `nil` with no `CreateFrame`, an `editBox` without
+`HookScript`, or no `opts.provider`.
+
+### `opts`
+
+Read when the handle is made. Every field is **Since 1**.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `provider` | required | `provider(text) → { item, ... }`, asked `DEBOUNCE` after the last keystroke with the box's text as typed. An `item` is `{ text =, value =, color =, icon = }`: `text` is the row's label, `color` is `{ r, g, b }` or a table with `.r .g .b`, `icon` is a file id or path; `value` and any other field are the host's and come back untouched in `onPick`. A bare string reads as `{ text = string }`. `nil` or an empty table closes the list. |
+| `onPick` | none | `onPick(item)`, after the list has closed, with the item exactly as the provider answered it. The widget never writes the box's text; a host that wants the text replaced or cleared does it here. |
+| `maxRows` | `AUTOCOMPLETE.MAX_ROWS` | The most rows shown, an integer; the rest of the provider's answer is dropped. **Since 2** a fraction is floored, and a value that floors below 1 (or is not a positive number) falls back to the default. |
+| `rowHeight` | `AUTOCOMPLETE.ROW_H` | Row height in pixels. |
+| `minChars` | `AUTOCOMPLETE.MIN_CHARS` | Trimmed characters before the provider is asked. |
+| `debounce` | `AUTOCOMPLETE.DEBOUNCE` | Seconds; never below `AUTOCOMPLETE.DEBOUNCE`. |
+| `font` | `AUTOCOMPLETE.FONT` | Font object the row labels are created with. |
+| `strata` | `AUTOCOMPLETE.STRATA` | The list's frame strata. |
+
+### Handle methods
+
+| Method | Since | Meaning |
+|---|---|---|
+| `handle:Refresh()` | 1 | Asks the provider now, for the box's text now, and shows the answer (or closes on nothing). Drops a waiting debounce. |
+| `handle:Close()` | 1 | Hides the list, drops the selection and any waiting debounce. The box's text is untouched. |
+| `handle:IsShown()` | 1 | `true` while the list is up. |
+| `handle:SetEnabled(on)` | 1 | `false` closes the list and ignores the box until `true`. |
+| `handle:Release()` | 1 | Closes the list and makes the handle inert for good: its hooks do nothing and its provider and `onPick` are dropped. Hooks cannot be removed in the client, so they stay on the box, inert. |
+
+### Behavior a host must know
+
+- **Hooks, never scripts.** `OnTextChanged`, `OnArrowPressed`, `OnEnterPressed`, `OnTabPressed`,
+  `OnEscapePressed`, `OnEditFocusLost`, `OnEditFocusGained` and `OnHide` are hooked, so the host's
+  own handler runs first and keeps running. A second `Autocomplete` on the same box releases the
+  first; the hooks dispatch to the newest handle. **Set the box's scripts before calling
+  `Autocomplete`.** A later `SetScript` on a hooked script replaces the hooks along with the old
+  script, and that script's part of the list stops: a replaced `OnTextChanged` never opens it, a
+  replaced `OnEditFocusLost` or `OnHide` leaves it up. **Since 2**, calling `lib.Autocomplete` on
+  the box again re-installs every hook (the new handle replaces the old, as above); under minor 1
+  the hooks were installed once per box and a re-call could not restore them. Each call's hooks
+  dispatch only while that call is the box's newest, so a re-call with no `SetScript` between never
+  runs a script twice; the older hooks stay on the box, inert, because hooks cannot be removed.
+- **Typing is `OnTextChanged` with `userInput` true.** The host's own `SetText` (a box cleared after
+  a pick, a restored saved view) closes the list rather than asking the provider.
+- **The keyboard.** Down selects the first row, then the next, stopping at the last; Up goes back,
+  and from the first row back to the typed text (no row selected). Enter picks the selected row, or
+  with none selected closes the list and picks nothing. Tab picks the selected row, or the first.
+  Esc closes and keeps the typed text. A new keystroke drops the selection at once, before the
+  debounce, so Enter can never take a row the new text no longer matches.
+- **The focus.** The list never takes keyboard focus. Focus lost to anywhere but the list closes it
+  on the next frame (so an Enter or Tab hook that runs after a host's `ClearFocus` still has the
+  selected row); focus regained before then keeps it. Focus lost to a press on the list keeps it and
+  hands the box the keys back on the next frame; the row's click, on the release, picks and closes.
+  A debounce still waiting when focus goes shows nothing. Focus gained with enough text in the box
+  offers the list again.
+- **Placement.** The list is parented to the box (it takes the box's scale and hides with it) and
+  anchored `TOPLEFT` → box `BOTTOMLEFT` and `TOPRIGHT` → box `BOTTOMRIGHT`, `OVERLAP` up, so it is
+  the box's width and follows every resize with no handler. Its height is the shown rows times the
+  row height plus the padding.
+- **Skin.** The backdrop (a 1px flat edge over a flat fill) is set once, when the list is built
+  (**Since 2**; minor 1 set it on every show). Its colors are read from the box on every show:
+  `GetBackdropBorderColor` for the border and `GetBackdropColor` for the background (alpha raised
+  to `MIN_BG_ALPHA`), each falling back to the house flat skin when the box answers no numbers.
+- **Pooled rows.** A row is built for an index that has none and reused for every later list; a
+  shorter list hides the leftovers. Every field of a row is repainted on every show.
+- **No events, no OnUpdate.** The only timers are the debounce and the one-frame focus checks, all
+  through `C_Timer.After` (read at call time; without it they run at once).
+- **Combat.** Plain frames, nothing protected: nothing here is refused in combat.
+- **Headless.** The base test kit hands back the frame itself for `CreateTexture` and
+  `CreateFontString`, so a row's icon is shown or hidden before the row is shown, and a suite reads
+  a row's text and selection from its `__text` and `__selected` fields rather than from its label.
+
+**Consumer census, v1.70.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls either member at the
+tag; the two named adopters land after it.
+
+- `lib.Autocomplete`: no consumer as of v1.70.0, a host duplicate: LootHistory's Timeline still hand-rolls the list (`makeSuggestRow` / `RenderSuggestions` in `modules/Timeline.lua`). LootHistory adopts it on every tab and deletes the local list, and BankLedger adopts it on its search box (the timeline-ledger plan's tasks B2 and C2).
+- `lib.AUTOCOMPLETE`: no consumer as of v1.70.0, kept because it is the published chrome and timing constants, so a host cites the list's defaults (debounce, row height, overlap) rather than restating them.
+
+**Consumer census, v1.71.0.** `lib.Autocomplete` now has two hosts, BankLedger's search-box seam
+in `modules/Browser.lua` and LootHistory's `NS.MakeAutocomplete` seam in `core/WidgetsSetup.lua`,
+so its line above no longer holds; LootHistory's Timeline no longer hand-rolls its own list.
+`lib.AUTOCOMPLETE`'s line stands.
+
+## Degraded
+
+**With the major absent there is no reorder handle, no row box and — from this version — no drag
+handle either.** That is an accepted
+cosmetic degradation, stated here so nobody re-solves it host-side: a host-drawn box is the drift the
+change exists to remove.
+
+With `LibKa0s-Widgets-1.0` absent — no vendored copy, or a copy whose `NEEDS_CORE` floor the host's
+`LibKa0s-Core-1.0` does not meet — `LibStub("LibKa0s-Widgets-1.0", true)` answers `nil`, exactly as
+for any other major. The secondary files cannot half-attach: each is paired on the shell's minor,
+and one that is missing leaves only its own members `nil` (`ReorderList` and `ROW_BOX` without
+`WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`, `LineChart`, `LINE_CHART` and `ChartMath` without
+`WidgetsLineChart.lua`, `Autocomplete` and `AUTOCOMPLETE` without `WidgetsAutocomplete.lua`).
+The host must have a plan for `nil`
+— both shipped consumers refuse to draw the surface that would use this widget rather than build a
+dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any
+non-click close path must itself become a no-op alongside the rest of the degraded surface. The same
+holds for `CopyWindow`: with the major absent there is nothing to call, and with the major present in
+a host that has no UI at all the call answers `nil` rather than raising — a host must be ready for a
+`nil` handle and simply not offer the export.
+
+A host with no Widgets copy, or one without `WidgetsAutocomplete.lua`, gets no autocomplete:
+`Autocomplete` and `AUTOCOMPLETE` are `nil`, and the host's box keeps working as a plain search box
+with no list under it.
+
+A host with no Widgets copy, or one without `WidgetsLineChart.lua`, gets no chart: `LineChart` is
+`nil` and there is nothing to draw with. LootHistory's `NS.MakeLineChart` seam answers `nil` in that
+case and its Timeline tab says why, rather than drawing a host-side chart.
+
+## Cross-consumer smoke check — recorded, NOT run
+
+**`ReorderList`, at minor 8.** MultiMeters' Columns page and ConsumableMaster's priority list adopt
+it together, and the adoption is only correct if a drag feels the same in both. The comparison has
+no single host to live in, so it is recorded here:
+
+- Drag a row in **both** addons in one client session. The handle art, the carried copy's alpha and
+  offset from the cursor, the gold insertion line and the fade on the picked-up row must be
+  identical. Any one differing means a host is overriding something it should not.
+- MultiMeters' list has a boundary and ConsumableMaster's does not. Drag a shown column down past
+  the divide in MultiMeters: the line must stop at it. Drag the last row of ConsumableMaster's list
+  down: it must simply stay put, with no divide to stop at.
+
+This has **not** been run — it needs a live client.
+
+
+BankLedger, LootHistory and MultiMeters each replaced a hand-rolled export copy window with
+`CopyWindow` at Widgets minor 6, and `LibKa0s-DebugLog-1.0` minor 12 joined them at minor 7. They
+were copies of one design, so the adoption is only correct if the windows still look identical to
+each other. Each host recorded its own single-addon check in its `docs/smoke-tests.md`; the
+comparison across all four has no single host to live in, so it is recorded here:
+
+- Open the CSV export copy window in all three addons in **one** client session and compare size,
+  strata, backdrop alpha, monospace face and title placement. Any one of them differing from the
+  other two means the descriptor is wrong, not that one host is nicer.
+- Open the debug log's copy window in the same session and compare it against those three. It is
+  the one caller that names its scroll frame, so it is also the one place a `scrollName` collision
+  would show — a second window failing to open, or opening on top of the first, is the symptom.
+
+This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
+visual fidelity as unverified.
