@@ -76,13 +76,15 @@ is re-vendored. Never patch a vendored copy downstream; fix it here and copy acr
 | `compat` | `LibKa0s/Perf.lua` reads the specialization globals inline (`P.Context`'s `C_SpecializationInfo.GetSpecialization` / `GetSpecializationInfo` read in `LibKa0s/Perf.lua`, in the file-level `specName` P.Context's reader table calls since `GI-LK-11`, cited by function rather than line because Perf's line numbers move with every peel), duplicating `LibKa0s-Compat-1.0`'s spec pair (`lib.GetSpecialization`, `LibKa0s/Compat.lua:270`, and `lib.GetSpecializationInfo`, `:289`). The copies are not identical: Perf's takes the namespaced rung for the index reader only and calls the `GetSpecializationInfo` global directly, where Compat's ladders both. | Raising Perf's floor to Compat is a vendoring break for eleven consumers (`ls -d ../*/libs/LibKa0s/Perf.lua \| wc -l` from this checkout, 11 on 2026-09-23) in a release declared additive: v1.55.0 moves no existing file's minor, and a new floor is the change to the vendoring `library-stack-§7` treats as breaking. Ruled as reading A of the Compat major's open question on this read; [the Compat document](docs/api/Compat/version-1-docs.md) states the same decision under *The library's own inline spec read*. This row supersedes `LK-31` in the frozen `docs/audits/2026-09-08/` bundle (`04_TECHNICAL_DESIGN.md`, `05_EXECUTION_PLAN.md` step 5), which asked for one owner of the spec reader and proposed `Core.lua`, with `Env.lua` as the alternative. Neither was taken; Compat now exists as that owner, and the only open question is when Perf floors on it. The bundle is not edited. | 2026-09-23 | The next Perf floor raise made for any other reason. |
 | `events-frames-taint-§1` | Three widget-owned private frames call `RegisterEvent` raw, with no pcall'd per-event helper, no player-reachable rejected-name record and no AceEvent: `LibKa0s/OptionsCombat.lua`'s combat lock (`PLAYER_REGEN_DISABLED` / `PLAYER_REGEN_ENABLED` on `lib.__combatFrame`, in `lib.__syncCombatEvents` and `lib.__pageShown`; `LibKa0s/OptionsTabs.lua`'s until the 2026-09-26 automated-tests sweep moved it there, unchanged), `LibKa0s/Widgets.lua`'s popup-menu dismiss (`GLOBAL_MOUSE_DOWN` on the shared dropdown menu, in the dropdown button's `OnClick`), and `LibKa0s/OptionsRegistry.lua`'s park frame (`PLAYER_REGEN_ENABLED` on `lib.__parkFrame`, in `lib.__parkRegistration`, from Options minor 24 and commit `d02a161` (`LK-25` of Ka0sAddonsCommonTasks `docs/2026-09-23-REVIEW_AND_STANDARDS_AUDIT_REMEDIATION/`); `LibKa0s/Options.lua`'s until the same sweep moved it there, unchanged). | The section is written against an addon's event traffic (`addon:RegisterEvent`, a module's disable path, the player-facing debug verb), and these frames carry one widget's UI state, not the host's. Its per-event isolation exists so that one retired or misspelled name cannot deafen a registration block; the names here are stable core client events, so that failure has no route in. This row is **not** justified by "the library cannot use AceEvent": `LibKa0s/Bus.lua` already resolves AceEvent-3.0 at call time, and `lib.SafeRegisterEvent` (`LibKa0s/Core.lua`) is the pcall'd helper the section asks for, available to any of these sites. Filed as `LK-37` by the 2026-09-23 audit (`docs/audits/2026-09-23/`), which chose a register row over that helper route: three minors and a re-vendor for no reachable benefit. | 2026-09-24, executing `LK-30` of Ka0sAddonsCommonTasks `docs/2026-09-23-REVIEW_AND_STANDARDS_AUDIT_REMEDIATION/` (commit `6eaa41f`) | Any of these frames registers an event newer than the current expansion, or a fourth private registration site appears in `LibKa0s/`. Either reopens the choice between this row and routing every site through `lib.SafeRegisterEvent`. |
 | `library-stack-§7` | `LibKa0s/WidgetsLineChart.lua` (Widgets key 12.1.4.1, v1.69.0) is promoted into the library with **one** consumer, LootHistory's Timeline tab (its `NS.MakeLineChart` seam), where the section's "What earns promotion into a Ka0s-owned lib" bar 1 asks for two or more consumers with the same semantics. | The owner ruled to build the chart here from the start (LootHistory `docs/superpowers/specs/2026-10-06-timeline-ledger-design.md`, §13 F3) rather than inside the addon and lift it later: a chart is a widget any Ka0s addon with a time series can draw, its math is pinned headless here (`tests/test_widgets_linechart_math.lua`), and it ships as a secondary file paired on the Widgets shell's minor, so it costs no consumer a setup seam and a host that draws no chart owes nothing. A ratification recorded only in an addon's spec is in no register, so the timeline-ledger plan's standards flag S1 put it to the owner, who chose this row over an upstream change to the standard. Its first re-check trigger ("one release passes after v1.69.0 with no second consumer named") fired at v1.70.0, which named none; the owner then ruled to keep the chart here, and the row stands as an **accepted** deviation. | 2026-10-06, the timeline-ledger plan's S1; accepted 2026-10-07 by the owner, after its re-check trigger fired at v1.70.0 | A second addon draws a chart (then the row is retired), or the chart's API needs a breaking change. |
+| `automated-tests-§4` | Five files in `layout-§1`'s 1000–1500 band have been carried as *accepted* past the watch list's three-run shelf life, and this row is their tracker. Measured 2026-10-07 with the command under *Files over the 1500-line cap*, each with its seam and its trigger: `LibKa0s/OptionsWidgets.lua` (1444; seam: the flow engine, `flowRows` and the switched sections; trigger: 1450 lines or the next maker added), `LibKa0s/OptionsIds.lua` (1359; seam: the suggestion half, the module-scope suggestions-while-typing block and the dropdown members; trigger: 1450 lines), `LibKa0s/OptionsIdList.lua` (1247; no seam inside it, since the list and its entry-line layout are one piece of machinery, so at the trigger a seam is named before the append; trigger: 1350 lines), `LibKa0s/OptionsTabs.lua` (1349; seam: the tabbed page, `O.RenderTabbedSchema` and its helpers; trigger: the next member added or 1400 lines) and `LibKa0s/Options.lua` (1288; seam: the reset walk, `runBulk`, `O.RestoreDefaults` and `O.RestoreAllDefaults`; trigger: the next member added or 1400 lines). | No file is over the cap, four have a named seam and the fifth has its trigger, and a peel is a release with a re-vendor into eleven consumers (*A peel here is a release* below), so each is scheduled at its trigger rather than now. The section asks for a tracked deviation with an id and an owner once an *accepted* outlives three release runs. Three of the five cells cited issue #32, which is closed, and an item of the finished 2026-09-26 automated-tests sweep, and neither is a tracker. Filed as `LK-17d` by the 2026-10-07 audit (`docs/audits/2026-10-07/`), which asked for an open issue per file. That remediation run ruled out opening new issues, so the tracker is this row (item `LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-07-REVIEW_AND_STANDARDS_AUDIT_REMEDIATION/`). | 2026-10-07, owner Tushar Saxena, under the owner's standing autonomy for that plan | Any of the five reaches its trigger, and then that file peels on its named seam in the change that reaches it. **Or** a GitHub issue is opened to track the band, and then this row is retired in favor of it. |
 
-**Six rows.** Two are not prose at all — a path fragment and two third-party API identifiers. The
+**Seven rows.** Two are not prose at all — a path fragment and two third-party API identifiers. The
 third declines a kit gate in favor of this repo's own, which is a state `testing-§9` names and the
 suite inventory reads. The fourth keeps one duplicated client read out of a release that promised to
 change no existing file. The fifth keeps three widget-owned UI frames on raw core-event
 registration, outside a rule written for addon event traffic. The sixth promotes a widget with one
-consumer, on the owner's ruling, accepted again after its first trigger fired, with a trigger that retires it or reopens it. The table is otherwise
+consumer, on the owner's ruling, accepted again after its first trigger fired, with a trigger that retires it or reopens it. The seventh tracks five band files whose acceptance
+outlived its shelf life, each with the seam it peels on and the trigger that peels it. The table is otherwise
 empty on purpose:
 the alternative is a register that gets created in the same breath as the first deviation, by whoever
 is already arguing for it.
@@ -277,7 +279,8 @@ three that sat within fifteen lines of the cap, `testkit/test_prose.lua` and, at
 `LibKa0s/OptionsTabs.lua` and `tests/test_widgets.lua`, are among them. They are named so a later
 reader can tell the band was looked at rather than missed. Every file in it carries a disposition in
 `docs/automated-tests/RESULTS.md` (see *The band's terminal states* below): an issue naming its
-seam, or an acceptance with a re-check trigger.
+seam, or an acceptance with a re-check trigger, which past its shelf life is the
+`automated-tests-§4` register row.
 v1.32.0's
 bulk-bracket cases went to their own suite, `tests/test_options_bulk.lua`, rather than into
 `tests/test_options.lua`: they took it to 1544 lines, and they peel on a seam of their own. v1.33.0's
@@ -299,11 +302,17 @@ new.
 - `LibKa0s/OptionsWidgets.lua` (1422) — **accepted.** The makers, the choice grid, the landing page
   and the flow engine, with the id surface gone. **Re-check trigger: 1450 lines, or the next maker
   added**; the flow engine (`flowRows`, the switched sections) is the seam at either.
+  **Tracked 2026-10-07** by the `automated-tests-§4` row in `## Documented deviations` above, which
+  carries its seam and trigger; this ruling is not renewed here.
 - `LibKa0s/OptionsIds.lua` (1358) — **accepted.** Resolution, suggestions and the input. **Re-check
   trigger: 1450 lines**; the suggestion half (the module-scope `suggestions while typing` block and
   the dropdown members) is the seam, to a file of its own.
+  **Tracked 2026-10-07** by the `automated-tests-§4` row in `## Documented deviations` above, which
+  carries its seam and trigger; this ruling is not renewed here.
 - `LibKa0s/OptionsIdList.lua` (1193) — **accepted.** The list and its entry-line layout, one piece
   of machinery. **Re-check trigger: 1350 lines.**
+  **Tracked 2026-10-07** by the `automated-tests-§4` row in `## Documented deviations` above, which
+  carries its seam and trigger; this ruling is not renewed here.
 
 The suites the id cases went to are out of the band: `tests/test_options_ids.lua` 724,
 `tests/test_options_idlist.lua` 379, `tests/test_options_idlist_layout.lua` 665, and so are the
@@ -334,7 +343,9 @@ None of the seven new files is in the band.
 outlives three consecutive release runs and a newly crossed entry with no disposition, and the
 2026-09-23 audit (`LK-17d` in `docs/audits/2026-09-23/`) found seven band files in one state or the other. Each now has one
 of the two terminal states a band entry may carry, and `docs/automated-tests/RESULTS.md`'s
-Disposition cells point here:
+Disposition cells point here. The 2026-10-07 audit (`LK-17d` in `docs/audits/2026-10-07/`) found the
+five *accepted* entries below past that shelf life again; they are now one tracked row in the
+register above, and each entry points at it instead of re-arguing its acceptance:
 
 - `tests/test_options.lua` (1339) — issue [#35](https://github.com/tusharsaxena/LibKa0s/issues/35):
   the render/refresh block peels to `tests/test_options_render.lua`. This is the "owed a tracked ID"
@@ -378,6 +389,8 @@ Disposition cells point here:
   `O.__combatRefused`, the combat lock's refusal line (gap G3), which sits with the instance's
   combat edges that re-arm it rather than in the reset walk, so the seam and the trigger stand as written,
   counted from this release.
+  **Tracked 2026-10-07** by the `automated-tests-§4` row in `## Documented deviations` above, which
+  carries its seam and trigger; this ruling is not renewed here.
 - `LibKa0s/OptionsTabs.lua` (1293, measured 2026-09-26 after its peel) — **peeled 2026-09-26,
   then accepted.** Re-ruled *accepted* at 1493 on 2026-09-24 as "the tabbed page's own machinery
   with no second seam inside it", and carried that way past `automated-tests-§4`'s shelf life (the
@@ -388,6 +401,8 @@ Disposition cells point here:
   left is the strip, its art, the banner, the header block, the sub-strip and the tabbed page.
   **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1400 lines**; the tabbed page
   (`O.RenderTabbedSchema` and its helpers, about 165 lines) is the next seam.
+  **Tracked 2026-10-07** by the `automated-tests-§4` row in `## Documented deviations` above, which
+  carries its seam and trigger; this ruling is not renewed here.
 
 The two re-rule triggers sit above the 1450 the plan wrote for them because both files were
 already past 1450 when they were ruled: 1457 and 1489 as measured, not the "about 1416" the plan
