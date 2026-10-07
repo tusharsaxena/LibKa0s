@@ -215,7 +215,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [19.1](./Slash/version-19.1-docs.md) | `Slash.lua` 19 · `SlashParse.lua` 1 | v1.66.0 | **Current** |
+| [20.2](./Slash/version-20.2-docs.md) | `Slash.lua` 20 · `SlashParse.lua` 2 | v1.71.0 | **Current** |
+| [19.1](./Slash/version-19.1-docs.md) | `Slash.lua` 19 · `SlashParse.lua` 1 | v1.66.0 – v1.70.0 | Superseded |
 | [18](./Slash/version-18-docs.md) | `Slash.lua` 18 | v1.65.0 | Superseded |
 | [17](./Slash/version-17-docs.md) | `Slash.lua` 17 | v1.63.0 – v1.64.0 | Superseded |
 | [16](./Slash/version-16-docs.md) | `Slash.lua` 16 | v1.60.0 – v1.62.0 | Superseded |

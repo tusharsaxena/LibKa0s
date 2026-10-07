@@ -14,8 +14,9 @@ cannot drift. Release order is in
 
 Versions in this release: **WidgetsLineChart minor 3** and **WidgetsAutocomplete minor 2**
 (`LibKa0s-Widgets-1.0` key 12.1.4.3.2: `Widgets` 12, `WidgetsReorder` 1, `WidgetsDragHandle` 4,
-`WidgetsLineChart` 3, `WidgetsAutocomplete` 2), and every other file at its v1.70.0 minor — `Core` 10, `Env` 1, `Compat`
-1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 19.1, `DebugLog`
+`WidgetsLineChart` 3, `WidgetsAutocomplete` 2), **Slash minor 20** and **SlashParse minor 2**
+(`LibKa0s-Slash-1.0` key 20.2), and every other file at its v1.70.0 minor — `Core` 10, `Env` 1, `Compat`
+1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `DebugLog`
 key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.3.8.1.7.4.2 and `Perf` key 14.1.1.6 — and **test
 kit revision 38**.
 
@@ -56,6 +57,21 @@ kit revision 38**.
   box on every show (`LK-R-09`).
 - Five cases in `tests/test_widgets_autocomplete.lua`.
   [Widgets version 12.1.4.3.2](docs/api/Widgets/version-12.1.4.3.2-docs.md).
+
+### SlashParse minor 2: a number row refuses `nan` and the infinities; Slash minor 20
+
+- **`lib.ParseValue` refuses `nan`, `inf`, `-inf` and an overflowing literal such as `1e400` on a
+  number row**, with the existing `ERR_NUMBER` reason, before the enum and the clamp. Lua's
+  `tonumber` reads all of them as numbers, and an unbounded row has no clamp, so
+  `/<slash> set <path> nan` stored a NaN through the shared write seam. A finite number parses and
+  clamps as before. A comment at the clamp now records why `n` is the second argument to
+  `math.max` / `math.min` (Lua 5.1's `math.max(0/0, -100)` answers NaN). `Schema.Set` stays
+  type-agnostic. From the 2026-10-07 review (`LK-R-06`).
+- **`Slash.lua` 20 changes one comment**: the profile-store note cites `slash-commands-§1` where it
+  cited `slash-commands.md:34` (LibKa0s#43, the 2026-10-07 audit's `LK-A-06`). Nothing that runs
+  moves; the minor moves because the payload did.
+- Two cases in `tests/test_slash_parse.lua`.
+  [Slash version 20.2](docs/api/Slash/version-20.2-docs.md).
 
 ### Test kit revision 38: `--list` Totals count only the cases that run
 
@@ -100,6 +116,8 @@ kit revision 38**.
   commit**, so its Total equals the README badge. `Kit.secret` and its siblings are opt-in.
 - **The whole-folder copy of `libs/LibKa0s/`** for `WidgetsLineChart` 3. A host that draws no chart
   owes nothing more; a host that calls `ClearHover` before repainting its chart may keep or drop it.
+- **Nothing for Slash 20.2** beyond the same copy: a `set` on a number row now refuses `nan` and
+  the infinities, and no consumer test pinned their acceptance.
 
 ## v1.70.0 — 2026-10-07
 

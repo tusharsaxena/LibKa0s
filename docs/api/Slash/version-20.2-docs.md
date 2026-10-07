@@ -1,4 +1,4 @@
-# `LibKa0s-Slash-1.0` — version 19.1
+# `LibKa0s-Slash-1.0` — version 20.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Slash surface points here rather than restating it. It describes the
@@ -8,14 +8,14 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Slash-1.0` |
-| Files and minors | `Slash.lua` **19** · `SlashParse.lua` **1** |
+| Files and minors | `Slash.lua` **20** · `SlashParse.lua` **2** |
 | Version key | `<Slash>.<SlashParse>`, in load order — the same two numbers `lib.MODULES` reports |
-| Shipped in | v1.66.0 |
-| Status | Superseded |
-| Supersedes | [version 18](./version-18-docs.md) — one file, whose parse refusals and `(none)` ignored the host's `L` |
-| Superseded by | [version 20.2](./version-20.2-docs.md) — `SlashParse.lua` 2: a number row refuses `nan` and the infinities; `Slash.lua` 20: one comment's citation |
+| Shipped in | v1.71.0 |
+| Status | **Current** |
+| Supersedes | [version 19.1](./version-19.1-docs.md) — whose number rows took `nan` and the infinities |
+| Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
-| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 19, SlashParse = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 20, SlashParse = 2 }` |
 
 `Since` in the tables below is the Slash minor in which the member first appeared; `lib.ParseBool`
 and `lib.ParseValue` live in `SlashParse.lua` from 19, and their `Since` is still the Slash minor. Minors 1–3 were
@@ -36,13 +36,38 @@ worse than one that refuses.
 Like DebugLog, it depends on LibStub and `LibKa0s-Core-1.0` and on no addon framework, and it
 returns before `NewLibrary` if Core is missing or below the minor it needs.
 
-Two files, one major, from this version — `Slash.lua` (the strings, the formatters, the command
+Two files, one major, from version 19.1 — `Slash.lua` (the strings, the formatters, the command
 primitives, profiles and the instance) and `SlashParse.lua` (`lib.ParseBool`, `lib.ParseValue` and
 the row type parsers behind them). One major for the same reason Perf is one: a shell and a parser
 from different vendored copies is not a state LibStub can detect. **This is why the version key above
 has two components.**
 
 ## What changed at this version
+
+**A number row refuses `nan` and the infinities** (2026-10-07 review, `LK-R-06`). Lua's `tonumber`
+reads `nan`, `inf` and `-inf` as numbers, and a literal such as `1e400` overflows to `inf`. Through
+`SlashParse.lua` 1, `lib.ParseValue` took any of them: a bounded row's clamp happened to absorb a
+NaN, only because `n` is the second argument to `math.max` / `math.min` (Lua 5.1's
+`math.max(0/0, -100)` answers NaN, `math.max(-100, 0/0)` answers -100), and an **unbounded** row
+had no clamp at all, so `/<slash> set <path> nan` stored a NaN through the shared write seam.
+
+- **`SlashParse.lua` 2** refuses a non-finite number with the existing `ERR_NUMBER` reason
+  (`expected a number`, or the host's `L` through the resolver), before the enum and the clamp, on
+  every number row. A finite number parses, clamps and matches a numeric dropdown exactly as at
+  19.1, `1e300` included.
+- The argument order of the clamp is kept, and a comment now records why.
+- `Schema.Set` stays type-agnostic: the refusal belongs to the CLI's parser, which is the seam that
+  reads text.
+- **`Slash.lua` 20 changes one comment and nothing that runs.** The profile-store comment cited the
+  standard by file and line (`slash-commands.md:34`); it now cites `slash-commands-§1` (LibKa0s#43).
+  The payload changed, so the minor moves; `SlashParse.lua`'s pairing guard re-runs on the new shell
+  minor by design.
+- No member, string, descriptor field or `NEEDS_*` floor moves; the member manifest is unchanged
+  apart from its version key.
+
+The cases are in `tests/test_slash_parse.lua`.
+
+### Previously, at version 19.1
 
 **The host's `L` reaches every parse refusal and the empty-string `(none)`** (issue #40). Through
 version 18 the file-level parsers behind `set` and the `string` formatter behind every echo read
@@ -243,7 +268,7 @@ refuse anything on the live set above.
 | a typo (no `commands` entry) | `unknown command '<verb>'` + the index | 13 |
 | **a reserved verb the host never registered** (`perf` on an exempt addon) | **`unknown command '<verb>'` + the index** | **14** |
 
-**One row is new at this version: `profile`**, and it states what was already true of any host verb:
+**One row was new at version 17: `profile`**, and it states what was already true of any host verb:
 `profile` is not in `lib.LIVE_VERBS`, so a host that wants it answered while disabled widens its own
 `liveVerbs`. At version 16 the `diagnostics` row was new; a disabled host that shipped `diagnostics`
 and passed no `liveVerbs` had answered it with the refusal line at 15. The last row moved at version 14, where version 13 read *the
@@ -592,7 +617,7 @@ rendered row depends on which instance rendered it.
 | `lib.FormatRow(command, description)` | 1 | One command row: `\|cFFFFFF00` command, an em dash with a single space either side, `\|cFFFFFFFF` description. **Not** indented — the indent belongs to whoever renders, because a chat line sits under a header and a settings-panel label does not. This is the one command-row formatter in the collection; the `/at list` header, its group headings and any host annotation are a different, lower-case-hex family and stay that way. |
 | `lib.FormatKV(path, valueStr)` | 1 | One `key = value` pair, gold key and white value, no trailing colon. Used by the list rows and by the get/set echo, so a setting reads identically wherever it is printed. |
 | `lib.FormatValue(row, v, textOf)` | 1 | Render a stored value by the row's declared type — a color as `{r, g, b, a}` to two places, a number through the row's `fmt`, an empty string as `NONE`, anything else through Core's `SafeToString`. `textOf` (**19**, optional) resolves `NONE`; absent, it is `lib.STRINGS`'. At this minor the descriptor's `format` hook, when present, takes precedence over this entirely. |
-| `lib.ParseValue(row, text, textOf)` | 1 | The type-aware parser. Returns the value, or `nil` plus a reason. A `string` row reads the whole of `text`, trimmed at both ends, and an enum is matched on that full string (**10**); every other type reads whitespace-separated tokens. `textOf` (**19**, optional) is a key → string resolver for the reason; absent, the reason is `lib.STRINGS`'. |
+| `lib.ParseValue(row, text, textOf)` | 1 | The type-aware parser. Returns the value, or `nil` plus a reason. A `number` row refuses `nan`, `inf` and `-inf` (and an overflowing literal such as `1e400`) with `ERR_NUMBER` (**20**). A `string` row reads the whole of `text`, trimmed at both ends, and an enum is matched on that full string (**10**); every other type reads whitespace-separated tokens. `textOf` (**19**, optional) is a key → string resolver for the reason; absent, the reason is `lib.STRINGS`'. |
 | `lib.SplitVerb(rest)` | **6** | → `verb, remainder`. The verb **lowercased**, the remainder's case *and* internal spacing preserved. The asymmetry is the contract, not an oversight — see below. Both default to `""`. |
 | `lib.FindCommand(list, name)` | **6** | → the matched `{ name, description, handler }` entry, or `nil`. Linear scan, compared verbatim; callers lowercase through `lib.SplitVerb` first. |
 | `lib.CommandRows(prefix, commands, indent)` | **6** | → an array of rendered rows, one per entry: `indent .. lib.FormatRow(prefix .. " " .. entry[1], entry[2])`. `indent` defaults to `""`. |
@@ -621,6 +646,10 @@ A `string` row's value is the whole of `text`, trimmed at both ends (**since 10*
 row holds several words and an enum entry containing a space, such as an LSM font name, can be
 named. A `bool` and a `number` read their first token and a color its first four, as they always
 have.
+
+A `number` row refuses a token Lua reads as NaN or as an infinity (**since 20**), with the same
+`ERR_NUMBER` reason as a word, before any enum or clamp: a clamp would answer the bound for an
+infinity on a bounded row, and an unbounded row would store it.
 
 ## The sub-command vocabulary
 
@@ -773,7 +802,7 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `brandName` | string | **when `isEnabled` is given** | **12** | The addon's brand name in plain text, `Ka0s <Name>` — the same string the LDB object takes as its `label`. Never derived from the TOC `Title`, which may carry color escapes. Missing it alongside `isEnabled` raises at `New`. |
 | `liveVerbs` | table | no | **12** | Array of the verbs that still answer while disabled. Defaults to `lib.LIVE_VERBS`, which is the standard's reserved verbs from **13**, thirteen of them from **16** (`diagnostics`). It names the verbs that stay live, not the verbs the host registers: from **14** a verb listed here with no `commands` entry behind it is answered as unknown rather than refused. Present so the set is data rather than a hard-coded branch; a host MAY narrow it to the verbs it actually ships. |
 | `profiles` | function | no | **17** | → the host's profile store, or nil. Duck-typed on AceDB-3.0's shape, `GetProfiles(tbl) -> tbl, n`, `GetCurrentProfile()`, `SetProfile(name)`, and never required to be AceDB. Asked at call time, because a host's db is built after its slash file runs. Absent, answering nil, or a store missing a method: `CliProfile` prints `PROFILE_UNAVAILABLE`. |
-| `debug` | function(tag, message) | no | **18** | The host's gated log seam, as Launcher's. Each refusal this module decides writes one `Cmd` line after its chat line: see [What changed at this version](#what-changed-at-this-version). Absent or not a function: no line. |
+| `debug` | function(tag, message) | no | **18** | The host's gated log seam, as Launcher's. Each refusal this module decides writes one `Cmd` line after its chat line: see [Previously, at version 18](#previously-at-version-18). Absent or not a function: no line. |
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. From **19** it reaches every parse refusal and the empty-string `NONE` as well. **It does not reach the disabled refusal line** (**12**): that wording is the collection's rather than the addon's. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
 
 Only `slash` and `commands` are required, and both raise rather than defaulting: a dispatcher with
@@ -920,6 +949,11 @@ correct on every minor.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+**What moves at version 20 is one refusal.** `set <path> nan`, `inf`, `-inf` or `1e400` on a number
+row answers the `INVALID` line with `ERR_NUMBER` under it, where version 19.1 stored the value (an
+unbounded row) or the bound (a bounded row's infinity). Every finite input answers as before. No
+consumer test in the collection pinned the old acceptance when this was written.
+
 **What moves at version 19 is wording, and only for a host that asked for it.** A host whose `L`
 carries `ERR_BOOL`, `ERR_NUMBER`, `ERR_STRING`, `ERR_ALLOWED`, `ERR_COLOR`, `ERR_TYPE` or `NONE` now
 sees its own text where it saw the library's. A host with no such keys sees no change. A host
@@ -1010,11 +1044,3 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
-
-## Moving to version 20.2
-
-**Copy the folder whole. Nothing a host calls moves or is removed.** Version 20.2 (`Slash.lua` 20,
-`SlashParse.lua` 2) refuses `nan`, `inf`, `-inf` and an overflowing literal such as `1e400` on a
-number row with `ERR_NUMBER`, before the enum and the clamp, where this version stored them on an
-unbounded row. `Slash.lua` 20 changes a comment only. A host whose `L` carries `ERR_NUMBER` sees
-its own text for the new refusal. See [version 20.2](./version-20.2-docs.md).

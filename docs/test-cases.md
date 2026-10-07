@@ -923,7 +923,7 @@ Total.
 - sl: with no groupKey the list groups rows by page, and a row with none under 'settings'
 - sl: an L, aliases or liveVerbs that is not a table, and a parse that is not a function, read as absent
 
-### test_slash_parse.lua (31)
+### test_slash_parse.lua (33)
 
 - sl: ParseBool accepts the same eight words the error string advertises
 - sl: ParseBool answers nil, never false, for a non-boolean word
@@ -931,6 +931,8 @@ Total.
 - sl: a junk boolean is rejected and the accepted words are listed
 - sl: a number is clamped to the row's range rather than rejected
 - sl: a non-numeric value for a number row is rejected
+- sl: a number row refuses nan and infinities with the not-a-number reason
+- sl: a finite number still parses, on an unbounded and a bounded row
 - sl: a string is validated against its enum, case-sensitively
 - sl: an enum declared as an ordered array is offered in declaration order
 - sl: an ordered array supplied as a function is evaluated at parse time
@@ -954,7 +956,7 @@ Total.
 - sl: a key-echoing L still falls through to the library's parse strings
 - sl: ParseValue and FormatValue take an optional resolver, and default to the library's strings
 - sl: a host's own parse is handed the instance's resolver as a third argument
-- sl: the parser lives in SlashParse.lua at minor 1, paired on the live shell
+- sl: the parser lives in SlashParse.lua at minor 2, paired on the live shell
 - sl: a payload without SlashParse.lua loads whole, and set refuses naming the file
 
 ### test_slash_disabled.lua (16)
@@ -2442,7 +2444,7 @@ Total.
 | test_debuglog_descriptor.lua | 7 |
 | test_resize_windows.lua | 23 |
 | test_slash.lua | 74 |
-| test_slash_parse.lua | 31 |
+| test_slash_parse.lua | 33 |
 | test_slash_disabled.lua | 16 |
 | test_slash_refusal.lua | 7 |
 | test_slash_profile.lua | 30 |
@@ -2502,4 +2504,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2136** |
+| **Total** | **2138** |
