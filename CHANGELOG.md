@@ -67,7 +67,8 @@ files**. Built to standard v2.76.0, as v1.69.0 was; the README's standards point
   recount in WowAddonStandards for the thirty-fourth file. It is recorded as a follow-up and is not
   part of this release.
 - **Tagged locally, not published.** `v1.70.0` is an annotated tag on `feat/2026-10-06-line-chart`;
-  the push, the merge to `master` and the GitHub release wait on the owner's go-ahead.
+  the push, the merge to `master` and the GitHub release wait on the owner's go-ahead. Since merged
+  to `master` (`a8b008f`) and the tag pushed, on the owner's go-ahead (2026-10-07).
 
 Release gate (`docs/automated-tests/20261007-102304/`): lint pass, 0/0 in 153 files;
 tests pass, 2089 tests, 0 failed; complexity pass, 0 over CCN 15. Perf

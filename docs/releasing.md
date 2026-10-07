@@ -464,7 +464,8 @@ copy of both payloads and the provenance line. Built on `feat/2026-10-06-line-ch
 locally, **not merged or pushed**; push, merge and GitHub release wait on the owner's go-ahead.
 **Step 8 is every consumer**: nine add a commit to `feat/2026-10-06-revendor-libka0s-v1.69.0`,
 LootHistory re-vendors on `feat/2026-10-06-timeline-ledger` and BankLedger on
-`feat/2026-10-07-autocomplete-typesubtype`.
+`feat/2026-10-07-autocomplete-typesubtype`. Since merged to `master` (`a8b008f`) and the tag pushed,
+on the owner's go-ahead (2026-10-07); the GitHub release is not used for this library (tags only).
 
 **Where v1.69.0 stands (2026-10-06).** One file is added and no existing file's minor moves:
 `WidgetsLineChart.lua` 1 (`LibKa0s-Widgets-1.0` 12.1.4.1), the line chart (`lib.LINE_CHART`,
@@ -475,7 +476,8 @@ consumer at release (LootHistory), which `library-stack-§7` asks two of; that i
 `CLAUDE.md`'s `## Documented deviations`. What a consumer owes is the whole-folder copy of both
 payloads and the provenance line. Built on `feat/2026-10-06-line-chart`, tagged locally, **not
 merged or pushed**; push, merge and GitHub release wait on the owner's go-ahead.
-**Step 8 is every consumer**, each on `feat/2026-10-06-revendor-libka0s-v1.69.0`.
+**Step 8 is every consumer**, each on `feat/2026-10-06-revendor-libka0s-v1.69.0`. Since merged to
+`master` (`a8b008f`, together with v1.70.0) and the tag pushed, on the owner's go-ahead (2026-10-07).
 
 **Where v1.68.1 stands (2026-10-04).** No LibStub minor moves and no file is added, so the payload
 is still fifteen majors across thirty-two files, byte-identical to v1.68.0's. The kit moves to
