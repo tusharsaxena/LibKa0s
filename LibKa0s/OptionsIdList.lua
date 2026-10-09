@@ -225,9 +225,9 @@ function lib.__AttachIdList(O, d, ids)
   -- AND two columns draws the X (`removeStyle = "icon"`), and the O.IdList doc says so.
   local ID_HELP_REL      = 0.09
   -- THE DEFAULT ART IS THIS LIBRARY'S OWN (minor 29). `media/icons/info.tga` ships inside the
-  -- vendored payload, is published as "info" in LibKa0s-Media-1.0's ICONS (Media.lua:99), and is
+  -- vendored payload, is published as "info" in LibKa0s-Media-1.0's ICONS (Media.lua:92-96), and is
   -- what ConsumableMaster already draws for this exact job (`KCM.Icon("info")`, its
-  -- settings/Category.lua:654). It is also WHITE with its shape entirely in the alpha channel
+  -- settings/Category.lua:641). It is also WHITE with its shape entirely in the alpha channel
   -- (Media.lua's "WHITE, AND THAT IS A CONTRACT"), which is what makes the tints above mean
   -- anything: a texture is tinted by MULTIPLYING, so white art becomes gold or red, while the
   -- Blizzard fallback below is a blue disc with its `i` baked into the color channels and can only
