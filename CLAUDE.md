@@ -233,8 +233,9 @@ first:
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
   accepted, below.
-- `LibKa0s/OptionsIdList.lua` (1246 with minor 3's loaded-addon check on `addonName`, LibKa0s#42,
-  measured 2026-10-02, under its 1350 re-check trigger; 1197 at v1.65.0; 1193 new: the id peel), ruled below.
+- `LibKa0s/OptionsIdList.lua` (1247 at v1.71.0's minor 4, measured 2026-10-07, under its 1350 re-check
+  trigger; 1246 with minor 3's loaded-addon check on `addonName`, LibKa0s#42, measured 2026-10-02;
+  1197 at v1.65.0; 1193 new: the id peel), ruled below.
 
 `LibKa0s/Perf.lua` left the band on 2026-10-01, 1307 → 975, closing issue
 [#7](https://github.com/tusharsaxena/LibKa0s/issues/7) in two peels at minor 14. The first moved the

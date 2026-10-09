@@ -32,7 +32,7 @@ Three tools. Only the first has a version that matters.
 | `lizard` | 1.24.0 | 1.24.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). The kit's sighted shadow (`testkit/lizard_sighted.lua`, kit revision 35) is written against 1.24.0's Lua reader; another version still runs, and its own blind spots surface as parity failures rather than as a quiet undercount. |
 
 The "verified with" column is the toolchain of the last recorded run,
-[`docs/automated-tests/20261007-102304/manifest.json`](docs/automated-tests/20261007-102304/manifest.json)
+[`docs/automated-tests/20261007-193954/manifest.json`](docs/automated-tests/20261007-193954/manifest.json)
 → `host` — evidence, not a pin. `luacheck` is pinned nowhere and pinning it would be false precision;
 `lizard` is named rather than pinned (see its row); `lua5.1` is not a preference. "5.2 will probably work" is **false**, and it costs an
 hour to disprove: 5.2 removed `setfenv`, and the loader is the first thing every suite touches.

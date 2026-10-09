@@ -10,9 +10,9 @@
 | Version | **24** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.54.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 23](version-23-docs.md) — the resource guard |
-| Superseded by | — |
+| Superseded by | [version 25](version-25-docs.md) — the pair key, the cap gate and the prose carve-out |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `24` |
 
@@ -95,3 +95,13 @@ list, ninety-one British spellings by construction, and scanning it would redden
 standard obliges it to carry. `localization-5` names this case as the fourth of its four exclusions.
 Every other file under `testkit/` is still scanned, including the README beside it — which is why
 that README describes the waived spellings rather than quoting them.
+
+## Moving to revision 25
+
+No member a suite calls is removed, renamed or resignatured. Revision 25 adds one file,
+`test_layout_cap.lua`, and keys a suite declaration by the pair (directory, basename) rather than the
+basename, so a bare `"test_prose"` no longer counts as covering `tests/_kit/test_prose.lua`. Re-vendor
+the whole folder, as always, then wire `{ name = "test_layout_cap", dir = "tests/_kit/" }`, set
+`Kit.layoutCap` before `Kit.run`, and for `test_prose` either wire the kit's copy as a pair or record
+the decline in the register. The inventory fails the run until each is done. See
+[version 25](version-25-docs.md).

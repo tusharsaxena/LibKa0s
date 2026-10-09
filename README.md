@@ -226,13 +226,13 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.70.0**, which adds one file (`WidgetsAutocomplete.lua`, minor 1), moves one existing file's minor (`WidgetsLineChart.lua`, 1 to 2) and adds no major: `Core = { Core = 10 }`,
-`Env = { Env = 1 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 3 }`, `Bus = { Bus = 2 }`,
+different vendored copy of each. As of **v1.71.0**, which adds no file and no major and moves six existing files' minors (`Env` 1 to 2, `Slash` 19 to 20, `SlashParse` 1 to 2, `WidgetsLineChart` 2 to 3, `WidgetsAutocomplete` 1 to 2, `OptionsIdList` 3 to 4): `Core = { Core = 10 }`,
+`Env = { Env = 2 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 3 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
 `Media = { Media = 4 }`,
-`Widgets = { Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 2, WidgetsAutocomplete = 1 }`, `DebugLog = { DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }`, `Slash = { Slash = 19, SlashParse = 1 }`,
+`Widgets = { Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }`, `DebugLog = { DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }`, `Slash = { Slash = 20, SlashParse = 2 }`,
 `Launcher = { Launcher = 5 }`,
-`Options = { Options = 28, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 3, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }`,
+`Options = { Options = 28, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 4, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2 }`,
 `Perf = { Perf = 14, PerfSampler = 1, PerfCommands = 1, PerfPanel = 6 }`. Those numbers move every release, so read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), not from here. Grouping
 by major is what lets you answer "which panel is attached to which probe?" from inside the game, once
@@ -317,7 +317,9 @@ docs/                -- development docs (not shipped)
                         <Major>/version-<minors>-docs.md, one per shipped version, never edited
                         after that version stops being current; api/README.md indexes them all.
                         Beside each, <Major>/members-<minors>.json -- the same version's public
-                        surface as DATA, which is what a degradation stub is checked against
+                        surface as DATA, which is what a degradation stub is checked against.
+                        api/CONSUMERS.md is the consumer census: which hosts call each public
+                        export, stamped with the release it measured
   releasing.md       -- the two version numbers, the release order, the re-vendor rule
   record-schema.md   -- the capture record, field by field
   adoption-prompt.md -- the per-addon adoption prompt

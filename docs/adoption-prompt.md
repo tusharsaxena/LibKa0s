@@ -820,7 +820,7 @@ and v1.67.0. If you are about to become the second host on a
 one-consumer surface — or the first on a zero-consumer one — treat a misfit as a library gap on
 first contact.
 
-**The zero-consumer set is in the census, not here.** At v1.67.0, 98 of 409 public exports have no
+**The zero-consumer set is in the census, not here.** At v1.71.0, 108 of 422 public exports have no
 host consumer, and none of them has a host duplicate or an unsettled contract behind it. At v1.66.0
 there were 106, and the eight host duplicates and two suspect shapes among them were cleared by the
 issues that census filed: `Core.MakeResizable` (its lock gate is Core 10, LibKa0s#41) and
@@ -828,8 +828,8 @@ issues that census filed: `Core.MakeResizable` (its lock gate is Core 10, LibKa0
 `CommandRows` two, and `ProfileNames` one; `O.PADDING_X` has one; every host passes the Options
 descriptor's `addonName` (LibKa0s#42); and KickCD deleted its copies of `lib.LAYOUT`'s internal
 header keys rather than re-reading them (KickCD#36). Five are deliberate host copies with the reason
-recorded beside them. Each of the rest carries a "no consumer as of v1.67.0, kept because ..." line
-in its major's live document. If you are about to hand-roll something, look there first.
+recorded beside them. Each of the rest carries a "no consumer as of vX, kept because ..." line
+in its major's live document, stamped with the census that first recorded it. If you are about to hand-roll something, look there first.
 
 - **`applySkin` (DebugLog minor 4) — two consumers: BankLedger, LootHistory**
   (`../BankLedger/core/DebugLogSetup.lua:142`, `../LootHistory/core/DebugLogSetup.lua:159`). The

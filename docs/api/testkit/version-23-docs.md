@@ -10,9 +10,9 @@
 | Version | **23** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.43.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 22](version-22-docs.md) — the recording surveys |
-| Superseded by | — |
+| Superseded by | [version 24](version-24-docs.md) — the US-English gate |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `23` |
 
@@ -109,3 +109,12 @@ Re-vendor. A suite that legitimately needs more than a default declares it in it
 options — which the Ka0s WoW Addon Standard treats as a documented deviation, not a setting.
 `tests/test_kit_limits.lua` here pins the guard (across real child processes, through
 `tests/fixture_guard.lua`) and every gate.
+
+## Moving to revision 24
+
+Nothing to change at a call site. Revision 24 adds one file, `test_prose.lua`, the kit's US-English
+gate, and moves nothing else: no member a suite calls is added, removed, renamed or resignatured.
+Re-vendor the whole folder, as always, then declare the new suite in the consuming runner as
+`{ name = "test_prose", dir = "tests/_kit/" }` — `Kit.assertSuiteInventory` scans `tests/_kit/` too,
+so a re-vendor that leaves it undeclared goes red naming the entry to add. A repo that already has
+its own copy wires one or the other, never both. See [version 24](version-24-docs.md).

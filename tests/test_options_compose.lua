@@ -176,8 +176,8 @@ function()
   -- __AttachCompose lets a host supply its own O.LSMValues, and the composer reads that member
   -- once, at row-declaration time. A host handing back a TABLE therefore freezes its media list at
   -- whatever happened to be registered when the file loaded -- exactly the failure the deferral
-  -- exists to prevent. MultiMeters ships that shape today (settings/Schema.lua:670 reads
-  -- `C.LSMValues = function(t) return lsmValues(t)() end`) and must hand back the closure instead.
+  -- exists to prevent. MultiMeters shipped that shape until its compose wiring moved to
+  -- settings/Schema_Compose.lua, which reads `C.LSMValues = lsmValues` and hands back the closure.
   --
   -- This case is the only thing that makes the breach visible: with the outer wrapper in place a
   -- table-returner works by accident, late-evaluated, and nothing anywhere says the host is wrong.
