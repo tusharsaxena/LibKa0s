@@ -10,9 +10,9 @@
 | Version | **38** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.71.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 37](version-37-docs.md) — the `--list` Total counted declared skips, and no kit file modeled a secret value |
-| Superseded by | — |
+| Superseded by | [version 39](version-39-docs.md) — `M.__fireUnconditional` reaches a method-name or function handler after unregister |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `38` |
 
@@ -123,3 +123,11 @@ lua tests/run.lua --list > docs/test-cases.md
 The suites list does not change and no kit case name changes, but `docs/test-cases.md` does, so it
 is regenerated in the re-vendor commit. A consumer's own prose that names the revision it holds
 (`kit revision 37`) moves to 38 in the same commit.
+
+## Moving to 39
+
+Copy the kit whole. No suite, case name or member changes, and `docs/test-cases.md` moves only where
+your own cases do. `M.__fireUnconditional` now reaches a handler registered under a method name, or
+as a function, after `UnregisterEvent` / `UnregisterAllEvents`, and still answers 1 or 0 without
+raising: assert the count in your stand-down suite, and expect a case that reached nothing before to
+run a handler now.

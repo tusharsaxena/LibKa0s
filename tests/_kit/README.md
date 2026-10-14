@@ -657,7 +657,13 @@ Driving them: **`M.__fire(event, ...)` dispatches to the live registration set o
 client would do — and **`M.__fireUnconditional(target, event, ...)` fires at a target whose
 registration has been removed**, which is what proves a survivor would have been caught. A suite
 that omits the second is asserting on its own silence: an empty registry dispatches nothing whether
-the addon stood down or the harness lost the ability to dispatch at all.
+the addon stood down or the harness lost the ability to dispatch at all. It answers how many
+handlers it reached, 1 or 0, and never raises, so **assert the count**: a 0 means the harness had
+nothing to fire at. From **revision 39** it also reaches an AceEvent handler registered under a
+method name, or as a function, after `UnregisterEvent` / `UnregisterAllEvents`: `RegisterEvent`
+keeps each event's handler as `__kitEver` on the `__events` table's metatable, which unregister
+never clears and `pairs` never sees, and the record wins over a method that merely shares the
+event's name. See `docs/api/testkit/version-39-docs.md`.
 
 The same revision models **`AceBucket-3.0`** (`RegisterBucketEvent`, `RegisterBucketMessage`,
 `UnregisterBucket`, `UnregisterAllBuckets`), because a bucket is a registration a stand-down has to
@@ -836,7 +842,8 @@ Delete the local copy when you re-vendor:
   so a module's own event target and the addon object behave identically. `RegisterEvent` raises
   where CallbackHandler does, including a missing method. Fire a recorded function as
   CallbackHandler does, `t.__events[event](event, ...)`, and a recorded method name as
-  `t[method](t, event, ...)`.
+  `t[method](t, event, ...)`. From revision 39 each event's last handler is also kept, uncleared, as
+  `__kitEver` on the metatable of `t.__events`, for `M.__fireUnconditional`.
 - **`NewAddon`** stamps AceConsole's `Printf` beside its `Print`, so an addon that forgets to take
   its own `NS.Printf` back after `NewAddon` fails the way it does in the client.
 - **`vendor_sync.lua`** checks the runner's recorded mode, as described above.

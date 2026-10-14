@@ -10,6 +10,38 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.72.0 — unreleased
+
+Versions in this release: every file at its v1.71.0 minor — `Core` 10, `Env` 2, `Compat` 1,
+`Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 20.2, `DebugLog` key
+19.2.1, `Launcher` 5, `Options` key 28.2.34.2.4.8.1.7.4.2, `Perf` key 14.1.1.6 and `Widgets` key
+12.1.4.3.2 — and **test kit revision 39**. No payload file under `LibKa0s/` has changed yet.
+
+### Test kit revision 39: `M.__fireUnconditional` reaches method-name and function handlers
+
+- **A handler registered under a method name, or as a function, is reached after unregister.**
+  `RegisterEvent("PLAYER_REGEN_DISABLED", "OnCombatStart")` named a method that is not the event,
+  and `UnregisterEvent` / `UnregisterAllEvents` clear the recorded handler, so through revision 38
+  `M.__fireUnconditional` matched none of its lookups, ran nothing and answered 0: the falsification
+  half of a stand-down suite could not reach the most common handler an addon registers. The
+  AceEvent fake's `RegisterEvent` now also keeps each event's handler as `__kitEver` on the
+  `__events` table's metatable, which unregister never clears and `pairs`, `M.__registrations()` and
+  the surveys never see, and `M.__fireUnconditional` reads it after the live `__events[event]` and
+  before the method named for the event. A second `Embed` in the same build carries it over. From
+  DropWatcher's 2026-10-14 review (F19).
+- **The return contract does not move:** 1 when a handler was reached, 0 when nothing was, never a
+  raise. The review's fix raised on 0; that was declined as a contract change under an unmoved
+  signature that would turn consumer suites red on re-vendor (X02). A suite proves reach by
+  asserting the count.
+- Five cases in `tests/test_mock_record.lua`. [testkit version 39](docs/api/testkit/version-39-docs.md).
+
+### What a consumer owes
+
+- **The whole-folder copy of `tests/_kit/`.** A stand-down case that fires unconditionally at a
+  method-name handler ran nothing before and runs it now; if that handler writes SavedVariables,
+  prints or shows a frame while disabled, the case goes red for a real reason and the addon's guard
+  is the fix. Assert the counts `M.__fireUnconditional` returns.
+
 ## v1.71.0 — 2026-10-07
 
 Versions in this release: **WidgetsLineChart minor 3** and **WidgetsAutocomplete minor 2**

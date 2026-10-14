@@ -2137,7 +2137,7 @@ Total.
 - ace: AceDB's OnProfileCopied carries the SOURCE profile's key, as AceDB-3.0 fires it
 - mock_ace: AceDB's ResetProfile fires OnProfileReset with the database alone
 
-### test_mock_record.lua (37)
+### test_mock_record.lua (42)
 
 - record: a fresh build has registered nothing
 - record: a raw frame:RegisterEvent is recorded, by frame and by name
@@ -2152,6 +2152,11 @@ Total.
 - record: __fire reaches the LIVE set only
 - record: __fireUnconditional reaches a target whose registration is gone
 - record: __fireUnconditional drives an AceEvent handler too
+- record: __fireUnconditional reaches a method-name handler after UnregisterAllEvents
+- record: __fireUnconditional reaches a function handler after UnregisterEvent
+- record: __fireUnconditional reaches the handler of the latest registration
+- record: __fireUnconditional answers 0, and does not raise, when nothing was ever registered
+- record: a second Embed in the same build keeps what __fireUnconditional can reach
 - record: the timer queue is both the pending array and the live set
 - record: a canceled ticker leaves the live set
 - record: a repeating AceTimer stays live across a tick, and leaves on cancel
@@ -2282,7 +2287,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 38
+- the kit is revision 39
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -2487,7 +2492,7 @@ Total.
 | test_kit_secrets.lua | 30 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
-| test_mock_record.lua | 37 |
+| test_mock_record.lua | 42 |
 | test_mock_events.lua | 14 |
 | test_mock_resize.lua | 6 |
 | test_mock_lines.lua | 5 |
@@ -2505,4 +2510,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2139** |
+| **Total** | **2144** |
