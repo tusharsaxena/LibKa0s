@@ -1966,6 +1966,16 @@ Total.
 - budget: finish says how many buckets went over budget, and nothing gates
 - budget: finish with budgets all inside says zero, and with none declared says nothing
 
+### test_perf_toplevel.lua (7)
+
+- perf top: Note takes false as an observation at top level, not as no observation
+- perf top: top level and a parent, in either order, are a mix that keeps both observations
+- perf top: a bucket observed only at top level is reported as top level, not as unobserved
+- perf top: an undeclared bucket seen at top level and inside a parent names both
+- perf top: two different parents name both in the mixed sentence
+- perf top: an undeclared bucket seen only at top level adds no nesting footer of its own
+- perf top: a top-level observation travels into the record and its JSON as false
+
 ### test_perf_isolation.lua (12)
 
 - iso: two instances create separate sampler frames
@@ -2484,6 +2494,7 @@ Total.
 | test_perf_panel.lua | 45 |
 | test_perf_command.lua | 22 |
 | test_perf_budget.lua | 11 |
+| test_perf_toplevel.lua | 7 |
 | test_perf_isolation.lua | 12 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
@@ -2510,4 +2521,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2144** |
+| **Total** | **2151** |

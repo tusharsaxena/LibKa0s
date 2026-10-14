@@ -69,6 +69,9 @@ is not re-read or re-migrated by the addon after adopting the library.
     // `within` is what the DESCRIPTOR declared; `observedWithin` is what the capture actually saw.
     "paintBar":    { "calls": 1869, "totalMs": 98.1, "maxMs": 0.92,
                      "within": "repaintPass", "observedWithin": "repaintPass" },
+    // A bucket seen inside a parent on one path and at top level (`false`) on another.
+    "evaluate":    { "calls": 412, "totalMs": 6.3, "maxMs": 0.21,
+                     "observedWithin": "feed.add", "observedMixed": true, "observedSecond": false },
     // `budget` is the descriptor's report-only ceiling, present only on a budgeted bucket.
     "spellPoll":   { "calls": 9120, "totalMs": 402.7, "maxMs": 9.64,
                      "budget": { "msPerSec": 13, "maxMs": 20 } }
@@ -117,6 +120,17 @@ the encoder.
   bucket was observed under two *different* parents, in which case `observedWithin` holds the first.
   Records written before minor 7 carry neither key and are read unchanged — which is why this did not
   cost a schema bump and did not discard anyone's ring.
+- **`buckets[*].observedWithin` is a string or `false`**, and **`buckets[*].observedSecond`** is new,
+  both from `Perf.lua` minor 15 and both **additive within schema 2**. `Perf.Note(key, ms, false)`
+  says the call ran **at top level**, inside no bucket; `false` is an observation, written to the
+  dump as the JSON boolean, and the report reads it as *top level*. It takes part in first-wins and
+  in the mix exactly as a parent key does, so a bucket seen both inside `feed.add` and at top level
+  is `observedMixed`. `observedSecond` is the first observation that differed from
+  `observedWithin` — a key or `false` — and is present only beside `observedMixed`, so a reader can
+  say *where else* the bucket ran rather than only that it did. A Shape B bracket still passes no
+  parent for the outermost open bracket (`PerfSampler.lua` minor 1). Records written before minor
+  15 carry no `observedSecond`; one written by a minor-14 probe whose call site passed `false`
+  carries `"observedWithin": false` too, and means the same.
 - **`buckets[*].budget`** is **additive within schema 2**, new at `Perf.lua` minor 14 (issue #1):
   `{ "msPerSec": <n>, "maxMs": <n> }`, either key absent when the descriptor declared only the
   other, copied from the descriptor's bucket entry so a reader of `dump.json` can judge the capture

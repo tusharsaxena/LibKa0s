@@ -12,10 +12,32 @@ cannot drift. Release order is in
 
 ## v1.72.0 — unreleased
 
-Versions in this release: every file at its v1.71.0 minor — `Core` 10, `Env` 2, `Compat` 1,
-`Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4, `Slash` key 20.2, `DebugLog` key
-19.2.1, `Launcher` 5, `Options` key 28.2.34.2.4.8.1.7.4.2, `Perf` key 14.1.1.6 and `Widgets` key
-12.1.4.3.2 — and **test kit revision 39**. No payload file under `LibKa0s/` has changed yet.
+Versions in this release: **Perf minor 15** (`LibKa0s-Perf-1.0` key 15.1.1.6: `Perf` 15,
+`PerfSampler` 1, `PerfCommands` 1, `PerfPanel` 6), and every other file at its v1.71.0 minor —
+`Core` 10, `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4,
+`Slash` key 20.2, `DebugLog` key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.4.8.1.7.4.2 and
+`Widgets` key 12.1.4.3.2 — and **test kit revision 39**. No `NEEDS_*` floor rises, no member is
+added or removed, and no payload file is added.
+
+### Perf minor 15: `Perf.Note` records an observation at top level
+
+- **`parentKey = false` means "observed at top level".** `Note`'s third argument had two states, nil
+  (*not stated*) and a bucket key (*observed inside it*), so a bucket that runs inside a parent on
+  one path and outside every bucket on another could not be recorded truthfully. `false` is the
+  third state; it takes part in first-wins and in the mix exactly as a key does. nil and a key keep
+  their meaning. From DropWatcher's 2026-10-14 review (F20).
+- **The record keeps the boolean.** `observedWithin` is a string or `false`, and a mixed bucket now
+  carries **`observedSecond`**, the first observation that differed from it. Both additive within
+  schema 2; `lib.EncodeJSON` writes `false`. [`docs/record-schema.md`](docs/record-schema.md).
+- **The nesting footer says *top level*, never the sentinel.** Through minor 14 a top-level-only
+  bucket that declared a parent was reported *declares itself within P — not observed*, and a mix
+  printed *first: false*. Now: *X observed at top level*, *X declares itself within P but was
+  observed at top level*, *X observed inside P and at top level*, and, for two keys, *X observed
+  inside more than one parent (first: P, then: Q)*. An undeclared bucket seen only at top level does
+  not by itself make a flat bucket set print the footer.
+- **Shape B is unchanged:** `P.Close` still passes nil for the outermost bracket (`PerfSampler.lua`
+  stays at minor 1).
+- Seven cases in a new suite, `tests/test_perf_toplevel.lua` (five red under minor 14). [Perf version 15.1.1.6](docs/api/Perf/version-15.1.1.6-docs.md).
 
 ### Test kit revision 39: `M.__fireUnconditional` reaches method-name and function handlers
 
@@ -37,6 +59,8 @@ Versions in this release: every file at its v1.71.0 minor — `Core` 10, `Env` 2
 
 ### What a consumer owes
 
+- **The whole-folder copy of `libs/LibKa0s/`** for Perf 15. Nothing in a host's code changes; a
+  host with a sometimes-nested bucket can pass `false` where the work runs outside every bucket.
 - **The whole-folder copy of `tests/_kit/`.** A stand-down case that fires unconditionally at a
   method-name handler ran nothing before and runs it now; if that handler writes SavedVariables,
   prints or shows a frame while disabled, the case goes red for a real reason and the addon's guard
