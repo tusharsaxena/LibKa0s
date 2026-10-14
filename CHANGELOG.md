@@ -10,14 +10,25 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.72.0 — unreleased
+## v1.72.0 — 2026-10-14
 
 Versions in this release: **Perf minor 15** (`LibKa0s-Perf-1.0` key 15.1.1.6: `Perf` 15,
 `PerfSampler` 1, `PerfCommands` 1, `PerfPanel` 6), and every other file at its v1.71.0 minor —
 `Core` 10, `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4,
 `Slash` key 20.2, `DebugLog` key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.4.8.1.7.4.2 and
 `Widgets` key 12.1.4.3.2 — and **test kit revision 39**. No `NEEDS_*` floor rises, no library
-member is added or removed, and no payload file is added (the kit gains `testkit/latch.lua`).
+member is added or removed, and no payload file is added, so the library stays at **fifteen
+majors across thirty-four files** (the kit gains `testkit/latch.lua`). Built to standard
+**v2.81.0**; the README's standards pointer moves from v2.77.0. Read against the v2.78.0 to
+v2.81.0 entries, nothing in them binds the payload: v2.78.0 has hosts take the landing page from
+`BuildLandingPage`, which `OptionsWidgets` has shipped since minor 6 and kept pool-safe since minor
+8; v2.79.0's compat family edits library-stack-§7's `LibKa0s-Compat-1.0` row to one seam routed
+from the root, which is how every host already wires it; v2.80.0's `Bindings.xml` rule is addon
+layout; and v2.81.0's six corrections (slash-commands-§7 step 6 and the refusal line by hold,
+toc-file-§5, documentation-§3, options-ui-§19, compat's root header) bind the consumers. Its
+step-6 rule is the one this release's kit revision 39 serves: a consumer asserts the count
+`M.__fireUnconditional` returns, and revision 39 is what makes that count 1 for a method-name
+handler.
 
 ### Perf minor 15: `Perf.Note` records an observation at top level
 
@@ -80,6 +91,15 @@ member is added or removed, and no payload file is added (the kit gains `testkit
   prints or shows a frame while disabled, the case goes red for a real reason and the addon's guard
   is the fix. Assert the counts `M.__fireUnconditional` returns. A hand-written step-10 latch case
   may switch to `T.assertLatchHoldOrder`; nothing requires it.
+- **The provenance line rolls to v1.72.0** in each consumer's `CLAUDE.md`, in the same commit as
+  the copy, as `tests/test_vendor_sync.lua` resolves both payloads from the tag it names.
+- **No census re-run.** No export is added or removed (`false` is a new value of an existing
+  argument, and the kit is not a library export), so [`docs/api/CONSUMERS.md`](docs/api/CONSUMERS.md)
+  keeps its v1.71.0 stamp.
+- **Released on its branch, not tagged.** v1.72.0 is cut on
+  `feat/2026-10-14-drop-watcher-review-audit` with no tag: the tag, the merge to `master` and the
+  push wait on the owner's approval of the merge. DropWatcher re-vendors from the branch head and
+  records v1.72.0 in its provenance line; the other thirteen consumers re-vendor after the tag.
 
 ## v1.71.0 — 2026-10-07
 
