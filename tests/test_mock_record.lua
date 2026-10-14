@@ -203,6 +203,80 @@ test("record: __fireUnconditional drives an AceEvent handler too", function()
   assertEqual(table.concat(seen, ","), "PLAYER_LOGIN")
 end)
 
+-- Kit revision 39 (DropWatcher's 2026-10-14 review, F19). AceEvent's method form,
+-- RegisterEvent("PLAYER_REGEN_DISABLED", "OnCombatStart"), names a method that is NOT the event, and
+-- the recorded handler goes with the registration, so through revision 38 this matched none of the
+-- three lookups and answered 0: the falsification half could not reach the most common handler an
+-- addon registers. Red under revision 38: the count is 0 and the handler never runs.
+test("record: __fireUnconditional reaches a method-name handler after UnregisterAllEvents", function()
+  local M = buildMocks()
+  local seen = {}
+  local t = {}
+  function t:OnCombatStart(event, arg) seen[#seen + 1] = { self = self, event = event, arg = arg } end
+  M.__libs["AceEvent-3.0"]:Embed(t)
+  t:RegisterEvent("PLAYER_REGEN_DISABLED", "OnCombatStart")
+  t:UnregisterAllEvents()
+  assertEqual(next(t.__events), nil, "the registration is gone, and the record of its handler does not show")
+  assertEqual(M.__fire("PLAYER_REGEN_DISABLED"), 0, "unreachable from the client")
+  assertEqual(M.__fireUnconditional(t, "PLAYER_REGEN_DISABLED", 7), 1, "and reached anyway")
+  assertEqual(#seen, 1)
+  assertTrue(seen[1].self == t, "called as a method, CallbackHandler's own call")
+  assertEqual(seen[1].event, "PLAYER_REGEN_DISABLED")
+  assertEqual(seen[1].arg, 7)
+end)
+
+test("record: __fireUnconditional reaches a function handler after UnregisterEvent", function()
+  local M = buildMocks()
+  local seen = {}
+  local t = {}
+  M.__libs["AceEvent-3.0"]:Embed(t)
+  t:RegisterEvent("PLAYER_REGEN_ENABLED", function(event, arg)
+    seen[#seen + 1] = event .. ":" .. tostring(arg)
+  end)
+  t:UnregisterEvent("PLAYER_REGEN_ENABLED")
+  assertEqual(M.__fire("PLAYER_REGEN_ENABLED"), 0)
+  assertEqual(M.__fireUnconditional(t, "PLAYER_REGEN_ENABLED", "x"), 1)
+  assertEqual(table.concat(seen, ","), "PLAYER_REGEN_ENABLED:x")
+end)
+
+test("record: __fireUnconditional reaches the handler of the latest registration", function()
+  local M = buildMocks()
+  local seen = {}
+  local t = {}
+  function t:First() seen[#seen + 1] = "first" end
+  function t:Second() seen[#seen + 1] = "second" end
+  M.__libs["AceEvent-3.0"]:Embed(t)
+  t:RegisterEvent("PLAYER_REGEN_DISABLED", "First")
+  t:RegisterEvent("PLAYER_REGEN_DISABLED", "Second")
+  t:UnregisterAllEvents()
+  assertEqual(M.__fireUnconditional(t, "PLAYER_REGEN_DISABLED"), 1)
+  assertEqual(table.concat(seen, ","), "second", "what the client would have called last")
+end)
+
+test("record: __fireUnconditional answers 0, and does not raise, when nothing was ever registered", function()
+  -- Decision D2 of DropWatcher's 2026-10-14 remediation: the count is the contract. A raise would
+  -- turn red every consumer suite that calls it at a target with nothing to reach, on its next
+  -- re-vendor; a suite proves reach by asserting the count instead (slash-commands-§7 step 6).
+  local M = buildMocks()
+  local t = {}
+  M.__libs["AceEvent-3.0"]:Embed(t)
+  assertEqual(M.__fireUnconditional(t, "PLAYER_REGEN_DISABLED"), 0, "nothing registered, nothing reached")
+  assertEqual(M.__fireUnconditional(nil, "PLAYER_REGEN_DISABLED"), 0, "and not a table at all")
+end)
+
+test("record: a second Embed in the same build keeps what __fireUnconditional can reach", function()
+  local M = buildMocks()
+  local hits = 0
+  local t = {}
+  function t:OnCombatStart() hits = hits + 1 end
+  M.__libs["AceEvent-3.0"]:Embed(t)
+  t:RegisterEvent("PLAYER_REGEN_DISABLED", "OnCombatStart")
+  t:UnregisterAllEvents()
+  M.__libs["AceEvent-3.0"]:Embed(t)
+  assertEqual(M.__fireUnconditional(t, "PLAYER_REGEN_DISABLED"), 1)
+  assertEqual(hits, 1)
+end)
+
 -- ── timers ─────────────────────────────────────────────────────────────────────────────────
 
 test("record: the timer queue is both the pending array and the live set", function()

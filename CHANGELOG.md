@@ -10,6 +10,101 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.72.0 — 2026-10-14
+
+Versions in this release: **Perf minor 15** (`LibKa0s-Perf-1.0` key 15.1.1.6: `Perf` 15,
+`PerfSampler` 1, `PerfCommands` 1, `PerfPanel` 6), and every other file at its v1.71.0 minor —
+`Core` 10, `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4,
+`Slash` key 20.2, `DebugLog` key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.4.8.1.7.4.2 and
+`Widgets` key 12.1.4.3.2 — and **test kit revision 39**. No `NEEDS_*` floor rises, no library
+member is added or removed, and no payload file is added, so the library stays at **fifteen
+majors across thirty-four files** (the kit gains `testkit/latch.lua`). Built to standard
+**v2.81.0**; the README's standards pointer moves from v2.77.0. Read against the v2.78.0 to
+v2.81.0 entries, nothing in them binds the payload: v2.78.0 has hosts take the landing page from
+`BuildLandingPage`, which `OptionsWidgets` has shipped since minor 6 and kept pool-safe since minor
+8; v2.79.0's compat family edits library-stack-§7's `LibKa0s-Compat-1.0` row to one seam routed
+from the root, which is how every host already wires it; v2.80.0's `Bindings.xml` rule is addon
+layout; and v2.81.0's six corrections (slash-commands-§7 step 6 and the refusal line by hold,
+toc-file-§5, documentation-§3, options-ui-§19, compat's root header) bind the consumers. Its
+step-6 rule is the one this release's kit revision 39 serves: a consumer asserts the count
+`M.__fireUnconditional` returns, and revision 39 is what makes that count 1 for a method-name
+handler.
+
+### Perf minor 15: `Perf.Note` records an observation at top level
+
+- **`parentKey = false` means "observed at top level".** `Note`'s third argument had two states, nil
+  (*not stated*) and a bucket key (*observed inside it*), so a bucket that runs inside a parent on
+  one path and outside every bucket on another could not be recorded truthfully. `false` is the
+  third state; it takes part in first-wins and in the mix exactly as a key does. nil and a key keep
+  their meaning. From DropWatcher's 2026-10-14 review (F20).
+- **The record keeps the boolean.** `observedWithin` is a string or `false`, and a mixed bucket now
+  carries **`observedSecond`**, the first observation that differed from it. Both additive within
+  schema 2; `lib.EncodeJSON` writes `false`. [`docs/record-schema.md`](docs/record-schema.md).
+- **The nesting footer says *top level*, never the sentinel.** Through minor 14 a top-level-only
+  bucket that declared a parent was reported *declares itself within P — not observed*, and a mix
+  printed *first: false*. Now: *X observed at top level*, *X declares itself within P but was
+  observed at top level*, *X observed inside P and at top level*, and, for two keys, *X observed
+  inside more than one parent (first: P, then: Q)*. An undeclared bucket seen only at top level does
+  not by itself make a flat bucket set print the footer.
+- **Shape B is unchanged:** `P.Close` still passes nil for the outermost bracket (`PerfSampler.lua`
+  stays at minor 1).
+- Seven cases in a new suite, `tests/test_perf_toplevel.lua` (five red under minor 14). [Perf version 15.1.1.6](docs/api/Perf/version-15.1.1.6-docs.md).
+
+### Test kit revision 39: `M.__fireUnconditional` reaches method-name and function handlers
+
+- **A handler registered under a method name, or as a function, is reached after unregister.**
+  `RegisterEvent("PLAYER_REGEN_DISABLED", "OnCombatStart")` named a method that is not the event,
+  and `UnregisterEvent` / `UnregisterAllEvents` clear the recorded handler, so through revision 38
+  `M.__fireUnconditional` matched none of its lookups, ran nothing and answered 0: the falsification
+  half of a stand-down suite could not reach the most common handler an addon registers. The
+  AceEvent fake's `RegisterEvent` now also keeps each event's handler as `__kitEver` on the
+  `__events` table's metatable, which unregister never clears and `pairs`, `M.__registrations()` and
+  the surveys never see, and `M.__fireUnconditional` reads it after the live `__events[event]` and
+  before the method named for the event. A second `Embed` in the same build carries it over. From
+  DropWatcher's 2026-10-14 review (F19).
+- **The return contract does not move:** 1 when a handler was reached, 0 when nothing was, never a
+  raise. The review's fix raised on 0; that was declined as a contract change under an unmoved
+  signature that would turn consumer suites red on re-vendor (X02). A suite proves reach by
+  asserting the count.
+- Five cases in `tests/test_mock_record.lua`. [testkit version 39](docs/api/testkit/version-39-docs.md).
+
+### Test kit revision 39: `Kit.assertLatchHoldOrder`, the step-10 helper
+
+- **New file `testkit/latch.lua`**, loaded once by `framework.lua` beside `secrets.lua`, with one
+  member, `Kit.assertLatchHoldOrder(opts)`, which `Kit.expose` publishes. It runs
+  `slash-commands-§7` step 10 (two holds, one latch) in both orders against injected seams —
+  `lifecycle`, `perfHold`, `setEnabled`, `regSet`, optional `key` and `label` — asserting the addon
+  stays stood down until the last hold is released and comes back with the registration set it went
+  down with, compared by key rather than by count. Each order runs under `pcall`, and the helper
+  releases perf and re-enables before re-raising, naming the order. It never reaches into the
+  addon's namespace, and the consumer keeps its `-- red under:` comment at the call site. Every
+  addon wrote this case by hand. From DropWatcher's 2026-10-14 review (F21).
+- Nine cases in a new suite, `tests/test_kit_latch.lua` (all red before the file existed), and
+  `tests/test_kitsync.lua` checks `latch.lua` exists on both sides.
+
+### What a consumer owes
+
+- **The whole-folder copy of `libs/LibKa0s/`** for Perf 15. Nothing in a host's code changes; a
+  host with a sometimes-nested bucket can pass `false` where the work runs outside every bucket.
+- **The whole-folder copy of `tests/_kit/`.** A stand-down case that fires unconditionally at a
+  method-name handler ran nothing before and runs it now; if that handler writes SavedVariables,
+  prints or shows a frame while disabled, the case goes red for a real reason and the addon's guard
+  is the fix. Assert the counts `M.__fireUnconditional` returns. A hand-written step-10 latch case
+  may switch to `T.assertLatchHoldOrder`; nothing requires it.
+- **The provenance line rolls to v1.72.0** in each consumer's `CLAUDE.md`, in the same commit as
+  the copy, as `tests/test_vendor_sync.lua` resolves both payloads from the tag it names.
+- **No census re-run.** No export is added or removed (`false` is a new value of an existing
+  argument, and the kit is not a library export), so [`docs/api/CONSUMERS.md`](docs/api/CONSUMERS.md)
+  keeps its v1.71.0 stamp.
+- **Released on its branch, not tagged.** v1.72.0 is cut on
+  `feat/2026-10-14-drop-watcher-review-audit` with no tag: the tag, the merge to `master` and the
+  push wait on the owner's approval of the merge. DropWatcher re-vendors from the branch head and
+  records v1.72.0 in its provenance line; the other thirteen consumers re-vendor after the tag.
+
+Release gate (`docs/automated-tests/20261014-215316/`): lint pass, 0/0 in 158 files;
+tests pass, 2162 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.71.0 — 2026-10-07
 
 Versions in this release: **WidgetsLineChart minor 3** and **WidgetsAutocomplete minor 2**

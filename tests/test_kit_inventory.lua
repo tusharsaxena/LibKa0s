@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 38", function()
-  assertEqual(Kit.VERSION, 38, "v1.71.0 ships revision 38, whose --list Total counts only cases that run")
-  assertEqual(T.KIT_VERSION, 38, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 39", function()
+  assertEqual(Kit.VERSION, 39, "v1.72.0 ships revision 39, whose __fireUnconditional reaches method-name handlers")
+  assertEqual(T.KIT_VERSION, 39, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

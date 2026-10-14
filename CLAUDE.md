@@ -212,7 +212,7 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
 left on 2026-10-01 (below), and `LibKa0s/Slash.lua` came in and left again the same day. Largest
 first:
 
-- `testkit/mock_base.lua` (1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
+- `testkit/mock_base.lua` (1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
   1452 with the shown-by-default flip's four comment lines, 1448 with
   `testkit/mock_events.lua`'s load, hook and install lines, 1446 before them — it was 1499 at kit
@@ -247,8 +247,9 @@ measurement windows and the FPS sampler, `P.Start` through `P.Cancel`, and `P.Su
 paired on the probe's minor like the other two. The open depth went with the brackets, so the window
 edges reset it in their own file and `P.Reset` zeroes it through the function the installer hands
 back; the FPS arms and the completion pair are read through getters because `P.Reset` replaces
-them. What is left is the probe, the record and the report. **Re-check trigger: 1000 lines**; the
-report sections (`addFpsLines` through `lib.__budgetOver`, file-level already) are the next seam.
+them. What is left is the probe, the record and the report. It is 997 with minor 15's top-level
+observation in `Note` (F20 of DropWatcher's 2026-10-14 review), measured 2026-10-14, three under
+the trigger. **Re-check trigger: 1000 lines**; the report sections (`addFpsLines` through `lib.__budgetOver`, file-level already) are the next seam.
 `LibKa0s/Slash.lua` came into the band on 2026-10-01 and left it the same day, 1030 → 877: 999 at
 v1.65.0, 1006 with minor 19's resolver (issue #40), 1030 with `GI-LK-11`'s file-level descriptor
 helpers. `GI-LK-03R` (the addendum's A2) moved the seam its entry named, the parser block

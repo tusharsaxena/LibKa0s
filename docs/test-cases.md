@@ -1966,6 +1966,16 @@ Total.
 - budget: finish says how many buckets went over budget, and nothing gates
 - budget: finish with budgets all inside says zero, and with none declared says nothing
 
+### test_perf_toplevel.lua (7)
+
+- perf top: Note takes false as an observation at top level, not as no observation
+- perf top: top level and a parent, in either order, are a mix that keeps both observations
+- perf top: a bucket observed only at top level is reported as top level, not as unobserved
+- perf top: an undeclared bucket seen at top level and inside a parent names both
+- perf top: two different parents name both in the mixed sentence
+- perf top: an undeclared bucket seen only at top level adds no nesting footer of its own
+- perf top: a top-level observation travels into the record and its JSON as false
+
 ### test_perf_isolation.lua (12)
 
 - iso: two instances create separate sampler frames
@@ -2059,6 +2069,18 @@ Total.
 - kit: a secret minted before a second kit load and mock build is still a secret after
 - kit: nothing installs issecretvalue by default
 
+### test_kit_latch.lua (9)
+
+- kit latch: Kit.assertLatchHoldOrder is on the kit table and published by Kit.expose
+- kit latch: a conformant host passes both orders and is left up with no hold taken
+- kit latch: an enable path that stands up directly fails order B (perf still held)
+- kit latch: a disable path that takes no hold fails order A (releasing perf resurrects it)
+- kit latch: a rebuild of the same size under different keys fails (compared by key, not count)
+- kit latch: an empty R_on fails before anything is held
+- kit latch: the label leads every failure message
+- kit latch: table registrations are keyed by target, kind, event and unit, or by opts.key
+- kit latch: missing or wrong-typed opts raise naming the field
+
 ### test_mock_base.lua (33)
 
 - mock: a frame that was never armed answers zero, dressed or not
@@ -2137,7 +2159,7 @@ Total.
 - ace: AceDB's OnProfileCopied carries the SOURCE profile's key, as AceDB-3.0 fires it
 - mock_ace: AceDB's ResetProfile fires OnProfileReset with the database alone
 
-### test_mock_record.lua (37)
+### test_mock_record.lua (42)
 
 - record: a fresh build has registered nothing
 - record: a raw frame:RegisterEvent is recorded, by frame and by name
@@ -2152,6 +2174,11 @@ Total.
 - record: __fire reaches the LIVE set only
 - record: __fireUnconditional reaches a target whose registration is gone
 - record: __fireUnconditional drives an AceEvent handler too
+- record: __fireUnconditional reaches a method-name handler after UnregisterAllEvents
+- record: __fireUnconditional reaches a function handler after UnregisterEvent
+- record: __fireUnconditional reaches the handler of the latest registration
+- record: __fireUnconditional answers 0, and does not raise, when nothing was ever registered
+- record: a second Embed in the same build keeps what __fireUnconditional can reach
 - record: the timer queue is both the pending array and the live set
 - record: a canceled ticker leaves the live set
 - record: a repeating AceTimer stays live across a tick, and leaves on cancel
@@ -2240,7 +2267,7 @@ Total.
 - kitsync: the kit revision is indexed in docs/api/README.md as the one Current revision
 - kitsync: the runner is mode 100755 in the git index, in BOTH copies
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
-- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
+- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, latch.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
 - kitsync: vendor_sync checks the runner's recorded mode, and this repo's copy passes
 - kitsync: the runner-mode case fails on a path the index records 100644
@@ -2282,7 +2309,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 38
+- the kit is revision 39
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -2479,15 +2506,17 @@ Total.
 | test_perf_panel.lua | 45 |
 | test_perf_command.lua | 22 |
 | test_perf_budget.lua | 11 |
+| test_perf_toplevel.lua | 7 |
 | test_perf_isolation.lua | 12 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
 | test_kit_asserts.lua | 11 |
 | test_kit_secrets.lua | 30 |
+| test_kit_latch.lua | 9 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
-| test_mock_record.lua | 37 |
+| test_mock_record.lua | 42 |
 | test_mock_events.lua | 14 |
 | test_mock_resize.lua | 6 |
 | test_mock_lines.lua | 5 |
@@ -2505,4 +2534,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2139** |
+| **Total** | **2160** |

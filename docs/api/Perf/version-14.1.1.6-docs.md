@@ -11,9 +11,9 @@
 | Files and minors | `Perf.lua` **14** · `PerfSampler.lua` **1** · `PerfCommands.lua` **1** · `PerfPanel.lua` **6** |
 | Version key | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>`, in load order — the same four numbers `lib.MODULES` reports |
 | Shipped in | v1.66.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 13.6](./version-13.6-docs.md) — the capture and the command surface inside `Perf.lua` |
-| Superseded by | — |
+| Superseded by | [version 15.1.1.6](./version-15.1.1.6-docs.md) — `Note` takes `false` as an observation at top level |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 14, PerfSampler = 1, PerfCommands = 1, PerfPanel = 6 }` |
@@ -716,3 +716,11 @@ The four files move as one. A consumer holding `Perf.lua` from one vendored copy
 `PerfSampler.lua`, `PerfCommands.lua` or `PerfPanel.lua` from another is not a supported state; each secondary file is
 paired on the probe's minor so a mismatch re-attaches rather than persisting silently, which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 15.1.1.6
+
+**Take it; nothing in a host's code or its degradation stub changes.** The next version is key
+15.1.1.6: `Perf.lua` 15, every other file unchanged. `Note`'s third argument gains a third state,
+`false`, *observed at top level*; nil and a bucket key keep their meaning. The record's
+`observedWithin` may then be `false`, and a mixed bucket carries `observedSecond`. No member
+changes. Re-vendor the whole folder, as always. See [version 15.1.1.6](./version-15.1.1.6-docs.md).
