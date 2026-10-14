@@ -2069,6 +2069,18 @@ Total.
 - kit: a secret minted before a second kit load and mock build is still a secret after
 - kit: nothing installs issecretvalue by default
 
+### test_kit_latch.lua (9)
+
+- kit latch: Kit.assertLatchHoldOrder is on the kit table and published by Kit.expose
+- kit latch: a conformant host passes both orders and is left up with no hold taken
+- kit latch: an enable path that stands up directly fails order B (perf still held)
+- kit latch: a disable path that takes no hold fails order A (releasing perf resurrects it)
+- kit latch: a rebuild of the same size under different keys fails (compared by key, not count)
+- kit latch: an empty R_on fails before anything is held
+- kit latch: the label leads every failure message
+- kit latch: table registrations are keyed by target, kind, event and unit, or by opts.key
+- kit latch: missing or wrong-typed opts raise naming the field
+
 ### test_mock_base.lua (33)
 
 - mock: a frame that was never armed answers zero, dressed or not
@@ -2255,7 +2267,7 @@ Total.
 - kitsync: the kit revision is indexed in docs/api/README.md as the one Current revision
 - kitsync: the runner is mode 100755 in the git index, in BOTH copies
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
-- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
+- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, latch.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
 - kitsync: vendor_sync checks the runner's recorded mode, and this repo's copy passes
 - kitsync: the runner-mode case fails on a path the index records 100644
@@ -2501,6 +2513,7 @@ Total.
 | test_kit_limits.lua | 12 |
 | test_kit_asserts.lua | 11 |
 | test_kit_secrets.lua | 30 |
+| test_kit_latch.lua | 9 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 42 |
@@ -2521,4 +2534,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2151** |
+| **Total** | **2160** |

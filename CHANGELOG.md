@@ -16,8 +16,8 @@ Versions in this release: **Perf minor 15** (`LibKa0s-Perf-1.0` key 15.1.1.6: `P
 `PerfSampler` 1, `PerfCommands` 1, `PerfPanel` 6), and every other file at its v1.71.0 minor —
 `Core` 10, `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` 4,
 `Slash` key 20.2, `DebugLog` key 19.2.1, `Launcher` 5, `Options` key 28.2.34.2.4.8.1.7.4.2 and
-`Widgets` key 12.1.4.3.2 — and **test kit revision 39**. No `NEEDS_*` floor rises, no member is
-added or removed, and no payload file is added.
+`Widgets` key 12.1.4.3.2 — and **test kit revision 39**. No `NEEDS_*` floor rises, no library
+member is added or removed, and no payload file is added (the kit gains `testkit/latch.lua`).
 
 ### Perf minor 15: `Perf.Note` records an observation at top level
 
@@ -57,6 +57,20 @@ added or removed, and no payload file is added.
   asserting the count.
 - Five cases in `tests/test_mock_record.lua`. [testkit version 39](docs/api/testkit/version-39-docs.md).
 
+### Test kit revision 39: `Kit.assertLatchHoldOrder`, the step-10 helper
+
+- **New file `testkit/latch.lua`**, loaded once by `framework.lua` beside `secrets.lua`, with one
+  member, `Kit.assertLatchHoldOrder(opts)`, which `Kit.expose` publishes. It runs
+  `slash-commands-§7` step 10 (two holds, one latch) in both orders against injected seams —
+  `lifecycle`, `perfHold`, `setEnabled`, `regSet`, optional `key` and `label` — asserting the addon
+  stays stood down until the last hold is released and comes back with the registration set it went
+  down with, compared by key rather than by count. Each order runs under `pcall`, and the helper
+  releases perf and re-enables before re-raising, naming the order. It never reaches into the
+  addon's namespace, and the consumer keeps its `-- red under:` comment at the call site. Every
+  addon wrote this case by hand. From DropWatcher's 2026-10-14 review (F21).
+- Nine cases in a new suite, `tests/test_kit_latch.lua` (all red before the file existed), and
+  `tests/test_kitsync.lua` checks `latch.lua` exists on both sides.
+
 ### What a consumer owes
 
 - **The whole-folder copy of `libs/LibKa0s/`** for Perf 15. Nothing in a host's code changes; a
@@ -64,7 +78,8 @@ added or removed, and no payload file is added.
 - **The whole-folder copy of `tests/_kit/`.** A stand-down case that fires unconditionally at a
   method-name handler ran nothing before and runs it now; if that handler writes SavedVariables,
   prints or shows a frame while disabled, the case goes red for a real reason and the addon's guard
-  is the fix. Assert the counts `M.__fireUnconditional` returns.
+  is the fix. Assert the counts `M.__fireUnconditional` returns. A hand-written step-10 latch case
+  may switch to `T.assertLatchHoldOrder`; nothing requires it.
 
 ## v1.71.0 — 2026-10-07
 
