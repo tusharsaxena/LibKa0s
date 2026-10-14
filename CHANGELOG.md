@@ -101,6 +101,10 @@ handler.
   push wait on the owner's approval of the merge. DropWatcher re-vendors from the branch head and
   records v1.72.0 in its provenance line; the other thirteen consumers re-vendor after the tag.
 
+Release gate (`docs/automated-tests/20261014-215316/`): lint pass, 0/0 in 158 files;
+tests pass, 2162 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.71.0 — 2026-10-07
 
 Versions in this release: **WidgetsLineChart minor 3** and **WidgetsAutocomplete minor 2**

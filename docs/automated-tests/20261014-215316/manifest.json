@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "addon": "LibKa0s",
+  "addonVersion": "1.71.0",
+  "run": "20261014-215316",
+  "startedAt": "2026-10-14T21:53:16+05:30",
+  "durationMs": 27198,
+  "label": null,
+  "release": "1.72.0",
+  "git": { "sha": "0521d49fd6fbdf4a1c41e0b59f50219964c42417", "branch": "feat/2026-10-14-drop-watcher-review-audit", "dirty": false },
+  "host": { "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio", "luacheck": "Luacheck: 1.2.0", "lizard": "1.24.0", "timingSource": "date +%s%3N" },
+  "suites": {
+    "lint": { "status": "pass", "durationMs": 3087, "warnings": 0, "errors": 0, "files": 158, "gating": true, "gates": { "commit": true, "release": true } },
+    "tests": { "status": "pass", "durationMs": 19349, "passed": 2160, "failed": 0, "skipped": 2, "total": 2162, "gating": true, "gates": { "commit": true, "release": true } },
+    "perf": { "status": "skip", "durationMs": 2, "skipReason": "no tests/perf.lua — this addon ships no offline scenarios", "scenarios": 0, "gating": false, "gates": { "commit": false, "release": true } },
+    "complexity": { "status": "pass", "durationMs": 3390, "warnings": 0, "maxCcn": 15, "nloc": 42982, "functions": 6534, "avgCcn": 2.0, "avgNloc": 6.7, "avgToken": 54.3, "warnFunRatio": 0.00, "warnNlocRatio": 0.00, "bandFiles": 6, "overCapFiles": 0, "blindFiles": 0, "gating": false, "gates": { "commit": false, "release": true } }
+  },
+  "verdict": "green"
+}
