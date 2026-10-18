@@ -1574,6 +1574,33 @@ Total.
 - nav: a live scroll moves right of the rail at once, and back when the rail is released, with or without a band
 - nav: with OptionsNav.lua absent there is no NavRail and nothing is inset
 
+### test_options_drawer.lua (24)
+
+- drawer: OptionsDrawer is at minor 1, attached to an Options shell at 29 or later
+- drawer: a closed drawer is one full-width group on the page, a header and no body
+- drawer: the header carries the label and the summary; set is gold, unset white and gray
+- drawer: summary and set may be functions, read when the drawer is drawn
+- drawer: a summary function that raises reads as no summary and is reported
+- drawer: the chevron points right while closed and down while open
+- drawer: a header click hands the host the other state, then re-renders the page once
+- drawer: a header click is refused in combat, and the host is not told
+- drawer: an onToggle that raises is reported and the click goes no further
+- drawer: an open drawer asks the host for its body, with a ctx whose scroll is the body
+- drawer: the ordinary helpers draw into the box, not onto the page
+- drawer: the body ctx reads the page's fields and writes through to the page
+- drawer: RefreshPanel on a body ctx refreshes the page it is drawn on
+- drawer: a body that raises is reported against the drawer and the page goes on
+- drawer: a disabled drawer draws its body under the render-disabled flag, and lifts it after
+- drawer: a drawer inside a drawer writes to the page and refreshes the page
+- drawer: actions sit right-aligned on the box's last line, in the order given
+- drawer: a closed drawer draws no actions; a drawer with none draws no action line
+- drawer: an action click runs the host's onClick; refused in combat; a raise is reported
+- drawer: a disabled drawer's actions are drawn disabled
+- drawer: the box pads its content and grows by the padding when it lays out
+- drawer: released, the box's methods and the header's button are handed back clean
+- drawer: with OptionsDrawer.lua absent there is no Drawer, and the page is untouched
+- drawer: with no AceGUI it draws nothing and answers nil
+
 ### test_options_idsuggest.lua (29)
 
 - IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
@@ -2493,6 +2520,7 @@ Total.
 | test_options_tabs.lua | 41 |
 | test_options_tabbed.lua | 20 |
 | test_options_nav.lua | 14 |
+| test_options_drawer.lua | 24 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 11 |
 | test_options_idlist_remove.lua | 8 |
@@ -2534,4 +2562,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2160** |
+| **Total** | **2184** |

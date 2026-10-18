@@ -70,7 +70,7 @@ the file you need:
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
-| `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
+| `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
 | `LibKa0s-Perf-1.0` | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
 
 A multi-file major gets a composite key because its files carry **independent** minors that really do
@@ -83,8 +83,9 @@ from another out of the wild, and LibStub cannot detect that mismatch if it happ
 `13.12.3`, four from `14.13.1.3` where `OptionsCompose.lua` joined the major, and five from
 `21.20.1.7.3` where `OptionsTabs.lua` did, six from `25.31.5.7.4.1` where `OptionsNav.lua` did, eight
 from `25.32.1.1.5.7.4.1` where `OptionsIds.lua` and `OptionsIdList.lua` did, nine from
-`25.32.1.1.6.1.7.4.1` where `OptionsCombat.lua` did, and ten from `26.1.32.1.1.6.1.7.4.1` where
-`OptionsRegistry.lua` did. The order is
+`25.32.1.1.6.1.7.4.1` where `OptionsCombat.lua` did, ten from `26.1.32.1.1.6.1.7.4.1` where
+`OptionsRegistry.lua` did, and eleven from `29.2.34.2.4.8.1.7.4.2.1` where `OptionsDrawer.lua` did.
+The order is
 load order — `LibKa0s.xml`'s — which is what `tests/test_versioning.lua` derives the expected
 filename from, so the two cannot disagree.
 
@@ -248,7 +249,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [28.2.34.2.4.8.1.7.4.2](./Options/version-28.2.34.2.4.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.71.0 | **Current** |
+| [29.2.34.2.4.8.1.7.4.2.1](./Options/version-29.2.34.2.4.8.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · **`OptionsDrawer.lua` 1** (new: `O.Drawer`) | v1.73.0 | **Current** |
+| [28.2.34.2.4.8.1.7.4.2](./Options/version-28.2.34.2.4.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.71.0 | Superseded |
 | [28.2.34.2.3.8.1.7.4.2](./Options/version-28.2.34.2.3.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 3 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.67.0 – v1.70.0 | Superseded |
 | [27.2.34.2.2.8.1.7.4.2](./Options/version-27.2.34.2.2.8.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.66.0 | Superseded |
 | [27.2.34.2.2.7.1.7.4.2](./Options/version-27.2.34.2.2.7.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 7 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | none (superseded inside v1.66.0 before the tag was published) | Superseded |
