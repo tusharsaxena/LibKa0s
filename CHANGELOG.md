@@ -39,23 +39,26 @@ does not have. From Ka0s Quick Comms' When tab (its
   their frames and handed back clean on release, because AceGUI's widget registry is process-global.
 - **The open state is the host's** (`spec.open`, `spec.onToggle(open)`), as a tab strip's selection
   is. A header click hands the host the other state and re-renders the page
-  (`O.RefreshPanel(page, true)`); it is refused in combat (`drawer <label>`), and an `onToggle` that
-  raises is reported and redraws nothing. Any number of drawers may be open at once.
+  (`O.RefreshPanel(page, true)`), carrying the page's scroll offset across the re-render so the
+  drawer just opened stays where the player was (the render's first `AddChild` otherwise runs
+  `FixScroll` on a one-row page and zeroes it); it is refused in combat (`drawer <label>`), and an
+  `onToggle` that raises is reported and redraws nothing. Any number of drawers may be open at once.
 - **The body is ordinary rows.** `spec.body(ctx, box)` is called with a **body ctx** whose scroll is
   the box, so `O.RenderGrid`, `O.IdList`, `O.TextRow`, `O.InlineButtonPair` and a host's own `make`
   items draw into it unchanged; every other field of that ctx reads and writes through to the page,
   so a refresher or a host's per-page list started there is the page's. It is pcall'd and reported
   against the drawer. `spec.disabled` draws the body under the page's render-disabled flag (put
-  back after, a raise included) and disables every action. A drawer drawn inside a box writes to,
-  and refreshes, the page.
+  back after, a raise included) and disables every action; so does a drawer drawn while the page's
+  flag is already set (a disabled tab, `RenderRows`' `opts.disabled`). A drawer drawn inside a box
+  writes to, and refreshes, the page.
 - **`spec.actions`**, `{ { text, tooltip, onClick, disabled } }`: buttons on the box's last line,
   right-aligned behind a filler, each `onClick` pcall'd and refused in combat.
 - **The box pads its content** (`lib.__drawerPad`: 26 left, under the header's name; 10 right; 8 top
   and bottom) by patching the box's `OnWidthSet`, `OnHeightSet` and `LayoutFinished` and its content
   anchors, every one restored on release so the pooled `SimpleGroup` the next addon takes is
   unpadded.
-- Twenty-four cases in a new suite, `tests/test_options_drawer.lua` (twenty-three red before the
-  file existed; the twenty-fourth pins the absent-file path). [Options version 29.2.34.2.4.8.1.7.4.2.1](docs/api/Options/version-29.2.34.2.4.8.1.7.4.2.1-docs.md).
+- Twenty-six cases in a new suite, `tests/test_options_drawer.lua` (twenty-five red before the
+  file existed; the twenty-sixth pins the absent-file path). [Options version 29.2.34.2.4.8.1.7.4.2.1](docs/api/Options/version-29.2.34.2.4.8.1.7.4.2.1-docs.md).
 - **One consumer at release** (Quick Comms). `library-stack-§7` asks two; the owner's ruling to build
   it here anyway is a row in `CLAUDE.md` → `## Documented deviations`.
 

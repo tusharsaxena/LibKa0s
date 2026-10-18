@@ -342,10 +342,10 @@ Rules, and the reason each exists:
   half-wired. That is the honest failure, not a working one: the host's setup file reports the
   library as missing and falls back. Nothing negotiates the other direction, and the
   paired-minor guards that protect a secondary file within a major (`SlashParse`, `OptionsRegistry`, `OptionsWidgets`,
-  `OptionsIds`, `OptionsIdList`, `OptionsTabs`, `OptionsCombat`, `OptionsCompose`, `OptionsScroll`, `OptionsNav`, `PerfSampler`, `PerfCommands`, `PerfPanel`) do not generalize across them. Whole-folder copying is the
+  `OptionsIds`, `OptionsIdList`, `OptionsTabs`, `OptionsCombat`, `OptionsCompose`, `OptionsScroll`, `OptionsNav`, `OptionsDrawer`, `PerfSampler`, `PerfCommands`, `PerfPanel`) do not generalize across them. Whole-folder copying is the
   mitigation.
-- **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** TEN files since
-  v1.62.0 (six from v1.61.0, five from v1.39.0). The other majors
+- **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** ELEVEN files since
+  v1.73.0 (ten from v1.62.0, six from v1.61.0, five from v1.39.0). The other majors
   fail loudly and early; this one does not. If `Options.lua` itself is missing or refused, every
   attach file bails on their own `LibStub("LibKa0s-Options-1.0", true)` lookup and the module is
   cleanly absent. But if only one of `OptionsWidgets.lua` / `OptionsTabs.lua` /

@@ -111,6 +111,22 @@ test("drawer: a header click hands the host the other state, then re-renders the
   assertEqual(told[2], false, "open -> closed")
 end)
 
+test("drawer: a header click keeps the page's scroll offset across the re-render", function()
+  -- red under: a toggle that re-renders the page without carrying the scroll offset across it.
+  -- The kit's ScrollFrame has no geometry, so the real loss (ClearScroll, then the first AddChild's
+  -- FixScroll taking the "content fits" branch) is stood in for by a refresh that zeroes it.
+  local O, _, ctx = bench()
+  local scroll = O.EnsureScroll(ctx)
+  scroll.localstatus.offset = 120
+  local fixed = 0
+  scroll.FixScroll = function() fixed = fixed + 1 end
+  O.RefreshPanel = function() scroll.localstatus.offset = 0 end
+  local d = O.Drawer(ctx, { label = "Battleground", open = false, onToggle = function() end })
+  headOf(d):__fire("OnClick")
+  assertEqual(scroll.localstatus.offset, 120, "the offset the player scrolled to survives the toggle")
+  assertEqual(fixed, 1, "and the scroll is re-fixed to it, clamped to the new end")
+end)
+
 test("drawer: a header click is refused in combat, and the host is not told", function()
   -- red under: a click that calls onToggle without asking the shell's combat refusal.
   local O, _, ctx = bench()
@@ -283,6 +299,18 @@ test("drawer: a disabled drawer's actions are drawn disabled", function()
   local O, _, ctx = bench()
   local d = O.Drawer(ctx, { label = "Role", open = true, disabled = true, actions = { { text = "Clear (Any)" } } })
   assertTrue(buttonsIn(d.actions)[1].disabled)
+end)
+
+test("drawer: a drawer drawn while the page is render-disabled draws its actions disabled", function()
+  -- red under: drawActions reading spec.disabled alone, so a drawer on a disabled tab (RenderRows'
+  -- opts.disabled, a host tab rendered disabled) keeps live Select all / Clear buttons.
+  local O, _, ctx = bench()
+  ctx.__renderDisabled = true
+  local d = O.Drawer(ctx, { label = "Role", open = true, actions = { { text = "Clear (Any)" } } })
+  ctx.__renderDisabled = nil
+  assertTrue(buttonsIn(d.actions)[1].disabled, "the action honors the page's flag")
+  local live = O.Drawer(ctx, { label = "Role", open = true, actions = { { text = "Clear (Any)" } } })
+  assertFalse(buttonsIn(live.actions)[1].disabled == true, "and is live on an enabled page")
 end)
 
 -- ── the box's padding, and what goes back to the pool ────────────────────────────────────────
