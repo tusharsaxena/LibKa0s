@@ -1175,7 +1175,7 @@ Total.
 - options: ClearScroll leaves the reserved band alone
 - options: ClearScroll resets BOTH heading trackers
 
-### test_options_render.lua (24)
+### test_options_render.lua (25)
 
 - options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower
 - options: registered page builders run in registration order, once, at CreateOptionsPanel
@@ -1192,6 +1192,7 @@ Total.
 - options: a dirty hidden page re-renders on its next show
 - options: the two tiers differ — one re-renders, the other only re-syncs
 - options: RefreshPanel touches ONE page, on both tiers
+- options: a structural refresh of a page on screen keeps its scroll offset
 - options: RefreshPanel defers a hidden page to its next show
 - options: RefreshPanel ignores a non-ctx rather than raising
 - options: a ctx that never went through SetRenderer keeps the old ungated behavior
@@ -2509,7 +2510,7 @@ Total.
 | test_launcher.lua | 45 |
 | test_atenable.lua | 21 |
 | test_options.lua | 61 |
-| test_options_render.lua | 24 |
+| test_options_render.lua | 25 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 53 |
@@ -2564,4 +2565,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2186** |
+| **Total** | **2187** |

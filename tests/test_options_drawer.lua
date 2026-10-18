@@ -114,13 +114,15 @@ end)
 test("drawer: a header click keeps the page's scroll offset across the re-render", function()
   -- red under: a toggle that re-renders the page without carrying the scroll offset across it.
   -- The kit's ScrollFrame has no geometry, so the real loss (ClearScroll, then the first AddChild's
-  -- FixScroll taking the "content fits" branch) is stood in for by a refresh that zeroes it.
+  -- FixScroll taking the "content fits" branch) is stood in for by a renderer that zeroes it. The
+  -- offset is kept by RefreshPanel itself (Options.lua's keepScroll), so the real one runs here.
   local O, _, ctx = bench()
   local scroll = O.EnsureScroll(ctx)
+  O.SetRenderer(ctx, function() scroll.localstatus.offset = 0 end)
+  ctx.panel:Show(); ctx.panel:__fire("OnShow")
   scroll.localstatus.offset = 120
   local fixed = 0
   scroll.FixScroll = function() fixed = fixed + 1 end
-  O.RefreshPanel = function() scroll.localstatus.offset = 0 end
   local d = O.Drawer(ctx, { label = "Battleground", open = false, onToggle = function() end })
   headOf(d):__fire("OnClick")
   assertEqual(scroll.localstatus.offset, 120, "the offset the player scrolled to survives the toggle")

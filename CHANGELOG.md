@@ -39,9 +39,8 @@ does not have. From Ka0s Quick Comms' When tab (its
   their frames and handed back clean on release, because AceGUI's widget registry is process-global.
 - **The open state is the host's** (`spec.open`, `spec.onToggle(open)`), as a tab strip's selection
   is. A header click hands the host the other state and re-renders the page
-  (`O.RefreshPanel(page, true)`), carrying the page's scroll offset across the re-render so the
-  drawer just opened stays where the player was (the render's first `AddChild` otherwise runs
-  `FixScroll` on a one-row page and zeroes it); it is refused in combat (`drawer <label>`), and an
+  (`O.RefreshPanel(page, true)`), which keeps the page's scroll offset across the re-render (Options
+  minor 29, below), so the drawer just opened stays where the player was; it is refused in combat (`drawer <label>`), and an
   `onToggle` that raises is reported and redraws nothing. Any number of drawers may be open at once.
 - **The body is ordinary rows.** `spec.body(ctx, box)` is called with a **body ctx** whose scroll is
   the box, so `O.RenderGrid`, `O.IdList`, `O.TextRow`, `O.InlineButtonPair` and a host's own `make`
@@ -67,13 +66,22 @@ does not have. From Ka0s Quick Comms' When tab (its
 `lib:New` attaches `OptionsDrawer.lua` after `OptionsNav.lua` (guarded, so a copy without the file
 has no `O.Drawer` and draws every page as before). `O.RefreshPanel(ctx, structural)` takes a
 drawer's body ctx back to the page it is drawn on (`rawget(ctx, "__drawerPage")`), so a host that
-refreshes the ctx it was handed re-renders the page rather than rendering the page into one box. A
-page ctx is refreshed exactly as at minor 28.
+refreshes the ctx it was handed re-renders the page rather than rendering the page into one box.
+
+**A structural refresh of a page on screen keeps its scroll offset.** `RefreshAllPanels` and
+`RefreshPanel(ctx, true)` restore the offset after the re-render and re-fix the scroll, clamped to
+the new end. Through minor 28 the render's first `AddChild` ran `FixScroll` on a one-row page and
+zeroed it, so a write that re-rendered a long page (a checkbox in an open drawer, a row appearing)
+dropped the player back at the top. A page drawn on its show (first show, or owed a render while
+hidden) and a tab click are a change of subject and still start at the top.
 
 ### What a consumer owes
 
 - **The whole-folder copy of `libs/LibKa0s/`** and the provenance line rolled to v1.73.0, as
   always; the kit does not move (39).
+- **A behavior change on every host's pages:** a structural refresh of a page on screen no longer
+  scrolls it to the top (Options minor 29). Nothing to change; a host that scrolled a page back to
+  the top by hand after its own refresh can drop that.
 - **Surface-parity churn.** An Options degradation stub pinned with `Kit.assertSurfaceParity` by
   name goes red until it gains **`Drawer`** as a no-op (a library-absent build draws no panel).
 - **No census re-run yet.** `O.Drawer` is a new export with no host call at the tag;
