@@ -10,6 +10,90 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.73.0 — 2026-10-18
+
+Versions in this release: **Options minor 29** and a new file, **OptionsDrawer minor 1**
+(`LibKa0s-Options-1.0` key **29.2.34.2.4.8.1.7.4.2.1**: `Options` 29, `OptionsRegistry` 2,
+`OptionsWidgets` 34, `OptionsIds` 2, `OptionsIdList` 4, `OptionsTabs` 8, `OptionsCombat` 1,
+`OptionsCompose` 7, `OptionsScroll` 4, `OptionsNav` 2, `OptionsDrawer` 1). Every other file is at
+its v1.72.0 minor: `Core` 10, `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3,
+`Item` 2, `Media` 4, `Slash` key 20.2, `DebugLog` key 19.2.1, `Launcher` 5, `Widgets` key
+12.1.4.3.2 and `Perf` key 15.1.1.6, and the test kit stays at **revision 39**. No `NEEDS_*` floor
+rises and no major is added; `OptionsDrawer.lua` is an eleventh file of the Options major, so the
+library is **fifteen majors across thirty-five files**. Built to standard **v2.83.0**; the README's
+standards pointer moves from v2.81.0. Read against the v2.82.0 and v2.83.0 entries, nothing in them
+binds the payload: v2.82.0's current-member pointer is architecture-§5's addon write path, and
+v2.83.0's localization-§6 binds an addon that splits a locale file, which a library with no locale
+does not have. From Ka0s Quick Comms' When tab (its
+`docs/superpowers/specs/2026-10-18-when-drawers-design.md`, task L1).
+
+### OptionsDrawer minor 1: the drawer
+
+- **`O.Drawer(ctx, spec)`**: a header bar (a chevron, the subject's name, and a one-line summary at
+  the right, cut with an ellipsis) that opens a bordered box joined under it, added to
+  `O.EnsureScroll(ctx)` as one full-width group. `spec = { label, summary, set, tooltip, open,
+  onToggle, body, actions, disabled }`. The name is gold while `set` is true and white otherwise;
+  the summary pale gold or gray the same way; `summary` and `set` may be functions, read at draw,
+  and a raise reads as nil and is reported. The look is the settings panel's (gold, white, dark
+  fills under 1px borders), not a widget type of its own: three AceGUI `SimpleGroup`s, decorated on
+  their frames and handed back clean on release, because AceGUI's widget registry is process-global.
+- **The open state is the host's** (`spec.open`, `spec.onToggle(open)`), as a tab strip's selection
+  is. A header click hands the host the other state and re-renders the page
+  (`O.RefreshPanel(page, true)`), which keeps the page's scroll offset across the re-render (Options
+  minor 29, below), so the drawer just opened stays where the player was; it is refused in combat (`drawer <label>`), and an
+  `onToggle` that raises is reported and redraws nothing. Any number of drawers may be open at once.
+- **The body is ordinary rows.** `spec.body(ctx, box)` is called with a **body ctx** whose scroll is
+  the box, so `O.RenderGrid`, `O.IdList`, `O.TextRow`, `O.InlineButtonPair` and a host's own `make`
+  items draw into it unchanged; every other field of that ctx reads and writes through to the page,
+  so a refresher or a host's per-page list started there is the page's. It is pcall'd and reported
+  against the drawer. `spec.disabled` draws the body under the page's render-disabled flag (put
+  back after, a raise included) and disables every action; so does a drawer drawn while the page's
+  flag is already set (a disabled tab, `RenderRows`' `opts.disabled`). A drawer drawn inside a box
+  writes to, and refreshes, the page.
+- **`spec.actions`**, `{ { text, tooltip, onClick, disabled } }`: buttons on the box's last line,
+  right-aligned behind a filler, each `onClick` pcall'd and refused in combat.
+- **The box pads its content** (`lib.__drawerPad`: 26 left, under the header's name; 10 right; 8 top
+  and bottom) by patching the box's `OnWidthSet`, `OnHeightSet` and `LayoutFinished` and its content
+  anchors, every one restored on release so the pooled `SimpleGroup` the next addon takes is
+  unpadded.
+- Twenty-six cases in a new suite, `tests/test_options_drawer.lua` (twenty-five red before the
+  file existed; the twenty-sixth pins the absent-file path). [Options version 29.2.34.2.4.8.1.7.4.2.1](docs/api/Options/version-29.2.34.2.4.8.1.7.4.2.1-docs.md).
+- **One consumer at release** (Quick Comms). `library-stack-§7` asks two; the owner's ruling to build
+  it here anyway is a row in `CLAUDE.md` → `## Documented deviations`.
+
+### Options minor 29: the drawer's attach, and RefreshPanel on a body ctx
+
+`lib:New` attaches `OptionsDrawer.lua` after `OptionsNav.lua` (guarded, so a copy without the file
+has no `O.Drawer` and draws every page as before). `O.RefreshPanel(ctx, structural)` takes a
+drawer's body ctx back to the page it is drawn on (`rawget(ctx, "__drawerPage")`), so a host that
+refreshes the ctx it was handed re-renders the page rather than rendering the page into one box.
+
+**A structural refresh of a page on screen keeps its scroll offset.** `RefreshAllPanels` and
+`RefreshPanel(ctx, true)` restore the offset after the re-render and re-fix the scroll, clamped to
+the new end. Through minor 28 the render's first `AddChild` ran `FixScroll` on a one-row page and
+zeroed it, so a write that re-rendered a long page (a checkbox in an open drawer, a row appearing)
+dropped the player back at the top. A page drawn on its show (first show, or owed a render while
+hidden) and a tab click are a change of subject and still start at the top.
+
+### What a consumer owes
+
+- **The whole-folder copy of `libs/LibKa0s/`** and the provenance line rolled to v1.73.0, as
+  always; the kit does not move (39).
+- **A behavior change on every host's pages:** a structural refresh of a page on screen no longer
+  scrolls it to the top (Options minor 29). Nothing to change; a host that scrolled a page back to
+  the top by hand after its own refresh can drop that.
+- **Surface-parity churn.** An Options degradation stub pinned with `Kit.assertSurfaceParity` by
+  name goes red until it gains **`Drawer`** as a no-op (a library-absent build draws no panel).
+- **No census re-run yet.** `O.Drawer` is a new export with no host call at the tag;
+  [`docs/api/CONSUMERS.md`](docs/api/CONSUMERS.md) keeps its v1.71.0 stamp until Quick Comms' When
+  tab lands and the census is re-run.
+- **Upstream follow-up:** `library-stack-§7`'s module paragraph and Options row in
+  WowAddonStandards count fifteen majors across thirty-four files and ten Options files; they need
+  the recount for the thirty-fifth file. Recorded here, not part of this release.
+- **Released on its branch, not tagged.** v1.73.0 is cut on `feat/drawer-widget` with no tag, no
+  release run and no push: the release run, the tag, the merge to `master` and the push wait on the
+  owner. Quick Comms re-vendors from the branch head.
+
 ## v1.72.0 — 2026-10-14
 
 Versions in this release: **Perf minor 15** (`LibKa0s-Perf-1.0` key 15.1.1.6: `Perf` 15,

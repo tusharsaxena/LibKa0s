@@ -92,7 +92,7 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Options-1.0",
-    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav" },
+    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer" },
     primary = "Options",
     paired = {
       { file = "OptionsRegistry", minorField = "__registryMinor", probeField = "__registryShellMinor" },
@@ -104,6 +104,7 @@ local MAJORS = {
       { file = "OptionsCompose", minorField = "__composeMinor", probeField = "__composeShellMinor" },
       { file = "OptionsScroll",  minorField = "__scrollMinor",  probeField = "__scrollShellMinor" },
       { file = "OptionsNav",     minorField = "__navMinor",     probeField = "__navShellMinor" },
+      { file = "OptionsDrawer",  minorField = "__drawerMinor",  probeField = "__drawerShellMinor" },
     },
   },
   {

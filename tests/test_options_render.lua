@@ -236,6 +236,34 @@ test("options: RefreshPanel touches ONE page, on both tiers", function()
   assertEqual(drewOther, 0, "and no other registered page was touched")
 end)
 
+test("options: a structural refresh of a page on screen keeps its scroll offset", function()
+  -- red under: a refresh whose re-render drops the player back at the top of the page. A write
+  -- inside a long page (a checkbox in an open drawer) re-renders it, and ClearScroll plus the first
+  -- AddChild's FixScroll zero the offset; the kit's ScrollFrame has no geometry, so a renderer that
+  -- zeroes it stands in for that loss.
+  local O = Fixture.new()
+  local ctx = O.CreatePanel("KeepP", "Keep", { pageKey = "keep" })
+  local scroll = O.EnsureScroll(ctx)
+  O.SetRenderer(ctx, function() scroll.localstatus.offset = 0 end)
+  ctx.panel:Show(); ctx.panel:__fire("OnShow")
+  local fixed = 0
+  scroll.FixScroll = function() fixed = fixed + 1 end
+
+  scroll.localstatus.offset = 120
+  O.RefreshPanel(ctx, true)
+  assertEqual(scroll.localstatus.offset, 120, "the offset the player scrolled to survives the write")
+  assertEqual(fixed, 1, "and the scroll is re-fixed to it, clamped to the new end")
+
+  O.RefreshAllPanels()
+  assertEqual(scroll.localstatus.offset, 120, "the registry-wide sweep keeps it too")
+
+  -- A page drawn on its show is a new visit, not a redraw of what the player is looking at.
+  ctx.panel:Hide()
+  O.RefreshPanel(ctx, true)
+  ctx.panel:Show(); ctx.panel:__fire("OnShow")
+  assertEqual(scroll.localstatus.offset, 0, "a dirty page drawn on its next show starts at the top")
+end)
+
 test("options: RefreshPanel defers a hidden page to its next show", function()
   -- The bug this API was published for: a host hand-rolling this branch guessed the flag name, so
   -- its page marked something nothing read and never re-rendered. The caller must not have to know
