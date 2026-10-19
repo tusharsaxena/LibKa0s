@@ -65,7 +65,7 @@ the file you need:
 | `LibKa0s-Schema-1.0` | `<Schema>` | `LibStub("LibKa0s-Schema-1.0").MODULES` |
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
-| `LibKa0s-Media-1.0` | `<Media>` | `LibStub("LibKa0s-Media-1.0").MODULES` |
+| `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
@@ -162,7 +162,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [4](./Media/version-4-docs.md) | `Media.lua` 4 | v1.56.0 | **Current** |
+| [5.1](./Media/version-5.1-docs.md) | `Media.lua` 5 · `MediaIcons.lua` 1 | v1.74.0 | **Current** |
+| [4](./Media/version-4-docs.md) | `Media.lua` 4 | v1.56.0 – v1.73.0 | Superseded |
 | [3](./Media/version-3-docs.md) | `Media.lua` 3 | v1.9.2 – v1.55.0 | Superseded |
 | [2](./Media/version-2-docs.md) | `Media.lua` 2 | v1.9.1 | Superseded |
 | [1](./Media/version-1-docs.md) | `Media.lua` 1 | v1.9.0 | Superseded |

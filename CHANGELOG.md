@@ -10,6 +10,80 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.74.0 — 2026-10-19
+
+Versions in this release: **Media minor 5** and a new file, **MediaIcons minor 1**
+(`LibKa0s-Media-1.0` key **5.1**: `Media` 5, `MediaIcons` 1). Every other file is at its v1.73.0
+minor: `Core` 10, `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2,
+`Slash` key 20.2, `DebugLog` key 19.2.1, `Launcher` 5, `Widgets` key 12.1.4.3.2, `Options` key
+29.2.34.2.4.8.1.7.4.2.1 and `Perf` key 15.1.1.6, and the test kit stays at **revision 39**. No
+`NEEDS_*` floor rises and no major is added; `MediaIcons.lua` is a second file of the Media major, so
+the library is **fifteen majors across thirty-six files**. Built to standard **v2.84.0**; the
+README's standards pointer moves from v2.83.0. Read against the v2.84.0 entry, nothing in it binds
+the payload: options-ui-§15's new extras bullet sanctions an addon's use of the `MasterControls`
+composer's `extra` slot, which the library has carried since before this release and does not
+change. From Ka0s Quick Comms' icons-and-polish batch (its
+`docs/superpowers/plans/2026-10-19-icons-and-polish.md`, tasks L1 and L2).
+
+### Media minor 5 and MediaIcons minor 1: three icon sets
+
+- **`ICONS` grows from 113 names to 5,836**: the other 111 Open Iconic marks (flat, unprefixed, under
+  their upstream names), 1,434 Phosphor Fill marks as `ph:<name>` (MIT; the 78 `*-logo` brand marks
+  dropped) and 4,178 Game-icons.net marks as `gi:<name>` (CC BY 3.0). Version 4's 113 names stay
+  first, in their order, at their paths. All 64×64 white RLE TGAs, the new sets in
+  `media/icons/phosphor/` and `media/icons/game-icons/`.
+- **`ICON_SETS`**, `{ { id, prefix, dir, label, license } }`, describes the three sets in browser
+  order, and **`Icon` resolves a prefix** into its set's folder (`ph:sword` →
+  `...\media\icons\phosphor\sword`); an unknown prefix answers `nil`.
+- **`IconAuthor(name)`** answers a Game-icons mark's credited author, `nil` for every other name.
+  `media/icons/game-icons/` carries `LICENSE-game-icons.txt` (the license link, upstream's notice and
+  the statement of changes CC BY asks for) and `AUTHORS.txt` (one line per mark). Phosphor's MIT
+  notice ships as `media/icons/phosphor/LICENSE-phosphor.txt`.
+- **`MediaIcons.lua` is generated** by `tools/artwork/icon_cleaner.py`: packed name strings, split at
+  load and appended to `ICONS` in place through `__SetGeneratedIcons`, which is idempotent and keeps
+  the table's identity. Paired on the shell's minor (`__iconsMinor` / `__iconsShellMinor`); a copy
+  without it keeps the 113 hand-written names.
+- **The generator** renders SVG with `resvg-py` (a venv under `tools/artwork/.venv`, see
+  `DEPENDENCIES.md`), clones Phosphor and Game-icons shallowly at pinned commits, takes Game-icons'
+  alpha from luminance (removing its background square) and checks every corner is transparent,
+  suffixes a name two Game-icons authors share with the author's folder on every copy, and respells
+  any name the US-English gate would reject through suffix rules read against
+  `testkit/prose_lists.lua` (four marks: `armored-shell`, `ring-mold`, `morbid-humor`,
+  `tarot-20-judgment`). `badges` and `various-artists` do not ship: no credited author.
+- **The payload grows by about 28 MB** of art, which every consumer carries on its next re-vendor.
+- Ten new or rewritten cases in `tests/test_media.lua` (`ICON_SETS`, the per-set inventory in both
+  directions, each set's license, the counts, no brand mark, minor 4's order, an idempotent
+  re-attach, prefix resolution, nil for an unknown prefix, `IconAuthor`). [Media version 5.1](docs/api/Media/version-5.1-docs.md).
+- **A release gate for the two pointers step 7 moves.** `tests/test_versioning.lua` now fails when
+  the newest `CHANGELOG.md` heading is dated and `docs/releasing.md`'s repo semver row or its
+  provenance template names another version; a heading still reading "unreleased" owes nothing.
+  Both had drifted before, and nothing read either.
+
+### What a consumer owes
+
+- **The whole-folder copy of `libs/LibKa0s/`** and the provenance line rolled to v1.74.0, as
+  always; the kit does not move (39). The copy is about 28 MB larger, and a consumer whose
+  `tests/test_vendor_sync.lua` diffs both payloads byte for byte should expect it to run longer.
+- **Attribution.** A consumer that draws a Game-icons mark ships CC BY 3.0 art and credits it (the
+  license file and `AUTHORS.txt` travel inside the copy); what each consumer's README owes is
+  tracked by LibKa0s#55. Quick Comms adds its `## Credits` in the same batch.
+- **Surface-parity churn.** A Media degradation stub pinned with `Kit.assertSurfaceParity` by name
+  goes red until it gains **`ICON_SETS`** (an empty array) and **`IconAuthor`** (answering nil).
+- **No census re-run yet.** `ICON_SETS` and `IconAuthor` are new exports with no host call at the
+  tag; [`docs/api/CONSUMERS.md`](docs/api/CONSUMERS.md) keeps its stamp until Quick Comms' icon
+  browser lands and the census is re-run.
+- **Upstream follow-up:** `library-stack-§7`'s index blurb in WowAddonStandards still counts fifteen
+  majors across thirty-four files; it needs the recount for the thirty-fifth and thirty-sixth.
+  Recorded here, not part of this release.
+- **Released on its branch with a local tag.** v1.74.0 is cut on
+  `feat/2026-10-19-icons-and-polish`, tagged locally and the branch pushed; the merge to `master`
+  and the tag push wait on the owner. Quick Comms re-vendors from the local tag; the other thirteen
+  consumers re-vendor later, at the owner's call.
+
+Release gate (`docs/automated-tests/20261019-105203/`): lint pass, 0/0 in 161 files;
+tests pass, 2198 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.73.0 — 2026-10-18
 
 Versions in this release: **Options minor 29** and a new file, **OptionsDrawer minor 1**

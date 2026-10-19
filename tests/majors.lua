@@ -56,8 +56,11 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Media-1.0",
-    files = { "Media" },
+    files = { "Media", "MediaIcons" },
     primary = "Media",
+    paired = {
+      { file = "MediaIcons", minorField = "__iconsMinor", probeField = "__iconsShellMinor" },
+    },
   },
   {
     major = "LibKa0s-Widgets-1.0",

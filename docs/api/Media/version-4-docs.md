@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **4** |
 | Shipped in | v1.56.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 3](./version-3-docs.md) — the face registered with no langmask, and counted whatever LSM answered |
-| Superseded by | — |
+| Superseded by | [version 5.1](./version-5.1-docs.md) — three icon sets (Open Iconic, Phosphor, Game-icons), `ICON_SETS`, prefixed names and `IconAuthor` |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 4 }` |
 
 ## What changed at this version
@@ -284,3 +284,13 @@ The consumer-side gate compares the vendored payload against the tag byte for by
 and normalized line endings on everything, which is right for Lua and wrong for a TGA. **Kit revision
 11 or newer is required** to vendor a payload with `media/` in it — see
 [`../testkit/version-11-docs.md`](../testkit/version-11-docs.md).
+
+## Moving to version 5.1
+
+Nothing is removed and no signature moves; a host written against this version is correct at
+version 5.1 unmodified. Every name here still resolves to the same path, and still sits at the same
+index of `ICONS`. What arrives: `ICONS` grows to 5,836 names (the rest of Open Iconic unprefixed,
+Phosphor Fill as `ph:<name>`, Game-icons as `gi:<name>`), `Icon` resolves the prefix into the set's
+subfolder, `ICON_SETS` describes the three sets, and `IconAuthor(name)` answers a Game-icons mark's
+author. A host that enumerates `ICONS` into a picker now enumerates every set, and one that shows
+Game-icons marks owes their authors a credit (CC BY 3.0). The payload is about 28 MB larger.
