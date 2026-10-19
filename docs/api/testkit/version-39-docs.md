@@ -10,9 +10,9 @@
 | Version | **39** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.72.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 38](version-38-docs.md) — `M.__fireUnconditional` could not reach a handler registered under a method name, or as a function, once it was unregistered |
-| Superseded by | — |
+| Superseded by | [version 40](version-40-docs.md) — `vendor_sync.lua` holds `media/icons/` to the consumer's `LibKa0s icons:` declaration |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `39` |
 
@@ -145,3 +145,11 @@ revision it holds (`kit revision 38`) moves to 39 in the same commit, and its st
 should assert the counts `M.__fireUnconditional` returns. A consumer whose step-10 case is written
 by hand may switch it to `T.assertLatchHoldOrder`, keeping its `-- red under:` comment at the call
 site; nothing requires it to.
+
+## Moving to 40
+
+Copy the kit whole. No suite, case name or member changes. `vendor_sync.lua` now reads an optional
+`LibKa0s icons:` line directly under your `CLAUDE.md` provenance line and holds
+`libs/LibKa0s/media/icons/` to it; with no line it compares the whole folder exactly as revision 39
+did, so the re-vendor alone turns nothing red. Add the line, then run `lua tools/prune-icons.lua
+<Addon>` from the LibKa0s checkout, in the same commit as the copy.

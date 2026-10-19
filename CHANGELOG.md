@@ -10,6 +10,60 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.75.0 — unreleased
+
+Versions in this release: every file at its v1.74.0 minor — `Core` 10, `Env` 2, `Compat` 1,
+`Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` key 5.1, `Slash` key 20.2,
+`DebugLog` key 19.2.1, `Launcher` 5, `Widgets` key 12.1.4.3.2, `Options` key
+29.2.34.2.4.8.1.7.4.2.1 and `Perf` key 15.1.1.6 — and **test kit revision 40**. No payload file under
+`LibKa0s/` has changed. The owner's 2026-10-20 ruling: only the bare minimum of icons is vendored
+into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
+README's standards pointer moves when this is released.
+
+### Test kit revision 40: the icon folder is held to the consumer's declaration
+
+- **`media/icons/` is the one carve-out from whole-folder vendoring.** v1.74.0's 5,836 icons are
+  about 28 MB, and every consumer carried all of them. A consumer now declares which icons it ships,
+  in one line directly under its `CLAUDE.md` provenance line: `LibKa0s icons: all (icon picker).`
+  (only for an addon whose UI lets the player choose among the catalog), `LibKa0s icons: none.`, or
+  a comma-separated list of `lib.ICONS` names (`LibKa0s icons: settings, close, ph:sword, gi:skull.`).
+- **`vendor_sync.lua` holds the copy to it.** Declared icons present and byte-identical to the tag,
+  undeclared ones absent (failed with a count and ten names), unknown names failed against the
+  **tag's** catalog, each set's attribution files (`LICENSE-open-iconic.txt`,
+  `phosphor/LICENSE-phosphor.txt`, `game-icons/LICENSE-game-icons.txt` and `game-icons/AUTHORS.txt`)
+  present exactly when one of its icons ships, and a malformed or misplaced line failed naming why.
+  Everything outside `media/icons/` is still compared whole. In the declared shape only the required
+  blobs are read, so `none` or a short list does not read 5,836.
+- **No line is the old gate.** A consumer that has not declared yet is compared whole, as under
+  revision 39, so the re-vendor alone turns nothing red. The rule's MUST binds from the first
+  release whose kit carries this gate.
+- **The parser and catalog are published** on the module (`parseIconLine`, `iconDeclaration`,
+  `iconCatalog`, `requiredIcons`, `cappedList`, `splitUnder`, `localNames`), `register` takes an
+  `iconsPattern` opt and a pair an `icons` field. `localNames` takes its cmd.exe fallback only on
+  Windows, where on Linux an empty folder ran coreutils' `dir` and left a file named `NUL` behind.
+- Eighteen cases in the new `tests/test_kit_vendor_sync.lua`, against a real library repo tagged in
+  a temporary directory and a consumer beside it. [testkit version 40](docs/api/testkit/version-40-docs.md).
+
+### `tools/prune-icons.lua`
+
+- **`lua tools/prune-icons.lua <Addon>`**, run after the `cp -r`, reads the consumer's declaration
+  with the kit's own parser and deletes every file under `<Addon>/libs/LibKa0s/media/icons/` it does
+  not require, printing each path. `all` or no line removes nothing; an unknown name or a malformed
+  line is refused and nothing is removed. Pure Lua 5.1, no dependencies.
+
+### `Media.Icon`: pass only declared names
+
+- No code change and no minor moves. `Icon(addonName, name)` still answers a path for any catalog
+  name; a consumer must pass only names it declared, because an undeclared one points at a file its
+  copy does not ship and draws nothing, silently. Paths are per host, so a pruned copy that wins the
+  LibStub race cannot break another addon's icons. [Media version 5.1](docs/api/Media/version-5.1-docs.md).
+
+### What a consumer owes
+
+- **On its next re-vendor:** the kit (revision 40), the library copy, its `LibKa0s icons:` line under
+  the provenance line, and `lua tools/prune-icons.lua <Addon>`, all in one commit. Re-vendoring every
+  consumer with its declaration is tracked as a LibKa0s issue.
+
 ## v1.74.0 — 2026-10-19
 
 Versions in this release: **Media minor 5** and a new file, **MediaIcons minor 1**
