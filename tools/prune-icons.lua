@@ -4,7 +4,7 @@
 --
 -- WHY THIS EXISTS. `media/icons/` is the one carve-out from whole-folder vendoring
 -- (`library-stack-§7`, standard v2.85.0; kit revision 40). LibKa0s v1.74.0 took it to 5,836 TGAs,
--- about 28 MB, and an addon that draws a settings glyph or two should not ship all of them. So a
+-- about 18 MB (28 MB on disk), and an addon that draws a settings glyph or two should not ship all of them. So a
 -- consumer declares which icons it ships, in one line directly under the provenance line of its
 -- root CLAUDE.md:
 --

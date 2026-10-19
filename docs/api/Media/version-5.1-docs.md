@@ -33,7 +33,7 @@ from here on (`<Media>.<MediaIcons>`).
 **What it costs a consumer.** The payload is whole-folder (`library-stack-§7`), so every addon that
 re-vendors carries all of the art, about 28 MB unpacked, whether it draws a glyph or not. *(Amended
 2026-10-20, no code change: from `library-stack-§7` at standard v2.85.0 and kit revision 40,
-`media/icons/` is the one carve-out, and a consumer ships only the icons it declares; see
+`media/icons/` (about 18 MB of it, 28 MB on disk) is the one carve-out, and a consumer ships only the icons it declares; see
 the Vendoring section below.)* WoW loads a
 texture only on `SetTexture`, so the runtime cost is the catalog's strings: one table of 5,836 names
 and the author map, built once by the copy LibStub keeps.
@@ -323,6 +323,15 @@ is built from the `addonName` you pass, so it always points into **your** `libs/
 copy of Media LibStub keeps, a pruned copy elsewhere cannot break your icons, and yours cannot break
 another addon's.
 
+**A pruned icon is a blank texture, not a fallback.** `Icon` answers `nil` only for a name outside
+`ICONS`; for a catalog name whose file your copy does not ship it still answers the path. Anything
+that falls back on `nil` (the text button, the `×`, the client glyph) therefore never falls back,
+and the control draws nothing. That includes the icons LibKa0s draws **for you**, which your line
+must declare: `close` (`Core.MakeCloseButton` given your addon name, so the DebugLog console,
+`PerfPanel.lua` and the Widgets copy window), `clear` and `copy` (the DebugLog console) and `info`
+(the Options id list's help mark, unless the spec passes `helpIcon`). A host that wires the debug
+console declares at least `close, copy, clear`.
+
 **A host with no LibKa0s** (the degraded install every Ka0s addon models) gets `nil` from the
 `LibStub` lookup and must degrade as it does for every other module. Icons are chrome: the right
 degradation is a control that draws a character, not a control that errors.
@@ -343,7 +352,8 @@ in one line directly under its `CLAUDE.md` provenance line, which icons it ships
 `LibKa0s icons: all (icon picker).` (only for a UI that lets the player choose among the catalog),
 `LibKa0s icons: none.`, or `lib.ICONS` names such as `LibKa0s icons: settings, close, ph:sword.` —
 and after the copy runs `lua tools/prune-icons.lua <Addon>` from the LibKa0s checkout. Each set's
-attribution files ship with it when any of its icons does. The rest of the payload, `MediaIcons.lua`,
+attribution files ship with it when any of its icons does. The icons LibKa0s draws for the host
+(`close`, `clear`, `copy`, `info`; see above) belong in the line too. The rest of the payload, `MediaIcons.lua`,
 `fonts/` and `textures/` included, is still copied whole. See
 [`../testkit/version-40-docs.md`](../testkit/version-40-docs.md).
 

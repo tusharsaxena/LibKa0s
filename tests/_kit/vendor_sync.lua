@@ -59,7 +59,7 @@
 --     and why `tests/test_kitsync.lua` stays the library-side equivalent.
 --
 -- THE ONE CARVE-OUT FROM WHOLE-FOLDER: `media/icons/` (kit revision 40, `library-stack-§7` from
--- standard v2.85.0). LibKa0s v1.74.0 took the icon folder to 5,836 TGAs, about 28 MB, and twelve
+-- standard v2.85.0). LibKa0s v1.74.0 took the icon folder to 5,836 TGAs, about 18 MB (28 MB on disk), and twelve
 -- consumers copying all of it to draw a handful of glyphs is a cost nobody chose. So a consumer
 -- DECLARES which icons it ships, in one line directly under its provenance line:
 --
@@ -180,8 +180,10 @@ end
 -- the catalog with exactly the code this gate does. A pruning tool and a gate that disagreed about
 -- what a line means would let the tool produce a copy the gate then refuses.
 
---- How the line is found: the marker, then the declaration body, per line.
-local DEFAULT_ICONS_PATTERN = "LibKa0s icons:%s*(.-)%s*$"
+--- How the line is found: the marker at the START of a line (an optional `- ` or `* ` list marker
+--- before it), then the declaration body. Anchored so prose that MENTIONS the line, such as
+--- "see the `LibKa0s icons:` line above", is not read as a second declaration.
+local DEFAULT_ICONS_PATTERN = "^[%s%-%*]*LibKa0s icons:%s*(.-)%s*$"
 
 --- The icon sets, by the subfolder of `media/icons/` each lives in, mapped to the `lib.ICONS`
 --- prefix its names carry (Media's `ICON_SETS`). Open Iconic is the flat folder, unprefixed.
@@ -376,7 +378,7 @@ end
 ---   pairs         = { { case = …, tag = …, local_ = …, label = …, icons = … }, … },
 ---   runner        = "tests/_kit/run-automated-tests.sh",  -- the runner, relative to root
 ---   runnerCase    = "the automated-test runner is recorded executable (100755)",
----   iconsPattern  = "LibKa0s icons:%s*(.-)%s*$", -- how the icon declaration line is spelled (rev 40)
+---   iconsPattern  = "^[%s%-%*]*LibKa0s icons:%s*(.-)%s*$", -- the icon declaration line, anchored (rev 40)
 --- }
 ---
 --- A pair's `icons` names the subfolder of its payload held to the `LibKa0s icons:` declaration

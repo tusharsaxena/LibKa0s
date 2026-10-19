@@ -74,6 +74,21 @@ test("iconDeclaration: absent, placed, misplaced, doubled", function()
   assertTrue(decl == nil and err:find("2 times", 1, true) ~= nil, tostring(err))
 end)
 
+test("iconDeclaration: anchored, so prose that mentions the line is not a second one", function()
+  local doc = PROVENANCE .. "\nLibKa0s icons: close.\n\nSee the `LibKa0s icons:` line above; "
+    .. "prune with tools/prune-icons.lua after a LibKa0s icons: edit.\n"
+  local decl, err = VendorSync.iconDeclaration(doc)
+  assertNil(err, "a mid-line mention is prose: " .. tostring(err))
+  assertEqual(decl.names[1], "close", "the real line still parses")
+  decl = VendorSync.iconDeclaration(PROVENANCE .. "\n- LibKa0s icons: none.\n")
+  assertEqual(decl.mode, "none", "a `- ` list marker before the line is allowed")
+  decl = VendorSync.iconDeclaration(PROVENANCE .. "\n  * LibKa0s icons: settings.\n")
+  assertEqual(decl.names[1], "settings", "an indented `* ` list marker is allowed")
+  decl, err = VendorSync.iconDeclaration(PROVENANCE .. "\n`LibKa0s icons:` close.\n")
+  assertNil(decl, "a code span at line start is not the line")
+  assertNil(err, "and is not an error either")
+end)
+
 local CATALOG_PATHS = {
   "LICENSE-open-iconic.txt", "close.tga", "settings.tga",
   "phosphor/LICENSE-phosphor.txt", "phosphor/sword.tga",

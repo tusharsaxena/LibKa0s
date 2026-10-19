@@ -75,12 +75,16 @@ modules and points you there. It does not restate them.
    Since v1.48.0 the folder has carried one more file than it used to. That is why you copy the whole
    folder, and never just the files you happen to have.
    **The one exception is `media/icons/`** (`library-stack-§7`, standard v2.85.0): it holds 5,836 icons,
-   about 28 MB, and an addon ships only the icons it declares. Put one line directly under the
+   about 18 MB (28 MB on disk), and an addon ships only the icons it declares. Put one line directly under the
    provenance line in the addon's `CLAUDE.md` — `LibKa0s icons: all (icon picker).` for an addon whose
    UI lets the player choose among the catalog, `LibKa0s icons: none.`, or the names it draws,
    `LibKa0s icons: settings, close, ph:sword.` — then, after the copy, run
    `lua tools/prune-icons.lua <Addon>` from this checkout. The addon's vendor-sync gate (kit revision
    40) holds the copy to that line; see [docs/releasing.md](docs/releasing.md#re-vendoring-consumers).
+   Icons the library draws for you count as yours: `close` (`Core.MakeCloseButton`, so the debug
+   console, the perf panel and the Widgets copy window), `clear` and `copy` (the debug console) and
+   `info` (the Options id list's help mark). A host that wires the debug console declares at least
+   `close, copy, clear`; a pruned one draws blank, not the text fallback.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
 3. If you adopt Perf, declare `## SavedVariables: <Addon>PerfDB` in the TOC. That is the global name
    you'll pass as the descriptor's `sv`. Core and DebugLog persist nothing.

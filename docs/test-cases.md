@@ -2435,12 +2435,13 @@ Total.
 - runner complexity: a file lizard stays blind in fails complexity, names the file, never fails the run
 - runner complexity: a function longer than lizard's default 1000 lines is not a warning (-L 1500)
 
-### test_kit_vendor_sync.lua (18)
+### test_kit_vendor_sync.lua (19)
 
 - parseIconLine: the three forms
 - parseIconLine: `all` without a parenthesized reason is refused
 - parseIconLine: malformed lists are refused, naming why
 - iconDeclaration: absent, placed, misplaced, doubled
+- iconDeclaration: anchored, so prose that mentions the line is not a second one
 - iconCatalog: names and attribution by set folder
 - requiredIcons: attribution travels with its set, unknown names come back
 - cappedList: ten names, then a count
@@ -2590,10 +2591,10 @@ Total.
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 13 |
-| test_kit_vendor_sync.lua | 18 |
+| test_kit_vendor_sync.lua | 19 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2214** |
+| **Total** | **2215** |

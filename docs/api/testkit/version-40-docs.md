@@ -25,7 +25,7 @@ member is renamed or removed and no kit case name changes.
 
 ### `vendor_sync.lua` holds `media/icons/` to the consumer's declaration
 
-LibKa0s v1.74.0 took `LibKa0s/media/icons/` to 5,836 TGAs, about 28 MB: 224 Open Iconic marks flat
+LibKa0s v1.74.0 took `LibKa0s/media/icons/` to 5,836 TGAs, about 18 MB (28 MB on disk): 224 Open Iconic marks flat
 in the folder, 1,434 Phosphor marks in `phosphor/` and 4,178 Game-icons marks in `game-icons/`.
 Every consumer vendored all of it, because the payload rule was whole-folder and this gate compared
 the whole folder. `library-stack-§7` (standard v2.85.0) now makes the icon folder the one
@@ -44,7 +44,16 @@ LibKa0s icons: settings, close, ph:sword, gi:skull.
 
 (one of the three, not all of them). Names are `lib.ICONS` names: Open Iconic unprefixed, `ph:`
 Phosphor, `gi:` Game-icons, comma-separated, the line ending in a period. `all` must carry a
-parenthesized reason naming the player-facing chooser.
+parenthesized reason naming the player-facing chooser. The marker is anchored to the start of a
+line (an optional `- ` or `* ` list marker before it), so prose or a code span that mentions
+`LibKa0s icons:` mid-line is not read as a second declaration.
+
+**Icons the library draws for the host are the host's to declare.** `close` is drawn by
+`Core.MakeCloseButton` given the addon name (the DebugLog console, `PerfPanel.lua` without a
+`decorate`, the Widgets copy window), `clear` and `copy` by the DebugLog console, and `info` by the
+Options id list's help mark unless the spec passes its own `helpIcon`. A host that wires the debug
+console declares at least `close, copy, clear`. This gate cannot catch an omission: a pruned icon
+still resolves to a path, so the module's text fallback never runs and the control draws blank.
 
 What the library pair's case then asserts, from revision 40:
 
@@ -109,7 +118,7 @@ The listing falls back to `dir /b /s` when `find` returns nothing. On Linux that
 `dir` and left a file named `NUL` in the working directory, which an empty icon folder (a `none`
 copy) would now reach. The fallback is taken only where `package.config` says Lua is on Windows.
 
-Eighteen cases in this repository's `tests/test_kit_vendor_sync.lua` pin it, against a real
+Nineteen cases in this repository's `tests/test_kit_vendor_sync.lua` pin it, against a real
 library repo tagged in a temporary directory and a consumer beside it: the three forms and every
 refusal of the parser, the line's placement, the catalog and the attribution rule, the gate with no
 line, `none`, a list, an undeclared icon, an unknown name a stray file tries to vouch for, a changed

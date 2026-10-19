@@ -23,7 +23,7 @@ README's standards pointer moves when this is released.
 ### Test kit revision 40: the icon folder is held to the consumer's declaration
 
 - **`media/icons/` is the one carve-out from whole-folder vendoring.** v1.74.0's 5,836 icons are
-  about 28 MB, and every consumer carried all of them. A consumer now declares which icons it ships,
+  about 18 MB (28 MB on disk), and every consumer carried all of them. A consumer now declares which icons it ships,
   in one line directly under its `CLAUDE.md` provenance line: `LibKa0s icons: all (icon picker).`
   (only for an addon whose UI lets the player choose among the catalog), `LibKa0s icons: none.`, or
   a comma-separated list of `lib.ICONS` names (`LibKa0s icons: settings, close, ph:sword, gi:skull.`).
@@ -39,9 +39,11 @@ README's standards pointer moves when this is released.
   release whose kit carries this gate.
 - **The parser and catalog are published** on the module (`parseIconLine`, `iconDeclaration`,
   `iconCatalog`, `requiredIcons`, `cappedList`, `splitUnder`, `localNames`), `register` takes an
-  `iconsPattern` opt and a pair an `icons` field. `localNames` takes its cmd.exe fallback only on
+  `iconsPattern` opt and a pair an `icons` field. The default pattern is anchored to the start of a
+  line (an optional `- ` or `* ` list marker allowed), so prose that mentions the line is not a
+  second declaration. `localNames` takes its cmd.exe fallback only on
   Windows, where on Linux an empty folder ran coreutils' `dir` and left a file named `NUL` behind.
-- Eighteen cases in the new `tests/test_kit_vendor_sync.lua`, against a real library repo tagged in
+- Nineteen cases in the new `tests/test_kit_vendor_sync.lua`, against a real library repo tagged in
   a temporary directory and a consumer beside it. [testkit version 40](docs/api/testkit/version-40-docs.md).
 
 ### `tools/prune-icons.lua`
@@ -63,6 +65,12 @@ README's standards pointer moves when this is released.
 - **On its next re-vendor:** the kit (revision 40), the library copy, its `LibKa0s icons:` line under
   the provenance line, and `lua tools/prune-icons.lua <Addon>`, all in one commit. Re-vendoring every
   consumer with its declaration is tracked as a LibKa0s issue.
+- **Declare the icons LibKa0s draws for you.** `close` (`Core.MakeCloseButton` given the addon name:
+  the DebugLog console, `PerfPanel.lua`, the Widgets copy window), `clear` and `copy` (the DebugLog
+  console) and `info` (the Options id list's help mark, unless the spec passes `helpIcon`) come out
+  of the host's copy. A host that wires the debug console declares at least `close, copy, clear`.
+  A pruned icon still resolves to a path, so the text fallback never runs and the control draws
+  blank; the gate cannot catch the omission.
 
 ## v1.74.0 — 2026-10-19
 

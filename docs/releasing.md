@@ -56,7 +56,10 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `LibKa0s-Bus-1.0` and `LibKa0s-Schema-1.0` at v1.55.0.
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
    say what changed. `tests/test_versioning.lua` fails if the block and any major's `lib.MODULES`
-   disagree, so this is enforced rather than remembered.
+   disagree, so this is enforced rather than remembered. A block written ahead of the release may
+   head itself `## vX.Y.Z — unreleased`; at release, replace `unreleased` with the date and confirm
+   `X.Y.Z` is the version actually being tagged, since a dated heading is what moves step 7's
+   pointers.
 5. **Write the API document for every major whose minor moved.** `docs/api/` is the source of truth
    for every public contract, versioned by folder because different consumers run different versions
    at the same time. Copy the current document to a new file named for the new version key —
@@ -251,6 +254,7 @@ committed here, never edited in a consumer.
 cp -r LibKa0s/. <Addon>/libs/LibKa0s/
 diff -r --strip-trailing-cr LibKa0s <Addon>/libs/LibKa0s   # content — MUST be empty
 diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD be empty
+# now write or roll BOTH CLAUDE.md lines (provenance + `LibKa0s icons:`, below), THEN prune
 lua tools/prune-icons.lua <Addon>                          # media/icons/ down to the declaration
 cd <Addon> && lua tests/run.lua && luacheck .
 ```
@@ -259,7 +263,9 @@ The two diffs run **before** the prune, against the whole copy; after it, `diff 
 pruned icon as `Only in LibKa0s/media/icons`, which is the declaration working, not a fork. From
 then on the consumer's `tests/test_vendor_sync.lua` is the check.
 
-Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
+**Before the prune**, add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as
+the copy. The tool reads the declaration under it, and on a consumer that has no line yet it finds
+none, removes nothing and the copy is committed whole:
 
 > Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.74.0 (MIT).
 
@@ -273,7 +279,7 @@ LibKa0s icons: settings, close, ph:sword, gi:skull.
 ```
 
 `media/icons/` is the one carve-out from whole-folder vendoring: v1.74.0 made it 5,836 icons, about
-28 MB, and a consumer ships **exactly the icons it declares**. Names are `lib.ICONS` names (Open
+18 MB (28 MB on disk), and a consumer ships **exactly the icons it declares**. Names are `lib.ICONS` names (Open
 Iconic unprefixed, `ph:` Phosphor, `gi:` Game-icons), comma-separated, the line ending in a period.
 `all` is only for an addon whose UI lets the player choose among the catalog (an icon picker), and
 its parenthesized reason names that chooser. A set's attribution files (`LICENSE-open-iconic.txt`,
@@ -283,6 +289,20 @@ icon file and no icon license. `tools/prune-icons.lua` applies exactly that afte
 printing every path it removes; it refuses a name the copy does not carry and then removes nothing.
 A consumer with no line is gated as a whole-folder copy, which is the transition state; the MUST
 binds from the first release whose kit carries the declaration-aware gate.
+
+**Library-drawn icons are the host's to declare.** Some modules call `Media.Icon(<host>, ...)` on
+the host's behalf, so the art comes out of the host's copy and its name must be in the host's line:
+
+| Name | Drawn by |
+|---|---|
+| `close` | `Core.MakeCloseButton` when given the addon name: the DebugLog console's close, `PerfPanel.lua`'s close (no `decorate`), the Widgets copy window's close |
+| `clear`, `copy` | the DebugLog console's title-bar buttons (`DebugLog.lua`) |
+| `info` | the Options id list's help mark, unless the spec passes its own `helpIcon` (`OptionsIdList.lua`) |
+
+A host that wires the debug console declares at least `close, copy, clear`. A pruned icon is **not**
+an absent one to these modules: `Icon` still answers a path, so the text fallback (the `×`, the
+CLEAR and COPY words, the client glyph) never runs and the control draws blank. The gate cannot see
+this, because the declaration is the only list it knows.
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
