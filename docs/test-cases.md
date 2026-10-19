@@ -2286,7 +2286,7 @@ Total.
 - parity: a major the surface source cannot resolve fails rather than passes
 - parity: with no surface source registered the gate fails rather than passes
 
-### test_versioning.lua (9)
+### test_versioning.lua (10)
 
 - versioning: every declared major is actually registered
 - versioning: every file in every major registers its live version
@@ -2297,6 +2297,7 @@ Total.
 - versioning: every paired secondary file records which primary it attached to
 - versioning: every major's live version has its API document on disk
 - versioning: every major's published member manifest matches its live surface
+- versioning: a dated changelog heading moves releasing.md's two version pointers with it
 
 ### test_kitsync.lua (12)
 
@@ -2560,7 +2561,7 @@ Total.
 | test_mock_resize.lua | 6 |
 | test_mock_lines.lua | 5 |
 | test_surface_parity.lua | 7 |
-| test_versioning.lua | 9 |
+| test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
 | test_prose.lua | 6 |
 | test_register.lua | 1 |
@@ -2573,4 +2574,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2195** |
+| **Total** | **2196** |

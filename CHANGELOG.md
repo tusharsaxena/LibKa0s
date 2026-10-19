@@ -18,8 +18,12 @@ minor: `Core` 10, `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool
 `Slash` key 20.2, `DebugLog` key 19.2.1, `Launcher` 5, `Widgets` key 12.1.4.3.2, `Options` key
 29.2.34.2.4.8.1.7.4.2.1 and `Perf` key 15.1.1.6, and the test kit stays at **revision 39**. No
 `NEEDS_*` floor rises and no major is added; `MediaIcons.lua` is a second file of the Media major, so
-the library is **fifteen majors across thirty-six files**. From Ka0s Quick Comms' icons-and-polish
-batch (its `docs/superpowers/plans/2026-10-19-icons-and-polish.md`, task L1).
+the library is **fifteen majors across thirty-six files**. Built to standard **v2.84.0**; the
+README's standards pointer moves from v2.83.0. Read against the v2.84.0 entry, nothing in it binds
+the payload: options-ui-§15's new extras bullet sanctions an addon's use of the `MasterControls`
+composer's `extra` slot, which the library has carried since before this release and does not
+change. From Ka0s Quick Comms' icons-and-polish batch (its
+`docs/superpowers/plans/2026-10-19-icons-and-polish.md`, tasks L1 and L2).
 
 ### Media minor 5 and MediaIcons minor 1: three icon sets
 
@@ -50,6 +54,31 @@ batch (its `docs/superpowers/plans/2026-10-19-icons-and-polish.md`, task L1).
 - Ten new or rewritten cases in `tests/test_media.lua` (`ICON_SETS`, the per-set inventory in both
   directions, each set's license, the counts, no brand mark, minor 4's order, an idempotent
   re-attach, prefix resolution, nil for an unknown prefix, `IconAuthor`). [Media version 5.1](docs/api/Media/version-5.1-docs.md).
+- **A release gate for the two pointers step 7 moves.** `tests/test_versioning.lua` now fails when
+  the newest `CHANGELOG.md` heading is dated and `docs/releasing.md`'s repo semver row or its
+  provenance template names another version; a heading still reading "unreleased" owes nothing.
+  Both had drifted before, and nothing read either.
+
+### What a consumer owes
+
+- **The whole-folder copy of `libs/LibKa0s/`** and the provenance line rolled to v1.74.0, as
+  always; the kit does not move (39). The copy is about 28 MB larger, and a consumer whose
+  `tests/test_vendor_sync.lua` diffs both payloads byte for byte should expect it to run longer.
+- **Attribution.** A consumer that draws a Game-icons mark ships CC BY 3.0 art and credits it (the
+  license file and `AUTHORS.txt` travel inside the copy); what each consumer's README owes is
+  tracked by LibKa0s#55. Quick Comms adds its `## Credits` in the same batch.
+- **Surface-parity churn.** A Media degradation stub pinned with `Kit.assertSurfaceParity` by name
+  goes red until it gains **`ICON_SETS`** (an empty array) and **`IconAuthor`** (answering nil).
+- **No census re-run yet.** `ICON_SETS` and `IconAuthor` are new exports with no host call at the
+  tag; [`docs/api/CONSUMERS.md`](docs/api/CONSUMERS.md) keeps its stamp until Quick Comms' icon
+  browser lands and the census is re-run.
+- **Upstream follow-up:** `library-stack-§7`'s index blurb in WowAddonStandards still counts fifteen
+  majors across thirty-four files; it needs the recount for the thirty-fifth and thirty-sixth.
+  Recorded here, not part of this release.
+- **Released on its branch with a local tag.** v1.74.0 is cut on
+  `feat/2026-10-19-icons-and-polish`, tagged locally and the branch pushed; the merge to `master`
+  and the tag push wait on the owner. Quick Comms re-vendors from the local tag; the other thirteen
+  consumers re-vendor later, at the owner's call.
 
 ## v1.73.0 — 2026-10-18
 

@@ -225,3 +225,20 @@ test("versioning: every major's published member manifest matches its live surfa
     "regenerate with `lua tools/gen-api-members.lua` and commit the result; a published member "
     .. "list that has fallen behind the surface is what a stub author copies")
 end)
+
+test("versioning: a dated changelog heading moves releasing.md's two version pointers with it", function()
+  -- docs/releasing.md step 7 moves two hand-maintained pointers before the tag: the repo semver in
+  -- its table and the consumer provenance template under "Re-vendoring consumers". Nothing read
+  -- either, which is how the template sat at v1.4.0 through the v1.5.0 release. A heading that still
+  -- reads "unreleased" is work in progress and owes nothing yet; a dated one is a release, and from
+  -- then on both pointers must name it.
+  local changelog = readFile("CHANGELOG.md")
+  local version, rest = changelog:match("\n## v(%d+%.%d+%.%d+) — ([^\r\n]*)")
+  assertTrue(version ~= nil, "CHANGELOG.md has no '## vX.Y.Z — ' heading")
+  if rest:find("unreleased", 1, true) then return end
+  local releasing = readFile("docs/releasing.md")
+  local semver = releasing:match("| Repo semver %(`v(%d+%.%d+%.%d+)`%)")
+  local template = releasing:match("> Bundles %[LibKa0s%]%(https://github%.com/tusharsaxena/LibKa0s%) v(%d+%.%d+%.%d+) %(MIT%)%.")
+  assertEqual(semver, version, "docs/releasing.md's Repo semver row must name the newest dated release")
+  assertEqual(template, version, "docs/releasing.md's provenance template must name the newest dated release")
+end)
