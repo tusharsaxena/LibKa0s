@@ -80,6 +80,10 @@ change. From Ka0s Quick Comms' icons-and-polish batch (its
   and the tag push wait on the owner. Quick Comms re-vendors from the local tag; the other thirteen
   consumers re-vendor later, at the owner's call.
 
+Release gate (`docs/automated-tests/20261019-105203/`): lint pass, 0/0 in 161 files;
+tests pass, 2198 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.73.0 — 2026-10-18
 
 Versions in this release: **Options minor 29** and a new file, **OptionsDrawer minor 1**
