@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 39", function()
-  assertEqual(Kit.VERSION, 39, "v1.72.0 ships revision 39, whose __fireUnconditional reaches method-name handlers")
-  assertEqual(T.KIT_VERSION, 39, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 40", function()
+  assertEqual(Kit.VERSION, 40, "the release after v1.74.0 ships revision 40, whose vendor_sync reads the `LibKa0s icons:` declaration")
+  assertEqual(T.KIT_VERSION, 40, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

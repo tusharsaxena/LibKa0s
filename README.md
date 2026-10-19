@@ -74,6 +74,17 @@ modules and points you there. It does not restate them.
    `PerfPanel.lua` behind `Perf.lua`.
    Since v1.48.0 the folder has carried one more file than it used to. That is why you copy the whole
    folder, and never just the files you happen to have.
+   **The one exception is `media/icons/`** (`library-stack-§7`, standard v2.85.0): it holds 5,836 icons,
+   about 18 MB (28 MB on disk), and an addon ships only the icons it declares. Put one line directly under the
+   provenance line in the addon's `CLAUDE.md` — `LibKa0s icons: all (icon picker).` for an addon whose
+   UI lets the player choose among the catalog, `LibKa0s icons: none.`, or the names it draws,
+   `LibKa0s icons: settings, close, ph:sword.` — then, after the copy, run
+   `lua tools/prune-icons.lua <Addon>` from this checkout. The addon's vendor-sync gate (kit revision
+   40) holds the copy to that line; see [docs/releasing.md](docs/releasing.md#re-vendoring-consumers).
+   Icons the library draws for you count as yours: `close` (`Core.MakeCloseButton`, so the debug
+   console, the perf panel and the Widgets copy window), `clear` and `copy` (the debug console) and
+   `info` (the Options id list's help mark). A host that wires the debug console declares at least
+   `close, copy, clear`; a pruned one draws blank, not the text fallback.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
 3. If you adopt Perf, declare `## SavedVariables: <Addon>PerfDB` in the TOC. That is the global name
    you'll pass as the descriptor's `sv`. Core and DebugLog persist nothing.
@@ -250,7 +261,8 @@ not released until its API document exists; see [`docs/api/README.md`](docs/api/
 then **re-vendor every consumer**. That last step is the one that gets forgotten. It has been
 forgotten once already, with both repos' suites green the whole time.
 
-Re-vendoring is **whole-folder**, never file by file. Every major except Core (Env, Compat, Lifecycle,
+Re-vendoring is **whole-folder**, never file by file, with one carve-out: `media/icons/` ships only the
+icons the consumer declares (see *Installing* above). Every major except Core (Env, Compat, Lifecycle,
 Bus, Schema, Pool, Item, Media, Widgets, DebugLog, Slash, Launcher, Options and Perf) resolves
 `LibKa0s-Core-1.0` before it calls `NewLibrary`, and returns outright if Core is missing or below the
 minor it needs. A consumer that copied a new `Perf.lua` over an old `Core.lua` gets no probe at all,
@@ -309,6 +321,9 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
 tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json from the LIVE
                         surface, loaded through the same mock the suites use. Generated, never
                         hand-edited; tests/test_versioning.lua regenerates and compares on every run
+tools/prune-icons.lua -- after the cp -r re-vendor, deletes every icon under <Addon>/libs/LibKa0s/
+                        media/icons/ that the addon's `LibKa0s icons:` line does not declare, with
+                        the kit's own parser (testkit/vendor_sync.lua). Pure Lua 5.1
 tools/artwork/       -- icon_cleaner.py rebuilds media/icons/ and MediaIcons.lua from Open Iconic,
                         Phosphor and Game-icons (pinned commits, its own venv); bar_textures.py
                         synthesizes media/textures/ from named constants. Both ARE the provenance

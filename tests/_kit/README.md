@@ -160,6 +160,20 @@ missing LibKa0s checkout does not skip it. It skips, with the reason, only where
 read at all: no `io.popen`, no git, or not a work tree. `opts.runner` and `opts.runnerCase` override
 the path and the case name.
 
+**From revision 40 it holds `media/icons/` to the consumer's icon declaration** (`library-stack-§7`,
+standard v2.85.0). The icon folder is the one carve-out from whole-folder vendoring: a consumer
+declares, in one line directly under its `CLAUDE.md` provenance line, `LibKa0s icons: all (icon
+picker).`, `LibKa0s icons: none.` or a comma-separated list of `lib.ICONS` names
+(`LibKa0s icons: settings, close, ph:sword, gi:skull.`), and the library pair then requires exactly
+those icons under `libs/LibKa0s/media/icons/`, each set's attribution files beside them when one of
+its icons ships, every one byte-identical to the tag, and nothing else there. Undeclared files fail
+with a count and ten names, missing ones fail the same way, and a name the **tag's** catalog does
+not carry fails. Everything outside `media/icons/` is still compared whole, and a repo with no line
+is gated exactly as before. `tools/prune-icons.lua` in the LibKa0s repo cuts a fresh copy down to
+the declaration using this file's own parser (`VendorSync.parseIconLine`, `iconDeclaration`,
+`iconCatalog`, `requiredIcons`). `opts.iconsPattern` overrides how the line is spelled, and a pair's
+`icons` field names the folder held to it. See `docs/api/testkit/version-40-docs.md`.
+
 ## `test_eol.lua`
 
 The first of the kit's own suites. Its first case holds every file `git ls-files` reports to the

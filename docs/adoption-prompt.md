@@ -453,7 +453,8 @@ to land once the other four are green.
     looks different is the finding. Rename the folder back before you finish.
 11. **Provenance.** `LICENSE` ships inside the payload as of v1.1.1, so a whole-folder copy carries
     it — do not hand-copy it into `libs/`, which would make the vendored folder differ from the ship
-    folder and break the gate for real. Add one line to the addon's README naming what it bundles:
+    folder and break the gate for real. Add one line to the addon's root `CLAUDE.md` naming what it bundles (not
+    `README.md`: the gate and `tools/prune-icons.lua` read `CLAUDE.md` only):
 
     ```
     Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.8.0 (MIT).
@@ -465,6 +466,16 @@ to land once the other four are green.
     out. Without the line at all there is no way to answer "which LibKa0s does this addon ship?"
     short of grepping minors out of vendored source — which is the question a re-vendor sweep needs
     answered fastest.
+    Directly under that line, declare the icons the addon ships — `LibKa0s icons: none.`, the
+    `lib.ICONS` names it draws (`LibKa0s icons: settings, close.`), or `LibKa0s icons: all (icon
+    picker).` only when its UI lets the player choose among the catalog — and after the copy run
+    `lua tools/prune-icons.lua <Addon>` from the LibKa0s checkout. `media/icons/` is the one
+    carve-out from whole-folder vendoring (kit revision 40; `docs/releasing.md` → *Re-vendoring
+    consumers*). Write both lines before running the prune. Declare the icons LibKa0s draws for the
+    addon too: `close` (`Core.MakeCloseButton`, so the debug console, the perf panel and the Widgets
+    copy window), `clear` and `copy` (the debug console) and `info` (the Options id list's help
+    mark); a host that wires the debug console declares at least `close, copy, clear`, because a
+    pruned icon draws blank rather than falling back to text.
 12. **Record every decision as a GitHub issue on the host addon's repo as you go**, one issue per
     module, naming the upstream minor that unblocked anything that needed one. Carry each one's
     status as a **label** — `state:triaged` for real work accepted but not being done now (open),

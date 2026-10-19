@@ -2348,7 +2348,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 39
+- the kit is revision 40
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -2434,6 +2434,28 @@ Total.
 - runner complexity: functions lizard's reader drops are measured, methods under their own name
 - runner complexity: a file lizard stays blind in fails complexity, names the file, never fails the run
 - runner complexity: a function longer than lizard's default 1000 lines is not a warning (-L 1500)
+
+### test_kit_vendor_sync.lua (19)
+
+- parseIconLine: the three forms
+- parseIconLine: `all` without a parenthesized reason is refused
+- parseIconLine: malformed lists are refused, naming why
+- iconDeclaration: absent, placed, misplaced, doubled
+- iconDeclaration: anchored, so prose that mentions the line is not a second one
+- iconCatalog: names and attribution by set folder
+- requiredIcons: attribution travels with its set, unknown names come back
+- cappedList: ten names, then a count
+- vendor sync: no `LibKa0s icons:` line is the whole-folder gate
+- vendor sync: `none.` ships no icon and no icon license
+- vendor sync: a list ships exactly its icons and their sets' attribution
+- vendor sync: an undeclared icon fails, counted and named
+- vendor sync: a name the tag does not carry fails, even if a stray file vouches for it
+- vendor sync: a declared icon that differs from the tag fails
+- vendor sync: outside media/icons the copy is still compared whole
+- vendor sync: `all` needs its reason, and with one is the whole folder
+- prune-icons: a list keeps its icons and attribution, and the gate then passes
+- prune-icons: none empties the folder; all and no line remove nothing
+- prune-icons: an unknown name is refused and nothing is removed
 
 ### test_eol.lua (2)
 
@@ -2569,9 +2591,10 @@ Total.
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 13 |
+| test_kit_vendor_sync.lua | 19 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2196** |
+| **Total** | **2215** |
