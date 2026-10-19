@@ -251,18 +251,25 @@ end
 --- line (blank lines between the two are allowed; any other line is not).
 ---
 --- opts: `provenancePattern` (the gate's), `iconsPattern` (DEFAULT_ICONS_PATTERN).
+--- The first non-blank line after line `at`, or nil.
+local function nextNonBlank(lines, at)
+    if not at then return nil end
+    for i = at + 1, #lines do
+        if lines[i]:match("%S") then return i end
+    end
+    return nil
+end
+
 function VendorSync.iconDeclaration(doc, opts)
     opts = opts or {}
     local provenance = opts.provenancePattern or DEFAULT_PATTERN
     local marker = opts.iconsPattern or DEFAULT_ICONS_PATTERN
-    local lines = {}
+    local found, provAt, lines = {}, nil, {}
     for line in (tostring(doc or "") .. "\n"):gmatch("([^\n]*)\n") do
-        lines[#lines + 1] = (line:gsub("\r$", ""))
-    end
-    local found, provAt = {}, nil
-    for i, line in ipairs(lines) do
-        if line:match(marker) then found[#found + 1] = i end
-        if not provAt and line:match(provenance) then provAt = i end
+        line = line:gsub("\r$", "")
+        lines[#lines + 1] = line
+        if line:match(marker) then found[#found + 1] = #lines end
+        if not provAt and line:match(provenance) then provAt = #lines end
     end
     if #found == 0 then return nil, nil end
     if #found > 1 then
@@ -270,13 +277,7 @@ function VendorSync.iconDeclaration(doc, opts)
             :format(#found, table.concat(found, ", "))
     end
     local at = found[1]
-    local nextLine
-    if provAt then
-        for i = provAt + 1, #lines do
-            if lines[i]:match("%S") then nextLine = i; break end
-        end
-    end
-    if not provAt or nextLine ~= at then
+    if nextNonBlank(lines, provAt) ~= at then
         return nil, ("the `LibKa0s icons:` line (line %d) must sit directly under the "
             .. "`Bundles [LibKa0s](...) vX.Y.Z (MIT).` provenance line"):format(at)
     end
@@ -350,6 +351,20 @@ end
 VendorSync.splitUnder = splitUnder
 VendorSync.localNames = localNames
 
+--- `register`'s opts with their defaults filled in, in the order `register` names them. A function
+--- of its own because every default is a branch, and `register` is long enough already.
+local function resolveOpts(opts)
+    local root = opts.root or DEFAULT_ROOT
+    return root,
+        opts.sibling or (root .. DEFAULT_SIBLING),
+        opts.probe or DEFAULT_PROBE,
+        opts.provenanceFile or DEFAULT_FILE,
+        opts.provenancePattern or opts.readmePattern or DEFAULT_PATTERN,
+        opts.runner or DEFAULT_RUNNER,
+        opts.runnerCase or DEFAULT_RUNNER_CASE,
+        opts.iconsPattern or DEFAULT_ICONS_PATTERN
+end
+
 --- Register the gate's cases on the consumer's test table.
 ---
 --- opts = {
@@ -383,14 +398,7 @@ function VendorSync.register(T, opts)
             .. "re-vendor tests/_kit/ from a LibKa0s tag that ships testkit/vendor_sync.lua", 0)
     end
 
-    local ROOT    = opts.root or DEFAULT_ROOT
-    local SIBLING = opts.sibling or (ROOT .. DEFAULT_SIBLING)
-    local PROBE   = opts.probe or DEFAULT_PROBE
-    local FILE    = opts.provenanceFile or DEFAULT_FILE
-    local PATTERN = opts.provenancePattern or opts.readmePattern or DEFAULT_PATTERN
-    local RUNNER      = opts.runner or DEFAULT_RUNNER
-    local RUNNER_CASE = opts.runnerCase or DEFAULT_RUNNER_CASE
-    local ICONS_PATTERN = opts.iconsPattern or DEFAULT_ICONS_PATTERN
+    local ROOT, SIBLING, PROBE, FILE, PATTERN, RUNNER, RUNNER_CASE, ICONS_PATTERN = resolveOpts(opts)
 
     --- Run a command in the sibling library repo and return stdout, or nil if it
     --- produced nothing. `nil` means "could not answer" — never "matched".
