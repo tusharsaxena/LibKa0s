@@ -98,7 +98,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Schema-1.0` | The settings schema's runtime without the schema. The host keeps its rows, and this module supplies the dotted-path primitives (`SplitPath`, `Read`, `Write`, `SameValue`), the path index, the single write seam `Set` and its all-or-nothing batch `SetMany`, the bulk bracket that makes a sweep one debug line, the profile reset's changed-row count and `Validate`. It owns no storage, sends no message and formats no value. | `Schema.lua` | [2](docs/api/Schema/version-2-docs.md) |
 | `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass. The keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
 | `LibKa0s-Item-1.0` | Item identity as four primitives and no policy: read an item link, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree about it in writing. | `Item.lua` | [2](docs/api/Item/version-2-docs.md) |
-| `LibKa0s-Media-1.0` | The art and type this collection draws with: 113 white icon TGAs (Open Iconic, MIT), seven generated statusbar textures, and JetBrains Mono (SIL OFL). All of it sits inside the payload, along with the paths that reach it and the LibSharedMedia registration. | `Media.lua`, `media/` | [4](docs/api/Media/version-4-docs.md) |
+| `LibKa0s-Media-1.0` | The art and type this collection draws with: 5,836 white icon TGAs from three sets (Open Iconic and Phosphor, MIT; Game-icons.net, CC BY 3.0), seven generated statusbar textures, and JetBrains Mono (SIL OFL). All of it sits inside the payload, along with the paths that reach it, the set catalog and the LibSharedMedia registration. | `Media.lua`, `MediaIcons.lua`, `media/` | [5.1](docs/api/Media/version-5.1-docs.md) |
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops, shared process-wide across addons. Then `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, but no row content at all. And `DragHandle`, the labeled strip with a help mark (and optionally a close mark) that a player drags a movable frame by. And `LineChart`, a pooled line chart over a time axis with markers, dashed ranges and a hover crosshair. And `Autocomplete`, a suggestion list hung directly under a host's `EditBox`, in the box's own width and skin, with a debounced provider and keyboard picking. Widgets takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua` | [12.1.4.3.2](docs/api/Widgets/version-12.1.4.3.2-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console (movable window, color-coded log, copy box, and the one seam that turns logging on and off), plus the diagnostics report a player sends with a bug report, the change gates (log once, log on change) the console re-arms on Clear and on enable, and the at-enable queue that holds a state line written while logging is off until it is turned on. The library writes the markers, the identity header and the cap, and runs each section an addon supplies under its own pcall. | `DebugLog.lua`, `DebugLogDiagnostics.lua`, `DebugLogGates.lua` | [19.2.1](docs/api/DebugLog/version-19.2.1-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser. In other words, everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua`, `SlashParse.lua` | [20.2](docs/api/Slash/version-20.2-docs.md) |
@@ -227,10 +227,10 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.73.0**, which adds one file (`OptionsDrawer` 1) and no major and moves one existing file's minor (`Options` 28 to 29): `Core = { Core = 10 }`,
+different vendored copy of each. As of **v1.74.0**, which adds one file (`MediaIcons` 1) and no major and moves one existing file's minor (`Media` 4 to 5): `Core = { Core = 10 }`,
 `Env = { Env = 2 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 3 }`, `Bus = { Bus = 2 }`,
 `Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
-`Media = { Media = 4 }`,
+`Media = { Media = 5, MediaIcons = 1 }`,
 `Widgets = { Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }`, `DebugLog = { DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }`, `Slash = { Slash = 20, SlashParse = 2 }`,
 `Launcher = { Launcher = 5 }`,
 `Options = { Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 4, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }`,
@@ -272,9 +272,13 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Pool.lua           -- LibKa0s-Pool-1.0, MINOR at the top of the file; needs Core
   Item.lua           -- LibKa0s-Item-1.0, MINOR at the top of the file; needs Core
   Media.lua          -- LibKa0s-Media-1.0, MINOR at the top of the file; needs Core
-  media/             -- THE ONLY NON-CODE PAYLOAD: icons/ (113 white TGAs, Open Iconic MIT),
-                        textures/ (7 generated statusbar bars) and fonts/ (JetBrains Mono, SIL
-                        OFL); the two third-party sets carry their license beside them
+  MediaIcons.lua     -- the generated icon catalog, same module, ICONS_MINOR of its own;
+                        written by tools/artwork/icon_cleaner.py, never by hand
+  media/             -- THE ONLY NON-CODE PAYLOAD: icons/ (224 Open Iconic TGAs, MIT, flat;
+                        phosphor/ 1,434 Phosphor Fill, MIT; game-icons/ 4,178 Game-icons.net,
+                        CC BY 3.0, with AUTHORS.txt), textures/ (7 generated statusbar bars) and
+                        fonts/ (JetBrains Mono, SIL OFL); every third-party set carries its license
+                        beside it
   Widgets.lua        -- LibKa0s-Widgets-1.0, MINOR at the top of the file; needs Core
   WidgetsReorder.lua -- ReorderList and the row box, same module, REORDER_MINOR of its own
   WidgetsDragHandle.lua -- the unlocked drag handle, same module, DRAG_MINOR of its own
@@ -305,11 +309,12 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
 tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json from the LIVE
                         surface, loaded through the same mock the suites use. Generated, never
                         hand-edited; tests/test_versioning.lua regenerates and compares on every run
-tools/artwork/       -- icon_cleaner.py rebuilds media/icons/ from Open Iconic; bar_textures.py
+tools/artwork/       -- icon_cleaner.py rebuilds media/icons/ and MediaIcons.lua from Open Iconic,
+                        Phosphor and Game-icons (pinned commits, its own venv); bar_textures.py
                         synthesizes media/textures/ from named constants. Both ARE the provenance
-                        record for their art -- upstream repo and license for the first, every value
-                        that decides a pixel for the second. Not shipped, not a build step: the TGAs
-                        are committed and the tools are how they are regenerated
+                        record for their art -- upstream repos, commits, licenses and authors for
+                        the first, every value that decides a pixel for the second. Not shipped,
+                        not a build step: the TGAs are committed and the tools regenerate them
 testkit/             -- the shared headless harness, vendored into each addon as tests/_kit/
                         (never shipped: it lives under tests/, which every .pkgmeta already excludes)
                         Kit.VERSION at the top of framework.lua names the revision
@@ -344,3 +349,22 @@ CHANGELOG.md         -- required at a library root, unlike an addon root: tests/
                         asserts it accounts for the version every file is at
 .luacheckrc
 ```
+
+## Credits
+
+The icon art in `LibKa0s/media/icons/` comes from three sets, each license shipped beside its art:
+
+- **[Open Iconic](https://github.com/iconic/open-iconic)** by Waybury, MIT
+  (`media/icons/LICENSE-open-iconic.txt`).
+- **[Phosphor Icons](https://github.com/phosphor-icons/core)**, the Fill weight, MIT
+  (`media/icons/phosphor/LICENSE-phosphor.txt`).
+- **[Game-icons.net](https://game-icons.net)**, CC BY 3.0 (`media/icons/game-icons/LICENSE-game-icons.txt`).
+  Icons made by Lorc, Delapouite, Skoll, Caro Asercion, Viscious Speed, Sbed, Aussiesim,
+  DarkZaitzev, Cathelineau, Quoting, Faithtoken, Lord Berandas, PriorBlue, Willdabeast, Carl Olsen,
+  Felbrigg, Lucas, SeregaCthtuf, Guard13007, John Redman, Kier Heyl, Pierre Leducq, Rihlsul, Andy
+  Meneely, GeneralAce135, HeavenlyDog, Zajkonur, Zeromancer, Catsu, Irongamer, John Colburn, Pepijn
+  Poolman, Sparker, SpencerDub and Starseeker. Every mark's author is listed in
+  `media/icons/game-icons/AUTHORS.txt`. Changed from the originals: rasterized to 64×64 TGA,
+  background removed, recolored white, some names suffixed or respelled.
+
+JetBrains Mono is by JetBrains, SIL OFL 1.1 (`media/fonts/JetBrainsMono-OFL.txt`).

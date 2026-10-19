@@ -381,10 +381,14 @@ Total.
 - item: LoadItem fires the callback once the item is loaded
 - item: LoadItem is inert without an id or without the API
 
-### test_media.lua (20)
+### test_media.lua (28)
 
-- media: every name in ICONS has a file, and every file has a name
-- media: the icon license ships beside the art
+- media: ICON_SETS names the three sets, each with a prefix, a folder and a license
+- media: every name in ICONS has a file, and every file has a name, in every set
+- media: each icon set's license ships beside its art
+- media: the catalog holds every set, not just the first
+- media: no Phosphor brand mark ships
+- media: the first 113 names are minor 4's, in minor 4's order
 - media: every name in TEXTURES has a file, and every file has a name
 - media: Texture builds the vendored path, WITHOUT the extension
 - media: the texture keys are the labels a player reads
@@ -392,6 +396,10 @@ Total.
 - media: ICONS holds no duplicate
 - media: Icon builds the vendored path, WITHOUT the extension
 - media: the file behind an icon path is still <name>.tga on disk
+- media: re-attaching the generated catalog never doubles a name, and keeps the table
+- media: a prefixed name resolves into its set's folder
+- media: an unknown prefix, or a set's name without its prefix, answers nil
+- media: IconAuthor names a Game-icons mark's author, and nothing else's
 - media: Font builds the vendored path from the catalog's own filename
 - media: an unknown name answers nil rather than a plausible path
 - media: a missing addon name answers nil rather than a path into nowhere
@@ -2486,7 +2494,7 @@ Total.
 | test_schema_batch.lua | 22 |
 | test_pool.lua | 23 |
 | test_item.lua | 15 |
-| test_media.lua | 20 |
+| test_media.lua | 28 |
 | test_widgets.lua | 57 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -2565,4 +2573,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2187** |
+| **Total** | **2195** |

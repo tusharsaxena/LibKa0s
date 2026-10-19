@@ -31,32 +31,119 @@ end
 
 -- ── the catalog against the directory ────────────────────────────────────────────────────
 
-test("media: every name in ICONS has a file, and every file has a name", function()
-  local files = listing(ICON_DIR)
-  assertTrue(files ~= nil, "could not list " .. ICON_DIR .. "; this gate must not pass blind")
+--- The folder one icon set's art sits in, from the repo root.
+local function setDir(set)
+  if set.dir == "" then return ICON_DIR end
+  return ICON_DIR .. "/" .. set.dir
+end
 
+--- The set a catalog name belongs to: the one whose prefix it carries, or the unprefixed set.
+local function setOf(name)
+  local prefix = name:match("^(%l+:)")
+  for _, set in ipairs(media.ICON_SETS) do
+    if set.prefix == (prefix or "") then return set end
+  end
+  return nil
+end
+
+--- The first catalog name carrying `prefix`.
+local function firstWith(prefix)
+  for _, name in ipairs(media.ICONS) do
+    if name:sub(1, #prefix) == prefix then return name end
+  end
+  return nil
+end
+
+test("media: ICON_SETS names the three sets, each with a prefix, a folder and a license", function()
+  -- red under: minor 4, which had one set and no table describing it.
+  assertTrue(type(media.ICON_SETS) == "table", "ICON_SETS is missing")
+  local ids = {}
+  for i, set in ipairs(media.ICON_SETS) do
+    ids[i] = set.id
+    assertTrue(type(set.prefix) == "string" and type(set.dir) == "string",
+      "set " .. tostring(set.id) .. " needs a prefix and a dir")
+    assertTrue(type(set.label) == "string" and set.label ~= "", "set " .. set.id .. " has no label")
+    assertTrue(type(set.license) == "string" and set.license ~= "",
+      "set " .. set.id .. " has no license file")
+  end
+  assertEqual(table.concat(ids, ","), "open-iconic,phosphor,game-icons")
+  assertEqual(media.ICON_SETS[1].prefix, "", "the first set is the unprefixed one")
+  assertEqual(media.ICON_SETS[2].prefix, "ph:")
+  assertEqual(media.ICON_SETS[3].prefix, "gi:")
+end)
+
+test("media: every name in ICONS has a file, and every file has a name, in every set", function()
+  -- red under: minor 4's listing, which read media/icons/ one level deep and so skipped every
+  -- subfolder without saying so -- the new sets' art would have been unchecked.
   local named = {}
   for _, name in ipairs(media.ICONS) do
-    named[name] = true
-    assertTrue(files[name .. ".tga"] == true,
-      "ICONS names '" .. name .. "' but " .. ICON_DIR .. "/" .. name .. ".tga is not there")
+    local set = setOf(name)
+    assertTrue(set ~= nil, "ICONS names '" .. name .. "', whose prefix no set claims")
+    if set then named[set.id .. "/" .. name:sub(#set.prefix + 1)] = true end
   end
 
-  for file in pairs(files) do
-    local base = file:match("^(.+)%.tga$")
-    if base then
-      assertTrue(named[base] == true,
-        ICON_DIR .. "/" .. file .. " ships but nothing in ICONS names it")
+  for _, set in ipairs(media.ICON_SETS) do
+    local dir = setDir(set)
+    local files = listing(dir)
+    assertTrue(files ~= nil and next(files) ~= nil,
+      "could not list " .. dir .. "; this gate must not pass blind")
+    for key in pairs(named) do
+      local id, base = key:match("^([^/]+)/(.+)$")
+      if id == set.id then
+        assertTrue(files[base .. ".tga"] == true,
+          "ICONS names '" .. set.prefix .. base .. "' but " .. dir .. "/" .. base .. ".tga is not there")
+      end
+    end
+    for file in pairs(files or {}) do
+      local base = file:match("^(.+)%.tga$")
+      if base then
+        assertTrue(named[set.id .. "/" .. base] == true,
+          dir .. "/" .. file .. " ships but nothing in ICONS names it")
+      end
     end
   end
 end)
 
-test("media: the icon license ships beside the art", function()
-  -- The art is Open Iconic under MIT, and the notice has to travel with the bytes: a consumer
-  -- vendors this folder wholesale and never visits this repo.
-  local files = listing(ICON_DIR)
-  assertTrue(files ~= nil and files["LICENSE-open-iconic.txt"] == true,
-    "LICENSE-open-iconic.txt is missing from " .. ICON_DIR)
+test("media: each icon set's license ships beside its art", function()
+  -- The notice has to travel with the bytes: a consumer vendors this folder wholesale and never
+  -- visits this repo. Open Iconic and Phosphor are MIT; Game-icons is CC BY 3.0, which also needs
+  -- the author of every mark and a statement of what was changed, so AUTHORS.txt ships with it.
+  for _, set in ipairs(media.ICON_SETS) do
+    local files = listing(setDir(set))
+    assertTrue(files ~= nil and files[set.license] == true,
+      set.license .. " is missing from " .. setDir(set))
+  end
+  local gi = listing(ICON_DIR .. "/game-icons")
+  assertTrue(gi ~= nil and gi["AUTHORS.txt"] == true, "game-icons/AUTHORS.txt is missing")
+end)
+
+test("media: the catalog holds every set, not just the first", function()
+  -- red under: minor 4's 113 names.
+  assertTrue(#media.ICONS > 5000, "ICONS holds " .. #media.ICONS .. " names")
+  local per = {}
+  for _, name in ipairs(media.ICONS) do
+    local set = setOf(name)
+    if set then per[set.id] = (per[set.id] or 0) + 1 end
+  end
+  assertEqual(per["open-iconic"], 224, "113 semantic keys plus the 111 other Open Iconic marks")
+  assertTrue((per.phosphor or 0) > 1000, "Phosphor Fill holds " .. tostring(per.phosphor))
+  assertTrue((per["game-icons"] or 0) > 3500, "Game-icons holds " .. tostring(per["game-icons"]))
+end)
+
+test("media: no Phosphor brand mark ships", function()
+  -- The `*-logo` marks are other people's trademarks, not glyphs; the generator drops them.
+  for _, name in ipairs(media.ICONS) do
+    assertTrue(not (name:find("^ph:") and name:find("%-logo$")), name .. " is a brand mark")
+  end
+end)
+
+test("media: the first 113 names are minor 4's, in minor 4's order", function()
+  -- A consumer stores the full texture path in SavedVariables and share strings, so an existing
+  -- name never moves, and the hand-written list stays first.
+  assertEqual(media.ICONS[1], "close")
+  assertEqual(media.ICONS[113], "shield")
+  assertTrue(media.ICONS[114] ~= nil and media.ICONS[114]:find(":") == nil,
+    "the other Open Iconic marks follow, unprefixed")
 end)
 
 test("media: every name in TEXTURES has a file, and every file has a name", function()
@@ -146,6 +233,67 @@ test("media: the file behind an icon path is still <name>.tga on disk", function
   local fh = io.open("LibKa0s/" .. rel .. ".tga", "rb")
   assertTrue(fh ~= nil, "no file at LibKa0s/" .. rel .. ".tga")
   if fh then fh:close() end
+end)
+
+test("media: re-attaching the generated catalog never doubles a name, and keeps the table", function()
+  -- The paired-file guard lets a newer MediaIcons.lua run again against the same shell, so the
+  -- attach must be idempotent; and a host that captured ICONS once must still read all of it.
+  local icons, before = media.ICONS, #media.ICONS
+  local names, authors = {}, {}
+  for i = 114, before do
+    names[#names + 1] = icons[i]
+    authors[icons[i]] = media.IconAuthor(icons[i])
+  end
+  media.__SetGeneratedIcons(names, authors)
+  media.__SetGeneratedIcons(names, authors)
+  assertTrue(media.ICONS == icons, "the table was replaced")
+  assertEqual(#media.ICONS, before, "a second attach doubled the catalog")
+  assertEqual(media.ICONS[113], "shield")
+  local gi = firstWith("gi:")
+  assertEqual(media.IconAuthor(gi), authors[gi])
+end)
+
+test("media: a prefixed name resolves into its set's folder", function()
+  -- red under: minor 4, whose path was the name itself under media\icons, with no subfolder.
+  assertEqual(media.Icon("MythicMeters", "ph:sword"),
+    "Interface\\AddOns\\MythicMeters\\libs\\LibKa0s\\media\\icons\\phosphor\\sword")
+  local gi = firstWith("gi:")
+  assertTrue(gi ~= nil, "no gi: name in ICONS")
+  if not gi then return end
+  assertEqual(media.Icon("MythicMeters", gi),
+    "Interface\\AddOns\\MythicMeters\\libs\\LibKa0s\\media\\icons\\game-icons\\" .. gi:sub(4))
+  -- and the file behind it is on disk
+  local rel = media.Icon("MythicMeters", "ph:sword"):gsub("\\", "/")
+    :gsub("^Interface/AddOns/MythicMeters/libs/LibKa0s/", "")
+  local fh = io.open("LibKa0s/" .. rel .. ".tga", "rb")
+  assertTrue(fh ~= nil, "no file at LibKa0s/" .. rel .. ".tga")
+  if fh then fh:close() end
+end)
+
+test("media: an unknown prefix, or a set's name without its prefix, answers nil", function()
+  assertEqual(media.Icon("MythicMeters", "zz:sword"), nil)
+  assertEqual(media.Icon("MythicMeters", "ph:nosuchmark"), nil)
+  assertEqual(media.Icon("MythicMeters", "sword"), nil, "Phosphor's sword is ph:sword")
+  assertEqual(media.Icon("MythicMeters", "close"),
+    "Interface\\AddOns\\MythicMeters\\libs\\LibKa0s\\media\\icons\\close", "close never moves")
+end)
+
+test("media: IconAuthor names a Game-icons mark's author, and nothing else's", function()
+  -- red under: minor 4, which had no IconAuthor. CC BY attribution is per author.
+  assertTrue(type(media.IconAuthor) == "function", "IconAuthor is missing")
+  if type(media.IconAuthor) ~= "function" then return end
+  local gi = firstWith("gi:")
+  assertTrue(gi ~= nil, "no gi: name in ICONS")
+  for _, name in ipairs(media.ICONS) do
+    if name:find("^gi:") then
+      local who = media.IconAuthor(name)
+      assertTrue(type(who) == "string" and who ~= "", name .. " has no author")
+    end
+  end
+  assertEqual(media.IconAuthor("ph:sword"), nil)
+  assertEqual(media.IconAuthor("close"), nil)
+  assertEqual(media.IconAuthor("gi:nosuchmark"), nil)
+  assertEqual(media.IconAuthor(nil), nil)
 end)
 
 test("media: Font builds the vendored path from the catalog's own filename", function()
