@@ -465,6 +465,12 @@ to land once the other four are green.
     out. Without the line at all there is no way to answer "which LibKa0s does this addon ship?"
     short of grepping minors out of vendored source — which is the question a re-vendor sweep needs
     answered fastest.
+    Directly under that line, declare the icons the addon ships — `LibKa0s icons: none.`, the
+    `lib.ICONS` names it draws (`LibKa0s icons: settings, close.`), or `LibKa0s icons: all (icon
+    picker).` only when its UI lets the player choose among the catalog — and after the copy run
+    `lua tools/prune-icons.lua <Addon>` from the LibKa0s checkout. `media/icons/` is the one
+    carve-out from whole-folder vendoring (kit revision 40; `docs/releasing.md` → *Re-vendoring
+    consumers*).
 12. **Record every decision as a GitHub issue on the host addon's repo as you go**, one issue per
     module, naming the upstream minor that unblocked anything that needed one. Carry each one's
     status as a **label** — `state:triaged` for real work accepted but not being done now (open),

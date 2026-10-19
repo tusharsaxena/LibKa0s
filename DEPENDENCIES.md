@@ -14,7 +14,7 @@ Required by `documentation-§7`, which binds this repo unchanged (`library-stack
 
 **Nothing.** LibKa0s is a **library, not an addon**: it has no `.toc`, it is never installed by a
 player, and it never appears in the addon list. It is vendored whole-folder into each host addon's
-`libs/LibKa0s/` and loaded through that addon's TOC — see
+`libs/LibKa0s/` (all but `media/icons/`, which carries only the icons the addon declares) and loaded through that addon's TOC — see
 [README.md → Installing](README.md#installing). A player who has a Ka0s addon already has every copy
 of this library they will ever need.
 
@@ -45,6 +45,7 @@ Also assumed present, and not installed separately on any normal WSL2 / Ubuntu b
 | POSIX `ls` | `Kit.assertSuiteInventory` lists `tests/` with `ls -A` via `io.popen` (`testkit/inventory.lua:190`, where kit revision 28 moved the suite inventory), falling back to `dir /b` under cmd.exe. When neither is available the gate **fails** rather than reporting a pass — an empty listing means "could not look", never "empty directory". |
 | POSIX `mktemp`, `mkdir`, `rm`, `pwd` | The kit's own inventory and line-ending suites build scratch repositories on disk through `io.popen` / `os.execute` (`tests/test_kit_inventory.lua:43`, `:58`, `:70`; `tests/test_kit_eol.lua:22`, `:32`, `:81`). |
 | `bash` | `testkit/run-automated-tests.sh` is `#!/usr/bin/env bash` and uses `set -uo pipefail` and arrays. |
+| POSIX `find`, `cp` | `testkit/vendor_sync.lua` lists a vendored copy with `find . -type f` (its `localNames`), and so does `tools/prune-icons.lua`, which reuses it; `tests/test_kit_vendor_sync.lua` builds a tagged fixture library and a consumer with `git init`, `cp -r` and `mktemp`. |
 
 ### Install
 
@@ -85,6 +86,10 @@ sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.1 100
 **Nothing extra to cut a release.** There is no packaging step and no CurseForge upload: `packaging`
 does not bind a library repo (`library-stack-§7`), and releasing is git plus the commands in
 [`docs/releasing.md`](docs/releasing.md).
+
+**Re-vendoring needs nothing extra either.** `tools/prune-icons.lua`, which cuts a consumer's copied
+`media/icons/` down to its `LibKa0s icons:` declaration, is pure Lua 5.1 with no dependencies beyond
+the `lua5.1` and POSIX `find` above: `lua tools/prune-icons.lua <Addon>`.
 
 **Regenerating the shipped art is the one thing that needs more**, and only when the art itself
 changes. `tools/artwork/icon_cleaner.py` rebuilds `LibKa0s/media/icons/` and the generated

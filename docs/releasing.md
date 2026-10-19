@@ -251,12 +251,38 @@ committed here, never edited in a consumer.
 cp -r LibKa0s/. <Addon>/libs/LibKa0s/
 diff -r --strip-trailing-cr LibKa0s <Addon>/libs/LibKa0s   # content — MUST be empty
 diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD be empty
+lua tools/prune-icons.lua <Addon>                          # media/icons/ down to the declaration
 cd <Addon> && lua tests/run.lua && luacheck .
 ```
+
+The two diffs run **before** the prune, against the whole copy; after it, `diff -r` reports every
+pruned icon as `Only in LibKa0s/media/icons`, which is the declaration working, not a fork. From
+then on the consumer's `tests/test_vendor_sync.lua` is the check.
 
 Then add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as the copy:
 
 > Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.74.0 (MIT).
+
+**And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
+40), one line in one of three forms:
+
+```text
+LibKa0s icons: all (icon picker).
+LibKa0s icons: none.
+LibKa0s icons: settings, close, ph:sword, gi:skull.
+```
+
+`media/icons/` is the one carve-out from whole-folder vendoring: v1.74.0 made it 5,836 icons, about
+28 MB, and a consumer ships **exactly the icons it declares**. Names are `lib.ICONS` names (Open
+Iconic unprefixed, `ph:` Phosphor, `gi:` Game-icons), comma-separated, the line ending in a period.
+`all` is only for an addon whose UI lets the player choose among the catalog (an icon picker), and
+its parenthesized reason names that chooser. A set's attribution files (`LICENSE-open-iconic.txt`,
+`phosphor/LICENSE-phosphor.txt`, `game-icons/LICENSE-game-icons.txt` and `game-icons/AUTHORS.txt`)
+travel with the set: present when any of its icons ships, absent when none does; `none` ships no
+icon file and no icon license. `tools/prune-icons.lua` applies exactly that after the `cp -r`,
+printing every path it removes; it refuses a name the copy does not carry and then removes nothing.
+A consumer with no line is gated as a whole-folder copy, which is the transition state; the MUST
+binds from the first release whose kit carries the declaration-aware gate.
 
 The version in that template is **the one being released**, not a literal to copy — at v1.5.0 the
 line reads v1.5.0, and this template moves with it rather than being corrected after the fact. That
@@ -331,7 +357,9 @@ gate yet, so downstream the `diff -r` above is still yours to run.
 
 Rules, and the reason each exists:
 
-- **Copy the WHOLE folder, always. Never one module.** With one major per module and independent
+- **Copy the WHOLE folder, always. Never one module.** The one carve-out is `media/icons/`, which
+  ships only the icons the consumer declares (above); it carries no Lua, so no minor and no floor
+  can skew through it. With one major per module and independent
   minors, per-module re-vendoring is exactly how cross-major skew gets manufactured: an addon ends
   up carrying a new `Perf.lua` over an old `Core.lua`, or a `Core.lua` that never arrived at all.
   The only negotiation between majors is a floor — a dependent file names the minimum minor it needs
@@ -380,7 +408,8 @@ Rules, and the reason each exists:
   re-vendored — which is another way of saying the floor is only ever safe because step 8 is not
   optional.
 - **The vendored copy MUST be identical to the ship folder in content, and SHOULD be identical in
-  bytes.** Both diffs above, every time. A hand-patched `libs/` copy is a fork nobody knows about —
+  bytes** — under `media/icons/`, exactly the declared icons and their sets' attribution files, each
+  identical. Both diffs above, every time. A hand-patched `libs/` copy is a fork nobody knows about —
   but a CR-only difference is not one, and treating it as one is how a `libs/` edit gets
   rationalised.
 - **A library change MUST be followed by a re-vendor commit in every consumer that depends on it**,
