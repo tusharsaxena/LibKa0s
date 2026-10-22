@@ -21,6 +21,11 @@ of this library they will ever need.
 The only runtime requirement is therefore World of Warcraft (Retail), by way of whichever host addon
 vendored the code.
 
+`LibKa0s-Glow-1.0` drives LibCustomGlow-1.0 but does not carry it: the consumer vendors
+LibCustomGlow-1.0 in its own `libs/`, and Glow resolves it with `LibStub` at every call, drawing
+nothing when it is absent, so there is nothing to install here (the suite uses a fake,
+`tests/test_glow.lua`).
+
 ## Development
 
 Three tools. Only the first has a version that matters.

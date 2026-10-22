@@ -10,7 +10,7 @@ before changing anything. [`DEPENDENCIES.md`](DEPENDENCIES.md) lists what to ins
 
 LibKa0s is a Ka0s-owned shared library. Ka0s WoW addons vendor it the way they vendor Ace3: each one
 copies it into its own `libs/` folder instead of depending on it at runtime. Every module is one
-LibStub major, and fifteen of them ship today:
+LibStub major, and seventeen of them ship today:
 
 - `LibKa0s-Core-1.0`: the small stateless seams every other module sits on. That means secret-safe
   stringification, the window skin and its close button, a prefixed chat printer,
@@ -82,7 +82,9 @@ modules and points you there. It does not restate them.
    `OptionsDrawer.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole eleven-file module
    is absent instead of half-attached. `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua` and `WidgetsAutocomplete.lua` do the same
    behind `Widgets.lua`, `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
-   `PerfPanel.lua` behind `Perf.lua`.
+   `PerfPanel.lua` behind `Perf.lua`, and `SimTimeline.lua` and `SimPanel.lua` behind `Sim.lua`.
+   `SimPanel.lua` also returns when Widgets is absent, since its scenario picker is a
+   `W.Dropdown`; the simulator then runs headless from its slash verb, with no panel.
    Since v1.48.0 the folder has carried one more file than it used to. That is why you copy the whole
    folder, and never just the files you happen to have.
    **The one exception is `media/icons/`** (`library-stack-§7`, standard v2.85.0): it holds 5,836 icons,
@@ -105,7 +107,7 @@ addon must work with no other addon installed.
 
 ## The modules
 
-There are fifteen LibStub majors, and a host adopts each one independently. The full contract for
+There are seventeen LibStub majors, and a host adopts each one independently. The full contract for
 each (the descriptor, every public member, every row field) lives in [`docs/api/`](docs/api/), one
 document per shipped version. This section is the map and that directory is the reference. Nothing
 here restates a signature, because a second copy of a contract is a contract that drifts.
@@ -232,7 +234,8 @@ somebody eventually runs without the pipeline.
 `testkit/` holds the registry, the assertions, the source loader and the universal half of the
 WoW-API mock. The whole collection shares it, and each addon vendors it as `tests/_kit/`. It is not a
 LibStub major and it never ships, but it does carry a plain revision integer, `Kit.VERSION` (exposed
-to suites as `KIT_VERSION`), so a consumer can say which copy it holds. Its full surface is in
+to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.75.0 carries revision
+41. Its full surface is in
 [`docs/api/testkit/`](docs/api/testkit/), indexed alongside the majors, and
 [`testkit/README.md`](./testkit/README.md) covers what it is and the vendoring discipline.
 
@@ -251,14 +254,18 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.74.0**, which adds one file (`MediaIcons` 1) and no major and moves one existing file's minor (`Media` 4 to 5): `Core = { Core = 10 }`,
+different vendored copy of each. As of **v1.75.0**, which adds two majors (`Glow` 1, and `Sim` 1
+with `SimTimeline` 1 and `SimPanel` 1) and moves eight existing files' minors (`Core` 10 to 11,
+`Item` 2 to 3, `Widgets` 12 to 13, `DebugLog` 19 to 20, `DebugLogDiagnostics` 2 to 3,
+`OptionsIdList` 4 to 5, `OptionsTabs` 8 to 9 and `PerfPanel` 6 to 7): `Core = { Core = 11 }`,
 `Env = { Env = 2 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 3 }`, `Bus = { Bus = 2 }`,
-`Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 2 }`,
+`Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 3 }`, `Glow = { Glow = 1 }`,
 `Media = { Media = 5, MediaIcons = 1 }`,
-`Widgets = { Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }`, `DebugLog = { DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }`, `Slash = { Slash = 20, SlashParse = 2 }`,
+`Widgets = { Widgets = 13, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }`, `DebugLog = { DebugLog = 20, DebugLogDiagnostics = 3, DebugLogGates = 1 }`, `Slash = { Slash = 20, SlashParse = 2 }`,
 `Launcher = { Launcher = 5 }`,
-`Options = { Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 4, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }`,
-`Perf = { Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 6 }`. Those numbers move every release, so read them from the top of
+`Options = { Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }`,
+`Perf = { Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 7 }`,
+`Sim = { Sim = 1, SimTimeline = 1, SimPanel = 1 }`. Those numbers move every release, so read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), not from here. Grouping
 by major is what lets you answer "which panel is attached to which probe?" from inside the game, once
 several addons each ship their own vendored copy. `tests/test_versioning.lua` checks that `MODULES`
@@ -296,7 +303,8 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Schema.lua         -- LibKa0s-Schema-1.0, MINOR at the top of the file; needs Core
   Pool.lua           -- LibKa0s-Pool-1.0, MINOR at the top of the file; needs Core
   Item.lua           -- LibKa0s-Item-1.0, MINOR at the top of the file; needs Core
-  Glow.lua           -- LibKa0s-Glow-1.0, MINOR at the top of the file; needs Core
+  Glow.lua           -- LibKa0s-Glow-1.0, MINOR at the top of the file; needs Core (LibCustomGlow-1.0
+                        is the host's, resolved at call time)
   Media.lua          -- LibKa0s-Media-1.0, MINOR at the top of the file; needs Core
   MediaIcons.lua     -- the generated icon catalog, same module, ICONS_MINOR of its own;
                         written by tools/artwork/icon_cleaner.py, never by hand
@@ -333,7 +341,8 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   PerfPanel.lua      -- the clickable step panel, part of the same module, PANEL_MINOR of its own
   Sim.lua            -- LibKa0s-Sim-1.0, MINOR at the top of the file; needs Core
   SimTimeline.lua    -- the gated step machine and RunVerb, same module, TIMELINE_MINOR of its own
-  SimPanel.lua       -- the docked step panel, picker and controls, same module, SIM_PANEL_MINOR of its own
+  SimPanel.lua       -- the docked step panel, picker and controls, same module, SIM_PANEL_MINOR of its own;
+                        also needs Widgets (the picker's W.Dropdown)
   LICENSE            -- ships INSIDE the payload, so every vendored copy carries the MIT notice
 tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json from the LIVE
                         surface, loaded through the same mock the suites use. Generated, never

@@ -235,8 +235,8 @@ first:
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
   accepted, below.
-- `LibKa0s/OptionsIdList.lua` (1247 at v1.71.0's minor 4, measured 2026-10-07, under its 1350 re-check
-  trigger; 1246 with minor 3's loaded-addon check on `addonName`, LibKa0s#42, measured 2026-10-02;
+- `LibKa0s/OptionsIdList.lua` (1251 at v1.75.0's minor 5, the #57 help-mark comment, measured
+  2026-10-22, under its 1350 re-check trigger; 1247 at v1.71.0's minor 4, measured 2026-10-07; 1246 with minor 3's loaded-addon check on `addonName`, LibKa0s#42, measured 2026-10-02;
   1197 at v1.65.0; 1193 new: the id peel), ruled below.
 
 `LibKa0s/Perf.lua` left the band on 2026-10-01, 1307 → 975, closing issue
@@ -263,6 +263,12 @@ the profile verb (`lib.ProfileNames`, `Sl:ProfileSwitch`, `Sl:CliProfile`) is th
 the row box and their machinery moved unchanged to `LibKa0s/WidgetsReorder.lua` (680) at Widgets
 minor 12, a secondary file paired on the shell's minor as `LibKa0s/WidgetsDragHandle.lua` is. The
 dropdown and the copy window stay; the copy window is the next seam if the file grows back.
+It has grown back, out of the band: 834 at v1.75.0's minor 13 (measured 2026-10-22), 655 before
+`W.SearchBox` (#52), the hoisted `SKIN` table and `W.TestStrip` (#48) with their header notes. The
+copy window stays the next seam, and the re-check trigger is 1000 lines. `LibKa0s/DebugLog.lua` is
+999 at v1.75.0's minor 20, re-measured 2026-10-22: the #57 comment correction added no line, so it
+stays one under the band. None of v1.75.0's new files is in the band: `LibKa0s/SimPanel.lua`, the
+largest, is 859.
 `tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page
 registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to
 `tests/test_options_render.lua` (373), the render/refresh seam the issue named plus the page-registry
@@ -449,7 +455,7 @@ never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests
 | Doc | Covers |
 |---|---|
 | [`README.md`](README.md) | What each module is, how to install and re-vendor, the repo layout |
-| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Compat`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
+| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Compat`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Glow`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, `Sim`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
 | [`docs/api/CONSUMERS.md`](docs/api/CONSUMERS.md) | The consumer census: for every public export, which hosts call it (file:line), each textual hit classified as call / host duplicate / degradation stub, and a verdict on every zero-consumer export. Stamped with the version it measured; re-run with the tool it names after a release that adds a surface |
 | [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
 | [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-analysis/README.md` points at rather than restating |

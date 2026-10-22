@@ -12,18 +12,23 @@ cannot drift. Release order is in
 
 ## v1.75.0 — unreleased
 
-Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** (comment-only)
-(`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**), **Core minor 11** (comment-only, key
-**11**), **DebugLog minor 20** (comment-only) and **DebugLogDiagnostics minor 3** (`LibKa0s-DebugLog-1.0` key **20.3.1**), **Widgets minor 13**
-(`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**),
-**Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**), **PerfPanel minor 7** (comment-only,
-`LibKa0s-Perf-1.0` key **15.1.1.7**), **Sim minor 1**, **SimTimeline minor 1** and **SimPanel minor 1** (the new major
-`LibKa0s-Sim-1.0`, key **1.1.1**), every
-other file still at its v1.74.0 minor — `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2,
-`Pool` 3, `Media` key 5.1, `Slash` key 20.2 and `Launcher` 5 — and
-**test kit revision 41**. No `NEEDS_*` floor rises, and two majors are added (`LibKa0s-Glow-1.0` and `LibKa0s-Sim-1.0`). The owner's
-2026-10-20 ruling: only the bare minimum of icons is vendored into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
-README's standards pointer moves when this is released.
+Versions in this release: **Core minor 11** (comment-only, key **11**); **Item minor 3**
+(`LibKa0s-Item-1.0` key **3**); **Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**);
+**Widgets minor 13** (`LibKa0s-Widgets-1.0` key **13.1.4.3.2**: `WidgetsReorder` 1,
+`WidgetsDragHandle` 4, `WidgetsLineChart` 3 and `WidgetsAutocomplete` 2 unchanged);
+**DebugLog minor 20** (comment-only) and **DebugLogDiagnostics minor 3** (`LibKa0s-DebugLog-1.0` key
+**20.3.1**, `DebugLogGates` 1 unchanged); **OptionsIdList minor 5** (comment-only) and
+**OptionsTabs minor 9** (`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**, its nine other
+files unchanged); **PerfPanel minor 7** (comment-only, `LibKa0s-Perf-1.0` key **15.1.1.7**);
+**Sim minor 1**, **SimTimeline minor 1** and **SimPanel minor 1** (the new major `LibKa0s-Sim-1.0`,
+key **1.1.1**); every other file still at its v1.74.0 minor (`Env` 2, `Compat` 1, `Lifecycle` 3,
+`Bus` 2, `Schema` 2, `Pool` 3, `Media` key 5.1, `Slash` key 20.2 and `Launcher` 5); and **test kit
+revision 41**. Two majors are added and no `NEEDS_*` floor rises, so the library is **seventeen
+majors across forty files**. Built to standard **v2.86.0**: `library-stack-§7`'s icon subset (from
+v2.85.0, the owner's 2026-10-20 ruling that only the bare minimum of icons is vendored into each
+consumer), its narrowed `__` clause and documentation-§1's icon credits; the README's standards
+pointer moves when this is released. The consumer's side of every change is under *What a consumer
+owes*, at the end of this entry.
 
 ### OptionsTabs minor 9: O.__releaseChrome is no longer exported (LibKa0s#45)
 
@@ -56,12 +61,6 @@ README's standards pointer moves when this is released.
 - **The attach files re-pair on the shell's new minor**; none of their own minors moves.
   [Widgets version 13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md).
 
-**What a consumer owes.** Nothing to keep working. An adopter extends the box with `HookScript`
-and never `SetScript`s the five scripts the constructor sets, rewrites the hint with
-`box.hint:SetText`, and hangs `W.Autocomplete` on it after construction. An adopter that passes an
-icon declares that icon's name on its `LibKa0s icons:` line (BankLedger, its magnifier): the icon is
-host-passed and joins no set the library draws.
-
 ### Widgets minor 13: W.TestStrip (#48)
 
 - **`W.TestStrip(parent, opts)`, the test-mode strip, shares minor 13 with the search box.** A
@@ -80,11 +79,6 @@ host-passed and joins no set the library draws.
   fallback. Re-check trigger: a consumer needs a different color, a tooltip renderer or a measured
   height with the same semantics as another.
   [Widgets version 13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md).
-
-**What a consumer owes.** Nothing to keep working. A TestStrip adopter declares `info` on its
-`LibKa0s icons:` line: the strip's mark is host-passed, so the library's closed set (close, copy,
-clear, info, for `OptionsIdList`) does not cover the adopter's own copy, and a pruned icon still
-resolves to a path and draws blank.
 
 ### Comment-only minors: the icon fallback a pruned copy does not get (#57)
 
@@ -120,9 +114,6 @@ resolves to a path and draws blank.
 - **No member moves.** DebugLogDiagnostics 2 -> 3, so the fuller header wins the LibStub race. The
   DebugLog key was briefly 20.2.1 on the release branch; no release carried it.
   [DebugLog version 20.3.1](docs/api/DebugLog/version-20.3.1-docs.md).
-
-**What a consumer owes.** Nothing. A host that parses its own report reads more `File minor`
-entries on the `LibKa0s running:` line.
 
 ### PerfPanel minor 7: comment-only; the step panel stays Sim-private (#53)
 
@@ -211,24 +202,6 @@ never shipped on its own.
   copy does not ship and draws nothing, silently. Paths are per host, so a pruned copy that wins the
   LibStub race cannot break another addon's icons. [Media version 5.1](docs/api/Media/version-5.1-docs.md).
 
-### What a consumer owes
-
-- **This release changes payload files under `LibKa0s/`.** An earlier draft of this entry said no
-  payload file had changed; that is withdrawn. Core, DebugLog, OptionsTabs, OptionsIdList and PerfPanel all
-  move a minor, so the re-vendor copies the library folder as well as the kit.
-- **Delete any `O.__releaseChrome` mirror from an Options degradation stub** at the v1.75.0
-  re-vendor (the KickCD M4-09 precedent). `Kit.assertSurfaceParity` iterates the live surface, so a
-  stub that keeps it turns nothing red; it is dead weight.
-- **On its next re-vendor:** the kit (revision 41), the library copy, its `LibKa0s icons:` line under
-  the provenance line, and `lua tools/prune-icons.lua <Addon>`, all in one commit. Re-vendoring every
-  consumer with its declaration is tracked as a LibKa0s issue.
-- **Declare the icons LibKa0s draws for you.** `close` (`Core.MakeCloseButton` given the addon name:
-  the DebugLog console, `PerfPanel.lua`, the Widgets copy window), `clear` and `copy` (the DebugLog
-  console) and `info` (the Options id list's help mark, unless the spec passes `helpIcon`) come out
-  of the host's copy. A host that wires the debug console declares at least `close, copy, clear`.
-  A pruned icon still resolves to a path, so the text fallback never runs and the control draws
-  blank; the gate cannot catch the omission.
-
 ### Item minor 3: Item.BonusIDsFromLink (#51)
 
 - **`Item.BonusIDsFromLink(link)`, the bonus ids an item link or bare itemString carries**, as
@@ -242,9 +215,6 @@ never shipped on its own.
   `EffectiveItemLevel`, `ItemLevelAt`/`QualityAt`, `QualityOf`, the Wowhead URL builder and the
   loot-line parser. `Item.lua`'s header reads "why these five" and points there.
   [Item version 3](docs/api/Item/version-3-docs.md).
-
-**What a consumer owes.** Nothing to keep working. An adopter with a library-absent stub for this
-major adds the same walk to it.
 
 ### LibKa0s-Glow-1.0 (new major, Glow minor 1)
 
@@ -273,10 +243,6 @@ major adds the same walk to it.
   [Glow version 1](docs/api/Glow/version-1-docs.md).
 - **Adopters:** **DropWatcher**, **QuickComms** and **KickCD**, each through a `core/GlowSetup.lua`
   seam publishing `NS.GlowLib`.
-
-**What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
-the file arrive, and a host that never wires it carries a small file that never runs. Every host
-keeps vendoring `LibCustomGlow-1.0`.
 
 ### LibKa0s-Sim-1.0 (new major, Sim minor 1, SimTimeline minor 1, SimPanel minor 1)
 
@@ -437,11 +403,56 @@ keeps vendoring `LibCustomGlow-1.0`.
   adopters and the future candidates (MultiMeters#60, WhatGroup#24, KickCD#38):
   [Sim version 1.1.1](docs/api/Sim/version-1.1.1-docs.md).
 
-**What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
-the files arrive, and a host that never calls `NewSeam` or `New` carries files that never run: no
-frame exists until a session's `ShowPanel`. The adopters, DropWatcher (migrating its own simulator
-onto the major), LootHistory and BankLedger (new simulators), wire it at their v1.75.0 re-vendor and
-owe the host contract H1-H10 from then on.
+### What a consumer owes
+
+- **One re-vendor commit:** the kit (revision 41), the whole library folder, the `LibKa0s icons:`
+  line directly under the `CLAUDE.md` provenance line, and `lua tools/prune-icons.lua <Addon>` run
+  from this checkout. Payload files move (Core, Item, Widgets, DebugLog, DebugLogDiagnostics,
+  OptionsIdList, OptionsTabs and PerfPanel each take a minor, and Glow and Sim arrive), so the
+  library is copied as well as the kit. An earlier draft of this entry said no payload file had
+  changed; that is withdrawn. A consumer with no `LibKa0s icons:` line is still compared whole, so
+  the re-vendor alone turns nothing red. Re-vendoring every consumer with its declaration is
+  tracked as a LibKa0s issue.
+- **Declare the icons LibKa0s draws for you.** `close` (`Core.MakeCloseButton` given the addon name:
+  the DebugLog console, `PerfPanel.lua`, the Widgets copy window), `clear` and `copy` (the DebugLog
+  console) and `info` (the Options id list's help mark, unless the spec passes `helpIcon`) come out
+  of the host's copy. A host that wires the debug console declares at least `close, copy, clear`.
+  A pruned icon still resolves to a path, so the text fallback never runs and the control draws
+  blank; the gate cannot catch the omission.
+- **Declare the icons you pass in.** A `W.TestStrip` adopter declares `info` (the strip's mark is
+  host-passed, so the library's closed set, close, copy, clear and info for `OptionsIdList`, does
+  not cover the adopter's own copy); a `W.SearchBox` adopter declares the mark it passes
+  (BankLedger, its magnifier); a Sim host declares the `d.panel.check` mark it passes.
+- **Delete any `O.__releaseChrome` mirror** from an Options degradation stub (the KickCD M4-09
+  precedent). `Kit.assertSurfaceParity` iterates the live surface, so a stub that keeps it turns
+  nothing red; it is dead weight.
+- **Surface-parity churn.** A degradation stub pinned with `Kit.assertSurfaceParity` by name goes
+  red until it gains the new members: a Widgets stub `SearchBox`, `TestStrip` and `TEST_STRIP`, an
+  Item stub `BonusIDsFromLink` (with the same walk, not a constant answer). Media's surface does
+  not move; a Glow or Sim stub is new with its adopter, built from the API document's *Adopting it*
+  (Sim's from `tests/test_sim_stub.lua`), with an empty ignore set.
+- **Adopters keep the contracts they take on.** A `W.SearchBox` adopter extends the box with
+  `HookScript` and never `SetScript`s the five scripts the constructor sets, rewrites the hint with
+  `box.hint:SetText`, and hangs `W.Autocomplete` on it after construction. A `W.TestStrip` adopter
+  owns the strip's anchors, its visibility and the gaps around it. A Glow adopter keeps vendoring
+  `LibCustomGlow-1.0`. A Sim adopter owes the host contract H1-H10 from its re-vendor on.
+- **Glow and Sim adoption is required of none.** Re-vendoring makes the files arrive, and a host
+  that never wires them carries files that never run: no frame, timer or event until `NewSeam`,
+  `New` or `ShowPanel`. The named adopters adopt in this run: Glow in **DropWatcher**,
+  **QuickComms** and **KickCD**; Sim in **DropWatcher** (migrating its own simulator onto the major),
+  **LootHistory** and **BankLedger** (new simulators). The promotions' adopters replace their
+  hand-built copies in the same run: `W.SearchBox` in LootHistory, BankLedger and DropWatcher,
+  `W.TestStrip` in DropWatcher, LootHistory, BankLedger and MultiMeters, `Item.BonusIDsFromLink` in
+  BankLedger and LootHistory.
+- **No new vendoring trigger.** `W.StepPanel` was withdrawn (outcome B), so Perf gains no floor on
+  Widgets. The one new attach-borne edge is `SimPanel.lua` on Widgets, which the whole-folder copy
+  always carries; without it the panel's fallbacks answer and a headless simulator is unchanged.
+- **README credits, per shipped icon set** (documentation-§1, standard v2.86.0): a consumer whose
+  copy ships a Game-icons.net mark credits it (MUST); one that ships an Open Iconic or Phosphor mark
+  should credit that set. The license files travel inside the pruned copy exactly when one of their
+  icons does.
+- **A host that parses its own diagnostics report** reads more `File minor` entries on the
+  `LibKa0s running:` line (Glow, Sim, SimTimeline, SimPanel). Nothing else changes for it.
 
 ## v1.74.0 — 2026-10-19
 
