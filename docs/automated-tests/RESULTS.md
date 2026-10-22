@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261022-155222`](20261022-155222/) | `2df9193` | clean | 1.74.0 → 1.75.0 | 0/0 | 180 | 2534/2/2536 | skip | 51354 | 7851 | 6.5 | 1.9 | 15 | 0 | **green** |
 | [`20261022-154939`](20261022-154939/) | `43c4663` | clean | 1.74.0 → 1.75.0 | 0/0 | 180 | 2534/2/2536 | skip | 51351 | 7849 | 6.5 | 1.9 | 16 | 1 | **green** |
 | [`20261019-105203`](20261019-105203/) | `2d10ec0` | clean | 1.73.0 → 1.74.0 | 0/0 | 161 | 2196/2/2198 | skip | 44542 | 6650 | 6.7 | 2.0 | 15 | 0 | **green** |
 | [`20261014-215316`](20261014-215316/) | `0521d49` | clean | 1.71.0 → 1.72.0 | 0/0 | 158 | 2160/2/2162 | skip | 42982 | 6534 | 6.7 | 2.0 | 15 | 0 | **green** |
@@ -142,10 +143,10 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **2536 cases** — 2534 passed, 0 failed, 2 skipped. The generated inventory
-[`20261022-154939/test-cases.md`](20261022-154939/test-cases.md) is the authority on which cases existed at this run;
+[`20261022-155222/test-cases.md`](20261022-155222/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **2198 → 2536** since the previous run.
+Unchanged from the previous run at 2536 cases.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -169,8 +170,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261022-154939`](20261022-154939/) — **this run's measurement, not its diff.** Max CCN **16** across 7849
-functions, **1** of them warned on; 6 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261022-155222`](20261022-155222/) — **this run's measurement, not its diff.** Max CCN **15** across 7851
+functions, **0** of them warned on; 6 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -182,7 +183,8 @@ cell is this file saying something crossed and nobody has ruled on it yet.
 
 | Function | CCN | Location | Disposition |
 |---|---|---|---|
-| `pinHeight` | 16 | `LibKa0s/SimPanel.lua` |  |
+
+None.
 
 ### Files by `layout-§1` band
 

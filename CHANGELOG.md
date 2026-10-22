@@ -456,6 +456,10 @@ never shipped on its own.
 - **A host that parses its own diagnostics report** reads more `File minor` entries on the
   `LibKa0s running:` line (Glow, Sim, SimTimeline, SimPanel). Nothing else changes for it.
 
+Release gate (`docs/automated-tests/20261022-155222/`): lint pass, 0/0 in 180 files;
+tests pass, 2536 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 ## v1.74.0 — 2026-10-19
 
 Versions in this release: **Media minor 5** and a new file, **MediaIcons minor 1**
