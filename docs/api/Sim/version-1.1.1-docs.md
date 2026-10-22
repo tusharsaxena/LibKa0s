@@ -10,10 +10,10 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **1** · `SimTimeline.lua` **1** · `SimPanel.lua` **1** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
-| Shipped in | v1.75.0 |
-| Status | **Current** |
+| Shipped in | the local `v1.75.0` tag only, before the release; the released v1.75.0 carries [2.2.1](./version-2.2.1-docs.md) |
+| Status | Superseded |
 | Supersedes | — (first version; briefly keyed `1`, then `1.1`, on the release branch, and no release carried either key) |
-| Superseded by | — |
+| Superseded by | [2.2.1](./version-2.2.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 1, SimTimeline = 1, SimPanel = 1 }` |
 
@@ -709,3 +709,19 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to version 2.2.1
+
+**Take it; no call changes.** Version 2.2.1 widens two existing members and adds none
+([version 2.2.1](./version-2.2.1-docs.md), *What changed at this version*):
+
+- **`Start` reads `d.scenarios` at call time.** A host that fills its scenario names and defs after
+  `New` no longer has them refused as unknown. A def listed after `New` is checked on its `Start`
+  and raises on the errors `New` raises; a host whose scenarios were complete at `New` sees no
+  difference.
+- **`prepare`'s `opts` carries the host's own start fields.** It is a shallow copy of the table
+  passed to `Start`, with `scenario`, `size` and `seed` resolved; `Restart()` carries the same
+  fields, every one but `seed`. A host that passed only `{ scenario, size, seed }` sees the same
+  three values. A host that kept extra start state on its own table to work around minor 1 can read
+  it from `opts` instead.
+

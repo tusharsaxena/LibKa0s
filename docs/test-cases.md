@@ -2120,7 +2120,7 @@ Total.
 - sim seam: Unwrapped() lists a late-added and a replaced member, sorted
 - sim seam: Sim.lua carries no auto-wrap metatable and no guarded-key query
 
-### test_sim_session.lua (52)
+### test_sim_session.lua (55)
 
 - sim session: New is on the library, beside NewSeam
 - sim session: every required descriptor field raises by name when missing
@@ -2134,6 +2134,9 @@ Total.
 - sim session: the seed defaults to an integer, and two starts draw different seeds
 - sim session: size reaches prepare only when the def has sizes; 0 is random
 - sim session: an unknown scenario is refused first, naming the scenarios
+- sim session: Start reads the scenarios live: a def added after New starts (minor 2)
+- sim session: a def listed after New is validated on Start, raising as New does
+- sim session: prepare receives the caller's extra start options (minor 2)
 - sim session: refusal order is unknown, already running, refusal, stood down
 - sim session: the stood-down backstop refuses after refusal passes
 - sim session: refusal runs inside the seam's Live (it reads the real world)
@@ -2175,7 +2178,7 @@ Total.
 - sim session: once bound, Live's traceback goes to the session's debug sink
 - sim session: Sim.lua defines one Live, on the seam, and no test hook on it
 
-### test_sim_timeline.lua (40)
+### test_sim_timeline.lua (41)
 
 - sim timeline: the file registers on the shell's minor and in MODULES
 - sim timeline: the STRINGS keys the step machine prints are added to Sim.STRINGS
@@ -2201,6 +2204,7 @@ Total.
 - sim timeline: Pause answers notPlaying when nothing plays
 - sim timeline: Resume continues a paused run; it answers notPaused otherwise
 - sim timeline: Restart stops with 'restart' and starts the same scenario with a fresh seed
+- sim timeline: Restart carries the caller's extra start options, all but seed (minor 2)
 - sim timeline: Restart answers notRunning while idle
 - sim timeline: a refused Restart prints the refusal and answers false, refused
 - sim timeline: a Restart during an async prepare ignores the old ready() (C.1)
@@ -2929,8 +2933,8 @@ Total.
 | test_perf_toplevel.lua | 7 |
 | test_perf_isolation.lua | 12 |
 | test_sim_seam.lua | 27 |
-| test_sim_session.lua | 52 |
-| test_sim_timeline.lua | 40 |
+| test_sim_session.lua | 55 |
+| test_sim_timeline.lua | 41 |
 | test_sim_verbs.lua | 42 |
 | test_sim_panel.lua | 44 |
 | test_sim_panel_render.lua | 31 |
@@ -2964,4 +2968,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2534** |
+| **Total** | **2538** |

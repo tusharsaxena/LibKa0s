@@ -106,8 +106,8 @@ end
 
 test("sim timeline: the file registers on the shell's minor and in MODULES", function()
   local _, Sim = env()
-  assertEqual(Sim.MODULES.SimTimeline, 1)
-  assertEqual(Sim.__timelineMinor, 1)
+  assertEqual(Sim.MODULES.SimTimeline, 2)
+  assertEqual(Sim.__timelineMinor, 2)
   assertEqual(Sim.__timelineShellMinor, Sim.MINOR)
   assertEqual(type(Sim.__AttachTimeline), "function")
 end)
@@ -380,6 +380,20 @@ test("sim timeline: Restart stops with 'restart' and starts the same scenario wi
   assertEqual(b.sim:Session().scenario, "sized")
   assertEqual(b.sim:Session().size, 5)
   assertEqual(b.sim:Status().pos, 0, "the new session starts at the top")
+end)
+
+test("sim timeline: Restart carries the caller's extra start options, all but seed (minor 2)", function()
+  local got = {}
+  local b = bench({ prepare = function(_, _, opts, ready) got[#got + 1] = opts; ready() end })
+  local band = { low = 25, high = 35 }
+  b.sim:Start({ scenario = "sized", size = 5, seed = 42, band = band, classFilter = "any" })
+  assertTrue(b.sim:Restart())
+  assertEqual(#got, 2, "prepare ran again")
+  assertTrue(rawequal(got[2].band, band), "band carried")
+  assertEqual(got[2].classFilter, "any", "classFilter carried")
+  assertEqual(got[2].scenario, "sized")
+  assertEqual(got[2].size, 5)
+  assertTrue(got[2].seed ~= 42, "a fresh seed, never the carried one")
 end)
 
 test("sim timeline: Restart answers notRunning while idle", function()

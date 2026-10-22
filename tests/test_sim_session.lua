@@ -238,6 +238,65 @@ test("sim session: an unknown scenario is refused first, naming the scenarios", 
   assertFalse(b.sim:IsActive())
 end)
 
+test("sim session: Start reads the scenarios live: a def added after New starts (minor 2)", function()
+  local b = bench({ scenarios = { names = {}, defs = {} } })
+  local ok, line = b.sim:Start({ scenario = "dungeon" })
+  assertFalse(ok, "not listed yet")
+  assertEqual(line, b.Sim.STRINGS.UNKNOWN_SCENARIO:format("dungeon", ""))
+  local sc = b.d.scenarios
+  sc.names[1] = "dungeon"
+  sc.defs.dungeon = { label = "Dungeon", sizes = { 5 }, timeline = function() return {} end }
+  ok = b.sim:Start({ scenario = "dungeon", size = 5 })
+  assertTrue(ok, "a scenario filled in place after New starts")
+  assertEqual(b.sim:Session().scenario, "dungeon")
+  assertTrue(rawequal(b.prepared[1].def, sc.defs.dungeon), "prepare gets the live def")
+  b.sim:Stop()
+  ok, line = b.sim:Start({ scenario = "nope" })
+  assertFalse(ok)
+  assertEqual(line, b.Sim.STRINGS.UNKNOWN_SCENARIO:format("nope", "dungeon"), "UNKNOWN lists the live names")
+end)
+
+test("sim session: a def listed after New is validated on Start, raising as New does", function()
+  local b = bench({ scenarios = { names = {}, defs = {} } })
+  local sc = b.d.scenarios
+  sc.names[1] = "ghost"
+  local err = raised(function() b.sim:Start({ scenario = "ghost" }) end)
+  assertTrue(err ~= nil and err:find("defs.ghost is missing", 1, true) ~= nil, "missing def: " .. tostring(err))
+  sc.defs.ghost = { label = "Ghost" }
+  err = raised(function() b.sim:Start({ scenario = "ghost" }) end)
+  assertTrue(err ~= nil and err:find("defs.ghost.timeline must be a function", 1, true) ~= nil,
+    "missing timeline: " .. tostring(err))
+  sc.defs.ghost = { label = "Ghost", sizes = 5, timeline = function() return {} end }
+  err = raised(function() b.sim:Start({ scenario = "ghost" }) end)
+  assertTrue(err ~= nil and err:find("defs.ghost.sizes must be a list", 1, true) ~= nil, "bad sizes: " .. tostring(err))
+  assertFalse(b.sim:IsActive(), "a raising Start starts nothing")
+  assertEqual(#b.prepared, 0)
+end)
+
+test("sim session: prepare receives the caller's extra start options (minor 2)", function()
+  local refused
+  local b = bench({ refusal = function(opts) refused = opts; return nil end })
+  local band = { low = 25, high = 35 }
+  local opts = { scenario = "group", size = 10, seed = 7, band = band, classFilter = "any" }
+  assertTrue(b.sim:Start(opts))
+  local got = b.prepared[1].opts
+  assertTrue(rawequal(got.band, band), "band arrives")
+  assertEqual(got.classFilter, "any", "classFilter arrives")
+  assertEqual(got.scenario, "group")
+  assertEqual(got.size, 10)
+  assertEqual(got.seed, 7)
+  assertFalse(rawequal(got, opts), "a shallow copy, not the caller's table")
+  assertTrue(rawequal(refused, opts), "refusal still gets the caller's opts")
+  b.sim:Stop()
+  local bare = { scenario = "solo", size = 99, band = band }
+  assertTrue(b.sim:Start(bare))
+  got = b.prepared[2].opts
+  assertNil(got.size, "the resolved size overwrites the caller's (no sizes, no size)")
+  assertEqual(type(got.seed), "number", "the resolved seed")
+  assertNil(bare.seed, "the caller's table is not written")
+  assertEqual(bare.size, 99)
+end)
+
 test("sim session: refusal order is unknown, already running, refusal, stood down", function()
   local asked = 0
   local b = bench({ refusal = function() asked = asked + 1; return "host says no" end })

@@ -20,8 +20,8 @@ Versions in this release: **Core minor 11** (comment-only, key **11**); **Item m
 **20.3.1**, `DebugLogGates` 1 unchanged); **OptionsIdList minor 5** (comment-only) and
 **OptionsTabs minor 9** (`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**, its nine other
 files unchanged); **PerfPanel minor 7** (comment-only, `LibKa0s-Perf-1.0` key **15.1.1.7**);
-**Sim minor 1**, **SimTimeline minor 1** and **SimPanel minor 1** (the new major `LibKa0s-Sim-1.0`,
-key **1.1.1**); every other file still at its v1.74.0 minor (`Env` 2, `Compat` 1, `Lifecycle` 3,
+**Sim minor 2**, **SimTimeline minor 2** and **SimPanel minor 1** (the new major `LibKa0s-Sim-1.0`,
+key **2.2.1**; key 1.1.1 was the local tag's only); every other file still at its v1.74.0 minor (`Env` 2, `Compat` 1, `Lifecycle` 3,
 `Bus` 2, `Schema` 2, `Pool` 3, `Media` key 5.1, `Slash` key 20.2 and `Launcher` 5); and **test kit
 revision 41**. Two majors are added and no `NEEDS_*` floor rises, so the library is **seventeen
 majors across forty files**. Built to standard **v2.86.0**: `library-stack-§7`'s icon subset (from
@@ -246,7 +246,7 @@ never shipped on its own.
 - **Adopters:** **DropWatcher**, **QuickComms** and **KickCD**, each through a `core/GlowSetup.lua`
   seam publishing `NS.GlowLib`.
 
-### LibKa0s-Sim-1.0 (new major, Sim minor 1, SimTimeline minor 1, SimPanel minor 1)
+### LibKa0s-Sim-1.0 (new major, Sim minor 2, SimTimeline minor 2, SimPanel minor 1)
 
 - **The Compat answer seam (#54).** `LibKa0s/Sim.lua`, loaded after `PerfPanel.lua`.
   `Sim:NewSeam(compat, opts) -> seam` wraps the host's own Compat table in place, once (a second
@@ -403,7 +403,23 @@ never shipped on its own.
   settles asynchronously). *Adopting it* carries the setup file, the reference stub from
   `tests/test_sim_stub.lua`, the `Unwrapped()` assertion and the stub parity case, and names the
   adopters and the future candidates (MultiMeters#60, WhatGroup#24, KickCD#38):
-  [Sim version 1.1.1](docs/api/Sim/version-1.1.1-docs.md).
+  [Sim version 2.2.1](docs/api/Sim/version-2.2.1-docs.md).
+- **Sim minor 2 and SimTimeline minor 2: `Start` reads the scenarios live, and `prepare` gets the
+  host's start fields (#54).** Two contract gaps DropWatcher's migration found (its item DW-02),
+  closed additively, after the key 1.1.1 had been tagged locally and re-vendored by the three
+  adopters' run branches. **No member is added or removed**; two existing members accept more.
+  `Start` reads `d.scenarios.names` and `d.scenarios.defs` when it is called rather than a set of
+  names frozen at `New`, so a host that fills its scenarios after `New` can start them. `New` still
+  checks the entries present when it runs and still accepts an empty list, and a def listed after
+  `New` is checked on its `Start` with `New`'s checks and error text (naming `Start`), raising as
+  `New` does. `UNKNOWN_SCENARIO` lists the live names. `prepare`'s `opts` is a shallow copy of the
+  table passed to `Start`, with `scenario`, `size` and `seed` set to the resolved values, so a
+  host's own start fields (DropWatcher's `band` and `classFilter`) arrive; the caller's table is
+  never written, `refusal(opts)` still gets it, the library reads no other field and the
+  timeline's `opts` stay `{ scenario, size, seed }`. `Restart()` starts again with the same extra
+  fields, every one but `seed`. The key moves `1.1.1` -> `2.2.1`, and the 1.1.1 document is kept,
+  Superseded, with its *Moving to* section:
+  [Sim version 2.2.1](docs/api/Sim/version-2.2.1-docs.md).
 
 ### What a consumer owes
 
