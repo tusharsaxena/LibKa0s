@@ -91,6 +91,7 @@ Kit.run{
     "test_options_throttle",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_budget", "test_perf_toplevel", "test_perf_isolation",
     "test_sim_seam", "test_sim_session", "test_sim_timeline", "test_sim_verbs", "test_sim_panel", "test_sim_panel_render",
+    "test_sim_isolation", "test_sim_stub", "test_sim_host",
     "test_loader", "test_parallel", "test_kit_limits", "test_kit_asserts", "test_kit_secrets", "test_kit_latch",
     "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events", "test_mock_resize", "test_mock_lines",
     "test_surface_parity",

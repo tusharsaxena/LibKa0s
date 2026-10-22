@@ -2343,6 +2343,39 @@ Total.
 - sim panel render: with no check, a done row keeps its dot and no check is built
 - sim panel render: with no MakeResizable in Core the panel builds fixed
 
+### test_sim_isolation.lua (11)
+
+- sim iso: two hosts' seams are separate objects over separate tables
+- sim iso: one host's provider and active flag never reach the other's seam
+- sim iso: one host's session, stop and status leave the other's untouched
+- sim iso: stopping one host kills its timers only
+- sim iso: one host's Run ticks advance that host only
+- sim iso: two hosts build separate panel frames, and showing one shows one
+- sim iso: each panel composes its own host's rows
+- sim iso: a newer shell loading second re-attaches its own timeline and panel
+- sim iso: an older copy loading second replaces nothing
+- sim iso: a higher SimPanel minor over the same shell still wins
+- sim iso: the paired copy actually drives a session (the attach is live, not a stamp)
+
+### test_sim_stub.lua (6)
+
+- sim stub: the session stub answers inert, member by member
+- sim stub: the seam stub's Live calls through with every argument and answer
+- sim stub: the session stub carries the live instance's whole surface
+- sim stub: and carries nothing the live instance does not publish
+- sim stub: the seam stub carries the live seam's whole surface, and nothing more
+- sim stub: the instance surface is the same with or without the attach files
+
+### test_sim_host.lua (7)
+
+- sim host: after load every non-pure Compat member is wrapped, and Unwrapped() is empty
+- sim host: idle, every wrapped member reaches the client
+- sim host: the host's refusal stops a start before anything is built
+- sim host: start, RunVerb('run') and stop, end to end
+- sim host: the host's fields are on its own table, and the instance gained none (C.4)
+- sim host: a stand-down mid-run stops first, suppresses cleanup delivery and hides the panel
+- sim host: a latch set without a stop is caught by Fire's self-stop backstop
+
 ### test_loader.lua (6)
 
 - loader: a cached chunk gives each instance its own global namespace
@@ -2900,6 +2933,9 @@ Total.
 | test_sim_verbs.lua | 42 |
 | test_sim_panel.lua | 44 |
 | test_sim_panel_render.lua | 31 |
+| test_sim_isolation.lua | 11 |
+| test_sim_stub.lua | 6 |
+| test_sim_host.lua | 7 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -2927,4 +2963,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2509** |
+| **Total** | **2533** |

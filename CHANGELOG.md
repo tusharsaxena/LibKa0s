@@ -389,6 +389,16 @@ keeps vendoring `LibCustomGlow-1.0`.
   `RESTART`, `STOP`, `RANDOM` and `RAN_AGO`. The key moves `1.1` -> `1.1.1` before any release
   carried `1.1`, so the document moved with it:
   [Sim version 1.1.1](docs/api/Sim/version-1.1.1-docs.md).
+- **The major's contract suites (#54), tests only.** `tests/test_sim_isolation.lua` pins two hosts
+  on one major keeping separate seams, sessions, timers and panels, and the shell, step machine
+  and panel pairing across vendored copies (Perf's idiom). `tests/test_sim_stub.lua` carries the
+  **reference degradation stub** a host copies when the major is absent (session and seam), with
+  `Kit.assertSurfaceParity` both ways against a live instance and a live seam and an empty ignore
+  set. `tests/test_sim_host.lua` drives a DropWatcher-shaped mini host start -> `RunVerb("run")`
+  -> stop and through a stand-down mid-run, asserting `seam:Unwrapped()` empty after load, no
+  guarded member live while active, host fields on the host's own table and none on the instance
+  (OWNER_SCOPE C.4), the stop order, cleanup delivery suppressed by the stand-down, no timer
+  outliving its session and nothing written to a SavedVariables-shaped global. No payload change.
 
 **What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
 the files arrive, and a host that never calls `NewSeam` or `New` carries files that never run: no
