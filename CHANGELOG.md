@@ -284,8 +284,9 @@ keeps vendoring `LibCustomGlow-1.0`.
   chat-lockdown simulation (host code), no SavedVariables read or written, no behavior flags.
 - **Payload weight.** Whole-folder vendoring ships the major into every consumer. Its file bodies
   only define functions: no frame, timer or event registration exists until `NewSeam` or `New` is
-  called (and no timer until a session calls `After`), so a host that never simulates pays parse
-  time and nothing else.
+  called (and no timer until a session calls `After`, no frame until `ShowPanel`), so a host that
+  never simulates pays parse time and nothing else: of the fourteen consumers the copy reaches, the
+  eleven that do not adopt pay parse time only.
 - **The session (#54).** `Sim:New(d) -> sim` binds one session to a seam (a second `New` on the
   same seam raises). Required descriptor fields raise by name when missing: `name`, `seam`,
   `slash`, `deliver` (`fn(event, ...) -> n`, any string a legal event name), `isStoodDown` (read at
@@ -399,10 +400,30 @@ keeps vendoring `LibCustomGlow-1.0`.
   guarded member live while active, host fields on the host's own table and none on the instance
   (OWNER_SCOPE C.4), the stop order, cleanup delivery suppressed by the stand-down, no timer
   outliving its session and nothing written to a SavedVariables-shaped global. No payload change.
+- **The host contract and what the library enforces (#54), docs only.** The API document names,
+  row by row, what the library enforces (the guarded-member rule, the refusal order, the idle cost,
+  session-bound timers, `ready()` and the click-ahead's slot, the two-phase re-entrancy-safe stop,
+  cleanup delivery, `Live`'s error, one provider per key, the session-only panel position) and what
+  it only documents as a host obligation: saved data untouched, nothing sent and no real player
+  acted on beyond the guarded keys, dispatch fidelity, real input mid-session, test-mode exclusion,
+  the marker, and every world refusal. Of #54's five "safety rules enforced by the library", only
+  "stop cleans everything" is the library's; the other four are host obligations, stated as such.
+  The host contract H1-H10 (Compat reads at call time; the seam straight after Compat with a
+  LOAD-BEARING TOC comment and `Unwrapped()` asserted empty; one faithful `deliver`; session-only
+  stores with a byte-identical test; `refusal`; `Stop("standDown")` first; one slash-only
+  feature-verb row; the marker, diagnostics and debug tag; the degradation stub with parity; the
+  session-only panel position) is joined by OWNER_SCOPE C.4 (host members on the host's own table,
+  such as `NS.SimHost`, never on the instance), C.9, C.11 and C.12 (a `gate` for a world that
+  settles asynchronously). *Adopting it* carries the setup file, the reference stub from
+  `tests/test_sim_stub.lua`, the `Unwrapped()` assertion and the stub parity case, and names the
+  adopters and the future candidates (MultiMeters#60, WhatGroup#24, KickCD#38):
+  [Sim version 1.1.1](docs/api/Sim/version-1.1.1-docs.md).
 
 **What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
 the files arrive, and a host that never calls `NewSeam` or `New` carries files that never run: no
-frame exists until a session's `ShowPanel`.
+frame exists until a session's `ShowPanel`. The adopters, DropWatcher (migrating its own simulator
+onto the major), LootHistory and BankLedger (new simulators), wire it at their v1.75.0 re-vendor and
+owe the host contract H1-H10 from then on.
 
 ## v1.74.0 — 2026-10-19
 

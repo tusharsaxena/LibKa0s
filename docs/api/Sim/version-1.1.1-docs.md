@@ -136,7 +136,7 @@ field of the wrong type raises the same way.
 | `play` | yes | `fn(step, session) -> detail?`. Drives one step's events through `sim:Fire`; its answer is the step's `detail`. It runs under `pcall`, and an error pauses the run (*The step machine*). |
 | `refusal` | no | `fn(opts) -> line|nil`. Run **inside `seam:Live`**, so it reads the real world; it owns every host rule (stood-down wording, test mode, combat, instance, group, per-scenario prerequisites). The library adds no world rule and relaxes none. An error in it is re-raised by `Start` after `Live` writes its traceback. |
 | `gate` | no | `fn(session) -> open, line?`. Checked before every step: by `Step`, by every `Run` tick and by the panel's click-ahead. Closed means the host's world has not settled (LootHistory passes its Reconciler settle, OWNER_SCOPE C.12). With no gate, the gate is always open (DropWatcher). A gate that raises counts as closed and writes a debug line. |
-| `stepDelay` | no | A number, or `fn(step) -> seconds`: the pause after `step` before `Run` plays the next one. Default `2`. Read when each timer is set. A host passes a fixed constant or a function of the step; there is no schema row for it (OWNER_SCOPE C.11). |
+| `stepDelay` | no | A number, or `fn(step) -> seconds`: the pause after `step` before `Run` plays the next one. Default `2`. Read when each timer is set. The library reads no setting: a new simulator passes a fixed constant or a function of the step, with no schema row (OWNER_SCOPE C.11; BankLedger's is `math.max(1.5, step.settle or 0)`). DropWatcher's `sim.stepDelay` setting predates the major and survives its migration as a reader passed here. |
 | `verbs` | no | `{ [verb] = { parse = fn(words) -> cmd|nil, run = fn(cmd, sim) -> ok, code, free = bool? } }`: the host's extra verbs, tried after the generic ones (*The verbs*). `words[1]` is the verb, lowercased. |
 | `why` | no | `{ [code] = line }`: the line a host verb's failure code prints. |
 | `usage` | no | `{ lines }`, printed verbatim after the library's usage. |
@@ -466,45 +466,224 @@ turns an error in `deliver` into a debug line and answers `0`, so a session surv
 | `RANDOM` | `Random`: the size dropdown's `0`. |
 | `RAN_AGO` | `Ran %s ago` (`12s`, `3m`, `2h`): a done row's tip line. |
 
-## The host contract (OWNER_SCOPE C.4)
+## What the library enforces, and what it only documents
 
-**Host members never hang on the library instance.** The host keeps its own table (for example
-`NS.SimHost`) for its host fields: its `Status` extras, `HistoryLog`, `MarkGUID`, `SetRestriction`
-and the like. It holds the seam separately for `SetProvider`. Host fields of a running session go
-on the session table (`sim:Session()`, the host bag).
+[#54](https://github.com/tusharsaxena/LibKa0s/issues/54) listed five safety rules as "enforced by
+the library". Only one of them, that stop cleans everything, can be: the library never sees a
+host's saved data, its sends, its players or its world, so it guards only what the host routes
+through the seam. This table is the split
+(design-sim §5, with OWNER_SCOPE C's fixes). A **yes** is pinned by this repo's suites; a **no** is
+the host's, and its row names what the host owes.
 
-## Host obligations so far
+| Property | Enforced by the library | Host obligation |
+|---|---|---|
+| A guarded member never reaches the client while a session is active, inside `Live` and providers included | **yes** | Classify its members correctly: every member that sends or acts on the world is `guarded` (H1). |
+| The idle seam costs one field test and allocates nothing | **yes** | — |
+| The refusal order: unknown scenario, already running, the host's `refusal` read inside `Live`, then the stood-down backstop | **yes** | Own every world rule in `refusal` (H5): the library adds none and relaxes none. |
+| No simulated event outside a live, not-stopping, not-stood-down session | **yes**: `Fire` answers `0`, and self-stops on an observed stand-down | Call `Stop("standDown")` **first** in its stand-down steps (H6). |
+| Timers die with the session; a canceled handle is forgotten | **yes** | Use `sim:After`, never a raw `C_Timer`, inside the simulation. |
+| The stop runs the guarded steps, then turns the seam off, then runs the rest, each step isolated; a second or nested `Stop` is a no-op (C.1) | **yes** | Put a step that must still see simulated answers in `OnStopGuarded`. |
+| Cleanup delivery happens only in the `OnStop` phase, and never while stood down (C.3) | **yes** | — |
+| A `ready()` acts only for the session that issued it (C.1); the click-ahead shares `Run`'s `playing` slot (C.2) | **yes** | — |
+| `Live` restores bypass on every exit and keeps the original error value (C.8) | **yes** | Read the real world only through `Live`. |
+| One owner per answer: a second `SetProvider` for a key raises (C.8) | **yes** | Release with `nil` before handing a key to a new provider. |
+| Nothing escapes the wrap | **detected**, not prevented: `seam:Unwrapped()` (C.8) | Create the seam straight after the Compat files (a LOAD-BEARING TOC comment), never `local x = Compat.Member`, and assert `Unwrapped()` empty in a suite (H2). |
+| The panel position is session-only (C.11) | **yes**: held in the instance's memory, never in SavedVariables | — (H10) |
+| Saved data is untouched | **no**: the library never sees a write | Session-only stores for every SavedVariables write the capture path reaches, and a byte-identical before/after test (H4). |
+| Nothing is sent, and nothing acts on a real player | **only for guarded keys** | Never call a hooked or world-changing client function from a simulator file except through a guarded Compat member (LootHistory pins this with a static scan). |
+| Reads that other LibKa0s majors (Env, Item) make on the host's behalf | **no**: they are outside the seam | Route through Compat whatever the simulation must answer (LootHistory's zone and map reads). |
+| Dispatch fidelity | **no** | `deliver` calls only the handlers the client's registration would call, in client order, skipping events the client rejected (H3). |
+| Real input in the middle of a session | **no** | Classify it: stop and deliver it live (LootHistory's interference), stop first (BankLedger's real bank open), or absorb it. |
+| Test mode and simulation are exclusive | **no** | Refuse each while the other runs (H5). |
+| A marker on screen while a session runs | **no**: the library supplies `IsActive` | preview-mode's marker rule (standard v2.86.0): the title or a `W.TestStrip` label, plus the footer (H8). |
+| It refuses in a real group, an instance or combat | **no**: no world rule is the library's | Each host's `refusal` says which apply to it (H5). |
 
-- Every client read the simulator answers, and every outward action, is a Compat member read at
-  call time. Never `local x = Compat.Member`: a captured member is the live one and escapes the seam.
-- `NewSeam` runs in a setup file loaded straight after the Compat files.
-- A suite asserts `seam:Unwrapped()` is empty after the whole addon loads.
-- `refusal` covers stood-down, test mode and the world rules that apply to the host.
-- `sim:Stop("standDown")` is the first stand-down step; a host reason (`group`, `combat`, a real
-  frame) calls `Stop` with that reason and, where it wants its own line, a `stopText` entry.
-- Every timer inside the simulation is `sim:After`, never a raw `C_Timer`, so it dies with the
-  session. A step that must still see simulated answers goes in `OnStopGuarded`.
-- A `gate` that can close answers its own line, so a player who steps by hand is told what the
-  world is waiting for.
-- Saved data is the host's: the library never intercepts a write, so session-only stores and an
-  invariant test are the host's.
-- `d.panel.anchorTo` answers the host's main window while it is shown, and nil while it is not, so
-  the panel floats rather than docking beside a hidden frame. `d.panel.check` is the host's own
-  resolved icon path, declared on its `LibKa0s icons:` line.
-- The slash surface is one feature-verb row, `{ "sim", desc, function(rest) NS.Sim:RunVerb(rest) end }`,
-  with no launcher entry and no key binding (OWNER_SCOPE C.11).
+**Simulated delivery swallows errors on purpose.** A live dispatcher rethrows the first error;
+`Fire` turns an error in `deliver` into a debug line and answers `0`, so a session survives a bad
+handler. A host suite that wants to see a handler's error reads the debug sink.
+
+**`STARTED` makes no saved-data claim.** Whether a simulation writes nothing is the host's guarantee
+(H4), not the library's, so the built-in line says only that a simulation started, and each host
+overrides it through `d.L` with its own line once its invariant test backs the claim.
+
+## The host contract (H1–H10)
+
+MUSTs for every host, restated in each host's own spec. The library enforces none of them (the table
+above says where it backs one up), so each is the host's to test.
+
+- **H1. Every client read the simulator answers, and every outward action, is a Compat member read
+  at call time** (`NS.Compat.Member(...)`). A captured member (`local x = Compat.Member`) is the live
+  one and escapes the seam. Every member that sends or acts on the world is in `opts.guarded`.
+- **H2. `Sim:NewSeam` runs in a setup file loaded straight after the Compat files**, with a
+  LOAD-BEARING TOC comment, before any other file can read a Compat member. A suite asserts
+  `seam:Unwrapped()` is empty after the whole addon loads.
+- **H3. One `deliver`** reproduces the client's handler set and order for any event name the host
+  fires, pseudo-events included (`hook:<name>`, `GUILDBANK_FRAME_SHOWN`), and skips the events the
+  client rejected at registration.
+- **H4. Session-only storage** for every SavedVariables write the capture path reaches, plus a
+  byte-identical before/after test of the saved tables across a whole session.
+- **H5. `refusal`** covers stood-down, test mode and the world rules that apply to the host (group,
+  instance, combat, per-scenario prerequisites), and test mode refuses while a simulation runs.
+  Destructive host commands (a purge, a reset, a delete) refuse while a session is active.
+- **H6. `sim:Stop("standDown")` is the first stand-down step.** A host reason (a profile event,
+  combat, a real frame opening) calls `Stop` with that reason, and a `stopText` entry where it wants
+  its own line.
+- **H7. One Slash-1.0 feature-verb row**, `{ "sim", desc, function(rest) NS.Sim:RunVerb(rest) end }`,
+  which the dispatcher refuses while the addon is disabled. **Slash-only** (C.11): no launcher entry
+  and no key binding.
+- **H8. A preview-mode marker** while a session runs (the table above), a `sim` section in the
+  diagnostics dump, and a `Sim` debug tag (the descriptor's `debug` sink).
+- **H9. The degradation stub** below, with a surface-parity case for the session and the seam.
+- **H10. The panel position is session-only** (C.11, superseding design-sim's window-state reading):
+  the library holds a dragged point in memory, the host writes nothing for it, it is never a schema
+  row and never a SavedVariables key, and the host's window-state documentation says so. Nothing a
+  simulation does writes to SavedVariables.
+
+And four rulings that bind every host alongside them:
+
+- **Host members never hang on the library instance (C.4).** The host keeps its own table, for
+  example `NS.SimHost`, for its host fields: its `Status` extras, `HistoryLog`, `MarkGUID`,
+  `SetRestriction` and the like. It holds the seam separately (for example `NS.SimSeam`) for
+  `SetProvider` and `Live`. Host fields of a running session go on the session table
+  (`sim:Session()`, the host bag). `tests/test_sim_host.lua` pins a host shaped this way.
+- **Restriction and chat-lockdown simulation stays host code (C.9).** DropWatcher's model, its
+  providers and its verbs are DropWatcher's; the library carries no restriction notion.
+- **Fixed, slash-only, unsaved (C.11).** The step delay is a host constant or a function of the step,
+  never a schema row; the simulator has no launcher entry and no key binding; nothing is saved.
+- **A host whose world settles asynchronously passes a `gate` (C.12).** LootHistory's answers closed
+  while its Reconciler has a pending settle, BankLedger's while a lag timer or a held baseline is
+  pending, and each answers its own line, so a player stepping by hand is told what the world waits
+  for. The gate is read before every step, by `Step`, every `Run` tick and the click-ahead, so the
+  click-ahead waits correctly where a per-step delay alone would only pace `Run`. A host with nothing
+  to settle passes none (DropWatcher).
+
+Two presentation obligations close it: `d.panel.anchorTo` answers the host's main window while it is
+shown and nil while it is not, so the panel floats rather than docking beside a hidden frame; and
+`d.panel.check` is the host's own resolved icon path, declared on its `LibKa0s icons:` line.
+
+## Adopting it
+
+**Adoption is required of none** (OWNER_SCOPE F, the Compat, Bus and Schema precedent). A host that
+never calls `NewSeam` or `New` owes nothing: the files arrive with the whole-folder copy and never
+run.
+
+**1. The setup file, straight after Compat.** One file, in the TOC slot right after the host's Compat
+files, with the comment that keeps it there:
+
+```toc
+# LOAD-BEARING: wraps every NS.Compat member at load (LibKa0s-Sim-1.0's seam). It must load straight
+# after the Compat files and before any file that reads a Compat member.
+core\SimSetup.lua
+```
+
+```lua
+local _, NS = ...
+-- core/SimSetup.lua: the LibKa0s-Sim-1.0 seam (library-stack-§7). Absent major: the inert stubs below.
+local Sim = LibStub and LibStub("LibKa0s-Sim-1.0", true)
+if Sim then
+  NS.SimSeam = Sim:NewSeam(NS.Compat, {
+    name = "MyAddon",
+    pure = PURE,          -- { [key] = true }: secret guards, text helpers
+    guarded = GUARDED,    -- { [key] = fn }: the safe answer for every member that acts
+    debug = function(tag, fmt, ...) NS.Debug(tag, fmt, ...) end,
+  })
+else
+  NS.SimSeam = newSeamStub()
+end
+```
+
+The simulator module then calls `Sim:New(d)` with `seam = NS.SimSeam` and publishes the instance as
+`NS.Sim` (or `newSimStub(print)` when the major is absent). Host fields go on `NS.SimHost`, never on
+`NS.Sim` (C.4).
+
+**2. The reference stub.** A host reads `NS.Sim:IsActive()` and `NS.Sim:IsDelivering()` on hot
+real-event paths and calls `NS.SimSeam:Live(fn, ...)` around client reads, so the stub is
+**mandatory**: one missing member raises on exactly the degraded path it exists to survive. Copy it
+from `tests/test_sim_stub.lua`, which pins it member by member:
+
+```lua
+local NEEDS_LINE = "The simulator needs LibKa0s-Sim-1.0."
+
+local function newSeamStub()
+  local seam = {}
+  function seam.SetProvider() end
+  function seam.Live(_, fn, ...) return fn(...) end
+  function seam.Keys() return {} end
+  function seam.Unwrapped() return {} end
+  return seam
+end
+
+local function newSimStub(say)
+  local sim = {}
+  local function no() return false end
+  local function noop() end
+  local function absent() return false, "absent" end
+  sim.IsActive, sim.IsDelivering, sim.IsPanelShown = no, no, no
+  function sim.Fire() return 0 end
+  function sim.DeliverForCleanup() return 0 end
+  function sim.After() return nil end
+  function sim.Start() say(NEEDS_LINE); return false, NEEDS_LINE end
+  sim.Stop = no
+  sim.OnStop, sim.OnStopGuarded, sim.AddListener = noop, noop, noop
+  function sim.Status() return { active = false } end
+  function sim.Session() return nil end
+  function sim.Steps() return {} end
+  function sim.Step() return nil, "absent" end
+  sim.Run, sim.Pause, sim.Resume, sim.Restart = absent, absent, absent, absent
+  function sim.RunVerb() say(NEEDS_LINE); return false, "absent" end
+  sim.ShowPanel, sim.TogglePanel = no, no
+  sim.HidePanel, sim.RefreshPanel, sim.ResetPanelPosition = noop, noop, noop
+  function sim.PanelRows() return {} end
+  return sim
+end
+```
+
+The instance surface is the same whether or not `SimTimeline.lua` and `SimPanel.lua` attached (the
+shell's fallbacks), so one stub fits every payload. It must carry nothing the live surface does
+not: no `IsGuarded`, no `IsActive` on the seam.
+
+**3. The `Unwrapped`-empty assertion**, in a host suite that loads the whole addon:
+
+```lua
+T.assertEqual(#NS.SimSeam:Unwrapped(), 0, "every Compat member is wrapped or pure")
+```
+
+**4. A stub parity case.** No manifest lists instance members, because `Sim:New` builds them per
+host, so the live half is a real instance registered through `Kit.setSurfaceSource`, compared both
+ways with an empty ignore set:
+
+```lua
+local restore = T.setSurfaceSource({ ["LibKa0s-Sim-1.0"] = liveSim })
+T.assertSurfaceParity(newSimStub(print), "LibKa0s-Sim-1.0", {})
+T.setSurfaceSource(restore)
+T.assertSurfaceParity(newSimStub(print), liveSim, "stub over the live instance", {})
+T.assertSurfaceParity(newSeamStub(), liveSeam, "seam stub over the live seam", {})
+```
+
+### Adopters
+
+| Host | Shape | Since |
+|---|---|---|
+| **DropWatcher** | **Migrated**: its own seam, session, step machine, verbs and panel (`core/SimSeam.lua` and its `modules/Sim*.lua`) were the source of this major; it moves onto it and deletes its generic copy, keeping its world, events, roster, scenarios, restriction model (C.9) and `sim.stepDelay` setting reader. | its v1.75.0 re-vendor |
+| **LootHistory** | **New simulator** (`/lh sim`): a deterministic fixture world, six scenarios, a Reconciler-settled `gate`, one `loot` host verb, destructive surfaces refused during a session. | its v1.75.0 re-vendor |
+| **BankLedger** | **New simulator** (`/bl sim`): warband, guild and one-sided scenarios with a `gate` and a `settle`-paced `stepDelay`, `/bl purge` refused during a session. | its v1.75.0 re-vendor |
+
+**Future candidates**, left open and repointed at this major: MultiMeters#60, WhatGroup#24 and
+KickCD#38. None is owed; each adopts when its own simulator is built.
 
 ## What is not here
 
 | Not in Sim-1.0 | Stays in | Re-check trigger |
 |---|---|---|
+| The five "safety rules enforced by the library" as [#54](https://github.com/tusharsaxena/LibKa0s/issues/54) worded them: nothing is sent; saved data is never written; the simulator never acts on a real player; stop cleans everything; it refuses to start in a real group, an instance or combat | **Stop cleans everything** is enforced (the two-phase stop, every session timer canceled). The other four are host obligations: guarded members cover only what the host routes through the seam, and every world rule is the host's `refusal` (*What the library enforces*, H4, H5) | a library-level hook that can see a host's sends, saved writes or world without the host routing them, which no addon framework offers |
 | `seam:IsActive()` | the session (`sim:IsActive()`) | never on the seam: OWNER_SCOPE C.7 |
 | `sim:RunTo(index)` | the panel's click-ahead, through the internal attach handshake | never public: OWNER_SCOPE C.7 |
 | A `help` verb | the usage, which any unknown word prints | never: OWNER_SCOPE C.7 |
 | A launcher entry or key binding for the simulator | the host's one `sim` slash row | never: OWNER_SCOPE C.11 |
 | A schema row for the step delay | a fixed host constant or `fn(step)` in `d.stepDelay` | never: OWNER_SCOPE C.11 |
 | `sim:Live(fn, ...)` | the seam (`seam:Live`): one `Live` | never: OWNER_SCOPE C.7 |
-| `d.panel.button`, `d.panel.tooltip`, `d.panel.store` | the library's own button and GameTooltip; a session-only position | never: OWNER_SCOPE C.7 and C.11 |
+| `d.panel.button`, `d.panel.tooltip` | the library's own button and GameTooltip | never: OWNER_SCOPE C.7 (DropWatcher's visible line changes are accepted and on its smoke list) |
+| A saved panel position (`d.panel.store`) | a dragged point held in the instance's memory for the session (H10) | never: nothing a simulation does writes to SavedVariables (OWNER_SCOPE C.11) |
 | A public step-panel widget (`W.StepPanel`) | a file-local renderer in `SimPanel.lua`, duplicated on purpose with `PerfPanel.lua`'s; `lib.__StepPanel` is an internal test seam | a second consumer that can take the renderer with no edit to its suites (LK-11's outcome B, [#53](https://github.com/tusharsaxena/LibKa0s/issues/53)) |
 | A StepPanel `place` or `onDragStop` hook | `SimPanel.lua` positions the frame itself and hooks `OnDragStop` | never: OWNER_SCOPE C.7 |
 | `seam:IsGuarded(key)` | the host, which classified its own keys | never: OWNER_SCOPE C.7 |
@@ -527,4 +706,6 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 whole-folder copy brings them in with no load-list change in the host. **Payload weight:** the file
 bodies only define functions; no frame, timer or event registration exists until `NewSeam` or
 `New` is called (and no timer until a session calls `After`, no frame until `ShowPanel`), so a
-host that never simulates pays parse time and nothing else.
+host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
+into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
+parse time only.
