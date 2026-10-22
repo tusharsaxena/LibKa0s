@@ -20,8 +20,8 @@ What that leaves, concretely:
   `versioning-git`; `line-endings` (the library ships Lua into every consumer's client-bound
   `libs/`, so it takes the CRLF pin — named explicitly upstream because a library repo has no `.toc`
   and `line-endings-§2`'s discriminator would otherwise read it as non-client); `localization-§5`
-  (US English in authored text — a British spelling here is vendored into eleven consumers and
-  becomes eleven findings); `documentation-§5`; `documentation-§7`.
+  (US English in authored text — a British spelling here is vendored into every consumer and
+  becomes one finding per consumer); `documentation-§5`; `documentation-§7`.
 - **Does not apply:** `documentation-§1`'s player-facing README structure and badge row;
   `documentation-§2`'s addon `CLAUDE.md` stub as written (this file is the substitute);
   `documentation-§3`'s `docs/` trio (`ARCHITECTURE.md`, `testing.md`, `smoke-tests.md`), its five
@@ -61,7 +61,7 @@ two things it is:
 
 When in doubt, treat standard conformance as a hard requirement and ask.
 
-**One extra rule this repo carries, because it is upstream of eleven others.** Everything in
+**One extra rule this repo carries, because it is upstream of every consumer addon.** Everything in
 `LibKa0s/` and `testkit/` is **vendored** — into `<Addon>/libs/LibKa0s/` and `<Addon>/tests/_kit/`
 respectively. A defect shipped from here reappears in every consumer, and a fix is only real once it
 is re-vendored. Never patch a vendored copy downstream; fix it here and copy across.
@@ -107,7 +107,7 @@ consumer's copy is exempt. The second carve-out, generated non-shipping data, ha
 **The heading is nested, and the gate is the kit's.** From kit revision 25 the census's parent is
 fixed at `## Documented deviations` in whichever document hosts it, so the level follows that
 register rather than the host — a `##` register takes a `###` census beneath it, here and in the
-eleven repos that host theirs in `docs/ARCHITECTURE.md`. This repo owed that one-level move and this
+consumer addons, which host theirs in `docs/ARCHITECTURE.md`. This repo owed that one-level move and this
 is it. What reads the table is now `tests/_kit/test_layout_cap.lua`, wired as
 `{ name = "test_layout_cap", dir = "tests/_kit/" }`; the hand-written copy this repo carried is
 deleted, because a twelfth local copy of a gate the kit ships is the drift the kit gate exists to
@@ -195,7 +195,7 @@ today — `OptionsWidgets.lua` was 1838 at the 2026-09-07 review and the suite 2
 while nobody was watching, which is the whole argument for having a gate rather than a paragraph.
 
 **A peel here is a release, and v1.39.0 is the worked example.** `LibKa0s/` is re-vendored
-whole-folder into eleven consumers and every file in it carries its own LibStub minor, so a peel adds
+whole-folder into every consumer and every file in it carries its own LibStub minor, so a peel adds
 a payload file, a `LibKa0s.xml` row, a minor, a row in `tests/majors.lua`, the multi-file pairing
 guard on its own minor **and** the shell's (`lib.__tabsMinor` / `lib.__tabsShellMinor` in
 `LibKa0s/OptionsTabs.lua`, following `lib.__widgetsShellMinor`), **a component on the major's version

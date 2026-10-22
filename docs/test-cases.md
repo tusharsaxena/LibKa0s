@@ -2267,7 +2267,7 @@ Total.
 - sim verbs: the generic verbs win over a host verb of the same name
 - sim verbs: a host 'help' verb is the host's own; the library defines none
 
-### test_sim_panel.lua (50)
+### test_sim_panel.lua (51)
 
 - sim panel: the file registers on the shell's minor and in MODULES
 - sim panel: the STRINGS keys the panel draws are added to Sim.STRINGS
@@ -2319,6 +2319,7 @@ Total.
 - sim panel: nothing listed yet: the Start row and the picker's Start are inert
 - sim panel: a picked scenario the host drops falls back to the first listed one
 - sim panel: every documented optional field filled in place after New is read at use
+- sim panel: anchorTo, stepDelay and the required callbacks and slash, reassigned after New, are read at use
 
 ### test_sim_panel_render.lua (31)
 
@@ -2942,7 +2943,7 @@ Total.
 | test_sim_session.lua | 55 |
 | test_sim_timeline.lua | 41 |
 | test_sim_verbs.lua | 42 |
-| test_sim_panel.lua | 50 |
+| test_sim_panel.lua | 51 |
 | test_sim_panel_render.lua | 31 |
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
@@ -2974,4 +2975,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2544** |
+| **Total** | **2545** |
