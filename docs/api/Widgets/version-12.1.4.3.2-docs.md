@@ -12,7 +12,7 @@
 | Shipped in | v1.71.0 – v1.74.0 |
 | Status | Superseded |
 | Supersedes | [version 12.1.4.2.1](./version-12.1.4.2.1-docs.md) — chart segments not clipped to the plot; a re-render does not re-sync the hover; autocomplete hooks installed once per box |
-| Superseded by | [version 13.1.4.3.2.1](./version-13.1.4.3.2.1-docs.md) — `Widgets.lua` 13: `SearchBox`, the flat filter-bar search box with the gold focus line, and `TestStrip`, the test-mode strip; `WidgetsStepPanel.lua` 1: `StepPanel`, the render-only step panel |
+| Superseded by | [version 13.1.4.3.2](./version-13.1.4.3.2-docs.md) — `Widgets.lua` 13: `SearchBox`, the flat filter-bar search box with the gold focus line, and `TestStrip`, the test-mode strip |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 12, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }` |
 
 ## What changed at 12.1.4.3.2
@@ -1411,17 +1411,15 @@ comparison across all four has no single host to live in, so it is recorded here
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
 
-## Moving to version 13.1.4.3.2.1
+## Moving to version 13.1.4.3.2
 
 **Copy the folder whole. Nothing a host calls moves or is removed.** The next version is key
-13.1.4.3.2.1: `Widgets.lua` 13, `WidgetsReorder.lua` 1, `WidgetsDragHandle.lua` 4,
-`WidgetsLineChart.lua` 3, `WidgetsAutocomplete.lua` 2 and the new `WidgetsStepPanel.lua` 1. `Widgets.lua` 13 adds `SearchBox`, the
+13.1.4.3.2: `Widgets.lua` 13, `WidgetsReorder.lua` 1, `WidgetsDragHandle.lua` 4,
+`WidgetsLineChart.lua` 3 and `WidgetsAutocomplete.lua` 2. `Widgets.lua` 13 adds `SearchBox`, the
 flat filter-bar search box in the dropdown's skin, with a hint while empty and a gold border while
 it has focus; the dropdown's fill, line and height move into one file-local table with no visible
 change. A host that hand-built its own search box may replace it with `SearchBox` and extend it
 with `HookScript`; a host that passes it an icon declares that icon's name. It also adds
 `TestStrip` and `TEST_STRIP`, the amber test-mode strip a window lays over sample data; a host that
-adopts it declares `info`, the mark it passes in. `WidgetsStepPanel.lua` 1 adds `StepPanel`, the
-render-only clickable step panel Perf and `LibKa0s-Sim-1.0` draw their steps with; it needs
-`LibKa0s-Core-1.0` 9, which the whole-folder payload carries. See
-[version 13.1.4.3.2.1](./version-13.1.4.3.2.1-docs.md).
+adopts it declares `info`, the mark it passes in. See
+[version 13.1.4.3.2](./version-13.1.4.3.2-docs.md).

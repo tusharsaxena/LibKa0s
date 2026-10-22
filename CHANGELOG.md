@@ -14,14 +14,13 @@ cannot drift. Release order is in
 
 Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** (comment-only)
 (`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**), **Core minor 11** (comment-only, key
-**11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13** and **WidgetsStepPanel minor 1**
-(`LibKa0s-Widgets-1.0` key **13.1.4.3.2.1**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**),
-**Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**), every
+**11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13**
+(`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**),
+**Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**), **PerfPanel minor 7** (comment-only,
+`LibKa0s-Perf-1.0` key **15.1.1.7**), every
 other file still at its v1.74.0 minor — `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2,
-`Pool` 3, `Media` key 5.1, `Slash` key 20.2, `Launcher` 5 and
-`Perf` key 15.1.1.6 — and
-**test kit revision 41**. No `NEEDS_*` floor rises, and one major is added (`LibKa0s-Glow-1.0`); the
-new `WidgetsStepPanel.lua` enters with an attach-file floor of its own on Core 9 (`MakeResizable`). The owner's
+`Pool` 3, `Media` key 5.1, `Slash` key 20.2 and `Launcher` 5 — and
+**test kit revision 41**. No `NEEDS_*` floor rises, and one major is added (`LibKa0s-Glow-1.0`). The owner's
 2026-10-20 ruling: only the bare minimum of icons is vendored into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
 README's standards pointer moves when this is released.
 
@@ -54,7 +53,7 @@ README's standards pointer moves when this is released.
   (re-check when a third flat control outside `Widgets.lua` copies the literals). The header's
   "No search box" now means inside the dropdown's menu.
 - **The attach files re-pair on the shell's new minor**; none of their own minors moves.
-  [Widgets version 13.1.4.3.2.1](docs/api/Widgets/version-13.1.4.3.2.1-docs.md).
+  [Widgets version 13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md).
 
 **What a consumer owes.** Nothing to keep working. An adopter extends the box with `HookScript`
 and never `SetScript`s the five scripts the constructor sets, rewrites the hint with
@@ -79,44 +78,12 @@ host-passed and joins no set the library draws.
   wrap, measuring or `Height()`, no test-mode state, no placement or body shift, and no icon
   fallback. Re-check trigger: a consumer needs a different color, a tooltip renderer or a measured
   height with the same semantics as another.
-  [Widgets version 13.1.4.3.2.1](docs/api/Widgets/version-13.1.4.3.2.1-docs.md).
+  [Widgets version 13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md).
 
 **What a consumer owes.** Nothing to keep working. A TestStrip adopter declares `info` on its
 `LibKa0s icons:` line: the strip's mark is host-passed, so the library's closed set (close, copy,
 clear, info, for `OptionsIdList`) does not cover the adopter's own copy, and a pruned icon still
 resolves to a path and draws blank.
-
-### W.StepPanel (WidgetsStepPanel minor 1, #53)
-
-**Public pending LK-11's spike**: the owner's scope makes `W.StepPanel` public only if Perf's panel
-can be rebuilt on it with `tests/test_perf_panel.lua` passing unedited (Perf and Sim, two
-consumers). If the rebuild fails, the member becomes Sim-private and this entry says so.
-
-- **`W.StepPanel(d)`, the render-only clickable step panel**, in a new sixth Widgets file,
-  `WidgetsStepPanel.lua`, paired on the shell's minor (`__stepPanelMinor` /
-  `__stepPanelShellMinor`) and floored on Core 9 for `MakeResizable`: with an older Core the file
-  returns and `StepPanel` is absent. One row per step: a status dot, the label and the slash
-  command, in Perf's geometry, palette and chrome (copied from `PerfPanel.lua`), with gold hover on
-  an actionable row and red on an actionable `cancel`. The descriptor is `name`, `addonName` (the
-  close mark's folder), `title` (re-read on every Refresh), `rows()` (each row
-  `{ key?, label, command, state, actionable, tip? }`, `actionable` explicit), `onClick(row, index)`
-  (called only after `rows()` is re-read and the row re-checked at that index), and optional
-  `check` (host-passed done mark), `tooltip`, `footer` (`height`, `build` once, `paint` every
-  Refresh) and `close`. There is no `place` and no `onDragStop`: the panel sits at CENTER -320 and
-  a caller positions or hooks `Frame()` itself. The handle answers `Frame`, `Show`, `Hide`,
-  `Toggle`, `IsShown`, `Refresh` and `Buttons`; `Frame()` is lazy and answers nil headless.
-- **The height bounds follow the row count.** `Core.MakeResizable` is call-once and fixes a
-  width-only frame's height bounds when it is called, so on every Refresh where the row count
-  changed the panel re-pins its own min and max height (`SetResizeBounds`, guarded, falling back to
-  `SetMinResize` / `SetMaxResize` as Core does). No Core API changes.
-- **The semantics stay with the consumers.** What puts a row in done, used, ready, busy, locked or
-  cancel, and whether it is clickable, is Perf's and Sim's; the widget adds no state.
-  [Widgets version 13.1.4.3.2.1](docs/api/Widgets/version-13.1.4.3.2.1-docs.md).
-
-**What a consumer owes.** Nothing to keep working. The Widgets key is now 13.1.4.3.2.1 (briefly
-13.1.4.3.2 on the release branch; no release carried it). An adopter passes its folder as
-`addonName` and declares `close` on its `LibKa0s icons:` line, and resolves and declares its own
-`check` art.
 
 ### Comment-only minors: the icon fallback a pruned copy does not get (#57)
 
@@ -137,6 +104,21 @@ consumers). If the rebuild fails, the member becomes Sim-private and this entry 
   [Core version 11](docs/api/Core/version-11-docs.md),
   [DebugLog version 20.2.1](docs/api/DebugLog/version-20.2.1-docs.md),
   [Options version 29.2.34.2.5.9.1.7.4.2.1](docs/api/Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md).
+
+### PerfPanel minor 7: comment-only; the step panel stays Sim-private (#53)
+
+- **`W.StepPanel` is withdrawn before any release carried it.** The owner's scope made the step
+  panel public only if Perf's panel could be rebuilt on it with every Perf suite passing unedited.
+  It could not: `tests/test_perf_command.lua:279` and `tests/test_perf_isolation.lua:264`, `:272`
+  and `:277` load `PerfPanel.lua` without Widgets, and `tests/test_resize_windows.lua:432` caught
+  the widget calling `Core.MakeResizable` unguarded. So `WidgetsStepPanel.lua`, its suite and its
+  rows leave, the Widgets key is 13.1.4.3.2 again (it was briefly 13.1.4.3.2.1 on the release
+  branch; no release carried it), and the renderer becomes library-private inside
+  `LibKa0s-Sim-1.0`, with no public contract.
+- **`PerfPanel.lua` gains one header comment and nothing else.** It names the deliberate
+  duplication with Sim's private renderer. The minor moves 6 -> 7 only so that two different files
+  never sit under one minor (the #57 precedent); Perf takes no dependency on Widgets, and nothing
+  visible changes. [Perf version 15.1.1.7](docs/api/Perf/version-15.1.1.7-docs.md).
 
 ### Test kit revision 41
 
@@ -213,7 +195,7 @@ never shipped on its own.
 ### What a consumer owes
 
 - **This release changes payload files under `LibKa0s/`.** An earlier draft of this entry said no
-  payload file had changed; that is withdrawn. Core, DebugLog, OptionsTabs and OptionsIdList all
+  payload file had changed; that is withdrawn. Core, DebugLog, OptionsTabs, OptionsIdList and PerfPanel all
   move a minor, so the re-vendor copies the library folder as well as the kit.
 - **Delete any `O.__releaseChrome` mirror from an Options degradation stub** at the v1.75.0
   re-vendor (the KickCD M4-09 precedent). `Kit.assertSurfaceParity` iterates the live surface, so a

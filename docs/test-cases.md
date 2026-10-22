@@ -706,39 +706,6 @@ Total.
 - TestStrip: TEST_STRIP publishes HEIGHT and no RESERVE
 - TestStrip: two strips share no regions
 
-### test_widgets_step_panel.lua (30)
-
-- StepPanel: the file attaches at minor 1, paired on the shell's minor
-- StepPanel: the descriptor's required fields raise when missing
-- StepPanel: the handle answers the seven members, and no frame until asked
-- StepPanel: headless, Frame() answers nil and nothing raises
-- StepPanel: the frame's chrome is Perf's
-- StepPanel: the close mark gets the descriptor's addonName
-- StepPanel: close=false draws no close mark
-- StepPanel: Show, Hide, Toggle and IsShown
-- StepPanel: row geometry and the test record
-- StepPanel: every state paints Perf's palette on the label and the dot
-- StepPanel: an unknown state paints as locked
-- StepPanel: actionable is explicit row data and nil means false
-- StepPanel: command text is repainted on every Refresh
-- StepPanel: an actionable row hovers gold and leaves to its palette color
-- StepPanel: an actionable cancel row hovers red
-- StepPanel: a non-actionable row does not hover
-- StepPanel: the tooltip is called on enter only for a row with a tip
-- StepPanel: a row with a tip and no tooltip fn shows nothing
-- StepPanel: a click re-reads rows() and hands onClick the fresh row and its index
-- StepPanel: a row that stopped being actionable after paint is not dispatched
-- StepPanel: a click on a row index the list no longer has is not dispatched
-- StepPanel: a dispatched click repaints
-- StepPanel: height follows the row count, and a shrink hides the extra rows
-- StepPanel: a footer adds its height plus PAD, is built once and painted every Refresh
-- StepPanel: the title is re-read on every Refresh
-- StepPanel: red under: bounds fixed at MakeResizable time are re-pinned when the count moves
-- StepPanel: the old SetMinResize / SetMaxResize pair is used where SetResizeBounds is absent
-- StepPanel: a width resize stretches every row, and new rows come at the stretched width
-- StepPanel: with a check, a done row shows the tinted check over a hidden dot
-- StepPanel: with no check, a done row keeps its dot and no check is built
-
 ### test_widgets_reorder.lua (7)
 
 - reorder: a host OnUpdate on a row frame survives a drag start and end
@@ -2628,7 +2595,6 @@ Total.
 | test_widgets_autocomplete.lua | 36 |
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 12 |
-| test_widgets_step_panel.lua | 30 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
@@ -2701,4 +2667,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2303** |
+| **Total** | **2273** |

@@ -181,7 +181,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [13.1.4.3.2.1](./Widgets/version-13.1.4.3.2.1-docs.md) | **`Widgets.lua` 13** (new: `SearchBox`, `TestStrip`, `TEST_STRIP`) · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 · **`WidgetsStepPanel.lua` 1** (new: `StepPanel`) | v1.75.0 | **Current** |
+| [13.1.4.3.2](./Widgets/version-13.1.4.3.2-docs.md) | **`Widgets.lua` 13** (new: `SearchBox`, `TestStrip`, `TEST_STRIP`) · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.75.0 | **Current** |
 | [12.1.4.3.2](./Widgets/version-12.1.4.3.2-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.71.0 – v1.74.0 | Superseded |
 | [12.1.4.2.1](./Widgets/version-12.1.4.2.1-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 2 · `WidgetsAutocomplete.lua` 1 | v1.70.0 | Superseded |
 | [12.1.4.1](./Widgets/version-12.1.4.1-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 1 | v1.69.0 | Superseded |
@@ -318,7 +318,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1.1.6](./Perf/version-15.1.1.6-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.72.0 | **Current** |
+| [15.1.1.7](./Perf/version-15.1.1.7-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 7** (comment-only: Sim's panel copies the renderer on purpose) | v1.75.0 | **Current** |
+| [15.1.1.6](./Perf/version-15.1.1.6-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.72.0 – v1.74.0 | Superseded |
 | [14.1.1.6](./Perf/version-14.1.1.6-docs.md) | `Perf.lua` 14 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.66.0 – v1.71.0 | Superseded |
 | [13.6](./Perf/version-13.6-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 6 | v1.64.0 – v1.65.0 | Superseded |
 | [13.5](./Perf/version-13.5-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 5 | v1.56.0 – v1.63.0 | Superseded |
