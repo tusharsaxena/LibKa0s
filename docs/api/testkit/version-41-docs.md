@@ -66,8 +66,8 @@ What `run-automated-tests.sh` does from revision 41:
 - **A run is measured only when** lizard exited 0 or 1 (lizard 1.24.0 returns 1 on any run that
   warned, `lizard.py:1182-1184`), the footer has exactly eight numeric fields, **and** stderr holds
   no `Traceback` line (a late raise can follow a good footer, `lizard.py:1176-1177`).
-- **Anything else is `fail`**, never a pass, with exactly one of two notes:
-  `lizard raised: <last non-empty line of stderr>` when there is a traceback, otherwise
+- **Anything else is `fail`**, never a pass, with exactly one of two notes: the crashed note
+  (next section) when there is a traceback, otherwise
   `lizard exited <rc> with no valid footer (bound: KA0S_KIT_TIMEOUT_S / KA0S_KIT_PROC_MB)`, which
   the timeout's 124 and the memory kill's 137 share. Every complexity figure is 0, the maximum CCN
   included, and parity is skipped (`blindFiles` stays 0). Like a blind file, a crash makes the
@@ -84,9 +84,8 @@ clean exit, and a timeout's 124.
 
 ### A lizard crash is its own bucket, named by a per-file retry (LibKa0s#47)
 
-The section above leaves a raise with one note, `lizard raised: <exception>`, and no file named.
-On a roster addon that is a tree of dozens of files and nothing to go on. From this point in
-revision 41 a raise is a bucket of its own, `crashed`, beside `blind`:
+A whole-tree raise names no file, and on a roster addon that is a tree of dozens of files and
+nothing to go on. So in revision 41 a raise is a bucket of its own, `crashed`, beside `blind`:
 
 - **The per-file retry.** When the whole-tree run is invalid **and** stderr holds a `Traceback`,
   the runner, before it removes the shadow, runs lizard once per file of the shadow's file list,
@@ -134,7 +133,7 @@ Three more cases in `tests/test_kit_runner.lua` pin the bucket: a fake lizard th
 its tree or its path includes `crash.lua` (one crashed file, named, none blind, figures 0 and
 `n/a`, the hint present), a fake that raises on every whole-tree run and on no single file (the
 whole-tree note, `crashedFiles` 0), and the real lizard 1.24.0 over the shape above, which skips
-where lizard is not on `PATH`. The traceback case above now reads the per-file note.
+where lizard is not on `PATH`. The traceback case above reads the per-file note.
 
 ## What a consumer owes
 

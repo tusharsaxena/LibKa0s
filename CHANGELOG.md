@@ -71,7 +71,7 @@ never shipped on its own.
   raise, and parity named every file blind. Now stderr is kept apart (and kept in
   `complexity.txt` under a separator), the footer is read under its header, and a run that did not
   exit 0 or 1, has no eight-number footer, or raised is `fail` with every figure 0 (`n/a` on the
-  console and in the trend row), parity skipped, and one of two notes: `lizard raised: ...` or
+  console and in the trend row), parity skipped, and one of two notes: the crashed note (#47, below) or
   `lizard exited <rc> with no valid footer (bound: ...)`. A crash stays amber, as blind is.
   [testkit version 41](docs/api/testkit/version-41-docs.md).
 - **#47: crashed is its own bucket.** On a raise (not on a 124/137 bound) the runner retries lizard
