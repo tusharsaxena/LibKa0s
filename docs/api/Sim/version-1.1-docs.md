@@ -17,8 +17,8 @@
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 1, SimTimeline = 1 }` |
 
-**The panel and the verbs arrive in the next commits of this release.** This version documents
-the Compat answer seam, the session that binds it and the step machine (`SimTimeline.lua`). The
+**The panel arrives in the next commits of this release.** This version documents the Compat
+answer seam, the session that binds it, the step machine and the verbs (`SimTimeline.lua`). The
 panel (`SimPanel.lua`) joins the major before v1.75.0 is released, and the version key grows to
 `<Sim>.<SimTimeline>.<SimPanel>` as it does. Until it attaches, the session carries fallbacks for
 its members (below).
@@ -29,9 +29,13 @@ its members (below).
 (`lib.__timelineMinor` / `lib.__timelineShellMinor`, Perf's idiom), and the version key grows from
 `1` to `1.1`. It overwrites the shell's timeline fallbacks with the step machine (*The step
 machine*, below): `Steps`, `Step`, `Run`, `Pause`, `Resume` and `Restart`, the host's `gate`, the
-per-step `stepDelay`, and `Status()`'s `pos`, `total`, `playing`, `paused` and `settling`.
+per-step `stepDelay`, and `Status()`'s `pos`, `total`, `playing`, `paused` and `settling`. It
+also overwrites the `RunVerb` fallback with the typed grammar every host's `sim` slash verb shares
+(*The verbs*, below), which reads the descriptor's `verbs`, `why`, `usage` and `statusLine`.
 `Sim.STRINGS` gains `BUILDING`, `PLAYING`, `NOT_PLAYING`, `NOT_PAUSED`, `DONE`, `SETTLING`,
-`STEP_LINE`, `STEP_FAILED`, `FINISHED` and `ERROR`. No member of the shell changes. Version `1`
+`STEP_LINE`, `STEP_FAILED`, `FINISHED` and `ERROR`, and for the verbs `STATUS_IDLE`,
+`STATUS_RUNNING`, `STATUS_SIZE`, `STATUS_RANDOM`, the six `STATE_*` words, `VERB_FAILED` and one
+`USAGE_*` line per generic verb. No member of the shell changes. Version `1`
 was never released: this document was `version-1-docs.md` until the key moved, on the release
 branch (the unreleased-key rule).
 
@@ -137,7 +141,10 @@ field of the wrong type raises the same way.
 | `refusal` | no | `fn(opts) -> line|nil`. Run **inside `seam:Live`**, so it reads the real world; it owns every host rule (stood-down wording, test mode, combat, instance, group, per-scenario prerequisites). The library adds no world rule and relaxes none. An error in it is re-raised by `Start` after `Live` writes its traceback. |
 | `gate` | no | `fn(session) -> open, line?`. Checked before every step: by `Step`, by every `Run` tick and by the panel's click-ahead. Closed means the host's world has not settled (LootHistory passes its Reconciler settle, OWNER_SCOPE C.12). With no gate, the gate is always open (DropWatcher). A gate that raises counts as closed and writes a debug line. |
 | `stepDelay` | no | A number, or `fn(step) -> seconds`: the pause after `step` before `Run` plays the next one. Default `2`. Read when each timer is set. A host passes a fixed constant or a function of the step; there is no schema row for it (OWNER_SCOPE C.11). |
-| `verbs`, `why`, `usage`, `statusLine` | no | Read by the verbs (a later commit of this release). Type-checked here. |
+| `verbs` | no | `{ [verb] = { parse = fn(words) -> cmd|nil, run = fn(cmd, sim) -> ok, code, free = bool? } }`: the host's extra verbs, tried after the generic ones (*The verbs*). `words[1]` is the verb, lowercased. |
+| `why` | no | `{ [code] = line }`: the line a host verb's failure code prints. |
+| `usage` | no | `{ lines }`, printed verbatim after the library's usage. |
+| `statusLine` | no | `fn(status, session) -> line|{lines}`, appended to the library's status line. An error in it is a debug line. |
 | `stopText` | no | `{ [reason] = line }`. The stop line for a reason, the library's own reasons included. |
 | `L` | no | Locale table. Any `STRINGS` key is overridden through `rawget`, so a locale table whose metatable answers an unknown key with the key does not shadow the built-in line. |
 | `print` | no | `fn(line)`, read at call time. Default: `DEFAULT_CHAT_FRAME:AddMessage`. |
@@ -171,7 +178,7 @@ answers every member it owns: `Steps()` and `PanelRows()` answer `{}`, `Step()` 
 `false`, and `HidePanel`, `RefreshPanel` and `ResetPanelPosition` do nothing. The attach files
 overwrite them through an internal handshake (`lib.__AttachTimeline`, `lib.__AttachPanel`, and the
 ctx table `New` hands both) that is not contract. At this version `SimTimeline.lua` attaches and
-`SimPanel.lua` does not yet exist, so the timeline members are live and the verb and panel members
+`SimPanel.lua` does not yet exist, so the timeline and verb members are live and the panel members
 are the fallbacks.
 
 ## The step machine (`SimTimeline.lua`)
@@ -209,6 +216,52 @@ synchronous while the gate stays open; a step failure or a `done` / `notRunning`
 is a file-local function the panel receives through the attach handshake, **never an instance
 member** (`sim.RunTo` is nil). It occupies `Run`'s `playing` slot (C.2): while its gate poll is
 pending, `Run` and a second click-ahead answer `playing`, and `Pause` and `Stop` cancel it.
+
+## The verbs: `sim:RunVerb(line) -> ok, code` (`SimTimeline.lua`)
+
+One grammar for every host's `/<slash> sim`. Every result is printed through `d.print`. The line
+is split on whitespace and its first word, the verb, is lowercased.
+
+| Typed | Effect | Answers |
+|---|---|---|
+| (empty, or blank) | The status line, then the usage, then `ShowPanel()` | `true` |
+| `start <name> [size]` | `Start{ scenario = name, size = tonumber(size) }`. The name matches a scenario exactly, else ignoring case. With no name, the usage | `true`; `false, "refused"` (Start printed its line); `false, "usage"` |
+| `run` · `step` · `pause` · `resume` · `restart` | The control of the same name, printing exactly its own lines | `true` or `false, code` |
+| `stop` | `Stop("stop")` | `true` |
+| `status` | The status line | `true` |
+| `panel` | `TogglePanel()` | `true` |
+| a key of `d.verbs` | The host's verb (below) | its `ok, code` |
+| anything else, `help` included | The usage | `false, "usage"` |
+
+- **There is no `help` verb (OWNER_SCOPE C.7).** `help` is an unknown word, and the usage it prints
+  is the help. A host that defines its own `help` in `d.verbs` gets it, like any host verb.
+- **The generic verbs win.** A host verb with a generic verb's name is never reached.
+- **Free verbs** run idle: the empty line, `status`, `start`, `panel`, and a host verb marked
+  `free = true`. Every other verb prints `NOT_RUNNING` and answers `false, "notRunning"` while no
+  session is active, before its control or its `parse` is called.
+- **WHY lines.** A failure code prints the library's line for it (`notRunning` → `NOT_RUNNING`,
+  `building` → `BUILDING`, `playing` → `PLAYING`, `done` → `DONE`, `settling` → `SETTLING`,
+  `notPlaying` → `NOT_PLAYING`, `notPaused` → `NOT_PAUSED`), else `d.why[code]`, else nothing. A
+  code whose line has already printed is **silent**: `refused` (the refusal line), `failed`
+  (`STEP_FAILED`) and `usage`; and a typed `step` on a closed gate answers `settling` after `Step`
+  printed the gate's own line, so it prints no second one.
+- **A host verb** is `parse(words)` then `run(cmd, sim)`, each under `pcall`. `parse` answering
+  `nil` prints the usage (`false, "usage"`). An error in either writes a debug line, prints
+  `VERB_FAILED` and answers `false, "error"`. `run`'s failure code prints its WHY line by the rule
+  above, so a host verb may answer a library code too.
+- **The status line.** Idle: `STATUS_IDLE` with the scenario names. Running: `STATUS_RUNNING` with
+  the scenario (`STATUS_SIZE` adds the size when the scenario has sizes, `STATUS_RANDOM` for `0`),
+  the seed, `pos` of `total` and a state word: `STATE_BUILDING` before `ready()`, else
+  `STATE_DONE` once every step has run, else `STATE_SETTLING`, `STATE_PLAYING`, `STATE_PAUSED`, or
+  `STATE_WAITING`. Then `d.statusLine(Status(), Session())`, a line or a list.
+- **The usage.** The ten `USAGE_*` lines, each formatted with `d.slash`, then `d.usage` verbatim.
+- **The click path is the typed path.** The panel calls `RunVerb` (or the internal click-ahead,
+  which prints the same per-step lines), so a click prints exactly what typing prints.
+
+**Host wiring** (documented, not enforced): one Slash-1.0 feature-verb row,
+`{ "sim", desc, function(rest) NS.Sim:RunVerb(rest) end }`. Being a feature verb, the dispatcher
+refuses it while the addon is disabled. The simulator is slash-only: **no launcher entry and no key
+binding** (OWNER_SCOPE C.11).
 
 ### `ready()` (OWNER_SCOPE C.1)
 
@@ -263,6 +316,22 @@ turns an error in `deliver` into a debug line and answers `0`, so a session surv
 | `STEP_FAILED` | `Simulation step %d of %d failed: %s. The run is paused; the debug log has the error.` |
 | `FINISHED` | `Simulation finished: %s stop ends it.` (`d.slash`) |
 | `ERROR` | `error`: a failed step's `detail`. |
+| `STATUS_IDLE` | `Simulation: idle. Scenarios: %s.` (the scenario names) |
+| `STATUS_RUNNING` | `Simulation: %s, seed %s, step %d of %d, %s.` (scenario, seed, position, total, state word) |
+| `STATUS_SIZE` | `%s (size %s)` (scenario, size) |
+| `STATUS_RANDOM` | `random`: size `0`. |
+| `STATE_BUILDING` · `STATE_PLAYING` · `STATE_PAUSED` · `STATE_SETTLING` · `STATE_WAITING` · `STATE_DONE` | `building` · `playing` · `paused` · `settling` · `waiting for a step` · `finished` |
+| `VERB_FAILED` | `Simulation verb '%s' failed. The debug log has the error.` |
+| `USAGE_BARE` | `%s: the status, this usage and the step panel.` (each `USAGE_*` takes `d.slash`) |
+| `USAGE_START` | `%s start <scenario> [size]: start a simulation.` |
+| `USAGE_RUN` | `%s run: play every step, pausing between them.` |
+| `USAGE_STEP` | `%s step: play the next step.` |
+| `USAGE_PAUSE` | `%s pause: pause a run.` |
+| `USAGE_RESUME` | `%s resume: resume a paused run.` |
+| `USAGE_RESTART` | `%s restart: start the same scenario again with a fresh seed.` |
+| `USAGE_STOP` | `%s stop: end the simulation.` |
+| `USAGE_STATUS` | `%s status: where the simulation stands.` |
+| `USAGE_PANEL` | `%s panel: show or hide the step panel.` |
 
 ## The host contract (OWNER_SCOPE C.4)
 
@@ -286,6 +355,8 @@ on the session table (`sim:Session()`, the host bag).
   world is waiting for.
 - Saved data is the host's: the library never intercepts a write, so session-only stores and an
   invariant test are the host's.
+- The slash surface is one feature-verb row, `{ "sim", desc, function(rest) NS.Sim:RunVerb(rest) end }`,
+  with no launcher entry and no key binding (OWNER_SCOPE C.11).
 
 ## What is not here
 
@@ -293,6 +364,8 @@ on the session table (`sim:Session()`, the host bag).
 |---|---|---|
 | `seam:IsActive()` | the session (`sim:IsActive()`) | never on the seam: OWNER_SCOPE C.7 |
 | `sim:RunTo(index)` | the panel's click-ahead, through the internal attach handshake | never public: OWNER_SCOPE C.7 |
+| A `help` verb | the usage, which any unknown word prints | never: OWNER_SCOPE C.7 |
+| A launcher entry or key binding for the simulator | the host's one `sim` slash row | never: OWNER_SCOPE C.11 |
 | A schema row for the step delay | a fixed host constant or `fn(step)` in `d.stepDelay` | never: OWNER_SCOPE C.11 |
 | `sim:Live(fn, ...)` | the seam (`seam:Live`): one `Live` | never: OWNER_SCOPE C.7 |
 | `d.panel.button`, `d.panel.tooltip`, `d.panel.store` | the library's own button and GameTooltip; a session-only position | never: OWNER_SCOPE C.7 and C.11 |

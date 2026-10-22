@@ -2217,6 +2217,51 @@ Total.
 - sim timeline: Status carries pos, total, playing, paused, settling and ready
 - sim timeline: every timer is a session After, so Stop leaves none
 
+### test_sim_verbs.lua (42)
+
+- sim verbs: RunVerb is SimTimeline's, not the shell's NO_TIMELINE fallback
+- sim verbs: the status, usage and state keys are added to Sim.STRINGS
+- sim verbs: the empty line prints the status line and the usage, and opens the panel
+- sim verbs: a nil or blank line is the empty line
+- sim verbs: 'help' is not a verb (C.7): it prints the usage, as any unknown word does
+- sim verbs: the usage is formatted with d.slash and appends d.usage
+- sim verbs: a usage line is overridable through d.L
+- sim verbs: status idle prints STATUS_IDLE with the scenario names, and is free
+- sim verbs: status running names the scenario, size, seed, position and state
+- sim verbs: status reads random for size 0 and no size for an unsized scenario
+- sim verbs: the status state reads building, playing, paused, settling and finished
+- sim verbs: status appends d.statusLine, as a line or a list, handed the status and session
+- sim verbs: a statusLine that raises is a debug line, and the library's line still prints
+- sim verbs: panel toggles the panel, idle or running (a free verb)
+- sim verbs: start <name> starts it with no size, and prints exactly Start's lines
+- sim verbs: start <name> <size> hands the size to Start
+- sim verbs: the verb and the scenario name match regardless of case
+- sim verbs: start of an unknown scenario prints the UNKNOWN_SCENARIO line, silently refused
+- sim verbs: start with no name prints the usage
+- sim verbs: start while running prints ALREADY_RUNNING once (refused is silent)
+- sim verbs: a host refusal prints its own line once
+- sim verbs: step dispatches to Step and prints exactly its line
+- sim verbs: run dispatches to Run
+- sim verbs: pause dispatches to Pause
+- sim verbs: resume dispatches to Resume
+- sim verbs: restart dispatches to Restart
+- sim verbs: stop dispatches to Stop with the reason stop
+- sim verbs: every non-free generic verb prints NOT_RUNNING while idle
+- sim verbs: a failure code prints its library WHY line
+- sim verbs: step on a closed gate prints the gate's line once, not a second WHY
+- sim verbs: a failing step prints STEP_FAILED once, and failed is silent
+- sim verbs: a refused restart is silent past the refusal's own line
+- sim verbs: a library WHY line is overridable through d.L
+- sim verbs: a host verb is parsed from the words and run with the command and the instance
+- sim verbs: a host verb needs a session: idle it prints NOT_RUNNING and is not run
+- sim verbs: a free host verb runs idle
+- sim verbs: a host failure code prints d.why's line; refused stays silent
+- sim verbs: a host verb that answers a library code prints the library's line
+- sim verbs: a host verb whose parse answers nil prints the usage
+- sim verbs: a host verb that raises prints VERB_FAILED and writes a debug line
+- sim verbs: the generic verbs win over a host verb of the same name
+- sim verbs: a host 'help' verb is the host's own; the library defines none
+
 ### test_loader.lua (6)
 
 - loader: a cached chunk gives each instance its own global namespace
@@ -2771,6 +2816,7 @@ Total.
 | test_sim_seam.lua | 27 |
 | test_sim_session.lua | 52 |
 | test_sim_timeline.lua | 40 |
+| test_sim_verbs.lua | 42 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -2798,4 +2844,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2392** |
+| **Total** | **2434** |

@@ -338,8 +338,23 @@ keeps vendoring `LibCustomGlow-1.0`.
   `settling`. `Sim.STRINGS` gains `BUILDING`, `PLAYING`, `NOT_PLAYING`, `NOT_PAUSED`, `DONE`,
   `SETTLING`, `STEP_LINE`, `STEP_FAILED`, `FINISHED` and `ERROR`. The key moves `1` -> `1.1` before
   any release carried `1`, so the document moved with it.
-- The panel and the verbs arrive in the next commits of this release, as `SimPanel.lua` joins the
-  key `<Sim>.<SimTimeline>.<SimPanel>`. The contract so far is
+- **The verbs: `sim:RunVerb(line) -> ok, code` (#54).** Also `SimTimeline.lua`, unreleased, so no
+  minor moves. One typed grammar for every host's `sim` slash verb, printed through `d.print`: the
+  empty line prints the status line and the usage and opens the panel; `start <name> [size]`
+  starts (the name matched exactly, else ignoring case); `run`, `step`, `pause`, `resume`,
+  `restart` and `stop` drive the control of the same name and print exactly its lines; `status`
+  and `panel`. Then the host's `d.verbs` (`parse(words)`, `run(cmd, sim)`, `free`), each under
+  `pcall`. **There is no `help` verb** (OWNER_SCOPE C.7): any unknown word, `help` included, prints
+  the usage, formatted with `d.slash` and followed by `d.usage`. The free verbs (the empty line,
+  `status`, `start`, `panel`, and a host verb marked free) run idle; every other prints
+  `NOT_RUNNING`. A failure code prints the library's WHY line or `d.why`'s, and `refused`,
+  `failed` and `usage` stay silent because their line has printed. The status line names the
+  scenario, size, seed, position and state, and appends `d.statusLine` (a line or a list). The
+  host wiring is one Slash-1.0 feature-verb row, slash-only (C.11). `Sim.STRINGS` gains
+  `STATUS_IDLE`, `STATUS_RUNNING`, `STATUS_SIZE`, `STATUS_RANDOM`, six `STATE_*` words,
+  `VERB_FAILED` and ten `USAGE_*` lines.
+- The panel arrives in the next commits of this release, as `SimPanel.lua` joins the key
+  `<Sim>.<SimTimeline>.<SimPanel>`. The contract so far is
   [Sim version 1.1](docs/api/Sim/version-1.1-docs.md).
 
 **What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
