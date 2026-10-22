@@ -12,13 +12,25 @@ cannot drift. Release order is in
 
 ## v1.75.0 — unreleased
 
-Versions in this release: every file at its v1.74.0 minor — `Core` 10, `Env` 2, `Compat` 1,
-`Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` key 5.1, `Slash` key 20.2,
-`DebugLog` key 19.2.1, `Launcher` 5, `Widgets` key 12.1.4.3.2, `Options` key
-29.2.34.2.4.8.1.7.4.2.1 and `Perf` key 15.1.1.6 — and **test kit revision 41**. No payload file under
-`LibKa0s/` has changed. The owner's 2026-10-20 ruling: only the bare minimum of icons is vendored
-into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
+Versions in this release: **OptionsTabs minor 9** (`LibKa0s-Options-1.0` key
+**29.2.34.2.4.9.1.7.4.2.1**), every other file still at its v1.74.0 minor — `Core` 10, `Env` 2,
+`Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` key 5.1, `Slash` key
+20.2, `DebugLog` key 19.2.1, `Launcher` 5, `Widgets` key 12.1.4.3.2 and `Perf` key 15.1.1.6 — and
+**test kit revision 41**. No `NEEDS_*` floor rises and no major is added. The owner's
+2026-10-20 ruling: only the bare minimum of icons is vendored into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
 README's standards pointer moves when this is released.
+
+### OptionsTabs minor 9: O.__releaseChrome is no longer exported (LibKa0s#45)
+
+- **`O.__releaseChrome` is gone from the instance.** It put the file-local `releaseChrome` on the
+  Options instance for a suite that never called it, and no roster consumer called it; the only
+  mentions outside the library were Options degradation stubs mirroring the name.
+  `releaseChrome` itself and its two callers, `O.PageBanner` and `O.PageHeader`, are unchanged,
+  and the chrome-ledger cases in `tests/test_options_tabs.lua` keep pinning teardown through
+  `PageBanner`. Removed with a minor bump under `library-stack-§7`'s `__` clause as narrowed at
+  standard **v2.86.0**: a `__` member documented as internal or as a test seam, with zero roster
+  consumers, may be removed with a minor bump. The members manifest does not change, since `__`
+  members are outside it. [Options version 29.2.34.2.4.9.1.7.4.2.1](docs/api/Options/version-29.2.34.2.4.9.1.7.4.2.1-docs.md).
 
 ### Test kit revision 41
 
@@ -74,6 +86,9 @@ never shipped on its own.
 
 ### What a consumer owes
 
+- **Delete any `O.__releaseChrome` mirror from an Options degradation stub** at the v1.75.0
+  re-vendor (the KickCD M4-09 precedent). `Kit.assertSurfaceParity` iterates the live surface, so a
+  stub that keeps it turns nothing red; it is dead weight.
 - **On its next re-vendor:** the kit (revision 41), the library copy, its `LibKa0s icons:` line under
   the provenance line, and `lua tools/prune-icons.lua <Addon>`, all in one commit. Re-vendoring every
   consumer with its declaration is tracked as a LibKa0s issue.

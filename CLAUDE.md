@@ -225,7 +225,8 @@ first:
   measured 2026-10-01, six under its 1450 re-check trigger; 1423 with v1.65.0's combat-refusal line;
   1422 new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
 - `LibKa0s/OptionsIds.lua` (1359 at v1.65.0; 1358 new: the id peel), ruled below.
-- `LibKa0s/OptionsTabs.lua` (1349 with minor 8's three `RenderTabbedSchema` opts, AbsorbTracker#32,
+- `LibKa0s/OptionsTabs.lua` (1350 at minor 9, which dropped the `O.__releaseChrome` export and added
+  its header note, LibKa0s#45, measured 2026-10-22; 1349 with minor 8's three `RenderTabbedSchema` opts, AbsorbTracker#32,
   measured 2026-10-01, no member added and under its 1400 re-check trigger; 1294 at v1.65.0; 1293 after the sweep moved its combat half to
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
