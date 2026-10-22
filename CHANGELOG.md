@@ -15,10 +15,22 @@ cannot drift. Release order is in
 Versions in this release: every file at its v1.74.0 minor — `Core` 10, `Env` 2, `Compat` 1,
 `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` key 5.1, `Slash` key 20.2,
 `DebugLog` key 19.2.1, `Launcher` 5, `Widgets` key 12.1.4.3.2, `Options` key
-29.2.34.2.4.8.1.7.4.2.1 and `Perf` key 15.1.1.6 — and **test kit revision 40**. No payload file under
+29.2.34.2.4.8.1.7.4.2.1 and `Perf` key 15.1.1.6 — and **test kit revision 41**. No payload file under
 `LibKa0s/` has changed. The owner's 2026-10-20 ruling: only the bare minimum of icons is vendored
 into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
 README's standards pointer moves when this is released.
+
+### Test kit revision 41
+
+Revision 41 is this release's one kit revision. It carries revision 40's icon gate below, which
+never shipped on its own.
+
+- **`Kit.__deviationRows` and `Kit.__declineFor` are no longer exported** (#45). `framework.lua` put
+  `inventory.lua`'s deviations reader and decline matcher on the kit table for self-tests no suite
+  wrote; `tests/test_kit_inventory.lua` pins the decline reader through its fixtures. Neither was
+  contract (no kit version document listed them for consumers), so no consumer changes.
+  `inventory.lua` stops returning them, and `run-automated-tests.sh`'s comment names `inventory.lua`
+  as the reader. [testkit version 41](docs/api/testkit/version-41-docs.md).
 
 ### Test kit revision 40: the icon folder is held to the consumer's declaration
 
@@ -62,7 +74,7 @@ README's standards pointer moves when this is released.
 
 ### What a consumer owes
 
-- **On its next re-vendor:** the kit (revision 40), the library copy, its `LibKa0s icons:` line under
+- **On its next re-vendor:** the kit (revision 41), the library copy, its `LibKa0s icons:` line under
   the provenance line, and `lua tools/prune-icons.lua <Addon>`, all in one commit. Re-vendoring every
   consumer with its declaration is tracked as a LibKa0s issue.
 - **Declare the icons LibKa0s draws for you.** `close` (`Core.MakeCloseButton` given the addon name:

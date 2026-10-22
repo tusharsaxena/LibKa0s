@@ -213,7 +213,7 @@ fi
 # and none of them could correct it: the kit may not be edited in place (`testing-§1`).
 #
 # The exemption is read out of the repo's own `## Documented deviations` register, in the two hosts
-# framework.lua's `deviationRows` reads and in the same order: `docs/ARCHITECTURE.md` for an addon,
+# inventory.lua's `deviationRows` reads and in the same order: `docs/ARCHITECTURE.md` for an addon,
 # the root `CLAUDE.md` for a library. Only the table rows DIRECTLY under the heading count, ending at
 # the next heading of any level, so a census or any other table nested beneath it is never a row.
 #

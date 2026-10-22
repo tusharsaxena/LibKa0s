@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 40", function()
-  assertEqual(Kit.VERSION, 40, "the release after v1.74.0 ships revision 40, whose vendor_sync reads the `LibKa0s icons:` declaration")
-  assertEqual(T.KIT_VERSION, 40, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 41", function()
+  assertEqual(Kit.VERSION, 41, "the release after v1.74.0 ships revision 41: no dead self-test exports, and the complexity runner treats a lizard crash as a crash")
+  assertEqual(T.KIT_VERSION, 41, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────
