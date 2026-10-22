@@ -63,8 +63,9 @@ local type, pairs, ipairs, tostring, select, error, pcall, xpcall, unpack, rawge
   type, pairs, ipairs, tostring, select, error, pcall, xpcall, unpack, rawget, rawequal
 local sort = table.sort
 
--- seam -> its private state; compat -> the seam that wrapped it. Weak-keyed, so a host table that
--- is dropped takes its seam with it. Sim:New (the session) reaches a seam's state through STATE.
+-- seam -> its private state; compat -> true once wrapped. Weak-keyed, and no value refers back to
+-- its key (Lua 5.1 weak keys are not ephemerons), so a host that drops its compat table and seam
+-- lets both be collected. Sim:New (the session) reaches a seam's state through STATE.
 local STATE = setmetatable({}, { __mode = "k" })
 local WRAPPED = setmetatable({}, { __mode = "k" })
 
@@ -218,6 +219,6 @@ function lib:NewSeam(compat, opts)   -- luacheck: ignore 212/self
   end
   local seam = seamMembers(state, compat)
   STATE[seam] = state
-  WRAPPED[compat] = seam
+  WRAPPED[compat] = true
   return seam
 end

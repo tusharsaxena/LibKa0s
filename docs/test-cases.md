@@ -2089,7 +2089,7 @@ Total.
 - iso: an older copy loading second replaces neither half
 - iso: a higher panel minor over the same probe still wins
 
-### test_sim_seam.lua (26)
+### test_sim_seam.lua (27)
 
 - sim seam: the major registers with Core, and reports its file minor
 - sim seam: the module is absent without Core
@@ -2100,6 +2100,7 @@ Total.
 - sim seam: NewSeam refuses a bad compat, a missing name and bad opts
 - sim seam: a guarded key must be a wrapped member, and its answer a function
 - sim seam: one compat table is wrapped once
+- sim seam: a dropped compat table and its seam are collected
 - sim seam: an idle call goes straight to live, arguments and nil holes intact
 - sim seam: idle, a guarded member calls live
 - sim seam: idle, a registered provider is never consulted
@@ -2669,7 +2670,7 @@ Total.
 | test_perf_budget.lua | 11 |
 | test_perf_toplevel.lua | 7 |
 | test_perf_isolation.lua | 12 |
-| test_sim_seam.lua | 26 |
+| test_sim_seam.lua | 27 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -2697,4 +2698,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2299** |
+| **Total** | **2300** |

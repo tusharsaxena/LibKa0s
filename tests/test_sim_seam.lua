@@ -152,6 +152,18 @@ test("sim seam: one compat table is wrapped once", function()
   assertTrue(err ~= nil and tostring(err):find("Host", 1, true) ~= nil, "a second wrap raises, named")
 end)
 
+test("sim seam: a dropped compat table and its seam are collected", function()
+  local _, Sim = env()
+  local probe = setmetatable({}, { __mode = "k" })
+  local C = compatFixture()
+  local seam = Sim:NewSeam(C, { name = "Host", pure = PURE })
+  probe[C], probe[seam] = true, true
+  C, seam = nil, nil   -- luacheck: ignore 311
+  collectgarbage("collect")
+  collectgarbage("collect")
+  assertNil(next(probe), "nothing the library holds keeps a dropped host table alive")
+end)
+
 -- ── the idle path ────────────────────────────────────────────────────────────────────────
 
 test("sim seam: an idle call goes straight to live, arguments and nil holes intact", function()
