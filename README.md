@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.84.0,
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.86.0,
 as a library repo. That is a scope of its own. What binds here is `library-stack-§7`'s applicability
 list, not the addon rule set, because there is no TOC, no player-facing README, no settings canvas and
 no install. [`CLAUDE.md`](CLAUDE.md) says which sections apply and which do not, and you should read it
@@ -97,7 +97,10 @@ modules and points you there. It does not restate them.
    Icons the library draws for you count as yours: `close` (`Core.MakeCloseButton`, so the debug
    console, the perf panel and the Widgets copy window), `clear` and `copy` (the debug console) and
    `info` (the Options id list's help mark). A host that wires the debug console declares at least
-   `close, copy, clear`; a pruned one draws blank, not the text fallback.
+   `close, copy, clear`; a pruned one draws blank, not the text fallback. Those four are the whole
+   set, and it is closed at v1.75.0 (`library-stack-§7`, standard v2.86.0): no later release resolves
+   a further name from your folder, and art you pass to a library widget (`W.TestStrip`'s mark, the
+   simulator panel's step marks) is your own use, declared as such.
 2. Add `libs\LibKa0s\LibKa0s.xml` to the TOC's lib block, after Ace3.
 3. If you adopt Perf, declare `## SavedVariables: <Addon>PerfDB` in the TOC. That is the global name
    you'll pass as the descriptor's `sv`. Core and DebugLog persist nothing.

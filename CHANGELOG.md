@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.75.0 — unreleased
+## v1.75.0 — 2026-10-22
 
 Versions in this release: **Core minor 11** (comment-only, key **11**); **Item minor 3**
 (`LibKa0s-Item-1.0` key **3**); **Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**);
@@ -26,9 +26,11 @@ key **1.1.1**); every other file still at its v1.74.0 minor (`Env` 2, `Compat` 1
 revision 41**. Two majors are added and no `NEEDS_*` floor rises, so the library is **seventeen
 majors across forty files**. Built to standard **v2.86.0**: `library-stack-§7`'s icon subset (from
 v2.85.0, the owner's 2026-10-20 ruling that only the bare minimum of icons is vendored into each
-consumer), its narrowed `__` clause and documentation-§1's icon credits; the README's standards
-pointer moves when this is released. The consumer's side of every change is under *What a consumer
-owes*, at the end of this entry.
+consumer), its narrowed `__` clause, its closed library-drawn icon set (`close`, `copy`, `clear`, `info`),
+its Sim row and recount (seventeen majors across forty files, re-run at this tag), automated-tests-§3's
+clarification that a crashed `lizard` run is not a complexity pass, and documentation-§1's icon
+credits; the README's standards pointer moves to it at this release. The consumer's side of every
+change is under *What a consumer owes*, at the end of this entry.
 
 ### OptionsTabs minor 9: O.__releaseChrome is no longer exported (LibKa0s#45)
 

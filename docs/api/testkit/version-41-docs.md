@@ -9,7 +9,7 @@
 | Payload | `testkit/` — `framework.lua`, `asserts.lua`, `inventory.lua`, `secrets.lua`, `latch.lua`, `loader.lua`, `mock_base.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`, `mock_lines.lua`, `mock_ids.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, `prose_lists.lua`, `prose_coverage.lua`, `prose_selftests.lua`, `test_layout_cap.lua`, `test_diagnostics_contract.lua`, `lizard_sighted.lua`, `test_lizard_sighted.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **41** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | unreleased — the first LibKa0s release after v1.74.0 |
+| First released in | v1.75.0 |
 | Status | **Current** |
 | Supersedes | [version 40](version-40-docs.md) — `framework.lua` exported two self-test seams, `Kit.__deviationRows` and `Kit.__declineFor`, that no suite read |
 | Superseded by | — |
@@ -17,7 +17,7 @@
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `41` |
 
 Everything revision 40 describes is unchanged here except what follows. No file is added. Revision
-41 is one release's kit: the LibKa0s release after v1.74.0 ships it once, and every kit change in
+41 is one release's kit: LibKa0s v1.75.0 ships it once, and every kit change in
 that release is listed below rather than taking a revision of its own.
 
 ## What changed
