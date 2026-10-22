@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **1** · `SimTimeline.lua` **1** · `SimPanel.lua` **1** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
-| Shipped in | the local `v1.75.0` tag only, before the release; the released v1.75.0 carries [2.2.1](./version-2.2.1-docs.md) |
+| Shipped in | the local `v1.75.0` tag only, before the release; the released v1.75.0 carries [2.2.2](./version-2.2.2-docs.md) ([2.2.1](./version-2.2.1-docs.md) was also on the local tag only) |
 | Status | Superseded |
 | Supersedes | — (first version; briefly keyed `1`, then `1.1`, on the release branch, and no release carried either key) |
 | Superseded by | [2.2.1](./version-2.2.1-docs.md) |

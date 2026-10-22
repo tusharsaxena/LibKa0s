@@ -850,3 +850,37 @@ test("sim panel: every documented optional field filled in place after New is re
   assertTrue(#debugged > 0, "the late debug sink")
   assertEqual(#b.printed, 0, "nothing reached the print sink New saw")
 end)
+
+test("sim panel: anchorTo, stepDelay and the required callbacks and slash, reassigned after New, are read at use", function()
+  local b = bench({ panel = {} })                  -- no anchorTo at New
+  local d = b.d
+  local late = { prepared = 0, played = {}, delivered = {}, stoodDown = false }
+  d.slash = "/late sim"
+  d.prepare = function(_, _, _, ready) late.prepared = late.prepared + 1; ready() end
+  d.play = function(step) late.played[#late.played + 1] = step.kind; return "late " .. step.kind end
+  d.deliver = function(event) late.delivered[#late.delivered + 1] = event; return 7 end
+  d.isStoodDown = function() return late.stoodDown end
+  d.stepDelay = 0.75
+  assertEqual(b.sim:PanelRows()[1].command, "/late sim start three", "the late slash")
+  F.recording(b.m, function()
+    local a = anchorAt(b, 100, 700, 1920)
+    d.panel.anchorTo = function() return a end   -- assigned for the first time after New
+    local f = shown(b)
+    local pt = f.__pts[1]
+    assertTrue(pt.rel == a, "docked to the late anchorTo"); assertEqual(f.__dock, "right")
+    b.sim:Start({ scenario = "three" })
+    assertEqual(late.prepared, 1, "the late prepare")
+    assertTrue(b.sim:Run())
+    assertEqual(joined(late.played), "a", "the late play")
+    local delays = {}
+    for _, t in ipairs(b.m.__timers()) do delays[#delays + 1] = t.delay end
+    assertEqual(joined(delays), "0.75", "Run's tick reads the late stepDelay")
+    assertEqual(b.sim:Fire("LATE_EVENT"), 7, "the late deliver")
+    assertEqual(joined(late.delivered), "LATE_EVENT")
+    late.stoodDown = true
+    assertEqual(b.sim:Fire("AFTER"), 0, "the late isStoodDown stops the session")
+    assertNil(b.sim:Session())
+    assertFalse(b.sim:ShowPanel(), "the panel refuses while the late isStoodDown answers true")
+  end)
+  assertEqual(#b.played + #b.readies, 0, "nothing reached the callbacks New saw")
+end)

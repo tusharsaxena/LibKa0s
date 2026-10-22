@@ -203,7 +203,8 @@ first time, and the library reads the new value at its next use: `scenarios` (`S
 machine, the verbs, the panel and its picker), `verbs`, `why`, `usage`, `statusLine`, `stopText`,
 `L`, `print`, `debug`, `refusal`, `gate`, `stepDelay`, `isStoodDown`, `deliver`, `prepare`, `play`,
 `slash`, and the `panel` fields `title`, `stepLabel`, `stepTip`, `startTip`, `stopTip` and
-`anchorTo`. `tests/test_sim_panel.lua` pins each of them filled after `New`. Fixed, on purpose:
+`anchorTo`. `tests/test_sim_panel.lua` pins each of them filled or reassigned after `New`, in its last two cases
+(among them `Run`'s tick reading a late `stepDelay` and the panel docking to a late `anchorTo`). Fixed, on purpose:
 
 - **`seam`** is bound at `New`: one seam binds one session, and a later `d.seam` is never read.
 - **The descriptor's checks** (the required fields, the optional fields' types, the `panel` keys)
