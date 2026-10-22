@@ -346,7 +346,7 @@ PERF_SCENARIOS=0; PERF_FAILED=0
 # its own RESULTS.md to compensate -- which `automated-tests-§4` forbids (Disposition is the ONE
 # authored cell) and which the next re-vendor would revert anyway. Fixed at source.
 PERF_TABLE=""
-CCN_WARN=0; CCN_NLOC=0; CCN_FUNCS=0; CCN_AVG=0; CCN_MAX=0; CCN_BAND=0; CCN_OVER=0
+CCN_WARN=0; CCN_NLOC=0; CCN_FUNCS=0; CCN_AVG=0; CCN_MAX=0; CCN_BAND=0; CCN_OVER=0; CX_INVALID=0
 # The watch list's own rows, TAB-separated, in `lizard`'s own order. `automated-tests-§4` wants
 # the two tables generated from the run that measured them, so they are captured where the
 # measurement happens rather than re-derived from the counters afterwards.
@@ -505,22 +505,51 @@ if wants complexity; then
         find . -name '*.lua' -not -path './libs/*' -not -path './tests/_kit/*' | sed 's|^\./||' \
             | LC_ALL=C sort > "$CX_TMP/files"
         mkdir -p "$CX_TMP/src" && $LUA "$SIGHTED" shadow "$CX_TMP/src" < "$CX_TMP/files"
-        raw="$(cd "$CX_TMP/src" && bounded lizard -l lua -L 1500 -x "./libs/*" -x "./tests/_kit/*" . 2>&1)"
-        # PARITY: a file whose `function` tokens and listed functions differ is a file lizard was
-        # still blind in, through a spot the sanitizer does not know. Its functions went unmeasured,
-        # so complexity does not pass: `fail`, which blocks the tag and never the run or the commit.
-        printf '%s\n' "$raw" > "$CX_TMP/lizard.txt"
-        CCN_BLIND_ROWS="$(cd "$CX_TMP/src" && $LUA "$SIGHTED" parity "$CX_TMP/lizard.txt" < "$CX_TMP/files")"
-        rm -rf "$CX_TMP"
-        printf '%s\n' "$raw" | emit complexity.txt
-        # lizard's footer, whole:
+        # STDERR STAYS OUT OF THE PARSE (kit revision 41, LibKa0s#46). Only the redirections differ
+        # from performance-§10's command. Under `2>&1` a deprecation warning landed after the footer
+        # and a traceback became the "footer", and five of its words were written into manifest.json.
+        raw="$(cd "$CX_TMP/src" && bounded lizard -l lua -L 1500 -x "./libs/*" -x "./tests/_kit/*" . 2>"$CX_TMP/lizard.err")" && cx_rc=0 || cx_rc=$?
+        # lizard's footer, whole, the line exactly two below its header, never the last line:
         #   Total nloc  Avg.NLOC  AvgCCN  Avg.token  Fun Cnt  Warning cnt  Fun Rt  nloc Rt
         # All eight are recorded. The averages and the two ratios are what make one run comparable
         # to another across a change in size -- a total that rose because the addon grew is a
         # different fact from an average that rose because it got denser, and only the second is a
         # complexity signal. Dropping them meant the analysis could only ever report totals.
-        footer="$(printf '%s\n' "$raw" | tail -1)"
-        fld() { printf '%s' "$footer" | awk -v n="$1" '{print $n}'; }
+        cx_footer() { printf '%s\n' "$raw" | awk '/^Total nloc/ {h=NR} h && NR==h+2 {print; exit}'; }
+        footer="$(cx_footer)"
+        # A RUN IS MEASURED only when lizard exited 0 or 1 (1.24.0 returns 1 on any warned run,
+        # lizard.py:1182-1184), the footer is eight numbers, and stderr holds no Traceback: a late
+        # raise can follow a good footer (lizard.py:1176-1177). Anything else is a crash or a bound
+        # (124 timeout, 137 killed), and a crash is `fail` with every figure 0, never a measurement:
+        # the `@` rows lizard streamed before raising would make CCN_MAX a partial max, and parity
+        # over a run with no per-file table names every file blind.
+        cx_valid() {
+            { [ "$cx_rc" -eq 0 ] || [ "$cx_rc" -eq 1 ]; } || return 1
+            printf '%s\n' "$footer" | awk '{ if (NF != 8) exit 1; for (i = 1; i <= 8; i++)
+                if ($i !~ /^-?[0-9]+(\.[0-9]+)?$/) exit 1 }' || return 1
+            ! grep -q 'Traceback' "$CX_TMP/lizard.err" 2>/dev/null
+        }
+        CX_INVALID=0
+        if ! cx_valid; then
+            CX_INVALID=1
+            if grep -q 'Traceback' "$CX_TMP/lizard.err" 2>/dev/null; then
+                NOTE[complexity]="lizard raised: $(awk 'NF {l=$0} END {print l}' "$CX_TMP/lizard.err" | tr -d '\r')"
+            else
+                NOTE[complexity]="lizard exited $cx_rc with no valid footer (bound: KA0S_KIT_TIMEOUT_S / KA0S_KIT_PROC_MB)"
+            fi
+        else
+            # PARITY: a file whose `function` tokens and listed functions differ is a file lizard was
+            # still blind in, through a spot the sanitizer does not know. Its functions went unmeasured,
+            # so complexity does not pass: `fail`, which blocks the tag and never the run or the commit.
+            printf '%s\n' "$raw" > "$CX_TMP/lizard.txt"
+            CCN_BLIND_ROWS="$(cd "$CX_TMP/src" && $LUA "$SIGHTED" parity "$CX_TMP/lizard.txt" < "$CX_TMP/files")"
+        fi
+        # complexity.txt is lizard's stdout; its stderr follows under a separator, so a traceback
+        # survives in the frozen bundle. Everything above reads lizard.err before the shadow goes.
+        cx_err="$(cat "$CX_TMP/lizard.err" 2>/dev/null)"
+        rm -rf "$CX_TMP"
+        { printf '%s\n' "$raw"; [ -n "$cx_err" ] && printf -- '--- lizard stderr ---\n%s\n' "$cx_err"; } | emit complexity.txt
+        fld() { printf '%s' "$footer" | awk -v n="$1" '{v=$n} END{print (v ~ /^-?[0-9]+(\.[0-9]+)?$/) ? v : 0}'; }
         CCN_NLOC=$(fld 1);      [ -z "$CCN_NLOC" ]      && CCN_NLOC=0
         CCN_AVG_NLOC=$(fld 2);  [ -z "$CCN_AVG_NLOC" ]  && CCN_AVG_NLOC=0
         CCN_AVG=$(fld 3);       [ -z "$CCN_AVG" ]       && CCN_AVG=0
@@ -537,6 +566,7 @@ if wants complexity; then
         # `NLOC CCN token PARAM length name@start-end@path`, so column 2 of every row carrying an
         # `@` is that function's CCN; the footer has no `@` and the same test skips it.
         CCN_MAX=$(printf '%s\n' "$raw" | awk '/@/ && $2+0>m {m=$2+0} END{print m+0}')
+        [ "$CX_INVALID" -eq 1 ] && CCN_MAX=0
         # THE WARNED FUNCTIONS THEMSELVES, not only how many there were. `automated-tests-§4` MUSTs
         # a watch list naming each one, and until kit 15 the runner recorded the count and threw the
         # names away — so ten repositories were asked for a table nothing produced and wrote it by
@@ -604,7 +634,12 @@ BANDPATHS
         [ -z "$CCN_BAND" ] && CCN_BAND=0; [ -z "$CCN_OVER" ] && CCN_OVER=0
         CCN_BLIND=$(printf '%s' "$CCN_BLIND_ROWS" | grep -c . || true)
         ST[complexity]="pass"
-        if [ "${CCN_BLIND:-0}" -gt 0 ]; then
+        if [ "$CX_INVALID" -eq 1 ]; then
+            # Every figure 0 (manifest.json stays numeric); the console and the trend row say n/a.
+            ST[complexity]="fail"
+            CCN_WARN=0; CCN_NLOC=0; CCN_FUNCS=0; CCN_AVG=0; CCN_MAX=0
+            CCN_AVG_NLOC=0; CCN_AVG_TOKEN=0; CCN_FUN_RT=0; CCN_NLOC_RT=0; CCN_WARN_ROWS=""
+        elif [ "${CCN_BLIND:-0}" -gt 0 ]; then
             ST[complexity]="fail"
             CCN_BLIND_NOTE="lizard blind in $CCN_BLIND file(s): $(printf '%s\n' "$CCN_BLIND_ROWS" \
                 | awk -F '\t' '{ printf "%s`%s` (%s of %s functions listed)", (NR > 1 ? ", " : ""), $1, $3, $2 }')"
@@ -635,8 +670,10 @@ fmt() {
         lint)       printf '%s warnings / %s errors in %s files' "$LINT_WARN" "$LINT_ERR" "$LINT_FILES" ;;
         tests)      printf '%s passed, %s failed, %s skipped, %s total' "$TESTS_PASS" "$TESTS_FAIL" "$TESTS_SKIP" "$TESTS_TOTAL" ;;
         perf)       printf '%s scenarios' "$PERF_SCENARIOS" ;;
-        complexity) printf '%s warnings (fun rate %s), %s NLOC / %s funcs, avg NLOC %s, avg CCN %s (max %s), avg tokens %s' \
-                        "$CCN_WARN" "$CCN_FUN_RT" "$CCN_NLOC" "$CCN_FUNCS" "$CCN_AVG_NLOC" "$CCN_AVG" "$CCN_MAX" "$CCN_AVG_TOKEN" ;;
+        complexity) if [ "${CX_INVALID:-0}" -eq 1 ]; then
+                        printf 'n/a warnings (fun rate n/a), n/a NLOC / n/a funcs, avg NLOC n/a, avg CCN n/a (max n/a), avg tokens n/a'
+                    else printf '%s warnings (fun rate %s), %s NLOC / %s funcs, avg NLOC %s, avg CCN %s (max %s), avg tokens %s' \
+                        "$CCN_WARN" "$CCN_FUN_RT" "$CCN_NLOC" "$CCN_FUNCS" "$CCN_AVG_NLOC" "$CCN_AVG" "$CCN_MAX" "$CCN_AVG_TOKEN"; fi ;;
     esac
 }
 echo "$ADDON $ADDON_VERSION — automated tests — $STAMP"
@@ -648,6 +685,7 @@ for s in lint tests perf complexity; do
     else
         printf '  %-11s %-5s — %s%s\n' "$s" "${ST[$s]}" "$(fmt "$s")" "$gate"
         [ "$s" = "complexity" ] && [ -n "$CCN_BLIND_NOTE" ] && printf '              %s\n' "$CCN_BLIND_NOTE"
+        [ "$s" = "complexity" ] && [ "${CX_INVALID:-0}" -eq 1 ] && printf '              %s\n' "${NOTE[complexity]}"
     fi
 done
 echo "  verdict: $VERDICT"
@@ -705,6 +743,7 @@ if [ "$WRITE_BUNDLE" -eq 1 ]; then
     # and the trend line would carry that lie forever. `skip` (tool absent) stays distinct from
     # `—` (not asked for): they are different facts about why a number is missing.
     cell() {
+        [ "$1" = "complexity" ] && [ "${CX_INVALID:-0}" -eq 1 ] && { printf 'n/a'; return; }
         case "${ST[$1]}" in
             skip)   printf 'skip' ;;
             notrun) printf '—' ;;
@@ -1043,9 +1082,15 @@ TOTALS
 
     md_complexity_section() {
         printf '## Complexity watch list\n\n'
-        case "${ST[complexity]}" in
-            notrun|skip)
-                if [ "${ST[complexity]}" = "skip" ]; then
+        # A crashed or bounded lizard measured nothing either (kit revision 41): its empty watch list
+        # must not replace the dispositions, so it carries the last measured section like a skip.
+        local cx_state="${ST[complexity]}"
+        [ "${CX_INVALID:-0}" -eq 1 ] && cx_state="crash"
+        case "$cx_state" in
+            notrun|skip|crash)
+                if [ "$cx_state" = "crash" ]; then
+                    printf '`complexity` **did not measure** on this run, so it did not pass — %s.\n' "${NOTE[complexity]}"
+                elif [ "$cx_state" = "skip" ]; then
                     printf '`complexity` was **skipped** on this run — %s.\n' "${NOTE[complexity]}"
                 else
                     printf '`complexity` was **not selected** on this run.\n'

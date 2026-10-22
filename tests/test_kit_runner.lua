@@ -369,3 +369,110 @@ test("runner complexity: a function longer than lizard's default 1000 lines is n
   assertTrue(manifest:find('"warnings": 0, "maxCcn": 1,', 1, true) ~= nil,
     "an 1100-line CCN-1 function is no complexity warning: " .. manifest .. "\n" .. out:sub(-600))
 end)
+
+-- ── a lizard that crashes, is bounded, or warns on stderr (kit revision 41, LibKa0s#46) ──────────
+-- These run a FAKE lizard placed first on PATH, so they never skip on a host without the real one.
+-- lizard 1.24.0 exits 1 on any run that warned (lizard.py:1182-1184), streams function rows before
+-- a late raise, and can raise after printing a good footer (lizard.py:1176-1177).
+
+local LIZ_HEAD = "================================================\n"
+  .. "  NLOC    CCN   token  PARAM  length  location  \n"
+  .. "------------------------------------------------\n"
+local LIZ_ROW = "       3      7     17      1       3 one@1-3@./one.lua\n"
+local LIZ_FILES = "1 file analyzed.\n"
+  .. "==============================================================\n"
+  .. "NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file\n"
+  .. "--------------------------------------------------------------\n"
+  .. "      3       3.0     7.0       17.0         1     ./one.lua\n\n"
+local LIZ_WARN = "==========================================================================================================\n"
+  .. "!!!! Warnings (cyclomatic_complexity > 15 or length > 1500 or nloc > 1000000 or parameter_count > 100) !!!!\n"
+  .. LIZ_HEAD .. LIZ_ROW
+local LIZ_FOOT = "==========================================================================================\n"
+  .. "Total nloc   Avg.NLOC  AvgCCN  Avg.token   Fun Cnt  Warning cnt   Fun Rt   nloc Rt\n"
+  .. "------------------------------------------------------------------------------------------\n"
+local ONE_LUA = "local function one(a)\n  return a and 1 or 2\nend\nreturn one\n"
+
+--- A fixture addon with `one.lua` and a fake `bin/lizard` that prints `out` and `err` and exits `rc`.
+local function fakeLizardRun(out, err, rc)
+  local script = "#!/usr/bin/env bash\n"
+    .. "if [ \"$1\" = \"--version\" ]; then echo 1.24.0; exit 0; fi\n"
+    .. "cat <<'LIZOUT'\n" .. out .. "LIZOUT\n"
+    .. "cat >&2 <<'LIZERR'\n" .. err .. "LIZERR\n"
+    .. ("exit %d\n"):format(rc)
+  return runIn(addon{ ["one.lua"] = ONE_LUA, ["bin/lizard"] = script }, "--suite complexity",
+    { setup = "chmod +x bin/lizard", env = 'PATH="$PWD/bin:$PATH" ',
+      read = { "manifest", "docs/automated-tests/RESULTS.md" } })
+end
+
+--- True when every value of the manifest's complexity object is a JSON number (or a known literal).
+local function complexityNumeric(manifest)
+  local body = manifest:match('"complexity": (%b{})')
+  if not body then return false, "no complexity object" end
+  for key, value in body:gmatch('"(%w+)": ([^,{}]+)') do
+    value = value:match("^%s*(.-)%s*$")
+    local literal = value:match('^".*"$') or value == "true" or value == "false"
+    if not literal and not value:match("^%-?%d+%.?%d*$") then return false, key .. "=" .. value end
+  end
+  return true
+end
+
+test("runner complexity: a lizard Traceback is a fail, figures zeroed, manifest numeric", function()
+  -- red under: revision 40, whose `2>&1` parse took the traceback's last line as the footer, ran
+  -- parity over a run with no per-file table, and recorded the partial max over the streamed rows
+  local out, code, read = fakeLizardRun(LIZ_HEAD .. LIZ_ROW,
+    "Traceback (most recent call last):\n  File \"lizard.py\", line 1176, in main\n"
+      .. "RecursionError: maximum recursion depth exceeded\n", 1)
+  assertEqual(code, 0, "a crash never fails the run: " .. out)
+  assertTrue(out:find("complexity  fail", 1, true) ~= nil, "the suite fails: " .. out)
+  assertTrue(out:find("lizard raised: RecursionError: maximum recursion depth exceeded", 1, true) ~= nil,
+    "the note names the exception: " .. out)
+  assertTrue(out:find("lizard blind in", 1, true) == nil, "parity is skipped, not 1 blind file: " .. out)
+  assertTrue(out:find("n/a warnings", 1, true) ~= nil, "the console renders n/a, not 0: " .. out)
+  assertTrue(out:find("verdict: amber", 1, true) ~= nil, "amber, never red: " .. out)
+  local manifest = read.manifest or ""
+  assertTrue(manifest:find('"complexity": { "status": "fail"', 1, true) ~= nil, "manifest: " .. manifest)
+  assertTrue(manifest:find('"maxCcn": 0,', 1, true) ~= nil, "max CCN is zeroed, not 7: " .. manifest)
+  local ok, why = complexityNumeric(manifest)
+  assertTrue(ok, "every complexity figure is numeric: " .. tostring(why) .. "\n" .. manifest)
+  local results = read["docs/automated-tests/RESULTS.md"] or ""
+  local row = results:match("\n(| %[`[^\n]+)\n") or ""
+  assertTrue(row:find("| n/a | n/a | n/a | n/a | n/a | n/a |", 1, true) ~= nil,
+    "the trend row's CCN columns read n/a: " .. row)
+end)
+
+test("runner complexity: a warned run exiting 1 with a valid footer is measured, not crashed", function()
+  -- red under: a validity rule that read any non-zero exit as a crash, which every warned run is
+  local out, code, read = fakeLizardRun(LIZ_HEAD .. LIZ_ROW .. LIZ_FILES .. LIZ_WARN .. LIZ_FOOT
+    .. "         3       3.0     7.0       17.0        1            1      1.00    1.00\n", "", 1)
+  assertEqual(code, 0, out)
+  local manifest = read.manifest or ""
+  assertTrue(manifest:find('"complexity": { "status": "pass"', 1, true) ~= nil, "measured: " .. manifest .. out)
+  assertTrue(manifest:find('"warnings": 1, "maxCcn": 7,', 1, true) ~= nil, "figures parsed: " .. manifest)
+  local fnSection = (read["docs/automated-tests/RESULTS.md"] or ""):match("### Functions `lizard` warned on\n\n(.-)\n### ") or ""
+  assertTrue(fnSection:find("| `one` | 7 | `one.lua` |", 1, true) ~= nil, "the watch list carries the row: " .. fnSection)
+end)
+
+test("runner complexity: stderr noise with exit 0 does not reach the parse", function()
+  -- red under: revision 40's `2>&1`, which put the warning after the footer, so `tail -1` read it
+  local out, code, read = fakeLizardRun(LIZ_HEAD .. LIZ_ROW .. LIZ_FILES .. LIZ_FOOT
+    .. "         3       3.0     7.0       17.0        1            0      0.00    0.00\n",
+    "lizard.py:12: DeprecationWarning: pkg_resources is deprecated\n", 0)
+  assertEqual(code, 0, out)
+  local manifest = read.manifest or ""
+  assertTrue(manifest:find('"complexity": { "status": "pass"', 1, true) ~= nil, "passes: " .. manifest .. out)
+  assertTrue(manifest:find('"nloc": 3, "functions": 1, "avgCcn": 7.0,', 1, true) ~= nil,
+    "the footer is parsed: " .. manifest)
+end)
+
+test("runner complexity: exit 124 is the bound note, numeric manifest, no per-file retry", function()
+  -- red under: revision 40, which parsed a timed-out run's partial output as a measurement
+  local out, code, read = fakeLizardRun(LIZ_HEAD .. LIZ_ROW, "", 124)
+  assertEqual(code, 0, out)
+  assertTrue(out:find("lizard exited 124 with no valid footer (bound: KA0S_KIT_TIMEOUT_S / KA0S_KIT_PROC_MB)",
+    1, true) ~= nil, "the bound note: " .. out)
+  assertTrue(out:find("per-file", 1, true) == nil, "no per-file retry: " .. out)
+  local manifest = read.manifest or ""
+  assertTrue(manifest:find('"complexity": { "status": "fail"', 1, true) ~= nil, "fails: " .. manifest)
+  local ok, why = complexityNumeric(manifest)
+  assertTrue(ok, "numeric: " .. tostring(why) .. "\n" .. manifest)
+end)

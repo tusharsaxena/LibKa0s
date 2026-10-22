@@ -65,6 +65,15 @@ never shipped on its own.
   contract (no kit version document listed them for consumers), so no consumer changes.
   `inventory.lua` stops returning them, and `run-automated-tests.sh`'s comment names `inventory.lua`
   as the reader. [testkit version 41](docs/api/testkit/version-41-docs.md).
+- **#46: a lizard crash is a crash, not 58 blind files.** The complexity suite read lizard's
+  output with stderr merged and took its last line as the footer, so a raise wrote the exception's
+  words into `manifest.json` as figures, the maximum CCN came from the rows streamed before the
+  raise, and parity named every file blind. Now stderr is kept apart (and kept in
+  `complexity.txt` under a separator), the footer is read under its header, and a run that did not
+  exit 0 or 1, has no eight-number footer, or raised is `fail` with every figure 0 (`n/a` on the
+  console and in the trend row), parity skipped, and one of two notes: `lizard raised: ...` or
+  `lizard exited <rc> with no valid footer (bound: ...)`. A crash stays amber, as blind is.
+  [testkit version 41](docs/api/testkit/version-41-docs.md).
 
 ### Test kit revision 40: the icon folder is held to the consumer's declaration
 

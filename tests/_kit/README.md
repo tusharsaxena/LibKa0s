@@ -110,6 +110,14 @@ about it are load-bearing:
   `complexity` is `fail`, the verdict `amber`, the files are named on the console and in
   `RESULTS.md`, and `manifest.json` counts them as `suites.complexity.blindFiles`. That blocks the
   tag and never the run or the commit. No Lua to build the shadow is a skip.
+- **A lizard crash or bound is a fail, never a measurement** (kit revision 41, LibKa0s#46).
+  lizard's stderr goes to its own file, not into the parse, and the footer is read two lines below
+  `Total nloc`. A run counts only when lizard exits 0 or 1 (1 is any run that warned), the footer
+  is eight numbers and stderr holds no `Traceback`. Otherwise `complexity` is `fail` (amber) with
+  the note `lizard raised: <exception>` or `lizard exited <rc> with no valid footer (bound: ...)`,
+  every figure is 0 in `manifest.json` and `n/a` on the console and in the trend row, parity is
+  skipped, and the watch list carries the last measured one. `complexity.txt` keeps lizard's
+  stderr under a `--- lizard stderr ---` separator.
 - **The bundle is written to whatever `.gitattributes` declares for it**, read per path with
   `git check-attr text eol` at the end of the run — not assumed. Everything the runner writes goes
   down a plain shell redirect, which bypasses git's filters entirely, so before kit revision 10 every

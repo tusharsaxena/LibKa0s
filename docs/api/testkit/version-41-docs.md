@@ -45,6 +45,43 @@ register is read by `inventory.lua`'s `deviationRows`, not `framework.lua`'s.
 
 No documented member is renamed or removed, and no kit case name changes.
 
+### A lizard crash or bound is a complexity fail with zeroed figures, never a pass (LibKa0s#46)
+
+Revision 40's complexity suite ran lizard with `2>&1` and read its footer with `tail -1`. When
+lizard raised, the last line was the exception, so five of its words were written into
+`manifest.json` as the NLOC, function and average figures (invalid JSON), the maximum CCN was a
+partial maximum over the function rows lizard had already streamed, and parity over a run with
+no per-file table named every file blind. lizard does not print nothing before a raise: it
+streams its function rows as it measures, and what a raise loses is the per-file table and the
+footer. A deprecation warning on stderr broke a clean run the same way, by landing after the
+footer.
+
+What `run-automated-tests.sh` does from revision 41:
+
+- **stderr is kept out of the parse.** The command is `performance-§10`'s, byte for byte; only
+  the redirection changes, to `2>lizard.err` beside the shadow. `complexity.txt` is still lizard's
+  stdout, and when stderr is not empty it follows under a `--- lizard stderr ---` separator, so a
+  traceback survives in the frozen bundle.
+- **The footer is the line exactly two below `Total nloc`**, never the last line of the output.
+- **A run is measured only when** lizard exited 0 or 1 (lizard 1.24.0 returns 1 on any run that
+  warned, `lizard.py:1182-1184`), the footer has exactly eight numeric fields, **and** stderr holds
+  no `Traceback` line (a late raise can follow a good footer, `lizard.py:1176-1177`).
+- **Anything else is `fail`**, never a pass, with exactly one of two notes:
+  `lizard raised: <last non-empty line of stderr>` when there is a traceback, otherwise
+  `lizard exited <rc> with no valid footer (bound: KA0S_KIT_TIMEOUT_S / KA0S_KIT_PROC_MB)`, which
+  the timeout's 124 and the memory kill's 137 share. Every complexity figure is 0, the maximum CCN
+  included, and parity is skipped (`blindFiles` stays 0). Like a blind file, a crash makes the
+  verdict amber: it blocks the tag and never fails the run or the commit.
+- **Zero is what the manifest holds, `n/a` is what a reader sees.** `manifest.json` keeps numeric
+  0 in every complexity field (each field is read as a number or written as 0, so the manifest is
+  valid JSON whatever lizard printed); the console line and the `RESULTS.md` trend row render the
+  CCN figures as `n/a`. The watch list is not regenerated from a run that measured nothing: like
+  a skip, the section names the note and carries the last measured list, dispositions included.
+
+Four cases in `tests/test_kit_runner.lua` pin this with a fake lizard first on `PATH`, so they
+run on any host: a traceback, a warned run that exits 1 with a valid footer, stderr noise on a
+clean exit, and a timeout's 124.
+
 ## What a consumer owes
 
 Re-vendor `tests/_kit/` whole:
