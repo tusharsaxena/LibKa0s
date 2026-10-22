@@ -781,6 +781,54 @@ cannot reach where you need it:
 If you find another, add it here in the same shape: what the contract cannot express, the file:line
 where it binds, and the issue tracking it.
 
+### New at v1.75.0 — two new majors, three promotions, and what must no longer be hand-rolled
+
+v1.75.0 adds `LibKa0s-Glow-1.0` and `LibKa0s-Sim-1.0`, promotes `W.SearchBox`, `W.TestStrip` and
+`Item.BonusIDsFromLink` out of the hosts that each wrote their own, and ships test kit revision 41.
+Adopting the two new majors is required of no addon; the named adopters adopt in this run. What
+binds every host from this release on is the list of things it must not keep a private copy of.
+
+**Wire it at the re-vendor, in one commit.** The kit (revision 41), the library folder, the
+`LibKa0s icons:` line directly under the `CLAUDE.md` provenance line, and
+`lua tools/prune-icons.lua <Addon>` run from the LibKa0s checkout. Declare every icon the library
+draws for you (`close`, and `copy, clear` if you wire the debug console) and every icon you pass it
+(`info` for a test strip, the mark you hand a search box, the check mark you hand a simulator's
+panel). A pruned icon resolves to a path and draws blank; no gate catches the omission. Delete any
+`O.__releaseChrome` mirror from your Options degradation stub, and add the new members to every
+stub you pin with `Kit.assertSurfaceParity` (Widgets: `SearchBox`, `TestStrip`, `TEST_STRIP`; Item:
+`BonusIDsFromLink`).
+
+**Do not hand-roll these any more:**
+
+- **A glow mapping.** Once v1.75.0 is vendored, a host START/STOP table over LibCustomGlow-1.0 (a
+  style name mapped to `ButtonGlow_Start`, `PixelGlow_Start` and the rest, with the knob arguments
+  laid out positionally) is a fork of `Glow.Start` and `Glow.Stop`. Route it through a
+  `core/GlowSetup.lua` seam published as `NS.GlowLib`, and keep the gates (whether to glow, the
+  burst, the triggers, stop-before-start) in the host. Keep vendoring LibCustomGlow-1.0 yourself:
+  Glow resolves it at call time and never carries it.
+  [`api/Glow/version-1-docs.md`](api/Glow/version-1-docs.md).
+- **A simulator.** A new in-client simulator **must** build on `LibKa0s-Sim-1.0`: the Compat answer
+  seam, the session with its two-phase stop, the step machine, the typed `sim` verbs and the docked
+  step panel. Hosts own only what the host contract (H1-H10) gives them: the scenarios, the
+  providers, `deliver`, the refusals and the marker. Host fields go on the host's own table (such
+  as `NS.SimHost`), never on the library instance. Copy the reference degradation stub from
+  [`tests/test_sim_stub.lua`](../tests/test_sim_stub.lua), pin it with its parity case, and
+  assert `seam:Unwrapped()` is empty after load.
+  [`api/Sim/version-2.2.2-docs.md`](api/Sim/version-2.2.2-docs.md), *Adopting it*.
+- **A flat search box.** `W.SearchBox(parent, width, opts)` replaces a hand-built filter-bar
+  `EditBox`: the dropdown's skin, the hint while empty and the gold focus line. Extend it with
+  `HookScript`, never `SetScript` on the scripts the constructor set.
+- **A test-mode strip.** `W.TestStrip(parent, opts)` replaces a hand-built amber band. Its text is
+  your localized line, its mark is your own resolved `info` art, and the anchors and the gaps around
+  it are your layout. [`api/Widgets/version-13.1.4.3.2-docs.md`](api/Widgets/version-13.1.4.3.2-docs.md).
+- **A bonus-id walk.** `Item.BonusIDsFromLink(link)` replaces the itemString split a Wowhead link
+  builder writes; if you carry a library-absent Item stub, give it the same walk.
+  [`api/Item/version-3-docs.md`](api/Item/version-3-docs.md).
+
+**The step panel is not a public widget.** It is library-internal to `LibKa0s-Sim-1.0`, a deliberate
+duplicate of Perf's panel, and a host reaches it only through `ShowPanel`, `HidePanel` and
+`PanelRows()`. Do not build a panel of your own on its internals.
+
 ### New at v1.24.0 — the settings-revamp surfaces, and nobody has adopted them yet
 
 Five majors moved together for the Ka0s settings revamp, and everything below has **zero consumers**
@@ -831,8 +879,9 @@ and v1.67.0. If you are about to become the second host on a
 one-consumer surface — or the first on a zero-consumer one — treat a misfit as a library gap on
 first contact.
 
-**The zero-consumer set is in the census, not here.** At v1.71.0, 108 of 422 public exports have no
-host consumer, and none of them has a host duplicate or an unsettled contract behind it. At v1.66.0
+**The zero-consumer set is in the census, not here.** At v1.75.0, 123 of 492 public exports have no
+host consumer (108 of 422 at v1.71.0: the new Sim major adds sixteen, and Media's `lib.ICONS` leaves
+the set now that Quick Comms reads it), and none of them has a host duplicate or an unsettled contract behind it. At v1.66.0
 there were 106, and the eight host duplicates and two suspect shapes among them were cleared by the
 issues that census filed: `Core.MakeResizable` (its lock gate is Core 10, LibKa0s#41) and
 `Core.SECRET` now have three hosts each; Slash's `SplitVerb` has three, `FindCommand` and

@@ -20,8 +20,8 @@ What that leaves, concretely:
   `versioning-git`; `line-endings` (the library ships Lua into every consumer's client-bound
   `libs/`, so it takes the CRLF pin — named explicitly upstream because a library repo has no `.toc`
   and `line-endings-§2`'s discriminator would otherwise read it as non-client); `localization-§5`
-  (US English in authored text — a British spelling here is vendored into eleven consumers and
-  becomes eleven findings); `documentation-§5`; `documentation-§7`.
+  (US English in authored text — a British spelling here is vendored into every consumer and
+  becomes one finding per consumer); `documentation-§5`; `documentation-§7`.
 - **Does not apply:** `documentation-§1`'s player-facing README structure and badge row;
   `documentation-§2`'s addon `CLAUDE.md` stub as written (this file is the substitute);
   `documentation-§3`'s `docs/` trio (`ARCHITECTURE.md`, `testing.md`, `smoke-tests.md`), its five
@@ -61,7 +61,7 @@ two things it is:
 
 When in doubt, treat standard conformance as a hard requirement and ask.
 
-**One extra rule this repo carries, because it is upstream of eleven others.** Everything in
+**One extra rule this repo carries, because it is upstream of every consumer addon.** Everything in
 `LibKa0s/` and `testkit/` is **vendored** — into `<Addon>/libs/LibKa0s/` and `<Addon>/tests/_kit/`
 respectively. A defect shipped from here reappears in every consumer, and a fix is only real once it
 is re-vendored. Never patch a vendored copy downstream; fix it here and copy across.
@@ -107,7 +107,7 @@ consumer's copy is exempt. The second carve-out, generated non-shipping data, ha
 **The heading is nested, and the gate is the kit's.** From kit revision 25 the census's parent is
 fixed at `## Documented deviations` in whichever document hosts it, so the level follows that
 register rather than the host — a `##` register takes a `###` census beneath it, here and in the
-eleven repos that host theirs in `docs/ARCHITECTURE.md`. This repo owed that one-level move and this
+consumer addons, which host theirs in `docs/ARCHITECTURE.md`. This repo owed that one-level move and this
 is it. What reads the table is now `tests/_kit/test_layout_cap.lua`, wired as
 `{ name = "test_layout_cap", dir = "tests/_kit/" }`; the hand-written copy this repo carried is
 deleted, because a twelfth local copy of a gate the kit ships is the drift the kit gate exists to
@@ -195,7 +195,7 @@ today — `OptionsWidgets.lua` was 1838 at the 2026-09-07 review and the suite 2
 while nobody was watching, which is the whole argument for having a gate rather than a paragraph.
 
 **A peel here is a release, and v1.39.0 is the worked example.** `LibKa0s/` is re-vendored
-whole-folder into eleven consumers and every file in it carries its own LibStub minor, so a peel adds
+whole-folder into every consumer and every file in it carries its own LibStub minor, so a peel adds
 a payload file, a `LibKa0s.xml` row, a minor, a row in `tests/majors.lua`, the multi-file pairing
 guard on its own minor **and** the shell's (`lib.__tabsMinor` / `lib.__tabsShellMinor` in
 `LibKa0s/OptionsTabs.lua`, following `lib.__widgetsShellMinor`), **a component on the major's version
@@ -225,7 +225,8 @@ first:
   measured 2026-10-01, six under its 1450 re-check trigger; 1423 with v1.65.0's combat-refusal line;
   1422 new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
 - `LibKa0s/OptionsIds.lua` (1359 at v1.65.0; 1358 new: the id peel), ruled below.
-- `LibKa0s/OptionsTabs.lua` (1349 with minor 8's three `RenderTabbedSchema` opts, AbsorbTracker#32,
+- `LibKa0s/OptionsTabs.lua` (1350 at minor 9, which dropped the `O.__releaseChrome` export and added
+  its header note, LibKa0s#45, measured 2026-10-22; 1349 with minor 8's three `RenderTabbedSchema` opts, AbsorbTracker#32,
   measured 2026-10-01, no member added and under its 1400 re-check trigger; 1294 at v1.65.0; 1293 after the sweep moved its combat half to
   `LibKa0s/OptionsCombat.lua`; 1493 with `SR-LK-01`'s rail inset, 1489 before it; 973 at v1.39.0's
   peel, and minor 22's combat lock, minor 23's dispatcher, `LK-27`'s page-chrome fix and `LK-28`'s
@@ -234,8 +235,8 @@ first:
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
   accepted, below.
-- `LibKa0s/OptionsIdList.lua` (1247 at v1.71.0's minor 4, measured 2026-10-07, under its 1350 re-check
-  trigger; 1246 with minor 3's loaded-addon check on `addonName`, LibKa0s#42, measured 2026-10-02;
+- `LibKa0s/OptionsIdList.lua` (1251 at v1.75.0's minor 5, the #57 help-mark comment, measured
+  2026-10-22, under its 1350 re-check trigger; 1247 at v1.71.0's minor 4, measured 2026-10-07; 1246 with minor 3's loaded-addon check on `addonName`, LibKa0s#42, measured 2026-10-02;
   1197 at v1.65.0; 1193 new: the id peel), ruled below.
 
 `LibKa0s/Perf.lua` left the band on 2026-10-01, 1307 → 975, closing issue
@@ -262,6 +263,12 @@ the profile verb (`lib.ProfileNames`, `Sl:ProfileSwitch`, `Sl:CliProfile`) is th
 the row box and their machinery moved unchanged to `LibKa0s/WidgetsReorder.lua` (680) at Widgets
 minor 12, a secondary file paired on the shell's minor as `LibKa0s/WidgetsDragHandle.lua` is. The
 dropdown and the copy window stay; the copy window is the next seam if the file grows back.
+It has grown back, out of the band: 834 at v1.75.0's minor 13 (measured 2026-10-22), 655 before
+`W.SearchBox` (#52), the hoisted `SKIN` table and `W.TestStrip` (#48) with their header notes. The
+copy window stays the next seam, and the re-check trigger is 1000 lines. `LibKa0s/DebugLog.lua` is
+999 at v1.75.0's minor 20, re-measured 2026-10-22: the #57 comment correction added no line, so it
+stays one under the band. None of v1.75.0's new files is in the band: `LibKa0s/SimPanel.lua`, the
+largest, is 899 after SimPanel minor 2.
 `tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page
 registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to
 `tests/test_options_render.lua` (373), the render/refresh seam the issue named plus the page-registry
@@ -448,7 +455,7 @@ never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests
 | Doc | Covers |
 |---|---|
 | [`README.md`](README.md) | What each module is, how to install and re-vendor, the repo layout |
-| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Compat`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
+| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Compat`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Glow`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, `Sim`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
 | [`docs/api/CONSUMERS.md`](docs/api/CONSUMERS.md) | The consumer census: for every public export, which hosts call it (file:line), each textual hit classified as call / host duplicate / degradation stub, and a verdict on every zero-consumer export. Stamped with the version it measured; re-run with the tool it names after a release that adds a surface |
 | [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
 | [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-analysis/README.md` points at rather than restating |

@@ -4,7 +4,7 @@
 -- because the two consumers disagree — on purpose, in writing — about what an UNCACHED item means:
 -- LootHistory guesses from the link's color and brackets, BankLedger refuses and records the skip
 -- so a quality gate never admits a row it cannot classify. Both are right for their addon, and a
--- shared resolver would have quietly overturned one of them. So this module carries the four
+-- shared resolver would have quietly overturned one of them. So this module carries the five
 -- primitives they compose and no opinion about how.
 
 local T = _G.LK_TEST
@@ -31,6 +31,74 @@ test("item: ItemIDFromLink answers nil for anything that is not a link", functio
   assertEqual(item.ItemIDFromLink("Linen Cloth"), nil)
   assertEqual(item.ItemIDFromLink(nil), nil)
   assertEqual(item.ItemIDFromLink(2589), nil)
+end)
+
+-- ── BonusIDsFromLink ─────────────────────────────────────────────────────────────────────
+
+test("item: BonusIDsFromLink reads the declared bonus ids in link order", function()
+  -- EPIC_LINK's field 13 declares 3, and fields 14..16 are 10356, 10355 and 1540; the 1:28:2462
+  -- after them is a modifier block, not a bonus.
+  local ids = item.BonusIDsFromLink(EPIC_LINK)
+  assertEqual(#ids, 3)
+  assertEqual(ids[1], 10356)
+  assertEqual(ids[2], 10355)
+  assertEqual(ids[3], 1540)
+end)
+
+test("item: BonusIDsFromLink accepts a bare itemString", function()
+  local ids = item.BonusIDsFromLink("item:19019::::::::80:250::5:2:6652:7981")
+  assertEqual(#ids, 2)
+  assertEqual(ids[1], 6652)
+  assertEqual(ids[2], 7981)
+end)
+
+test("item: BonusIDsFromLink answers an empty table for an item with no bonuses", function()
+  local ids = item.BonusIDsFromLink(RARE_LINK)
+  assertEqual(type(ids), "table")
+  assertEqual(#ids, 0)
+  assertEqual(#item.BonusIDsFromLink("item:19019"), 0, "no field 13 at all is a count of 0")
+  assertEqual(#item.BonusIDsFromLink("item:19019::::::::80:250::5:0:28:2462"), 0,
+    "a declared 0 reads nothing after it")
+end)
+
+test("item: BonusIDsFromLink stops at the declared count when modifiers follow", function()
+  -- red under: reading to the end of the string, which would take 1, 28 and 2462 as bonuses.
+  local ids = item.BonusIDsFromLink("item:1::::::::80:250::5:1:4800:2:9:70:28:2462")
+  assertEqual(#ids, 1)
+  assertEqual(ids[1], 4800)
+end)
+
+test("item: BonusIDsFromLink keeps empty fields so positions hold", function()
+  -- red under: a split that drops empty fields, which would read field 13 out of the wrong place.
+  -- An empty field inside the declared span is a position, not a bonus, and is skipped.
+  local ids = item.BonusIDsFromLink("item:1::::::::::::3:11::22")
+  assertEqual(#ids, 2)
+  assertEqual(ids[1], 11)
+  assertEqual(ids[2], 22)
+end)
+
+test("item: BonusIDsFromLink skips a non-numeric field", function()
+  local ids = item.BonusIDsFromLink("item:1::::::::::::3:11:-:22")
+  assertEqual(#ids, 2)
+  assertEqual(ids[1], 11)
+  assertEqual(ids[2], 22)
+end)
+
+test("item: BonusIDsFromLink answers nil for anything that is not an item", function()
+  T.assertNil(item.BonusIDsFromLink("Linen Cloth"))
+  T.assertNil(item.BonusIDsFromLink("|Hspell:2061|h[Flash Heal]|h"))
+  T.assertNil(item.BonusIDsFromLink("item:"), "item: with no id is not an item")
+  T.assertNil(item.BonusIDsFromLink(nil))
+  T.assertNil(item.BonusIDsFromLink(19019))
+end)
+
+test("item: BonusIDsFromLink answers the same for a |cff link and a |cnIQ link", function()
+  local body = "|Hitem:258586::::::::80:250::5:3:10356:10355:1540:1:28:2462:::|h[Bloodfeather Chestguard]|h|r"
+  local legacy = item.BonusIDsFromLink("|cffa335ee" .. body)
+  local live = item.BonusIDsFromLink("|cnIQ4:" .. body)
+  assertEqual(#legacy, 3)
+  assertEqual(#live, 3)
+  for i = 1, 3 do assertEqual(live[i], legacy[i]) end
 end)
 
 -- ── QualityFromLink ──────────────────────────────────────────────────────────────────────

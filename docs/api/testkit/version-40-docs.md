@@ -9,10 +9,10 @@
 | Payload | `testkit/` — `framework.lua`, `asserts.lua`, `inventory.lua`, `secrets.lua`, `latch.lua`, `loader.lua`, `mock_base.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`, `mock_lines.lua`, `mock_ids.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, `prose_lists.lua`, `prose_coverage.lua`, `prose_selftests.lua`, `test_layout_cap.lua`, `test_diagnostics_contract.lua`, `lizard_sighted.lua`, `test_lizard_sighted.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **40** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | unreleased — the first LibKa0s release after v1.74.0 |
-| Status | **Current** |
+| First released in | unreleased — superseded by revision 41 before v1.75.0 was cut |
+| Status | Superseded |
 | Supersedes | [version 39](version-39-docs.md) — `vendor_sync.lua` compared `libs/LibKa0s/` whole, so a consumer could not ship fewer than all 5,836 icons |
-| Superseded by | — |
+| Superseded by | [version 41](version-41-docs.md) — `Kit.__deviationRows` and `Kit.__declineFor`, two self-test seams no suite read, are no longer exported |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `40` |
 
@@ -139,3 +139,9 @@ library's payload, add the `LibKa0s icons:` line under the provenance line and r
 `lua tools/prune-icons.lua <Addon>` from the LibKa0s checkout (see `docs/releasing.md`,
 *Re-vendoring consumers*). A consumer's own prose that names the revision it holds
 (`kit revision 39`) moves to 40 in the same commit.
+
+## Moving to 41
+
+Copy the kit whole. No suite, case name or documented member changes. `Kit.__deviationRows` and
+`Kit.__declineFor`, two undocumented self-test seams no suite read, are gone from the kit table; see
+[version 41](version-41-docs.md).

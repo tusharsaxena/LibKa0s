@@ -65,6 +65,7 @@ the file you need:
 | `LibKa0s-Schema-1.0` | `<Schema>` | `LibStub("LibKa0s-Schema-1.0").MODULES` |
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
+| `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
@@ -72,6 +73,7 @@ the file you need:
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
 | `LibKa0s-Perf-1.0` | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
+| `LibKa0s-Sim-1.0` | `<Sim>.<SimTimeline>.<SimPanel>` | `LibStub("LibKa0s-Sim-1.0").MODULES` |
 
 A multi-file major gets a composite key because its files carry **independent** minors that really do
 diverge — the Options major has passed through `O3/W2`, `O3/W3`, `O4/W4` and `O4/W5`. Keying on one
@@ -98,7 +100,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 | **Current** |
+| [11](./Core/version-11-docs.md) | **`Core.lua` 11** (comment-only: an undeclared `close` draws blank) | v1.75.0 | **Current** |
+| [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 – v1.74.0 | Superseded |
 | [9](./Core/version-9-docs.md) | `Core.lua` 9 | v1.64.0 – v1.66.0 | Superseded |
 | [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 – v1.63.0 | Superseded |
 | [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 – v1.55.0 | Superseded |
@@ -155,8 +158,15 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2](./Item/version-2-docs.md) | `Item.lua` 2 | v1.56.0 | **Current** |
+| [3](./Item/version-3-docs.md) | `Item.lua` 3 | v1.75.0 | **Current** |
+| [2](./Item/version-2-docs.md) | `Item.lua` 2 | v1.56.0 – v1.74.0 | Superseded |
 | [1](./Item/version-1-docs.md) | `Item.lua` 1 | v1.15.0 – v1.55.0 | Superseded |
+
+### `LibKa0s-Glow-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Glow/version-1-docs.md) | `Glow.lua` 1 | v1.75.0 | **Current** |
 
 ### `LibKa0s-Media-1.0`
 
@@ -172,7 +182,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12.1.4.3.2](./Widgets/version-12.1.4.3.2-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.71.0 | **Current** |
+| [13.1.4.3.2](./Widgets/version-13.1.4.3.2-docs.md) | **`Widgets.lua` 13** (new: `SearchBox`, `TestStrip`, `TEST_STRIP`) · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.75.0 | **Current** |
+| [12.1.4.3.2](./Widgets/version-12.1.4.3.2-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.71.0 – v1.74.0 | Superseded |
 | [12.1.4.2.1](./Widgets/version-12.1.4.2.1-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 2 · `WidgetsAutocomplete.lua` 1 | v1.70.0 | Superseded |
 | [12.1.4.1](./Widgets/version-12.1.4.1-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 1 | v1.69.0 | Superseded |
 | [12.1.4](./Widgets/version-12.1.4-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 | v1.68.0 – v1.68.1 | Superseded |
@@ -196,7 +207,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 | **Current** |
+| [20.3.1](./DebugLog/version-20.3.1-docs.md) | **`DebugLog.lua` 20** (comment-only: undeclared `close`, `copy`, `clear` draw blank) · **`DebugLogDiagnostics.lua` 3** (the identity header names Glow and Sim) · `DebugLogGates.lua` 1 | v1.75.0 | **Current** |
+| [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 – v1.74.0 | Superseded |
 | [18.2.1](./DebugLog/version-18.2.1-docs.md) | `DebugLog.lua` 18 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.65.0 | Superseded |
 | [17.2](./DebugLog/version-17.2-docs.md) | `DebugLog.lua` 17 · `DebugLogDiagnostics.lua` 2 | v1.64.0 | Superseded |
 | [16.1](./DebugLog/version-16.1-docs.md) | `DebugLog.lua` 16 · `DebugLogDiagnostics.lua` 1 | none (superseded inside v1.64.0 before the tag was published) | Superseded |
@@ -250,7 +262,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [29.2.34.2.4.8.1.7.4.2.1](./Options/version-29.2.34.2.4.8.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · **`OptionsDrawer.lua` 1** (new: `O.Drawer`) | v1.73.0 | **Current** |
+| [29.2.34.2.5.9.1.7.4.2.1](./Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · **`OptionsIdList.lua` 5** (comment-only: an undeclared `info` draws blank) · **`OptionsTabs.lua` 9** (`__releaseChrome` no longer exported) · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · `OptionsDrawer.lua` 1 | v1.75.0 | **Current** |
+| [29.2.34.2.4.8.1.7.4.2.1](./Options/version-29.2.34.2.4.8.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · **`OptionsDrawer.lua` 1** (new: `O.Drawer`) | v1.73.0 – v1.74.0 | Superseded |
 | [28.2.34.2.4.8.1.7.4.2](./Options/version-28.2.34.2.4.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.71.0 | Superseded |
 | [28.2.34.2.3.8.1.7.4.2](./Options/version-28.2.34.2.3.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 3 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.67.0 – v1.70.0 | Superseded |
 | [27.2.34.2.2.8.1.7.4.2](./Options/version-27.2.34.2.2.8.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.66.0 | Superseded |
@@ -306,7 +319,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1.1.6](./Perf/version-15.1.1.6-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.72.0 | **Current** |
+| [15.1.1.7](./Perf/version-15.1.1.7-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 7** (comment-only: Sim's panel copies the renderer on purpose) | v1.75.0 | **Current** |
+| [15.1.1.6](./Perf/version-15.1.1.6-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.72.0 – v1.74.0 | Superseded |
 | [14.1.1.6](./Perf/version-14.1.1.6-docs.md) | `Perf.lua` 14 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.66.0 – v1.71.0 | Superseded |
 | [13.6](./Perf/version-13.6-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 6 | v1.64.0 – v1.65.0 | Superseded |
 | [13.5](./Perf/version-13.5-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 5 | v1.56.0 – v1.63.0 | Superseded |
@@ -320,6 +334,14 @@ answers both "what does this version have?" and "when did I get it?".
 | [6.3](./Perf/version-6.3-docs.md) | `Perf.lua` 6 · `PerfPanel.lua` 3 | v1.7.0 | Superseded |
 | [5.3](./Perf/version-5.3-docs.md) | `Perf.lua` 5 · `PerfPanel.lua` 3 | v1.0.0 – v1.6.3 (every release to date) | Superseded |
 
+### `LibKa0s-Sim-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [2.2.2](./Sim/version-2.2.2-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 2** (the picker reads its scenario at use; no scenario listed, the Start row is locked) | v1.75.0 | **Current** |
+| [2.2.1](./Sim/version-2.2.1-docs.md) | **`Sim.lua` 2** (`Start` reads the scenarios live; `prepare` gets the host's start fields) · **`SimTimeline.lua` 2** (`Restart` carries them) · `SimPanel.lua` 1 | the local `v1.75.0` tag only | Superseded |
+| [1.1.1](./Sim/version-1.1.1-docs.md) | `Sim.lua` 1 · `SimTimeline.lua` 1 · **`SimPanel.lua` 1** (the docked step panel; its renderer is library-internal) | the local `v1.75.0` tag only | Superseded |
+
 ### `testkit`
 
 Not a LibStub major and never shipped — vendored to `<Addon>/tests/_kit/`, and versioned by a plain
@@ -329,7 +351,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [40](./testkit/version-40-docs.md) | same files; `vendor_sync.lua` reads the consumer's `LibKa0s icons:` declaration (one line directly under the provenance line: `all (<chooser>).`, `none.` or a comma-separated list of `lib.ICONS` names) and holds `libs/LibKa0s/media/icons/` to exactly it: declared icons present and byte-identical to the tag, undeclared ones absent (counted, ten named), unknown names failed against the tag's own catalog, each set's attribution files present exactly when one of its icons is; everything else still compared whole, and no line is the whole-folder gate as before. Publishes the parser and catalog (`VendorSync.parseIconLine`, `iconDeclaration`, `iconCatalog`, `requiredIcons`, `cappedList`, `splitUnder`, `localNames`) for `tools/prune-icons.lua`; a pair takes an `icons` field and `register` an `iconsPattern` opt. `localNames` tries the cmd.exe fallback only on Windows. `Kit.VERSION` is 40. No member is renamed or removed and no case name changes | unreleased (the release after v1.74.0) | **Current** |
+| [41](./testkit/version-41-docs.md) | same files; `framework.lua` no longer exports `Kit.__deviationRows` or `Kit.__declineFor`, two self-test seams no suite read (`tests/test_kit_inventory.lua` pins the decline reader through its fixtures), and `inventory.lua` no longer returns them; `run-automated-tests.sh`'s register comment names `inventory.lua`. `run-automated-tests.sh`'s complexity suite keeps lizard's stderr out of the parse and reads the footer under `Total nloc`: a run that did not exit 0 or 1, has no eight-number footer or raised is `fail` (amber) with every figure 0 (`n/a` on the console and in the trend row) and parity skipped, never a measurement (LibKa0s#46); on a raise (not a 124 / 137 bound) it retries lizard once per file in the shadow, bounded, names each file whose solo run raises, and counts them in the new `suites.complexity.crashedFiles` (additive, schema 1; never counted blind), with `RESULTS.md`'s watch list led by `**Not measured — lizard raised**` (LibKa0s#47). `Kit.VERSION` is 41. No documented member is renamed or removed and no case name changes | v1.75.0 | **Current** |
+| [40](./testkit/version-40-docs.md) | same files; `vendor_sync.lua` reads the consumer's `LibKa0s icons:` declaration (one line directly under the provenance line: `all (<chooser>).`, `none.` or a comma-separated list of `lib.ICONS` names) and holds `libs/LibKa0s/media/icons/` to exactly it: declared icons present and byte-identical to the tag, undeclared ones absent (counted, ten named), unknown names failed against the tag's own catalog, each set's attribution files present exactly when one of its icons is; everything else still compared whole, and no line is the whole-folder gate as before. Publishes the parser and catalog (`VendorSync.parseIconLine`, `iconDeclaration`, `iconCatalog`, `requiredIcons`, `cappedList`, `splitUnder`, `localNames`) for `tools/prune-icons.lua`; a pair takes an `icons` field and `register` an `iconsPattern` opt. `localNames` tries the cmd.exe fallback only on Windows. `Kit.VERSION` is 40. No member is renamed or removed and no case name changes | unreleased (superseded before v1.75.0) | Superseded |
 | [39](./testkit/version-39-docs.md) | same files **plus `latch.lua`**: `Kit.assertLatchHoldOrder(opts)`, the `slash-commands-§7` step-10 helper, drives the two-hold latch in both orders through injected seams (`lifecycle`, `perfHold`, `setEnabled`, `regSet`, optional `key` / `label`), compares the rebuilt registration set with `R_on` by key and restores state on failure; `Kit.expose` publishes it. `M.__fireUnconditional` reaches a handler registered under a method name, or as a function, after `UnregisterEvent` / `UnregisterAllEvents`: AceEvent `RegisterEvent` also keeps each event's handler in a never-cleared record (`__kitEver` on the `__events` metatable, invisible to `pairs` and to the surveys), read after the live `__events[event]` and before the method named for the event, where revision 38 answered 0. Still answers 1 or 0 and never raises (a raise was declined as a breaking contract change). `Kit.VERSION` is 39. No member is renamed or removed, and no case name or survey changes | v1.72.0 – v1.74.0 | Superseded |
 | [38](./testkit/version-38-docs.md) | adds `secrets.lua`: `Kit.secret`, `Kit.isSecret`, `Kit.reveal`, `Kit.SECRET_ERROR` and the opt-in `Kit.installSecretValue` (sets the global `issecretvalue` and returns its restore; nothing installs it by default), one process-wide weak-keyed registry; `--list`'s `## Totals` table counts only the cases that run: each suite row and `the runner` row leave declared skips out (a row at 0 is omitted), a `\| Skipped \| N \|` row precedes Total when N > 0 declared skips are registered, and Total is the registered non-skipped count, equal to the README badge (`testing-§5`), where revision 37 counted the whole registry; the preamble says so, and skipped cases stay listed in their groups. The renderer moves from `framework.lua` to `inventory.lua`, keeping `framework.lua` under 1000 lines. `Kit.VERSION` is 38. No member is renamed or removed, and no case name or mock changes; a consumer regenerates `docs/test-cases.md` | v1.71.0 | Superseded |
 | [37](./testkit/version-37-docs.md) | same files **plus `mock_lines.lua`**: `CreateLine` on every tracked mock frame answers a distinct Line, recorded in creation order as `__madeLines` on its frame, whose two ends (`GetStartPoint` / `GetEndPoint`), thickness, color, alpha, draw layer and shown state are answered back, and any capitalized method a Line does not have raises naming itself, where revision 36 answered `CreateLine` with the frame itself; `mock_base.lua` loads the file and passes each frame through it (two lines). `Kit.VERSION` is 37. No member is renamed or removed, and no kit case or runner output changes | v1.69.0 – v1.70.0 | Superseded |

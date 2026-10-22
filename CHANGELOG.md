@@ -10,15 +10,159 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.75.0 — unreleased
+## v1.75.0 — 2026-10-22
 
-Versions in this release: every file at its v1.74.0 minor — `Core` 10, `Env` 2, `Compat` 1,
-`Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` key 5.1, `Slash` key 20.2,
-`DebugLog` key 19.2.1, `Launcher` 5, `Widgets` key 12.1.4.3.2, `Options` key
-29.2.34.2.4.8.1.7.4.2.1 and `Perf` key 15.1.1.6 — and **test kit revision 40**. No payload file under
-`LibKa0s/` has changed. The owner's 2026-10-20 ruling: only the bare minimum of icons is vendored
-into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
-README's standards pointer moves when this is released.
+Versions in this release: **Core minor 11** (comment-only, key **11**); **Item minor 3**
+(`LibKa0s-Item-1.0` key **3**); **Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**);
+**Widgets minor 13** (`LibKa0s-Widgets-1.0` key **13.1.4.3.2**: `WidgetsReorder` 1,
+`WidgetsDragHandle` 4, `WidgetsLineChart` 3 and `WidgetsAutocomplete` 2 unchanged);
+**DebugLog minor 20** (comment-only) and **DebugLogDiagnostics minor 3** (`LibKa0s-DebugLog-1.0` key
+**20.3.1**, `DebugLogGates` 1 unchanged); **OptionsIdList minor 5** (comment-only) and
+**OptionsTabs minor 9** (`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**, its nine other
+files unchanged); **PerfPanel minor 7** (comment-only, `LibKa0s-Perf-1.0` key **15.1.1.7**);
+**Sim minor 2**, **SimTimeline minor 2** and **SimPanel minor 2** (the new major `LibKa0s-Sim-1.0`,
+key **2.2.2**; keys 1.1.1 and 2.2.1 were the local tag's only); every other file still at its v1.74.0 minor (`Env` 2, `Compat` 1, `Lifecycle` 3,
+`Bus` 2, `Schema` 2, `Pool` 3, `Media` key 5.1, `Slash` key 20.2 and `Launcher` 5); and **test kit
+revision 41**. Two majors are added and no `NEEDS_*` floor rises, so the library is **seventeen
+majors across forty files**. Built to standard **v2.86.0**: `library-stack-§7`'s icon subset (from
+v2.85.0, the owner's 2026-10-20 ruling that only the bare minimum of icons is vendored into each
+consumer), its narrowed `__` clause, its closed library-drawn icon set (`close`, `copy`, `clear`, `info`),
+its Sim row and recount (seventeen majors across forty files, re-run at this tag), automated-tests-§3's
+clarification that a crashed `lizard` run is not a complexity pass, and documentation-§1's icon
+credits; the README's standards pointer moves to it at this release. The consumer's side of every
+change is under *What a consumer owes*, at the end of this entry.
+
+### OptionsTabs minor 9: O.__releaseChrome is no longer exported (LibKa0s#45)
+
+- **`O.__releaseChrome` is gone from the instance.** It put the file-local `releaseChrome` on the
+  Options instance for a suite that never called it, and no roster consumer called it; the only
+  mentions outside the library were Options degradation stubs mirroring the name.
+  `releaseChrome` itself and its two callers, `O.PageBanner` and `O.PageHeader`, are unchanged,
+  and the chrome-ledger cases in `tests/test_options_tabs.lua` keep pinning teardown through
+  `PageBanner`. Removed with a minor bump under `library-stack-§7`'s `__` clause as narrowed at
+  standard **v2.86.0**: a `__` member documented as internal or as a test seam, with zero roster
+  consumers, may be removed with a minor bump. The members manifest does not change, since `__`
+  members are outside it. [Options version 29.2.34.2.5.9.1.7.4.2.1](docs/api/Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md).
+
+### Widgets minor 13: W.SearchBox (#52)
+
+- **`W.SearchBox(parent, width, opts)`, the flat filter-bar search box.** An `EditBox` in the
+  dropdown's skin (fill, line, 20px), `GameFontHighlightSmall`, auto focus off, with a gray hint
+  (`box.hint`) shown exactly while the box is empty, Escape and Enter to clear focus, and the
+  **gold focus line**: the border goes gold while the box has the keys and back to gray when it
+  loses them. `opts` is `{ hint, icon, onChange }` and nothing else; `width` is set only when it is
+  a number. An icon (a resolved path or a fileID) is an 11x11 mark at the left, and moves the text
+  inset from 6 to 21. Adopters: **LootHistory**, **BankLedger** and **DropWatcher**, each replacing
+  a hand-built box.
+- **The dropdown's skin is one file-local `SKIN` table** that `MakeDropdown` and the search box
+  read, hoisted from the dropdown's literals with no visible change. It is not exported.
+- **Two rejections are recorded in `Widgets.lua`'s header** (`library-stack-§7`): `W.Checkbox`
+  (no consumer; re-check when a second addon hand-builds a flat checkbox) and an exported flat skin
+  (re-check when a third flat control outside `Widgets.lua` copies the literals). The header's
+  "No search box" now means inside the dropdown's menu.
+- **The attach files re-pair on the shell's new minor**; none of their own minors moves.
+  [Widgets version 13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md).
+
+### Widgets minor 13: W.TestStrip (#48)
+
+- **`W.TestStrip(parent, opts)`, the test-mode strip, shares minor 13 with the search box.** A
+  full-width band a window lays between its chrome and its data while test mode is on: an 18px
+  amber fill at 12% (DropWatcher's warn tone), an optional 12x12 mark at the left and one line of
+  `GameFontNormalSmall` text that truncates rather than wraps. `opts` is `{ text, icon }`; the text
+  is the host's localized line and the icon is the host's own resolved `info` art. The strip is
+  born hidden and unanchored with the mouse off, and after the constructor returns it never
+  anchors, shows, hides, re-measures or changes its height or its text's anchors, so a host's
+  `SetHeight`, `SetWordWrap` and `SetText` stick. The public surface is the constructor,
+  `W.TEST_STRIP.HEIGHT` (18) and `strip.text`; there is no `RESERVE`, because the gaps around the
+  strip are host layout. Promoted on the owner's 2026-10-22 ruling. Adopters: **DropWatcher**
+  (moving its own strip into the library), **LootHistory**, **BankLedger** and **MultiMeters**.
+- **Six omissions are recorded in `Widgets.lua`'s header**: no tooltip option, no color option, no
+  wrap, measuring or `Height()`, no test-mode state, no placement or body shift, and no icon
+  fallback. Re-check trigger: a consumer needs a different color, a tooltip renderer or a measured
+  height with the same semantics as another.
+  [Widgets version 13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md).
+
+### Comment-only minors: the icon fallback a pruned copy does not get (#57)
+
+- **Three comments said a missing icon falls back to text, and it never did.** `Core.lua`'s
+  `MakeCloseButton` said the × is what "every window gets on an install missing the art";
+  `DebugLog.lua`'s `makeIconButton` said the same of the CLEAR and COPY words; `OptionsIdList.lua`'s
+  help mark said `media/icons/info.tga` "ships inside the vendored payload". `Media.Icon` answers a
+  path from the catalog and never checks that the file exists, so a host that passes its addon name
+  but did not declare the icon on its `LibKa0s icons:` line gets a **blank** control, before pruning
+  as after. The fallbacks are what a host that passes no addon name, or has no Media module, gets.
+  The comments now say so and name the icons as the host's to declare (`library-stack-§7`'s icon
+  subset; the library-drawn table in `docs/releasing.md`), and `OptionsIdList.lua`'s line citations
+  (Media's `ICONS`, ConsumableMaster's `settings/Category.lua`, `Core.lua`, `DebugLog.lua`) point at
+  the current lines.
+- **No member or behavior moves.** The minors move (Core 10 -> 11, DebugLog 19 -> 20, OptionsIdList
+  4 -> 5) so a corrected copy wins the LibStub race. The Options key was briefly
+  29.2.34.2.4.9.1.7.4.2.1 on the release branch; no release carried it.
+  [Core version 11](docs/api/Core/version-11-docs.md),
+  [DebugLog version 20.3.1](docs/api/DebugLog/version-20.3.1-docs.md),
+  [Options version 29.2.34.2.5.9.1.7.4.2.1](docs/api/Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md).
+
+### DebugLogDiagnostics minor 3: the identity header names Glow and Sim (#54 #56)
+
+- **The report's `LibKa0s running:` line lists the two new majors.** `DebugLogDiagnostics.lua`
+  writes down the majors whose running minors it prints, since LibStub cannot list what it holds,
+  and the list stopped at Perf. It now carries `Glow` and `Sim` too, in `tests/majors.lua` order, so
+  a report from a client running `LibKa0s-Glow-1.0` or `LibKa0s-Sim-1.0` names `Glow`, `Sim`,
+  `SimTimeline` and `SimPanel` with their minors. A major absent from the client is still skipped.
+- **A gate ties the list to `tests/majors.lua`.** A new case in
+  `tests/test_debuglog_diagnostics.lua` builds a report with the whole library loaded and fails,
+  naming the file, when any file of any major `tests/majors.lua` ships is missing from the header.
+  It derives the expected entries from `T.majors`, and no seam reads the file's local.
+- **No member moves.** DebugLogDiagnostics 2 -> 3, so the fuller header wins the LibStub race. The
+  DebugLog key was briefly 20.2.1 on the release branch; no release carried it.
+  [DebugLog version 20.3.1](docs/api/DebugLog/version-20.3.1-docs.md).
+
+### PerfPanel minor 7: comment-only; the step panel stays Sim-private (#53)
+
+- **`W.StepPanel` is withdrawn before any release carried it.** The owner's scope made the step
+  panel public only if Perf's panel could be rebuilt on it with every Perf suite passing unedited.
+  It could not: `tests/test_perf_command.lua:279` and `tests/test_perf_isolation.lua:264`, `:272`
+  and `:277` load `PerfPanel.lua` without Widgets, and `tests/test_resize_windows.lua:432` caught
+  the widget calling `Core.MakeResizable` unguarded. So `WidgetsStepPanel.lua`, its suite and its
+  rows leave, the Widgets key is 13.1.4.3.2 again (it was briefly 13.1.4.3.2.1 on the release
+  branch; no release carried it), and the renderer becomes library-private inside
+  `LibKa0s-Sim-1.0`, with no public contract.
+- **`PerfPanel.lua` gains one header comment and nothing else.** It names the deliberate
+  duplication with Sim's private renderer. The minor moves 6 -> 7 only so that two different files
+  never sit under one minor (the #57 precedent); Perf takes no dependency on Widgets, and nothing
+  visible changes. [Perf version 15.1.1.7](docs/api/Perf/version-15.1.1.7-docs.md).
+
+### Test kit revision 41
+
+Revision 41 is this release's one kit revision. It carries revision 40's icon gate below, which
+never shipped on its own.
+
+- **`Kit.__deviationRows` and `Kit.__declineFor` are no longer exported** (#45). `framework.lua` put
+  `inventory.lua`'s deviations reader and decline matcher on the kit table for self-tests no suite
+  wrote; `tests/test_kit_inventory.lua` pins the decline reader through its fixtures. Neither was
+  contract (no kit version document listed them for consumers), so no consumer changes.
+  `inventory.lua` stops returning them, and `run-automated-tests.sh`'s comment names `inventory.lua`
+  as the reader. [testkit version 41](docs/api/testkit/version-41-docs.md).
+- **#46: a lizard crash is a crash, not 58 blind files.** The complexity suite read lizard's
+  output with stderr merged and took its last line as the footer, so a raise wrote the exception's
+  words into `manifest.json` as figures, the maximum CCN came from the rows streamed before the
+  raise, and parity named every file blind. Now stderr is kept apart (and kept in
+  `complexity.txt` under a separator), the footer is read under its header, and a run that did not
+  exit 0 or 1, has no eight-number footer, or raised is `fail` with every figure 0 (`n/a` on the
+  console and in the trend row), parity skipped, and one of two notes: the crashed note (#47, below) or
+  `lizard exited <rc> with no valid footer (bound: ...)`. A crash stays amber, as blind is.
+  [testkit version 41](docs/api/testkit/version-41-docs.md).
+- **#47: crashed is its own bucket.** On a raise (not on a 124/137 bound) the runner retries lizard
+  once per file inside the shadow, bounded, and names each file whose solo run raises:
+  `lizard raised on N file(s): <path> (<exception>), so nothing was measured.` with a static hint
+  to hoist the function literal out of the `for` header, or `lizard raised on the whole tree; no
+  single file reproduces it` when none does. The rest is never re-measured: figures stay 0 / `n/a`,
+  and a crashed file is never reported blind. `manifest.json` gains `crashedFiles` beside
+  `blindFiles` (schema 1, additive, no exception text), and `RESULTS.md`'s watch list leads with
+  `**Not measured — lizard raised**`. Rejected, with triggers recorded: an
+  `S.forInFunctionLiterals` detector (until a second crash of this shape in a roster addon) and
+  rewriting the shape in the shadow, which would under-count CCN (until lizard fixes its reader or
+  a crash has no hoist remedy). [testkit version 41](docs/api/testkit/version-41-docs.md).
 
 ### Test kit revision 40: the icon folder is held to the consumer's declaration
 
@@ -60,17 +204,290 @@ README's standards pointer moves when this is released.
   copy does not ship and draws nothing, silently. Paths are per host, so a pruned copy that wins the
   LibStub race cannot break another addon's icons. [Media version 5.1](docs/api/Media/version-5.1-docs.md).
 
+### Item minor 3: Item.BonusIDsFromLink (#51)
+
+- **`Item.BonusIDsFromLink(link)`, the bonus ids an item link or bare itemString carries**, as
+  numbers in link order: `{}` for an item with none, `nil` for a non-string or a string holding no
+  `item:<id>`. It splits the itemString keeping empty fields, reads field 13 as the declared count
+  and reads fields 14 to 13+*n*, skipping a non-numeric field and never reading the modifiers after
+  the count. Additive: no member moves, `NEEDS_CORE` stays 1 and no floor is raised. Adopters:
+  **BankLedger** and **LootHistory**, whose Wowhead builders each wrote this walk.
+- **The rest of #51 is recorded as rejected**, each with its reason and re-check trigger, under
+  *What this major is not* in the API document: `LinkDetail`/`BetterLink`, `IdentityKey`/`SameItem`,
+  `EffectiveItemLevel`, `ItemLevelAt`/`QualityAt`, `QualityOf`, the Wowhead URL builder and the
+  loot-line parser. `Item.lua`'s header reads "why these five" and points there.
+  [Item version 3](docs/api/Item/version-3-docs.md).
+
+### LibKa0s-Glow-1.0 (new major, Glow minor 1)
+
+- **The stateless LibCustomGlow-1.0 driver (#56).** `LibKa0s/Glow.lua`, loaded after `Item.lua`.
+  Two members besides `MAJOR`, `MINOR` and `MODULES`, dot-called: `Glow.Start(frame, style, knobs,
+  key, frameLevel) -> boolean` and `Glow.Stop(frame, style, key)`. The style vocabulary is closed:
+  `button`, `proc`, `pixel`, `autocast`; anything else is a quiet `false` or no-op. `knobs` carries
+  `color` and thirteen named knobs (`pixelLines`, `pixelFrequency`, `pixelLength`, `pixelThickness`,
+  `pixelBorder`, `autocastParticles`, `autocastFrequency`, `autocastScale`, `buttonFrequency`,
+  `procDuration`, `procStartAnim`, `xOffset`, `yOffset`); other fields are ignored, so a host passes
+  its whole config table. No defaults: a `nil` knob reaches LibCustomGlow as `nil`, and a numeric
+  knob that is not a number goes as `nil`. `Start` never stops anything first. `Stop` with a style
+  stops that style; with `nil` it stops all four (button, pixel, autocast, proc).
+- **LibCustomGlow-1.0 is resolved at every call**, never captured at load, and each of its members
+  is presence-checked, so an absent or older copy answers `false` instead of raising. There is no
+  floor on it: the payload cannot carry a consumer-vendored lib. `NEEDS_CORE = 1`, and no Core
+  member is called.
+- **The traps** the three hosts each handled on their own: `pixelLength` 0, negative or non-numeric
+  goes as `nil` (LibCustomGlow computes a length only for `nil`); `pixelBorder` and `procStartAnim`
+  go as `~= false`; the proc options are a fresh table per call, never the caller's knobs (LibCustomGlow
+  sets a metatable on them); a color handed over is kept by reference by the button style and must
+  not be mutated; the button style has no key, so a stop-all belongs only on a frame the host owns.
+- **No `STYLES` member, no ranges, no defaults, no `Available()`, no lifecycle** (the repaint gate,
+  the proc burst, triggers, class-color resolution and stop-before-start stay the host's). Each is
+  recorded with its re-check trigger under *What is not here* in
+  [Glow version 1](docs/api/Glow/version-1-docs.md).
+- **Adopters:** **DropWatcher**, **QuickComms** and **KickCD**, each through a `core/GlowSetup.lua`
+  seam publishing `NS.GlowLib`.
+
+### LibKa0s-Sim-1.0 (new major, Sim minor 2, SimTimeline minor 2, SimPanel minor 2)
+
+- **The Compat answer seam (#54).** `LibKa0s/Sim.lua`, loaded after `PerfPanel.lua`.
+  `Sim:NewSeam(compat, opts) -> seam` wraps the host's own Compat table in place, once (a second
+  wrap of the same table raises). `opts.name` (required) names the seam in errors and debug lines;
+  `opts.pure` (`{[key]=true}`) is never wrapped; `opts.guarded` (`{[key]=fn}`) is the safe answer
+  while a session is active, and a guarded key that is not a wrapped member raises at load;
+  `opts.debug` (optional `fn(tag, fmt, ...)`) is the sink `Live` writes a traceback to. Every other
+  function member becomes a closure whose idle path is one upvalue-field test and allocates nothing;
+  while a bound session is active, the key's provider answers as `provider(fallback, ...)` with
+  `fallback = guarded[key] or live`, and a guarded member never reaches the client, inside `Live`
+  included. Until a session binds, the seam is idle and every call answers live.
+- **Four seam members.** `SetProvider(key, fn)` (`nil` releases; raises on a key that is not
+  wrapped, pure or unknown, and on a second non-nil provider for a key that already has one);
+  `Live(fn, ...)` (bypass on, nesting-safe, restored on every exit; an error is re-raised with its
+  original value, so a table survives, after its traceback is written to the debug sink; nil holes
+  in the returns survive); `Keys()` (the sorted wrapped keys); `Unwrapped()` (the sorted function
+  members that are neither pure nor still the seam's wrapper: one added or replaced after
+  `NewSeam`; every host suite asserts it is empty).
+- **What it deliberately is not** (OWNER_SCOPE C.7 to C.9): no query of the seam's active state or
+  of a key's guarded status, no auto-wrap metatable on the host's table, no restriction or
+  chat-lockdown simulation (host code), no SavedVariables read or written, no behavior flags.
+- **Payload weight.** Whole-folder vendoring ships the major into every consumer. Its file bodies
+  only define functions: no frame, timer or event registration exists until `NewSeam` or `New` is
+  called (and no timer until a session calls `After`, no frame until `ShowPanel`), so a host that
+  never simulates pays parse time and nothing else: of the fourteen consumers the copy reaches, the
+  eleven that do not adopt pay parse time only.
+- **The session (#54).** `Sim:New(d) -> sim` binds one session to a seam (a second `New` on the
+  same seam raises). Required descriptor fields raise by name when missing: `name`, `seam`,
+  `slash`, `deliver` (`fn(event, ...) -> n`, any string a legal event name), `isStoodDown` (read at
+  call time), `scenarios` (`{names, defs}`, each def with a `timeline`), `prepare` and `play`.
+  `d.panel` takes presentation fields only; `button`, `tooltip` and `store` raise (OWNER_SCOPE C.7,
+  C.11). `Start(opts)` refuses, in order, an unknown scenario (naming the scenarios), a session
+  already running, the host's `refusal(opts)` read inside `seam:Live`, and the stood-down
+  backstop; then it creates the session `{sim, scenario, size, seed, startedAt, events}` (`size`
+  only when the def has `sizes`, `0` random; a time-derived seed by default), turns the seam on,
+  prints a neutral `STARTED` and runs `prepare` under `pcall` with a `ready` bound to that session:
+  a stale or second `ready()` is ignored (C.1), and a `prepare` error becomes `Stop("error")`.
+- **The two-phase stop.** `Stop(reason)` is re-entrancy-safe (a `Stop` from inside `deliver`, a
+  stop callback, a listener, or twice in a row answers `false`, C.1) and runs, each step after the
+  first under `pcall`: the run and every session timer canceled; `stopping` (the seam still answers,
+  `Fire` and `After` refuse); the `OnStopGuarded` list; the seam off; the `OnStop` list, the only
+  place `DeliverForCleanup` delivers (and never while stood down, C.3); the panel hidden on a
+  stand-down or repainted; listeners; then the host's `stopText[reason]`, the library line for
+  `stop`, `restart` and `error`, or `STOPPED_REASON`.
+- **Delivery and timers.** `Fire(event, ...)` delivers under `pcall` only while a session is live,
+  not stopping and not stood down; an observed stand-down self-stops with `standDown`; an error in
+  `deliver` is a debug line and answers `0`. `IsDelivering()` is true only inside `Fire`,
+  nesting-safe. `After(delay, fn)` is a timer that fires only within its own session, under
+  `pcall`; `handle:Cancel()` cancels and forgets it, and the stop cancels every live one.
+- **The rest of the instance.** `IsActive()`, `Session()` (host fields go on the session table:
+  the host bag), `Status()`, `OnStopGuarded(fn)`, `OnStop(fn)`, `AddListener(fn)`. No public
+  `active` field and no `sim:Live`: the one `Live` is the seam's (C.7). Host members never hang on
+  the instance; the host keeps its own table (C.4). Every timeline, verb and panel member has a
+  fallback until `SimTimeline.lua` and `SimPanel.lua` attach (`RunVerb` prints `NO_TIMELINE` and
+  answers `false, "absent"`). `Sim.STRINGS` carries the session's lines, each overridable through
+  `d.L` by `rawget`. Once bound, `seam:Live`'s traceback goes to the session's debug sink.
+- **SimTimeline minor 1: the gated step machine (#54).** `LibKa0s/SimTimeline.lua`, loaded after
+  `Sim.lua`, a secondary file paired on the shell's minor (`__timelineMinor` /
+  `__timelineShellMinor`) that attaches through `lib.__AttachTimeline` and overwrites the shell's
+  fallbacks. `Steps()` is the session's live list (built from the scenario's pure `timeline`, `{}`
+  idle). `Step()` answers the step or `nil, code` (`notRunning`, `building` until the session's
+  `ready()`, `done`, `settling` when the host's `gate(session)` is closed, printing its line or
+  `SETTLING` without advancing); on success it plays under `pcall`, stamps `ranAt`, `detail` and
+  `index` (nothing else), prints `STEP_LINE` and tells listeners, and a `play` error counts the step
+  as run with detail `ERROR`, pauses the run and prints `STEP_FAILED` (`nil, "failed"`). `Run()`
+  plays to the end, re-polling a closed gate every 0.25 s and waiting `stepDelay(step)` (a number or
+  `fn(step)`, default 2, read when each timer is set; no schema row, OWNER_SCOPE C.11) between
+  steps; the last step prints `FINISHED`. `Pause()` cancels the pending tick with no orphan timer,
+  `Resume()` runs again, `Restart()` stops with `restart` and starts the same scenario and size with
+  a fresh seed. The click-ahead the panel will drive is Sim-internal, handed over through the
+  attach handshake and never an instance member (C.7); it plays back to back up to a row, honoring
+  the gate, and shares `Run`'s `playing` slot, so `Run` answers `playing` and `Pause` and `Stop`
+  cancel its pending poll (C.2). Step, every tick and the click-ahead carry the session as a token
+  and bail if a `Stop` or `Restart` inside `play` changed it: no stamp, no line, no next tick (C.1).
+  Every timer is the session's `After`. `Status()` fills `pos`, `total`, `playing`, `paused` and
+  `settling`. `Sim.STRINGS` gains `BUILDING`, `PLAYING`, `NOT_PLAYING`, `NOT_PAUSED`, `DONE`,
+  `SETTLING`, `STEP_LINE`, `STEP_FAILED`, `FINISHED` and `ERROR`. The key moves `1` -> `1.1` before
+  any release carried `1`, so the document moved with it.
+- **The verbs: `sim:RunVerb(line) -> ok, code` (#54).** Also `SimTimeline.lua`, unreleased, so no
+  minor moves. One typed grammar for every host's `sim` slash verb, printed through `d.print`: the
+  empty line prints the status line and the usage and opens the panel; `start <name> [size]`
+  starts (the name matched exactly, else ignoring case); `run`, `step`, `pause`, `resume`,
+  `restart` and `stop` drive the control of the same name and print exactly its lines; `status`
+  and `panel`. Then the host's `d.verbs` (`parse(words)`, `run(cmd, sim)`, `free`), each under
+  `pcall`. **There is no `help` verb** (OWNER_SCOPE C.7): any unknown word, `help` included, prints
+  the usage, formatted with `d.slash` and followed by `d.usage`. The free verbs (the empty line,
+  `status`, `start`, `panel`, and a host verb marked free) run idle; every other prints
+  `NOT_RUNNING`. A failure code prints the library's WHY line or `d.why`'s, and `refused`,
+  `failed` and `usage` stay silent because their line has printed. The status line names the
+  scenario, size, seed, position and state, and appends `d.statusLine` (a line or a list). The
+  host wiring is one Slash-1.0 feature-verb row, slash-only (C.11). `Sim.STRINGS` gains
+  `STATUS_IDLE`, `STATUS_RUNNING`, `STATUS_SIZE`, `STATUS_RANDOM`, six `STATE_*` words,
+  `VERB_FAILED` and ten `USAGE_*` lines.
+- **SimPanel minor 1: the docked step panel (#53, #54).** `LibKa0s/SimPanel.lua`, loaded after
+  `SimTimeline.lua`, a secondary file paired on the shell's minor (`__panelMinor` /
+  `__panelShellMinor`) that attaches through `lib.__AttachPanel` and overwrites the shell's panel
+  fallbacks. Its attach-file floor is Core 9 or newer and Widgets present (the picker's
+  `W.Dropdown`): a new attach-borne edge, Sim -> Widgets, and with it unmet the file returns, the
+  fallbacks answer and a headless simulator is unchanged. The rows are Start, one per step and
+  Stop, addressed by index, each beside its typed command, in Perf's states and no new one: a step
+  before `pos` done, the one at `pos` busy while the run plays or the gate holds, the next ready,
+  and the rows further ahead locked but clickable, a click there playing every step up to it
+  through the internal click-ahead; every step locked and inert while idle, stopping or before
+  `ready()`; Start ready while idle, busy until `ready()`, then done; Stop cancel only while a
+  session runs. A click re-composes the rows and re-checks the clicked one, so a stale row never
+  acts, and every action is `RunVerb` or the click-ahead (the click path is the typed path).
+  Idle, the rows preview the picked scenario's timeline. Under the rows: the picker (a scenario
+  `W.Dropdown`, a size dropdown only when the scenario has sizes, `Random` for `0`, and Start)
+  while idle, and the controls (Run all, Pause / Resume swapping, Restart, Stop) while running,
+  on the library's own minimal Core-skinned button and GameTooltip (no `d.panel.button` or
+  `d.panel.tooltip`, OWNER_SCOPE C.7). A shown panel repaints on every listener notification and
+  re-pins its height bounds when the row count changes (C.5); `ShowPanel` answers `false` while
+  stood down, and a stand-down stop hides it. Every non-click way the picker leaves the screen
+  (`HidePanel`, Escape through the frame's `OnHide`, a typed start swapping the picker out) closes
+  Widgets' shared dropdown menu, so none leaves it orphaned. Placement: a point dragged this session wins, held
+  in memory only, so nothing is written to SavedVariables (C.11); else it docks right of
+  `d.panel.anchorTo()`, or left when the right has no room, or floats at CENTER +420, with an 8 px
+  gap, redocking on every show; `ResetPanelPosition()` forgets the point. `PanelRows()` answers the
+  composed rows `{ key, index, label, command, state, actionable, tip }`, so a host suite asserts
+  them without a `__` field. The `d.panel` fields draw: `title` (default `<name> - Simulation`),
+  `stepLabel`, `stepTip`, `startTip` and `stopTip` (a done row's tip adds `RAN_AGO`), `anchorTo`,
+  and `check`, the host-passed done mark, so the library-drawn icon set does not grow. **The
+  renderer is library-internal** (LK-11's outcome B): a file-local section of `SimPanel.lua`,
+  duplicated on purpose with `PerfPanel.lua`'s, with `lib.__StepPanel` as its internal test seam
+  and no public contract; `Core.MakeResizable` is guarded there, the defect LK-11's spike found.
+  `Sim.STRINGS` gains `PANEL_START`, `START`, `PANEL_STOP`, `RUN_ALL`, `PAUSE`, `RESUME`,
+  `RESTART`, `STOP`, `RANDOM` and `RAN_AGO`. The key moves `1.1` -> `1.1.1` before any release
+  carried `1.1`, so the document moved with it:
+  [Sim version 1.1.1](docs/api/Sim/version-1.1.1-docs.md).
+- **The major's contract suites (#54), tests only.** `tests/test_sim_isolation.lua` pins two hosts
+  on one major keeping separate seams, sessions, timers and panels, and the shell, step machine
+  and panel pairing across vendored copies (Perf's idiom). `tests/test_sim_stub.lua` carries the
+  **reference degradation stub** a host copies when the major is absent (session and seam), with
+  `Kit.assertSurfaceParity` both ways against a live instance and a live seam and an empty ignore
+  set. `tests/test_sim_host.lua` drives a DropWatcher-shaped mini host start -> `RunVerb("run")`
+  -> stop and through a stand-down mid-run, asserting `seam:Unwrapped()` empty after load, no
+  guarded member live while active, host fields on the host's own table and none on the instance
+  (OWNER_SCOPE C.4), the stop order, cleanup delivery suppressed by the stand-down, no timer
+  outliving its session and nothing written to a SavedVariables-shaped global. No payload change.
+- **The host contract and what the library enforces (#54), docs only.** The API document names,
+  row by row, what the library enforces (the guarded-member rule, the refusal order, the idle cost,
+  session-bound timers, `ready()` and the click-ahead's slot, the two-phase re-entrancy-safe stop,
+  cleanup delivery, `Live`'s error, one provider per key, the session-only panel position) and what
+  it only documents as a host obligation: saved data untouched, nothing sent and no real player
+  acted on beyond the guarded keys, dispatch fidelity, real input mid-session, test-mode exclusion,
+  the marker, and every world refusal. Of #54's five "safety rules enforced by the library", only
+  "stop cleans everything" is the library's; the other four are host obligations, stated as such.
+  The host contract H1-H10 (Compat reads at call time; the seam straight after Compat with a
+  LOAD-BEARING TOC comment and `Unwrapped()` asserted empty; one faithful `deliver`; session-only
+  stores with a byte-identical test; `refusal`; `Stop("standDown")` first; one slash-only
+  feature-verb row; the marker, diagnostics and debug tag; the degradation stub with parity; the
+  session-only panel position) is joined by OWNER_SCOPE C.4 (host members on the host's own table,
+  such as `NS.SimHost`, never on the instance), C.9, C.11 and C.12 (a `gate` for a world that
+  settles asynchronously). *Adopting it* carries the setup file, the reference stub from
+  `tests/test_sim_stub.lua`, the `Unwrapped()` assertion and the stub parity case, and names the
+  adopters and the future candidates (MultiMeters#60, WhatGroup#24, KickCD#38):
+  [Sim version 2.2.2](docs/api/Sim/version-2.2.2-docs.md).
+- **Sim minor 2 and SimTimeline minor 2: `Start` reads the scenarios live, and `prepare` gets the
+  host's start fields (#54).** Two contract gaps DropWatcher's migration found (its item DW-02),
+  closed additively, after the key 1.1.1 had been tagged locally and re-vendored by the three
+  adopters' run branches. **No member is added or removed**; two existing members accept more.
+  `Start` reads `d.scenarios.names` and `d.scenarios.defs` when it is called rather than a set of
+  names frozen at `New`, so a host that fills its scenarios after `New` can start them. `New` still
+  checks the entries present when it runs and still accepts an empty list, and a def listed after
+  `New` is checked on its `Start` with `New`'s checks and error text (naming `Start`), raising as
+  `New` does. `UNKNOWN_SCENARIO` lists the live names. `prepare`'s `opts` is a shallow copy of the
+  table passed to `Start`, with `scenario`, `size` and `seed` set to the resolved values, so a
+  host's own start fields (DropWatcher's `band` and `classFilter`) arrive; the caller's table is
+  never written, `refusal(opts)` still gets it, the library reads no other field and the
+  timeline's `opts` stay `{ scenario, size, seed }`. `Restart()` starts again with the same extra
+  fields, every one but `seed`. The key moves `1.1.1` -> `2.2.1`, and the 1.1.1 document is kept,
+  Superseded, with its *Moving to* section:
+  [Sim version 2.2.1](docs/api/Sim/version-2.2.1-docs.md).
+- **SimPanel minor 2: the picker reads its scenario at use (#54).** A third contract gap
+  DropWatcher's migration found (its item DW-04), closed additively after the key 2.2.1 had been
+  tagged locally. **No member is added or removed.** Minor 1 read `d.scenarios.names[1]` once,
+  inside `New`, so a host that filled its scenarios after `New` (legal since Sim minor 2) got an
+  idle Start row reading `Start: nil` and a picker whose `START` ran `start nil`. Now the panel's
+  scenario is the picker's choice while its def resolves, else the first name listed when the rows
+  are composed or the button is pressed: the Start row, its preview, its command and click, and the
+  picker's selection, size dropdown, `START` and tooltip all read it. With no scenario listed the
+  Start row is locked and `START` disabled. An audit of every other descriptor read found nothing
+  else fixed at `New` that a host can fill later; the Sim document lists what is read at use and the
+  few things fixed on purpose (the seam, the checks, the frame name, `panel.check`). The key moves
+  `2.2.1` -> `2.2.2`, and the 2.2.1 document is kept, Superseded, with its *Moving to* section:
+  [Sim version 2.2.2](docs/api/Sim/version-2.2.2-docs.md).
+
 ### What a consumer owes
 
-- **On its next re-vendor:** the kit (revision 40), the library copy, its `LibKa0s icons:` line under
-  the provenance line, and `lua tools/prune-icons.lua <Addon>`, all in one commit. Re-vendoring every
-  consumer with its declaration is tracked as a LibKa0s issue.
+- **One re-vendor commit:** the kit (revision 41), the whole library folder, the `LibKa0s icons:`
+  line directly under the `CLAUDE.md` provenance line, and `lua tools/prune-icons.lua <Addon>` run
+  from this checkout. Payload files move (Core, Item, Widgets, DebugLog, DebugLogDiagnostics,
+  OptionsIdList, OptionsTabs and PerfPanel each take a minor, and Glow and Sim arrive), so the
+  library is copied as well as the kit. An earlier draft of this entry said no payload file had
+  changed; that is withdrawn. A consumer with no `LibKa0s icons:` line is still compared whole, so
+  the re-vendor alone turns nothing red. Re-vendoring every consumer with its declaration is
+  tracked as a LibKa0s issue.
 - **Declare the icons LibKa0s draws for you.** `close` (`Core.MakeCloseButton` given the addon name:
   the DebugLog console, `PerfPanel.lua`, the Widgets copy window), `clear` and `copy` (the DebugLog
   console) and `info` (the Options id list's help mark, unless the spec passes `helpIcon`) come out
   of the host's copy. A host that wires the debug console declares at least `close, copy, clear`.
   A pruned icon still resolves to a path, so the text fallback never runs and the control draws
   blank; the gate cannot catch the omission.
+- **Declare the icons you pass in.** A `W.TestStrip` adopter declares `info` (the strip's mark is
+  host-passed, so the library's closed set, close, copy, clear and info for `OptionsIdList`, does
+  not cover the adopter's own copy); a `W.SearchBox` adopter declares the mark it passes
+  (BankLedger, its magnifier); a Sim host declares the `d.panel.check` mark it passes.
+- **Delete any `O.__releaseChrome` mirror** from an Options degradation stub (the KickCD M4-09
+  precedent). `Kit.assertSurfaceParity` iterates the live surface, so a stub that keeps it turns
+  nothing red; it is dead weight.
+- **Surface-parity churn.** A degradation stub pinned with `Kit.assertSurfaceParity` by name goes
+  red until it gains the new members: a Widgets stub `SearchBox`, `TestStrip` and `TEST_STRIP`, an
+  Item stub `BonusIDsFromLink` (with the same walk, not a constant answer). Media's surface does
+  not move; a Glow or Sim stub is new with its adopter, built from the API document's *Adopting it*
+  (Sim's from `tests/test_sim_stub.lua`), with an empty ignore set.
+- **Adopters keep the contracts they take on.** A `W.SearchBox` adopter extends the box with
+  `HookScript` and never `SetScript`s the five scripts the constructor sets, rewrites the hint with
+  `box.hint:SetText`, and hangs `W.Autocomplete` on it after construction. A `W.TestStrip` adopter
+  owns the strip's anchors, its visibility and the gaps around it. A Glow adopter keeps vendoring
+  `LibCustomGlow-1.0`. A Sim adopter owes the host contract H1-H10 from its re-vendor on.
+- **Glow and Sim adoption is required of none.** Re-vendoring makes the files arrive, and a host
+  that never wires them carries files that never run: no frame, timer or event until `NewSeam`,
+  `New` or `ShowPanel`. The named adopters adopt in this run: Glow in **DropWatcher**,
+  **QuickComms** and **KickCD**; Sim in **DropWatcher** (migrating its own simulator onto the major),
+  **LootHistory** and **BankLedger** (new simulators). The promotions' adopters replace their
+  hand-built copies in the same run: `W.SearchBox` in LootHistory, BankLedger and DropWatcher,
+  `W.TestStrip` in DropWatcher, LootHistory, BankLedger and MultiMeters, `Item.BonusIDsFromLink` in
+  BankLedger and LootHistory.
+- **No new vendoring trigger.** `W.StepPanel` was withdrawn (outcome B), so Perf gains no floor on
+  Widgets. The one new attach-borne edge is `SimPanel.lua` on Widgets, which the whole-folder copy
+  always carries; without it the panel's fallbacks answer and a headless simulator is unchanged.
+- **README credits, per shipped icon set** (documentation-§1, standard v2.86.0): a consumer whose
+  copy ships a Game-icons.net mark credits it (MUST); one that ships an Open Iconic or Phosphor mark
+  should credit that set. The license files travel inside the pruned copy exactly when one of their
+  icons does.
+- **A host that parses its own diagnostics report** reads more `File minor` entries on the
+  `LibKa0s running:` line (Glow, Sim, SimTimeline, SimPanel). Nothing else changes for it.
+
+Release gate (`docs/automated-tests/20261022-155222/`): lint pass, 0/0 in 180 files;
+tests pass, 2536 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
 ## v1.74.0 — 2026-10-19
 

@@ -55,6 +55,11 @@ local MAJORS = {
     primary = "Item",
   },
   {
+    major = "LibKa0s-Glow-1.0",
+    files = { "Glow" },
+    primary = "Glow",
+  },
+  {
     major = "LibKa0s-Media-1.0",
     files = { "Media", "MediaIcons" },
     primary = "Media",
@@ -118,6 +123,15 @@ local MAJORS = {
       { file = "PerfSampler",  minorField = "__samplerMinor",  probeField = "__samplerShellMinor" },
       { file = "PerfCommands", minorField = "__commandsMinor", probeField = "__commandsShellMinor" },
       { file = "PerfPanel",    minorField = "__panelMinor",    probeField = "__panelProbeMinor" },
+    },
+  },
+  {
+    major = "LibKa0s-Sim-1.0",
+    files = { "Sim", "SimTimeline", "SimPanel" },
+    primary = "Sim",
+    paired = {
+      { file = "SimTimeline", minorField = "__timelineMinor", probeField = "__timelineShellMinor" },
+      { file = "SimPanel", minorField = "__panelMinor", probeField = "__panelShellMinor" },
     },
   },
 }

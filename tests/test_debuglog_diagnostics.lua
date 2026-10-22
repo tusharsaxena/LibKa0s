@@ -1,7 +1,8 @@
 -- tests/test_debuglog_diagnostics.lua — LibKa0s-DebugLog-1.0's diagnostics report
--- (DebugLogDiagnostics.lua, minor 2): RunDiagnostics, BuildDiagnostics, the `out` writer a section
+-- (DebugLogDiagnostics.lua, minor 3): RunDiagnostics, BuildDiagnostics, the `out` writer a section
 -- is handed, and DebugVerb. Minor 2's change: a run turns debug logging on for the session first,
--- unless the descriptor opts out (debug-logging-§14 at v2.71.0).
+-- unless the descriptor opts out (debug-logging-§14 at v2.71.0). Minor 3's: the identity header
+-- names Glow and Sim, and a case below ties its list to tests/majors.lua.
 --
 -- The dispatcher-facing half of the contract (both slash forms, while disabled, `debug diag` not
 -- running it) is the kit's shared case, testkit/test_diagnostics_contract.lua, which this repo
@@ -60,7 +61,7 @@ test("diag: the caps are pinned as literals, and the file registers under the ma
   -- Literals on purpose: these are the numbers the standard and every consumer's docs cite.
   assertEqual(debuglog.DIAG_MAX_LINES, 1200)
   assertEqual(debuglog.DIAG_MAX_PER_LIST, 40)
-  assertEqual(debuglog.MODULES.DebugLogDiagnostics, 2)
+  assertEqual(debuglog.MODULES.DebugLogDiagnostics, 3)
   assertEqual(debuglog.__diagShellMinor, debuglog.MINOR, "paired on the live shell")
   assertEqual(debuglog.STRINGS.DIAG_WRITTEN,
     "Diagnostic report written to the debug console: %d lines. Use Copy to share it.")
@@ -94,9 +95,42 @@ test("diag: the identity header names the host, the client, the flags and the ru
     assertTrue(has(t, "debug logging: off"), "the flag, printed")
     assertTrue(has(t, "combat: InCombatLockdown=false UnitAffectingCombat=false"), "both reads")
     assertTrue(has(t, "LibKa0s running: "), "the running minors")
-    assertTrue(has(t, "DebugLogDiagnostics 2"), "this file among them")
+    assertTrue(has(t, "DebugLogDiagnostics 3"), "this file among them")
     assertTrue(has(t, "DebugLog " .. debuglog.MINOR), "and its shell")
   end)
+
+test("diag: the running-minors header covers every major tests/majors.lua ships", function()
+  -- red under: a major added to tests/majors.lua (and LibKa0s.xml) but not to the header's MAJORS
+  -- list, which a player's report would then silently leave out. The expected entries are derived
+  -- from T.majors and each major's live MODULES, never from a hand list, and no seam reads the
+  -- file's local.
+  local D = newLog()
+  local t = texts(D:BuildDiagnostics())
+  local header
+  for i, line in ipairs(t) do
+    if line:find("LibKa0s running:", 1, true) == 1 then
+      local parts = { line }
+      local j = i + 1
+      while t[j] and t[j]:sub(1, 2) == "  " do parts[#parts + 1] = t[j]; j = j + 1 end
+      header = table.concat(parts, ", ")
+      break
+    end
+  end
+  assertTrue(header ~= nil, "the report has a 'LibKa0s running:' line")
+  local entries = {}
+  for entry in (header:gsub("^LibKa0s running:", "") .. ","):gmatch("%s*([^,]-)%s*,") do
+    if entry ~= "" then entries[entry] = true end
+  end
+  for _, row in ipairs(T.majors) do
+    local major = mocks.LibStub(row.major, true)
+    assertTrue(type(major) == "table" and type(major.MODULES) == "table",
+      row.major .. " is loaded with its MODULES")
+    for _, file in ipairs(row.files) do
+      local want = file .. " " .. tostring(major.MODULES[file])
+      assertTrue(entries[want], ("the header is missing %s (%s)"):format(want, row.major))
+    end
+  end
+end)
 
 test("diag: a combat read that raises prints unreadable and costs nothing else", function()
   local saved = mocks.InCombatLockdown

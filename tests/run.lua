@@ -47,6 +47,8 @@ _G.LK_TEST = Kit.expose{
   schema = mocks.LibStub("LibKa0s-Schema-1.0"),
   pool = mocks.LibStub("LibKa0s-Pool-1.0"),
   item = mocks.LibStub("LibKa0s-Item-1.0"),
+  glow = mocks.LibStub("LibKa0s-Glow-1.0"),
+  sim = mocks.LibStub("LibKa0s-Sim-1.0"),
   debuglog = mocks.LibStub("LibKa0s-DebugLog-1.0"),
   slash = mocks.LibStub("LibKa0s-Slash-1.0"),
   options = mocks.LibStub("LibKa0s-Options-1.0"),
@@ -78,7 +80,7 @@ Kit.diagnostics = dofile("tests/fixture_diagnostics.lua")(_G.LK_TEST)
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_core_resize", "test_env", "test_compat", "test_lifecycle", "test_lifecycle_debug", "test_bus", "test_schema", "test_schema_write", "test_schema_batch", "test_pool", "test_item", "test_media", "test_widgets", "test_widgets_reorderlist", "test_widgets_draghandle", "test_widgets_draghandle_place", "test_widgets_linechart_math", "test_widgets_linechart", "test_widgets_autocomplete", "test_widgets_reorder", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_debuglog_gates", "test_debuglog_descriptor", "test_resize_windows", "test_slash", "test_slash_parse", "test_slash_disabled", "test_slash_refusal", "test_slash_profile", "test_slash_debug",
+    "test_core", "test_core_resize", "test_env", "test_compat", "test_lifecycle", "test_lifecycle_debug", "test_bus", "test_schema", "test_schema_write", "test_schema_batch", "test_pool", "test_item", "test_glow", "test_media", "test_widgets", "test_widgets_reorderlist", "test_widgets_draghandle", "test_widgets_draghandle_place", "test_widgets_linechart_math", "test_widgets_linechart", "test_widgets_autocomplete", "test_widgets_searchbox", "test_widgets_teststrip", "test_widgets_reorder", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_debuglog_gates", "test_debuglog_descriptor", "test_resize_windows", "test_slash", "test_slash_parse", "test_slash_disabled", "test_slash_refusal", "test_slash_profile", "test_slash_debug",
     "test_launcher", "test_atenable",
     "test_options", "test_options_render", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_choicegrid", "test_options_flow", "test_options_landing",
@@ -88,6 +90,8 @@ Kit.run{
     "test_options_idsuggest", "test_options_idsuggest_frames", "test_options_idlist_remove", "test_options_switched", "test_options_combat", "test_options_combat_debug", "test_options_compose",
     "test_options_throttle",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_budget", "test_perf_toplevel", "test_perf_isolation",
+    "test_sim_seam", "test_sim_session", "test_sim_timeline", "test_sim_verbs", "test_sim_panel", "test_sim_panel_render",
+    "test_sim_isolation", "test_sim_stub", "test_sim_host",
     "test_loader", "test_parallel", "test_kit_limits", "test_kit_asserts", "test_kit_secrets", "test_kit_latch",
     "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events", "test_mock_resize", "test_mock_lines",
     "test_surface_parity",

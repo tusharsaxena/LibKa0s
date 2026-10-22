@@ -1,0 +1,12 @@
+{
+  "major": "LibKa0s-Glow-1.0",
+  "versionKey": "1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Glow", "minor": 1 }
+  ],
+  "members": [
+    { "name": "Start", "kind": "function" },
+    { "name": "Stop", "kind": "function" }
+  ]
+}

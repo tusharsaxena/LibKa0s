@@ -363,11 +363,19 @@ Total.
 - pool: the ReleaseAll guard cannot catch keys that are themselves 1..n
 - pool: a keyed release is unaffected by ordering — the key is the mapping
 
-### test_item.lua (15)
+### test_item.lua (23)
 
 - item: ItemIDFromLink pulls the id out of a full link
 - item: ItemIDFromLink accepts a bare itemString
 - item: ItemIDFromLink answers nil for anything that is not a link
+- item: BonusIDsFromLink reads the declared bonus ids in link order
+- item: BonusIDsFromLink accepts a bare itemString
+- item: BonusIDsFromLink answers an empty table for an item with no bonuses
+- item: BonusIDsFromLink stops at the declared count when modifiers follow
+- item: BonusIDsFromLink keeps empty fields so positions hold
+- item: BonusIDsFromLink skips a non-numeric field
+- item: BonusIDsFromLink answers nil for anything that is not an item
+- item: BonusIDsFromLink answers the same for a |cff link and a |cnIQ link
 - item: QualityFromLink reads the quality out of a legacy |cff hex prefix
 - item: QualityFromLink reads the 11.1.5+ |cnIQ<n> link color
 - item: QualityFromLink retries a quality map that was built empty
@@ -380,6 +388,24 @@ Total.
 - item: LoadItem asks the client to cache the id
 - item: LoadItem fires the callback once the item is loaded
 - item: LoadItem is inert without an id or without the API
+
+### test_glow.lua (15)
+
+- glow: the major registers with Core, and reports its file minor
+- glow: absent LCG -- Start answers false for every style and Stop is quiet
+- glow: LCG registered AFTER the driver loads is reached at call time
+- glow: pixel maps every knob to its LCG position, key at 10 and frameLevel at 11
+- glow: pixelLength 0, negative, a string or nil goes as nil; a positive number passes
+- glow: pixelBorder and procStartAnim are false only when false
+- glow: a numeric knob that is not a number goes as nil
+- glow: autocast maps 9 positions and button 4, button with no key
+- glow: proc gets a fresh options table per call, never the caller's knobs
+- glow: nil and non-table knobs read as empty, and the call still happens
+- glow: an unknown style or a nil frame answers false and calls nothing
+- glow: a missing LCG member answers false or is skipped, and others still work
+- glow: Stop shapes -- one style, keyless button, stop-all in order, unknown is a no-op
+- glow: stateless -- Start never stops, and repeated Starts all reach LCG
+- glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
 ### test_media.lua (28)
 
@@ -646,6 +672,40 @@ Total.
 - autocomplete: a maxRows that floors below 1 falls back to MAX_ROWS
 - autocomplete: the backdrop is set once, and its colors follow a restyled box on every show
 
+### test_widgets_searchbox.lua (16)
+
+- SearchBox: wears the dropdown's skin, fill, line and height 20
+- SearchBox: the dropdown's look is unchanged after the SKIN hoist
+- SearchBox: small highlight face, no auto focus
+- SearchBox: a number width is set, a nil width sets none
+- SearchBox: the hint shows when empty, hides on text, shows again on clear
+- SearchBox: a nil GetText counts as empty
+- SearchBox: no hint opt gives an empty hint, still a FontString
+- SearchBox: Escape and Enter clear focus
+- SearchBox: focus gained paints the gold line, focus lost the gray one
+- SearchBox: onChange gets (text, box) exactly once per change
+- SearchBox: an icon path draws an 11x11 mark at LEFT+5 and insets the text 21
+- SearchBox: no icon keeps box.icon nil and the text inset 6
+- SearchBox: a numeric fileID is an icon too
+- SearchBox: host hooks on OnTextChanged and OnEditFocusGained survive and run
+- SearchBox: W.Autocomplete composes on it, and the hint still toggles
+- SearchBox: the host rewrites the hint through box.hint:SetText
+
+### test_widgets_teststrip.lua (12)
+
+- TestStrip: born hidden, unanchored and 18 tall, with its regions
+- TestStrip: the fill is the collection's amber at 12%, on all points
+- TestStrip: an icon path draws a 12x12 mark at LEFT+6, text on its RIGHT+6
+- TestStrip: no icon leaves __icon nil and the text at the strip's LEFT+6
+- TestStrip: a numeric fileID is an icon too
+- TestStrip: the text is GameFontNormalSmall, RIGHT at -6, LEFT-justified, no wrap
+- TestStrip: opts.text is set; nil, non-table opts and non-string text give ''
+- TestStrip: the constructor never enables the mouse; a host's tooltip hook runs
+- TestStrip: a host's SetHeight and SetWordWrap stick
+- TestStrip: a write to TEST_STRIP.HEIGHT does not move the next strip
+- TestStrip: TEST_STRIP publishes HEIGHT and no RESERVE
+- TestStrip: two strips share no regions
+
 ### test_widgets_reorder.lua (7)
 
 - reorder: a host OnUpdate on a row frame survives a drag start and end
@@ -747,12 +807,13 @@ Total.
 - dbgtime: BUFFER_SLACK is published, and is 128 at minor 14
 - dbgtime: Add reads BUFFER_SLACK at call time, like MAX_BUFFER
 
-### test_debuglog_diagnostics.lua (46)
+### test_debuglog_diagnostics.lua (47)
 
 - diag: the caps are pinned as literals, and the file registers under the major
 - diag: both markers carry the brand, and the end marker counts every line
 - diag: with no brandName the markers name the title
 - diag: the identity header names the host, the client, the flags and the running minors
+- diag: the running-minors header covers every major tests/majors.lua ships
 - diag: a combat read that raises prints unreadable and costs nothing else
 - diag: an initSummary that raises prints unreadable and the header still follows
 - diag: BuildDiagnostics writes nothing
@@ -2029,6 +2090,304 @@ Total.
 - iso: an older copy loading second replaces neither half
 - iso: a higher panel minor over the same probe still wins
 
+### test_sim_seam.lua (27)
+
+- sim seam: the major registers with Core, and reports its file minor
+- sim seam: the module is absent without Core
+- sim seam: the seam carries exactly SetProvider, Live, Keys and Unwrapped
+- sim seam: every non-pure function is wrapped, and Keys() is sorted
+- sim seam: pure members are the host's own functions, untouched
+- sim seam: Keys() answers a fresh copy each call
+- sim seam: NewSeam refuses a bad compat, a missing name and bad opts
+- sim seam: a guarded key must be a wrapped member, and its answer a function
+- sim seam: one compat table is wrapped once
+- sim seam: a dropped compat table and its seam are collected
+- sim seam: an idle call goes straight to live, arguments and nil holes intact
+- sim seam: idle, a guarded member calls live
+- sim seam: idle, a registered provider is never consulted
+- sim seam: the idle wrapper allocates nothing
+- sim seam: SetProvider raises on a pure key and on an unknown key
+- sim seam: a second owner raises; nil releases, and then a new owner is taken
+- sim seam: SetProvider raises on a provider that is not a function
+- sim seam: Live runs fn with its arguments and keeps nil holes in both
+- sim seam: Live nests, and the seam works again after a raise
+- sim seam: Live re-raises a table error value unchanged
+- sim seam: Live re-raises a string error with no second position prefix
+- sim seam: Live writes the traceback to opts.debug before re-raising
+- sim seam: a raising debug sink never masks the original error
+- sim seam: Live with no debug sink still re-raises
+- sim seam: Unwrapped() is empty straight after NewSeam
+- sim seam: Unwrapped() lists a late-added and a replaced member, sorted
+- sim seam: Sim.lua carries no auto-wrap metatable and no guarded-key query
+
+### test_sim_session.lua (55)
+
+- sim session: New is on the library, beside NewSeam
+- sim session: every required descriptor field raises by name when missing
+- sim session: a seam that NewSeam did not make raises
+- sim session: a second New on one seam raises (one seam binds one session)
+- sim session: a scenario name with no def, or a def with no timeline, raises
+- sim session: d.panel takes presentation fields only (no button, tooltip or store)
+- sim session: the instance carries no Live and no public active or delivering field
+- sim session: the fallback members answer until their files attach
+- sim session: Start prints STARTED and creates the session
+- sim session: the seed defaults to an integer, and two starts draw different seeds
+- sim session: size reaches prepare only when the def has sizes; 0 is random
+- sim session: an unknown scenario is refused first, naming the scenarios
+- sim session: Start reads the scenarios live: a def added after New starts (minor 2)
+- sim session: a def listed after New is validated on Start, raising as New does
+- sim session: prepare receives the caller's extra start options (minor 2)
+- sim session: refusal order is unknown, already running, refusal, stood down
+- sim session: the stood-down backstop refuses after refusal passes
+- sim session: refusal runs inside the seam's Live (it reads the real world)
+- sim session: a prepare error becomes Stop('error')
+- sim session: ready() is bound to its session; a second call is ignored
+- sim session: a stale ready() is ignored after a restart and after stop then start
+- sim session: Fire answers 0 when idle
+- sim session: Fire delivers any event name with its payload, and counts it
+- sim session: an observed stand-down stops the session first and answers 0
+- sim session: Fire answers 0 while stopping
+- sim session: a deliver error is isolated to a debug line, and Fire answers 0
+- sim session: IsDelivering is true only inside Fire, and nesting restores it
+- sim session: a Stop inside deliver leaves IsDelivering false afterwards
+- sim session: After answers nil when idle
+- sim session: After fires within its session, under pcall
+- sim session: After never fires into a later session
+- sim session: Cancel cancels and forgets; Stop cancels every live handle
+- sim session: After refuses while stopping
+- sim session: Stop answers false when idle
+- sim session: Stop runs guarded, then seam off, then cleanup, then notify, then prints
+- sim session: each stop step is pcalled; a raising one does not skip the rest
+- sim session: Stop re-entered from deliver, OnStop or a second call is a no-op false (C.1)
+- sim session: stop reason lines, host stopText, and the generic reason line
+- sim session: stopText overrides a library reason too
+- sim session: the panel is hidden on a stood-down stop and repainted otherwise
+- sim session: DeliverForCleanup delivers only in the OnStop phase, with the seam off
+- sim session: DeliverForCleanup answers 0 while stood down
+- sim session: Status answers every field, idle and running
+- sim session: host fields go on the session table (the host bag)
+- sim session: listeners hear start, ready and stop, with the instance
+- sim session: registrations must be functions
+- sim session: STRINGS carry every session key
+- sim session: d.L overrides a string through rawget; a metatable fallback does not shadow
+- sim session: print and debug are read at call time; the defaults need neither
+- sim session: active, a provider answers and is handed the live fallback
+- sim session: active, a member with no provider answers live
+- sim session: a guarded member never reaches live while active, inside Live included
+- sim session: active, Live answers live for ordinary members, nested and after a raise
+- sim session: once bound, Live's traceback goes to the session's debug sink
+- sim session: Sim.lua defines one Live, on the seam, and no test hook on it
+
+### test_sim_timeline.lua (41)
+
+- sim timeline: the file registers on the shell's minor and in MODULES
+- sim timeline: the STRINGS keys the step machine prints are added to Sim.STRINGS
+- sim timeline: the members overwrite the shell's fallbacks, and RunTo is not one of them
+- sim timeline: Steps is the live list while running and {} idle
+- sim timeline: the timeline is handed the def and the session's opts
+- sim timeline: Step answers building until ready(), then plays; a second ready is ignored
+- sim timeline: Step stamps ranAt, detail and index, prints STEP_LINE and nothing else
+- sim timeline: Step labels a step through panel.stepLabel when the host gives one
+- sim timeline: Step answers done after the last step, and the last step prints FINISHED
+- sim timeline: Step answers notRunning while idle
+- sim timeline: a closed gate answers settling, prints its line and does not advance
+- sim timeline: a closed gate with no line prints SETTLING
+- sim timeline: once the gate opens, Step plays and settling clears
+- sim timeline: with no gate the gate is always open
+- sim timeline: Run plays the first step at once and the next after the default 2 s
+- sim timeline: Run reads a constant stepDelay
+- sim timeline: Run reads stepDelay(step) for the step just played, when each timer is set
+- sim timeline: Run answers notRunning, building, playing and done
+- sim timeline: a Run tick on a closed gate re-polls after 0.25 s without advancing
+- sim timeline: the gate is checked before every step of a Run
+- sim timeline: Pause cancels the pending tick and leaves no orphan timer
+- sim timeline: Pause answers notPlaying when nothing plays
+- sim timeline: Resume continues a paused run; it answers notPaused otherwise
+- sim timeline: Restart stops with 'restart' and starts the same scenario with a fresh seed
+- sim timeline: Restart carries the caller's extra start options, all but seed (minor 2)
+- sim timeline: Restart answers notRunning while idle
+- sim timeline: a refused Restart prints the refusal and answers false, refused
+- sim timeline: a Restart during an async prepare ignores the old ready() (C.1)
+- sim timeline: RunTo plays up to and including index back to back, synchronous on an open gate
+- sim timeline: RunTo waits on a closed gate by polling, then continues
+- sim timeline: RunTo answers notRunning, building and done
+- sim timeline: Run during a pending RunTo poll answers playing (C.2)
+- sim timeline: Pause cancels a pending RunTo poll (C.2)
+- sim timeline: Stop cancels a pending RunTo poll (C.2)
+- sim timeline: a step failure ends a RunTo
+- sim timeline: a play error counts the step as run, pauses the run and prints STEP_FAILED
+- sim timeline: a Stop inside play leaves no stamp, no STEP_LINE and no next tick (token)
+- sim timeline: a Restart inside play leaves the new session untouched (token)
+- sim timeline: listeners fire on start, ready, step, run, pause and stop
+- sim timeline: Status carries pos, total, playing, paused, settling and ready
+- sim timeline: every timer is a session After, so Stop leaves none
+
+### test_sim_verbs.lua (42)
+
+- sim verbs: RunVerb is SimTimeline's, not the shell's NO_TIMELINE fallback
+- sim verbs: the status, usage and state keys are added to Sim.STRINGS
+- sim verbs: the empty line prints the status line and the usage, and opens the panel
+- sim verbs: a nil or blank line is the empty line
+- sim verbs: 'help' is not a verb (C.7): it prints the usage, as any unknown word does
+- sim verbs: the usage is formatted with d.slash and appends d.usage
+- sim verbs: a usage line is overridable through d.L
+- sim verbs: status idle prints STATUS_IDLE with the scenario names, and is free
+- sim verbs: status running names the scenario, size, seed, position and state
+- sim verbs: status reads random for size 0 and no size for an unsized scenario
+- sim verbs: the status state reads building, playing, paused, settling and finished
+- sim verbs: status appends d.statusLine, as a line or a list, handed the status and session
+- sim verbs: a statusLine that raises is a debug line, and the library's line still prints
+- sim verbs: panel toggles the panel, idle or running (a free verb)
+- sim verbs: start <name> starts it with no size, and prints exactly Start's lines
+- sim verbs: start <name> <size> hands the size to Start
+- sim verbs: the verb and the scenario name match regardless of case
+- sim verbs: start of an unknown scenario prints the UNKNOWN_SCENARIO line, silently refused
+- sim verbs: start with no name prints the usage
+- sim verbs: start while running prints ALREADY_RUNNING once (refused is silent)
+- sim verbs: a host refusal prints its own line once
+- sim verbs: step dispatches to Step and prints exactly its line
+- sim verbs: run dispatches to Run
+- sim verbs: pause dispatches to Pause
+- sim verbs: resume dispatches to Resume
+- sim verbs: restart dispatches to Restart
+- sim verbs: stop dispatches to Stop with the reason stop
+- sim verbs: every non-free generic verb prints NOT_RUNNING while idle
+- sim verbs: a failure code prints its library WHY line
+- sim verbs: step on a closed gate prints the gate's line once, not a second WHY
+- sim verbs: a failing step prints STEP_FAILED once, and failed is silent
+- sim verbs: a refused restart is silent past the refusal's own line
+- sim verbs: a library WHY line is overridable through d.L
+- sim verbs: a host verb is parsed from the words and run with the command and the instance
+- sim verbs: a host verb needs a session: idle it prints NOT_RUNNING and is not run
+- sim verbs: a free host verb runs idle
+- sim verbs: a host failure code prints d.why's line; refused stays silent
+- sim verbs: a host verb that answers a library code prints the library's line
+- sim verbs: a host verb whose parse answers nil prints the usage
+- sim verbs: a host verb that raises prints VERB_FAILED and writes a debug line
+- sim verbs: the generic verbs win over a host verb of the same name
+- sim verbs: a host 'help' verb is the host's own; the library defines none
+
+### test_sim_panel.lua (51)
+
+- sim panel: the file registers on the shell's minor and in MODULES
+- sim panel: the STRINGS keys the panel draws are added to Sim.STRINGS
+- sim panel: the floor unmet (no Widgets): no attach, and the shell's fallbacks answer
+- sim panel: the floor unmet (Core below 9): no attach
+- sim panel: idle, the rows preview the picked scenario at pos 0, every step locked
+- sim panel: PanelRows is a fresh list each call, and building it plays nothing
+- sim panel: building: Start busy, every step locked and not actionable, Stop cancel
+- sim panel: mid-run: done, ready, and ahead rows locked AND actionable
+- sim panel: playing: the row at pos is busy
+- sim panel: settling: the row at pos is busy while the gate holds the next one
+- sim panel: done: every step done and none actionable; Stop still cancels
+- sim panel: stopping: nothing is actionable, and the Stop row is locked
+- sim panel: after a stop the rows are the idle preview again
+- sim panel: d.panel.stepLabel names the rows (step, i, steps)
+- sim panel: startTip and stopTip may be functions answering a line list
+- sim panel: the title defaults to name .. ' - Simulation', and d.panel.title overrides it
+- sim panel: headless, ShowPanel answers false and PanelRows still composes
+- sim panel: Show, Hide, Toggle, IsPanelShown
+- sim panel: the empty verb opens it and `panel` toggles it
+- sim panel: ShowPanel answers false and does nothing while stood down
+- sim panel: a stand-down stop hides it; any other stop repaints it
+- sim panel: every listener notification repaints a shown panel
+- sim panel: the check texture is the host's path, shown on a done row
+- sim panel: height bounds are re-pinned when the row count changes
+- sim panel: the picker previews the chosen scenario and offers sizes only when it has them
+- sim panel: the picker's Start starts the chosen scenario through the typed verb
+- sim panel: running, the controls replace the picker, and Pause swaps with Resume
+- sim panel: Restart through the controls prints what the typed verb prints
+- sim panel: clicking Start, the ready row and Stop prints what typing them prints
+- sim panel: clicking an ahead row runs every step up to it, in order (the internal RunTo)
+- sim panel: an ahead click while a run is playing prints the PLAYING line and plays nothing
+- sim panel: a stale click re-composes from the live model and refuses
+- sim panel: with no anchor and no dragged point it floats at CENTER +420
+- sim panel: it docks right of anchorTo() with DOCK_GAP 8
+- sim panel: it docks left when there is no room on the right
+- sim panel: it floats when neither side has room
+- sim panel: a point dragged this session beats the dock, in memory only
+- sim panel: ResetPanelPosition forgets the point and redocks
+- sim panel: with no dragged point it redocks on every Show
+- sim panel: the panel never names SavedVariables or a store
+- sim panel: a row's tip goes to GameTooltip as double lines under the row's label
+- sim panel: HidePanel closes the shared dropdown menu
+- sim panel: Escape (the frame's OnHide, not HidePanel) closes the shared dropdown menu
+- sim panel: a typed start that swaps the picker out closes the shared dropdown menu
+- sim panel: scenarios filled after New: the idle rows read the first one live (minor 2)
+- sim panel: scenarios filled after New: the picker's Start starts the first one (minor 2)
+- sim panel: scenarios filled after New: clicking the Start row starts the first one (minor 2)
+- sim panel: nothing listed yet: the Start row and the picker's Start are inert
+- sim panel: a picked scenario the host drops falls back to the first listed one
+- sim panel: every documented optional field filled in place after New is read at use
+- sim panel: anchorTo, stepDelay and the required callbacks and slash, reassigned after New, are read at use
+
+### test_sim_panel_render.lua (31)
+
+- sim panel render: the renderer is the internal seam lib.__StepPanel, not a Widgets member
+- sim panel render: the descriptor's required fields raise when missing
+- sim panel render: the handle answers the seven members, and no frame until asked
+- sim panel render: headless, Frame() answers nil and nothing raises
+- sim panel render: the frame's chrome is Perf's
+- sim panel render: the close mark gets the descriptor's addonName
+- sim panel render: close=false draws no close mark
+- sim panel render: Show, Hide, Toggle and IsShown
+- sim panel render: row geometry and the test record
+- sim panel render: every state paints Perf's palette on the label and the dot
+- sim panel render: an unknown state paints as locked
+- sim panel render: actionable is explicit row data and nil means false
+- sim panel render: command text is repainted on every Refresh
+- sim panel render: an actionable row hovers gold and leaves to its palette color
+- sim panel render: an actionable cancel row hovers red
+- sim panel render: a non-actionable row does not hover
+- sim panel render: the tooltip is called on enter only for a row with a tip
+- sim panel render: a row with a tip and no tooltip fn shows nothing
+- sim panel render: a click re-reads rows() and hands onClick the fresh row and its index
+- sim panel render: a row that stopped being actionable after paint is not dispatched
+- sim panel render: a click on a row index the list no longer has is not dispatched
+- sim panel render: a dispatched click repaints
+- sim panel render: height follows the row count, and a shrink hides the extra rows
+- sim panel render: a footer adds its height plus PAD, is built once and painted every Refresh
+- sim panel render: the title is re-read on every Refresh
+- sim panel render: red under: bounds fixed at MakeResizable time are re-pinned when the count moves
+- sim panel render: the old SetMinResize / SetMaxResize pair is used where SetResizeBounds is absent
+- sim panel render: a width resize stretches every row, and new rows come at the stretched width
+- sim panel render: with a check, a done row shows the tinted check over a hidden dot
+- sim panel render: with no check, a done row keeps its dot and no check is built
+- sim panel render: with no MakeResizable in Core the panel builds fixed
+
+### test_sim_isolation.lua (11)
+
+- sim iso: two hosts' seams are separate objects over separate tables
+- sim iso: one host's provider and active flag never reach the other's seam
+- sim iso: one host's session, stop and status leave the other's untouched
+- sim iso: stopping one host kills its timers only
+- sim iso: one host's Run ticks advance that host only
+- sim iso: two hosts build separate panel frames, and showing one shows one
+- sim iso: each panel composes its own host's rows
+- sim iso: a newer shell loading second re-attaches its own timeline and panel
+- sim iso: an older copy loading second replaces nothing
+- sim iso: a higher SimPanel minor over the same shell still wins
+- sim iso: the paired copy actually drives a session (the attach is live, not a stamp)
+
+### test_sim_stub.lua (6)
+
+- sim stub: the session stub answers inert, member by member
+- sim stub: the seam stub's Live calls through with every argument and answer
+- sim stub: the session stub carries the live instance's whole surface
+- sim stub: and carries nothing the live instance does not publish
+- sim stub: the seam stub carries the live seam's whole surface, and nothing more
+- sim stub: the instance surface is the same with or without the attach files
+
+### test_sim_host.lua (7)
+
+- sim host: after load every non-pure Compat member is wrapped, and Unwrapped() is empty
+- sim host: idle, every wrapped member reaches the client
+- sim host: the host's refusal stops a start before anything is built
+- sim host: start, RunVerb('run') and stop, end to end
+- sim host: the host's fields are on its own table, and the instance gained none (C.4)
+- sim host: a stand-down mid-run stops first, suppresses cleanup delivery and hides the panel
+- sim host: a latch set without a stop is caught by Fire's self-stop backstop
+
 ### test_loader.lua (6)
 
 - loader: a cached chunk gives each instance its own global namespace
@@ -2348,7 +2707,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 40
+- the kit is revision 41
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -2419,7 +2778,7 @@ Total.
 - prose scan-back: a restated kit folder in skipDirs that .pkgmeta ignores passes the refusal
 - prose lists: PUBLISHED_BRITISH == #BRITISH == 92 and PUBLISHED_ALLOWED == #ALLOWED == 33
 
-### test_kit_runner.lua (13)
+### test_kit_runner.lua (20)
 
 - runner perf: a performance-§12 register row records skip reason (2), in the manifest and RESULTS.md
 - runner perf: a library's root CLAUDE.md register is read when there is no docs/ARCHITECTURE.md
@@ -2434,6 +2793,13 @@ Total.
 - runner complexity: functions lizard's reader drops are measured, methods under their own name
 - runner complexity: a file lizard stays blind in fails complexity, names the file, never fails the run
 - runner complexity: a function longer than lizard's default 1000 lines is not a warning (-L 1500)
+- runner complexity: a lizard Traceback is a fail, figures zeroed, manifest numeric
+- runner complexity: a warned run exiting 1 with a valid footer is measured, not crashed
+- runner complexity: stderr noise with exit 0 does not reach the parse
+- runner complexity: exit 124 is the bound note, numeric manifest, no per-file retry
+- runner complexity: a file lizard raises on is crashed, named, and never reported blind
+- runner complexity: a raise no single file reproduces is a whole-tree crash
+- runner complexity: the real 1.24.0 for-header crash is crashed, not blind
 
 ### test_kit_vendor_sync.lua (19)
 
@@ -2516,7 +2882,8 @@ Total.
 | test_schema_write.lua | 41 |
 | test_schema_batch.lua | 22 |
 | test_pool.lua | 23 |
-| test_item.lua | 15 |
+| test_item.lua | 23 |
+| test_glow.lua | 15 |
 | test_media.lua | 28 |
 | test_widgets.lua | 57 |
 | test_widgets_reorderlist.lua | 24 |
@@ -2525,10 +2892,12 @@ Total.
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 19 |
 | test_widgets_autocomplete.lua | 36 |
+| test_widgets_searchbox.lua | 16 |
+| test_widgets_teststrip.lua | 12 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
-| test_debuglog_diagnostics.lua | 46 |
+| test_debuglog_diagnostics.lua | 47 |
 | test_debuglog_gates.lua | 20 |
 | test_debuglog_descriptor.lua | 7 |
 | test_resize_windows.lua | 23 |
@@ -2570,6 +2939,15 @@ Total.
 | test_perf_budget.lua | 11 |
 | test_perf_toplevel.lua | 7 |
 | test_perf_isolation.lua | 12 |
+| test_sim_seam.lua | 27 |
+| test_sim_session.lua | 55 |
+| test_sim_timeline.lua | 41 |
+| test_sim_verbs.lua | 42 |
+| test_sim_panel.lua | 51 |
+| test_sim_panel_render.lua | 31 |
+| test_sim_isolation.lua | 11 |
+| test_sim_stub.lua | 6 |
+| test_sim_host.lua | 7 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -2590,11 +2968,11 @@ Total.
 | test_kit_inventory.lua | 42 |
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
-| test_kit_runner.lua | 13 |
+| test_kit_runner.lua | 20 |
 | test_kit_vendor_sync.lua | 19 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2215** |
+| **Total** | **2545** |
