@@ -1287,6 +1287,17 @@ into a dispatch table the major has already frozen is not. It is opted into with
 `dialogControl = "EditBox"` rather than inferred from a missing `values` list, because inference
 would silently turn a row whose values function happened to return empty into a free-text field.
 
+## What is not here
+
+`library-stack-§7` asks for each rejected promotion to be recorded with its reason where the next
+author will look, and for this major that is here. A row is reopened when its trigger fires, not
+before.
+
+| Rejected | Consumers counted | Why | Re-check trigger |
+|---|---|---|---|
+| `O.MixedGrid` — a composer drawing a header line and one line per row, one cell per column, each column naming its maker and each cell an ordinary schema row ([LibKa0s#50](https://github.com/tusharsaxena/LibKa0s/issues/50), rejected 2026-10-22) | **1**: DropWatcher's Situations table. The census of all fourteen roster addons found no second: MultiMeters' visibility contexts are one bool column, AuraMaster's zones one bool per zone (its categories already use `ChoiceGrid`), PremadeGroupsFilterExtension's region colors one color per region, QuickComms' conditions are drawers, KickCD's spell rows a record list, LootHistory's price sources a `ReorderList`. | Bar 1 fails on the count. Bar 2 fails in prospect: the one consumer is already built in the addon as a raw-frame table in a look the owner chose on purpose (fixed pixel columns, striping, gold headers), and adopting a Flow-line grid would need a style flag, a per-row label state driven by another cell, per-column dropdown widths and a column whose path is outside the row's namespace. Bar 3 fails: the shape went through three forms in nine days. `OptionsWidgets.lua` also sits at its band trigger, and the one-consumer exceptions (`LineChart`, `Drawer`) are not to become a third. | A second roster addon ships or specs a fixed set of rows by at least two setting columns of different maker types, every cell a schema row written through the addon's write seam, and both addons accept the same presentation; or DropWatcher's owner asks to replace the raw-frame table with Flow lines. Re-run the census whenever an addon joins `ADDONS.md`. |
+| `O.GlowGroup` — a glow settings composer ([LibKa0s#56](https://github.com/tusharsaxena/LibKa0s/issues/56)) | **3** hosts, three layouts | Recorded with the major it serves: see [Glow version 1, *What is not here*](../Glow/version-1-docs.md#what-is-not-here). | options-ui gains a canonical glow block, or two hosts converge on one glow row layout. |
+
 ## The panel descriptor
 
 Everything a host supplies to `lib:New(descriptor)`.

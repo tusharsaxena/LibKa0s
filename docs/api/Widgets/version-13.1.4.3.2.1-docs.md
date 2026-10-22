@@ -40,7 +40,8 @@ were (they equal the search box's line and fill).
   fill, line and height are hoisted into a `SKIN` table the dropdown and the search box both read.
   It is **not exported**, and there is no applier that paints it.
 - **Two flat controls were censused and rejected**, and the rejections are recorded in
-  `Widgets.lua`'s header, where the next author will look (`library-stack-§7`):
+  `Widgets.lua`'s header, where the next author will look (`library-stack-§7`), and in full
+  under *What is not here* below:
   - **`W.Checkbox`**, a flat checkbox. No consumer draws one. Re-check trigger: a second addon
     hand-builds a flat checkbox.
   - **An exported flat skin** (the `SKIN` table, or an applier). Re-check trigger: a third flat
@@ -892,6 +893,18 @@ decision, not an oversight, and every one of these is reachable later without a 
 
 None of these is wanted by either shipped consumer, and a widget that grows features nobody asked for
 is a widget whose degraded behavior nobody has tested.
+
+## What is not here
+
+The absences above are features this major's shipped members leave out. This section records the
+controls that were proposed as members of their own and rejected, as `library-stack-§7` asks, with
+`Widgets.lua`'s header carrying the short form. A row is reopened when its trigger fires, not
+before.
+
+| Rejected ([LibKa0s#52](https://github.com/tusharsaxena/LibKa0s/issues/52), 2026-10-22) | Consumers counted | Why | Re-check trigger |
+|---|---|---|---|
+| `W.Checkbox` — a flat 14px check button in the dropdown's skin | **0**. DropWatcher's only flat checkbox was deleted five hours after it was built (commit `c6871a6`, its three window toggles became multi-select `Dropdown` values), and LootHistory's only checkbox is an AceGUI one in its options panel. PremadeGroupsFilterExtension builds `UICheckButtonTemplate` on purpose to match the panel it extends and must not adopt. No other roster window has a check button. | Bar 1 fails with no consumer, and bar 3 with it: the one instance lasted five hours before both repos independently moved to a multi-select `Dropdown`, which this major already ships. A member added on speculation is surface the library keeps forever. | A second addon hand-builds a flat checkbox: two standalone windows (not AceGUI panels) each need an on/off control beside a `Dropdown` that cannot reasonably be a multi-select value, with the same tick-and-label semantics. |
+| A published flat skin — the file-local `SKIN` table exported, or a `FlatSkin(frame)` applier — **deferred** | About **5** sites repaint the same backdrop by hand (LootHistory's and BankLedger's bar buttons, two DropWatcher frames, MultiMeters' whisper row), but MultiMeters themes its copy through its own skin colors, so the semantics are mixed. | Sharing the values inside `Widgets.lua` was enough for the search box. An applier is four lines of backdrop calls: the high-frequency, low-content shape `library-stack-§7` keeps inline, and theming is a plausible divergence this year (bar 3). The real candidate behind it, a flat bar button shared by LootHistory and BankLedger, was not what #52 asked and has not been through the bars. | A third flat control outside `Widgets.lua` copies the literals, or a separate issue nominates a flat bar button with LootHistory's and BankLedger's bar buttons plus a third window as consumers. |
 
 ## The reorderable list
 

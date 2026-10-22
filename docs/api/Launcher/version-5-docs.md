@@ -108,6 +108,18 @@ The host hands the table in; this module does not know what a profile is.
 uncompressed 32-bit, the same file the TOC's `## IconTexture` names. A launcher registered with no
 icon file behind it draws **nothing**, which is worse than the state before adoption.
 
+## What is not here
+
+[LibKa0s#58](https://github.com/tusharsaxena/LibKa0s/issues/58) asked for the *Show window* entry to
+owe a key binding. The owner made that a `launcher-§6` MUST in the standard; the library parts were
+judged against `library-stack-§7` on 2026-10-22 and are recorded here, where the next author will
+look. A row is reopened when its trigger fires, not before.
+
+| Not here | Consumers counted | Why | Re-check trigger |
+|---|---|---|---|
+| A binding helper — a member that names the binding header and label and builds the `CLICK` button routed to the descriptor's `toggleWindow` (**rejected**) | **1** shipped: QuickComms. BankLedger, LootHistory, MultiMeters, DropWatcher and WhatGroup owe the binding but had written none, so they are future consumers, not verified ones. | `Bindings.xml` must stay per addon (the client reads it only from the addon's root), and the library can neither generate it nor check that the button name it creates matches the static file. What is left is about six lines (a named frame, `RegisterForClicks`, `OnClick`, a label and a header global): the high-frequency, low-content shape `library-stack-§7` keeps inline. Bar 2 fails as well: QuickComms writes its binding header from its dial module for four other bindings, so a helper that set the header would collide or need an "owns header?" flag. The refusal and down-edge rules are enforced as well by the standard clause and each addon's own test. | After the `launcher-§6` rollout, two or more addons' binding buttons diverge in a correctness way (a missing stand-down refusal, a double toggle from up and down clicks, a secure template, a default key); or a second `CLICK` binding per addon is ruled in and the per-addon code stops being trivial. |
+| A kit check that a consumer with a *Show window* entry ships a conforming `Bindings.xml` (**deferred**) | **1**: QuickComms' own static and behavioral assertions (`tests/test_dial.lua`), on its own mock. | A kit suite cannot tell on its own that an addon owes a binding (`ADDONS.md` is not vendored and this major's instance does not expose its descriptor), so each consumer would declare it, and an undeclared one is exactly the miss the check exists to catch; the audit catches that better. The behavioral half needs button click support the kit's mock does not have. The static half is generic but has one consumer today, and the kit's bar for a shared gate is the many hand copies it replaces. | Three or more addons ship `Bindings.xml` tests after the rollout: if their static assertions are identical, promote the static half alone as a kit revision. Re-check the behavioral half only if the kit's mock gains button click support for another reason. |
+
 ## Neither broker library is a dependency
 
 LibDataBroker-1.1 and LibDBIcon-1.0 are resolved with `LibStub(…, true)` **at `Register` time**, and
