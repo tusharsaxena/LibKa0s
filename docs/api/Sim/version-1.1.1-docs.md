@@ -1,4 +1,4 @@
-# `LibKa0s-Sim-1.0` — version 1.1
+# `LibKa0s-Sim-1.0` — version 1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Sim surface points here rather than restating it. It describes the
@@ -8,36 +8,32 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Sim-1.0` |
-| Files and minors | `Sim.lua` **1** · `SimTimeline.lua` **1** |
-| Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports; `SimPanel.lua` joins it later in this release |
+| Files and minors | `Sim.lua` **1** · `SimTimeline.lua` **1** · `SimPanel.lua` **1** |
+| Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
 | Shipped in | v1.75.0 |
 | Status | **Current** |
-| Supersedes | — (first version; briefly keyed `1` on the release branch, and no release carried that key) |
+| Supersedes | — (first version; briefly keyed `1`, then `1.1`, on the release branch, and no release carried either key) |
 | Superseded by | — |
-| Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell |
-| Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 1, SimTimeline = 1 }` |
-
-**The panel arrives in the next commits of this release.** This version documents the Compat
-answer seam, the session that binds it, the step machine and the verbs (`SimTimeline.lua`). The
-panel (`SimPanel.lua`) joins the major before v1.75.0 is released, and the version key grows to
-`<Sim>.<SimTimeline>.<SimPanel>` as it does. Until it attaches, the session carries fallbacks for
-its members (below).
+| Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
+| Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 1, SimTimeline = 1, SimPanel = 1 }` |
 
 ## What changed at this version
 
-`SimTimeline.lua` minor 1 joins the major, a secondary file paired on the shell's minor
-(`lib.__timelineMinor` / `lib.__timelineShellMinor`, Perf's idiom), and the version key grows from
-`1` to `1.1`. It overwrites the shell's timeline fallbacks with the step machine (*The step
-machine*, below): `Steps`, `Step`, `Run`, `Pause`, `Resume` and `Restart`, the host's `gate`, the
-per-step `stepDelay`, and `Status()`'s `pos`, `total`, `playing`, `paused` and `settling`. It
-also overwrites the `RunVerb` fallback with the typed grammar every host's `sim` slash verb shares
-(*The verbs*, below), which reads the descriptor's `verbs`, `why`, `usage` and `statusLine`.
-`Sim.STRINGS` gains `BUILDING`, `PLAYING`, `NOT_PLAYING`, `NOT_PAUSED`, `DONE`, `SETTLING`,
-`STEP_LINE`, `STEP_FAILED`, `FINISHED` and `ERROR`, and for the verbs `STATUS_IDLE`,
-`STATUS_RUNNING`, `STATUS_SIZE`, `STATUS_RANDOM`, the six `STATE_*` words, `VERB_FAILED` and one
-`USAGE_*` line per generic verb. No member of the shell changes. Version `1`
-was never released: this document was `version-1-docs.md` until the key moved, on the release
-branch (the unreleased-key rule).
+`SimPanel.lua` minor 1 joins the major, the third file, paired on the shell's minor
+(`lib.__panelMinor` / `lib.__panelShellMinor`), and the version key grows from `1.1` to `1.1.1`. It
+overwrites the shell's panel fallbacks with the docked step panel (*The panel*, below):
+`ShowPanel`, `HidePanel`, `TogglePanel`, `IsPanelShown`, `RefreshPanel`, `ResetPanelPosition` and
+`PanelRows`, the picker and the run controls, and the session-only placement. The descriptor's
+`panel` fields now draw something: `title`, `stepLabel`, `stepTip`, `startTip`, `stopTip`,
+`anchorTo` and `check`. `Sim.STRINGS` gains `PANEL_START`, `START`, `PANEL_STOP`, `RUN_ALL`,
+`PAUSE`, `RESUME`, `RESTART`, `STOP`, `RANDOM` and `RAN_AGO`. No member of the shell or of
+`SimTimeline.lua` changes. Neither `1` nor `1.1` was released: this document was
+`version-1-docs.md`, then `version-1.1-docs.md`, until the key moved, on the release branch (the
+unreleased-key rule).
+
+**Previously, at `1.1`** (never released): `SimTimeline.lua` minor 1 joined the major and the key
+grew from `1` to `1.1`, overwriting the shell's timeline fallbacks with the step machine and the
+`RunVerb` fallback with the typed grammar (*The step machine* and *The verbs*, below).
 
 ## What this major is
 
@@ -66,7 +62,7 @@ Read straight off the LibStub table.
 | `Sim:New(d) -> sim` | 1 | Binds one session to a seam and answers its instance. Below. |
 | `STRINGS` | 1 | The built-in English lines, every key overridable through `d.L` (below). |
 | `MAJOR` · `MINOR` | 1 | `"LibKa0s-Sim-1.0"` and the live minor. |
-| `MODULES` | 1 | `{ Sim = <minor>, SimTimeline = <minor> }`: the live minors, and the values that pick this document. |
+| `MODULES` | 1 | `{ Sim = <minor>, SimTimeline = <minor>, SimPanel = <minor> }`: the live minors, and the values that pick this document. |
 
 ## The seam: `Sim:NewSeam(compat, opts)`
 
@@ -130,7 +126,7 @@ field of the wrong type raises the same way.
 
 | Field | Required | Contract |
 |---|---|---|
-| `name` | yes | The addon folder. Error text, and later the panel's frame name. |
+| `name` | yes | The addon folder. Error text, the panel's close-mark folder, and its frame name, `<name>SimPanel`. |
 | `seam` | yes | From `Sim:NewSeam`, not yet bound. |
 | `slash` | yes | The typed prefix, for example `"/dw sim"`. |
 | `deliver` | yes | `fn(event, ...) -> n`. Calls exactly the handlers the client's registration would call for this event, in order, and answers how many ran. **Any string is a legal event name** (`hook:<name>`, `GUILDBANK_FRAME_SHOWN`). Each call is `pcall`ed by the library; per-handler isolation is the host's. |
@@ -149,7 +145,7 @@ field of the wrong type raises the same way.
 | `L` | no | Locale table. Any `STRINGS` key is overridden through `rawget`, so a locale table whose metatable answers an unknown key with the key does not shadow the built-in line. |
 | `print` | no | `fn(line)`, read at call time. Default: `DEFAULT_CHAT_FRAME:AddMessage`. |
 | `debug` | no | `fn(tag, fmt, ...)`, read at call time, tag `"SIM"`. Default: none. A sink that raises is ignored. |
-| `panel` | no | Presentation only: `title`, `stepLabel`, `stepTip`, `startTip`, `stopTip`, `anchorTo`, `check`. Any other key raises: there is no `button` and no `tooltip` (the library draws its own button and uses GameTooltip) and no `store` (the panel position is session-only, nothing is written to SavedVariables). OWNER_SCOPE C.7 and C.11. |
+| `panel` | no | Presentation only: `title`, `stepLabel`, `stepTip`, `startTip`, `stopTip`, `anchorTo`, `check` (*The panel*, below). Any other key raises: there is no `button` and no `tooltip` (the library draws its own button and uses GameTooltip) and no `store` (the panel position is session-only, nothing is written to SavedVariables). OWNER_SCOPE C.7 and C.11. |
 
 ### Instance members
 
@@ -177,9 +173,9 @@ answers every member it owns: `Steps()` and `PanelRows()` answer `{}`, `Step()` 
 `NO_TIMELINE` and answers `false, "absent"`, `ShowPanel`, `TogglePanel` and `IsPanelShown` answer
 `false`, and `HidePanel`, `RefreshPanel` and `ResetPanelPosition` do nothing. The attach files
 overwrite them through an internal handshake (`lib.__AttachTimeline`, `lib.__AttachPanel`, and the
-ctx table `New` hands both) that is not contract. At this version `SimTimeline.lua` attaches and
-`SimPanel.lua` does not yet exist, so the timeline and verb members are live and the panel members
-are the fallbacks.
+ctx table `New` hands both) that is not contract. At this version both attach in a full payload;
+`SimPanel.lua` stays out when its attach-file floor is unmet, and the panel members are then the
+fallbacks while the seam, the session, the step machine and the verbs work unchanged.
 
 ## The step machine (`SimTimeline.lua`)
 
@@ -216,6 +212,135 @@ synchronous while the gate stays open; a step failure or a `done` / `notRunning`
 is a file-local function the panel receives through the attach handshake, **never an instance
 member** (`sim.RunTo` is nil). It occupies `Run`'s `playing` slot (C.2): while its gate poll is
 pending, `Run` and a second click-ahead answer `playing`, and `Pause` and `Stop` cancel it.
+
+## The panel (`SimPanel.lua`)
+
+A docked window listing the session's steps as clickable rows, each beside the slash command that
+does the same thing, with the scenario picker under them while no simulation runs and the run
+controls while one does. It teaches the typed form while the player clicks: **the click path is the
+typed path.**
+
+**Attach-file floor.** `SimPanel.lua` attaches only with `LibKa0s-Core-1.0` ≥ 9 (the width-only
+resize) and `LibKa0s-Widgets-1.0` present (the picker's `W.Dropdown`). With the floor unmet the file
+returns before it registers, `MODULES.SimPanel` is absent, and the shell's panel fallbacks answer;
+a headless simulator (seam, session, timeline, verbs) is never lost to a missing panel.
+
+**The renderer is library-internal (LK-11's outcome B, [#53](https://github.com/tusharsaxena/LibKa0s/issues/53)).**
+The owner's scope made the step panel a public widget, `W.StepPanel`, only if Perf's panel could be
+rebuilt on it with every Perf suite passing unedited. It could not, so there is **no public step
+panel**: the renderer is a file-local section of `SimPanel.lua`, with no contract a host may read,
+and a deliberate duplicate of `PerfPanel.lua`'s renderer (the same geometry, palette and chrome;
+each file's header names the other). The library's own suites reach it through
+`lib.__StepPanel`, an **internal test seam** under `library-stack-§7`'s `__` clause: no host reads
+it, the members manifest leaves it out, and it may change or go with a minor bump.
+
+### Rows
+
+`Start`, then one row per timeline step, then `Stop`. A row is addressed by its **index**, because
+step keys repeat: `0` for Start, `i` for timeline step `i`, `#steps + 1` for Stop. States are Perf's
+set and no other: `done`, `busy`, `ready`, `locked`, `cancel` (no new state, ever).
+
+| Row | State | Actionable |
+|---|---|---|
+| Timeline row before `pos` | `done` | no |
+| Timeline row at `pos` | `busy` while the run plays or the gate holds the next step, else `done` | no |
+| Timeline row at `pos + 1` | `ready` | yes: the typed `step` |
+| Timeline rows further ahead | `locked` | **yes**: the click-ahead plays every step up to and including it |
+| Any timeline row while idle, stopping, or before the session's `ready()` | `locked` | no |
+| Start | `ready` while idle, `busy` until `ready()` (and while stopping), then `done` | only while idle |
+| Stop | `cancel` while a session runs, else `locked` | only while a session runs |
+
+- **Command column.** Start: `slash .. " start " .. name`, plus `" " .. size` when the picked
+  scenario has sizes and a size other than random (`0`) is picked. A timeline row:
+  `slash .. " step"`. Stop: `slash .. " stop"`.
+- **Labels.** Start: `PANEL_START` with the scenario's `label` (else its name). A timeline row:
+  `d.panel.stepLabel(step, i, steps)`, else `step.label`, else `step.kind`. Stop: `PANEL_STOP`.
+- **Tips.** Start: `d.panel.startTip`; a timeline row: `d.panel.stepTip(step, i)`; Stop:
+  `d.panel.stopTip`. Each is a list of lines, a line being `{ left, right? }` or a string; a done
+  row adds `RAN_AGO` (Start from the session's `startedAt`, a step from its `ranAt`), formatted
+  with `12s`, `3m` or `2h`. The tip is drawn on GameTooltip, the row's label as its title and a
+  `{ left, right }` line as a double line.
+- **Preview while idle.** The rows are the picked scenario's `timeline(def, { scenario, size,
+  seed = 0 })` at `pos` 0, every step `locked`. The timeline is pure, so composing plays nothing;
+  one that raises previews no steps and writes a debug line.
+
+`sim:PanelRows()` answers exactly these rows as a fresh list of fresh tables
+`{ key, index, label, command, state, actionable, tip }`, where `key` is `"start"`, `"step"` or
+`"stop"`. It is published so a host suite asserts its rows without reaching a `__` field, and it
+composes whether or not the panel was ever shown.
+
+### Clicks
+
+A click re-composes the rows from the live model and re-checks `actionable` at the clicked
+position, so **a stale row never acts** (a row painted actionable on a panel that has not repainted
+since does nothing). Then: Start runs `RunVerb("start <name> [size]")`; Stop runs
+`RunVerb("stop")`; the `ready` row runs `RunVerb("step")`; a row ahead runs the internal
+click-ahead (*The step machine*), whose per-step lines are the typed ones, and a failure code it
+answers prints its WHY line (`PLAYING` while a run plays, for example). Every action is a verb or
+the click-ahead, so a click prints exactly what typing prints.
+
+### The footer
+
+- **Idle: the picker.** A scenario `W.Dropdown` built from `scenarios.names` and each def's
+  `label`; a size `W.Dropdown`, shown only when the picked def has `sizes`, offering `RANDOM` (`0`)
+  then each size; and a `START` button that runs the same verb the Start row does. The picker starts
+  on the first scenario, and while a session runs it follows the session's scenario.
+- **Running: the controls.** `RUN_ALL` (`run`; enabled while steps are left and nothing plays),
+  `PAUSE` / `RESUME`, swapping on the run's `paused` state (`pause` enabled while playing,
+  `resume` while steps are left), `RESTART` (`restart`) and `STOP` (`stop`). Every control is a
+  verb.
+- **The button** is the library's own: a Core-skinned box with a centered label, gold under the
+  pointer, gray while disabled, and a GameTooltip naming its typed command. There is no
+  `d.panel.button` and no `d.panel.tooltip` (OWNER_SCOPE C.7).
+
+### Refresh and visibility
+
+- A shown panel repaints on **every listener notification** (a typed verb, a click, a timer step,
+  ready, stop), and its height follows the row count, the width-only resize bounds re-pinned
+  whenever the count changes (OWNER_SCOPE C.5).
+- `ShowPanel()` answers `false` and does nothing **while `isStoodDown()`**. The stop hides the panel
+  when it runs stood down (step 6) and repaints it otherwise.
+- `HidePanel()` also closes the shared dropdown menu, so a panel hidden by a verb leaves no orphaned
+  menu.
+
+### Placement (session-only)
+
+1. **A point dragged this session wins.** On drag stop the panel's point is remembered in the
+   instance's memory and nowhere else: **nothing is written to SavedVariables**, and there is no
+   `d.panel.store` (OWNER_SCOPE C.11). A `/reload` forgets it.
+2. Else it **docks right** of `d.panel.anchorTo()`, `DOCK_GAP` (8) px from it, top edges aligned,
+3. or **left** of it when the right has no room on the screen,
+4. or **floats** at `CENTER` +420 when neither side fits, or when `anchorTo` is absent or answers
+   nil.
+
+It is placed on **every** `ShowPanel`, so with no dragged point it redocks to wherever the anchor is
+now. `ResetPanelPosition()` forgets the dragged point and, when the panel is shown, redocks it at
+once.
+
+### Instance members
+
+| Member | Contract |
+|---|---|
+| `sim:ShowPanel() -> bool` | Builds the panel on first use, places it and shows it. `false` while stood down, and headless (no `CreateFrame`). |
+| `sim:HidePanel()` | Hides it (and the shared dropdown menu). |
+| `sim:TogglePanel() -> bool` | Hides a shown panel (`false`), else `ShowPanel()`. |
+| `sim:IsPanelShown() -> bool` | Whether it is shown. |
+| `sim:RefreshPanel()` | Repaints a shown panel; a no-op otherwise. |
+| `sim:ResetPanelPosition()` | Forgets the dragged point (above). |
+| `sim:PanelRows() -> rows` | The composed rows (above). Pure. |
+
+### `d.panel` fields (presentation only)
+
+| Field | Default | Contract |
+|---|---|---|
+| `title` | `name .. " - Simulation"` | A string, or `fn() -> string`, re-read on every repaint. |
+| `stepLabel` | `step.label`, else `step.kind` | `fn(step, i, steps) -> string`. Also names a step in `STEP_LINE` and `STEP_FAILED`. |
+| `stepTip` | none | `fn(step, i) -> { lines }`. |
+| `startTip`, `stopTip` | none | `{ lines }`, or a function answering them. |
+| `anchorTo` | none (float) | `fn() -> frame|nil`: the window the panel docks beside. |
+| `check` | none (the dot only) | The done mark's texture path, **host-passed** (for example the host's `NS.Icon("confirm")`), drawn over a hidden dot and tinted with the state color. The library draws no icon of its own here, so the set of library-drawn icons does not grow; the host declares the icon it resolves on its own `LibKa0s icons:` line. |
+
+A callback that raises is a debug line and its default.
 
 ## The verbs: `sim:RunVerb(line) -> ok, code` (`SimTimeline.lua`)
 
@@ -332,6 +457,12 @@ turns an error in `deliver` into a debug line and answers `0`, so a session surv
 | `USAGE_STOP` | `%s stop: end the simulation.` |
 | `USAGE_STATUS` | `%s status: where the simulation stands.` |
 | `USAGE_PANEL` | `%s panel: show or hide the step panel.` |
+| `PANEL_START` | `Start: %s` (the scenario's label; `SimPanel.lua`, as are the keys below) |
+| `START` | `Start`: the picker's button. |
+| `PANEL_STOP` | `Stop simulation` |
+| `RUN_ALL` · `PAUSE` · `RESUME` · `RESTART` · `STOP` | `Run all` · `Pause` · `Resume` · `Restart` · `Stop`: the controls. |
+| `RANDOM` | `Random`: the size dropdown's `0`. |
+| `RAN_AGO` | `Ran %s ago` (`12s`, `3m`, `2h`): a done row's tip line. |
 
 ## The host contract (OWNER_SCOPE C.4)
 
@@ -355,6 +486,9 @@ on the session table (`sim:Session()`, the host bag).
   world is waiting for.
 - Saved data is the host's: the library never intercepts a write, so session-only stores and an
   invariant test are the host's.
+- `d.panel.anchorTo` answers the host's main window while it is shown, and nil while it is not, so
+  the panel floats rather than docking beside a hidden frame. `d.panel.check` is the host's own
+  resolved icon path, declared on its `LibKa0s icons:` line.
 - The slash surface is one feature-verb row, `{ "sim", desc, function(rest) NS.Sim:RunVerb(rest) end }`,
   with no launcher entry and no key binding (OWNER_SCOPE C.11).
 
@@ -369,6 +503,8 @@ on the session table (`sim:Session()`, the host bag).
 | A schema row for the step delay | a fixed host constant or `fn(step)` in `d.stepDelay` | never: OWNER_SCOPE C.11 |
 | `sim:Live(fn, ...)` | the seam (`seam:Live`): one `Live` | never: OWNER_SCOPE C.7 |
 | `d.panel.button`, `d.panel.tooltip`, `d.panel.store` | the library's own button and GameTooltip; a session-only position | never: OWNER_SCOPE C.7 and C.11 |
+| A public step-panel widget (`W.StepPanel`) | a file-local renderer in `SimPanel.lua`, duplicated on purpose with `PerfPanel.lua`'s; `lib.__StepPanel` is an internal test seam | a second consumer that can take the renderer with no edit to its suites (LK-11's outcome B, [#53](https://github.com/tusharsaxena/LibKa0s/issues/53)) |
+| A StepPanel `place` or `onDragStop` hook | `SimPanel.lua` positions the frame itself and hooks `OnDragStop` | never: OWNER_SCOPE C.7 |
 | `seam:IsGuarded(key)` | the host, which classified its own keys | never: OWNER_SCOPE C.7 |
 | A `__newindex` auto-wrap on the host's table | `seam:Unwrapped()` and the host suite that asserts it empty | never: it adds magic to the host's table and still misses a replacement (OWNER_SCOPE C.8) |
 | Restriction and chat-lockdown simulation | the host (DropWatcher) | never: OWNER_SCOPE C.9 |
@@ -385,8 +521,8 @@ diff -r --strip-trailing-cr LibKa0s <Addon>/libs/LibKa0s   # content — MUST be
 diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD be empty
 ```
 
-`Sim.lua` and `SimTimeline.lua` are entries in `LibKa0s.xml`, after `PerfPanel.lua`, so the
+`Sim.lua`, `SimTimeline.lua` and `SimPanel.lua` are entries in `LibKa0s.xml`, after `PerfPanel.lua`, so the
 whole-folder copy brings them in with no load-list change in the host. **Payload weight:** the file
 bodies only define functions; no frame, timer or event registration exists until `NewSeam` or
-`New` is called (and no timer until a session calls `After`), so a host that never simulates pays
-parse time and nothing else.
+`New` is called (and no timer until a session calls `After`, no frame until `ShowPanel`), so a
+host that never simulates pays parse time and nothing else.

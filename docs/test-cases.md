@@ -2262,6 +2262,84 @@ Total.
 - sim verbs: the generic verbs win over a host verb of the same name
 - sim verbs: a host 'help' verb is the host's own; the library defines none
 
+### test_sim_panel.lua (41)
+
+- sim panel: the file registers on the shell's minor and in MODULES
+- sim panel: the STRINGS keys the panel draws are added to Sim.STRINGS
+- sim panel: the floor unmet (no Widgets): no attach, and the shell's fallbacks answer
+- sim panel: the floor unmet (Core below 9): no attach
+- sim panel: idle, the rows preview the picked scenario at pos 0, every step locked
+- sim panel: PanelRows is a fresh list each call, and building it plays nothing
+- sim panel: building: Start busy, every step locked and not actionable, Stop cancel
+- sim panel: mid-run: done, ready, and ahead rows locked AND actionable
+- sim panel: playing: the row at pos is busy
+- sim panel: settling: the row at pos is busy while the gate holds the next one
+- sim panel: done: every step done and none actionable; Stop still cancels
+- sim panel: stopping: nothing is actionable, and the Stop row is locked
+- sim panel: after a stop the rows are the idle preview again
+- sim panel: d.panel.stepLabel names the rows (step, i, steps)
+- sim panel: startTip and stopTip may be functions answering a line list
+- sim panel: the title defaults to name .. ' - Simulation', and d.panel.title overrides it
+- sim panel: headless, ShowPanel answers false and PanelRows still composes
+- sim panel: Show, Hide, Toggle, IsPanelShown
+- sim panel: the empty verb opens it and `panel` toggles it
+- sim panel: ShowPanel answers false and does nothing while stood down
+- sim panel: a stand-down stop hides it; any other stop repaints it
+- sim panel: every listener notification repaints a shown panel
+- sim panel: the check texture is the host's path, shown on a done row
+- sim panel: height bounds are re-pinned when the row count changes
+- sim panel: the picker previews the chosen scenario and offers sizes only when it has them
+- sim panel: the picker's Start starts the chosen scenario through the typed verb
+- sim panel: running, the controls replace the picker, and Pause swaps with Resume
+- sim panel: Restart through the controls prints what the typed verb prints
+- sim panel: clicking Start, the ready row and Stop prints what typing them prints
+- sim panel: clicking an ahead row runs every step up to it, in order (the internal RunTo)
+- sim panel: an ahead click while a run is playing prints the PLAYING line and plays nothing
+- sim panel: a stale click re-composes from the live model and refuses
+- sim panel: with no anchor and no dragged point it floats at CENTER +420
+- sim panel: it docks right of anchorTo() with DOCK_GAP 8
+- sim panel: it docks left when there is no room on the right
+- sim panel: it floats when neither side has room
+- sim panel: a point dragged this session beats the dock, in memory only
+- sim panel: ResetPanelPosition forgets the point and redocks
+- sim panel: with no dragged point it redocks on every Show
+- sim panel: the panel never names SavedVariables or a store
+- sim panel: a row's tip goes to GameTooltip as double lines under the row's label
+
+### test_sim_panel_render.lua (31)
+
+- sim panel render: the renderer is the internal seam lib.__StepPanel, not a Widgets member
+- sim panel render: the descriptor's required fields raise when missing
+- sim panel render: the handle answers the seven members, and no frame until asked
+- sim panel render: headless, Frame() answers nil and nothing raises
+- sim panel render: the frame's chrome is Perf's
+- sim panel render: the close mark gets the descriptor's addonName
+- sim panel render: close=false draws no close mark
+- sim panel render: Show, Hide, Toggle and IsShown
+- sim panel render: row geometry and the test record
+- sim panel render: every state paints Perf's palette on the label and the dot
+- sim panel render: an unknown state paints as locked
+- sim panel render: actionable is explicit row data and nil means false
+- sim panel render: command text is repainted on every Refresh
+- sim panel render: an actionable row hovers gold and leaves to its palette color
+- sim panel render: an actionable cancel row hovers red
+- sim panel render: a non-actionable row does not hover
+- sim panel render: the tooltip is called on enter only for a row with a tip
+- sim panel render: a row with a tip and no tooltip fn shows nothing
+- sim panel render: a click re-reads rows() and hands onClick the fresh row and its index
+- sim panel render: a row that stopped being actionable after paint is not dispatched
+- sim panel render: a click on a row index the list no longer has is not dispatched
+- sim panel render: a dispatched click repaints
+- sim panel render: height follows the row count, and a shrink hides the extra rows
+- sim panel render: a footer adds its height plus PAD, is built once and painted every Refresh
+- sim panel render: the title is re-read on every Refresh
+- sim panel render: red under: bounds fixed at MakeResizable time are re-pinned when the count moves
+- sim panel render: the old SetMinResize / SetMaxResize pair is used where SetResizeBounds is absent
+- sim panel render: a width resize stretches every row, and new rows come at the stretched width
+- sim panel render: with a check, a done row shows the tinted check over a hidden dot
+- sim panel render: with no check, a done row keeps its dot and no check is built
+- sim panel render: with no MakeResizable in Core the panel builds fixed
+
 ### test_loader.lua (6)
 
 - loader: a cached chunk gives each instance its own global namespace
@@ -2817,6 +2895,8 @@ Total.
 | test_sim_session.lua | 52 |
 | test_sim_timeline.lua | 40 |
 | test_sim_verbs.lua | 42 |
+| test_sim_panel.lua | 41 |
+| test_sim_panel_render.lua | 31 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -2844,4 +2924,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2434** |
+| **Total** | **2506** |

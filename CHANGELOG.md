@@ -17,8 +17,8 @@ Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** 
 **11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13**
 (`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**),
 **Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**), **PerfPanel minor 7** (comment-only,
-`LibKa0s-Perf-1.0` key **15.1.1.7**), **Sim minor 1** and **SimTimeline minor 1** (the new major `LibKa0s-Sim-1.0`,
-key **1.1** so far), every
+`LibKa0s-Perf-1.0` key **15.1.1.7**), **Sim minor 1**, **SimTimeline minor 1** and **SimPanel minor 1** (the new major
+`LibKa0s-Sim-1.0`, key **1.1.1**), every
 other file still at its v1.74.0 minor — `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2,
 `Pool` 3, `Media` key 5.1, `Slash` key 20.2 and `Launcher` 5 — and
 **test kit revision 41**. No `NEEDS_*` floor rises, and two majors are added (`LibKa0s-Glow-1.0` and `LibKa0s-Sim-1.0`). The owner's
@@ -260,7 +260,7 @@ major adds the same walk to it.
 the file arrive, and a host that never wires it carries a small file that never runs. Every host
 keeps vendoring `LibCustomGlow-1.0`.
 
-### LibKa0s-Sim-1.0 (new major, Sim minor 1, SimTimeline minor 1)
+### LibKa0s-Sim-1.0 (new major, Sim minor 1, SimTimeline minor 1, SimPanel minor 1)
 
 - **The Compat answer seam (#54).** `LibKa0s/Sim.lua`, loaded after `PerfPanel.lua`.
   `Sim:NewSeam(compat, opts) -> seam` wraps the host's own Compat table in place, once (a second
@@ -353,12 +353,44 @@ keeps vendoring `LibCustomGlow-1.0`.
   host wiring is one Slash-1.0 feature-verb row, slash-only (C.11). `Sim.STRINGS` gains
   `STATUS_IDLE`, `STATUS_RUNNING`, `STATUS_SIZE`, `STATUS_RANDOM`, six `STATE_*` words,
   `VERB_FAILED` and ten `USAGE_*` lines.
-- The panel arrives in the next commits of this release, as `SimPanel.lua` joins the key
-  `<Sim>.<SimTimeline>.<SimPanel>`. The contract so far is
-  [Sim version 1.1](docs/api/Sim/version-1.1-docs.md).
+- **SimPanel minor 1: the docked step panel (#53, #54).** `LibKa0s/SimPanel.lua`, loaded after
+  `SimTimeline.lua`, a secondary file paired on the shell's minor (`__panelMinor` /
+  `__panelShellMinor`) that attaches through `lib.__AttachPanel` and overwrites the shell's panel
+  fallbacks. Its attach-file floor is Core 9 or newer and Widgets present (the picker's
+  `W.Dropdown`): a new attach-borne edge, Sim -> Widgets, and with it unmet the file returns, the
+  fallbacks answer and a headless simulator is unchanged. The rows are Start, one per step and
+  Stop, addressed by index, each beside its typed command, in Perf's states and no new one: a step
+  before `pos` done, the one at `pos` busy while the run plays or the gate holds, the next ready,
+  and the rows further ahead locked but clickable, a click there playing every step up to it
+  through the internal click-ahead; every step locked and inert while idle, stopping or before
+  `ready()`; Start ready while idle, busy until `ready()`, then done; Stop cancel only while a
+  session runs. A click re-composes the rows and re-checks the clicked one, so a stale row never
+  acts, and every action is `RunVerb` or the click-ahead (the click path is the typed path).
+  Idle, the rows preview the picked scenario's timeline. Under the rows: the picker (a scenario
+  `W.Dropdown`, a size dropdown only when the scenario has sizes, `Random` for `0`, and Start)
+  while idle, and the controls (Run all, Pause / Resume swapping, Restart, Stop) while running,
+  on the library's own minimal Core-skinned button and GameTooltip (no `d.panel.button` or
+  `d.panel.tooltip`, OWNER_SCOPE C.7). A shown panel repaints on every listener notification and
+  re-pins its height bounds when the row count changes (C.5); `ShowPanel` answers `false` while
+  stood down, and a stand-down stop hides it. Placement: a point dragged this session wins, held
+  in memory only, so nothing is written to SavedVariables (C.11); else it docks right of
+  `d.panel.anchorTo()`, or left when the right has no room, or floats at CENTER +420, with an 8 px
+  gap, redocking on every show; `ResetPanelPosition()` forgets the point. `PanelRows()` answers the
+  composed rows `{ key, index, label, command, state, actionable, tip }`, so a host suite asserts
+  them without a `__` field. The `d.panel` fields draw: `title` (default `<name> - Simulation`),
+  `stepLabel`, `stepTip`, `startTip` and `stopTip` (a done row's tip adds `RAN_AGO`), `anchorTo`,
+  and `check`, the host-passed done mark, so the library-drawn icon set does not grow. **The
+  renderer is library-internal** (LK-11's outcome B): a file-local section of `SimPanel.lua`,
+  duplicated on purpose with `PerfPanel.lua`'s, with `lib.__StepPanel` as its internal test seam
+  and no public contract; `Core.MakeResizable` is guarded there, the defect LK-11's spike found.
+  `Sim.STRINGS` gains `PANEL_START`, `START`, `PANEL_STOP`, `RUN_ALL`, `PAUSE`, `RESUME`,
+  `RESTART`, `STOP`, `RANDOM` and `RAN_AGO`. The key moves `1.1` -> `1.1.1` before any release
+  carried `1.1`, so the document moved with it:
+  [Sim version 1.1.1](docs/api/Sim/version-1.1.1-docs.md).
 
 **What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
-the file arrive, and a host that never calls `NewSeam` or `New` carries a file that never runs.
+the files arrive, and a host that never calls `NewSeam` or `New` carries files that never run: no
+frame exists until a session's `ShowPanel`.
 
 ## v1.74.0 — 2026-10-19
 
