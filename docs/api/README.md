@@ -207,7 +207,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [20.2.1](./DebugLog/version-20.2.1-docs.md) | **`DebugLog.lua` 20** (comment-only: undeclared `close`, `copy`, `clear` draw blank) · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.75.0 | **Current** |
+| [20.3.1](./DebugLog/version-20.3.1-docs.md) | **`DebugLog.lua` 20** (comment-only: undeclared `close`, `copy`, `clear` draw blank) · **`DebugLogDiagnostics.lua` 3** (the identity header names Glow and Sim) · `DebugLogGates.lua` 1 | v1.75.0 | **Current** |
 | [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 – v1.74.0 | Superseded |
 | [18.2.1](./DebugLog/version-18.2.1-docs.md) | `DebugLog.lua` 18 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.65.0 | Superseded |
 | [17.2](./DebugLog/version-17.2-docs.md) | `DebugLog.lua` 17 · `DebugLogDiagnostics.lua` 2 | v1.64.0 | Superseded |

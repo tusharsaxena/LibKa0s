@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** (comment-only)
 (`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**), **Core minor 11** (comment-only, key
-**11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13**
+**11**), **DebugLog minor 20** (comment-only) and **DebugLogDiagnostics minor 3** (`LibKa0s-DebugLog-1.0` key **20.3.1**), **Widgets minor 13**
 (`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**),
 **Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**), **PerfPanel minor 7** (comment-only,
 `LibKa0s-Perf-1.0` key **15.1.1.7**), **Sim minor 1**, **SimTimeline minor 1** and **SimPanel minor 1** (the new major
@@ -103,8 +103,26 @@ resolves to a path and draws blank.
   4 -> 5) so a corrected copy wins the LibStub race. The Options key was briefly
   29.2.34.2.4.9.1.7.4.2.1 on the release branch; no release carried it.
   [Core version 11](docs/api/Core/version-11-docs.md),
-  [DebugLog version 20.2.1](docs/api/DebugLog/version-20.2.1-docs.md),
+  [DebugLog version 20.3.1](docs/api/DebugLog/version-20.3.1-docs.md),
   [Options version 29.2.34.2.5.9.1.7.4.2.1](docs/api/Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md).
+
+### DebugLogDiagnostics minor 3: the identity header names Glow and Sim (#54 #56)
+
+- **The report's `LibKa0s running:` line lists the two new majors.** `DebugLogDiagnostics.lua`
+  writes down the majors whose running minors it prints, since LibStub cannot list what it holds,
+  and the list stopped at Perf. It now carries `Glow` and `Sim` too, in `tests/majors.lua` order, so
+  a report from a client running `LibKa0s-Glow-1.0` or `LibKa0s-Sim-1.0` names `Glow`, `Sim`,
+  `SimTimeline` and `SimPanel` with their minors. A major absent from the client is still skipped.
+- **A gate ties the list to `tests/majors.lua`.** A new case in
+  `tests/test_debuglog_diagnostics.lua` builds a report with the whole library loaded and fails,
+  naming the file, when any file of any major `tests/majors.lua` ships is missing from the header.
+  It derives the expected entries from `T.majors`, and no seam reads the file's local.
+- **No member moves.** DebugLogDiagnostics 2 -> 3, so the fuller header wins the LibStub race. The
+  DebugLog key was briefly 20.2.1 on the release branch; no release carried it.
+  [DebugLog version 20.3.1](docs/api/DebugLog/version-20.3.1-docs.md).
+
+**What a consumer owes.** Nothing. A host that parses its own report reads more `File minor`
+entries on the `LibKa0s running:` line.
 
 ### PerfPanel minor 7: comment-only; the step panel stays Sim-private (#53)
 

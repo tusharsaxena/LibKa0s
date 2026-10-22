@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 20.2.1
+# `LibKa0s-DebugLog-1.0` — version 20.3.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,17 +8,17 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **20** · `DebugLogDiagnostics.lua` minor **2** · `DebugLogGates.lua` minor **1** |
+| Files and minors | `DebugLog.lua` minor **20** · `DebugLogDiagnostics.lua` minor **3** · `DebugLogGates.lua` minor **1** |
 | Shipped in | v1.75.0 |
 | Status | **Current** |
-| Supersedes | [version 19.2.1](./version-19.2.1-docs.md) — the same surface and behavior; its `makeIconButton` comment said the text buttons are what an install missing the art gets |
+| Supersedes | [version 19.2.1](./version-19.2.1-docs.md) — the same surface; its `makeIconButton` comment said the text buttons are what an install missing the art gets, and its report's identity header did not name Glow or Sim (briefly keyed 20.2.1 on the release branch; no release carried that key) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 20, DebugLogDiagnostics = 2, DebugLogGates = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 20, DebugLogDiagnostics = 3, DebugLogGates = 1 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared; a `Since` of
-**D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file version 14.1 added, and **D2** its
-minor 2; a `Since` of **G1** is `DebugLogGates.lua` minor 1, the secondary file this version adds.
+**D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file version 14.1 added, **D2** its
+minor 2 and **D3** its minor 3; a `Since` of **G1** is `DebugLogGates.lua` minor 1, the secondary file this version adds.
 Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
 this major".
@@ -49,9 +49,21 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 
 ## What changed at this version
 
-**Comment-only; no member or behavior change** (LibKa0s#57). `DebugLog.lua` moves to minor **20**
-so a corrected copy wins the LibStub race; `DebugLogDiagnostics.lua` and `DebugLogGates.lua` are
-unchanged. `makeIconButton`'s docblock said the text buttons (the ×, CLEAR and COPY) are "what an
+**No member change.** Two things move, and `DebugLogGates.lua` is unchanged.
+
+**The identity header names the two new majors** (`DebugLogDiagnostics.lua` minor **3**, D3;
+LibKa0s#54, LibKa0s#56). The report's `LibKa0s running:` line lists every file of every major on a
+list written into the file, since LibStub cannot enumerate what it holds. v1.75.0 adds two majors,
+`LibKa0s-Glow-1.0` (`Glow`) and `LibKa0s-Sim-1.0` (`Sim`, `SimTimeline`, `SimPanel`), and the list
+now carries both, in `tests/majors.lua` order: `Core`, `Env`, `Compat`, `Lifecycle`, `Bus`,
+`Schema`, `Pool`, `Item`, `Glow`, `Media`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`,
+`Perf`, `Sim`. A major absent from the client is still skipped, so a host that loads neither prints
+the same header as before. `tests/test_debuglog_diagnostics.lua` now fails, naming the file, when a
+major `tests/majors.lua` ships is missing from the header, so the next major cannot be left out
+silently. This version was briefly keyed 20.2.1 on the release branch; no release carried that key.
+
+**Comment-only in `DebugLog.lua`** (LibKa0s#57). `DebugLog.lua` moves to minor **20**
+so a corrected copy wins the LibStub race. `makeIconButton`'s docblock said the text buttons (the ×, CLEAR and COPY) are "what an
 install missing the art gets". They are what a host that never passes `addonName` gets and what a
 host without the Media module gets. A host that passes its name but whose copy lacks the art gets a
 **blank** control, because `Media.Icon` answers a path from the catalog and never checks that the
@@ -237,7 +249,7 @@ is the state a consumer's library-absent stub already answers for.
    version, build, date, interface), the locale, the debug-logging flag, the two combat reads
    (`InCombatLockdown()`, `UnitAffectingCombat("player")`, each pcall'd and printed `unreadable`
    if it raises), and every file of every LibKa0s major **running** in the client, as
-   `File minor`. Running, because under LibStub the winning copy may be another addon's vendor.
+   `File minor` (`Glow` and `Sim` among the majors from D3). Running, because under LibStub the winning copy may be another addon's vendor.
 3. **The host's sections**, from the descriptor's `diagnostics()` (called at run time, so a module
    that loads after the console can still supply one) or from `spec.sections`. Each runs under its
    own pcall; a raise costs one line, `section <name> failed: <err>`, and the next section runs.
@@ -807,8 +819,10 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
-Version 20.2.1 changes nothing a host can observe: one comment is corrected, and the minor moves only
-so a copy at 20 wins over the 19 every v1.66.0 to v1.74.0 consumer carries. A host that passes
+Version 20.3.1 changes one thing a host can observe: a report's `LibKa0s running:` line also lists
+the Glow and Sim files when those majors run in the client. A host that parses the line reads more
+entries, in the same `File minor` form. Otherwise one comment is corrected, and `DebugLog.lua`'s
+minor moves only so a copy at 20 wins over the 19 every v1.66.0 to v1.74.0 consumer carries. A host that passes
 `addonName` declares `close, copy, clear` on its `LibKa0s icons:` line, or those controls draw blank.
 
 Version 19.2.1 changes nothing a host can observe. `lib:New`'s descriptor reads (the required-field

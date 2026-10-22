@@ -12,7 +12,7 @@
 | Shipped in | v1.66.0 |
 | Status | Superseded |
 | Supersedes | [version 18.2.1](./version-18.2.1-docs.md) — the same surface and behavior; `lib:New`'s descriptor reads were inline |
-| Superseded by | [version 20.2.1](./version-20.2.1-docs.md) — comment-only: an undeclared icon draws blank, not the text fallback |
+| Superseded by | [version 20.3.1](./version-20.3.1-docs.md) — an undeclared icon draws blank, not the text fallback (comment-only), and the report's identity header names Glow and Sim |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }` |
 
@@ -839,9 +839,10 @@ the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a c
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
 
-## Moving to version 20.2.1
+## Moving to version 20.3.1
 
-**Take it; nothing moves.** Version 20.2.1 is this surface and this behavior; only
-`makeIconButton`'s comment changes, withdrawing the claim that an install missing the art gets the
-text buttons. A host that passes `addonName` declares `close, copy, clear` on its `LibKa0s icons:`
-line, or those controls draw blank. See [version 20.2.1](./version-20.2.1-docs.md).
+**Take it; nothing moves.** Version 20.3.1 is this surface; `makeIconButton`'s comment changes,
+withdrawing the claim that an install missing the art gets the text buttons, and the report's
+`LibKa0s running:` line also lists the Glow and Sim files when those majors run. A host that passes
+`addonName` declares `close, copy, clear` on its `LibKa0s icons:` line, or those controls draw blank.
+See [version 20.3.1](./version-20.3.1-docs.md).
