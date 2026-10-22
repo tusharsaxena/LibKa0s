@@ -1,13 +1,14 @@
 {
   "major": "LibKa0s-Widgets-1.0",
-  "versionKey": "13.1.4.3.2",
+  "versionKey": "13.1.4.3.2.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Widgets", "minor": 13 },
     { "file": "WidgetsReorder", "minor": 1 },
     { "file": "WidgetsDragHandle", "minor": 4 },
     { "file": "WidgetsLineChart", "minor": 3 },
-    { "file": "WidgetsAutocomplete", "minor": 2 }
+    { "file": "WidgetsAutocomplete", "minor": 2 },
+    { "file": "WidgetsStepPanel", "minor": 1 }
   ],
   "members": [
     { "name": "AUTOCOMPLETE", "kind": "table" },
@@ -23,6 +24,7 @@
     { "name": "ROW_BOX", "kind": "table" },
     { "name": "ReorderList", "kind": "function" },
     { "name": "SearchBox", "kind": "function" },
+    { "name": "StepPanel", "kind": "function" },
     { "name": "TEST_STRIP", "kind": "table" },
     { "name": "TestStrip", "kind": "function" }
   ]

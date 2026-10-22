@@ -14,13 +14,14 @@ cannot drift. Release order is in
 
 Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** (comment-only)
 (`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**), **Core minor 11** (comment-only, key
-**11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13**
-(`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**),
+**11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13** and **WidgetsStepPanel minor 1**
+(`LibKa0s-Widgets-1.0` key **13.1.4.3.2.1**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**),
 **Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**), every
 other file still at its v1.74.0 minor — `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2,
 `Pool` 3, `Media` key 5.1, `Slash` key 20.2, `Launcher` 5 and
 `Perf` key 15.1.1.6 — and
-**test kit revision 41**. No `NEEDS_*` floor rises, and one major is added (`LibKa0s-Glow-1.0`). The owner's
+**test kit revision 41**. No `NEEDS_*` floor rises, and one major is added (`LibKa0s-Glow-1.0`); the
+new `WidgetsStepPanel.lua` enters with an attach-file floor of its own on Core 9 (`MakeResizable`). The owner's
 2026-10-20 ruling: only the bare minimum of icons is vendored into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
 README's standards pointer moves when this is released.
 
@@ -53,7 +54,7 @@ README's standards pointer moves when this is released.
   (re-check when a third flat control outside `Widgets.lua` copies the literals). The header's
   "No search box" now means inside the dropdown's menu.
 - **The attach files re-pair on the shell's new minor**; none of their own minors moves.
-  [Widgets version 13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md).
+  [Widgets version 13.1.4.3.2.1](docs/api/Widgets/version-13.1.4.3.2.1-docs.md).
 
 **What a consumer owes.** Nothing to keep working. An adopter extends the box with `HookScript`
 and never `SetScript`s the five scripts the constructor sets, rewrites the hint with
@@ -78,12 +79,44 @@ host-passed and joins no set the library draws.
   wrap, measuring or `Height()`, no test-mode state, no placement or body shift, and no icon
   fallback. Re-check trigger: a consumer needs a different color, a tooltip renderer or a measured
   height with the same semantics as another.
-  [Widgets version 13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md).
+  [Widgets version 13.1.4.3.2.1](docs/api/Widgets/version-13.1.4.3.2.1-docs.md).
 
 **What a consumer owes.** Nothing to keep working. A TestStrip adopter declares `info` on its
 `LibKa0s icons:` line: the strip's mark is host-passed, so the library's closed set (close, copy,
 clear, info, for `OptionsIdList`) does not cover the adopter's own copy, and a pruned icon still
 resolves to a path and draws blank.
+
+### W.StepPanel (WidgetsStepPanel minor 1, #53)
+
+**Public pending LK-11's spike**: the owner's scope makes `W.StepPanel` public only if Perf's panel
+can be rebuilt on it with `tests/test_perf_panel.lua` passing unedited (Perf and Sim, two
+consumers). If the rebuild fails, the member becomes Sim-private and this entry says so.
+
+- **`W.StepPanel(d)`, the render-only clickable step panel**, in a new sixth Widgets file,
+  `WidgetsStepPanel.lua`, paired on the shell's minor (`__stepPanelMinor` /
+  `__stepPanelShellMinor`) and floored on Core 9 for `MakeResizable`: with an older Core the file
+  returns and `StepPanel` is absent. One row per step: a status dot, the label and the slash
+  command, in Perf's geometry, palette and chrome (copied from `PerfPanel.lua`), with gold hover on
+  an actionable row and red on an actionable `cancel`. The descriptor is `name`, `addonName` (the
+  close mark's folder), `title` (re-read on every Refresh), `rows()` (each row
+  `{ key?, label, command, state, actionable, tip? }`, `actionable` explicit), `onClick(row, index)`
+  (called only after `rows()` is re-read and the row re-checked at that index), and optional
+  `check` (host-passed done mark), `tooltip`, `footer` (`height`, `build` once, `paint` every
+  Refresh) and `close`. There is no `place` and no `onDragStop`: the panel sits at CENTER -320 and
+  a caller positions or hooks `Frame()` itself. The handle answers `Frame`, `Show`, `Hide`,
+  `Toggle`, `IsShown`, `Refresh` and `Buttons`; `Frame()` is lazy and answers nil headless.
+- **The height bounds follow the row count.** `Core.MakeResizable` is call-once and fixes a
+  width-only frame's height bounds when it is called, so on every Refresh where the row count
+  changed the panel re-pins its own min and max height (`SetResizeBounds`, guarded, falling back to
+  `SetMinResize` / `SetMaxResize` as Core does). No Core API changes.
+- **The semantics stay with the consumers.** What puts a row in done, used, ready, busy, locked or
+  cancel, and whether it is clickable, is Perf's and Sim's; the widget adds no state.
+  [Widgets version 13.1.4.3.2.1](docs/api/Widgets/version-13.1.4.3.2.1-docs.md).
+
+**What a consumer owes.** Nothing to keep working. The Widgets key is now 13.1.4.3.2.1 (briefly
+13.1.4.3.2 on the release branch; no release carried it). An adopter passes its folder as
+`addonName` and declares `close` on its `LibKa0s icons:` line, and resolves and declares its own
+`check` art.
 
 ### Comment-only minors: the icon fallback a pruned copy does not get (#57)
 

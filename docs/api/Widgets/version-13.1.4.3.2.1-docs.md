@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 13.1.4.3.2
+# `LibKa0s-Widgets-1.0` — version 13.1.4.3.2.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,21 +8,25 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **13** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **2** |
+| Files and minors | `Widgets.lua` minor **13** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **2** · `WidgetsStepPanel.lua` minor **1** |
 | Shipped in | v1.75.0 |
 | Status | **Current** |
-| Supersedes | [version 12.1.4.3.2](./version-12.1.4.3.2-docs.md) — no search box, no test-mode strip |
+| Supersedes | [version 12.1.4.3.2](./version-12.1.4.3.2-docs.md) — no search box, no test-mode strip, no step panel |
 | Superseded by | — |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 13, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }` |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `WidgetsStepPanel.lua` additionally requires `LibKa0s-Core-1.0` minor ≥ 9 (`NEEDS_CORE = 9`, for `MakeResizable`), and without it that file returns and `StepPanel` is absent. |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 13, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2, WidgetsStepPanel = 1 }` |
 
-## What changed at 13.1.4.3.2
+## What changed at 13.1.4.3.2.1
 
 **`lib.SearchBox`, the flat filter-bar search box, joins the dropdown it sits beside** (#52),
-**and `lib.TestStrip`, the test-mode strip, joins them** (#48). One minor carries both:
-`Widgets.lua` moves from **12** to **13**; `WidgetsReorder.lua` stays at **1**,
+**`lib.TestStrip`, the test-mode strip, joins them** (#48), **and `lib.StepPanel`, the
+render-only clickable step panel, arrives in a file of its own** (#53). One shell minor carries the
+first two: `Widgets.lua` moves from **12** to **13**; `WidgetsReorder.lua` stays at **1**,
 `WidgetsDragHandle.lua` at **4**, `WidgetsLineChart.lua` at **3** and `WidgetsAutocomplete.lua` at
-**2**, so the key is 13.1.4.3.2. Three members are added (`SearchBox`, `TestStrip`, `TEST_STRIP`)
-and none is removed or renamed. The four
+**2**; the new sixth file, `WidgetsStepPanel.lua`, enters at **1**, so the key is 13.1.4.3.2.1.
+This version was briefly keyed 13.1.4.3.2 on the release branch, before the step panel's file
+joined it; no release carried that key. Four members are added (`SearchBox`, `TestStrip`,
+`TEST_STRIP`, `StepPanel`) and none is removed or renamed. The four
 attach files re-pair on the shell's new minor through their `__*ShellMinor` probes, as every shell
 bump has them do; none of their own minors moves, and `AUTOCOMPLETE.BORDER` / `.BG` stay as they
 were (they equal the search box's line and fill).
@@ -50,6 +54,13 @@ were (they equal the search box's line and fill).
   shows, hides, re-measures or changes its height or its text's anchors, so whatever a host sets
   later sticks. `TEST_STRIP` publishes `HEIGHT` (18) and nothing else; a host adds its own gaps.
   See *The test-mode strip* below.
+- **`StepPanel(d)`** (`WidgetsStepPanel` **Since 1**; **public pending the PerfPanel rebuild**,
+  see *The step panel*). Perf's clickable step panel and DropWatcher's simulator panel were the same
+  panel twice, and `LibKa0s-Sim-1.0` would have made a third. The widget owns the shape (Perf's
+  geometry, palette and chrome, the dot, label and command columns, width-only resize) and none of
+  the semantics: rows, their states and whether each is clickable are the host's data, and a click
+  reaches the host only after the rows are re-read and the clicked row re-checked. A secondary file
+  paired on the shell's minor, floored on Core 9 for `MakeResizable`.
 
 **What a host must change: nothing.** The dropdown looks and behaves exactly as it did. A host
 that adopts the search box deletes its hand-built one; one that passes an icon declares that
@@ -444,8 +455,11 @@ version 6 it also owns `Widgets.CopyWindow`, the collection's one selectable-tex
 *The copy window* below. Since version 13 it owns `Widgets.SearchBox`, the flat search box a filter
 bar puts beside the dropdown, in the same skin — see *The search box* below — and
 `Widgets.TestStrip`, the band a window lays over sample data — see *The test-mode strip* below.
+Since `WidgetsStepPanel` 1 it owns `Widgets.StepPanel`, the clickable list of steps Perf's run and
+a simulation are driven from — see *The step panel* below.
 
-Depends on LibStub and `LibKa0s-Core-1.0` (minor 1 or newer), and on no addon framework.
+Depends on LibStub and `LibKa0s-Core-1.0` (minor 1 or newer; minor 9 or newer for
+`WidgetsStepPanel.lua`), and on no addon framework.
 
 ## Why it takes no dependency on `LibKa0s-Media-1.0`
 
@@ -464,6 +478,7 @@ library's.
 | `Dropdown(parent, width, opts)` | 1 | Builds one flat-skin dropdown button parented to `parent`, `width` px wide and 20px tall, that opens the shared popup menu on click. Returns the dropdown frame. |
 | `SearchBox(parent, width, opts)` | **13** | Builds one flat search box, an `EditBox` parented to `parent`, in the dropdown's skin, with a hint while empty and the gold focus line. Returns the box. See *The search box*. |
 | `TestStrip(parent, opts)` | **13** | Builds one test-mode strip, a `Frame` parented to `parent`: an amber band, an optional host-passed mark and one line of text, born hidden and unanchored. Returns the strip. See *The test-mode strip*. |
+| `StepPanel(d)` | `WidgetsStepPanel` **1** | Builds one render-only step panel and returns its handle. The frame is lazy: nothing is created until the first `Frame()` or `Show()`. Public pending the PerfPanel rebuild. See *The step panel*. |
 | `TEST_STRIP` | **13** | `{ HEIGHT = 18 }`, the strip's height, published so a host lays out around it. Read-only in effect: a write moves no strip. See *The test-mode strip*. |
 | `CopyWindow(descriptor)` | **6** | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
@@ -767,6 +782,89 @@ another.*
 - **No test-mode state** — the strip never reads test mode.
 - **No placement and no body shift** — that is host layout.
 - **No icon fallback** — no icon is a valid, tested state.
+
+## The step panel
+
+**`WidgetsStepPanel.lua`, minor 1** (#53). A small movable window listing steps, one row each: a
+status dot, the step's label and, right-aligned and dimmer, the slash command that does the same
+thing, so the panel teaches the typed form while it is clicked. Perf's run panel drew it first and
+DropWatcher's simulator drew it again; `LibKa0s-Sim-1.0` is its next consumer.
+
+**Public pending the PerfPanel rebuild.** The owner's 2026-10-22 scope (C.6) makes `StepPanel` public
+only if Perf's own panel can be rebuilt on it with `tests/test_perf_panel.lua` passing unedited,
+which gives it two consumers (Perf and Sim). If that rebuild fails, the member becomes Sim-private
+and this section is withdrawn in the same release; v1.75.0's changelog records which way it went.
+
+**Render-only, on purpose.** The two panels have the same shape and not the same semantics: a perf
+run is a strict sequence with an always-offered cancel, and a simulation lets a click run ahead to
+a later step and stops rather than cancels. So the widget owns the shape and none of the semantics.
+A row's state and whether it is clickable are the host's data; the six states are only the
+palette's keys, and no new state is ever added here.
+
+### `StepPanel(d)`
+
+| `d` field | Required | Meaning |
+|---|---|---|
+| `name` | yes | The frame's global name, and its `UISpecialFrames` entry (Escape closes it). |
+| `addonName` | yes | The host's addon **folder**, passed to `Core.MakeCloseButton` as its third argument so the close mark is the catalog's `close` icon rather than the × fallback. The host declares `close` on its `LibKa0s icons:` line. |
+| `title` | no | A string, or a function answering one, **re-read on every `Refresh`**. Nil draws an empty title. |
+| `rows` | yes | `function() -> { row, ... }`, read on every `Refresh` and on every click. A row is `{ key?, label, command, state, actionable, tip? }`: `label` and `command` are the two texts drawn; `state` picks the color (`done`, `used`, `ready`, `busy`, `locked`, `cancel`; anything else paints as `locked`); `actionable` is explicit row data, and nil means false; `tip` is anything truthy the host's `tooltip` reads; `key` is the host's, never read here. Anything that is not a table counts as no rows. |
+| `onClick` | yes | `function(row, index)`. Called only after `rows()` is re-read and `actionable` is re-checked **at the clicked index**, with the row as `rows()` answers it now. A row that stopped being actionable between the paint and the click, or an index the list no longer has, dispatches nothing. Every click then repaints. |
+| `check` | no | The done mark: a resolved texture path or fileID, **host-passed** (the library does not draw it and the host declares it, e.g. its `confirm` icon). A 12x12 `OVERLAY` texture centered on the dot, tinted with the state color, shown over a hidden dot on a `done` row. With none, a done row keeps its green dot. |
+| `tooltip` | no | `function(owner, row)`, called on enter over any row that has a `tip`, actionable or not, with the row button as `owner`. The panel hides `GameTooltip` on leave after it has called this. With none, there is no tooltip. |
+| `footer` | no | `{ height, build(frame, api), paint(frame) }`. `build` runs **once**, when the frame is built, with `api` = `{ Show, Hide, Toggle, IsShown, Refresh, Buttons, TITLE_H, PAD, ROW_W }`; `paint` runs at the end of **every** `Refresh`. The footer band is the bottom `height` px above a `PAD` inset; the host anchors its controls to the frame's bottom (`BOTTOMLEFT`, `PAD`, `PAD`). A footer without a number `height` and both functions is ignored. |
+| `close` | no | Default true. `false` draws no close mark and leaves the corner to the caller. |
+
+There is **no `place` and no `onDragStop`** (C.7): the panel sits at `CENTER`, -320, 0, set once
+at build, and a caller that wants it elsewhere, or wants to save where it was dragged, positions
+`Frame()` or hooks its `OnDragStop` itself. A descriptor that is not a table, or that lacks
+`name`, `addonName`, `rows` or `onClick` of the right type, raises.
+
+### The handle
+
+Plain functions (no `self`): `Frame()`, `Show()`, `Hide()`, `Toggle()`, `IsShown()`, `Refresh()`,
+`Buttons()`.
+
+| Member | Meaning |
+|---|---|
+| `Frame()` | Builds the frame on first call and answers it. Answers `nil`, building nothing, where there is no `CreateFrame` (headless). The frame is built hidden. |
+| `Show()` | Builds if needed, repaints, shows. A no-op headless. |
+| `Hide()` / `Toggle()` / `IsShown()` | As named. `IsShown()` is `false` before the first build. |
+| `Refresh()` | Re-reads the title and `rows()` and repaints every row, the height and the footer. Cheap and idempotent: call it on every host transition. A no-op before the frame exists. |
+| `Buttons()` | The row buttons of the last paint, by index, as a fresh table. |
+
+### What it draws
+
+- **Geometry** (Perf's): rows 360 x 22 with a 4px gap, at `TOPLEFT` + 8, -(24 + 8 + (i-1) * 26);
+  the dot 8x8 at the row's `LEFT` + 8; the label at `LEFT` + 26; the command at `RIGHT` - 10. Title
+  height 24, padding 8. The frame is `ROW_W + 2 * PAD` wide.
+- **Height** = `24 + 2 * 8 + n * 26`, plus `footer.height + 8` with a footer, recomputed on every
+  `Refresh`. Rows are created on demand, reused, and hidden when the list shrinks.
+- **Palette** (Perf's): done and used (0.30, 0.85, 0.30), ready (0.90, 0.90, 0.92), busy
+  (1, 0.82, 0), locked (0.40, 0.40, 0.42), cancel (0.80, 0.32, 0.32), on the label and the dot; a
+  locked dot at alpha 0.35. The command column is (0.45, 0.45, 0.48) and is repainted on every
+  `Refresh`.
+- **Hover.** An actionable row's label turns gold (1, 0.82, 0), or (1, 0.45, 0.45) for `cancel`, and
+  returns to its state color on leave. A row that is not actionable does not hover.
+- **Chrome.** `BackdropTemplate` under `UIParent`, `DIALOG` strata, movable, clamped, dragged with
+  the left button, `Core.ApplySkin`; the title (`GameFontNormal`) at `TOP` 0, -6; the close mark at
+  `TOPRIGHT` -6, -3. `frame.title` and `frame.closeButton` are readable.
+- **Resize, width only**, through `Core.MakeResizable`; the rows stretch to the frame's width less
+  the padding, and rows made later come at that width. `MakeResizable` fixes a width-only frame's
+  height bounds when it is called, so on every `Refresh` where the row count changed the panel
+  re-pins its min and max height to the new height itself (`SetResizeBounds`, keeping the width
+  bounds, or the old `SetMinResize` / `SetMaxResize` pair where it is absent). No Core API changed
+  for this.
+- **Row fields.** `b.dot`, `b.text`, `b.cmd` and, with a `check`, `b.check` are readable. The test
+  record `b.__label`, `b.__state`, `b.__command` and `b.__index` is what was painted, for headless
+  suites; like every `__` field it is internal and not contract.
+
+### What it deliberately is not
+
+No state logic (what puts a row in a state is the host's), no slash knowledge (the command is a
+string the host composed), no saved position, no `place` / `onDragStop`, no height resize, no
+library-drawn done mark. `StepPanel` never registers an event and never runs on a timer: it paints
+when the host calls `Refresh` or `Show` and when a row is clicked.
 
 ## Known and intentional absences
 
@@ -1520,7 +1618,8 @@ With `LibKa0s-Widgets-1.0` absent — no vendored copy, or a copy whose `NEEDS_C
 for any other major. The secondary files cannot half-attach: each is paired on the shell's minor,
 and one that is missing leaves only its own members `nil` (`ReorderList` and `ROW_BOX` without
 `WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`, `LineChart`, `LINE_CHART` and `ChartMath` without
-`WidgetsLineChart.lua`, `Autocomplete` and `AUTOCOMPLETE` without `WidgetsAutocomplete.lua`).
+`WidgetsLineChart.lua`, `Autocomplete` and `AUTOCOMPLETE` without `WidgetsAutocomplete.lua`,
+`StepPanel` without `WidgetsStepPanel.lua` or under a `LibKa0s-Core-1.0` older than minor 9).
 `TestStrip` and `TEST_STRIP` live in the shell, so they are present exactly when the major is; a
 host with no Widgets copy shows no strip, and marks test mode however it did before.
 The host must have a plan for `nil`
