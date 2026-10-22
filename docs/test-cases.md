@@ -2089,6 +2089,35 @@ Total.
 - iso: an older copy loading second replaces neither half
 - iso: a higher panel minor over the same probe still wins
 
+### test_sim_seam.lua (26)
+
+- sim seam: the major registers with Core, and reports its file minor
+- sim seam: the module is absent without Core
+- sim seam: the seam carries exactly SetProvider, Live, Keys and Unwrapped
+- sim seam: every non-pure function is wrapped, and Keys() is sorted
+- sim seam: pure members are the host's own functions, untouched
+- sim seam: Keys() answers a fresh copy each call
+- sim seam: NewSeam refuses a bad compat, a missing name and bad opts
+- sim seam: a guarded key must be a wrapped member, and its answer a function
+- sim seam: one compat table is wrapped once
+- sim seam: an idle call goes straight to live, arguments and nil holes intact
+- sim seam: idle, a guarded member calls live
+- sim seam: idle, a registered provider is never consulted
+- sim seam: the idle wrapper allocates nothing
+- sim seam: SetProvider raises on a pure key and on an unknown key
+- sim seam: a second owner raises; nil releases, and then a new owner is taken
+- sim seam: SetProvider raises on a provider that is not a function
+- sim seam: Live runs fn with its arguments and keeps nil holes in both
+- sim seam: Live nests, and the seam works again after a raise
+- sim seam: Live re-raises a table error value unchanged
+- sim seam: Live re-raises a string error with no second position prefix
+- sim seam: Live writes the traceback to opts.debug before re-raising
+- sim seam: a raising debug sink never masks the original error
+- sim seam: Live with no debug sink still re-raises
+- sim seam: Unwrapped() is empty straight after NewSeam
+- sim seam: Unwrapped() lists a late-added and a replaced member, sorted
+- sim seam: Sim.lua carries no auto-wrap metatable and no guarded-key query
+
 ### test_loader.lua (6)
 
 - loader: a cached chunk gives each instance its own global namespace
@@ -2640,6 +2669,7 @@ Total.
 | test_perf_budget.lua | 11 |
 | test_perf_toplevel.lua | 7 |
 | test_perf_isolation.lua | 12 |
+| test_sim_seam.lua | 26 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -2667,4 +2697,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2273** |
+| **Total** | **2299** |

@@ -17,10 +17,11 @@ Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** 
 **11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13**
 (`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**),
 **Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**), **PerfPanel minor 7** (comment-only,
-`LibKa0s-Perf-1.0` key **15.1.1.7**), every
+`LibKa0s-Perf-1.0` key **15.1.1.7**), **Sim minor 1** (the new major `LibKa0s-Sim-1.0`, key
+**1** so far), every
 other file still at its v1.74.0 minor — `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2,
 `Pool` 3, `Media` key 5.1, `Slash` key 20.2 and `Launcher` 5 — and
-**test kit revision 41**. No `NEEDS_*` floor rises, and one major is added (`LibKa0s-Glow-1.0`). The owner's
+**test kit revision 41**. No `NEEDS_*` floor rises, and two majors are added (`LibKa0s-Glow-1.0` and `LibKa0s-Sim-1.0`). The owner's
 2026-10-20 ruling: only the bare minimum of icons is vendored into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
 README's standards pointer moves when this is released.
 
@@ -258,6 +259,38 @@ major adds the same walk to it.
 **What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
 the file arrive, and a host that never wires it carries a small file that never runs. Every host
 keeps vendoring `LibCustomGlow-1.0`.
+
+### LibKa0s-Sim-1.0 (new major, Sim minor 1)
+
+- **The Compat answer seam (#54).** `LibKa0s/Sim.lua`, loaded after `PerfPanel.lua`.
+  `Sim:NewSeam(compat, opts) -> seam` wraps the host's own Compat table in place, once (a second
+  wrap of the same table raises). `opts.name` (required) names the seam in errors and debug lines;
+  `opts.pure` (`{[key]=true}`) is never wrapped; `opts.guarded` (`{[key]=fn}`) is the safe answer
+  while a session is active, and a guarded key that is not a wrapped member raises at load;
+  `opts.debug` (optional `fn(tag, fmt, ...)`) is the sink `Live` writes a traceback to. Every other
+  function member becomes a closure whose idle path is one upvalue-field test and allocates nothing;
+  while a bound session is active, the key's provider answers as `provider(fallback, ...)` with
+  `fallback = guarded[key] or live`, and a guarded member never reaches the client, inside `Live`
+  included. Until a session binds, the seam is idle and every call answers live.
+- **Four seam members.** `SetProvider(key, fn)` (`nil` releases; raises on a key that is not
+  wrapped, pure or unknown, and on a second non-nil provider for a key that already has one);
+  `Live(fn, ...)` (bypass on, nesting-safe, restored on every exit; an error is re-raised with its
+  original value, so a table survives, after its traceback is written to the debug sink; nil holes
+  in the returns survive); `Keys()` (the sorted wrapped keys); `Unwrapped()` (the sorted function
+  members that are neither pure nor still the seam's wrapper: one added or replaced after
+  `NewSeam`; every host suite asserts it is empty).
+- **What it deliberately is not** (OWNER_SCOPE C.7 to C.9): no query of the seam's active state or
+  of a key's guarded status, no auto-wrap metatable on the host's table, no restriction or
+  chat-lockdown simulation (host code), no SavedVariables read or written, no behavior flags.
+- **Payload weight.** Whole-folder vendoring ships the major into every consumer. Its file bodies
+  only define functions: no frame, timer or event registration exists until `NewSeam` (or the
+  session constructor) is called, so a host that never simulates pays parse time and nothing else.
+- Sessions, the step machine and the panel arrive in the next commits of this release, as
+  `SimTimeline.lua` and `SimPanel.lua` join the key `<Sim>.<SimTimeline>.<SimPanel>`. The contract
+  so far is [Sim version 1](docs/api/Sim/version-1-docs.md).
+
+**What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
+the file arrive, and a host that never calls `NewSeam` carries a file that never runs.
 
 ## v1.74.0 — 2026-10-19
 

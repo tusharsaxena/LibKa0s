@@ -125,5 +125,10 @@ local MAJORS = {
       { file = "PerfPanel",    minorField = "__panelMinor",    probeField = "__panelProbeMinor" },
     },
   },
+  {
+    major = "LibKa0s-Sim-1.0",
+    files = { "Sim" },
+    primary = "Sim",
+  },
 }
 return MAJORS
