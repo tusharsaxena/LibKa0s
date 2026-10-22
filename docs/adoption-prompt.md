@@ -879,8 +879,9 @@ and v1.67.0. If you are about to become the second host on a
 one-consumer surface — or the first on a zero-consumer one — treat a misfit as a library gap on
 first contact.
 
-**The zero-consumer set is in the census, not here.** At v1.71.0, 108 of 422 public exports have no
-host consumer, and none of them has a host duplicate or an unsettled contract behind it. At v1.66.0
+**The zero-consumer set is in the census, not here.** At v1.75.0, 123 of 492 public exports have no
+host consumer (108 of 422 at v1.71.0: the new Sim major adds sixteen, and Media's `lib.ICONS` leaves
+the set now that Quick Comms reads it), and none of them has a host duplicate or an unsettled contract behind it. At v1.66.0
 there were 106, and the eight host duplicates and two suspect shapes among them were cleared by the
 issues that census filed: `Core.MakeResizable` (its lock gate is Core 10, LibKa0s#41) and
 `Core.SECRET` now have three hosts each; Slash's `SplitVerb` has three, `FindCommand` and

@@ -744,6 +744,28 @@ T.assertSurfaceParity(newSeamStub(), liveSeam, "seam stub over the live seam", {
 **Future candidates**, left open and repointed at this major: MultiMeters#60, WhatGroup#24 and
 KickCD#38. None is owed; each adopts when its own simulator is built.
 
+**Consumer census, v1.75.0** ([`CONSUMERS.md`](../CONSUMERS.md)). Measured after the three
+adopters landed: `NewSeam` and `New` have all three hosts, and the session and seam members split
+as that page's rows show (several by hand, because the scan does not resolve a `NewSeam` result and
+BankLedger's stubs read as calls). No host calls or passes these:
+
+- `lib.STRINGS`: no consumer as of v1.75.0, kept because it is the English fallback every Sim, SimTimeline and SimPanel line resolves through; hosts override by key through the descriptor's `L`.
+- `PanelRows`: no consumer as of v1.75.0, kept because it is what the library's own step panel draws, published pure so a suite can pin the composed rows.
+- `Pause`: no consumer as of v1.75.0, kept because every host drives the step machine through its `/x sim` verbs and the panel's buttons, which `RunVerb` and the panel dispatch to it inside the library.
+- `RefreshPanel`: no consumer as of v1.75.0, kept because the panel refreshes on the library's own transitions and toggles through the `panel` verb that `RunVerb` dispatches.
+- `Restart`: no consumer as of v1.75.0, kept because every host drives the step machine through its `/x sim` verbs and the panel's buttons, which `RunVerb` and the panel dispatch to it inside the library.
+- `Resume`: no consumer as of v1.75.0, kept because every host drives the step machine through its `/x sim` verbs and the panel's buttons, which `RunVerb` and the panel dispatch to it inside the library.
+- `Run`: no consumer as of v1.75.0, kept because every host drives the step machine through its `/x sim` verbs and the panel's buttons, which `RunVerb` and the panel dispatch to it inside the library.
+- `Step`: no consumer as of v1.75.0, kept because it is the one-step read beside `Steps()`; the hosts' panels and status lines read the whole list.
+- `TogglePanel`: no consumer as of v1.75.0, kept because the panel refreshes on the library's own transitions and toggles through the `panel` verb that `RunVerb` dispatches.
+- `Unwrapped`: no consumer as of v1.75.0, kept because a host suite MUST assert it empty after the whole addon loads (the Sim document's H2), and the census never counts a test.
+- `addonName`: no consumer as of v1.75.0, kept because it is a field of the Sim-private step-panel renderer (the W.StepPanel spike took outcome B, LK-11), which SimPanel.lua's own adapter fills; no host descriptor carries it.
+- `close`: no consumer as of v1.75.0, kept because it is a field of the Sim-private step-panel renderer (the W.StepPanel spike took outcome B, LK-11), which SimPanel.lua's own adapter fills; no host descriptor carries it.
+- `footer`: no consumer as of v1.75.0, kept because it is a field of the Sim-private step-panel renderer (the W.StepPanel spike took outcome B, LK-11), which SimPanel.lua's own adapter fills; no host descriptor carries it.
+- `onClick`: no consumer as of v1.75.0, kept because it is a field of the Sim-private step-panel renderer (the W.StepPanel spike took outcome B, LK-11), which SimPanel.lua's own adapter fills; no host descriptor carries it.
+- `rows`: no consumer as of v1.75.0, kept because it is a field of the Sim-private step-panel renderer (the W.StepPanel spike took outcome B, LK-11), which SimPanel.lua's own adapter fills; no host descriptor carries it.
+- `tooltip`: no consumer as of v1.75.0, kept because it is a field of the Sim-private step-panel renderer (the W.StepPanel spike took outcome B, LK-11), which SimPanel.lua's own adapter fills; no host descriptor carries it.
+
 ## What is not here
 
 | Not in Sim-1.0 | Stays in | Re-check trigger |
