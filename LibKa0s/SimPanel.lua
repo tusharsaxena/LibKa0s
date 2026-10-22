@@ -160,22 +160,30 @@ local function footerOf(d)
   return f
 end
 
---- Re-pin the height bounds to `h`, keeping the width bounds MakeResizable set. Guarded like
---- Core's setBounds, because SetResizeBounds replaced the SetMinResize / SetMaxResize pair in 10.0.
-local function pinHeight(frame, minW, h)
-  if type(frame.SetResizeBounds) == "function" then
-    local curMinW, _, curMaxW
-    if type(frame.GetResizeBounds) == "function" then curMinW, _, curMaxW = frame:GetResizeBounds() end
-    local loW = (type(curMinW) == "number" and curMinW > 0) and curMinW or minW
-    local hiW = (type(curMaxW) == "number" and curMaxW >= loW) and curMaxW or loW
-    frame:SetResizeBounds(loW, h, hiW, h)
-    return
-  end
+--- The 10.0+ half of pinHeight: keep the width bounds MakeResizable set, pin the height to `h`.
+local function pinHeightBounds(frame, minW, h)
+  local curMinW, _, curMaxW
+  if type(frame.GetResizeBounds) == "function" then curMinW, _, curMaxW = frame:GetResizeBounds() end
+  local loW = (type(curMinW) == "number" and curMinW > 0) and curMinW or minW
+  local hiW = (type(curMaxW) == "number" and curMaxW >= loW) and curMaxW or loW
+  frame:SetResizeBounds(loW, h, hiW, h)
+end
+
+--- The pre-10.0 half: the SetMinResize / SetMaxResize pair, the maximum width the screen's.
+local function pinHeightLegacy(frame, minW, h)
   if type(frame.SetMinResize) == "function" then frame:SetMinResize(minW, h) end
   if type(frame.SetMaxResize) == "function" then
     local sw = type(UIParent) == "table" and type(UIParent.GetWidth) == "function" and UIParent:GetWidth()
     frame:SetMaxResize((type(sw) == "number" and sw > minW) and sw or minW, h)
   end
+end
+
+--- Re-pin the height bounds to `h`, keeping the width bounds MakeResizable set. Guarded like
+--- Core's setBounds, because SetResizeBounds replaced the SetMinResize / SetMaxResize pair in 10.0.
+--- Split in two so neither half passes CCN 15 (automated-tests-§3's release gate).
+local function pinHeight(frame, minW, h)
+  if type(frame.SetResizeBounds) == "function" then return pinHeightBounds(frame, minW, h) end
+  pinHeightLegacy(frame, minW, h)
 end
 
 --- The frame chrome: Perf's backdrop, strata, drag, title and close mark.
