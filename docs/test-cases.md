@@ -2119,6 +2119,61 @@ Total.
 - sim seam: Unwrapped() lists a late-added and a replaced member, sorted
 - sim seam: Sim.lua carries no auto-wrap metatable and no guarded-key query
 
+### test_sim_session.lua (52)
+
+- sim session: New is on the library, beside NewSeam
+- sim session: every required descriptor field raises by name when missing
+- sim session: a seam that NewSeam did not make raises
+- sim session: a second New on one seam raises (one seam binds one session)
+- sim session: a scenario name with no def, or a def with no timeline, raises
+- sim session: d.panel takes presentation fields only (no button, tooltip or store)
+- sim session: the instance carries no Live and no public active or delivering field
+- sim session: the fallback members answer until their files attach
+- sim session: Start prints STARTED and creates the session
+- sim session: the seed defaults to an integer, and two starts draw different seeds
+- sim session: size reaches prepare only when the def has sizes; 0 is random
+- sim session: an unknown scenario is refused first, naming the scenarios
+- sim session: refusal order is unknown, already running, refusal, stood down
+- sim session: the stood-down backstop refuses after refusal passes
+- sim session: refusal runs inside the seam's Live (it reads the real world)
+- sim session: a prepare error becomes Stop('error')
+- sim session: ready() is bound to its session; a second call is ignored
+- sim session: a stale ready() is ignored after a restart and after stop then start
+- sim session: Fire answers 0 when idle
+- sim session: Fire delivers any event name with its payload, and counts it
+- sim session: an observed stand-down stops the session first and answers 0
+- sim session: Fire answers 0 while stopping
+- sim session: a deliver error is isolated to a debug line, and Fire answers 0
+- sim session: IsDelivering is true only inside Fire, and nesting restores it
+- sim session: a Stop inside deliver leaves IsDelivering false afterwards
+- sim session: After answers nil when idle
+- sim session: After fires within its session, under pcall
+- sim session: After never fires into a later session
+- sim session: Cancel cancels and forgets; Stop cancels every live handle
+- sim session: After refuses while stopping
+- sim session: Stop answers false when idle
+- sim session: Stop runs guarded, then seam off, then cleanup, then notify, then prints
+- sim session: each stop step is pcalled; a raising one does not skip the rest
+- sim session: Stop re-entered from deliver, OnStop or a second call is a no-op false (C.1)
+- sim session: stop reason lines, host stopText, and the generic reason line
+- sim session: stopText overrides a library reason too
+- sim session: the panel is hidden on a stood-down stop and repainted otherwise
+- sim session: DeliverForCleanup delivers only in the OnStop phase, with the seam off
+- sim session: DeliverForCleanup answers 0 while stood down
+- sim session: Status answers every field, idle and running
+- sim session: host fields go on the session table (the host bag)
+- sim session: listeners hear start, ready and stop, with the instance
+- sim session: registrations must be functions
+- sim session: STRINGS carry every session key
+- sim session: d.L overrides a string through rawget; a metatable fallback does not shadow
+- sim session: print and debug are read at call time; the defaults need neither
+- sim session: active, a provider answers and is handed the live fallback
+- sim session: active, a member with no provider answers live
+- sim session: a guarded member never reaches live while active, inside Live included
+- sim session: active, Live answers live for ordinary members, nested and after a raise
+- sim session: once bound, Live's traceback goes to the session's debug sink
+- sim session: Sim.lua defines one Live, on the seam, and no test hook on it
+
 ### test_loader.lua (6)
 
 - loader: a cached chunk gives each instance its own global namespace
@@ -2671,6 +2726,7 @@ Total.
 | test_perf_toplevel.lua | 7 |
 | test_perf_isolation.lua | 12 |
 | test_sim_seam.lua | 27 |
+| test_sim_session.lua | 52 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -2698,4 +2754,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2300** |
+| **Total** | **2352** |

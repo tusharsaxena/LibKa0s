@@ -3,11 +3,11 @@
 -- Every case runs on a fresh environment with Core and Sim loaded and a fresh host Compat table,
 -- the way a host's setup file wraps its own NS.Compat straight after the Compat files load.
 --
--- Only the IDLE seam is pinned here: no session binds a seam until `Sim:New` lands (the next
--- commit of this release), and the plan's review ruled out a test-only hook that would flip the
--- active flag by hand. Every active-path case (providers handed the fallback, a guarded member
--- never reaching live, `Live` answering live under an active session, bypass restored after a
--- raise) is written against a real session in tests/test_sim_session.lua's seam cases.
+-- Only the IDLE seam is pinned here: only a session `Sim:New` binds turns a seam on, and the
+-- plan's review ruled out a test-only hook that would flip the active flag by hand. Every
+-- active-path case (providers handed the fallback, a guarded member never reaching live, `Live`
+-- answering live under an active session, bypass restored after a raise) is written against a
+-- real session in tests/test_sim_session.lua's seam cases.
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse, assertNil =

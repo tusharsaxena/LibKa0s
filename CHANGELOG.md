@@ -283,14 +283,45 @@ keeps vendoring `LibCustomGlow-1.0`.
   of a key's guarded status, no auto-wrap metatable on the host's table, no restriction or
   chat-lockdown simulation (host code), no SavedVariables read or written, no behavior flags.
 - **Payload weight.** Whole-folder vendoring ships the major into every consumer. Its file bodies
-  only define functions: no frame, timer or event registration exists until `NewSeam` (or the
-  session constructor) is called, so a host that never simulates pays parse time and nothing else.
-- Sessions, the step machine and the panel arrive in the next commits of this release, as
+  only define functions: no frame, timer or event registration exists until `NewSeam` or `New` is
+  called (and no timer until a session calls `After`), so a host that never simulates pays parse
+  time and nothing else.
+- **The session (#54).** `Sim:New(d) -> sim` binds one session to a seam (a second `New` on the
+  same seam raises). Required descriptor fields raise by name when missing: `name`, `seam`,
+  `slash`, `deliver` (`fn(event, ...) -> n`, any string a legal event name), `isStoodDown` (read at
+  call time), `scenarios` (`{names, defs}`, each def with a `timeline`), `prepare` and `play`.
+  `d.panel` takes presentation fields only; `button`, `tooltip` and `store` raise (OWNER_SCOPE C.7,
+  C.11). `Start(opts)` refuses, in order, an unknown scenario (naming the scenarios), a session
+  already running, the host's `refusal(opts)` read inside `seam:Live`, and the stood-down
+  backstop; then it creates the session `{sim, scenario, size, seed, startedAt, events}` (`size`
+  only when the def has `sizes`, `0` random; a time-derived seed by default), turns the seam on,
+  prints a neutral `STARTED` and runs `prepare` under `pcall` with a `ready` bound to that session:
+  a stale or second `ready()` is ignored (C.1), and a `prepare` error becomes `Stop("error")`.
+- **The two-phase stop.** `Stop(reason)` is re-entrancy-safe (a `Stop` from inside `deliver`, a
+  stop callback, a listener, or twice in a row answers `false`, C.1) and runs, each step after the
+  first under `pcall`: the run and every session timer canceled; `stopping` (the seam still answers,
+  `Fire` and `After` refuse); the `OnStopGuarded` list; the seam off; the `OnStop` list, the only
+  place `DeliverForCleanup` delivers (and never while stood down, C.3); the panel hidden on a
+  stand-down or repainted; listeners; then the host's `stopText[reason]`, the library line for
+  `stop`, `restart` and `error`, or `STOPPED_REASON`.
+- **Delivery and timers.** `Fire(event, ...)` delivers under `pcall` only while a session is live,
+  not stopping and not stood down; an observed stand-down self-stops with `standDown`; an error in
+  `deliver` is a debug line and answers `0`. `IsDelivering()` is true only inside `Fire`,
+  nesting-safe. `After(delay, fn)` is a timer that fires only within its own session, under
+  `pcall`; `handle:Cancel()` cancels and forgets it, and the stop cancels every live one.
+- **The rest of the instance.** `IsActive()`, `Session()` (host fields go on the session table:
+  the host bag), `Status()`, `OnStopGuarded(fn)`, `OnStop(fn)`, `AddListener(fn)`. No public
+  `active` field and no `sim:Live`: the one `Live` is the seam's (C.7). Host members never hang on
+  the instance; the host keeps its own table (C.4). Every timeline, verb and panel member has a
+  fallback until `SimTimeline.lua` and `SimPanel.lua` attach (`RunVerb` prints `NO_TIMELINE` and
+  answers `false, "absent"`). `Sim.STRINGS` carries the session's lines, each overridable through
+  `d.L` by `rawget`. Once bound, `seam:Live`'s traceback goes to the session's debug sink.
+- The step machine and the panel arrive in the next commits of this release, as
   `SimTimeline.lua` and `SimPanel.lua` join the key `<Sim>.<SimTimeline>.<SimPanel>`. The contract
   so far is [Sim version 1](docs/api/Sim/version-1-docs.md).
 
 **What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
-the file arrive, and a host that never calls `NewSeam` carries a file that never runs.
+the file arrive, and a host that never calls `NewSeam` or `New` carries a file that never runs.
 
 ## v1.74.0 — 2026-10-19
 

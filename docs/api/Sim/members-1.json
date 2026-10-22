@@ -6,6 +6,8 @@
     { "file": "Sim", "minor": 1 }
   ],
   "members": [
-    { "name": "NewSeam", "kind": "function" }
+    { "name": "New", "kind": "function" },
+    { "name": "NewSeam", "kind": "function" },
+    { "name": "STRINGS", "kind": "table" }
   ]
 }
