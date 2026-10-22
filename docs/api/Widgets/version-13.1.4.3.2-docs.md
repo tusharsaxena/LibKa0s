@@ -11,16 +11,18 @@
 | Files and minors | `Widgets.lua` minor **13** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **2** |
 | Shipped in | v1.75.0 |
 | Status | **Current** |
-| Supersedes | [version 12.1.4.3.2](./version-12.1.4.3.2-docs.md) — no search box |
+| Supersedes | [version 12.1.4.3.2](./version-12.1.4.3.2-docs.md) — no search box, no test-mode strip |
 | Superseded by | — |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 13, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }` |
 
 ## What changed at 13.1.4.3.2
 
-**`lib.SearchBox`, the flat filter-bar search box, joins the dropdown it sits beside** (#52).
+**`lib.SearchBox`, the flat filter-bar search box, joins the dropdown it sits beside** (#52),
+**and `lib.TestStrip`, the test-mode strip, joins them** (#48). One minor carries both:
 `Widgets.lua` moves from **12** to **13**; `WidgetsReorder.lua` stays at **1**,
 `WidgetsDragHandle.lua` at **4**, `WidgetsLineChart.lua` at **3** and `WidgetsAutocomplete.lua` at
-**2**, so the key is 13.1.4.3.2. One member is added and none is removed or renamed. The four
+**2**, so the key is 13.1.4.3.2. Three members are added (`SearchBox`, `TestStrip`, `TEST_STRIP`)
+and none is removed or renamed. The four
 attach files re-pair on the shell's new minor through their `__*ShellMinor` probes, as every shell
 bump has them do; none of their own minors moves, and `AUTOCOMPLETE.BORDER` / `.BG` stay as they
 were (they equal the search box's line and fill).
@@ -39,11 +41,22 @@ were (they equal the search box's line and fill).
     hand-builds a flat checkbox.
   - **An exported flat skin** (the `SKIN` table, or an applier). Re-check trigger: a third flat
     control outside `Widgets.lua` copies the literals.
+- **`TestStrip(parent, opts)` and `TEST_STRIP`** (**Since 13**). DropWatcher drew a strip between
+  its filter bar and its panes while test mode was on; LootHistory and BankLedger put a red word on
+  the title bar, and MultiMeters a red title suffix that a hidden header hides with it. The
+  owner's 2026-10-22 ruling promoted DropWatcher's strip so all four mark sample data the same way:
+  an 18px amber band at 12%, an optional mark and one line of text. The contract is **birth-only**:
+  the strip is born hidden and unanchored, and after the constructor returns it never anchors,
+  shows, hides, re-measures or changes its height or its text's anchors, so whatever a host sets
+  later sticks. `TEST_STRIP` publishes `HEIGHT` (18) and nothing else; a host adds its own gaps.
+  See *The test-mode strip* below.
 
 **What a host must change: nothing.** The dropdown looks and behaves exactly as it did. A host
 that adopts the search box deletes its hand-built one; one that passes an icon declares that
 icon's name on its `LibKa0s icons:` line (BankLedger passes its magnifier), because the icon is
-host-passed and joins no set the library draws.
+host-passed and joins no set the library draws. The same holds for the strip: its mark is the
+host's own `info` icon, resolved by the host and passed in, so **every `TestStrip` adopter declares
+`info`** on its `LibKa0s icons:` line. A pruned icon still resolves to a path and draws blank.
 
 ## What changed at 12.1.4.3.2
 
@@ -429,7 +442,8 @@ work the first time one copy is restyled and the other is not. `Widgets.Dropdown
 dropdown; `Widgets.CloseMenu` closes the shared popup behind every dropdown any host has built. Since
 version 6 it also owns `Widgets.CopyWindow`, the collection's one selectable-text export frame — see
 *The copy window* below. Since version 13 it owns `Widgets.SearchBox`, the flat search box a filter
-bar puts beside the dropdown, in the same skin — see *The search box* below.
+bar puts beside the dropdown, in the same skin — see *The search box* below — and
+`Widgets.TestStrip`, the band a window lays over sample data — see *The test-mode strip* below.
 
 Depends on LibStub and `LibKa0s-Core-1.0` (minor 1 or newer), and on no addon framework.
 
@@ -449,6 +463,8 @@ library's.
 |---|---|---|
 | `Dropdown(parent, width, opts)` | 1 | Builds one flat-skin dropdown button parented to `parent`, `width` px wide and 20px tall, that opens the shared popup menu on click. Returns the dropdown frame. |
 | `SearchBox(parent, width, opts)` | **13** | Builds one flat search box, an `EditBox` parented to `parent`, in the dropdown's skin, with a hint while empty and the gold focus line. Returns the box. See *The search box*. |
+| `TestStrip(parent, opts)` | **13** | Builds one test-mode strip, a `Frame` parented to `parent`: an amber band, an optional host-passed mark and one line of text, born hidden and unanchored. Returns the strip. See *The test-mode strip*. |
+| `TEST_STRIP` | **13** | `{ HEIGHT = 18 }`, the strip's height, published so a host lays out around it. Read-only in effect: a write moves no strip. See *The test-mode strip*. |
 | `CopyWindow(descriptor)` | **6** | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
 | `ReorderList(opts)` | **8** | Builds a drag-to-reorder controller for one render of a list. Returns the controller. See *The reorderable list*. |
@@ -687,6 +703,70 @@ defaults are filled into a copy.
 - **`lib.Autocomplete(box, ...)` composes after construction.** The autocomplete hooks the box's
   scripts, so it keeps the search box's own handlers; build the box first, then hang the list.
 - **The icon is the host's to declare.** See `opts.icon` above.
+
+## The test-mode strip
+
+**`Widgets.lua`, minor 13** (#48). A full-width band a window lays between its chrome and its data,
+saying the data under it is not real. It draws itself and nothing else: the host decides when it
+shows, where it sits and what it says.
+
+### `TestStrip(parent, opts)`
+
+| Parameter | Meaning |
+|---|---|
+| `parent` | The frame to parent it to. |
+| `opts` | Optional; anything that is not a table counts as none. Exactly two fields, each optional. |
+
+| `opts` field | Since | Meaning | With no value |
+|---|---|---|---|
+| `text` | 13 | The host's **localized** line, set once at birth. Later changes go through `strip.text:SetText`. Anything that is not a string counts as none. | `""`. |
+| `icon` | 13 | A resolved texture path or a fileID, drawn as a 12x12 mark at the strip's left edge (+6px). **Host-passed**: the adopters pass their own `NS.Icon("info")`, so `info` is a **host-declared** icon, declared on each adopter's `LibKa0s icons:` line, and the closed set the library draws itself stays close, copy, clear, info (`OptionsIdList`'s). Any other type is ignored. There is no fallback. | No mark; the text starts at the strip's left edge (+6px). |
+
+### `lib.TEST_STRIP`
+
+| Field | Value | Meaning |
+|---|---|---|
+| `HEIGHT` | 18 | The strip's height at birth. A host anchors the strip and pushes its body down around this figure, adding its own gaps (DropWatcher and the other adopters leave 2px above and below). The constructor reads a file-local, so writing this field moves no strip. |
+
+There is no `RESERVE` member: the gaps are host layout.
+
+### What it builds
+
+| Field | Meaning |
+|---|---|
+| The strip | A bare `Frame`, **born hidden and unanchored** (no point at all), `HEIGHT` tall. The mouse is **never** enabled by the constructor. |
+| `strip.text` | **Public.** A `FontString`, `OVERLAY`, from `GameFontNormalSmall` (gold); LEFT at the mark's RIGHT +6 (or the strip's LEFT +6 with no mark), RIGHT at the strip's RIGHT -6, `JustifyH("LEFT")`, word wrap **off**, so a long line truncates with an ellipsis. |
+| `strip.__fill` | **Internal**, not contract. The `BACKGROUND` texture over all points, amber 1, 0.65, 0.15 at 0.12 (DropWatcher's `C.TONE.warn` at 12%). |
+| `strip.__icon` | **Internal**, not contract. The mark's `ARTWORK` texture, or `nil` with no icon. |
+
+The public surface is exactly the constructor, `TEST_STRIP.HEIGHT` and `strip.text`. The strip has
+no methods.
+
+### Behavior a host must know
+
+- **Birth-only.** After the constructor returns, the strip never anchors, shows, hides,
+  re-measures, or changes its height or its text's anchors. A host's later `strip:SetHeight(h)`,
+  `strip.text:SetWordWrap(true)` and `strip.text:SetText(...)` stick; DropWatcher's compact
+  two-line variant relies on exactly that, and stays host-side.
+- **The host places it.** Anchor it under the chrome, `Show` it while test mode is on and `Hide` it
+  when it is off, and push the body down by `TEST_STRIP.HEIGHT` plus the host's own gaps while it
+  shows. A host that lays out from config only (MultiMeters) can, because the height is a constant.
+- **A tooltip is the host's.** Enable the mouse and `HookScript("OnEnter")` / `("OnLeave")` with the
+  host's own renderer. A host that wants none leaves the strip mouse-transparent.
+- **Declare `info`.** See `opts.icon` above.
+
+### What it deliberately is not
+
+Each of these is recorded in `Widgets.lua`'s header, with one re-check trigger for all of them: *a
+consumer needs a different color, a tooltip renderer or a measured height with the same semantics as
+another.*
+
+- **No tooltip option** — three hosts draw tooltips three ways, and one wants none.
+- **No color option** — the sameness across adopters is the point of promoting it.
+- **No wrap, no measuring, no `Height()`** — one host wraps, and one must never measure.
+- **No test-mode state** — the strip never reads test mode.
+- **No placement and no body shift** — that is host layout.
+- **No icon fallback** — no icon is a valid, tested state.
 
 ## Known and intentional absences
 
@@ -1441,6 +1521,8 @@ for any other major. The secondary files cannot half-attach: each is paired on t
 and one that is missing leaves only its own members `nil` (`ReorderList` and `ROW_BOX` without
 `WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`, `LineChart`, `LINE_CHART` and `ChartMath` without
 `WidgetsLineChart.lua`, `Autocomplete` and `AUTOCOMPLETE` without `WidgetsAutocomplete.lua`).
+`TestStrip` and `TEST_STRIP` live in the shell, so they are present exactly when the major is; a
+host with no Widgets copy shows no strip, and marks test mode however it did before.
 The host must have a plan for `nil`
 — both shipped consumers refuse to draw the surface that would use this widget rather than build a
 dead control that opens no menu, and a host with no library also has no `CloseMenu()` to call, so any

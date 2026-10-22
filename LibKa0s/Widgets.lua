@@ -1,5 +1,6 @@
 -- LibKa0s-Widgets-1.0 — the collection's flat dropdown, the one popup menu every instance of it
--- drops, and the flat search box a filter bar puts beside it (minor 13).
+-- drops, the flat search box a filter bar puts beside it, and the test-mode strip a window lays
+-- over sample data (minor 13).
 --
 -- ── WHY THIS IS A LIBRARY AND NOT A COPY ──────────────────────────────────────────────────────
 --
@@ -8,6 +9,12 @@
 -- author's work the first time one copy is restyled and the other is not. That is the argument the
 -- icons were consolidated under at v1.9.0; a widget that DRAWS those icons is the same argument one
 -- layer up.
+--
+-- The test-mode strip (`lib.TestStrip`, #48) is here for the same reason. DropWatcher drew it, and
+-- LootHistory, BankLedger and MultiMeters each marked test mode their own way: a red title-bar
+-- word in two of them and a title suffix in the third, which a hidden header hides with it. The
+-- owner's 2026-10-22 ruling promoted DropWatcher's strip so all four say "this is not your data"
+-- with one band, in one color, at one height.
 --
 -- ── WHY IT DOES NOT DEPEND ON LibKa0s-Media-1.0 ───────────────────────────────────────────────
 --
@@ -36,6 +43,15 @@
 --     file-local: the dropdown and the search box are its only readers, and the autocomplete
 --     publishes its own copy as `AUTOCOMPLETE.BORDER` / `.BG`. Re-check trigger: a third flat
 --     control outside this file copies the literals.
+--
+-- The test-mode strip is a band, a mark and a line of text, and deliberately nothing more. It has
+-- no tooltip option (three hosts, three tooltip renderers; a host enables the mouse and hooks
+-- OnEnter itself), no color option (the sameness is the point), no wrap, no measuring and no
+-- `Height()` (one host wraps, and one must never measure), no test-mode state (the host decides
+-- when it shows and what it says), no placement and no body shift (that is host layout; a host
+-- leaves its own gap around `TEST_STRIP.HEIGHT`), and no icon fallback (no icon is a valid state:
+-- the text moves to the left edge). Re-check trigger for all six: a consumer needs a different
+-- color, a tooltip renderer or a measured height with the same semantics as another.
 --
 -- Depends on LibStub and LibKa0s-Core-1.0, and on no addon framework.
 
@@ -753,4 +769,66 @@ function lib.CopyWindow(d)
   end
 
   return win
+end
+
+-- ── the test-mode strip ──────────────────────────────────────────────────────────────────────
+
+-- DropWatcher's C.TONE.warn (1, 0.65, 0.15) at 12%. FILE-LOCAL, like SKIN: there is no color option.
+local STRIP_FILL = { 1.00, 0.65, 0.15, 0.12 }
+local STRIP_H, STRIP_ICON, STRIP_INSET = 18, 12, 6
+
+--- Read-only layout figures, so a host lays out around the strip's own height rather than copying
+--- it (the DRAG_HANDLE / ROW_BOX precedent). A host adds its own gaps around it. Writing to this
+--- table moves nothing: the constructor reads the file-local.
+lib.TEST_STRIP = { HEIGHT = STRIP_H }
+
+--- Build the test-mode strip: a full-width band a window lays between its chrome and its data,
+--- saying the data under it is not real. It draws itself and nothing else.
+---
+--- Born HIDDEN, UNANCHORED and `TEST_STRIP.HEIGHT` tall, with the mouse never enabled. After this
+--- returns the strip never anchors, shows, hides, re-measures or changes its height or its text's
+--- anchors, so a host's later `SetHeight`, `strip.text:SetWordWrap` and `strip.text:SetText`
+--- stick. The icon art is HOST-PASSED, a resolved path or a fileID (the host's `info` icon),
+--- because this file cannot call Media (the header): a host that passes one declares that icon's
+--- name. The fill and the icon are stored as `__fill` / `__icon`, which are not the contract.
+---
+--- @param parent table     the frame to parent it to
+--- @param opts table|nil   { text = string|nil, icon = path|fileID|nil }; text is the host's
+---                         localized line ('' when absent), and no icon puts the text at LEFT+6
+--- @return table  the Frame, with `strip.text` (FontString, OVERLAY, GameFontNormalSmall, LEFT at
+---                the icon's RIGHT+6 or the strip's LEFT+6, RIGHT at -6, JustifyH LEFT, no wrap)
+function lib.TestStrip(parent, opts)
+  opts = type(opts) == "table" and opts or {}
+  local s = CreateFrame("Frame", nil, parent)
+  s:SetHeight(STRIP_H)   -- the local, not lib.TEST_STRIP: a host write cannot move it
+
+  local fill = s:CreateTexture(nil, "BACKGROUND")
+  fill:SetAllPoints(s)
+  fill:SetColorTexture(unpack(STRIP_FILL))
+  s.__fill = fill
+
+  local icon = opts.icon
+  if type(icon) == "string" or type(icon) == "number" then
+    local tex = s:CreateTexture(nil, "ARTWORK")
+    tex:SetSize(STRIP_ICON, STRIP_ICON)
+    tex:SetPoint("LEFT", s, "LEFT", STRIP_INSET, 0)
+    tex:SetTexture(icon)
+    s.__icon = tex
+  end
+
+  -- From a template, so it is never fontless when SetText arrives.
+  local text = s:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  if s.__icon then
+    text:SetPoint("LEFT", s.__icon, "RIGHT", STRIP_INSET, 0)
+  else
+    text:SetPoint("LEFT", s, "LEFT", STRIP_INSET, 0)
+  end
+  text:SetPoint("RIGHT", s, "RIGHT", -STRIP_INSET, 0)
+  text:SetJustifyH("LEFT")
+  text:SetWordWrap(false)   -- with both anchors, a long line truncates with an ellipsis
+  text:SetText(type(opts.text) == "string" and opts.text or "")
+  s.text = text
+
+  s:Hide()   -- born unanchored: hidden, so it never flashes at the parent's center
+  return s
 end

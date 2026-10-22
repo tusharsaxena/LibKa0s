@@ -60,6 +60,30 @@ and never `SetScript`s the five scripts the constructor sets, rewrites the hint 
 icon declares that icon's name on its `LibKa0s icons:` line (BankLedger, its magnifier): the icon is
 host-passed and joins no set the library draws.
 
+### Widgets minor 13: W.TestStrip (#48)
+
+- **`W.TestStrip(parent, opts)`, the test-mode strip, shares minor 13 with the search box.** A
+  full-width band a window lays between its chrome and its data while test mode is on: an 18px
+  amber fill at 12% (DropWatcher's warn tone), an optional 12x12 mark at the left and one line of
+  `GameFontNormalSmall` text that truncates rather than wraps. `opts` is `{ text, icon }`; the text
+  is the host's localized line and the icon is the host's own resolved `info` art. The strip is
+  born hidden and unanchored with the mouse off, and after the constructor returns it never
+  anchors, shows, hides, re-measures or changes its height or its text's anchors, so a host's
+  `SetHeight`, `SetWordWrap` and `SetText` stick. The public surface is the constructor,
+  `W.TEST_STRIP.HEIGHT` (18) and `strip.text`; there is no `RESERVE`, because the gaps around the
+  strip are host layout. Promoted on the owner's 2026-10-22 ruling. Adopters: **DropWatcher**
+  (moving its own strip into the library), **LootHistory**, **BankLedger** and **MultiMeters**.
+- **Six omissions are recorded in `Widgets.lua`'s header**: no tooltip option, no color option, no
+  wrap, measuring or `Height()`, no test-mode state, no placement or body shift, and no icon
+  fallback. Re-check trigger: a consumer needs a different color, a tooltip renderer or a measured
+  height with the same semantics as another.
+  [Widgets version 13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md).
+
+**What a consumer owes.** Nothing to keep working. A TestStrip adopter declares `info` on its
+`LibKa0s icons:` line: the strip's mark is host-passed, so the library's closed set (close, copy,
+clear, info, for `OptionsIdList`) does not cover the adopter's own copy, and a pruned icon still
+resolves to a path and draws blank.
+
 ### Comment-only minors: the icon fallback a pruned copy does not get (#57)
 
 - **Three comments said a missing icon falls back to text, and it never did.** `Core.lua`'s

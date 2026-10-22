@@ -665,6 +665,21 @@ Total.
 - SearchBox: W.Autocomplete composes on it, and the hint still toggles
 - SearchBox: the host rewrites the hint through box.hint:SetText
 
+### test_widgets_teststrip.lua (12)
+
+- TestStrip: born hidden, unanchored and 18 tall, with its regions
+- TestStrip: the fill is the collection's amber at 12%, on all points
+- TestStrip: an icon path draws a 12x12 mark at LEFT+6, text on its RIGHT+6
+- TestStrip: no icon leaves __icon nil and the text at the strip's LEFT+6
+- TestStrip: a numeric fileID is an icon too
+- TestStrip: the text is GameFontNormalSmall, RIGHT at -6, LEFT-justified, no wrap
+- TestStrip: opts.text is set; nil, non-table opts and non-string text give ''
+- TestStrip: the constructor never enables the mouse; a host's tooltip hook runs
+- TestStrip: a host's SetHeight and SetWordWrap stick
+- TestStrip: a write to TEST_STRIP.HEIGHT does not move the next strip
+- TestStrip: TEST_STRIP publishes HEIGHT and no RESERVE
+- TestStrip: two strips share no regions
+
 ### test_widgets_reorder.lua (7)
 
 - reorder: a host OnUpdate on a row frame survives a drag start and end
@@ -2552,6 +2567,7 @@ Total.
 | test_widgets_linechart.lua | 19 |
 | test_widgets_autocomplete.lua | 36 |
 | test_widgets_searchbox.lua | 16 |
+| test_widgets_teststrip.lua | 12 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
@@ -2624,4 +2640,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2238** |
+| **Total** | **2250** |

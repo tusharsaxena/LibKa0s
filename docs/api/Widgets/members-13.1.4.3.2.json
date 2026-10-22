@@ -22,6 +22,8 @@
     { "name": "LineChart", "kind": "function" },
     { "name": "ROW_BOX", "kind": "table" },
     { "name": "ReorderList", "kind": "function" },
-    { "name": "SearchBox", "kind": "function" }
+    { "name": "SearchBox", "kind": "function" },
+    { "name": "TEST_STRIP", "kind": "table" },
+    { "name": "TestStrip", "kind": "function" }
   ]
 }
