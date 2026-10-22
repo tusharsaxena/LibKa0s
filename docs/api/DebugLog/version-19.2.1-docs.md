@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **19** · `DebugLogDiagnostics.lua` minor **2** · `DebugLogGates.lua` minor **1** |
 | Shipped in | v1.66.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 18.2.1](./version-18.2.1-docs.md) — the same surface and behavior; `lib:New`'s descriptor reads were inline |
-| Superseded by | — |
+| Superseded by | [version 20.2.1](./version-20.2.1-docs.md) — comment-only: an undeclared icon draws blank, not the text fallback |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 19, DebugLogDiagnostics = 2, DebugLogGates = 1 }` |
 
@@ -838,3 +838,10 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
+
+## Moving to version 20.2.1
+
+**Take it; nothing moves.** Version 20.2.1 is this surface and this behavior; only
+`makeIconButton`'s comment changes, withdrawing the claim that an install missing the art gets the
+text buttons. A host that passes `addonName` declares `close, copy, clear` on its `LibKa0s icons:`
+line, or those controls draw blank. See [version 20.2.1](./version-20.2.1-docs.md).

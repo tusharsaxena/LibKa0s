@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **10** |
 | Shipped in | v1.67.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 9](./version-9-docs.md) — no lock gate, no stop callback, grip always on the sized frame |
-| Superseded by | — |
+| Superseded by | [version 11](./version-11-docs.md) — comment-only: a host that did not declare `close` gets a blank control, not the × |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 10 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
@@ -477,3 +477,10 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
+
+## Moving to version 11
+
+**Take it; nothing moves.** Version 11 is this surface and this behavior; only `MakeCloseButton`'s
+comment changes, withdrawing the claim that an install missing the art gets the ×. A host that
+passes its addon name declares `close` on its `LibKa0s icons:` line, or its close control draws
+blank. See [version 11](./version-11-docs.md).

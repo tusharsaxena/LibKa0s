@@ -12,10 +12,12 @@ cannot drift. Release order is in
 
 ## v1.75.0 — unreleased
 
-Versions in this release: **OptionsTabs minor 9** (`LibKa0s-Options-1.0` key
-**29.2.34.2.4.9.1.7.4.2.1**), every other file still at its v1.74.0 minor — `Core` 10, `Env` 2,
-`Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2, `Pool` 3, `Item` 2, `Media` key 5.1, `Slash` key
-20.2, `DebugLog` key 19.2.1, `Launcher` 5, `Widgets` key 12.1.4.3.2 and `Perf` key 15.1.1.6 — and
+Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** (comment-only)
+(`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**), **Core minor 11** (comment-only, key
+**11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), every
+other file still at its v1.74.0 minor — `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2,
+`Pool` 3, `Item` 2, `Media` key 5.1, `Slash` key 20.2, `Launcher` 5, `Widgets` key 12.1.4.3.2 and
+`Perf` key 15.1.1.6 — and
 **test kit revision 41**. No `NEEDS_*` floor rises and no major is added. The owner's
 2026-10-20 ruling: only the bare minimum of icons is vendored into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
 README's standards pointer moves when this is released.
@@ -30,7 +32,27 @@ README's standards pointer moves when this is released.
   `PageBanner`. Removed with a minor bump under `library-stack-§7`'s `__` clause as narrowed at
   standard **v2.86.0**: a `__` member documented as internal or as a test seam, with zero roster
   consumers, may be removed with a minor bump. The members manifest does not change, since `__`
-  members are outside it. [Options version 29.2.34.2.4.9.1.7.4.2.1](docs/api/Options/version-29.2.34.2.4.9.1.7.4.2.1-docs.md).
+  members are outside it. [Options version 29.2.34.2.5.9.1.7.4.2.1](docs/api/Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md).
+
+### Comment-only minors: the icon fallback a pruned copy does not get (#57)
+
+- **Three comments said a missing icon falls back to text, and it never did.** `Core.lua`'s
+  `MakeCloseButton` said the × is what "every window gets on an install missing the art";
+  `DebugLog.lua`'s `makeIconButton` said the same of the CLEAR and COPY words; `OptionsIdList.lua`'s
+  help mark said `media/icons/info.tga` "ships inside the vendored payload". `Media.Icon` answers a
+  path from the catalog and never checks that the file exists, so a host that passes its addon name
+  but did not declare the icon on its `LibKa0s icons:` line gets a **blank** control, before pruning
+  as after. The fallbacks are what a host that passes no addon name, or has no Media module, gets.
+  The comments now say so and name the icons as the host's to declare (`library-stack-§7`'s icon
+  subset; the library-drawn table in `docs/releasing.md`), and `OptionsIdList.lua`'s line citations
+  (Media's `ICONS`, ConsumableMaster's `settings/Category.lua`, `Core.lua`, `DebugLog.lua`) point at
+  the current lines.
+- **No member or behavior moves.** The minors move (Core 10 -> 11, DebugLog 19 -> 20, OptionsIdList
+  4 -> 5) so a corrected copy wins the LibStub race. The Options key was briefly
+  29.2.34.2.4.9.1.7.4.2.1 on the release branch; no release carried it.
+  [Core version 11](docs/api/Core/version-11-docs.md),
+  [DebugLog version 20.2.1](docs/api/DebugLog/version-20.2.1-docs.md),
+  [Options version 29.2.34.2.5.9.1.7.4.2.1](docs/api/Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md).
 
 ### Test kit revision 41
 
@@ -86,6 +108,9 @@ never shipped on its own.
 
 ### What a consumer owes
 
+- **This release changes payload files under `LibKa0s/`.** An earlier draft of this entry said no
+  payload file had changed; that is withdrawn. Core, DebugLog, OptionsTabs and OptionsIdList all
+  move a minor, so the re-vendor copies the library folder as well as the kit.
 - **Delete any `O.__releaseChrome` mirror from an Options degradation stub** at the v1.75.0
   re-vendor (the KickCD M4-09 precedent). `Kit.assertSurfaceParity` iterates the live surface, so a
   stub that keeps it turns nothing red; it is dead weight.

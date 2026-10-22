@@ -98,7 +98,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 | **Current** |
+| [11](./Core/version-11-docs.md) | **`Core.lua` 11** (comment-only: an undeclared `close` draws blank) | v1.75.0 | **Current** |
+| [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 – v1.74.0 | Superseded |
 | [9](./Core/version-9-docs.md) | `Core.lua` 9 | v1.64.0 – v1.66.0 | Superseded |
 | [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 – v1.63.0 | Superseded |
 | [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 – v1.55.0 | Superseded |
@@ -196,7 +197,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 | **Current** |
+| [20.2.1](./DebugLog/version-20.2.1-docs.md) | **`DebugLog.lua` 20** (comment-only: undeclared `close`, `copy`, `clear` draw blank) · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.75.0 | **Current** |
+| [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 – v1.74.0 | Superseded |
 | [18.2.1](./DebugLog/version-18.2.1-docs.md) | `DebugLog.lua` 18 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.65.0 | Superseded |
 | [17.2](./DebugLog/version-17.2-docs.md) | `DebugLog.lua` 17 · `DebugLogDiagnostics.lua` 2 | v1.64.0 | Superseded |
 | [16.1](./DebugLog/version-16.1-docs.md) | `DebugLog.lua` 16 · `DebugLogDiagnostics.lua` 1 | none (superseded inside v1.64.0 before the tag was published) | Superseded |
@@ -250,8 +252,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [29.2.34.2.4.9.1.7.4.2.1](./Options/version-29.2.34.2.4.9.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · **`OptionsTabs.lua` 9** (`__releaseChrome` no longer exported) · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · `OptionsDrawer.lua` 1 | v1.75.0 | **Current** |
-| [29.2.34.2.4.8.1.7.4.2.1](./Options/version-29.2.34.2.4.8.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · **`OptionsDrawer.lua` 1** (new: `O.Drawer`) | v1.73.0 | Superseded |
+| [29.2.34.2.5.9.1.7.4.2.1](./Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · **`OptionsIdList.lua` 5** (comment-only: an undeclared `info` draws blank) · **`OptionsTabs.lua` 9** (`__releaseChrome` no longer exported) · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · `OptionsDrawer.lua` 1 | v1.75.0 | **Current** |
+| [29.2.34.2.4.8.1.7.4.2.1](./Options/version-29.2.34.2.4.8.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · **`OptionsDrawer.lua` 1** (new: `O.Drawer`) | v1.73.0 – v1.74.0 | Superseded |
 | [28.2.34.2.4.8.1.7.4.2](./Options/version-28.2.34.2.4.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.71.0 | Superseded |
 | [28.2.34.2.3.8.1.7.4.2](./Options/version-28.2.34.2.3.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 3 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.67.0 – v1.70.0 | Superseded |
 | [27.2.34.2.2.8.1.7.4.2](./Options/version-27.2.34.2.2.8.1.7.4.2-docs.md) | `Options.lua` 27 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 2 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.66.0 | Superseded |

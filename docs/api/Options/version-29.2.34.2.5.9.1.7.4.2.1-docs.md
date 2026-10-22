@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 29.2.34.2.4.9.1.7.4.2.1
+# `LibKa0s-Options-1.0` — version 29.2.34.2.5.9.1.7.4.2.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,14 +8,14 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **29** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **4** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** |
+| Files and minors | `Options.lua` **29** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>`, in load order — the same eleven numbers `lib.MODULES` reports. |
 | Shipped in | v1.75.0 |
 | Status | **Current** |
-| Supersedes | [version 29.2.34.2.4.8.1.7.4.2.1](./version-29.2.34.2.4.8.1.7.4.2.1-docs.md) — which still exported the `__releaseChrome` test seam |
+| Supersedes | [version 29.2.34.2.4.8.1.7.4.2.1](./version-29.2.34.2.4.8.1.7.4.2.1-docs.md) — which still exported the `__releaseChrome` test seam, and whose `OptionsIdList.lua` comment said the help mark's `info` art ships in every copy |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither does `OptionsDrawer.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 4, OptionsTabs = 9, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
@@ -40,8 +40,24 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-**The `__releaseChrome` test seam is no longer exported (T9).** `OptionsTabs.lua` 8 -> **9**; every
-other file of the major is unchanged. `O.__releaseChrome` put the file-local `releaseChrome` on the
+**The `__releaseChrome` test seam is no longer exported (T9), and `OptionsIdList.lua`'s help-mark
+comment is corrected (comment-only).** `OptionsTabs.lua` 8 -> **9** and `OptionsIdList.lua` 4 ->
+**5**; every other file of the major is unchanged. This version was briefly keyed
+29.2.34.2.4.9.1.7.4.2.1 on the release branch, before the `OptionsIdList.lua` minor moved; no release
+carried that key.
+
+**`OptionsIdList.lua` minor 5 is comment-only; no member or behavior change** (LibKa0s#57). Its
+help-mark comment said `media/icons/info.tga` "ships inside the vendored payload". From v1.75.0 a
+consumer's copy is pruned to the icons its `LibKa0s icons:` line declares, so the art ships only
+when the host declares `info` (or passes its own `helpIcon`). An undeclared `info` is **not** an
+absent one to the help mark: `Media.Icon` answers a path from the catalog and never checks that the
+file exists, so the ladder stops at that rung and the mark draws **blank** rather than falling back
+to the client's information glyph. The comment's three line citations (Media's `ICONS`,
+ConsumableMaster's `KCM.Icon("info")`, `DebugLog.lua`'s `makeIconButton`) and its two
+`Core.lua` citations are re-pointed at the current lines. The minor moves so a corrected copy wins
+the LibStub race; nothing a host observes changes.
+
+**The `__releaseChrome` seam (T9).** `O.__releaseChrome` put the file-local `releaseChrome` on the
 instance for a suite that never called it, and no roster consumer called it either: the only
 mentions outside the library were degradation stubs mirroring the name, which the consumers drop
 at their v1.75.0 re-vendor. `releaseChrome` itself and its two callers (`O.PageBanner` and
@@ -2341,10 +2357,12 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
 
 ## Compatibility
 
-**At 29.2.34.2.4.9.1.7.4.2.1 one `__` test seam is removed and nothing public moves**:
+**At 29.2.34.2.5.9.1.7.4.2.1 one `__` test seam is removed and nothing public moves**:
 `__releaseChrome`, which no suite or roster consumer called. A host draws what it drew. An Options
 degradation stub that mirrored `__releaseChrome` should drop it at the re-vendor;
 `Kit.assertSurfaceParity` iterates the live surface, so a stub that keeps it turns nothing red.
+`OptionsIdList.lua` minor 5 is comment-only. A host that draws help marks declares `info` on its
+`LibKa0s icons:` line or passes its own `helpIcon`; an undeclared `info` draws blank.
 
 **At 29.2.34.2.4.8.1.7.4.2.1 one member is added and nothing is removed**: `O.Drawer` (D1). A host
 that does not call it draws what it drew; `RefreshPanel` on a page ctx is unchanged. An Options

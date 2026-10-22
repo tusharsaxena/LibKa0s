@@ -13,7 +13,7 @@
 | Shipped in | v1.73.0 |
 | Status | Superseded |
 | Supersedes | [version 28.2.34.2.4.8.1.7.4.2](./version-28.2.34.2.4.8.1.7.4.2-docs.md) — which had no drawer |
-| Superseded by | [version 29.2.34.2.4.9.1.7.4.2.1](./version-29.2.34.2.4.9.1.7.4.2.1-docs.md) — stops exporting the `__releaseChrome` test seam |
+| Superseded by | [version 29.2.34.2.5.9.1.7.4.2.1](./version-29.2.34.2.5.9.1.7.4.2.1-docs.md) — stops exporting the `__releaseChrome` test seam; `OptionsIdList.lua` minor 5 is comment-only |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither does `OptionsDrawer.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 4, OptionsTabs = 8, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }` |
 
@@ -2412,9 +2412,11 @@ that can observe the difference is one passing **both** paths — which no host 
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
 
-## Moving to version 29.2.34.2.4.9.1.7.4.2.1
+## Moving to version 29.2.34.2.5.9.1.7.4.2.1
 
 **Copy the folder whole. Nothing a host calls moves or is removed.** `OptionsTabs.lua` moves to minor
-**9**, which stops exporting the `__releaseChrome` test seam; every other file is unchanged. An
-Options degradation stub that mirrors `__releaseChrome` drops it. See
-[version 29.2.34.2.4.9.1.7.4.2.1](./version-29.2.34.2.4.9.1.7.4.2.1-docs.md).
+**9**, which stops exporting the `__releaseChrome` test seam, and `OptionsIdList.lua` to minor **5**,
+a comment-only correction (the help mark's `info` art is the host's to declare, and an undeclared one
+draws blank); every other file is unchanged. An Options degradation stub that mirrors
+`__releaseChrome` drops it. See
+[version 29.2.34.2.5.9.1.7.4.2.1](./version-29.2.34.2.5.9.1.7.4.2.1-docs.md).
