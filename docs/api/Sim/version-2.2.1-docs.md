@@ -10,10 +10,10 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **2** · `SimPanel.lua` **1** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
-| Shipped in | v1.75.0 |
-| Status | **Current** |
+| Shipped in | the local `v1.75.0` tag only, before the release; the released v1.75.0 carries [2.2.2](./version-2.2.2-docs.md) |
+| Status | Superseded |
 | Supersedes | [1.1.1](./version-1.1.1-docs.md) (carried only by the local `v1.75.0` tag before the release; earlier keyed `1`, then `1.1`, on the release branch, and no release carried either key) |
-| Superseded by | — |
+| Superseded by | [2.2.2](./version-2.2.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 2, SimPanel = 1 }` |
 
@@ -736,3 +736,15 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to version 2.2.2
+
+**Take it; no call changes.** Version 2.2.2 changes `SimPanel.lua` alone and adds no member
+([version 2.2.2](./version-2.2.2-docs.md), *What changed at this version*):
+
+- **The panel's picker reads its scenario at use.** A host that fills its scenarios after `New`
+  gets a Start row and a picker that start the first listed scenario, where 2.2.1 showed
+  `Start: nil` and ran `start nil`. A host whose scenarios were complete at `New` sees no
+  difference.
+- **With no scenario listed, the Start row is locked** and the picker's `START` disabled, rather
+  than offering a start that can only be refused.

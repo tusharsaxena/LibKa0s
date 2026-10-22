@@ -119,8 +119,8 @@ end
 
 test("sim panel: the file registers on the shell's minor and in MODULES", function()
   local _, Sim = F.env()
-  assertEqual(Sim.MODULES.SimPanel, 1)
-  assertEqual(Sim.__panelMinor, 1)
+  assertEqual(Sim.MODULES.SimPanel, 2)
+  assertEqual(Sim.__panelMinor, 2)
   assertEqual(Sim.__panelShellMinor, Sim.MINOR)
   assertEqual(type(Sim.__AttachPanel), "function")
   assertEqual(type(Sim.__StepPanel), "function", "the renderer's internal test seam")
@@ -711,4 +711,142 @@ test("sim panel: a typed start that swaps the picker out closes the shared dropd
     b.sim:RefreshPanel()
     assertEqual(closes(), 1, "a repaint with the picker already hidden closes nothing")
   end)
+end)
+
+-- ── a descriptor filled in place after New (SimPanel minor 2) ───────────────────────────────
+--
+-- Sim minor 2 made `Start` read `d.scenarios` live, so a host may fill its scenarios after `New`
+-- (DropWatcher builds them when its world module loads). SimPanel minor 1 still read the first
+-- scenario name once, inside `New`, so such a host's panel offered `Start: nil` for good. These
+-- cases pin the live read, and the last one pins every other documented field read at use.
+
+--- Fill `sc` (the descriptor's own scenarios table) in place with the bench's two scenarios.
+local function fillScenarios(sc)
+  sc.names[#sc.names + 1] = "three"
+  sc.names[#sc.names + 1] = "sized"
+  sc.defs.three = { label = "Three", timeline = function()
+    return { { kind = "a", label = "Alpha" }, { kind = "b", label = "Beta" }, { kind = "c", label = "Gamma" } }
+  end }
+  sc.defs.sized = { label = "Sized", sizes = { 5, 10 }, timeline = function()
+    return { { kind = "s1" }, { kind = "s2" } }
+  end }
+end
+
+local function lateBench() return bench({ scenarios = { names = {}, defs = {} } }) end
+
+test("sim panel: scenarios filled after New: the idle rows read the first one live (minor 2)", function()
+  local b = lateBench()
+  fillScenarios(b.d.scenarios)
+  local rows = b.sim:PanelRows()
+  assertEqual(rows[1].label, b.Sim.STRINGS.PANEL_START:format("Three"))
+  assertEqual(rows[1].command, "/host sim start three")
+  assertEqual(#rows, 5, "Start, the three previewed steps, Stop")
+  assertEqual(rows[2].label, "Alpha"); assertEqual(rows[4].label, "Gamma")
+  assertEqual(states(rows), "ready,locked,locked,locked,locked")
+  assertEqual(actionable(rows), "ynnnn")
+end)
+
+test("sim panel: scenarios filled after New: the picker's Start starts the first one (minor 2)", function()
+  local b = lateBench()
+  F.recording(b.m, function()
+    local f = shown(b)                              -- shown while nothing is listed yet
+    fillScenarios(b.d.scenarios)
+    b.sim:RefreshPanel()
+    assertEqual(f.picker.scenario._value, "three", "the picker selects the first scenario")
+    f.picker.start:__fire("OnClick")
+    assertTrue(b.sim:IsActive(), "the picker's Start started a session")
+    assertEqual(b.sim:Session().scenario, "three")
+  end)
+end)
+
+test("sim panel: scenarios filled after New: clicking the Start row starts the first one (minor 2)", function()
+  local b = lateBench()
+  F.recording(b.m, function()
+    local f = shown(b)
+    fillScenarios(b.d.scenarios)
+    b.sim:RefreshPanel()
+    buttons(f)[1]:__fire("OnClick")
+    assertTrue(b.sim:IsActive(), "the Start row started a session")
+    assertEqual(b.sim:Session().scenario, "three")
+  end)
+end)
+
+test("sim panel: nothing listed yet: the Start row and the picker's Start are inert", function()
+  local b = lateBench()
+  local rows = b.sim:PanelRows()
+  assertEqual(#rows, 2, "Start and Stop, no preview")
+  assertEqual(rows[1].state, "locked")
+  assertFalse(rows[1].actionable, "no scenario to start")
+  assertEqual(rows[1].command, "/host sim start")
+  assertEqual(rows[1].label, b.Sim.STRINGS.PANEL_START:format(""))
+  F.recording(b.m, function()
+    local f = shown(b)
+    assertFalse(f.picker.start:IsEnabled(), "the picker's Start is disabled")
+    local before = #b.printed
+    f.picker.start:__fire("OnClick")
+    assertEqual(#b.printed, before, "a disabled Start prints nothing")
+    assertFalse(b.sim:IsActive())
+  end)
+end)
+
+test("sim panel: a picked scenario the host drops falls back to the first listed one", function()
+  local b = bench()
+  F.recording(b.m, function()
+    local f = shown(b)
+    f.picker.scenario.onSelect("sized")
+    assertEqual(b.sim:PanelRows()[1].command, "/host sim start sized")
+    local sc = b.d.scenarios
+    sc.defs.sized = nil
+    table.remove(sc.names, 2)
+    assertEqual(b.sim:PanelRows()[1].command, "/host sim start three")
+    f.picker.start:__fire("OnClick")
+    assertEqual(b.sim:Session().scenario, "three", "the picker's Start follows the fallback")
+  end)
+end)
+
+test("sim panel: every documented optional field filled in place after New is read at use", function()
+  local debugged = {}
+  local b = bench({ panel = {}, verbs = {}, usage = {}, why = {} })
+  local d = b.d
+  -- Filled in place, or assigned for the first time, after New: nothing here was there at New.
+  d.verbs.ping = { free = true, parse = function(words) return words end, run = function() return false, "nope" end }
+  d.why.nope = "Nope line."
+  d.usage[1] = "/host sim ping: pings."
+  d.statusLine = function() return "Extra status." end
+  d.L = { STARTED = "Go (%s)." }
+  d.stopText = { stop = "Ended." }
+  d.refusal = function(opts) if opts.scenario == "sized" then return "No sized." end end
+  d.gate = function(session) return session.events > 0, "Gate shut." end
+  d.stepDelay = function() return 0 end
+  d.debug = function(_, fmt, ...) debugged[#debugged + 1] = fmt:format(...) end
+  d.panel.title = "Late title"
+  d.panel.stepLabel = function(step) return "L-" .. step.kind end
+  d.panel.startTip = { { "Late", "start tip" } }
+  d.panel.stopTip = function() return { { "Late", "stop tip" } } end
+  d.panel.stepTip = function(step) return { { "Late", step.kind } } end
+  d.panel.check = HOST_CHECK
+  local printed = {}
+  d.print = function(line) printed[#printed + 1] = line end
+
+  assertEqual(joined(linesOf({ printed = printed }, function() b.sim:RunVerb("ping") end), "|"), "Nope line.")
+  local usage = linesOf({ printed = printed }, function() b.sim:RunVerb("nonsense") end)
+  assertEqual(usage[#usage], "/host sim ping: pings.", "the late usage line")
+  local status = linesOf({ printed = printed }, function() b.sim:RunVerb("status") end)
+  assertEqual(status[2], "Extra status.")
+  assertEqual(joined(linesOf({ printed = printed }, function() b.sim:Start({ scenario = "sized" }) end)),
+    "No sized.", "the late refusal")
+  local rows = b.sim:PanelRows()
+  assertEqual(rows[2].label, "L-a", "the late stepLabel")
+  assertTrue(tipHas(rows[1], "start tip")); assertTrue(tipHas(rows[2], "Late a")); assertTrue(tipHas(rows[5], "stop tip"))
+  F.recording(b.m, function()
+    local f = shown(b)
+    assertEqual(f.title:GetText(), "Late title")
+    assertEqual(buttons(f)[1].check.__texture, HOST_CHECK, "check set before the first Show")
+    assertEqual(joined(linesOf({ printed = printed }, function() b.sim:Start({ scenario = "three" }) end)),
+      "Go (Three).", "the late L")
+    assertEqual(joined(linesOf({ printed = printed }, function() b.sim:Step() end)), "Gate shut.", "the late gate")
+    assertEqual(joined(linesOf({ printed = printed }, function() b.sim:Stop() end)), "Ended.", "the late stopText")
+  end)
+  assertTrue(#debugged > 0, "the late debug sink")
+  assertEqual(#b.printed, 0, "nothing reached the print sink New saw")
 end)

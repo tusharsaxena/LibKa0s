@@ -338,7 +338,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.2.1](./Sim/version-2.2.1-docs.md) | **`Sim.lua` 2** (`Start` reads the scenarios live; `prepare` gets the host's start fields) · **`SimTimeline.lua` 2** (`Restart` carries them) · `SimPanel.lua` 1 | v1.75.0 | **Current** |
+| [2.2.2](./Sim/version-2.2.2-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 2** (the picker reads its scenario at use; no scenario listed, the Start row is locked) | v1.75.0 | **Current** |
+| [2.2.1](./Sim/version-2.2.1-docs.md) | **`Sim.lua` 2** (`Start` reads the scenarios live; `prepare` gets the host's start fields) · **`SimTimeline.lua` 2** (`Restart` carries them) · `SimPanel.lua` 1 | the local `v1.75.0` tag only | Superseded |
 | [1.1.1](./Sim/version-1.1.1-docs.md) | `Sim.lua` 1 · `SimTimeline.lua` 1 · **`SimPanel.lua` 1** (the docked step panel; its renderer is library-internal) | the local `v1.75.0` tag only | Superseded |
 
 ### `testkit`

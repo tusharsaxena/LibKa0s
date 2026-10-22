@@ -57,7 +57,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `LibKa0s-Sim-1.0` at v1.75.0. The Sim row is the example of a three-file major paired on its
    shell: `files = { Sim, SimTimeline, SimPanel }` and a `paired`
    array of two (`{ SimTimeline, __timelineMinor, __timelineShellMinor }`,
-   `{ SimPanel, __panelMinor, __panelShellMinor }`), so its key is three numbers (2.2.1 at v1.75.0).
+   `{ SimPanel, __panelMinor, __panelShellMinor }`), so its key is three numbers (2.2.2 at v1.75.0).
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
    say what changed. `tests/test_versioning.lua` fails if the block and any major's `lib.MODULES`
    disagree, so this is enforced rather than remembered. A block written ahead of the release may
@@ -543,9 +543,9 @@ remains unadopted.**
 
 **Where v1.75.0 stands (2026-10-22).** Four files are added and eight files' minors move, for the
 LibKa0s issues #45-#58 run. Added: `Glow.lua` 1 (the new major `LibKa0s-Glow-1.0`, key 1) and
-`Sim.lua` 2, `SimTimeline.lua` 2 and `SimPanel.lua` 1 (the new major `LibKa0s-Sim-1.0`, key 2.2.1;
+`Sim.lua` 2, `SimTimeline.lua` 2 and `SimPanel.lua` 2 (the new major `LibKa0s-Sim-1.0`, key 2.2.2;
 the step panel is Sim-private, and `W.StepPanel` was withdrawn; key 1.1.1 was carried only by the
-local tag, before `Start` read the scenarios live and handed `prepare` the host's start fields). Moved: `Item.lua` 3
+local tag, before `Start` read the scenarios live and handed `prepare` the host's start fields, and key 2.2.1 only by the local tag before the panel's picker read its scenario at use). Moved: `Item.lua` 3
 (`BonusIDsFromLink`), `Widgets.lua` 13 (`SearchBox`, `TestStrip`; key 13.1.4.3.2), `OptionsTabs.lua`
 9 (`O.__releaseChrome` no longer exported; Options key 29.2.34.2.5.9.1.7.4.2.1),
 `DebugLogDiagnostics.lua` 3 (the identity header names Glow and Sim; DebugLog key 20.3.1), and the

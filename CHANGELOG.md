@@ -20,8 +20,8 @@ Versions in this release: **Core minor 11** (comment-only, key **11**); **Item m
 **20.3.1**, `DebugLogGates` 1 unchanged); **OptionsIdList minor 5** (comment-only) and
 **OptionsTabs minor 9** (`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**, its nine other
 files unchanged); **PerfPanel minor 7** (comment-only, `LibKa0s-Perf-1.0` key **15.1.1.7**);
-**Sim minor 2**, **SimTimeline minor 2** and **SimPanel minor 1** (the new major `LibKa0s-Sim-1.0`,
-key **2.2.1**; key 1.1.1 was the local tag's only); every other file still at its v1.74.0 minor (`Env` 2, `Compat` 1, `Lifecycle` 3,
+**Sim minor 2**, **SimTimeline minor 2** and **SimPanel minor 2** (the new major `LibKa0s-Sim-1.0`,
+key **2.2.2**; keys 1.1.1 and 2.2.1 were the local tag's only); every other file still at its v1.74.0 minor (`Env` 2, `Compat` 1, `Lifecycle` 3,
 `Bus` 2, `Schema` 2, `Pool` 3, `Media` key 5.1, `Slash` key 20.2 and `Launcher` 5); and **test kit
 revision 41**. Two majors are added and no `NEEDS_*` floor rises, so the library is **seventeen
 majors across forty files**. Built to standard **v2.86.0**: `library-stack-§7`'s icon subset (from
@@ -246,7 +246,7 @@ never shipped on its own.
 - **Adopters:** **DropWatcher**, **QuickComms** and **KickCD**, each through a `core/GlowSetup.lua`
   seam publishing `NS.GlowLib`.
 
-### LibKa0s-Sim-1.0 (new major, Sim minor 2, SimTimeline minor 2, SimPanel minor 1)
+### LibKa0s-Sim-1.0 (new major, Sim minor 2, SimTimeline minor 2, SimPanel minor 2)
 
 - **The Compat answer seam (#54).** `LibKa0s/Sim.lua`, loaded after `PerfPanel.lua`.
   `Sim:NewSeam(compat, opts) -> seam` wraps the host's own Compat table in place, once (a second
@@ -403,7 +403,7 @@ never shipped on its own.
   settles asynchronously). *Adopting it* carries the setup file, the reference stub from
   `tests/test_sim_stub.lua`, the `Unwrapped()` assertion and the stub parity case, and names the
   adopters and the future candidates (MultiMeters#60, WhatGroup#24, KickCD#38):
-  [Sim version 2.2.1](docs/api/Sim/version-2.2.1-docs.md).
+  [Sim version 2.2.2](docs/api/Sim/version-2.2.2-docs.md).
 - **Sim minor 2 and SimTimeline minor 2: `Start` reads the scenarios live, and `prepare` gets the
   host's start fields (#54).** Two contract gaps DropWatcher's migration found (its item DW-02),
   closed additively, after the key 1.1.1 had been tagged locally and re-vendored by the three
@@ -420,6 +420,19 @@ never shipped on its own.
   fields, every one but `seed`. The key moves `1.1.1` -> `2.2.1`, and the 1.1.1 document is kept,
   Superseded, with its *Moving to* section:
   [Sim version 2.2.1](docs/api/Sim/version-2.2.1-docs.md).
+- **SimPanel minor 2: the picker reads its scenario at use (#54).** A third contract gap
+  DropWatcher's migration found (its item DW-04), closed additively after the key 2.2.1 had been
+  tagged locally. **No member is added or removed.** Minor 1 read `d.scenarios.names[1]` once,
+  inside `New`, so a host that filled its scenarios after `New` (legal since Sim minor 2) got an
+  idle Start row reading `Start: nil` and a picker whose `START` ran `start nil`. Now the panel's
+  scenario is the picker's choice while its def resolves, else the first name listed when the rows
+  are composed or the button is pressed: the Start row, its preview, its command and click, and the
+  picker's selection, size dropdown, `START` and tooltip all read it. With no scenario listed the
+  Start row is locked and `START` disabled. An audit of every other descriptor read found nothing
+  else fixed at `New` that a host can fill later; the Sim document lists what is read at use and the
+  few things fixed on purpose (the seam, the checks, the frame name, `panel.check`). The key moves
+  `2.2.1` -> `2.2.2`, and the 2.2.1 document is kept, Superseded, with its *Moving to* section:
+  [Sim version 2.2.2](docs/api/Sim/version-2.2.2-docs.md).
 
 ### What a consumer owes
 

@@ -1,0 +1,15 @@
+{
+  "major": "LibKa0s-Sim-1.0",
+  "versionKey": "2.2.2",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Sim", "minor": 2 },
+    { "file": "SimTimeline", "minor": 2 },
+    { "file": "SimPanel", "minor": 2 }
+  ],
+  "members": [
+    { "name": "New", "kind": "function" },
+    { "name": "NewSeam", "kind": "function" },
+    { "name": "STRINGS", "kind": "table" }
+  ]
+}
