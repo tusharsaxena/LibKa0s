@@ -372,7 +372,9 @@ keeps vendoring `LibCustomGlow-1.0`.
   on the library's own minimal Core-skinned button and GameTooltip (no `d.panel.button` or
   `d.panel.tooltip`, OWNER_SCOPE C.7). A shown panel repaints on every listener notification and
   re-pins its height bounds when the row count changes (C.5); `ShowPanel` answers `false` while
-  stood down, and a stand-down stop hides it. Placement: a point dragged this session wins, held
+  stood down, and a stand-down stop hides it. Every non-click way the picker leaves the screen
+  (`HidePanel`, Escape through the frame's `OnHide`, a typed start swapping the picker out) closes
+  Widgets' shared dropdown menu, so none leaves it orphaned. Placement: a point dragged this session wins, held
   in memory only, so nothing is written to SavedVariables (C.11); else it docks right of
   `d.panel.anchorTo()`, or left when the right has no room, or floats at CENTER +420, with an 8 px
   gap, redocking on every show; `ResetPanelPosition()` forgets the point. `PanelRows()` answers the

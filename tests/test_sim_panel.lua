@@ -662,3 +662,53 @@ test("sim panel: a row's tip goes to GameTooltip as double lines under the row's
     assertFalse(tip:IsShown())
   end)
 end)
+
+-- ── the shared dropdown menu (W.CloseMenu) ───────────────────────────────────────────────
+--
+-- The picker's dropdowns share Widgets' process-wide popup menu, which no owner's Hide reaches
+-- (Widgets.lua's CloseMenu contract): every non-click way the picker leaves the screen must close
+-- it, or it floats on at FULLSCREEN_DIALOG with no owner. The kit's Hide() fires no OnHide, so the
+-- Escape case fires it itself, the way the client does when CloseSpecialWindows hides the frame.
+
+--- Count W.CloseMenu calls on bench `b`; answers a reader of the count.
+local function spyCloseMenu(b)
+  local W = b.m.LibStub("LibKa0s-Widgets-1.0")
+  local n, orig = 0, W.CloseMenu
+  W.CloseMenu = function(...) n = n + 1; return orig(...) end
+  return function() return n end
+end
+
+test("sim panel: HidePanel closes the shared dropdown menu", function()
+  local b = bench()
+  F.recording(b.m, function()
+    shown(b)
+    local closes = spyCloseMenu(b)
+    b.sim:HidePanel()
+    assertTrue(closes() >= 1, "HidePanel closed the menu")
+  end)
+end)
+
+test("sim panel: Escape (the frame's OnHide, not HidePanel) closes the shared dropdown menu", function()
+  local b = bench()
+  F.recording(b.m, function()
+    local f = shown(b)
+    local closes = spyCloseMenu(b)
+    f:Hide()
+    f:__fire("OnHide")                              -- what CloseSpecialWindows' Hide fires in the client
+    assertTrue(closes() >= 1, "Escape closed the menu")
+  end)
+end)
+
+test("sim panel: a typed start that swaps the picker out closes the shared dropdown menu", function()
+  local b = bench()
+  F.recording(b.m, function()
+    local f = shown(b)
+    assertTrue(f.picker:IsShown())
+    local closes = spyCloseMenu(b)
+    b.sim:RunVerb("start three")                    -- typed, not clicked: no mouse press reaches the menu
+    assertFalse(f.picker:IsShown())
+    assertEqual(closes(), 1, "the swap closed the menu once")
+    b.sim:RefreshPanel()
+    assertEqual(closes(), 1, "a repaint with the picker already hidden closes nothing")
+  end)
+end)

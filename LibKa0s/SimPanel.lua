@@ -51,6 +51,14 @@ local NEEDS_CORE = 9
 if not core or (core.MINOR or 0) < NEEDS_CORE or not W then return end
 
 local SIM_PANEL_MINOR = 1
+
+--- Close Widgets' shared dropdown menu. The picker's dropdowns drop that process-wide popup, which
+--- no owner's Hide reaches (Widgets.lua's CloseMenu contract), so every non-click way the picker
+--- leaves the screen calls this: HidePanel, the frame's OnHide (Escape through UISpecialFrames
+--- never goes through HidePanel), and the footer swapping the picker out for the controls.
+local function closeMenu()
+  if type(W.CloseMenu) == "function" then W.CloseMenu() end
+end
 -- Paired on the SHELL's minor as well as this file's own, as SimTimeline.lua is.
 if lib.__panelMinor and lib.__panelMinor >= SIM_PANEL_MINOR
   and lib.__panelShellMinor == lib.MINOR then return end
@@ -313,6 +321,8 @@ local function StepPanel(d)
     end
     core.ApplySkin(frame)
     frame:Hide()
+    -- Escape hides the frame directly (CloseSpecialWindows), never through HidePanel.
+    if type(frame.HookScript) == "function" then frame:HookScript("OnHide", closeMenu) end
     if type(UISpecialFrames) == "table" then table.insert(UISpecialFrames, d.name) end
     -- Guarded: the no-MakeResizable fixture (tests/test_resize_windows.lua) is today's fixed panel.
     if type(core.MakeResizable) == "function" then
@@ -702,6 +712,8 @@ local function footer(P)
     end,
     paint = function(f)
       local running = P.ctx.session() ~= nil and not P.ctx.stopping()
+      -- A typed start swaps the picker out with no mouse press: its open menu would stay behind.
+      if running and f.picker:IsShown() then closeMenu() end
       f.picker:SetShown(not running)
       f.controls:SetShown(running)
       if running then paintControls(P, f) else paintPicker(P, f) end
@@ -806,7 +818,7 @@ local function installMembers(sim, P)
   function sim.HidePanel()
     if not P.panel then return end
     P.panel.Hide()
-    if type(W.CloseMenu) == "function" then W.CloseMenu() end   -- no orphaned dropdown menu
+    closeMenu()                                    -- no orphaned dropdown menu
   end
 
   function sim.IsPanelShown() return P.panel ~= nil and P.panel.IsShown() end

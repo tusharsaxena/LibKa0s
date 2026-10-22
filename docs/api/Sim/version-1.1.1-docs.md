@@ -300,8 +300,10 @@ the click-ahead, so a click prints exactly what typing prints.
   whenever the count changes (OWNER_SCOPE C.5).
 - `ShowPanel()` answers `false` and does nothing **while `isStoodDown()`**. The stop hides the panel
   when it runs stood down (step 6) and repaints it otherwise.
-- `HidePanel()` also closes the shared dropdown menu, so a panel hidden by a verb leaves no orphaned
-  menu.
+- Every non-click way the picker leaves the screen closes the shared dropdown menu (Widgets'
+  `CloseMenu`), so none leaves it orphaned: `HidePanel()`, Escape (the frame's `OnHide`, since
+  `UISpecialFrames` hides the frame without going through `HidePanel`), and a typed start that
+  swaps the picker out for the controls.
 
 ### Placement (session-only)
 
