@@ -424,8 +424,8 @@ test("runner complexity: a lizard Traceback is a fail, figures zeroed, manifest 
       .. "RecursionError: maximum recursion depth exceeded\n", 1)
   assertEqual(code, 0, "a crash never fails the run: " .. out)
   assertTrue(out:find("complexity  fail", 1, true) ~= nil, "the suite fails: " .. out)
-  assertTrue(out:find("lizard raised: RecursionError: maximum recursion depth exceeded", 1, true) ~= nil,
-    "the note names the exception: " .. out)
+  assertTrue(out:find("lizard raised on 1 file(s): one.lua (RecursionError: maximum recursion depth exceeded)",
+    1, true) ~= nil, "the note names the file and the exception: " .. out)
   assertTrue(out:find("lizard blind in", 1, true) == nil, "parity is skipped, not 1 blind file: " .. out)
   assertTrue(out:find("n/a warnings", 1, true) ~= nil, "the console renders n/a, not 0: " .. out)
   assertTrue(out:find("verdict: amber", 1, true) ~= nil, "amber, never red: " .. out)
@@ -475,4 +475,91 @@ test("runner complexity: exit 124 is the bound note, numeric manifest, no per-fi
   assertTrue(manifest:find('"complexity": { "status": "fail"', 1, true) ~= nil, "fails: " .. manifest)
   local ok, why = complexityNumeric(manifest)
   assertTrue(ok, "numeric: " .. tostring(why) .. "\n" .. manifest)
+end)
+
+-- ── a crash is its own bucket, named by a per-file retry (kit revision 41, LibKa0s#47) ────────────
+-- When the whole-tree run raises, the runner retries lizard once per file inside the shadow and
+-- names each file whose solo run raises. It never re-measures the rest: figures stay 0 / n/a.
+
+local LIZ_VALID = LIZ_HEAD .. LIZ_ROW .. LIZ_FILES .. LIZ_FOOT
+  .. "         3       3.0     7.0       17.0        1            0      0.00    0.00\n"
+local LIZ_RAISE = "Traceback (most recent call last):\n  File \"lizard.py\", line 1176, in main\n"
+  .. "TypeError: sequence item 0: expected str instance, NoneType found\n"
+local HOIST_HINT = "Hoist each function literal out of a for/while header into a local first "
+  .. "(the multi-line keyed table form makes lizard 1.24.0 raise)."
+
+--- A fake `bin/lizard` that raises when `raiseWhen` (a bash test over `$t`, the last argument)
+--- holds, and prints a valid table otherwise.
+local function crashLizard(raiseWhen)
+  return "#!/usr/bin/env bash\n"
+    .. "if [ \"$1\" = \"--version\" ]; then echo 1.24.0; exit 0; fi\n"
+    .. "t=\"${!#}\"\n"
+    .. "if " .. raiseWhen .. "; then\n"
+    .. "cat <<'LIZOUT'\n" .. LIZ_HEAD .. LIZ_ROW .. "LIZOUT\n"
+    .. "cat >&2 <<'LIZERR'\n" .. LIZ_RAISE .. "LIZERR\n"
+    .. "exit 1\nfi\n"
+    .. "cat <<'LIZOUT'\n" .. LIZ_VALID .. "LIZOUT\n"
+    .. "exit 0\n"
+end
+
+local function crashRun(files, raiseWhen)
+  files["bin/lizard"] = crashLizard(raiseWhen)
+  return runIn(addon(files), "--suite complexity",
+    { setup = "chmod +x bin/lizard", env = 'PATH="$PWD/bin:$PATH" ',
+      read = { "manifest", "docs/automated-tests/RESULTS.md" } })
+end
+
+test("runner complexity: a file lizard raises on is crashed, named, and never reported blind", function()
+  -- red under: LK-04's revision 41, which noted `lizard raised: <exception>` and named no file
+  local out, code, read = crashRun({ ["crash.lua"] = ONE_LUA, ["fine.lua"] = ONE_LUA },
+    '[ "$t" = "crash.lua" ] || { [ "$t" = "." ] && [ -f crash.lua ]; }')
+  assertEqual(code, 0, "a crash never fails the run: " .. out)
+  assertTrue(out:find("complexity  fail", 1, true) ~= nil, "the suite fails: " .. out)
+  assertTrue(out:find("lizard raised on 1 file(s): crash.lua (TypeError: sequence item 0: expected str "
+    .. "instance, NoneType found), so nothing was measured. " .. HOIST_HINT, 1, true) ~= nil,
+    "the note names the file, the exception and the hoist hint: " .. out)
+  assertTrue(out:find("blind", 1, true) == nil, "no file is called blind: " .. out)
+  assertTrue(out:find("n/a warnings", 1, true) ~= nil, "figures read n/a: " .. out)
+  assertTrue(out:find("verdict: amber", 1, true) ~= nil, "amber, never red: " .. out)
+  local manifest = read.manifest or ""
+  assertTrue(manifest:find('"complexity": { "status": "fail"', 1, true) ~= nil, "manifest: " .. manifest)
+  assertTrue(manifest:find('"blindFiles": 0, "crashedFiles": 1,', 1, true) ~= nil,
+    "one crashed file, none blind: " .. manifest)
+  assertTrue(manifest:find('"maxCcn": 0,', 1, true) ~= nil, "figures zeroed: " .. manifest)
+  assertTrue(manifest:find("TypeError", 1, true) == nil, "no exception text in the manifest: " .. manifest)
+  local ok, why = complexityNumeric(manifest)
+  assertTrue(ok, "numeric: " .. tostring(why) .. "\n" .. manifest)
+  local results = read["docs/automated-tests/RESULTS.md"] or ""
+  assertTrue(results:find("**Not measured — lizard raised** (`automated-tests-§3`): lizard raised on 1 file(s): "
+    .. "crash.lua", 1, true) ~= nil, "the watch list leads with the crash: " .. results:sub(-2000))
+  local row = results:match("\n(| %[`[^\n]+)\n") or ""
+  assertTrue(row:find("| n/a | n/a | n/a | n/a | n/a | n/a |", 1, true) ~= nil, "trend row n/a: " .. row)
+end)
+
+test("runner complexity: a raise no single file reproduces is a whole-tree crash", function()
+  -- red under: a retry that reported a file whose solo run is clean, or that named none and said so
+  local out, code, read = crashRun({ ["one.lua"] = ONE_LUA, ["fine.lua"] = ONE_LUA }, '[ "$t" = "." ]')
+  assertEqual(code, 0, out)
+  assertTrue(out:find("complexity  fail", 1, true) ~= nil, "the suite fails: " .. out)
+  assertTrue(out:find("lizard raised on the whole tree; no single file reproduces it", 1, true) ~= nil,
+    "the whole-tree note: " .. out)
+  assertTrue(out:find("blind", 1, true) == nil, "no file is called blind: " .. out)
+  local manifest = read.manifest or ""
+  assertTrue(manifest:find('"blindFiles": 0, "crashedFiles": 0,', 1, true) ~= nil, "no crashed file: " .. manifest)
+  local ok, why = complexityNumeric(manifest)
+  assertTrue(ok, "valid JSON figures: " .. tostring(why) .. "\n" .. manifest)
+end)
+
+test("runner complexity: the real 1.24.0 for-header crash is crashed, not blind", function()
+  local lizard = firstLine("command -v lizard 2>/dev/null")
+  if not lizard or lizard == "" then T.skip("lizard is not on PATH, so the complexity suite cannot run") end
+  local out, code, read = runIn(addon{
+    ["crash.lua"] = "for name, fn in pairs({\n  A = function() f() end,\n}) do g(name, fn) end\n",
+    ["fine.lua"] = "local function one() return 1 end\nreturn one\n",
+  }, "--suite complexity", { read = { "manifest" } })
+  assertEqual(code, 0, out)
+  assertTrue(out:find("lizard raised on 1 file(s): crash.lua (", 1, true) ~= nil, "crash.lua is named: " .. out)
+  assertTrue(out:find("blind", 1, true) == nil, "not blind: " .. out)
+  local manifest = read.manifest or ""
+  assertTrue(manifest:find('"blindFiles": 0, "crashedFiles": 1,', 1, true) ~= nil, "manifest: " .. manifest)
 end)

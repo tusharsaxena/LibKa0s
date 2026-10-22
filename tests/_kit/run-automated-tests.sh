@@ -352,6 +352,9 @@ CCN_WARN=0; CCN_NLOC=0; CCN_FUNCS=0; CCN_AVG=0; CCN_MAX=0; CCN_BAND=0; CCN_OVER=
 # measurement happens rather than re-derived from the counters afterwards.
 CCN_WARN_ROWS=""; CCN_BAND_ROWS=""; CCN_EXEMPT_ROWS=""
 CCN_BLIND=0; CCN_BLIND_ROWS=""; CCN_BLIND_NOTE=""
+# A lizard that raised (kit revision 41, LibKa0s#47) is its own bucket, never `blind`: the rows are
+# `path<TAB>exception` for each file whose solo retry raises, and the note leads the watch list.
+CCN_CRASHED=0; CCN_CRASHED_ROWS=""; CCN_CRASHED_NOTE=""
 CCN_AVG_NLOC=0; CCN_AVG_TOKEN=0; CCN_FUN_RT=0; CCN_NLOC_RT=0
 
 # Strip ANSI color before writing. luacheck and the harness color their output when they
@@ -532,8 +535,36 @@ if wants complexity; then
         CX_INVALID=0
         if ! cx_valid; then
             CX_INVALID=1
-            if grep -q 'Traceback' "$CX_TMP/lizard.err" 2>/dev/null; then
-                NOTE[complexity]="lizard raised: $(awk 'NF {l=$0} END {print l}' "$CX_TMP/lizard.err" | tr -d '\r')"
+            if [ "$cx_rc" -ne 124 ] && [ "$cx_rc" -ne 137 ] && grep -q 'Traceback' "$CX_TMP/lizard.err" 2>/dev/null; then
+                cx_exc="$(awk 'NF {l=$0} END {print l}' "$CX_TMP/lizard.err" | tr -d '\r')"
+                # THE PER-FILE RETRY (LibKa0s#47): once per file, inside the shadow, with the same
+                # fixed flags and each run bounded, to name what raised. It never re-measures the
+                # rest: a tree with a crashing file is not measured, so every figure stays 0.
+                while IFS= read -r f; do
+                    (cd "$CX_TMP/src" && bounded lizard -l lua -L 1500 -x "./libs/*" -x "./tests/_kit/*" "$f" \
+                        >/dev/null 2>"$CX_TMP/solo.err") || true
+                    grep -q 'Traceback' "$CX_TMP/solo.err" 2>/dev/null && CCN_CRASHED_ROWS="$CCN_CRASHED_ROWS$f	$(
+                        awk 'NF {l=$0} END {print l}' "$CX_TMP/solo.err" | tr -d '\r')
+"
+                done < "$CX_TMP/files"
+                CCN_CRASHED=$(printf '%s' "$CCN_CRASHED_ROWS" | grep -c . || true)
+                if [ "${CCN_CRASHED:-0}" -gt 0 ]; then
+                    # The hoist hint is static: no detector names the shape (the owner's ruling).
+                    cx_hint="Hoist each function literal out of a for/while header into a local first"
+                    cx_hint="$cx_hint (the multi-line keyed table form makes lizard 1.24.0 raise)."
+                    CCN_CRASHED_NOTE="lizard raised on $CCN_CRASHED file(s): $(printf '%s' "$CCN_CRASHED_ROWS" \
+                        | awk -F '\t' '{ printf "%s%s (%s)", (NR > 1 ? ", " : ""), $1, $2 }'), so nothing was measured. $cx_hint"
+                else
+                    CCN_CRASHED=0
+                    CCN_CRASHED_NOTE="lizard raised on the whole tree; no single file reproduces it ($cx_exc), so nothing was measured."
+                fi
+                # The manifest's skipReason carries no per-file exception text: that lives in
+                # complexity.txt, the console and RESULTS.md, which read CCN_CRASHED_NOTE.
+                if [ "$CCN_CRASHED" -gt 0 ]; then
+                    NOTE[complexity]="lizard raised on $CCN_CRASHED file(s) (named in complexity.txt)"
+                else
+                    NOTE[complexity]="lizard raised on the whole tree; no single file reproduces it"
+                fi
             else
                 NOTE[complexity]="lizard exited $cx_rc with no valid footer (bound: KA0S_KIT_TIMEOUT_S / KA0S_KIT_PROC_MB)"
             fi
@@ -548,7 +579,8 @@ if wants complexity; then
         # survives in the frozen bundle. Everything above reads lizard.err before the shadow goes.
         cx_err="$(cat "$CX_TMP/lizard.err" 2>/dev/null)"
         rm -rf "$CX_TMP"
-        { printf '%s\n' "$raw"; [ -n "$cx_err" ] && printf -- '--- lizard stderr ---\n%s\n' "$cx_err"; } | emit complexity.txt
+        { printf '%s\n' "$raw"; [ -n "$cx_err" ] && printf -- '--- lizard stderr ---\n%s\n' "$cx_err"
+          [ -n "$CCN_CRASHED_NOTE" ] && printf -- '--- lizard raised, per file ---\n%s\n%s' "$CCN_CRASHED_NOTE" "$CCN_CRASHED_ROWS"; } | emit complexity.txt
         fld() { printf '%s' "$footer" | awk -v n="$1" '{v=$n} END{print (v ~ /^-?[0-9]+(\.[0-9]+)?$/) ? v : 0}'; }
         CCN_NLOC=$(fld 1);      [ -z "$CCN_NLOC" ]      && CCN_NLOC=0
         CCN_AVG_NLOC=$(fld 2);  [ -z "$CCN_AVG_NLOC" ]  && CCN_AVG_NLOC=0
@@ -634,7 +666,7 @@ BANDPATHS
         [ -z "$CCN_BAND" ] && CCN_BAND=0; [ -z "$CCN_OVER" ] && CCN_OVER=0
         CCN_BLIND=$(printf '%s' "$CCN_BLIND_ROWS" | grep -c . || true)
         ST[complexity]="pass"
-        if [ "$CX_INVALID" -eq 1 ]; then
+        if [ "$CX_INVALID" -eq 1 ] || [ "${CCN_CRASHED:-0}" -gt 0 ]; then
             # Every figure 0 (manifest.json stays numeric); the console and the trend row say n/a.
             ST[complexity]="fail"
             CCN_WARN=0; CCN_NLOC=0; CCN_FUNCS=0; CCN_AVG=0; CCN_MAX=0
@@ -685,7 +717,7 @@ for s in lint tests perf complexity; do
     else
         printf '  %-11s %-5s — %s%s\n' "$s" "${ST[$s]}" "$(fmt "$s")" "$gate"
         [ "$s" = "complexity" ] && [ -n "$CCN_BLIND_NOTE" ] && printf '              %s\n' "$CCN_BLIND_NOTE"
-        [ "$s" = "complexity" ] && [ "${CX_INVALID:-0}" -eq 1 ] && printf '              %s\n' "${NOTE[complexity]}"
+        [ "$s" = "complexity" ] && [ "${CX_INVALID:-0}" -eq 1 ] && printf '              %s\n' "${CCN_CRASHED_NOTE:-${NOTE[complexity]}}"
     fi
 done
 echo "  verdict: $VERDICT"
@@ -732,7 +764,7 @@ if [ "$WRITE_BUNDLE" -eq 1 ]; then
         suite_json lint       ", \"warnings\": $LINT_WARN, \"errors\": $LINT_ERR, \"files\": $LINT_FILES, $GATE_COMMIT"; printf ',\n'
         suite_json tests      ", \"passed\": $TESTS_PASS, \"failed\": $TESTS_FAIL, \"skipped\": $TESTS_SKIP, \"total\": $TESTS_TOTAL, $GATE_COMMIT"; printf ',\n'
         suite_json perf       ", \"scenarios\": $PERF_SCENARIOS, $GATE_RECORD"; printf ',\n'
-        suite_json complexity ", \"warnings\": $CCN_WARN, \"maxCcn\": $CCN_MAX, \"nloc\": $CCN_NLOC, \"functions\": $CCN_FUNCS, \"avgCcn\": $CCN_AVG, \"avgNloc\": $CCN_AVG_NLOC, \"avgToken\": $CCN_AVG_TOKEN, \"warnFunRatio\": $CCN_FUN_RT, \"warnNlocRatio\": $CCN_NLOC_RT, \"bandFiles\": $CCN_BAND, \"overCapFiles\": $CCN_OVER, \"blindFiles\": $CCN_BLIND, $GATE_RECORD"; printf '\n'
+        suite_json complexity ", \"warnings\": $CCN_WARN, \"maxCcn\": $CCN_MAX, \"nloc\": $CCN_NLOC, \"functions\": $CCN_FUNCS, \"avgCcn\": $CCN_AVG, \"avgNloc\": $CCN_AVG_NLOC, \"avgToken\": $CCN_AVG_TOKEN, \"warnFunRatio\": $CCN_FUN_RT, \"warnNlocRatio\": $CCN_NLOC_RT, \"bandFiles\": $CCN_BAND, \"overCapFiles\": $CCN_OVER, \"blindFiles\": $CCN_BLIND, \"crashedFiles\": $CCN_CRASHED, $GATE_RECORD"; printf '\n'
         printf '  },\n'
         printf '  "verdict": "%s"\n' "$VERDICT"
         printf '}\n'
@@ -1088,7 +1120,10 @@ TOTALS
         [ "${CX_INVALID:-0}" -eq 1 ] && cx_state="crash"
         case "$cx_state" in
             notrun|skip|crash)
-                if [ "$cx_state" = "crash" ]; then
+                if [ "$cx_state" = "crash" ] && [ -n "$CCN_CRASHED_NOTE" ]; then
+                    printf '**Not measured — lizard raised** (`automated-tests-§3`): %s\n\n' "$CCN_CRASHED_NOTE"
+                    printf '`complexity` **did not measure** on this run, so it did not pass.\n'
+                elif [ "$cx_state" = "crash" ]; then
                     printf '`complexity` **did not measure** on this run, so it did not pass — %s.\n' "${NOTE[complexity]}"
                 elif [ "$cx_state" = "skip" ]; then
                     printf '`complexity` was **skipped** on this run — %s.\n' "${NOTE[complexity]}"

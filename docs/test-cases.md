@@ -2419,7 +2419,7 @@ Total.
 - prose scan-back: a restated kit folder in skipDirs that .pkgmeta ignores passes the refusal
 - prose lists: PUBLISHED_BRITISH == #BRITISH == 92 and PUBLISHED_ALLOWED == #ALLOWED == 33
 
-### test_kit_runner.lua (17)
+### test_kit_runner.lua (20)
 
 - runner perf: a performance-§12 register row records skip reason (2), in the manifest and RESULTS.md
 - runner perf: a library's root CLAUDE.md register is read when there is no docs/ARCHITECTURE.md
@@ -2438,6 +2438,9 @@ Total.
 - runner complexity: a warned run exiting 1 with a valid footer is measured, not crashed
 - runner complexity: stderr noise with exit 0 does not reach the parse
 - runner complexity: exit 124 is the bound note, numeric manifest, no per-file retry
+- runner complexity: a file lizard raises on is crashed, named, and never reported blind
+- runner complexity: a raise no single file reproduces is a whole-tree crash
+- runner complexity: the real 1.24.0 for-header crash is crashed, not blind
 
 ### test_kit_vendor_sync.lua (19)
 
@@ -2594,11 +2597,11 @@ Total.
 | test_kit_inventory.lua | 42 |
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
-| test_kit_runner.lua | 17 |
+| test_kit_runner.lua | 20 |
 | test_kit_vendor_sync.lua | 19 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2219** |
+| **Total** | **2222** |

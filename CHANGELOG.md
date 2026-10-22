@@ -74,6 +74,17 @@ never shipped on its own.
   console and in the trend row), parity skipped, and one of two notes: `lizard raised: ...` or
   `lizard exited <rc> with no valid footer (bound: ...)`. A crash stays amber, as blind is.
   [testkit version 41](docs/api/testkit/version-41-docs.md).
+- **#47: crashed is its own bucket.** On a raise (not on a 124/137 bound) the runner retries lizard
+  once per file inside the shadow, bounded, and names each file whose solo run raises:
+  `lizard raised on N file(s): <path> (<exception>), so nothing was measured.` with a static hint
+  to hoist the function literal out of the `for` header, or `lizard raised on the whole tree; no
+  single file reproduces it` when none does. The rest is never re-measured: figures stay 0 / `n/a`,
+  and a crashed file is never reported blind. `manifest.json` gains `crashedFiles` beside
+  `blindFiles` (schema 1, additive, no exception text), and `RESULTS.md`'s watch list leads with
+  `**Not measured — lizard raised**`. Rejected, with triggers recorded: an
+  `S.forInFunctionLiterals` detector (until a second crash of this shape in a roster addon) and
+  rewriting the shape in the shadow, which would under-count CCN (until lizard fixes its reader or
+  a crash has no hoist remedy). [testkit version 41](docs/api/testkit/version-41-docs.md).
 
 ### Test kit revision 40: the icon folder is held to the consumer's declaration
 

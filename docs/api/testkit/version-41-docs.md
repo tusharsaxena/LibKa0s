@@ -82,6 +82,60 @@ Four cases in `tests/test_kit_runner.lua` pin this with a fake lizard first on `
 run on any host: a traceback, a warned run that exits 1 with a valid footer, stderr noise on a
 clean exit, and a timeout's 124.
 
+### A lizard crash is its own bucket, named by a per-file retry (LibKa0s#47)
+
+The section above leaves a raise with one note, `lizard raised: <exception>`, and no file named.
+On a roster addon that is a tree of dozens of files and nothing to go on. From this point in
+revision 41 a raise is a bucket of its own, `crashed`, beside `blind`:
+
+- **The per-file retry.** When the whole-tree run is invalid **and** stderr holds a `Traceback`,
+  the runner, before it removes the shadow, runs lizard once per file of the shadow's file list,
+  inside the shadow, with `performance-§10`'s fixed flags and the file as the only path, each run
+  under the same bound as the whole-tree run. Every file whose solo run raises is a crashed row:
+  its path and the last non-empty line of that run's stderr.
+- **No re-measure of the rest.** The retry names; it does not measure. A tree with a crashing file
+  is a tree that was not measured, so every figure stays 0 in `manifest.json` and `n/a` on the
+  console and in the trend row, parity stays skipped, and a crashed file is never reported blind
+  (`blindFiles` stays 0).
+- **The bound exception.** A run that exited 124 (the timeout) or 137 (the memory kill) keeps the
+  bound note and is not retried, whatever stderr holds: a retry of a bounded tree would run the
+  bound once per file.
+- **The note.** With N crashed files the console line under `complexity`, and the watch list's
+  lead in `RESULTS.md`, read
+  `lizard raised on N file(s): <path> (<exception>), so nothing was measured. Hoist each function
+  literal out of a for/while header into a local first (the multi-line keyed table form makes
+  lizard 1.24.0 raise).` The hint is static: it is the remedy for the one shape known to raise
+  (`for name, fn in pairs({ A = function() ... end, }) do`, written across lines), and no detector
+  names the shape. When no single file reproduces the raise, the note is
+  `lizard raised on the whole tree; no single file reproduces it (<exception>), so nothing was
+  measured.` and `crashedFiles` is 0.
+- **Where each part lives.** `manifest.json`'s complexity object gains `"crashedFiles": N` beside
+  `blindFiles`, additively (`schema` stays 1), and carries no per-file exception text: its
+  `skipReason` is `lizard raised on N file(s) (named in complexity.txt)` or the whole-tree
+  sentence. The exceptions live in the console note, the `RESULTS.md` lead
+  `**Not measured — lizard raised** (automated-tests-§3): <note>`, printed before where the blind
+  lead would be, and `complexity.txt`, which appends the note and the `path<TAB>exception` rows
+  under a `--- lizard raised, per file ---` separator.
+- `crashedFiles` above 0 makes `complexity` `fail`, so the verdict is amber: it blocks the tag and
+  never fails the run or the commit.
+
+**Rejected, each with the trigger that reopens it.**
+
+- *An `S.forInFunctionLiterals` detector in `lizard_sighted.lua`*, which would name the shape
+  before lizard runs. There are zero instances in the roster today, and the per-file retry names
+  any file that raises, whatever the shape. Trigger: a second crash of this shape in a roster
+  addon.
+- *Neutralizing the shape in the sighted shadow*, rewriting the header so lizard does not raise.
+  The rewrite moves the function literal's decisions out of where lizard counts them, so the file
+  would be measured with an under-counted CCN, which is worse than not measured. Trigger: lizard
+  upstream fixes the reader, or a crash appears that has no hoist remedy.
+
+Three more cases in `tests/test_kit_runner.lua` pin the bucket: a fake lizard that raises whenever
+its tree or its path includes `crash.lua` (one crashed file, named, none blind, figures 0 and
+`n/a`, the hint present), a fake that raises on every whole-tree run and on no single file (the
+whole-tree note, `crashedFiles` 0), and the real lizard 1.24.0 over the shape above, which skips
+where lizard is not on `PATH`. The traceback case above now reads the per-file note.
+
 ## What a consumer owes
 
 Re-vendor `tests/_kit/` whole:
