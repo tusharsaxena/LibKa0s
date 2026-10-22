@@ -55,6 +55,11 @@ local MAJORS = {
     primary = "Item",
   },
   {
+    major = "LibKa0s-Glow-1.0",
+    files = { "Glow" },
+    primary = "Glow",
+  },
+  {
     major = "LibKa0s-Media-1.0",
     files = { "Media", "MediaIcons" },
     primary = "Media",

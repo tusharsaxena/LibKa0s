@@ -389,6 +389,24 @@ Total.
 - item: LoadItem fires the callback once the item is loaded
 - item: LoadItem is inert without an id or without the API
 
+### test_glow.lua (15)
+
+- glow: the major registers with Core, and reports its file minor
+- glow: absent LCG -- Start answers false for every style and Stop is quiet
+- glow: LCG registered AFTER the driver loads is reached at call time
+- glow: pixel maps every knob to its LCG position, key at 10 and frameLevel at 11
+- glow: pixelLength 0, negative, a string or nil goes as nil; a positive number passes
+- glow: pixelBorder and procStartAnim are false only when false
+- glow: a numeric knob that is not a number goes as nil
+- glow: autocast maps 9 positions and button 4, button with no key
+- glow: proc gets a fresh options table per call, never the caller's knobs
+- glow: nil and non-table knobs read as empty, and the call still happens
+- glow: an unknown style or a nil frame answers false and calls nothing
+- glow: a missing LCG member answers false or is skipped, and others still work
+- glow: Stop shapes -- one style, keyless button, stop-all in order, unknown is a no-op
+- glow: stateless -- Start never stops, and repeated Starts all reach LCG
+- glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
+
 ### test_media.lua (28)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
@@ -2566,6 +2584,7 @@ Total.
 | test_schema_batch.lua | 22 |
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
+| test_glow.lua | 15 |
 | test_media.lua | 28 |
 | test_widgets.lua | 57 |
 | test_widgets_reorderlist.lua | 24 |
@@ -2648,4 +2667,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2258** |
+| **Total** | **2273** |

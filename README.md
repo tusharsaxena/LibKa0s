@@ -35,6 +35,9 @@ LibStub major, and fifteen of them ship today:
   unkeyed. Acquire order survives a release.
 - `LibKa0s-Item-1.0` treats item identity as five primitives with no policy: read a link and its
   bonus ids, name a quality, ask the client to cache an id.
+- `LibKa0s-Glow-1.0` is the stateless LibCustomGlow-1.0 driver: one of four glow styles and its knob
+  values mapped to LibCustomGlow's positional arguments, with its two traps handled. It resolves
+  LibCustomGlow-1.0 at call time and does nothing without it.
 - `LibKa0s-Media-1.0` carries the art and type the collection draws with, inside the payload, along
   with the paths that reach them and the LibSharedMedia registration.
 - `LibKa0s-Widgets-1.0` has the flat-skin dropdown button, the reorderable-list drag, the unlocked
@@ -111,6 +114,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Schema-1.0` | The settings schema's runtime without the schema. The host keeps its rows, and this module supplies the dotted-path primitives (`SplitPath`, `Read`, `Write`, `SameValue`), the path index, the single write seam `Set` and its all-or-nothing batch `SetMany`, the bulk bracket that makes a sweep one debug line, the profile reset's changed-row count and `Validate`. It owns no storage, sends no message and formats no value. | `Schema.lua` | [2](docs/api/Schema/version-2-docs.md) |
 | `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass. The keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
 | `LibKa0s-Item-1.0` | Item identity as five primitives and no policy: read an item link and its bonus ids, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree about it in writing. | `Item.lua` | [3](docs/api/Item/version-3-docs.md) |
+| `LibKa0s-Glow-1.0` | The stateless LibCustomGlow-1.0 driver. `Start(frame, style, knobs, key, frameLevel)` and `Stop(frame, style, key)` map one of four styles (`button`, `proc`, `pixel`, `autocast`) and its knob values to LibCustomGlow's positional arguments, with its two traps handled (`pixelLength` 0 means automatic; a boolean is false only when false). No defaults, no ranges, no lifecycle: the repaint gate, the proc burst and the triggers stay the host's. LibCustomGlow-1.0 is resolved at call time, and without it nothing is drawn. | `Glow.lua` | [1](docs/api/Glow/version-1-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 5,836 white icon TGAs from three sets (Open Iconic and Phosphor, MIT; Game-icons.net, CC BY 3.0), seven generated statusbar textures, and JetBrains Mono (SIL OFL). All of it sits inside the payload, along with the paths that reach it, the set catalog and the LibSharedMedia registration. | `Media.lua`, `MediaIcons.lua`, `media/` | [5.1](docs/api/Media/version-5.1-docs.md) |
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops, shared process-wide across addons. Then `SearchBox`, the flat filter-bar search box in the same skin, with a hint while empty and a gold border while it has focus. Then `TestStrip`, the amber band a window lays between its chrome and sample data while test mode is on, born hidden and placed by the host. Then `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, but no row content at all. And `DragHandle`, the labeled strip with a help mark (and optionally a close mark) that a player drags a movable frame by. And `LineChart`, a pooled line chart over a time axis with markers, dashed ranges and a hover crosshair. And `Autocomplete`, a suggestion list hung directly under a host's `EditBox`, in the box's own width and skin, with a debounced provider and keyboard picking. Widgets takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua` | [13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console (movable window, color-coded log, copy box, and the one seam that turns logging on and off), plus the diagnostics report a player sends with a bug report, the change gates (log once, log on change) the console re-arms on Clear and on enable, and the at-enable queue that holds a state line written while logging is off until it is turned on. The library writes the markers, the identity header and the cap, and runs each section an addon supplies under its own pcall. | `DebugLog.lua`, `DebugLogDiagnostics.lua`, `DebugLogGates.lua` | [20.2.1](docs/api/DebugLog/version-20.2.1-docs.md) |
@@ -265,7 +269,7 @@ forgotten once already, with both repos' suites green the whole time.
 
 Re-vendoring is **whole-folder**, never file by file, with one carve-out: `media/icons/` ships only the
 icons the consumer declares (see *Installing* above). Every major except Core (Env, Compat, Lifecycle,
-Bus, Schema, Pool, Item, Media, Widgets, DebugLog, Slash, Launcher, Options and Perf) resolves
+Bus, Schema, Pool, Item, Glow, Media, Widgets, DebugLog, Slash, Launcher, Options and Perf) resolves
 `LibKa0s-Core-1.0` before it calls `NewLibrary`, and returns outright if Core is missing or below the
 minor it needs. A consumer that copied a new `Perf.lua` over an old `Core.lua` gets no probe at all,
 not a half-updated one, and the host's setup stub then says "perf is not installed". That is the
@@ -285,6 +289,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Schema.lua         -- LibKa0s-Schema-1.0, MINOR at the top of the file; needs Core
   Pool.lua           -- LibKa0s-Pool-1.0, MINOR at the top of the file; needs Core
   Item.lua           -- LibKa0s-Item-1.0, MINOR at the top of the file; needs Core
+  Glow.lua           -- LibKa0s-Glow-1.0, MINOR at the top of the file; needs Core
   Media.lua          -- LibKa0s-Media-1.0, MINOR at the top of the file; needs Core
   MediaIcons.lua     -- the generated icon catalog, same module, ICONS_MINOR of its own;
                         written by tools/artwork/icon_cleaner.py, never by hand

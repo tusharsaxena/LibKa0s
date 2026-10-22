@@ -65,6 +65,7 @@ the file you need:
 | `LibKa0s-Schema-1.0` | `<Schema>` | `LibStub("LibKa0s-Schema-1.0").MODULES` |
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
+| `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
@@ -159,6 +160,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [3](./Item/version-3-docs.md) | `Item.lua` 3 | v1.75.0 | **Current** |
 | [2](./Item/version-2-docs.md) | `Item.lua` 2 | v1.56.0 – v1.74.0 | Superseded |
 | [1](./Item/version-1-docs.md) | `Item.lua` 1 | v1.15.0 – v1.55.0 | Superseded |
+
+### `LibKa0s-Glow-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Glow/version-1-docs.md) | `Glow.lua` 1 | v1.75.0 | **Current** |
 
 ### `LibKa0s-Media-1.0`
 

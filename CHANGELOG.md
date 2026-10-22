@@ -15,11 +15,12 @@ cannot drift. Release order is in
 Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** (comment-only)
 (`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**), **Core minor 11** (comment-only, key
 **11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13**
-(`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**), every
+(`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**),
+**Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**), every
 other file still at its v1.74.0 minor — `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2,
 `Pool` 3, `Media` key 5.1, `Slash` key 20.2, `Launcher` 5 and
 `Perf` key 15.1.1.6 — and
-**test kit revision 41**. No `NEEDS_*` floor rises and no major is added. The owner's
+**test kit revision 41**. No `NEEDS_*` floor rises, and one major is added (`LibKa0s-Glow-1.0`). The owner's
 2026-10-20 ruling: only the bare minimum of icons is vendored into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
 README's standards pointer moves when this is released.
 
@@ -210,6 +211,38 @@ never shipped on its own.
 
 **What a consumer owes.** Nothing to keep working. An adopter with a library-absent stub for this
 major adds the same walk to it.
+
+### LibKa0s-Glow-1.0 (new major, Glow minor 1)
+
+- **The stateless LibCustomGlow-1.0 driver (#56).** `LibKa0s/Glow.lua`, loaded after `Item.lua`.
+  Two members besides `MAJOR`, `MINOR` and `MODULES`, dot-called: `Glow.Start(frame, style, knobs,
+  key, frameLevel) -> boolean` and `Glow.Stop(frame, style, key)`. The style vocabulary is closed:
+  `button`, `proc`, `pixel`, `autocast`; anything else is a quiet `false` or no-op. `knobs` carries
+  `color` and thirteen named knobs (`pixelLines`, `pixelFrequency`, `pixelLength`, `pixelThickness`,
+  `pixelBorder`, `autocastParticles`, `autocastFrequency`, `autocastScale`, `buttonFrequency`,
+  `procDuration`, `procStartAnim`, `xOffset`, `yOffset`); other fields are ignored, so a host passes
+  its whole config table. No defaults: a `nil` knob reaches LibCustomGlow as `nil`, and a numeric
+  knob that is not a number goes as `nil`. `Start` never stops anything first. `Stop` with a style
+  stops that style; with `nil` it stops all four (button, pixel, autocast, proc).
+- **LibCustomGlow-1.0 is resolved at every call**, never captured at load, and each of its members
+  is presence-checked, so an absent or older copy answers `false` instead of raising. There is no
+  floor on it: the payload cannot carry a consumer-vendored lib. `NEEDS_CORE = 1`, and no Core
+  member is called.
+- **The traps** the three hosts each handled on their own: `pixelLength` 0, negative or non-numeric
+  goes as `nil` (LibCustomGlow computes a length only for `nil`); `pixelBorder` and `procStartAnim`
+  go as `~= false`; the proc options are a fresh table per call, never the caller's knobs (LibCustomGlow
+  sets a metatable on them); a color handed over is kept by reference by the button style and must
+  not be mutated; the button style has no key, so a stop-all belongs only on a frame the host owns.
+- **No `STYLES` member, no ranges, no defaults, no `Available()`, no lifecycle** (the repaint gate,
+  the proc burst, triggers, class-color resolution and stop-before-start stay the host's). Each is
+  recorded with its re-check trigger under *What is not here* in
+  [Glow version 1](docs/api/Glow/version-1-docs.md).
+- **Adopters:** **DropWatcher**, **QuickComms** and **KickCD**, each through a `core/GlowSetup.lua`
+  seam publishing `NS.GlowLib`.
+
+**What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
+the file arrive, and a host that never wires it carries a small file that never runs. Every host
+keeps vendoring `LibCustomGlow-1.0`.
 
 ## v1.74.0 — 2026-10-19
 
