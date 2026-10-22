@@ -14,9 +14,10 @@ cannot drift. Release order is in
 
 Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** (comment-only)
 (`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**), **Core minor 11** (comment-only, key
-**11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), every
+**11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13**
+(`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), every
 other file still at its v1.74.0 minor — `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2,
-`Pool` 3, `Item` 2, `Media` key 5.1, `Slash` key 20.2, `Launcher` 5, `Widgets` key 12.1.4.3.2 and
+`Pool` 3, `Item` 2, `Media` key 5.1, `Slash` key 20.2, `Launcher` 5 and
 `Perf` key 15.1.1.6 — and
 **test kit revision 41**. No `NEEDS_*` floor rises and no major is added. The owner's
 2026-10-20 ruling: only the bare minimum of icons is vendored into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
@@ -33,6 +34,31 @@ README's standards pointer moves when this is released.
   standard **v2.86.0**: a `__` member documented as internal or as a test seam, with zero roster
   consumers, may be removed with a minor bump. The members manifest does not change, since `__`
   members are outside it. [Options version 29.2.34.2.5.9.1.7.4.2.1](docs/api/Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md).
+
+### Widgets minor 13: W.SearchBox (#52)
+
+- **`W.SearchBox(parent, width, opts)`, the flat filter-bar search box.** An `EditBox` in the
+  dropdown's skin (fill, line, 20px), `GameFontHighlightSmall`, auto focus off, with a gray hint
+  (`box.hint`) shown exactly while the box is empty, Escape and Enter to clear focus, and the
+  **gold focus line**: the border goes gold while the box has the keys and back to gray when it
+  loses them. `opts` is `{ hint, icon, onChange }` and nothing else; `width` is set only when it is
+  a number. An icon (a resolved path or a fileID) is an 11x11 mark at the left, and moves the text
+  inset from 6 to 21. Adopters: **LootHistory**, **BankLedger** and **DropWatcher**, each replacing
+  a hand-built box.
+- **The dropdown's skin is one file-local `SKIN` table** that `MakeDropdown` and the search box
+  read, hoisted from the dropdown's literals with no visible change. It is not exported.
+- **Two rejections are recorded in `Widgets.lua`'s header** (`library-stack-§7`): `W.Checkbox`
+  (no consumer; re-check when a second addon hand-builds a flat checkbox) and an exported flat skin
+  (re-check when a third flat control outside `Widgets.lua` copies the literals). The header's
+  "No search box" now means inside the dropdown's menu.
+- **The attach files re-pair on the shell's new minor**; none of their own minors moves.
+  [Widgets version 13.1.4.3.2](docs/api/Widgets/version-13.1.4.3.2-docs.md).
+
+**What a consumer owes.** Nothing to keep working. An adopter extends the box with `HookScript`
+and never `SetScript`s the five scripts the constructor sets, rewrites the hint with
+`box.hint:SetText`, and hangs `W.Autocomplete` on it after construction. An adopter that passes an
+icon declares that icon's name on its `LibKa0s icons:` line (BankLedger, its magnifier): the icon is
+host-passed and joins no set the library draws.
 
 ### Comment-only minors: the icon fallback a pruned copy does not get (#57)
 

@@ -646,6 +646,25 @@ Total.
 - autocomplete: a maxRows that floors below 1 falls back to MAX_ROWS
 - autocomplete: the backdrop is set once, and its colors follow a restyled box on every show
 
+### test_widgets_searchbox.lua (16)
+
+- SearchBox: wears the dropdown's skin, fill, line and height 20
+- SearchBox: the dropdown's look is unchanged after the SKIN hoist
+- SearchBox: small highlight face, no auto focus
+- SearchBox: a number width is set, a nil width sets none
+- SearchBox: the hint shows when empty, hides on text, shows again on clear
+- SearchBox: a nil GetText counts as empty
+- SearchBox: no hint opt gives an empty hint, still a FontString
+- SearchBox: Escape and Enter clear focus
+- SearchBox: focus gained paints the gold line, focus lost the gray one
+- SearchBox: onChange gets (text, box) exactly once per change
+- SearchBox: an icon path draws an 11x11 mark at LEFT+5 and insets the text 21
+- SearchBox: no icon keeps box.icon nil and the text inset 6
+- SearchBox: a numeric fileID is an icon too
+- SearchBox: host hooks on OnTextChanged and OnEditFocusGained survive and run
+- SearchBox: W.Autocomplete composes on it, and the hint still toggles
+- SearchBox: the host rewrites the hint through box.hint:SetText
+
 ### test_widgets_reorder.lua (7)
 
 - reorder: a host OnUpdate on a row frame survives a drag start and end
@@ -2532,6 +2551,7 @@ Total.
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 19 |
 | test_widgets_autocomplete.lua | 36 |
+| test_widgets_searchbox.lua | 16 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
@@ -2604,4 +2624,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2222** |
+| **Total** | **2238** |
