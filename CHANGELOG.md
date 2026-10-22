@@ -15,9 +15,9 @@ cannot drift. Release order is in
 Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** (comment-only)
 (`LibKa0s-Options-1.0` key **29.2.34.2.5.9.1.7.4.2.1**), **Core minor 11** (comment-only, key
 **11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13**
-(`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), every
+(`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**), every
 other file still at its v1.74.0 minor — `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2,
-`Pool` 3, `Item` 2, `Media` key 5.1, `Slash` key 20.2, `Launcher` 5 and
+`Pool` 3, `Media` key 5.1, `Slash` key 20.2, `Launcher` 5 and
 `Perf` key 15.1.1.6 — and
 **test kit revision 41**. No `NEEDS_*` floor rises and no major is added. The owner's
 2026-10-20 ruling: only the bare minimum of icons is vendored into each consumer. Cites `library-stack-§7` at standard **v2.85.0**, written in parallel; the
@@ -193,6 +193,23 @@ never shipped on its own.
   of the host's copy. A host that wires the debug console declares at least `close, copy, clear`.
   A pruned icon still resolves to a path, so the text fallback never runs and the control draws
   blank; the gate cannot catch the omission.
+
+### Item minor 3: Item.BonusIDsFromLink (#51)
+
+- **`Item.BonusIDsFromLink(link)`, the bonus ids an item link or bare itemString carries**, as
+  numbers in link order: `{}` for an item with none, `nil` for a non-string or a string holding no
+  `item:<id>`. It splits the itemString keeping empty fields, reads field 13 as the declared count
+  and reads fields 14 to 13+*n*, skipping a non-numeric field and never reading the modifiers after
+  the count. Additive: no member moves, `NEEDS_CORE` stays 1 and no floor is raised. Adopters:
+  **BankLedger** and **LootHistory**, whose Wowhead builders each wrote this walk.
+- **The rest of #51 is recorded as rejected**, each with its reason and re-check trigger, under
+  *What this major is not* in the API document: `LinkDetail`/`BetterLink`, `IdentityKey`/`SameItem`,
+  `EffectiveItemLevel`, `ItemLevelAt`/`QualityAt`, `QualityOf`, the Wowhead URL builder and the
+  loot-line parser. `Item.lua`'s header reads "why these five" and points there.
+  [Item version 3](docs/api/Item/version-3-docs.md).
+
+**What a consumer owes.** Nothing to keep working. An adopter with a library-absent stub for this
+major adds the same walk to it.
 
 ## v1.74.0 — 2026-10-19
 

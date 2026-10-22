@@ -9,10 +9,10 @@
 |---|---|
 | Major | `LibKa0s-Item-1.0` |
 | Files and minors | `Item.lua` minor **2** |
-| Shipped in | v1.56.0 |
-| Status | **Current** |
+| Shipped in | v1.56.0 – v1.74.0 |
+| Status | Superseded |
 | Supersedes | [version 1](./version-1-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 3](./version-3-docs.md) — `BonusIDsFromLink`, the bonus ids of an item link in link order |
 | Confirm in-game | `LibStub("LibKa0s-Item-1.0").MODULES` → `{ Item = 2 }` |
 
 ## What changed at this version
@@ -172,3 +172,12 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 
 `Item.lua` is a new entry in `LibKa0s.xml`, so a consumer whose test harness derives its load list
 from that XML picks it up with no edit; a consumer that re-types the list adds one row.
+
+## Moving to version 3
+
+**Copy the folder whole. Nothing a host calls moves or is removed.** Version 3 is `Item.lua` minor
+3, which adds `BonusIDsFromLink(link)`: the bonus ids an item link or bare itemString carries, as
+numbers in link order, `{}` for an item with none and `nil` for anything that is not an item. No
+floor rises. A host that wrote its own bonus walk (BankLedger's and LootHistory's Wowhead builders)
+may replace it, and a host with a library-absent stub for this major adds the same walk there. See
+[version 3](./version-3-docs.md), which also records the rest of LibKa0s#51 as rejected.

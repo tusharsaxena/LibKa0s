@@ -363,11 +363,19 @@ Total.
 - pool: the ReleaseAll guard cannot catch keys that are themselves 1..n
 - pool: a keyed release is unaffected by ordering — the key is the mapping
 
-### test_item.lua (15)
+### test_item.lua (23)
 
 - item: ItemIDFromLink pulls the id out of a full link
 - item: ItemIDFromLink accepts a bare itemString
 - item: ItemIDFromLink answers nil for anything that is not a link
+- item: BonusIDsFromLink reads the declared bonus ids in link order
+- item: BonusIDsFromLink accepts a bare itemString
+- item: BonusIDsFromLink answers an empty table for an item with no bonuses
+- item: BonusIDsFromLink stops at the declared count when modifiers follow
+- item: BonusIDsFromLink keeps empty fields so positions hold
+- item: BonusIDsFromLink skips a non-numeric field
+- item: BonusIDsFromLink answers nil for anything that is not an item
+- item: BonusIDsFromLink answers the same for a |cff link and a |cnIQ link
 - item: QualityFromLink reads the quality out of a legacy |cff hex prefix
 - item: QualityFromLink reads the 11.1.5+ |cnIQ<n> link color
 - item: QualityFromLink retries a quality map that was built empty
@@ -2557,7 +2565,7 @@ Total.
 | test_schema_write.lua | 41 |
 | test_schema_batch.lua | 22 |
 | test_pool.lua | 23 |
-| test_item.lua | 15 |
+| test_item.lua | 23 |
 | test_media.lua | 28 |
 | test_widgets.lua | 57 |
 | test_widgets_reorderlist.lua | 24 |
@@ -2640,4 +2648,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2250** |
+| **Total** | **2258** |
