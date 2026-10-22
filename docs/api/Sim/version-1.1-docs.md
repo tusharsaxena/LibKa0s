@@ -1,4 +1,4 @@
-# `LibKa0s-Sim-1.0` — version 1
+# `LibKa0s-Sim-1.0` — version 1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Sim surface points here rather than restating it. It describes the
@@ -8,19 +8,32 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Sim-1.0` |
-| File | `Sim.lua` minor **1** |
+| Files and minors | `Sim.lua` **1** · `SimTimeline.lua` **1** |
+| Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports; `SimPanel.lua` joins it later in this release |
 | Shipped in | v1.75.0 |
 | Status | **Current** |
-| Supersedes | — (first version) |
+| Supersedes | — (first version; briefly keyed `1` on the release branch, and no release carried that key) |
 | Superseded by | — |
-| Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called) |
-| Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 1 }` |
+| Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell |
+| Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 1, SimTimeline = 1 }` |
 
-**The step machine and the panel arrive in the next commits of this release.** This version
-documents the Compat answer seam and the session that binds it. The step machine
-(`SimTimeline.lua`) and the panel (`SimPanel.lua`) join the major before v1.75.0 is released, and
-the version key grows to `<Sim>.<SimTimeline>.<SimPanel>` as they do; each step gets its own
-document. Until they attach, the session carries fallbacks for their members (below).
+**The panel and the verbs arrive in the next commits of this release.** This version documents
+the Compat answer seam, the session that binds it and the step machine (`SimTimeline.lua`). The
+panel (`SimPanel.lua`) joins the major before v1.75.0 is released, and the version key grows to
+`<Sim>.<SimTimeline>.<SimPanel>` as it does. Until it attaches, the session carries fallbacks for
+its members (below).
+
+## What changed at this version
+
+`SimTimeline.lua` minor 1 joins the major, a secondary file paired on the shell's minor
+(`lib.__timelineMinor` / `lib.__timelineShellMinor`, Perf's idiom), and the version key grows from
+`1` to `1.1`. It overwrites the shell's timeline fallbacks with the step machine (*The step
+machine*, below): `Steps`, `Step`, `Run`, `Pause`, `Resume` and `Restart`, the host's `gate`, the
+per-step `stepDelay`, and `Status()`'s `pos`, `total`, `playing`, `paused` and `settling`.
+`Sim.STRINGS` gains `BUILDING`, `PLAYING`, `NOT_PLAYING`, `NOT_PAUSED`, `DONE`, `SETTLING`,
+`STEP_LINE`, `STEP_FAILED`, `FINISHED` and `ERROR`. No member of the shell changes. Version `1`
+was never released: this document was `version-1-docs.md` until the key moved, on the release
+branch (the unreleased-key rule).
 
 ## What this major is
 
@@ -49,7 +62,7 @@ Read straight off the LibStub table.
 | `Sim:New(d) -> sim` | 1 | Binds one session to a seam and answers its instance. Below. |
 | `STRINGS` | 1 | The built-in English lines, every key overridable through `d.L` (below). |
 | `MAJOR` · `MINOR` | 1 | `"LibKa0s-Sim-1.0"` and the live minor. |
-| `MODULES` | 1 | `{ Sim = <minor> }`: the live minor, and the value that picks this document. |
+| `MODULES` | 1 | `{ Sim = <minor>, SimTimeline = <minor> }`: the live minors, and the values that pick this document. |
 
 ## The seam: `Sim:NewSeam(compat, opts)`
 
@@ -120,9 +133,11 @@ field of the wrong type raises the same way.
 | `isStoodDown` | yes | `fn() -> bool`, read at call time. |
 | `scenarios` | yes | `{ names = {ordered}, defs = { [name] = { label, sizes = {n, ...}?, timeline = fn(def, opts) -> steps } } }`. Every listed name needs a def with a `timeline` function; a name that is not in `names` is unknown to `Start`. |
 | `prepare` | yes | `fn(session, def, opts, ready)`. Builds the host's world and calls `ready()`, sync or async. `opts` is `{ scenario, size, seed }`. |
-| `play` | yes | `fn(step, session) -> detail?`. Drives one step (the step machine, next commit). |
+| `play` | yes | `fn(step, session) -> detail?`. Drives one step's events through `sim:Fire`; its answer is the step's `detail`. It runs under `pcall`, and an error pauses the run (*The step machine*). |
 | `refusal` | no | `fn(opts) -> line|nil`. Run **inside `seam:Live`**, so it reads the real world; it owns every host rule (stood-down wording, test mode, combat, instance, group, per-scenario prerequisites). The library adds no world rule and relaxes none. An error in it is re-raised by `Start` after `Live` writes its traceback. |
-| `gate`, `stepDelay`, `verbs`, `why`, `usage`, `statusLine` | no | Read by the step machine and the verbs (next commits). Type-checked here: `stepDelay` is a number or `fn(step) -> seconds`. |
+| `gate` | no | `fn(session) -> open, line?`. Checked before every step: by `Step`, by every `Run` tick and by the panel's click-ahead. Closed means the host's world has not settled (LootHistory passes its Reconciler settle, OWNER_SCOPE C.12). With no gate, the gate is always open (DropWatcher). A gate that raises counts as closed and writes a debug line. |
+| `stepDelay` | no | A number, or `fn(step) -> seconds`: the pause after `step` before `Run` plays the next one. Default `2`. Read when each timer is set. A host passes a fixed constant or a function of the step; there is no schema row for it (OWNER_SCOPE C.11). |
+| `verbs`, `why`, `usage`, `statusLine` | no | Read by the verbs (a later commit of this release). Type-checked here. |
 | `stopText` | no | `{ [reason] = line }`. The stop line for a reason, the library's own reasons included. |
 | `L` | no | Locale table. Any `STRINGS` key is overridden through `rawget`, so a locale table whose metatable answers an unknown key with the key does not shadow the built-in line. |
 | `print` | no | `fn(line)`, read at call time. Default: `DEFAULT_CHAT_FRAME:AddMessage`. |
@@ -146,15 +161,54 @@ public `active` or `delivering` field and **no `Live`** (the one `Live` is on th
 | `sim:OnStopGuarded(fn)` | Registers `fn(session)`, run at stop **while the seam still answers**. Permanent and ordered, normally at file load. |
 | `sim:OnStop(fn)` | Registers `fn(session, reason)`, run at stop **after the seam is off**. Permanent and ordered. |
 | `sim:DeliverForCleanup(event, ...) -> n` | Delivers through `deliver` **only during the OnStop phase**, with the seam off, and answers `0` at any other time **and while `isStoodDown()`** (OWNER_SCOPE C.3). For undoing an edge the simulation raised. |
-| `sim:Status() -> t` | `{ active, scenario, size, seed, startedAt, events, ready, pos, total, playing, paused, settling }`. Until the step machine attaches, `pos` and `total` are `0` and the three flags `false`. A fresh table each call; a host merges its own fields into its copy. |
-| `sim:AddListener(fn)` | Registers `fn(sim)`, run under `pcall` on every transition (start, ready, stop; the step machine adds step, run and pause). Permanent. |
+| `sim:Status() -> t` | `{ active, scenario, size, seed, startedAt, events, ready, pos, total, playing, paused, settling }`. While idle, or when `SimTimeline.lua` is absent, `pos` and `total` are `0` and the three flags `false`. A fresh table each call; a host merges its own fields into its copy. |
+| `sim:AddListener(fn)` | Registers `fn(sim)`, run under `pcall` on every transition: start, ready, step, run, pause, stop (and a gate that closes under a step). Permanent. |
 
-**Fallbacks.** Until `SimTimeline.lua` and `SimPanel.lua` attach, the instance still answers every
-member they own: `Steps()` and `PanelRows()` answer `{}`, `Step()` answers `nil, "absent"`, `Run`,
-`Pause`, `Resume` and `Restart` answer `false, "absent"`, `RunVerb` prints `NO_TIMELINE` and answers
-`false, "absent"`, `ShowPanel`, `TogglePanel` and `IsPanelShown` answer `false`, and `HidePanel`,
-`RefreshPanel` and `ResetPanelPosition` do nothing. The attach files overwrite them through an
-internal handshake (`lib.__AttachTimeline`, `lib.__AttachPanel`) that is not contract.
+**Fallbacks.** When `SimTimeline.lua` or `SimPanel.lua` has not attached, the instance still
+answers every member it owns: `Steps()` and `PanelRows()` answer `{}`, `Step()` answers
+`nil, "absent"`, `Run`, `Pause`, `Resume` and `Restart` answer `false, "absent"`, `RunVerb` prints
+`NO_TIMELINE` and answers `false, "absent"`, `ShowPanel`, `TogglePanel` and `IsPanelShown` answer
+`false`, and `HidePanel`, `RefreshPanel` and `ResetPanelPosition` do nothing. The attach files
+overwrite them through an internal handshake (`lib.__AttachTimeline`, `lib.__AttachPanel`, and the
+ctx table `New` hands both) that is not contract. At this version `SimTimeline.lua` attaches and
+`SimPanel.lua` does not yet exist, so the timeline members are live and the verb and panel members
+are the fallbacks.
+
+## The step machine (`SimTimeline.lua`)
+
+A session's steps are its scenario's `timeline(def, { scenario, size, seed })`, built the first
+time the session is read. A step is the host's table with at least `kind`; the library adds
+`ranAt`, `detail` and `index` to a step that has run, and **writes nothing else into it**. A step's
+label in the lines below is `d.panel.stepLabel(step, i, steps)` when the host gives one, else
+`step.label`, else `step.kind`.
+
+| Member | Answers | Contract |
+|---|---|---|
+| `sim:Steps()` | the live list | The session's steps, the same table each call. `{}` while idle. |
+| `sim:Step()` | `step` or `nil, code` | Codes: `notRunning`, `building` (until the session's `ready()`), `done`, `settling`, `failed`. `settling`: the gate is closed; its line, else `SETTLING`, is printed and the step does not advance. On success it advances `pos`, `pcall`s `play`, stamps `ranAt`, `detail` (`play`'s answer) and `index`, prints `STEP_LINE` and tells listeners. **A `play` error** counts the step as run with detail `ERROR`, pauses the run, writes the error to the debug sink, prints `STEP_FAILED` and answers `nil, "failed"`. |
+| `sim:Run()` | `true` or `false, code` | Codes: `notRunning`, `building`, `playing`, `done`. Clears `paused`, tells listeners and plays to the end: the first tick runs at once, and each tick checks the gate. Closed: it re-polls after `GATE_POLL` (0.25 s) without advancing, printing the gate's line once per settling spell. Open: it plays a step and sets the next tick after `stepDelay(step)`. `playing` is true from `Run` until the run finishes, pauses or stops. |
+| `sim:Pause()` | `true` or `false, code` | Code: `notPlaying`. Cancels the pending tick or poll, **leaving no live timer**, and sets `paused`. |
+| `sim:Resume()` | `true` or `false, code` | Code: `notPaused`. Clears `paused` and answers `Run()`. |
+| `sim:Restart()` | `true` or `false, code` | Code: `notRunning`. `Stop("restart")`, then `Start{ scenario, size }` with a **fresh seed**, so `prepare` runs again. A refusal is printed by `Start` and answered `false, "refused"`. |
+
+**The end.** When the step that plays is the last one, whether `Step`, `Run` or the click-ahead
+played it, `FINISHED` is printed, formatted with `d.slash`, the playing slot clears and listeners
+are told.
+
+**The session token (OWNER_SCOPE C.1).** `Step`, every `Run` tick and the click-ahead capture the
+session before `play` and bail if it changed during `play` (a `Stop` or a `Restart` from inside the
+host's own `play`): no stamp, no `STEP_LINE`, no next tick. A `ready()` from an earlier session is
+ignored (*`ready()`*, above), so a restart during an async `prepare` cannot ready the new session.
+
+**Timers.** Every tick and poll is the session's own `sim:After`, so it dies with the session:
+`Stop`'s step (1) cancels the pending one and forgets the run.
+
+**The click-ahead is internal (OWNER_SCOPE C.7).** The panel's click on a row ahead plays every step
+up to and including that row, back to back with no `stepDelay`, honoring the gate by polling, and
+synchronous while the gate stays open; a step failure or a `done` / `notRunning` answer ends it. It
+is a file-local function the panel receives through the attach handshake, **never an instance
+member** (`sim.RunTo` is nil). It occupies `Run`'s `playing` slot (C.2): while its gate poll is
+pending, `Run` and a second click-ahead answer `playing`, and `Pause` and `Stop` cancel it.
 
 ### `ready()` (OWNER_SCOPE C.1)
 
@@ -199,6 +253,16 @@ turns an error in `deliver` into a debug line and answers `0`, so a session surv
 | `UNKNOWN_SCENARIO` | `Unknown scenario '%s'. Scenarios: %s.` |
 | `NOT_RUNNING` | `No simulation is running.` |
 | `NO_TIMELINE` | `The simulator's timeline is not loaded (SimTimeline.lua).` |
+| `BUILDING` | `The simulation is still building its world.` (`SimTimeline.lua`, as are the keys below) |
+| `PLAYING` | `The simulation is already playing.` |
+| `NOT_PLAYING` | `The simulation is not playing.` |
+| `NOT_PAUSED` | `The simulation is not paused.` |
+| `DONE` | `Every step of the simulation has run.` |
+| `SETTLING` | `Waiting for the simulated world to settle.` The gate's own line wins when it gives one. |
+| `STEP_LINE` | `Simulation step %d of %d: %s.` (position, total, label) |
+| `STEP_FAILED` | `Simulation step %d of %d failed: %s. The run is paused; the debug log has the error.` |
+| `FINISHED` | `Simulation finished: %s stop ends it.` (`d.slash`) |
+| `ERROR` | `error`: a failed step's `detail`. |
 
 ## The host contract (OWNER_SCOPE C.4)
 
@@ -218,6 +282,8 @@ on the session table (`sim:Session()`, the host bag).
   frame) calls `Stop` with that reason and, where it wants its own line, a `stopText` entry.
 - Every timer inside the simulation is `sim:After`, never a raw `C_Timer`, so it dies with the
   session. A step that must still see simulated answers goes in `OnStopGuarded`.
+- A `gate` that can close answers its own line, so a player who steps by hand is told what the
+  world is waiting for.
 - Saved data is the host's: the library never intercepts a write, so session-only stores and an
   invariant test are the host's.
 
@@ -226,6 +292,8 @@ on the session table (`sim:Session()`, the host bag).
 | Not in Sim-1.0 | Stays in | Re-check trigger |
 |---|---|---|
 | `seam:IsActive()` | the session (`sim:IsActive()`) | never on the seam: OWNER_SCOPE C.7 |
+| `sim:RunTo(index)` | the panel's click-ahead, through the internal attach handshake | never public: OWNER_SCOPE C.7 |
+| A schema row for the step delay | a fixed host constant or `fn(step)` in `d.stepDelay` | never: OWNER_SCOPE C.11 |
 | `sim:Live(fn, ...)` | the seam (`seam:Live`): one `Live` | never: OWNER_SCOPE C.7 |
 | `d.panel.button`, `d.panel.tooltip`, `d.panel.store` | the library's own button and GameTooltip; a session-only position | never: OWNER_SCOPE C.7 and C.11 |
 | `seam:IsGuarded(key)` | the host, which classified its own keys | never: OWNER_SCOPE C.7 |
@@ -244,7 +312,8 @@ diff -r --strip-trailing-cr LibKa0s <Addon>/libs/LibKa0s   # content — MUST be
 diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD be empty
 ```
 
-`Sim.lua` is an entry in `LibKa0s.xml`, after `PerfPanel.lua`, so the whole-folder copy brings it in
-with no load-list change in the host. **Payload weight:** the file body only defines functions; no
-frame, timer or event registration exists until `NewSeam` or `New` is called (and no timer until a
-session calls `After`), so a host that never simulates pays parse time and nothing else.
+`Sim.lua` and `SimTimeline.lua` are entries in `LibKa0s.xml`, after `PerfPanel.lua`, so the
+whole-folder copy brings them in with no load-list change in the host. **Payload weight:** the file
+bodies only define functions; no frame, timer or event registration exists until `NewSeam` or
+`New` is called (and no timer until a session calls `After`), so a host that never simulates pays
+parse time and nothing else.

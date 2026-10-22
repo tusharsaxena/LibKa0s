@@ -2174,6 +2174,49 @@ Total.
 - sim session: once bound, Live's traceback goes to the session's debug sink
 - sim session: Sim.lua defines one Live, on the seam, and no test hook on it
 
+### test_sim_timeline.lua (40)
+
+- sim timeline: the file registers on the shell's minor and in MODULES
+- sim timeline: the STRINGS keys the step machine prints are added to Sim.STRINGS
+- sim timeline: the members overwrite the shell's fallbacks, and RunTo is not one of them
+- sim timeline: Steps is the live list while running and {} idle
+- sim timeline: the timeline is handed the def and the session's opts
+- sim timeline: Step answers building until ready(), then plays; a second ready is ignored
+- sim timeline: Step stamps ranAt, detail and index, prints STEP_LINE and nothing else
+- sim timeline: Step labels a step through panel.stepLabel when the host gives one
+- sim timeline: Step answers done after the last step, and the last step prints FINISHED
+- sim timeline: Step answers notRunning while idle
+- sim timeline: a closed gate answers settling, prints its line and does not advance
+- sim timeline: a closed gate with no line prints SETTLING
+- sim timeline: once the gate opens, Step plays and settling clears
+- sim timeline: with no gate the gate is always open
+- sim timeline: Run plays the first step at once and the next after the default 2 s
+- sim timeline: Run reads a constant stepDelay
+- sim timeline: Run reads stepDelay(step) for the step just played, when each timer is set
+- sim timeline: Run answers notRunning, building, playing and done
+- sim timeline: a Run tick on a closed gate re-polls after 0.25 s without advancing
+- sim timeline: the gate is checked before every step of a Run
+- sim timeline: Pause cancels the pending tick and leaves no orphan timer
+- sim timeline: Pause answers notPlaying when nothing plays
+- sim timeline: Resume continues a paused run; it answers notPaused otherwise
+- sim timeline: Restart stops with 'restart' and starts the same scenario with a fresh seed
+- sim timeline: Restart answers notRunning while idle
+- sim timeline: a refused Restart prints the refusal and answers false, refused
+- sim timeline: a Restart during an async prepare ignores the old ready() (C.1)
+- sim timeline: RunTo plays up to and including index back to back, synchronous on an open gate
+- sim timeline: RunTo waits on a closed gate by polling, then continues
+- sim timeline: RunTo answers notRunning, building and done
+- sim timeline: Run during a pending RunTo poll answers playing (C.2)
+- sim timeline: Pause cancels a pending RunTo poll (C.2)
+- sim timeline: Stop cancels a pending RunTo poll (C.2)
+- sim timeline: a step failure ends a RunTo
+- sim timeline: a play error counts the step as run, pauses the run and prints STEP_FAILED
+- sim timeline: a Stop inside play leaves no stamp, no STEP_LINE and no next tick (token)
+- sim timeline: a Restart inside play leaves the new session untouched (token)
+- sim timeline: listeners fire on start, ready, step, run, pause and stop
+- sim timeline: Status carries pos, total, playing, paused, settling and ready
+- sim timeline: every timer is a session After, so Stop leaves none
+
 ### test_loader.lua (6)
 
 - loader: a cached chunk gives each instance its own global namespace
@@ -2727,6 +2770,7 @@ Total.
 | test_perf_isolation.lua | 12 |
 | test_sim_seam.lua | 27 |
 | test_sim_session.lua | 52 |
+| test_sim_timeline.lua | 40 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -2754,4 +2798,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2352** |
+| **Total** | **2392** |

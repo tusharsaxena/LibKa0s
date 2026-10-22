@@ -1,9 +1,10 @@
 {
   "major": "LibKa0s-Sim-1.0",
-  "versionKey": "1",
+  "versionKey": "1.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "Sim", "minor": 1 }
+    { "file": "Sim", "minor": 1 },
+    { "file": "SimTimeline", "minor": 1 }
   ],
   "members": [
     { "name": "New", "kind": "function" },

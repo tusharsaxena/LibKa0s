@@ -17,8 +17,8 @@ Versions in this release: **OptionsTabs minor 9** and **OptionsIdList minor 5** 
 **11**) and **DebugLog minor 20** (comment-only, `LibKa0s-DebugLog-1.0` key **20.2.1**), **Widgets minor 13**
 (`LibKa0s-Widgets-1.0` key **13.1.4.3.2**), **Item minor 3** (`LibKa0s-Item-1.0` key **3**),
 **Glow minor 1** (the new major `LibKa0s-Glow-1.0`, key **1**), **PerfPanel minor 7** (comment-only,
-`LibKa0s-Perf-1.0` key **15.1.1.7**), **Sim minor 1** (the new major `LibKa0s-Sim-1.0`, key
-**1** so far), every
+`LibKa0s-Perf-1.0` key **15.1.1.7**), **Sim minor 1** and **SimTimeline minor 1** (the new major `LibKa0s-Sim-1.0`,
+key **1.1** so far), every
 other file still at its v1.74.0 minor — `Env` 2, `Compat` 1, `Lifecycle` 3, `Bus` 2, `Schema` 2,
 `Pool` 3, `Media` key 5.1, `Slash` key 20.2 and `Launcher` 5 — and
 **test kit revision 41**. No `NEEDS_*` floor rises, and two majors are added (`LibKa0s-Glow-1.0` and `LibKa0s-Sim-1.0`). The owner's
@@ -260,7 +260,7 @@ major adds the same walk to it.
 the file arrive, and a host that never wires it carries a small file that never runs. Every host
 keeps vendoring `LibCustomGlow-1.0`.
 
-### LibKa0s-Sim-1.0 (new major, Sim minor 1)
+### LibKa0s-Sim-1.0 (new major, Sim minor 1, SimTimeline minor 1)
 
 - **The Compat answer seam (#54).** `LibKa0s/Sim.lua`, loaded after `PerfPanel.lua`.
   `Sim:NewSeam(compat, opts) -> seam` wraps the host's own Compat table in place, once (a second
@@ -316,9 +316,31 @@ keeps vendoring `LibCustomGlow-1.0`.
   fallback until `SimTimeline.lua` and `SimPanel.lua` attach (`RunVerb` prints `NO_TIMELINE` and
   answers `false, "absent"`). `Sim.STRINGS` carries the session's lines, each overridable through
   `d.L` by `rawget`. Once bound, `seam:Live`'s traceback goes to the session's debug sink.
-- The step machine and the panel arrive in the next commits of this release, as
-  `SimTimeline.lua` and `SimPanel.lua` join the key `<Sim>.<SimTimeline>.<SimPanel>`. The contract
-  so far is [Sim version 1](docs/api/Sim/version-1-docs.md).
+- **SimTimeline minor 1: the gated step machine (#54).** `LibKa0s/SimTimeline.lua`, loaded after
+  `Sim.lua`, a secondary file paired on the shell's minor (`__timelineMinor` /
+  `__timelineShellMinor`) that attaches through `lib.__AttachTimeline` and overwrites the shell's
+  fallbacks. `Steps()` is the session's live list (built from the scenario's pure `timeline`, `{}`
+  idle). `Step()` answers the step or `nil, code` (`notRunning`, `building` until the session's
+  `ready()`, `done`, `settling` when the host's `gate(session)` is closed, printing its line or
+  `SETTLING` without advancing); on success it plays under `pcall`, stamps `ranAt`, `detail` and
+  `index` (nothing else), prints `STEP_LINE` and tells listeners, and a `play` error counts the step
+  as run with detail `ERROR`, pauses the run and prints `STEP_FAILED` (`nil, "failed"`). `Run()`
+  plays to the end, re-polling a closed gate every 0.25 s and waiting `stepDelay(step)` (a number or
+  `fn(step)`, default 2, read when each timer is set; no schema row, OWNER_SCOPE C.11) between
+  steps; the last step prints `FINISHED`. `Pause()` cancels the pending tick with no orphan timer,
+  `Resume()` runs again, `Restart()` stops with `restart` and starts the same scenario and size with
+  a fresh seed. The click-ahead the panel will drive is Sim-internal, handed over through the
+  attach handshake and never an instance member (C.7); it plays back to back up to a row, honoring
+  the gate, and shares `Run`'s `playing` slot, so `Run` answers `playing` and `Pause` and `Stop`
+  cancel its pending poll (C.2). Step, every tick and the click-ahead carry the session as a token
+  and bail if a `Stop` or `Restart` inside `play` changed it: no stamp, no line, no next tick (C.1).
+  Every timer is the session's `After`. `Status()` fills `pos`, `total`, `playing`, `paused` and
+  `settling`. `Sim.STRINGS` gains `BUILDING`, `PLAYING`, `NOT_PLAYING`, `NOT_PAUSED`, `DONE`,
+  `SETTLING`, `STEP_LINE`, `STEP_FAILED`, `FINISHED` and `ERROR`. The key moves `1` -> `1.1` before
+  any release carried `1`, so the document moved with it.
+- The panel and the verbs arrive in the next commits of this release, as `SimPanel.lua` joins the
+  key `<Sim>.<SimTimeline>.<SimPanel>`. The contract so far is
+  [Sim version 1.1](docs/api/Sim/version-1.1-docs.md).
 
 **What a consumer owes.** Nothing until it adopts; adoption is required of none. Re-vendoring makes
 the file arrive, and a host that never calls `NewSeam` or `New` carries a file that never runs.

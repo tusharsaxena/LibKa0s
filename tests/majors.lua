@@ -127,8 +127,11 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Sim-1.0",
-    files = { "Sim" },
+    files = { "Sim", "SimTimeline" },
     primary = "Sim",
+    paired = {
+      { file = "SimTimeline", minorField = "__timelineMinor", probeField = "__timelineShellMinor" },
+    },
   },
 }
 return MAJORS

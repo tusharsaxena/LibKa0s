@@ -338,7 +338,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Sim/version-1-docs.md) | `Sim.lua` 1 | v1.75.0 | **Current** |
+| [1.1](./Sim/version-1.1-docs.md) | `Sim.lua` 1 · `SimTimeline.lua` 1 | v1.75.0 | **Current** |
 
 ### `testkit`
 

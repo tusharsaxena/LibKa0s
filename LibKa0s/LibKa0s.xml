@@ -37,4 +37,5 @@
 	<Script file="PerfCommands.lua"/>
 	<Script file="PerfPanel.lua"/>
 	<Script file="Sim.lua"/>
+	<Script file="SimTimeline.lua"/>
 </Ui>

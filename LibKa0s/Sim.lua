@@ -643,8 +643,9 @@ local function installFallbacks(sim, S)
   function sim.PanelRows() return {} end
 end
 
---- The attach handshake's internal table: what SimTimeline.lua and SimPanel.lua read and the two
---- hooks they may set (cancelRun, Stop's step 1; status, filling Status()'s timeline fields).
+--- The attach handshake's internal table: what SimTimeline.lua and SimPanel.lua read and the
+--- fields SimTimeline.lua sets on it (cancelRun, Stop's step 1; status, filling Status()'s timeline
+--- fields; runTo, the click-ahead SimPanel.lua drives, which is never an instance member).
 local function newCtx(S)
   return {
     d = S.d,
