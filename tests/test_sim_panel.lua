@@ -119,8 +119,8 @@ end
 
 test("sim panel: the file registers on the shell's minor and in MODULES", function()
   local _, Sim = F.env()
-  assertEqual(Sim.MODULES.SimPanel, 3)
-  assertEqual(Sim.__panelMinor, 3)
+  assertEqual(Sim.MODULES.SimPanel, 4)
+  assertEqual(Sim.__panelMinor, 4)
   assertEqual(Sim.__panelShellMinor, Sim.MINOR)
   assertEqual(type(Sim.__AttachPanel), "function")
   assertEqual(type(Sim.__StepPanel), "function", "the renderer's internal test seam")
@@ -405,6 +405,26 @@ test("sim panel: the picker previews the chosen scenario and offers sizes only w
     f.picker.scenario.onSelect("three")
     assertFalse(f.picker.size:IsShown())
     assertEqual(b.sim:PanelRows()[1].command, "/host sim start three", "a size is never sent to a def without sizes")
+  end)
+end)
+
+test("sim panel: the picker's scenario takes the width the bar leaves, on one line", function()
+  -- red under: SimPanel minor 3, whose scenario dropdown was a fixed 140 wide beside a hidden size
+  -- dropdown, so LootHistory's `Open world: kill, lockbox, quest` wrapped onto two lines
+  local b = bench()
+  F.recording(b.m, function()
+    local f = shown(b)
+    local pk = f.picker
+    -- the bar is ROW_W 360: START is 84 at the right, with a 6 gap before it
+    assertEqual(pk.scenario.__geomW, 270, "no sizes: everything left of START")
+    assertEqual(pk.scenario.text.__wordWrap, false, "the label never wraps")
+    pk.scenario.onSelect("sized")
+    assertEqual(pk.scenario.__geomW, 174, "with sizes: the size dropdown (90) and its gap come out")
+    assertEqual(pk.size.__geomW, 90)
+    local pt = pk.size.__pts[#pk.size.__pts]
+    assertEqual(pt.x, 180, "the size dropdown sits right after the scenario")
+    pk.scenario.onSelect("three")
+    assertEqual(pk.scenario.__geomW, 270, "and widens again")
   end)
 end)
 

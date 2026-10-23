@@ -10,6 +10,24 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.75.2 — 2026-10-23
+
+Versions in this release: **SimPanel minor 4** (`LibKa0s-Sim-1.0` key **2.2.4**); every other file
+still at its v1.75.1 minor, and **test kit revision 41** unchanged. Still **seventeen majors across
+forty files**. Built to standard **v2.86.0**.
+
+### SimPanel minor 4: the picker's scenario dropdown fits its label
+
+- **The scenario dropdown takes the width the bar leaves.** It was a fixed 140 wide, so beside a
+  hidden size dropdown LootHistory's `Open world: kill, lockbox, quest` wrapped onto two lines. It
+  now spans everything left of `START` (270), less the size dropdown (now 90) and its gap while the
+  scenario has `sizes` (174), and its label never wraps. Found in game on `/lh sim` (2026-10-23).
+  [Sim version 2.2.4](docs/api/Sim/version-2.2.4-docs.md).
+
+### What a consumer owes
+
+- **Re-vendor; no call changes.**
+
 ## v1.75.1 — 2026-10-23
 
 Versions in this release: **SimPanel minor 3** (`LibKa0s-Sim-1.0` key **2.2.3**); every other file

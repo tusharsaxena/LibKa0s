@@ -2267,7 +2267,7 @@ Total.
 - sim verbs: the generic verbs win over a host verb of the same name
 - sim verbs: a host 'help' verb is the host's own; the library defines none
 
-### test_sim_panel.lua (52)
+### test_sim_panel.lua (53)
 
 - sim panel: the file registers on the shell's minor and in MODULES
 - sim panel: the STRINGS keys the panel draws are added to Sim.STRINGS
@@ -2294,6 +2294,7 @@ Total.
 - sim panel: the check texture is the host's path, shown on a done row
 - sim panel: height bounds are re-pinned when the row count changes
 - sim panel: the picker previews the chosen scenario and offers sizes only when it has them
+- sim panel: the picker's scenario takes the width the bar leaves, on one line
 - sim panel: the picker's Start starts the chosen scenario through the typed verb
 - sim panel: running, the controls replace the picker, and Pause swaps with Resume
 - sim panel: Restart through the controls prints what the typed verb prints
@@ -2944,7 +2945,7 @@ Total.
 | test_sim_session.lua | 55 |
 | test_sim_timeline.lua | 41 |
 | test_sim_verbs.lua | 42 |
-| test_sim_panel.lua | 52 |
+| test_sim_panel.lua | 53 |
 | test_sim_panel_render.lua | 31 |
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
@@ -2976,4 +2977,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2546** |
+| **Total** | **2547** |

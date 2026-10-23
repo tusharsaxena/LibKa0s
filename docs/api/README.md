@@ -338,7 +338,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.2.3](./Sim/version-2.2.3-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 3** (a disabled row or control still shows its tip) | v1.75.1 | **Current** |
+| [2.2.4](./Sim/version-2.2.4-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 4** (the picker's scenario takes the width the bar leaves, on one line) | v1.75.2 | **Current** |
+| [2.2.3](./Sim/version-2.2.3-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 3** (a disabled row or control still shows its tip) | v1.75.1 | Superseded |
 | [2.2.2](./Sim/version-2.2.2-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 2** (the picker reads its scenario at use; no scenario listed, the Start row is locked) | v1.75.0 | Superseded |
 | [2.2.1](./Sim/version-2.2.1-docs.md) | **`Sim.lua` 2** (`Start` reads the scenarios live; `prepare` gets the host's start fields) · **`SimTimeline.lua` 2** (`Restart` carries them) · `SimPanel.lua` 1 | the local `v1.75.0` tag only | Superseded |
 | [1.1.1](./Sim/version-1.1.1-docs.md) | `Sim.lua` 1 · `SimTimeline.lua` 1 · **`SimPanel.lua` 1** (the docked step panel; its renderer is library-internal) | the local `v1.75.0` tag only | Superseded |

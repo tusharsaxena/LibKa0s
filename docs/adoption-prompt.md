@@ -814,7 +814,7 @@ stub you pin with `Kit.assertSurfaceParity` (Widgets: `SearchBox`, `TestStrip`, 
   as `NS.SimHost`), never on the library instance. Copy the reference degradation stub from
   [`tests/test_sim_stub.lua`](../tests/test_sim_stub.lua), pin it with its parity case, and
   assert `seam:Unwrapped()` is empty after load.
-  [`api/Sim/version-2.2.3-docs.md`](api/Sim/version-2.2.3-docs.md), *Adopting it*.
+  [`api/Sim/version-2.2.4-docs.md`](api/Sim/version-2.2.4-docs.md), *Adopting it*.
 - **A flat search box.** `W.SearchBox(parent, width, opts)` replaces a hand-built filter-bar
   `EditBox`: the dropdown's skin, the hint while empty and the gold focus line. Extend it with
   `HookScript`, never `SetScript` on the scripts the constructor set.
