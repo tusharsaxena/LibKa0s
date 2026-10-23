@@ -10,6 +10,113 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.76.0 — 2026-10-23
+
+Opened 2026-10-23. Simulator auto-run (Run all removed), the test strip's simulation flavor, and the
+release re-look of preview and simulation fixtures.
+
+Versions in this release: **SimTimeline minor 3** and **SimPanel minor 5** (`LibKa0s-Sim-1.0` key
+**2.3.5**, `Sim` 2 unchanged); **Widgets minor 14** (`LibKa0s-Widgets-1.0` key **14.1.4.3.2**:
+`WidgetsReorder` 1, `WidgetsDragHandle` 4, `WidgetsLineChart` 3 and `WidgetsAutocomplete` 2
+unchanged); **PerfPanel minor 8** (`LibKa0s-Perf-1.0` key **15.1.1.8**, `Perf` 15, `PerfSampler` 1
+and `PerfCommands` 1 unchanged); every other file still at its v1.75.2 minor, and **test kit revision
+41** unchanged, until an entry below moves one. Each change bumps the minor of the files it touches
+once, and this block names each new minor as it lands. Still **seventeen majors across forty
+files**.
+
+### SimTimeline minor 3 and SimPanel minor 5: a simulation plays on its own
+
+- **A verb start or restart plays the run by itself.** A typed `/<slash> sim start …`, the panel
+  picker's `START`, the idle Start row, a typed `restart` and the controls' `RESTART` arm the new
+  session's run: it is `playing` at once, building included, and its first step plays on the frame
+  after the session's `ready()`, then every step at the host's step delay. The members
+  `sim:Start{}` and `sim:Restart()` arm nothing, so host scripts and suites that drive them are
+  unchanged. No member, descriptor field or start option is added (`library-stack-§7` bar 2: no
+  behavior flags). The owner's request, 2026-10-23 (OWNER_SCOPE A.1 and C.1 of Ka0sAddonsCommonTasks
+  `docs/2026-10-23-SIM_PREVIEW_MODE_STRIPS/`).
+- **A manual step or click holds the run.** A typed `step`, a click on the ready row and a click
+  ahead cancel the run's pending tick (or a click-ahead's gate poll) and leave it paused, then act;
+  the run stays paused after the act while steps remain, so Resume continues it. A click on the
+  next row used to play beside a running Run all (the run's tick then played the step after as
+  well), and a click ahead was refused with `PLAYING`; a second click-ahead now retargets.
+- **`Resume` keeps `paused` when it is refused** as `building` or `done`; it used to clear the flag
+  first.
+- **The controls are Pause/Resume, Restart and Stop**, three equal buttons spanning the bar. Run all
+  is gone and `RUN_ALL` leaves `Sim.STRINGS`. The first control reads Resume whenever nothing plays
+  and sends `run` for a session started through the member. `USAGE_START` and `USAGE_RUN` say the
+  simulation plays at once and that `run` is the same as resume.
+  [Sim version 2.3.5](docs/api/Sim/version-2.3.5-docs.md).
+
+### Widgets minor 14: W.TestStrip's simulation flavor
+
+- **`W.TestStrip(parent, { kind = "sim" })` draws the strip in the collection's simulation cyan.**
+  `opts.kind` is `"test"` (the default) or `"sim"`; exactly `"sim"` gives the cyan 0.35, 0.80, 1.00
+  at 12% (DropWatcher's `TB.SIM_TONE`, LootHistory's `SIM_MARK`), and anything else, nil, a
+  non-string or an unknown string such as `"Sim"` or `"preview"`, gives the amber 1, 0.65, 0.15 at
+  12% it always drew. Height, mark, inset, font, anchors, the birth-only contract and the mouse
+  being off are the same for both kinds.
+- **`strip.kind`, read-only and set once at birth** (`"test"` or `"sim"`), so a host suite can ask
+  which flavor a strip is without reading `__fill`. Writing it repaints nothing.
+- **Additive: no member is added and every existing call is unchanged.** `TestStrip` and
+  `TEST_STRIP` are still the whole surface, so `members-14.1.4.3.2.json` lists the same names as
+  13. A `ModeStrip` alias (a second name for one function), a host color and a `SetKind` recolor
+  were rejected; `Widgets.lua`'s header records the first, with the re-check trigger "a third kind
+  is asked for". A window that marks both modes builds one strip of each kind and shows the one in
+  force. The owner's 2026-10-23 ruling (OWNER_SCOPE A and C of Ka0sAddonsCommonTasks
+  `docs/2026-10-23-SIM_PREVIEW_MODE_STRIPS/`). Adopters in this release: BankLedger, DropWatcher,
+  LootHistory, MultiMeters and KickCD.
+- **The attach files re-pair on the shell's new minor**; none of their own minors moves.
+  [Widgets version 14.1.4.3.2](docs/api/Widgets/version-14.1.4.3.2-docs.md).
+
+### SimPanel minor 5 and PerfPanel minor 8: a step label stops at the command column
+
+- **A long step label truncates with an ellipsis before the command column instead of running
+  under it.** The owner's report on BankLedger's sim panel (2026-10-23): `Deposit 1 x Flask of the
+  Shattered Sun to Character Bank (1 recorded)` overlapped `/bl sim step`, because each row's label
+  was anchored on its left only. The label is now one line (word wrap off) and bounded on its right
+  8 short of the command's left edge; the command keeps its natural width at the right. A Sim row
+  with no command runs the label to the row's right inset. The bound is anchors, not a width, so
+  widening the panel shows more of the label. The full label stays the Sim row's tooltip title.
+  LK-91 of Ka0sAddonsCommonTasks `docs/2026-10-23-SIM_PREVIEW_MODE_STRIPS/`.
+- **Both copies of the renderer take it at the same geometry.** `SimPanel.lua` keeps minor 5, the
+  minor this release already gave it (v1.76.0 is tagged locally only and has reached no host); `PerfPanel.lua`, last released at 7 in v1.75.0,
+  moves to 8, or a host already holding 7 would never load the fix. No member is added.
+  [Sim version 2.3.5](docs/api/Sim/version-2.3.5-docs.md),
+  [Perf version 15.1.1.8](docs/api/Perf/version-15.1.1.8-docs.md).
+
+### Docs and process: the preview and simulation re-look
+
+- **`docs/releasing.md` gains the preview and simulation re-look (step 5) and its release-notes
+  line (step 7)**, the library's half of the standard's v2.87.0 preview-mode release rule. Step 8's
+  re-vendor report names the change to each host the re-look lists. No minor moves.
+- **Built to standard v2.87.0** (was v2.86.0): the README's standards pointer moves after a read of
+  v2.87.0's three rulings, the preview and simulation release re-look (the counterpart above), the
+  simulation that plays on its own (SimTimeline 3, SimPanel 5) and the strip's simulation flavor
+  with one marker per mode on screen (Widgets 14). None binds new code on the payload.
+- **Consumers planned at v1.76.0**: MultiMeters and KickCD join `LibKa0s-Sim-1.0` (MultiMeters#60,
+  KickCD#38), and BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD adopt
+  `TestStrip`'s `kind = "sim"`, recorded in `docs/api/CONSUMERS.md` and the Consumers table of
+  `docs/releasing.md` until the census is re-run.
+
+### What a consumer owes
+
+- **No code.** Re-vendor.
+- **Nothing for the strip.** A host that wants the amber strip keeps its call; one that passes
+  `kind = "sim"` still declares `info` on its `LibKa0s icons:` line if it passes the `info` mark.
+- **Re-true suites that typed `start` and then ran, or clicked Run all.** After a typed or clicked
+  start a `run` now answers `playing` and the next timer pass plays the first step; start through
+  the member (or pause first) where the case is not about auto-play. A suite that asserted the
+  waiting state after a manual step now reads `paused`.
+- **Reword docs and strings that name Run all**, or present `/<slash> sim run` as the way to play
+  after a start (step-delay tooltips, ready lines, smoke procedures).
+- **No host overrides `RUN_ALL`** (grep each host's `locales/` and `modules/`); one that did would
+  carry a dead key.
+
+Release gate (`docs/automated-tests/20261023-150627/`): lint pass, 0/0 in 181 files;
+tests pass, 2575 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+Preview and simulation re-look: Refreshed — `SimTimeline.lua` 3, `SimPanel.lua` 5 and `Widgets.lua` 14 moved; `tests/fixture_sim_panel.lua` re-read unchanged, `tests/test_sim_panel.lua`, `test_sim_timeline.lua`, `test_sim_verbs.lua`, the new `test_sim_autoplay.lua` and `test_widgets_teststrip.lua` refreshed in d728cc4 (LK-01) and d5fa6e9 (LK-10), with `docs/api/Sim/version-2.3.5-docs.md` and `docs/api/Widgets/version-14.1.4.3.2-docs.md`; hosts affected for step 8: BankLedger, DropWatcher and LootHistory (Sim and the strip), MultiMeters (the strip), and MultiMeters and KickCD as new Sim and sim-strip adopters.
+
 ## v1.75.2 — 2026-10-23
 
 Versions in this release: **SimPanel minor 4** (`LibKa0s-Sim-1.0` key **2.2.4**); every other file

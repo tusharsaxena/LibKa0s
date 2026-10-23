@@ -119,8 +119,8 @@ end
 
 test("sim panel: the file registers on the shell's minor and in MODULES", function()
   local _, Sim = F.env()
-  assertEqual(Sim.MODULES.SimPanel, 4)
-  assertEqual(Sim.__panelMinor, 4)
+  assertEqual(Sim.MODULES.SimPanel, 5)
+  assertEqual(Sim.__panelMinor, 5)
   assertEqual(Sim.__panelShellMinor, Sim.MINOR)
   assertEqual(type(Sim.__AttachPanel), "function")
   assertEqual(type(Sim.__StepPanel), "function", "the renderer's internal test seam")
@@ -128,10 +128,11 @@ end)
 
 test("sim panel: the STRINGS keys the panel draws are added to Sim.STRINGS", function()
   local _, Sim = F.env()
-  for _, key in ipairs({ "PANEL_START", "START", "PANEL_STOP", "RUN_ALL", "PAUSE", "RESUME", "RESTART", "STOP",
+  for _, key in ipairs({ "PANEL_START", "START", "PANEL_STOP", "PAUSE", "RESUME", "RESTART", "STOP",
     "RANDOM", "RAN_AGO" }) do
     assertEqual(type(Sim.STRINGS[key]), "string", key)
   end
+  assertNil(Sim.STRINGS.RUN_ALL, "Run all is gone (minor 5): a simulation plays on its own")
   assertEqual(Sim.STRINGS.NO_TIMELINE ~= nil and Sim.STRINGS.STEP_LINE ~= nil, true, "the other files' keys stay")
 end)
 
@@ -441,24 +442,97 @@ test("sim panel: the picker's Start starts the chosen scenario through the typed
   end)
 end)
 
-test("sim panel: running, the controls replace the picker, and Pause swaps with Resume", function()
+test("sim panel: the picker's Start leaves the session playing, its first tick on the next frame", function()
+  local typed, clicked = bench(), bench()
+  local want = linesOf(typed, function() typed.sim:RunVerb("start three") end)
+  F.recording(clicked.m, function()
+    local f = shown(clicked)
+    local got = linesOf(clicked, function() f.picker.start:__fire("OnClick") end)
+    assertEqual(joined(got, "|"), joined(want, "|"), "the typed start's lines, and no more")
+    assertTrue(clicked.sim:Status().playing)
+    local timers = clicked.m.__timers()
+    assertEqual(#timers, 1)
+    assertEqual(timers[1].delay, 0)
+    assertEqual(#clicked.played, 0)
+    clicked.m.__fireTimers()
+    assertEqual(joined(clicked.played), "a")
+  end)
+end)
+
+test("sim panel: running, the controls are Pause, Restart and Stop, spanning the bar", function()
+  local b = bench()
+  F.recording(b.m, function()
+    local f = shown(b)
+    b.sim:RunVerb("start three")
+    local c = f.controls
+    assertNil(c.run, "no Run all (minor 5)")
+    local x = {}
+    for i, key in ipairs({ "pause", "restart", "stop" }) do
+      assertEqual(c[key].__geomW, 116, key .. ": CONTROL_W")
+      local pt = c[key].__pts[#c[key].__pts]
+      x[i] = pt.x
+    end
+    assertEqual(joined(x), "0,122,244")
+  end)
+end)
+
+test("sim panel: a member start offers Resume, which sends run once ready and starts play", function()
+  local b = bench(nil, true)
+  F.recording(b.m, function()
+    local f = shown(b)
+    b.sim:Start({ scenario = "three" })
+    local c = f.controls
+    assertEqual(c.pause.__label, b.Sim.STRINGS.RESUME, "nothing plays and nothing is paused")
+    assertFalse(c.pause:IsEnabled(), "building")
+    b.readies[1]()
+    assertTrue(c.pause:IsEnabled(), "enabled once ready")
+    assertEqual(c.pause.__verb, "run")
+    local tip = b.m.GameTooltip
+    local lines = {}
+    rawset(tip, "AddLine", function(_, l) lines[#lines + 1] = tostring(l) end)
+    F.hover(c.pause)
+    assertEqual(lines[1], "/host sim run")
+    c.pause:__fire("OnClick")
+    assertTrue(b.sim:Status().playing)
+    assertEqual(joined(b.played), "a")
+    assertEqual(c.pause.__label, b.Sim.STRINGS.PAUSE)
+  end)
+end)
+
+test("sim panel: Restart's button arms the new session", function()
   local b = bench()
   F.recording(b.m, function()
     local f = shown(b)
     b.sim:Start({ scenario = "three" })
+    f.controls.restart:__fire("OnClick")
+    local st = b.sim:Status()
+    assertTrue(st.playing)
+    assertEqual(st.pos, 0)
+    local timers = b.m.__timers()
+    assertEqual(#timers, 1); assertEqual(timers[1].delay, 0)
+  end)
+end)
+
+test("sim panel: running, the controls replace the picker, and Pause swaps with Resume", function()
+  local b = bench()
+  F.recording(b.m, function()
+    local f = shown(b)
+    -- started through the member, so nothing plays until the Resume button sends `run` (minor 5)
+    b.sim:Start({ scenario = "three" })
     assertFalse(f.picker:IsShown()); assertTrue(f.controls:IsShown())
     local c = f.controls
-    assertEqual(c.run.__label, b.Sim.STRINGS.RUN_ALL)
     assertEqual(c.restart.__label, b.Sim.STRINGS.RESTART)
     assertEqual(c.stop.__label, b.Sim.STRINGS.STOP)
+    assertEqual(c.pause.__label, b.Sim.STRINGS.RESUME)
+    assertTrue(c.pause:IsEnabled(), "ready with steps left: Resume sends run")
+    c.pause:__fire("OnClick")
+    assertTrue(b.sim:Status().playing)
     assertEqual(c.pause.__label, b.Sim.STRINGS.PAUSE)
-    assertFalse(c.pause:IsEnabled(), "nothing to pause yet")
-    assertTrue(c.run:IsEnabled())
-    c.run:__fire("OnClick")
-    assertTrue(c.pause:IsEnabled()); assertFalse(c.run:IsEnabled(), "already playing")
+    assertTrue(c.pause:IsEnabled())
     c.pause:__fire("OnClick")
     assertFalse(b.sim:Status().playing)
     assertEqual(c.pause.__label, b.Sim.STRINGS.RESUME, "Pause became Resume")
+    assertEqual(c.pause.__verb, "resume", "paused: it sends resume")
     c.pause:__fire("OnClick")
     assertTrue(b.sim:Status().playing, "Resume ran")
     assertEqual(c.pause.__label, b.Sim.STRINGS.PAUSE)
@@ -513,15 +587,45 @@ test("sim panel: clicking an ahead row runs every step up to it, in order (the i
   end)
 end)
 
-test("sim panel: an ahead click while a run is playing prints the PLAYING line and plays nothing", function()
+test("sim panel: an ahead click while a run is playing holds it and plays up to the row", function()
+  -- SimPanel minor 5 / SimTimeline minor 3: the click-ahead holds a playing run first; it used to
+  -- print the PLAYING line and play nothing
+  local b = bench({ scenarios = { names = { "four" }, defs = { four = { label = "Four", timeline = function()
+    return { { kind = "a" }, { kind = "b" }, { kind = "c" }, { kind = "d" } }
+  end } } } })
+  F.recording(b.m, function()
+    local f = shown(b)
+    b.sim:RunVerb("start four")
+    b.m.__fireTimers()
+    assertEqual(joined(b.played), "a")
+    local out = linesOf(b, function() buttons(f)[4]:__fire("OnClick") end)   -- step 3, two ahead
+    assertEqual(joined(b.played), "a,b,c")
+    assertEqual(out[1], b.Sim.STRINGS.STEP_LINE:format(2, 4, "b"))
+    local st = b.sim:Status()
+    assertFalse(st.playing); assertTrue(st.paused, "held")
+    assertEqual(#b.m.__timers(), 0, "the run's pending tick is gone")
+    assertEqual(f.controls.pause.__label, b.Sim.STRINGS.RESUME)
+  end)
+end)
+
+test("sim panel: clicking the ready row while a run plays holds it and plays one step", function()
   local b = bench()
   F.recording(b.m, function()
     local f = shown(b)
-    b.sim:Start({ scenario = "three" })
-    b.sim:Run()
-    local out = linesOf(b, function() buttons(f)[4]:__fire("OnClick") end)
-    assertEqual(joined(b.played), "a")
-    assertEqual(out[1], b.Sim.STRINGS.PLAYING)
+    b.sim:RunVerb("start three")
+    b.m.__fireTimers()
+    buttons(f)[3]:__fire("OnClick")                   -- the ready row, step 2
+    assertEqual(joined(b.played), "a,b")
+    assertEqual(#b.m.__timers(), 0)
+    local c = f.controls
+    assertEqual(c.pause.__label, b.Sim.STRINGS.RESUME)
+    assertEqual(c.pause.__verb, "resume")
+    local tip = b.m.GameTooltip
+    local lines = {}
+    rawset(tip, "AddDoubleLine", function(_, l) lines[#lines + 1] = tostring(l) end)
+    rawset(tip, "AddLine", function(_, l) lines[#lines + 1] = tostring(l) end)
+    F.hover(c.pause)
+    assertEqual(lines[1], "/host sim resume")
   end)
 end)
 
@@ -683,6 +787,23 @@ test("sim panel: a row's tip goes to GameTooltip as double lines under the row's
   end)
 end)
 
+test("sim panel: a step label truncated in its row is whole in the tooltip's first line", function()
+  -- LK-91: the label stops at the command column with an ellipsis, so the tip is where it is read
+  local long = "Deposit 1 x Flask of the Shattered Sun to Character Bank (1 recorded)"
+  local b = bench(nil, nil, { stepLabel = function() return long end })
+  F.recording(b.m, function()
+    local f = shown(b)
+    local tip = b.m.GameTooltip
+    local got = {}
+    rawset(tip, "SetText", function(_, t) got[#got + 1] = tostring(t) end)
+    local row = buttons(f)[2]
+    assertEqual(row.text.__wordWrap, false, "one line")
+    assertTrue(row.text.__pts[2].rel == row.cmd, "bounded by the command column")
+    row:__fire("OnEnter")
+    assertEqual(got[1], long, "the tip opens with the full label")
+  end)
+end)
+
 test("sim panel: a disabled row or button still shows its tip, as the client hovers it", function()
   -- red under: SimPanel minor 2, which disabled every row that is not actionable (a played step,
   -- the started Start row) and the idle Pause without SetMotionScriptsWhileDisabled, so the client
@@ -702,9 +823,11 @@ test("sim panel: a disabled row or button still shows its tip, as the client hov
     F.hover(start, "OnLeave")
     assertFalse(tip:IsShown(), "and leaving hides it")
     local pause = f.controls.pause
-    assertFalse(pause:IsEnabled(), "nothing to pause yet")
+    b.sim:Step(); b.sim:Step(); b.sim:Step()          -- done: nothing left to resume (minor 5)
+    assertFalse(pause:IsEnabled(), "nothing left to play")
+    local before = #titles
     F.hover(pause)
-    assertEqual(#titles, 2, "the idle Pause names its command")
+    assertEqual(#titles, before + 1, "the disabled Resume names its command")
     F.hover(pause, "OnLeave")
     assertFalse(tip:IsShown())
   end)

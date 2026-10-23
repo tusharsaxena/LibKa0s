@@ -1,5 +1,6 @@
--- tests/test_widgets_teststrip.lua — LibKa0s-Widgets-1.0: `lib.TestStrip` (minor 13), the
--- test-mode strip a window lays between its chrome and its data (#48).
+-- tests/test_widgets_teststrip.lua — LibKa0s-Widgets-1.0: `lib.TestStrip` (minors 13 and
+-- 14), the mode strip a window lays between its chrome and its data (#48): test mode, or a
+-- simulation (`opts.kind = "sim"`, minor 14).
 --
 -- Every case runs under the geometry factory tests/fixture_geom.lua installs (the reason is
 -- tests/test_widgets.lua's header), wrapped once more here by `recording`: the geometry frame
@@ -217,5 +218,101 @@ test("TestStrip: two strips share no regions", function()
     assertTrue(a.text ~= b.text, "two texts")
     assertEqual(a.text:GetText(), "a")
     assertEqual(b.text:GetText(), "b")
+  end)
+end)
+
+-- ── the simulation flavor (minor 14) ─────────────────────────────────────────────────────────
+
+local function fillOf(s) return s.__fill.__colorTexture end
+
+local function assertFill(s, r, g, b, a, label)
+  local c = fillOf(s)
+  assertEqual(c[1], r, label); assertEqual(c[2], g, label)
+  assertEqual(c[3], b, label); assertEqual(c[4], a, label)
+end
+
+test("TestStrip: kind = 'sim' fills the collection's simulation cyan at 12% and reads 'sim'", function()
+  recording(function()
+    local s = W.TestStrip(mocks.UIParent, { text = "SIMULATION", kind = "sim" })
+    assertFill(s, 0.35, 0.80, 1.00, 0.12, "sim fill")
+    assertTrue(s.__fill.__allPoints == s, "the fill covers the strip, all points")
+    assertEqual(s.__fill.__layer, "BACKGROUND")
+    assertEqual(s.kind, "sim")
+  end)
+end)
+
+test("TestStrip: the default and every kind that is not 'sim' give the amber and 'test'", function()
+  recording(function()
+    local cases = {
+      { label = "no opts" },
+      { label = "kind nil", opts = { text = "x" } },
+      { label = "kind 'test'", opts = { kind = "test" } },
+      { label = "kind 42", opts = { kind = 42 } },
+      { label = "kind 'Sim'", opts = { kind = "Sim" } },
+      { label = "kind 'preview'", opts = { kind = "preview" } },
+    }
+    for _, c in ipairs(cases) do
+      local s = W.TestStrip(mocks.UIParent, c.opts)
+      assertFill(s, 1.00, 0.65, 0.15, 0.12, c.label)
+      assertEqual(s.kind, "test", c.label)
+    end
+  end)
+end)
+
+test("TestStrip: a sim strip has a test strip's height, icon, text, anchors, state and mouse", function()
+  recording(function()
+    local t = W.TestStrip(mocks.UIParent, { text = "x", icon = HOST_ICON })
+    local s = W.TestStrip(mocks.UIParent, { text = "x", icon = HOST_ICON, kind = "sim" })
+    for _, strip in ipairs({ t, s }) do
+      assertEqual(strip:GetHeight(), 18)
+      assertFalse(strip:IsShown())
+      assertEqual(strip:GetNumPoints(), 0)
+      assertEqual(strip.__mouseCalls, nil)
+      assertFalse(strip:IsMouseEnabled())
+      assertEqual(strip.__icon.__texture, HOST_ICON)
+      assertEqual(strip.__icon.__layer, "ARTWORK")
+      assertEqual(strip.__icon:GetWidth(), 12)
+      assertEqual(strip.__icon:GetHeight(), 12)
+      local ip = point(strip.__icon, 1)
+      assertEqual(ip.point, "LEFT"); assertTrue(ip.rel == strip, "icon on the strip")
+      assertEqual(ip.relPoint, "LEFT"); assertEqual(ip.x, 6)
+      assertEqual(strip.text.__template, "GameFontNormalSmall")
+      assertEqual(strip.text.__layer, "OVERLAY")
+      assertEqual(strip.text:GetNumPoints(), 2)
+      local lp, rp = point(strip.text, 1), point(strip.text, 2)
+      assertEqual(lp.point, "LEFT"); assertTrue(lp.rel == strip.__icon, "text on the icon")
+      assertEqual(lp.relPoint, "RIGHT"); assertEqual(lp.x, 6)
+      assertEqual(rp.point, "RIGHT"); assertTrue(rp.rel == strip, "text on the strip")
+      assertEqual(rp.relPoint, "RIGHT"); assertEqual(rp.x, -6)
+      assertEqual(strip.text.__justifyH, "LEFT")
+      assertEqual(strip.text.__wordWrap, false)
+      assertEqual(strip.text:GetText(), "x")
+    end
+  end)
+end)
+
+test("TestStrip: a test strip and a sim strip side by side share no regions", function()
+  recording(function()
+    local t = W.TestStrip(mocks.UIParent, { text = "t", icon = HOST_ICON })
+    local s = W.TestStrip(mocks.UIParent, { text = "s", icon = HOST_ICON, kind = "sim" })
+    assertTrue(t ~= s, "two frames")
+    assertTrue(t.__fill ~= s.__fill, "two fills")
+    assertTrue(t.__icon ~= s.__icon, "two icons")
+    assertTrue(t.text ~= s.text, "two texts")
+    assertFill(t, 1.00, 0.65, 0.15, 0.12, "the test strip keeps the amber")
+    assertFill(s, 0.35, 0.80, 1.00, 0.12, "the sim strip keeps the cyan")
+    assertEqual(t.kind, "test")
+    assertEqual(s.kind, "sim")
+  end)
+end)
+
+test("TestStrip: a write to strip.kind after birth does not repaint the fill", function()
+  recording(function()
+    local t = W.TestStrip(mocks.UIParent)
+    local s = W.TestStrip(mocks.UIParent, { kind = "sim" })
+    t.kind = "sim"
+    s.kind = "test"
+    assertFill(t, 1.00, 0.65, 0.15, 0.12, "birth-only: still amber")
+    assertFill(s, 0.35, 0.80, 1.00, 0.12, "birth-only: still cyan")
   end)
 end)

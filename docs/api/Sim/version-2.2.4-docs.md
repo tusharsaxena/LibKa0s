@@ -11,9 +11,9 @@
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **2** · `SimPanel.lua` **4** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
 | Shipped in | v1.75.2 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [2.2.3](./version-2.2.3-docs.md) (shipped in v1.75.1), which superseded [2.2.2](./version-2.2.2-docs.md) (v1.75.0) |
-| Superseded by | — |
+| Superseded by | [2.3.5](./version-2.3.5-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 2, SimPanel = 4 }` |
 
@@ -839,3 +839,23 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to version 2.3.5
+
+**Take it; no call changes, but suites and docs owe a re-true.** Version 2.3.5 moves
+`SimTimeline.lua` to 3 and `SimPanel.lua` to 5 and adds no member ([version
+2.3.5](./version-2.3.5-docs.md), *What changed at this version*): a simulation started from the
+verb layer plays on its own, a manual step or click holds the run, and the Run all control and its
+`RUN_ALL` string are gone. What a host owes:
+
+- **Suites that typed `start` (or clicked the picker's `START`) and then ran.** The typed start now
+  arms the run, so a following `run` answers `playing`, a following `pause` succeeds, and the next
+  `m.__fireTimers()` plays the first step. A case whose subject is not auto-play starts through
+  the member (`sim:Start{}`) or pauses after the typed start; a case whose subject is the typed
+  path asserts the new behavior. A suite that reads `controls.run` or clicks Run all reads the
+  first control (`pause`), which sends `run` for a member-started session.
+- **Suites that asserted the waiting state after a manual step.** A manual `Step` and a short
+  click-ahead now leave the run `paused` while steps remain.
+- **Docs and strings that name Run all**, or present `/<slash> sim run` as the way to play after a
+  start. No host overrides `RUN_ALL` (grep each host's `locales/` and `modules/`); one that did
+  would now carry a dead key.

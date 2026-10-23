@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **13** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **4** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **2** |
 | Shipped in | v1.75.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 12.1.4.3.2](./version-12.1.4.3.2-docs.md) — no search box, no test-mode strip |
-| Superseded by | — |
+| Superseded by | [version 14.1.4.3.2](./version-14.1.4.3.2-docs.md) — `Widgets.lua` 14: `TestStrip`'s simulation flavor, `opts.kind = "sim"` (cyan) and the read-only `strip.kind` |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 13, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }` |
 
 ## What changed at 13.1.4.3.2
@@ -1583,3 +1583,13 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
+
+## Moving to version 14.1.4.3.2
+
+**Copy the folder whole. Nothing a host calls moves or is removed.** The next version is key
+14.1.4.3.2: `Widgets.lua` 14, `WidgetsReorder.lua` 1, `WidgetsDragHandle.lua` 4,
+`WidgetsLineChart.lua` 3 and `WidgetsAutocomplete.lua` 2. `Widgets.lua` 14 gives `TestStrip` a
+simulation flavor: `opts.kind = "sim"` draws the strip in the collection's simulation cyan, and
+every strip carries a read-only `strip.kind` (`"test"` or `"sim"`). **A host that wants the amber
+strip has nothing to do**: any call without `kind = "sim"` draws exactly what it drew here. Pass
+`kind = "sim"` for the cyan. See [version 14.1.4.3.2](./version-14.1.4.3.2-docs.md).
