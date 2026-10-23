@@ -10,6 +10,18 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.77.0 — unreleased
+
+Opened 2026-10-24. The settings-panel Keybindings tab (`O.KeybindingsTab` / `O.KeybindRows`, a
+twelfth Options file), the test kit's binding and frame-layer mocks and its Bindings.xml check, and
+the frame-layering fixes the 2026-10-24 strata review asked of the library: toplevel tool windows
+that re-raise a shown confirmation, a DragHandle level and parent-alpha option, clamped menus, the
+IdList suggestion list closed at combat start, and one shared strata tooltip (`O.StrataTooltip`).
+
+Versions in this release: every file still at its v1.76.0 minor and **test kit revision 41**, until
+an entry below moves one. Each change bumps the minor of the files it touches once, and this block
+names each new minor as it lands. Still **seventeen majors across forty files**.
+
 ## v1.76.0 — 2026-10-23
 
 Opened 2026-10-23. Simulator auto-run (Run all removed), the test strip's simulation flavor, and the
