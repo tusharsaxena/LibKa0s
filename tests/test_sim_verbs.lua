@@ -164,7 +164,8 @@ test("sim verbs: status running names the scenario, size, seed, position and sta
   b.sim:Step()
   local out = linesOf(b, function() b.sim:RunVerb("status") end)
   local S = b.Sim.STRINGS
-  assertEqual(out[1], S.STATUS_RUNNING:format(S.STATUS_SIZE:format("sized", "5"), "42", 1, 2, S.STATE_WAITING))
+  -- a manual step leaves the run paused while steps remain (SimTimeline minor 3)
+  assertEqual(out[1], S.STATUS_RUNNING:format(S.STATUS_SIZE:format("sized", "5"), "42", 1, 2, S.STATE_PAUSED))
   assertEqual(#out, 1)
 end)
 
@@ -361,7 +362,9 @@ end)
 
 test("sim verbs: a failure code prints its library WHY line", function()
   local b = bench(nil, true)
-  b.sim:RunVerb("start three")
+  -- started through the member: a typed start would arm the run (SimTimeline minor 3), and an armed
+  -- run answers pause and resume while building (tests/test_sim_autoplay.lua)
+  b.sim:Start({ scenario = "three" })
   local cases = {
     { "step", "building", "BUILDING" },
     { "run", "building", "BUILDING" },

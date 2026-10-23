@@ -15,9 +15,46 @@ cannot drift. Release order is in
 Opened 2026-10-23. Simulator auto-run (Run all removed), the test strip's simulation flavor, and the
 release re-look of preview and simulation fixtures.
 
-Versions in this release: every file still at its v1.75.2 minor, and **test kit revision 41**
-unchanged, until an entry below moves one. Each change bumps the minor of the files it touches once,
-and this block names each new minor as it lands. Still **seventeen majors across forty files**.
+Versions in this release: **SimTimeline minor 3** and **SimPanel minor 5** (`LibKa0s-Sim-1.0` key
+**2.3.5**, `Sim` 2 unchanged); every other file still at its v1.75.2 minor, and **test kit revision
+41** unchanged, until an entry below moves one. Each change bumps the minor of the files it touches
+once, and this block names each new minor as it lands. Still **seventeen majors across forty
+files**.
+
+### SimTimeline minor 3 and SimPanel minor 5: a simulation plays on its own
+
+- **A verb start or restart plays the run by itself.** A typed `/<slash> sim start …`, the panel
+  picker's `START`, the idle Start row, a typed `restart` and the controls' `RESTART` arm the new
+  session's run: it is `playing` at once, building included, and its first step plays on the frame
+  after the session's `ready()`, then every step at the host's step delay. The members
+  `sim:Start{}` and `sim:Restart()` arm nothing, so host scripts and suites that drive them are
+  unchanged. No member, descriptor field or start option is added (`library-stack-§7` bar 2: no
+  behavior flags). The owner's request, 2026-10-23 (OWNER_SCOPE A.1 and C.1 of Ka0sAddonsCommonTasks
+  `docs/2026-10-23-SIM_PREVIEW_MODE_STRIPS/`).
+- **A manual step or click holds the run.** A typed `step`, a click on the ready row and a click
+  ahead cancel the run's pending tick (or a click-ahead's gate poll) and leave it paused, then act;
+  the run stays paused after the act while steps remain, so Resume continues it. A click on the
+  next row used to play beside a running Run all (the run's tick then played the step after as
+  well), and a click ahead was refused with `PLAYING`; a second click-ahead now retargets.
+- **`Resume` keeps `paused` when it is refused** as `building` or `done`; it used to clear the flag
+  first.
+- **The controls are Pause/Resume, Restart and Stop**, three equal buttons spanning the bar. Run all
+  is gone and `RUN_ALL` leaves `Sim.STRINGS`. The first control reads Resume whenever nothing plays
+  and sends `run` for a session started through the member. `USAGE_START` and `USAGE_RUN` say the
+  simulation plays at once and that `run` is the same as resume.
+  [Sim version 2.3.5](docs/api/Sim/version-2.3.5-docs.md).
+
+#### What a consumer owes
+
+- **No code.** Re-vendor.
+- **Re-true suites that typed `start` and then ran, or clicked Run all.** After a typed or clicked
+  start a `run` now answers `playing` and the next timer pass plays the first step; start through
+  the member (or pause first) where the case is not about auto-play. A suite that asserted the
+  waiting state after a manual step now reads `paused`.
+- **Reword docs and strings that name Run all**, or present `/<slash> sim run` as the way to play
+  after a start (step-delay tooltips, ready lines, smoke procedures).
+- **No host overrides `RUN_ALL`** (grep each host's `locales/` and `modules/`); one that did would
+  carry a dead key.
 
 ## v1.75.2 — 2026-10-23
 

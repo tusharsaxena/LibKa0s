@@ -338,7 +338,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.2.4](./Sim/version-2.2.4-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 4** (the picker's scenario takes the width the bar leaves, on one line) | v1.75.2 | **Current** |
+| [2.3.5](./Sim/version-2.3.5-docs.md) | `Sim.lua` 2 · **`SimTimeline.lua` 3** (a verb start or restart plays on its own; a manual step or click holds the run) · **`SimPanel.lua` 5** (Run all removed: Pause/Resume, Restart and Stop) | v1.76.0 | **Current** |
+| [2.2.4](./Sim/version-2.2.4-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 4** (the picker's scenario takes the width the bar leaves, on one line) | v1.75.2 | Superseded |
 | [2.2.3](./Sim/version-2.2.3-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 3** (a disabled row or control still shows its tip) | v1.75.1 | Superseded |
 | [2.2.2](./Sim/version-2.2.2-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 2** (the picker reads its scenario at use; no scenario listed, the Start row is locked) | v1.75.0 | Superseded |
 | [2.2.1](./Sim/version-2.2.1-docs.md) | **`Sim.lua` 2** (`Start` reads the scenarios live; `prepare` gets the host's start fields) · **`SimTimeline.lua` 2** (`Restart` carries them) · `SimPanel.lua` 1 | the local `v1.75.0` tag only | Superseded |

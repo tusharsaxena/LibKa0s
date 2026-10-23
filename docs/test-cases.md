@@ -2211,7 +2211,7 @@ Total.
 - sim timeline: RunTo plays up to and including index back to back, synchronous on an open gate
 - sim timeline: RunTo waits on a closed gate by polling, then continues
 - sim timeline: RunTo answers notRunning, building and done
-- sim timeline: Run during a pending RunTo poll answers playing (C.2)
+- sim timeline: Run during a pending RunTo poll answers playing; a second RunTo retargets (C.2)
 - sim timeline: Pause cancels a pending RunTo poll (C.2)
 - sim timeline: Stop cancels a pending RunTo poll (C.2)
 - sim timeline: a step failure ends a RunTo
@@ -2267,7 +2267,26 @@ Total.
 - sim verbs: the generic verbs win over a host verb of the same name
 - sim verbs: a host 'help' verb is the host's own; the library defines none
 
-### test_sim_panel.lua (53)
+### test_sim_autoplay.lua (16)
+
+- sim autoplay: a typed start with a synchronous ready plays on the next frame, then at stepDelay
+- sim autoplay: the first tick after a typed start reads d.stepDelay for the next one
+- sim autoplay: a typed start with ready held is armed and building; ready() schedules the tick
+- sim autoplay: the members arm nothing: sim:Start{} and sim:Restart() leave the run waiting
+- sim autoplay: a typed restart arms the new session, and no timer of the old one survives
+- sim autoplay: a refused typed start arms nothing
+- sim autoplay: Pause while armed and building holds it, and a later ready() schedules nothing
+- sim autoplay: Stop while armed and building leaves no timer, and a stale ready() schedules nothing
+- sim autoplay: a typed step while a run plays holds it, plays the next step, and stays paused
+- sim autoplay: a typed step while armed and building answers building and leaves the run armed
+- sim autoplay: a click-ahead while a run plays holds it and plays up to the row
+- sim autoplay: a click-ahead short of the last step leaves the run paused
+- sim autoplay: a second click-ahead retargets a polling one; Run still answers playing (C.2)
+- sim autoplay: a manual step from the waiting state leaves paused; finishing clears it
+- sim autoplay: a typed run after a manual step resumes and plays the next step at once
+- sim autoplay: the start and run usage lines say a simulation plays at once
+
+### test_sim_panel.lua (58)
 
 - sim panel: the file registers on the shell's minor and in MODULES
 - sim panel: the STRINGS keys the panel draws are added to Sim.STRINGS
@@ -2296,11 +2315,16 @@ Total.
 - sim panel: the picker previews the chosen scenario and offers sizes only when it has them
 - sim panel: the picker's scenario takes the width the bar leaves, on one line
 - sim panel: the picker's Start starts the chosen scenario through the typed verb
+- sim panel: the picker's Start leaves the session playing, its first tick on the next frame
+- sim panel: running, the controls are Pause, Restart and Stop, spanning the bar
+- sim panel: a member start offers Resume, which sends run once ready and starts play
+- sim panel: Restart's button arms the new session
 - sim panel: running, the controls replace the picker, and Pause swaps with Resume
 - sim panel: Restart through the controls prints what the typed verb prints
 - sim panel: clicking Start, the ready row and Stop prints what typing them prints
 - sim panel: clicking an ahead row runs every step up to it, in order (the internal RunTo)
-- sim panel: an ahead click while a run is playing prints the PLAYING line and plays nothing
+- sim panel: an ahead click while a run is playing holds it and plays up to the row
+- sim panel: clicking the ready row while a run plays holds it and plays one step
 - sim panel: a stale click re-composes from the live model and refuses
 - sim panel: with no anchor and no dragged point it floats at CENTER +420
 - sim panel: it docks right of anchorTo() with DOCK_GAP 8
@@ -2945,7 +2969,8 @@ Total.
 | test_sim_session.lua | 55 |
 | test_sim_timeline.lua | 41 |
 | test_sim_verbs.lua | 42 |
-| test_sim_panel.lua | 53 |
+| test_sim_autoplay.lua | 16 |
+| test_sim_panel.lua | 58 |
 | test_sim_panel_render.lua | 31 |
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
@@ -2977,4 +3002,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2547** |
+| **Total** | **2568** |

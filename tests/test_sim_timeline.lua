@@ -106,8 +106,8 @@ end
 
 test("sim timeline: the file registers on the shell's minor and in MODULES", function()
   local _, Sim = env()
-  assertEqual(Sim.MODULES.SimTimeline, 2)
-  assertEqual(Sim.__timelineMinor, 2)
+  assertEqual(Sim.MODULES.SimTimeline, 3)
+  assertEqual(Sim.__timelineMinor, 3)
   assertEqual(Sim.__timelineShellMinor, Sim.MINOR)
   assertEqual(type(Sim.__AttachTimeline), "function")
 end)
@@ -465,7 +465,7 @@ test("sim timeline: RunTo answers notRunning, building and done", function()
   assertFalse(ok); assertEqual(code, "done")
 end)
 
-test("sim timeline: Run during a pending RunTo poll answers playing (C.2)", function()
+test("sim timeline: Run during a pending RunTo poll answers playing; a second RunTo retargets (C.2)", function()
   local b = gated()
   b.sim:Start({ scenario = "three" })
   b.gateOpen = false
@@ -473,9 +473,13 @@ test("sim timeline: Run during a pending RunTo poll answers playing (C.2)", func
   local ok, code = b.sim:Run()
   assertFalse(ok)
   assertEqual(code, "playing")
-  ok, code = b.ctx.runTo(2)
-  assertFalse(ok)
-  assertEqual(code, "playing", "a second click-ahead answers playing")
+  -- minor 3: a click-ahead holds whatever plays and retargets, where it used to answer playing
+  assertTrue(b.ctx.runTo(2), "a second click-ahead holds the first and retargets")
+  assertEqual(#b.m.__timers(), 1, "one poll: the first one's was canceled")
+  b.gateOpen = true
+  b.m.__fireTimers()
+  assertEqual(joined(b.played), "a,b")
+  assertTrue(b.sim:Status().paused, "short of the last step: held")
 end)
 
 test("sim timeline: Pause cancels a pending RunTo poll (C.2)", function()
