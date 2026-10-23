@@ -10,6 +10,15 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.76.0 — unreleased
+
+Opened 2026-10-23. Simulator auto-run (Run all removed), the test strip's simulation flavor, and the
+release re-look of preview and simulation fixtures.
+
+Versions in this release: every file still at its v1.75.2 minor, and **test kit revision 41**
+unchanged, until an entry below moves one. Each change bumps the minor of the files it touches once,
+and this block names each new minor as it lands. Still **seventeen majors across forty files**.
+
 ## v1.75.2 — 2026-10-23
 
 Versions in this release: **SimPanel minor 4** (`LibKa0s-Sim-1.0` key **2.2.4**); every other file
