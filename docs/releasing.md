@@ -98,6 +98,17 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    manifest lists (see *Where v1.63.0 stood* below). It is a generated file and never hand-edited, and
    `tests/test_versioning.lua` regenerates and compares it on every run, so a bumped minor whose
    manifest has not been written is red for the same reason a bumped minor with no document is.
+
+   **The preview and simulation re-look.** When the release moves the minor of `Sim.lua`,
+   `SimTimeline.lua`, `SimPanel.lua`, or of the file that defines `W.TestStrip` and its flavors
+   (find it with `grep -l 'TestStrip' LibKa0s/*.lua`, which today prints `LibKa0s/Widgets.lua`),
+   re-read against the change the fixtures and suites that exercise them —
+   `tests/fixture_sim_panel.lua`, every `tests/test_sim_*.lua` and `tests/test_widgets_teststrip.lua`
+   — and the new `docs/api/Sim/` and `docs/api/Widgets/` documents. Then list the hosts whose
+   scenarios or test-mode strips the change affects, from the Consumers table's Sim and Widgets
+   rows, for step 8. This is the library's half of the standard's `preview-mode`, *Kept current at
+   every release*. That rule binds the hosts; `preview-mode` itself does not bind a library
+   (`library-stack-§7` applicability), so the practice is this checklist's own.
 6. **Regenerate the case list**: `lua tests/run.lua --list` into `docs/test-cases.md`, keeping CRLF
    (see that file's own banner for the exact command).
 7. **Move every version-bearing line to the version being released, then prove the tree.** Two
@@ -185,6 +196,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    jq -r '.git.sha'                     "$S"    # the commit being tagged, or its parent
    jq -r '.suites | to_entries[] | "\(.key) \(.value.status)"' "$S"
    jq -r '.suites.complexity.warnings'  "$S"    # 0
+   grep -n '^Preview and simulation re-look:' CHANGELOG.md | head -1  # inside the block being tagged
    grep -l '"release": "<X.Y.Z>"' docs/automated-tests/*/manifest.json  # >= 1 path, <stamp> among them
    test -f docs/automated-tests/<stamp>/ANALYSIS.md && echo present     # present
    ```
@@ -217,10 +229,23 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
    ```
 
+   Directly after it, write the second fixed line, the answer to step 5's re-look:
+
+   ```text
+   Preview and simulation re-look: <Current|Refreshed|Deferred|Not applicable> — <files reviewed, commits, or reason>.
+   ```
+
+   Not applicable is the answer when the release moved none of step 5's minors.
+   `/dev-copilot:bump-version` (2.5.0+) asks the question and writes this line; by hand, write it
+   from the step-5 re-read. It rides in the second commit with the release-gate line, and the
+   preconditions above prove it: `grep -n '^Preview and simulation re-look:' CHANGELOG.md | head -1`
+   must hit the block being tagged.
+
    The line goes into the new entry only. Released entries stay as written.
 8. **Re-vendor every consumer** — see below. This is part of the release, not a follow-up, and it
    includes bumping the version named in each consumer's `CLAUDE.md` provenance line, in the same
-   commit as the copy.
+   commit as the copy. When step 5 listed affected hosts, each affected host's re-vendor report
+   names the change, so the host re-looks at its scenarios or test-mode data at its next release.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 

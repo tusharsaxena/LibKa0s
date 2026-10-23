@@ -67,6 +67,12 @@ files**.
 - **The attach files re-pair on the shell's new minor**; none of their own minors moves.
   [Widgets version 14.1.4.3.2](docs/api/Widgets/version-14.1.4.3.2-docs.md).
 
+### Docs and process: the preview and simulation re-look
+
+- **`docs/releasing.md` gains the preview and simulation re-look (step 5) and its release-notes
+  line (step 7)**, the library's half of the standard's v2.87.0 preview-mode release rule. Step 8's
+  re-vendor report names the change to each host the re-look lists. No minor moves.
+
 ### What a consumer owes
 
 - **No code.** Re-vendor.
