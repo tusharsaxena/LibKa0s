@@ -268,7 +268,7 @@ It has grown back, out of the band: 834 at v1.75.0's minor 13 (measured 2026-10-
 copy window stays the next seam, and the re-check trigger is 1000 lines. `LibKa0s/DebugLog.lua` is
 999 at v1.75.0's minor 20, re-measured 2026-10-22: the #57 comment correction added no line, so it
 stays one under the band. None of v1.75.0's new files is in the band: `LibKa0s/SimPanel.lua`, the
-largest, is 908 after SimPanel minor 3.
+largest, is 919 after SimPanel minor 4.
 `tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page
 registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to
 `tests/test_options_render.lua` (373), the render/refresh seam the issue named plus the page-registry

@@ -77,6 +77,7 @@ local function region(parent, kind, layer, template)
   function r:SetTexture(p) self.__texture = p; return self end
   function r:GetTexture() return self.__texture end
   function r:SetJustifyH(v) self.__justifyH = v; return self end
+  function r:SetWordWrap(v) self.__wordWrap = v; return self end
   function r:SetAllPoints() return self end
   function r:SetFont() return self end
   return r
