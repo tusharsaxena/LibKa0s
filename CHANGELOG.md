@@ -95,6 +95,11 @@ files**.
 - **No host overrides `RUN_ALL`** (grep each host's `locales/` and `modules/`); one that did would
   carry a dead key.
 
+Release gate (`docs/automated-tests/20261023-150627/`): lint pass, 0/0 in 181 files;
+tests pass, 2575 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+Preview and simulation re-look: Refreshed — `SimTimeline.lua` 3, `SimPanel.lua` 5 and `Widgets.lua` 14 moved; `tests/fixture_sim_panel.lua` re-read unchanged, `tests/test_sim_panel.lua`, `test_sim_timeline.lua`, `test_sim_verbs.lua`, the new `test_sim_autoplay.lua` and `test_widgets_teststrip.lua` refreshed in d728cc4 (LK-01) and d5fa6e9 (LK-10), with `docs/api/Sim/version-2.3.5-docs.md` and `docs/api/Widgets/version-14.1.4.3.2-docs.md`; hosts affected for step 8: BankLedger, DropWatcher and LootHistory (Sim and the strip), MultiMeters (the strip), and MultiMeters and KickCD as new Sim and sim-strip adopters.
+
 ## v1.75.2 — 2026-10-23
 
 Versions in this release: **SimPanel minor 4** (`LibKa0s-Sim-1.0` key **2.2.4**); every other file
