@@ -119,8 +119,8 @@ end
 
 test("sim panel: the file registers on the shell's minor and in MODULES", function()
   local _, Sim = F.env()
-  assertEqual(Sim.MODULES.SimPanel, 2)
-  assertEqual(Sim.__panelMinor, 2)
+  assertEqual(Sim.MODULES.SimPanel, 3)
+  assertEqual(Sim.__panelMinor, 3)
   assertEqual(Sim.__panelShellMinor, Sim.MINOR)
   assertEqual(type(Sim.__AttachPanel), "function")
   assertEqual(type(Sim.__StepPanel), "function", "the renderer's internal test seam")
@@ -659,6 +659,33 @@ test("sim panel: a row's tip goes to GameTooltip as double lines under the row's
     assertEqual(joined(got, "|"), "T:Alpha|D:Injects=a")
     assertTrue(tip:IsShown())
     buttons(f)[2]:__fire("OnLeave")
+    assertFalse(tip:IsShown())
+  end)
+end)
+
+test("sim panel: a disabled row or button still shows its tip, as the client hovers it", function()
+  -- red under: SimPanel minor 2, which disabled every row that is not actionable (a played step,
+  -- the started Start row) and the idle Pause without SetMotionScriptsWhileDisabled, so the client
+  -- ran no OnEnter on them and their tips (a loot step's drops and where they went) never showed
+  local b = bench()
+  F.recording(b.m, function()
+    local f = shown(b)
+    local tip = b.m.GameTooltip
+    local titles = {}
+    rawset(tip, "SetText", function(_, t) titles[#titles + 1] = tostring(t) end)
+    b.sim:Start({ scenario = "three" })
+    local start = buttons(f)[1]
+    assertFalse(start:IsEnabled(), "the started Start row is disabled")
+    F.hover(start)
+    assertEqual(#titles, 1, "the started Start row's tip shows")
+    assertTrue(tip:IsShown())
+    F.hover(start, "OnLeave")
+    assertFalse(tip:IsShown(), "and leaving hides it")
+    local pause = f.controls.pause
+    assertFalse(pause:IsEnabled(), "nothing to pause yet")
+    F.hover(pause)
+    assertEqual(#titles, 2, "the idle Pause names its command")
+    F.hover(pause, "OnLeave")
     assertFalse(tip:IsShown())
   end)
 end)

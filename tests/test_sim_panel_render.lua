@@ -311,7 +311,7 @@ test("sim panel render: the tooltip is called on enter only for a row with a tip
     assertEqual(#calls, 1, "the second row has no tip")
     assertTrue(calls[1].owner == b[1], "owned by the row button")
     assertTrue(calls[1].row == list[1], "and handed the row")
-    b[3]:__fire("OnEnter")
+    F.hover(b[3])   -- the client's rule: a disabled row's OnEnter runs only with motion scripts on
     assertEqual(#calls, 2, "a row that is not actionable still shows its tip")
     sameColor(T, b[3].text.__textColor, COLORS.done, "but does not hover")
   end)
