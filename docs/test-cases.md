@@ -691,7 +691,7 @@ Total.
 - SearchBox: W.Autocomplete composes on it, and the hint still toggles
 - SearchBox: the host rewrites the hint through box.hint:SetText
 
-### test_widgets_teststrip.lua (12)
+### test_widgets_teststrip.lua (17)
 
 - TestStrip: born hidden, unanchored and 18 tall, with its regions
 - TestStrip: the fill is the collection's amber at 12%, on all points
@@ -705,6 +705,11 @@ Total.
 - TestStrip: a write to TEST_STRIP.HEIGHT does not move the next strip
 - TestStrip: TEST_STRIP publishes HEIGHT and no RESERVE
 - TestStrip: two strips share no regions
+- TestStrip: kind = 'sim' fills the collection's simulation cyan at 12% and reads 'sim'
+- TestStrip: the default and every kind that is not 'sim' give the amber and 'test'
+- TestStrip: a sim strip has a test strip's height, icon, text, anchors, state and mouse
+- TestStrip: a test strip and a sim strip side by side share no regions
+- TestStrip: a write to strip.kind after birth does not repaint the fill
 
 ### test_widgets_reorder.lua (7)
 
@@ -2919,7 +2924,7 @@ Total.
 | test_widgets_linechart.lua | 19 |
 | test_widgets_autocomplete.lua | 36 |
 | test_widgets_searchbox.lua | 16 |
-| test_widgets_teststrip.lua | 12 |
+| test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
@@ -3002,4 +3007,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2568** |
+| **Total** | **2573** |

@@ -16,7 +16,9 @@ Opened 2026-10-23. Simulator auto-run (Run all removed), the test strip's simula
 release re-look of preview and simulation fixtures.
 
 Versions in this release: **SimTimeline minor 3** and **SimPanel minor 5** (`LibKa0s-Sim-1.0` key
-**2.3.5**, `Sim` 2 unchanged); every other file still at its v1.75.2 minor, and **test kit revision
+**2.3.5**, `Sim` 2 unchanged); **Widgets minor 14** (`LibKa0s-Widgets-1.0` key **14.1.4.3.2**:
+`WidgetsReorder` 1, `WidgetsDragHandle` 4, `WidgetsLineChart` 3 and `WidgetsAutocomplete` 2
+unchanged); every other file still at its v1.75.2 minor, and **test kit revision
 41** unchanged, until an entry below moves one. Each change bumps the minor of the files it touches
 once, and this block names each new minor as it lands. Still **seventeen majors across forty
 files**.
@@ -44,9 +46,32 @@ files**.
   simulation plays at once and that `run` is the same as resume.
   [Sim version 2.3.5](docs/api/Sim/version-2.3.5-docs.md).
 
-#### What a consumer owes
+### Widgets minor 14: W.TestStrip's simulation flavor
+
+- **`W.TestStrip(parent, { kind = "sim" })` draws the strip in the collection's simulation cyan.**
+  `opts.kind` is `"test"` (the default) or `"sim"`; exactly `"sim"` gives the cyan 0.35, 0.80, 1.00
+  at 12% (DropWatcher's `TB.SIM_TONE`, LootHistory's `SIM_MARK`), and anything else, nil, a
+  non-string or an unknown string such as `"Sim"` or `"preview"`, gives the amber 1, 0.65, 0.15 at
+  12% it always drew. Height, mark, inset, font, anchors, the birth-only contract and the mouse
+  being off are the same for both kinds.
+- **`strip.kind`, read-only and set once at birth** (`"test"` or `"sim"`), so a host suite can ask
+  which flavor a strip is without reading `__fill`. Writing it repaints nothing.
+- **Additive: no member is added and every existing call is unchanged.** `TestStrip` and
+  `TEST_STRIP` are still the whole surface, so `members-14.1.4.3.2.json` lists the same names as
+  13. A `ModeStrip` alias (a second name for one function), a host color and a `SetKind` recolor
+  were rejected; `Widgets.lua`'s header records the first, with the re-check trigger "a third kind
+  is asked for". A window that marks both modes builds one strip of each kind and shows the one in
+  force. The owner's 2026-10-23 ruling (OWNER_SCOPE A and C of Ka0sAddonsCommonTasks
+  `docs/2026-10-23-SIM_PREVIEW_MODE_STRIPS/`). Adopters in this release: BankLedger, DropWatcher,
+  LootHistory, MultiMeters and KickCD.
+- **The attach files re-pair on the shell's new minor**; none of their own minors moves.
+  [Widgets version 14.1.4.3.2](docs/api/Widgets/version-14.1.4.3.2-docs.md).
+
+### What a consumer owes
 
 - **No code.** Re-vendor.
+- **Nothing for the strip.** A host that wants the amber strip keeps its call; one that passes
+  `kind = "sim"` still declares `info` on its `LibKa0s icons:` line if it passes the `info` mark.
 - **Re-true suites that typed `start` and then ran, or clicked Run all.** After a typed or clicked
   start a `run` now answers `playing` and the next timer pass plays the first step; start through
   the member (or pause first) where the case is not about auto-play. A suite that asserted the

@@ -820,7 +820,9 @@ stub you pin with `Kit.assertSurfaceParity` (Widgets: `SearchBox`, `TestStrip`, 
   `HookScript`, never `SetScript` on the scripts the constructor set.
 - **A test-mode strip.** `W.TestStrip(parent, opts)` replaces a hand-built amber band. Its text is
   your localized line, its mark is your own resolved `info` art, and the anchors and the gaps around
-  it are your layout. [`api/Widgets/version-13.1.4.3.2-docs.md`](api/Widgets/version-13.1.4.3.2-docs.md).
+  it are your layout. Pass `kind = "sim"` for the cyan strip that marks a simulation; anything else
+  is the amber test-mode strip, and `strip.kind` says which.
+  [`api/Widgets/version-14.1.4.3.2-docs.md`](api/Widgets/version-14.1.4.3.2-docs.md).
 - **A bonus-id walk.** `Item.BonusIDsFromLink(link)` replaces the itemString split a Wowhead link
   builder writes; if you carry a library-absent Item stub, give it the same walk.
   [`api/Item/version-3-docs.md`](api/Item/version-3-docs.md).
