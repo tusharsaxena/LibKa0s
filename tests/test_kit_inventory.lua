@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 41", function()
-  assertEqual(Kit.VERSION, 41, "the release after v1.74.0 ships revision 41: no dead self-test exports, and the complexity runner treats a lizard crash as a crash")
-  assertEqual(T.KIT_VERSION, 41, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 42", function()
+  assertEqual(Kit.VERSION, 42, "v1.77.0 ships revision 42: the opt-in binding mock and frame-layer recorder, and Kit.assertBindingsXml")
+  assertEqual(T.KIT_VERSION, 42, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

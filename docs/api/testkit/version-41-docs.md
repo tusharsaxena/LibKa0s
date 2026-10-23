@@ -10,9 +10,9 @@
 | Version | **41** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.75.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 40](version-40-docs.md) — `framework.lua` exported two self-test seams, `Kit.__deviationRows` and `Kit.__declineFor`, that no suite read |
-| Superseded by | — |
+| Superseded by | [version 42](version-42-docs.md) — adds the opt-in `mock_bindings.lua` and `mock_layers.lua` and `Kit.assertBindingsXml` (`bindings_xml.lua`) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `41` |
 
@@ -147,3 +147,10 @@ lua tests/run.lua --list > docs/test-cases.md
 
 No suite, case name or documented member changes. A consumer's own prose that names the revision it
 holds moves to 41 in the same commit.
+
+## Moving to 42
+
+Copy the kit whole. Nothing else is owed: no suite, case name or documented member changes. The two
+new mocks are opt-in, so a suite that never installs them sees the base exactly as revision 41 left
+it; install `mock_bindings.lua` or `mock_layers.lua` where a suite needs bindings or frame layers
+answered, and call `T.assertBindingsXml` from the suite that checks an addon's `Bindings.xml`.

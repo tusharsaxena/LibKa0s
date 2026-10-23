@@ -18,9 +18,40 @@ the frame-layering fixes the 2026-10-24 strata review asked of the library: topl
 that re-raise a shown confirmation, a DragHandle level and parent-alpha option, clamped menus, the
 IdList suggestion list closed at combat start, and one shared strata tooltip (`O.StrataTooltip`).
 
-Versions in this release: every file still at its v1.76.0 minor and **test kit revision 41**, until
+Versions in this release: every file still at its v1.76.0 minor and **test kit revision 42**, until
 an entry below moves one. Each change bumps the minor of the files it touches once, and this block
 names each new minor as it lands. Still **seventeen majors across forty files**.
+
+### Test kit revision 42: binding mock, frame-layer recorder and the Bindings.xml check
+
+Three new kit files, documented in
+[docs/api/testkit/version-42-docs.md](docs/api/testkit/version-42-docs.md). No `LibKa0s/` file
+changes, so no file minor moves; `mock_base.lua` is unchanged (1464 lines).
+
+- **`mock_bindings.lua`**, opt-in (`dofile("tests/_kit/mock_bindings.lua")(M)`), ported from
+  QuickComms' harness: two binding sets and the live tables, `GetBindingKey` answering every key of
+  a command in bind order, `GetBindingAction` answering `""` for a free key, `SetBinding` and
+  `SaveBindings` refused and recorded in combat (`__bindingRefusals`), a one-shot
+  `__bindingFailNext`, `LoadBindings` / `GetCurrentBindingSet`, `GetBindingText` /
+  `GetBindingName`, `UPDATE_BINDINGS` fired through `M.__fire` and counted, the client's binding
+  constants and `Enum.BindingSet`, the modifier reads with `M.setModifiers`, `M.bindKey` /
+  `M.clearBindings`, and the client's chord helpers behind `clientChordHelpers = true`. It fills
+  only the names a consumer's mock lacks.
+- **`mock_layers.lua`**, opt-in (`local restore = dofile("tests/_kit/mock_layers.lua")(M)`): every
+  frame `M.CreateFrame` builds after install, and `M.UIParent`, answers its strata and level
+  (inherited through its parents; `SetParent` drops an explicit level), fixed strata and level,
+  toplevel, clamp and parent alpha, with `Raise` / `Lower` counted and the survey `M.__layers`.
+  Through revision 41 `GetFrameLevel` and `GetParent` answered the frame itself.
+- **`Kit.assertBindingsXml(path, opts)`** in `bindings_xml.lua`, loaded by `framework.lua` and
+  published by `Kit.expose`: the `launcher-§6` shape check the standard's re-check paragraph
+  deferred until an addon shipped a second binding (DpsRace and QuickComms do). Every Binding in
+  the addon's category, no `header=` or `default=`, the names equal to the commands in order, each
+  `BINDING_NAME_` label set, and the category global reading the brand.
+
+What M2 of the 2026-10-24 run uses: the KB items install `mock_bindings.lua` and call
+`T.assertBindingsXml` (and LK-12's `T.keybindThroughTab`); the ZS items install `mock_layers.lua`.
+New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` and
+`tests/test_kit_bindings.lua`.
 
 ## v1.76.0 — 2026-10-23
 

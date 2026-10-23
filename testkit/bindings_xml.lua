@@ -1,0 +1,125 @@
+-- testkit/bindings_xml.lua — Kit.assertBindingsXml, the shared Bindings.xml shape check (kit
+-- revision 42).
+--
+-- WHY. launcher-§6 rules how an addon's key bindings are declared: every Binding in the addon's own
+-- category (never the client's ADDONS bucket), no header= (the category carries the heading), no
+-- default= (an addon never claims a player's key), one BINDING_NAME_ label per command, and the
+-- category global reading the addon's brand. Its re-check paragraph deferred a vendored check until
+-- an addon shipped more than one binding; DpsRace and QuickComms do, so the kit ships the one form.
+--
+-- SURFACE, on the kit table and published by `Kit.expose`:
+--
+--   Kit.assertBindingsXml(path, opts) -> { { name =, category = }, ... }
+--
+--     path            the addon's Bindings.xml, relative to the run's working directory
+--     opts.category   required string: the category every Binding names (BINDING_HEADER_<X>)
+--     opts.commands   required array, in file order: command strings, or the addon's NS.BINDINGS
+--                     records ({ command = ... }); both are accepted, and may be mixed
+--     opts.brand      required string: what globals[opts.category] must read
+--     opts.globals    where the BINDING_NAME_ and category globals live (default _G); a harness
+--                     whose addon globals land elsewhere, such as the mock, passes that table
+--     opts.labels     optional map command -> the label its BINDING_NAME_ global must read
+--
+-- PARSING. XML comments (`<!-- ... -->`) are stripped first, so a commented-out Binding is not a
+-- binding. Every `<Binding .../>` and `<Binding ...>` element's attributes are read, double- or
+-- single-quoted. It is a shape check over a small, flat file, not an XML parser.
+--
+-- FAILURE. Through Kit.fail at the caller's line, naming the file and launcher-§6: a missing or
+-- unreadable file, no Binding at all, a category other than opts.category, a header= or default=
+-- attribute, names not equal to the commands in order (count first), an absent or empty
+-- BINDING_NAME_ global, a label that differs from opts.labels, or a category global that is not
+-- the brand.
+--
+-- SHAPE. Returns `function(Kit)`, which installs the member on the kit table it is handed.
+-- `framework.lua` loads it once, from its own folder, beside `latch.lua`; it is not a module a
+-- suite loads on its own.
+
+return function(Kit)
+  local fail = Kit.fail
+
+  local function readAll(path)
+    local f = io.open(path, "rb")
+    if not f then return nil end
+    local body = f:read("*a")
+    f:close()
+    return body
+  end
+
+  local function parseAttrs(s)
+    local attrs = {}
+    for k, _, v in s:gmatch("([%w_:%-]+)%s*=%s*([\"'])(.-)%2") do attrs[k] = v end
+    return attrs
+  end
+
+  --- Every Binding element's attribute table, in file order, comments stripped.
+  local function elements(text)
+    text = text:gsub("<!%-%-.-%-%->", "")
+    local out = {}
+    for rest in text:gmatch("<Binding([^>]*)>") do
+      local c = rest:sub(1, 1)
+      if c == "" or c == "/" or c:match("%s") then out[#out + 1] = parseAttrs(rest) end
+    end
+    return out
+  end
+
+  local function commandNames(commands)
+    local names = {}
+    for i, c in ipairs(commands) do
+      names[i] = type(c) == "table" and c.command or c
+    end
+    return names
+  end
+
+  --- nil and the list when the file conforms; otherwise the problem, as a sentence.
+  local function check(path, opts)
+    local text = readAll(path)
+    if not text then return "cannot read the file" end
+    local els = elements(text)
+    if #els == 0 then return "no <Binding> element" end
+    local list = {}
+    for i, a in ipairs(els) do
+      local name = a.name or ("#" .. i)
+      if a.category ~= opts.category then
+        return ("Binding %s has category %q, expected %q"):format(name, tostring(a.category), opts.category)
+      end
+      if a.header ~= nil then return ("Binding %s carries header=; the category is the heading"):format(name) end
+      if a.default ~= nil then return ("Binding %s carries default=; an addon never claims a key"):format(name) end
+      list[i] = { name = a.name, category = a.category }
+    end
+    local want = commandNames(opts.commands)
+    if #want ~= #list then
+      return ("Binding count %d does not match the %d commands"):format(#list, #want)
+    end
+    local g = opts.globals or _G
+    for i, b in ipairs(list) do
+      if b.name ~= want[i] then
+        return ("Binding %d is %s, expected %s (the commands' order)"):format(i, tostring(b.name), tostring(want[i]))
+      end
+      local key = "BINDING_NAME_" .. b.name
+      local label = g[key]
+      if type(label) ~= "string" or label == "" then
+        return ("%s is not a non-empty string"):format(key)
+      end
+      local expected = opts.labels and opts.labels[b.name]
+      if expected ~= nil and label ~= expected then
+        return ("%s reads %q, expected %q"):format(key, label, expected)
+      end
+    end
+    if g[opts.category] ~= opts.brand then
+      return ("%s reads %q, expected the brand %q"):format(opts.category, tostring(g[opts.category]),
+        tostring(opts.brand))
+    end
+    return nil, list
+  end
+
+  function Kit.assertBindingsXml(path, opts)
+    opts = opts or {}
+    local prefix = "assertBindingsXml: " .. tostring(path) .. ": "
+    if type(opts.category) ~= "string" then fail(prefix .. "opts.category must be a string (launcher-§6)", 2) end
+    if type(opts.commands) ~= "table" then fail(prefix .. "opts.commands must be an array (launcher-§6)", 2) end
+    if opts.brand == nil then fail(prefix .. "opts.brand is required (launcher-§6)", 2) end
+    local problem, list = check(path, opts)
+    if problem then fail(prefix .. problem .. " (launcher-§6)", 2) end
+    return list
+  end
+end

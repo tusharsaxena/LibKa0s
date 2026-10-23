@@ -2514,6 +2514,21 @@ Total.
 - kit latch: table registrations are keyed by target, kind, event and unit, or by opts.key
 - kit latch: missing or wrong-typed opts raise naming the field
 
+### test_kit_bindings.lua (12)
+
+- kit bindings: Kit.assertBindingsXml is on the kit table and published by Kit.expose
+- kit bindings: a conforming file passes with string commands and returns the list
+- kit bindings: NS.BINDINGS-style records and matching labels are accepted
+- kit bindings: a Binding in the ADDONS category fails
+- kit bindings: a header= attribute fails
+- kit bindings: a default= attribute fails
+- kit bindings: a missing BINDING_NAME_ global fails, and so does a wrong label
+- kit bindings: the commands out of order fail
+- kit bindings: a category global that is not the brand fails
+- kit bindings: a file with no Binding fails
+- kit bindings: a missing file fails, naming it
+- kit bindings: a failure is reported at the caller's line
+
 ### test_mock_base.lua (33)
 
 - mock: a frame that was never armed answers zero, dressed or not
@@ -2671,6 +2686,36 @@ Total.
 - line mock: ClearAllPoints forgets both ends
 - line mock: an unmodeled method raises instead of silently succeeding
 
+### test_mock_bindings.lua (17)
+
+- binding mock: GetBindingKey answers every key in bind order, and nil for an unbound command
+- binding mock: slot order is kept across a rebind of the first slot
+- binding mock: GetBindingAction answers the empty string for a free key
+- binding mock: a key taken from another action leaves that action keyless
+- binding mock: SetBinding and SaveBindings are refused in combat, recorded, and change nothing
+- binding mock: __bindingFailNext refuses one SetBinding for that key, then clears
+- binding mock: SaveBindings(2) then LoadBindings round-trips both sets
+- binding mock: UPDATE_BINDINGS reaches a registered frame and not an unregistered one
+- binding mock: __bindingsFireOnSet = false suppresses only SetBinding's fire
+- binding mock: GetBindingName reads BINDING_NAME_ on the mock, then _G, then answers the command
+- binding mock: a consumer's own GetBindingKey is kept, and the seams are installed regardless
+- binding mock: the constants are the client's
+- binding mock: the Enum merge keeps existing members
+- binding mock: modifiers are false by default and set by M.setModifiers
+- binding mock: bindKey seeds silently and clearBindings empties both sets and every log
+- binding mock: the client chord helpers are absent by default
+- binding mock: clientChordHelpers installs the client's chord helpers, faithfully
+
+### test_mock_layers.lua (7)
+
+- layer mock: strata and level are inherited through the parent chain
+- layer mock: an explicit level survives until SetParent, which re-derives it
+- layer mock: toplevel, clamp, parent alpha and fixed strata/level round-trip
+- layer mock: Raise and Lower are counted
+- layer mock: an unknown strata raises, naming itself
+- layer mock: UIParent carries the recorder too
+- layer mock: restore() puts CreateFrame back, and later frames are plain
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -2701,7 +2746,7 @@ Total.
 - kitsync: the kit revision is indexed in docs/api/README.md as the one Current revision
 - kitsync: the runner is mode 100755 in the git index, in BOTH copies
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
-- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, latch.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
+- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, latch.lua, bindings_xml.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
 - kitsync: vendor_sync checks the runner's recorded mode, and this repo's copy passes
 - kitsync: the runner-mode case fails on a path the index records 100644
@@ -2743,7 +2788,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 41
+- the kit is revision 42
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -2991,12 +3036,15 @@ Total.
 | test_kit_asserts.lua | 11 |
 | test_kit_secrets.lua | 30 |
 | test_kit_latch.lua | 9 |
+| test_kit_bindings.lua | 12 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 42 |
 | test_mock_events.lua | 14 |
 | test_mock_resize.lua | 6 |
 | test_mock_lines.lua | 5 |
+| test_mock_bindings.lua | 17 |
+| test_mock_layers.lua | 7 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -3012,4 +3060,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2578** |
+| **Total** | **2614** |
