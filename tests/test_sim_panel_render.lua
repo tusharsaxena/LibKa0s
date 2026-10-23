@@ -211,6 +211,74 @@ test("sim panel render: row geometry and the test record", function()
   end)
 end)
 
+-- LK-91 (owner report 2026-10-23, BankLedger's sim panel): a long step label ran under the command
+-- column, because the label was anchored LEFT only. It is now bounded on both sides, word wrap off,
+-- so the client truncates it with an ellipsis; the anchors (not a width) follow a resize.
+local LABEL_GAP = 8
+
+--- The label's anchor for `point`, or nil.
+local function labelPoint(btn, point)
+  for _, pt in ipairs(btn.text.__pts or {}) do
+    if pt.point == point then return pt end
+  end
+end
+
+test("sim panel render: a long label truncates before the command column, never under it", function()
+  recording(mocks, function()
+    local long = "Deposit 1 x Flask of the Shattered Sun to Character Bank (1 recorded)"
+    local p = newPanel({ row(long, "ready", true) })
+    p.Show()
+    local btn = p.Buttons()[1]
+    assertEqual(#btn.text.__pts, 2, "two horizontal anchors, no more")
+    local left, right = labelPoint(btn, "LEFT"), labelPoint(btn, "RIGHT")
+    assertTrue(left ~= nil and left.rel == btn, "LEFT on the row")
+    assertEqual(left.x, LABEL_X)
+    assertTrue(right ~= nil and right.rel == btn.cmd, "RIGHT on the command")
+    assertEqual(right.relPoint, "LEFT"); assertEqual(right.x, -LABEL_GAP)
+    assertEqual(btn.text.__wordWrap, false, "word wrap off: one line, ellipsis")
+    assertEqual(btn.text.__justifyH, "LEFT")
+    assertEqual(btn.cmd.__pts[1].point, "RIGHT", "the command keeps its natural width at the right")
+    assertEqual(#btn.cmd.__pts, 1)
+    assertEqual(btn.text.__text, long, "the full label is still the text")
+  end)
+end)
+
+test("sim panel render: a row with no command lets the label run to the row's right inset", function()
+  recording(mocks, function()
+    local list = { row("Bare", "ready", true, { command = "" }) }
+    local p = newPanel(list)
+    p.Show()
+    local btn = p.Buttons()[1]
+    assertEqual(#btn.text.__pts, 2)
+    local right = labelPoint(btn, "RIGHT")
+    assertTrue(right.rel == btn, "RIGHT on the row")
+    assertEqual(right.relPoint, "RIGHT"); assertEqual(right.x, -CMD_PAD)
+    -- A repaint where the command appears re-anchors on the command, and back again.
+    list[1] = row("Bare", "ready", true)
+    p.Refresh()
+    assertEqual(#btn.text.__pts, 2, "re-anchored, not stacked")
+    assertTrue(labelPoint(btn, "RIGHT").rel == btn.cmd)
+    assertEqual(labelPoint(btn, "LEFT").x, LABEL_X)
+    list[1] = row("Bare", "ready", true, { command = "" })
+    p.Refresh()
+    assertTrue(labelPoint(btn, "RIGHT").rel == btn, "a nil-or-empty command frees the inset again")
+  end)
+end)
+
+test("sim panel render: a resize moves the label's bound through its anchors, not a width", function()
+  recording(mocks, function()
+    local p = newPanel({ row("Some quite long label for the row", "ready", true) })
+    p.Show()
+    local f, btn = p.Frame(), p.Buttons()[1]
+    f:__setGeom(520, f:GetHeight())
+    f:__fire("OnSizeChanged", 520, f:GetHeight())
+    assertEqual(btn:GetWidth(), 520 - PAD * 2)
+    assertNil(btn.text.__w, "no fixed width on the label")
+    assertEqual(#btn.text.__pts, 2)
+    assertTrue(labelPoint(btn, "RIGHT").rel == btn.cmd)
+  end)
+end)
+
 test("sim panel render: every state paints Perf's palette on the label and the dot", function()
   recording(mocks, function()
     local list = {}

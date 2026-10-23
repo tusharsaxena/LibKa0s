@@ -393,6 +393,31 @@ test("lib: every row shows its slash command", function()
   p.HidePanel()
 end)
 
+test("lib: a step label is bounded by its command column and never wraps", function()
+  -- LK-91: the same fix as SimPanel's private copy of this renderer, at the same geometry. A label
+  -- anchored LEFT only ran under the right-hand command once a locale made it long; bounded on both
+  -- sides with word wrap off, the client truncates it with an ellipsis, and the anchors follow a
+  -- resize. tests/fixture_sim_panel.lua's recorder gives the row distinct font strings to ask.
+  local SP = dofile("tests/fixture_sim_panel.lua")
+  SP.recording(mocks, function()
+    local p = Fixture.new()
+    p.ShowPanel()
+    local f = p.__panel()
+    for _, step in ipairs(p.STEPS) do
+      local b = f.buttons[step.key]
+      assertTrue(b.text ~= b, step.key .. ": a distinct label under the recorder")
+      local pts = b.text.__pts
+      assertEqual(#pts, 2, step.key .. ": two horizontal anchors")
+      assertEqual(pts[1].point, "LEFT"); assertTrue(pts[1].rel == b); assertEqual(pts[1].x, 26)
+      assertEqual(pts[2].point, "RIGHT"); assertTrue(pts[2].rel == b.cmd, step.key .. ": on the command")
+      assertEqual(pts[2].relPoint, "LEFT"); assertEqual(pts[2].x, -8)
+      assertEqual(b.text.__wordWrap, false, step.key .. ": word wrap off")
+      assertEqual(b.cmd.__pts[1].point, "RIGHT"); assertEqual(b.cmd.__pts[1].x, -10)
+    end
+    p.HidePanel()
+  end)
+end)
+
 test("lib: cancel stays clickable while a run is mid-experiment", function()
   local p = Fixture.new()
   p.Start("c")

@@ -69,6 +69,7 @@ local function region(parent, kind, layer, template)
     self.__pts[#self.__pts + 1] = { point = p, rel = rel, relPoint = relPoint, x = x, y = y }
     return self
   end
+  function r:ClearAllPoints() self.__pts = {}; return self end
   function r:SetText(t) self.__text = t; return self end
   function r:GetText() return self.__text end
   function r:SetTextColor(cr, cg, cb, ca) self.__textColor = { cr, cg, cb, ca }; return self end

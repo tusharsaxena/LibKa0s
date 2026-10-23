@@ -238,8 +238,9 @@ at v1.76.0 (2026-10-23): `tests/test_sim_panel.lua` came in, the last entry belo
 - `LibKa0s/OptionsIdList.lua` (1251 at v1.75.0's minor 5, the #57 help-mark comment, measured
   2026-10-22, under its 1350 re-check trigger; 1247 at v1.71.0's minor 4, measured 2026-10-07; 1246 with minor 3's loaded-addon check on `addonName`, LibKa0s#42, measured 2026-10-02;
   1197 at v1.65.0; 1193 new: the id peel), ruled below.
-- `tests/test_sim_panel.lua` (1039, new to the band at v1.76.0, measured 2026-10-23: 933 → 1039 with
-  SimPanel minor 5's controls cases, `LK-01`), ruled in `docs/automated-tests/RESULTS.md`: the seam
+- `tests/test_sim_panel.lua` (1056 with the step-label truncation's tooltip case (2026-10-23), which moved no
+  SimPanel minor and so does not fire the trigger below; 1039, new to the band at v1.76.0, measured
+  2026-10-23: 933 → 1039 with SimPanel minor 5's controls cases, `LK-01`), ruled in `docs/automated-tests/RESULTS.md`: the seam
   is the *frame, the picker and the controls* section, to its own `tests/test_sim_panel_controls.lua`
   beside `tests/test_sim_panel_render.lua`. **Re-check trigger: 1200 lines, or the next SimPanel
   minor that adds cases here.**
@@ -274,8 +275,8 @@ It has grown back, out of the band: 853 at v1.76.0's minor 14 (the strip's `kind
 copy window stays the next seam, and the re-check trigger is 1000 lines. `LibKa0s/DebugLog.lua` is
 999 at v1.75.0's minor 20, re-measured 2026-10-22: the #57 comment correction added no line, so it
 stays one under the band. Of v1.75.0's new files only `tests/test_sim_panel.lua` is in the band
-(1039 at v1.76.0, listed above); `LibKa0s/SimPanel.lua`, the largest payload file among them, is 929
-after SimPanel minor 5 (v1.76.0; 919 after minor 4).
+(1056 at v1.76.0, listed above); `LibKa0s/SimPanel.lua`, the largest payload file among them, is 949
+after SimPanel minor 5 with the step-label bound (v1.76.0; 929 before it, 919 after minor 4).
 `tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page
 registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to
 `tests/test_options_render.lua` (373), the render/refresh seam the issue named plus the page-registry

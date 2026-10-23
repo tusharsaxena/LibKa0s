@@ -59,6 +59,11 @@ member is added or removed**, and the members manifest lists the same surface. `
   at once; pause it to step by hand.` (it keeps the substring `start a simulation.` hosts match), and
   `USAGE_RUN` reads `%s run: play the remaining steps (the same as resume).` The `run` verb stays,
   the synonym of `resume` and the way to play a member-started session.
+- **A step label stops at the command column** (LK-91, the owner's report on BankLedger's panel,
+  2026-10-23). A long label (`Deposit 1 x Flask of the Shattered Sun to Character Bank (1
+  recorded)`) ran under the right-hand `/bl sim step`, because the label was anchored on its left
+  only. It is now bounded on both sides with word wrap off, so the client truncates it with an
+  ellipsis: see *Row layout* under the panel's rows. The tooltip still opens with the whole label.
 
 The key moves `2.2.4` -> `2.3.5`.
 
@@ -414,6 +419,12 @@ set and no other: `done`, `busy`, `ready`, `locked`, `cancel` (no new state, eve
 | Start | `ready` while idle (`locked` while no scenario is listed), `busy` until `ready()` (and while stopping), then `done` | only while idle, and a scenario is listed |
 | Stop | `cancel` while a session runs, else `locked` | only while a session runs |
 
+- **Row layout.** A status dot at x 8, the label from x 26, and the command right-aligned 10 in
+  from the row's right edge at its natural width. The label is one line (word wrap off) and bounded
+  on the right 8 short of the command's left edge, or at the row's right inset (10) when the row's
+  command is nil or empty, so a label too long for its row ends in an ellipsis and never runs under
+  the command (2.3.5). The bound is anchors, not a width, so widening the panel shows more of the
+  label. The full label is the tooltip's first line, which every row the adapter composes shows.
 - **Command column.** Start: `slash .. " start " .. name`, plus `" " .. size` when the picked
   scenario has sizes and a size other than random (`0`) is picked. A timeline row:
   `slash .. " step"`. Stop: `slash .. " stop"`.

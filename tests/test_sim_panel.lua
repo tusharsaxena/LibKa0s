@@ -787,6 +787,23 @@ test("sim panel: a row's tip goes to GameTooltip as double lines under the row's
   end)
 end)
 
+test("sim panel: a step label truncated in its row is whole in the tooltip's first line", function()
+  -- LK-91: the label stops at the command column with an ellipsis, so the tip is where it is read
+  local long = "Deposit 1 x Flask of the Shattered Sun to Character Bank (1 recorded)"
+  local b = bench(nil, nil, { stepLabel = function() return long end })
+  F.recording(b.m, function()
+    local f = shown(b)
+    local tip = b.m.GameTooltip
+    local got = {}
+    rawset(tip, "SetText", function(_, t) got[#got + 1] = tostring(t) end)
+    local row = buttons(f)[2]
+    assertEqual(row.text.__wordWrap, false, "one line")
+    assertTrue(row.text.__pts[2].rel == row.cmd, "bounded by the command column")
+    row:__fire("OnEnter")
+    assertEqual(got[1], long, "the tip opens with the full label")
+  end)
+end)
+
 test("sim panel: a disabled row or button still shows its tip, as the client hovers it", function()
   -- red under: SimPanel minor 2, which disabled every row that is not actionable (a played step,
   -- the started Start row) and the idle Pause without SetMotionScriptsWhileDisabled, so the client

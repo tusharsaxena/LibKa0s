@@ -320,7 +320,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1.1.7](./Perf/version-15.1.1.7-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 7** (comment-only: Sim's panel copies the renderer on purpose) | v1.75.0 | **Current** |
+| [15.1.1.8](./Perf/version-15.1.1.8-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 8** (a step label stops at the command column) | v1.76.0 | **Current** |
+| [15.1.1.7](./Perf/version-15.1.1.7-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 7 (comment-only: Sim's panel copies the renderer on purpose) | v1.75.0 – v1.75.2 | Superseded |
 | [15.1.1.6](./Perf/version-15.1.1.6-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.72.0 – v1.74.0 | Superseded |
 | [14.1.1.6](./Perf/version-14.1.1.6-docs.md) | `Perf.lua` 14 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.66.0 – v1.71.0 | Superseded |
 | [13.6](./Perf/version-13.6-docs.md) | `Perf.lua` 13 · `PerfPanel.lua` 6 | v1.64.0 – v1.65.0 | Superseded |

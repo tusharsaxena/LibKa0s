@@ -1983,7 +1983,7 @@ Total.
 - sampler: the capture lives in PerfSampler.lua at minor 1, paired on the live probe
 - sampler: a probe without PerfSampler.lua builds, records nothing and says why
 
-### test_perf_panel.lua (45)
+### test_perf_panel.lua (46)
 
 - lib: before a run Start is the one offered step
 - lib: Start reads done while a run is in flight
@@ -2013,6 +2013,7 @@ Total.
 - lib: cancel returns false when there is nothing to cancel
 - lib: a canceled run leaves the next one clean
 - lib: every row shows its slash command
+- lib: a step label is bounded by its command column and never wraps
 - lib: cancel stays clickable while a run is mid-experiment
 - lib: cancel is not clickable once the run is finished
 - lib: hiding the panel never touches the run
@@ -2291,7 +2292,7 @@ Total.
 - sim autoplay: a typed run after a manual step resumes and plays the next step at once
 - sim autoplay: the start and run usage lines say a simulation plays at once
 
-### test_sim_panel.lua (58)
+### test_sim_panel.lua (59)
 
 - sim panel: the file registers on the shell's minor and in MODULES
 - sim panel: the STRINGS keys the panel draws are added to Sim.STRINGS
@@ -2340,6 +2341,7 @@ Total.
 - sim panel: with no dragged point it redocks on every Show
 - sim panel: the panel never names SavedVariables or a store
 - sim panel: a row's tip goes to GameTooltip as double lines under the row's label
+- sim panel: a step label truncated in its row is whole in the tooltip's first line
 - sim panel: a disabled row or button still shows its tip, as the client hovers it
 - sim panel: HidePanel closes the shared dropdown menu
 - sim panel: Escape (the frame's OnHide, not HidePanel) closes the shared dropdown menu
@@ -2352,7 +2354,7 @@ Total.
 - sim panel: every documented optional field filled in place after New is read at use
 - sim panel: anchorTo, stepDelay and the required callbacks and slash, reassigned after New, are read at use
 
-### test_sim_panel_render.lua (31)
+### test_sim_panel_render.lua (34)
 
 - sim panel render: the renderer is the internal seam lib.__StepPanel, not a Widgets member
 - sim panel render: the descriptor's required fields raise when missing
@@ -2363,6 +2365,9 @@ Total.
 - sim panel render: close=false draws no close mark
 - sim panel render: Show, Hide, Toggle and IsShown
 - sim panel render: row geometry and the test record
+- sim panel render: a long label truncates before the command column, never under it
+- sim panel render: a row with no command lets the label run to the row's right inset
+- sim panel render: a resize moves the label's bound through its anchors, not a width
 - sim panel render: every state paints Perf's palette on the label and the dot
 - sim panel render: an unknown state paints as locked
 - sim panel render: actionable is explicit row data and nil means false
@@ -2965,7 +2970,7 @@ Total.
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
-| test_perf_panel.lua | 45 |
+| test_perf_panel.lua | 46 |
 | test_perf_command.lua | 22 |
 | test_perf_budget.lua | 11 |
 | test_perf_toplevel.lua | 7 |
@@ -2975,8 +2980,8 @@ Total.
 | test_sim_timeline.lua | 41 |
 | test_sim_verbs.lua | 42 |
 | test_sim_autoplay.lua | 16 |
-| test_sim_panel.lua | 58 |
-| test_sim_panel_render.lua | 31 |
+| test_sim_panel.lua | 59 |
+| test_sim_panel_render.lua | 34 |
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
 | test_sim_host.lua | 7 |
@@ -3007,4 +3012,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2573** |
+| **Total** | **2578** |

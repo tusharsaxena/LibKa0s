@@ -18,7 +18,8 @@ release re-look of preview and simulation fixtures.
 Versions in this release: **SimTimeline minor 3** and **SimPanel minor 5** (`LibKa0s-Sim-1.0` key
 **2.3.5**, `Sim` 2 unchanged); **Widgets minor 14** (`LibKa0s-Widgets-1.0` key **14.1.4.3.2**:
 `WidgetsReorder` 1, `WidgetsDragHandle` 4, `WidgetsLineChart` 3 and `WidgetsAutocomplete` 2
-unchanged); every other file still at its v1.75.2 minor, and **test kit revision
+unchanged); **PerfPanel minor 8** (`LibKa0s-Perf-1.0` key **15.1.1.8**, `Perf` 15, `PerfSampler` 1
+and `PerfCommands` 1 unchanged); every other file still at its v1.75.2 minor, and **test kit revision
 41** unchanged, until an entry below moves one. Each change bumps the minor of the files it touches
 once, and this block names each new minor as it lands. Still **seventeen majors across forty
 files**.
@@ -66,6 +67,22 @@ files**.
   LootHistory, MultiMeters and KickCD.
 - **The attach files re-pair on the shell's new minor**; none of their own minors moves.
   [Widgets version 14.1.4.3.2](docs/api/Widgets/version-14.1.4.3.2-docs.md).
+
+### SimPanel minor 5 and PerfPanel minor 8: a step label stops at the command column
+
+- **A long step label truncates with an ellipsis before the command column instead of running
+  under it.** The owner's report on BankLedger's sim panel (2026-10-23): `Deposit 1 x Flask of the
+  Shattered Sun to Character Bank (1 recorded)` overlapped `/bl sim step`, because each row's label
+  was anchored on its left only. The label is now one line (word wrap off) and bounded on its right
+  8 short of the command's left edge; the command keeps its natural width at the right. A Sim row
+  with no command runs the label to the row's right inset. The bound is anchors, not a width, so
+  widening the panel shows more of the label. The full label stays the Sim row's tooltip title.
+  LK-91 of Ka0sAddonsCommonTasks `docs/2026-10-23-SIM_PREVIEW_MODE_STRIPS/`.
+- **Both copies of the renderer take it at the same geometry.** `SimPanel.lua` keeps minor 5, the
+  minor this release already gave it (v1.76.0 is tagged locally only and has reached no host); `PerfPanel.lua`, last released at 7 in v1.75.0,
+  moves to 8, or a host already holding 7 would never load the fix. No member is added.
+  [Sim version 2.3.5](docs/api/Sim/version-2.3.5-docs.md),
+  [Perf version 15.1.1.8](docs/api/Perf/version-15.1.1.8-docs.md).
 
 ### Docs and process: the preview and simulation re-look
 
