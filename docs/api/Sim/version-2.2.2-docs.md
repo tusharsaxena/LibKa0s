@@ -11,9 +11,9 @@
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **2** · `SimPanel.lua` **2** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
 | Shipped in | v1.75.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [2.2.1](./version-2.2.1-docs.md) (carried only by the local `v1.75.0` tag before the release), which superseded [1.1.1](./version-1.1.1-docs.md) (the same; earlier keyed `1`, then `1.1`, on the release branch, and no release carried either key) |
-| Superseded by | — |
+| Superseded by | [2.2.3](./version-2.2.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 2, SimPanel = 2 }` |
 
@@ -804,3 +804,12 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to version 2.2.3
+
+**Take it; no call changes.** Version 2.2.3 changes `SimPanel.lua` alone and adds no member
+([version 2.2.3](./version-2.2.3-docs.md), *What changed at this version*):
+
+- **A disabled row or control shows its tip in game.** Every row and control the panel builds now
+  has `SetMotionScriptsWhileDisabled(true)`, so a played step (a loot step's drops among them), the
+  started Start row and a disabled control show their tooltips. Nothing else draws differently.

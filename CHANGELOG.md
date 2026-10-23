@@ -10,6 +10,31 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.75.1 — 2026-10-23
+
+Versions in this release: **SimPanel minor 3** (`LibKa0s-Sim-1.0` key **2.2.3**); every other file
+still at its v1.75.0 minor, and **test kit revision 41** unchanged. No major is added and no
+`NEEDS_*` floor rises, so the library is still **seventeen majors across forty files**. Built to
+standard **v2.86.0**.
+
+### SimPanel minor 3: a disabled row or control still shows its tip
+
+- **Every row and control the step panel builds keeps its hover scripts while disabled.** The panel
+  disables each row it will not act on (a played step, the started Start row) and each control with
+  nothing to do, and the client runs no `OnEnter` or `OnLeave` on a disabled Button unless
+  `SetMotionScriptsWhileDisabled(true)` was called on it. Minor 2 never called it, so in game a
+  played step drew no tip: DropWatcher's loot step, whose tip says where each drop went, among
+  them. Found in game on `/dw sim` (2026-10-23); the kit's frame fires `OnEnter` on a disabled
+  button, which is how the suite missed it. `tests/fixture_sim_panel.lua` gains `F.hover`, which
+  hovers as the client does, and two cases use it.
+  [Sim version 2.2.3](docs/api/Sim/version-2.2.3-docs.md).
+
+### What a consumer owes
+
+- **Re-vendor; no call changes.** DropWatcher, LootHistory and BankLedger, the three Sim hosts,
+  get the tips back with no code of their own. Every other consumer re-vendors only to keep its
+  copy at the tag.
+
 ## v1.75.0 — 2026-10-22
 
 Versions in this release: **Core minor 11** (comment-only, key **11**); **Item minor 3**

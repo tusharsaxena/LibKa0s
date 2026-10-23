@@ -85,6 +85,7 @@ end
 local function record(f)
   recordPoints(f)
   recordSize(f)
+  rawset(f, "SetMotionScriptsWhileDisabled", function(self, v) self.__motionWhileDisabled = v; return self end)
   rawset(f, "CreateTexture", function(self, _, layer) return region(self, "Texture", layer) end)
   rawset(f, "CreateFontString", function(self, _, layer, template)
     return region(self, "FontString", layer, template)
@@ -107,6 +108,14 @@ function F.recording(m, fn)
   local ok, err = pcall(fn)
   m.CreateFrame = saved
   if not ok then error(err, 0) end
+end
+
+--- Hover `b` as the client does: a disabled Button runs no OnEnter or OnLeave unless
+--- SetMotionScriptsWhileDisabled(true) was called on it. The kit's frame fires them regardless,
+--- which is how disabled rows that drew no tooltip in game passed here. `script` defaults to OnEnter.
+function F.hover(b, script)
+  if not b:IsEnabled() and b.__motionWhileDisabled ~= true then return end
+  return b:__fire(script or "OnEnter")
 end
 
 --- `got` is a color table whose first three components equal `want`'s.

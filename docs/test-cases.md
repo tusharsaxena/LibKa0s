@@ -2267,7 +2267,7 @@ Total.
 - sim verbs: the generic verbs win over a host verb of the same name
 - sim verbs: a host 'help' verb is the host's own; the library defines none
 
-### test_sim_panel.lua (51)
+### test_sim_panel.lua (52)
 
 - sim panel: the file registers on the shell's minor and in MODULES
 - sim panel: the STRINGS keys the panel draws are added to Sim.STRINGS
@@ -2310,6 +2310,7 @@ Total.
 - sim panel: with no dragged point it redocks on every Show
 - sim panel: the panel never names SavedVariables or a store
 - sim panel: a row's tip goes to GameTooltip as double lines under the row's label
+- sim panel: a disabled row or button still shows its tip, as the client hovers it
 - sim panel: HidePanel closes the shared dropdown menu
 - sim panel: Escape (the frame's OnHide, not HidePanel) closes the shared dropdown menu
 - sim panel: a typed start that swaps the picker out closes the shared dropdown menu
@@ -2943,7 +2944,7 @@ Total.
 | test_sim_session.lua | 55 |
 | test_sim_timeline.lua | 41 |
 | test_sim_verbs.lua | 42 |
-| test_sim_panel.lua | 51 |
+| test_sim_panel.lua | 52 |
 | test_sim_panel_render.lua | 31 |
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
@@ -2975,4 +2976,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2545** |
+| **Total** | **2546** |
