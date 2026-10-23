@@ -263,12 +263,13 @@ the profile verb (`lib.ProfileNames`, `Sl:ProfileSwitch`, `Sl:CliProfile`) is th
 the row box and their machinery moved unchanged to `LibKa0s/WidgetsReorder.lua` (680) at Widgets
 minor 12, a secondary file paired on the shell's minor as `LibKa0s/WidgetsDragHandle.lua` is. The
 dropdown and the copy window stay; the copy window is the next seam if the file grows back.
-It has grown back, out of the band: 834 at v1.75.0's minor 13 (measured 2026-10-22), 655 before
+It has grown back, out of the band: 853 at v1.76.0's minor 14 (the strip's `kind`, measured
+2026-10-23), 834 at v1.75.0's minor 13 (measured 2026-10-22), 655 before
 `W.SearchBox` (#52), the hoisted `SKIN` table and `W.TestStrip` (#48) with their header notes. The
 copy window stays the next seam, and the re-check trigger is 1000 lines. `LibKa0s/DebugLog.lua` is
 999 at v1.75.0's minor 20, re-measured 2026-10-22: the #57 comment correction added no line, so it
 stays one under the band. None of v1.75.0's new files is in the band: `LibKa0s/SimPanel.lua`, the
-largest, is 919 after SimPanel minor 4.
+largest, is 929 after SimPanel minor 5 (v1.76.0; 919 after minor 4).
 `tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page
 registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to
 `tests/test_options_render.lua` (373), the render/refresh seam the issue named plus the page-registry

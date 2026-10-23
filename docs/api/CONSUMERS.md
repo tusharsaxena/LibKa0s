@@ -86,6 +86,10 @@ new rows, each read from the code:
   instance counts are lower bounds in the way *Method* says: a host that drives a control through
   its `/x sim` verbs reaches it inside the library. Fourteen Sim rows are read by hand (see
   *Method*, step 5).
+  **Planned at v1.76.0:** MultiMeters and KickCD become `LibKa0s-Sim-1.0` consumers in the v1.76.0
+  run (its M3; MultiMeters#60, KickCD#38), each with its own seam (`Sim:NewSeam`) and session
+  (`Sim:New`) lookups, which would make `lib.NewSeam` and `lib.New` consumed (5). The counts above
+  stand until those adoptions land and the census is re-run for v1.76.0.
 - **`LibKa0s-Widgets-1.0` minor 13**: `lib.SearchBox` is consumed (3), by BankLedger
   (`modules/Browser.lua`), DropWatcher and LootHistory (both through `core/WidgetsSetup.lua`)
   ([#52](https://github.com/tusharsaxena/LibKa0s/issues/52)). `lib.TestStrip` is consumed (4), by
@@ -818,8 +822,8 @@ here are uncapped.
 | Perf | `sv` (descriptor) | 9: AbsorbTracker, AuraMaster, ConsumableMaster, DropWatcher, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced, QuickComms | call 9 | consumed (9) |
 | Perf | `title` (descriptor) | 9: AbsorbTracker, AuraMaster, ConsumableMaster, DropWatcher, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced, QuickComms | call 9 | consumed (9) |
 | Perf | `version` (descriptor) | 9: AbsorbTracker, AuraMaster, ConsumableMaster, DropWatcher, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced, QuickComms | call 9 | consumed (9) |
-| Sim | `lib.New` | BankLedger `modules/Sim.lua:344`; DropWatcher `modules/Sim.lua:275`; LootHistory `modules/Sim.lua:324` | call 3 · name-only 168 · def 23 · stub 19 · test 816 | consumed (3) |
-| Sim | `lib.NewSeam` | BankLedger `core/SimSetup.lua:98`; DropWatcher `core/SimSetup.lua:87`; LootHistory `core/SimSeam.lua:120` | call 3 · test 4 | consumed (3) |
+| Sim | `lib.New` | BankLedger `modules/Sim.lua:344`; DropWatcher `modules/Sim.lua:275`; LootHistory `modules/Sim.lua:324` | call 3 · name-only 168 · def 23 · stub 19 · test 816 | consumed (3); MultiMeters and KickCD planned at v1.76.0 (MultiMeters#60, KickCD#38), counts unchanged until they land |
+| Sim | `lib.NewSeam` | BankLedger `core/SimSetup.lua:98`; DropWatcher `core/SimSetup.lua:87`; LootHistory `core/SimSeam.lua:120` | call 3 · test 4 | consumed (3); MultiMeters and KickCD planned at v1.76.0 (MultiMeters#60, KickCD#38), counts unchanged until they land |
 | Sim | `lib.STRINGS` | none | call 0 · name-only 1 · stub 4 · test 150 | zero — kept, documented |
 | Sim | `AddListener` (instance) | BankLedger `core/SimSetup.lua:82`; LootHistory `modules/SimPanel.lua:111` | call 3 · name-only 2 | thin (2) |
 | Sim | `After` (instance) | BankLedger `core/SimSetup.lua:55`; DropWatcher `modules/SimPool.lua:351` | call 4 · name-only 38 · def 4 · stub 1 · test 123 | thin (2) |

@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.76.0 — unreleased
+## v1.76.0 — 2026-10-23
 
 Opened 2026-10-23. Simulator auto-run (Run all removed), the test strip's simulation flavor, and the
 release re-look of preview and simulation fixtures.
@@ -72,6 +72,14 @@ files**.
 - **`docs/releasing.md` gains the preview and simulation re-look (step 5) and its release-notes
   line (step 7)**, the library's half of the standard's v2.87.0 preview-mode release rule. Step 8's
   re-vendor report names the change to each host the re-look lists. No minor moves.
+- **Built to standard v2.87.0** (was v2.86.0): the README's standards pointer moves after a read of
+  v2.87.0's three rulings, the preview and simulation release re-look (the counterpart above), the
+  simulation that plays on its own (SimTimeline 3, SimPanel 5) and the strip's simulation flavor
+  with one marker per mode on screen (Widgets 14). None binds new code on the payload.
+- **Consumers planned at v1.76.0**: MultiMeters and KickCD join `LibKa0s-Sim-1.0` (MultiMeters#60,
+  KickCD#38), and BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD adopt
+  `TestStrip`'s `kind = "sim"`, recorded in `docs/api/CONSUMERS.md` and the Consumers table of
+  `docs/releasing.md` until the census is re-run.
 
 ### What a consumer owes
 
