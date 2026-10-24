@@ -29,19 +29,20 @@ that adds a surface, and restamp the page.
 
 ## The numbers
 
-492 public exports across seventeen majors: 117 lib-level members, 215 instance members and 160
-descriptor fields.
+501 public exports across seventeen majors: 118 lib-level members, 221 instance members and 162
+descriptor fields. Nine of them are new at v1.77.0 and not yet measured (see
+[What moved since v1.66.0](#what-moved-since-v1660)); the other 492 are the v1.75.0 census.
 
 | Verdict | Exports | Meaning |
 |---|---|---|
 | consumed | 287 | Called, or passed, by three or more hosts |
 | thin | 82 | One or two hosts. A misfit found by the next host is a library gap on first contact |
-| **zero** | **123** | No host calls it. Each one is split below |
+| **zero** | **132** | No host calls it. Each one is split below |
 
 Fifteen of the 492 verdicts were set by reading the code where the scan could not see, or saw
 wrong; each is marked *read by hand* in its row and explained under [Method](#method), step 5.
 
-The 123 zero-consumer exports:
+The 132 zero-consumer exports:
 
 | Split | Exports | What happens |
 |---|---|---|
@@ -49,6 +50,7 @@ The 123 zero-consumer exports:
 | suspect shape | 0 | Both from v1.66.0 were settled at v1.67.0: Core 10 gave `MakeResizable` its lock gate ([#41](https://github.com/tusharsaxena/LibKa0s/issues/41)), and every host now passes the Options descriptor's `addonName` ([#42](https://github.com/tusharsaxena/LibKa0s/issues/42)) |
 | deliberate host copy | 5 | A host keeps its own copy on purpose, with the reason recorded beside it. Listed, not re-opened |
 | documented | 118 | No duplicate and no host waiting for it. Each gets a "no consumer as of vX, kept because ..." line in its major's live document, stamped with the census that first recorded it: v1.67.0 for the earlier ones, v1.69.0 for the line-chart exports, v1.70.0 for `lib.AUTOCOMPLETE`, v1.75.0 for the sixteen Sim exports |
+| planned at v1.77.0 | 9 | New at v1.77.0, with named adopters in M2 (eight) or M3 (`ResetAllTooltip`) of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`; not measured. Each moves to its measured verdict when the census is re-run |
 
 Most of the 118 fall into four groups. The rows below give each export's own reason.
 
@@ -68,6 +70,26 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
   `makeCloseButton`, Perf's `decorate`, `ring`, `onChange` and `L`, and Launcher's `L`.
 
 ## What moved since v1.66.0
+
+**v1.77.0 rows, planned and not measured (2026-10-24).** Eight rows are added without a re-run, and
+the v1.75.0 stamp stands: Options `KeybindingsTab`, `KeybindRows` and `KEYBINDS_UNCHANGED`
+(OptionsKeybinds minor 2) and `StrataTooltip` (OptionsCompose minor 8), all instance members;
+Core `lib.RaiseStaticPopups` (Core minor 12), which the library's own three tool windows call; and
+the `DragHandle` spec fields `level` and `ignoreParentAlpha` with the handle method `ApplyLevel`
+(WidgetsDragHandle minor 5). Their adopters are planned, not measured: each row's verdict is
+*zero — planned at v1.77.0* until the adopting items of that run's M2 land and the census is
+re-run, which sets the measured verdict. `lib.KEYBIND_STRINGS` (OptionsKeybinds minor 1), the one
+other public name v1.77.0 adds, gets no row until that re-run, since no adopter reads it by name
+(a host passes `spec.strings`).
+
+**v1.77.0's settings-layout extension, planned and not measured (2026-10-24).** One row is added the
+same way, Options `ResetAllTooltip` (OptionsCompose minor 11, an instance member), with its adopters
+in M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`. The rest of that extension is new fields on
+existing exports, so it amends rows rather than adding them: `MasterControls` gains `notes`,
+`resetPositionTooltip` and `lockIsPreview` (OptionsCompose minor 9) with the *Master opacity* label
+and the frameless packing, and `BarGroup`, `FontGroup`, `BorderGroup` and `ColorPair` gain
+`tooltips` (minor 10). Each amended row keeps its v1.75.0 verdict, which counts calls of the export
+and not of its fields.
 
 **v1.75.0 re-run (2026-10-23).** Seventy exports are new and none leaves. `O.__releaseChrome`,
 which OptionsTabs minor 9 stops exporting
@@ -398,6 +420,7 @@ here are uncapped.
 | Core | `lib.MakeResizable` | 5: BankLedger, DropWatcher, LootHistory, MultiMeters, QuickComms | call 5 · name-only 5 · stub 6 · test 39 | consumed (5) |
 | Core | `lib.New` | all 14 | call 14 · name-only 157 · def 23 · stub 19 · test 816 | consumed (14) |
 | Core | `lib.RGBA` | ConsumableMaster `core/CoreSetup.lua:163`; MultiMeters `core/CoreSetup.lua:243`; QuickComms `settings/SchemaMembers.lua:350` | call 4 · name-only 8 · stub 2 · test 35 | consumed (3) |
+| Core | `lib.RaiseStaticPopups` | none in a host by design; internal callers DebugLog (`DebugLog.lua`), Perf (`PerfPanel.lua`) and Sim (`SimPanel.lua`), each tool window on show | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M2 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
 | Core | `lib.ResolveColor` | 8: AbsorbTracker, AuraMaster, ConsumableMaster, DropWatcher, KickCD, PanelMaster, PartyFrameEnhanced, QuickComms | call 9 · name-only 41 · def 1 · stub 6 · test 17 | consumed (8) |
 | Core | `lib.SECRET` | AbsorbTracker `core/CoreSetup.lua:136`; KickCD `core/CoreSetup.lua:194`; MultiMeters `core/CoreSetup.lua:236` | call 3 · name-only 3 · stub 10 · test 304 | consumed (3) |
 | Core | `lib.SKIN` | 7: AuraMaster, DropWatcher, MultiMeters, PartyFrameEnhanced, PremadeGroupsFilterExtension, QuickComms, WhatGroup | call 7 · name-only 10 · stub 21 · test 31 | consumed (7) |
@@ -513,6 +536,7 @@ here are uncapped.
 | Widgets | `lib.SearchBox` | BankLedger `modules/Browser.lua:319`; DropWatcher `core/WidgetsSetup.lua:49`; LootHistory `core/WidgetsSetup.lua:140` | call 5 · name-only 1 · test 31 | consumed (3) |
 | Widgets | `lib.TEST_STRIP` | BankLedger `modules/Browser.lua:765`; LootHistory `core/WidgetsSetup.lua:304`; MultiMeters `modules/Window.lua:76` | call 6 · test 6 | consumed (3) |
 | Widgets | `lib.TestStrip` | 4: BankLedger, DropWatcher, LootHistory, MultiMeters | call 9 · test 20 | consumed (4); `kind = "sim"` (Widgets 14) to be consumed by BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD in v1.76.0, counts unchanged until they land |
+| Widgets | `ApplyLevel` (instance) | none yet; planned: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, QuickComms (a host calls it on its drag handle after a re-level or re-parent) | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M2 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
 | Widgets | `addonName` (descriptor) | 4: BankLedger, LootHistory, MultiMeters, QuickComms | call 4 | consumed (4) |
 | Widgets | `anchorTo` (descriptor) | BankLedger `modules/Export.lua:290`; LootHistory `modules/Export.lua:377`; MultiMeters `modules/Export_Modal.lua:381` | call 3 | consumed (3) |
 | Widgets | `applySkin` (descriptor) | BankLedger `modules/Export.lua:287`; LootHistory `modules/Export.lua:374`; MultiMeters `modules/Export_Modal.lua:375` | call 3 | consumed (3) |
@@ -522,7 +546,9 @@ here are uncapped.
 | Widgets | `fontSize` (descriptor) | LootHistory `modules/Export.lua:373`; MultiMeters `modules/Export_Modal.lua:373` | call 2 | thin (2) |
 | Widgets | `height` (descriptor) | MultiMeters `modules/Export_Modal.lua:370` | call 1 | thin (1) |
 | Widgets | `hoverXs` (descriptor) | none | call 0 | zero — kept, documented |
+| Widgets | `ignoreParentAlpha` (descriptor) | none yet; planned: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, QuickComms (a `DragHandle` spec field) | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M2 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
 | Widgets | `integer` (descriptor) | none | call 0 | zero — kept, documented |
+| Widgets | `level` (descriptor) | none yet; planned: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, QuickComms (a `DragHandle` spec field) | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M2 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
 | Widgets | `makeCloseButton` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `markers` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `name` (descriptor) | BankLedger `modules/Export.lua:284`; LootHistory `modules/Export.lua:370`; MultiMeters `modules/Export_Modal.lua:368` | call 3 | consumed (3) |
@@ -679,14 +705,14 @@ here are uncapped.
 | Options | `AttachTooltip` (instance) | 8: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, MultiMeters, PanelMaster, PrettyChat, WhatGroup | call 29 · name-only 69 · def 1 · stub 13 · test 24 | consumed (8) |
 | Options | `BANNER_H` (instance) | AbsorbTracker `settings/UnitPanel.lua:126`; PanelMaster `settings/PanelEditor.lua:510` | call 5 · name-only 3 · stub 5 · test 31 | thin (2) |
 | Options | `BUTTON_PAIR_REL` (instance) | AuraMaster `settings/GeneralSpells.lua:602`; LootHistory `settings/Panel.lua:38`; PanelMaster `settings/Panel.lua:59` | call 7 · name-only 7 · stub 6 · test 31 | consumed (3) |
-| Options | `BarGroup` (instance) | 5: AbsorbTracker, AuraMaster, KickCD, PanelMaster, PartyFrameEnhanced | call 7 · stub 11 · test 17 | consumed (5) |
-| Options | `BorderGroup` (instance) | 6: AbsorbTracker, AuraMaster, DropWatcher, KickCD, PanelMaster, PartyFrameEnhanced | call 12 · name-only 5 · def 1 · stub 11 · test 17 | consumed (6) |
+| Options | `BarGroup` (instance) | 5: AbsorbTracker, AuraMaster, KickCD, PanelMaster, PartyFrameEnhanced; v1.77.0 adds `tooltips` beside `labels` (OptionsCompose minor 10, `options-ui-§16`): planned AbsorbTracker, in M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`, not measured | call 7 · stub 11 · test 17 | consumed (5) |
+| Options | `BorderGroup` (instance) | 6: AbsorbTracker, AuraMaster, DropWatcher, KickCD, PanelMaster, PartyFrameEnhanced; v1.77.0 adds `tooltips` beside `labels` (OptionsCompose minor 10, `options-ui-§16`): planned AbsorbTracker, in M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`, not measured | call 12 · name-only 5 · def 1 · stub 11 · test 17 | consumed (6) |
 | Options | `BuildLandingPage` (instance) | 12: AbsorbTracker, AuraMaster, BankLedger, DropWatcher, KickCD, LootHistory, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, WhatGroup | call 12 · name-only 3 · stub 3 · test 52 | consumed (12) |
 | Options | `CHROME_GAP` (instance) | none | call 0 · name-only 3 · stub 6 · test 19 | zero — kept, documented |
 | Options | `CLASS_COLOR_NOTE` (instance) | AuraMaster `settings/Bars.lua:96`; PanelMaster `settings/PanelEditor.lua:387` | call 3 · name-only 1 · stub 3 · test 22 | thin (2) |
 | Options | `ChoiceGrid` (instance) | AuraMaster `settings/Filters.lua:634` | call 2 · stub 15 · test 3 | thin (1) |
 | Options | `ClearScroll` (instance) | all 14 | call 22 · name-only 3 · stub 16 · test 55 | consumed (14) |
-| Options | `ColorPair` (instance) | 4: AbsorbTracker, AuraMaster, KickCD, PartyFrameEnhanced | call 11 · name-only 13 · def 1 · stub 11 · test 14 | consumed (4) |
+| Options | `ColorPair` (instance) | 4: AbsorbTracker, AuraMaster, KickCD, PartyFrameEnhanced; v1.77.0 adds `tooltips` beside `labels` (OptionsCompose minor 10, `options-ui-§16`): planned AbsorbTracker, in M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`, not measured | call 11 · name-only 13 · def 1 · stub 11 · test 14 | consumed (4) |
 | Options | `CreateOptionsPanel` (instance) | all 14 | call 14 · name-only 5 · stub 23 · test 47 | consumed (14) |
 | Options | `CreatePanel` (instance) | all 14 | call 43 · name-only 8 · def 1 · stub 15 · test 91 | consumed (14) |
 | Options | `Drawer` (instance) | QuickComms `settings/Groups_When.lua:653` | call 0 · name-only 1 · stub 16 · test 13 | thin (1, read by hand) |
@@ -694,14 +720,17 @@ here are uncapped.
 | Options | `EnsureScroll` (instance) | 11: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PremadeGroupsFilterExtension, PrettyChat, WhatGroup | call 36 · name-only 14 · def 1 · stub 21 · test 24 | consumed (11) |
 | Options | `FONT_FLAGS` (instance) | none | call 0 · name-only 1 · stub 4 · test 14 | zero — deliberate host copy |
 | Options | `FONT_FLAGS_SORT` (instance) | none | call 0 · stub 3 · test 12 | zero — deliberate host copy |
-| Options | `FontGroup` (instance) | 4: AbsorbTracker, AuraMaster, KickCD, PartyFrameEnhanced | call 9 · name-only 5 · def 1 · stub 11 · test 12 | consumed (4) |
+| Options | `FontGroup` (instance) | 4: AbsorbTracker, AuraMaster, KickCD, PartyFrameEnhanced; v1.77.0 adds `tooltips` beside `labels` (OptionsCompose minor 10, `options-ui-§16`): planned AbsorbTracker, in M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`, not measured | call 9 · name-only 5 · def 1 · stub 11 · test 12 | consumed (4) |
 | Options | `ID_NAME_HINT` (instance) | none | call 0 · stub 17 · test 3 | zero — kept, documented |
 | Options | `IdInput` (instance) | KickCD `settings/Spells_Header.lua:228` | call 1 · name-only 1 · stub 15 · test 19 | thin (1) |
 | Options | `IdList` (instance) | AuraMaster `settings/Filters.lua:809`; BankLedger `settings/Panel.lua:389`; LootHistory `settings/Panel.lua:338` | call 4 · name-only 1 · stub 18 · test 98 | consumed (3) |
 | Options | `InlineButtonPair` (instance) | 5: AuraMaster, BankLedger, MultiMeters, PanelMaster, PremadeGroupsFilterExtension | call 10 · name-only 11 · def 1 · stub 14 · test 11 | consumed (5) |
+| Options | `KEYBINDS_UNCHANGED` (instance) | none yet; planned: BankLedger, DpsRace, DropWatcher, LootHistory, MultiMeters, QuickComms, WhatGroup | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M2 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
+| Options | `KeybindRows` (instance) | none yet; planned: BankLedger, DpsRace, DropWatcher, LootHistory, MultiMeters, QuickComms, WhatGroup | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M2 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
+| Options | `KeybindingsTab` (instance) | none yet; planned: BankLedger, DpsRace, DropWatcher, LootHistory, MultiMeters, QuickComms, WhatGroup | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M2 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
 | Options | `LSMValues` (instance) | AbsorbTracker `settings/Appearance.lua:188`; MultiMeters `settings/Schema_Compose.lua:394` | call 2 · name-only 1 · def 1 · stub 11 · test 36 | thin (2) |
 | Options | `MASTER_GROUP` (instance) | 10: AbsorbTracker, AuraMaster, DropWatcher, KickCD, LootHistory, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, WhatGroup | call 11 · name-only 2 · stub 9 · test 37 | consumed (10) |
-| Options | `MasterControls` (instance) | 9: AbsorbTracker, AuraMaster, DropWatcher, KickCD, LootHistory, PartyFrameEnhanced, PremadeGroupsFilterExtension, QuickComms, WhatGroup | call 9 · name-only 6 · def 1 · stub 19 · test 45 | consumed (9) |
+| Options | `MasterControls` (instance) | 9: AbsorbTracker, AuraMaster, DropWatcher, KickCD, LootHistory, PartyFrameEnhanced, PremadeGroupsFilterExtension, QuickComms, WhatGroup; v1.77.0 (OptionsCompose minor 9, `options-ui-§15`, M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`, not measured): `notes` planned BankLedger, ConsumableMaster, LootHistory, WhatGroup; `lockIsPreview` planned AbsorbTracker, ConsumableMaster, KickCD, PartyFrameEnhanced; `resetPositionTooltip` available, adoption per each addon's LY item; the *Master opacity* label and the frameless packing reach every consumer at its RV2 | call 9 · name-only 6 · def 1 · stub 19 · test 45 | consumed (9) |
 | Options | `NavRail` (instance) | AuraMaster `settings/OptionsSetup.lua:614`; KickCD `settings/Panel_Render.lua:346`; MultiMeters `settings/OptionsSetup.lua:613` | call 3 · stub 21 · test 20 | consumed (3) |
 | Options | `OpenOptionsPanel` (instance) | 10: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat | call 13 · name-only 19 · stub 15 · test 154 | consumed (10) |
 | Options | `PADDING_X` (instance) | PanelMaster `settings/Panel.lua:495` | call 2 · stub 2 · test 27 | thin (1) |
@@ -718,6 +747,7 @@ here are uncapped.
 | Options | `RenderRows` (instance) | 4: AuraMaster, KickCD, LootHistory, MultiMeters | call 16 · name-only 11 · stub 13 · test 46 | consumed (4) |
 | Options | `RenderSchema` (instance) | none | call 0 · stub 16 · test 24 | zero — kept, documented |
 | Options | `RenderTabbedSchema` (instance) | 12: AbsorbTracker, AuraMaster, BankLedger, DropWatcher, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, WhatGroup | call 17 · name-only 2 · stub 21 · test 46 | consumed (12) |
+| Options | `ResetAllTooltip` (instance) | none yet; planned: BankLedger, DropWatcher, LootHistory, MultiMeters, QuickComms, WhatGroup, PremadeGroupsFilterExtension, PrettyChat (a General page's header Defaults tooltip) | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
 | Options | `ResolveId` (instance) | AuraMaster `settings/GeneralSpells.lua:725` | call 1 · name-only 1 · stub 17 · test 8 | thin (1) |
 | Options | `RestoreAllDefaults` (instance) | 10: AbsorbTracker, AuraMaster, DropWatcher, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced, PremadeGroupsFilterExtension, QuickComms, WhatGroup | call 19 · name-only 5 · def 4 · stub 15 · test 150 | consumed (10) |
 | Options | `RestoreDefaults` (instance) | 6: AbsorbTracker, AuraMaster, DropWatcher, KickCD, MultiMeters, PartyFrameEnhanced | call 11 · name-only 8 · def 5 · stub 8 · test 151 | consumed (6) |
@@ -727,6 +757,7 @@ here are uncapped.
 | Options | `SessionCheckbox` (instance) | ConsumableMaster `settings/Panel.lua:701`; KickCD `settings/Panel_Widgets.lua:43` | call 2 · stub 13 · test 18 | thin (2) |
 | Options | `SetChromeHeight` (instance) | none | call 0 · stub 15 · test 4 | zero — kept, documented |
 | Options | `SetRenderer` (instance) | 13: AbsorbTracker, AuraMaster, BankLedger, DropWatcher, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, WhatGroup | call 36 · name-only 7 · def 1 · stub 16 · test 39 | consumed (13) |
+| Options | `StrataTooltip` (instance) | none yet; planned: AuraMaster, MultiMeters, PanelMaster, PartyFrameEnhanced | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M2 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
 | Options | `SubTabStrip` (instance) | BankLedger `settings/Panel.lua:454`; LootHistory `settings/Panel.lua:467` | call 2 · name-only 1 · stub 13 · test 5 | thin (2) |
 | Options | `TAB_H` (instance) | none | call 0 · name-only 5 · stub 5 · test 20 | zero — kept, documented |
 | Options | `TabStrip` (instance) | 5: KickCD, LootHistory, MultiMeters, PanelMaster, PrettyChat | call 8 · name-only 5 · stub 18 · test 68 | consumed (5) |

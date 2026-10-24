@@ -252,3 +252,124 @@ suggestCase("IdInput suggestions: a host kind's suggestTag is appended after the
   assertTrue(other ~= nil and other:find("never matches", 1, true) == nil,
     "and a row the host said nothing about carries nothing")
 end)
+
+-- ── combat (OptionsIds minor 3, OptionsCombat minor 2) ──────────────────────────────────────
+--
+-- The dropdown is parented to UIParent, so the combat cover over a page cannot reach it: before
+-- these minors a list left open at the start of combat stayed up over a covered page, with rows the
+-- write seam would refuse. O.__releaseOwnedFocus, which closes an AceGUI pullout on the instance's
+-- pages, now closes an IdList suggestion list one of those pages opened as well. The events are
+-- fired through lib.__combatFrame, as tests/test_options_combat.lua's harness fires them.
+
+local lib = T.options
+
+local function fireCombat(event)
+  local f = lib.__combatFrame
+  assertTrue(f ~= nil, "the library owns one combat event frame")
+  f:__fire("OnEvent", event)
+end
+
+--- A suggestion case whose page is on screen, with the library's combat state and the page put
+--- back however it ends.
+local function combatSuggestCase(name, fn)
+  suggestCase(name, function(made)
+    local savedLockdown = mocks.InCombatLockdown
+    local shownCtx = {}
+    local function showPage(ctx)
+      ctx.panel:Show(); ctx.panel:__fire("OnShow")
+      shownCtx[#shownCtx + 1] = ctx
+    end
+    local ok, err = pcall(fn, made, showPage)
+    mocks.InCombatLockdown = function() return false end
+    lib.__combatLocked = false
+    for _, ctx in ipairs(shownCtx) do ctx.panel:Hide(); ctx.panel:__fire("OnHide") end
+    mocks.InCombatLockdown = savedLockdown
+    if not ok then error(err, 0) end
+  end)
+end
+
+--- One IdInput on a page, its box's frame under the page as AceGUI's AddChild leaves it in the
+--- client. The kit's containers record a child without parenting it, and its frames answer
+--- GetParent with themselves (fidelity rule 2), so the case says where the box sits.
+local function pageInput(made, spec, O)
+  local b = input(made, spec, O)
+  local panel = b.ctx.panel
+  rawset(b.eb.frame, "GetParent", function() return panel end)
+  return b
+end
+
+combatSuggestCase("IdInput suggestions: the start of combat closes a list a page opened", function(made, showPage)
+  seedZephyr()
+  -- The minors that brought it: floors, so a later bump for another reason needs no edit here.
+  assertTrue((lib.MODULES.OptionsIds or 0) >= 3, "OptionsIds minor " .. tostring(lib.MODULES.OptionsIds))
+  assertTrue((lib.MODULES.OptionsCombat or 0) >= 2,
+    "OptionsCombat minor " .. tostring(lib.MODULES.OptionsCombat))
+  local b = pageInput(made, { kind = "item", candidates = zephyrs })
+  showPage(b.ctx)
+  typeText(b, "zephyr")
+  local dd = dropdown(made)
+  assertTrue(dd:IsShown(), "the list is up before combat")
+  fireCombat("PLAYER_REGEN_DISABLED")
+  mocks.InCombatLockdown = function() return true end
+  -- red under: a release that closes only an AceGUI pullout (the list stays up over the cover)
+  assertFalse(dd:IsShown(), "the list closes with the page covered")
+  dd.rows[1]:__fire("OnClick")
+  assertEqual(#b.added, 0, "and no box owns it any more, so a stale row picks nothing")
+end)
+
+combatSuggestCase("IdInput suggestions: a list another page's box opened is not this release's",
+  function(made)
+  seedZephyr()
+  local b = pageInput(made, { kind = "item", candidates = zephyrs })
+  local other = b.O.CreatePanel("SuggestFramesOther", "Suggest other", {})
+  typeText(b, "zephyr")
+  local dd = dropdown(made)
+  assertTrue(type(b.O.__closeOwnedSuggest) == "function", "the instance carries the member")
+  b.O.__closeOwnedSuggest({ other })
+  -- red under: a close that ignores the panels it is handed (any list of the instance goes)
+  assertTrue(dd:IsShown(), "a box under none of the panels keeps its list")
+  b.O.__closeOwnedSuggest({ other, b.ctx })
+  assertFalse(dd:IsShown(), "the box's own page closes it")
+end)
+
+combatSuggestCase("IdInput suggestions: a focused pullout and the list both close at combat start",
+  function(made, showPage)
+  seedZephyr()
+  local b = pageInput(made, { kind = "item", candidates = zephyrs })
+  showPage(b.ctx)
+  typeText(b, "zephyr")
+  local dd = dropdown(made)
+  local AceGUI = b.O.AceGUI
+  local cleared = 0
+  local frame = mocks.CreateFrame("Frame", nil, b.ctx.panel)
+  rawset(frame, "GetParent", function() return b.ctx.panel end)
+  AceGUI.FocusedWidget = { frame = frame, ClearFocus = function() end }
+  AceGUI.ClearFocus = function(self) cleared = cleared + 1; self.FocusedWidget = nil end
+  local ok, err = pcall(fireCombat, "PLAYER_REGEN_DISABLED")
+  AceGUI.ClearFocus, AceGUI.FocusedWidget = nil, nil
+  if not ok then error(err, 0) end
+  mocks.InCombatLockdown = function() return true end
+  assertEqual(cleared, 1, "the pullout on this page was closed")
+  -- red under: the release returning once it has closed the pullout (the list is skipped)
+  assertFalse(dd:IsShown(), "and so was the list")
+end)
+
+combatSuggestCase("IdInput suggestions: leaving combat does not reopen a list combat closed",
+  function(made, showPage)
+  seedZephyr()
+  local b = pageInput(made, { kind = "item", candidates = zephyrs })
+  showPage(b.ctx)
+  typeText(b, "zephyr")
+  assertTrue(shown(b), "the list is up before combat")
+  fireCombat("PLAYER_REGEN_DISABLED")
+  mocks.InCombatLockdown = function() return true end
+  assertFalse(shown(b), "combat closed it")
+  mocks.InCombatLockdown = function() return false end
+  fireCombat("PLAYER_REGEN_ENABLED")
+  mocks.__fireTimers()
+  -- red under: an end of combat that re-shows the last owner's list (the page's refreshers or a
+  -- remembered owner putting it back up with no keystroke)
+  assertFalse(shown(b), "the end of combat puts nothing back up")
+  typeText(b, "zephyr")
+  assertEqual(shownIds(b), "191395,191396,191397", "the box's next keystroke lists again")
+end)

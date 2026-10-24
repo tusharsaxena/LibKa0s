@@ -10,6 +10,574 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.77.0 — 2026-10-24
+
+Opened 2026-10-24. The settings-panel Keybindings tab (`O.KeybindingsTab` / `O.KeybindRows`, a
+twelfth Options file), the test kit's binding and frame-layer mocks and its Bindings.xml check, and
+the frame-layering fixes the 2026-10-24 strata review asked of the library: toplevel tool windows
+that re-raise a shown confirmation, a DragHandle level and parent-alpha option, clamped menus, the
+IdList suggestion list closed at combat start, and one shared strata tooltip (`O.StrataTooltip`).
+Extended on 2026-10-24, after the local tag and before any push, with the settings-layout surfaces
+of the run's item 020: `MasterControls` `notes`, `resetPositionTooltip` and `lockIsPreview`, the
+*Master opacity* label and the frameless packing, `tooltips` on the group composers, and
+`O.ResetAllTooltip`. Extended again on 2026-10-24, still before any push, with the owner's
+follow-up to item 015: one key button and Clear per Keybindings row (OptionsKeybinds minor 4).
+
+Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **DebugLog minor 21**
+(`LibKa0s-DebugLog-1.0` key **21.3.1**, `DebugLogDiagnostics` 3 and `DebugLogGates` 1 unchanged);
+**PerfPanel minor 9** (`LibKa0s-Perf-1.0` key **15.1.1.9**, `Perf` 15, `PerfSampler` 1 and
+`PerfCommands` 1 unchanged); **SimPanel minor 6** (`LibKa0s-Sim-1.0` key **2.3.6**, `Sim` 2 and
+`SimTimeline` 3 unchanged); **Widgets minor 15**, **WidgetsDragHandle minor 5** and
+**WidgetsAutocomplete minor 3** (`LibKa0s-Widgets-1.0` key **15.1.5.3.3**, `WidgetsReorder` 1 and
+`WidgetsLineChart` 3 unchanged); **Options minor 30**, **OptionsIds minor 3**, **OptionsCombat
+minor 2**, **OptionsCompose minor 11** and **OptionsKeybinds minor 4**, a new twelfth Options file
+(`LibKa0s-Options-1.0` key **30.2.34.3.5.9.2.11.4.2.1.4**, every other Options file unchanged); every
+other file still at its v1.76.0 minor and **test kit revision 42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
+this block names each new minor as it lands. Now **seventeen majors across forty-one files**.
+
+### Test kit revision 42: binding mock, frame-layer recorder and the Bindings.xml check
+
+Three new kit files, documented in
+[docs/api/testkit/version-42-docs.md](docs/api/testkit/version-42-docs.md). No `LibKa0s/` file
+changes, so no file minor moves; `mock_base.lua` is unchanged (1464 lines).
+
+- **`mock_bindings.lua`**, opt-in (`dofile("tests/_kit/mock_bindings.lua")(M)`), ported from
+  QuickComms' harness: two binding sets and the live tables, `GetBindingKey` answering every key of
+  a command in bind order, `GetBindingAction` answering `""` for a free key, `SetBinding` and
+  `SaveBindings` refused and recorded in combat (`__bindingRefusals`), a one-shot
+  `__bindingFailNext`, `LoadBindings` / `GetCurrentBindingSet`, `GetBindingText` /
+  `GetBindingName`, `UPDATE_BINDINGS` fired through `M.__fire` and counted, the client's binding
+  constants and `Enum.BindingSet`, the modifier reads with `M.setModifiers`, `M.bindKey` /
+  `M.clearBindings`, and the client's chord helpers behind `clientChordHelpers = true`. It fills
+  only the names a consumer's mock lacks.
+- **`mock_layers.lua`**, opt-in (`local restore = dofile("tests/_kit/mock_layers.lua")(M)`): every
+  frame `M.CreateFrame` builds after install, and `M.UIParent`, answers its strata and level
+  (inherited through its parents; `SetParent` drops an explicit level), fixed strata and level,
+  toplevel, clamp and parent alpha, with `Raise` / `Lower` counted and the survey `M.__layers`.
+  Through revision 41 `GetFrameLevel` and `GetParent` answered the frame itself.
+- **`Kit.assertBindingsXml(path, opts)`** in `bindings_xml.lua`, loaded by `framework.lua` and
+  published by `Kit.expose`: the `launcher-§6` shape check the standard's re-check paragraph
+  deferred until an addon shipped a second binding (DpsRace and QuickComms do). Every Binding in
+  the addon's category, no `header=` or `default=`, the names equal to the commands in order, each
+  `BINDING_NAME_` label set, and the category global reading the brand.
+- **`Kit.keybindThroughTab(row, slot, key, mods)`**, in the same file and published by `Kit.expose`
+  (added with OptionsKeybinds minor 2, below, inside this unreleased revision): the settings-panel
+  Keybindings tab driven the way a player drives it. It fires the row's slot widget `OnClick` with
+  `"LeftButton"`, holds `mods` through the binding mock's `M.setModifiers` for the press (and puts
+  them back), runs the library's capture listener's `OnKeyDown` with `key` (the library resolved
+  through `LibStub`), and answers the row's outcome line. It fails naming `options-ui-§20` when the
+  row, the slot or the listener is missing. `Kit.expose` now records the harness's mock for it.
+  **From OptionsKeybinds minor 4** (below, still this revision: v1.77.0 has not shipped) a row has
+  one key button, so slot 1 is that button, driven as before, and **slot 2 writes the second key
+  through the model** the way the client's Options -> Keybindings page would set it:
+  `lib.__keyChord(key)` with `mods` held, `lib.__keybindSet(row.command, 2, chord)`, then the row's
+  view repainted (the `UPDATE_BINDINGS` sync's work, done at once); it answers the client's
+  `KEY_BOUND`, or the library's words for a refusal. A press with no chord (`ESCAPE`, a modifier
+  alone, an ignored key) writes nothing, in combat or out, and answers the row's own outcome line,
+  as slot 1 does on Escape, never `KEY_BOUND`. A row drawn by an older minor, with a second
+  slot widget, is still clicked. No case name changes, and no kit revision moves.
+
+What M2 of the 2026-10-24 run uses: the KB items install `mock_bindings.lua` and call
+`T.assertBindingsXml` and `T.keybindThroughTab`; the ZS items install `mock_layers.lua`.
+New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` and
+`tests/test_kit_bindings.lua`.
+
+### Core minor 12, DebugLog minor 21, PerfPanel minor 9 and SimPanel minor 6: toplevel tool windows
+
+- **The debug console, the perf panel and the sim panel are toplevel.** Each was already DIALOG and
+  clamped; each now also calls `SetToplevel(true)`, so a click raises it among its DIALOG peers (the
+  Settings panel the Test button opens the console from among them), and a click on the peer raises
+  that back (`frame-layering-§1` T6 and `§4`; XS-06). Reported by nine of the strata review's
+  per-addon analyses (ABS-Z07, BAN-Z08, KIC-Z10, MUL-Z10, PAR-Z10, PrettyChat PRE-Z01 and PRE-Z02,
+  WHA-S08, LOO-S05); STRATA_MODEL LK-01 of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
+- **A shown confirmation stays on top.** New `Core.RaiseStaticPopups()` (Core minor 12) raises every
+  shown Blizzard `StaticPopupN` (up to `STATICPOPUP_NUMDIALOGS`, 4 when that is not a number), each
+  `Raise` pcall'd, and answers the count; it never shows, hides, re-stratas or sets toplevel on a
+  Blizzard frame (XS-21). Each of the three windows calls it from its `OnShow`, read at call time
+  and guarded, so a tool window shown after a *Reset all settings* confirmation never buries it
+  (XS-08). **No Core floor moves**: with an older vendored Core the windows show as before and raise
+  nothing.
+- **The copy window is excluded.** `Widgets.CopyWindow` already sits one strata above its DIALOG
+  opener (FULLSCREEN); a toplevel FULLSCREEN window would rise over a host's FULLSCREEN modal band on
+  show (XS-12, QuickComms). `Widgets.lua` does not move.
+- **What a consumer owes: nothing.** A re-vendor takes it. An addon whose own surface sits at DIALOG
+  or above records in its LAYERS comment that the console can cover it.
+- New suite `tests/test_tool_windows_layering.lua`, on the kit's `mock_layers.lua`: the three
+  windows are DIALOG, toplevel and clamped (the pin PrettyChat's PRE-Z04 asked for, held here), the
+  copy window is FULLSCREEN and not toplevel, a shown popup is raised once and a hidden one never,
+  no popups and an erroring `Raise` are harmless, `STATICPOPUP_NUMDIALOGS` is honored, and the
+  windows build and show on a Core without the helper. `LibKa0s/DebugLog.lua` enters
+  `layout-§1`'s 1000-1500 band (CLAUDE.md).
+
+### WidgetsDragHandle minor 5: a level offset and parent alpha
+
+- **`spec.level`**: the handle's frame level as an offset over `parent:GetFrameLevel()`, written
+  before the help and close marks are built, so the strip and both marks sit in order at birth
+  (handle at parent + `level`, marks at handle + 1). The parent's level is read through the host's
+  `spec.number` guard, or `tonumber`; a secret or non-number answer reads 0. Absent, nothing is
+  written and the handle is minor 4's parent + 1 (`frame-layering-§2`; XS-05, ABS-S04, KIC-S06).
+- **`handle:ApplyLevel()`**: re-applies `level` over the handle's current parent and sets both marks
+  to the handle's level + 1 explicitly, answering `true`; without `spec.level` it writes nothing and
+  answers `false`. A host calls it after it re-levels or re-parents the parent, because `SetParent`
+  re-derives levels (`frame-layering-§3`; XS-18).
+- **`spec.ignoreParentAlpha = true`**: `SetIgnoreParentAlpha(true)` on the handle (guarded on the
+  method), so a display that fades its content does not fade the strip a player must find; the marks
+  follow it as its children (ABS-S05, XS-05).
+- **Why.** Five hosts re-leveled the handle by hand after construction (AbsorbTracker ABS-Z04,
+  AuraMaster's L+50, ConsumableMaster CON-Z08, KickCD KIC-Z07, QuickComms' pad strip), after the
+  marks were born, which risks a mark drawing under its own strip; four fade their display.
+  STRATA_MODEL LK-02 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
+- **What a consumer owes: nothing.** Neither field passed, the strip is minor 4's exactly. The M2
+  adopters (AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, QuickComms) pass the fields instead
+  of re-leveling by hand. Documented in
+  [docs/api/Widgets/version-15.1.5.3.3-docs.md](docs/api/Widgets/version-15.1.5.3.3-docs.md).
+- New suite `tests/test_widgets_draghandle_layers.lua`, on the kit's `mock_layers.lua` over the
+  DragHandle bench: minor 4's levels pinned without `level`; `level = 50` over a parent at 7 gives
+  57 and 58, with the handle's write logged before either mark is created; `ApplyLevel` after a
+  re-level to 20 gives 70 and 71 and, with no `level`, answers `false` and writes nothing; a secret
+  or non-number parent level reads 0; `ignoreParentAlpha` set, absent, and on a frame without the
+  method. The placement suite's minor pin reads "4 or later".
+
+### Widgets minor 15 and WidgetsAutocomplete minor 3: popups clamped to screen
+
+- **The dropdown menu** (`Widgets.lua` 15): the one shared popup every `lib.Dropdown` drops calls
+  `SetClampedToScreen(true)` when `EnsureMenu` builds it, right after its `FULLSCREEN_DIALOG`
+  strata, so a dropdown near the bottom or right edge of the screen drops a menu the client keeps on
+  screen. Anchoring, strata, the `GLOBAL_MOUSE_DOWN` dismissal and `OnHide` are unchanged.
+- **The autocomplete list** (`WidgetsAutocomplete.lua` 3): `ensureList` calls
+  `SetClampedToScreen(true)` right after the list's strata (`AUTOCOMPLETE.STRATA`, or the handle's
+  `opts.strata`), so a search box near the bottom edge keeps its suggestions on screen.
+  `lib.AUTOCOMPLETE` is unchanged.
+- **Why.** A host window moved to a screen edge dropped these popups off it (`frame-layering-§4`;
+  XS-22, LOO-Z08). LootHistory already clamps its own row menu (LOO-S09). STRATA_MODEL LK-03 of
+  Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
+- **What a consumer owes: nothing.** A popup that fits on screen sits exactly where it did. No
+  lib-level member moves (`members-15.1.5.3.3.json`). The Widgets document is the DragHandle
+  change's, re-keyed from 14.1.5.3.2 (never shipped) to 15.1.5.3.3:
+  [docs/api/Widgets/version-15.1.5.3.3-docs.md](docs/api/Widgets/version-15.1.5.3.3-docs.md).
+- Two new cases, each on the kit's `mock_layers.lua`, installed and restored: in
+  `tests/test_widgets.lua`, the menu a fresh library builds on the first dropdown open is
+  `FULLSCREEN_DIALOG` and clamped; in `tests/test_widgets_autocomplete.lua`, the list built on the
+  first show is at `AUTOCOMPLETE.STRATA` (and at the handle's `opts.strata` when one is passed) and
+  clamped.
+
+### OptionsIds minor 3 and OptionsCombat minor 2: the suggestion list closes when combat starts
+
+- **The list closes at `PLAYER_REGEN_DISABLED`.** The suggestion dropdown an `O.IdInput` (and an
+  `O.IdList`'s add box) puts up as the player types is parented to `UIParent`, so the combat cover
+  over a page could not reach it, and a list left open stayed up over a covered page with rows the
+  write seam refuses. New internal instance member `O.__closeOwnedSuggest(panels)` (OptionsIds 3)
+  closes it, as Escape does, when the box that owns it sits under one of `panels`
+  (`lib.__descendsFrom`); a list a box under none of them opened is left alone.
+- **`O.__releaseOwnedFocus(panels)` closes both** (OptionsCombat 2). It no longer returns once it
+  has closed an AceGUI pullout on one of the instance's pages, and ends by calling
+  `O.__closeOwnedSuggest` when the instance has it. The caller (`Options.lua`'s combat hook) does
+  not move. Leaving combat reopens nothing; the box's next keystroke lists again.
+- **Why.** Nothing usable is lost: a pick in combat was already refused (`O.__combatRefused`), and
+  an AceGUI pullout closes the same way (`frame-layering-§4`; XS-10, BAN-S11, BAN-Z10). The strata
+  review rated it to land only after an in-client check; the run's lead landed it and moved that
+  check to the smoke list (SM-LK-04). STRATA_MODEL LK-04 of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
+- **What a consumer owes: nothing.** Both members are `__`-prefixed, so no Options degradation stub
+  owes them, and no public member moves at this change (the manifest it wrote,
+  `members-29.2.34.3.5.9.2.7.4.2.1.json`, gave way to `members-29.2.34.3.5.9.2.8.4.2.1.json` when
+  OptionsCompose minor 8 landed, and that to `members-30.2.34.3.5.9.2.8.4.2.1.1.json` when Options
+  minor 30 and OptionsKeybinds minor 1 did, and that to `members-30.2.34.3.5.9.2.8.4.2.1.2.json`
+  when OptionsKeybinds minor 2 did, and that to `members-30.2.34.3.5.9.2.8.4.2.1.3.json` when
+  OptionsKeybinds minor 3 did, and that to `members-30.2.34.3.5.9.2.9.4.2.1.3.json` when
+  OptionsCompose minor 9 did (now `members-30.2.34.3.5.9.2.11.4.2.1.4.json`)). Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md).
+- Four new cases in `tests/test_options_idsuggest_frames.lua`, with the events fired through
+  `lib.__combatFrame`: a list a shown page's box opened closes at combat start and its rows pick
+  nothing; a box under none of the panels handed in keeps its list; a focused pullout and the list
+  both close; and leaving combat puts nothing back up while the box's next keystroke lists again.
+
+### OptionsCompose minor 8: one strata tooltip
+
+- **`O.StrataTooltip(values[, strings])`**, a new public instance member: the one tooltip every
+  player strata row carries (`frame-layering-§1`, player-chosen strata; `options-ui-§16`). Pass it
+  the row's own value table, an array of strata keys or the dropdown's map keyed by strata key. It
+  returns the tiers sentence always ("The layer this frame draws in. ... in the same layer as the
+  game's Settings window."), adds the dialog-and-above sentence when the row offers `DIALOG`,
+  `FULLSCREEN`, `FULLSCREEN_DIALOG` or `TOOLTIP`, and adds the dropdown-menus-and-tooltips sentence
+  when it offers `FULLSCREEN_DIALOG` or `TOOLTIP`. A non-table answers the tiers sentence alone.
+  `strings` (`{ BASE, DIALOG, POPUP }`) overrides each part: the library carries no locale, so a
+  host with one passes its own L through it. The default text is ASCII.
+- **No value set is published.** Each knob keeps the values it stores; a value-set change is a
+  migration, not a tooltip.
+- **Why.** PanelMaster and MultiMeters each wrote their own tier sentences, and AuraMaster and
+  PartyFrameEnhanced needed one (U-12, XC-21, PAN-L20, MUL-L22, XS-03 of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`). The standard's frame-layering-§1 names this member
+  and quotes the three sentences; the four addons' strata rows adopt it in the run's M2.
+- **What a consumer owes: every Options degradation stub gains `StrataTooltip`.**
+  `Kit.assertSurfaceParity` compares a stub against the live instance `lib:New` returns (the
+  surface a consumer's runner registers with `Kit.setSurfaceSource`), so the re-vendor turns red
+  until the stub answers it. The regenerated `members-29.2.34.3.5.9.2.8.4.2.1.json` (now
+  `members-30.2.34.3.5.9.2.11.4.2.1.4.json`) lists the lib-level table only, as every Options
+  manifest does, so it does not name the new member. Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md),
+  which replaces the 29.2.34.3.5.9.2.7.4.2.1, 29.2.34.3.5.9.2.8.4.2.1, 30.2.34.3.5.9.2.8.4.2.1.1, 30.2.34.3.5.9.2.8.4.2.1.2 and 30.2.34.3.5.9.2.8.4.2.1.3
+  documents this release carried on its branch: no release carried any of those keys.
+- Six new cases in `tests/test_options_compose.lua`: `BACKGROUND` to `HIGH` (array and map) give the
+  tiers alone; a set with `DIALOG` (or `FULLSCREEN`) adds the dialog sentence; a set with `TOOLTIP`
+  or `FULLSCREEN_DIALOG` adds both; a non-table gives the tiers; `strings` overrides each part; and
+  the default text is ASCII and names the Settings window.
+
+### Options minor 30 and OptionsKeybinds minor 1: the key binding model
+
+- **`OptionsKeybinds.lua`, a twelfth Options file at minor 1**, loaded after `OptionsDrawer.lua`
+  (and so after `OptionsCombat.lua`, whose lock it reads) and paired on the shell's minor
+  (`lib.__keybindsMinor` / `lib.__keybindsShellMinor`). It is the headless half of the
+  settings-panel Keybindings tab (`options-ui-§20`): the editor for the bindings a host declares in
+  its own `Bindings.xml`, two slots per action as on the client's Options -> Keybindings page.
+- **`lib.__keybindSet(command, slot, key)`** binds with the client's slot semantics
+  (`RebindKeysInOrder`): the old keys are unbound, `key` is taken from the action that had it, and
+  the command is rebound in order with `key` in `slot` (a key the command already holds swaps; slot
+  2 on a keyless command becomes slot 1). It answers `ok, displaced, displacedUnbound, reason`.
+  **It refuses `"combat"`** under `lib.__IsCombatLocked()` before calling any binding API
+  (`SetBinding` is `#nocombat`; `SaveBindings` is blocked from tainted code in combat), and
+  `"unavailable"` without the five binding functions. A falsy `SetBinding` puts every old binding
+  back, the displaced action's too, and answers `"failed"` with no save. Otherwise one
+  `SaveBindings(GetCurrentBindingSet())`. **`lib.__keybindClear(command, slot)`** clears one slot or
+  both the same way; nothing to clear saves nothing.
+- **`lib.__keyChord(key, mods)`**: a key press as the client's chord string (`ALT-` `CTRL-` `SHIFT-`
+  `META-`, mouse buttons 3 to 31 and the wheel), `nil` for a modifier alone, `UNKNOWN`, the left and
+  right buttons and `ESCAPE`; the client's `GetConvertedKeyOrButton`,
+  `IsKeyPressIgnoredForBinding` and `CreateKeyChordStringUsingMetaKeyState` first, a bundled copy
+  without them. **`lib.__keybindSetName()`** answers `"account"` or `"character"`.
+- **`lib.KEYBIND_STRINGS`**, the tab's words (ASCII; a host's `spec.strings` overrides them for
+  translation), with the client's own `NOT_BOUND`, `KEY_BOUND` and `KEY_UNBOUND_ERROR` winning
+  where they exist. It is the one public lib-level name added, so
+  `members-30.2.34.3.5.9.2.8.4.2.1.1.json` (now `members-30.2.34.3.5.9.2.11.4.2.1.4.json`) lists it.
+- **`Options.lua` minor 30** attaches the file at the end of `lib:New`, guarded
+  (`lib.__AttachKeybinds(O, d)`, an empty body at minor 1: the tab's instance members arrive with
+  the file's next minor in this release).
+- **Why.** OWNER_SCOPE 015 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`: every
+  addon with a window offers its key bindings on its own settings page, following the binding set
+  the player chose and in step with Blizzard's page. This **supersedes QuickComms' 2026-10-21
+  retirement of its in-panel key box** (QuickComms `b902e35`); the write-and-save path it retired
+  (`db8f7a6`) is the one this file carries. `launcher-§6`'s rejection of a library-owned binding
+  file (LibKa0s#58) stands: the file writes no `BINDING_*` global, never reads `Bindings.xml` and
+  sets no default key.
+- **What a consumer owes: nothing yet.** No instance member is added, so no Options degradation
+  stub moves. Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md).
+- New suite `tests/test_options_keybinds_model.lua` (the kit's `mock_bindings.lua` installed per
+  case): slots on commands with 0, 1 and 2 keys, the slot 2 to slot 1 swap, a displaced action
+  reported keyless only when it is, a failed rebind restoring everything with no save, one save to
+  the current set (1 and 2), both combat refusals calling nothing, clears, `"unavailable"`, the chord
+  builder on both routes, the set name and the twelve-component key.
+
+### OptionsKeybinds minor 2: the Keybindings tab
+
+- **Three public instance members** (`options-ui-§20`), on top of minor 1's model:
+  - **`O.KeybindingsTab(spec)`** returns the `opts.tabs` entry for `O.RenderTabbedSchema`:
+    `{ key = spec.key or "Keybindings", label, tooltip, before = spec.before, render }`, with no
+    `before` by default, so the library puts it after every group tab. `spec`: `bindings` (the
+    host's `NS.BINDINGS`, `{ { command, tooltip } }`, row order), `key`, `before`, `intro` (one
+    optional host line under the fixed intro, never in place of it) and `strings` (translations of
+    `lib.KEYBIND_STRINGS`).
+  - **`O.KeybindRows(ctx, spec, parent)`** draws the rows into `parent` (default the page's scroll)
+    for a hand-drawn strip such as LootHistory's `GENERAL_TABS`, and answers the row records
+    (`{ command, label, group, slots, clear, status }`), or nil when degraded.
+  - **`O.KEYBINDS_UNCHANGED`**, "Key bindings are not changed.", for the end of a General page's
+    `opts.defaultsTooltip`.
+- **A row**: the client's `GetBindingName(command)` label (no label is passed in, so it cannot
+  drift from the client's page), **Key 1** and **Key 2** slots showing `GetBindingText(key)` or
+  `NOT_BOUND`, and **Clear**, at 0.40 / 0.22 / 0.22 / 0.12. Under the rows, the set line ("Saved for:
+  all characters" or "this character only", then where the player switches it) and the outcome line.
+  Each row registers a refresher that re-reads `GetBindingKey`; nothing is cached.
+- **The capture**, as on the client's page: a left click listens, a second click or Escape cancels
+  (the keyboard-enabled listener consumes Escape, so the Settings window stays open), a right click
+  clears that slot, PRINTSCREEN still screenshots, a modifier alone keeps listening, mouse buttons 3
+  to 31 and the wheel bind. The outcome line is the client's `KEY_UNBOUND_ERROR` naming the action
+  that lost its key when it is left with none, else `KEY_BOUND`. **One listener for the session**,
+  `lib.__keybindListener`, a plain frame kept across an upgrade, so one slot listens at a time
+  across every host.
+- **Combat**: starting a capture, a right click and Clear are refused through `O.__combatRefused`
+  (the gray notice once, the outcome line `COMBAT`, no binding API called). A capture in progress
+  stops at combat start through `lib.__keybindOnCombat`, a hook in the lock's `lib.__combatHooks`;
+  no event is registered for it. A capture also stops on the slot's `OnRelease` (a tab change or a
+  structural refresh) and on the page's `OnHide`.
+- **Pooled widgets** (`options-ui-§19`): a slot's frame takes both mouse buttons, and its one
+  `OnRelease` puts `RegisterForClicks("LeftButtonUp")` back. The tab never touches `SettingsPanel`,
+  `KeybindListener`, `HideUIPanel`, `ToggleGameMenu` or `Settings.*`, and never uses AceGUI's
+  `Keybinding` widget.
+- **Degradation**: without the binding API the tab draws one line pointing at Options ->
+  Keybindings, and nothing else.
+- **What a consumer owes: every Options degradation stub gains `KeybindingsTab`, `KeybindRows` and
+  `KEYBINDS_UNCHANGED`**, in every addon, windowed or not (`Kit.assertSurfaceParity`). The
+  regenerated `members-30.2.34.3.5.9.2.8.4.2.1.2.json` (now `members-30.2.34.3.5.9.2.11.4.2.1.4.json`)
+  lists the lib-level table only, as every
+  Options manifest does, so it does not name them. The KB items of the 2026-10-24 run test their tab
+  through `T.keybindThroughTab`. Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md).
+- **Why.** OWNER_SCOPE 015 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`
+  (KEYBINDINGS_RESEARCH §5.1 and §5.2; XC-01, XC-02, XC-03 and U-03 of its layout review). Repainting
+  on `UPDATE_BINDINGS` is the next minor's (OptionsKeybinds minor 3, below).
+- New suite `tests/test_options_keybinds.lua` on the bench `tests/fixture_keybinds.lua`, which fails
+  a case on any touch of Blizzard's settings window: the tab entry and its place last, rows and
+  labels, slots and the refresher, the capture (SHIFT-K, Escape, a modifier alone, PRINTSCREEN, a
+  second click, Button4, the wheel, the right click, Clear, one capture across rows), the outcome
+  and set lines, the three combat cases, pooling, OnHide, a disabled render, degradation and the
+  intro. Three new cases in `tests/test_kit_bindings.lua` pin `Kit.keybindThroughTab`, driven against an
+  Options instance.
+
+### OptionsKeybinds minor 3: the tab follows Options -> Keybindings
+
+- **A key set on the client's Options -> Keybindings page, a binding set switched (Character
+  Specific Keybindings, which runs `LoadBindings`) or an override binding now shows on the
+  Keybindings tab** without reopening the settings. `SetBinding`, `SaveBindings` and `LoadBindings`
+  fire `UPDATE_BINDINGS`; one library frame, **`lib.__keybindEventFrame`** (hidden, made once, kept
+  across an upgrade, its `OnEvent` resolving `lib.__OnKeybindEvent` at call time), hears it.
+- **Only while a keybind row is on screen.** `lib.__keybindLive` (weak-keyed, row record -> ctx)
+  holds every row from its build to its group's `OnRelease`; `lib.__syncKeybindEvents()` drops dead
+  rows and registers when a live row's group frame is visible on a shown page, or unregisters when
+  none is. It runs on row build, on release, from the page's `OnShow` and `OnHide` and at the start
+  of each dispatch, so a host with no settings page open owns no registration (the combat lock's
+  discipline). An event that reaches the frame anyway draws and prints nothing.
+- **Through Core's `SafeRegisterEvent`**, pcall'd, never a raw `RegisterEvent`, so this is not a
+  fourth raw private registration site (`CLAUDE.md`'s `events-frames-taint-§1` row says so).
+  Without the helper nothing registers; the page's `OnShow` re-read and the refreshers still work.
+- **One repaint per frame.** The dispatcher queues one `C_Timer.After(0, ...)` repaint unless one is
+  pending (`lib.__keybindRepaintPending`; with no `C_Timer` it repaints at once), so a burst of
+  events costs one pass. The repaint re-reads every on-screen row's keys from `GetBindingKey` and
+  its set line; a listening slot keeps `LISTENING`. It only reads, so it runs in combat too.
+- **The page's `OnShow` re-reads** its rows with or without an event (QuickComms' db8f7a6
+  precedent), and its `OnHide` stops a capture as before; both hooks are installed once per page
+  (`ctx.__keybindSyncHooked`) and dispatch by name.
+- **What a consumer owes: nothing.** Every new name is `__`-prefixed and no instance member moves;
+  the regenerated `members-30.2.34.3.5.9.2.8.4.2.1.3.json` (now
+  `members-30.2.34.3.5.9.2.11.4.2.1.4.json`) is unchanged apart from its key.
+  Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md).
+- **Why.** OWNER_SCOPE 015 ("sync across both") of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`, KEYBINDINGS_RESEARCH §3.1, §3.4 and §5.1 "Syncing"
+  (risks 5 and 9 of §5.6).
+- New suite `tests/test_options_keybinds_sync.lua` (fourteen cases, on `tests/fixture_keybinds.lua`,
+  which now resets the sync state around every case): registered only while rows are on screen and
+  let go of on the last hide and on release; registration through a spied `SafeRegisterEvent`, and
+  none without it while `OnShow` still re-reads; an external `SetBinding` shown after the frame;
+  three events, one repaint; `LoadBindings(2)` repainting the slots and the set line; a key changed
+  while hidden shown on the next `OnShow` with no event; `__fireUnconditional` with nothing on
+  screen drawing and printing nothing; a capture keeping `LISTENING`; a repaint in combat; and no
+  `C_Timer`. The two existing version cases read minor 3.
+
+### OptionsCompose minor 9: Master controls notes, the preview lock, Master opacity and the frameless packing
+
+- **What.** `O.MasterControls(spec)` takes three new fields, the only ways a host extends the
+  composed words (`options-ui-§15`, standard v2.88.0):
+  - **`notes`**, `{ <leaf> = "One sentence." }`: the sentence is appended after the canonical
+    tooltip of that row or button, with one space. The leaves are `enabled`, `visibility`, `scale`,
+    `alpha`, `locked`, `debugConsole`, `minimap` and `testMode`, and the buttons `resetPosition` and
+    `resetAll`. Keyed by the canonical leaf, so a `keys` rename keeps its note; a note for an
+    omitted row, or one that is not a non-empty string, does nothing; `extra` rows take none.
+  - **`resetPositionTooltip`**: replaces the *Reset position* tooltip, the one canonical text that
+    has to name the addon's own frames; `notes.resetPosition` follows it. No effect when frameless.
+  - **`lockIsPreview = true`**: *Lock frame*'s tooltip becomes the library's one sentence for an
+    addon whose unlocked view is its test mode, quoted by the standard: "Stop the frame being
+    dragged. While it is unlocked the display shows placeholder content, so it can be seen and
+    placed; this is the addon's test mode." `notes.locked` follows it. With `testModePath` as well
+    it raises at the host's call, since such an addon has no *Test mode* row; a frameless spec emits
+    no *Lock frame* row and neither raises nor uses it.
+
+  Two owner-ruled changes reach a host that passes none of the new fields:
+  - **The alpha row is labeled *Master opacity*** (was *Master alpha*). The stored leaf, the
+    tooltip, the range and the default are unchanged, so nothing migrates.
+  - **The frameless packing.** With *Lock frame* omitted (frameless, or `omit.locked`) and the
+    console row emitted, *Minimap button* carries no `startsLine` and sits beside *Debug console*;
+    *Test mode*, when there is one, opens its own line. A frameless tab reads [Enable][General
+    visibility] / [Debug console][Minimap button], then *Reset all settings*. With *Lock frame*
+    present, compose minor 7's shape stands. The composer lays out the rows it is asked for and does
+    not police the standard's "a frameless addon has no Test mode".
+
+  `MasterControls` is split into file-local helpers (`masterRows`, `masterButtons`, `emitNoted`,
+  `withNote`) so no function nears CCN 15. It still never writes to `spec`, `spec.notes` or
+  `spec.omit`.
+- **Why.** `options-ui-§15` as WS-34 wrote it: a host MUST NOT rewrite a composed row's words, and
+  the three fields are what it passes instead (U-01, XC-04, XC-05 of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`; anti-pattern #106). *Master opacity* is owner call
+  CALL-02 (U-09a, `options-ui-§21`: no label says "alpha"), and the packing is the standard's
+  ruling U-09c, so no line holds a lone control.
+- **Consumer impact.** Every host shows *Master opacity* after its re-vendor, with no stored path
+  changed, so a suite pinning "Master alpha" changes at the addon's RV2. The frameless hosts,
+  PremadeGroupsFilterExtension (`settings/Panel.lua`) and PrettyChat (`settings/Schema.lua`), and any
+  host omitting `locked` (none today), get the packed line when they pass `minimapPath`. In this
+  repo, `tests/fixture_compose_golden.lua`'s `MasterControls/framed` record changed for the label
+  only; its `MasterControls/frameless` record declares no minimap row and did not change. The
+  regenerated `members-30.2.34.3.5.9.2.11.4.2.1.4.json` is unchanged apart from its key and the
+  OptionsCompose minor: no member is added, so no Options degradation stub owes anything for it.
+  Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md),
+  which replaces the 30.2.34.3.5.9.2.8.4.2.1.3 document this release carried on its branch.
+- New suite `tests/test_options_compose_master.lua` (fifteen cases, after `test_options_compose`):
+  the *Master opacity* label; each note on exactly its row, the button notes, ignored notes, a
+  `keys` rename, and an untouched spec; `resetPositionTooltip` with and without a note and when
+  frameless; `lockIsPreview`'s sentence, its refusal with `testModePath` and the frameless case;
+  the packing for frameless, `omit.locked`, nothing omitted and no console, and a flow-engine
+  render with *Debug console* and *Minimap button* on one line; and the minor.
+- **Deviation from the plan item.** The refusal names the section as "options-ui section 15": the
+  shipped library's strings are ASCII (`tests/test_prose.lua`'s gate, the em dash excepted), so the
+  section sign the item asked for cannot appear in a shipped string.
+
+### OptionsCompose minor 10: tooltips beside labels
+
+- **What.** `O.FontGroup`, `O.BorderGroup`, `O.BarGroup` and `O.ColorPair` take **`tooltips`**
+  beside `labels`: `{ <leaf> = "..." }`, keyed by the canonical leaf as `labels` is, never by a
+  `keys` rename. A non-empty string replaces that row's tooltip; a color swatch keeps the
+  class-color sentence after it (`" " .. O.CLASS_COLOR_NOTE`, `options-ui-§17`), and a companion
+  takes the words as given. The label stays canonical. Bound rows (`spec.bind`) behave the same. An
+  empty or non-string entry, or one for an omitted leaf, does nothing, and the spec and its
+  `tooltips` table are never written. Applied in `emit`, the one place overrides are applied,
+  through a file-local `withTooltip`. **`O.MasterControls` ignores `tooltips`** (its spec view
+  shadows the field with an empty table): `notes` stays that tab's only route, and its `labels`
+  behave as before.
+- **Why.** `options-ui-§16` as WS-35 wrote it (standard v2.88.0): where a composed group's canonical
+  tooltip misdescribes the host's wiring, the host passes `tooltips` rather than patching the
+  returned row (anti-pattern #106's group clause). The first consumer is AbsorbTracker's *Bar
+  opacity*, applied to the whole frame rather than the fill (U-02, ABS-P15, ABS-L12 of
+  Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`).
+- **Consumer impact.** None for a host that passes no `tooltips`: every record in
+  `tests/fixture_compose_golden.lua` is unchanged. No member is added, so no Options degradation
+  stub owes anything, and the regenerated `members-30.2.34.3.5.9.2.11.4.2.1.4.json` is unchanged
+  apart from its key and the OptionsCompose minor. Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md)
+  (*The common spec*), which replaces the 30.2.34.3.5.9.2.9.4.2.1.3 document this release carried
+  on its branch.
+- New suite `tests/test_options_compose_tooltips.lua` (twelve cases, after
+  `test_options_compose_master`): each leaf of each group (BorderGroup with and without `show`)
+  replaced alone with every other row byte-identical; the swatch's class-color sentence; no note on
+  a companion; ignored entries; a `keys` rename; `labels` with `tooltips`; a prefixed block; the
+  bind arm; an untouched spec; `MasterControls` ignoring it; the goldens; and the minor.
+  `tests/test_options_compose_master.lua`'s minor case now reads "minor 9 or later".
+
+### OptionsCompose minor 11: the reset's tooltip for the General Defaults
+
+- **What.** **`O.ResetAllTooltip(tail)`**, a new public instance member: the tooltip *Reset all
+  settings* carries, returned for the General page's header **Defaults**. It reads the descriptor
+  at call time through the same chooser `O.MasterControls` gives the button (`RESET_ALL_TIP`,
+  `RESET_ALL_TIP_PROFILE` with `resetProfile`, `RESET_ALL_TIP_PROFILES_PAGE` with `profilesPage` as
+  well), so the two controls can never differ. `tail` follows after one space when it is a
+  non-empty string; anything else adds nothing. `O.MasterControls`' `notes.resetAll` is that
+  button's own and never reaches the member. No other member moves and `Options.lua` is unchanged.
+- **Why.** `options-ui-§12` as WS-36 wrote it: where the General page's header Defaults is the
+  global reset, its `defaultsTooltip` MUST be the reset's own text, with options-ui-§20's tail,
+  `O.ResetAllTooltip(O.KEYBINDS_UNCHANGED)`, for an addon with key bindings. The collection carried
+  three wordings of one act (U-04, XC-02 of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`). Planned consumers, each moving its General Defaults
+  onto the member with no host wording: BankLedger, DropWatcher, LootHistory, MultiMeters,
+  QuickComms and WhatGroup (with `O.KEYBINDS_UNCHANGED`), PremadeGroupsFilterExtension and
+  PrettyChat (no tail).
+- **What a consumer owes: every Options degradation stub gains `ResetAllTooltip`**, at the addon's
+  re-vendor (RV2): `Kit.assertSurfaceParity` compares the stub with the live instance, so the
+  re-vendor turns red until the stub answers it. Suggested stub:
+  `ResetAllTooltip = function(tail) return type(tail) == "string" and tail or "" end`. The
+  regenerated `members-30.2.34.3.5.9.2.11.4.2.1.4.json` lists the lib-level table only, as every
+  Options manifest does, so it does not name the new member; it moves its key and the
+  OptionsCompose minor. Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md)
+  (`O.ResetAllTooltip(tail)`), which replaces the 30.2.34.3.5.9.2.10.4.2.1.3 document this release
+  carried on its branch.
+- New suite `tests/test_options_reset_tooltip.lua` (seven cases, after
+  `test_options_compose_tooltips`): the three hosts' wordings; the wording following a descriptor
+  changed after `New`, as the button's does; each equal to the tooltip the
+  MasterControls tail hands `O.InlineButtonPair`; the `O.KEYBINDS_UNCHANGED` tail after one space;
+  an empty, nil or non-string tail adding nothing; `notes.resetAll` not reaching the member; and the
+  minor. `tests/test_options_compose_tooltips.lua`'s minor case now reads "minor 10 or later".
+
+### OptionsKeybinds minor 4: one key button and Clear per row
+
+- **What.** A Keybindings row is the binding's label, **one key button** and **Clear**; the second
+  slot widget is gone. The button shows the action's first key (`GetBindingKey`'s first return) or
+  `NOT_BOUND`. A left click listens and the key binds into slot 1 through the unchanged
+  `lib.__keybindSet(command, 1, key)`, with the client's slot semantics, so a second key the player
+  set on the client's Options -> Keybindings page is kept. **Nothing is hidden**: with a second key
+  the button reads `<first key> +1` (`KEY_MORE`, `"%s +%d"`), and its tooltip, built at each hover,
+  names every key (`KEYS_ALL`, `"Keys: %s"`) and says the others were set on the game's Key
+  Bindings page (`KEYS_OTHER`). A right click on the button clears the key it shows (slot 1; a
+  second key moves up and shows), and Clear removes every key (`CLEAR_TIP` now says so). Escape,
+  the combat refusals, the set line, the outcome line and the `UPDATE_BINDINGS` sync are unchanged,
+  and so are the label's, the button's and Clear's widths (0.40, 0.22, 0.12). The client's own
+  Keybindings page is not touched. `lib.KEYBIND_STRINGS` drops `KEY1` / `KEY2` ("Key 1" / "Key 2")
+  and gains `KEY` ("Key binding", the tooltip's title), `KEY_MORE`, `KEYS_ALL` and `KEYS_OTHER`.
+- **Why.** The owner's follow-up to 015 (2026-10-24): "For all the keybindings in the individual
+  addon > General > Keybindings, just have a single keybinding button and clear button. In the
+  Settings > Game > Keybindings, leave it as is." `options-ui-§20` as WS-40 rewrote it, in
+  addendum-02 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
+- **What a consumer owes: nothing for a stub**, since no member is added or removed. What a
+  re-vendor changes is drawn: one button per row, so a suite that read a row's `slots[2]` reads the
+  one button's `"<key> +1"` text instead, a `spec.strings` translation of `KEY1` or `KEY2` is
+  ignored, and a smoke or settings doc that names Key 1 / Key 2 moves to the one button. The
+  regenerated `members-30.2.34.3.5.9.2.11.4.2.1.4.json` is unchanged apart from its key. Documented
+  in
+  [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md),
+  which replaces the 30.2.34.3.5.9.2.11.4.2.1.3 document the local v1.77.0 tag was first cut at.
+- **The kit's driver** keeps slot 1 and writes slot 2 through the model (the kit section above).
+- Cases, tests first: `tests/test_options_keybinds.lua` pins one key widget per row (label, button,
+  Clear), the `+1` text and the tooltip naming both keys and the game's page, a key bound through
+  the button keeping key 2, a right click clearing key 1 with key 2 moving up, and Clear removing
+  both, and drives the kit's slot-2 route; every capture, combat and sync case moved onto the one
+  button and stays green. `tests/test_kit_bindings.lua` adds the slot-2 case;
+  `tests/test_options_keybinds_model.lua` pins the new words and minor 4;
+  `tests/test_options_keybinds_sync.lua`'s minor case reads "minor 3 or later".
+
+### Docs and process
+
+- **Built to standard v2.88.0** (was v2.87.0): the README's standards pointer moves after a read of
+  v2.88.0's rulings, launcher-§6's per-addon binding category with the `Kit.assertBindingsXml`
+  check (kit revision 42), options-ui-§20's Keybindings tab (OptionsKeybinds 1-4), the new
+  frame-layering section (the toplevel tool windows, the DragHandle level, the clamped popups and
+  the suggestion list closed at combat start) and the one strata tooltip (OptionsCompose 8). Every
+  `frame-layering-§N` and `options-ui-§20` citation in `LibKa0s/`, `docs/` and this file resolves
+  to a heading of the standard at v2.88.0.
+- **Consumers planned at v1.77.0**, recorded in `docs/api/CONSUMERS.md` (nine rows, verdict
+  *zero — planned at v1.77.0*, the v1.75.0 stamp kept) and the Consumers table of
+  `docs/releasing.md` until the census is re-run: the Keybindings tab by BankLedger, DpsRace,
+  DropWatcher, LootHistory, MultiMeters, QuickComms and WhatGroup; `O.StrataTooltip` by AuraMaster,
+  MultiMeters, PanelMaster and PartyFrameEnhanced; DragHandle's `level`, `ignoreParentAlpha` and
+  `ApplyLevel` by AbsorbTracker, AuraMaster, ConsumableMaster, KickCD and QuickComms. The
+  settings-layout extension (M3) adds the ninth row, `O.ResetAllTooltip`, by BankLedger,
+  DropWatcher, LootHistory, MultiMeters, QuickComms, WhatGroup, PremadeGroupsFilterExtension and
+  PrettyChat, and amends the `MasterControls` row (`notes` by BankLedger, ConsumableMaster,
+  LootHistory and WhatGroup; `lockIsPreview` by AbsorbTracker, ConsumableMaster, KickCD and
+  PartyFrameEnhanced; `resetPositionTooltip` per each addon's layout item) and the four group
+  composers' rows (`tooltips` by AbsorbTracker).
+- **Three functions split under the CCN 15 release ceiling**, found by the first v1.77.0 release
+  run (`docs/automated-tests/20261024-073953/`, kept as the record that found them): `lib:New` in
+  `Options.lua` (16; its guarded attach chain is now a local `attachHalves`), and `check` (18) and
+  `Kit.keybindThroughTab` (18) in `testkit/bindings_xml.lua`, each into file-local halves. No
+  behavior changes, and no minor or kit revision moves: Options minor 30 and kit revision 42 are
+  this release's own.
+
+### What a consumer owes
+
+- **Every Options degradation stub gains five instance members**: `KeybindingsTab`,
+  `KeybindRows`, `KEYBINDS_UNCHANGED`, `StrataTooltip` and `ResetAllTooltip` (OptionsCompose minor
+  11). `Kit.assertSurfaceParity` is red at the re-vendor until the stub answers them.
+- **Two visible Master controls changes come with the copy** (OptionsCompose minor 9): the alpha
+  row reads *Master opacity*, with no stored path moved, so a suite pinning "Master alpha" changes;
+  and a frameless host (or one omitting `locked`) draws *Minimap button* beside *Debug console*.
+  `notes`, `resetPositionTooltip` and `lockIsPreview` are opt-in, and a host that rewrote a composed
+  tooltip moves onto them at its next release.
+- **The group composers' `tooltips` is opt-in** (OptionsCompose minor 10): a host that patched a
+  composed font, border, bar or color row's tooltip moves onto it at its next release.
+- **One visible Keybindings change comes with the copy** (OptionsKeybinds minor 4): a row is one key
+  button and Clear, so a suite that read `slots[2]` and a doc naming Key 1 / Key 2 move to the one
+  button and its `"<key> +1"` text. `T.keybindThroughTab(row, 1, ...)` is unchanged.
+- **Nothing else is owed by a re-vendor.** The toplevel tool windows, the clamped popups and the
+  suggestion list's combat close take effect with the copy; DragHandle's fields, the Keybindings
+  tab and the strata tooltip are opt-in, and so are the kit's `mock_bindings.lua` and
+  `mock_layers.lua`.
+
+Release gate (`docs/automated-tests/20261024-162023/`): lint pass, 0/0 in 197 files;
+tests pass, 2755 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+The first release run, `docs/automated-tests/20261024-074358/`, was taken before the layout
+extension, and the second, `docs/automated-tests/20261024-121210/`, before the keybindings
+follow-up (OptionsKeybinds minor 4); both are superseded by this one.
+Preview and simulation re-look: Current — SimPanel minor 6 adds toplevel and the popup re-raise only; tests/fixture_sim_panel.lua, tests/test_sim_panel.lua, tests/test_sim_panel_render.lua and docs/api/Sim/version-2.3.6-docs.md re-read; no scenario or test-mode strip changes (Widgets minor 15, `W.TestStrip`'s file, clamps the dropdown menu only; tests/test_widgets_teststrip.lua unchanged); the settings-layout extension touches no simulator or preview surface, and Test mode's row only gains the omit.locked packing (OptionsCompose minor 9); the keybindings follow-up (OptionsKeybinds minor 4) redraws the Keybindings tab's rows only and touches no simulator or preview surface.
+
 ## v1.76.0 — 2026-10-23
 
 Opened 2026-10-23. Simulator auto-run (Run all removed), the test strip's simulation flavor, and the

@@ -9,10 +9,10 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **20** · `DebugLogDiagnostics.lua` minor **3** · `DebugLogGates.lua` minor **1** |
-| Shipped in | v1.75.0 |
-| Status | **Current** |
+| Shipped in | v1.75.0 – v1.76.0 |
+| Status | Superseded |
 | Supersedes | [version 19.2.1](./version-19.2.1-docs.md) — the same surface; its `makeIconButton` comment said the text buttons are what an install missing the art gets, and its report's identity header did not name Glow or Sim (briefly keyed 20.2.1 on the release branch; no release carried that key) |
-| Superseded by | — |
+| Superseded by | [version 21.3.1](./version-21.3.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 20, DebugLogDiagnostics = 3, DebugLogGates = 1 }` |
 
@@ -868,3 +868,10 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
+
+## Moving to version 21.3.1
+
+**Take it; nothing moves.** Version 21.3.1 is this surface; the console is toplevel and, when it
+shows, re-raises any shown Blizzard StaticPopup through Core's `RaiseStaticPopups` (guarded, so an
+older Core raises nothing). The copy window it opens is unchanged and not toplevel. See [version
+21.3.1](./version-21.3.1-docs.md).

@@ -4,6 +4,7 @@ codes = true
 exclude_files = { "tests/_kit/" }
 read_globals = {
   "LibStub", "CreateFrame", "UIParent", "UISpecialFrames", "DEFAULT_CHAT_FRAME",
+  "STATICPOPUP_NUMDIALOGS",   -- how many StaticPopupN frames Core.RaiseStaticPopups walks
   "time", "date", "debugprofilestop", "UnitAffectingCombat", "InCombatLockdown",
   "C_AddOns",   -- Env's TOC reader and the id list help-art guard; never the bare globals
   "C_Map",   -- the player's map id, read by LibKa0s-Env-1.0
@@ -47,6 +48,14 @@ read_globals = {
   -- The client's context menu (11.0+), which LibKa0s-Launcher-1.0's right click opens (minor 4).
   -- Read at call time and guarded: a client without it degrades to opening the settings panel.
   "MenuUtil", "MenuResponse",
+  -- The client's key-binding API and its words, for LibKa0s-Options-1.0's Keybindings tab
+  -- (OptionsKeybinds.lua). Every one read bare, at call time, and guarded for absence; the tab
+  -- writes no BINDING_* global and never reads Bindings.xml.
+  "GetBindingKey", "GetBindingAction", "SetBinding", "SaveBindings", "GetCurrentBindingSet",
+  "GetBindingText", "GetBindingName", "GetConvertedKeyOrButton", "IsKeyPressIgnoredForBinding",
+  "CreateKeyChordStringUsingMetaKeyState", "IsAltKeyDown", "IsControlKeyDown", "IsShiftKeyDown",
+  "IsMetaKeyDown", "Screenshot", "NOT_BOUND", "KEY_BOUND", "KEY_UNBOUND_ERROR",
+  "CHARACTER_BINDINGS", "ACCOUNT_BINDINGS",
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes
 -- through _G[name]. That is the one sanctioned _G mutation in this library.

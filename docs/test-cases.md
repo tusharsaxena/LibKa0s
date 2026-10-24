@@ -438,7 +438,7 @@ Total.
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
 
-### test_widgets.lua (57)
+### test_widgets.lua (58)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
 - Widgets.Dropdown falls to Blizzard's arrow with no host art
@@ -463,6 +463,7 @@ Total.
 - Widgets.CloseMenu hides an open menu
 - Widgets.CloseMenu is a no-op when the menu is already hidden
 - Widgets.CloseMenu is a no-op when no dropdown has ever opened the menu
+- The menu built on the first dropdown open is FULLSCREEN_DIALOG and clamped to the screen
 - Widgets.CloseMenu leaves the unregistering to the menu's own OnHide
 - A preset row lights up when its own predicate says so
 - A preset row stays dark when its predicate says the selection is something else
@@ -585,7 +586,20 @@ Total.
 - draghandle: a descriptor's own place wins over the spec's, as owner and anchor do
 - draghandle: a descriptor may place while the spec does not, and its neighbor is untouched
 - draghandle: a tooltipPlace that is not a function is ignored, not called
-- draghandle: DragHandle is at minor 4, the placement hook's minor
+- draghandle: DragHandle is at minor 4 or later, the placement hook's floor
+
+### test_widgets_draghandle_layers.lua (10)
+
+- DragHandle minor 5: MODULES and the file minor say 5
+- DragHandle level: no spec.level keeps minor 4 -- handle at parent + 1, marks at handle + 1
+- DragHandle level: level = 50 on a parent at 7 -- handle 57, marks 58, written before the marks exist
+- DragHandle ApplyLevel: a parent re-leveled to 20 puts the handle at 70 and the marks at 71
+- DragHandle ApplyLevel: without spec.level it answers false and writes nothing
+- DragHandle level: a secret or non-number parent level reads as 0
+- DragHandle level: the host's numeric guard reads the parent's level
+- DragHandle ignoreParentAlpha: true sets it, absent leaves it false
+- DragHandle ignoreParentAlpha: a frame without SetIgnoreParentAlpha does not error
+- DragHandle level: onClose plus level builds both marks at handle + 1
 
 ### test_widgets_linechart_math.lua (21)
 
@@ -633,7 +647,7 @@ Total.
 - line chart: a render under a resting cursor re-fires onHover and moves the crosshair to the new scale
 - line chart: a render that leaves no scale hides the crosshair, and a later clear still tells the host
 
-### test_widgets_autocomplete.lua (36)
+### test_widgets_autocomplete.lua (37)
 
 - autocomplete: answers nil without a provider or without a box it can hook
 - autocomplete: publishes its chrome, with the 0.15 s debounce floor and 8 rows by default
@@ -645,6 +659,7 @@ Total.
 - autocomplete: at most maxRows rows, 8 by default
 - autocomplete: Refresh asks the provider at once for the box's text
 - autocomplete: the list hangs from the box's bottom corners, the box's width, in its own strata
+- autocomplete: the list built on first show is at its strata and clamped to the screen
 - autocomplete: the list wears the box's own border and background
 - autocomplete: a box with no backdrop colors gets the house flat skin
 - autocomplete: each row takes its item's color, in either shape, and plain text without one
@@ -920,6 +935,17 @@ Total.
 - resize panel: a resize stretches every step row
 - resize panel: the width survives a hide and a show
 - resize panel: with no MakeResizable in Core it is today's fixed panel
+
+### test_tool_windows_layering.lua (8)
+
+- tool windows: the console, the perf panel and the sim panel are DIALOG, toplevel and clamped
+- tool windows: the console's copy window is FULLSCREEN and not toplevel
+- tool windows: showing each window raises a shown StaticPopup once and a hidden one never
+- tool windows: with no StaticPopup globals nothing is raised and nothing errors
+- tool windows: an erroring Raise on a popup is swallowed
+- core: RaiseStaticPopups answers the count raised and honors STATICPOPUP_NUMDIALOGS
+- core: RaiseStaticPopups never shows, hides or re-stratas a popup
+- tool windows: with no RaiseStaticPopups in Core the three windows build and show
 
 ### test_slash.lua (74)
 
@@ -1678,6 +1704,85 @@ Total.
 - drawer: with OptionsDrawer.lua absent there is no Drawer, and the page is untouched
 - drawer: with no AceGUI it draws nothing and answers nil
 
+### test_options_keybinds_model.lua (26)
+
+- keybinds: OptionsKeybinds is at minor 4, paired on an Options shell at 30 or later
+- keybinds: the Options version key has twelve components
+- keybinds: KEYBIND_STRINGS carries the exact default words, all ASCII
+- keybinds: the client's own strings win where they exist, with the library's fallbacks
+- keybinds: the API is available only when all five binding functions exist
+- keybinds: slot 1 on a keyless command binds the key and saves once
+- keybinds: slot 2 on a keyless command becomes slot 1
+- keybinds: slot 1 on a one-key command replaces that key, which is left free
+- keybinds: slot 2 on a one-key command keeps the old key first
+- keybinds: on a two-key command the slot's old key is unbound and the order kept
+- keybinds: the same key in the same slot is a no-op that writes and saves nothing
+- keybinds: moving a key from slot 2 to slot 1 of the same command swaps the two
+- keybinds: taking another action's only key names it, left keyless
+- keybinds: taking one of another action's two keys names it, not left keyless
+- keybinds: a failed SetBinding restores every old binding, the displaced action's too
+- keybinds: a failed SetBinding on a keyless command leaves it keyless and saves nothing
+- keybinds: SaveBindings runs exactly once, with GetCurrentBindingSet(), for sets 1 and 2
+- keybinds: under the combat lock set and clear refuse 'combat' and call no binding API
+- keybinds: under InCombatLockdown alone set and clear refuse 'combat' too
+- keybinds: clear slot 1 leaves slot 2, clear slot 2 leaves slot 1, nil clears both
+- keybinds: clearing with nothing bound succeeds and saves nothing
+- keybinds: the set in force is 'account' for 1 and 'character' for 2
+- keybinds: the bundled chord builder orders ALT-CTRL-SHIFT-META and converts mouse names
+- keybinds: the bundled chord builder reads the modifier keys when no mods are passed
+- keybinds: with the client's chord helpers the client route agrees
+- keybinds: the client route refuses the left and right buttons its ignore check lets through
+
+### test_options_keybinds.lua (30)
+
+- keybinds tab: OptionsKeybinds is at minor 4 and attaches the three members
+- keybinds tab: KeybindingsTab's defaults
+- keybinds tab: spec.key, spec.before and spec.strings override
+- keybinds tab: RenderTabbedSchema puts it LAST, after every group tab, and its render draws rows
+- keybinds tab: rows follow spec.bindings in order, labeled by GetBindingName
+- keybinds tab: a binding whose command is not a string is skipped and reported
+- keybinds tab: one key button per row, then Clear: no second slot widget (minor 4)
+- keybinds tab: the button shows the first key, '<key> +1' with a second, NOT_BOUND with none, and a refresher repaints
+- keybinds tab: with a second key the tooltip names every key and where the others were set
+- keybinds tab: a key bound through the button goes to slot 1 and keeps the second key
+- keybinds tab: the button then SHIFT-K binds SHIFT-K to slot 1 and saves once
+- keybinds tab: Escape cancels with no SetBinding
+- keybinds tab: a modifier alone keeps listening; PRINTSCREEN screenshots and keeps listening
+- keybinds tab: a second left click cancels, and so does a right click on the listener
+- keybinds tab: Button4 and the wheel bind
+- keybinds tab: a right click clears the key shown and the second moves up; Clear clears both
+- keybinds tab: starting row 2 stops row 1; one listening slot
+- keybinds tab: a taken key names the action left with no key; otherwise KEY_BOUND
+- keybinds tab: the set line follows the set in force
+- keybinds tab: a capture started in combat is refused with the gray notice, once
+- keybinds tab: PLAYER_REGEN_DISABLED stops a capture in progress, writing nothing
+- keybinds tab: a right click and Clear in combat call no binding API
+- keybinds tab: released slots leave with nothing of ours, and the listener goes home
+- keybinds tab: the page's OnHide stops a capture
+- keybinds tab: a page drawn disabled draws disabled slots and Clear
+- keybinds tab: without SetBinding one UNAVAILABLE row and nil
+- keybinds tab: with no AceGUI scroll it draws nothing and answers nil
+- keybinds tab: the fixed intro always draws, and spec.intro adds one line under it
+- keybinds tab: T.keybindThroughTab binds through a row and answers the outcome line
+- keybinds tab: T.keybindThroughTab slot 2 sets the game page's key through the model
+
+### test_options_keybinds_sync.lua (14)
+
+- keybinds sync: OptionsKeybinds is at minor 3 or later
+- keybinds sync: UPDATE_BINDINGS is heard only while a keybind row is on screen
+- keybinds sync: a page with no keybind rows registers nothing
+- keybinds sync: releasing the rows lets go
+- keybinds sync: the registration goes through Core's SafeRegisterEvent
+- keybinds sync: without SafeRegisterEvent nothing registers, and OnShow still re-reads
+- keybinds sync: a key set in Options -> Keybindings shows on the next frame
+- keybinds sync: three UPDATE_BINDINGS in one frame give exactly one repaint
+- keybinds sync: LoadBindings to the other set repaints the slots and the set line
+- keybinds sync: a key changed while the page was hidden shows on the next OnShow, no event
+- keybinds sync: an event delivered with no row on screen draws and prints nothing
+- keybinds sync: a capture in progress keeps LISTENING through a repaint
+- keybinds sync: a repaint runs in combat, since it only reads
+- keybinds sync: without C_Timer the repaint runs at once
+
 ### test_options_idsuggest.lua (29)
 
 - IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
@@ -1710,7 +1815,7 @@ Total.
 - IdInput suggestions: a host kind with no base is offered nothing of the client's
 - IdInput suggestions: the shared-name check reads one source through a based kind and its base
 
-### test_options_idsuggest_frames.lua (11)
+### test_options_idsuggest_frames.lua (15)
 
 - IdInput suggestions: one dropdown per instance, whatever the renders
 - IdInput suggestions: a box pooled into a second render is hooked once
@@ -1723,6 +1828,10 @@ Total.
 - IdInput suggestions: a raising info costs that id's row, not the list
 - IdInput suggestions: the dropdown is as wide as the box looks
 - IdInput suggestions: a host kind's suggestTag is appended after the id
+- IdInput suggestions: the start of combat closes a list a page opened
+- IdInput suggestions: a list another page's box opened is not this release's
+- IdInput suggestions: a focused pullout and the list both close at combat start
+- IdInput suggestions: leaving combat does not reopen a list combat closed
 
 ### test_options_idlist_remove.lua (8)
 
@@ -1802,7 +1911,7 @@ Total.
 - opt combat debug: no debug on the descriptor is silent, and the chat is unchanged
 - opt combat debug: a debug that is not a function is ignored
 
-### test_options_compose.lua (45)
+### test_options_compose.lua (51)
 
 - compose: the instance carries every composer and every published constant
 - compose: FontGroup emits the six canonical leaves in the canonical order
@@ -1849,6 +1958,55 @@ Total.
 - compose: with resetProfile and profilesPage the tooltip names Profiles -> Reset Profile
 - compose: the descriptor moves the Reset all tooltip and nothing else Master controls draws
 - compose: a shell that hands __AttachCompose no descriptor keeps the minor-4 tooltip
+- compose: StrataTooltip over BACKGROUND..HIGH says the tiers and nothing more
+- compose: StrataTooltip adds the dialog sentence when the row offers Dialog or above
+- compose: StrataTooltip adds both sentences when the row offers Fullscreen Dialog or Tooltip
+- compose: StrataTooltip over a non-table says the tiers alone
+- compose: StrataTooltip takes each part from strings, which is how a host localizes it
+- compose: StrataTooltip's default text is pure ASCII and names the Settings window
+
+### test_options_compose_master.lua (15)
+
+- compose master: the alpha row is labeled Master opacity, everything else unchanged
+- compose master: each row's note appends one sentence to exactly that row
+- compose master: notes.resetAll and notes.resetPosition append to the button tooltips
+- compose master: an empty, non-string or omitted-leaf note changes nothing
+- compose master: a keys rename does not stop the note
+- compose master: the spec and its notes are never written, and two calls agree
+- compose master: resetPositionTooltip replaces the Reset position tooltip
+- compose master: lockIsPreview gives Lock frame the library's preview sentence
+- compose master: lockIsPreview with a testModePath is refused
+- compose master: frameless with lockIsPreview emits no Lock frame row and does not raise
+- compose master: frameless puts Minimap button beside Debug console
+- compose master: framed with Lock frame omitted packs minimap and gives Test mode its own line
+- compose master: with the console omitted too, frameless Minimap button opens its line
+- compose master: the flow engine draws Debug console and Minimap button on one line
+- compose master: OptionsCompose is at minor 9 or later
+
+### test_options_compose_tooltips.lua (12)
+
+- compose tooltips: an entry replaces exactly its leaf's tooltip, every other row byte-identical
+- compose tooltips: a swatch's override ends with the class-color sentence
+- compose tooltips: a companion's override has no class-color sentence appended
+- compose tooltips: an empty, non-string or omitted-leaf entry changes nothing
+- compose tooltips: a keys rename keeps the override
+- compose tooltips: labels and tooltips together both apply
+- compose tooltips: a prefixed block keys the override by the leaf, not the path
+- compose tooltips: the bind arm applies the override
+- compose tooltips: the spec and its tooltips table are never written, and two calls agree
+- compose tooltips: MasterControls ignores tooltips (notes is its only route)
+- compose tooltips: every golden is unchanged
+- compose tooltips: OptionsCompose is at minor 10 or later
+
+### test_options_reset_tooltip.lua (7)
+
+- reset tooltip: each host answers its own lib.STRINGS wording
+- reset tooltip: follows a descriptor changed after New, as the button does
+- reset tooltip: equals the tooltip MasterControls gives Reset all settings
+- reset tooltip: the key-bindings tail follows after one space
+- reset tooltip: an empty, nil or non-string tail adds nothing
+- reset tooltip: notes.resetAll is the button's own and does not reach the member
+- reset tooltip: OptionsCompose is at minor 11
 
 ### test_options_throttle.lua (4)
 
@@ -2514,6 +2672,26 @@ Total.
 - kit latch: table registrations are keyed by target, kind, event and unit, or by opts.key
 - kit latch: missing or wrong-typed opts raise naming the field
 
+### test_kit_bindings.lua (17)
+
+- kit bindings: Kit.assertBindingsXml is on the kit table and published by Kit.expose
+- kit bindings: a conforming file passes with string commands and returns the list
+- kit bindings: NS.BINDINGS-style records and matching labels are accepted
+- kit bindings: a Binding in the ADDONS category fails
+- kit bindings: a header= attribute fails
+- kit bindings: a default= attribute fails
+- kit bindings: a missing BINDING_NAME_ global fails, and so does a wrong label
+- kit bindings: the commands out of order fail
+- kit bindings: a category global that is not the brand fails
+- kit bindings: a file with no Binding fails
+- kit bindings: a missing file fails, naming it
+- kit bindings: a failure is reported at the caller's line
+- kit bindings: Kit.keybindThroughTab is on the kit table and published by Kit.expose
+- kit bindings: keybindThroughTab binds a key through an Options instance's row
+- kit bindings: keybindThroughTab slot 2 binds the game page's key through the model
+- kit bindings: keybindThroughTab slot 2 with a press that binds nothing answers the row's own line
+- kit bindings: keybindThroughTab fails naming options-ui-§20 without a row or a slot
+
 ### test_mock_base.lua (33)
 
 - mock: a frame that was never armed answers zero, dressed or not
@@ -2671,6 +2849,36 @@ Total.
 - line mock: ClearAllPoints forgets both ends
 - line mock: an unmodeled method raises instead of silently succeeding
 
+### test_mock_bindings.lua (17)
+
+- binding mock: GetBindingKey answers every key in bind order, and nil for an unbound command
+- binding mock: slot order is kept across a rebind of the first slot
+- binding mock: GetBindingAction answers the empty string for a free key
+- binding mock: a key taken from another action leaves that action keyless
+- binding mock: SetBinding and SaveBindings are refused in combat, recorded, and change nothing
+- binding mock: __bindingFailNext refuses one SetBinding for that key, then clears
+- binding mock: SaveBindings(2) then LoadBindings round-trips both sets
+- binding mock: UPDATE_BINDINGS reaches a registered frame and not an unregistered one
+- binding mock: __bindingsFireOnSet = false suppresses only SetBinding's fire
+- binding mock: GetBindingName reads BINDING_NAME_ on the mock, then _G, then answers the command
+- binding mock: a consumer's own GetBindingKey is kept, and the seams are installed regardless
+- binding mock: the constants are the client's
+- binding mock: the Enum merge keeps existing members
+- binding mock: modifiers are false by default and set by M.setModifiers
+- binding mock: bindKey seeds silently and clearBindings empties both sets and every log
+- binding mock: the client chord helpers are absent by default
+- binding mock: clientChordHelpers installs the client's chord helpers, faithfully
+
+### test_mock_layers.lua (7)
+
+- layer mock: strata and level are inherited through the parent chain
+- layer mock: an explicit level survives until SetParent, which re-derives it
+- layer mock: toplevel, clamp, parent alpha and fixed strata/level round-trip
+- layer mock: Raise and Lower are counted
+- layer mock: an unknown strata raises, naming itself
+- layer mock: UIParent carries the recorder too
+- layer mock: restore() puts CreateFrame back, and later frames are plain
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -2701,7 +2909,7 @@ Total.
 - kitsync: the kit revision is indexed in docs/api/README.md as the one Current revision
 - kitsync: the runner is mode 100755 in the git index, in BOTH copies
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
-- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, latch.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
+- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, latch.lua, bindings_xml.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
 - kitsync: vendor_sync checks the runner's recorded mode, and this repo's copy passes
 - kitsync: the runner-mode case fails on a path the index records 100644
@@ -2743,7 +2951,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 41
+- the kit is revision 42
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -2921,13 +3129,14 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_media.lua | 28 |
-| test_widgets.lua | 57 |
+| test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_draghandle_place.lua | 10 |
+| test_widgets_draghandle_layers.lua | 10 |
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 19 |
-| test_widgets_autocomplete.lua | 36 |
+| test_widgets_autocomplete.lua | 37 |
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
@@ -2937,6 +3146,7 @@ Total.
 | test_debuglog_gates.lua | 20 |
 | test_debuglog_descriptor.lua | 7 |
 | test_resize_windows.lua | 23 |
+| test_tool_windows_layering.lua | 8 |
 | test_slash.lua | 74 |
 | test_slash_parse.lua | 33 |
 | test_slash_disabled.lua | 16 |
@@ -2960,13 +3170,19 @@ Total.
 | test_options_tabbed.lua | 20 |
 | test_options_nav.lua | 14 |
 | test_options_drawer.lua | 26 |
+| test_options_keybinds_model.lua | 26 |
+| test_options_keybinds.lua | 30 |
+| test_options_keybinds_sync.lua | 14 |
 | test_options_idsuggest.lua | 29 |
-| test_options_idsuggest_frames.lua | 11 |
+| test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 9 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
-| test_options_compose.lua | 45 |
+| test_options_compose.lua | 51 |
+| test_options_compose_master.lua | 15 |
+| test_options_compose_tooltips.lua | 12 |
+| test_options_reset_tooltip.lua | 7 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -2991,12 +3207,15 @@ Total.
 | test_kit_asserts.lua | 11 |
 | test_kit_secrets.lua | 30 |
 | test_kit_latch.lua | 9 |
+| test_kit_bindings.lua | 17 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 42 |
 | test_mock_events.lua | 14 |
 | test_mock_resize.lua | 6 |
 | test_mock_lines.lua | 5 |
+| test_mock_bindings.lua | 17 |
+| test_mock_layers.lua | 7 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -3012,4 +3231,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2578** |
+| **Total** | **2753** |

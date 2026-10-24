@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "addon": "LibKa0s",
+  "addonVersion": "1.76.0",
+  "run": "20261024-074358",
+  "startedAt": "2026-10-24T07:43:58+05:30",
+  "durationMs": 41661,
+  "label": null,
+  "release": "1.77.0",
+  "git": { "sha": "3c2bb20e8edc9ec5853a6b39430d4525f111778b", "branch": "feat/2026-10-24-keybinds-layout-strata", "dirty": false },
+  "host": { "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio", "luacheck": "Luacheck: 1.2.0", "lizard": "1.24.0", "timingSource": "date +%s%3N" },
+  "suites": {
+    "lint": { "status": "pass", "durationMs": 13094, "warnings": 0, "errors": 0, "files": 194, "gating": true, "gates": { "commit": true, "release": true } },
+    "tests": { "status": "pass", "durationMs": 23100, "passed": 2713, "failed": 0, "skipped": 2, "total": 2715, "gating": true, "gates": { "commit": true, "release": true } },
+    "perf": { "status": "skip", "durationMs": 2, "skipReason": "no tests/perf.lua — this addon ships no offline scenarios", "scenarios": 0, "gating": false, "gates": { "commit": false, "release": true } },
+    "complexity": { "status": "pass", "durationMs": 4002, "warnings": 0, "maxCcn": 15, "nloc": 55325, "functions": 8480, "avgCcn": 1.9, "avgNloc": 6.5, "avgToken": 53.7, "warnFunRatio": 0.00, "warnNlocRatio": 0.00, "bandFiles": 9, "overCapFiles": 0, "blindFiles": 0, "crashedFiles": 0, "gating": false, "gates": { "commit": false, "release": true } }
+  },
+  "verdict": "green"
+}

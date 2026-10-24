@@ -208,6 +208,28 @@ test("autocomplete: the list hangs from the box's bottom corners, the box's widt
   end)
 end)
 
+--- The list is clamped to the screen (Autocomplete minor 3): a box near the bottom edge keeps its
+--- suggestions on screen instead of hanging them off it. Read through the kit's frame-layer recorder,
+--- installed for this case and restored after, so strata and clamp answer back.
+test("autocomplete: the list built on first show is at its strata and clamped to the screen", function()
+  local restore = dofile("tests/_kit/mock_layers.lua")(mocks)
+  local ok, err = pcall(function()
+    local h, box = setup(function() return items(2) end)
+    typed(box, "a")
+    local L = mocks.__layers(h.__list)
+    assertEqual(L.strata, AC.STRATA)
+    assertTrue(L.clamped, "the default list is clamped to the screen")
+    local h2, box2 = setup(function() return items(2) end, { strata = "DIALOG" })
+    typed(box2, "a")
+    L = mocks.__layers(h2.__list)
+    assertEqual(L.strata, "DIALOG", "the handle's opts.strata wins")
+    assertTrue(L.clamped, "a host strata is clamped too")
+    assertEqual(W.MODULES.WidgetsAutocomplete, 3)
+  end)
+  restore()
+  if not ok then error(err, 0) end
+end)
+
 test("autocomplete: the list wears the box's own border and background", function()
   recording(function()
     local h, box = setup(function() return items(1) end)

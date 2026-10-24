@@ -1,0 +1,26 @@
+{
+  "major": "LibKa0s-Options-1.0",
+  "versionKey": "30.2.34.3.5.9.2.11.4.2.1.4",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Options", "minor": 30 },
+    { "file": "OptionsRegistry", "minor": 2 },
+    { "file": "OptionsWidgets", "minor": 34 },
+    { "file": "OptionsIds", "minor": 3 },
+    { "file": "OptionsIdList", "minor": 5 },
+    { "file": "OptionsTabs", "minor": 9 },
+    { "file": "OptionsCombat", "minor": 2 },
+    { "file": "OptionsCompose", "minor": 11 },
+    { "file": "OptionsScroll", "minor": 4 },
+    { "file": "OptionsNav", "minor": 2 },
+    { "file": "OptionsDrawer", "minor": 1 },
+    { "file": "OptionsKeybinds", "minor": 4 }
+  ],
+  "members": [
+    { "name": "KEYBIND_STRINGS", "kind": "table" },
+    { "name": "LAYOUT", "kind": "table" },
+    { "name": "New", "kind": "function" },
+    { "name": "PatchAlwaysShowScrollbar", "kind": "function" },
+    { "name": "STRINGS", "kind": "table" }
+  ]
+}

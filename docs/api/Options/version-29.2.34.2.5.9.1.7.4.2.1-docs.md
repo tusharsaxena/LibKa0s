@@ -10,10 +10,10 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **29** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>`, in load order — the same eleven numbers `lib.MODULES` reports. |
-| Shipped in | v1.75.0 |
-| Status | **Current** |
+| Shipped in | v1.75.0 – v1.76.0 |
+| Status | Superseded |
 | Supersedes | [version 29.2.34.2.4.8.1.7.4.2.1](./version-29.2.34.2.4.8.1.7.4.2.1-docs.md) — which still exported the `__releaseChrome` test seam, and whose `OptionsIdList.lua` comment said the help mark's `info` art ships in every copy |
-| Superseded by | — |
+| Superseded by | [version 30.2.34.3.5.9.2.11.4.2.1.4](./version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md) — closes an IdList suggestion list at the start of combat, adds `O.StrataTooltip`, adds the key binding model and the Keybindings tab, which follows Options -> Keybindings and draws one key button and Clear per row (`OptionsKeybinds.lua`), gives Master controls its notes, the preview lock, *Master opacity* and the frameless packing, gives the group composers `tooltips` beside `labels`, and adds `O.ResetAllTooltip`, the reset's tooltip for the General page's header Defaults |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither does `OptionsDrawer.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }` |
 
@@ -2457,3 +2457,35 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 30.2.34.3.5.9.2.11.4.2.1.4
+
+**Copy the folder whole. Nothing a host calls moves or is removed; one public member is added.**
+`OptionsCompose.lua` moves to minor **8** and adds `O.StrataTooltip(values, strings)`, the one
+tooltip every player strata row carries (`frame-layering-§1`): pass it the row's own value table and
+drop any tier sentences of your own. **Every Options degradation stub gains `StrataTooltip`**
+(`Kit.assertSurfaceParity` compares a stub against the live instance). `OptionsIds.lua` moves to minor
+**3** and `OptionsCombat.lua` to minor **2**: at the start of combat the lock now closes an IdList
+suggestion list one of the instance's pages opened, as it already closed an AceGUI pullout, through
+a new internal instance member `O.__closeOwnedSuggest(panels)`. It is `__`-prefixed, so an Options
+degradation stub owes nothing. `Options.lua` moves to minor **30** and attaches a new twelfth file,
+`OptionsKeybinds.lua` (minor **4**): the key binding model and the settings-panel Keybindings tab
+(`options-ui-§20`), one key button and Clear per row, which follows Options -> Keybindings while it
+is on screen, and adds three public instance members, `O.KeybindingsTab(spec)`,
+`O.KeybindRows(ctx, spec, parent)` and `O.KEYBINDS_UNCHANGED`, beside the words,
+`lib.KEYBIND_STRINGS`. **Every Options degradation stub gains `KeybindingsTab`, `KeybindRows` and
+`KEYBINDS_UNCHANGED`**, in every addon. An addon with bindings draws the tab last on its General
+page and ends its General Defaults tooltip with `O.KEYBINDS_UNCHANGED`. `OptionsCompose.lua` then
+moves to minor **9**: `O.MasterControls` takes `notes`, `resetPositionTooltip` and `lockIsPreview`
+(`options-ui-§15`), so a host that rewrote a composed tooltip moves onto them; its alpha row reads
+*Master opacity* (the stored leaf is still `alpha`, so a suite pinning *Master alpha* changes), and
+with *Lock frame* omitted *Minimap button* sits beside *Debug console*. No member is added.
+`OptionsCompose.lua` then moves to minor **10**: `O.FontGroup`, `O.BorderGroup`, `O.BarGroup` and
+`O.ColorPair` take `tooltips` beside `labels` (`options-ui-§16`), so a host that rewrote a composed
+group's tooltip passes it instead; a swatch keeps the class-color sentence after the host's words,
+and `O.MasterControls` ignores the field. No member is added. `OptionsCompose.lua` then moves to
+minor **11** and adds `O.ResetAllTooltip(tail)`, the text *Reset all settings* carries
+(`options-ui-§12`): the General page's header Defaults declares
+`defaultsTooltip = O.ResetAllTooltip(O.KEYBINDS_UNCHANGED)` in place of its own wording, and **every
+Options degradation stub gains `ResetAllTooltip`**. See
+[version 30.2.34.3.5.9.2.11.4.2.1.4](./version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md).

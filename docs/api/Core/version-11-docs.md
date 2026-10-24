@@ -9,10 +9,10 @@
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **11** |
-| Shipped in | v1.75.0 |
-| Status | **Current** |
+| Shipped in | v1.75.0 – v1.76.0 |
+| Status | Superseded |
 | Supersedes | [version 10](./version-10-docs.md) — the same surface and behavior; its `MakeCloseButton` comment said the × is what every window gets on an install missing the art |
-| Superseded by | — |
+| Superseded by | [version 12](./version-12-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 11 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
@@ -491,3 +491,9 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
+
+## Moving to version 12
+
+**Take it; nothing moves.** Version 12 adds one member, `RaiseStaticPopups()`, which the library's
+own tool windows call when they show, so a Blizzard confirmation shown first stays on top of them.
+Every member here is unchanged. See [version 12](./version-12-docs.md).
