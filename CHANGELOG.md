@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.77.0 — unreleased
+## v1.77.0 — 2026-10-24
 
 Opened 2026-10-24. The settings-panel Keybindings tab (`O.KeybindingsTab` / `O.KeybindRows`, a
 twelfth Options file), the test kit's binding and frame-layer mocks and its Bindings.xml check, and
@@ -347,6 +347,32 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   while hidden shown on the next `OnShow` with no event; `__fireUnconditional` with nothing on
   screen drawing and printing nothing; a capture keeping `LISTENING`; a repaint in combat; and no
   `C_Timer`. The two existing version cases read minor 3.
+
+### Docs and process
+
+- **Built to standard v2.88.0** (was v2.87.0): the README's standards pointer moves after a read of
+  v2.88.0's rulings, launcher-§6's per-addon binding category with the `Kit.assertBindingsXml`
+  check (kit revision 42), options-ui-§20's Keybindings tab (OptionsKeybinds 1-3), the new
+  frame-layering section (the toplevel tool windows, the DragHandle level, the clamped popups and
+  the suggestion list closed at combat start) and the one strata tooltip (OptionsCompose 8). Every
+  `frame-layering-§N` and `options-ui-§20` citation in `LibKa0s/`, `docs/` and this file resolves
+  to a heading of the standard at v2.88.0.
+- **Consumers planned at v1.77.0**, recorded in `docs/api/CONSUMERS.md` (eight rows, verdict
+  *zero — planned at v1.77.0*, the v1.75.0 stamp kept) and the Consumers table of
+  `docs/releasing.md` until the census is re-run: the Keybindings tab by BankLedger, DpsRace,
+  DropWatcher, LootHistory, MultiMeters, QuickComms and WhatGroup; `O.StrataTooltip` by AuraMaster,
+  MultiMeters, PanelMaster and PartyFrameEnhanced; DragHandle's `level`, `ignoreParentAlpha` and
+  `ApplyLevel` by AbsorbTracker, AuraMaster, ConsumableMaster, KickCD and QuickComms.
+
+### What a consumer owes
+
+- **Every Options degradation stub gains four instance members**: `KeybindingsTab`,
+  `KeybindRows`, `KEYBINDS_UNCHANGED` and `StrataTooltip`. `Kit.assertSurfaceParity` is red at the
+  re-vendor until the stub answers them.
+- **Nothing else is owed by a re-vendor.** The toplevel tool windows, the clamped popups and the
+  suggestion list's combat close take effect with the copy; DragHandle's fields, the Keybindings
+  tab and the strata tooltip are opt-in, and so are the kit's `mock_bindings.lua` and
+  `mock_layers.lua`.
 
 ## v1.76.0 — 2026-10-23
 
