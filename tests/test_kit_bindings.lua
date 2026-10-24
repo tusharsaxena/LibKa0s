@@ -7,6 +7,11 @@
 -- BINDING_NAME_ global, the commands out of order, the category global not the brand, a missing
 -- file and a file with no Binding at all. A Binding inside an XML comment is not a binding.
 --
+-- And Kit.keybindThroughTab (the same revision, with LibKa0s's OptionsKeybinds minor 2), driven
+-- against a live Options instance on tests/fixture_keybinds.lua's bench: a key pressed through a
+-- row's slot is bound, the outcome line comes back, and a missing row or slot fails naming
+-- options-ui-§20.
+--
 -- Fixtures are written under os.tmpname paths and removed after each case.
 
 local T = _G.LK_TEST
@@ -126,4 +131,28 @@ test("kit bindings: a failure is reported at the caller's line", function()
     assertTrue(not ok)
     assertTrue(tostring(err):find("test_kit_bindings.lua", 1, true) ~= nil, "at the caller: " .. tostring(err))
   end)
+end)
+
+-- ── Kit.keybindThroughTab ────────────────────────────────────────────────────────────────────
+
+local Bench = dofile("tests/fixture_keybinds.lua")
+
+test("kit bindings: Kit.keybindThroughTab is on the kit table and published by Kit.expose", function()
+  assertEqual(type(Kit.keybindThroughTab), "function", "the kit installs the driver")
+  assertEqual(type(T.keybindThroughTab), "function", "and Kit.expose hands it to the suite")
+end)
+
+Bench.case("kit bindings: keybindThroughTab binds a key through an Options instance's row", function()
+  local _, _, _, rows = Bench.rowsPage()
+  local status = T.keybindThroughTab(rows()[1], 1, "F8")
+  assertEqual(Bench.keys(Bench.TOGGLE), "F8", "GetBindingKey returns the key bound through the tab")
+  assertEqual(status, T.mocks.KEY_BOUND, "and the outcome line comes back")
+  assertEqual(T.keybindThroughTab(rows()[2], 2, "J", { alt = true, shift = true }), T.mocks.KEY_BOUND)
+  assertEqual(Bench.keys(Bench.SECOND), "ALT-SHIFT-J", "with the modifiers held for the press")
+  assertTrue(not T.mocks.IsAltKeyDown() and not T.mocks.IsShiftKeyDown(), "and let go after it")
+end)
+
+Bench.case("kit bindings: keybindThroughTab fails naming options-ui-§20 without a row or a slot", function()
+  assertErrorMatches(function() T.keybindThroughTab(nil, 1, "K") end, "options-ui-§20")
+  assertErrorMatches(function() T.keybindThroughTab({ slots = {} }, 2, "K") end, "options-ui-§20")
 end)

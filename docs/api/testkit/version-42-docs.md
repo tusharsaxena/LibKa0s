@@ -18,7 +18,8 @@
 
 Everything revision 41 describes is unchanged here except what follows. Three files are added. Revision
 42 is one release's kit: LibKa0s v1.77.0 ships it once, and every kit change in that release is listed
-below rather than taking a revision of its own.
+below rather than taking a revision of its own. `Kit.expose` also gains one
+published member, `keybindThroughTab` (from `bindings_xml.lua`).
 
 ## What changed
 
@@ -141,6 +142,28 @@ order (the count first); each `globals["BINDING_NAME_" .. name]` is a non-empty 
 `labels[name]` where given; and `globals[opts.category] == opts.brand`. A missing or unreadable file
 fails too. It is a shape check over a small, flat file, not an XML parser.
 
+### `Kit.keybindThroughTab`, the Keybindings tab's driver, in `bindings_xml.lua`
+
+Added with LibKa0s's `OptionsKeybinds.lua` minor 2 (the settings-panel Keybindings tab,
+`options-ui-§20`), in this same unreleased revision. `Kit.expose` publishes `t.keybindThroughTab`,
+and now records the harness's mock (`t.mocks` or `t.mock`) for it.
+
+```lua
+local rows = O.KeybindRows(ctx, { bindings = NS.BINDINGS })   -- or the tab, drawn by its page
+local status = T.keybindThroughTab(rows[1], 1, "K", { shift = true })
+-- GetBindingKey(NS.BINDINGS[1].command) == "SHIFT-K"; status == KEY_BOUND
+```
+
+`Kit.keybindThroughTab(row, slot, key, mods)` does what a player does: it fires the row's slot
+widget's `OnClick` callback with `"LeftButton"` (through the AceGUI fake's `__fire`), sets `mods`
+(`{ alt, ctrl, shift, meta }`) through the binding mock's `M.setModifiers` for the press when given
+and puts the previous state back after it, runs the `OnKeyDown` script of the library's capture
+listener (`lib.__keybindListener`, the library resolved through
+`LibStub("LibKa0s-Options-1.0")`) with `key`, and answers the row's outcome-line text. `slot`
+defaults to 1. The mock is the one handed to `Kit.expose`, else `_G`. It fails through `Kit.fail`,
+naming `options-ui-§20`, when `row` is not a row record, the slot widget is missing, there is no
+listener with an `OnKeyDown`, or `mods` is given with no `M.setModifiers`.
+
 No documented member is renamed or removed and no case name changes. `mock_base.lua` is unchanged.
 
 ## What a consumer owes
@@ -155,5 +178,6 @@ lua tests/run.lua --list > docs/test-cases.md
 
 Nothing else: the two mocks are opt-in and the check is a member a suite calls. A consumer's own
 prose that names the revision it holds moves to 42 in the same commit. An addon with key bindings
-installs `mock_bindings.lua` and calls `T.assertBindingsXml` from its own suite; an addon asserting
+installs `mock_bindings.lua`, calls `T.assertBindingsXml` from its own suite and binds a key through
+its Keybindings tab with `T.keybindThroughTab`; an addon asserting
 strata or level installs `mock_layers.lua`.

@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 30.2.34.3.5.9.2.8.4.2.1.1
+# `LibKa0s-Options-1.0` — version 30.2.34.3.5.9.2.8.4.2.1.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,19 +8,19 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **30** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **3** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **2** · `OptionsCompose.lua` **8** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** · `OptionsKeybinds.lua` **1** |
+| Files and minors | `Options.lua` **30** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **3** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **2** · `OptionsCompose.lua` **8** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** · `OptionsKeybinds.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>`, in load order — the same twelve numbers `lib.MODULES` reports. |
 | Shipped in | v1.77.0 |
 | Status | **Current** |
-| Supersedes | [version 29.2.34.2.5.9.1.7.4.2.1](./version-29.2.34.2.5.9.1.7.4.2.1-docs.md) — whose IdList suggestion list stayed open over a covered page when combat started, which had no shared strata-row tooltip, and no key binding model |
+| Supersedes | [version 29.2.34.2.5.9.1.7.4.2.1](./version-29.2.34.2.5.9.1.7.4.2.1-docs.md) — whose IdList suggestion list stayed open over a covered page when combat started, which had no shared strata-row tooltip, and no key binding model and no Keybindings tab |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua` and `OptionsKeybinds.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 30, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 8, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1, OptionsKeybinds = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 30, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 8, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1, OptionsKeybinds = 2 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `S1` for
-`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `D1` for `OptionsDrawer.lua` minor 1, `K1` for `OptionsKeybinds.lua` minor 1, `I1` for
+`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `D1` for `OptionsDrawer.lua` minor 1, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `I1` for
 `OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `OC2` for `OptionsCombat.lua` minor 2, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -40,12 +40,27 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-Three changes, in `Options.lua` 29 -> **30**, `OptionsIds.lua` 2 -> **3**, `OptionsCombat.lua`
+Four changes, in `Options.lua` 29 -> **30**, `OptionsIds.lua` 2 -> **3**, `OptionsCombat.lua`
 1 -> **2**, `OptionsCompose.lua` 7 -> **8** and a new twelfth file, `OptionsKeybinds.lua`, at
-minor **1**; every other file of the major is unchanged. This version was briefly keyed
-29.2.34.3.5.9.2.7.4.2.1 and then 29.2.34.3.5.9.2.8.4.2.1 on the release branch, before the
-`OptionsCompose.lua` minor moved and before `OptionsKeybinds.lua` joined; no release carried either
-key.
+minor **2** (its minor 1 and minor 2 both land in this release); every other file of the major is
+unchanged. This version was briefly keyed 29.2.34.3.5.9.2.7.4.2.1, then 29.2.34.3.5.9.2.8.4.2.1 and
+then 30.2.34.3.5.9.2.8.4.2.1.1 on the release branch, before the `OptionsCompose.lua` minor moved,
+before `OptionsKeybinds.lua` joined and before its second minor; no release carried any of those
+keys.
+
+**The Keybindings tab (K2).** `OptionsKeybinds.lua` 1 -> **2** adds three public instance members:
+**`O.KeybindingsTab(spec)`**, the `opts.tabs` entry a General page draws last
+(`O.RenderTabbedSchema`, `options-ui-§13`), **`O.KeybindRows(ctx, spec, parent)`**, the rows
+themselves for a host-built strip, and **`O.KEYBINDS_UNCHANGED`**, the sentence a General page's
+Defaults tooltip ends with. Each binding the host declares (`NS.BINDINGS`) is one row: the client's
+`GetBindingName` label, **Key 1** and **Key 2** slots and **Clear**, with the set line and the
+outcome line under the rows. The capture behaves as the client's page does (Escape cancels, a
+right-click clears a slot, mouse buttons 3 to 31 and the wheel bind) through one library-level
+listener, `lib.__keybindListener`; it is refused in combat and stopped at combat start. This is
+`options-ui-§20`'s surface (OWNER_SCOPE 015). **Every Options degradation stub owes the three
+members.** See [The Keybindings tab](#the-keybindings-tab-optionskeybindslua-minor-2). Cases:
+`tests/test_options_keybinds.lua`, and the kit's new driver `Kit.keybindThroughTab`
+(`tests/test_kit_bindings.lua`).
 
 **The key binding model (K1 and O30).** `OptionsKeybinds.lua` is new, a twelfth file of the major,
 and `Options.lua` 29 -> **30** attaches it at the end of `lib:New`, guarded
@@ -1512,6 +1527,9 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `RenderTabbedSchema(ctx, pageKey, afterGroup, pairWith, opts)` | **W9** (`opts`: **T4**, **T8**) | Render one page as a tab strip over its own sections. Defined in `OptionsTabs.lua` from **T4**; `OptionsWidgets.lua` keeps an untabbed stand-in that ignores `opts` for a partial copy without it. `opts` = `{ tabs, cfg, disabledFor, disabledNotice, chrome }` (**T4**, see [24.31.4.7.4](#previously-at-24314774)) and `{ untabbedSkipRender, disabledReplaces, disabledNoticeFont, rerender }` (**T8**, see [Previously, at 27.2.34.2.2.8.1.7.4.2](#previously-at-272342281742)), each optional and off by default. The partition is by `row.group`, in declaration order — each group is exactly one tab, and there is no second field naming a group's tab (options-ui-§13); from **T4** `opts.tabs` can add host tabs that own no group, and a host tab keyed by a group name replaces that group's tab. **Every page draws a strip from W13, including a one-group page** — the `#groups < 2` fallback to `RenderSchema` is gone, and the only exemption is a page the host does not route through this function at all (the AceConfig-drawn Profiles page). A page whose rows carry **no** `group` is reported by page key through the descriptor's `print` and rendered untabbed. A stale `ctx.activeTab` heals to the first tab in the strip — the first group unless a host tab is placed before it, and a host tab on a page whose tabs are all host tabs. A tab click re-enters through `ClearScroll` and this function again — the same structural path a subject change already takes, but that path carries no combat refusal to inherit: `SetRenderer`'s guard covers opening or switching a category, not redrawing inside an already-open panel, so a tab click needs no guard and none is added (options-ui-§13). Returns the group names, in tab order, and from **T4** every drawn tab's key in strip order. |
 | `TabStrip(ctx, spec)` | **W9** | A pinned tab strip in `ctx.chrome` (options-ui-§13). `spec = { tabs = { { key, label, tooltip } }, value, onSelect }`. One `Button` per tab, the active tab the disabled one. Wraps its buttons across rows via `__layoutTabs`, places them via `__tabPlacement`, and reserves the band via `__tabBand` + `SetChromeHeight` — **after** the wrap is known. Each tab is three slices of the client's `Options_Tab_*` atlases; the selected one is drawn from the Active family and its foot overlaps the `Options_InnerFrame` content panel `TabStrip` also draws (**W11**). Re-places itself once when `ctx.chrome` first learns a real width (**W11**). **Its geometry is invariant under the selection from W13.** **From W14 the buttons and the content panel are acquired from `LibKa0s-Pool-1.0` pools held on the `ctx` rather than created per click** — see [What changed at this version](#previously-at-24314774). Returns the buttons in tab order, or nil having drawn nothing. |
 | `SubTabStrip(ctx, parent, spec)` | **W13** | A **secondary** strip drawn inside the scroll as ordinary page content, parented to a frame the host supplies (options-ui-§13). Same `spec` shape as `TabStrip`, same selection-invariant pitch, its own ledger (`ctx.__subTabKids`) released on entry, and **no** content panel and **no** `SetChromeHeight` — the page already has both. **Not pooled at W14**, unlike the primary strip: its parent is a frame AceGUI takes back, so its buttons are unparented on release and cannot be recycled. Returns the buttons in tab order **and** the total height the strip occupies, so the host can size the frame it handed in, or nil having drawn nothing. The selection is the host's state: `spec.value` and `spec.onSelect` are the whole contract, and the convention for the collection is `ctx.activeSubTab` as a table keyed by the primary tab's key, session-only and never persisted. |
+| `KeybindingsTab(spec)` | **K2** | The Keybindings tab's `opts.tabs` entry for `RenderTabbedSchema`: `{ key, label, tooltip, before, render }`, key `Keybindings` and last unless `spec` says otherwise. See [The Keybindings tab](#the-keybindings-tab-optionskeybindslua-minor-2). |
+| `KeybindRows(ctx, spec, parent)` | **K2** | Draws the Keybindings rows into `parent` (default the page's scroll) and returns the row records, or nil when degraded. For a host-built strip's body. |
+| `KEYBINDS_UNCHANGED` | **K2** | `"Key bindings are not changed."`, the sentence a General page's `opts.defaultsTooltip` ends with (`options-ui-§20`). |
 | `Drawer(ctx, spec)` | **D1** | A header bar (chevron, name gold while set, one-line summary) that opens a bordered box joined under it, filled by `spec.body(ctx, box)` with ordinary rows. See [The drawer](#the-drawer). |
 | `NavRail(ctx, spec)` | **N1** | The pinned nav rail, the first level of a page that edits one instance out of many (options-ui-§13): `spec = { entries = { { key, label, tooltip } }, value, onSelect, width }`, `width` 120 by default. Draw after `PageBanner`, before `TabStrip`. Records `ctx.railWidth`, which `lib.__railInset` turns into the inset the strip, the content panel and the scroll start at. Entries pooled per page, released on every call; the selected entry disabled; a click refused in combat by the library; `onSelect` pcall'd. The selection is the host's, as `SubTabStrip`'s is. Returns the entry buttons in rail order, or nil having drawn nothing (an empty list releases the rail, `railWidth` 0). |
 | `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip, action }`; `action = { text, tooltip, onClick }` (**T4**) draws a `Button` in the band's right half for the picker+create band, pcall'd, refused in combat, and Released like the dropdown. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). From **T4** the previous render's dropdown is Released to AceGUI once the new one exists, rather than hidden and kept. **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing, and the action's `Button` as a second value when there is one. |
@@ -1685,9 +1703,9 @@ its decoration hidden, so the pooled `SimpleGroup` the next addon takes is plain
 `Options.lua` minor 30 at the end of `lib:New`, guarded (`lib.__AttachKeybinds(O, d)`). It is the
 headless half of the settings-panel Keybindings tab (`options-ui-§20`): the editor for the key
 bindings a host declares in its own `Bindings.xml` (`launcher-§6`), two slots per action as on the
-client's Options -> Keybindings page, saved by the game to the set in force. **Minor 1 attaches no
-instance member**; the tab's public members (`O.KeybindingsTab`, `O.KeybindRows`) arrive with the
-file's next minor in this same release, and are documented here when they do.
+client's Options -> Keybindings page, saved by the game to the set in force. **Minor 1 attached no
+instance member**; the tab's public members arrived with minor 2 in this same release: see
+[The Keybindings tab](#the-keybindings-tab-optionskeybindslua-minor-2).
 
 **What it never does.** It writes no `BINDING_*` global, never reads `Bindings.xml` and sets no
 default key, so `launcher-§6`'s recorded rejection of a library-owned binding file (LibKa0s#58)
@@ -1782,6 +1800,155 @@ The client's own strings win where they exist, read at use through `lib.__keybin
 
 Cases: `tests/test_options_keybinds_model.lua`, each installing the kit's
 `mock_bindings.lua` (revision 42).
+
+## The Keybindings tab (OptionsKeybinds.lua, minor 2)
+
+`options-ui-§20`'s surface, **Since K2**: an addon whose `Bindings.xml` ships a binding lets the
+player set those keys on its own General page, in one tab the library draws, with the client's
+Keybindings page's behavior. Both surfaces read and write the client's one store, so a key set in
+either shows in the other. Three public instance members; everything else here is library-level and
+`__`-prefixed.
+
+### `O.KeybindingsTab(spec)` → tab entry
+
+A host-tab entry for `O.RenderTabbedSchema`'s `opts.tabs` (`options-ui-§13`):
+
+```lua
+{ key = spec.key or "Keybindings", label = S.TAB_LABEL, tooltip = S.TAB_TIP, before = spec.before,
+  render = function(ctx) O.KeybindRows(ctx, spec) end }
+```
+
+where `S` is `lib.KEYBIND_STRINGS` with `spec.strings` over it. The page's tab strip runs `render`
+under its pcall with `ctx.__renderDisabled` set for a page drawn disabled. With no `before` the
+library puts the tab **after every group tab**, which is where `options-ui-§20` asks for it.
+
+| `spec` field | Meaning |
+|---|---|
+| `bindings` | `{ { command, tooltip }, ... }`, the host's `NS.BINDINGS` (launcher-§6), in row order: `Bindings.xml` order, Show window first. A binding whose `command` is not a string is skipped and reported through the descriptor's `print` with `lib.STRINGS.ROW_FAILED`. |
+| `key` | The tab key, default `Keybindings`. |
+| `before` | A tab key to sit before; nil (the rule) is last. |
+| `intro` | Optional: **one** host line drawn under the fixed intro. It never replaces it. |
+| `strings` | Translations of any `lib.KEYBIND_STRINGS` key, for translation only. The library's table is never written. |
+
+### `O.KeybindRows(ctx, spec, parent)` → rows or `nil`
+
+Draws the tab's body into `parent`, default `O.EnsureScroll(ctx)`. With no AceGUI or no scroll it
+draws nothing and answers nil.
+
+- **Degradation.** Without the binding API (`lib.__keybindAvailable()` false) it draws exactly one
+  line, `UNAVAILABLE` ("Key bindings cannot be set here on this client. Use Options -> Keybindings."),
+  and answers nil.
+- **The intro**, always: `INTRO` ("Key bindings are saved by the game, not in your profile. Defaults
+  and Reset all settings leave them alone."), then `spec.intro` as a second line when it is a
+  non-empty string, then a row gap (`O.ROW_VSPACER`). On the page's scroll each line is an
+  `O.TextRow`; in a host-built `parent` it is a full-width Label there.
+- **One row per binding**, an AceGUI `SimpleGroup` (Flow, full width) holding: the label,
+  `GetBindingName(command)` (else `_G["BINDING_NAME_" .. command]`, else the command), at relative
+  width 0.40, an `InteractiveLabel` carrying the binding's `tooltip`; **Key 1** and **Key 2**, AceGUI
+  Buttons at 0.22 each, showing `GetBindingText(key)` (else the key) or the client's `NOT_BOUND`, with
+  the `SLOT_TIP` tooltip; and **Clear**, a Button at 0.12 with `CLEAR_TIP`. The widths sum to 0.96,
+  inside the clip inset (`options-ui-§8`).
+- **Under the rows**, two Labels: the **set line**, `SET_ACCOUNT` or `SET_CHARACTER` (from
+  `lib.__keybindSetName()`), a space and `SET_HOW`, so "Saved for: all characters (Options ->
+  Keybindings -> Character Specific Keybindings)"; then the **outcome line**, empty until an action.
+- **Disabled.** Under `ctx.__renderDisabled` the slots and Clear are drawn disabled.
+- **Refresh.** Each row pushes a refresher into `ctx.refreshers` that repaints its slots and the set
+  line from `GetBindingKey`. No key is cached anywhere.
+
+The answer is the row records, in order, for a suite:
+`{ command, label, group, slots = { key1Button, key2Button }, clear, status }`, where `status` is the
+one outcome Label every row shares.
+
+**The capture.** A left click on a slot starts listening (refused in combat), and only one slot in
+the session listens at a time: starting one stops any other. The one listener,
+**`lib.__keybindListener`**, is a plain Frame made once and kept across a LibStub upgrade (as
+`lib.__parkFrame` is), drawing nothing and with no strata or level of its own (frame-layering T0).
+To listen it is parented over the slot (`SetParent`, `SetAllPoints`), takes the keyboard, the mouse
+and the wheel, and shows; the slot reads `LISTENING`.
+
+| Input while listening | Result |
+|---|---|
+| `ESCAPE` | Cancels. The keyboard-enabled listener consumes it, so the Settings window stays open; `SetPropagateKeyboardInput` is never called. |
+| `PRINTSCREEN` | `Screenshot()` when present; still listening. |
+| A key `lib.__keyChord` answers nil for (a modifier alone, `UNKNOWN`) | Still listening. |
+| Any other key | Written: `lib.__keybindSet(command, slot, chord)`. |
+| Left or right mouse button | Cancels (click the slot again to cancel, as on the client's page). |
+| Any other mouse button | Written, through `lib.__keyChord` (`BUTTON3` to `BUTTON31`). |
+| The wheel | `MOUSEWHEELUP` / `MOUSEWHEELDOWN`, with the modifiers held, written. |
+
+After a write the capture stops and the outcome line reads, in the client's own words where it has
+them: `KEY_UNBOUND_ERROR` formatted with the `GetBindingName` of the action that lost the key, when
+that action is left with no key; else `KEY_BOUND`; `COMBAT` for `"combat"`, `UNAVAILABLE` for
+`"unavailable"` and `FAILED` otherwise. Every row of the same render is repainted.
+
+**A right click on a slot** clears that slot (`lib.__keybindClear(command, slot)`, outcome
+`CLEARED`); **Clear** clears both (`lib.__keybindClear(command, nil)`). Both are refused in combat.
+
+**Stopping.** A stop turns the listener's keyboard, mouse and wheel off, hides it, clears its points
+and parents it back to `UIParent`, and the slot shows its key again. A capture stops on: Escape or a
+second click; a write; the slot widget's `OnRelease` (a tab change or a structural refresh releases
+it through `ClearScroll`); the page's `OnHide` (hooked once per page, `ctx.__keybindHooked`); and
+**combat start**, through `lib.__keybindOnCombat`, a hook in the combat lock's `lib.__combatHooks`
+held strongly on `lib` (an older copy's hook is taken out of the set when a newer copy loads). On
+`locked == true` it stops the capture and writes `COMBAT` to the outcome line. No event is
+registered for it: the lock's one combat frame is the only listener.
+
+**Refusals.** Starting a capture, a right click and Clear each ask `O.__combatRefused("keybind",
+command)` first: in combat the gray notice prints once for the combat, the outcome line reads
+`COMBAT`, and **no binding API is called**, not even a read.
+
+**Pooled widgets** (`options-ui-§19`). A slot's frame is told `RegisterForClicks("LeftButtonUp",
+"RightButtonUp")`, and its one `OnRelease` callback puts it back to `"LeftButtonUp"` and stops a
+capture it holds, so a pooled Button leaves with nothing of ours. No script is set on a widget's
+frame; the listener is the library's own frame and is re-homed on every stop.
+
+**What it never touches.** `SettingsPanel` (no Commit, no Close), `HideUIPanel`, `ToggleGameMenu`,
+`Settings.OpenToCategory`, `Settings.SelectCharacterBindings` / `Settings.SelectAccountBindings`,
+`KeybindListener` and the client's binding row template; AceGUI's `Keybinding` widget is not used.
+It keeps no key in SavedVariables or a profile and offers no account/character switch of its own.
+Repainting on `UPDATE_BINDINGS` and on the page's show is not part of K2.
+
+### `O.KEYBINDS_UNCHANGED`
+
+`lib.KEYBIND_STRINGS.UNCHANGED`, "Key bindings are not changed.": the sentence a host appends to its
+General page's `opts.defaultsTooltip` (`CreatePanel`), so the Defaults button says it leaves keys
+alone before it is clicked.
+
+### Declaring it
+
+A page drawn by `O.RenderTabbedSchema` (DropWatcher; the same shape in every such host):
+
+```lua
+Helpers.RenderTabbedSchema(c, "general", AFTER_GROUP, nil, {
+  rerender = renderGeneral,
+  tabs = { O.KeybindingsTab({ bindings = NS.BINDINGS }) },
+})
+```
+
+A hand-drawn General strip (LootHistory's `GENERAL_TABS`) adds its last entry:
+
+```lua
+{ key = "Keybindings", build = function(ctx) O.KeybindRows(ctx, KEYBIND_SPEC) end }
+```
+
+And the General page's Defaults tooltip ends with the sentence:
+
+```lua
+defaultsTooltip = L["Resets every setting on this page."] .. " " .. O.KEYBINDS_UNCHANGED,
+```
+
+### What a consumer owes
+
+**Every Options degradation stub gains `KeybindingsTab`, `KeybindRows` and `KEYBINDS_UNCHANGED`**,
+in every addon, windowed or not: `Kit.assertSurfaceParity` compares the stub with the live instance,
+so the re-vendor of this version turns red until the stub answers all three. This version's member
+manifest lists the lib-level table only, as every Options manifest does, so it does not name them.
+An addon that ships bindings tests its tab through `T.keybindThroughTab(row, slot, key[, mods])`
+(the kit's driver, revision 42) with `tests/_kit/mock_bindings.lua` installed, and leaves the
+capture, conflict, combat and settings-window cases to this library's suite (`testing-§8`).
+
+Cases: `tests/test_options_keybinds.lua` (on `tests/fixture_keybinds.lua`'s bench, which fails a
+case on any touch of Blizzard's settings window), and `tests/test_kit_bindings.lua` for the driver.
 
 ## The choice grid
 
@@ -2565,11 +2732,11 @@ tooltip. Wire it as the row's `tooltip`:
 
 ## Compatibility
 
-**At 30.2.34.3.5.9.2.8.4.2.1.1 one instance member is added and nothing is removed**: `O.StrataTooltip` (C8).
+**At 30.2.34.3.5.9.2.8.4.2.1.2 four instance members are added and nothing is removed**: `O.StrataTooltip` (C8), and `O.KeybindingsTab`, `O.KeybindRows` and `O.KEYBINDS_UNCHANGED` (K2).
 A host that does not call it draws what it drew. **An Options degradation stub owes
-`StrataTooltip`**: `Kit.assertSurfaceParity` compares a stub against the live instance (the
+`StrataTooltip`, `KeybindingsTab`, `KeybindRows` and `KEYBINDS_UNCHANGED`**: `Kit.assertSurfaceParity` compares a stub against the live instance (the
 surface registered with `Kit.setSurfaceSource`), so a stub without it turns the re-vendor red. This
-version's manifest lists the lib-level table only and does not name it. The two other moves (I3, OC2) are internal and owe nothing. `OptionsKeybinds.lua` (K1) adds one public lib-level table, `lib.KEYBIND_STRINGS`, which the manifest names, and otherwise only `__` members; `Options.lua` 30's guarded attach changes nothing a host draws, and a copy without `OptionsKeybinds.lua` is otherwise this version. A stub of the instance owes nothing for K1.
+version's manifest lists the lib-level table only and does not name them. The two other moves (I3, OC2) are internal and owe nothing. `OptionsKeybinds.lua` (K1) adds one public lib-level table, `lib.KEYBIND_STRINGS`, which the manifest names, and otherwise only `__` members; `Options.lua` 30's guarded attach changes nothing a host draws, and a copy without `OptionsKeybinds.lua` is otherwise this version. A stub of the instance owes nothing for K1. K2's three members draw nothing until a host calls them, and a copy without `OptionsKeybinds.lua` has none of them.
 
 **At 29.2.34.2.5.9.1.7.4.2.1 one `__` test seam is removed and nothing public moves**:
 `__releaseChrome`, which no suite or roster consumer called. A host draws what it drew. An Options

@@ -25,8 +25,8 @@ Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **D
 `SimTimeline` 3 unchanged); **Widgets minor 15**, **WidgetsDragHandle minor 5** and
 **WidgetsAutocomplete minor 3** (`LibKa0s-Widgets-1.0` key **15.1.5.3.3**, `WidgetsReorder` 1 and
 `WidgetsLineChart` 3 unchanged); **Options minor 30**, **OptionsIds minor 3**, **OptionsCombat
-minor 2**, **OptionsCompose minor 8** and **OptionsKeybinds minor 1**, a new twelfth Options file
-(`LibKa0s-Options-1.0` key **30.2.34.3.5.9.2.8.4.2.1.1**, every other Options file unchanged); every
+minor 2**, **OptionsCompose minor 8** and **OptionsKeybinds minor 2**, a new twelfth Options file
+(`LibKa0s-Options-1.0` key **30.2.34.3.5.9.2.8.4.2.1.2**, every other Options file unchanged); every
 other file still at its v1.76.0 minor and **test kit revision 42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
 this block names each new minor as it lands. Now **seventeen majors across forty-one files**.
 
@@ -55,9 +55,16 @@ changes, so no file minor moves; `mock_base.lua` is unchanged (1464 lines).
   deferred until an addon shipped a second binding (DpsRace and QuickComms do). Every Binding in
   the addon's category, no `header=` or `default=`, the names equal to the commands in order, each
   `BINDING_NAME_` label set, and the category global reading the brand.
+- **`Kit.keybindThroughTab(row, slot, key, mods)`**, in the same file and published by `Kit.expose`
+  (added with OptionsKeybinds minor 2, below, inside this unreleased revision): the settings-panel
+  Keybindings tab driven the way a player drives it. It fires the row's slot widget `OnClick` with
+  `"LeftButton"`, holds `mods` through the binding mock's `M.setModifiers` for the press (and puts
+  them back), runs the library's capture listener's `OnKeyDown` with `key` (the library resolved
+  through `LibStub`), and answers the row's outcome line. It fails naming `options-ui-§20` when the
+  row, the slot or the listener is missing. `Kit.expose` now records the harness's mock for it.
 
 What M2 of the 2026-10-24 run uses: the KB items install `mock_bindings.lua` and call
-`T.assertBindingsXml` (and LK-12's `T.keybindThroughTab`); the ZS items install `mock_layers.lua`.
+`T.assertBindingsXml` and `T.keybindThroughTab`; the ZS items install `mock_layers.lua`.
 New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` and
 `tests/test_kit_bindings.lua`.
 
@@ -162,8 +169,9 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   owes them, and no public member moves at this change (the manifest it wrote,
   `members-29.2.34.3.5.9.2.7.4.2.1.json`, gave way to `members-29.2.34.3.5.9.2.8.4.2.1.json` when
   OptionsCompose minor 8 landed, and that to `members-30.2.34.3.5.9.2.8.4.2.1.1.json` when Options
-  minor 30 and OptionsKeybinds minor 1 did). Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md).
+  minor 30 and OptionsKeybinds minor 1 did, and that to `members-30.2.34.3.5.9.2.8.4.2.1.2.json`
+  when OptionsKeybinds minor 2 did). Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md).
 - Four new cases in `tests/test_options_idsuggest_frames.lua`, with the events fired through
   `lib.__combatFrame`: a list a shown page's box opened closes at combat start and its rows pick
   nothing; a box under none of the panels handed in keeps its list; a focused pullout and the list
@@ -190,11 +198,11 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   `Kit.assertSurfaceParity` compares a stub against the live instance `lib:New` returns (the
   surface a consumer's runner registers with `Kit.setSurfaceSource`), so the re-vendor turns red
   until the stub answers it. The regenerated `members-29.2.34.3.5.9.2.8.4.2.1.json` (now
-  `members-30.2.34.3.5.9.2.8.4.2.1.1.json`) lists the lib-level table only, as every Options
+  `members-30.2.34.3.5.9.2.8.4.2.1.2.json`) lists the lib-level table only, as every Options
   manifest does, so it does not name the new member. Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md),
-  which replaces the 29.2.34.3.5.9.2.7.4.2.1 and 29.2.34.3.5.9.2.8.4.2.1 documents this release
-  carried on its branch: no release carried either key.
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md),
+  which replaces the 29.2.34.3.5.9.2.7.4.2.1, 29.2.34.3.5.9.2.8.4.2.1 and 30.2.34.3.5.9.2.8.4.2.1.1
+  documents this release carried on its branch: no release carried any of those keys.
 - Six new cases in `tests/test_options_compose.lua`: `BACKGROUND` to `HIGH` (array and map) give the
   tiers alone; a set with `DIALOG` (or `FULLSCREEN`) adds the dialog sentence; a set with `TOOLTIP`
   or `FULLSCREEN_DIALOG` adds both; a non-table gives the tiers; `strings` overrides each part; and
@@ -225,7 +233,7 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
 - **`lib.KEYBIND_STRINGS`**, the tab's words (ASCII; a host's `spec.strings` overrides them for
   translation), with the client's own `NOT_BOUND`, `KEY_BOUND` and `KEY_UNBOUND_ERROR` winning
   where they exist. It is the one public lib-level name added, so
-  `members-30.2.34.3.5.9.2.8.4.2.1.1.json` lists it.
+  `members-30.2.34.3.5.9.2.8.4.2.1.1.json` (now `members-30.2.34.3.5.9.2.8.4.2.1.2.json`) lists it.
 - **`Options.lua` minor 30** attaches the file at the end of `lib:New`, guarded
   (`lib.__AttachKeybinds(O, d)`, an empty body at minor 1: the tab's instance members arrive with
   the file's next minor in this release).
@@ -238,12 +246,66 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   sets no default key.
 - **What a consumer owes: nothing yet.** No instance member is added, so no Options degradation
   stub moves. Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md).
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md).
 - New suite `tests/test_options_keybinds_model.lua` (the kit's `mock_bindings.lua` installed per
   case): slots on commands with 0, 1 and 2 keys, the slot 2 to slot 1 swap, a displaced action
   reported keyless only when it is, a failed rebind restoring everything with no save, one save to
   the current set (1 and 2), both combat refusals calling nothing, clears, `"unavailable"`, the chord
   builder on both routes, the set name and the twelve-component key.
+
+### OptionsKeybinds minor 2: the Keybindings tab
+
+- **Three public instance members** (`options-ui-§20`), on top of minor 1's model:
+  - **`O.KeybindingsTab(spec)`** returns the `opts.tabs` entry for `O.RenderTabbedSchema`:
+    `{ key = spec.key or "Keybindings", label, tooltip, before = spec.before, render }`, with no
+    `before` by default, so the library puts it after every group tab. `spec`: `bindings` (the
+    host's `NS.BINDINGS`, `{ { command, tooltip } }`, row order), `key`, `before`, `intro` (one
+    optional host line under the fixed intro, never in place of it) and `strings` (translations of
+    `lib.KEYBIND_STRINGS`).
+  - **`O.KeybindRows(ctx, spec, parent)`** draws the rows into `parent` (default the page's scroll)
+    for a hand-drawn strip such as LootHistory's `GENERAL_TABS`, and answers the row records
+    (`{ command, label, group, slots, clear, status }`), or nil when degraded.
+  - **`O.KEYBINDS_UNCHANGED`**, "Key bindings are not changed.", for the end of a General page's
+    `opts.defaultsTooltip`.
+- **A row**: the client's `GetBindingName(command)` label (no label is passed in, so it cannot
+  drift from the client's page), **Key 1** and **Key 2** slots showing `GetBindingText(key)` or
+  `NOT_BOUND`, and **Clear**, at 0.40 / 0.22 / 0.22 / 0.12. Under the rows, the set line ("Saved for:
+  all characters" or "this character only", then where the player switches it) and the outcome line.
+  Each row registers a refresher that re-reads `GetBindingKey`; nothing is cached.
+- **The capture**, as on the client's page: a left click listens, a second click or Escape cancels
+  (the keyboard-enabled listener consumes Escape, so the Settings window stays open), a right click
+  clears that slot, PRINTSCREEN still screenshots, a modifier alone keeps listening, mouse buttons 3
+  to 31 and the wheel bind. The outcome line is the client's `KEY_UNBOUND_ERROR` naming the action
+  that lost its key when it is left with none, else `KEY_BOUND`. **One listener for the session**,
+  `lib.__keybindListener`, a plain frame kept across an upgrade, so one slot listens at a time
+  across every host.
+- **Combat**: starting a capture, a right click and Clear are refused through `O.__combatRefused`
+  (the gray notice once, the outcome line `COMBAT`, no binding API called). A capture in progress
+  stops at combat start through `lib.__keybindOnCombat`, a hook in the lock's `lib.__combatHooks`;
+  no event is registered for it. A capture also stops on the slot's `OnRelease` (a tab change or a
+  structural refresh) and on the page's `OnHide`.
+- **Pooled widgets** (`options-ui-§19`): a slot's frame takes both mouse buttons, and its one
+  `OnRelease` puts `RegisterForClicks("LeftButtonUp")` back. The tab never touches `SettingsPanel`,
+  `KeybindListener`, `HideUIPanel`, `ToggleGameMenu` or `Settings.*`, and never uses AceGUI's
+  `Keybinding` widget.
+- **Degradation**: without the binding API the tab draws one line pointing at Options ->
+  Keybindings, and nothing else.
+- **What a consumer owes: every Options degradation stub gains `KeybindingsTab`, `KeybindRows` and
+  `KEYBINDS_UNCHANGED`**, in every addon, windowed or not (`Kit.assertSurfaceParity`). The
+  regenerated `members-30.2.34.3.5.9.2.8.4.2.1.2.json` lists the lib-level table only, as every
+  Options manifest does, so it does not name them. The KB items of the 2026-10-24 run test their tab
+  through `T.keybindThroughTab`. Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md).
+- **Why.** OWNER_SCOPE 015 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`
+  (KEYBINDINGS_RESEARCH §5.1 and §5.2; XC-01, XC-02, XC-03 and U-03 of its layout review). Repainting
+  on `UPDATE_BINDINGS` is the next minor's.
+- New suite `tests/test_options_keybinds.lua` on the bench `tests/fixture_keybinds.lua`, which fails
+  a case on any touch of Blizzard's settings window: the tab entry and its place last, rows and
+  labels, slots and the refresher, the capture (SHIFT-K, Escape, a modifier alone, PRINTSCREEN, a
+  second click, Button4, the wheel, the right click, Clear, one capture across rows), the outcome
+  and set lines, the three combat cases, pooling, OnHide, a disabled render, degradation and the
+  intro. Three new cases in `tests/test_kit_bindings.lua` pin `Kit.keybindThroughTab`, driven against an
+  Options instance.
 
 ## v1.76.0 — 2026-10-23
 

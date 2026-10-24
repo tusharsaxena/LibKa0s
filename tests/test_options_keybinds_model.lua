@@ -50,9 +50,9 @@ local function count(t) return #t end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-test("keybinds: OptionsKeybinds is at minor 1, paired on an Options shell at 30 or later", function()
-  assertEqual(lib.MODULES.OptionsKeybinds, 1)
-  assertEqual(lib.__keybindsMinor, 1)
+test("keybinds: OptionsKeybinds is at minor 2, paired on an Options shell at 30 or later", function()
+  assertEqual(lib.MODULES.OptionsKeybinds, 2)
+  assertEqual(lib.__keybindsMinor, 2)
   assertTrue(lib.MINOR >= 30, "Options.lua minor " .. tostring(lib.MINOR))
   assertEqual(lib.__keybindsShellMinor, lib.MINOR)
   assertEqual(type(lib.__AttachKeybinds), "function")

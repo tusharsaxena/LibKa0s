@@ -3,8 +3,10 @@
 -- client's Options -> Keybindings page, saved by the game to whichever set is in force. This file
 -- holds the headless half: lib.__keybindSet / lib.__keybindClear (write a key with the client's own
 -- slot semantics, refuse in combat, save once), lib.__keyChord (a key press to the client's chord
--- string), lib.__keybindSetName and the words, lib.KEYBIND_STRINGS. The rows that draw it attach
--- through lib.__AttachKeybinds (options-ui-§20).
+-- string), lib.__keybindSetName and the words, lib.KEYBIND_STRINGS. From minor 2 it also holds the
+-- tab that draws it (options-ui-§20): the instance members O.KeybindingsTab, O.KeybindRows and
+-- O.KEYBINDS_UNCHANGED, attached through lib.__AttachKeybinds, and the one capture listener every
+-- host shares, lib.__keybindListener.
 --
 -- A twelfth file of the Options major (minor 1), guarded with the same multi-file idiom as
 -- OptionsDrawer.lua; Options minor 30 attaches it. It loads after OptionsCombat.lua, because every
@@ -40,7 +42,11 @@ if not lib then return end
 -- Minor 1: the binding model (lib.__keybindSet / lib.__keybindClear / lib.__keybindAvailable /
 -- lib.__keybindSetName), the chord builder (lib.__keyChord), the words (lib.KEYBIND_STRINGS) and an
 -- empty lib.__AttachKeybinds.
-local KEYBINDS_MINOR = 1
+-- Minor 2: the Keybindings tab -- O.KeybindingsTab, O.KeybindRows and O.KEYBINDS_UNCHANGED, two key
+-- slots and a Clear button per action, the capture (lib.__keybindListener, one across every host,
+-- Escape cancels, a right-click clears a slot), the set line and the outcome line, the combat
+-- refusals and the capture stopped at combat start (lib.__keybindOnCombat), and the degradation row.
+local KEYBINDS_MINOR = 2
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__keybindsMinor and lib.__keybindsMinor >= KEYBINDS_MINOR
   and lib.__keybindsShellMinor == lib.MINOR then return end
@@ -276,9 +282,392 @@ function lib.__keybindSetName()
   return GetCurrentBindingSet() == character and "character" or "account"
 end
 
+-- ── the capture (minor 2) ────────────────────────────────────────────────────────────────────
+--
+-- ONE listener for every host in the session, because only one slot may listen at a time and
+-- every vendored copy is handed the same `lib`: lib.__keybindListener, created once and kept across
+-- a LibStub upgrade the way lib.__parkFrame is (OptionsRegistry.lua). A plain Frame that draws
+-- nothing (frame-layering T0): no strata and no level of its own, so parented over the slot it
+-- listens for it sits one level above it. Its scripts dispatch through the lib-level functions by
+-- name, at call time, so a newer minor's handlers are the ones that run on an older copy's frame.
+--
+-- While it listens it covers the slot (SetAllPoints) and takes the keyboard, the mouse and the
+-- wheel; the keyboard-enabled frame consumes Escape, so the Settings window stays open. It never
+-- calls SetPropagateKeyboardInput (protected in combat), and it is never left enabled: every stop
+-- turns all three off, hides it, clears its points and parents it back to UIParent.
+--
+-- lib.__keybindCapture is nil or { view = <the rows' view>, row = <row record>, slot = 1|2 }.
+
+--- The listener, made on first use. nil without CreateFrame.
+function lib.__keybindEnsureListener()
+  local f = lib.__keybindListener
+  if f then return f end
+  if type(CreateFrame) ~= "function" then return nil end
+  f = CreateFrame("Frame")
+  if not f then return nil end
+  f:Hide()
+  f:SetScript("OnKeyDown", function(_, key)
+    local fn = lib.__keybindOnKey
+    if type(fn) == "function" then fn(key) end
+  end)
+  f:SetScript("OnMouseDown", function(_, button)
+    local fn = lib.__keybindOnMouse
+    if type(fn) == "function" then fn(button) end
+  end)
+  f:SetScript("OnMouseWheel", function(_, delta)
+    local fn = lib.__keybindOnWheel
+    if type(fn) == "function" then fn(delta) end
+  end)
+  lib.__keybindListener = f
+  return f
+end
+
+--- Stop the capture, if any: the listener lets go of everything and goes home. With `repaint`
+--- not false the slot shows its key again (false when the slot widget is being released and may
+--- already belong to someone else). Answers the capture it stopped, or nil.
+function lib.__keybindStop(repaint)
+  local cap = lib.__keybindCapture
+  lib.__keybindCapture = nil
+  local f = lib.__keybindListener
+  if f then
+    f:EnableKeyboard(false)
+    f:EnableMouse(false)
+    f:EnableMouseWheel(false)
+    f:Hide()
+    f:ClearAllPoints()
+    f:SetParent(UIParent)
+  end
+  if cap and repaint ~= false and cap.view and cap.view.paintRow then cap.view.paintRow(cap.row) end
+  return cap
+end
+
+--- Start listening for `row`'s `slot`, stopping any other capture first. The caller has already
+--- asked the combat lock. Answers false when there is no listener to listen with.
+function lib.__keybindStart(view, row, slot)
+  lib.__keybindStop()
+  local f = lib.__keybindEnsureListener()
+  local w = row.slots[slot]
+  if not f or not w or not w.frame then return false end
+  lib.__keybindCapture = { view = view, row = row, slot = slot }
+  f:SetParent(w.frame)
+  f:ClearAllPoints()
+  f:SetAllPoints(w.frame)
+  f:EnableKeyboard(true)
+  f:EnableMouse(true)
+  f:EnableMouseWheel(true)
+  f:Show()
+  w:SetText(view.S.LISTENING)
+  return true
+end
+
+local function bindingName(command)
+  if type(GetBindingName) == "function" then
+    local name = GetBindingName(command)
+    if type(name) == "string" and name ~= "" then return name end
+  end
+  local g = _G["BINDING_NAME_" .. tostring(command)]
+  if type(g) == "string" and g ~= "" then return g end
+  return tostring(command)
+end
+
+--- The outcome line for a refusal or a failure: `why` from __keybindSet / __keybindClear.
+local function reasonText(S, why)
+  if why == "combat" then return S.COMBAT end
+  if why == "unavailable" then return S.UNAVAILABLE end
+  return S.FAILED
+end
+
+--- The outcome line after a write, in the client's own words where it has them.
+local function setOutcome(S, ok, displaced, displacedUnbound, why)
+  if not ok then return reasonText(S, why) end
+  if displaced and displacedUnbound then
+    return lib.__keybindClientString("KEY_UNBOUND_ERROR"):format(bindingName(displaced))
+  end
+  return lib.__keybindClientString("KEY_BOUND")
+end
+
+--- Write `chord` to the listening slot, stop, and show the outcome on every row of that view.
+local function captureWrite(chord)
+  local cap = lib.__keybindCapture
+  if not cap then return end
+  local ok, displaced, displacedUnbound, why = lib.__keybindSet(cap.row.command, cap.slot, chord)
+  lib.__keybindStop(false)
+  cap.view.setStatus(setOutcome(cap.view.S, ok, displaced, displacedUnbound, why))
+  cap.view.repaint()
+end
+
+--- OnKeyDown: Escape cancels; PRINTSCREEN takes the screenshot and keeps listening; a press that
+--- binds nothing (a modifier alone) keeps listening; anything else is written.
+function lib.__keybindOnKey(key)
+  if not lib.__keybindCapture then return end
+  if key == "ESCAPE" then lib.__keybindStop(); return end
+  if key == "PRINTSCREEN" then
+    if type(Screenshot) == "function" then Screenshot() end
+    return
+  end
+  local chord = lib.__keyChord(key)
+  if chord then captureWrite(chord) end
+end
+
+--- OnMouseDown: the left or right button cancels (click the slot again to cancel, as on the
+--- client's page); any other button is written.
+function lib.__keybindOnMouse(button)
+  if not lib.__keybindCapture then return end
+  if button == "LeftButton" or button == "RightButton" then lib.__keybindStop(); return end
+  local chord = lib.__keyChord(button)
+  if chord then captureWrite(chord) end
+end
+
+--- OnMouseWheel: MOUSEWHEELUP or MOUSEWHEELDOWN, with the modifiers held.
+function lib.__keybindOnWheel(delta)
+  if not lib.__keybindCapture then return end
+  local chord = lib.__keyChord((tonumber(delta) or 0) > 0 and "MOUSEWHEELUP" or "MOUSEWHEELDOWN")
+  if chord then captureWrite(chord) end
+end
+
+-- Combat start stops a capture in progress, through the combat lock's hook set (Options.lua;
+-- OptionsCombat.lua calls each hook as pcall(hook, locked)). Held strongly on lib, since the set is
+-- weak-keyed, and an older copy's hook is taken out of the set before this one goes in. No event
+-- registration of its own: the lock's one combat frame is the only listener.
+if lib.__combatHooks then
+  if lib.__keybindOnCombat then lib.__combatHooks[lib.__keybindOnCombat] = nil end
+  lib.__keybindOnCombat = function(locked)
+    if locked ~= true then return end
+    local cap = lib.__keybindStop()
+    if cap and cap.view and cap.view.setStatus then cap.view.setStatus(cap.view.S.COMBAT) end
+  end
+  lib.__combatHooks[lib.__keybindOnCombat] = true
+end
+
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
---- Called by lib:New (Options minor 30), guarded. The tab's instance members arrive with the next
---- minor of this file; minor 1 attaches nothing.
+-- The row's column widths, relative, summing below 1 for the clip inset (options-ui-§8).
+local W_LABEL, W_SLOT, W_CLEAR = 0.40, 0.22, 0.12
+
+--- lib.KEYBIND_STRINGS with a host's translations over it, as a fresh table.
+local function mergeStrings(overrides)
+  local S = {}
+  for k, v in pairs(lib.KEYBIND_STRINGS) do S[k] = v end
+  if type(overrides) == "table" then
+    for k, v in pairs(overrides) do
+      if type(v) == "string" then S[k] = v end
+    end
+  end
+  return S
+end
+
+local function slotText(key)
+  if key == nil or key == "" then return lib.__keybindClientString("NOT_BOUND") end
+  if type(GetBindingText) == "function" then
+    local t = GetBindingText(key)
+    if type(t) == "string" and t ~= "" then return t end
+  end
+  return key
+end
+
+local function setLineText(S)
+  local which = lib.__keybindSetName() == "character" and S.SET_CHARACTER or S.SET_ACCOUNT
+  return which .. " " .. S.SET_HOW
+end
+
+--- Called by lib:New (Options minor 30), guarded. Minor 2 attaches the tab's three members.
 function lib.__AttachKeybinds(O, d) -- luacheck: no unused args
+  local function print(line) if O.__print then O.__print(line) end end
+  local function refused(command)
+    return O.__combatRefused ~= nil and O.__combatRefused("keybind", command)
+  end
+
+  --- `options-ui-§20`'s sentence for the General page's Defaults tooltip (`opts.defaultsTooltip`).
+  O.KEYBINDS_UNCHANGED = lib.KEYBIND_STRINGS.UNCHANGED
+
+  --- A host-tab entry for O.RenderTabbedSchema's `opts.tabs`; see O.KeybindRows for `spec`.
+  function O.KeybindingsTab(spec)
+    spec = spec or {}
+    local S = mergeStrings(spec.strings)
+    return {
+      key = spec.key or "Keybindings", label = S.TAB_LABEL, tooltip = S.TAB_TIP, before = spec.before,
+      render = function(ctx) O.KeybindRows(ctx, spec) end,
+    }
+  end
+
+  --- One full-width line of text in `parent`: O.TextRow on the page's own scroll, a Label in a
+  --- host-built body.
+  local function textLine(view, text)
+    if view.parent == view.ctx.scroll then return O.TextRow(view.ctx, text) end
+    local w = O.AceGUI:Create("Label")
+    w:SetFullWidth(true)
+    w:SetText(text)
+    view.parent:AddChild(w)
+    return w
+  end
+
+  --- The view's painters: one row's slots (the listening slot is left saying so), every row and the
+  --- set line, and the outcome line. Nothing is cached; every paint reads GetBindingKey.
+  local function painters(view)
+    function view.paintRow(row)
+      local list = {}
+      if type(GetBindingKey) == "function" then list = { GetBindingKey(row.command) } end
+      local keys = {}
+      for i = 1, 2 do
+        local k = list[i]
+        if k ~= nil and k ~= "" then keys[#keys + 1] = k end
+      end
+      local cap = lib.__keybindCapture
+      for slot = 1, 2 do
+        if not (cap and cap.row == row and cap.slot == slot) then
+          row.slots[slot]:SetText(slotText(keys[slot]))
+        end
+      end
+    end
+    function view.repaint()
+      for _, row in ipairs(view.rows) do view.paintRow(row) end
+      if view.setLine then view.setLine:SetText(setLineText(view.S)) end
+    end
+    function view.setStatus(text)
+      if view.status then view.status:SetText(text or "") end
+    end
+  end
+
+  local function onSlotClick(view, row, slot, button)
+    local S = view.S
+    if button == "RightButton" then
+      lib.__keybindStop()
+      if refused(row.command) then view.setStatus(S.COMBAT); return end
+      local ok, why = lib.__keybindClear(row.command, slot)
+      view.setStatus(ok and S.CLEARED or reasonText(S, why))
+      view.repaint()
+      return
+    end
+    local cap = lib.__keybindCapture
+    if cap and cap.row == row and cap.slot == slot then lib.__keybindStop(); return end
+    if refused(row.command) then
+      lib.__keybindStop()
+      view.setStatus(S.COMBAT)
+      return
+    end
+    lib.__keybindStart(view, row, slot)
+  end
+
+  local function onClear(view, row)
+    local cap = lib.__keybindCapture
+    if cap and cap.row == row then lib.__keybindStop() end
+    if refused(row.command) then view.setStatus(view.S.COMBAT); return end
+    local ok, why = lib.__keybindClear(row.command, nil)
+    view.setStatus(ok and view.S.CLEARED or reasonText(view.S, why))
+    view.repaint()
+  end
+
+  --- A slot: an AceGUI Button that takes both mouse buttons, handed back to the pool as it came
+  --- (options-ui-§19): its one OnRelease restores LeftButtonUp and stops a capture it holds.
+  local function makeSlot(view, row, slot, tip)
+    local btn = O.AceGUI:Create("Button")
+    btn:SetRelativeWidth(W_SLOT)
+    if btn.frame and btn.frame.RegisterForClicks then
+      btn.frame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    end
+    btn:SetCallback("OnClick", function(_, _, button) onSlotClick(view, row, slot, button) end)
+    btn:SetCallback("OnRelease", function(w)
+      if w.frame and w.frame.RegisterForClicks then w.frame:RegisterForClicks("LeftButtonUp") end
+      local cap = lib.__keybindCapture
+      if cap and cap.row.slots[cap.slot] == w then lib.__keybindStop(false) end
+    end)
+    O.AttachTooltip(btn, view.S["KEY" .. slot], tip)
+    if view.ctx.__renderDisabled then btn:SetDisabled(true) end
+    return btn
+  end
+
+  --- One action's row: label, Key 1, Key 2, Clear, in a full-width Flow group.
+  local function makeRow(view, binding)
+    local AceGUI, S = O.AceGUI, view.S
+    local row = { command = binding.command, status = view.status, slots = {} }
+    local group = AceGUI:Create("SimpleGroup")
+    group:SetLayout("Flow")
+    group:SetFullWidth(true)
+    local name = bindingName(binding.command)
+    -- An InteractiveLabel, because a plain Label takes no mouse and its tooltip would never show.
+    local label = AceGUI:Create("InteractiveLabel")
+    label:SetText(name)
+    label:SetRelativeWidth(W_LABEL)
+    O.AttachTooltip(label, name, binding.tooltip)
+    group:AddChild(label)
+    for slot = 1, 2 do
+      row.slots[slot] = makeSlot(view, row, slot, S.SLOT_TIP)
+      group:AddChild(row.slots[slot])
+    end
+    local clear = AceGUI:Create("Button")
+    clear:SetText(S.CLEAR)
+    clear:SetRelativeWidth(W_CLEAR)
+    clear:SetCallback("OnClick", function() onClear(view, row) end)
+    O.AttachTooltip(clear, S.CLEAR, S.CLEAR_TIP)
+    if view.ctx.__renderDisabled then clear:SetDisabled(true) end
+    group:AddChild(clear)
+    row.group, row.label, row.clear = group, label, clear
+    return row
+  end
+
+  --- The page's OnHide stops a capture on that page; hooked once per page.
+  local function hookHide(ctx)
+    local panel = ctx.panel
+    if ctx.__keybindHooked or type(panel) ~= "table" or not panel.HookScript then return end
+    ctx.__keybindHooked = true
+    panel:HookScript("OnHide", function()
+      local cap = lib.__keybindCapture
+      if cap and cap.view.panel == panel then lib.__keybindStop() end
+    end)
+  end
+
+  local function drawRows(view, bindings)
+    for _, b in ipairs(bindings) do
+      if type(b) == "table" and type(b.command) == "string" then
+        local row = makeRow(view, b)
+        view.parent:AddChild(row.group)
+        view.rows[#view.rows + 1] = row
+      else
+        local what = type(b) == "table" and b.command or b
+        print(lib.STRINGS.ROW_FAILED:format(tostring(what), "a binding's command must be a string"))
+      end
+    end
+  end
+
+  --- Draw the Keybindings rows into `parent` (default: the page's scroll). Answers the row records
+  --- `{ command, label, group, slots = { w1, w2 }, clear, status }`, or nil when degraded.
+  --- `spec`: bindings ({ { command, tooltip } }, row order), intro (one host line under the fixed
+  --- intro), strings (translations of lib.KEYBIND_STRINGS keys); key and before are the tab's.
+  function O.KeybindRows(ctx, spec, parent)
+    spec = spec or {}
+    parent = parent or O.EnsureScroll(ctx)
+    if not O.AceGUI or not parent then return nil end
+    local S = mergeStrings(spec.strings)
+    local view = { ctx = ctx, panel = ctx.panel, parent = parent, S = S, rows = {} }
+    if not lib.__keybindAvailable() then
+      textLine(view, S.UNAVAILABLE)
+      return nil
+    end
+    painters(view)
+    textLine(view, S.INTRO)
+    if type(spec.intro) == "string" and spec.intro ~= "" then textLine(view, spec.intro) end
+    O.AddSpacer(parent, O.ROW_VSPACER)
+
+    view.status = O.AceGUI:Create("Label")
+    view.status:SetFullWidth(true)
+    view.status:SetText("")
+    drawRows(view, type(spec.bindings) == "table" and spec.bindings or {})
+
+    view.setLine = O.AceGUI:Create("Label")
+    view.setLine:SetFullWidth(true)
+    parent:AddChild(view.setLine)
+    parent:AddChild(view.status)
+    view.repaint()
+
+    for _, row in ipairs(view.rows) do
+      if type(ctx.refreshers) == "table" then
+        ctx.refreshers[#ctx.refreshers + 1] = function()
+          view.paintRow(row)
+          view.setLine:SetText(setLineText(S))
+        end
+      end
+    end
+    hookHide(ctx)
+    return view.rows
+  end
 end

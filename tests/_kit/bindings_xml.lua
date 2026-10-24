@@ -30,7 +30,26 @@
 -- BINDING_NAME_ global, a label that differs from opts.labels, or a category global that is not
 -- the brand.
 --
--- SHAPE. Returns `function(Kit)`, which installs the member on the kit table it is handed.
+-- AND THE TAB'S DRIVER (kit revision 42, with LibKa0s's OptionsKeybinds minor 2):
+--
+--   Kit.keybindThroughTab(row, slot, key, mods) -> the row's outcome line
+--
+--     row    a row record O.KeybindRows answered ({ command, slots = { w1, w2 }, status, ... })
+--     slot   1 or 2 (default 1)
+--     key    the key press, as the client's OnKeyDown hands it ("K", "F5", "ESCAPE", ...)
+--     mods   optional { alt =, ctrl =, shift =, meta = }, set through the binding mock's
+--            M.setModifiers for the press and put back to what they were after it
+--
+--   It does what a player does on the tab: a left click on the slot (the slot widget's OnClick
+--   callback, fired through the AceGUI fake's __fire with "LeftButton"), then the key, run through
+--   the OnKeyDown script of the library's one capture listener (lib.__keybindListener, the
+--   library resolved through LibStub("LibKa0s-Options-1.0")). It answers the text of the row's
+--   outcome line, so a suite asserts KEY_BOUND, or reads GetBindingKey, without knowing how the
+--   tab is wired. The mock is the one the harness handed Kit.expose (`mocks` or `mock`), else _G.
+--   It fails naming options-ui-§20 when the row, the slot, the listener or its script is missing,
+--   or `mods` is given with no M.setModifiers (install tests/_kit/mock_bindings.lua first).
+--
+-- SHAPE. Returns `function(Kit)`, which installs the members on the kit table it is handed.
 -- `framework.lua` loads it once, from its own folder, beside `latch.lua`; it is not a module a
 -- suite loads on its own.
 
@@ -121,5 +140,56 @@ return function(Kit)
     local problem, list = check(path, opts)
     if problem then fail(prefix .. problem .. " (launcher-§6)", 2) end
     return list
+  end
+
+  -- ── Kit.keybindThroughTab ──────────────────────────────────────────────────────────────────
+
+  local function env()
+    local m = rawget(Kit, "__exposedMock")
+    if type(m) == "table" then return m end
+    return _G
+  end
+
+  local function statusText(row)
+    local s = row.status
+    if type(s) ~= "table" then return nil end
+    if s.text ~= nil then return s.text end
+    if type(s.label) == "table" and s.label.GetText then return s.label:GetText() end
+    return nil
+  end
+
+  function Kit.keybindThroughTab(row, slot, key, mods)
+    local prefix = "keybindThroughTab: "
+    slot = slot or 1
+    if type(row) ~= "table" or type(row.slots) ~= "table" then
+      fail(prefix .. "no row record from O.KeybindRows (options-ui-§20)", 2)
+    end
+    local w = row.slots[slot]
+    if type(w) ~= "table" or type(w.__fire) ~= "function" then
+      fail(prefix .. "the row has no slot " .. tostring(slot) .. " widget to click (options-ui-§20)", 2)
+    end
+    local M = env()
+    local ls = M.LibStub or rawget(_G, "LibStub")
+    -- LibStub is a callable table in the client and in the kit's mock, not a function.
+    local callable = type(ls) == "function" or type(ls) == "table"
+    local lib = callable and ls("LibKa0s-Options-1.0", true) or nil
+    w:__fire("OnClick", "LeftButton")
+    local f = lib and lib.__keybindListener
+    local onKey = f and f.GetScript and f:GetScript("OnKeyDown")
+    if type(onKey) ~= "function" then
+      fail(prefix .. "no lib.__keybindListener OnKeyDown to press the key into (options-ui-§20)", 2)
+    end
+    local prev
+    if mods ~= nil then
+      if type(M.setModifiers) ~= "function" then
+        fail(prefix .. "mods given but no setModifiers: install tests/_kit/mock_bindings.lua (options-ui-§20)", 2)
+      end
+      prev = M.__modifiers
+      M.setModifiers(mods)
+    end
+    local ok, err = pcall(onKey, f, key)
+    if mods ~= nil then M.setModifiers(prev) end
+    if not ok then error(err, 0) end
+    return statusText(row)
   end
 end

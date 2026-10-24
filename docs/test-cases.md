@@ -1706,7 +1706,7 @@ Total.
 
 ### test_options_keybinds_model.lua (26)
 
-- keybinds: OptionsKeybinds is at minor 1, paired on an Options shell at 30 or later
+- keybinds: OptionsKeybinds is at minor 2, paired on an Options shell at 30 or later
 - keybinds: the Options version key has twelve components
 - keybinds: KEYBIND_STRINGS carries the exact default words, all ASCII
 - keybinds: the client's own strings win where they exist, with the library's fallbacks
@@ -1732,6 +1732,35 @@ Total.
 - keybinds: the bundled chord builder reads the modifier keys when no mods are passed
 - keybinds: with the client's chord helpers the client route agrees
 - keybinds: the client route refuses the left and right buttons its ignore check lets through
+
+### test_options_keybinds.lua (26)
+
+- keybinds tab: OptionsKeybinds is at minor 2 and attaches the three members
+- keybinds tab: KeybindingsTab's defaults
+- keybinds tab: spec.key, spec.before and spec.strings override
+- keybinds tab: RenderTabbedSchema puts it LAST, after every group tab, and its render draws rows
+- keybinds tab: rows follow spec.bindings in order, labeled by GetBindingName
+- keybinds tab: a binding whose command is not a string is skipped and reported
+- keybinds tab: slots show the keys in slot order, NOT_BOUND when empty, and a refresher repaints
+- keybinds tab: Key 1 then SHIFT-K binds SHIFT-K to slot 1 and saves once
+- keybinds tab: Escape cancels with no SetBinding
+- keybinds tab: a modifier alone keeps listening; PRINTSCREEN screenshots and keeps listening
+- keybinds tab: a second left click cancels, and so does a right click on the listener
+- keybinds tab: Button4 and the wheel bind
+- keybinds tab: a right click clears that slot only; Clear clears both
+- keybinds tab: starting row 2 stops row 1; one listening slot
+- keybinds tab: a taken key names the action left with no key; otherwise KEY_BOUND
+- keybinds tab: the set line follows the set in force
+- keybinds tab: a capture started in combat is refused with the gray notice, once
+- keybinds tab: PLAYER_REGEN_DISABLED stops a capture in progress, writing nothing
+- keybinds tab: a right click and Clear in combat call no binding API
+- keybinds tab: released slots leave with nothing of ours, and the listener goes home
+- keybinds tab: the page's OnHide stops a capture
+- keybinds tab: a page drawn disabled draws disabled slots and Clear
+- keybinds tab: without SetBinding one UNAVAILABLE row and nil
+- keybinds tab: with no AceGUI scroll it draws nothing and answers nil
+- keybinds tab: the fixed intro always draws, and spec.intro adds one line under it
+- keybinds tab: T.keybindThroughTab binds through a row and answers the outcome line
 
 ### test_options_idsuggest.lua (29)
 
@@ -2579,7 +2608,7 @@ Total.
 - kit latch: table registrations are keyed by target, kind, event and unit, or by opts.key
 - kit latch: missing or wrong-typed opts raise naming the field
 
-### test_kit_bindings.lua (12)
+### test_kit_bindings.lua (15)
 
 - kit bindings: Kit.assertBindingsXml is on the kit table and published by Kit.expose
 - kit bindings: a conforming file passes with string commands and returns the list
@@ -2593,6 +2622,9 @@ Total.
 - kit bindings: a file with no Binding fails
 - kit bindings: a missing file fails, naming it
 - kit bindings: a failure is reported at the caller's line
+- kit bindings: Kit.keybindThroughTab is on the kit table and published by Kit.expose
+- kit bindings: keybindThroughTab binds a key through an Options instance's row
+- kit bindings: keybindThroughTab fails naming options-ui-§20 without a row or a slot
 
 ### test_mock_base.lua (33)
 
@@ -3073,6 +3105,7 @@ Total.
 | test_options_nav.lua | 14 |
 | test_options_drawer.lua | 26 |
 | test_options_keybinds_model.lua | 26 |
+| test_options_keybinds.lua | 26 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3104,7 +3137,7 @@ Total.
 | test_kit_asserts.lua | 11 |
 | test_kit_secrets.lua | 30 |
 | test_kit_latch.lua | 9 |
-| test_kit_bindings.lua | 12 |
+| test_kit_bindings.lua | 15 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 42 |
@@ -3128,4 +3161,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2670** |
+| **Total** | **2699** |
