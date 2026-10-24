@@ -431,7 +431,7 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   [docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md)
   (*The common spec*), which replaces the 30.2.34.3.5.9.2.9.4.2.1.3 document this release carried
   on its branch.
-- New suite `tests/test_options_compose_tooltips.lua` (thirteen cases, after
+- New suite `tests/test_options_compose_tooltips.lua` (twelve cases, after
   `test_options_compose_master`): each leaf of each group (BorderGroup with and without `show`)
   replaced alone with every other row byte-identical; the swatch's class-color sentence; no note on
   a companion; ignored entries; a `keys` rename; `labels` with `tooltips`; a prefixed block; the

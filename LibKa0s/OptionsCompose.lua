@@ -714,9 +714,9 @@ function lib.__AttachCompose(O, d)
     -- The group defaults to the canonical literal without writing to the caller's table. `__index`
     -- rather than a copy so that every other field is read straight off the spec.
     -- `tooltips = EMPTY` shadows the spec's own: the group composers' tooltip override never reaches
-  -- this tab, whose only route to its words is `notes` (options-ui-§15, compose minor 10).
-  local ms = setmetatable({ group = spec.group or MASTER_GROUP, omit = omit, tooltips = EMPTY },
-    { __index = spec })
+    -- this tab, whose only route to its words is `notes` (options-ui-§15, compose minor 10).
+    local ms = setmetatable({ group = spec.group or MASTER_GROUP, omit = omit, tooltips = EMPTY },
+      { __index = spec })
     local notes = type(spec.notes) == "table" and spec.notes or EMPTY
 
     local rows = masterRows(ms, spec, notes)
