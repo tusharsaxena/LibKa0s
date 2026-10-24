@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ka0s skin picker</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;family=Barlow:wght@400;600&amp;family=Cinzel:wght@600&amp;family=Crimson+Pro:wght@400;600&amp;family=Inter:wght@400;600&amp;family=Manrope:wght@400;600&amp;family=Marcellus&amp;family=PT+Sans:wght@400;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1680px; height: 900px; box-sizing: border-box; display: flex; gap: 40px; padding: 60px 40px; background: #0f1114; color: #E8E8EC; font-family: 'Inter', Arial, sans-serif; font-size: 14px; line-height: 1.4">
+
+  <div style="width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 18px">
+    <div>
+      <div style="color: #A0A4AD; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase">Settings › General › Appearance</div>
+      <h1 style="margin: 6px 0 0; font-size: 26px; font-weight: 600">Appearance</h1>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-weight: 600">Skin source</span>
+      <div style="display: flex; gap: 8px">
+        <button type="button" aria-pressed="{{ka0sOn}}" onClick="{{useKa0s}}" style="flex-grow: 1; height: 40px; background: {{ka0sBg}}; border: {{ka0sBorder}}; border-radius: 6px; color: #E8E8EC; font-family: inherit; font-size: inherit; font-weight: 600">Ka0s skins</button>
+        <button type="button" aria-pressed="{{euiOn}}" onClick="{{useEui}}" style="flex-grow: 1; height: 40px; background: {{euiBg}}; border: {{euiBorder}}; border-radius: 6px; color: #E8E8EC; font-family: inherit; font-size: inherit; font-weight: 600">EllesmereUI</button>
+      </div>
+    </div>
+
+    <sc-if value="{{ka0sOn}}" hint-placeholder-val="{{true}}">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{cards}}" as="c" hint-placeholder-count="9">
+          <button type="button" aria-pressed="{{c.on}}" onClick="{{c.pick}}" style="display: flex; flex-direction: column; gap: 8px; padding: 10px; text-align: left; background: #171a1f; border: {{c.border}}; border-radius: 8px; color: #E8E8EC; font-family: inherit; font-size: inherit">
+            <span style="display: flex; height: 22px; border-radius: 4px; overflow: hidden">
+              <span style="flex-grow: 2; background: {{c.s0}}"></span>
+              <span style="flex-grow: 1; background: {{c.s1}}"></span>
+              <span style="flex-grow: 1; background: {{c.s2}}"></span>
+              <span style="flex-grow: 1; background: {{c.s3}}"></span>
+            </span>
+            <span style="font-weight: 600">{{c.label}}</span>
+            <span style="color: #A0A4AD; font-size: 11.5px; line-height: 1.3">{{c.desc}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{euiOn}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #171a1f; border: 1px solid #2c3036; border-radius: 8px">
+        <span style="font-weight: 600">EllesmereUI is ready</span>
+        <sc-for list="{{checks}}" as="k" hint-placeholder-count="3">
+          <span style="display: flex; gap: 8px; align-items: flex-start">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" style="flex-shrink: 0; margin-top: 2px"><path d="M3 8.5 L6.5 12 L13 4" stroke="#0CD29D" stroke-width="2" fill="none" stroke-linecap="round"></path></svg>
+            <span>{{k}}</span>
+          </span>
+        </sc-for>
+        <span style="color: #A0A4AD; font-size: 12px">Style follows EllesmereUI (EllesmereUI or Modern). If any check fails, this addon uses your Ka0s skin instead.</span>
+      </div>
+    </sc-if>
+
+    <button type="button" aria-pressed="{{all}}" onClick="{{toggleAll}}" style="display: flex; gap: 10px; align-items: flex-start; padding: 0; background: transparent; border: 0; color: #E8E8EC; text-align: left; font-family: inherit; font-size: inherit">
+      <span style="width: 18px; height: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid #5a5f68; border-radius: 4px; background: {{allBg}}">
+        <sc-if value="{{all}}" hint-placeholder-val="{{true}}">
+          <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12"><path d="M2 6.5 L5 9 L10 3" stroke="#06121C" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+        </sc-if>
+      </span>
+      <span style="display: flex; flex-direction: column; gap: 2px">
+        <span>Copy to every Ka0s addon</span>
+        <span style="color: #A0A4AD; font-size: 12px">{{allNote}}</span>
+      </span>
+    </button>
+
+    <p style="margin: 0; color: #A0A4AD; font-size: 12px">Skins change every visual element: windows, panels, dialogs, settings pages and the HUD. HUD style options default to "From skin"; any value you set yourself wins.</p>
+  </div>
+
+  <div style="flex-grow: 1; min-width: 0">
+    <dc-import name="Preview" skin="{{sel}}" hint-size="1200px,780px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1680,"height":900}}'>
+var CARDS = [
+  ['classic', 'Ka0s Default', 'Today’s look: slate, gold, Blizzard buttons.', ['#0f0f14', '#FFD100', '#a3241a', '#3d3d45']],
+  ['obsidian', 'Obsidian', 'Flat and quiet, one blue accent.', ['#121214', '#4DB8FF', '#2a2a2f', '#E8E8EC']],
+  ['azeroth', 'Azeroth', 'Parchment and leather, like a quest log.', ['#E9DDBC', '#3a2412', '#8E1B10', '#F5C542']],
+  ['glass', 'Glass', 'Translucent panels over the world.', ['#2a3346', '#B69CFF', '#C9CFDB', '#FFFFFF']],
+  ['contrast', 'High Contrast', 'Black, white and yellow; larger text.', ['#000000', '#FFFFFF', '#FFE600', '#000000']],
+  ['ember', 'Ember', 'Charcoal and brass with a fire accent.', ['#1a0e0a', '#FF7A33', '#FFB45A', '#6a2e17']],
+  ['wowdefault', 'WoW Default', 'Vanilla 1.12: stone, steel trim, red buttons.', ['#1c1a17', '#a8a8a8', '#b3200f', '#FFD100']],
+  ['midnight', 'WoW Midnight', 'Night blue, Sunwell gold, void violet.', ['#171a2e', '#b08a3e', '#B48CFF', '#F6D27A']],
+  ['forever', 'WoW Forever', 'Warm charcoal, black title bars, tan accent.', ['#13110f', '#050505', '#C9A07A', '#F2B33D']]
+];
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { source: 'ka0s', skin: 'classic', all: false };
+  }
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var ka0sOn = s.source === 'ka0s';
+    var cards = CARDS.map(function (c) {
+      var on = s.skin === c[0];
+      return { label: c[1], desc: c[2], s0: c[3][0], s1: c[3][1], s2: c[3][2], s3: c[3][3], on: on,
+        border: on ? '2px solid #4DB8FF' : '2px solid #2c3036',
+        pick: function () { self.setState({ skin: c[0] }); } };
+    });
+    return {
+      ka0sOn: ka0sOn, euiOn: !ka0sOn,
+      ka0sBg: ka0sOn ? '#1f3446' : '#171a1f', ka0sBorder: ka0sOn ? '2px solid #4DB8FF' : '2px solid #2c3036',
+      euiBg: ka0sOn ? '#171a1f' : '#1f3446', euiBorder: ka0sOn ? '2px solid #2c3036' : '2px solid #4DB8FF',
+      useKa0s: function () { self.setState({ source: 'ka0s' }); },
+      useEui: function () { self.setState({ source: 'eui' }); },
+      cards: cards,
+      checks: ['EllesmereUI and its Blizzard Skin module are loaded', 'EllesmereUI third-party skinning is on', 'This addon is on in EllesmereUI’s Third-Party Addons list'],
+      all: s.all, allBg: s.all ? '#4DB8FF' : 'transparent',
+      allNote: s.all ? 'Copies this choice into every installed Ka0s addon once; each keeps its own setting after.' : 'This addon only (saved in its profile).',
+      toggleAll: function () { self.setState({ all: !s.all }); },
+      sel: ka0sOn ? s.skin : 'eui'
+    };
+  }
+}
+</script>
+</body>
+</html>
