@@ -89,12 +89,8 @@ return function(Kit)
     return names
   end
 
-  --- nil and the list when the file conforms; otherwise the problem, as a sentence.
-  local function check(path, opts)
-    local text = readAll(path)
-    if not text then return "cannot read the file" end
-    local els = elements(text)
-    if #els == 0 then return "no <Binding> element" end
+  --- The attribute half: nil and the list when every element conforms; otherwise the problem.
+  local function checkElements(els, opts)
     local list = {}
     for i, a in ipairs(els) do
       local name = a.name or ("#" .. i)
@@ -105,6 +101,12 @@ return function(Kit)
       if a.default ~= nil then return ("Binding %s carries default=; an addon never claims a key"):format(name) end
       list[i] = { name = a.name, category = a.category }
     end
+    return nil, list
+  end
+
+  --- The names half: nil when the names follow the commands and every label and the category
+  --- global read as they must; otherwise the problem.
+  local function checkNames(list, opts)
     local want = commandNames(opts.commands)
     if #want ~= #list then
       return ("Binding count %d does not match the %d commands"):format(#list, #want)
@@ -128,6 +130,20 @@ return function(Kit)
       return ("%s reads %q, expected the brand %q"):format(opts.category, tostring(g[opts.category]),
         tostring(opts.brand))
     end
+    return nil
+  end
+
+  --- nil and the list when the file conforms; otherwise the problem, as a sentence. Two halves, so
+  --- neither passes automated-tests-§3's CCN 15 ceiling.
+  local function check(path, opts)
+    local text = readAll(path)
+    if not text then return "cannot read the file" end
+    local els = elements(text)
+    if #els == 0 then return "no <Binding> element" end
+    local problem, list = checkElements(els, opts)
+    if problem then return problem end
+    problem = checkNames(list, opts)
+    if problem then return problem end
     return nil, list
   end
 
@@ -158,25 +174,44 @@ return function(Kit)
     return nil
   end
 
-  function Kit.keybindThroughTab(row, slot, key, mods)
-    local prefix = "keybindThroughTab: "
-    slot = slot or 1
+  --- The slot widget to click, or nil and the problem.
+  local function slotWidget(row, slot)
     if type(row) ~= "table" or type(row.slots) ~= "table" then
-      fail(prefix .. "no row record from O.KeybindRows (options-ui-§20)", 2)
+      return nil, "no row record from O.KeybindRows (options-ui-§20)"
     end
     local w = row.slots[slot]
     if type(w) ~= "table" or type(w.__fire) ~= "function" then
-      fail(prefix .. "the row has no slot " .. tostring(slot) .. " widget to click (options-ui-§20)", 2)
+      return nil, "the row has no slot " .. tostring(slot) .. " widget to click (options-ui-§20)"
     end
-    local M = env()
+    return w
+  end
+
+  --- The Options library, resolved through the mock's LibStub (or the global one), or nil.
+  local function optionsLib(M)
     local ls = M.LibStub or rawget(_G, "LibStub")
     -- LibStub is a callable table in the client and in the kit's mock, not a function.
     local callable = type(ls) == "function" or type(ls) == "table"
-    local lib = callable and ls("LibKa0s-Options-1.0", true) or nil
-    w:__fire("OnClick", "LeftButton")
+    return callable and ls("LibKa0s-Options-1.0", true) or nil
+  end
+
+  --- The capture listener and its OnKeyDown script, or nil when either is missing.
+  local function listenerScript(lib)
     local f = lib and lib.__keybindListener
     local onKey = f and f.GetScript and f:GetScript("OnKeyDown")
-    if type(onKey) ~= "function" then
+    if type(onKey) ~= "function" then return nil end
+    return f, onKey
+  end
+
+  function Kit.keybindThroughTab(row, slot, key, mods)
+    local prefix = "keybindThroughTab: "
+    slot = slot or 1
+    local w, problem = slotWidget(row, slot)
+    if not w then fail(prefix .. problem, 2) end
+    local M = env()
+    local lib = optionsLib(M)
+    w:__fire("OnClick", "LeftButton")
+    local f, onKey = listenerScript(lib)
+    if not f then
       fail(prefix .. "no lib.__keybindListener OnKeyDown to press the key into (options-ui-§20)", 2)
     end
     local prev

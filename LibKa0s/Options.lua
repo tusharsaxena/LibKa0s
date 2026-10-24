@@ -1302,15 +1302,19 @@ function lib:New(d)
   -- them on the same instance the shell lives on. Both are guarded: a file that failed to load
   -- leaves its half absent rather than erroring at :New, which is why the shell's own members
   -- reach for O.AttachTooltip and O.PatchAlwaysShowScrollbar at CALL time and never at load time.
-  if lib.__AttachWidgets then lib.__AttachWidgets(O, d) end
-  -- After the widgets, because the chrome half's RenderTabbedSchema replaces the widget half's
-  -- untabbed fallback. The descriptor reaches it for `rowsForPage` alone (OptionsTabs minor 4).
-  if lib.__AttachTabs    then lib.__AttachTabs(O, d)    end
-  if lib.__AttachCompose then lib.__AttachCompose(O, d) end
-  if lib.__AttachScroll  then lib.__AttachScroll(O, d)  end
-  if lib.__AttachNav     then lib.__AttachNav(O)        end
-  if lib.__AttachDrawer  then lib.__AttachDrawer(O)     end
-  if lib.__AttachKeybinds then lib.__AttachKeybinds(O, d) end
+  -- A function of its own (minor 30) so lib:New stays under automated-tests-§3's CCN 15 ceiling.
+  local function attachHalves()
+    if lib.__AttachWidgets then lib.__AttachWidgets(O, d) end
+    -- After the widgets, because the chrome half's RenderTabbedSchema replaces the widget half's
+    -- untabbed fallback. The descriptor reaches it for `rowsForPage` alone (OptionsTabs minor 4).
+    if lib.__AttachTabs    then lib.__AttachTabs(O, d)    end
+    if lib.__AttachCompose then lib.__AttachCompose(O, d) end
+    if lib.__AttachScroll  then lib.__AttachScroll(O, d)  end
+    if lib.__AttachNav     then lib.__AttachNav(O)        end
+    if lib.__AttachDrawer  then lib.__AttachDrawer(O)     end
+    if lib.__AttachKeybinds then lib.__AttachKeybinds(O, d) end
+  end
+  attachHalves()
 
   return O
 end

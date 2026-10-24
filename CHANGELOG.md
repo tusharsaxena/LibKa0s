@@ -363,6 +363,12 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   DropWatcher, LootHistory, MultiMeters, QuickComms and WhatGroup; `O.StrataTooltip` by AuraMaster,
   MultiMeters, PanelMaster and PartyFrameEnhanced; DragHandle's `level`, `ignoreParentAlpha` and
   `ApplyLevel` by AbsorbTracker, AuraMaster, ConsumableMaster, KickCD and QuickComms.
+- **Three functions split under the CCN 15 release ceiling**, found by the first v1.77.0 release
+  run (`docs/automated-tests/20261024-073953/`, kept as the record that found them): `lib:New` in
+  `Options.lua` (16; its guarded attach chain is now a local `attachHalves`), and `check` (18) and
+  `Kit.keybindThroughTab` (18) in `testkit/bindings_xml.lua`, each into file-local halves. No
+  behavior changes, and no minor or kit revision moves: Options minor 30 and kit revision 42 are
+  this release's own.
 
 ### What a consumer owes
 
