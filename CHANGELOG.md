@@ -22,8 +22,9 @@ Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **D
 (`LibKa0s-DebugLog-1.0` key **21.3.1**, `DebugLogDiagnostics` 3 and `DebugLogGates` 1 unchanged);
 **PerfPanel minor 9** (`LibKa0s-Perf-1.0` key **15.1.1.9**, `Perf` 15, `PerfSampler` 1 and
 `PerfCommands` 1 unchanged); **SimPanel minor 6** (`LibKa0s-Sim-1.0` key **2.3.6**, `Sim` 2 and
-`SimTimeline` 3 unchanged); **WidgetsDragHandle minor 5** (`LibKa0s-Widgets-1.0` key **14.1.5.3.2**,
-`Widgets` 14, `WidgetsReorder` 1, `WidgetsLineChart` 3 and `WidgetsAutocomplete` 2 unchanged); every
+`SimTimeline` 3 unchanged); **Widgets minor 15**, **WidgetsDragHandle minor 5** and
+**WidgetsAutocomplete minor 3** (`LibKa0s-Widgets-1.0` key **15.1.5.3.3**, `WidgetsReorder` 1 and
+`WidgetsLineChart` 3 unchanged); every
 other file still at its v1.76.0 minor and **test kit revision 42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
 this block names each new minor as it lands. Still **seventeen majors across forty files**.
 
@@ -107,13 +108,36 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
 - **What a consumer owes: nothing.** Neither field passed, the strip is minor 4's exactly. The M2
   adopters (AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, QuickComms) pass the fields instead
   of re-leveling by hand. Documented in
-  [docs/api/Widgets/version-14.1.5.3.2-docs.md](docs/api/Widgets/version-14.1.5.3.2-docs.md).
+  [docs/api/Widgets/version-15.1.5.3.3-docs.md](docs/api/Widgets/version-15.1.5.3.3-docs.md).
 - New suite `tests/test_widgets_draghandle_layers.lua`, on the kit's `mock_layers.lua` over the
   DragHandle bench: minor 4's levels pinned without `level`; `level = 50` over a parent at 7 gives
   57 and 58, with the handle's write logged before either mark is created; `ApplyLevel` after a
   re-level to 20 gives 70 and 71 and, with no `level`, answers `false` and writes nothing; a secret
   or non-number parent level reads 0; `ignoreParentAlpha` set, absent, and on a frame without the
   method. The placement suite's minor pin reads "4 or later".
+
+### Widgets minor 15 and WidgetsAutocomplete minor 3: popups clamped to screen
+
+- **The dropdown menu** (`Widgets.lua` 15): the one shared popup every `lib.Dropdown` drops calls
+  `SetClampedToScreen(true)` when `EnsureMenu` builds it, right after its `FULLSCREEN_DIALOG`
+  strata, so a dropdown near the bottom or right edge of the screen drops a menu the client keeps on
+  screen. Anchoring, strata, the `GLOBAL_MOUSE_DOWN` dismissal and `OnHide` are unchanged.
+- **The autocomplete list** (`WidgetsAutocomplete.lua` 3): `ensureList` calls
+  `SetClampedToScreen(true)` right after the list's strata (`AUTOCOMPLETE.STRATA`, or the handle's
+  `opts.strata`), so a search box near the bottom edge keeps its suggestions on screen.
+  `lib.AUTOCOMPLETE` is unchanged.
+- **Why.** A host window moved to a screen edge dropped these popups off it (`frame-layering-§4`;
+  XS-22, LOO-Z08). LootHistory already clamps its own row menu (LOO-S09). STRATA_MODEL LK-03 of
+  Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
+- **What a consumer owes: nothing.** A popup that fits on screen sits exactly where it did. No
+  lib-level member moves (`members-15.1.5.3.3.json`). The Widgets document is the DragHandle
+  change's, re-keyed from 14.1.5.3.2 (never shipped) to 15.1.5.3.3:
+  [docs/api/Widgets/version-15.1.5.3.3-docs.md](docs/api/Widgets/version-15.1.5.3.3-docs.md).
+- Two new cases, each on the kit's `mock_layers.lua`, installed and restored: in
+  `tests/test_widgets.lua`, the menu a fresh library builds on the first dropdown open is
+  `FULLSCREEN_DIALOG` and clamped; in `tests/test_widgets_autocomplete.lua`, the list built on the
+  first show is at `AUTOCOMPLETE.STRATA` (and at the handle's `opts.strata` when one is passed) and
+  clamped.
 
 ## v1.76.0 — 2026-10-23
 

@@ -12,7 +12,7 @@
 | Shipped in | v1.76.0 |
 | Status | Superseded |
 | Supersedes | [version 13.1.4.3.2](./version-13.1.4.3.2-docs.md) — the strip has one flavor, amber test mode; no `opts.kind`, no `strip.kind` |
-| Superseded by | [version 14.1.5.3.2](./version-14.1.5.3.2-docs.md) — `WidgetsDragHandle.lua` 5: `spec.level`, `spec.ignoreParentAlpha` and `handle:ApplyLevel()` |
+| Superseded by | [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md) — `Widgets.lua` 15 and `WidgetsAutocomplete.lua` 3: the dropdown menu and the autocomplete list are clamped to the screen; `WidgetsDragHandle.lua` 5: `spec.level`, `spec.ignoreParentAlpha` and `handle:ApplyLevel()` |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 14, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }` |
 
 ## What changed at 14.1.4.3.2
@@ -1635,14 +1635,16 @@ comparison across all four has no single host to live in, so it is recorded here
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
 
-## Moving to version 14.1.5.3.2
+## Moving to version 15.1.5.3.3
 
 **Copy the folder whole. Nothing a host calls moves or is removed.** The next version is key
-14.1.5.3.2: `Widgets.lua` 14, `WidgetsReorder.lua` 1, `WidgetsDragHandle.lua` 5,
-`WidgetsLineChart.lua` 3 and `WidgetsAutocomplete.lua` 2. `WidgetsDragHandle.lua` 5 adds two optional
+15.1.5.3.3: `Widgets.lua` 15, `WidgetsReorder.lua` 1, `WidgetsDragHandle.lua` 5,
+`WidgetsLineChart.lua` 3 and `WidgetsAutocomplete.lua` 3. `Widgets.lua` 15 clamps the shared dropdown
+menu to the screen and `WidgetsAutocomplete.lua` 3 clamps the suggestion list, so neither popup runs
+off a screen edge; a host owes nothing for either. `WidgetsDragHandle.lua` 5 adds two optional
 `spec` fields and one method: `level`, the handle's frame level as an offset over its parent's,
 applied before the marks are built; `handle:ApplyLevel()`, which re-applies it after the host
 re-levels or re-parents the parent; and `ignoreParentAlpha`, which keeps the strip opaque over a
 display that fades. **A host that passes neither draws exactly what it drew here.** A host that
 re-levels its handle by hand after the constructor switches to `level` and calls `ApplyLevel()`
-where it re-levels the parent. See [version 14.1.5.3.2](./version-14.1.5.3.2-docs.md).
+where it re-levels the parent. See [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md).

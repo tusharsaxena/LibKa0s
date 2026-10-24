@@ -1,13 +1,13 @@
 {
   "major": "LibKa0s-Widgets-1.0",
-  "versionKey": "14.1.5.3.2",
+  "versionKey": "15.1.5.3.3",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "Widgets", "minor": 14 },
+    { "file": "Widgets", "minor": 15 },
     { "file": "WidgetsReorder", "minor": 1 },
     { "file": "WidgetsDragHandle", "minor": 5 },
     { "file": "WidgetsLineChart", "minor": 3 },
-    { "file": "WidgetsAutocomplete", "minor": 2 }
+    { "file": "WidgetsAutocomplete", "minor": 3 }
   ],
   "members": [
     { "name": "AUTOCOMPLETE", "kind": "table" },

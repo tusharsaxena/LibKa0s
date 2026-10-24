@@ -462,6 +462,39 @@ test("Widgets.CloseMenu is a no-op when no dropdown has ever opened the menu", f
   assertTrue(ok, "closing before anything has ever opened must not raise")
 end)
 
+-- The shared menu is clamped to the screen (minor 15): a dropdown near the bottom edge drops a menu
+-- that stays on screen instead of running off it. A fresh library in its own mock set, with the
+-- kit's frame-layer recorder installed BEFORE the load and restored after, because the shared W's
+-- menu was built at file scope on the plain factory and cannot answer strata or clamp.
+test("The menu built on the first dropdown open is FULLSCREEN_DIALOG and clamped to the screen", function()
+  local Loader     = dofile("tests/_kit/loader.lua")
+  local buildMocks = dofile("tests/wow_mock.lua")
+  local fresh = buildMocks()
+  local restore = dofile("tests/_kit/mock_layers.lua")(fresh)
+  local ok, err = pcall(function()
+    Loader.load("LibKa0s/Core.lua", nil, fresh)
+    Loader.load("LibKa0s/Widgets.lua", nil, fresh)
+    local FW = fresh.LibStub("LibKa0s-Widgets-1.0")
+    local dd = FW.Dropdown(fresh.UIParent, 110)
+    dd:SetOptions({})
+    local made, saved = {}, fresh.CreateFrame
+    fresh.CreateFrame = function(...)
+      local f = saved(...)
+      made[#made + 1] = f
+      return f
+    end
+    dd:__fire("OnClick")
+    fresh.CreateFrame = saved
+    assertTrue(made[1] ~= nil, "the first open built the menu")
+    local L = fresh.__layers(made[1])
+    assertEqual(L.strata, "FULLSCREEN_DIALOG")
+    assertTrue(L.clamped, "the menu is clamped to the screen")
+    assertEqual(FW.MINOR, 15)
+  end)
+  restore()
+  if not ok then error(err, 0) end
+end)
+
 test("Widgets.CloseMenu leaves the unregistering to the menu's own OnHide", function()
   local dd = W.Dropdown(mocks.UIParent, 110)
   dd:SetOptions({ { value = "x", label = "X" } })

@@ -438,7 +438,7 @@ Total.
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
 
-### test_widgets.lua (57)
+### test_widgets.lua (58)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
 - Widgets.Dropdown falls to Blizzard's arrow with no host art
@@ -463,6 +463,7 @@ Total.
 - Widgets.CloseMenu hides an open menu
 - Widgets.CloseMenu is a no-op when the menu is already hidden
 - Widgets.CloseMenu is a no-op when no dropdown has ever opened the menu
+- The menu built on the first dropdown open is FULLSCREEN_DIALOG and clamped to the screen
 - Widgets.CloseMenu leaves the unregistering to the menu's own OnHide
 - A preset row lights up when its own predicate says so
 - A preset row stays dark when its predicate says the selection is something else
@@ -646,7 +647,7 @@ Total.
 - line chart: a render under a resting cursor re-fires onHover and moves the crosshair to the new scale
 - line chart: a render that leaves no scale hides the crosshair, and a later clear still tells the host
 
-### test_widgets_autocomplete.lua (36)
+### test_widgets_autocomplete.lua (37)
 
 - autocomplete: answers nil without a provider or without a box it can hook
 - autocomplete: publishes its chrome, with the 0.15 s debounce floor and 8 rows by default
@@ -658,6 +659,7 @@ Total.
 - autocomplete: at most maxRows rows, 8 by default
 - autocomplete: Refresh asks the provider at once for the box's text
 - autocomplete: the list hangs from the box's bottom corners, the box's width, in its own strata
+- autocomplete: the list built on first show is at its strata and clamped to the screen
 - autocomplete: the list wears the box's own border and background
 - autocomplete: a box with no backdrop colors gets the house flat skin
 - autocomplete: each row takes its item's color, in either shape, and plain text without one
@@ -2990,14 +2992,14 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_media.lua | 28 |
-| test_widgets.lua | 57 |
+| test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_draghandle_place.lua | 10 |
 | test_widgets_draghandle_layers.lua | 10 |
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 19 |
-| test_widgets_autocomplete.lua | 36 |
+| test_widgets_autocomplete.lua | 37 |
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
@@ -3086,4 +3088,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2632** |
+| **Total** | **2634** |

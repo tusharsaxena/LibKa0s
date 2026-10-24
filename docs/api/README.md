@@ -183,7 +183,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [14.1.5.3.2](./Widgets/version-14.1.5.3.2-docs.md) | `Widgets.lua` 14 · `WidgetsReorder.lua` 1 · **`WidgetsDragHandle.lua` 5** (`spec.level`, `spec.ignoreParentAlpha`, `handle:ApplyLevel()`: the strip and its marks sit over the content and stay opaque) · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.77.0 | **Current** |
+| [15.1.5.3.3](./Widgets/version-15.1.5.3.3-docs.md) | **`Widgets.lua` 15** (the dropdown menu is clamped to the screen; no new member) · `WidgetsReorder.lua` 1 · **`WidgetsDragHandle.lua` 5** (`spec.level`, `spec.ignoreParentAlpha`, `handle:ApplyLevel()`: the strip and its marks sit over the content and stay opaque) · `WidgetsLineChart.lua` 3 · **`WidgetsAutocomplete.lua` 3** (the suggestion list is clamped to the screen) | v1.77.0 | **Current** |
 | [14.1.4.3.2](./Widgets/version-14.1.4.3.2-docs.md) | `Widgets.lua` 14 (`TestStrip`'s simulation flavor: `opts.kind = "sim"`, `strip.kind`; no new member) · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.76.0 | Superseded |
 | [13.1.4.3.2](./Widgets/version-13.1.4.3.2-docs.md) | **`Widgets.lua` 13** (new: `SearchBox`, `TestStrip`, `TEST_STRIP`) · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.75.0 | Superseded |
 | [12.1.4.3.2](./Widgets/version-12.1.4.3.2-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.71.0 – v1.74.0 | Superseded |

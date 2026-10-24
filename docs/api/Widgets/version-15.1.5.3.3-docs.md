@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 14.1.5.3.2
+# `LibKa0s-Widgets-1.0` — version 15.1.5.3.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,20 +8,33 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **14** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **5** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **2** |
+| Files and minors | `Widgets.lua` minor **15** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **5** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **3** |
 | Shipped in | v1.77.0 |
 | Status | **Current** |
-| Supersedes | [version 14.1.4.3.2](./version-14.1.4.3.2-docs.md) (shipped in v1.76.0) — `WidgetsDragHandle.lua` 4: no `spec.level`, no `spec.ignoreParentAlpha`, no `handle:ApplyLevel()` |
+| Supersedes | [version 14.1.4.3.2](./version-14.1.4.3.2-docs.md) (shipped in v1.76.0) — `Widgets.lua` 14, `WidgetsDragHandle.lua` 4 and `WidgetsAutocomplete.lua` 2: no `spec.level`, no `spec.ignoreParentAlpha`, no `handle:ApplyLevel()`, and neither popup clamped to the screen |
 | Superseded by | — |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 14, WidgetsReorder = 1, WidgetsDragHandle = 5, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 15, WidgetsReorder = 1, WidgetsDragHandle = 5, WidgetsLineChart = 3, WidgetsAutocomplete = 3 }` |
 
-## What changed at 14.1.5.3.2
+## What changed at 15.1.5.3.3
 
-**The drag handle can sit where the frame-layering model puts it, and stay opaque.**
-`WidgetsDragHandle.lua` moves from **4** to **5**; `Widgets.lua` stays at **14**, `WidgetsReorder.lua`
-at **1**, `WidgetsLineChart.lua` at **3** and `WidgetsAutocomplete.lua` at **2**, so the key is
-14.1.5.3.2. **No lib-level member is added, removed or renamed**, so `members-14.1.5.3.2.json` lists
-the same names as 14.1.4.3.2; what is new is two `spec` fields and one instance method.
+**The drag handle can sit where the frame-layering model puts it, and stay opaque; and both popups
+stay on screen.** `Widgets.lua` moves from **14** to **15**, `WidgetsDragHandle.lua` from **4** to
+**5** and `WidgetsAutocomplete.lua` from **2** to **3**; `WidgetsReorder.lua` stays at **1** and
+`WidgetsLineChart.lua` at **3**, so the key is 15.1.5.3.3. **No lib-level member is added, removed
+or renamed**, so `members-15.1.5.3.3.json` lists the same names as 14.1.4.3.2; what is new is two
+`spec` fields, one instance method and two clamps. (The DragHandle change was first written up under
+key 14.1.5.3.2 within the v1.77.0 cycle; that key never shipped, and this document is the same one
+under the release's key.)
+
+- **The dropdown menu is clamped to the screen** (**Since Widgets 15**). The one shared popup every
+  dropdown drops calls `SetClampedToScreen(true)` when it is built, right after its
+  `FULLSCREEN_DIALOG` strata, so a dropdown near the bottom or right edge of the screen drops a menu
+  the client keeps on screen rather than one that runs off it. Its anchoring, its strata, the
+  `GLOBAL_MOUSE_DOWN` dismissal and its `OnHide` are unchanged.
+- **The autocomplete list is clamped to the screen** (**Since Autocomplete 3**). The list calls
+  `SetClampedToScreen(true)` when it is built, right after its strata (`AUTOCOMPLETE.STRATA`, or the
+  handle's `opts.strata`), so a search box near the bottom edge keeps its suggestions on screen.
+  `lib.AUTOCOMPLETE` is unchanged, and so are the list's anchors, its strata and its close paths.
 
 - **`spec.level`** (**Since DragHandle 5**), a number: the handle's frame level as an **offset** over
   `parent:GetFrameLevel()`, written right after the strip is created and **before** the help and
@@ -48,8 +61,15 @@ exist puts all three in order at birth, and `ApplyLevel` puts them back after th
 re-parents the parent, because `SetParent` re-derives levels (XS-18). STRATA_MODEL LK-02 of
 Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
 
-**What a host must change: nothing.** A host that passes neither field draws exactly what minor 4
-drew. **A host that hand-re-levels its handle switches to the spec field**: pass `level` (the offset
+**Why the clamps (`frame-layering-§4`; XS-22).** A popup anchored under its control goes wherever the
+control is, and a host window moved to the bottom edge of the screen dropped its dropdown's rows, or
+its search box's suggestions, below the screen, where the player cannot pick them. LootHistory already
+clamps its own row menu (LOO-S09); these two are the library's popups, so the clamp is the library's.
+STRATA_MODEL LK-03 of the same bundle.
+
+**What a host must change: nothing.** The clamps need nothing from a host; a menu or a list that
+fits on screen sits exactly where it did. A host that passes neither DragHandle field draws exactly
+what minor 4 drew. **A host that hand-re-levels its handle switches to the spec field**: pass `level` (the offset
 over the handle's parent) instead of calling `handle:SetFrameLevel` after the constructor, and call
 `handle:ApplyLevel()` wherever it re-levels or re-parents the handle's parent, not only inside a
 memoized restyle that may skip it. A host whose display fades passes `ignoreParentAlpha = true`
@@ -651,6 +671,10 @@ this line — and only that surface — permanent.
   press anywhere outside it, and that narrows the window without closing it** — a host window hidden
   by Escape or by a slash command is hidden with no click at all, so there is nothing for the menu
   to hear. The call is still required from every non-click close path.
+- **The menu is clamped to the screen (since version 15).** It is anchored under the dropdown that
+  opened it, and the client moves it back on screen when that anchor would put any of it off an
+  edge, so a dropdown near the bottom of the screen drops a menu that may cover the dropdown itself
+  rather than one that runs below the screen.
 - **Rows are pooled across dropdowns, and every field is repainted on every pass.** The popup's row
   buttons are reused rather than rebuilt, and they are shared by every dropdown that has ever opened
   in this process, not just the one currently open. Every visible field of a row — its text, its
@@ -1504,7 +1528,7 @@ it, so its line above stands.
 
 ## The autocomplete
 
-**`WidgetsAutocomplete.lua`, minor 2.** A suggestion list that hangs directly under a host's
+**`WidgetsAutocomplete.lua`, minor 3.** A suggestion list that hangs directly under a host's
 `EditBox` and reads as part of it: the box's width, the box's own border and background, one row per
 suggestion with an optional icon and the suggestion's own color (an item's quality color, say). The
 host supplies what the rows say and what a pick does; the widget owns the list, the debounce, the
@@ -1534,7 +1558,8 @@ Read, never restated. Every field is **Since 1**.
 ### `lib.Autocomplete(editBox, opts)` → `handle`
 
 **Since 1.** Hooks `editBox` (never replaces a script it has) and answers a handle. The list frame is
-built on the first list that shows. **Since 2**, every call installs a fresh set of hooks and the
+built on the first list that shows, and **since 3** it is clamped to the screen, so a box near the
+bottom edge keeps its suggestions on screen. **Since 2**, every call installs a fresh set of hooks and the
 older call's hooks go inert, so calling it again after a host `SetScript` restores the list. Answers `nil` with no `CreateFrame`, an `editBox` without
 `HookScript`, or no `opts.provider`.
 
