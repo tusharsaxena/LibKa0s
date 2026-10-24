@@ -18,7 +18,7 @@
 --
 --   lib.skins[key]       the registered skin definitions (SkinDefs.lua registers them)
 --   lib.owners[owner]    { label, get, set, source, skin, pendingReload, listeners }
---   lib.painted[frame]   weak-keyed: { owner, calls = { [prim] = args }, order = { prim, ... } }
+--   lib.painted[frame]   weak-keyed: { owner, seq, calls = { [prim] = args }, order = { prim, ... } }
 --   lib.byOwner[owner]   weak-keyed set of that owner's painted frames
 --   lib.facades[owner]   the owner's facade S, one table kept across minors
 --   lib.prim[name]       the painting primitives, fn(owner, ...); SkinPaint.lua fills them
@@ -87,6 +87,8 @@ lib.painted  = lib.painted or setmetatable({}, WEAK_KEYS)
 lib.byOwner  = lib.byOwner or {}
 lib.facades  = lib.facades or {}
 lib.prim     = lib.prim or {}
+-- The last first-paint stamp handed out: a record's `seq` orders the frames a repaint replays.
+lib.__paintSeq = lib.__paintSeq or 0
 -- The resolved token tables, one per skin key. A cache, rebuilt on demand: emptied here so a newer
 -- minor's resolution rules apply, and by RegisterSkin because a skin derives from Ka0s Default.
 lib.__resolved = {}
@@ -389,7 +391,8 @@ function lib:Track(owner, frame, prim, ...)
     rec = nil
   end
   if not rec then
-    rec = { owner = owner, calls = {}, order = {}, regions = {} }
+    lib.__paintSeq = lib.__paintSeq + 1
+    rec = { owner = owner, seq = lib.__paintSeq, calls = {}, order = {}, regions = {} }
     self.painted[frame] = rec
   end
   if not rec.calls[prim] then rec.order[#rec.order + 1] = prim end
@@ -421,20 +424,25 @@ local function replay(owner, frame, rec)
   return calls
 end
 
+local function bySeq(a, b) return (a.seq or 0) < (b.seq or 0) end
+
 --- Re-run every primitive recorded for `owner`'s frames with the owner's current skin, each frame
---- once. `lib.__repainting` is true while it runs, so a primitive can tell a repaint from a first
---- paint. Answers the number of primitive calls made.
+--- once, frames in the order they were first painted for the owner (a frame that moved to it counts
+--- from the move) and each frame's primitives in their first-paint order. `lib.__repainting` is
+--- true while it runs, so a primitive can tell a repaint from a first paint. Answers the number
+--- of primitive calls made.
 function lib:Repaint(owner)
   local set = self.byOwner[owner]
   if not set then return 0 end
-  local frames = {}
-  for frame in pairs(set) do frames[#frames + 1] = frame end
+  local recs = {}
+  for frame in pairs(set) do
+    local rec = self.painted[frame]
+    if rec and rec.owner == owner then recs[#recs + 1] = { frame = frame, rec = rec, seq = rec.seq } end
+  end
+  table.sort(recs, bySeq)
   local calls, was = 0, self.__repainting
   self.__repainting = true
-  for _, frame in ipairs(frames) do
-    local rec = self.painted[frame]
-    if rec and rec.owner == owner then calls = calls + replay(owner, frame, rec) end
-  end
+  for _, e in ipairs(recs) do calls = calls + replay(owner, e.frame, e.rec) end
   self.__repainting = was
   return calls
 end

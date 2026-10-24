@@ -424,6 +424,30 @@ test("skin: a repaint replays each recorded frame once, primitives in first-pain
   assertEqual(Skin:Repaint("Nobody"), 0, "an owner with no frames repaints nothing")
 end)
 
+test("skin: a repaint replays frames in the order they were first painted", function()
+  local _, Skin = env()
+  Skin:RegisterOwner("A")
+  Skin:RegisterOwner("B")
+  local order = {}
+  Skin.prim.Shell = function(owner, f)
+    order[#order + 1] = f
+    Skin:Track(owner, f, "Shell")
+  end
+  -- Enough frames that a hash walk would almost never come out in paint order.
+  local frames = {}
+  for n = 1, 40 do frames[n] = frame(tostring(n)) end
+  for n = 40, 1, -1 do Skin.prim.Shell("A", frames[n]) end
+  Skin.prim.Shell("A", frames[40])  -- painted again: keeps its first-paint place
+  Skin.prim.Shell("B", frames[20])  -- moved to B: no longer A's
+  Skin.prim.Shell("A", frames[20])  -- back to A: a fresh first paint, so last
+  order = {}
+  assertEqual(Skin:Repaint("A"), 40, "every frame once")
+  local want = {}
+  for n = 40, 1, -1 do if n ~= 20 then want[#want + 1] = frames[n] end end
+  want[#want + 1] = frames[20]
+  for n = 1, 40 do assertEqual(order[n], want[n], "frame " .. n .. " in first-paint order") end
+end)
+
 test("skin: the repaint flag is up only while replaying, and a raising primitive stops nothing", function()
   local _, Skin = env()
   Skin:RegisterOwner("A")

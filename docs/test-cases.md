@@ -446,7 +446,7 @@ Total.
 - media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
 - media: RegisterLSM registers the Glass border and background, and counts them
 
-### test_skin.lua (25)
+### test_skin.lua (26)
 
 - skin: the major registers both files and the sentinel
 - skin: the shell refuses without Core, and SkinDefs then attaches to nothing
@@ -466,6 +466,7 @@ Total.
 - skin: leaving eui asks for one reload and repaints nothing
 - skin: one owner switching never repaints another's frames
 - skin: a repaint replays each recorded frame once, primitives in first-paint order
+- skin: a repaint replays frames in the order they were first painted
 - skin: the repaint flag is up only while replaying, and a raising primitive stops nothing
 - skin: a frame painted for a second owner moves to it; Untrack forgets it
 - skin: the frame registry holds its frames weakly
@@ -3181,7 +3182,7 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_media.lua | 36 |
-| test_skin.lua | 25 |
+| test_skin.lua | 26 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3285,4 +3286,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2799** |
+| **Total** | **2800** |

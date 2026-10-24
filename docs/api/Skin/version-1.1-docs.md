@@ -69,7 +69,7 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `Skin:ResolveSkin(key)` | token table | Ka0s Default's tokens with the skin's own over them, cached. An unregistered key resolves as Ka0s Default. Shared: never write to it. |
 | `Skin:Track(owner, frame, prim, ...)` | record | For the primitives: records that `prim` painted `frame` for `owner` with these arguments. One record per frame; a frame painted for a second owner (a pooled frame) moves to it; repeating a primitive replaces its arguments and keeps its replay position. The record's `regions` table is the primitive's own. |
 | `Skin:Untrack(frame)` | — | Forgets a frame (a pooled widget handed back). |
-| `Skin:Repaint(owner)` | calls | Replays every primitive recorded for the owner's frames, each frame once, in first-paint order, each call under pcall; `lib.__repainting` is true while it runs. `SetChoice` calls it. |
+| `Skin:Repaint(owner)` | calls | Replays every primitive recorded for the owner's frames, each frame once: frames in the order they were first painted for the owner (a frame that moved to it counts from the move), and each frame's primitives in their first-paint order, each call under pcall; `lib.__repainting` is true while it runs. `SetChoice` calls it. |
 | `FROM_SKIN` | `"@skin"` | The stored value meaning "take this setting from the skin". |
 | `DEFAULT` | `"ka0s"` | The skin every owner wears until it picks another, and the one an unknown key resolves as. |
 | `SOURCES` | `{ "ka0s", "eui" }` | The two skin sources. |
@@ -137,7 +137,14 @@ local Skin = LibStub("LibKa0s-Skin-1.0", true)
 if Skin then
   NS.Skin = Skin:RegisterOwner(addonName, {
     label = "My Addon",
-    get = function() local a = NS.db.profile.appearance; return a.source, a.skin end,
+    -- At file load AceDB is not up yet: answer nothing, and the owner wears Ka0s Default until
+    -- the SetChoice below applies the profile.
+    get = function()
+      local db = NS.db
+      if not db then return end
+      local a = db.profile.appearance
+      return a.source, a.skin
+    end,
     set = function(source, skin)
       local a = NS.db.profile.appearance
       a.source, a.skin = source, skin
@@ -149,14 +156,17 @@ end
 NS.Skin.Shell(frame)
 local r, g, b = NS.Skin.Color("title.text")
 
--- the Appearance row's onChange, and after a profile switch, copy or reset
+-- once AceDB is up (OnInitialize, right after AceDB:New), in the Appearance row's onChange, and
+-- after a profile switch, copy or reset
 local changed, reload = Skin:SetChoice(addonName, NS.db.profile.appearance.source,
   NS.db.profile.appearance.skin)
 if reload then StaticPopup_Show("MYADDON_RELOAD") end
 ```
 
-`get` is read at `RegisterOwner` only, so call it after AceDB is up, or call `SetChoice` with the
-profile's values once it is. A host's degradation arm (library absent) needs no stub of this major:
+`get` is read at `RegisterOwner` only. Registered at file load, as above, it runs before AceDB is
+up, so it must nil-guard the database: a getter that raises is reported through `geterrorhandler()`
+(a visible Lua error) and the owner falls back to Ka0s Default. Call `SetChoice` with the
+profile's values once AceDB is up. A host's degradation arm (library absent) needs no stub of this major:
 with no `NS.Skin` the host paints today's way.
 
 ## Ka0s Default and the token schema

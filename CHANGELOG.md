@@ -92,7 +92,8 @@ paired on its minor (`__defsMinor` / `__defsShellMinor`).
   host's profile.
 - **The frame registry.** `Track(owner, frame, prim, ...)` records a primitive's paint in a
   weak-keyed table, one record per frame, moving a pooled frame to its newest owner; `Untrack`
-  forgets one; `Repaint(owner)` replays each recorded frame once, in first-paint order, each call
+  forgets one; `Repaint(owner)` replays each recorded frame once, frames in the order they were first
+  painted for the owner and each frame's primitives in their first-paint order, each call
   under pcall.
 - **The facade.** `Skin:For(owner)` answers one table per owner, kept across minors. The painting
   vocabulary (EllesmereUI's names, then the Ka0s extras) is a set of late-bound trampolines into
