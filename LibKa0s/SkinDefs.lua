@@ -240,7 +240,9 @@ lib:RegisterSkin({
 -- is only the EllesmereUI preview and is never registered. A key the mockup's skin leaves out
 -- inherits Ka0s Default's Lua value (never the mockup's BASE), and so does every token MOCK_MAP
 -- does not reach. `extra` names the tokens the mockup does not draw that a skin still sets so its
--- surfaces read (cards, drawers opened, disabled text, light-skin charts); each is a schema name.
+-- surfaces read (cards, drawers opened, disabled text, light-skin charts, a set drawer label the
+-- mockup draws in its body color, which would hide OptionsDrawer's set / unset cue); each is a
+-- schema name.
 --
 -- WHAT WOW CANNOT DRAW is approximated (docs/api/Skin, "The eight skins"): no blur (Glass is
 -- translucency on its rounded art); no CSS radius but the one rounded art shipped, Ka0s Glass at 8,
@@ -404,6 +406,7 @@ register("obsidian", "Obsidian", "Near-black and flat, hairline edges, one cool 
     ["text.disabled"] = hex("#6A6A72"), ["text.linkHot"] = hex("#8FD3FF"),
     ["drawer.bgOpen"] = hex("#1d1d21"), ["drawer.boxBg"] = hex("#121214"),
     ["drawer.summarySet"] = hex("#A8DBFF"), ["btnPrimary.hover"] = hex("#000000"),
+    ["drawer.textSet"] = hex("#4DB8FF"),
     ["card.bg"] = hex("#18181b"), ["card.border"] = hex("#2a2a2f"),
     ["panel.bg"] = hex("#0f0f11"), ["panel.border"] = hex("#26262b"),
     ["scroll.thumbOn"] = hex("#5a5a64"), ["tab.glow"] = rgba(255, 255, 255, 0.06),
@@ -452,7 +455,7 @@ register("azeroth", "Azeroth", "Parchment and leather, Cinzel titles, red wax-se
     ["btn.hover"] = hex("#FFFFFF"), ["btnPrimary.hover"] = hex("#FFFFFF"),
     ["close.hot"] = hex("#FF6B4A"),
     ["drawer.bgOpen"] = hex("#cdb789"), ["drawer.boxBg"] = hex("#F7EED6"),
-    ["drawer.summarySet"] = hex("#8E1B10"),
+    ["drawer.summarySet"] = hex("#8E1B10"), ["drawer.textSet"] = hex("#8E1B10"),
     ["card.bg"] = hex("#F3E8CB"), ["card.border"] = hex("#b8955a"),
     ["panel.bg"] = rgba(120, 80, 30, 0.08), ["panel.border"] = hex("#b8955a"),
     ["scroll.thumbOn"] = hex("#5e3a14"), ["tab.glow"] = rgba(255, 255, 255, 0.25),
@@ -513,7 +516,7 @@ register("glass", "Glass", "Translucent frosted panels with rounded corners and 
     ["text.disabled"] = hex("#8A90A0"), ["text.linkHot"] = hex("#D4C4FF"),
     ["btnPrimary.hover"] = hex("#3A2A66"),
     ["drawer.bgOpen"] = rgba(255, 255, 255, 0.09), ["drawer.boxBg"] = rgba(0, 0, 0, 0.2),
-    ["drawer.summarySet"] = hex("#D4C4FF"),
+    ["drawer.summarySet"] = hex("#D4C4FF"), ["drawer.textSet"] = hex("#B69CFF"),
     ["card.bg"] = rgba(255, 255, 255, 0.06), ["card.border"] = rgba(255, 255, 255, 0.14),
     ["panel.bg"] = rgba(255, 255, 255, 0.04), ["panel.border"] = rgba(255, 255, 255, 0.12),
     ["scroll.thumbOn"] = rgba(255, 255, 255, 0.6), ["icon.hot"] = hex("#FFFFFF"),

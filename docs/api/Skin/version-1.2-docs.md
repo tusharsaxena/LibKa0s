@@ -500,7 +500,9 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   today's constants and is not touched by the mockup.
 - **Extras.** Where the mockup draws nothing a surface needs (an opened drawer, KPI cards and
   list panels, disabled text, the hover wash on a primary button), a skin sets that token itself
-  in its `extra` table, chosen from the skin's own palette. Azeroth, the one light skin, also sets
+  in its `extra` table, chosen from the skin's own palette. That includes `drawer.textSet` wherever
+  the mockup draws the drawer label in the body color: OptionsDrawer's label color is the set /
+  unset cue, so Obsidian, Azeroth and Glass take their accent and WoW Forever its heading gold. Azeroth, the one light skin, also sets
   its headings, quality colors, semantic colors and chart colors, which Ka0s Default draws for a
   dark window.
 - **Derived washes.** `list.hover`, `menu.hover`, `section.rule` and `drawer.borderOpen` are the
@@ -710,7 +712,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `drawer.boxBg` | `#121214` | `#F7EED6` | `#000000 .2` | `#000000` | `#140A07` | `#111111` | `#08091A` | `#0A0908` |
 | `drawer.boxBorder` | `#2A2A2F` | `#8A6A36` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#5A4A26` | `#2E2A26` |
 | `drawer.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
-| `drawer.textSet` | `#E8E8EC` | `#3A2412` | `#F2F4F8` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
+| `drawer.textSet` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
 | `drawer.summary` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `drawer.summarySet` | `#A8DBFF` | `#8E1B10` | `#D4C4FF` | `#FFE600` | `#FFCF9A` | · | `#F6D27A` | `#E0C3A6` |
 | `menu.bg` | `#121214` | `#E9DDBC` | `#121622 .6` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |

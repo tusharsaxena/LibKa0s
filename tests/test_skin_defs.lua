@@ -140,6 +140,21 @@ test("skin defs: every skin's text reads on its own window", function()
   end
 end)
 
+-- OptionsDrawer draws a drawer's label in drawer.textSet when its value is set and in drawer.text
+-- when it is not: the label color is the set/unset cue, so the two must be told apart at a glance.
+-- "Apart" is one channel at least 0.2 away (Azeroth's #2A1C0C / #3A2412 differed by 0.06).
+test("skin defs: every skin's set drawer label differs from its unset one", function()
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local tokens = Skin:ResolveSkin(key)
+    local a, b = tokens["drawer.text"], tokens["drawer.textSet"]
+    local apart = 0
+    for i = 1, 3 do apart = math.max(apart, math.abs(a[i] - b[i])) end
+    assertTrue(apart >= 0.2, ("%s: drawer.textSet is %.2f from drawer.text, want >= 0.2")
+      :format(key, apart))
+  end
+end)
+
 -- ── per-skin choices (docs/api/Skin, "The eight skins") ──────────────────────────────────────
 
 local CONTROLS = { "btn", "btnPrimary", "input", "check", "tab", "nav", "drawer", "popup", "menu" }
