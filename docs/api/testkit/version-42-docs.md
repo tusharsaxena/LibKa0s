@@ -172,7 +172,9 @@ widget, the driver writes it through the library's model as that page would: `li
 with `mods` held (and put back), then `lib.__keybindSet(row.command, 2, chord)`, then the row's
 view repainted (`row.view.repaint()`, the `UPDATE_BINDINGS` sync's work, done at once so a suite
 needs no timer). It answers the client's `KEY_BOUND` (`lib.__keybindClientString`), or
-`KEYBIND_STRINGS.COMBAT` / `UNAVAILABLE` / `FAILED` for a refusal. A row drawn by an older minor,
+`KEYBIND_STRINGS.COMBAT` / `UNAVAILABLE` / `FAILED` for a refusal. A press `lib.__keyChord` answers
+nil for (`ESCAPE`, a modifier pressed alone, an ignored key) writes nothing, in combat or out, and
+the driver answers the row's own outcome-line text, as slot 1 does on Escape. A row drawn by an older minor,
 with a second slot widget, is still clicked. It fails naming `options-ui-§20` when the row has no
 string `command` or the library has no `__keybindSet`.
 

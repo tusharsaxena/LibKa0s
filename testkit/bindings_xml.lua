@@ -55,7 +55,8 @@
 --   written through the library's model, as that page would: lib.__keyChord(key) with `mods` held,
 --   then lib.__keybindSet(row.command, 2, chord), then the row's view repainted (the
 --   UPDATE_BINDINGS sync's work, done now); it answers the client's KEY_BOUND line, or the
---   library's words for a refusal. A row drawn by an older minor (two slot widgets) is still
+--   library's words for a refusal. A press with no chord (ESCAPE, a modifier alone, an ignored
+--   key) writes nothing and answers the row's own outcome line, in combat or out. A row drawn by an older minor (two slot widgets) is still
 --   clicked, as before.
 --
 -- SHAPE. Returns `function(Kit)`, which installs the members on the kit table it is handed.
@@ -233,7 +234,9 @@ return function(Kit)
   end
 
   --- Slot 2 on a one-button row: the second key, written through the model as the client's page
-  --- would write it, and the row repainted. Answers the outcome words.
+  --- would write it, and the row repainted. Answers the outcome words. A press with no chord
+  --- (ESCAPE, a modifier alone, an ignored key) writes nothing and answers the row's own line,
+  --- as slot 1's capture leaves it on Escape, in combat or out.
   local function modelSlot2(row, key, mods, prefix)
     local M = env()
     local lib = optionsLib(M)
@@ -243,9 +246,9 @@ return function(Kit)
     if not lib or type(lib.__keybindSet) ~= "function" or type(lib.__keyChord) ~= "function" then
       fail(prefix .. "no lib.__keybindSet to write slot 2 through (options-ui-§20)", 3)
     end
+    local chord = withMods(M, mods, prefix, 4, function() return lib.__keyChord(key) or false end)
+    if not chord then return statusText(row) end
     local ok, _, _, why = withMods(M, mods, prefix, 4, function()
-      local chord = lib.__keyChord(key)
-      if not chord then return true end
       return lib.__keybindSet(row.command, 2, chord)
     end)
     local view = row.view

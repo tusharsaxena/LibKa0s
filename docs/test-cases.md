@@ -2672,7 +2672,7 @@ Total.
 - kit latch: table registrations are keyed by target, kind, event and unit, or by opts.key
 - kit latch: missing or wrong-typed opts raise naming the field
 
-### test_kit_bindings.lua (16)
+### test_kit_bindings.lua (17)
 
 - kit bindings: Kit.assertBindingsXml is on the kit table and published by Kit.expose
 - kit bindings: a conforming file passes with string commands and returns the list
@@ -2689,6 +2689,7 @@ Total.
 - kit bindings: Kit.keybindThroughTab is on the kit table and published by Kit.expose
 - kit bindings: keybindThroughTab binds a key through an Options instance's row
 - kit bindings: keybindThroughTab slot 2 binds the game page's key through the model
+- kit bindings: keybindThroughTab slot 2 with a press that binds nothing answers the row's own line
 - kit bindings: keybindThroughTab fails naming options-ui-§20 without a row or a slot
 
 ### test_mock_base.lua (33)
@@ -3206,7 +3207,7 @@ Total.
 | test_kit_asserts.lua | 11 |
 | test_kit_secrets.lua | 30 |
 | test_kit_latch.lua | 9 |
-| test_kit_bindings.lua | 16 |
+| test_kit_bindings.lua | 17 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 42 |
@@ -3230,4 +3231,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2752** |
+| **Total** | **2753** |

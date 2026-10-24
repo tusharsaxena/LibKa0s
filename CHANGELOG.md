@@ -72,7 +72,9 @@ changes, so no file minor moves; `mock_base.lua` is unchanged (1464 lines).
   through the model** the way the client's Options -> Keybindings page would set it:
   `lib.__keyChord(key)` with `mods` held, `lib.__keybindSet(row.command, 2, chord)`, then the row's
   view repainted (the `UPDATE_BINDINGS` sync's work, done at once); it answers the client's
-  `KEY_BOUND`, or the library's words for a refusal. A row drawn by an older minor, with a second
+  `KEY_BOUND`, or the library's words for a refusal. A press with no chord (`ESCAPE`, a modifier
+  alone, an ignored key) writes nothing, in combat or out, and answers the row's own outcome line,
+  as slot 1 does on Escape, never `KEY_BOUND`. A row drawn by an older minor, with a second
   slot widget, is still clicked. No case name changes, and no kit revision moves.
 
 What M2 of the 2026-10-24 run uses: the KB items install `mock_bindings.lua` and call

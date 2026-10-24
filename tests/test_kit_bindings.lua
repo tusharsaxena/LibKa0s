@@ -163,6 +163,23 @@ Bench.case("kit bindings: keybindThroughTab slot 2 binds the game page's key thr
   assertEqual(rows()[1].slots[1].text, "F8 +1", "and the row shows it")
 end)
 
+Bench.case("kit bindings: keybindThroughTab slot 2 with a press that binds nothing answers the row's own line", function()
+  -- ESCAPE, a modifier alone and an ignored key have no chord: nothing is written, so the driver
+  -- must not answer KEY_BOUND (slot 1 leaves the outcome line alone on Escape, and so does slot 2).
+  local _, _, _, rows = Bench.rowsPage()
+  local row = rows()[1]
+  local before = T.keybindThroughTab(row, 1, "F8")
+  assertEqual(before, T.mocks.KEY_BOUND)
+  row.status.text = "untouched"
+  for _, key in ipairs({ "ESCAPE", "LSHIFT", "UNKNOWN" }) do
+    assertEqual(T.keybindThroughTab(row, 2, key), "untouched", key .. ": the row's line, not KEY_BOUND")
+    assertEqual(Bench.keys(Bench.TOGGLE), "F8", key .. ": and nothing bound in slot 2")
+  end
+  T.mocks.InCombatLockdown = function() return true end
+  assertEqual(T.keybindThroughTab(row, 2, "ESCAPE"), "untouched", "in combat too, not KEY_BOUND")
+  T.mocks.InCombatLockdown = function() return false end
+end)
+
 Bench.case("kit bindings: keybindThroughTab fails naming options-ui-§20 without a row or a slot", function()
   assertErrorMatches(function() T.keybindThroughTab(nil, 1, "K") end, "options-ui-§20")
   assertErrorMatches(function() T.keybindThroughTab({ slots = {} }, 1, "K") end, "options-ui-§20")
