@@ -234,7 +234,8 @@ end)
 
 -- ── the minor ────────────────────────────────────────────────────────────────────────────────
 
-test("compose master: OptionsCompose is at minor 9", function()
-  -- red under: the change landing without its bump, which no vendored copy would pick up.
-  assertEqual(T.options.MODULES.OptionsCompose, 9)
+test("compose master: OptionsCompose is at minor 9 or later", function()
+  -- red under: the change landing without its bump, which no vendored copy would pick up. The
+  -- current minor is pinned by test_options_compose_tooltips.lua (minor 10).
+  assertTrue(T.options.MODULES.OptionsCompose >= 9)
 end)

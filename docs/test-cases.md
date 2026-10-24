@@ -1977,7 +1977,22 @@ Total.
 - compose master: framed with Lock frame omitted packs minimap and gives Test mode its own line
 - compose master: with the console omitted too, frameless Minimap button opens its line
 - compose master: the flow engine draws Debug console and Minimap button on one line
-- compose master: OptionsCompose is at minor 9
+- compose master: OptionsCompose is at minor 9 or later
+
+### test_options_compose_tooltips.lua (12)
+
+- compose tooltips: an entry replaces exactly its leaf's tooltip, every other row byte-identical
+- compose tooltips: a swatch's override ends with the class-color sentence
+- compose tooltips: a companion's override has no class-color sentence appended
+- compose tooltips: an empty, non-string or omitted-leaf entry changes nothing
+- compose tooltips: a keys rename keeps the override
+- compose tooltips: labels and tooltips together both apply
+- compose tooltips: a prefixed block keys the override by the leaf, not the path
+- compose tooltips: the bind arm applies the override
+- compose tooltips: the spec and its tooltips table are never written, and two calls agree
+- compose tooltips: MasterControls ignores tooltips (notes is its only route)
+- compose tooltips: every golden is unchanged
+- compose tooltips: OptionsCompose is at minor 10
 
 ### test_options_throttle.lua (4)
 
@@ -3150,6 +3165,7 @@ Total.
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 51 |
 | test_options_compose_master.lua | 15 |
+| test_options_compose_tooltips.lua | 12 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3198,4 +3214,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2728** |
+| **Total** | **2740** |

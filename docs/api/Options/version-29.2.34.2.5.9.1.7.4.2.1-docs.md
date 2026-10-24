@@ -13,7 +13,7 @@
 | Shipped in | v1.75.0 – v1.76.0 |
 | Status | Superseded |
 | Supersedes | [version 29.2.34.2.4.8.1.7.4.2.1](./version-29.2.34.2.4.8.1.7.4.2.1-docs.md) — which still exported the `__releaseChrome` test seam, and whose `OptionsIdList.lua` comment said the help mark's `info` art ships in every copy |
-| Superseded by | [version 30.2.34.3.5.9.2.9.4.2.1.3](./version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md) — closes an IdList suggestion list at the start of combat, adds `O.StrataTooltip`, adds the key binding model and the Keybindings tab, which follows Options -> Keybindings (`OptionsKeybinds.lua`), and gives Master controls its notes, the preview lock, *Master opacity* and the frameless packing |
+| Superseded by | [version 30.2.34.3.5.9.2.10.4.2.1.3](./version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md) — closes an IdList suggestion list at the start of combat, adds `O.StrataTooltip`, adds the key binding model and the Keybindings tab, which follows Options -> Keybindings (`OptionsKeybinds.lua`), gives Master controls its notes, the preview lock, *Master opacity* and the frameless packing, and gives the group composers `tooltips` beside `labels` |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither does `OptionsDrawer.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }` |
 
@@ -2458,7 +2458,7 @@ that can observe the difference is one passing **both** paths — which no host 
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
 
-## Moving to version 30.2.34.3.5.9.2.9.4.2.1.3
+## Moving to version 30.2.34.3.5.9.2.10.4.2.1.3
 
 **Copy the folder whole. Nothing a host calls moves or is removed; one public member is added.**
 `OptionsCompose.lua` moves to minor **8** and adds `O.StrataTooltip(values, strings)`, the one
@@ -2478,5 +2478,9 @@ page and ends its General Defaults tooltip with `O.KEYBINDS_UNCHANGED`. `Options
 moves to minor **9**: `O.MasterControls` takes `notes`, `resetPositionTooltip` and `lockIsPreview`
 (`options-ui-§15`), so a host that rewrote a composed tooltip moves onto them; its alpha row reads
 *Master opacity* (the stored leaf is still `alpha`, so a suite pinning *Master alpha* changes), and
-with *Lock frame* omitted *Minimap button* sits beside *Debug console*. No member is added. See
-[version 30.2.34.3.5.9.2.9.4.2.1.3](./version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md).
+with *Lock frame* omitted *Minimap button* sits beside *Debug console*. No member is added.
+`OptionsCompose.lua` then moves to minor **10**: `O.FontGroup`, `O.BorderGroup`, `O.BarGroup` and
+`O.ColorPair` take `tooltips` beside `labels` (`options-ui-§16`), so a host that rewrote a composed
+group's tooltip passes it instead; a swatch keeps the class-color sentence after the host's words,
+and `O.MasterControls` ignores the field. No member is added. See
+[version 30.2.34.3.5.9.2.10.4.2.1.3](./version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md).

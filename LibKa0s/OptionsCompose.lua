@@ -26,12 +26,15 @@
 local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib then return end
 
-local COMPOSE_MINOR = 9
+local COMPOSE_MINOR = 10
 -- Minor 8: O.StrataTooltip(values[, strings]), the one tooltip every player strata row carries
 -- (frame-layering-§1, options-ui-§16).
 -- Minor 9: MasterControls takes `notes`, `resetPositionTooltip` and `lockIsPreview`, the only ways a
 -- host extends the composed words; the alpha row reads Master opacity (stored leaf unchanged); and
 -- with Lock frame omitted, Minimap button packs beside Debug console (options-ui-§15, v2.88.0).
+-- Minor 10: the group composers take `tooltips` beside `labels`, replacing a leaf's tooltip where the
+-- canonical words misdescribe the host's wiring; a swatch keeps its class-color sentence after it,
+-- and MasterControls ignores the field (options-ui-§16, v2.88.0).
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__composeMinor and lib.__composeMinor >= COMPOSE_MINOR
@@ -183,6 +186,18 @@ local function bindRow(bind, row, field)
   return row
 end
 
+--- Replace `row`'s tooltip with the host's own words (compose minor 10, options-ui-§16), for a
+--- composed group whose canonical tooltip misdescribes the host's wiring -- a *Bar opacity* applied
+--- to the whole frame rather than the fill. Only a non-empty string does anything. A color swatch
+--- keeps CLASS_COLOR_NOTE after the host's words, because that sentence is options-ui-§17's and
+--- describes the pair, not the wiring; its companion takes the words as given. The label is not
+--- touched: a host that needs other words for the label passes `labels`, as before.
+local function withTooltip(row, tip)
+  if type(tip) ~= "string" or tip == "" then return end
+  if row.type == "color" then tip = tip .. " " .. CLASS_COLOR_NOTE end
+  row.tooltip = tip
+end
+
 --- Append one canonical row to `rows`, unless the caller omitted that leaf.
 ---
 --- Everything a caller can override is applied HERE and nowhere else — the path leaf, the label, the
@@ -195,12 +210,16 @@ end
 ---
 --- Under `spec.bind` the same key becomes the row's record `field` instead of its path (see the arm
 --- above); nothing else in this function looks at the bind.
+---
+--- `spec.tooltips` (compose minor 10, options-ui-§16) is read here too, keyed by the canonical LEAF
+--- exactly as `labels` is, never by a `keys` rename: see withTooltip below for what it does.
 local function emit(spec, rows, leaf, row)
   local omit = spec.omit or EMPTY
   if omit[leaf] then return nil end
 
   local keys     = spec.keys or EMPTY
   local labels   = spec.labels or EMPTY
+  local tooltips = spec.tooltips or EMPTY
   local defaults = spec.defaults or EMPTY
 
   local key = row.path or ((spec.prefix or "") .. (keys[leaf] or leaf))
@@ -211,6 +230,7 @@ local function emit(spec, rows, leaf, row)
   row.order    = (tonumber(spec.order) or 0) + (#rows * ORDER_STEP)
   if labels[leaf]   ~= nil then row.label   = labels[leaf]   end
   if defaults[leaf] ~= nil then row.default = defaults[leaf] end
+  withTooltip(row, tooltips[leaf])
 
   rows[#rows + 1] = row
   return row
@@ -482,8 +502,9 @@ function lib.__AttachCompose(O, d)
   --- (options-ui-§17). The primitive the three group composers below are built out of, and the one
   --- a host calls directly for a standalone swatch.
   ---
-  --- `spec` takes the common fields (prefix, page, group, subgroup, order, keys, labels, defaults,
-  --- omit, classColor, extra) plus:
+  --- `spec` takes the common fields (prefix, page, group, subgroup, order, keys, labels, tooltips,
+  --- defaults, omit, classColor, extra; `tooltips` since compose minor 10, a swatch's override keeping
+  --- the class-color sentence after it) plus:
   ---   key           string   the swatch's leaf. Defaults to "color".
   ---   companionKey  string   the companion's leaf. Defaults to "useClassColor<Key>".
   ---   label         string   the swatch's label. Defaults to "Color".
@@ -649,6 +670,8 @@ function lib.__AttachCompose(O, d)
   ---                              note for an omitted row, or one that is not a non-empty string,
   ---                              does nothing; `extra` rows are the host's and take none. This is
   ---                              the only way a host extends the composed words (options-ui-§15).
+  ---                              The group composers' `tooltips` (compose minor 10) is not read
+  ---                              here; `labels` keeps its behavior.
   ---   resetPositionTooltip string since compose minor 9: replaces the Reset position tooltip, the
   ---                              one canonical text that has to name the addon's own frames.
   ---                              notes.resetPosition then follows it. No effect when frameless.
@@ -690,7 +713,10 @@ function lib.__AttachCompose(O, d)
     end
     -- The group defaults to the canonical literal without writing to the caller's table. `__index`
     -- rather than a copy so that every other field is read straight off the spec.
-    local ms = setmetatable({ group = spec.group or MASTER_GROUP, omit = omit }, { __index = spec })
+    -- `tooltips = EMPTY` shadows the spec's own: the group composers' tooltip override never reaches
+  -- this tab, whose only route to its words is `notes` (options-ui-§15, compose minor 10).
+  local ms = setmetatable({ group = spec.group or MASTER_GROUP, omit = omit, tooltips = EMPTY },
+    { __index = spec })
     local notes = type(spec.notes) == "table" and spec.notes or EMPTY
 
     local rows = masterRows(ms, spec, notes)

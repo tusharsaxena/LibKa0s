@@ -25,8 +25,8 @@ Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **D
 `SimTimeline` 3 unchanged); **Widgets minor 15**, **WidgetsDragHandle minor 5** and
 **WidgetsAutocomplete minor 3** (`LibKa0s-Widgets-1.0` key **15.1.5.3.3**, `WidgetsReorder` 1 and
 `WidgetsLineChart` 3 unchanged); **Options minor 30**, **OptionsIds minor 3**, **OptionsCombat
-minor 2**, **OptionsCompose minor 9** and **OptionsKeybinds minor 3**, a new twelfth Options file
-(`LibKa0s-Options-1.0` key **30.2.34.3.5.9.2.9.4.2.1.3**, every other Options file unchanged); every
+minor 2**, **OptionsCompose minor 10** and **OptionsKeybinds minor 3**, a new twelfth Options file
+(`LibKa0s-Options-1.0` key **30.2.34.3.5.9.2.10.4.2.1.3**, every other Options file unchanged); every
 other file still at its v1.76.0 minor and **test kit revision 42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
 this block names each new minor as it lands. Now **seventeen majors across forty-one files**.
 
@@ -171,9 +171,9 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   OptionsCompose minor 8 landed, and that to `members-30.2.34.3.5.9.2.8.4.2.1.1.json` when Options
   minor 30 and OptionsKeybinds minor 1 did, and that to `members-30.2.34.3.5.9.2.8.4.2.1.2.json`
   when OptionsKeybinds minor 2 did, and that to `members-30.2.34.3.5.9.2.8.4.2.1.3.json` when
-  OptionsKeybinds minor 3 did, and that to `members-30.2.34.3.5.9.2.9.4.2.1.3.json` when
+  OptionsKeybinds minor 3 did, and that to `members-30.2.34.3.5.9.2.10.4.2.1.3.json` when
   OptionsCompose minor 9 did). Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md).
+  [docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md).
 - Four new cases in `tests/test_options_idsuggest_frames.lua`, with the events fired through
   `lib.__combatFrame`: a list a shown page's box opened closes at combat start and its rows pick
   nothing; a box under none of the panels handed in keeps its list; a focused pullout and the list
@@ -200,9 +200,9 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   `Kit.assertSurfaceParity` compares a stub against the live instance `lib:New` returns (the
   surface a consumer's runner registers with `Kit.setSurfaceSource`), so the re-vendor turns red
   until the stub answers it. The regenerated `members-29.2.34.3.5.9.2.8.4.2.1.json` (now
-  `members-30.2.34.3.5.9.2.9.4.2.1.3.json`) lists the lib-level table only, as every Options
+  `members-30.2.34.3.5.9.2.10.4.2.1.3.json`) lists the lib-level table only, as every Options
   manifest does, so it does not name the new member. Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md),
+  [docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md),
   which replaces the 29.2.34.3.5.9.2.7.4.2.1, 29.2.34.3.5.9.2.8.4.2.1, 30.2.34.3.5.9.2.8.4.2.1.1, 30.2.34.3.5.9.2.8.4.2.1.2 and 30.2.34.3.5.9.2.8.4.2.1.3
   documents this release carried on its branch: no release carried any of those keys.
 - Six new cases in `tests/test_options_compose.lua`: `BACKGROUND` to `HIGH` (array and map) give the
@@ -235,7 +235,7 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
 - **`lib.KEYBIND_STRINGS`**, the tab's words (ASCII; a host's `spec.strings` overrides them for
   translation), with the client's own `NOT_BOUND`, `KEY_BOUND` and `KEY_UNBOUND_ERROR` winning
   where they exist. It is the one public lib-level name added, so
-  `members-30.2.34.3.5.9.2.8.4.2.1.1.json` (now `members-30.2.34.3.5.9.2.9.4.2.1.3.json`) lists it.
+  `members-30.2.34.3.5.9.2.8.4.2.1.1.json` (now `members-30.2.34.3.5.9.2.10.4.2.1.3.json`) lists it.
 - **`Options.lua` minor 30** attaches the file at the end of `lib:New`, guarded
   (`lib.__AttachKeybinds(O, d)`, an empty body at minor 1: the tab's instance members arrive with
   the file's next minor in this release).
@@ -248,7 +248,7 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   sets no default key.
 - **What a consumer owes: nothing yet.** No instance member is added, so no Options degradation
   stub moves. Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md).
+  [docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md).
 - New suite `tests/test_options_keybinds_model.lua` (the kit's `mock_bindings.lua` installed per
   case): slots on commands with 0, 1 and 2 keys, the slot 2 to slot 1 swap, a displaced action
   reported keyless only when it is, a failed rebind restoring everything with no save, one save to
@@ -294,11 +294,11 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   Keybindings, and nothing else.
 - **What a consumer owes: every Options degradation stub gains `KeybindingsTab`, `KeybindRows` and
   `KEYBINDS_UNCHANGED`**, in every addon, windowed or not (`Kit.assertSurfaceParity`). The
-  regenerated `members-30.2.34.3.5.9.2.8.4.2.1.2.json` (now `members-30.2.34.3.5.9.2.9.4.2.1.3.json`)
+  regenerated `members-30.2.34.3.5.9.2.8.4.2.1.2.json` (now `members-30.2.34.3.5.9.2.10.4.2.1.3.json`)
   lists the lib-level table only, as every
   Options manifest does, so it does not name them. The KB items of the 2026-10-24 run test their tab
   through `T.keybindThroughTab`. Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md).
+  [docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md).
 - **Why.** OWNER_SCOPE 015 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`
   (KEYBINDINGS_RESEARCH §5.1 and §5.2; XC-01, XC-02, XC-03 and U-03 of its layout review). Repainting
   on `UPDATE_BINDINGS` is the next minor's (OptionsKeybinds minor 3, below).
@@ -335,9 +335,9 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   (`ctx.__keybindSyncHooked`) and dispatch by name.
 - **What a consumer owes: nothing.** Every new name is `__`-prefixed and no instance member moves;
   the regenerated `members-30.2.34.3.5.9.2.8.4.2.1.3.json` (now
-  `members-30.2.34.3.5.9.2.9.4.2.1.3.json`) is unchanged apart from its key.
+  `members-30.2.34.3.5.9.2.10.4.2.1.3.json`) is unchanged apart from its key.
   Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md).
+  [docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md).
 - **Why.** OWNER_SCOPE 015 ("sync across both") of Ka0sAddonsCommonTasks
   `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`, KEYBINDINGS_RESEARCH §3.1, §3.4 and §5.1 "Syncing"
   (risks 5 and 9 of §5.6).
@@ -392,10 +392,10 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   host omitting `locked` (none today), get the packed line when they pass `minimapPath`. In this
   repo, `tests/fixture_compose_golden.lua`'s `MasterControls/framed` record changed for the label
   only; its `MasterControls/frameless` record declares no minimap row and did not change. The
-  regenerated `members-30.2.34.3.5.9.2.9.4.2.1.3.json` is unchanged apart from its key and the
+  regenerated `members-30.2.34.3.5.9.2.10.4.2.1.3.json` is unchanged apart from its key and the
   OptionsCompose minor: no member is added, so no Options degradation stub owes anything for it.
   Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.9.4.2.1.3-docs.md),
+  [docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md),
   which replaces the 30.2.34.3.5.9.2.8.4.2.1.3 document this release carried on its branch.
 - New suite `tests/test_options_compose_master.lua` (fifteen cases, after `test_options_compose`):
   the *Master opacity* label; each note on exactly its row, the button notes, ignored notes, a
@@ -406,6 +406,37 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
 - **Deviation from the plan item.** The refusal names the section as "options-ui section 15": the
   shipped library's strings are ASCII (`tests/test_prose.lua`'s gate, the em dash excepted), so the
   section sign the item asked for cannot appear in a shipped string.
+
+### OptionsCompose minor 10: tooltips beside labels
+
+- **What.** `O.FontGroup`, `O.BorderGroup`, `O.BarGroup` and `O.ColorPair` take **`tooltips`**
+  beside `labels`: `{ <leaf> = "..." }`, keyed by the canonical leaf as `labels` is, never by a
+  `keys` rename. A non-empty string replaces that row's tooltip; a color swatch keeps the
+  class-color sentence after it (`" " .. O.CLASS_COLOR_NOTE`, `options-ui-§17`), and a companion
+  takes the words as given. The label stays canonical. Bound rows (`spec.bind`) behave the same. An
+  empty or non-string entry, or one for an omitted leaf, does nothing, and the spec and its
+  `tooltips` table are never written. Applied in `emit`, the one place overrides are applied,
+  through a file-local `withTooltip`. **`O.MasterControls` ignores `tooltips`** (its spec view
+  shadows the field with an empty table): `notes` stays that tab's only route, and its `labels`
+  behave as before.
+- **Why.** `options-ui-§16` as WS-35 wrote it (standard v2.88.0): where a composed group's canonical
+  tooltip misdescribes the host's wiring, the host passes `tooltips` rather than patching the
+  returned row (anti-pattern #106's group clause). The first consumer is AbsorbTracker's *Bar
+  opacity*, applied to the whole frame rather than the fill (U-02, ABS-P15, ABS-L12 of
+  Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`).
+- **Consumer impact.** None for a host that passes no `tooltips`: every record in
+  `tests/fixture_compose_golden.lua` is unchanged. No member is added, so no Options degradation
+  stub owes anything, and the regenerated `members-30.2.34.3.5.9.2.10.4.2.1.3.json` is unchanged
+  apart from its key and the OptionsCompose minor. Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.10.4.2.1.3-docs.md)
+  (*The common spec*), which replaces the 30.2.34.3.5.9.2.9.4.2.1.3 document this release carried
+  on its branch.
+- New suite `tests/test_options_compose_tooltips.lua` (thirteen cases, after
+  `test_options_compose_master`): each leaf of each group (BorderGroup with and without `show`)
+  replaced alone with every other row byte-identical; the swatch's class-color sentence; no note on
+  a companion; ignored entries; a `keys` rename; `labels` with `tooltips`; a prefixed block; the
+  bind arm; an untouched spec; `MasterControls` ignoring it; the goldens; and the minor.
+  `tests/test_options_compose_master.lua`'s minor case now reads "minor 9 or later".
 
 ### Docs and process
 
@@ -439,6 +470,8 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   and a frameless host (or one omitting `locked`) draws *Minimap button* beside *Debug console*.
   `notes`, `resetPositionTooltip` and `lockIsPreview` are opt-in, and a host that rewrote a composed
   tooltip moves onto them at its next release.
+- **The group composers' `tooltips` is opt-in** (OptionsCompose minor 10): a host that patched a
+  composed font, border, bar or color row's tooltip moves onto it at its next release.
 - **Nothing else is owed by a re-vendor.** The toplevel tool windows, the clamped popups and the
   suggestion list's combat close take effect with the copy; DragHandle's fields, the Keybindings
   tab and the strata tooltip are opt-in, and so are the kit's `mock_bindings.lua` and
