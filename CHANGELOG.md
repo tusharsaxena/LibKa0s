@@ -18,9 +18,13 @@ the frame-layering fixes the 2026-10-24 strata review asked of the library: topl
 that re-raise a shown confirmation, a DragHandle level and parent-alpha option, clamped menus, the
 IdList suggestion list closed at combat start, and one shared strata tooltip (`O.StrataTooltip`).
 
-Versions in this release: every file still at its v1.76.0 minor and **test kit revision 42**, until
-an entry below moves one. Each change bumps the minor of the files it touches once, and this block
-names each new minor as it lands. Still **seventeen majors across forty files**.
+Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **DebugLog minor 21**
+(`LibKa0s-DebugLog-1.0` key **21.3.1**, `DebugLogDiagnostics` 3 and `DebugLogGates` 1 unchanged);
+**PerfPanel minor 9** (`LibKa0s-Perf-1.0` key **15.1.1.9**, `Perf` 15, `PerfSampler` 1 and
+`PerfCommands` 1 unchanged); **SimPanel minor 6** (`LibKa0s-Sim-1.0` key **2.3.6**, `Sim` 2 and
+`SimTimeline` 3 unchanged); every other file still at its v1.76.0 minor and **test kit revision
+42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
+this block names each new minor as it lands. Still **seventeen majors across forty files**.
 
 ### Test kit revision 42: binding mock, frame-layer recorder and the Bindings.xml check
 
@@ -52,6 +56,34 @@ What M2 of the 2026-10-24 run uses: the KB items install `mock_bindings.lua` and
 `T.assertBindingsXml` (and LK-12's `T.keybindThroughTab`); the ZS items install `mock_layers.lua`.
 New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` and
 `tests/test_kit_bindings.lua`.
+
+### Core minor 12, DebugLog minor 21, PerfPanel minor 9 and SimPanel minor 6: toplevel tool windows
+
+- **The debug console, the perf panel and the sim panel are toplevel.** Each was already DIALOG and
+  clamped; each now also calls `SetToplevel(true)`, so a click raises it among its DIALOG peers (the
+  Settings panel the Test button opens the console from among them), and a click on the peer raises
+  that back (`frame-layering-§1` T6 and `§4`; XS-06). Reported by nine of the strata review's
+  per-addon analyses (ABS-Z07, BAN-Z08, KIC-Z10, MUL-Z10, PAR-Z10, PrettyChat PRE-Z01 and PRE-Z02,
+  WHA-S08, LOO-S05); STRATA_MODEL LK-01 of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
+- **A shown confirmation stays on top.** New `Core.RaiseStaticPopups()` (Core minor 12) raises every
+  shown Blizzard `StaticPopupN` (up to `STATICPOPUP_NUMDIALOGS`, 4 when that is not a number), each
+  `Raise` pcall'd, and answers the count; it never shows, hides, re-stratas or sets toplevel on a
+  Blizzard frame (XS-21). Each of the three windows calls it from its `OnShow`, read at call time
+  and guarded, so a tool window shown after a *Reset all settings* confirmation never buries it
+  (XS-08). **No Core floor moves**: with an older vendored Core the windows show as before and raise
+  nothing.
+- **The copy window is excluded.** `Widgets.CopyWindow` already sits one strata above its DIALOG
+  opener (FULLSCREEN); a toplevel FULLSCREEN window would rise over a host's FULLSCREEN modal band on
+  show (XS-12, QuickComms). `Widgets.lua` does not move.
+- **What a consumer owes: nothing.** A re-vendor takes it. An addon whose own surface sits at DIALOG
+  or above records in its LAYERS comment that the console can cover it.
+- New suite `tests/test_tool_windows_layering.lua`, on the kit's `mock_layers.lua`: the three
+  windows are DIALOG, toplevel and clamped (the pin PrettyChat's PRE-Z04 asked for, held here), the
+  copy window is FULLSCREEN and not toplevel, a shown popup is raised once and a hidden one never,
+  no popups and an erroring `Raise` are harmless, `STATICPOPUP_NUMDIALOGS` is honored, and the
+  windows build and show on a Core without the helper. `LibKa0s/DebugLog.lua` enters
+  `layout-§1`'s 1000-1500 band (CLAUDE.md).
 
 ## v1.76.0 — 2026-10-23
 

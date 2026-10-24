@@ -921,6 +921,17 @@ Total.
 - resize panel: the width survives a hide and a show
 - resize panel: with no MakeResizable in Core it is today's fixed panel
 
+### test_tool_windows_layering.lua (8)
+
+- tool windows: the console, the perf panel and the sim panel are DIALOG, toplevel and clamped
+- tool windows: the console's copy window is FULLSCREEN and not toplevel
+- tool windows: showing each window raises a shown StaticPopup once and a hidden one never
+- tool windows: with no StaticPopup globals nothing is raised and nothing errors
+- tool windows: an erroring Raise on a popup is swallowed
+- core: RaiseStaticPopups answers the count raised and honors STATICPOPUP_NUMDIALOGS
+- core: RaiseStaticPopups never shows, hides or re-stratas a popup
+- tool windows: with no RaiseStaticPopups in Core the three windows build and show
+
 ### test_slash.lua (74)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
@@ -2982,6 +2993,7 @@ Total.
 | test_debuglog_gates.lua | 20 |
 | test_debuglog_descriptor.lua | 7 |
 | test_resize_windows.lua | 23 |
+| test_tool_windows_layering.lua | 8 |
 | test_slash.lua | 74 |
 | test_slash_parse.lua | 33 |
 | test_slash_disabled.lua | 16 |
@@ -3060,4 +3072,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2614** |
+| **Total** | **2622** |

@@ -211,7 +211,8 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
 2026-09-24 write-out: the sweep took six out and its id peel brought three in. Six now:
 `tests/test_options.lua`, `tests/test_schema.lua`, `LibKa0s/Widgets.lua` and `LibKa0s/Perf.lua`
 left on 2026-10-01 (below), and `LibKa0s/Slash.lua` came in and left again the same day. Seven
-at v1.76.0 (2026-10-23): `tests/test_sim_panel.lua` came in, the last entry below. Largest first:
+at v1.76.0 (2026-10-23): `tests/test_sim_panel.lua` came in. Eight at v1.77.0: `LibKa0s/DebugLog.lua`
+came in, the last entry below. Largest first:
 
 - `testkit/mock_base.lua` (1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
@@ -243,7 +244,14 @@ at v1.76.0 (2026-10-23): `tests/test_sim_panel.lua` came in, the last entry belo
   2026-10-23: 933 → 1039 with SimPanel minor 5's controls cases, `LK-01`), ruled in `docs/automated-tests/RESULTS.md`: the seam
   is the *frame, the picker and the controls* section, to its own `tests/test_sim_panel_controls.lua`
   beside `tests/test_sim_panel_render.lua`. **Re-check trigger: 1200 lines, or the next SimPanel
-  minor that adds cases here.**
+  minor that adds cases here.** SimPanel minor 6 (v1.77.0, `LK-01` of the 2026-10-24 run) added no
+  case here: its cases are `tests/test_tool_windows_layering.lua`'s, and only the two minor pins moved.
+- `LibKa0s/DebugLog.lua` (1008, new to the band at v1.77.0, measured 2026-10-24: 999 → 1008 with
+  minor 21's toplevel console and its guarded StaticPopup re-raise, `LK-01` of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) — **accepted.** The seam is the console window
+  (`EnsureFrame`, the drag bar and their chrome helpers), to its own `LibKa0s/DebugLogWindow.lua`
+  paired on the shell's minor. **Re-check trigger: 1100 lines, or the next DebugLog minor that adds
+  a window feature.**
 
 `LibKa0s/Perf.lua` left the band on 2026-10-01, 1307 → 975, closing issue
 [#7](https://github.com/tusharsaxena/LibKa0s/issues/7) in two peels at minor 14. The first moved the
@@ -272,9 +280,9 @@ dropdown and the copy window stay; the copy window is the next seam if the file 
 It has grown back, out of the band: 853 at v1.76.0's minor 14 (the strip's `kind`, measured
 2026-10-23), 834 at v1.75.0's minor 13 (measured 2026-10-22), 655 before
 `W.SearchBox` (#52), the hoisted `SKIN` table and `W.TestStrip` (#48) with their header notes. The
-copy window stays the next seam, and the re-check trigger is 1000 lines. `LibKa0s/DebugLog.lua` is
+copy window stays the next seam, and the re-check trigger is 1000 lines. `LibKa0s/DebugLog.lua` was
 999 at v1.75.0's minor 20, re-measured 2026-10-22: the #57 comment correction added no line, so it
-stays one under the band. Of v1.75.0's new files only `tests/test_sim_panel.lua` is in the band
+stayed one under the band until v1.77.0's minor 21 took it in (listed above). Of v1.75.0's new files only `tests/test_sim_panel.lua` is in the band
 (1056 at v1.76.0, listed above); `LibKa0s/SimPanel.lua`, the largest payload file among them, is 949
 after SimPanel minor 5 with the step-label bound (v1.76.0; 929 before it, 919 after minor 4).
 `tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page

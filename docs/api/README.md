@@ -100,7 +100,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [11](./Core/version-11-docs.md) | **`Core.lua` 11** (comment-only: an undeclared `close` draws blank) | v1.75.0 | **Current** |
+| [12](./Core/version-12-docs.md) | **`Core.lua` 12** (`RaiseStaticPopups`: the tool windows re-raise a shown StaticPopup) | v1.77.0 | **Current** |
+| [11](./Core/version-11-docs.md) | `Core.lua` 11 (comment-only: an undeclared `close` draws blank) | v1.75.0 – v1.76.0 | Superseded |
 | [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 – v1.74.0 | Superseded |
 | [9](./Core/version-9-docs.md) | `Core.lua` 9 | v1.64.0 – v1.66.0 | Superseded |
 | [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 – v1.63.0 | Superseded |
@@ -208,7 +209,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [20.3.1](./DebugLog/version-20.3.1-docs.md) | **`DebugLog.lua` 20** (comment-only: undeclared `close`, `copy`, `clear` draw blank) · **`DebugLogDiagnostics.lua` 3** (the identity header names Glow and Sim) · `DebugLogGates.lua` 1 | v1.75.0 | **Current** |
+| [21.3.1](./DebugLog/version-21.3.1-docs.md) | **`DebugLog.lua` 21** (the console is toplevel and re-raises a shown StaticPopup) · `DebugLogDiagnostics.lua` 3 · `DebugLogGates.lua` 1 | v1.77.0 | **Current** |
+| [20.3.1](./DebugLog/version-20.3.1-docs.md) | `DebugLog.lua` 20 (comment-only: undeclared `close`, `copy`, `clear` draw blank) · `DebugLogDiagnostics.lua` 3 (the identity header names Glow and Sim) · `DebugLogGates.lua` 1 | v1.75.0 – v1.76.0 | Superseded |
 | [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 – v1.74.0 | Superseded |
 | [18.2.1](./DebugLog/version-18.2.1-docs.md) | `DebugLog.lua` 18 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.65.0 | Superseded |
 | [17.2](./DebugLog/version-17.2-docs.md) | `DebugLog.lua` 17 · `DebugLogDiagnostics.lua` 2 | v1.64.0 | Superseded |
@@ -320,7 +322,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1.1.8](./Perf/version-15.1.1.8-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 8** (a step label stops at the command column) | v1.76.0 | **Current** |
+| [15.1.1.9](./Perf/version-15.1.1.9-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 9** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | **Current** |
+| [15.1.1.8](./Perf/version-15.1.1.8-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 8 (a step label stops at the command column) | v1.76.0 | Superseded |
 | [15.1.1.7](./Perf/version-15.1.1.7-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 7 (comment-only: Sim's panel copies the renderer on purpose) | v1.75.0 – v1.75.2 | Superseded |
 | [15.1.1.6](./Perf/version-15.1.1.6-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.72.0 – v1.74.0 | Superseded |
 | [14.1.1.6](./Perf/version-14.1.1.6-docs.md) | `Perf.lua` 14 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.66.0 – v1.71.0 | Superseded |
@@ -340,7 +343,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.3.5](./Sim/version-2.3.5-docs.md) | `Sim.lua` 2 · **`SimTimeline.lua` 3** (a verb start or restart plays on its own; a manual step or click holds the run) · **`SimPanel.lua` 5** (Run all removed: Pause/Resume, Restart and Stop) | v1.76.0 | **Current** |
+| [2.3.6](./Sim/version-2.3.6-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 6** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | **Current** |
+| [2.3.5](./Sim/version-2.3.5-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 (a verb start or restart plays on its own; a manual step or click holds the run) · `SimPanel.lua` 5 (Run all removed: Pause/Resume, Restart and Stop) | v1.76.0 | Superseded |
 | [2.2.4](./Sim/version-2.2.4-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 4** (the picker's scenario takes the width the bar leaves, on one line) | v1.75.2 | Superseded |
 | [2.2.3](./Sim/version-2.2.3-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 3** (a disabled row or control still shows its tip) | v1.75.1 | Superseded |
 | [2.2.2](./Sim/version-2.2.2-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 2** (the picker reads its scenario at use; no scenario listed, the Start row is locked) | v1.75.0 | Superseded |

@@ -119,8 +119,8 @@ end
 
 test("sim panel: the file registers on the shell's minor and in MODULES", function()
   local _, Sim = F.env()
-  assertEqual(Sim.MODULES.SimPanel, 5)
-  assertEqual(Sim.__panelMinor, 5)
+  assertEqual(Sim.MODULES.SimPanel, 6)
+  assertEqual(Sim.__panelMinor, 6)
   assertEqual(Sim.__panelShellMinor, Sim.MINOR)
   assertEqual(type(Sim.__AttachPanel), "function")
   assertEqual(type(Sim.__StepPanel), "function", "the renderer's internal test seam")

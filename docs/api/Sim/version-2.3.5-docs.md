@@ -11,9 +11,9 @@
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **5** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
 | Shipped in | v1.76.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [2.2.4](./version-2.2.4-docs.md) (shipped in v1.75.2), which superseded [2.2.3](./version-2.2.3-docs.md) (v1.75.1) |
-| Superseded by | — |
+| Superseded by | [2.3.6](./version-2.3.6-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 5 }` |
 
@@ -919,3 +919,10 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to version 2.3.6
+
+**Take it; nothing moves.** Version 2.3.6 moves `SimPanel.lua` to 6 and adds no member: the step
+panel is toplevel and, when it shows, re-raises any shown Blizzard StaticPopup through Core's
+`RaiseStaticPopups` (guarded, so an older Core raises nothing). See [version
+2.3.6](./version-2.3.6-docs.md).

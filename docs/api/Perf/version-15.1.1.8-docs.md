@@ -11,9 +11,9 @@
 | Files and minors | `Perf.lua` **15** · `PerfSampler.lua` **1** · `PerfCommands.lua` **1** · `PerfPanel.lua` **8** |
 | Version key | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>`, in load order — the same four numbers `lib.MODULES` reports |
 | Shipped in | v1.76.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 15.1.1.7](./version-15.1.1.7-docs.md) — the same surface; a long step label ran under the command column |
-| Superseded by | — |
+| Superseded by | [version 15.1.1.9](./version-15.1.1.9-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 8 }` |
@@ -804,3 +804,9 @@ The four files move as one. A consumer holding `Perf.lua` from one vendored copy
 `PerfSampler.lua`, `PerfCommands.lua` or `PerfPanel.lua` from another is not a supported state; each secondary file is
 paired on the probe's minor so a mismatch re-attaches rather than persisting silently, which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 15.1.1.9
+
+**Take it; nothing moves.** Version 15.1.1.9 is this surface; the step panel is toplevel and, when
+it shows, re-raises any shown Blizzard StaticPopup through Core's `RaiseStaticPopups` (guarded, so
+an older Core raises nothing). See [version 15.1.1.9](./version-15.1.1.9-docs.md).
