@@ -24,7 +24,8 @@ Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **D
 `PerfCommands` 1 unchanged); **SimPanel minor 6** (`LibKa0s-Sim-1.0` key **2.3.6**, `Sim` 2 and
 `SimTimeline` 3 unchanged); **Widgets minor 15**, **WidgetsDragHandle minor 5** and
 **WidgetsAutocomplete minor 3** (`LibKa0s-Widgets-1.0` key **15.1.5.3.3**, `WidgetsReorder` 1 and
-`WidgetsLineChart` 3 unchanged); every
+`WidgetsLineChart` 3 unchanged); **OptionsIds minor 3** and **OptionsCombat minor 2**
+(`LibKa0s-Options-1.0` key **29.2.34.3.5.9.2.7.4.2.1**, every other Options file unchanged); every
 other file still at its v1.76.0 minor and **test kit revision 42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
 this block names each new minor as it lands. Still **seventeen majors across forty files**.
 
@@ -138,6 +139,31 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   `FULLSCREEN_DIALOG` and clamped; in `tests/test_widgets_autocomplete.lua`, the list built on the
   first show is at `AUTOCOMPLETE.STRATA` (and at the handle's `opts.strata` when one is passed) and
   clamped.
+
+### OptionsIds minor 3 and OptionsCombat minor 2: the suggestion list closes when combat starts
+
+- **The list closes at `PLAYER_REGEN_DISABLED`.** The suggestion dropdown an `O.IdInput` (and an
+  `O.IdList`'s add box) puts up as the player types is parented to `UIParent`, so the combat cover
+  over a page could not reach it, and a list left open stayed up over a covered page with rows the
+  write seam refuses. New internal instance member `O.__closeOwnedSuggest(panels)` (OptionsIds 3)
+  closes it, as Escape does, when the box that owns it sits under one of `panels`
+  (`lib.__descendsFrom`); a list a box under none of them opened is left alone.
+- **`O.__releaseOwnedFocus(panels)` closes both** (OptionsCombat 2). It no longer returns once it
+  has closed an AceGUI pullout on one of the instance's pages, and ends by calling
+  `O.__closeOwnedSuggest` when the instance has it. The caller (`Options.lua`'s combat hook) does
+  not move. Leaving combat reopens nothing; the box's next keystroke lists again.
+- **Why.** Nothing usable is lost: a pick in combat was already refused (`O.__combatRefused`), and
+  an AceGUI pullout closes the same way (`frame-layering-§4`; XS-10, BAN-S11, BAN-Z10). The strata
+  review rated it to land only after an in-client check; the run's lead landed it and moved that
+  check to the smoke list (SM-LK-04). STRATA_MODEL LK-04 of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
+- **What a consumer owes: nothing.** Both members are `__`-prefixed, so no Options degradation stub
+  owes them, and no public member moves (`members-29.2.34.3.5.9.2.7.4.2.1.json`). Documented in
+  [docs/api/Options/version-29.2.34.3.5.9.2.7.4.2.1-docs.md](docs/api/Options/version-29.2.34.3.5.9.2.7.4.2.1-docs.md).
+- Four new cases in `tests/test_options_idsuggest_frames.lua`, with the events fired through
+  `lib.__combatFrame`: a list a shown page's box opened closes at combat start and its rows pick
+  nothing; a box under none of the panels handed in keeps its list; a focused pullout and the list
+  both close; and leaving combat puts nothing back up while the box's next keystroke lists again.
 
 ## v1.76.0 — 2026-10-23
 

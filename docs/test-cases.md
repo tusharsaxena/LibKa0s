@@ -1736,7 +1736,7 @@ Total.
 - IdInput suggestions: a host kind with no base is offered nothing of the client's
 - IdInput suggestions: the shared-name check reads one source through a based kind and its base
 
-### test_options_idsuggest_frames.lua (11)
+### test_options_idsuggest_frames.lua (15)
 
 - IdInput suggestions: one dropdown per instance, whatever the renders
 - IdInput suggestions: a box pooled into a second render is hooked once
@@ -1749,6 +1749,10 @@ Total.
 - IdInput suggestions: a raising info costs that id's row, not the list
 - IdInput suggestions: the dropdown is as wide as the box looks
 - IdInput suggestions: a host kind's suggestTag is appended after the id
+- IdInput suggestions: the start of combat closes a list a page opened
+- IdInput suggestions: a list another page's box opened is not this release's
+- IdInput suggestions: a focused pullout and the list both close at combat start
+- IdInput suggestions: leaving combat does not reopen a list combat closed
 
 ### test_options_idlist_remove.lua (8)
 
@@ -3034,7 +3038,7 @@ Total.
 | test_options_nav.lua | 14 |
 | test_options_drawer.lua | 26 |
 | test_options_idsuggest.lua | 29 |
-| test_options_idsuggest_frames.lua | 11 |
+| test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 9 |
 | test_options_combat.lua | 33 |
@@ -3088,4 +3092,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2634** |
+| **Total** | **2638** |

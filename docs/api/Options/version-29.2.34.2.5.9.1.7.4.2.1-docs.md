@@ -10,10 +10,10 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **29** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **2** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **1** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>`, in load order — the same eleven numbers `lib.MODULES` reports. |
-| Shipped in | v1.75.0 |
-| Status | **Current** |
+| Shipped in | v1.75.0 – v1.76.0 |
+| Status | Superseded |
 | Supersedes | [version 29.2.34.2.4.8.1.7.4.2.1](./version-29.2.34.2.4.8.1.7.4.2.1-docs.md) — which still exported the `__releaseChrome` test seam, and whose `OptionsIdList.lua` comment said the help mark's `info` art ships in every copy |
-| Superseded by | — |
+| Superseded by | [version 29.2.34.3.5.9.2.7.4.2.1](./version-29.2.34.3.5.9.2.7.4.2.1-docs.md) — closes an IdList suggestion list at the start of combat |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither does `OptionsDrawer.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }` |
 
@@ -2457,3 +2457,12 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 29.2.34.3.5.9.2.7.4.2.1
+
+**Copy the folder whole. Nothing a host calls moves or is removed.** `OptionsIds.lua` moves to minor
+**3** and `OptionsCombat.lua` to minor **2**: at the start of combat the lock now closes an IdList
+suggestion list one of the instance's pages opened, as it already closed an AceGUI pullout, through
+a new internal instance member `O.__closeOwnedSuggest(panels)`. It is `__`-prefixed, so an Options
+degradation stub owes nothing. See
+[version 29.2.34.3.5.9.2.7.4.2.1](./version-29.2.34.3.5.9.2.7.4.2.1-docs.md).
