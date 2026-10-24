@@ -1,0 +1,42 @@
+{
+  "major": "LibKa0s-Skin-1.0",
+  "versionKey": "1.1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Skin", "minor": 1 },
+    { "file": "SkinDefs", "minor": 1 }
+  ],
+  "members": [
+    { "name": "Color", "kind": "function" },
+    { "name": "DEFAULT", "kind": "string" },
+    { "name": "FROM_SKIN", "kind": "string" },
+    { "name": "For", "kind": "function" },
+    { "name": "GetChoice", "kind": "function" },
+    { "name": "GetSkin", "kind": "function" },
+    { "name": "IsFromSkin", "kind": "function" },
+    { "name": "IsOwner", "kind": "function" },
+    { "name": "OnLooksChanged", "kind": "function" },
+    { "name": "Owners", "kind": "function" },
+    { "name": "PendingReload", "kind": "function" },
+    { "name": "RegisterOwner", "kind": "function" },
+    { "name": "RegisterSkin", "kind": "function" },
+    { "name": "Repaint", "kind": "function" },
+    { "name": "ResetToSkin", "kind": "function" },
+    { "name": "Resolve", "kind": "function" },
+    { "name": "ResolveSkin", "kind": "function" },
+    { "name": "SCHEMA", "kind": "table" },
+    { "name": "SOURCES", "kind": "table" },
+    { "name": "SetChoice", "kind": "function" },
+    { "name": "Skins", "kind": "function" },
+    { "name": "Token", "kind": "function" },
+    { "name": "Track", "kind": "function" },
+    { "name": "Untrack", "kind": "function" },
+    { "name": "VOCAB", "kind": "table" },
+    { "name": "byOwner", "kind": "table" },
+    { "name": "facades", "kind": "table" },
+    { "name": "owners", "kind": "table" },
+    { "name": "painted", "kind": "table" },
+    { "name": "prim", "kind": "table" },
+    { "name": "skins", "kind": "table" }
+  ]
+}

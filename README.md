@@ -10,7 +10,7 @@ before changing anything. [`DEPENDENCIES.md`](DEPENDENCIES.md) lists what to ins
 
 LibKa0s is a Ka0s-owned shared library. Ka0s WoW addons vendor it the way they vendor Ace3: each one
 copies it into its own `libs/` folder instead of depending on it at runtime. Every module is one
-LibStub major, and seventeen of them ship today:
+LibStub major, and eighteen of them ship today:
 
 - `LibKa0s-Core-1.0`: the small stateless seams every other module sits on. That means secret-safe
   stringification, the window skin and its close button, a prefixed chat printer,
@@ -40,6 +40,9 @@ LibStub major, and seventeen of them ship today:
   LibCustomGlow-1.0 at call time and does nothing without it.
 - `LibKa0s-Media-1.0` carries the art and type the collection draws with, inside the payload, along
   with the paths that reach them and the LibSharedMedia registration.
+- `LibKa0s-Skin-1.0` is the skin engine: which skin each addon wears, chosen per addon, what each
+  token resolves to, and the per-addon record of painted frames that lets a skin switch repaint them
+  live. Ka0s Default, today's look, is its first skin.
 - `LibKa0s-Widgets-1.0` has the flat-skin dropdown button, the reorderable-list drag, the unlocked
   drag handle a player moves a frame by, a pooled line chart over a time axis, `SearchBox` (the flat
   filter-bar search box in the dropdown's skin, with a gold focus line), `TestStrip` (the amber band
@@ -81,7 +84,7 @@ modules and points you there. It does not restate them.
    `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`,
    `OptionsDrawer.lua` and `OptionsKeybinds.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole twelve-file module
    is absent instead of half-attached. `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua` and `WidgetsAutocomplete.lua` do the same
-   behind `Widgets.lua`, `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
+   behind `Widgets.lua`, `SkinDefs.lua` behind `Skin.lua`, `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
    `PerfPanel.lua` behind `Perf.lua`, and `SimTimeline.lua` and `SimPanel.lua` behind `Sim.lua`.
    `SimPanel.lua` also returns when Widgets is absent, since its scenario picker is a
    `W.Dropdown`; the simulator then runs headless from its slash verb, with no panel.
@@ -110,7 +113,7 @@ addon must work with no other addon installed.
 
 ## The modules
 
-There are seventeen LibStub majors, and a host adopts each one independently. The full contract for
+There are eighteen LibStub majors, and a host adopts each one independently. The full contract for
 each (the descriptor, every public member, every row field) lives in [`docs/api/`](docs/api/), one
 document per shipped version. This section is the map and that directory is the reference. Nothing
 here restates a signature, because a second copy of a contract is a contract that drifts.
@@ -127,8 +130,9 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Item-1.0` | Item identity as five primitives and no policy: read an item link and its bonus ids, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree about it in writing. | `Item.lua` | [3](docs/api/Item/version-3-docs.md) |
 | `LibKa0s-Glow-1.0` | The stateless LibCustomGlow-1.0 driver. `Start(frame, style, knobs, key, frameLevel)` and `Stop(frame, style, key)` map one of four styles (`button`, `proc`, `pixel`, `autocast`) and its knob values to LibCustomGlow's positional arguments, with its two traps handled (`pixelLength` 0 means automatic; a boolean is false only when false). No defaults, no ranges, no lifecycle: the repaint gate, the proc burst and the triggers stay the host's. LibCustomGlow-1.0 is resolved at call time, and without it nothing is drawn. | `Glow.lua` | [1](docs/api/Glow/version-1-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 5,836 white icon TGAs from three sets (Open Iconic and Phosphor, MIT; Game-icons.net, CC BY 3.0), seven generated statusbar textures, the Glass skin's generated rounded border and fill (the LSM `border` and `background` catalogs), and six SIL OFL faces: JetBrains Mono plus the skins' Barlow, Cinzel SemiBold and Atkinson Hyperlegible, each under its own locale mask. All of it sits inside the payload, along with the paths that reach it, the set catalog and the LibSharedMedia registration. | `Media.lua`, `MediaIcons.lua`, `media/` | [6.1](docs/api/Media/version-6.1-docs.md) |
+| `LibKa0s-Skin-1.0` | The skin engine. A skin is a token table; each addon registers as an **owner** (`Skin:RegisterOwner`, its folder name) and wears its own choice of skin, read once from its profile and moved by `SetChoice`, which resolves the skin, repaints every frame recorded for that owner (and no other), and fires the owner's `OnLooksChanged`. `Skin:For(owner)` is the owner's facade, the painting vocabulary as late-bound trampolines that survive a minor upgrade. `FROM_SKIN`, `Resolve` and `ResetToSkin` let a HUD setting follow the skin. `SkinDefs.lua` holds the token schema and Ka0s Default, whose tokens are today's constants. | `Skin.lua`, `SkinDefs.lua` | [1.1](docs/api/Skin/version-1.1-docs.md) |
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops, shared process-wide across addons. Then `SearchBox`, the flat filter-bar search box in the same skin, with a hint while empty and a gold border while it has focus. Then `TestStrip`, the mode strip: the amber band a window lays between its chrome and sample data while test mode is on, or with `kind = "sim"` the cyan band of a simulation, born hidden and placed by the host. Then `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, but no row content at all. And `DragHandle`, the labeled strip with a help mark (and optionally a close mark) that a player drags a movable frame by. And `LineChart`, a pooled line chart over a time axis with markers, dashed ranges and a hover crosshair. And `Autocomplete`, a suggestion list hung directly under a host's `EditBox`, in the box's own width and skin, with a debounced provider and keyboard picking. Widgets takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua` | [15.1.5.3.3](docs/api/Widgets/version-15.1.5.3.3-docs.md) |
-| `LibKa0s-DebugLog-1.0` | The on-screen debug console (movable window, color-coded log, copy box, and the one seam that turns logging on and off), plus the diagnostics report a player sends with a bug report, the change gates (log once, log on change) the console re-arms on Clear and on enable, and the at-enable queue that holds a state line written while logging is off until it is turned on. The library writes the markers, the identity header and the cap, and runs each section an addon supplies under its own pcall. | `DebugLog.lua`, `DebugLogDiagnostics.lua`, `DebugLogGates.lua` | [21.3.1](docs/api/DebugLog/version-21.3.1-docs.md) |
+| `LibKa0s-DebugLog-1.0` | The on-screen debug console (movable window, color-coded log, copy box, and the one seam that turns logging on and off), plus the diagnostics report a player sends with a bug report, the change gates (log once, log on change) the console re-arms on Clear and on enable, and the at-enable queue that holds a state line written while logging is off until it is turned on. The library writes the markers, the identity header and the cap, and runs each section an addon supplies under its own pcall. | `DebugLog.lua`, `DebugLogDiagnostics.lua`, `DebugLogGates.lua` | [21.4.1](docs/api/DebugLog/version-21.4.1-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser. In other words, everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua`, `SlashParse.lua` | [20.2](docs/api/Slash/version-20.2-docs.md) |
 | `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice: with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. It has one `OnClick`, implementing launcher-§2. Left-click opens the settings panel; right-click opens the client's context menu of the toggles the host supplies (Enabled, Locked, Test mode, Show window). There is one library-drawn status tooltip (launcher-§1), and LibDBIcon's own `minimap` table comes from the host. Neither broker library is a dependency. Both are resolved with `LibStub(…, true)` at register time, and every degradation is named, not raised. | `Launcher.lua` | [5](docs/api/Launcher/version-5-docs.md) |
 | `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, the nav rail a page that edits one instance out of many may lead with, a drawer (a header bar that opens a bordered box of ordinary rows), the Keybindings tab that edits a host's own key bindings in the client's binding set, and the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block. It also carries the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`, `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`, `OptionsDrawer.lua`, `OptionsKeybinds.lua` | [30.2.34.3.5.9.2.11.4.2.1.4](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md) |
@@ -286,7 +290,7 @@ forgotten once already, with both repos' suites green the whole time.
 
 Re-vendoring is **whole-folder**, never file by file, with one carve-out: `media/icons/` ships only the
 icons the consumer declares (see *Installing* above). Every major except Core (Env, Compat, Lifecycle,
-Bus, Schema, Pool, Item, Glow, Media, Widgets, DebugLog, Slash, Launcher, Options, Perf and Sim) resolves
+Bus, Schema, Pool, Item, Glow, Media, Skin, Widgets, DebugLog, Slash, Launcher, Options, Perf and Sim) resolves
 `LibKa0s-Core-1.0` before it calls `NewLibrary`, and returns outright if Core is missing or below the
 minor it needs. A consumer that copied a new `Perf.lua` over an old `Core.lua` gets no probe at all,
 not a half-updated one, and the host's setup stub then says "perf is not installed". That is the
@@ -317,6 +321,8 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
                         the Glass skin's generated border and fill) and fonts/ (JetBrains Mono,
                         Barlow, Cinzel SemiBold, Atkinson Hyperlegible, all SIL OFL); every
                         third-party set carries its license beside it
+  Skin.lua           -- LibKa0s-Skin-1.0, MINOR at the top of the file; needs Core
+  SkinDefs.lua       -- the token schema and the skins, same module, DEFS_MINOR of its own
   Widgets.lua        -- LibKa0s-Widgets-1.0, MINOR at the top of the file; needs Core
   WidgetsReorder.lua -- ReorderList and the row box, same module, REORDER_MINOR of its own
   WidgetsDragHandle.lua -- the unlocked drag handle, same module, DRAG_MINOR of its own

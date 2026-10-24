@@ -17,9 +17,12 @@ choice on the settings panel, with LootHistory as the prototype consumer. The te
 paint recorder opens it.
 
 Versions in this release: **Media minor 6** (`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1
-unchanged); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
-entry below moves one. Each change bumps the minor of the files it touches once, and this block
-names each new minor as it lands. Still **seventeen majors across forty-one files**.
+unchanged), **Skin minor 1** and **SkinDefs minor 1** (the new major `LibKa0s-Skin-1.0`, key
+**1.1**), **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key **21.4.1**); every other file
+still at its v1.77.0 minor, and **test kit revision 43**, until an entry below moves one. Each change
+bumps the minor of the files it touches once, and this block names each new minor as it lands. Now
+**eighteen majors across forty-three files**: one major added (`LibKa0s-Skin-1.0`), and no
+`NEEDS_*` floor rises.
 
 ### Test kit revision 43: the paint recorder
 
@@ -71,6 +74,55 @@ path version 5.1 had resolves the same.
   with `LSM:Fetch`; it never builds a path.
 - `tools/prune-icons.lua` touches only `media/icons/`: a consumer pruned to `LibKa0s icons: none.`
   keeps all of `fonts/` and `textures/`.
+
+### LibKa0s-Skin-1.0 (new major, Skin minor 1, SkinDefs minor 1)
+
+The skin engine and its first skin, documented in
+[docs/api/Skin/version-1.1-docs.md](docs/api/Skin/version-1.1-docs.md). `Skin.lua` loads after
+`MediaIcons.lua`, floored on Core (`NEEDS_CORE = 1`, no Core member called); `SkinDefs.lua` is
+paired on its minor (`__defsMinor` / `__defsShellMinor`).
+
+- **Owners and their choice.** `Skin:RegisterOwner(owner, opts)` at the consumer's file load, the
+  owner being its folder name: `opts.get()` answers the profile's `{ source, skin }`, read once;
+  `opts.set` writes it; `opts.label` names the addon. `IsOwner`, `Owners`, `GetChoice`.
+  `SetChoice(owner, source, skin)` is idempotent; otherwise it resolves the new skin, repaints every
+  frame recorded for that owner and no other, then fires that owner's `OnLooksChanged` listeners.
+  Leaving the `eui` source repaints nothing and sets a pending-reload flag, and its second answer is
+  true exactly once per owner, so a caller raises its reload popup at most once. It never writes the
+  host's profile.
+- **The frame registry.** `Track(owner, frame, prim, ...)` records a primitive's paint in a
+  weak-keyed table, one record per frame, moving a pooled frame to its newest owner; `Untrack`
+  forgets one; `Repaint(owner)` replays each recorded frame once, in first-paint order, each call
+  under pcall.
+- **The facade.** `Skin:For(owner)` answers one table per owner, kept across minors. The painting
+  vocabulary (EllesmereUI's names, then the Ka0s extras) is a set of late-bound trampolines into
+  `lib.prim`, filled by the primitives' file later in this release; a newer minor re-fills every
+  existing facade in place. `S.Token`, `S.Color`, `S.Resolve`, `S.OnLooksChanged`, `S.IsEnabled`,
+  `S.GetStyle`, `S.apiVersion` (3).
+- **FROM_SKIN.** `Skin.FROM_SKIN = "@skin"`; `Resolve(owner, kind, value, fromSkin)` answers the
+  skin's token for the sentinel or a true companion; `Skin.ResetToSkin(profile, keys)` writes the
+  sentinel, or a color's `<key>FromSkin = true`, for each listed key (dotted paths allowed);
+  `IsFromSkin`.
+- **The schema and Ka0s Default** (`SkinDefs.lua`). `Skin.SCHEMA`, 192 tokens in twelve groups
+  (fonts, window, text and the GameTooltip line roles, buttons, inputs, tabs and the nav rail,
+  drawers and menus, lists and cards, overlays, HUD, charts, semantic), with per-control
+  `borderSize` / `borderStyle`, window and title gradients and per-control radii. Ka0s Default's
+  values are today's constants, each pinned in `tests/test_skin.lua` against the constant it
+  replaces; every font token is nil, meaning the FontString keeps its font object, and the
+  quality colors are nil, meaning the client's. Where two sites draw one role in two colors, both
+  survive as two tokens. The other eight skins join later in this release.
+
+New suite `tests/test_skin.lua`. **What a consumer owes:** nothing until it adopts; adoption is
+required of none. Whole-folder vendoring ships the major into every consumer, and its files only
+define functions and data tables: no frame, timer or event exists until a host registers an owner.
+
+### DebugLogDiagnostics minor 4: the identity header names Skin
+
+`LibKa0s-DebugLog-1.0` key 21.4.1, documented in
+[docs/api/DebugLog/version-21.4.1-docs.md](docs/api/DebugLog/version-21.4.1-docs.md). The report's
+`LibKa0s running:` line lists `Skin` and `SkinDefs` when the major runs in the client, between
+`Media` and `Widgets` in `tests/majors.lua` order. `tests/test_debuglog_diagnostics.lua` asks for it.
+No member change.
 
 ## v1.77.0 — 2026-10-24
 

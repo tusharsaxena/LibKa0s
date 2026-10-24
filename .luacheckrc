@@ -56,6 +56,9 @@ read_globals = {
   "CreateKeyChordStringUsingMetaKeyState", "IsAltKeyDown", "IsControlKeyDown", "IsShiftKeyDown",
   "IsMetaKeyDown", "Screenshot", "NOT_BOUND", "KEY_BOUND", "KEY_UNBOUND_ERROR",
   "CHARACTER_BINDINGS", "ACCOUNT_BINDINGS",
+  -- The client's error handler, which LibKa0s-Skin-1.0 hands a raising repaint primitive or
+  -- OnLooksChanged listener so the rest of the pass still runs. Read at call time and guarded.
+  "geterrorhandler",
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes
 -- through _G[name]. That is the one sanctioned _G mutation in this library.

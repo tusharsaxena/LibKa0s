@@ -68,6 +68,14 @@ local MAJORS = {
     },
   },
   {
+    major = "LibKa0s-Skin-1.0",
+    files = { "Skin", "SkinDefs" },
+    primary = "Skin",
+    paired = {
+      { file = "SkinDefs", minorField = "__defsMinor", probeField = "__defsShellMinor" },
+    },
+  },
+  {
     major = "LibKa0s-Widgets-1.0",
     files = { "Widgets", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete" },
     primary = "Widgets",

@@ -67,6 +67,7 @@ the file you need:
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
+| `LibKa0s-Skin-1.0` | `<Skin>.<SkinDefs>` | `LibStub("LibKa0s-Skin-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
@@ -181,6 +182,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [2](./Media/version-2-docs.md) | `Media.lua` 2 | v1.9.1 | Superseded |
 | [1](./Media/version-1-docs.md) | `Media.lua` 1 | v1.9.0 | Superseded |
 
+### `LibKa0s-Skin-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1.1](./Skin/version-1.1-docs.md) | `Skin.lua` 1 (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`) · `SkinDefs.lua` 1 (the token schema and Ka0s Default) | v1.78.0 (unreleased) | **Current** |
+
 ### `LibKa0s-Widgets-1.0`
 
 | Version | Files | Shipped in | Status |
@@ -212,7 +219,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [21.3.1](./DebugLog/version-21.3.1-docs.md) | **`DebugLog.lua` 21** (the console is toplevel and re-raises a shown StaticPopup) · `DebugLogDiagnostics.lua` 3 · `DebugLogGates.lua` 1 | v1.77.0 | **Current** |
+| [21.4.1](./DebugLog/version-21.4.1-docs.md) | `DebugLog.lua` 21 · **`DebugLogDiagnostics.lua` 4** (the identity header names Skin) · `DebugLogGates.lua` 1 | v1.78.0 (unreleased) | **Current** |
+| [21.3.1](./DebugLog/version-21.3.1-docs.md) | **`DebugLog.lua` 21** (the console is toplevel and re-raises a shown StaticPopup) · `DebugLogDiagnostics.lua` 3 · `DebugLogGates.lua` 1 | v1.77.0 | Superseded |
 | [20.3.1](./DebugLog/version-20.3.1-docs.md) | `DebugLog.lua` 20 (comment-only: undeclared `close`, `copy`, `clear` draw blank) · `DebugLogDiagnostics.lua` 3 (the identity header names Glow and Sim) · `DebugLogGates.lua` 1 | v1.75.0 – v1.76.0 | Superseded |
 | [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 – v1.74.0 | Superseded |
 | [18.2.1](./DebugLog/version-18.2.1-docs.md) | `DebugLog.lua` 18 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.65.0 | Superseded |

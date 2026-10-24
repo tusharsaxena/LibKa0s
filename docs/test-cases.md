@@ -446,6 +446,34 @@ Total.
 - media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
 - media: RegisterLSM registers the Glass border and background, and counts them
 
+### test_skin.lua (25)
+
+- skin: the major registers both files and the sentinel
+- skin: the shell refuses without Core, and SkinDefs then attaches to nothing
+- skin: without SkinDefs the engine runs and every token is nil
+- skin: the schema names each token once, with a known kind
+- skin: every registered skin resolves every schema token to its kind
+- skin: Ka0s Default leaves every font token nil
+- skin: Ka0s Default equals the published constants
+- skin: Ka0s Default equals the file-local constants it replaces
+- skin: Ka0s Default equals LootHistory's constants
+- skin: a skin derives from Ka0s Default, and false means none
+- skin: RegisterSkin validates, orders and replaces
+- skin: an unregistered owner is not an owner and reads Ka0s Default
+- skin: RegisterOwner reads the host's choice once, in either shape
+- skin: SetChoice is idempotent
+- skin: SetChoice resolves before the listeners run
+- skin: leaving eui asks for one reload and repaints nothing
+- skin: one owner switching never repaints another's frames
+- skin: a repaint replays each recorded frame once, primitives in first-paint order
+- skin: the repaint flag is up only while replaying, and a raising primitive stops nothing
+- skin: a frame painted for a second owner moves to it; Untrack forgets it
+- skin: the frame registry holds its frames weakly
+- skin: the facade is late-bound: swapping lib.prim reaches a cached S
+- skin: a newer minor keeps every facade table and re-fills it
+- skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
+- skin: ResetToSkin puts listed keys back on the skin
+
 ### test_widgets.lua (58)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
@@ -3153,6 +3181,7 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_media.lua | 36 |
+| test_skin.lua | 25 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3256,4 +3285,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2774** |
+| **Total** | **2799** |
