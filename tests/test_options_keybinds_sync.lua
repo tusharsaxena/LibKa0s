@@ -49,9 +49,9 @@ end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-case("keybinds sync: OptionsKeybinds is at minor 3", function()
-  assertEqual(lib.MODULES.OptionsKeybinds, 3)
-  assertEqual(lib.__keybindsMinor, 3)
+case("keybinds sync: OptionsKeybinds is at minor 3 or later", function()
+  assertTrue(lib.MODULES.OptionsKeybinds >= 3, "minor " .. tostring(lib.MODULES.OptionsKeybinds))
+  assertEqual(lib.__keybindsMinor, lib.MODULES.OptionsKeybinds)
   assertEqual(type(lib.__syncKeybindEvents), "function")
   assertEqual(type(lib.__OnKeybindEvent), "function")
 end)

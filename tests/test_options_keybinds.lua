@@ -1,11 +1,14 @@
 -- tests/test_options_keybinds.lua -- LibKa0s-Options-1.0's Keybindings tab (OptionsKeybinds.lua
--- minor 2, options-ui-§20): O.KeybindingsTab, O.KeybindRows and O.KEYBINDS_UNCHANGED.
+-- minor 2, one key button per row from minor 4, options-ui-§20): O.KeybindingsTab, O.KeybindRows and
+-- O.KEYBINDS_UNCHANGED.
 --
 -- What it pins: the tab entry and its place (last on a tabbed page); one row per binding in the
--- host's order, labeled by the client's GetBindingName; two slots showing the keys and NOT_BOUND;
+-- host's order, labeled by the client's GetBindingName; ONE key button showing the first key or
+-- NOT_BOUND, "<key> +1" and a tooltip naming every key when the game's page set a second (minor 4);
 -- the capture (Escape cancels, a modifier alone keeps listening, a second click cancels, mouse
--- buttons and the wheel bind, a right-click clears one slot, Clear clears both, one capture across
--- every row); the outcome line (KEY_UNBOUND_ERROR naming the action that lost its key, else
+-- buttons and the wheel bind, a key bound through the button keeps the second key, a right-click
+-- clears the key shown and the second moves up, Clear clears every key, one capture across every
+-- row); the outcome line (KEY_UNBOUND_ERROR naming the action that lost its key, else
 -- KEY_BOUND); the set line; the combat refusals and the capture stopped at combat start; pooled
 -- hygiene (options-ui-§19); the page's OnHide; a page drawn disabled; the degradation row; the intro.
 --
@@ -26,9 +29,9 @@ local SET_HOW = "(Options -> Keybindings -> Character Specific Keybindings)"
 
 -- ── the version and the members ──────────────────────────────────────────────────────────────
 
-case("keybinds tab: OptionsKeybinds is at minor 3 and attaches the three members", function()
-  assertEqual(lib.MODULES.OptionsKeybinds, 3)
-  assertEqual(lib.__keybindsMinor, 3)
+case("keybinds tab: OptionsKeybinds is at minor 4 and attaches the three members", function()
+  assertEqual(lib.MODULES.OptionsKeybinds, 4)
+  assertEqual(lib.__keybindsMinor, 4)
   local O = Bench.page(function() end)
   assertEqual(type(O.KeybindingsTab), "function")
   assertEqual(type(O.KeybindRows), "function")
@@ -97,9 +100,11 @@ case("keybinds tab: rows follow spec.bindings in order, labeled by GetBindingNam
   assertEqual(r[1].group.type, "SimpleGroup")
   assertEqual(r[1].group.layout, "Flow")
   assertTrue(r[1].group.fullWidth == true)
-  local sum = r[1].label.relativeWidth + r[1].slots[1].relativeWidth + r[1].slots[2].relativeWidth
-    + r[1].clear.relativeWidth
+  local sum = r[1].label.relativeWidth + r[1].slots[1].relativeWidth + r[1].clear.relativeWidth
   assertTrue(sum < 1, "the widths leave the clip inset (options-ui-§8): " .. sum)
+  assertEqual(r[1].label.relativeWidth, 0.40, "the label's width as before")
+  assertEqual(r[1].slots[1].relativeWidth, 0.22, "the key button's as before")
+  assertEqual(r[1].clear.relativeWidth, 0.12, "Clear's as before")
   assertEqual(r[1].clear.text, S.CLEAR)
   assertTrue(r[1].status == r[2].status, "one outcome line under the rows")
   assertEqual(r[1].status.text, "", "empty until an action")
@@ -114,16 +119,34 @@ case("keybinds tab: a binding whose command is not a string is skipped and repor
   assertTrue(rec.chat[1]:find("settings row '42' failed to render", 1, true) ~= nil, rec.chat[1])
 end)
 
-case("keybinds tab: slots show the keys in slot order, NOT_BOUND when empty, and a refresher repaints",
-function()
+case("keybinds tab: one key button per row, then Clear: no second slot widget (minor 4)", function()
+  local _, _, _, rows = Bench.rowsPage()
+  for _, row in ipairs(rows()) do
+    assertEqual(#row.slots, 1, "one key widget")
+    assertNil(row.slots[2], "no Key 2 slot")
+    local kids = row.group.children
+    assertEqual(#kids, 3, "the label, the key button and Clear")
+    assertTrue(kids[1] == row.label and kids[2] == row.slots[1] and kids[3] == row.clear,
+      "in that order")
+    local buttons = 0
+    for _, w in ipairs(kids) do if w.type == "Button" then buttons = buttons + 1 end end
+    assertEqual(buttons, 2, "the key button and Clear")
+  end
+  assertNil(S.KEY1, "no 'Key 1' word")
+  assertNil(S.KEY2, "no 'Key 2' word")
+end)
+
+case("keybinds tab: the button shows the first key, '<key> +1' with a second, NOT_BOUND with none, "
+  .. "and a refresher repaints", function()
   mocks.bindKey("F5", Bench.TOGGLE)
   mocks.bindKey("SHIFT-F5", Bench.TOGGLE)
   local _, _, ctx, rows = Bench.rowsPage()
   local r = rows()
-  assertEqual(r[1].slots[1].text, "F5")
-  assertEqual(r[1].slots[2].text, "SHIFT-F5")
+  assertEqual(r[1].slots[1].text, "F5 +1", "nothing is hidden: the second key is counted")
   assertEqual(r[2].slots[1].text, mocks.NOT_BOUND)
-  assertEqual(r[2].slots[2].text, mocks.NOT_BOUND)
+  mocks.SetBinding("SHIFT-F5", nil)
+  for _, fn in ipairs(ctx.refreshers) do fn() end
+  assertEqual(r[1].slots[1].text, "F5", "one key: no count")
   mocks.SetBinding("K", Bench.SECOND)
   assertEqual(r[2].slots[1].text, mocks.NOT_BOUND, "no repaint until asked: nothing is cached")
   for _, fn in ipairs(ctx.refreshers) do fn() end
@@ -132,7 +155,52 @@ end)
 
 -- ── the capture ──────────────────────────────────────────────────────────────────────────────
 
-case("keybinds tab: Key 1 then SHIFT-K binds SHIFT-K to slot 1 and saves once", function()
+-- The key button's tooltip, read by firing its OnEnter with GameTooltip's SetText and AddLine spied.
+local function keyTip(widget)
+  local tip, seen = mocks.GameTooltip, {}
+  local savedSet, savedAdd = rawget(tip, "SetText"), rawget(tip, "AddLine")
+  rawset(tip, "SetText", function(_, text) seen[#seen + 1] = text end)
+  rawset(tip, "AddLine", function(_, text) seen[#seen + 1] = text end)
+  local ok, err = pcall(widget.callbacks.OnEnter, widget)
+  rawset(tip, "SetText", savedSet)
+  rawset(tip, "AddLine", savedAdd)
+  assertTrue(ok, tostring(err))
+  return table.concat(seen, "\n")
+end
+
+case("keybinds tab: with a second key the tooltip names every key and where the others were set",
+function()
+  mocks.bindKey("F5", Bench.TOGGLE)
+  mocks.bindKey("SHIFT-F5", Bench.TOGGLE)
+  local _, _, _, rows = Bench.rowsPage()
+  local tip = keyTip(rows()[1].slots[1])
+  assertTrue(tip:find(S.SLOT_TIP, 1, true) ~= nil, tip)
+  assertTrue(tip:find(S.KEYS_ALL:format("F5, SHIFT-F5"), 1, true) ~= nil, "every key: " .. tip)
+  assertTrue(tip:find(S.KEYS_OTHER, 1, true) ~= nil, "where the others were set: " .. tip)
+  assertTrue(S.KEYS_OTHER:find("Options -> Keybindings", 1, true) ~= nil, S.KEYS_OTHER)
+  local one = keyTip(rows()[2].slots[1])
+  assertTrue(one:find(S.SLOT_TIP, 1, true) ~= nil, one)
+  assertTrue(one:find(S.KEYS_OTHER, 1, true) == nil, "no second key, no game-page line: " .. one)
+  mocks.bindKey("K", Bench.SECOND)
+  assertTrue(keyTip(rows()[2].slots[1]):find(S.KEYS_OTHER, 1, true) == nil, "one key neither")
+  mocks.bindKey("L", Bench.SECOND)
+  assertTrue(keyTip(rows()[2].slots[1]):find(S.KEYS_ALL:format("K, L"), 1, true) ~= nil,
+    "read at hover, never cached")
+end)
+
+case("keybinds tab: a key bound through the button goes to slot 1 and keeps the second key", function()
+  mocks.bindKey("F5", Bench.TOGGLE)
+  mocks.bindKey("F6", Bench.TOGGLE)
+  local _, _, _, rows = Bench.rowsPage()
+  local r = rows()[1]
+  Bench.click(r.slots[1])
+  Bench.key("K")
+  assertEqual(Bench.keys(Bench.TOGGLE), "K,F6", "slot 1 replaced, the game page's key kept")
+  assertEqual(r.slots[1].text, "K +1")
+  assertEqual(r.status.text, mocks.KEY_BOUND)
+end)
+
+case("keybinds tab: the button then SHIFT-K binds SHIFT-K to slot 1 and saves once", function()
   local _, _, _, rows = Bench.rowsPage()
   local r = rows()[1]
   Bench.click(r.slots[1])
@@ -194,7 +262,7 @@ case("keybinds tab: a second left click cancels, and so does a right click on th
   Bench.mouse("LeftButton")
   assertNil(lib.__keybindCapture)
   assertEqual(r.slots[1].text, mocks.NOT_BOUND)
-  Bench.click(r.slots[2])
+  Bench.click(r.slots[1])
   Bench.mouse("RightButton")
   assertNil(lib.__keybindCapture)
   assertEqual(#mocks.__bindingWrites, 0)
@@ -206,25 +274,28 @@ case("keybinds tab: Button4 and the wheel bind", function()
   Bench.click(r.slots[1])
   Bench.mouse("Button4")
   assertEqual(Bench.keys(Bench.TOGGLE), "BUTTON4")
-  Bench.click(r.slots[2])
+  Bench.click(r.slots[1])
   Bench.wheel(1)
-  assertEqual(Bench.keys(Bench.TOGGLE), "BUTTON4,MOUSEWHEELUP")
+  assertEqual(Bench.keys(Bench.TOGGLE), "MOUSEWHEELUP", "slot 1 again: the key replaces BUTTON4")
   Bench.click(rows()[2].slots[1])
   Bench.wheel(-1)
   assertEqual(Bench.keys(Bench.SECOND), "MOUSEWHEELDOWN")
 end)
 
-case("keybinds tab: a right click clears that slot only; Clear clears both", function()
+case("keybinds tab: a right click clears the key shown and the second moves up; Clear clears both",
+function()
   mocks.bindKey("F5", Bench.TOGGLE)
   mocks.bindKey("F6", Bench.TOGGLE)
   local _, _, _, rows = Bench.rowsPage()
   local r = rows()[1]
+  assertEqual(r.slots[1].text, "F5 +1")
   Bench.click(r.slots[1], "RightButton")
   assertEqual(Bench.keys(Bench.TOGGLE), "F6")
   assertEqual(r.status.text, S.CLEARED)
-  assertEqual(r.slots[1].text, "F6", "the remaining key moves up, as the client's slots do")
-  assertEqual(r.slots[2].text, mocks.NOT_BOUND)
+  assertEqual(r.slots[1].text, "F6", "the remaining key moves up and shows, as the client's slots do")
   mocks.bindKey("F7", Bench.TOGGLE)
+  r.view.repaint()
+  assertEqual(r.slots[1].text, "F6 +1")
   Bench.click(r.clear)
   assertEqual(Bench.keys(Bench.TOGGLE), "")
   assertEqual(r.slots[1].text, mocks.NOT_BOUND)
@@ -235,12 +306,12 @@ case("keybinds tab: starting row 2 stops row 1; one listening slot", function()
   local _, _, _, rows = Bench.rowsPage()
   local r1, r2 = rows()[1], rows()[2]
   Bench.click(r1.slots[1])
-  Bench.click(r2.slots[2])
+  Bench.click(r2.slots[1])
   assertEqual(r1.slots[1].text, mocks.NOT_BOUND, "row 1 shows its key again")
-  assertEqual(r2.slots[2].text, S.LISTENING)
-  assertTrue(Bench.listener().__kbParent == r2.slots[2].frame)
+  assertEqual(r2.slots[1].text, S.LISTENING)
+  assertTrue(Bench.listener().__kbParent == r2.slots[1].frame)
   Bench.key("Q")
-  assertEqual(Bench.keys(Bench.SECOND), "Q", "slot 2 on a keyless action becomes slot 1")
+  assertEqual(Bench.keys(Bench.SECOND), "Q")
   assertEqual(Bench.keys(Bench.TOGGLE), "")
 end)
 
@@ -258,7 +329,7 @@ case("keybinds tab: a taken key names the action left with no key; otherwise KEY
 
   mocks.bindKey("N", "LKTEST_OTHER")
   mocks.bindKey("O", "LKTEST_OTHER")
-  Bench.click(r.slots[2])
+  Bench.click(r.slots[1])
   Bench.key("N")
   assertEqual(r.status.text, mocks.KEY_BOUND, "the loser keeps a key: no unbound line")
   assertEqual(Bench.keys("LKTEST_OTHER"), "O")
@@ -286,7 +357,7 @@ case("keybinds tab: a capture started in combat is refused with the gray notice,
   assertTrue(Bench.listener().__keyboard ~= true, "the keyboard is never taken in combat")
   assertEqual(#rec.chat, 1, "one gray notice")
   assertTrue(rec.chat[1]:find("|cffaaaaaa", 1, true) == 1, rec.chat[1])
-  Bench.click(r.slots[2])
+  Bench.click(r.slots[1])
   assertEqual(#rec.chat, 1, "and only one")
 end)
 
@@ -337,15 +408,15 @@ case("keybinds tab: released slots leave with nothing of ours, and the listener 
       assertEqual(slot.frame.__clicks, "LeftButtonUp,RightButtonUp", "a slot takes both buttons")
     end
   end
-  Bench.click(r[1].slots[2])
+  Bench.click(r[1].slots[1])
   O.ClearScroll(ctx)
   -- The kit's ScrollFrame forgets its children rather than releasing them; AceGUI releases each.
   local aceGUI = mocks.__libs["AceGUI-3.0"]
   for _, row in ipairs(r) do
-    for _, w in ipairs({ row.slots[1], row.slots[2], row.clear }) do aceGUI:Release(w) end
+    for _, w in ipairs({ row.slots[1], row.clear }) do aceGUI:Release(w) end
   end
   for _, row in ipairs(r) do
-    for _, w in ipairs({ row.slots[1], row.slots[2], row.clear }) do
+    for _, w in ipairs({ row.slots[1], row.clear }) do
       assertTrue(w.frame.__clicks == nil or w.frame.__clicks == "LeftButtonUp",
         "restored to LeftButtonUp: " .. tostring(w.frame.__clicks))
       assertNil(w.callbacks.OnClick, "no OnClick left on a pooled Button")
@@ -380,8 +451,7 @@ case("keybinds tab: a page drawn disabled draws disabled slots and Clear", funct
     c.__renderDisabled = nil
   end)
   for _, row in ipairs(rows2) do
-    assertTrue(row.slots[1].disabled == true and row.slots[2].disabled == true
-      and row.clear.disabled == true)
+    assertTrue(row.slots[1].disabled == true and row.clear.disabled == true)
   end
 end)
 
@@ -429,8 +499,19 @@ end)
 
 case("keybinds tab: T.keybindThroughTab binds through a row and answers the outcome line", function()
   local _, _, _, rows = Bench.rowsPage()
-  local status = T.keybindThroughTab(rows()[1], 2, "K", { ctrl = true })
+  local status = T.keybindThroughTab(rows()[1], 1, "K", { ctrl = true })
   assertEqual(Bench.keys(Bench.TOGGLE), "CTRL-K")
   assertEqual(status, mocks.KEY_BOUND)
   assertFalse(mocks.IsControlKeyDown(), "the modifiers are put back")
+end)
+
+case("keybinds tab: T.keybindThroughTab slot 2 sets the game page's key through the model", function()
+  local _, _, _, rows = Bench.rowsPage()
+  local r = rows()[1]
+  T.keybindThroughTab(r, 1, "K")
+  local status = T.keybindThroughTab(r, 2, "J", { shift = true })
+  assertEqual(Bench.keys(Bench.TOGGLE), "K,SHIFT-J", "slot 2 written, slot 1 kept")
+  assertEqual(status, mocks.KEY_BOUND)
+  assertEqual(r.slots[1].text, "K +1", "the row repainted, as the sync would")
+  assertFalse(mocks.IsShiftKeyDown(), "the modifiers are put back")
 end)

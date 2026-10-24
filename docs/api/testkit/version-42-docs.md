@@ -164,6 +164,24 @@ defaults to 1. The mock is the one handed to `Kit.expose`, else `_G`. It fails t
 naming `options-ui-§20`, when `row` is not a row record, the slot widget is missing, there is no
 listener with an `OnKeyDown`, or `mods` is given with no `M.setModifiers`.
 
+**Slot 2 on a one-button row** (with LibKa0s's `OptionsKeybinds.lua` minor 4, still this revision:
+v1.77.0 had not shipped when it changed). From that minor a row has **one key button** and Clear
+(`options-ui-§20`), so slot 1 is that button, driven exactly as above, and a second key is the one a
+player sets on the client's Options -> Keybindings page. When `slot` is 2 and the row has no slot-2
+widget, the driver writes it through the library's model as that page would: `lib.__keyChord(key)`
+with `mods` held (and put back), then `lib.__keybindSet(row.command, 2, chord)`, then the row's
+view repainted (`row.view.repaint()`, the `UPDATE_BINDINGS` sync's work, done at once so a suite
+needs no timer). It answers the client's `KEY_BOUND` (`lib.__keybindClientString`), or
+`KEYBIND_STRINGS.COMBAT` / `UNAVAILABLE` / `FAILED` for a refusal. A row drawn by an older minor,
+with a second slot widget, is still clicked. It fails naming `options-ui-§20` when the row has no
+string `command` or the library has no `__keybindSet`.
+
+```lua
+T.keybindThroughTab(rows[1], 1, "K")                   -- the key button: slot 1
+T.keybindThroughTab(rows[1], 2, "J", { shift = true }) -- the game page's key: slot 2
+-- GetBindingKey(command) == "K", "SHIFT-J"; rows[1].slots[1].text == "K +1"
+```
+
 No documented member is renamed or removed and no case name changes. `mock_base.lua` is unchanged.
 
 ## What a consumer owes

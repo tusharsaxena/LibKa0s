@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 30.2.34.3.5.9.2.11.4.2.1.3
+# `LibKa0s-Options-1.0` — version 30.2.34.3.5.9.2.11.4.2.1.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,19 +8,19 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **30** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **3** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **2** · `OptionsCompose.lua` **11** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** · `OptionsKeybinds.lua` **3** |
+| Files and minors | `Options.lua` **30** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **3** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **2** · `OptionsCompose.lua` **11** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** · `OptionsKeybinds.lua` **4** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>`, in load order — the same twelve numbers `lib.MODULES` reports. |
 | Shipped in | v1.77.0 |
 | Status | **Current** |
 | Supersedes | [version 29.2.34.2.5.9.1.7.4.2.1](./version-29.2.34.2.5.9.1.7.4.2.1-docs.md) — whose IdList suggestion list stayed open over a covered page when combat started, which had no shared strata-row tooltip, and no key binding model and no Keybindings tab |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua` and `OptionsKeybinds.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 30, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 11, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1, OptionsKeybinds = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 30, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 11, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1, OptionsKeybinds = 4 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `C9` for `OptionsCompose.lua` minor 9, `C10` for `OptionsCompose.lua` minor 10, `C11` for `OptionsCompose.lua` minor 11, `S1` for
-`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `D1` for `OptionsDrawer.lua` minor 1, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `I1` for
+`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `D1` for `OptionsDrawer.lua` minor 1, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `K4` for `OptionsKeybinds.lua` minor 4, `I1` for
 `OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `OC2` for `OptionsCombat.lua` minor 2, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -42,14 +42,33 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 Six changes, in `Options.lua` 29 -> **30**, `OptionsIds.lua` 2 -> **3**, `OptionsCombat.lua`
 1 -> **2**, `OptionsCompose.lua` 7 -> **11** (its minors 8, 9, 10 and 11 all land in this release) and a
-new twelfth file, `OptionsKeybinds.lua`, at minor **3** (its minors 1, 2 and 3 all land in this
+new twelfth file, `OptionsKeybinds.lua`, at minor **4** (its minors 1, 2, 3 and 4 all land in this
 release); every other file of the major is unchanged. This version was briefly keyed
 29.2.34.3.5.9.2.7.4.2.1, then 29.2.34.3.5.9.2.8.4.2.1, then 30.2.34.3.5.9.2.8.4.2.1.1, then
-30.2.34.3.5.9.2.8.4.2.1.2, then 30.2.34.3.5.9.2.8.4.2.1.3, then 30.2.34.3.5.9.2.9.4.2.1.3 and
-then 30.2.34.3.5.9.2.10.4.2.1.3 on the release branch, before the `OptionsCompose.lua` minor moved,
-before `OptionsKeybinds.lua` joined, before its second minor, before its third, before
-`OptionsCompose.lua`'s ninth, before its tenth and before its eleventh; no release carried any of
-those keys.
+30.2.34.3.5.9.2.8.4.2.1.2, then 30.2.34.3.5.9.2.8.4.2.1.3, then 30.2.34.3.5.9.2.9.4.2.1.3, then
+30.2.34.3.5.9.2.10.4.2.1.3 and then 30.2.34.3.5.9.2.11.4.2.1.3 on the release branch, before the
+`OptionsCompose.lua` minor moved, before `OptionsKeybinds.lua` joined, before its second minor,
+before its third, before `OptionsCompose.lua`'s ninth, before its tenth, before its eleventh and
+before `OptionsKeybinds.lua`'s fourth; no release carried any of those keys (the local v1.77.0 tag
+was cut at 30.2.34.3.5.9.2.11.4.2.1.3 and moves before any push).
+
+**One key button and Clear per row (K4).** `OptionsKeybinds.lua` 3 -> **4** is the owner's
+follow-up to item 015 (`options-ui-§20` as WS-40 rewrote it): a row of the Keybindings tab is the
+binding's label, **one key button** and **Clear**; the client's Options -> Keybindings page is not
+touched and keeps its two columns. The button shows the action's first key (`GetBindingKey`'s first
+return) or `NOT_BOUND`; a left click listens and the key binds into slot 1 with the client's slot
+semantics (`lib.__keybindSet(command, 1, key)`), so a second key set on the client's page is kept.
+Nothing is hidden: with a second key the button reads **`<first key> +1`** (`KEY_MORE`), and its
+tooltip, read at hover, names every key (`KEYS_ALL`) and says the others were set on the game's Key
+Bindings page (`KEYS_OTHER`). A right click on the button clears the key it shows (slot 1; a second
+key moves up and shows), and Clear removes every key. Escape, the combat refusals, the set line, the
+outcome line and the `UPDATE_BINDINGS` sync are unchanged. The second slot widget is gone, a row
+record's `slots` holds the one button, and `lib.KEYBIND_STRINGS` loses `KEY1` / `KEY2` (a host's
+`spec.strings` entry for either is ignored) and gains `KEY`, `KEY_MORE`, `KEYS_ALL` and
+`KEYS_OTHER`; `CLEAR_TIP` says every key. **No member is added or removed and a stub owes nothing.**
+The kit's `Kit.keybindThroughTab` keeps slot 1 and writes slot 2 through the model (kit revision 42,
+unreleased). See [The Keybindings tab](#the-keybindings-tab-optionskeybindslua-minor-2). Cases:
+`tests/test_options_keybinds.lua`, `tests/test_kit_bindings.lua`.
 
 **The reset's tooltip for the General page's header Defaults: `O.ResetAllTooltip(tail)` (C11).**
 `OptionsCompose.lua` 10 -> **11** implements the library half of `options-ui-§12` as WS-36 wrote it:
@@ -108,9 +127,9 @@ Cases: `tests/test_options_keybinds_sync.lua`.
 (`O.RenderTabbedSchema`, `options-ui-§13`), **`O.KeybindRows(ctx, spec, parent)`**, the rows
 themselves for a host-built strip, and **`O.KEYBINDS_UNCHANGED`**, the sentence a General page's
 Defaults tooltip ends with. Each binding the host declares (`NS.BINDINGS`) is one row: the client's
-`GetBindingName` label, **Key 1** and **Key 2** slots and **Clear**, with the set line and the
-outcome line under the rows. The capture behaves as the client's page does (Escape cancels, a
-right-click clears a slot, mouse buttons 3 to 31 and the wheel bind) through one library-level
+`GetBindingName` label, two key slots and **Clear** at K2 (one key button and Clear from **K4**),
+with the set line and the outcome line under the rows. The capture behaves as the client's page does
+(Escape cancels, a right-click clears a slot, mouse buttons 3 to 31 and the wheel bind) through one library-level
 listener, `lib.__keybindListener`; it is refused in combat and stopped at combat start. This is
 `options-ui-§20`'s surface (OWNER_SCOPE 015). **Every Options degradation stub owes the three
 members.** See [The Keybindings tab](#the-keybindings-tab-optionskeybindslua-minor-2). Cases:
@@ -1758,8 +1777,8 @@ its decoration hidden, so the pooled `SimpleGroup` the next addon takes is plain
 `OptionsDrawer.lua` (and so after `OptionsCombat.lua`, whose lock it reads) and attached by
 `Options.lua` minor 30 at the end of `lib:New`, guarded (`lib.__AttachKeybinds(O, d)`). It is the
 headless half of the settings-panel Keybindings tab (`options-ui-§20`): the editor for the key
-bindings a host declares in its own `Bindings.xml` (`launcher-§6`), two slots per action as on the
-client's Options -> Keybindings page, saved by the game to the set in force. **Minor 1 attached no
+bindings a host declares in its own `Bindings.xml` (`launcher-§6`), with the client's two slots per
+action (the tab shows them on one key button from K4), saved by the game to the set in force. **Minor 1 attached no
 instance member**; the tab's public members arrived with minor 2 in this same release: see
 [The Keybindings tab](#the-keybindings-tab-optionskeybindslua-minor-2).
 
@@ -1837,9 +1856,12 @@ overrides any key through the tab's `spec.strings`). ASCII, `->` for an arrow.
 | `TAB_TIP` | The same key bindings as Options -> Keybindings. A key set here shows there, and the other way round. |
 | `INTRO` | Key bindings are saved by the game, not in your profile. Defaults and Reset all settings leave them alone. |
 | `UNCHANGED` | Key bindings are not changed. |
-| `KEY1` / `KEY2` | Key 1 / Key 2 |
+| `KEY` | Key binding (the key button's tooltip title; **K4**, replacing K2's `KEY1` / `KEY2`) |
+| `KEY_MORE` | %s +%d (the button with more than one key: the first key's text and how many more; **K4**) |
+| `KEYS_ALL` | Keys: %s (the tooltip's list of every key, comma-separated; **K4**) |
+| `KEYS_OTHER` | The others were set on the game's Key Bindings page (Options -> Keybindings). (**K4**) |
 | `CLEAR` | Clear |
-| `CLEAR_TIP` | Remove both keys from this action. |
+| `CLEAR_TIP` | Remove every key from this action. (K2 read "Remove both keys from this action.") |
 | `SLOT_TIP` | Click, then press a key or a mouse button to bind it. Esc cancels. Right-click removes this key. |
 | `LISTENING` | Press a key... |
 | `SET_ACCOUNT` | Saved for: all characters |
@@ -1900,23 +1922,30 @@ draws nothing and answers nil.
   `O.TextRow`; in a host-built `parent` it is a full-width Label there.
 - **One row per binding**, an AceGUI `SimpleGroup` (Flow, full width) holding: the label,
   `GetBindingName(command)` (else `_G["BINDING_NAME_" .. command]`, else the command), at relative
-  width 0.40, an `InteractiveLabel` carrying the binding's `tooltip`; **Key 1** and **Key 2**, AceGUI
-  Buttons at 0.22 each, showing `GetBindingText(key)` (else the key) or the client's `NOT_BOUND`, with
-  the `SLOT_TIP` tooltip; and **Clear**, a Button at 0.12 with `CLEAR_TIP`. The widths sum to 0.96,
-  inside the clip inset (`options-ui-§8`).
+  width 0.40, an `InteractiveLabel` carrying the binding's `tooltip`; **one key button** (from
+  **K4**; K2 drew two, Key 1 and Key 2), an AceGUI Button at 0.22 showing the action's first key as
+  `GetBindingText(key)` (else the key), or the client's `NOT_BOUND`, and with more than one key
+  `KEY_MORE` over it (`"F5 +1"`); and **Clear**, a Button at 0.12 with `CLEAR_TIP`. The widths sum to
+  0.74, inside the clip inset (`options-ui-§8`); the label, the key button and Clear keep K2's
+  widths, so they line up as before, minus the second slot.
+- **The key button's tooltip** (K4), built at each hover from `GetBindingKey`: the title `KEY`,
+  then `SLOT_TIP`; with more than one key, `KEYS_ALL` naming every key in slot order
+  (`"Keys: F5, SHIFT-F5"`) and `KEYS_OTHER`, which says the others were set on the client's Key
+  Bindings page. A key set there is therefore never hidden, though the tab binds only the first.
 - **Under the rows**, two Labels: the **set line**, `SET_ACCOUNT` or `SET_CHARACTER` (from
   `lib.__keybindSetName()`), a space and `SET_HOW`, so "Saved for: all characters (Options ->
   Keybindings -> Character Specific Keybindings)"; then the **outcome line**, empty until an action.
-- **Disabled.** Under `ctx.__renderDisabled` the slots and Clear are drawn disabled.
-- **Refresh.** Each row pushes a refresher into `ctx.refreshers` that repaints its slots and the set
-  line from `GetBindingKey`. No key is cached anywhere.
+- **Disabled.** Under `ctx.__renderDisabled` the key button and Clear are drawn disabled.
+- **Refresh.** Each row pushes a refresher into `ctx.refreshers` that repaints its key button and the
+  set line from `GetBindingKey`. No key is cached anywhere.
 
 The answer is the row records, in order, for a suite:
-`{ command, label, group, slots = { key1Button, key2Button }, clear, status }`, where `status` is the
-one outcome Label every row shares.
+`{ command, label, group, slots = { keyButton }, clear, status, view }` (K2's `slots` held two
+Buttons), where `status` is the one outcome Label every row shares.
 
-**The capture.** A left click on a slot starts listening (refused in combat), and only one slot in
-the session listens at a time: starting one stops any other. The one listener,
+**The capture.** A left click on the key button starts listening for slot 1 (refused in combat), and
+only one button in the session listens at a time: starting one stops any other. The tab never
+listens for slot 2 from K4; that key is the client's page's to set, and the model keeps it. The one listener,
 **`lib.__keybindListener`**, is a plain Frame made once and kept across a LibStub upgrade (as
 `lib.__parkFrame` is), drawing nothing and with no strata or level of its own (frame-layering T0).
 To listen it is parented over the slot (`SetParent`, `SetAllPoints`), takes the keyboard, the mouse
@@ -1927,7 +1956,7 @@ and the wheel, and shows; the slot reads `LISTENING`.
 | `ESCAPE` | Cancels. The keyboard-enabled listener consumes it, so the Settings window stays open; `SetPropagateKeyboardInput` is never called. |
 | `PRINTSCREEN` | `Screenshot()` when present; still listening. |
 | A key `lib.__keyChord` answers nil for (a modifier alone, `UNKNOWN`) | Still listening. |
-| Any other key | Written: `lib.__keybindSet(command, slot, chord)`. |
+| Any other key | Written: `lib.__keybindSet(command, 1, chord)`, slot 1, so a second key is kept. |
 | Left or right mouse button | Cancels (click the slot again to cancel, as on the client's page). |
 | Any other mouse button | Written, through `lib.__keyChord` (`BUTTON3` to `BUTTON31`). |
 | The wheel | `MOUSEWHEELUP` / `MOUSEWHEELDOWN`, with the modifiers held, written. |
@@ -1937,8 +1966,9 @@ them: `KEY_UNBOUND_ERROR` formatted with the `GetBindingName` of the action that
 that action is left with no key; else `KEY_BOUND`; `COMBAT` for `"combat"`, `UNAVAILABLE` for
 `"unavailable"` and `FAILED` otherwise. Every row of the same render is repainted.
 
-**A right click on a slot** clears that slot (`lib.__keybindClear(command, slot)`, outcome
-`CLEARED`); **Clear** clears both (`lib.__keybindClear(command, nil)`). Both are refused in combat.
+**A right click on the key button** clears the key it shows (`lib.__keybindClear(command, 1)`,
+outcome `CLEARED`); a second key then moves up and shows. **Clear** clears every key
+(`lib.__keybindClear(command, nil)`). Both are refused in combat.
 
 **Stopping.** A stop turns the listener's keyboard, mouse and wheel off, hides it, clears its points
 and parents it back to `UIParent`, and the slot shows its key again. A capture stops on: Escape or a
@@ -2052,7 +2082,8 @@ ResetAllTooltip = function(tail) return type(tail) == "string" and tail or "" en
 This version's member manifest lists the lib-level table only, as every Options manifest does, so
 it does not name them.
 An addon that ships bindings tests its tab through `T.keybindThroughTab(row, slot, key[, mods])`
-(the kit's driver, revision 42) with `tests/_kit/mock_bindings.lua` installed, and leaves the
+(the kit's driver, revision 42; slot 1 is the key button, and from K4 slot 2 writes the second key
+through the model, as the client's page would) with `tests/_kit/mock_bindings.lua` installed, and leaves the
 capture, conflict, combat and settings-window cases to this library's suite (`testing-§8`).
 
 Cases: `tests/test_options_keybinds.lua` (on `tests/fixture_keybinds.lua`'s bench, which fails a
@@ -2909,11 +2940,11 @@ defaultsTooltip = H.ResetAllTooltip(H.KEYBINDS_UNCHANGED),
 
 ## Compatibility
 
-**At 30.2.34.3.5.9.2.11.4.2.1.3 five instance members are added and nothing is removed**: `O.StrataTooltip` (C8), `O.KeybindingsTab`, `O.KeybindRows` and `O.KEYBINDS_UNCHANGED` (K2), and `O.ResetAllTooltip` (C11).
+**At 30.2.34.3.5.9.2.11.4.2.1.4 five instance members are added and nothing is removed**: `O.StrataTooltip` (C8), `O.KeybindingsTab`, `O.KeybindRows` and `O.KEYBINDS_UNCHANGED` (K2), and `O.ResetAllTooltip` (C11).
 A host that does not call it draws what it drew. **An Options degradation stub owes
 `StrataTooltip`, `KeybindingsTab`, `KeybindRows`, `KEYBINDS_UNCHANGED` and `ResetAllTooltip`**: `Kit.assertSurfaceParity` compares a stub against the live instance (the
 surface registered with `Kit.setSurfaceSource`), so a stub without it turns the re-vendor red. This
-version's manifest lists the lib-level table only and does not name them. The two other moves (I3, OC2) are internal and owe nothing. `OptionsKeybinds.lua` (K1) adds one public lib-level table, `lib.KEYBIND_STRINGS`, which the manifest names, and otherwise only `__` members; `Options.lua` 30's guarded attach changes nothing a host draws, and a copy without `OptionsKeybinds.lua` is otherwise this version. A stub of the instance owes nothing for K1. K2's three members draw nothing until a host calls them, and a copy without `OptionsKeybinds.lua` has none of them. `OptionsKeybinds.lua` 3 (K3) adds only `__` library-level names and one hidden frame that registers `UPDATE_BINDINGS` through Core's `SafeRegisterEvent` while a keybind row is on screen, so a stub owes nothing for it and a host with no settings page open owns no registration. `OptionsCompose.lua` 9 (C9) adds no member, so a stub owes nothing for it; its three `O.MasterControls` fields change nothing for a host that passes none of them, but two owner-ruled changes reach every host that re-vendors: the alpha row reads *Master opacity* (no stored path moves, so a suite pinning *Master alpha* changes at the addon's re-vendor), and a host that omits *Lock frame* (every frameless host) draws *Minimap button* beside *Debug console*. `OptionsCompose.lua` 10 (C10) adds no member, so a stub owes nothing for it; the group composers' `tooltips` field is opt-in, and a host that passes none draws exactly what it drew. `OptionsCompose.lua` 11 (C11) adds `O.ResetAllTooltip`, which draws nothing; a host that does not call it draws what it drew, and its stub owes the member.
+version's manifest lists the lib-level table only and does not name them. The two other moves (I3, OC2) are internal and owe nothing. `OptionsKeybinds.lua` (K1) adds one public lib-level table, `lib.KEYBIND_STRINGS`, which the manifest names, and otherwise only `__` members; `Options.lua` 30's guarded attach changes nothing a host draws, and a copy without `OptionsKeybinds.lua` is otherwise this version. A stub of the instance owes nothing for K1. K2's three members draw nothing until a host calls them, and a copy without `OptionsKeybinds.lua` has none of them. `OptionsKeybinds.lua` 3 (K3) adds only `__` library-level names and one hidden frame that registers `UPDATE_BINDINGS` through Core's `SafeRegisterEvent` while a keybind row is on screen, so a stub owes nothing for it and a host with no settings page open owns no registration. `OptionsCompose.lua` 9 (C9) adds no member, so a stub owes nothing for it; its three `O.MasterControls` fields change nothing for a host that passes none of them, but two owner-ruled changes reach every host that re-vendors: the alpha row reads *Master opacity* (no stored path moves, so a suite pinning *Master alpha* changes at the addon's re-vendor), and a host that omits *Lock frame* (every frameless host) draws *Minimap button* beside *Debug console*. `OptionsCompose.lua` 10 (C10) adds no member, so a stub owes nothing for it; the group composers' `tooltips` field is opt-in, and a host that passes none draws exactly what it drew. `OptionsCompose.lua` 11 (C11) adds `O.ResetAllTooltip`, which draws nothing; a host that does not call it draws what it drew, and its stub owes the member. `OptionsKeybinds.lua` 4 (K4) adds and removes no member, so a stub owes nothing for it; what changes is drawn: a row has one key button and Clear, a suite that read a row's `slots[2]` reads the one button's `"<key> +1"` text instead, and `lib.KEYBIND_STRINGS` drops `KEY1` / `KEY2` (a host's translation of either is ignored) for `KEY`, `KEY_MORE`, `KEYS_ALL` and `KEYS_OTHER`.
 
 **At 29.2.34.2.5.9.1.7.4.2.1 one `__` test seam is removed and nothing public moves**:
 `__releaseChrome`, which no suite or roster consumer called. A host draws what it drew. An Options

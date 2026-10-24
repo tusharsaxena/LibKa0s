@@ -147,12 +147,24 @@ Bench.case("kit bindings: keybindThroughTab binds a key through an Options insta
   local status = T.keybindThroughTab(rows()[1], 1, "F8")
   assertEqual(Bench.keys(Bench.TOGGLE), "F8", "GetBindingKey returns the key bound through the tab")
   assertEqual(status, T.mocks.KEY_BOUND, "and the outcome line comes back")
-  assertEqual(T.keybindThroughTab(rows()[2], 2, "J", { alt = true, shift = true }), T.mocks.KEY_BOUND)
+  assertEqual(T.keybindThroughTab(rows()[2], 1, "J", { alt = true, shift = true }), T.mocks.KEY_BOUND)
   assertEqual(Bench.keys(Bench.SECOND), "ALT-SHIFT-J", "with the modifiers held for the press")
   assertTrue(not T.mocks.IsAltKeyDown() and not T.mocks.IsShiftKeyDown(), "and let go after it")
 end)
 
+Bench.case("kit bindings: keybindThroughTab slot 2 binds the game page's key through the model", function()
+  -- OptionsKeybinds minor 4 draws one key button per row; a second key is the one a player sets on
+  -- Options -> Keybindings, so slot 2 writes it with the library's own slot semantics.
+  local _, _, _, rows = Bench.rowsPage()
+  assertEqual(T.keybindThroughTab(rows()[1], 1, "F8"), T.mocks.KEY_BOUND)
+  assertEqual(T.keybindThroughTab(rows()[1], 2, "F9", { ctrl = true }), T.mocks.KEY_BOUND)
+  assertEqual(Bench.keys(Bench.TOGGLE), "F8,CTRL-F9", "slot 2 written beside slot 1")
+  assertTrue(not T.mocks.IsControlKeyDown(), "the modifiers let go after it")
+  assertEqual(rows()[1].slots[1].text, "F8 +1", "and the row shows it")
+end)
+
 Bench.case("kit bindings: keybindThroughTab fails naming options-ui-§20 without a row or a slot", function()
   assertErrorMatches(function() T.keybindThroughTab(nil, 1, "K") end, "options-ui-§20")
+  assertErrorMatches(function() T.keybindThroughTab({ slots = {} }, 1, "K") end, "options-ui-§20")
   assertErrorMatches(function() T.keybindThroughTab({ slots = {} }, 2, "K") end, "options-ui-§20")
 end)
