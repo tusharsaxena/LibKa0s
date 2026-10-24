@@ -1,10 +1,13 @@
 {
   "major": "LibKa0s-Skin-1.0",
-  "versionKey": "1.2",
+  "versionKey": "1.2.1.1.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Skin", "minor": 1 },
-    { "file": "SkinDefs", "minor": 2 }
+    { "file": "SkinDefs", "minor": 2 },
+    { "file": "SkinPaint", "minor": 1 },
+    { "file": "SkinPaintExtras", "minor": 1 },
+    { "file": "SkinPaintControls", "minor": 1 }
   ],
   "members": [
     { "name": "Color", "kind": "function" },
@@ -20,6 +23,7 @@
     { "name": "PendingReload", "kind": "function" },
     { "name": "RegisterOwner", "kind": "function" },
     { "name": "RegisterSkin", "kind": "function" },
+    { "name": "Release", "kind": "function" },
     { "name": "Repaint", "kind": "function" },
     { "name": "ResetToSkin", "kind": "function" },
     { "name": "Resolve", "kind": "function" },

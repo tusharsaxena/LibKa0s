@@ -17,11 +17,12 @@ choice on the settings panel, with LootHistory as the prototype consumer. The te
 paint recorder opens it.
 
 Versions in this release: **Media minor 6** (`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1
-unchanged), **Skin minor 1** and **SkinDefs minor 2** (the new major `LibKa0s-Skin-1.0`, key
-**1.2**), **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key **21.4.1**); every other file
+unchanged), **Skin minor 1**, **SkinDefs minor 2**, **SkinPaint minor 1**,
+**SkinPaintExtras minor 1** and **SkinPaintControls minor 1** (the new major `LibKa0s-Skin-1.0`, key
+**1.2.1.1.1**), **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key **21.4.1**); every other file
 still at its v1.77.0 minor, and **test kit revision 43**, until an entry below moves one. Each change
 bumps the minor of the files it touches once, and this block names each new minor as it lands. Now
-**eighteen majors across forty-three files**: one major added (`LibKa0s-Skin-1.0`), and no
+**eighteen majors across forty-six files**: one major added (`LibKa0s-Skin-1.0`), and no
 `NEEDS_*` floor rises.
 
 ### Test kit revision 43: the paint recorder
@@ -78,7 +79,7 @@ path version 5.1 had resolves the same.
 ### LibKa0s-Skin-1.0 (new major, Skin minor 1, SkinDefs minor 1)
 
 The skin engine and its first skin, documented in
-[docs/api/Skin/version-1.2-docs.md](docs/api/Skin/version-1.2-docs.md). `Skin.lua` loads after
+[docs/api/Skin/version-1.2.1.1.1-docs.md](docs/api/Skin/version-1.2.1.1.1-docs.md). `Skin.lua` loads after
 `MediaIcons.lua`, floored on Core (`NEEDS_CORE = 1`, no Core member called); `SkinDefs.lua` is
 paired on its minor (`__defsMinor` / `__defsShellMinor`).
 
@@ -122,7 +123,7 @@ define functions and data tables: no frame, timer or event exists until a host r
 `LibKa0s-Skin-1.0` key 1.2 (the in-flight 1.1 document moved to it; 1.1 never shipped). Obsidian,
 Azeroth, Glass, High Contrast, Ember, WoW Default, WoW Midnight and WoW Forever join Ka0s Default,
 in that order, documented under *The eight skins* in
-[docs/api/Skin/version-1.2-docs.md](docs/api/Skin/version-1.2-docs.md) with every token each sets.
+[docs/api/Skin/version-1.2.1.1.1-docs.md](docs/api/Skin/version-1.2.1.1.1-docs.md) with every token each sets.
 
 - **Translated from the mockups.** Each skin is its entry in the mockups' token table, key for
   key (`classic` is `ka0s`, `wowdefault` is `wow`; the `eui` preview is never registered), run
@@ -152,6 +153,50 @@ New suite `tests/test_skin_defs.lua`: the nine skins in order, schema names and 
 token defined or inherited from Ka0s Default, the geometry invariant, the GameTooltip lines at 4.5:1
 on `(.05, .05, .08)`, each skin's text on its own window (body 4.5:1, the other roles 3:1), and
 each skin's recorded choices. No member change.
+
+### SkinPaint, SkinPaintExtras and SkinPaintControls minor 1: the paint primitives
+
+`LibKa0s-Skin-1.0` key 1.2.1.1.1 (the in-flight 1.2 document moved to it; 1.2 never shipped),
+documented under *The primitives* in
+[docs/api/Skin/version-1.2.1.1.1-docs.md](docs/api/Skin/version-1.2.1.1.1-docs.md). Three files
+paired on the shell's minor, loaded after `SkinDefs.lua`; the extras and the controls paint with
+`SkinPaint.lua`'s helpers and attach only beside it. Every `VOCAB` name now has its primitive, so
+`S.Shell(frame)`, `S.Button(btn)` and the rest paint.
+
+- **`SkinPaint.lua`**: the painter helpers, `Shell`, `Panel`, `Inset`, `FadeRegions`,
+  `FadeNineSlice`, and the new member **`Skin:Release(target)`**, which puts a target back and
+  untracks it (for a pooled widget).
+- **`SkinPaintExtras.lua`**: `TitleBar`, `Divider`, `Footer`, `Card`, `Strip`, `Cover`, `Tooltip`
+  (library-owned frames only), `MenuFrame`, `Text`, `Font`, `White`, and the getters
+  `GetAccentColor`, `GetPanelColor`, `GetFont`, `GlowColor`, `ChartStyle`, `BarStyle`.
+- **`SkinPaintControls.lua`**: `Button`, `WhiteButtonLabel`, `StateButtonLabel`, `EditBox`,
+  `Checkbox`, `Dropdown`, `ScrollBar`, `Slider`, `Tab`, `SetTabSelection`, `CloseButton`,
+  `PageButton`, `SquareIcon`, `IconBorder`, `SortHeaderBar`, `ApplyBarFill`, `NavItem`, `Drawer`,
+  `ListRow`.
+- **The technique.** Stock art is faded by alpha with its prior alpha recorded, never cleared,
+  hidden, re-parented or re-scripted; Ka0s regions are created once per target and kept in its weak
+  record, so a repaint reuses them; every overlay that is not the target's own fill lives on a
+  per-record holder frame (one level up), never as a direct region of a frame an EllesmereUI
+  primitive may reach; `SetBackdrop` only on a BackdropTemplate target or the holder; borders flat,
+  `bevelOut` / `bevelIn` or `nine:<LSM key>` drawn outset; gradients through `SetGradient`; fonts
+  through one font object per owner and role (the 12.0.7 shadow rule). A nil token leaves a property
+  alone and puts back what a previous skin changed. Hover and focus are hooked once and read the
+  record at call time.
+- **Ka0s Default keeps stock art** (a stock control is left as the client draws it and put back
+  after a skin), and for a custom target it makes **today's paint calls, call for call**: `Shell` is
+  `Core.ApplySkin(frame)` handed Core's own `SKIN`; `Dropdown` and `EditBox` are `W.Dropdown`'s
+  and `W.SearchBox`'s backdrop calls; `MenuFrame`, `CloseButton`, `NavItem`, `Drawer`, `ScrollBar`,
+  `Strip`, `Cover`, `Divider`, `Panel` and `Card` the calls of the library or LootHistory code they
+  stand for. The library's own code is not routed through them yet: that is the run's next items.
+- **WoW Default and WoW Midnight** draw the per-skin art choices: the dialog edge on the holder over the
+  tiled background, bevel edges, the tab, knob and checkbox art; Midnight's gradients with no art.
+- **No primitive draws a `LibKa0s-Media-1.0` icon**: every texture is `WHITE8X8` or in-client art,
+  so no host owes a new `LibKa0s icons:` declaration.
+
+New suites `tests/test_skin_paint.lua` and `tests/test_skin_paint_controls.lua`, on the kit's paint
+recorder with a call tracer (`tests/fixture_skin_paint.lua`). `.luacheckrc` reads `CreateColor`,
+`CreateFont`, `STANDARD_TEXT_FONT` and `hooksecurefunc`. **What a consumer owes:** nothing until
+it adopts.
 
 ### DebugLogDiagnostics minor 4: the identity header names Skin
 

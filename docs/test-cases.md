@@ -493,6 +493,60 @@ Total.
 - skin defs: every font and border a skin names is shipped or an LSM default
 - skin defs: the font assignments follow the spec
 
+### test_skin_paint.lua (27)
+
+- skin paint: the three files attach to the shell and fill every vocabulary entry
+- skin paint: the extras and controls attach to nothing without SkinPaint's helpers
+- skin paint: with no skin registered a primitive paints nothing it has no token for
+- skin paint: Shell on Ka0s Default is Core.ApplySkin, call for call
+- skin paint: Shell paints a skin's window from its tokens
+- skin paint: a second Shell call makes no new region and paints the same
+- skin paint: a skin switch repaints a Shell live, and back to Ka0s Default exactly
+- skin paint: WoW Default's window is the dialog edge on the holder over the tiled art
+- skin paint: the holder is a child frame one level up, and edges live on it
+- skin paint: Ka0s Default leaves a stock frame stock, and a skin fades its art
+- skin paint: two owners on one loaded copy paint and repaint only their own frames
+- skin paint: Release puts a target back and stops repainting it
+- skin paint: Panel on Ka0s Default is LootHistory's list panel, call for call
+- skin paint: Inset, noBg, noBorder and the nav rail's recolor
+- skin paint: FadeRegions fades the stock textures, records their alpha, and spares its own
+- skin paint: FadeNineSlice fades the nine pieces away from Ka0s Default
+- skin paint: TitleBar paints only the title color on Ka0s Default
+- skin paint: TitleBar fills on the holder, centers its title, and gives the alignment back
+- skin paint: Divider colors a texture in place, as Core's divider is colored
+- skin paint: Card on Ka0s Default is LootHistory's KPI card, call for call
+- skin paint: Footer draws nothing on Ka0s Default and a band in a skin that sets foot.bg
+- skin paint: Strip and Cover color their textures as TestStrip and the combat cover do
+- skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for call
+- skin paint: Tooltip leaves a library tooltip alone unless the skin colors tooltips
+- skin paint: Text colors a role, and a skin's font reaches it through the owner's font object
+- skin paint: Font and White put the body font and color on a string
+- skin paint: the getters answer the owner's skin
+
+### test_skin_paint_controls.lua (21)
+
+- skin controls: Button on Ka0s Default is LootHistory's flat button's paint
+- skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
+- skin controls: a stock button stays stock on Ka0s Default and is faded and boxed in a skin
+- skin controls: Button with keepKeys paints only the label
+- skin controls: WhiteButtonLabel and StateButtonLabel
+- skin controls: EditBox on Ka0s Default paints the search box's backdrop, call for call
+- skin controls: EditBox fades a template's pieces and colors its text and hint in a skin
+- skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call
+- skin controls: Checkbox draws a box and a mark that follows the check
+- skin controls: WoW Default's checkbox is the client's art; Ka0s Default leaves it stock
+- skin controls: ScrollBar's thumb states and the console's own bar match today's tints
+- skin controls: a bar's own thumb is left stock on Ka0s Default and tinted in a skin
+- skin controls: Slider is left alone by Ka0s Default and painted by a skin that sets it
+- skin controls: Tab paints its state, SetTabSelection moves it, and a repaint keeps it
+- skin controls: WoW Default's tabs are the client's tab art; a stock tab stays stock
+- skin controls: CloseButton on Ka0s Default is Core's close button, call for call
+- skin controls: a stock close button gets a glyph in a skin and is left stock on Ka0s Default
+- skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and ApplyBarFill
+- skin controls: NavItem on Ka0s Default is OptionsNav's entry paint
+- skin controls: Drawer on Ka0s Default is OptionsDrawer's header paint
+- skin controls: ListRow washes live on the holder and follow the latest state
+
 ### test_widgets.lua (58)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
@@ -3202,6 +3256,8 @@ Total.
 | test_media.lua | 36 |
 | test_skin.lua | 26 |
 | test_skin_defs.lua | 15 |
+| test_skin_paint.lua | 27 |
+| test_skin_paint_controls.lua | 21 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3305,4 +3361,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2815** |
+| **Total** | **2863** |

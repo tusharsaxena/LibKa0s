@@ -59,6 +59,10 @@ read_globals = {
   -- The client's error handler, which LibKa0s-Skin-1.0 hands a raising repaint primitive or
   -- OnLooksChanged listener so the rest of the pass still runs. Read at call time and guarded.
   "geterrorhandler",
+  -- The Skin primitives (SkinPaint*.lua): a ColorMixin for SetGradient, the per-owner font objects,
+  -- the client's standard face (S.GetFont when a skin names none) and the hook a checkbox's mark
+  -- follows SetChecked through. Each read at call time and guarded for absence.
+  "CreateColor", "CreateFont", "STANDARD_TEXT_FONT", "hooksecurefunc",
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes
 -- through _G[name]. That is the one sanctioned _G mutation in this library.

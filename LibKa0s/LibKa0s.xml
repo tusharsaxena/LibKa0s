@@ -12,6 +12,9 @@
 	<Script file="MediaIcons.lua"/>
 	<Script file="Skin.lua"/>
 	<Script file="SkinDefs.lua"/>
+	<Script file="SkinPaint.lua"/>
+	<Script file="SkinPaintExtras.lua"/>
+	<Script file="SkinPaintControls.lua"/>
 	<Script file="Widgets.lua"/>
 	<Script file="WidgetsReorder.lua"/>
 	<Script file="WidgetsDragHandle.lua"/>

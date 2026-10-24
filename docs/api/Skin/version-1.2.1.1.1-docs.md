@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 1.2
+# `LibKa0s-Skin-1.0` — version 1.2.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **1** · `SkinDefs.lua` minor **2** |
+| Files and minors | `Skin.lua` minor **1** · `SkinDefs.lua` minor **2** · `SkinPaint.lua` minor **1** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** |
 | Shipped in | v1.78.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`; no Core member is called) |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 1, SkinDefs = 2 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 1, SkinDefs = 2, SkinPaint = 1, SkinPaintExtras = 1, SkinPaintControls = 1 }` |
 
 ## What this major is
 
@@ -22,9 +22,10 @@
 today: `Core.SKIN`, Widgets' file-local `SKIN`, the Options palettes, and about ninety literals in
 LootHistory alone. A **skin** turns those constants into data, a token table, and a host picks one
 **per addon** (Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`, the owner's rulings R1 to R4).
-This version is the engine and the nine skins: **Ka0s Default**, whose tokens are today's
-constants, so an addon that never picks another skin draws exactly what it drew before, and eight
-more translated from the owner's mockups (*The eight skins*, below).
+This version is the engine, the nine skins and the paint primitives: **Ka0s Default**, whose
+tokens are today's constants, so an addon that never picks another skin draws exactly what it drew
+before, eight more translated from the owner's mockups (*The eight skins*, below), and the
+primitives the facade calls (*The primitives*, below).
 
 The engine holds four things, each keyed by **owner** (the consumer's addon folder name), because
 LibStub keeps one copy of this major for the whole client and two addons may wear different skins
@@ -37,14 +38,19 @@ at once:
   skin switch can repaint it live, with no reload, no OnUpdate and no event;
 - **the facade**, one table per owner carrying the painting vocabulary as late-bound trampolines.
 
-It paints nothing itself. The primitives (`S.Shell`, `S.Button`, ...) arrive in `SkinPaint.lua`
-(a later file of this major); until then every vocabulary entry answers nil and touches nothing. The
-EllesmereUI provider (`source = "eui"`) arrives in `SkinEUI.lua`; at this version `eui` is a stored
+The engine paints nothing itself: the primitives (`S.Shell`, `S.Button`, ...) are
+`SkinPaint.lua`'s, `SkinPaintExtras.lua`'s and `SkinPaintControls.lua`'s (*The primitives*,
+below), and a payload without them has a facade whose every vocabulary entry answers nil and
+touches nothing. The EllesmereUI provider (`source = "eui"`) arrives in `SkinEUI.lua`; at this version `eui` is a stored
 choice whose tokens fall back to the owner's Ka0s skin.
 
-Depends on LibStub and `LibKa0s-Core-1.0` (minor 1 or newer), and on no addon framework. `SkinDefs.lua`
-is paired on the shell's minor (`__defsMinor` / `__defsShellMinor`), the Widgets and Sim idiom, so a
-skin table from one vendored copy never attaches to an engine from another. A payload without it
+Depends on LibStub and `LibKa0s-Core-1.0` (minor 1 or newer), and on no addon framework; the
+primitives also read LibSharedMedia-3.0 at call time when it is loaded (faces, border art), and
+`Shell` calls `Core.ApplySkin`. `SkinDefs.lua` and the three primitive files are paired on the
+shell's minor (`__defsMinor` / `__defsShellMinor`, `__paintMinor` / `__paintShellMinor`,
+`__extrasMinor` / `__extrasShellMinor`, `__controlsMinor` / `__controlsShellMinor`), the Widgets
+and Sim idiom, so a skin table or a primitive from one vendored copy never attaches to an engine
+from another. A payload without it
 still runs the engine: no skin is registered and every token resolves to nil.
 
 ## Members
@@ -70,6 +76,7 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `Skin:ResolveSkin(key)` | token table | Ka0s Default's tokens with the skin's own over them, cached. An unregistered key resolves as Ka0s Default. Shared: never write to it. |
 | `Skin:Track(owner, frame, prim, ...)` | record | For the primitives: records that `prim` painted `frame` for `owner` with these arguments. One record per frame; a frame painted for a second owner (a pooled frame) moves to it; repeating a primitive replaces its arguments and keeps its replay position. The record's `regions` table is the primitive's own. |
 | `Skin:Untrack(frame)` | — | Forgets a frame (a pooled widget handed back). |
+| `Skin:Release(target)` | — | From `SkinPaint.lua`: puts a target back (everything a primitive faded, recolored, re-fonted or backdropped on it), hides its Ka0s regions and holder, and untracks it. See *The primitives*. |
 | `Skin:Repaint(owner)` | calls | Replays every primitive recorded for the owner's frames, each frame once: frames in the order they were first painted for the owner (a frame that moved to it counts from the move), and each frame's primitives in their first-paint order, each call under pcall; `lib.__repainting` is true while it runs. `SetChoice` calls it. |
 | `FROM_SKIN` | `"@skin"` | The stored value meaning "take this setting from the skin". |
 | `DEFAULT` | `"ka0s"` | The skin every owner wears until it picks another, and the one an unknown key resolves as. |
@@ -90,7 +97,8 @@ still runs the engine: no skin is registered and every token resolves to nil.
   `GetAccentColor`, `GetPanelColor`, `GetFont`), then the Ka0s extras (`TitleBar`, `Divider`,
   `Footer`, `Card`, `Slider`, `NavItem`, `Drawer`, `ListRow`, `MenuFrame`, `Tooltip`, `Strip`,
   `Cover`, `Text`, `ChartStyle`, `BarStyle`, `IconBorder`, `GlowColor`). A primitive no loaded file
-  provides answers nil and touches nothing. **At this version none is provided.**
+  provides answers nil and touches nothing. **At this version every one is provided** (*The
+  primitives*, below).
 - **The engine, bound to the owner:** `S.Token(name)`, `S.Color(name)`, `S.Resolve(kind, value,
   fromSkin)`, `S.OnLooksChanged(fn)`, `S.IsEnabled()` (true for a registered owner), `S.GetStyle()`
   (`"ka0s:<skin key>"`), `S.apiVersion` (3, EllesmereUI's facade API version), `S.owner` and
@@ -153,7 +161,7 @@ if Skin then
   })
 end
 
--- wherever a frame is built (the primitives arrive with SkinPaint.lua)
+-- wherever a frame is built, after the host's own SetScript calls (see The primitives)
 NS.Skin.Shell(frame)
 local r, g, b = NS.Skin.Color("title.text")
 
@@ -480,6 +488,183 @@ eight skins*, below.
 **197 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
 `tab.texture`, `tab.onTexture`) joined at this version, for WoW Default's Blizzard art.
 
+## The primitives
+
+`SkinPaint.lua`, `SkinPaintExtras.lua` and `SkinPaintControls.lua` fill `lib.prim` with one
+function per `VOCAB` name, `fn(owner, target, ...)`, which the facade's trampolines reach at call
+time: `S.Button(btn, opts)` is `lib.prim.Button(owner, btn, opts)`. Each file is paired on the
+shell's minor (`__paintMinor` / `__paintShellMinor`, `__extrasMinor` / `__extrasShellMinor`,
+`__controlsMinor` / `__controlsShellMinor`); the extras and the controls paint with
+`SkinPaint.lua`'s helpers (`lib.__P`, not contract) and attach only when that file attached to the
+same shell, so a payload missing `SkinPaint.lua` has no primitive at all and every vocabulary entry
+answers nil.
+
+### How every primitive paints
+
+- **Recorded.** A primitive that paints a target records itself on it (`Skin:Track`) with the
+  arguments it was given, so `SetChoice` replays it with the new skin. Calling it again replaces
+  the arguments and keeps its place in the replay order (`S.ListRow(row, state)` from a pooled row's
+  bind step repaints with the latest state). The getters record nothing.
+- **Idempotent.** Every Ka0s region (a fill, an edge, a gradient, a mark, a glyph) is created once
+  per target, kept in the target's weak record (`rec.regions`) and reused by every later call and
+  every repaint. Nothing is written onto a frame's table.
+- **Stock art is faded, never destroyed.** A template's art (a button's normal, pushed, disabled
+  and highlight textures, a template's `Left` / `Middle` / `Right` pieces, a `NineSlice`'s nine
+  pieces, and any regions the caller names in `opts.stock`) is faded with `SetAlpha(0)` and its
+  prior alpha recorded. No primitive calls `Hide`, `SetParent`, `SetScript` (bar the one below) or
+  `SetTexture("")` on a frame it did not make, and none replaces a method.
+- **Ka0s Default keeps stock art.** On Ka0s Default a target that carries template art is left as
+  the client draws it: nothing is painted, and everything a previous skin faded, recolored or drew
+  on it is put back. Ka0s Default is today's look, and today a stock control is stock. A custom
+  target (a BackdropTemplate frame the library or the host built) is painted from Ka0s Default's
+  tokens, which are today's constants.
+- **The holder.** Every Ka0s overlay that is not the target's own fill (edges, a divider's line, a
+  list row's washes, the strip and cover washes, a tab's underline, the extras' fills on a frame with
+  no backdrop) lives on the target's **holder**: one child frame per record, `SetAllPoints` over the
+  target at its frame level + 1, made with BackdropTemplate so a nine-slice edge can be its backdrop.
+  Never a direct region of a frame an EllesmereUI primitive may reach, because EllesmereUI's
+  FadeRegions fades every direct region of the frame it skins.
+- **Backdrops.** A frame wears a backdrop when it carries BackdropTemplate, which the primitives
+  read from the frame's own table (the template's mixin copies `SetBackdrop` there). Only such a
+  frame, or the holder, is ever given `SetBackdrop`, and only a target the library or the owner
+  created: never pass a Blizzard frame you did not create. A stock frame's own backdrop is recorded
+  before the first change and put back on Ka0s Default and by `Release`.
+- **Borders.** A token's `borderStyle` is `flat` (the backdrop's own edge, or four 1px-and-up edge
+  textures on the holder for a frame with no backdrop), `bevelOut` / `bevelIn` (two-tone edges on the
+  holder, light top-left and dark bottom-right, or the reverse) or `nine:<LibSharedMedia border
+  key>` (the holder's backdrop edge at `borderSize`, drawn outset by a quarter of its size so the art's
+  soft band sits outside the target and content anchors never move; `border` is the art's vertex
+  color). An unknown key draws a flat 1px edge. `Blizzard Dialog`, `Blizzard Dialog Gold` and
+  `Blizzard Tooltip` resolve to the client's own paths when LibSharedMedia lacks them.
+- **Gradients** are `SetGradient("VERTICAL", bottom, top)` on a white color texture, from a fill
+  token's `<fill>Top` / `<fill>Bottom` pair; a later flat fill resets the gradient to white.
+- **Fonts** go through one font object per owner and role (`LibKa0sSkin_<owner>_<role>`, role
+  `body`, `title` or `mono`), created with `CreateFont`, given the face, size, outline and (unless
+  `font.shadow` is false) a 1, -1 black shadow, then set on the string with `SetFontObject`: from
+  12.0.7 a runtime `SetShadow*` on a FontString no longer renders, a font object's shadow does. A nil
+  face token (every font token in Ka0s Default) leaves the string's font alone, and puts back the
+  font object it had before a skin's face reached it. Faces resolve through LibSharedMedia.
+- **Colors.** A text or vertex color whose alpha is 1 is passed as three components, as every call
+  site writes them; fills and backdrop colors as four. A color from a nilable token, or any color on
+  a stock target, records the prior color first and puts it back when the token resolves to nil.
+- **Hover and focus** are `HookScript`'d once per target and read the target's record at call time,
+  so a skin switch needs no new hook and a pooled control that moved to another owner hovers in that
+  owner's skin. Call a primitive **after** the host sets its own scripts: a later `SetScript`
+  replaces the hook. `S.CloseButton(btn, { own = true })` is the one primitive that SetScripts, for
+  a close button the library built and that has no host script, as Core's does today.
+
+### Ka0s Default is today's paint, call for call
+
+For a registered owner on Ka0s Default, each primitive makes the paint calls the code it stands for
+makes today, in the same order, with the same arity, on the same objects. `tests/test_skin_paint.lua`
+and `tests/test_skin_paint_controls.lua` pin each with the kit's paint recorder and a call tracer:
+
+| Primitive | Pinned against |
+|---|---|
+| `Shell(frame)` | `Core.ApplySkin(frame)`, run on an identical frame: it **is** that call, handed Core's own `SKIN` table, for a registered owner and for an unregistered name alike |
+| `Panel(frame)` | LootHistory's list panel (`modules/AnalyticsCharts.lua`) |
+| `Panel(frame, { nav = true })` | OptionsNav's rail recolor (`PANE_FILL` four components, `PANE_BORDER` three) |
+| `Card(frame)` | LootHistory's KPI card (`modules/Analytics.lua`) |
+| `MenuFrame(frame)` | Widgets' shared popup menu (`EnsureMenu`: the WHITE8X8 table with no insets) |
+| `Divider(texture)` | Core.ApplySkin's divider |
+| `Strip(texture, opts)` | `W.TestStrip`'s fill (`STRIP_FILL`, test and sim) |
+| `Cover(texture, { text })` | OptionsCombat's dim and its line |
+| `TitleBar(bar)` | the title color only (Ka0s Default sets no title fill and no alignment) |
+| `Footer(frame)`, `Tooltip(frame)` | nothing (their tokens are nil in Ka0s Default) |
+| `Button(btn)` | LootHistory's flat button (`modules/BrowserFilterBar.lua`), its gold-on-hover label |
+| `EditBox(eb)` | `W.SearchBox`, run for real: its backdrop, fill and edge |
+| `Dropdown(dd)` | `W.Dropdown`, run for real: its backdrop, fill, edge and the arrow's gray |
+| `CloseButton(btn, { own = true })` | `Core.MakeCloseButton`'s glyph tint and its hover pair |
+| `NavItem(item, opts)` | OptionsNav's entry (the selection tint, the white / gold label) |
+| `Drawer(head, opts)` | OptionsDrawer's header (label, summary, then the edge set) |
+| `ScrollBar(sb, { state })` | OptionsScroll's `THUMB_ON` / `THUMB_OFF` |
+| `ScrollBar(bar, { track, thumb })` | DebugLog's console bar |
+
+The library code itself is not routed through the primitives at this version: that is the next
+items of the run (Core and Widgets, the settings chrome, the tool windows), each of which keeps its
+owner-less and Ka0s Default trace pinned when it moves.
+
+### Primitive reference
+
+No primitive draws a `LibKa0s-Media-1.0` icon: every texture is `WHITE8X8` or in-client art, so a
+host owes no new `LibKa0s icons:` declaration for any of them. The in-client art they draw is the
+skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTexture`,
+`check.texture`, `check.markTexture`, the `nine:` border keys) plus `PageButton`'s arrow,
+`Interface\ChatFrame\ChatFrameExpandArrow`.
+
+**The window family** (`SkinPaint.lua`, `SkinPaintExtras.lua`):
+
+| Primitive | Paints | Tokens |
+|---|---|---|
+| `Shell(frame, opts)` | A window. On a backdrop frame, `Core.ApplySkin` with the skin's table (backdrop, inner rule, `frame.title`'s color, `frame.divider`'s), an inner rule cleared when the skin has none, a non-flat edge on the holder; on any frame the window gradient, the tiled art, the top bar (unless `opts.noTopBar`) and the bottom bar (`opts.bottomBar`, true or a height), and the title font on `frame.title`. A frame with no backdrop gets its fill as a region and its edge on the holder. `opts.noBorder` draws no edge and no inner rule. | `win.*`, `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.height`, `divider`, `foot.bg`, `font.title` |
+| `Panel(frame, opts)` | A flat panel; `opts.inset` paints it as an inset, `opts.noBg` / `opts.noBorder` leave out a half, `opts.nav` recolors the backdrop the frame already wears. | `panel.bg`, `panel.border`; `nav.bg`, `nav.border` |
+| `Inset(frame, opts)` | A recessed area. | `input.bg`, `input.border`, `input.borderStyle`, `input.borderSize` |
+| `FadeRegions(frame, ...)` | Fades every texture region of the frame (and of each further frame) that no primitive made. Ka0s Default fades nothing and puts them back. | none |
+| `FadeNineSlice(frame)` | Fades `frame.NineSlice`'s nine pieces. Ka0s Default puts them back. | none |
+| `TitleBar(bar, opts)` | A title bar: the fill (the bar's backdrop, or the holder), its text (`opts.text`, else `bar.title` / `bar.text`) in the title color, font and alignment (the prior alignment put back when the skin sets none). | `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.align`, `font.title` |
+| `Divider(target, opts)` | A texture colored in place, or a line filling a frame on its holder; `opts.token` names another color (`section.rule`, `tab.rule`). | `divider` |
+| `Footer(frame, opts)` | A footer band; its text (`opts.text`, else `frame.text`) muted. | `foot.bg`, `text.muted` |
+| `Card(frame, opts)` | A card: `opts.title` in the heading color, `opts.text` in the body color. | `card.bg`, `card.border`, `text.heading`, `text.body` |
+| `Strip(target, opts)` | The test or simulation strip's wash (`opts.kind` `"test"` / `"sim"`), a texture in place or the holder. The meaning colors are the library's; a skin changes only their legibility. | `strip.test`, `strip.sim` |
+| `Cover(target, opts)` | The combat cover's dim, and `opts.text`. | `cover.dim`, `cover.text` |
+| `Tooltip(frame)` | A **library-owned** tooltip's backdrop, recolored; never GameTooltip. | `tooltip.bg`, `tooltip.border` |
+| `MenuFrame(frame, opts)` | A popup menu's flat backdrop (no insets); `opts.alt` the alternate edge; `opts.popup` recolors the backdrop the frame already wears. | `menu.bg`, `menu.border`, `menu.borderAlt`, `menu.borderStyle`, `menu.borderSize`; `popup.bg`, `popup.border` |
+| `Text(fs, role)` | A text role's color and font: `body`, `muted`, `heading`, `headingAlt`, `accent`, `disabled`, `link`, `linkHot`, `title` (the title font for `title` and the headings, the body font otherwise). | `text.*`, `title.text`, `font.*` |
+| `Font(fs, r, g, b)` | The body font, and the color when given. | `font.body`, `font.bodySize`, `font.outline`, `font.shadow` |
+| `White(fs)` | The body font and the body color (EllesmereUI's `White`, legible in a light skin). | `font.body`, `text.body` |
+
+**The controls** (`SkinPaintControls.lua`):
+
+| Primitive | Paints | Tokens |
+|---|---|---|
+| `Button(btn, keepKeys \| opts)` | A push button: its stock art faded, the flat-control box, the label (the button's font string, else `btn.text` / `btn.Text`) in the text color and body font, the hover color under the pointer, `btn.icon` tinted. `keepKeys == true` or `opts.keep` keeps the stock art and paints only the label; `opts.primary` reads `btnPrimary.*`. | `btn.*` / `btnPrimary.*` (`bg`, `bgTop`, `bgBottom`, `border`, `borderStyle`, `borderSize`, `text`, `hover`, `icon`) |
+| `WhiteButtonLabel(btn)` | The label in the button text color and body font. | `btn.text` |
+| `StateButtonLabel(btn, on)` | The label in the accent while on, muted otherwise. | `text.accent`, `text.muted` |
+| `EditBox(eb, opts)` | A text input: the template's pieces faded, the flat-control box, the typed text and the hint (`opts.placeholder`, else `eb.hint`), the focus edge while it has the keys. `opts.padInput` sets 6px insets; `opts.noBorder` draws no edge and hooks no focus. | `input.*` |
+| `Checkbox(cb, opts)` | A check button: its stock art faded (the stock check too unless `opts.stockCheck`), a box `opts.borderInset` inside it, an edge on the holder, a mark three pixels inside the box shown while checked (following `OnClick`, `OnShow` and `SetChecked`), and with `opts.hover` a highlight. | `check.*`, `menu.hover` |
+| `Dropdown(dd, opts)` | A dropdown button: the template's pieces faded, the flat-control box, the arrow (`dd.arrow` / `dd.Arrow`), the label (`dd.text` / `dd.Text`). | `input.*`, `icon.tint` |
+| `ScrollBar(sb, opts)` | A scroll bar: `opts.track` / `opts.thumb` (textures the caller drew) filled; `opts.state` `"on"` / `"off"` tints the bar's own thumb; otherwise, away from Ka0s Default, the bar's own thumb takes the knob art or the thumb color over a track region. | `scroll.*` |
+| `Slider(slider, opts)` | A slider's track (a region, its edge on the holder), fill (`opts.fill`) and thumb (`opts.thumb`, else its own). Every slider token is nil in Ka0s Default. | `slider.*` |
+| `Tab(tab, opts)` | A tab: its stock art (and `opts.stock`) faded, the backing (`opts.fill`, else a region: the tab art, else the color and gradient), an underline on the holder while selected, the label (`opts.text`, else its own). `opts.selected` is the first state. | `tab.*` |
+| `SetTabSelection(tab, selected)` | Moves a painted tab's state and repaints it; the state lives in the tab's record, so a skin switch keeps it. | as `Tab` |
+| `CloseButton(btn, opts)` | A close control: its art (`btn.icon`, a texture, or `btn.glyph`) at rest and under the pointer. A stock close button is left stock on Ka0s Default; in a skin its art is faded and an ASCII `x` drawn. `opts.own` SetScripts the hover pair. | `close.rest`, `close.hot` |
+| `PageButton(btn, dir)` | A paging arrow (`prev`, `next`, `up`, `down`, `left`, `right`): the button look and the in-client arrow, turned. | `btn.*` |
+| `SquareIcon(frame, opts)` | An icon button: `opts.crop` trims the icon art (`opts.icon`, else `frame.icon` / `frame.Icon`) to .08-.92; an edge on the holder. | `icon.border` |
+| `IconBorder(frame, opts)` | An icon edge, `opts.size` pixels, on the holder. | `icon.border` |
+| `SortHeaderBar(bar, opts)` | A list header: the fill, each of `opts.texts`, each of `opts.arrows`. | `list.header.bg`, `list.header.text`, `icon.tint` |
+| `ApplyBarFill(target)` | The accent on a status bar (`SetStatusBarColor`) or a texture. | `text.accent` |
+| `NavItem(item, opts)` | A nav-rail entry: `opts.label` selected or not, `opts.sel` (the selection texture), a selection bar on the holder while `opts.selected`. | `nav.text`, `nav.selText`, `nav.selBg`, `nav.selBar` |
+| `Drawer(head, opts)` | A settings drawer: `opts.label` and `opts.summary` set or not (`opts.set`), then the edge set (`opts.edges`, OptionsDrawer's `{ fill, left, right, bottom, top }`) open or not (`opts.open`), and the box's (`opts.box`). A header with no edge set is boxed on its holder. | `drawer.*` |
+| `ListRow(row, state)` | A list row's washes on its holder: stripe, hover, selection and its outline. `state` is a table or `"stripe"`, `"hover"`, `"selected"`, `"normal"`. | `list.stripe`, `list.hover`, `list.sel`, `list.selOutline` |
+
+**The getters** (record nothing):
+
+| Getter | Answers |
+|---|---|
+| `GetAccentColor()` | r, g, b, a of `text.accent` |
+| `GetPanelColor()` | r, g, b, a of `win.bg` |
+| `GetFont()` | the body face's path, or the client's `STANDARD_TEXT_FONT` when the skin names none |
+| `GlowColor()` | r, g, b, a of `glow.color`, or nil (the host's own glow color stands) |
+| `ChartStyle()` | a fresh table of the `chart.*` tokens by short name (`axis`, `axisAlt`, `grid`, `crosshair`, `marker`, `line`, `bar`, `track`, `total`, `other`, `otherLine`, `series`); the colors are shared |
+| `BarStyle()` | a fresh table: `texture` (the LSM path or nil), `textureKey`, `gloss`, `bg`, `border`, `borderStyle`, `borderSize`, `font` (path or nil), `fontKey`, `fontSize`, `outline`, `iconBorder` |
+
+### WoW Default and WoW Midnight on the primitives
+
+The choices (*Blizzard art and the per-skin choices*, below) are drawn as follows. WoW
+Default's window is `Shell`'s nine-slice edge, `Blizzard Dialog` at 32 outset by 8 on the holder,
+the backdrop's own edge clear, over a `#1E1C19` backdrop fill with `UI-DialogBox-Background-Dark`
+tiled in a band above it; its buttons are `Button`'s red gradient under a 2px `bevelOut` gold edge on
+the holder; its tabs are `Tab`'s `UI-OptionsFrame-ActiveTab` / `-InActiveTab` art; its scroll thumb
+`ScrollBar`'s `UI-ScrollBar-Knob`; its checkbox `Checkbox`'s `UI-CheckBox-Up` box and
+`UI-CheckBox-Check` mark; its inputs, checkboxes and nav rail a 2px `bevelIn` edge. WoW Midnight
+draws no art: `Shell`'s window and title gradients, its 2px flat edges, `Button`'s gradients.
+
+### `Skin:Release(target)`
+
+Gives a target back: everything a primitive faded, recolored, re-fonted or backdropped on it is put
+back as it was, every Ka0s region on it (and its holder) is hidden and kept for reuse, and it is no
+longer repainted for anyone. For a pooled widget returning to a pool every addon shares.
+
 ## The eight skins
 
 Obsidian, Azeroth, Glass, High Contrast, Ember, WoW Default, WoW Midnight and WoW Forever, in that
@@ -803,7 +988,11 @@ Tokens each skin sets of its own: Obsidian 125, Azeroth 158, Glass 127, High Con
 
 ## What is not here
 
-- **No painting.** The primitives are `SkinPaint.lua`'s, a later file of this major.
+- **No routing yet.** The library's own windows, widgets and settings chrome still paint with
+  their constants; they take an owner and route through the primitives in later files of this
+  release's run.
+- **No AceGUI.** Skinning the AceGUI rows a settings page acquires, and restoring them on release,
+  is a later file of this major (`SkinAce.lua`).
 - **No EllesmereUI.** The `eui` provider, its gate and its reads are `SkinEUI.lua`'s.
 - **No SavedVariables.** The host stores `{ source, skin }` in its own profile; `SetChoice` never
   writes it.
@@ -814,5 +1003,7 @@ Tokens each skin sets of its own: Obsidian 125, Azeroth 158, Glass 127, High Con
 Whole-folder, like every major. `Skin.lua` returns before `NewLibrary` when Core is missing or below
 minor 1, and `SkinDefs.lua` then returns on its own `LibStub("LibKa0s-Skin-1.0", true)` lookup, so
 the major is absent rather than half-wired. Without `SkinDefs.lua` the engine still loads and every
-token resolves to nil. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
+token resolves to nil, and every primitive paints only what it has a token for (`Shell` is still
+`Core.ApplySkin(frame)`). Without `SkinPaint.lua` neither `SkinPaintExtras.lua` nor
+`SkinPaintControls.lua` attaches, and every vocabulary entry answers nil. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
 the LibStub race later keeps every owner, record and facade; the resolve cache alone is rebuilt.
