@@ -521,10 +521,12 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   tab and the strata tooltip are opt-in, and so are the kit's `mock_bindings.lua` and
   `mock_layers.lua`.
 
-Release gate (`docs/automated-tests/20261024-074358/`): lint pass, 0/0 in 194 files;
-tests pass, 2715 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+Release gate (`docs/automated-tests/20261024-121210/`): lint pass, 0/0 in 197 files;
+tests pass, 2749 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
-Preview and simulation re-look: Current — SimPanel minor 6 adds toplevel and the popup re-raise only; tests/fixture_sim_panel.lua, tests/test_sim_panel.lua, tests/test_sim_panel_render.lua and docs/api/Sim/version-2.3.6-docs.md re-read; no scenario or test-mode strip changes (Widgets minor 15, `W.TestStrip`'s file, clamps the dropdown menu only; tests/test_widgets_teststrip.lua unchanged).
+The first release run, `docs/automated-tests/20261024-074358/`, was taken before the layout
+extension and is superseded by this one.
+Preview and simulation re-look: Current — SimPanel minor 6 adds toplevel and the popup re-raise only; tests/fixture_sim_panel.lua, tests/test_sim_panel.lua, tests/test_sim_panel_render.lua and docs/api/Sim/version-2.3.6-docs.md re-read; no scenario or test-mode strip changes (Widgets minor 15, `W.TestStrip`'s file, clamps the dropdown menu only; tests/test_widgets_teststrip.lua unchanged); the settings-layout extension touches no simulator or preview surface, and Test mode's row only gains the omit.locked packing (OptionsCompose minor 9).
 
 ## v1.76.0 — 2026-10-23
 
