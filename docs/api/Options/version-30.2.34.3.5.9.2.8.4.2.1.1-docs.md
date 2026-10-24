@@ -1746,7 +1746,8 @@ Mouse names convert first (`LeftButton` `BUTTON1`, `RightButton` `BUTTON2`, `Mid
 `BUTTON3`, `Button4`..`Button31` `BUTTON4`..`BUTTON31`); `MOUSEWHEELUP` / `MOUSEWHEELDOWN` pass.
 Prefixes `ALT-` `CTRL-` `SHIFT-` `META-`, in that order. The client's `GetConvertedKeyOrButton`,
 `IsKeyPressIgnoredForBinding` and `CreateKeyChordStringUsingMetaKeyState` are taken first, each on
-its own guard; without them a bundled copy of `BindingUtil.lua`'s logic reads `IsAltKeyDown` /
+its own guard (the bundled ignore list applies on both routes, since the client's
+`IsKeyPressIgnoredForBinding` does not cover `BUTTON1` / `BUTTON2`); without them a bundled copy of `BindingUtil.lua`'s logic reads `IsAltKeyDown` /
 `IsControlKeyDown` / `IsShiftKeyDown` / `IsMetaKeyDown`. `mods` (`{ alt, ctrl, shift, meta }`)
 overrides the modifier state and takes the bundled route, for a suite. `PRINTSCREEN` is the
 capture's to handle (`Screenshot()` when present).

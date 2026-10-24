@@ -213,9 +213,13 @@ test("binding mock: clientChordHelpers installs the client's chord helpers, fait
   assertEqual(M.GetConvertedKeyOrButton("Button4"), "BUTTON4")
   assertEqual(M.GetConvertedKeyOrButton("X"), "X")
   for _, k in ipairs({ "LSHIFT", "RSHIFT", "LCTRL", "RCTRL", "LALT", "RALT", "LMETA", "RMETA",
-                       "UNKNOWN", "BUTTON1", "BUTTON2" }) do
+                       "UNKNOWN" }) do
     assertTrue(M.IsKeyPressIgnoredForBinding(k), k .. " is ignored")
   end
+  -- BindingUtil.lua:21-25 ignores the modifier keys and UNKNOWN only; the left and right buttons
+  -- are refused by the binding page's own click handler (:90-92), not by this function.
+  assertFalse(M.IsKeyPressIgnoredForBinding("BUTTON1"), "the client does not ignore BUTTON1 here")
+  assertFalse(M.IsKeyPressIgnoredForBinding("BUTTON2"), "the client does not ignore BUTTON2 here")
   assertFalse(M.IsKeyPressIgnoredForBinding("BUTTON3"))
   assertFalse(M.IsKeyPressIgnoredForBinding("X"))
   M.setModifiers{ alt = true, ctrl = true, shift = true, meta = true }

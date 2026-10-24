@@ -1704,7 +1704,7 @@ Total.
 - drawer: with OptionsDrawer.lua absent there is no Drawer, and the page is untouched
 - drawer: with no AceGUI it draws nothing and answers nil
 
-### test_options_keybinds_model.lua (25)
+### test_options_keybinds_model.lua (26)
 
 - keybinds: OptionsKeybinds is at minor 1, paired on an Options shell at 30 or later
 - keybinds: the Options version key has twelve components
@@ -1731,6 +1731,7 @@ Total.
 - keybinds: the bundled chord builder orders ALT-CTRL-SHIFT-META and converts mouse names
 - keybinds: the bundled chord builder reads the modifier keys when no mods are passed
 - keybinds: with the client's chord helpers the client route agrees
+- keybinds: the client route refuses the left and right buttons its ignore check lets through
 
 ### test_options_idsuggest.lua (29)
 
@@ -3071,7 +3072,7 @@ Total.
 | test_options_tabbed.lua | 20 |
 | test_options_nav.lua | 14 |
 | test_options_drawer.lua | 26 |
-| test_options_keybinds_model.lua | 25 |
+| test_options_keybinds_model.lua | 26 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3127,4 +3128,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2669** |
+| **Total** | **2670** |

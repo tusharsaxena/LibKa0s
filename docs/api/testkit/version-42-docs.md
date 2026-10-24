@@ -67,7 +67,8 @@ AceEvent targets registered for it.
 With `clientChordHelpers = true` the installer adds three client helpers, faithful to
 `BindingUtil.lua`: `GetConvertedKeyOrButton` (`LeftButton` `BUTTON1`, `RightButton` `BUTTON2`,
 `MiddleButton` `BUTTON3`, `ButtonN` `BUTTONN`, else the key), `IsKeyPressIgnoredForBinding` (`LSHIFT`
-`RSHIFT` `LCTRL` `RCTRL` `LALT` `RALT` `LMETA` `RMETA` `UNKNOWN` `BUTTON1` `BUTTON2`) and
+`RSHIFT` `LCTRL` `RCTRL` `LALT` `RALT` `LMETA` `RMETA` `UNKNOWN`, as `BindingUtil.lua:21-25`; not
+`BUTTON1` / `BUTTON2`, which the binding page refuses in its own click handler, `:90-92`) and
 `CreateKeyChordStringUsingMetaKeyState(key)` (`ALT-CTRL-SHIFT-META-` order, a modifier key alone
 adding no key). They are absent by default, so a suite exercises the library's bundled fallback
 unless it asks for the client's.

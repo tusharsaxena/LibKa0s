@@ -100,7 +100,10 @@ end
 --
 -- BindingUtil.lua's logic, bundled for a client (or the headless harness) without its functions.
 -- The client's GetConvertedKeyOrButton, IsKeyPressIgnoredForBinding and
--- CreateKeyChordStringUsingMetaKeyState are taken first, each on its own guard.
+-- CreateKeyChordStringUsingMetaKeyState are taken first, each on its own guard. IGNORED applies
+-- on BOTH routes: the client's ignore check covers the modifier keys and UNKNOWN only
+-- (BindingUtil.lua:21-25), and the binding page refuses BUTTON1 / BUTTON2 in its own click
+-- handler (:90-92), so trusting the client alone would bind a plain left or right click.
 
 local IGNORED = {
   LSHIFT = true, RSHIFT = true, LCTRL = true, RCTRL = true, LALT = true, RALT = true,
@@ -117,10 +120,9 @@ local function convertKey(key)
 end
 
 local function isIgnored(key)
-  if type(IsKeyPressIgnoredForBinding) == "function" then
-    return IsKeyPressIgnoredForBinding(key) and true or false
-  end
-  return IGNORED[key] == true
+  if IGNORED[key] then return true end
+  return type(IsKeyPressIgnoredForBinding) == "function" and IsKeyPressIgnoredForBinding(key) and true
+    or false
 end
 
 local function isDown(fn)

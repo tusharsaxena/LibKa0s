@@ -407,3 +407,19 @@ test("keybinds: with the client's chord helpers the client route agrees", functi
     assertTrue(used > 0, "the client's chord string was asked for")
   end)
 end)
+
+test("keybinds: the client route refuses the left and right buttons its ignore check lets through", function()
+  -- The client's IsKeyPressIgnoredForBinding covers the modifier keys and UNKNOWN only
+  -- (BindingUtil.lua:21-25); BUTTON1 / BUTTON2 are refused elsewhere (:90-92), so the library
+  -- applies its own list as well.
+  withBindings({ clientChordHelpers = true }, function()
+    mocks.IsKeyPressIgnoredForBinding = function() return false end
+    for _, button in ipairs({ "LeftButton", "RightButton", "BUTTON1", "BUTTON2" }) do
+      mocks.setModifiers{}
+      assertNil(lib.__keyChord(button), button .. " binds nothing")
+      mocks.setModifiers{ shift = true }
+      assertNil(lib.__keyChord(button), "SHIFT-" .. button .. " binds nothing")
+    end
+    assertEqual(lib.__keyChord("MiddleButton"), "SHIFT-BUTTON3")
+  end)
+end)

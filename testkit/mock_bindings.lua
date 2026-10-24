@@ -202,9 +202,10 @@ return function(M, opts)
 
   if opts.clientChordHelpers then
     local BUTTONS = { LeftButton = "BUTTON1", RightButton = "BUTTON2", MiddleButton = "BUTTON3" }
+    -- BindingUtil.lua:21-25: the modifier keys and UNKNOWN only. BUTTON1 / BUTTON2 are refused by
+    -- the binding page's click handler (:90-92), so a caller must refuse them itself.
     local IGNORED = { LSHIFT = true, RSHIFT = true, LCTRL = true, RCTRL = true, LALT = true,
-                      RALT = true, LMETA = true, RMETA = true, UNKNOWN = true, BUTTON1 = true,
-                      BUTTON2 = true }
+                      RALT = true, LMETA = true, RMETA = true, UNKNOWN = true }
     local META = { LALT = true, RALT = true, LCTRL = true, RCTRL = true, LSHIFT = true,
                    RSHIFT = true, LMETA = true, RMETA = true }
     fill("GetConvertedKeyOrButton", function(key)
