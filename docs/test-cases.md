@@ -1992,7 +1992,16 @@ Total.
 - compose tooltips: the spec and its tooltips table are never written, and two calls agree
 - compose tooltips: MasterControls ignores tooltips (notes is its only route)
 - compose tooltips: every golden is unchanged
-- compose tooltips: OptionsCompose is at minor 10
+- compose tooltips: OptionsCompose is at minor 10 or later
+
+### test_options_reset_tooltip.lua (6)
+
+- reset tooltip: each host answers its own lib.STRINGS wording
+- reset tooltip: equals the tooltip MasterControls gives Reset all settings
+- reset tooltip: the key-bindings tail follows after one space
+- reset tooltip: an empty, nil or non-string tail adds nothing
+- reset tooltip: notes.resetAll is the button's own and does not reach the member
+- reset tooltip: OptionsCompose is at minor 11
 
 ### test_options_throttle.lua (4)
 
@@ -3166,6 +3175,7 @@ Total.
 | test_options_compose.lua | 51 |
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
+| test_options_reset_tooltip.lua | 6 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3214,4 +3224,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2740** |
+| **Total** | **2746** |

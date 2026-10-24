@@ -26,7 +26,7 @@
 local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib then return end
 
-local COMPOSE_MINOR = 10
+local COMPOSE_MINOR = 11
 -- Minor 8: O.StrataTooltip(values[, strings]), the one tooltip every player strata row carries
 -- (frame-layering-§1, options-ui-§16).
 -- Minor 9: MasterControls takes `notes`, `resetPositionTooltip` and `lockIsPreview`, the only ways a
@@ -35,6 +35,8 @@ local COMPOSE_MINOR = 10
 -- Minor 10: the group composers take `tooltips` beside `labels`, replacing a leaf's tooltip where the
 -- canonical words misdescribe the host's wiring; a swatch keeps its class-color sentence after it,
 -- and MasterControls ignores the field (options-ui-§16, v2.88.0).
+-- Minor 11: O.ResetAllTooltip(tail), the Reset all settings tooltip for the General page's header
+-- Defaults, read from the descriptor exactly as the button reads it (options-ui-§12, U-04).
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__composeMinor and lib.__composeMinor >= COMPOSE_MINOR
@@ -495,6 +497,19 @@ function lib.__AttachCompose(O, d)
     if offersAny(offered, STRATA_POPUP_UP) then
       text = text .. (S.POPUP or STRATA_TEXT.POPUP)
     end
+    return text
+  end
+
+  --- The tooltip *Reset all settings* carries, for the General page's header Defaults where that
+  --- button is the global reset (options-ui-§12, U-04). Since compose minor 11.
+  ---
+  --- Reads the descriptor at call time through the same resetAllTooltip MasterControls uses, so the
+  --- two controls for one act can never describe it two ways. `tail` (optional) follows after one
+  --- space when it is a non-empty string; an addon with key bindings passes O.KEYBINDS_UNCHANGED
+  --- (options-ui-§20). MasterControls' `notes.resetAll` is that button's own and never appears here.
+  function O.ResetAllTooltip(tail)
+    local text = resetAllTooltip(desc)
+    if type(tail) == "string" and tail ~= "" then text = text .. " " .. tail end
     return text
   end
 

@@ -211,7 +211,7 @@ test("compose tooltips: every golden is unchanged", function()
   end
 end)
 
-test("compose tooltips: OptionsCompose is at minor 10", function()
+test("compose tooltips: OptionsCompose is at minor 10 or later", function()
   -- red under: the change landing without its bump, which no vendored copy would pick up.
-  assertEqual(T.options.MODULES.OptionsCompose, 10)
+  assertTrue(T.options.MODULES.OptionsCompose >= 10)
 end)

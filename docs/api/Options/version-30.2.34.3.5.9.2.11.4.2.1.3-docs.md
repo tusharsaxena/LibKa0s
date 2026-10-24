@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 30.2.34.3.5.9.2.10.4.2.1.3
+# `LibKa0s-Options-1.0` — version 30.2.34.3.5.9.2.11.4.2.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **30** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **3** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **2** · `OptionsCompose.lua` **10** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** · `OptionsKeybinds.lua` **3** |
+| Files and minors | `Options.lua` **30** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **3** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **2** · `OptionsCompose.lua` **11** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** · `OptionsKeybinds.lua` **3** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>`, in load order — the same twelve numbers `lib.MODULES` reports. |
 | Shipped in | v1.77.0 |
 | Status | **Current** |
 | Supersedes | [version 29.2.34.2.5.9.1.7.4.2.1](./version-29.2.34.2.5.9.1.7.4.2.1-docs.md) — whose IdList suggestion list stayed open over a covered page when combat started, which had no shared strata-row tooltip, and no key binding model and no Keybindings tab |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua` and `OptionsKeybinds.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 30, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 10, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1, OptionsKeybinds = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 30, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 11, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1, OptionsKeybinds = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `C9` for `OptionsCompose.lua` minor 9, `C10` for `OptionsCompose.lua` minor 10, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `C9` for `OptionsCompose.lua` minor 9, `C10` for `OptionsCompose.lua` minor 10, `C11` for `OptionsCompose.lua` minor 11, `S1` for
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `D1` for `OptionsDrawer.lua` minor 1, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `I1` for
 `OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `OC2` for `OptionsCombat.lua` minor 2, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
@@ -41,14 +41,28 @@ member is a fact about when a consumer got it, not about which file holds it tod
 ## What changed at this version
 
 Six changes, in `Options.lua` 29 -> **30**, `OptionsIds.lua` 2 -> **3**, `OptionsCombat.lua`
-1 -> **2**, `OptionsCompose.lua` 7 -> **10** (its minors 8, 9 and 10 all land in this release) and a
+1 -> **2**, `OptionsCompose.lua` 7 -> **11** (its minors 8, 9, 10 and 11 all land in this release) and a
 new twelfth file, `OptionsKeybinds.lua`, at minor **3** (its minors 1, 2 and 3 all land in this
 release); every other file of the major is unchanged. This version was briefly keyed
 29.2.34.3.5.9.2.7.4.2.1, then 29.2.34.3.5.9.2.8.4.2.1, then 30.2.34.3.5.9.2.8.4.2.1.1, then
-30.2.34.3.5.9.2.8.4.2.1.2, then 30.2.34.3.5.9.2.8.4.2.1.3 and then 30.2.34.3.5.9.2.9.4.2.1.3 on
-the release branch, before the `OptionsCompose.lua` minor moved, before `OptionsKeybinds.lua`
-joined, before its second minor, before its third, before `OptionsCompose.lua`'s ninth and before
-its tenth; no release carried any of those keys.
+30.2.34.3.5.9.2.8.4.2.1.2, then 30.2.34.3.5.9.2.8.4.2.1.3, then 30.2.34.3.5.9.2.9.4.2.1.3 and
+then 30.2.34.3.5.9.2.10.4.2.1.3 on the release branch, before the `OptionsCompose.lua` minor moved,
+before `OptionsKeybinds.lua` joined, before its second minor, before its third, before
+`OptionsCompose.lua`'s ninth, before its tenth and before its eleventh; no release carried any of
+those keys.
+
+**The reset's tooltip for the General page's header Defaults: `O.ResetAllTooltip(tail)` (C11).**
+`OptionsCompose.lua` 10 -> **11** implements the library half of `options-ui-§12` as WS-36 wrote it:
+where the General page's header **Defaults** is the global reset, its `defaultsTooltip` is the very
+text *Reset all settings* carries. `O.ResetAllTooltip(tail)` returns that text, read from the
+descriptor at call time through the same chooser `O.MasterControls` uses (`resetProfile`,
+`profilesPage`), so the two controls for one act can never describe it two ways; `tail` follows
+after one space when it is a non-empty string, and an addon with key bindings passes
+`O.KEYBINDS_UNCHANGED` (`options-ui-§20`). `O.MasterControls`' `notes.resetAll` is that button's
+own and never reaches this member. **One instance member is added, and every Options degradation
+stub owes it** (see [What a consumer owes](#what-a-consumer-owes)). See
+[`O.ResetAllTooltip(tail)`](#oresetalltooltiptail--string). U-04 and XC-02 of Ka0sAddonsCommonTasks
+`docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`. Cases: `tests/test_options_reset_tooltip.lua`.
 
 **Tooltips beside labels on the group composers (C10).** `OptionsCompose.lua` 9 -> **10**
 implements the composer half of `options-ui-§16` as standard v2.88.0 wrote it. `O.FontGroup`,
@@ -1610,6 +1624,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `VISIBILITY_VALUES` / `VISIBILITY_SORT` | **C1** | The four general-visibility values and their declared order. General visibility is a dropdown, not a boolean: a boolean can only ever answer two of the four. |
 | `MASTER_GROUP` | **C1** | The literal `"Master controls"` — the group name, the tab label and the `afterGroup` key are one string, because the group name **is** the hook key. |
 | `CLASS_COLOR_NOTE` | **C1** | The sentence every composed swatch's tooltip carries, in place of the `disabledIf` it must never have. |
+| `ResetAllTooltip(tail)` | **C11** | The tooltip *Reset all settings* carries, for the General page's header Defaults (`options-ui-§12`), read from the descriptor at call time exactly as the button reads it; `tail` follows after one space when it is a non-empty string. Pure; returns a string. See [`O.ResetAllTooltip`](#oresetalltooltiptail--string). |
 | `StrataTooltip(values, strings)` | **C8** | The one tooltip every player strata row carries (`frame-layering-§1`), built from the row's own value table: the tiers always, plus the dialog-and-above sentences only when the row offers those values. Pure; returns a string. See [`O.StrataTooltip`](#ostratatooltipvalues-strings--string). |
 | `LSMValues(mediaType)` | W1 (never-empty: **W4**) | A **deferred** closure pulling the live media hash at dropdown-render time. Never empty: a media library that has not loaded yet yields a single `None` placeholder, because a dropdown with no options cannot be opened and the CLI would refuse even the stored value. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. **Since C3 the media composers assign what this returns directly into a row's `values`**, which is why a host that replaces this member must return a function; see [The schema composers](#the-schema-composers). |
 | `PatchAlwaysShowScrollbar(scroll)` | S1 | The scrollbar override. Idempotent, and reversed on `OnRelease` — AceGUI pools ScrollFrames, so an unreleased patch escapes into whichever addon recycles the widget next. |
@@ -2015,18 +2030,27 @@ A hand-drawn General strip (LootHistory's `GENERAL_TABS`) adds its last entry:
 { key = "Keybindings", build = function(ctx) O.KeybindRows(ctx, KEYBIND_SPEC) end }
 ```
 
-And the General page's Defaults tooltip ends with the sentence:
+And the General page's Defaults tooltip is the reset's own (**C11**, `options-ui-§12`), ending with
+the sentence:
 
 ```lua
-defaultsTooltip = L["Resets every setting on this page."] .. " " .. O.KEYBINDS_UNCHANGED,
+defaultsTooltip = O.ResetAllTooltip(O.KEYBINDS_UNCHANGED),
 ```
 
 ### What a consumer owes
 
 **Every Options degradation stub gains `KeybindingsTab`, `KeybindRows` and `KEYBINDS_UNCHANGED`**,
 in every addon, windowed or not: `Kit.assertSurfaceParity` compares the stub with the live instance,
-so the re-vendor of this version turns red until the stub answers all three. This version's member
-manifest lists the lib-level table only, as every Options manifest does, so it does not name them.
+so the re-vendor of this version turns red until the stub answers all three. **It gains
+`ResetAllTooltip` as well (C11)**, owed by every addon at its re-vendor (RV2) for the same reason;
+the suggested stub is
+
+```lua
+ResetAllTooltip = function(tail) return type(tail) == "string" and tail or "" end,
+```
+
+This version's member manifest lists the lib-level table only, as every Options manifest does, so
+it does not name them.
 An addon that ships bindings tests its tab through `T.keybindThroughTab(row, slot, key[, mods])`
 (the kit's driver, revision 42) with `tests/_kit/mock_bindings.lua` installed, and leaves the
 capture, conflict, combat and settings-window cases to this library's suite (`testing-§8`).
@@ -2863,13 +2887,33 @@ tooltip. Wire it as the row's `tooltip`:
   values = STRATA_VALUES, tooltip = H.StrataTooltip(STRATA_VALUES) }
 ```
 
+### `O.ResetAllTooltip(tail)` → string
+
+New at `OptionsCompose.lua` minor **11** (**C11**). The tooltip *Reset all settings* carries, for
+the General page's header **Defaults** where that button is the global reset: `options-ui-§12`
+makes its `defaultsTooltip` this text (a **MUST**), and the host writes no wording of its own around
+it. A pure function: no widget, no state.
+
+It reads the instance's descriptor **at call time** through the same chooser `O.MasterControls`
+gives the button, so the two can never differ: with no `resetProfile`, `lib.STRINGS.RESET_ALL_TIP`;
+with `resetProfile`, `lib.STRINGS.RESET_ALL_TIP_PROFILE`; with `profilesPage` as well,
+`lib.STRINGS.RESET_ALL_TIP_PROFILES_PAGE`. `tail` (optional) follows after one space when it is a
+non-empty string; anything else adds nothing. An addon with key bindings passes options-ui-§20's
+tail, `O.KEYBINDS_UNCHANGED`. `O.MasterControls`' `notes.resetAll` is that button's own and never
+appears here. Declare it on the General page, built in the page builder after `lib:New`:
+
+```lua
+defaultsButton  = true,
+defaultsTooltip = H.ResetAllTooltip(H.KEYBINDS_UNCHANGED),
+```
+
 ## Compatibility
 
-**At 30.2.34.3.5.9.2.10.4.2.1.3 four instance members are added and nothing is removed**: `O.StrataTooltip` (C8), and `O.KeybindingsTab`, `O.KeybindRows` and `O.KEYBINDS_UNCHANGED` (K2).
+**At 30.2.34.3.5.9.2.11.4.2.1.3 five instance members are added and nothing is removed**: `O.StrataTooltip` (C8), `O.KeybindingsTab`, `O.KeybindRows` and `O.KEYBINDS_UNCHANGED` (K2), and `O.ResetAllTooltip` (C11).
 A host that does not call it draws what it drew. **An Options degradation stub owes
-`StrataTooltip`, `KeybindingsTab`, `KeybindRows` and `KEYBINDS_UNCHANGED`**: `Kit.assertSurfaceParity` compares a stub against the live instance (the
+`StrataTooltip`, `KeybindingsTab`, `KeybindRows`, `KEYBINDS_UNCHANGED` and `ResetAllTooltip`**: `Kit.assertSurfaceParity` compares a stub against the live instance (the
 surface registered with `Kit.setSurfaceSource`), so a stub without it turns the re-vendor red. This
-version's manifest lists the lib-level table only and does not name them. The two other moves (I3, OC2) are internal and owe nothing. `OptionsKeybinds.lua` (K1) adds one public lib-level table, `lib.KEYBIND_STRINGS`, which the manifest names, and otherwise only `__` members; `Options.lua` 30's guarded attach changes nothing a host draws, and a copy without `OptionsKeybinds.lua` is otherwise this version. A stub of the instance owes nothing for K1. K2's three members draw nothing until a host calls them, and a copy without `OptionsKeybinds.lua` has none of them. `OptionsKeybinds.lua` 3 (K3) adds only `__` library-level names and one hidden frame that registers `UPDATE_BINDINGS` through Core's `SafeRegisterEvent` while a keybind row is on screen, so a stub owes nothing for it and a host with no settings page open owns no registration. `OptionsCompose.lua` 9 (C9) adds no member, so a stub owes nothing for it; its three `O.MasterControls` fields change nothing for a host that passes none of them, but two owner-ruled changes reach every host that re-vendors: the alpha row reads *Master opacity* (no stored path moves, so a suite pinning *Master alpha* changes at the addon's re-vendor), and a host that omits *Lock frame* (every frameless host) draws *Minimap button* beside *Debug console*. `OptionsCompose.lua` 10 (C10) adds no member, so a stub owes nothing for it; the group composers' `tooltips` field is opt-in, and a host that passes none draws exactly what it drew.
+version's manifest lists the lib-level table only and does not name them. The two other moves (I3, OC2) are internal and owe nothing. `OptionsKeybinds.lua` (K1) adds one public lib-level table, `lib.KEYBIND_STRINGS`, which the manifest names, and otherwise only `__` members; `Options.lua` 30's guarded attach changes nothing a host draws, and a copy without `OptionsKeybinds.lua` is otherwise this version. A stub of the instance owes nothing for K1. K2's three members draw nothing until a host calls them, and a copy without `OptionsKeybinds.lua` has none of them. `OptionsKeybinds.lua` 3 (K3) adds only `__` library-level names and one hidden frame that registers `UPDATE_BINDINGS` through Core's `SafeRegisterEvent` while a keybind row is on screen, so a stub owes nothing for it and a host with no settings page open owns no registration. `OptionsCompose.lua` 9 (C9) adds no member, so a stub owes nothing for it; its three `O.MasterControls` fields change nothing for a host that passes none of them, but two owner-ruled changes reach every host that re-vendors: the alpha row reads *Master opacity* (no stored path moves, so a suite pinning *Master alpha* changes at the addon's re-vendor), and a host that omits *Lock frame* (every frameless host) draws *Minimap button* beside *Debug console*. `OptionsCompose.lua` 10 (C10) adds no member, so a stub owes nothing for it; the group composers' `tooltips` field is opt-in, and a host that passes none draws exactly what it drew. `OptionsCompose.lua` 11 (C11) adds `O.ResetAllTooltip`, which draws nothing; a host that does not call it draws what it drew, and its stub owes the member.
 
 **At 29.2.34.2.5.9.1.7.4.2.1 one `__` test seam is removed and nothing public moves**:
 `__releaseChrome`, which no suite or roster consumer called. A host draws what it drew. An Options
