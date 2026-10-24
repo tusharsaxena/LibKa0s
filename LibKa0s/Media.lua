@@ -463,8 +463,6 @@ end
 --- has therefore already run by the time a TOC reaches the consumer's own files, and a default that
 --- names a face LSM has not heard of yet is a default that resolves to nothing.
 ---
---- @param addonName string  the consumer's own addon folder name
---- @param vendorPath string optional
 --- THE NEW LEG-1 KEYS LAND FROM ONE FOLDER. LSM keeps the first registration of a key, so while
 --- only one consumer vendors minor 6 the skin faces and the Glass art resolve into THAT addon's
 --- folder, and every other copy's later `Register` is a no-op; it holds the files, so they draw.

@@ -371,4 +371,4 @@ with `borders, backgrounds` after them. What arrives: five OFL faces the skins n
 (`Ka0s Barlow`, `Ka0s Barlow SemiBold`, `Ka0s Cinzel`, `Ka0s Atkinson`, `Ka0s Atkinson Bold`,
 western only), a `langmask` list on every `FONTS` entry, and the `BORDERS` / `BACKGROUNDS` catalogs
 with the Glass rounded border and fill, registered with LibSharedMedia. The payload grows by about
-0.5 MB of fonts. See [version 6.1](./version-6.1-docs.md).
+0.4 MB of fonts. See [version 6.1](./version-6.1-docs.md).
