@@ -24,11 +24,11 @@ Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **D
 `PerfCommands` 1 unchanged); **SimPanel minor 6** (`LibKa0s-Sim-1.0` key **2.3.6**, `Sim` 2 and
 `SimTimeline` 3 unchanged); **Widgets minor 15**, **WidgetsDragHandle minor 5** and
 **WidgetsAutocomplete minor 3** (`LibKa0s-Widgets-1.0` key **15.1.5.3.3**, `WidgetsReorder` 1 and
-`WidgetsLineChart` 3 unchanged); **OptionsIds minor 3**, **OptionsCombat minor 2** and
-**OptionsCompose minor 8** (`LibKa0s-Options-1.0` key **29.2.34.3.5.9.2.8.4.2.1**, every other
-Options file unchanged); every
+`WidgetsLineChart` 3 unchanged); **Options minor 30**, **OptionsIds minor 3**, **OptionsCombat
+minor 2**, **OptionsCompose minor 8** and **OptionsKeybinds minor 1**, a new twelfth Options file
+(`LibKa0s-Options-1.0` key **30.2.34.3.5.9.2.8.4.2.1.1**, every other Options file unchanged); every
 other file still at its v1.76.0 minor and **test kit revision 42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
-this block names each new minor as it lands. Still **seventeen majors across forty files**.
+this block names each new minor as it lands. Now **seventeen majors across forty-one files**.
 
 ### Test kit revision 42: binding mock, frame-layer recorder and the Bindings.xml check
 
@@ -161,8 +161,9 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
 - **What a consumer owes: nothing.** Both members are `__`-prefixed, so no Options degradation stub
   owes them, and no public member moves at this change (the manifest it wrote,
   `members-29.2.34.3.5.9.2.7.4.2.1.json`, gave way to `members-29.2.34.3.5.9.2.8.4.2.1.json` when
-  OptionsCompose minor 8 landed). Documented in
-  [docs/api/Options/version-29.2.34.3.5.9.2.8.4.2.1-docs.md](docs/api/Options/version-29.2.34.3.5.9.2.8.4.2.1-docs.md).
+  OptionsCompose minor 8 landed, and that to `members-30.2.34.3.5.9.2.8.4.2.1.1.json` when Options
+  minor 30 and OptionsKeybinds minor 1 did). Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md).
 - Four new cases in `tests/test_options_idsuggest_frames.lua`, with the events fired through
   `lib.__combatFrame`: a list a shown page's box opened closes at combat start and its rows pick
   nothing; a box under none of the panels handed in keeps its list; a focused pullout and the list
@@ -188,15 +189,61 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
 - **What a consumer owes: every Options degradation stub gains `StrataTooltip`.**
   `Kit.assertSurfaceParity` compares a stub against the live instance `lib:New` returns (the
   surface a consumer's runner registers with `Kit.setSurfaceSource`), so the re-vendor turns red
-  until the stub answers it. The regenerated `members-29.2.34.3.5.9.2.8.4.2.1.json` lists the
-  lib-level table only, as every Options manifest does, so it does not name the new member. Documented in
-  [docs/api/Options/version-29.2.34.3.5.9.2.8.4.2.1-docs.md](docs/api/Options/version-29.2.34.3.5.9.2.8.4.2.1-docs.md),
-  which replaces the 29.2.34.3.5.9.2.7.4.2.1 document this release opened with: no release
-  carried that key.
+  until the stub answers it. The regenerated `members-29.2.34.3.5.9.2.8.4.2.1.json` (now
+  `members-30.2.34.3.5.9.2.8.4.2.1.1.json`) lists the lib-level table only, as every Options
+  manifest does, so it does not name the new member. Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md),
+  which replaces the 29.2.34.3.5.9.2.7.4.2.1 and 29.2.34.3.5.9.2.8.4.2.1 documents this release
+  carried on its branch: no release carried either key.
 - Six new cases in `tests/test_options_compose.lua`: `BACKGROUND` to `HIGH` (array and map) give the
   tiers alone; a set with `DIALOG` (or `FULLSCREEN`) adds the dialog sentence; a set with `TOOLTIP`
   or `FULLSCREEN_DIALOG` adds both; a non-table gives the tiers; `strings` overrides each part; and
   the default text is ASCII and names the Settings window.
+
+### Options minor 30 and OptionsKeybinds minor 1: the key binding model
+
+- **`OptionsKeybinds.lua`, a twelfth Options file at minor 1**, loaded after `OptionsDrawer.lua`
+  (and so after `OptionsCombat.lua`, whose lock it reads) and paired on the shell's minor
+  (`lib.__keybindsMinor` / `lib.__keybindsShellMinor`). It is the headless half of the
+  settings-panel Keybindings tab (`options-ui-§20`): the editor for the bindings a host declares in
+  its own `Bindings.xml`, two slots per action as on the client's Options -> Keybindings page.
+- **`lib.__keybindSet(command, slot, key)`** binds with the client's slot semantics
+  (`RebindKeysInOrder`): the old keys are unbound, `key` is taken from the action that had it, and
+  the command is rebound in order with `key` in `slot` (a key the command already holds swaps; slot
+  2 on a keyless command becomes slot 1). It answers `ok, displaced, displacedUnbound, reason`.
+  **It refuses `"combat"`** under `lib.__IsCombatLocked()` before calling any binding API
+  (`SetBinding` is `#nocombat`; `SaveBindings` is blocked from tainted code in combat), and
+  `"unavailable"` without the five binding functions. A falsy `SetBinding` puts every old binding
+  back, the displaced action's too, and answers `"failed"` with no save. Otherwise one
+  `SaveBindings(GetCurrentBindingSet())`. **`lib.__keybindClear(command, slot)`** clears one slot or
+  both the same way; nothing to clear saves nothing.
+- **`lib.__keyChord(key, mods)`**: a key press as the client's chord string (`ALT-` `CTRL-` `SHIFT-`
+  `META-`, mouse buttons 3 to 31 and the wheel), `nil` for a modifier alone, `UNKNOWN`, the left and
+  right buttons and `ESCAPE`; the client's `GetConvertedKeyOrButton`,
+  `IsKeyPressIgnoredForBinding` and `CreateKeyChordStringUsingMetaKeyState` first, a bundled copy
+  without them. **`lib.__keybindSetName()`** answers `"account"` or `"character"`.
+- **`lib.KEYBIND_STRINGS`**, the tab's words (ASCII; a host's `spec.strings` overrides them for
+  translation), with the client's own `NOT_BOUND`, `KEY_BOUND` and `KEY_UNBOUND_ERROR` winning
+  where they exist. It is the one public lib-level name added, so
+  `members-30.2.34.3.5.9.2.8.4.2.1.1.json` lists it.
+- **`Options.lua` minor 30** attaches the file at the end of `lib:New`, guarded
+  (`lib.__AttachKeybinds(O, d)`, an empty body at minor 1: the tab's instance members arrive with
+  the file's next minor in this release).
+- **Why.** OWNER_SCOPE 015 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`: every
+  addon with a window offers its key bindings on its own settings page, following the binding set
+  the player chose and in step with Blizzard's page. This **supersedes QuickComms' 2026-10-21
+  retirement of its in-panel key box** (QuickComms `b902e35`); the write-and-save path it retired
+  (`db8f7a6`) is the one this file carries. `launcher-§6`'s rejection of a library-owned binding
+  file (LibKa0s#58) stands: the file writes no `BINDING_*` global, never reads `Bindings.xml` and
+  sets no default key.
+- **What a consumer owes: nothing yet.** No instance member is added, so no Options degradation
+  stub moves. Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.1-docs.md).
+- New suite `tests/test_options_keybinds_model.lua` (the kit's `mock_bindings.lua` installed per
+  case): slots on commands with 0, 1 and 2 keys, the slot 2 to slot 1 swap, a displaced action
+  reported keyless only when it is, a failed rebind restoring everything with no save, one save to
+  the current set (1 and 2), both combat refusals calling nothing, clears, `"unavailable"`, the chord
+  builder on both routes, the set name and the twelve-component key.
 
 ## v1.76.0 — 2026-10-23
 

@@ -1704,6 +1704,34 @@ Total.
 - drawer: with OptionsDrawer.lua absent there is no Drawer, and the page is untouched
 - drawer: with no AceGUI it draws nothing and answers nil
 
+### test_options_keybinds_model.lua (25)
+
+- keybinds: OptionsKeybinds is at minor 1, paired on an Options shell at 30 or later
+- keybinds: the Options version key has twelve components
+- keybinds: KEYBIND_STRINGS carries the exact default words, all ASCII
+- keybinds: the client's own strings win where they exist, with the library's fallbacks
+- keybinds: the API is available only when all five binding functions exist
+- keybinds: slot 1 on a keyless command binds the key and saves once
+- keybinds: slot 2 on a keyless command becomes slot 1
+- keybinds: slot 1 on a one-key command replaces that key, which is left free
+- keybinds: slot 2 on a one-key command keeps the old key first
+- keybinds: on a two-key command the slot's old key is unbound and the order kept
+- keybinds: the same key in the same slot is a no-op that writes and saves nothing
+- keybinds: moving a key from slot 2 to slot 1 of the same command swaps the two
+- keybinds: taking another action's only key names it, left keyless
+- keybinds: taking one of another action's two keys names it, not left keyless
+- keybinds: a failed SetBinding restores every old binding, the displaced action's too
+- keybinds: a failed SetBinding on a keyless command leaves it keyless and saves nothing
+- keybinds: SaveBindings runs exactly once, with GetCurrentBindingSet(), for sets 1 and 2
+- keybinds: under the combat lock set and clear refuse 'combat' and call no binding API
+- keybinds: under InCombatLockdown alone set and clear refuse 'combat' too
+- keybinds: clear slot 1 leaves slot 2, clear slot 2 leaves slot 1, nil clears both
+- keybinds: clearing with nothing bound succeeds and saves nothing
+- keybinds: the set in force is 'account' for 1 and 'character' for 2
+- keybinds: the bundled chord builder orders ALT-CTRL-SHIFT-META and converts mouse names
+- keybinds: the bundled chord builder reads the modifier keys when no mods are passed
+- keybinds: with the client's chord helpers the client route agrees
+
 ### test_options_idsuggest.lua (29)
 
 - IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
@@ -3043,6 +3071,7 @@ Total.
 | test_options_tabbed.lua | 20 |
 | test_options_nav.lua | 14 |
 | test_options_drawer.lua | 26 |
+| test_options_keybinds_model.lua | 25 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3098,4 +3127,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2644** |
+| **Total** | **2669** |
