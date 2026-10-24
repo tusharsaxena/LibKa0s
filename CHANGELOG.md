@@ -17,6 +17,10 @@ twelfth Options file), the test kit's binding and frame-layer mocks and its Bind
 the frame-layering fixes the 2026-10-24 strata review asked of the library: toplevel tool windows
 that re-raise a shown confirmation, a DragHandle level and parent-alpha option, clamped menus, the
 IdList suggestion list closed at combat start, and one shared strata tooltip (`O.StrataTooltip`).
+Extended on 2026-10-24, after the local tag and before any push, with the settings-layout surfaces
+of the run's item 020: `MasterControls` `notes`, `resetPositionTooltip` and `lockIsPreview`, the
+*Master opacity* label and the frameless packing, `tooltips` on the group composers, and
+`O.ResetAllTooltip`.
 
 Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **DebugLog minor 21**
 (`LibKa0s-DebugLog-1.0` key **21.3.1**, `DebugLogDiagnostics` 3 and `DebugLogGates` 1 unchanged);
@@ -481,12 +485,18 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   the suggestion list closed at combat start) and the one strata tooltip (OptionsCompose 8). Every
   `frame-layering-§N` and `options-ui-§20` citation in `LibKa0s/`, `docs/` and this file resolves
   to a heading of the standard at v2.88.0.
-- **Consumers planned at v1.77.0**, recorded in `docs/api/CONSUMERS.md` (eight rows, verdict
+- **Consumers planned at v1.77.0**, recorded in `docs/api/CONSUMERS.md` (nine rows, verdict
   *zero — planned at v1.77.0*, the v1.75.0 stamp kept) and the Consumers table of
   `docs/releasing.md` until the census is re-run: the Keybindings tab by BankLedger, DpsRace,
   DropWatcher, LootHistory, MultiMeters, QuickComms and WhatGroup; `O.StrataTooltip` by AuraMaster,
   MultiMeters, PanelMaster and PartyFrameEnhanced; DragHandle's `level`, `ignoreParentAlpha` and
-  `ApplyLevel` by AbsorbTracker, AuraMaster, ConsumableMaster, KickCD and QuickComms.
+  `ApplyLevel` by AbsorbTracker, AuraMaster, ConsumableMaster, KickCD and QuickComms. The
+  settings-layout extension (M3) adds the ninth row, `O.ResetAllTooltip`, by BankLedger,
+  DropWatcher, LootHistory, MultiMeters, QuickComms, WhatGroup, PremadeGroupsFilterExtension and
+  PrettyChat, and amends the `MasterControls` row (`notes` by BankLedger, ConsumableMaster,
+  LootHistory and WhatGroup; `lockIsPreview` by AbsorbTracker, ConsumableMaster, KickCD and
+  PartyFrameEnhanced; `resetPositionTooltip` per each addon's layout item) and the four group
+  composers' rows (`tooltips` by AbsorbTracker).
 - **Three functions split under the CCN 15 release ceiling**, found by the first v1.77.0 release
   run (`docs/automated-tests/20261024-073953/`, kept as the record that found them): `lib:New` in
   `Options.lua` (16; its guarded attach chain is now a local `attachHalves`), and `check` (18) and

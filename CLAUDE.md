@@ -258,7 +258,12 @@ and `tests/test_options_compose.lua` came in, the last two entries below. Larges
   `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) — **accepted.** The seam is the record-backed arm
   (the *compose minor 4* section and *PanelMaster's three hand-written groups*), to its own
   `tests/test_options_compose_arm.lua`. **Re-check trigger: 1200 lines, or the next OptionsCompose
-  minor that adds cases here.**
+  minor that adds cases here.** Re-measured 2026-10-24 after v1.77.0's settings-layout extension
+  (OptionsCompose minors 9-11, `LK-30` to `LK-32` of the same run): still 1012, since those minors'
+  cases went to suites of their own, `tests/test_options_compose_master.lua` (241),
+  `tests/test_options_compose_tooltips.lua` (217) and `tests/test_options_reset_tooltip.lua` (105), so
+  the trigger did not fire. `LibKa0s/OptionsCompose.lua` is 758 (637 at minor 8), out of the band;
+  `LibKa0s/OptionsWidgets.lua` and `LibKa0s/OptionsTabs.lua` were not touched by the extension.
 
 `LibKa0s/Perf.lua` left the band on 2026-10-01, 1307 → 975, closing issue
 [#7](https://github.com/tusharsaxena/LibKa0s/issues/7) in two peels at minor 14. The first moved the
