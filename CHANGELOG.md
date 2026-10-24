@@ -17,8 +17,8 @@ choice on the settings panel, with LootHistory as the prototype consumer. The te
 paint recorder opens it.
 
 Versions in this release: **Media minor 6** (`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1
-unchanged), **Skin minor 1** and **SkinDefs minor 1** (the new major `LibKa0s-Skin-1.0`, key
-**1.1**), **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key **21.4.1**); every other file
+unchanged), **Skin minor 1** and **SkinDefs minor 2** (the new major `LibKa0s-Skin-1.0`, key
+**1.2**), **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key **21.4.1**); every other file
 still at its v1.77.0 minor, and **test kit revision 43**, until an entry below moves one. Each change
 bumps the minor of the files it touches once, and this block names each new minor as it lands. Now
 **eighteen majors across forty-three files**: one major added (`LibKa0s-Skin-1.0`), and no
@@ -78,7 +78,7 @@ path version 5.1 had resolves the same.
 ### LibKa0s-Skin-1.0 (new major, Skin minor 1, SkinDefs minor 1)
 
 The skin engine and its first skin, documented in
-[docs/api/Skin/version-1.1-docs.md](docs/api/Skin/version-1.1-docs.md). `Skin.lua` loads after
+[docs/api/Skin/version-1.2-docs.md](docs/api/Skin/version-1.2-docs.md). `Skin.lua` loads after
 `MediaIcons.lua`, floored on Core (`NEEDS_CORE = 1`, no Core member called); `SkinDefs.lua` is
 paired on its minor (`__defsMinor` / `__defsShellMinor`).
 
@@ -111,11 +111,47 @@ paired on its minor (`__defsMinor` / `__defsShellMinor`).
   values are today's constants, each pinned in `tests/test_skin.lua` against the constant it
   replaces; every font token is nil, meaning the FontString keeps its font object, and the
   quality colors are nil, meaning the client's. Where two sites draw one role in two colors, both
-  survive as two tokens. The other eight skins join later in this release.
+  survive as two tokens. The other eight skins follow (SkinDefs minor 2, below).
 
 New suite `tests/test_skin.lua`. **What a consumer owes:** nothing until it adopts; adoption is
 required of none. Whole-folder vendoring ships the major into every consumer, and its files only
 define functions and data tables: no frame, timer or event exists until a host registers an owner.
+
+### SkinDefs minor 2: the eight other skins
+
+`LibKa0s-Skin-1.0` key 1.2 (the in-flight 1.1 document moved to it; 1.1 never shipped). Obsidian,
+Azeroth, Glass, High Contrast, Ember, WoW Default, WoW Midnight and WoW Forever join Ka0s Default,
+in that order, documented under *The eight skins* in
+[docs/api/Skin/version-1.2-docs.md](docs/api/Skin/version-1.2-docs.md) with every token each sets.
+
+- **Translated from the mockups.** Each skin is its entry in the mockups' token table, key for
+  key (`classic` is `ka0s`, `wowdefault` is `wow`; the `eui` preview is never registered), run
+  through one map onto the schema. A key a mockup skin omits inherits Ka0s Default's Lua value,
+  never the mockup's base; Ka0s Default itself is unchanged. Each skin also sets what the mockups
+  do not draw (opened drawers, cards and panels, disabled text), and Azeroth, the one light skin,
+  its headings, quality, semantic and chart colors.
+- **What WoW cannot draw.** No blur; one rounded art (Glass, `nine:Ka0s Glass` at radius 8), so
+  every other radius is square; vertical gradients through `<ctl>.bgTop` / `<ctl>.bgBottom`; CSS
+  bevels as `bevelOut` / `bevelIn` or Blizzard's dialog art. Geometry (`title.height`,
+  `scroll.width`, `scroll.gutter`, `win.inset`) is Ka0s Default's in all nine.
+- **Blizzard art, WoW Default only.** The window is `BACKDROP_DIALOG_32_32`'s edge (LSM
+  `Blizzard Dialog`) over `UI-DialogBox-Background-Dark`; buttons are a red gradient with a 2px
+  `bevelOut` gold `#A07C2C` edge; tabs `UI-OptionsFrame-ActiveTab` / `-InActiveTab`; the scroll
+  thumb `UI-ScrollBar-Knob`; the checkbox `UI-CheckBox-Up` / `-Check`. WoW Midnight is flat with a
+  2px `#B08A3E` edge and gradients; WoW Forever is warm charcoal with no window texture, black
+  title bars with centered white titles, a tan accent, gold headings and 1px edges. High Contrast
+  draws every control edge at 2px or more.
+- **Five new nilable schema tokens** for that art, `check.texture`, `check.markTexture`,
+  `scroll.thumbTexture`, `tab.texture` and `tab.onTexture` (197 tokens): an art token draws its
+  art at its own colors, and the color token beside it is the fallback.
+- **Fonts.** Obsidian, Glass and WoW Forever wear Barlow; Azeroth, Ember and WoW Midnight Cinzel
+  titles over the client body font; High Contrast Atkinson Hyperlegible 2pt larger; WoW Default
+  the client's.
+
+New suite `tests/test_skin_defs.lua`: the nine skins in order, schema names and kinds only, every
+token defined or inherited from Ka0s Default, the geometry invariant, the GameTooltip lines at 4.5:1
+on `(.05, .05, .08)`, each skin's text on its own window (body 4.5:1, the other roles 3:1), and
+each skin's recorded choices. No member change.
 
 ### DebugLogDiagnostics minor 4: the identity header names Skin
 

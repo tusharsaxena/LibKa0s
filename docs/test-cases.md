@@ -475,6 +475,23 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
+### test_skin_defs.lua (14)
+
+- skin defs: the nine skins register in order with their labels
+- skin defs: every skin names only schema tokens, each of its kind
+- skin defs: every skin defines every schema token or inherits it from Ka0s Default
+- skin defs: geometry tokens equal Ka0s Default in all nine skins
+- skin defs: every skin's GameTooltip lines read on the client's dark tooltip
+- skin defs: every skin's text reads on its own window
+- skin defs: High Contrast draws every control border at 2px or more
+- skin defs: Glass is the rounded skin, radius 8 on the Ka0s Glass nine-slice
+- skin defs: WoW Default wears the Blizzard art docs/api/Skin names
+- skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art
+- skin defs: only WoW Default names Blizzard art
+- skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
+- skin defs: every font and border a skin names is shipped or an LSM default
+- skin defs: the font assignments follow the spec
+
 ### test_widgets.lua (58)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
@@ -3183,6 +3200,7 @@ Total.
 | test_glow.lua | 15 |
 | test_media.lua | 36 |
 | test_skin.lua | 26 |
+| test_skin_defs.lua | 14 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3286,4 +3304,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2800** |
+| **Total** | **2814** |

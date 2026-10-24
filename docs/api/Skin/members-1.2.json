@@ -1,10 +1,10 @@
 {
   "major": "LibKa0s-Skin-1.0",
-  "versionKey": "1.1",
+  "versionKey": "1.2",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Skin", "minor": 1 },
-    { "file": "SkinDefs", "minor": 1 }
+    { "file": "SkinDefs", "minor": 2 }
   ],
   "members": [
     { "name": "Color", "kind": "function" },

@@ -186,7 +186,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.1](./Skin/version-1.1-docs.md) | `Skin.lua` 1 (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`) · `SkinDefs.lua` 1 (the token schema and Ka0s Default) | v1.78.0 (unreleased) | **Current** |
+| [1.2](./Skin/version-1.2-docs.md) | `Skin.lua` 1 (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`) · **`SkinDefs.lua` 2** (the token schema and the nine skins) | v1.78.0 (unreleased) | **Current** |
 
 ### `LibKa0s-Widgets-1.0`
 
