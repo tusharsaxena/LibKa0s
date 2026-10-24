@@ -25,8 +25,8 @@ Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **D
 `SimTimeline` 3 unchanged); **Widgets minor 15**, **WidgetsDragHandle minor 5** and
 **WidgetsAutocomplete minor 3** (`LibKa0s-Widgets-1.0` key **15.1.5.3.3**, `WidgetsReorder` 1 and
 `WidgetsLineChart` 3 unchanged); **Options minor 30**, **OptionsIds minor 3**, **OptionsCombat
-minor 2**, **OptionsCompose minor 8** and **OptionsKeybinds minor 2**, a new twelfth Options file
-(`LibKa0s-Options-1.0` key **30.2.34.3.5.9.2.8.4.2.1.2**, every other Options file unchanged); every
+minor 2**, **OptionsCompose minor 8** and **OptionsKeybinds minor 3**, a new twelfth Options file
+(`LibKa0s-Options-1.0` key **30.2.34.3.5.9.2.8.4.2.1.3**, every other Options file unchanged); every
 other file still at its v1.76.0 minor and **test kit revision 42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
 this block names each new minor as it lands. Now **seventeen majors across forty-one files**.
 
@@ -170,8 +170,9 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   `members-29.2.34.3.5.9.2.7.4.2.1.json`, gave way to `members-29.2.34.3.5.9.2.8.4.2.1.json` when
   OptionsCompose minor 8 landed, and that to `members-30.2.34.3.5.9.2.8.4.2.1.1.json` when Options
   minor 30 and OptionsKeybinds minor 1 did, and that to `members-30.2.34.3.5.9.2.8.4.2.1.2.json`
-  when OptionsKeybinds minor 2 did). Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md).
+  when OptionsKeybinds minor 2 did, and that to `members-30.2.34.3.5.9.2.8.4.2.1.3.json` when
+  OptionsKeybinds minor 3 did). Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md).
 - Four new cases in `tests/test_options_idsuggest_frames.lua`, with the events fired through
   `lib.__combatFrame`: a list a shown page's box opened closes at combat start and its rows pick
   nothing; a box under none of the panels handed in keeps its list; a focused pullout and the list
@@ -198,10 +199,10 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   `Kit.assertSurfaceParity` compares a stub against the live instance `lib:New` returns (the
   surface a consumer's runner registers with `Kit.setSurfaceSource`), so the re-vendor turns red
   until the stub answers it. The regenerated `members-29.2.34.3.5.9.2.8.4.2.1.json` (now
-  `members-30.2.34.3.5.9.2.8.4.2.1.2.json`) lists the lib-level table only, as every Options
+  `members-30.2.34.3.5.9.2.8.4.2.1.3.json`) lists the lib-level table only, as every Options
   manifest does, so it does not name the new member. Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md),
-  which replaces the 29.2.34.3.5.9.2.7.4.2.1, 29.2.34.3.5.9.2.8.4.2.1 and 30.2.34.3.5.9.2.8.4.2.1.1
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md),
+  which replaces the 29.2.34.3.5.9.2.7.4.2.1, 29.2.34.3.5.9.2.8.4.2.1, 30.2.34.3.5.9.2.8.4.2.1.1 and 30.2.34.3.5.9.2.8.4.2.1.2
   documents this release carried on its branch: no release carried any of those keys.
 - Six new cases in `tests/test_options_compose.lua`: `BACKGROUND` to `HIGH` (array and map) give the
   tiers alone; a set with `DIALOG` (or `FULLSCREEN`) adds the dialog sentence; a set with `TOOLTIP`
@@ -233,7 +234,7 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
 - **`lib.KEYBIND_STRINGS`**, the tab's words (ASCII; a host's `spec.strings` overrides them for
   translation), with the client's own `NOT_BOUND`, `KEY_BOUND` and `KEY_UNBOUND_ERROR` winning
   where they exist. It is the one public lib-level name added, so
-  `members-30.2.34.3.5.9.2.8.4.2.1.1.json` (now `members-30.2.34.3.5.9.2.8.4.2.1.2.json`) lists it.
+  `members-30.2.34.3.5.9.2.8.4.2.1.1.json` (now `members-30.2.34.3.5.9.2.8.4.2.1.3.json`) lists it.
 - **`Options.lua` minor 30** attaches the file at the end of `lib:New`, guarded
   (`lib.__AttachKeybinds(O, d)`, an empty body at minor 1: the tab's instance members arrive with
   the file's next minor in this release).
@@ -246,7 +247,7 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   sets no default key.
 - **What a consumer owes: nothing yet.** No instance member is added, so no Options degradation
   stub moves. Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md).
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md).
 - New suite `tests/test_options_keybinds_model.lua` (the kit's `mock_bindings.lua` installed per
   case): slots on commands with 0, 1 and 2 keys, the slot 2 to slot 1 swap, a displaced action
   reported keyless only when it is, a failed rebind restoring everything with no save, one save to
@@ -292,13 +293,14 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   Keybindings, and nothing else.
 - **What a consumer owes: every Options degradation stub gains `KeybindingsTab`, `KeybindRows` and
   `KEYBINDS_UNCHANGED`**, in every addon, windowed or not (`Kit.assertSurfaceParity`). The
-  regenerated `members-30.2.34.3.5.9.2.8.4.2.1.2.json` lists the lib-level table only, as every
+  regenerated `members-30.2.34.3.5.9.2.8.4.2.1.2.json` (now `members-30.2.34.3.5.9.2.8.4.2.1.3.json`)
+  lists the lib-level table only, as every
   Options manifest does, so it does not name them. The KB items of the 2026-10-24 run test their tab
   through `T.keybindThroughTab`. Documented in
-  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md).
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md).
 - **Why.** OWNER_SCOPE 015 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`
   (KEYBINDINGS_RESEARCH §5.1 and §5.2; XC-01, XC-02, XC-03 and U-03 of its layout review). Repainting
-  on `UPDATE_BINDINGS` is the next minor's.
+  on `UPDATE_BINDINGS` is the next minor's (OptionsKeybinds minor 3, below).
 - New suite `tests/test_options_keybinds.lua` on the bench `tests/fixture_keybinds.lua`, which fails
   a case on any touch of Blizzard's settings window: the tab entry and its place last, rows and
   labels, slots and the refresher, the capture (SHIFT-K, Escape, a modifier alone, PRINTSCREEN, a
@@ -306,6 +308,45 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   and set lines, the three combat cases, pooling, OnHide, a disabled render, degradation and the
   intro. Three new cases in `tests/test_kit_bindings.lua` pin `Kit.keybindThroughTab`, driven against an
   Options instance.
+
+### OptionsKeybinds minor 3: the tab follows Options -> Keybindings
+
+- **A key set on the client's Options -> Keybindings page, a binding set switched (Character
+  Specific Keybindings, which runs `LoadBindings`) or an override binding now shows on the
+  Keybindings tab** without reopening the settings. `SetBinding`, `SaveBindings` and `LoadBindings`
+  fire `UPDATE_BINDINGS`; one library frame, **`lib.__keybindEventFrame`** (hidden, made once, kept
+  across an upgrade, its `OnEvent` resolving `lib.__OnKeybindEvent` at call time), hears it.
+- **Only while a keybind row is on screen.** `lib.__keybindLive` (weak-keyed, row record -> ctx)
+  holds every row from its build to its group's `OnRelease`; `lib.__syncKeybindEvents()` drops dead
+  rows and registers when a live row's group frame is visible on a shown page, or unregisters when
+  none is. It runs on row build, on release, from the page's `OnShow` and `OnHide` and at the start
+  of each dispatch, so a host with no settings page open owns no registration (the combat lock's
+  discipline). An event that reaches the frame anyway draws and prints nothing.
+- **Through Core's `SafeRegisterEvent`**, pcall'd, never a raw `RegisterEvent`, so this is not a
+  fourth raw private registration site (`CLAUDE.md`'s `events-frames-taint-§1` row says so).
+  Without the helper nothing registers; the page's `OnShow` re-read and the refreshers still work.
+- **One repaint per frame.** The dispatcher queues one `C_Timer.After(0, ...)` repaint unless one is
+  pending (`lib.__keybindRepaintPending`; with no `C_Timer` it repaints at once), so a burst of
+  events costs one pass. The repaint re-reads every on-screen row's keys from `GetBindingKey` and
+  its set line; a listening slot keeps `LISTENING`. It only reads, so it runs in combat too.
+- **The page's `OnShow` re-reads** its rows with or without an event (QuickComms' db8f7a6
+  precedent), and its `OnHide` stops a capture as before; both hooks are installed once per page
+  (`ctx.__keybindSyncHooked`) and dispatch by name.
+- **What a consumer owes: nothing.** Every new name is `__`-prefixed and no instance member moves;
+  the regenerated `members-30.2.34.3.5.9.2.8.4.2.1.3.json` is unchanged apart from its key.
+  Documented in
+  [docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md).
+- **Why.** OWNER_SCOPE 015 ("sync across both") of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`, KEYBINDINGS_RESEARCH §3.1, §3.4 and §5.1 "Syncing"
+  (risks 5 and 9 of §5.6).
+- New suite `tests/test_options_keybinds_sync.lua` (fourteen cases, on `tests/fixture_keybinds.lua`,
+  which now resets the sync state around every case): registered only while rows are on screen and
+  let go of on the last hide and on release; registration through a spied `SafeRegisterEvent`, and
+  none without it while `OnShow` still re-reads; an external `SetBinding` shown after the frame;
+  three events, one repaint; `LoadBindings(2)` repainting the slots and the set line; a key changed
+  while hidden shown on the next `OnShow` with no event; `__fireUnconditional` with nothing on
+  screen drawing and printing nothing; a capture keeping `LISTENING`; a repaint in combat; and no
+  `C_Timer`. The two existing version cases read minor 3.
 
 ## v1.76.0 — 2026-10-23
 

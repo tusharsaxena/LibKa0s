@@ -87,7 +87,7 @@ from another out of the wild, and LibStub cannot detect that mismatch if it happ
 from `25.32.1.1.5.7.4.1` where `OptionsIds.lua` and `OptionsIdList.lua` did, nine from
 `25.32.1.1.6.1.7.4.1` where `OptionsCombat.lua` did, ten from `26.1.32.1.1.6.1.7.4.1` where
 `OptionsRegistry.lua` did, eleven from `29.2.34.2.4.8.1.7.4.2.1` where `OptionsDrawer.lua` did, and
-twelve from `30.2.34.3.5.9.2.8.4.2.1.2` where `OptionsKeybinds.lua` did.
+twelve from `30.2.34.3.5.9.2.8.4.2.1.3` where `OptionsKeybinds.lua` did.
 The order is
 load order — `LibKa0s.xml`'s — which is what `tests/test_versioning.lua` derives the expected
 filename from, so the two cannot disagree.
@@ -267,7 +267,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [30.2.34.3.5.9.2.8.4.2.1.2](./Options/version-30.2.34.3.5.9.2.8.4.2.1.2-docs.md) | **`Options.lua` 30** (attaches `OptionsKeybinds.lua`) · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · **`OptionsIds.lua` 3** (`__closeOwnedSuggest`: the suggestion list closes at combat start) · `OptionsIdList.lua` 5 · `OptionsTabs.lua` 9 · **`OptionsCombat.lua` 2** (`__releaseOwnedFocus` closes the list too) · **`OptionsCompose.lua` 8** (`StrataTooltip`: the one strata-row tooltip) · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · `OptionsDrawer.lua` 1 · **`OptionsKeybinds.lua` 2** (new: the key binding model, and the Keybindings tab `KeybindingsTab` / `KeybindRows` / `KEYBINDS_UNCHANGED`) | v1.77.0 | **Current** |
+| [30.2.34.3.5.9.2.8.4.2.1.3](./Options/version-30.2.34.3.5.9.2.8.4.2.1.3-docs.md) | **`Options.lua` 30** (attaches `OptionsKeybinds.lua`) · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · **`OptionsIds.lua` 3** (`__closeOwnedSuggest`: the suggestion list closes at combat start) · `OptionsIdList.lua` 5 · `OptionsTabs.lua` 9 · **`OptionsCombat.lua` 2** (`__releaseOwnedFocus` closes the list too) · **`OptionsCompose.lua` 8** (`StrataTooltip`: the one strata-row tooltip) · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · `OptionsDrawer.lua` 1 · **`OptionsKeybinds.lua` 3** (new: the key binding model, the Keybindings tab `KeybindingsTab` / `KeybindRows` / `KEYBINDS_UNCHANGED`, and its sync with Options -> Keybindings on `UPDATE_BINDINGS`) | v1.77.0 | **Current** |
 | [29.2.34.2.5.9.1.7.4.2.1](./Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · **`OptionsIdList.lua` 5** (comment-only: an undeclared `info` draws blank) · **`OptionsTabs.lua` 9** (`__releaseChrome` no longer exported) · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · `OptionsDrawer.lua` 1 | v1.75.0 – v1.76.0 | Superseded |
 | [29.2.34.2.4.8.1.7.4.2.1](./Options/version-29.2.34.2.4.8.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · **`OptionsDrawer.lua` 1** (new: `O.Drawer`) | v1.73.0 – v1.74.0 | Superseded |
 | [28.2.34.2.4.8.1.7.4.2](./Options/version-28.2.34.2.4.8.1.7.4.2-docs.md) | `Options.lua` 28 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 | v1.71.0 | Superseded |

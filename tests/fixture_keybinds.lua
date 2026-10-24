@@ -123,8 +123,10 @@ function Bench.case(name, fn)
     installRecorder(violations)
     local unwrap = wrapCreate(mocks.__libs["AceGUI-3.0"])
     Bench.listener()
+    Bench.resetSync()
     local ok, err = pcall(fn)
     if lib.__keybindStop then lib.__keybindStop(false) end
+    Bench.resetSync()
     unwrap()
     for _, k in ipairs(FILLED) do mocks[k] = before[k] end
     for _, k in ipairs(SETTINGS_FNS) do mocks.Settings[k] = beforeSettings[k] end
@@ -135,6 +137,18 @@ function Bench.case(name, fn)
     T.assertEqual(#violations, 0,
       "the Keybindings tab touched Blizzard's settings window: " .. table.concat(violations, "; "))
   end)
+end
+
+--- The sync state (OptionsKeybinds.lua minor 3) back to empty: no live row, no repaint pending,
+--- and UPDATE_BINDINGS let go of. A row a case drew stays "on screen" in the harness (the kit's
+--- ScrollFrame forgets its children rather than releasing them), so without this one case's rows
+--- would keep the frame registered into the next case, and into every later suite.
+function Bench.resetSync()
+  if type(lib.__keybindLive) == "table" then
+    for row in pairs(lib.__keybindLive) do lib.__keybindLive[row] = nil end
+  end
+  lib.__keybindRepaintPending = nil
+  if lib.__syncKeybindEvents then lib.__syncKeybindEvents() end
 end
 
 local seq = 0

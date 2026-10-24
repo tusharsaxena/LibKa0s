@@ -6,7 +6,9 @@
 -- string), lib.__keybindSetName and the words, lib.KEYBIND_STRINGS. From minor 2 it also holds the
 -- tab that draws it (options-ui-§20): the instance members O.KeybindingsTab, O.KeybindRows and
 -- O.KEYBINDS_UNCHANGED, attached through lib.__AttachKeybinds, and the one capture listener every
--- host shares, lib.__keybindListener.
+-- host shares, lib.__keybindListener. From minor 3 the tab follows Options -> Keybindings: one
+-- library frame, lib.__keybindEventFrame, hears UPDATE_BINDINGS while a keybind row is on screen
+-- and repaints once per frame, and the page's OnShow re-reads every key.
 --
 -- A twelfth file of the Options major (minor 1), guarded with the same multi-file idiom as
 -- OptionsDrawer.lua; Options minor 30 attaches it. It loads after OptionsCombat.lua, because every
@@ -38,6 +40,8 @@
 
 local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib then return end
+-- Core's SafeRegisterEvent is the one registration route (minor 3); without it nothing registers.
+local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 
 -- Minor 1: the binding model (lib.__keybindSet / lib.__keybindClear / lib.__keybindAvailable /
 -- lib.__keybindSetName), the chord builder (lib.__keyChord), the words (lib.KEYBIND_STRINGS) and an
@@ -46,7 +50,11 @@ if not lib then return end
 -- slots and a Clear button per action, the capture (lib.__keybindListener, one across every host,
 -- Escape cancels, a right-click clears a slot), the set line and the outcome line, the combat
 -- refusals and the capture stopped at combat start (lib.__keybindOnCombat), and the degradation row.
-local KEYBINDS_MINOR = 2
+-- Minor 3: the tab follows Options -> Keybindings -- UPDATE_BINDINGS heard through Core's
+-- SafeRegisterEvent only while a keybind row is on screen (lib.__keybindEventFrame,
+-- lib.__keybindLive, lib.__syncKeybindEvents), one debounced repaint per frame
+-- (lib.__OnKeybindEvent), and the page's OnShow re-reading every key.
+local KEYBINDS_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__keybindsMinor and lib.__keybindsMinor >= KEYBINDS_MINOR
   and lib.__keybindsShellMinor == lib.MINOR then return end
@@ -439,6 +447,131 @@ if lib.__combatHooks then
   lib.__combatHooks[lib.__keybindOnCombat] = true
 end
 
+-- ── the sync (minor 3) ───────────────────────────────────────────────────────────────────────
+--
+-- The tab follows Options -> Keybindings and the binding set in force (KEYBINDINGS_RESEARCH 3.1,
+-- 3.4 and 5.1 "Syncing"): SetBinding, SaveBindings, LoadBindings on a set switch and the client's
+-- override bindings all fire UPDATE_BINDINGS. ONE library frame hears it, and only while a keybind
+-- row is on screen -- the lock's discipline (lib.__syncCombatEvents, OptionsCombat.lua) -- so a host
+-- with no settings page open owns no registration. It registers through Core's SafeRegisterEvent
+-- on purpose, so this is not a fourth raw private registration site (CLAUDE.md's
+-- events-frames-taint-§1 row); without Core it registers nothing, and the page's OnShow re-read and
+-- the refreshers still keep the slots true. Events come in bursts (a rebind is several SetBinding
+-- calls, and an override binding fires too), so they are debounced to one repaint per frame. A
+-- repaint only reads, so it runs in combat as well.
+--
+-- lib.__keybindLive: row record -> its ctx, weak-keyed, from the row's build to its group's
+-- OnRelease. lib.__keybindEventFrame: made once, kept across an upgrade, its OnEvent looking the
+-- dispatcher up by name at call time (lib.__combatFrame's idiom).
+
+lib.__keybindLive = lib.__keybindLive or setmetatable({}, { __mode = "k" })
+
+-- Shown, by IsVisible where the frame has it, else IsShown; a frame with neither counts as shown.
+local function shown(f)
+  if type(f) ~= "table" then return false end
+  local probe = f.IsVisible or f.IsShown
+  return probe == nil or probe(f) and true or false
+end
+
+-- A row is on screen when its group's frame is, on a page that is. In the client the group's
+-- IsVisible already answers for its parents; the page is asked as well for a frame that does not.
+local function rowOnScreen(row, ctx)
+  local g = row.group
+  if type(g) ~= "table" or not shown(g.frame) then return false end
+  return type(ctx) ~= "table" or ctx.panel == nil or shown(ctx.panel)
+end
+
+local function eventRegistered(f)
+  return type(f.IsEventRegistered) == "function" and f:IsEventRegistered("UPDATE_BINDINGS")
+end
+
+--- Drop dead rows, then hear UPDATE_BINDINGS if any live row is on screen, or let go of it if none
+--- is. Answers whether one is.
+function lib.__syncKeybindEvents()
+  local any = false
+  for row, ctx in pairs(lib.__keybindLive) do
+    if row.dead or type(row.group) ~= "table" then
+      lib.__keybindLive[row] = nil
+    elseif not any and rowOnScreen(row, ctx) then
+      any = true
+    end
+  end
+  local f = lib.__keybindEventFrame
+  if not f then return any end
+  if not any then
+    if f.UnregisterEvent then f:UnregisterEvent("UPDATE_BINDINGS") end
+  elseif not eventRegistered(f) then
+    local register = core and core.SafeRegisterEvent
+    if type(register) == "function" then register(f, "UPDATE_BINDINGS") end
+  end
+  return any
+end
+
+-- Every distinct view of the live rows `pick(row, ctx)` accepts, repainted once each: its slots
+-- (a listening slot keeps saying so) and its set line.
+local function repaintViews(pick)
+  local done = {}
+  for row, ctx in pairs(lib.__keybindLive) do
+    local view = row.view
+    if view and not done[view] and view.repaint and pick(row, ctx) then
+      done[view] = true
+      view.repaint()
+    end
+  end
+end
+
+--- The debounced repaint: every live row on screen, read again from GetBindingKey.
+function lib.__keybindFlush()
+  lib.__keybindRepaintPending = nil
+  repaintViews(rowOnScreen)
+end
+
+--- The dispatcher. Synced first: with no row on screen it lets go and draws nothing. Otherwise one
+--- repaint is queued for the end of the frame, however many events arrive before it runs.
+function lib.__OnKeybindEvent(event)
+  if not lib.__syncKeybindEvents() or event ~= "UPDATE_BINDINGS" then return end
+  if lib.__keybindRepaintPending then return end
+  lib.__keybindRepaintPending = true
+  if type(C_Timer) == "table" and type(C_Timer.After) == "function" then
+    C_Timer.After(0, function() lib.__keybindFlush() end)
+  else
+    lib.__keybindFlush()
+  end
+end
+
+--- A page came on screen: hear the event again, and re-read every key of its rows, so a key set
+--- while it was hidden shows with no event at all.
+function lib.__keybindOnPanelShow(ctx)
+  lib.__syncKeybindEvents()
+  repaintViews(function(_, c) return c == ctx end)
+end
+
+--- A page went off screen: a capture on it stops, and the event is let go of if it was the last.
+function lib.__keybindOnPanelHide(ctx)
+  local cap = lib.__keybindCapture
+  if cap and cap.view and cap.view.panel == ctx.panel then lib.__keybindStop() end
+  lib.__syncKeybindEvents()
+end
+
+do
+  local f = lib.__keybindEventFrame
+  if not f and type(CreateFrame) == "function" then
+    f = CreateFrame("Frame")
+    if f then
+      f:Hide()
+      lib.__keybindEventFrame = f
+    end
+  end
+  if f then
+    f:SetScript("OnEvent", function(_, event)
+      local dispatch = lib.__OnKeybindEvent
+      if type(dispatch) == "function" then dispatch(event) end
+    end)
+  end
+  -- An older copy's frame may still hold a registration; this lets go unless a row is on screen.
+  lib.__syncKeybindEvents()
+end
+
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
 -- The row's column widths, relative, summing below 1 for the clip inset (options-ui-§8).
@@ -579,10 +712,16 @@ function lib.__AttachKeybinds(O, d) -- luacheck: no unused args
   --- One action's row: label, Key 1, Key 2, Clear, in a full-width Flow group.
   local function makeRow(view, binding)
     local AceGUI, S = O.AceGUI, view.S
-    local row = { command = binding.command, status = view.status, slots = {} }
+    local row = { command = binding.command, status = view.status, slots = {}, view = view }
     local group = AceGUI:Create("SimpleGroup")
     group:SetLayout("Flow")
     group:SetFullWidth(true)
+    -- Released (a tab change or a structural refresh): no longer live, and maybe the last on screen.
+    group:SetCallback("OnRelease", function()
+      row.dead = true
+      lib.__keybindLive[row] = nil
+      lib.__syncKeybindEvents()
+    end)
     local name = bindingName(binding.command)
     -- An InteractiveLabel, because a plain Label takes no mouse and its tooltip would never show.
     local label = AceGUI:Create("InteractiveLabel")
@@ -605,14 +744,19 @@ function lib.__AttachKeybinds(O, d) -- luacheck: no unused args
     return row
   end
 
-  --- The page's OnHide stops a capture on that page; hooked once per page.
-  local function hookHide(ctx)
+  --- The page's OnShow re-reads its rows and its OnHide stops a capture on it, both re-syncing the
+  --- event; hooked once per page, each dispatching by name so a newer minor's handler runs.
+  local function hookPanel(ctx)
     local panel = ctx.panel
-    if ctx.__keybindHooked or type(panel) ~= "table" or not panel.HookScript then return end
-    ctx.__keybindHooked = true
+    if ctx.__keybindSyncHooked or type(panel) ~= "table" or not panel.HookScript then return end
+    ctx.__keybindSyncHooked = true
+    panel:HookScript("OnShow", function()
+      local fn = lib.__keybindOnPanelShow
+      if type(fn) == "function" then fn(ctx) end
+    end)
     panel:HookScript("OnHide", function()
-      local cap = lib.__keybindCapture
-      if cap and cap.view.panel == panel then lib.__keybindStop() end
+      local fn = lib.__keybindOnPanelHide
+      if type(fn) == "function" then fn(ctx) end
     end)
   end
 
@@ -622,6 +766,7 @@ function lib.__AttachKeybinds(O, d) -- luacheck: no unused args
         local row = makeRow(view, b)
         view.parent:AddChild(row.group)
         view.rows[#view.rows + 1] = row
+        lib.__keybindLive[row] = view.ctx
       else
         local what = type(b) == "table" and b.command or b
         print(lib.STRINGS.ROW_FAILED:format(tostring(what), "a binding's command must be a string"))
@@ -667,7 +812,8 @@ function lib.__AttachKeybinds(O, d) -- luacheck: no unused args
         end
       end
     end
-    hookHide(ctx)
+    hookPanel(ctx)
+    lib.__syncKeybindEvents()
     return view.rows
   end
 end

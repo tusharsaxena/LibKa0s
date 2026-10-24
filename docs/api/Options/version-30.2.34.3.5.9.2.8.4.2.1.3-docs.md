@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 30.2.34.3.5.9.2.8.4.2.1.2
+# `LibKa0s-Options-1.0` — version 30.2.34.3.5.9.2.8.4.2.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,19 +8,19 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **30** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **3** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **2** · `OptionsCompose.lua` **8** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** · `OptionsKeybinds.lua` **2** |
+| Files and minors | `Options.lua` **30** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **3** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **2** · `OptionsCompose.lua` **8** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** · `OptionsKeybinds.lua` **3** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>`, in load order — the same twelve numbers `lib.MODULES` reports. |
 | Shipped in | v1.77.0 |
 | Status | **Current** |
 | Supersedes | [version 29.2.34.2.5.9.1.7.4.2.1](./version-29.2.34.2.5.9.1.7.4.2.1-docs.md) — whose IdList suggestion list stayed open over a covered page when combat started, which had no shared strata-row tooltip, and no key binding model and no Keybindings tab |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua` and `OptionsKeybinds.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 30, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 8, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1, OptionsKeybinds = 2 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 30, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 8, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1, OptionsKeybinds = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `S1` for
-`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `D1` for `OptionsDrawer.lua` minor 1, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `I1` for
+`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `D1` for `OptionsDrawer.lua` minor 1, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `I1` for
 `OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `OC2` for `OptionsCombat.lua` minor 2, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -42,11 +42,20 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 Four changes, in `Options.lua` 29 -> **30**, `OptionsIds.lua` 2 -> **3**, `OptionsCombat.lua`
 1 -> **2**, `OptionsCompose.lua` 7 -> **8** and a new twelfth file, `OptionsKeybinds.lua`, at
-minor **2** (its minor 1 and minor 2 both land in this release); every other file of the major is
-unchanged. This version was briefly keyed 29.2.34.3.5.9.2.7.4.2.1, then 29.2.34.3.5.9.2.8.4.2.1 and
-then 30.2.34.3.5.9.2.8.4.2.1.1 on the release branch, before the `OptionsCompose.lua` minor moved,
-before `OptionsKeybinds.lua` joined and before its second minor; no release carried any of those
-keys.
+minor **3** (its minors 1, 2 and 3 all land in this release); every other file of the major is
+unchanged. This version was briefly keyed 29.2.34.3.5.9.2.7.4.2.1, then 29.2.34.3.5.9.2.8.4.2.1,
+then 30.2.34.3.5.9.2.8.4.2.1.1 and then 30.2.34.3.5.9.2.8.4.2.1.2 on the release branch, before the
+`OptionsCompose.lua` minor moved, before `OptionsKeybinds.lua` joined, before its second minor and
+before its third; no release carried any of those keys.
+
+**The tab follows Options -> Keybindings (K3).** `OptionsKeybinds.lua` 2 -> **3** keeps the
+Keybindings tab in step with the client's page and with the binding set in force: one library
+frame, `lib.__keybindEventFrame`, hears `UPDATE_BINDINGS` only while a keybind row is on screen,
+registered through Core's `SafeRegisterEvent` and never raw, and repaints every row on screen once
+per frame however many events arrive; the page's `OnShow` re-reads every key, so a key changed while
+it was hidden shows with no event. No public member is added and a stub owes nothing. See
+[Following Options -> Keybindings](#following-options---keybindings-optionskeybindslua-minor-3).
+Cases: `tests/test_options_keybinds_sync.lua`.
 
 **The Keybindings tab (K2).** `OptionsKeybinds.lua` 1 -> **2** adds three public instance members:
 **`O.KeybindingsTab(spec)`**, the `opts.tabs` entry a General page draws last
@@ -1887,7 +1896,8 @@ that action is left with no key; else `KEY_BOUND`; `COMBAT` for `"combat"`, `UNA
 **Stopping.** A stop turns the listener's keyboard, mouse and wheel off, hides it, clears its points
 and parents it back to `UIParent`, and the slot shows its key again. A capture stops on: Escape or a
 second click; a write; the slot widget's `OnRelease` (a tab change or a structural refresh releases
-it through `ClearScroll`); the page's `OnHide` (hooked once per page, `ctx.__keybindHooked`); and
+it through `ClearScroll`); the page's `OnHide` (hooked once per page, `ctx.__keybindHooked` at K2,
+`ctx.__keybindSyncHooked` from K3); and
 **combat start**, through `lib.__keybindOnCombat`, a hook in the combat lock's `lib.__combatHooks`
 held strongly on `lib` (an older copy's hook is taken out of the set when a newer copy loads). On
 `locked == true` it stops the capture and writes `COMBAT` to the outcome line. No event is
@@ -1906,7 +1916,49 @@ frame; the listener is the library's own frame and is re-homed on every stop.
 `Settings.OpenToCategory`, `Settings.SelectCharacterBindings` / `Settings.SelectAccountBindings`,
 `KeybindListener` and the client's binding row template; AceGUI's `Keybinding` widget is not used.
 It keeps no key in SavedVariables or a profile and offers no account/character switch of its own.
-Repainting on `UPDATE_BINDINGS` and on the page's show is not part of K2.
+Repainting on `UPDATE_BINDINGS` and on the page's show is not part of K2; it is K3's (below).
+
+### Following Options -> Keybindings (OptionsKeybinds.lua, minor 3)
+
+**Since K3.** The tab and the client's Keybindings page read and write one store, and from K3 the
+tab also *follows* it: a key set on the client's page, a binding set switched (Character Specific
+Keybindings, which runs `LoadBindings`), or an override binding shows on the tab without
+reopening the settings. `SetBinding`, `SaveBindings` and `LoadBindings` all fire
+`UPDATE_BINDINGS` (KEYBINDINGS_RESEARCH §3.1 and §3.4 of Ka0sAddonsCommonTasks
+`docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`).
+
+- **One registration, only while a row is on screen.** `lib.__keybindEventFrame` is one hidden
+  Frame for the process, made once and kept across an upgrade; its `OnEvent` resolves
+  `lib.__OnKeybindEvent` at call time (the combat lock's idiom). It hears `UPDATE_BINDINGS` while
+  at least one live keybind row is on screen and lets go when the last one leaves, so a host with no
+  settings page open owns no registration (the lock's discipline, `lib.__syncCombatEvents`).
+- **Registered through Core.** The frame registers with `LibStub("LibKa0s-Core-1.0").SafeRegisterEvent(frame,
+  "UPDATE_BINDINGS")`, pcall'd, and never with a raw `RegisterEvent`; it unregisters with the
+  frame's `UnregisterEvent`. Without Core's helper nothing registers, and the `OnShow` re-read and
+  the refreshers still keep the slots true.
+- **One repaint per frame.** The dispatcher re-syncs first and, with no row on screen, returns
+  having drawn nothing (so a stand-down suite that fires every event at every frame sees nothing).
+  Otherwise it queues **one** repaint with `C_Timer.After(0, ...)` unless one is already pending
+  (`lib.__keybindRepaintPending`); with no `C_Timer` it repaints at once. The repaint reads every
+  live on-screen row's keys from `GetBindingKey` and its view's set line again. A slot that is
+  listening keeps `LISTENING` through it.
+- **The page's `OnShow` re-reads** that page's rows (and re-syncs), with or without an event; its
+  `OnHide` stops a capture on it and re-syncs. Both are hooked once per page and dispatch by name.
+- **In combat** a repaint still runs: it only reads.
+
+| Name | Since | Meaning |
+|---|---|---|
+| `lib.__keybindEventFrame` | K3 | The one `UPDATE_BINDINGS` frame. Hidden, kept across an upgrade. |
+| `lib.__keybindLive` | K3 | Weak-keyed set, row record -> its ctx: added when a row is built, removed in the row group's `OnRelease`. A record carries `view` from K3. |
+| `lib.__syncKeybindEvents()` → boolean | K3 | Drop dead rows; register when any live row is on screen (its group frame's `IsVisible`, `IsShown` as the fallback, on a page that is shown), unregister when none is. Called on row build, on release, from the page's `OnShow` / `OnHide` and at the start of each dispatch. Answers whether a row is on screen. |
+| `lib.__OnKeybindEvent(event)` | K3 | The dispatcher, above. |
+| `lib.__keybindRepaintPending` | K3 | True while a queued repaint has not run. |
+| `lib.__keybindFlush()` | K3 | The repaint: clears the flag and repaints every live row on screen. |
+| `lib.__keybindOnPanelShow(ctx)` / `lib.__keybindOnPanelHide(ctx)` | K3 | The page hooks' bodies. |
+
+Every one is `__`-prefixed: no manifest lists them and no degradation stub owes them. Cases:
+`tests/test_options_keybinds_sync.lua`, on `tests/fixture_keybinds.lua`'s bench, which also puts the
+sync state back after each case (`Bench.resetSync`).
 
 ### `O.KEYBINDS_UNCHANGED`
 
@@ -2732,11 +2784,11 @@ tooltip. Wire it as the row's `tooltip`:
 
 ## Compatibility
 
-**At 30.2.34.3.5.9.2.8.4.2.1.2 four instance members are added and nothing is removed**: `O.StrataTooltip` (C8), and `O.KeybindingsTab`, `O.KeybindRows` and `O.KEYBINDS_UNCHANGED` (K2).
+**At 30.2.34.3.5.9.2.8.4.2.1.3 four instance members are added and nothing is removed**: `O.StrataTooltip` (C8), and `O.KeybindingsTab`, `O.KeybindRows` and `O.KEYBINDS_UNCHANGED` (K2).
 A host that does not call it draws what it drew. **An Options degradation stub owes
 `StrataTooltip`, `KeybindingsTab`, `KeybindRows` and `KEYBINDS_UNCHANGED`**: `Kit.assertSurfaceParity` compares a stub against the live instance (the
 surface registered with `Kit.setSurfaceSource`), so a stub without it turns the re-vendor red. This
-version's manifest lists the lib-level table only and does not name them. The two other moves (I3, OC2) are internal and owe nothing. `OptionsKeybinds.lua` (K1) adds one public lib-level table, `lib.KEYBIND_STRINGS`, which the manifest names, and otherwise only `__` members; `Options.lua` 30's guarded attach changes nothing a host draws, and a copy without `OptionsKeybinds.lua` is otherwise this version. A stub of the instance owes nothing for K1. K2's three members draw nothing until a host calls them, and a copy without `OptionsKeybinds.lua` has none of them.
+version's manifest lists the lib-level table only and does not name them. The two other moves (I3, OC2) are internal and owe nothing. `OptionsKeybinds.lua` (K1) adds one public lib-level table, `lib.KEYBIND_STRINGS`, which the manifest names, and otherwise only `__` members; `Options.lua` 30's guarded attach changes nothing a host draws, and a copy without `OptionsKeybinds.lua` is otherwise this version. A stub of the instance owes nothing for K1. K2's three members draw nothing until a host calls them, and a copy without `OptionsKeybinds.lua` has none of them. `OptionsKeybinds.lua` 3 (K3) adds only `__` library-level names and one hidden frame that registers `UPDATE_BINDINGS` through Core's `SafeRegisterEvent` while a keybind row is on screen, so a stub owes nothing for it and a host with no settings page open owns no registration.
 
 **At 29.2.34.2.5.9.1.7.4.2.1 one `__` test seam is removed and nothing public moves**:
 `__releaseChrome`, which no suite or roster consumer called. A host draws what it drew. An Options

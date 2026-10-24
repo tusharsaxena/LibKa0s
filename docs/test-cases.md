@@ -1706,7 +1706,7 @@ Total.
 
 ### test_options_keybinds_model.lua (26)
 
-- keybinds: OptionsKeybinds is at minor 2, paired on an Options shell at 30 or later
+- keybinds: OptionsKeybinds is at minor 3, paired on an Options shell at 30 or later
 - keybinds: the Options version key has twelve components
 - keybinds: KEYBIND_STRINGS carries the exact default words, all ASCII
 - keybinds: the client's own strings win where they exist, with the library's fallbacks
@@ -1735,7 +1735,7 @@ Total.
 
 ### test_options_keybinds.lua (26)
 
-- keybinds tab: OptionsKeybinds is at minor 2 and attaches the three members
+- keybinds tab: OptionsKeybinds is at minor 3 and attaches the three members
 - keybinds tab: KeybindingsTab's defaults
 - keybinds tab: spec.key, spec.before and spec.strings override
 - keybinds tab: RenderTabbedSchema puts it LAST, after every group tab, and its render draws rows
@@ -1761,6 +1761,23 @@ Total.
 - keybinds tab: with no AceGUI scroll it draws nothing and answers nil
 - keybinds tab: the fixed intro always draws, and spec.intro adds one line under it
 - keybinds tab: T.keybindThroughTab binds through a row and answers the outcome line
+
+### test_options_keybinds_sync.lua (14)
+
+- keybinds sync: OptionsKeybinds is at minor 3
+- keybinds sync: UPDATE_BINDINGS is heard only while a keybind row is on screen
+- keybinds sync: a page with no keybind rows registers nothing
+- keybinds sync: releasing the rows lets go
+- keybinds sync: the registration goes through Core's SafeRegisterEvent
+- keybinds sync: without SafeRegisterEvent nothing registers, and OnShow still re-reads
+- keybinds sync: a key set in Options -> Keybindings shows on the next frame
+- keybinds sync: three UPDATE_BINDINGS in one frame give exactly one repaint
+- keybinds sync: LoadBindings to the other set repaints the slots and the set line
+- keybinds sync: a key changed while the page was hidden shows on the next OnShow, no event
+- keybinds sync: an event delivered with no row on screen draws and prints nothing
+- keybinds sync: a capture in progress keeps LISTENING through a repaint
+- keybinds sync: a repaint runs in combat, since it only reads
+- keybinds sync: without C_Timer the repaint runs at once
 
 ### test_options_idsuggest.lua (29)
 
@@ -3106,6 +3123,7 @@ Total.
 | test_options_drawer.lua | 26 |
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 26 |
+| test_options_keybinds_sync.lua | 14 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3161,4 +3179,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2699** |
+| **Total** | **2713** |

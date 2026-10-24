@@ -26,9 +26,9 @@ local SET_HOW = "(Options -> Keybindings -> Character Specific Keybindings)"
 
 -- ── the version and the members ──────────────────────────────────────────────────────────────
 
-case("keybinds tab: OptionsKeybinds is at minor 2 and attaches the three members", function()
-  assertEqual(lib.MODULES.OptionsKeybinds, 2)
-  assertEqual(lib.__keybindsMinor, 2)
+case("keybinds tab: OptionsKeybinds is at minor 3 and attaches the three members", function()
+  assertEqual(lib.MODULES.OptionsKeybinds, 3)
+  assertEqual(lib.__keybindsMinor, 3)
   local O = Bench.page(function() end)
   assertEqual(type(O.KeybindingsTab), "function")
   assertEqual(type(O.KeybindRows), "function")
