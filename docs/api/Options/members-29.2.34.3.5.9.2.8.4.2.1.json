@@ -1,6 +1,6 @@
 {
   "major": "LibKa0s-Options-1.0",
-  "versionKey": "29.2.34.3.5.9.2.7.4.2.1",
+  "versionKey": "29.2.34.3.5.9.2.8.4.2.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Options", "minor": 29 },
@@ -10,7 +10,7 @@
     { "file": "OptionsIdList", "minor": 5 },
     { "file": "OptionsTabs", "minor": 9 },
     { "file": "OptionsCombat", "minor": 2 },
-    { "file": "OptionsCompose", "minor": 7 },
+    { "file": "OptionsCompose", "minor": 8 },
     { "file": "OptionsScroll", "minor": 4 },
     { "file": "OptionsNav", "minor": 2 },
     { "file": "OptionsDrawer", "minor": 1 }

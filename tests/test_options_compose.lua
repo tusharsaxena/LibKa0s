@@ -942,3 +942,71 @@ test("compose: a shell that hands __AttachCompose no descriptor keeps the minor-
     function(Oi) T.options.__AttachCompose(Oi) end)
   assertEqual(tip, S.RESET_ALL_TIP)
 end)
+
+-- ── O.StrataTooltip: the one strata-row tooltip (OptionsCompose minor 8) ─────────────────────
+--
+-- frame-layering-§1 (player-chosen strata) and options-ui-§16: every player strata row's tooltip
+-- is this string, so the tier sentences are written once for the collection. The parts are pinned
+-- byte for byte because the standard (WS-05) quotes them and an audit compares the two.
+
+local STRATA_BASE = "The layer this frame draws in. Background and Low draw under most of the " ..
+  "interface, Medium is the default for displays, and High draws over other windows, in the same " ..
+  "layer as the game's Settings window."
+local STRATA_DIALOG = " Dialog and above also cover confirmation dialogs, this addon's debug " ..
+  "console and the Settings window, so a frame placed there can hide them."
+local STRATA_POPUP = " Fullscreen Dialog and Tooltip can also cover dropdown menus and tooltips."
+
+test("compose: StrataTooltip over BACKGROUND..HIGH says the tiers and nothing more", function()
+  -- red under: an instance without StrataTooltip, or a DIALOG sentence appended unconditionally.
+  assertEqual(type(O.StrataTooltip), "function")
+  assertEqual(O.StrataTooltip({ "BACKGROUND", "LOW", "MEDIUM", "HIGH" }), STRATA_BASE)
+  assertEqual(O.StrataTooltip({ BACKGROUND = "Background", LOW = "Low", MEDIUM = "Medium",
+    HIGH = "High" }), STRATA_BASE, "a dropdown's key map reads as its keys")
+end)
+
+test("compose: StrataTooltip adds the dialog sentence when the row offers Dialog or above", function()
+  -- red under: reading the map's labels instead of its keys, or missing one of the four triggers.
+  assertEqual(O.StrataTooltip({ "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG" }),
+    STRATA_BASE .. STRATA_DIALOG)
+  assertEqual(O.StrataTooltip({ LOW = "Low", DIALOG = "Dialog" }), STRATA_BASE .. STRATA_DIALOG)
+  assertEqual(O.StrataTooltip({ "FULLSCREEN" }), STRATA_BASE .. STRATA_DIALOG)
+end)
+
+test("compose: StrataTooltip adds both sentences when the row offers Fullscreen Dialog or Tooltip",
+  function()
+  -- red under: a POPUP sentence without the DIALOG one, or TOOLTIP not counted as Dialog and above.
+  local all = { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG",
+    "TOOLTIP" }
+  assertEqual(O.StrataTooltip(all), STRATA_BASE .. STRATA_DIALOG .. STRATA_POPUP)
+  assertEqual(O.StrataTooltip({ "TOOLTIP" }), STRATA_BASE .. STRATA_DIALOG .. STRATA_POPUP)
+  assertEqual(O.StrataTooltip({ FULLSCREEN_DIALOG = "Fullscreen Dialog" }),
+    STRATA_BASE .. STRATA_DIALOG .. STRATA_POPUP)
+end)
+
+test("compose: StrataTooltip over a non-table says the tiers alone", function()
+  -- red under: indexing or iterating a nil / string value set.
+  assertEqual(O.StrataTooltip(nil), STRATA_BASE)
+  assertEqual(O.StrataTooltip("DIALOG"), STRATA_BASE)
+  assertEqual(O.StrataTooltip(), STRATA_BASE)
+end)
+
+test("compose: StrataTooltip takes each part from strings, which is how a host localizes it",
+  function()
+  -- red under: ignoring `strings`, or one override replacing the whole text.
+  local all = { "HIGH", "TOOLTIP" }
+  assertEqual(O.StrataTooltip(all, { BASE = "b" }), "b" .. STRATA_DIALOG .. STRATA_POPUP)
+  assertEqual(O.StrataTooltip(all, { DIALOG = "d" }), STRATA_BASE .. "d" .. STRATA_POPUP)
+  assertEqual(O.StrataTooltip(all, { POPUP = "p" }), STRATA_BASE .. STRATA_DIALOG .. "p")
+  assertEqual(O.StrataTooltip(all, { BASE = "b", DIALOG = "d", POPUP = "p" }), "bdp")
+  assertEqual(O.StrataTooltip({ "HIGH" }, { BASE = "b", DIALOG = "d", POPUP = "p" }), "b",
+    "an override is still appended only when the row offers its values")
+  assertEqual(O.StrataTooltip(all, "not a table"), STRATA_BASE .. STRATA_DIALOG .. STRATA_POPUP)
+end)
+
+test("compose: StrataTooltip's default text is pure ASCII and names the Settings window", function()
+  -- red under: a typographic apostrophe or dash in the library's text (a client font may lack it).
+  local text = O.StrataTooltip({ "TOOLTIP" })
+  assertFalse(text:find("[\128-\255]") ~= nil, "every default part is ASCII")
+  assertTrue(text:find("Settings window", 1, true) ~= nil)
+  assertTrue(STRATA_BASE:find("Settings window", 1, true) ~= nil, "the BASE part names it")
+end)

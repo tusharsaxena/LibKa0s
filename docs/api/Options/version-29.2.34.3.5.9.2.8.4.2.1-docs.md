@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 29.2.34.3.5.9.2.7.4.2.1
+# `LibKa0s-Options-1.0` — version 29.2.34.3.5.9.2.8.4.2.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **29** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **3** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **2** · `OptionsCompose.lua` **7** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** |
+| Files and minors | `Options.lua` **29** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **34** · `OptionsIds.lua` **3** · `OptionsIdList.lua` **5** · `OptionsTabs.lua` **9** · `OptionsCombat.lua` **2** · `OptionsCompose.lua` **8** · `OptionsScroll.lua` **4** · `OptionsNav.lua` **2** · `OptionsDrawer.lua` **1** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>`, in load order — the same eleven numbers `lib.MODULES` reports. |
 | Shipped in | v1.77.0 |
 | Status | **Current** |
-| Supersedes | [version 29.2.34.2.5.9.1.7.4.2.1](./version-29.2.34.2.5.9.1.7.4.2.1-docs.md) — whose IdList suggestion list stayed open over a covered page when combat started |
+| Supersedes | [version 29.2.34.2.5.9.1.7.4.2.1](./version-29.2.34.2.5.9.1.7.4.2.1-docs.md) — whose IdList suggestion list stayed open over a covered page when combat started, and which had no shared strata-row tooltip |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither does `OptionsDrawer.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 8, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `C7` for `OptionsCompose.lua` minor 7, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `S1` for
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `N1` for `OptionsNav.lua` minor 1, `D1` for `OptionsDrawer.lua` minor 1, `I1` for
 `OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `OC2` for `OptionsCombat.lua` minor 2, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
@@ -40,8 +40,21 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-**The IdList suggestion list closes when combat starts (I3 and OC2).** `OptionsIds.lua` 2 -> **3**
-and `OptionsCombat.lua` 1 -> **2**; every other file of the major is unchanged. The dropdown an
+Two changes, in `OptionsIds.lua` 2 -> **3**, `OptionsCombat.lua` 1 -> **2** and
+`OptionsCompose.lua` 7 -> **8**; every other file of the major is unchanged. This version was briefly
+keyed 29.2.34.3.5.9.2.7.4.2.1 on the release branch, before the `OptionsCompose.lua` minor moved;
+no release carried that key.
+
+**One strata-row tooltip for the collection: `O.StrataTooltip(values, strings)` (C8).** A new
+public instance member, a pure function returning the tooltip every player strata row carries
+(`frame-layering-§1`, player-chosen strata, a MUST for every such row; `options-ui-§16`). Before it,
+each addon that let the player pick a frame's strata wrote its own tier sentences (PanelMaster and
+MultiMeters did, and AuraMaster and PartyFrameEnhanced needed one; U-12, XC-21, PAN-L20, MUL-L22,
+XS-03 of the 2026-10-24 review). See
+[`O.StrataTooltip(values, strings)`](#ostratatooltipvalues-strings--string). No value set is
+published with it: each knob keeps the values it stores. Cases: `tests/test_options_compose.lua`.
+
+**The IdList suggestion list closes when combat starts (I3 and OC2).** The dropdown an
 `O.IdInput` (and so an `O.IdList`'s add box) puts up as the player types is parented to `UIParent`
 (see [The id input and the id list](#the-id-input-and-the-id-list)), so the combat cover over a page
 could not reach it: through I2 a list left open at `PLAYER_REGEN_DISABLED` stayed on screen over a
@@ -1524,6 +1537,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `VISIBILITY_VALUES` / `VISIBILITY_SORT` | **C1** | The four general-visibility values and their declared order. General visibility is a dropdown, not a boolean: a boolean can only ever answer two of the four. |
 | `MASTER_GROUP` | **C1** | The literal `"Master controls"` — the group name, the tab label and the `afterGroup` key are one string, because the group name **is** the hook key. |
 | `CLASS_COLOR_NOTE` | **C1** | The sentence every composed swatch's tooltip carries, in place of the `disabledIf` it must never have. |
+| `StrataTooltip(values, strings)` | **C8** | The one tooltip every player strata row carries (`frame-layering-§1`), built from the row's own value table: the tiers always, plus the dialog-and-above sentences only when the row offers those values. Pure; returns a string. See [`O.StrataTooltip`](#ostratatooltipvalues-strings--string). |
 | `LSMValues(mediaType)` | W1 (never-empty: **W4**) | A **deferred** closure pulling the live media hash at dropdown-render time. Never empty: a media library that has not loaded yet yields a single `None` placeholder, because a dropdown with no options cannot be opened and the CLI would refuse even the stored value. Deferred is load-bearing: LSM-backed rows evaluate this inside a schema-row literal at file load, long before the addons that register media have run. **Since C3 the media composers assign what this returns directly into a row's `values`**, which is why a host that replaces this member must return a function; see [The schema composers](#the-schema-composers). |
 | `PatchAlwaysShowScrollbar(scroll)` | S1 | The scrollbar override. Idempotent, and reversed on `OnRelease` — AceGUI pools ScrollFrames, so an unreleased patch escapes into whichever addon recycles the widget next. |
 | `ROW_VSPACER` / `SECTION_HEADING_H` / `BUTTON_PAIR_REL` | W1 | The cross-slice layout constants, mirrored onto the instance so a host's own page code stays in lockstep with the engine's spacing. |
@@ -2390,7 +2404,53 @@ label), `frameless`, `debugConsolePath` (default `"state.debugConsole"`), `onRes
   [Previously, at 18.15.5.3](#previously-at-1815553). *Reset position*'s tooltip is
   unchanged.
 
+### `O.StrataTooltip(values, strings)` → string
+
+New at `OptionsCompose.lua` minor **8** (**C8**). The tooltip of a dropdown that lets the player pick
+a frame's strata. `frame-layering-§1` (player-chosen strata) makes it a **MUST** for every such row:
+a host does not write tier sentences of its own, though a row-specific sentence (what the frame is)
+may precede this text. Like the composers, a pure function: no widget, no state, and nothing handed
+in is written to.
+
+`values` is the row's own value table: an **array** of strata keys
+(`{ "BACKGROUND", "LOW", ... }`), or the dropdown's **map** keyed by strata key
+(`{ DIALOG = "Dialog", ... }`, whose labels are not read). Anything else offers no strata. The
+returned string is built from three parts, in this order:
+
+- **BASE, always:**
+
+  > The layer this frame draws in. Background and Low draw under most of the interface, Medium is the default for displays, and High draws over other windows, in the same layer as the game's Settings window.
+
+- **DIALOG, appended when `values` holds `DIALOG`, `FULLSCREEN`, `FULLSCREEN_DIALOG` or `TOOLTIP`**
+  (it begins with a space):
+
+  > Dialog and above also cover confirmation dialogs, this addon's debug console and the Settings window, so a frame placed there can hide them.
+
+- **POPUP, appended when `values` holds `FULLSCREEN_DIALOG` or `TOOLTIP`** (it begins with a space):
+
+  > Fullscreen Dialog and Tooltip can also cover dropdown menus and tooltips.
+
+`strings` (optional) is `{ BASE =, DIALOG =, POPUP = }`, each field replacing that part (an
+appended override is still appended only when the row offers its values). **The library carries no
+locale**, so a host with one passes its own L's three strings through here; a non-table `strings`
+is ignored. The default text is ASCII and US English.
+
+**No value set is published.** A knob keeps the values it already stores (`BACKGROUND` to `HIGH`
+is `options-ui-§16`'s set for a new row); changing a stored value set is a migration, not a
+tooltip. Wire it as the row's `tooltip`:
+
+```lua
+{ type = "dropdown", path = "layout.strata", label = "Frame strata",
+  values = STRATA_VALUES, tooltip = H.StrataTooltip(STRATA_VALUES) }
+```
+
 ## Compatibility
+
+**At 29.2.34.3.5.9.2.8.4.2.1 one member is added and nothing is removed**: `O.StrataTooltip` (C8).
+A host that does not call it draws what it drew. **An Options degradation stub owes
+`StrataTooltip`**: `Kit.assertSurfaceParity` compares a stub against the live instance (the
+surface registered with `Kit.setSurfaceSource`), so a stub without it turns the re-vendor red. This
+version's manifest lists the lib-level table only and does not name it. The two other moves (I3, OC2) are internal and owe nothing.
 
 **At 29.2.34.2.5.9.1.7.4.2.1 one `__` test seam is removed and nothing public moves**:
 `__releaseChrome`, which no suite or roster consumer called. A host draws what it drew. An Options

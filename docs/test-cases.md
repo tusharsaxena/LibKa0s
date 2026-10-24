@@ -1832,7 +1832,7 @@ Total.
 - opt combat debug: no debug on the descriptor is silent, and the chat is unchanged
 - opt combat debug: a debug that is not a function is ignored
 
-### test_options_compose.lua (45)
+### test_options_compose.lua (51)
 
 - compose: the instance carries every composer and every published constant
 - compose: FontGroup emits the six canonical leaves in the canonical order
@@ -1879,6 +1879,12 @@ Total.
 - compose: with resetProfile and profilesPage the tooltip names Profiles -> Reset Profile
 - compose: the descriptor moves the Reset all tooltip and nothing else Master controls draws
 - compose: a shell that hands __AttachCompose no descriptor keeps the minor-4 tooltip
+- compose: StrataTooltip over BACKGROUND..HIGH says the tiers and nothing more
+- compose: StrataTooltip adds the dialog sentence when the row offers Dialog or above
+- compose: StrataTooltip adds both sentences when the row offers Fullscreen Dialog or Tooltip
+- compose: StrataTooltip over a non-table says the tiers alone
+- compose: StrataTooltip takes each part from strings, which is how a host localizes it
+- compose: StrataTooltip's default text is pure ASCII and names the Settings window
 
 ### test_options_throttle.lua (4)
 
@@ -3043,7 +3049,7 @@ Total.
 | test_options_switched.lua | 9 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
-| test_options_compose.lua | 45 |
+| test_options_compose.lua | 51 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3092,4 +3098,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2638** |
+| **Total** | **2644** |

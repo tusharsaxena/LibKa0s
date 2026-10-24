@@ -24,8 +24,9 @@ Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **D
 `PerfCommands` 1 unchanged); **SimPanel minor 6** (`LibKa0s-Sim-1.0` key **2.3.6**, `Sim` 2 and
 `SimTimeline` 3 unchanged); **Widgets minor 15**, **WidgetsDragHandle minor 5** and
 **WidgetsAutocomplete minor 3** (`LibKa0s-Widgets-1.0` key **15.1.5.3.3**, `WidgetsReorder` 1 and
-`WidgetsLineChart` 3 unchanged); **OptionsIds minor 3** and **OptionsCombat minor 2**
-(`LibKa0s-Options-1.0` key **29.2.34.3.5.9.2.7.4.2.1**, every other Options file unchanged); every
+`WidgetsLineChart` 3 unchanged); **OptionsIds minor 3**, **OptionsCombat minor 2** and
+**OptionsCompose minor 8** (`LibKa0s-Options-1.0` key **29.2.34.3.5.9.2.8.4.2.1**, every other
+Options file unchanged); every
 other file still at its v1.76.0 minor and **test kit revision 42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
 this block names each new minor as it lands. Still **seventeen majors across forty files**.
 
@@ -158,12 +159,44 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   check to the smoke list (SM-LK-04). STRATA_MODEL LK-04 of Ka0sAddonsCommonTasks
   `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
 - **What a consumer owes: nothing.** Both members are `__`-prefixed, so no Options degradation stub
-  owes them, and no public member moves (`members-29.2.34.3.5.9.2.7.4.2.1.json`). Documented in
-  [docs/api/Options/version-29.2.34.3.5.9.2.7.4.2.1-docs.md](docs/api/Options/version-29.2.34.3.5.9.2.7.4.2.1-docs.md).
+  owes them, and no public member moves at this change (the manifest it wrote,
+  `members-29.2.34.3.5.9.2.7.4.2.1.json`, gave way to `members-29.2.34.3.5.9.2.8.4.2.1.json` when
+  OptionsCompose minor 8 landed). Documented in
+  [docs/api/Options/version-29.2.34.3.5.9.2.8.4.2.1-docs.md](docs/api/Options/version-29.2.34.3.5.9.2.8.4.2.1-docs.md).
 - Four new cases in `tests/test_options_idsuggest_frames.lua`, with the events fired through
   `lib.__combatFrame`: a list a shown page's box opened closes at combat start and its rows pick
   nothing; a box under none of the panels handed in keeps its list; a focused pullout and the list
   both close; and leaving combat puts nothing back up while the box's next keystroke lists again.
+
+### OptionsCompose minor 8: one strata tooltip
+
+- **`O.StrataTooltip(values[, strings])`**, a new public instance member: the one tooltip every
+  player strata row carries (`frame-layering-§1`, player-chosen strata; `options-ui-§16`). Pass it
+  the row's own value table, an array of strata keys or the dropdown's map keyed by strata key. It
+  returns the tiers sentence always ("The layer this frame draws in. ... in the same layer as the
+  game's Settings window."), adds the dialog-and-above sentence when the row offers `DIALOG`,
+  `FULLSCREEN`, `FULLSCREEN_DIALOG` or `TOOLTIP`, and adds the dropdown-menus-and-tooltips sentence
+  when it offers `FULLSCREEN_DIALOG` or `TOOLTIP`. A non-table answers the tiers sentence alone.
+  `strings` (`{ BASE, DIALOG, POPUP }`) overrides each part: the library carries no locale, so a
+  host with one passes its own L through it. The default text is ASCII.
+- **No value set is published.** Each knob keeps the values it stores; a value-set change is a
+  migration, not a tooltip.
+- **Why.** PanelMaster and MultiMeters each wrote their own tier sentences, and AuraMaster and
+  PartyFrameEnhanced needed one (U-12, XC-21, PAN-L20, MUL-L22, XS-03 of Ka0sAddonsCommonTasks
+  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`). The standard's frame-layering-§1 names this member
+  and quotes the three sentences; the four addons' strata rows adopt it in the run's M2.
+- **What a consumer owes: every Options degradation stub gains `StrataTooltip`.**
+  `Kit.assertSurfaceParity` compares a stub against the live instance `lib:New` returns (the
+  surface a consumer's runner registers with `Kit.setSurfaceSource`), so the re-vendor turns red
+  until the stub answers it. The regenerated `members-29.2.34.3.5.9.2.8.4.2.1.json` lists the
+  lib-level table only, as every Options manifest does, so it does not name the new member. Documented in
+  [docs/api/Options/version-29.2.34.3.5.9.2.8.4.2.1-docs.md](docs/api/Options/version-29.2.34.3.5.9.2.8.4.2.1-docs.md),
+  which replaces the 29.2.34.3.5.9.2.7.4.2.1 document this release opened with: no release
+  carried that key.
+- Six new cases in `tests/test_options_compose.lua`: `BACKGROUND` to `HIGH` (array and map) give the
+  tiers alone; a set with `DIALOG` (or `FULLSCREEN`) adds the dialog sentence; a set with `TOOLTIP`
+  or `FULLSCREEN_DIALOG` adds both; a non-table gives the tiers; `strings` overrides each part; and
+  the default text is ASCII and names the Settings window.
 
 ## v1.76.0 — 2026-10-23
 
