@@ -171,8 +171,8 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   OptionsCompose minor 8 landed, and that to `members-30.2.34.3.5.9.2.8.4.2.1.1.json` when Options
   minor 30 and OptionsKeybinds minor 1 did, and that to `members-30.2.34.3.5.9.2.8.4.2.1.2.json`
   when OptionsKeybinds minor 2 did, and that to `members-30.2.34.3.5.9.2.8.4.2.1.3.json` when
-  OptionsKeybinds minor 3 did, and that to `members-30.2.34.3.5.9.2.11.4.2.1.3.json` when
-  OptionsCompose minor 9 did). Documented in
+  OptionsKeybinds minor 3 did, and that to `members-30.2.34.3.5.9.2.9.4.2.1.3.json` when
+  OptionsCompose minor 9 did (now `members-30.2.34.3.5.9.2.11.4.2.1.3.json`)). Documented in
   [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.3-docs.md).
 - Four new cases in `tests/test_options_idsuggest_frames.lua`, with the events fired through
   `lib.__combatFrame`: a list a shown page's box opened closes at combat start and its rows pick
@@ -465,8 +465,9 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   [docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.3-docs.md](docs/api/Options/version-30.2.34.3.5.9.2.11.4.2.1.3-docs.md)
   (`O.ResetAllTooltip(tail)`), which replaces the 30.2.34.3.5.9.2.10.4.2.1.3 document this release
   carried on its branch.
-- New suite `tests/test_options_reset_tooltip.lua` (six cases, after
-  `test_options_compose_tooltips`): the three hosts' wordings; each equal to the tooltip the
+- New suite `tests/test_options_reset_tooltip.lua` (seven cases, after
+  `test_options_compose_tooltips`): the three hosts' wordings; the wording following a descriptor
+  changed after `New`, as the button's does; each equal to the tooltip the
   MasterControls tail hands `O.InlineButtonPair`; the `O.KEYBINDS_UNCHANGED` tail after one space;
   an empty, nil or non-string tail adding nothing; `notes.resetAll` not reaching the member; and the
   minor. `tests/test_options_compose_tooltips.lua`'s minor case now reads "minor 10 or later".

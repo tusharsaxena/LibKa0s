@@ -44,11 +44,23 @@ local function resetAllSpec(O, extra)
 end
 
 test("reset tooltip: each host answers its own lib.STRINGS wording", function()
-  -- red under: a single literal, or the descriptor read at attach time rather than call time.
+  -- red under: a single literal, or one wording for every host.
   for _, h in ipairs(HOSTS) do
     local O = Fixture.new(h.overrides)
     assertEqual(O.ResetAllTooltip(), S[h.want], h.name)
   end
+end)
+
+test("reset tooltip: follows a descriptor changed after New, as the button does", function()
+  -- red under: the descriptor read once at attach time rather than at each call.
+  local O, rec = Fixture.new()
+  assertEqual(O.ResetAllTooltip(), S.RESET_ALL_TIP, "before")
+  rec.d.resetProfile = function() end
+  assertEqual(O.ResetAllTooltip(), S.RESET_ALL_TIP_PROFILE, "resetProfile set after New")
+  assertEqual(O.ResetAllTooltip(), resetAllSpec(O).tooltip, "resetProfile, same as the button")
+  rec.d.profilesPage = true
+  assertEqual(O.ResetAllTooltip(), S.RESET_ALL_TIP_PROFILES_PAGE, "profilesPage set after New")
+  assertEqual(O.ResetAllTooltip(), resetAllSpec(O).tooltip, "profilesPage, same as the button")
 end)
 
 test("reset tooltip: equals the tooltip MasterControls gives Reset all settings", function()
