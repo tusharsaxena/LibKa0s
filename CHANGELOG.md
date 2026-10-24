@@ -10,6 +10,35 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.78.0 — unreleased
+
+Opened 2026-10-25. Skinning, leg 1: the LibKa0s skin engine, its paint primitives and the skin
+choice on the settings panel, with LootHistory as the prototype consumer. The test kit's opt-in
+paint recorder opens it.
+
+Versions in this release: every file still at its v1.77.0 minor and **test kit revision 43**, until
+an entry below moves one. Each change bumps the minor of the files it touches once, and this block
+names each new minor as it lands. Still **seventeen majors across forty-one files**.
+
+### Test kit revision 43: the paint recorder
+
+One new kit file, `mock_paint.lua`, documented in
+[docs/api/testkit/version-43-docs.md](docs/api/testkit/version-43-docs.md). No `LibKa0s/` file
+changes, so no file minor moves; `mock_base.lua` gains one comment line pointing at it (1465 lines).
+
+- **`mock_paint.lua`**, opt-in (`local restore = dofile("tests/_kit/mock_paint.lua")(M)`): every
+  frame `M.CreateFrame` builds after install, and `M.UIParent`, answers `CreateTexture` and
+  `CreateFontString` with distinct region objects it owns (`GetRegions`; `GetChildren` over the
+  recorded frames parented to it), and records `SetBackdrop`, `SetBackdropColor`,
+  `SetBackdropBorderColor` and `SetAlpha`. Textures record `SetColorTexture`, `SetTexture`,
+  `SetAtlas` (still in `__atlas`), `SetVertexColor`, `SetGradient`, `SetTexCoord`, `SetAlpha` and
+  `SetDesaturated`; font strings record their text, `SetTextColor`, `SetFont`, `SetFontObject` and
+  the shadow. A NineSlice template builds a `NineSlice` child with the client's nine pieces
+  (`M.__paintNineSlice` attaches one by hand). A region raises on a method it does not have. Survey
+  `M.__paint(obj)`; `M.__paintFrame(frame)` decorates a frame the base built. Off by default:
+  through revision 42 `CreateTexture` and `CreateFontString` answered the frame itself, and they
+  still do for a suite that does not install it. New suite: `tests/test_mock_paint.lua`.
+
 ## v1.77.0 — 2026-10-24
 
 Opened 2026-10-24. The settings-panel Keybindings tab (`O.KeybindingsTab` / `O.KeybindRows`, a

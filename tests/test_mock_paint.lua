@@ -1,0 +1,205 @@
+-- tests/test_mock_paint.lua — the kit's opt-in paint recorder (revision 43, testkit/mock_paint.lua).
+--
+-- Through revision 42 every paint call answered from the base's metatable: CreateTexture and
+-- CreateFontString handed back THE FRAME, and SetColorTexture, SetVertexColor, SetTextColor, SetFont,
+-- SetBackdrop and the rest stored nothing, so a skin suite could not assert which color a region was
+-- painted or that a repaint changed it (fidelity rules 1 and 3). The recorder answers them, opt-in.
+--
+-- Every case builds a fresh mock, for the reason `tests/test_mock_record.lua` gives.
+
+local T = _G.LK_TEST
+local test, assertEqual, assertTrue, assertFalse = T.test, T.assertEqual, T.assertTrue, T.assertFalse
+local assertNil, assertErrorMatches = T.assertNil, T.assertErrorMatches
+
+local buildMocks = dofile("tests/wow_mock.lua")
+local install = dofile("tests/_kit/mock_paint.lua")
+
+local function rgba(...) return table.concat({ ... }, ",") end
+
+test("paint mock: CreateTexture and CreateFontString answer distinct regions the frame owns", function()
+  -- red under: revision 42, where both answered the frame itself
+  local M = buildMocks(); install(M)
+  local f = M.CreateFrame("Frame")
+  local tex = f:CreateTexture(nil, "BACKGROUND")
+  local fs = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  assertTrue(tex ~= f and fs ~= f and tex ~= fs, "three objects, not one")
+  assertTrue(tex:GetParent() == f and fs:GetParent() == f, "each region answers its owner")
+  assertEqual(tex:GetObjectType(), "Texture"); assertEqual(fs:GetObjectType(), "FontString")
+  assertTrue(fs:IsObjectType("FontString")); assertFalse(fs:IsObjectType("Texture"))
+  assertEqual(tex:GetDrawLayer(), "BACKGROUND")
+  local regions = { f:GetRegions() }
+  assertEqual(#regions, 2, "GetRegions answers both, in creation order")
+  assertTrue(regions[1] == tex and regions[2] == fs)
+  local s = M.__paint(fs)
+  assertEqual(s.kind, "FontString"); assertEqual(s.template, "GameFontNormal")
+end)
+
+test("paint mock: texture paint calls are recorded and answered back", function()
+  local M = buildMocks(); install(M)
+  local tex = M.CreateFrame("Frame"):CreateTexture()
+  assertEqual(rgba(tex:GetVertexColor()), "1,1,1,1", "an unpainted texture is white")
+  tex:SetColorTexture(0.1, 0.2, 0.3)
+  assertEqual(rgba(unpack(M.__paint(tex).color)), "0.1,0.2,0.3,1", "alpha defaults to 1")
+  tex:SetVertexColor(0.5, 0.6, 0.7, 0.8)
+  assertEqual(rgba(tex:GetVertexColor()), "0.5,0.6,0.7,0.8")
+  tex:SetTexture("Interface\\Buttons\\WHITE8X8")
+  assertEqual(tex:GetTexture(), "Interface\\Buttons\\WHITE8X8")
+  assertNil(M.__paint(tex).color, "a file replaces the color texture, as in the client")
+  tex:SetGradient("VERTICAL", { r = 0, g = 0, b = 0, a = 1 }, { r = 1, g = 1, b = 1, a = 0.5 })
+  local g = M.__paint(tex).gradient
+  assertEqual(g.orientation, "VERTICAL"); assertEqual(g.min.r, 0); assertEqual(g.max.a, 0.5)
+  tex:SetTexCoord(0.1, 0.9, 0.2, 0.8)
+  assertEqual(rgba(tex:GetTexCoord()), "0.1,0.2,0.1,0.8,0.9,0.2,0.9,0.8", "four-argument form, corners")
+  tex:SetDesaturated(true)
+  assertTrue(tex:IsDesaturated())
+  tex:SetAlpha(0.25)
+  assertEqual(tex:GetAlpha(), 0.25)
+end)
+
+test("paint mock: SetAtlas on a texture records the art and sizes it from the fixture", function()
+  local M = buildMocks(); install(M)
+  local tex = M.CreateFrame("Frame"):CreateTexture()
+  tex:SetAtlas("Options_Tab_Active_Middle", true)
+  assertEqual(tex:GetAtlas(), "Options_Tab_Active_Middle")
+  assertEqual(tex.__atlas, "Options_Tab_Active_Middle", "the same field the base's frames record")
+  local size = M.__atlasSizes["Options_Tab_Active_Middle"]
+  assertEqual(tex:GetWidth(), size[1]); assertEqual(tex:GetHeight(), size[2])
+  assertNil(tex:GetTexture(), "an atlas replaces the file")
+end)
+
+test("paint mock: font string text, color, font, font object and shadow are recorded", function()
+  local M = buildMocks(); install(M)
+  local fs = M.CreateFrame("Frame"):CreateFontString()
+  assertEqual(rgba(fs:GetTextColor()), "1,1,1,1")
+  fs:SetTextColor(1, 0.82, 0)
+  assertEqual(rgba(fs:GetTextColor()), "1,0.82,0,1")
+  fs:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+  assertEqual(rgba(fs:GetFont()), "Fonts\\FRIZQT__.TTF,12,OUTLINE")
+  local obj = { GetFont = function() return "Fonts\\ARIALN.TTF", 10, "" end }
+  fs:SetFontObject(obj)
+  assertTrue(fs:GetFontObject() == obj)
+  assertEqual(rgba(fs:GetFont()), "Fonts\\ARIALN.TTF,10,", "a font object answers GetFont")
+  fs:SetShadowOffset(1, -1); fs:SetShadowColor(0, 0, 0, 0.5)
+  assertEqual(rgba(fs:GetShadowOffset()), "1,-1")
+  assertEqual(rgba(fs:GetShadowColor()), "0,0,0,0.5")
+  fs:SetText("hello")
+  assertEqual(fs:GetText(), "hello")
+end)
+
+test("paint mock: regions show, hide and answer IsVisible through their owner", function()
+  local M = buildMocks(); install(M)
+  local f = M.CreateFrame("Frame")
+  local tex = f:CreateTexture()
+  assertTrue(tex:IsShown(), "a new region is shown, as in the client")
+  tex:Hide(); assertFalse(tex:IsShown())
+  tex:SetShown(true); assertTrue(tex:IsVisible())
+  f:Hide()
+  assertTrue(tex:IsShown()); assertFalse(tex:IsVisible(), "a shown region of a hidden frame is not visible")
+end)
+
+test("paint mock: backdrop and its two colors are recorded on the frame", function()
+  local M = buildMocks(); install(M)
+  local f = M.CreateFrame("Frame", nil, nil, "BackdropTemplate")
+  assertNil(f:GetBackdrop()); assertNil(f:GetBackdropColor())
+  local bd = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 }
+  f:SetBackdrop(bd)
+  assertTrue(f:GetBackdrop() == bd)
+  assertEqual(rgba(f:GetBackdropColor()), "1,1,1,1", "a backdrop with no color set is white")
+  f:SetBackdropColor(0.05, 0.05, 0.07, 0.95)
+  f:SetBackdropBorderColor(0.2, 0.2, 0.2)
+  assertEqual(rgba(f:GetBackdropColor()), "0.05,0.05,0.07,0.95")
+  assertEqual(rgba(f:GetBackdropBorderColor()), "0.2,0.2,0.2,1")
+  f:SetAlpha(0.5)
+  local s = M.__paint(f)
+  assertEqual(s.kind, "Frame"); assertEqual(s.alpha, 0.5); assertTrue(s.backdrop == bd)
+  f:SetBackdrop(nil)
+  assertNil(f:GetBackdrop())
+end)
+
+test("paint mock: GetChildren answers the frames parented here, in creation order", function()
+  local M = buildMocks(); install(M)
+  local root = M.CreateFrame("Frame")
+  local a = M.CreateFrame("Frame", nil, root)
+  M.CreateFrame("Frame")
+  local b = M.CreateFrame("Button", nil, root)
+  local kids = { root:GetChildren() }
+  assertEqual(#kids, 2); assertTrue(kids[1] == a and kids[2] == b)
+  assertEqual(select("#", a:GetChildren()), 0)
+end)
+
+test("paint mock: a NineSlice template carries the standard pieces as regions of a child", function()
+  local M = buildMocks(); install(M)
+  local f = M.CreateFrame("Frame", nil, nil, "BackdropTemplate, NineSlicePanelTemplate")
+  local ns = f.NineSlice
+  assertTrue(type(ns) == "table" and ns ~= f, "a NineSlice child")
+  for _, key in ipairs(M.__nineSliceKeys) do
+    assertEqual(ns[key]:GetObjectType(), "Texture", key)
+    assertTrue(ns[key]:GetParent() == ns, key .. " is owned by the NineSlice")
+  end
+  assertEqual(#M.__nineSliceKeys, 9)
+  assertEqual(select("#", ns:GetRegions()), 9)
+  assertTrue((f:GetChildren()) == ns, "and the NineSlice is the frame's child")
+  assertNil(rawget(M.CreateFrame("Frame"), "NineSlice"), "a plain frame has none")
+  local g = M.CreateFrame("Frame")
+  assertTrue(M.__paintNineSlice(g) == g.NineSlice, "a suite can attach one by hand")
+end)
+
+test("paint mock: HookScript still chains on a recorded frame", function()
+  local M = buildMocks(); install(M)
+  local f = M.CreateFrame("Frame")
+  local calls = {}
+  f:SetScript("OnShow", function() calls[#calls + 1] = "set" end)
+  f:HookScript("OnShow", function() calls[#calls + 1] = "hook" end)
+  f:__fire("OnShow")
+  assertEqual(table.concat(calls, " "), "set hook")
+end)
+
+test("paint mock: a method a region does not have raises, naming itself", function()
+  local M = buildMocks(); install(M)
+  local f = M.CreateFrame("Frame")
+  assertErrorMatches(function() f:CreateFontString():SetTexture("x") end, "SetTexture")
+  assertErrorMatches(function() f:CreateTexture():SetScript("OnShow", nil) end, "SetScript")
+end)
+
+test("paint mock: UIParent records too, and frames from __paintFrame", function()
+  local M = buildMocks(); install(M)
+  assertTrue(M.UIParent:CreateTexture() ~= M.UIParent)
+  local plain = M.__stubFrame()
+  assertTrue(plain:CreateTexture() == plain, "a base-built frame stays plain")
+  M.__paintFrame(plain)
+  assertTrue(plain:CreateTexture() ~= plain, "until a suite decorates it")
+end)
+
+test("paint mock: off by default, and restore() puts everything back", function()
+  local M = buildMocks()
+  local off = M.CreateFrame("Frame")
+  assertTrue(off:CreateTexture() == off, "without install, the base's divergence stands")
+  assertTrue(off:SetColorTexture(1, 1, 1) == off)
+  local before = M.CreateFrame
+  local plain = M.__stubFrame()
+  local restore = install(M)
+  M.__paintFrame(plain)
+  restore()
+  assertTrue(M.CreateFrame == before, "CreateFrame restored")
+  local f = M.CreateFrame("Frame")
+  assertNil(rawget(f, "CreateTexture"), "a frame built after restore has no recorder")
+  assertTrue(f:CreateTexture() == f)
+  assertTrue(M.UIParent:CreateTexture() == M.UIParent, "UIParent restored")
+  assertTrue(plain:CreateTexture() == plain, "a decorated frame restored")
+  assertNil(M.__paint, "the survey is gone"); assertNil(M.__paintFrame)
+end)
+
+test("paint mock: composes with the layer recorder in either order", function()
+  local M = buildMocks()
+  local layers = dofile("tests/_kit/mock_layers.lua")
+  local r1 = layers(M); local r2 = install(M)
+  local parent = M.CreateFrame("Frame")
+  local child = M.CreateFrame("Frame", nil, parent)
+  assertEqual(child:GetFrameLevel(), 1)
+  assertTrue((parent:GetChildren()) == child)
+  local other = M.CreateFrame("Frame")
+  child:SetParent(other)
+  assertEqual(select("#", parent:GetChildren()), 0, "a reparented child leaves its old parent's list")
+  assertTrue((other:GetChildren()) == child)
+  r2(); r1()
+end)

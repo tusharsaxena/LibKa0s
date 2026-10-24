@@ -2879,6 +2879,22 @@ Total.
 - layer mock: UIParent carries the recorder too
 - layer mock: restore() puts CreateFrame back, and later frames are plain
 
+### test_mock_paint.lua (13)
+
+- paint mock: CreateTexture and CreateFontString answer distinct regions the frame owns
+- paint mock: texture paint calls are recorded and answered back
+- paint mock: SetAtlas on a texture records the art and sizes it from the fixture
+- paint mock: font string text, color, font, font object and shadow are recorded
+- paint mock: regions show, hide and answer IsVisible through their owner
+- paint mock: backdrop and its two colors are recorded on the frame
+- paint mock: GetChildren answers the frames parented here, in creation order
+- paint mock: a NineSlice template carries the standard pieces as regions of a child
+- paint mock: HookScript still chains on a recorded frame
+- paint mock: a method a region does not have raises, naming itself
+- paint mock: UIParent records too, and frames from __paintFrame
+- paint mock: off by default, and restore() puts everything back
+- paint mock: composes with the layer recorder in either order
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -2951,7 +2967,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 42
+- the kit is revision 43
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -3216,6 +3232,7 @@ Total.
 | test_mock_lines.lua | 5 |
 | test_mock_bindings.lua | 17 |
 | test_mock_layers.lua | 7 |
+| test_mock_paint.lua | 13 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -3231,4 +3248,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2753** |
+| **Total** | **2766** |
