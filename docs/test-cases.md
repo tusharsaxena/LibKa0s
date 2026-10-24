@@ -1961,6 +1961,24 @@ Total.
 - compose: StrataTooltip takes each part from strings, which is how a host localizes it
 - compose: StrataTooltip's default text is pure ASCII and names the Settings window
 
+### test_options_compose_master.lua (15)
+
+- compose master: the alpha row is labeled Master opacity, everything else unchanged
+- compose master: each row's note appends one sentence to exactly that row
+- compose master: notes.resetAll and notes.resetPosition append to the button tooltips
+- compose master: an empty, non-string or omitted-leaf note changes nothing
+- compose master: a keys rename does not stop the note
+- compose master: the spec and its notes are never written, and two calls agree
+- compose master: resetPositionTooltip replaces the Reset position tooltip
+- compose master: lockIsPreview gives Lock frame the library's preview sentence
+- compose master: lockIsPreview with a testModePath is refused
+- compose master: frameless with lockIsPreview emits no Lock frame row and does not raise
+- compose master: frameless puts Minimap button beside Debug console
+- compose master: framed with Lock frame omitted packs minimap and gives Test mode its own line
+- compose master: with the console omitted too, frameless Minimap button opens its line
+- compose master: the flow engine draws Debug console and Minimap button on one line
+- compose master: OptionsCompose is at minor 9
+
 ### test_options_throttle.lua (4)
 
 - throttle: a nil-returning scheduleTimer still gets ONE slider timer per window
@@ -3131,6 +3149,7 @@ Total.
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 51 |
+| test_options_compose_master.lua | 15 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3179,4 +3198,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2713** |
+| **Total** | **2728** |
