@@ -407,7 +407,7 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_media.lua (28)
+### test_media.lua (36)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -415,7 +415,7 @@ Total.
 - media: the catalog holds every set, not just the first
 - media: no Phosphor brand mark ships
 - media: the first 113 names are minor 4's, in minor 4's order
-- media: every name in TEXTURES has a file, and every file has a name
+- media: every name in TEXTURES, BORDERS and BACKGROUNDS has a file, and every file a name
 - media: Texture builds the vendored path, WITHOUT the extension
 - media: the texture keys are the labels a player reads
 - media: every font in FONTS ships with its license
@@ -437,6 +437,14 @@ Total.
 - media: an LSM without the locale bits gets a plain Register
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
+- media: FONTS carries the five skin faces beside JetBrains Mono
+- media: each face names its own locales, and only JetBrains Mono reaches ruRU
+- media: every OFL face ships with its license text beside it
+- media: RegisterLSM('X') registers 'Ka0s Barlow' under X's own libs folder, western only
+- media: a ruRU client keeps JetBrains Mono and is refused the western-only faces
+- media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
+- media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
+- media: RegisterLSM registers the Glass border and background, and counts them
 
 ### test_widgets.lua (58)
 
@@ -3144,7 +3152,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_media.lua | 28 |
+| test_media.lua | 36 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3248,4 +3256,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2766** |
+| **Total** | **2774** |

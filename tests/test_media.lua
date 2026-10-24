@@ -146,18 +146,22 @@ test("media: the first 113 names are minor 4's, in minor 4's order", function()
     "the other Open Iconic marks follow, unprefixed")
 end)
 
-test("media: every name in TEXTURES has a file, and every file has a name", function()
+test("media: every name in TEXTURES, BORDERS and BACKGROUNDS has a file, and every file a name", function()
   -- Same both-directions check the icons get, and it matters more here: a texture name is a LSM key
   -- a PROFILE STORES, so a catalog entry with no file behind it is a saved setting that resolves to
-  -- nothing on the next login.
+  -- nothing on the next login. The three catalogs share the folder (minor 6), so a file counts as
+  -- named when any of them names it.
   local files = listing("LibKa0s/media/textures")
   assertTrue(files ~= nil, "could not list LibKa0s/media/textures")
 
   local named = {}
-  for name, entry in pairs(media.TEXTURES) do
-    named[entry.file] = true
-    assertTrue(files[entry.file] == true,
-      "TEXTURES['" .. name .. "'] names " .. entry.file .. ", which is not on disk")
+  for _, catalog in ipairs({ "TEXTURES", "BORDERS", "BACKGROUNDS" }) do
+    assertTrue(type(media[catalog]) == "table", catalog .. " is missing")
+    for name, entry in pairs(media[catalog] or {}) do
+      named[entry.file] = true
+      assertTrue(files[entry.file] == true,
+        catalog .. "['" .. name .. "'] names " .. entry.file .. ", which is not on disk")
+    end
   end
   for file in pairs(files) do
     if file:match("%.tga$") then
@@ -430,7 +434,7 @@ test("media: RegisterLSM counts a face another copy registered first", function(
   T.mocks.__libs["LibSharedMedia-3.0"] = localeLSM(128, store, masks)
   local fonts = media.RegisterLSM("MythicMeters")
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
-  assertEqual(fonts, 1)
+  assertEqual(fonts, 6, "JetBrains Mono, held by the other copy, and the five western faces")
   assertEqual(store.font["JetBrains Mono"], first, "the first registration stays")
 end)
 
@@ -447,8 +451,9 @@ test("media: an LSM without the locale bits gets a plain Register", function()
   }
   local fonts = media.RegisterLSM("MythicMeters")
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
-  assertEqual(fonts, 1)
-  assertEqual(argc[1], 2, "key and path, and no langmask argument")
+  assertEqual(fonts, 6)
+  assertEqual(#argc, 6)
+  for i = 1, #argc do assertEqual(argc[i], 2, "key and path, and no langmask argument") end
 end)
 
 test("media: an LSM without IsValid counts every Register call, as minor 3 did", function()
@@ -461,17 +466,173 @@ test("media: an LSM without IsValid counts every Register call, as minor 3 did",
     MediaType = { FONT = "font", STATUSBAR = "statusbar" },
     Register = function() registered = registered + 1 end,   -- answers nothing, like the fakes
   }
-  local ok, fonts, bars = pcall(media.RegisterLSM, "MythicMeters")
+  local ok, fonts, bars, borders, backgrounds = pcall(media.RegisterLSM, "MythicMeters")
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
   assertTrue(ok, "RegisterLSM raised on an LSM without IsValid: " .. tostring(fonts))
-  assertEqual(fonts + bars, registered, "every Register call counts when IsValid is absent")
-  assertEqual(fonts, 1)
+  assertEqual(fonts + bars + borders + backgrounds, registered,
+    "every Register call counts when IsValid is absent")
+  assertEqual(fonts, 6)
 end)
 
 test("media: no LibSharedMedia is 0 registrations, not an error", function()
   -- An addon that does not carry LSM still wants its icons, so this degrades rather than raising.
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
-  local fonts, bars = media.RegisterLSM("MythicMeters")
+  local fonts, bars, borders, backgrounds = media.RegisterLSM("MythicMeters")
   assertEqual(fonts, 0)
   assertEqual(bars, 0)
+  assertEqual(borders, 0)
+  assertEqual(backgrounds, 0)
+end)
+
+-- ── the skin faces and the Glass art (minor 6) ───────────────────────────────────────────
+
+-- The five OFL faces the skins name, by LSM key, and the files behind them.
+local SKIN_FACES = {
+  ["Ka0s Barlow"]          = { file = "Barlow-Regular.ttf",               license = "Barlow-OFL.txt" },
+  ["Ka0s Barlow SemiBold"] = { file = "Barlow-SemiBold.ttf",              license = "Barlow-OFL.txt" },
+  ["Ka0s Cinzel"]          = { file = "Cinzel-SemiBold.ttf",              license = "Cinzel-OFL.txt" },
+  ["Ka0s Atkinson"]        = { file = "AtkinsonHyperlegible-Regular.ttf",
+                               license = "AtkinsonHyperlegible-OFL.txt" },
+  ["Ka0s Atkinson Bold"]   = { file = "AtkinsonHyperlegible-Bold.ttf",
+                               license = "AtkinsonHyperlegible-OFL.txt" },
+}
+
+test("media: FONTS carries the five skin faces beside JetBrains Mono", function()
+  -- red under: minor 5, whose catalog was one monospace face.
+  local n = 0
+  for _ in pairs(media.FONTS) do n = n + 1 end
+  assertEqual(n, 6, "JetBrains Mono plus five skin faces")
+  for name, want in pairs(SKIN_FACES) do
+    local entry = media.FONTS[name]
+    assertTrue(entry ~= nil, "FONTS has no '" .. name .. "'")
+    if entry then
+      assertEqual(entry.file, want.file, name .. "'s file")
+      assertEqual(entry.license, want.license, name .. "'s license")
+    end
+  end
+end)
+
+test("media: each face names its own locales, and only JetBrains Mono reaches ruRU", function()
+  -- red under: minor 5's one global western+ruRU mask. Cinzel and Atkinson have no Cyrillic, so
+  -- flagging them ruRU would draw a Russian player's text as boxes.
+  for name, entry in pairs(media.FONTS) do
+    assertTrue(type(entry.langmask) == "table" and #entry.langmask > 0,
+      name .. " carries no langmask list")
+  end
+  assertEqual(table.concat(media.FONTS["JetBrains Mono"].langmask or {}, ","), "western,ruRU")
+  for name in pairs(SKIN_FACES) do
+    assertEqual(table.concat(media.FONTS[name].langmask or {}, ","), "western",
+      name .. " is a western-only face")
+  end
+end)
+
+test("media: every OFL face ships with its license text beside it", function()
+  for name, entry in pairs(media.FONTS) do
+    local fh = io.open(FONT_DIR .. "/" .. entry.license, "rb")
+    assertTrue(fh ~= nil, name .. ": " .. entry.license .. " is missing")
+    if fh then
+      local body = fh:read("*a")
+      fh:close()
+      assertTrue(body:find("SIL Open Font License, Version 1.1", 1, true) ~= nil,
+        entry.license .. " is not the OFL 1.1 text")
+    end
+  end
+  -- Cinzel ships as a static instance cut from upstream's variable font; its license says so.
+  local fh = io.open(FONT_DIR .. "/Cinzel-OFL.txt", "rb")
+  local body = fh and fh:read("*a") or ""
+  if fh then fh:close() end
+  assertTrue(body:find("static instance", 1, true) ~= nil, "Cinzel-OFL.txt does not record the instancing")
+end)
+
+test("media: RegisterLSM('X') registers 'Ka0s Barlow' under X's own libs folder, western only", function()
+  -- The path is built from the host's name: a vendored copy cannot know its own folder.
+  local store, masks = {}, {}
+  T.mocks.__libs["LibSharedMedia-3.0"] = localeLSM(128, store, masks)
+  local fonts = media.RegisterLSM("X")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertEqual(store.font and store.font["Ka0s Barlow"],
+    "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\fonts\\Barlow-Regular.ttf")
+  for name, want in pairs(SKIN_FACES) do
+    assertEqual(masks[name], 128, name .. " must be flagged western only")
+    assertEqual(store.font[name], "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\fonts\\" .. want.file)
+  end
+  assertEqual(masks["JetBrains Mono"], 128 + 2, "JetBrains Mono keeps western + ruRU")
+  assertEqual(fonts, 6)
+end)
+
+test("media: a ruRU client keeps JetBrains Mono and is refused the western-only faces", function()
+  local store, masks = {}, {}
+  T.mocks.__libs["LibSharedMedia-3.0"] = localeLSM(2, store, masks)
+  local fonts = media.RegisterLSM("X")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertEqual(fonts, 1, "only JetBrains Mono lands on ruRU")
+  assertTrue(store.font["Ka0s Barlow"] == nil, "a western-only face landed on ruRU")
+end)
+
+test("media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless", function()
+  -- red under: minor 5, which had neither catalog.
+  local border, background = media.BORDERS and media.BORDERS["Ka0s Glass"],
+    media.BACKGROUNDS and media.BACKGROUNDS["Ka0s Glass"]
+  assertTrue(border ~= nil, "BORDERS has no 'Ka0s Glass'")
+  assertTrue(background ~= nil, "BACKGROUNDS has no 'Ka0s Glass'")
+  if not (border and background) then return end
+  assertEqual(border.file, "glass-border.tga")
+  assertEqual(border.edgeSize, 8, "the edge size the 1px stroke and radius 8 are drawn at")
+  assertEqual(background.file, "glass-fill.tga")
+  assertEqual(background.slice, 8, "the nine-slice margin, the corner radius")
+  assertEqual(media.Border("X", "Ka0s Glass"),
+    "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\textures\\glass-border")
+  assertEqual(media.Background("X", "Ka0s Glass"),
+    "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\textures\\glass-fill")
+  assertEqual(media.Border("X", "Blizzard Dialog"), nil, "in-client keys are LSM's, not ours")
+  assertEqual(media.Background(nil, "Ka0s Glass"), nil)
+end)
+
+--- The header of a TGA on disk: image type, width, height, bits per pixel.
+local function tgaHeader(path)
+  local fh = io.open(path, "rb")
+  if not fh then return nil end
+  local h = fh:read(18)
+  fh:close()
+  if not h or #h < 18 then return nil end
+  return h:byte(3), h:byte(13) + 256 * h:byte(14), h:byte(15) + 256 * h:byte(16), h:byte(17)
+end
+
+local function powerOfTwo(n)
+  while n > 1 and n % 2 == 0 do n = n / 2 end
+  return n == 1
+end
+
+test("media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes", function()
+  local want = { ["glass-fill.tga"] = { 32, 32 }, ["glass-border.tga"] = { 256, 32 } }
+  for file, size in pairs(want) do
+    local kind, w, h, bpp = tgaHeader("LibKa0s/media/textures/" .. file)
+    assertTrue(kind ~= nil, file .. " is not readable")
+    assertEqual(kind, 2, file .. " must be uncompressed true-color (type 2)")
+    assertEqual(bpp, 32, file .. " needs an alpha channel")
+    assertEqual(w, size[1], file .. " width")
+    assertEqual(h, size[2], file .. " height")
+    assertTrue(powerOfTwo(w) and powerOfTwo(h), file .. " is not power-of-two")
+  end
+end)
+
+test("media: RegisterLSM registers the Glass border and background, and counts them", function()
+  local byKind = {}
+  T.mocks.__libs["LibSharedMedia-3.0"] = {
+    MediaType = { FONT = "font", STATUSBAR = "statusbar", BORDER = "border", BACKGROUND = "background" },
+    Register = function(_, kind, key, path)
+      byKind[kind] = byKind[kind] or {}
+      byKind[kind][key] = path
+      return true
+    end,
+    IsValid = function(_, kind, key) return byKind[kind] ~= nil and byKind[kind][key] ~= nil end,
+  }
+  local fonts, bars, borders, backgrounds = media.RegisterLSM("X")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertEqual(fonts, 6)
+  assertEqual(bars, 7)
+  assertEqual(borders, 1)
+  assertEqual(backgrounds, 1)
+  assertEqual(byKind.border and byKind.border["Ka0s Glass"], media.Border("X", "Ka0s Glass"))
+  assertEqual(byKind.background and byKind.background["Ka0s Glass"], media.Background("X", "Ka0s Glass"))
 end)

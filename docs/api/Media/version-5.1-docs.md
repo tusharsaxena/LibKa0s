@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **5** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.74.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 4](./version-4-docs.md) — 113 Open Iconic names, one flat folder, no sets |
-| Superseded by | — |
+| Superseded by | [version 6.1](./version-6.1-docs.md) — five OFL skin faces with per-face locale masks, the `BORDERS` and `BACKGROUNDS` catalogs and the Glass art |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 5, MediaIcons = 1 }` |
 
 ## What changed at this version
@@ -362,3 +362,13 @@ The consumer-side gate compares the vendored payload against the tag byte for by
 and normalized line endings on everything, which is right for Lua and wrong for a TGA. **Kit revision
 11 or newer is required** to vendor a payload with `media/` in it — see
 [`../testkit/version-11-docs.md`](../testkit/version-11-docs.md).
+
+## Moving to version 6.1
+
+**Take it; nothing moves.** Version 6.1 is additive: every name and path here resolves the same,
+JetBrains Mono keeps its western + ruRU mask, and `RegisterLSM` still answers `fonts, bars` first,
+with `borders, backgrounds` after them. What arrives: five OFL faces the skins name
+(`Ka0s Barlow`, `Ka0s Barlow SemiBold`, `Ka0s Cinzel`, `Ka0s Atkinson`, `Ka0s Atkinson Bold`,
+western only), a `langmask` list on every `FONTS` entry, and the `BORDERS` / `BACKGROUNDS` catalogs
+with the Glass rounded border and fill, registered with LibSharedMedia. The payload grows by about
+0.5 MB of fonts. See [version 6.1](./version-6.1-docs.md).

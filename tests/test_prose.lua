@@ -211,7 +211,7 @@ for _, word in ipairs(ALLOWED) do ALLOWED_WORDS[word] = true end
 -- `base .. ICON_DIR .. "\\" .. name` from the key, and the file on disk is `minimise.tga`,
 -- vendored into every consumer's `libs/LibKa0s/media/icons/`. Renaming the key alone points at a
 -- texture that does not exist, and a texture that fails to load draws nothing and raises nothing —
--- the silent failure Media.lua:248-254 records. Changing it needs a second `.tga` or an alias map,
+-- the silent failure Media.lua:293-299 records. Changing it needs a second `.tga` or an alias map,
 -- so until then the key stays and CLAUDE.md's `## Documented deviations` carries the row.
 --
 -- An entry that stops matching is itself a failure below. An exemption nobody can see expiring is
@@ -376,7 +376,7 @@ local AUTHORED_LISTS = { ["tests/test_prose.lua"] = true }
 -- file quotes it, in backticks, asterisks or string quotes, so a stray use of the same spelling as
 -- prose elsewhere in it still reddens.
 local AUTHORED_RATIFIED = {
-  ["docs/api/Media/version-5.1-docs.md"] = { "minimise" },
+  ["docs/api/Media/version-6.1-docs.md"] = { "minimise" },
   ["tools/artwork/icon_cleaner.py"] = { "minimise" },
   ["CLAUDE.md"] = { "minimise", ".cancelled", "iscancelled" },
   ["tests/test_mock_ace.lua"] = { ".cancelled", "iscancelled" },

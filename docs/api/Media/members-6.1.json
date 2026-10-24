@@ -1,0 +1,25 @@
+{
+  "major": "LibKa0s-Media-1.0",
+  "versionKey": "6.1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Media", "minor": 6 },
+    { "file": "MediaIcons", "minor": 1 }
+  ],
+  "members": [
+    { "name": "BACKGROUNDS", "kind": "table" },
+    { "name": "BORDERS", "kind": "table" },
+    { "name": "Background", "kind": "function" },
+    { "name": "Border", "kind": "function" },
+    { "name": "FONTS", "kind": "table" },
+    { "name": "Font", "kind": "function" },
+    { "name": "ICONS", "kind": "table" },
+    { "name": "ICON_SETS", "kind": "table" },
+    { "name": "Icon", "kind": "function" },
+    { "name": "IconAuthor", "kind": "function" },
+    { "name": "RegisterLSM", "kind": "function" },
+    { "name": "TEXTURES", "kind": "table" },
+    { "name": "Texture", "kind": "function" },
+    { "name": "VENDOR_PATH", "kind": "string" }
+  ]
+}

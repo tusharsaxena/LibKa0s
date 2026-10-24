@@ -16,8 +16,9 @@ Opened 2026-10-25. Skinning, leg 1: the LibKa0s skin engine, its paint primitive
 choice on the settings panel, with LootHistory as the prototype consumer. The test kit's opt-in
 paint recorder opens it.
 
-Versions in this release: every file still at its v1.77.0 minor and **test kit revision 43**, until
-an entry below moves one. Each change bumps the minor of the files it touches once, and this block
+Versions in this release: **Media minor 6** (`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1
+unchanged); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
+entry below moves one. Each change bumps the minor of the files it touches once, and this block
 names each new minor as it lands. Still **seventeen majors across forty-one files**.
 
 ### Test kit revision 43: the paint recorder
@@ -38,6 +39,38 @@ changes, so no file minor moves; `mock_base.lua` gains one comment line pointing
   `M.__paint(obj)`; `M.__paintFrame(frame)` decorates a frame the base built. Off by default:
   through revision 42 `CreateTexture` and `CreateFontString` answered the frame itself, and they
   still do for a suite that does not install it. New suite: `tests/test_mock_paint.lua`.
+
+### Media minor 6: the skin faces and the Glass art
+
+`LibKa0s-Media-1.0` key 6.1, documented in
+[docs/api/Media/version-6.1-docs.md](docs/api/Media/version-6.1-docs.md). Additive: every name and
+path version 5.1 had resolves the same.
+
+- **Five OFL faces in `FONTS`**, SIL OFL 1.1, each license beside it in `media/fonts/`:
+  `Ka0s Barlow` and `Ka0s Barlow SemiBold` (Barlow), `Ka0s Cinzel` (Cinzel SemiBold) and
+  `Ka0s Atkinson` and `Ka0s Atkinson Bold` (Atkinson Hyperlegible). About 0.4 MB on every consumer.
+  New `tools/artwork/fonts.py` is their provenance record: it pins each upstream file to a
+  google/fonts commit and SHA-256, and cuts Cinzel's static SemiBold (wght 600) from upstream's
+  variable font with fontTools, which `Cinzel-OFL.txt` records above the license.
+- **A `langmask` per face.** Every `FONTS` entry lists its LibSharedMedia locale groups, and
+  `RegisterLSM` builds each face's mask from its own list. JetBrains Mono keeps western + ruRU; the
+  five skin faces are western only (Cinzel and Atkinson have no Cyrillic). Minor 5 applied one mask
+  to every face.
+- **`BORDERS` and `BACKGROUNDS`**, with `Border` and `Background` path readers, registered as LSM
+  `border` and `background` by `RegisterLSM`, which now answers `fonts, bars, borders, backgrounds`.
+  Each holds `Ka0s Glass`: `glass-border.tga` (256x32, the backdrop edge-file layout, a 1px line
+  with radius-8 corners at `edgeSize = 8`) and `glass-fill.tga` (32x32, a one-file nine-slice with
+  margins 8), white uncompressed TGAs from the new `tools/artwork/glass_textures.py`. The in-client
+  keys the skins use (`Blizzard Dialog`, `Blizzard Tooltip`, `Solid`, ...) are LibSharedMedia's own
+  defaults, so none is registered here.
+- **In leg 1 the new keys resolve into LootHistory's folder.** LibSharedMedia keeps the first
+  registration of a key, and LootHistory is the first consumer running v1.78.0 to call
+  `RegisterLSM`, so `Ka0s Barlow` and the rest point at
+  `Interface\AddOns\LootHistory\libs\LibKa0s\media\...` until leg 2's re-vendor ships the
+  files to every consumer. A skin names a face or texture by LSM key and the engine resolves it
+  with `LSM:Fetch`; it never builds a path.
+- `tools/prune-icons.lua` touches only `media/icons/`: a consumer pruned to `LibKa0s icons: none.`
+  keeps all of `fonts/` and `textures/`.
 
 ## v1.77.0 — 2026-10-24
 

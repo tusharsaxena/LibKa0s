@@ -126,7 +126,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass. The keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
 | `LibKa0s-Item-1.0` | Item identity as five primitives and no policy: read an item link and its bonus ids, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree about it in writing. | `Item.lua` | [3](docs/api/Item/version-3-docs.md) |
 | `LibKa0s-Glow-1.0` | The stateless LibCustomGlow-1.0 driver. `Start(frame, style, knobs, key, frameLevel)` and `Stop(frame, style, key)` map one of four styles (`button`, `proc`, `pixel`, `autocast`) and its knob values to LibCustomGlow's positional arguments, with its two traps handled (`pixelLength` 0 means automatic; a boolean is false only when false). No defaults, no ranges, no lifecycle: the repaint gate, the proc burst and the triggers stay the host's. LibCustomGlow-1.0 is resolved at call time, and without it nothing is drawn. | `Glow.lua` | [1](docs/api/Glow/version-1-docs.md) |
-| `LibKa0s-Media-1.0` | The art and type this collection draws with: 5,836 white icon TGAs from three sets (Open Iconic and Phosphor, MIT; Game-icons.net, CC BY 3.0), seven generated statusbar textures, and JetBrains Mono (SIL OFL). All of it sits inside the payload, along with the paths that reach it, the set catalog and the LibSharedMedia registration. | `Media.lua`, `MediaIcons.lua`, `media/` | [5.1](docs/api/Media/version-5.1-docs.md) |
+| `LibKa0s-Media-1.0` | The art and type this collection draws with: 5,836 white icon TGAs from three sets (Open Iconic and Phosphor, MIT; Game-icons.net, CC BY 3.0), seven generated statusbar textures, the Glass skin's generated rounded border and fill (the LSM `border` and `background` catalogs), and six SIL OFL faces: JetBrains Mono plus the skins' Barlow, Cinzel SemiBold and Atkinson Hyperlegible, each under its own locale mask. All of it sits inside the payload, along with the paths that reach it, the set catalog and the LibSharedMedia registration. | `Media.lua`, `MediaIcons.lua`, `media/` | [6.1](docs/api/Media/version-6.1-docs.md) |
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops, shared process-wide across addons. Then `SearchBox`, the flat filter-bar search box in the same skin, with a hint while empty and a gold border while it has focus. Then `TestStrip`, the mode strip: the amber band a window lays between its chrome and sample data while test mode is on, or with `kind = "sim"` the cyan band of a simulation, born hidden and placed by the host. Then `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, but no row content at all. And `DragHandle`, the labeled strip with a help mark (and optionally a close mark) that a player drags a movable frame by. And `LineChart`, a pooled line chart over a time axis with markers, dashed ranges and a hover crosshair. And `Autocomplete`, a suggestion list hung directly under a host's `EditBox`, in the box's own width and skin, with a debounced provider and keyboard picking. Widgets takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. | `Widgets.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua` | [15.1.5.3.3](docs/api/Widgets/version-15.1.5.3.3-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console (movable window, color-coded log, copy box, and the one seam that turns logging on and off), plus the diagnostics report a player sends with a bug report, the change gates (log once, log on change) the console re-arms on Clear and on enable, and the at-enable queue that holds a state line written while logging is off until it is turned on. The library writes the markers, the identity header and the cap, and runs each section an addon supplies under its own pcall. | `DebugLog.lua`, `DebugLogDiagnostics.lua`, `DebugLogGates.lua` | [21.3.1](docs/api/DebugLog/version-21.3.1-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser. In other words, everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua`, `SlashParse.lua` | [20.2](docs/api/Slash/version-20.2-docs.md) |
@@ -313,9 +313,10 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
                         written by tools/artwork/icon_cleaner.py, never by hand
   media/             -- THE ONLY NON-CODE PAYLOAD: icons/ (224 Open Iconic TGAs, MIT, flat;
                         phosphor/ 1,434 Phosphor Fill, MIT; game-icons/ 4,178 Game-icons.net,
-                        CC BY 3.0, with AUTHORS.txt), textures/ (7 generated statusbar bars) and
-                        fonts/ (JetBrains Mono, SIL OFL); every third-party set carries its license
-                        beside it
+                        CC BY 3.0, with AUTHORS.txt), textures/ (7 generated statusbar bars and
+                        the Glass skin's generated border and fill) and fonts/ (JetBrains Mono,
+                        Barlow, Cinzel SemiBold, Atkinson Hyperlegible, all SIL OFL); every
+                        third-party set carries its license beside it
   Widgets.lua        -- LibKa0s-Widgets-1.0, MINOR at the top of the file; needs Core
   WidgetsReorder.lua -- ReorderList and the row box, same module, REORDER_MINOR of its own
   WidgetsDragHandle.lua -- the unlocked drag handle, same module, DRAG_MINOR of its own
@@ -355,10 +356,12 @@ tools/prune-icons.lua -- after the cp -r re-vendor, deletes every icon under <Ad
                         the kit's own parser (testkit/vendor_sync.lua). Pure Lua 5.1
 tools/artwork/       -- icon_cleaner.py rebuilds media/icons/ and MediaIcons.lua from Open Iconic,
                         Phosphor and Game-icons (pinned commits, its own venv); bar_textures.py
-                        synthesizes media/textures/ from named constants. Both ARE the provenance
-                        record for their art -- upstream repos, commits, licenses and authors for
-                        the first, every value that decides a pixel for the second. Not shipped,
-                        not a build step: the TGAs are committed and the tools regenerate them
+                        and glass_textures.py synthesize media/textures/ from named constants;
+                        fonts.py fetches the OFL skin faces at pinned commits and cuts Cinzel's
+                        static SemiBold. Each IS the provenance record for its art -- upstream
+                        repos, commits, licenses and authors, or every value that decides a
+                        pixel. Not shipped, not a build step: the art is committed and the tools
+                        regenerate it
 testkit/             -- the shared headless harness, vendored into each addon as tests/_kit/
                         (never shipped: it lives under tests/, which every .pkgmeta already excludes)
                         Kit.VERSION at the top of framework.lua names the revision
@@ -411,4 +414,17 @@ The icon art in `LibKa0s/media/icons/` comes from three sets, each license shipp
   `media/icons/game-icons/AUTHORS.txt`. Changed from the originals: rasterized to 64×64 TGA,
   background removed, recolored white, some names suffixed or respelled.
 
-JetBrains Mono is by JetBrains, SIL OFL 1.1 (`media/fonts/JetBrainsMono-OFL.txt`).
+The fonts in `LibKa0s/media/fonts/` are all SIL OFL 1.1, each license shipped beside the face:
+
+- **[JetBrains Mono](https://github.com/JetBrains/JetBrainsMono)** by JetBrains
+  (`media/fonts/JetBrainsMono-OFL.txt`).
+- **[Barlow](https://github.com/jpt/barlow)** by The Barlow Project Authors, Regular and SemiBold
+  (`media/fonts/Barlow-OFL.txt`).
+- **[Cinzel](https://github.com/NDISCOVER/Cinzel)** by The Cinzel Project Authors, SemiBold
+  (`media/fonts/Cinzel-OFL.txt`). Changed from the original: a static instance at weight 600 cut
+  from upstream's variable font, renamed "Cinzel SemiBold"; no glyph edited.
+- **[Atkinson Hyperlegible](https://www.brailleinstitute.org/freefont/)** by the Braille Institute
+  of America, Regular and Bold (`media/fonts/AtkinsonHyperlegible-OFL.txt`).
+
+`tools/artwork/fonts.py` records where each face came from (google/fonts, pinned by commit and
+SHA-256).
