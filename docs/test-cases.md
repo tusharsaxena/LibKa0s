@@ -493,7 +493,7 @@ Total.
 - skin defs: every font and border a skin names is shipped or an LSM default
 - skin defs: the font assignments follow the spec
 
-### test_skin_paint.lua (27)
+### test_skin_paint.lua (29)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -506,13 +506,15 @@ Total.
 - skin paint: the holder is a child frame one level up, and edges live on it
 - skin paint: Ka0s Default leaves a stock frame stock, and a skin fades its art
 - skin paint: two owners on one loaded copy paint and repaint only their own frames
-- skin paint: Release puts a target back and stops repainting it
+- skin paint: a target painted for a second owner is given back first
+- skin paint: a target untracked and painted again reuses its regions and hooks
+- skin paint: fills and washes sit under the target's text, edges over it
 - skin paint: Panel on Ka0s Default is LootHistory's list panel, call for call
 - skin paint: Inset, noBg, noBorder and the nav rail's recolor
 - skin paint: FadeRegions fades the stock textures, records their alpha, and spares its own
 - skin paint: FadeNineSlice fades the nine pieces away from Ka0s Default
 - skin paint: TitleBar paints only the title color on Ka0s Default
-- skin paint: TitleBar fills on the holder, centers its title, and gives the alignment back
+- skin paint: TitleBar fills under its text, centers its title, and gives the alignment back
 - skin paint: Divider colors a texture in place, as Core's divider is colored
 - skin paint: Card on Ka0s Default is LootHistory's KPI card, call for call
 - skin paint: Footer draws nothing on Ka0s Default and a band in a skin that sets foot.bg
@@ -523,7 +525,7 @@ Total.
 - skin paint: Font and White put the body font and color on a string
 - skin paint: the getters answer the owner's skin
 
-### test_skin_paint_controls.lua (21)
+### test_skin_paint_controls.lua (23)
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
@@ -545,7 +547,9 @@ Total.
 - skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and ApplyBarFill
 - skin controls: NavItem on Ka0s Default is OptionsNav's entry paint
 - skin controls: Drawer on Ka0s Default is OptionsDrawer's header paint
-- skin controls: ListRow washes live on the holder and follow the latest state
+- skin controls: ListRow washes live under the row and follow the latest state
+- skin controls: every primitive's second call makes no new frame, region or hook
+- skin controls: every primitive's repaint reuses its regions and paints the new skin
 
 ### test_widgets.lua (58)
 
@@ -3256,8 +3260,8 @@ Total.
 | test_media.lua | 36 |
 | test_skin.lua | 26 |
 | test_skin_defs.lua | 15 |
-| test_skin_paint.lua | 27 |
-| test_skin_paint_controls.lua | 21 |
+| test_skin_paint.lua | 29 |
+| test_skin_paint_controls.lua | 23 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3361,4 +3365,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2863** |
+| **Total** | **2867** |

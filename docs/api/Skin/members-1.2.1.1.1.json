@@ -23,7 +23,6 @@
     { "name": "PendingReload", "kind": "function" },
     { "name": "RegisterOwner", "kind": "function" },
     { "name": "RegisterSkin", "kind": "function" },
-    { "name": "Release", "kind": "function" },
     { "name": "Repaint", "kind": "function" },
     { "name": "ResetToSkin", "kind": "function" },
     { "name": "Resolve", "kind": "function" },

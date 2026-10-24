@@ -8,8 +8,10 @@
 -- SkinPaint.lua's helpers (`lib.__P`), so it attaches only when that file attached to the same
 -- shell. The technique, the holder rule and the Ka0s Default rule are SkinPaint.lua's header.
 --
--- Every extra's overlay goes on the target's holder (or, for a frame that wears a backdrop, into
--- that backdrop), never as a direct region of a frame that may reach an EllesmereUI primitive.
+-- Every extra's overlay goes on one of the target's holders (fills and washes on the fill holder
+-- under the target's text, edges and lines on the holder over it) or, for a frame that wears a
+-- backdrop, into that backdrop: never as a direct region of a frame that may reach an EllesmereUI
+-- primitive.
 -- No primitive here draws a LibKa0s-Media icon.
 
 local lib = LibStub and LibStub("LibKa0s-Skin-1.0", true)
@@ -56,7 +58,7 @@ local function justify(rec, fs, align)
 end
 
 --- S.TitleBar(bar, opts): a title bar. Its fill is `title.bg` (or the `title.bgTop` / `bgBottom`
---- gradient), the bar's backdrop when it has one, else on the holder; its text (`opts.text`, else
+--- gradient), the bar's backdrop when it has one, else on the fill holder under the text; its text (`opts.text`, else
 --- `bar.title` / `bar.text`) takes `title.text`, the title font and `title.align`. Ka0s Default sets
 --- no title fill and no alignment, so only the text color is painted. Draws no Media icon.
 prim.TitleBar = function(owner, bar, opts)
@@ -117,7 +119,8 @@ prim.Card = function(owner, frame, opts)
   if P.isFS(opts.text) then P.tint(rec, opts.text, T, "text.body") end
 end
 
--- A wash: a texture colored in place, or a holder region filling a frame.
+-- A wash: a texture colored in place, or a region of the fill holder filling a frame (under the
+-- frame's own text).
 local function wash(owner, target, name, token, opts)
   if type(target) ~= "table" then return nil end
   local rec = P.track(owner, target, name, opts)
@@ -126,7 +129,7 @@ local function wash(owner, target, name, token, opts)
     if c then target:SetColorTexture(rgba(c)) end
     return rec
   end
-  local h = c and P.holder(rec, target)
+  local h = c and P.under(rec, target)
   local t = h and P.tex(rec, "wash", h, "BACKGROUND")
   if not t then
     P.hide(rec, "wash")
@@ -139,7 +142,7 @@ local function wash(owner, target, name, token, opts)
 end
 
 --- S.Strip(target, opts): the test / simulation strip's wash, `strip.test` or `strip.sim`
---- (`opts.kind`), on a texture in place (`W.TestStrip`'s fill) or on a frame's holder. The strip's
+--- (`opts.kind`), on a texture in place (`W.TestStrip`'s fill) or on a frame's fill holder. The strip's
 --- meaning colors are the library's; a skin changes only their legibility. Draws no Media icon.
 prim.Strip = function(owner, target, opts)
   local kind = type(opts) == "table" and opts.kind == "sim" and "sim" or "test"
@@ -147,7 +150,7 @@ prim.Strip = function(owner, target, opts)
 end
 
 --- S.Cover(target, opts): the combat cover's dim, `cover.dim`, on a texture in place
---- (OptionsCombat's) or a frame's holder; `opts.text` takes `cover.text`. Draws no Media icon.
+--- (OptionsCombat's) or a frame's fill holder; `opts.text` takes `cover.text`. Draws no Media icon.
 prim.Cover = function(owner, target, opts)
   local rec = wash(owner, target, "Cover", "cover.dim", opts)
   if rec and type(opts) == "table" and P.isFS(opts.text) then

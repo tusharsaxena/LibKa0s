@@ -463,13 +463,13 @@ test("skin controls: Drawer on Ka0s Default is OptionsDrawer's header paint", fu
   }, "\n"))
 end)
 
-test("skin controls: ListRow washes live on the holder and follow the latest state", function()
+test("skin controls: ListRow washes live under the row and follow the latest state", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local row = m.CreateFrame("Button", nil, m.UIParent)
   S.ListRow(row, "stripe")
   local stripe = F.region(Skin, row, "stripe")
-  assertEqual(stripe:GetParent(), F.region(Skin, row, "holder"), "on the holder")
+  assertEqual(stripe:GetParent(), F.region(Skin, row, "under"), "on the fill holder, under the row's text")
   assertEqual(F.rgba(survey(m, stripe).color), F.tok(Skin, "ka0s", "list.stripe"))
   S.ListRow(row, { stripe = true, hover = true })
   assertEqual(F.rgba(survey(m, F.region(Skin, row, "hover")).color), F.tok(Skin, "ka0s", "list.hover"))
@@ -483,4 +483,148 @@ test("skin controls: ListRow washes live on the holder and follow the latest sta
   local regions = row:GetNumRegions()
   S.ListRow(row, "selected")
   assertEqual(row:GetNumRegions(), regions, "no new region on the row itself")
+end)
+
+-- ── idempotence, repaint, owner moves (every primitive) ──────────────────────────────────────
+
+--- Frames and regions under `obj` (a frame, or a region: then its parent), counted recursively.
+local function census(obj)
+  local frames, regions = 0, 0
+  local function walk(f)
+    frames = frames + 1
+    regions = regions + f:GetNumRegions()
+    for _, c in ipairs({ f:GetChildren() }) do walk(c) end
+  end
+  local kind = obj.GetObjectType and obj:GetObjectType()
+  if kind == "Texture" or kind == "FontString" then obj = obj:GetParent() end
+  walk(obj)
+  return frames .. " frames, " .. regions .. " regions"
+end
+
+--- Count every HookScript on `frame` and every hooksecurefunc in `m`; answers a reader.
+local function hookCounter(m, frame)
+  local n = { script = 0, secure = 0 }
+  local kind = type(frame) == "table" and frame:GetObjectType()
+  if kind and kind ~= "Texture" and kind ~= "FontString" then
+    local orig = frame.HookScript
+    rawset(frame, "HookScript", function(self, ...) n.script = n.script + 1; return orig(self, ...) end)
+  end
+  m.hooksecurefunc = function() n.secure = n.secure + 1 end
+  return function() return n.script .. " script hooks, " .. n.secure .. " secure hooks" end
+end
+
+--- Watch every argument, every region and child of a frame argument, and every region an options
+--- table names.
+local function watchAll(tr, args)
+  local function walk(o)
+    if type(o) ~= "table" or tr.ids[o] then return end
+    local kind = type(o.GetObjectType) == "function" and o:GetObjectType()
+    if not kind then
+      for _, v in pairs(o) do if type(v) == "table" and type(v.GetObjectType) == "function" then walk(v) end end
+      return
+    end
+    tr.watch(o)
+    if kind == "Texture" or kind == "FontString" then return end
+    for _, r in ipairs({ o:GetRegions() }) do walk(r) end
+    for _, c in ipairs({ o:GetChildren() }) do walk(c) end
+  end
+  for _, a in ipairs(args) do walk(a) end
+end
+
+local function bare(m, kind)
+  local f = m.CreateFrame(kind or "Frame", nil, m.UIParent)
+  rawset(f, "SetBackdrop", nil)
+  return f
+end
+
+local function withFS(f, key) f[key] = f:CreateFontString(); return f end
+
+-- name -> function(m) answering the target and the primitive's further arguments
+local BUILD = {
+  Shell = function(m) return F.window(m) end,
+  Panel = function(m) return bare(m) end,
+  Inset = function(m) return m.CreateFrame("Frame", nil, m.UIParent, "BackdropTemplate") end,
+  FadeRegions = function(m) local f = bare(m); f:CreateTexture(); return f end,
+  FadeNineSlice = function(m) return m.CreateFrame("Frame", nil, m.UIParent, "PortraitFrameTemplate") end,
+  Button = function(m) return backdropButton(m) end,
+  WhiteButtonLabel = function(m) return backdropButton(m) end,
+  StateButtonLabel = function(m) return backdropButton(m), true end,
+  EditBox = function(m) return withFS(m.CreateFrame("EditBox", nil, m.UIParent, "BackdropTemplate"), "hint") end,
+  Checkbox = function(m) local cb = bare(m, "CheckButton"); rawset(cb, "GetChecked", function() return true end); return cb end,
+  Dropdown = function(m)
+    local dd = withFS(m.CreateFrame("Button", nil, m.UIParent, "BackdropTemplate"), "text")
+    dd.arrow = dd:CreateTexture(); return dd
+  end,
+  ScrollBar = function(m) return bare(m, "Slider") end,
+  Slider = function(m) return bare(m, "Slider") end,
+  Tab = function(m) return withFS(bare(m, "Button"), "text"), { selected = true } end,
+  CloseButton = function(m) local b = bare(m, "Button"); b.icon = b:CreateTexture(); return b end,
+  PageButton = function(m) return backdropButton(m), "next" end,
+  SquareIcon = function(m) local f = bare(m); f.icon = f:CreateTexture(); return f, { crop = true } end,
+  IconBorder = function(m) return bare(m) end,
+  SortHeaderBar = function(m) local f = bare(m); return f, { texts = { f:CreateFontString() } } end,
+  ApplyBarFill = function(m) return bare(m, "StatusBar") end,
+  NavItem = function(m)
+    local f = bare(m); return f, { label = f:CreateFontString(), sel = f:CreateTexture(), selected = true }
+  end,
+  Drawer = function(m) local f = bare(m, "Button"); return f, { label = f:CreateFontString(), open = true } end,
+  ListRow = function(m) return bare(m, "Button"), "selected" end,
+  TitleBar = function(m) return withFS(bare(m), "title") end,
+  Divider = function(m) return bare(m) end,
+  Footer = function(m) return withFS(bare(m), "text") end,
+  Card = function(m) local f = bare(m); return f, { title = f:CreateFontString() } end,
+  Strip = function(m) return bare(m) end,
+  Cover = function(m) local f = bare(m); return f, { text = f:CreateFontString() } end,
+  Tooltip = function(m) return m.CreateFrame("Frame", nil, m.UIParent, "BackdropTemplate") end,
+  MenuFrame = function(m) return m.CreateFrame("Frame", nil, m.UIParent, "BackdropTemplate") end,
+  Text = function(m) return bare(m):CreateFontString(), "heading" end,
+  Font = function(m) return bare(m):CreateFontString(), 1, 1, 1 end,
+  White = function(m) return bare(m):CreateFontString() end,
+}
+
+-- Primitives whose every token is nil in both skins of the repaint case: nothing to repaint.
+local NO_TOKEN = { IconBorder = true }   -- icon.border is nil in every shipped skin
+
+local function eachPrimitive(fn)
+  local names = {}
+  for name in pairs(BUILD) do names[#names + 1] = name end
+  table.sort(names)
+  for _, name in ipairs(names) do fn(name, BUILD[name]) end
+end
+
+test("skin controls: every primitive's second call makes no new frame, region or hook", function()
+  eachPrimitive(function(name, build)
+    for _, skin in ipairs({ "ka0s", "obsidian", "contrast", "wow" }) do
+      local m, Skin = F.env()
+      local S = F.owner(Skin, OWNER, skin)
+      local args = { build(m) }
+      local hooks = hookCounter(m, args[1])
+      S[name](unpack(args))
+      local first, firstHooks = census(args[1]), hooks()
+      S[name](unpack(args))
+      assertEqual(census(args[1]), first, name .. " on " .. skin .. ": no new frame or region")
+      assertEqual(hooks(), firstHooks, name .. " on " .. skin .. ": no new hook")
+    end
+  end)
+end)
+
+test("skin controls: every primitive's repaint reuses its regions and paints the new skin", function()
+  eachPrimitive(function(name, build)
+    local m, Skin = F.env()
+    local S = F.owner(Skin, OWNER, "obsidian")
+    local args = { build(m) }
+    local hooks = hookCounter(m, args[1])
+    S[name](unpack(args))
+    Skin:SetChoice(OWNER, "ka0s", "contrast")
+    local regions = Skin.painted[args[1]].regions
+    local after, afterHooks = census(args[1]), hooks()
+    local tr = F.tracer(m)
+    watchAll(tr, args)
+    tr.start(); Skin:SetChoice(OWNER, "ka0s", "obsidian"); Skin:SetChoice(OWNER, "ka0s", "contrast"); tr.stop()
+    tr.restore()
+    assertTrue(Skin.painted[args[1]].regions == regions, name .. ": the same regions table")
+    assertEqual(census(args[1]), after, name .. ": a repaint makes no new frame or region")
+    assertEqual(hooks(), afterHooks, name .. ": and no new hook")
+    assertTrue(#tr.lines > 0 or NO_TOKEN[name], name .. ": the repaint painted")
+  end)
 end)

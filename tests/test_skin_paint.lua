@@ -1,6 +1,6 @@
 -- tests/test_skin_paint.lua — LibKa0s-Skin-1.0's paint primitives, part one: the shared rules
 -- (attachment, the holder, idempotence, live repaint, per-owner isolation, Ka0s Default keeping
--- stock art, Release) and the window family, the text primitives and the getters
+-- stock art, owner moves and re-tracking) and the window family, the text primitives and the getters
 -- (SkinPaint.lua, SkinPaintExtras.lua). The controls are tests/test_skin_paint_controls.lua's.
 --
 -- Every case runs on a fresh environment with the kit's paint recorder installed
@@ -45,7 +45,7 @@ test("skin paint: the three files attach to the shell and fill every vocabulary 
   for _, name in ipairs(Skin.VOCAB) do
     assertEqual(type(Skin.prim[name]), "function", "lib.prim." .. name)
   end
-  assertEqual(type(Skin.Release), "function", "Skin:Release")
+  assertNil(Skin.Release, "no Release member: a pooled target is given back when it moves owner")
 end)
 
 test("skin paint: the extras and controls attach to nothing without SkinPaint's helpers", function()
@@ -211,21 +211,77 @@ test("skin paint: two owners on one loaded copy paint and repaint only their own
   assertEqual(F.rgba(survey(m, fb).backdropColor), F.tok(Skin, "ember", "win.bg"))
 end)
 
-test("skin paint: Release puts a target back and stops repainting it", function()
+test("skin paint: a target painted for a second owner is given back first", function()
   local m, Skin = F.env()
-  local S = F.owner(Skin, OWNER, "obsidian")
-  local f = m.CreateFrame("Frame", nil, m.UIParent)
-  rawset(f, "SetBackdrop", nil)
-  local stock = f:CreateTexture()
-  stock:SetAlpha(0.7)
-  S.FadeRegions(f)
-  S.Panel(f)
-  assertEqual(stock:GetAlpha(), 0)
-  Skin:Release(f)
-  assertEqual(stock:GetAlpha(), 0.7, "the faded art's alpha is back")
-  assertFalse(F.region(Skin, f, "fill") ~= nil and F.region(Skin, f, "fill"):IsShown())
-  assertNil(Skin.painted[f], "untracked")
-  assertEqual(Skin:Repaint(OWNER), 0, "nothing left to repaint")
+  local A, B = F.owner(Skin, "AddonA", "obsidian"), F.owner(Skin, "AddonB")
+  local b = m.CreateFrame("Button", nil, m.UIParent)
+  rawset(b, "SetBackdrop", nil)
+  local normal = b:CreateTexture()
+  rawset(b, "GetNormalTexture", function() return normal end)
+  A.Button(b)
+  assertEqual(normal:GetAlpha(), 0, "A's skin fades the stock art")
+  B.Button(b)
+  assertEqual(normal:GetAlpha(), 1, "B on Ka0s Default sees the stock art again")
+  assertEqual(Skin.painted[b].owner, "AddonB")
+
+  local C = F.owner(Skin, "AddonC", "contrast")
+  local row = m.CreateFrame("Button", nil, m.UIParent)
+  C.ListRow(row, "selected")
+  local sel, edge = F.region(Skin, row, "sel"), F.region(Skin, row, "edgeTop")
+  A.ListRow(row, "normal")
+  assertFalse(sel:IsShown(), "C's selection wash is gone")
+  assertFalse(edge:IsShown(), "and its outline")
+  Skin:SetChoice("AddonC", "ka0s", "glass")
+  assertFalse(sel:IsShown(), "C's repaint no longer reaches the row")
+end)
+
+test("skin paint: a target untracked and painted again reuses its regions and hooks", function()
+  local m, Skin = F.env()
+  local A, B = F.owner(Skin, "AddonA", "contrast"), F.owner(Skin, "AddonB", "obsidian")
+  local row = m.CreateFrame("Button", nil, m.UIParent)
+  A.ListRow(row, "selected")
+  local holder, under = F.region(Skin, row, "holder"), F.region(Skin, row, "under")
+  for _ = 1, 3 do
+    Skin:Untrack(row)
+    A.ListRow(row, "selected")
+  end
+  B.ListRow(row, "selected")
+  assertTrue(F.region(Skin, row, "holder") == holder, "the same holder")
+  assertTrue(F.region(Skin, row, "under") == under, "the same fill holder")
+  assertEqual(row:GetNumChildren(), 2, "two holders on the row, ever")
+
+  local secure, scripts = 0, 0
+  m.hooksecurefunc = function() secure = secure + 1 end
+  local cb = m.CreateFrame("CheckButton", nil, m.UIParent)
+  local hook = cb.HookScript
+  rawset(cb, "HookScript", function(self, ...) scripts = scripts + 1; return hook(self, ...) end)
+  A.Checkbox(cb)
+  local first = scripts .. "/" .. secure
+  Skin:Untrack(cb); A.Checkbox(cb); B.Checkbox(cb)
+  assertEqual(scripts .. "/" .. secure, first, "no hook is added twice")
+end)
+
+test("skin paint: fills and washes sit under the target's text, edges over it", function()
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "contrast")
+  local tr = F.tracer(m)
+  local row = m.CreateFrame("Button", nil, m.UIParent)
+  rawset(row, "GetFrameLevel", function() return 5 end)
+  tr.start(); S.ListRow(row, { stripe = true, selected = true }); tr.stop(); tr.restore()
+  local under, holder = F.region(Skin, row, "under"), F.region(Skin, row, "holder")
+  assertTrue(under ~= nil and under.__parent == row, "the fill holder is the row's child")
+  assertTrue(tr.text():find("SetFrameLevel(4)", 1, true) ~= nil, "one level below the row")
+  assertEqual(F.region(Skin, row, "stripe"):GetParent(), under, "the stripe under the row's text")
+  assertEqual(F.region(Skin, row, "sel"):GetParent(), under, "the selection wash too")
+  assertEqual(F.region(Skin, row, "edgeTop"):GetParent(), holder, "the outline over it")
+
+  local lv0 = m.CreateFrame("Frame", nil, m.UIParent)
+  rawset(lv0, "SetBackdrop", nil)
+  rawset(lv0, "GetFrameLevel", function() return 0 end)
+  local tr0 = F.tracer(m)
+  tr0.start(); S.Strip(lv0); tr0.stop(); tr0.restore()
+  assertTrue(tr0.text():find("SetFrameLevel(0)", 1, true) ~= nil, "never below level 0")
+  assertEqual(F.region(Skin, lv0, "wash"):GetParent(), F.region(Skin, lv0, "under"))
 end)
 
 -- ── Panel, Inset, the faders ─────────────────────────────────────────────────────────────────
@@ -309,16 +365,16 @@ test("skin paint: TitleBar paints only the title color on Ka0s Default", functio
   assertEqual(text, "#2:SetTextColor(1,0.820,0)", "title.text, three components, and nothing else")
 end)
 
-test("skin paint: TitleBar fills on the holder, centers its title, and gives the alignment back", function()
+test("skin paint: TitleBar fills under its text, centers its title, and gives the alignment back", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER, "forever")
   local bar = m.CreateFrame("Frame", nil, m.UIParent)
-  rawset(bar, "SetBackdrop", nil)   -- a bare bar: the fill goes on the holder
+  rawset(bar, "SetBackdrop", nil)   -- a bare bar: the fill goes on the fill holder
   local fs = bar:CreateFontString()
   fs:SetJustifyH("LEFT")
   S.TitleBar(bar, { text = fs })
   local fill = F.region(Skin, bar, "fill")
-  assertTrue(fill:GetParent() == F.region(Skin, bar, "holder"), "the fill is on the holder")
+  assertTrue(fill:GetParent() == F.region(Skin, bar, "under"), "the fill is under the bar's text")
   assertEqual(F.rgba(survey(m, fill).color), F.tok(Skin, "forever", "title.bg"))
   assertEqual(fs:GetJustifyH(), "CENTER", "WoW Forever centers its titles")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")

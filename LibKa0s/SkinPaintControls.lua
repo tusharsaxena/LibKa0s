@@ -7,7 +7,7 @@
 -- major, paired on the shell's minor (`__controlsMinor` / `__controlsShellMinor`), painting with
 -- SkinPaint.lua's helpers (`lib.__P`). The technique is SkinPaint.lua's header: stock art faded and
 -- recorded, Ka0s regions made once per target, Ka0s Default leaving a stock control stock, every
--- border and wash on the holder.
+-- border on the holder and every wash on the fill holder under the target's text.
 --
 -- HOVER AND FOCUS are HookScript'd once per target and read the target's record at call time, so a
 -- skin switch recolors them with no new hook and a pooled control that moved to another owner
@@ -579,7 +579,8 @@ local DRAWER_HEAD_OPEN = { fill = "drawer.bgOpen", border = "drawer.borderOpen",
 --- `drawer.summarySet` / `drawer.summary`; then its edge set (`opts.edges`, OptionsDrawer's
 --- `{ fill, left, right, bottom, top }`) in `drawer.bgOpen` / `drawer.borderOpen` while `opts.open`,
 --- else `drawer.bg` / `drawer.border`, and the box's (`opts.box`) in `drawer.boxBg` /
---- `drawer.boxBorder`. A header with no edge set is boxed on its holder. Draws no Media icon.
+--- `drawer.boxBorder`. A header with no edge set is boxed on its holders (the fill under its text,
+--- the edge over it). Draws no Media icon.
 local function drawerText(rec, T, opts)
   local set = opts.set and true or false
   if P.isFS(opts.label) then P.tint(rec, opts.label, T, set and "drawer.textSet" or "drawer.text") end
@@ -605,7 +606,7 @@ local ROW_STATE = { stripe = { stripe = true }, hover = { hover = true }, select
                     normal = {} }
 
 local function rowWash(rec, row, key, c, layer)
-  local h = c and P.holder(rec, row)
+  local h = c and P.under(rec, row)
   local t = h and P.tex(rec, key, h, layer)
   if not t then return P.hide(rec, key) end
   t:SetAllPoints(h)
@@ -613,8 +614,9 @@ local function rowWash(rec, row, key, c, layer)
   t:Show()
 end
 
---- S.ListRow(row, state): a list row's washes, on its holder: `list.stripe` when `state.stripe`,
---- `list.hover` when `state.hover`, `list.sel` and a `list.selOutline` edge when `state.selected`.
+--- S.ListRow(row, state): a list row's washes, on its fill holder under the row's text:
+--- `list.stripe` when `state.stripe`, `list.hover` when `state.hover`, `list.sel` when
+--- `state.selected`, with a `list.selOutline` edge on the holder over it.
 --- `state` is a table or one of "stripe", "hover", "selected", "normal". Call it from the row's
 --- bind step: the latest state is what a skin switch repaints. Draws no Media icon.
 prim.ListRow = function(owner, row, state)

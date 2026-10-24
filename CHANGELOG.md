@@ -163,9 +163,11 @@ paired on the shell's minor, loaded after `SkinDefs.lua`; the extras and the con
 `SkinPaint.lua`'s helpers and attach only beside it. Every `VOCAB` name now has its primitive, so
 `S.Shell(frame)`, `S.Button(btn)` and the rest paint.
 
-- **`SkinPaint.lua`**: the painter helpers, `Shell`, `Panel`, `Inset`, `FadeRegions`,
-  `FadeNineSlice`, and the new member **`Skin:Release(target)`**, which puts a target back and
-  untracks it (for a pooled widget).
+- **`SkinPaint.lua`**: the painter helpers, `Shell`, `Panel`, `Inset`, `FadeRegions` and
+  `FadeNineSlice`. A target's regions, holders and hook flags outlive its record, so a re-tracked
+  or pooled target reuses them, and a target painted for a second owner is given back first.
+  Edges draw on a holder over the target, fills and washes on a fill holder under it, so a list
+  row's or title bar's text stays legible.
 - **`SkinPaintExtras.lua`**: `TitleBar`, `Divider`, `Footer`, `Card`, `Strip`, `Cover`, `Tooltip`
   (library-owned frames only), `MenuFrame`, `Text`, `Font`, `White`, and the getters
   `GetAccentColor`, `GetPanelColor`, `GetFont`, `GlowColor`, `ChartStyle`, `BarStyle`.

@@ -1,8 +1,7 @@
 -- LibKa0s-Skin-1.0 — the Ka0s paint primitives, part one: the painter helpers every primitive
 -- shares, the window primitives of EllesmereUI's vocabulary (Shell, Panel, Inset) and the
--- stock-art faders (FadeRegions, FadeNineSlice), and `Skin:Release`. SkinPaintExtras.lua carries
--- the window family's Ka0s extras, the text and font primitives and the getters;
--- SkinPaintControls.lua the controls.
+-- stock-art faders (FadeRegions, FadeNineSlice). SkinPaintExtras.lua carries the window family's
+-- Ka0s extras, the text and font primitives and the getters; SkinPaintControls.lua the controls.
 --
 -- ── WHY IT IS A FILE OF ITS OWN ──────────────────────────────────────────────────────────────
 --
@@ -18,18 +17,28 @@
 --   * Stock art is FADED by alpha, its prior alpha recorded, and never cleared, re-textured, hidden,
 --     re-parented or re-scripted: SetAlpha survives the client's own SetTexture / Show swaps, and a
 --     recorded alpha is a restore.
---   * Ka0s regions are created ONCE per target and kept in the target's weak record
---     (`rec.regions`); a repaint reuses them. Nothing is written onto a frame's table.
+--   * Ka0s regions are created ONCE per target and kept in a weak per-target table that outlives
+--     the record (`lib.__regions[target]`, which every record of the target answers as
+--     `rec.regions`): a repaint, a record Skin:Untrack dropped and a move to another owner all reuse
+--     them, holders, saved values and hook flags alike, because a frame is never collected and a
+--     hook is never removed. Nothing is written onto a frame's table.
+--   * A target painted for a second owner is GIVEN BACK first (everything the first owner's skin
+--     faded, recolored, re-fonted, backdropped or drew is put back) and then painted for the new
+--     owner, so no skin leaks into another addon's frame.
 --   * Ka0s Default keeps STOCK art. A target that carries the client's template art (a button's
 --     normal texture, a template's Left/Middle/Right pieces, a NineSlice, or the regions a caller
 --     names as `opts.stock`) is left exactly as the client draws it under Ka0s Default, and every
 --     region a previous skin faded or painted on it is put back. Ka0s Default is today's look, and
 --     today a stock control is stock.
---   * Every Ka0s overlay that is not the target's own fill (edges, the divider line, list-row
---     washes, the strip and cover washes, the extras' fills on a frame with no backdrop) lives on a
---     per-record child HOLDER frame (SetAllPoints, frame level + 1), never as a direct region of a
---     frame that may reach an EllesmereUI primitive: EllesmereUI's FadeRegions / Restrip fade every
---     direct region of the frame it skins.
+--   * Every Ka0s overlay that is not the target's own fill lives on a child HOLDER frame of the
+--     target, never as a direct region of a frame that may reach an EllesmereUI primitive:
+--     EllesmereUI's FadeRegions / Restrip fade every direct region of the frame it skins. There are
+--     two, both SetAllPoints over the target. EDGES (borders, the divider line, a tab's underline,
+--     a row's selection outline) go on the holder one frame level ABOVE the target. FILLS AND
+--     WASHES (list-row stripe, hover and selection washes, the strip and cover washes, the extras'
+--     fills and gradients) go on the fill holder one level BELOW it (never below 0), the
+--     BackdropTemplate idiom: a region of a higher frame draws over every region of a lower one,
+--     whatever its layer, so a fill above the target would bury the target's own text.
 --   * SetBackdrop only on the target or the holder, and a target is passed by the library or the
 --     owner that created it: never hand a primitive a Blizzard frame you did not create.
 --   * Gradients are SetGradient on a white color texture; fonts go through one FontObject per owner
@@ -63,6 +72,9 @@ lib.MODULES.SkinPaint = PAINT_MINOR
 
 -- Every region and holder a primitive created, weakly: FadeRegions never fades one of its own.
 lib.__ours = lib.__ours or setmetatable({}, { __mode = "k" })
+-- Each target's regions, weakly, across its records (see the header): kept across minors, since the
+-- frames and hooks they name outlive any one copy of this file.
+lib.__regions = lib.__regions or setmetatable({}, { __mode = "k" })
 -- The per-owner font objects, "owner\0role" -> FontObject. Kept across minors: a font object is a
 -- named client object and cannot be created twice under one name.
 lib.__fonts = lib.__fonts or {}
@@ -221,9 +233,10 @@ local function saved(rec, kind)
 end
 P.saved = saved
 
---- The record's holder: a child frame over the target, one frame level up, made once.
-function P.holder(rec, frame)
-  local h = rec.regions.holder
+-- A child frame over the target at its frame level + `offset` (never below 0), made once as
+-- `rec.regions[key]`.
+local function holderAt(rec, frame, key, offset)
+  local h = rec.regions[key]
   if h then
     h:Show()
     return h
@@ -233,11 +246,18 @@ function P.holder(rec, frame)
   if type(h) ~= "table" then return nil end
   h:SetAllPoints(frame)
   local lv = type(frame.GetFrameLevel) == "function" and frame:GetFrameLevel()
-  if type(lv) == "number" then h:SetFrameLevel(lv + 1) end
+  if type(lv) == "number" then h:SetFrameLevel(math.max(0, lv + offset)) end
   lib.__ours[h] = true
-  rec.regions.holder = h
+  rec.regions[key] = h
   return h
 end
+
+--- The record's holder, for edges: a child frame over the target, one frame level up, made once.
+function P.holder(rec, frame) return holderAt(rec, frame, "holder", 1) end
+
+--- The record's fill holder, for fills and washes: a child frame over the target, one frame level
+--- down (never below 0), made once, so what it draws sits under every region of the target.
+function P.under(rec, frame) return holderAt(rec, frame, "under", -1) end
 
 --- One texture region of the record, made once on `parent`.
 function P.tex(rec, key, parent, layer, sublevel)
@@ -511,15 +531,18 @@ function P.backdrop(rec, frame, fill, border, size, insets)
 end
 
 local function boxFillParent(rec, frame, spec)
-  if spec.extra then return P.holder(rec, frame) end
+  if spec.extra then return P.under(rec, frame) end
   return frame
 end
 
+local function hasGradient(T, base) return base and T[base .. "Top"] and T[base .. "Bottom"] and true end
+
 -- The gradient a backdrop cannot draw, over its fill: a region of the target (a primitive of
--- EllesmereUI's vocabulary) or of the holder (a Ka0s extra).
+-- EllesmereUI's vocabulary), or of the fill holder (a Ka0s extra, whose backdrop fill is then
+-- cleared: the gradient, drawn under the target, is the fill).
 local function boxGradient(rec, frame, T, spec)
   local base = spec.fill
-  if not (base and T[base .. "Top"] and T[base .. "Bottom"]) then return P.hide(rec, "grad") end
+  if not hasGradient(T, base) then return P.hide(rec, "grad") end
   local parent = boxFillParent(rec, frame, spec)
   local t = P.tex(rec, "grad", parent, "BACKGROUND", 1)
   if not t then return end
@@ -538,8 +561,8 @@ local function boxTokens(T, spec, opts)
   return fill, border, style, size, style == "flat"
 end
 
--- A box on a frame with no backdrop: the fill as a region (of the target, or the holder for an
--- extra), the border on the holder.
+-- A box on a frame with no backdrop: the fill as a region (of the target, or the fill holder for
+-- an extra), the border on the holder.
 local function regionBox(rec, frame, T, spec, border, style, size)
   local parent = boxFillParent(rec, frame, spec)
   local t = spec.fill and P.tex(rec, "fill", parent, "BACKGROUND", 0)
@@ -551,7 +574,7 @@ local function regionBox(rec, frame, T, spec, border, style, size)
 end
 
 --- Paint a box: `spec` names the fill, border, style and size tokens (`extra` true for a Ka0s
---- extra, whose overlays all go on the holder; `insets` false for a menu's backdrop). A frame with
+--- extra, whose fill regions go on the fill holder; `insets` false for a menu's backdrop). A frame with
 --- a backdrop wears the flat-control backdrop; a non-flat border goes on the holder. A spec whose
 --- fill and border both resolve to nil leaves the frame alone, and puts back a backdrop a previous
 --- skin set.
@@ -564,6 +587,7 @@ function P.box(rec, frame, T, spec, opts)
     return P.hideEdges(rec, frame)
   end
   if not P.hasBackdrop(frame) then return regionBox(rec, frame, T, spec, border, style, size) end
+  if spec.extra and hasGradient(T, spec.fill) then fill = CLEAR end
   P.backdrop(rec, frame, fill, flat and border or nil, flat and size or 1, spec.insets)
   boxGradient(rec, frame, T, spec)
   if flat then return P.hideEdges(rec, frame) end
@@ -589,8 +613,8 @@ local function restoreColors(rec, method)
 end
 
 --- Undo everything a primitive did to a target: faded art back to its alpha, fonts, text and vertex
---- colors and a backdrop back to what they were, every Ka0s region hidden. The regions are kept
---- for reuse.
+--- colors and a backdrop back to what they were, every Ka0s region and both holders hidden. The
+--- regions are kept for reuse.
 function P.unpaint(rec, frame)
   local s = rec.regions.saved or {}
   for region, a in pairs(s.alpha or {}) do region:SetAlpha(a) end
@@ -618,10 +642,21 @@ function P.stockDefault(owner, rec, frame, opts)
   return false
 end
 
---- Record that `prim` painted `target` for `owner` (Skin:Track), and answer the record.
+--- Record that `prim` painted `target` for `owner` (Skin:Track), and answer the record. A target
+--- another owner painted is given back first; the record answers the target's lasting regions.
 function P.track(owner, target, name, ...)
   if type(target) ~= "table" then return nil end
-  return lib:Track(owner, target, name, ...)
+  local old = lib.painted[target]
+  if old and old.owner ~= owner then P.unpaint(old, target) end
+  local rec = lib:Track(owner, target, name, ...)
+  if not rec then return nil end
+  local regions = lib.__regions[target]
+  if regions then
+    rec.regions = regions
+  else
+    lib.__regions[target] = rec.regions
+  end
+  return rec
 end
 
 -- ── the window family ────────────────────────────────────────────────────────────────────────
@@ -795,17 +830,4 @@ prim.FadeNineSlice = function(owner, frame)
   local ns = rawget(frame, "NineSlice")
   if not P.isFrame(ns) then return end
   for _, k in ipairs(NINE_KEYS) do P.fade(rec, P.field(ns, k, "Texture")) end
-end
-
--- ── giving a target back ─────────────────────────────────────────────────────────────────────
-
---- Give `target` back: everything a primitive faded, recolored, re-fonted or backdropped on it is
---- put back as it was, every Ka0s region on it is hidden (kept for reuse), and it is no longer
---- repainted for anyone. For a pooled widget returning to a pool every addon shares.
-function lib:Release(target)
-  local rec = self.painted[target]
-  if not rec then return end
-  local Pnow = self.__P
-  if Pnow then Pnow.unpaint(rec, target) end
-  self:Untrack(target)
 end

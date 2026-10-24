@@ -76,7 +76,6 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `Skin:ResolveSkin(key)` | token table | Ka0s Default's tokens with the skin's own over them, cached. An unregistered key resolves as Ka0s Default. Shared: never write to it. |
 | `Skin:Track(owner, frame, prim, ...)` | record | For the primitives: records that `prim` painted `frame` for `owner` with these arguments. One record per frame; a frame painted for a second owner (a pooled frame) moves to it; repeating a primitive replaces its arguments and keeps its replay position. The record's `regions` table is the primitive's own. |
 | `Skin:Untrack(frame)` | — | Forgets a frame (a pooled widget handed back). |
-| `Skin:Release(target)` | — | From `SkinPaint.lua`: puts a target back (everything a primitive faded, recolored, re-fonted or backdropped on it), hides its Ka0s regions and holder, and untracks it. See *The primitives*. |
 | `Skin:Repaint(owner)` | calls | Replays every primitive recorded for the owner's frames, each frame once: frames in the order they were first painted for the owner (a frame that moved to it counts from the move), and each frame's primitives in their first-paint order, each call under pcall; `lib.__repainting` is true while it runs. `SetChoice` calls it. |
 | `FROM_SKIN` | `"@skin"` | The stored value meaning "take this setting from the skin". |
 | `DEFAULT` | `"ka0s"` | The skin every owner wears until it picks another, and the one an unknown key resolves as. |
@@ -518,17 +517,31 @@ answers nil.
   on it is put back. Ka0s Default is today's look, and today a stock control is stock. A custom
   target (a BackdropTemplate frame the library or the host built) is painted from Ka0s Default's
   tokens, which are today's constants.
-- **The holder.** Every Ka0s overlay that is not the target's own fill (edges, a divider's line, a
-  list row's washes, the strip and cover washes, a tab's underline, the extras' fills on a frame with
-  no backdrop) lives on the target's **holder**: one child frame per record, `SetAllPoints` over the
-  target at its frame level + 1, made with BackdropTemplate so a nine-slice edge can be its backdrop.
-  Never a direct region of a frame an EllesmereUI primitive may reach, because EllesmereUI's
-  FadeRegions fades every direct region of the frame it skins.
+- **The holders.** Every Ka0s overlay that is not the target's own fill lives on one of two child
+  frames of the target, each made once, `SetAllPoints` over it and made with BackdropTemplate. Never
+  a direct region of a frame an EllesmereUI primitive may reach, because EllesmereUI's FadeRegions
+  fades every direct region of the frame it skins. **Edges** (borders, a divider's line, a tab's
+  underline, a nav entry's selection bar, a list row's selection outline) go on the **holder**, at the
+  target's frame level + 1, so a nine-slice edge can be its backdrop and every edge draws over the
+  target. **Fills and washes** (a list row's stripe, hover and selection washes, the strip and cover
+  washes, the extras' fills and gradients: `TitleBar`, `Footer`, `Card`, `SortHeaderBar`, a boxed
+  `Drawer` header) go on the **fill holder**, at the target's frame level - 1 (never below 0): a region
+  of a higher frame draws over every region of a lower one whatever its layer, so a fill one level up
+  would bury the target's own text, which is how BackdropTemplate frames sit under their parent. On an
+  extra that wears a backdrop and gets a gradient, the gradient on the fill holder is the fill, and
+  the backdrop's own fill is cleared.
+- **Lasting regions, and owner moves.** A target's regions, holders, saved values and hook flags are
+  kept in a weak per-target table (`lib.__regions`) that outlives its record, so a record dropped by
+  `Skin:Untrack` and painted again, or a target moved to another owner, reuses them: a frame is never
+  collected and a hook never removed, so making them again would grow without bound on a pooled
+  widget. A target painted for a second owner is first **given back** (everything the first owner's
+  skin faded, recolored, re-fonted, backdropped or drew put back), then painted for the new one, so no
+  skin leaks into another addon's frame.
 - **Backdrops.** A frame wears a backdrop when it carries BackdropTemplate, which the primitives
   read from the frame's own table (the template's mixin copies `SetBackdrop` there). Only such a
   frame, or the holder, is ever given `SetBackdrop`, and only a target the library or the owner
   created: never pass a Blizzard frame you did not create. A stock frame's own backdrop is recorded
-  before the first change and put back on Ka0s Default and by `Release`.
+  before the first change and put back on Ka0s Default and when the target moves to another owner.
 - **Borders.** A token's `borderStyle` is `flat` (the backdrop's own edge, or four 1px-and-up edge
   textures on the holder for a frame with no backdrop), `bevelOut` / `bevelIn` (two-tone edges on the
   holder, light top-left and dark bottom-right, or the reverse) or `nine:<LibSharedMedia border
@@ -601,11 +614,11 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 | `Inset(frame, opts)` | A recessed area. | `input.bg`, `input.border`, `input.borderStyle`, `input.borderSize` |
 | `FadeRegions(frame, ...)` | Fades every texture region of the frame (and of each further frame) that no primitive made. Ka0s Default fades nothing and puts them back. | none |
 | `FadeNineSlice(frame)` | Fades `frame.NineSlice`'s nine pieces. Ka0s Default puts them back. | none |
-| `TitleBar(bar, opts)` | A title bar: the fill (the bar's backdrop, or the holder), its text (`opts.text`, else `bar.title` / `bar.text`) in the title color, font and alignment (the prior alignment put back when the skin sets none). | `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.align`, `font.title` |
+| `TitleBar(bar, opts)` | A title bar: the fill (the bar's backdrop, or the fill holder), its text (`opts.text`, else `bar.title` / `bar.text`) in the title color, font and alignment (the prior alignment put back when the skin sets none). | `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.align`, `font.title` |
 | `Divider(target, opts)` | A texture colored in place, or a line filling a frame on its holder; `opts.token` names another color (`section.rule`, `tab.rule`). | `divider` |
 | `Footer(frame, opts)` | A footer band; its text (`opts.text`, else `frame.text`) muted. | `foot.bg`, `text.muted` |
 | `Card(frame, opts)` | A card: `opts.title` in the heading color, `opts.text` in the body color. | `card.bg`, `card.border`, `text.heading`, `text.body` |
-| `Strip(target, opts)` | The test or simulation strip's wash (`opts.kind` `"test"` / `"sim"`), a texture in place or the holder. The meaning colors are the library's; a skin changes only their legibility. | `strip.test`, `strip.sim` |
+| `Strip(target, opts)` | The test or simulation strip's wash (`opts.kind` `"test"` / `"sim"`), a texture in place or the fill holder. The meaning colors are the library's; a skin changes only their legibility. | `strip.test`, `strip.sim` |
 | `Cover(target, opts)` | The combat cover's dim, and `opts.text`. | `cover.dim`, `cover.text` |
 | `Tooltip(frame)` | A **library-owned** tooltip's backdrop, recolored; never GameTooltip. | `tooltip.bg`, `tooltip.border` |
 | `MenuFrame(frame, opts)` | A popup menu's flat backdrop (no insets); `opts.alt` the alternate edge; `opts.popup` recolors the backdrop the frame already wears. | `menu.bg`, `menu.border`, `menu.borderAlt`, `menu.borderStyle`, `menu.borderSize`; `popup.bg`, `popup.border` |
@@ -634,8 +647,8 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 | `SortHeaderBar(bar, opts)` | A list header: the fill, each of `opts.texts`, each of `opts.arrows`. | `list.header.bg`, `list.header.text`, `icon.tint` |
 | `ApplyBarFill(target)` | The accent on a status bar (`SetStatusBarColor`) or a texture. | `text.accent` |
 | `NavItem(item, opts)` | A nav-rail entry: `opts.label` selected or not, `opts.sel` (the selection texture), a selection bar on the holder while `opts.selected`. | `nav.text`, `nav.selText`, `nav.selBg`, `nav.selBar` |
-| `Drawer(head, opts)` | A settings drawer: `opts.label` and `opts.summary` set or not (`opts.set`), then the edge set (`opts.edges`, OptionsDrawer's `{ fill, left, right, bottom, top }`) open or not (`opts.open`), and the box's (`opts.box`). A header with no edge set is boxed on its holder. | `drawer.*` |
-| `ListRow(row, state)` | A list row's washes on its holder: stripe, hover, selection and its outline. `state` is a table or `"stripe"`, `"hover"`, `"selected"`, `"normal"`. | `list.stripe`, `list.hover`, `list.sel`, `list.selOutline` |
+| `Drawer(head, opts)` | A settings drawer: `opts.label` and `opts.summary` set or not (`opts.set`), then the edge set (`opts.edges`, OptionsDrawer's `{ fill, left, right, bottom, top }`) open or not (`opts.open`), and the box's (`opts.box`). A header with no edge set is boxed on its holders (the fill under its text, the edge over it). | `drawer.*` |
+| `ListRow(row, state)` | A list row's washes on its fill holder, under the row's text (stripe, hover, selection), and the selection outline on its holder. `state` is a table or `"stripe"`, `"hover"`, `"selected"`, `"normal"`. | `list.stripe`, `list.hover`, `list.sel`, `list.selOutline` |
 
 **The getters** (record nothing):
 
@@ -658,12 +671,6 @@ the holder; its tabs are `Tab`'s `UI-OptionsFrame-ActiveTab` / `-InActiveTab` ar
 `ScrollBar`'s `UI-ScrollBar-Knob`; its checkbox `Checkbox`'s `UI-CheckBox-Up` box and
 `UI-CheckBox-Check` mark; its inputs, checkboxes and nav rail a 2px `bevelIn` edge. WoW Midnight
 draws no art: `Shell`'s window and title gradients, its 2px flat edges, `Button`'s gradients.
-
-### `Skin:Release(target)`
-
-Gives a target back: everything a primitive faded, recolored, re-fonted or backdropped on it is put
-back as it was, every Ka0s region on it (and its holder) is hidden and kept for reuse, and it is no
-longer repainted for anyone. For a pooled widget returning to a pool every addon shares.
 
 ## The eight skins
 
