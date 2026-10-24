@@ -50,7 +50,7 @@ The 132 zero-consumer exports:
 | suspect shape | 0 | Both from v1.66.0 were settled at v1.67.0: Core 10 gave `MakeResizable` its lock gate ([#41](https://github.com/tusharsaxena/LibKa0s/issues/41)), and every host now passes the Options descriptor's `addonName` ([#42](https://github.com/tusharsaxena/LibKa0s/issues/42)) |
 | deliberate host copy | 5 | A host keeps its own copy on purpose, with the reason recorded beside it. Listed, not re-opened |
 | documented | 118 | No duplicate and no host waiting for it. Each gets a "no consumer as of vX, kept because ..." line in its major's live document, stamped with the census that first recorded it: v1.67.0 for the earlier ones, v1.69.0 for the line-chart exports, v1.70.0 for `lib.AUTOCOMPLETE`, v1.75.0 for the sixteen Sim exports |
-| planned at v1.77.0 | 9 | New at v1.77.0, with named adopters in M2 (eight) or M3 (`ResetAllTooltip`) of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`; not measured. Each moves to its measured verdict when the census is re-run |
+| planned at v1.77.0 | 9 | New at v1.77.0, with named adopters in M2 (eight) or M3 (`ResetAllTooltip`, seven adopters) of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`; not measured. Each moves to its measured verdict when the census is re-run |
 
 Most of the 118 fall into four groups. The rows below give each export's own reason.
 
@@ -84,7 +84,11 @@ other public name v1.77.0 adds, gets no row until that re-run, since no adopter 
 
 **v1.77.0's settings-layout extension, planned and not measured (2026-10-24).** One row is added the
 same way, Options `ResetAllTooltip` (OptionsCompose minor 11, an instance member), with its adopters
-in M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`. The rest of that extension is new fields on
+in M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`: the seven General pages
+whose header Defaults is the global reset (BankLedger, DropWatcher, LootHistory,
+PremadeGroupsFilterExtension, PrettyChat, QuickComms and WhatGroup). The row first named MultiMeters
+as an eighth, but its General Defaults is a page reset and does not adopt it; the row was corrected
+from each addon's master on 2026-10-24. The rest of that extension is new fields on
 existing exports, so it amends rows rather than adding them: `MasterControls` gains `notes`,
 `resetPositionTooltip` and `lockIsPreview` (OptionsCompose minor 9) with the *Master opacity* label
 and the frameless packing, and `BarGroup`, `FontGroup`, `BorderGroup` and `ColorPair` gain
@@ -747,7 +751,7 @@ here are uncapped.
 | Options | `RenderRows` (instance) | 4: AuraMaster, KickCD, LootHistory, MultiMeters | call 16 · name-only 11 · stub 13 · test 46 | consumed (4) |
 | Options | `RenderSchema` (instance) | none | call 0 · stub 16 · test 24 | zero — kept, documented |
 | Options | `RenderTabbedSchema` (instance) | 12: AbsorbTracker, AuraMaster, BankLedger, DropWatcher, KickCD, MultiMeters, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, WhatGroup | call 17 · name-only 2 · stub 21 · test 46 | consumed (12) |
-| Options | `ResetAllTooltip` (instance) | none yet; planned: BankLedger, DropWatcher, LootHistory, MultiMeters, QuickComms, WhatGroup, PremadeGroupsFilterExtension, PrettyChat (a General page's header Defaults tooltip) | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
+| Options | `ResetAllTooltip` (instance) | none measured yet; planned (7), each landed on its master: BankLedger `settings/Panel.lua:743`; DropWatcher `settings/Panel.lua:88`; LootHistory `settings/Panel.lua:1152`; PremadeGroupsFilterExtension `settings/Panel.lua:379`; PrettyChat `settings/Panel.lua:799`; QuickComms `settings/Panel.lua:114`; WhatGroup `settings/Panel.lua:326` (a General page's header Defaults tooltip). MultiMeters is not one: its General Defaults is a page reset | not measured (new at v1.77.0) | zero — planned at v1.77.0 (M3 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) |
 | Options | `ResolveId` (instance) | AuraMaster `settings/GeneralSpells.lua:725` | call 1 · name-only 1 · stub 17 · test 8 | thin (1) |
 | Options | `RestoreAllDefaults` (instance) | 10: AbsorbTracker, AuraMaster, DropWatcher, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced, PremadeGroupsFilterExtension, QuickComms, WhatGroup | call 19 · name-only 5 · def 4 · stub 15 · test 150 | consumed (10) |
 | Options | `RestoreDefaults` (instance) | 6: AbsorbTracker, AuraMaster, DropWatcher, KickCD, MultiMeters, PartyFrameEnhanced | call 11 · name-only 8 · def 5 · stub 8 · test 151 | consumed (6) |
