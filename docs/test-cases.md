@@ -585,7 +585,20 @@ Total.
 - draghandle: a descriptor's own place wins over the spec's, as owner and anchor do
 - draghandle: a descriptor may place while the spec does not, and its neighbor is untouched
 - draghandle: a tooltipPlace that is not a function is ignored, not called
-- draghandle: DragHandle is at minor 4, the placement hook's minor
+- draghandle: DragHandle is at minor 4 or later, the placement hook's floor
+
+### test_widgets_draghandle_layers.lua (10)
+
+- DragHandle minor 5: MODULES and the file minor say 5
+- DragHandle level: no spec.level keeps minor 4 -- handle at parent + 1, marks at handle + 1
+- DragHandle level: level = 50 on a parent at 7 -- handle 57, marks 58, written before the marks exist
+- DragHandle ApplyLevel: a parent re-leveled to 20 puts the handle at 70 and the marks at 71
+- DragHandle ApplyLevel: without spec.level it answers false and writes nothing
+- DragHandle level: a secret or non-number parent level reads as 0
+- DragHandle level: the host's numeric guard reads the parent's level
+- DragHandle ignoreParentAlpha: true sets it, absent leaves it false
+- DragHandle ignoreParentAlpha: a frame without SetIgnoreParentAlpha does not error
+- DragHandle level: onClose plus level builds both marks at handle + 1
 
 ### test_widgets_linechart_math.lua (21)
 
@@ -2981,6 +2994,7 @@ Total.
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
 | test_widgets_draghandle_place.lua | 10 |
+| test_widgets_draghandle_layers.lua | 10 |
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 19 |
 | test_widgets_autocomplete.lua | 36 |
@@ -3072,4 +3086,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2622** |
+| **Total** | **2632** |

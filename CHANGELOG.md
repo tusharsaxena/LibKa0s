@@ -22,8 +22,9 @@ Versions in this release: **Core minor 12** (`LibKa0s-Core-1.0` key **12**); **D
 (`LibKa0s-DebugLog-1.0` key **21.3.1**, `DebugLogDiagnostics` 3 and `DebugLogGates` 1 unchanged);
 **PerfPanel minor 9** (`LibKa0s-Perf-1.0` key **15.1.1.9**, `Perf` 15, `PerfSampler` 1 and
 `PerfCommands` 1 unchanged); **SimPanel minor 6** (`LibKa0s-Sim-1.0` key **2.3.6**, `Sim` 2 and
-`SimTimeline` 3 unchanged); every other file still at its v1.76.0 minor and **test kit revision
-42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
+`SimTimeline` 3 unchanged); **WidgetsDragHandle minor 5** (`LibKa0s-Widgets-1.0` key **14.1.5.3.2**,
+`Widgets` 14, `WidgetsReorder` 1, `WidgetsLineChart` 3 and `WidgetsAutocomplete` 2 unchanged); every
+other file still at its v1.76.0 minor and **test kit revision 42**, until an entry below moves one. Each change bumps the minor of the files it touches once, and
 this block names each new minor as it lands. Still **seventeen majors across forty files**.
 
 ### Test kit revision 42: binding mock, frame-layer recorder and the Bindings.xml check
@@ -84,6 +85,35 @@ New suites here: `tests/test_mock_bindings.lua`, `tests/test_mock_layers.lua` an
   no popups and an erroring `Raise` are harmless, `STATICPOPUP_NUMDIALOGS` is honored, and the
   windows build and show on a Core without the helper. `LibKa0s/DebugLog.lua` enters
   `layout-§1`'s 1000-1500 band (CLAUDE.md).
+
+### WidgetsDragHandle minor 5: a level offset and parent alpha
+
+- **`spec.level`**: the handle's frame level as an offset over `parent:GetFrameLevel()`, written
+  before the help and close marks are built, so the strip and both marks sit in order at birth
+  (handle at parent + `level`, marks at handle + 1). The parent's level is read through the host's
+  `spec.number` guard, or `tonumber`; a secret or non-number answer reads 0. Absent, nothing is
+  written and the handle is minor 4's parent + 1 (`frame-layering-§2`; XS-05, ABS-S04, KIC-S06).
+- **`handle:ApplyLevel()`**: re-applies `level` over the handle's current parent and sets both marks
+  to the handle's level + 1 explicitly, answering `true`; without `spec.level` it writes nothing and
+  answers `false`. A host calls it after it re-levels or re-parents the parent, because `SetParent`
+  re-derives levels (`frame-layering-§3`; XS-18).
+- **`spec.ignoreParentAlpha = true`**: `SetIgnoreParentAlpha(true)` on the handle (guarded on the
+  method), so a display that fades its content does not fade the strip a player must find; the marks
+  follow it as its children (ABS-S05, XS-05).
+- **Why.** Five hosts re-leveled the handle by hand after construction (AbsorbTracker ABS-Z04,
+  AuraMaster's L+50, ConsumableMaster CON-Z08, KickCD KIC-Z07, QuickComms' pad strip), after the
+  marks were born, which risks a mark drawing under its own strip; four fade their display.
+  STRATA_MODEL LK-02 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`.
+- **What a consumer owes: nothing.** Neither field passed, the strip is minor 4's exactly. The M2
+  adopters (AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, QuickComms) pass the fields instead
+  of re-leveling by hand. Documented in
+  [docs/api/Widgets/version-14.1.5.3.2-docs.md](docs/api/Widgets/version-14.1.5.3.2-docs.md).
+- New suite `tests/test_widgets_draghandle_layers.lua`, on the kit's `mock_layers.lua` over the
+  DragHandle bench: minor 4's levels pinned without `level`; `level = 50` over a parent at 7 gives
+  57 and 58, with the handle's write logged before either mark is created; `ApplyLevel` after a
+  re-level to 20 gives 70 and 71 and, with no `level`, answers `false` and writes nothing; a secret
+  or non-number parent level reads 0; `ignoreParentAlpha` set, absent, and on a frame without the
+  method. The placement suite's minor pin reads "4 or later".
 
 ## v1.76.0 — 2026-10-23
 

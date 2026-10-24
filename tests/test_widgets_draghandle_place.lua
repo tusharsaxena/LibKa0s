@@ -235,7 +235,7 @@ test("draghandle: a tooltipPlace that is not a function is ignored, not called",
   assertEqual(log[1][3], "ANCHOR_TOP")
 end)
 
-test("draghandle: DragHandle is at minor 4, the placement hook's minor", function()
-  assertEqual(W.MODULES.WidgetsDragHandle, 4)
-  assertEqual(W.__dragMinor, 4)
+test("draghandle: DragHandle is at minor 4 or later, the placement hook's floor", function()
+  assertTrue(W.MODULES.WidgetsDragHandle >= 4)
+  assertTrue(W.__dragMinor >= 4)
 end)
