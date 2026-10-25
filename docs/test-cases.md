@@ -477,7 +477,7 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
-### test_skin_defs.lua (15)
+### test_skin_defs.lua (17)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -486,6 +486,8 @@ Total.
 - skin defs: every skin's GameTooltip lines read on the client's dark tooltip
 - skin defs: every skin's text reads on its own window
 - skin defs: every skin's set drawer label differs from its unset one
+- skin defs: every skin's bind-state and danger colors read on its own window
+- skin defs: the bind-state tokens inherit Ka0s Default unless a skin overrides for legibility
 - skin defs: High Contrast draws every control border at 2px or more
 - skin defs: Glass is the rounded skin, radius 8 on the Ka0s Glass nine-slice
 - skin defs: WoW Default wears the Blizzard art docs/api/Skin names
@@ -3415,7 +3417,7 @@ Total.
 | test_glow.lua | 15 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
-| test_skin_defs.lua | 15 |
+| test_skin_defs.lua | 17 |
 | test_skin_paint.lua | 29 |
 | test_skin_paint_controls.lua | 23 |
 | test_skin_eui.lua | 29 |
@@ -3528,4 +3530,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3002** |
+| **Total** | **3004** |

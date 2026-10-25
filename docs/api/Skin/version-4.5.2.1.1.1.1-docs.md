@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 4.4.2.1.1.1.1
+# `LibKa0s-Skin-1.0` — version 4.5.2.1.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **4** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **5** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 4, SkinDefs = 4, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 4, SkinDefs = 5, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
 
 ## What this major is
 
@@ -256,11 +256,18 @@ changing:
 | "Other" series | `chart.other` `.55, .62, .72` · `chart.otherLine` `.7, .7, .72` | Insights `NEUTRAL` · Timeline `OTHER` |
 | Gain / loss | `sem.good` / `sem.bad` · `sem.statusOk` / `sem.statusBad` | `C.DirRGB` · the AH status lights |
 | Simulation cyan | `sem.info` `.3, .8, 1` · `strip.sim` `.35, .8, 1, .12` | LootHistory `SIM_MARK` · Widgets `STRIP_FILL` |
+| Bind on pickup | `sem.boundBoP` `.3, .82, .42` (green) · `sem.boundBoPAlt` `.85, .45, .45` (red) | LootHistory `BOUND_STYLE` (the table's padlocks) · `BOUND_COLOR` (Insights) |
+| Bind on equip | `sem.boundBoE` `.92, .92, .92, .95` · `sem.boundBoEAlt` `.55, .8, .6` | the same two sites |
+| Not bound | `sem.boundNone` `.6, .6, .6, .4` · `sem.boundNoneAlt` `.6, .6, .65` | the same two sites |
+| Destructive item | `sem.danger` `1, 1/3, 1/3` · `sem.bad` `1, .33, .33` | the row menu's Delete and Forget (`\|cffff5555`) · `C.DirRGB`'s loss |
 | Idle label | `tab.text` `.7, .7, .72` (LootHistory's browser tabs) · the Options tab strip's font objects (no token: stock) | Browser `SKIN.tabIdle` · `OptionsTabs` |
 | Selected vs idle | `nav.text` gold / `nav.selText` white · `drawer.text` white / `drawer.textSet` gold | `OptionsNav` · `OptionsDrawer` (opposite conventions) |
 
-Identity colors that carry meaning by hue (LootHistory's 36 per-source colors and its bind-state
-locks, class colors) are not tokens: no skin changes what they mean.
+Identity colors that carry meaning by hue (LootHistory's 36 per-source colors, class colors) are
+not tokens: no skin changes what they mean. The bind states were on that list until SkinDefs minor
+5 made them tokens, because a near-white `BoE` lock and a faint gray unbound one cannot be read on
+Azeroth's parchment: the dark skins inherit Ka0s Default's hues and only the skins that need it
+override (*Token reference*, below).
 
 ### Token reference
 
@@ -541,8 +548,17 @@ eight skins*, below.
 | `sem.stepLocked` | color | no | `0.4, 0.4, 0.42, 1` |
 | `sem.stepCancel` | color | no | `0.8, 0.32, 0.32, 1` |
 | `sem.stepCancelHot` | color | no | `1, 0.45, 0.45, 1` |
+| `sem.boundNone` | color | no | `0.6, 0.6, 0.6, 0.4` |
+| `sem.boundBoE` | color | no | `0.92, 0.92, 0.92, 0.95` |
+| `sem.boundBoP` | color | no | `0.3, 0.82, 0.42, 1` |
+| `sem.boundWarband` | color | no | `0.3, 0.58, 0.98, 1` |
+| `sem.boundWarbandUE` | color | no | `0.95, 0.52, 0.12, 1` |
+| `sem.boundBoPAlt` | color | no | `0.85, 0.45, 0.45, 1` |
+| `sem.boundBoEAlt` | color | no | `0.55, 0.8, 0.6, 1` |
+| `sem.boundNoneAlt` | color | no | `0.6, 0.6, 0.65, 1` |
+| `sem.danger` | color | no | `1, 1/3, 1/3, 1` (hex-encodes to `ff5555`) |
 
-**215 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
+**224 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
 `tab.texture`, `tab.onTexture`) joined at SkinDefs minor 2, for WoW Default's Blizzard art. The
 eight **Widgets tokens** (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg`, `list.box`,
 `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`) joined at SkinDefs minor 3, so the drag handle and
@@ -562,7 +578,17 @@ eight skins derive them by following a token the skin sets (`FOLLOW` in `SkinDef
 message and the ready step from the body text, the counter and the command column from the muted
 text, the tag from the heading, the stamp from `sem.info`, the busy step from the accent, the
 locked step from the disabled text, cancel from `sem.off` and its hover from `sem.bad`; a skin that
-sets neither keeps the constant.
+sets neither keeps the constant. The nine **bind-state and danger tokens** joined at SkinDefs minor
+5, so LootHistory's padlocks, its Insights binding split and its row menu's destructive items follow
+a skin with Ka0s Default's pixels unchanged: the five bind states are LootHistory's `BOUND_STYLE`
+(the table's padlocks, legend and filter), the three `Alt` tokens its `BOUND_COLOR` split (Insights
+draws bind on pickup red, bind on equip green and unbound in a cooler gray; its warband pair is the
+table's own), and `sem.danger` the row menu's Delete and Forget, kept apart from `sem.bad` because
+`1, 0.33, 0.33` hex-encodes to `ff5454` and the menu writes `|cffff5555`. They follow no other token:
+the hue is the meaning, so the dark skins inherit Ka0s Default's values. Azeroth sets all nine in ink
+that reads on parchment, and High Contrast sets the gray and off-white ones (`sem.boundNone`,
+`sem.boundBoE`, `sem.boundNoneAlt`) opaque in its own palette. `tests/test_skin_defs.lua` holds every
+skin's nine to a 3:1 contrast on its window.
 
 ## The primitives
 
@@ -1085,8 +1111,17 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `sem.stepLocked` | `#6A6A72` | `#7A6A50` | `#8A90A0` | `#B0B0B0` | `#8A6E5C` | `#808080` | `#7A7590` | `#7A756E` |
 | `sem.stepCancel` | · | `#B3261E` | · | · | · | · | · | · |
 | `sem.stepCancelHot` | · | `#B3261E` | · | · | · | · | · | · |
+| `sem.boundNone` | · | `#7A6A50 .7` | · | `#B0B0B0` | · | · | · | · |
+| `sem.boundBoE` | · | `#2A1C0C` | · | `#FFFFFF` | · | · | · | · |
+| `sem.boundBoP` | · | `#1C6B12` | · | · | · | · | · | · |
+| `sem.boundWarband` | · | `#00519E` | · | · | · | · | · | · |
+| `sem.boundWarbandUE` | · | `#A65A00` | · | · | · | · | · | · |
+| `sem.boundBoPAlt` | · | `#B3261E` | · | · | · | · | · | · |
+| `sem.boundBoEAlt` | · | `#1C6B12` | · | · | · | · | · | · |
+| `sem.boundNoneAlt` | · | `#6A5233` | · | `#B0B0B0` | · | · | · | · |
+| `sem.danger` | · | `#B3261E` | · | · | · | · | · | · |
 
-Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 4): Obsidian 140, Azeroth 176, Glass 142, High Contrast 147, Ember 143, WoW Default 143, WoW Midnight 146, WoW Forever 143.
+Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 5): Obsidian 140, Azeroth 185, Glass 142, High Contrast 150, Ember 143, WoW Default 143, WoW Midnight 146, WoW Forever 143.
 
 ## The EllesmereUI provider
 

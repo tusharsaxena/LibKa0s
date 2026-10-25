@@ -155,6 +155,49 @@ test("skin defs: every skin's set drawer label differs from its unset one", func
   end
 end)
 
+-- The bind-state and danger tokens (SkinDefs minor 5): LootHistory's padlocks, its Insights split
+-- and the row menu's destructive items draw text and glyphs on the window, so each reads there.
+-- Contrast ignores alpha, as above: `sem.boundNone`'s faint 0.40 is Ka0s Default's own choice.
+local BIND = { "sem.boundNone", "sem.boundBoE", "sem.boundBoP", "sem.boundWarband",
+  "sem.boundWarbandUE", "sem.boundBoPAlt", "sem.boundBoEAlt", "sem.boundNoneAlt", "sem.danger" }
+
+test("skin defs: every skin's bind-state and danger colors read on its own window", function()
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local tokens = Skin:ResolveSkin(key)
+    for _, name in ipairs(BIND) do
+      local ratio = contrast(tokens[name], tokens["win.bg"])
+      assertTrue(ratio >= 3, ("%s: %s contrast %.2f on win.bg, want >= 3"):format(key, name, ratio))
+    end
+  end
+end)
+
+-- The dark skins inherit Ka0s Default's bind colors (the hue is the meaning); Azeroth, the light
+-- skin, sets every one, and High Contrast sets the gray and off-white ones, fully opaque.
+local BIND_OWN = {
+  azeroth = BIND,
+  contrast = { "sem.boundNone", "sem.boundBoE", "sem.boundNoneAlt" },
+}
+
+test("skin defs: the bind-state tokens inherit Ka0s Default unless a skin overrides for legibility",
+  function()
+  local Skin = skinLib()
+  local k = Skin:ResolveSkin("ka0s")
+  for _, key in ipairs(KEYS) do
+    local tokens, own = Skin:ResolveSkin(key), {}
+    for _, name in ipairs(BIND_OWN[key] or {}) do own[name] = true end
+    for _, name in ipairs(BIND) do
+      local same = true
+      for i = 1, 4 do same = same and (tokens[name][i] or 1) == (k[name][i] or 1) end
+      assertEqual(same, not own[name], ("%s: %s %s Ka0s Default's"):format(key, name,
+        own[name] and "overrides" or "inherits"))
+    end
+  end
+  for _, name in ipairs(BIND_OWN.contrast) do
+    assertEqual(Skin:ResolveSkin("contrast")[name][4] or 1, 1, "High Contrast: " .. name .. " opaque")
+  end
+end)
+
 -- ── per-skin choices (docs/api/Skin, "The eight skins") ──────────────────────────────────────
 
 local CONTROLS = { "btn", "btnPrimary", "input", "check", "tab", "nav", "drawer", "popup", "menu" }

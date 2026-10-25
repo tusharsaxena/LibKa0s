@@ -187,7 +187,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [4.4.2.1.1.1.1](./Skin/version-4.4.2.1.1.1.1-docs.md) | **`Skin.lua` 4** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots; `ResetToSkin` sets a media pick's `<key>FromSkin` companion; `OwnerLabel` and `WriteChoice` for the Appearance tab's copy) · **`SkinDefs.lua` 4** (the token schema and the nine skins; the eight Widgets tokens and the ten tool-window tokens) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) · **`SkinAce.lua` 1** (the AceGUI rows: `PaintAce`, `PaintAceTree`, `OnRelease`, and the proxy on an Options instance's `O.AceGUI`) | v1.78.0 | **Current** |
+| [4.5.2.1.1.1.1](./Skin/version-4.5.2.1.1.1.1-docs.md) | **`Skin.lua` 4** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots; `ResetToSkin` sets a media pick's `<key>FromSkin` companion; `OwnerLabel` and `WriteChoice` for the Appearance tab's copy) · **`SkinDefs.lua` 5** (the token schema and the nine skins; the eight Widgets tokens, the ten tool-window tokens and the nine bind-state and danger tokens) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) · **`SkinAce.lua` 1** (the AceGUI rows: `PaintAce`, `PaintAceTree`, `OnRelease`, and the proxy on an Options instance's `O.AceGUI`) | v1.78.0 | **Current** |
 
 ### `LibKa0s-Widgets-1.0`
 

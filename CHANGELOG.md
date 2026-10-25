@@ -16,12 +16,14 @@ Opened 2026-10-25. Skinning, leg 1: the LibKa0s skin engine, its paint primitive
 choice on the settings panel, with LootHistory as the prototype consumer. The test kit's opt-in
 paint recorder opens it. Extended on 2026-10-25, after the local tag and before any push, with
 Media minor 7 (`LK-A1`): `RegisterLSM` no longer offers a key LibSharedMedia already holds, the
-defect behind the owner's "Attempt to register an invalid font" reports.
+defect behind the owner's "Attempt to register an invalid font" reports. Extended again the same
+day with SkinDefs minor 5 (`LK-A2`): nine Semantic tokens for LootHistory's bind-state locks and its
+row menu's destructive items, the library gap its `LH-03` item found.
 
 Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 7**
-(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 4**,
+(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 5**,
 **SkinPaint minor 2**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1**, **SkinEUI
-minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **4.4.2.1.1.1.1**); **Widgets minor 16**,
+minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **4.5.2.1.1.1.1**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
 **WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
 **16.2.6.4.4.1**, a new sixth file); **DebugLog minor 22**, **DebugLogDiagnostics minor 4** and
@@ -369,8 +371,8 @@ OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopt
 ### SkinAce minor 1 and Options 32.3.35.4.6.10.3.12.6.3.2.5: the AceGUI rows wear their owner's skin
 
 `LibKa0s-Skin-1.0` key 3.3.2.1.1.1.1
-([docs/api/Skin/version-4.4.2.1.1.1.1-docs.md](docs/api/Skin/version-4.4.2.1.1.1.1-docs.md) since
-SkinDefs minor 4 and Skin minor 4, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
+([docs/api/Skin/version-4.5.2.1.1.1.1-docs.md](docs/api/Skin/version-4.5.2.1.1.1.1-docs.md) since
+SkinDefs minor 4 and Skin minor 4, and SkinDefs minor 5, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
 `LibKa0s-Options-1.0` key 32.3.35.4.6.10.3.12.6.3.2.5
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md)
 since Options minor 33, below; the in-flight 31.2.35.4.6.10.3.12.5.3.2.5 document moved to it), LK-08 of Ka0sAddonsCommonTasks
@@ -458,8 +460,8 @@ reaches its console and panels through the names it already passes.
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md),
 a thirteenth file; the in-flight 32.3.35.4.6.10.3.12.6.3.2.5 document moved to it, never shipped) and
 `LibKa0s-Skin-1.0` key 4.4.2.1.1.1.1
-([docs/api/Skin/version-4.4.2.1.1.1.1-docs.md](docs/api/Skin/version-4.4.2.1.1.1.1-docs.md), the
-in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
+([docs/api/Skin/version-4.5.2.1.1.1.1-docs.md](docs/api/Skin/version-4.5.2.1.1.1.1-docs.md) since
+SkinDefs minor 5, below; the in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/` (`skinning-§3`; the owner's ruling R1, per addon).
 
 - **`OptionsAppearance.lua` (minor 1), a new file** paired on the shell's minor
@@ -491,7 +493,7 @@ in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddon
 - **Skin minor 4: `Skin:OwnerLabel(owner)` and `Skin:WriteChoice(owner, source, skin)`**, the two
   members the copy needs: the label an owner registered with, and a write through the `opts.set` it
   registered, under pcall, which never moves the applied choice. Both are in the regenerated
-  `members-4.4.2.1.1.1.1.json`.
+  `members-4.4.2.1.1.1.1.json` (`members-4.5.2.1.1.1.1.json` since SkinDefs minor 5, below).
 - **The ellipsis.** `COPY` carries U+2026, which `options-ui-§21` asks of a button that opens a
   confirmation; `tests/test_prose.lua`'s ASCII gate ratifies it for `LibKa0s/OptionsAppearance.lua`
   alone, beside the em dash and Core's close glyph.
@@ -539,6 +541,35 @@ document and manifest moved to it, never shipped). No member is added and no sig
   `Register` call for them, raises no report and still counts 6, 7, 1, 1. `media: an LSM without
   the locale bits gets a plain Register` now answers `IsValid` from what landed rather than a
   constant `true`, which under minor 7 would offer nothing.
+
+### SkinDefs minor 5: bind-state and danger tokens
+
+Extended on 2026-10-25, after the local tag and before any push (`LK-A2` of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-03` found). `LibKa0s-Skin-1.0` key
+4.5.2.1.1.1.1 ([docs/api/Skin/version-4.5.2.1.1.1.1-docs.md](docs/api/Skin/version-4.5.2.1.1.1.1-docs.md);
+the in-flight 4.4.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
+is added, removed or renamed, and every token minor 4 had resolves the same in every skin.
+
+- **Nine Semantic tokens** (224 tokens), each Ka0s Default's value the LootHistory constant it
+  replaces: the five bind states `sem.boundNone` `.6, .6, .6, .4`, `sem.boundBoE`
+  `.92, .92, .92, .95`, `sem.boundBoP` `.3, .82, .42`, `sem.boundWarband` `.3, .58, .98` and
+  `sem.boundWarbandUE` `.95, .52, .12` (BrowserTable `BOUND_STYLE`: the table's padlocks, legend and
+  filter); Insights' split of three of them, `sem.boundBoPAlt` `.85, .45, .45`, `sem.boundBoEAlt`
+  `.55, .8, .6` and `sem.boundNoneAlt` `.6, .6, .65` (AnalyticsFormat `BOUND_COLOR`, recorded in
+  the Skin document's *Split roles*); and `sem.danger` `1, 1/3, 1/3` for the row menu's Delete and
+  Forget, which keeps the menu's exact `|cffff5555` (`sem.bad`'s `1, .33, .33` encodes to `ff5454`).
+  Bind colors used to be listed as identity colors no skin changes; on Azeroth's parchment a
+  near-white `BoE` lock cannot be read, so they became tokens.
+- **The other skins inherit them** (the hue is the meaning; no `FOLLOW` entry), except where a
+  skin overrides for legibility: **Azeroth** sets all nine in ink that reads on parchment, and
+  **High Contrast** sets `sem.boundNone`, `sem.boundBoE` and `sem.boundNoneAlt` opaque in its own
+  palette (`#B0B0B0`, `#FFFFFF`, `#B0B0B0`).
+
+Tests: `tests/test_skin.lua` pins the nine Ka0s Default values with LootHistory's constants and
+`sem.danger`'s `ff5555` encoding; two new `tests/test_skin_defs.lua` cases hold every skin's nine to
+3:1 contrast on its window and pin which skins inherit and which override, High Contrast's opaque.
+Red on minor 4. **What a consumer owes:** nothing; LootHistory reads the tokens at its `LH-RV`
+re-vendor.
 
 ### Docs and process
 

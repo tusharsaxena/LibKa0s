@@ -248,6 +248,15 @@ local LOOTHISTORY = {
   { "sem.neutral", { 0.62, 0.62, 0.66 } }, { "sem.gold", { 1.00, 0.86, 0.55 } },
   { "sem.warband", { 0.25, 0.75, 0.95, 1 } }, { "sem.modeTest", { 1, 0.15, 0.15 } },
   { "sem.info", { 0.3, 0.8, 1 } },
+  -- The bind states (SkinDefs minor 5): BrowserTable BOUND_STYLE, the table's padlocks ...
+  { "sem.boundNone", { 0.60, 0.60, 0.60, 0.40 } }, { "sem.boundBoE", { 0.92, 0.92, 0.92, 0.95 } },
+  { "sem.boundBoP", { 0.30, 0.82, 0.42, 1 } }, { "sem.boundWarband", { 0.30, 0.58, 0.98, 1 } },
+  { "sem.boundWarbandUE", { 0.95, 0.52, 0.12, 1 } },
+  -- ... and AnalyticsFormat BOUND_COLOR, Insights' split of three of them (warband and warband
+  -- until equipped are the table's own two there).
+  { "sem.boundBoPAlt", { 0.85, 0.45, 0.45, 1 } }, { "sem.boundBoEAlt", { 0.55, 0.80, 0.60, 1 } },
+  { "sem.boundNoneAlt", { 0.60, 0.60, 0.65, 1 } },
+  { "sem.danger", { 1, 1 / 3, 1 / 3, 1 } },             -- the row menu's Delete / Forget |cffff5555
 }
 
 test("skin: Ka0s Default equals LootHistory's constants", function()
@@ -257,6 +266,10 @@ test("skin: Ka0s Default equals LootHistory's constants", function()
   assertEqual(#k["chart.series"], 21, "chart.series = AnalyticsFormat PALETTE (21)")
   sameColor(k["chart.series"][1], { 0.90, 0.25, 0.25 }, "PALETTE[1]")
   sameColor(k["chart.series"][21], { 0.50, 0.28, 0.62 }, "PALETTE[21]")
+  local d = k["sem.danger"]
+  local function byte(v) return math.floor(v * 255 + 0.5) end
+  assertEqual(("%02x%02x%02x"):format(byte(d[1]), byte(d[2]), byte(d[3])), "ff5555",
+    "sem.danger hex-encodes to the row menu's exact |cffff5555 byte")
 end)
 
 -- ── skins ────────────────────────────────────────────────────────────────────────────────────
