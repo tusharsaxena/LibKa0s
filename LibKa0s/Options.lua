@@ -34,7 +34,9 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 29: lib:New attaches OptionsDrawer.lua, and RefreshPanel takes a drawer's body ctx back to
 -- the page it is drawn on.
 -- Minor 30: lib:New attaches OptionsKeybinds.lua, the Keybindings tab (options-ui-§20).
-local MAJOR, MINOR = "LibKa0s-Options-1.0", 30
+-- Minor 31: a page wears its skin owner's skin (`addonName`, once registered with LibKa0s-Skin-1.0;
+-- OptionsScroll.lua's helpers): the header and backdrop at CreatePanel, the thumb at EnsureScroll.
+local MAJOR, MINOR = "LibKa0s-Options-1.0", 31
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -400,7 +402,9 @@ end
 ---                              a path to nothing. Omit it, or ship no Media major, and those
 ---                              controls fall back to the Blizzard texture. NOT the MasterControls
 ---                              compose spec's `addonName`, which is a DISPLAY label ("Aura
----                              Master"): same field name, a different question.
+---                              Master"): same field name, a different question. Since minor
+---                              31 it is also the pages' SKIN OWNER: once that addon called
+---                              LibKa0s-Skin-1.0's RegisterOwner, every page wears its skin.
 ---   print(line)                where a user-facing line goes. Pass the host's tagged printer.
 ---   get(path)                  read a stored value.
 ---   set(path, value)           write one. Route it through the host's single write seam, so a
@@ -691,6 +695,7 @@ function lib:New(d)
     local titleFS, divider = buildHeader(panel, title, opts)
     panel.title   = titleFS
     panel.divider = divider
+    if O.__skinPage then O.__skinPage(panel) end   -- the owner's skin (minor 31), none without one
 
     local body = CreateFrame("Frame", nil, panel)
     body:SetPoint("TOPLEFT",     panel, "TOPLEFT",     0, -(L.HEADER_HEIGHT + 8))
@@ -876,7 +881,7 @@ function lib:New(d)
       if scroll.FixScroll   then scroll:FixScroll()    end
     end)
 
-    if O.PatchAlwaysShowScrollbar then O.PatchAlwaysShowScrollbar(scroll) end
+    if O.PatchAlwaysShowScrollbar then O.PatchAlwaysShowScrollbar(scroll, d.addonName) end
 
     return scroll
   end

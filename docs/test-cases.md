@@ -1850,7 +1850,7 @@ Total.
 
 ### test_options_drawer.lua (26)
 
-- drawer: OptionsDrawer is at minor 1, attached to an Options shell at 29 or later
+- drawer: OptionsDrawer is at minor 1 or later, attached to an Options shell at 29 or later
 - drawer: a closed drawer is one full-width group on the page, a header and no body
 - drawer: the header carries the label and the summary; set is gold, unset white and gray
 - drawer: summary and set may be functions, read when the drawer is drawn
@@ -1879,7 +1879,7 @@ Total.
 
 ### test_options_keybinds_model.lua (26)
 
-- keybinds: OptionsKeybinds is at minor 4, paired on an Options shell at 30 or later
+- keybinds: OptionsKeybinds is at minor 4 or later, paired on an Options shell at 30 or later
 - keybinds: the Options version key has twelve components
 - keybinds: KEYBIND_STRINGS carries the exact default words, all ASCII
 - keybinds: the client's own strings win where they exist, with the library's fallbacks
@@ -1908,7 +1908,7 @@ Total.
 
 ### test_options_keybinds.lua (30)
 
-- keybinds tab: OptionsKeybinds is at minor 4 and attaches the three members
+- keybinds tab: OptionsKeybinds is at minor 4 or later and attaches the three members
 - keybinds tab: KeybindingsTab's defaults
 - keybinds tab: spec.key, spec.before and spec.strings override
 - keybinds tab: RenderTabbedSchema puts it LAST, after every group tab, and its render draws rows
@@ -2179,7 +2179,37 @@ Total.
 - reset tooltip: the key-bindings tail follows after one space
 - reset tooltip: an empty, nil or non-string tail adds nothing
 - reset tooltip: notes.resetAll is the button's own and does not reach the member
-- reset tooltip: OptionsCompose is at minor 11
+- reset tooltip: OptionsCompose is at minor 11 or later
+
+### test_options_skin.lua (14)
+
+- options skin: a page with no registered owner is today's paint, call for call
+- options skin: an owner-less page records nothing in the Skin major
+- options skin: an owned page paints its header and an opaque backdrop from the skin
+- options skin: an owned page's tab strip fades the client's art and wears the tab roles
+- options skin: an owned page's rail, drawer and cover paint from the skin
+- options skin: a skin switch repaints the owned page with no reload, and Ka0s Default undoes it
+- options skin: Ka0s Default on an owned page draws no backdrop and keeps the client's art
+- options skin: an owner that registers after the page was built gets its skin on the next show
+- options skin: two owners' pages stay apart
+- options skin: the always-shown thumb takes the owner's tints, and is given back on release
+- options skin: a pooled drawer head drawn for no owner leaves the owner's repaint
+- options skin: the id list's help mark takes the skin's tints away from Ka0s Default
+- options skin: the keybind rows take the skin's text roles away from Ka0s Default
+- options skin: Ka0s Default leaves the help mark and the keybind rows as they were
+
+### test_options_compose_skin.lua (10)
+
+- compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
+- compose skin: without fromSkin the three groups emit exactly the rows they did
+- compose skin: fromSkin appends one companion per picker, after the canonical rows
+- compose skin: the canonical rows are unchanged beside the companion, and so is every list
+- compose skin: omit and keys reach the companion like any canonical leaf
+- compose skin: the picker shows the skin's value while its companion is set, its own otherwise
+- compose skin: a rendered picker is disabled while the companion is set and the companion writes
+- compose skin: a record-backed group reads its companion from the record
+- compose skin: ResetToSkin sets companions to true and never writes the sentinel into a pick
+- compose skin: Skin is at minor 3 or later
 
 ### test_options_throttle.lua (4)
 
@@ -3378,6 +3408,8 @@ Total.
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
+| test_options_skin.lua | 14 |
+| test_options_compose_skin.lua | 10 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3427,4 +3459,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2921** |
+| **Total** | **2945** |

@@ -57,7 +57,10 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Skin-1.0", 2
+-- Minor 3: ResetToSkin sets a setting's `<key>FromSkin` companion where it has one, and a bool key
+-- (a companion named directly) to true, so the sentinel never lands in a media pick or a bool
+-- (OptionsCompose minor 12's companions; LK-07 of the skinning run).
+local MAJOR, MINOR = "LibKa0s-Skin-1.0", 3
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -429,9 +432,11 @@ local function walk(t, path)
 end
 
 --- Put every listed key of `profile` back on the skin (the owner's ruling R3). A key holding a
---- color (a table) keeps its color and gets its companion `<key>FromSkin = true`; any other key
---- takes the FROM_SKIN sentinel. Keys may be dotted paths into nested tables; a path whose table
---- does not exist is skipped. Answers how many keys it set. Called as `Skin.ResetToSkin(p, keys)`.
+--- color (a table), or one with a `<key>FromSkin` companion beside it (OptionsCompose's `fromSkin`
+--- pickers, minor 3), keeps its value and gets the companion set to true; a bool key (a companion
+--- named directly) is set to true; any other key takes the FROM_SKIN sentinel. Keys may be dotted
+--- paths into nested tables; a path whose table does not exist is skipped. Answers how many keys it
+--- set. Called as `Skin.ResetToSkin(p, keys)`.
 function lib.ResetToSkin(profile, keys, extra)
   if profile == lib then profile, keys = keys, extra end
   if type(profile) ~= "table" or type(keys) ~= "table" then return 0 end
@@ -439,8 +444,11 @@ function lib.ResetToSkin(profile, keys, extra)
   for _, path in ipairs(keys) do
     local parent, leaf = walk(profile, tostring(path))
     if type(parent) == "table" then
-      if type(parent[leaf]) == "table" then
+      local v = parent[leaf]
+      if type(v) == "table" or parent[leaf .. "FromSkin"] ~= nil then
         parent[leaf .. "FromSkin"] = true
+      elseif type(v) == "boolean" then
+        parent[leaf] = true
       else
         parent[leaf] = lib.FROM_SKIN
       end

@@ -17,13 +17,17 @@ choice on the settings panel, with LootHistory as the prototype consumer. The te
 paint recorder opens it.
 
 Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 6**
-(`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1 unchanged), **Skin minor 2**, **SkinDefs minor 3**,
+(`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1 unchanged), **Skin minor 3**, **SkinDefs minor 3**,
 **SkinPaint minor 2**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1** and **SkinEUI
-minor 1** (the new major `LibKa0s-Skin-1.0`, key **2.3.2.1.1.1**); **Widgets minor 16**,
+minor 1** (the new major `LibKa0s-Skin-1.0`, key **3.3.2.1.1.1**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
 **WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
 **16.2.6.4.4.1**, a new sixth file); **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key
-**21.4.1**); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
+**21.4.1**); **Options minor 31**, **OptionsWidgets minor 35**, **OptionsIds minor 4**,
+**OptionsIdList minor 6**, **OptionsTabs minor 10**, **OptionsCombat minor 3**, **OptionsCompose minor
+12**, **OptionsScroll minor 5**, **OptionsNav minor 3**, **OptionsDrawer minor 2** and
+**OptionsKeybinds minor 5** (`LibKa0s-Options-1.0` key **31.2.35.4.6.10.3.12.5.3.2.5**, `OptionsRegistry` 2
+unchanged); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
 entry below moves one. Each change bumps the minor of the files it touches once, and this block
 names each new minor as it lands. Now **eighteen majors across forty-eight files**: one major added
 (`LibKa0s-Skin-1.0`) and one file (`WidgetsCopyWindow.lua`), and no `NEEDS_*` floor rises.
@@ -305,6 +309,54 @@ renamed in any of the three.
 New suite `tests/test_widgets_skin.lua` (24 cases); five minor pins in the Widgets suites now read
 "at least" the minor their feature arrived at. Re-vendor the whole folder: the new file must arrive
 with the shell. **What a consumer owes:** nothing; an adopter passes its folder name as `owner`.
+
+### Options 31.2.35.4.6.10.3.12.5.3.2.5 and Skin minor 3: the settings chrome follows its skin owner
+
+`LibKa0s-Options-1.0` key 31.2.35.4.6.10.3.12.5.3.2.5
+([docs/api/Options/version-31.2.35.4.6.10.3.12.5.3.2.5-docs.md](docs/api/Options/version-31.2.35.4.6.10.3.12.5.3.2.5-docs.md))
+and `LibKa0s-Skin-1.0` key 3.3.2.1.1.1 (the in-flight 2.3.2.1.1.1 document moved to it; 2.3.2.1.1.1
+never shipped), LK-07 of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`. Every Options file but
+`OptionsRegistry.lua` moves; no member is added to `Options.lua` or `OptionsTabs.lua`, whose band
+triggers are "the next member added".
+
+- **The page's skin owner is the descriptor's `addonName`**, once that addon registered with
+  `LibKa0s-Skin-1.0` (OptionsScroll minor 5's helpers, reached at call time; Core minor 13's
+  `__SkinFacade`, no floor). An unregistered name, no name and a client without the Skin major paint
+  today's chrome, call for call; a registered owner's page is painted again through its facade after
+  the chrome's own paint.
+- **Options minor 31**: the header (the title in the title role, the divider tinted `title.text`) and,
+  away from Ka0s Default, an opaque page backdrop from `win.bg` at full alpha, so a light skin stays
+  legible over the client's Settings window; both painted at `CreatePanel` and on every show.
+  `EnsureScroll` hands the owner to the scrollbar patch.
+- **OptionsTabs minor 10**: each tab through `S.Tab` (the client's three atlases faded away from Ka0s
+  Default, the backing and the label in the tab roles), the content box (`S.FadeRegions`, `S.Panel`)
+  and the banner hairline (`S.Divider`, `tab.rule`).
+- **OptionsNav minor 3**: the rail's pane (`S.Panel`, `nav`) and each entry (`S.NavItem`).
+  **OptionsDrawer minor 2**: the head and the box (`S.Drawer`). **OptionsCombat minor 3**: the cover
+  on every show (`S.Cover`). **OptionsIds minor 4**: the suggestion list on every open
+  (`S.MenuFrame`, `popup`). **OptionsScroll minor 5**: `PatchAlwaysShowScrollbar(scroll, owner)` paints
+  the thumb's two tints through `S.ScrollBar`, and gives the pooled bar back on release.
+- **OptionsIdList minor 6** and **OptionsKeybinds minor 5**, away from Ka0s Default only, read at
+  draw: the help mark's tints (`text.accent`, `sem.bad`, `text.disabled`, `icon.hot`) and the keybind
+  rows' text (`text.body`, `text.muted`, through the Label's own `SetColor`).
+- **Live repaint**: a primitive records what it painted, so `SetChoice` repaints those; the instance's
+  one `OnLooksChanged` listener repaints each page's header and backdrop and runs
+  `O.RefreshAllPanels()` for what a render reads from a token. A pooled drawer head or scrollbar drawn
+  for no owner is untracked, so its former owner's switch no longer reaches it.
+- **OptionsCompose minor 12: `fromSkin`.** `FontGroup`, `BorderGroup` and `BarGroup` take an opt-in
+  `fromSkin = true`: one companion bool `<key>FromSkin` (*Use the skin's font / border / texture*,
+  default false) after the canonical rows, on a line of its own. While it is set the picker is disabled
+  and shows the skin's value (`hud.font`, `bar.borderStyle`, `bar.texture`) through the new row field
+  **OptionsWidgets minor 35** reads first, `skinValue()`. No sentinel enters a media list or the CLI's
+  values; without `fromSkin` the rows are minor 11's.
+- **Skin minor 3**: `ResetToSkin` sets a key's `<key>FromSkin` companion to true when one exists
+  beside it, and a bool key (a companion named directly) to true, so the sentinel never lands in a
+  media pick or a bool.
+
+New suites `tests/test_options_skin.lua` (14 cases) and `tests/test_options_compose_skin.lua` (10
+cases), red on the previous payload; four minor pins (OptionsDrawer, OptionsKeybinds twice,
+OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopter registers its owner
+(`Skin:RegisterOwner(addonName, ...)`) and its pages follow.
 
 ## v1.77.0 — 2026-10-24
 

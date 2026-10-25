@@ -100,6 +100,6 @@ test("reset tooltip: notes.resetAll is the button's own and does not reach the m
   assertEqual(O.ResetAllTooltip(), before, "the member does not")
 end)
 
-test("reset tooltip: OptionsCompose is at minor 11", function()
-  assertEqual(T.options.MODULES.OptionsCompose, 11)
+test("reset tooltip: OptionsCompose is at minor 11 or later", function()
+  assertTrue(T.options.MODULES.OptionsCompose >= 11, "OptionsCompose minor " .. tostring(T.options.MODULES.OptionsCompose))
 end)

@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 2.3.2.1.1.1
+# `LibKa0s-Skin-1.0` — version 3.3.2.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **2** · `SkinDefs.lua` minor **3** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **3** · `SkinDefs.lua` minor **3** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** |
 | Shipped in | v1.78.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 2, SkinDefs = 3, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 3, SkinDefs = 3, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1 }` |
 
 ## What this major is
 
@@ -71,7 +71,7 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `Skin:Token(owner, name)` | value | The owner's resolved token: from its skin resolved (`ResolveSkin`), or, while EllesmereUI paints the owner, from Ka0s Default with EllesmereUI's accent, panel color and font over it (*The EllesmereUI provider*). An unregistered owner reads Ka0s Default. A color is `{ r, g, b, a }`, a shared table: never write to it. nil for a token the skin leaves alone. |
 | `Skin:Color(owner, name)` | r, g, b, a | A color token's components, alpha 1 when it has three; nil otherwise. |
 | `Skin:Resolve(owner, kind, value, fromSkin)` | value | `value`, or the owner's token `kind` when `value` is `FROM_SKIN` or `fromSkin` is true. |
-| `Skin.ResetToSkin(profile, keys)` | count | Puts each listed key back on the skin (R3). A key holding a color (a table) keeps its color and gets its companion `<key>FromSkin = true`; any other key takes `FROM_SKIN`. Keys may be dotted paths (`"font.face"`); a path through a missing table is skipped and no table is created. The colon form works too. |
+| `Skin.ResetToSkin(profile, keys)` | count | Puts each listed key back on the skin (R3). A key holding a color (a table), or one with a `<key>FromSkin` companion beside it (an `OptionsCompose` `fromSkin` picker), keeps its value and gets the companion set to `true` (Skin minor 3); a bool key (a companion named directly) is set to `true`; any other key takes `FROM_SKIN`. Keys may be dotted paths (`"font.face"`); a path through a missing table is skipped and no table is created. The colon form works too. |
 | `Skin.IsFromSkin(value)` | boolean | `value == FROM_SKIN`. |
 | `Skin:RegisterSkin(def)` | def | Registers `{ key, label, desc, swatches = { 4 hex }, tokens }`. `key` and `tokens` are required; `label` defaults to the key, `desc` to `""`, `swatches` to `{}`. Re-registering a key replaces it in place (a newer `SkinDefs.lua`). Empties the resolve cache. |
 | `Skin:GetSkin(key)` | def or nil | The registered definition. |
@@ -146,6 +146,16 @@ one-time migration helper: it writes the sentinel or the companion for each list
 nothing; the per-profile step that calls it, and its schema-version stamp, belong to each adopting
 addon's own migration runner (`savedvariables`). **The sentinel never enters an LSM list or a CLI
 values list.**
+
+**A media pick follows the skin through its companion, never the sentinel** (Skin minor 3, with
+`LibKa0s-Options-1.0`'s `OptionsCompose.lua` minor 12). An LSM30 picker shows its list's key as the
+label and uses the list's value as the media path, and that list is the CLI's allowed values, so a
+sentinel stored in a font, border or bar-texture key would draw no preview and be a value nothing can
+render. `O.FontGroup` / `O.BorderGroup` / `O.BarGroup` with `fromSkin = true` emit a bool
+`<key>FromSkin` beside the picker instead, and `ResetToSkin` sets that companion to `true` whether
+the list names the pick (`"hud.font"`, when `"hud.fontFromSkin"` exists beside it) or the companion
+itself; the pick keeps its value for when the player turns the companion off. The host draws with
+`S.Resolve(token, pick, fromSkin)`.
 
 ## Adopting it
 
