@@ -597,6 +597,9 @@ document and manifest moved to it, never shipped). No member is added and no sig
   never calls `Skin:RegisterOwner` keeps its look, and test kit revision 43's `mock_paint.lua` is
   opt-in too.
 
+Release gate (`docs/automated-tests/20261025-113223/`, re-measured at `d8ac604` after LK-A1; the first close's
+record is `docs/automated-tests/20261025-100830/`): lint pass, 0/0 in 223 files; tests pass, 3002 passed,
+2 skipped, 0 failed; complexity pass, 0 over CCN 15. Perf SKIPPED, not measured. First close:
 Release gate (`docs/automated-tests/20261025-100830/`): lint pass, 0/0 in 223 files;
 tests pass, 3003 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
