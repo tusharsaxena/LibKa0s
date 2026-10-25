@@ -9,8 +9,8 @@
 --     addon, a page whose host names none and a page in a client with no Skin major make the same
 --     paint calls, call for call (the tracer, hook installs aside).
 --   * AN OWNED PAGE paints its chrome from the owner's skin -- header, backdrop, tab strip, content
---     box, nav rail, drawer, combat cover, scrollbar thumb, the id list's help mark and the keybind
---     rows -- and a skin switch repaints it with no reload.
+--     box, nav rail, drawer, combat cover, scrollbar thumb, the id list's help mark, the keybind
+--     rows and the id-suggestion popup -- and a skin switch repaints it with no reload.
 --   * KA0S DEFAULT ON AN OWNED PAGE draws what an owner-less page draws: no backdrop, the client's
 --     tab art at full alpha.
 
@@ -334,4 +334,49 @@ test("options skin: Ka0s Default leaves the help mark and the keybind rows as th
   local rows = O.KeybindRows(ctx, { bindings = { { command = "LKSKIN_TOGGLE" } } })
   assertNil(rows[1].label.color, "no color set on the action's name")
   assertNil(rows[1].status.color, "nor on the outcome line")
+end)
+
+--- The id-suggestion popup a page's IdInput opens, typed into under the page's owner: answers the
+--- popup (the one frame carrying `rows`).
+local function openSuggest(m, O)
+  for tier, id in ipairs({ 191395, 191396, 191397 }) do
+    m.addIdRecord("item", id, "Potion of the Hushed Zephyr", 4638, nil, 1)
+    m.setCraftedQuality(id, tier)
+  end
+  seq = seq + 1
+  local ctx = O.CreatePanel("SkinSuggest" .. seq, "Suggest", {})
+  local real, made = m.CreateFrame, {}
+  m.CreateFrame = function(...)
+    local f = real(...)
+    made[#made + 1] = f
+    return f
+  end
+  local _, eb = O.IdInput(ctx, nil, { kind = "item", candidates = function() return { 191395, 191396, 191397 } end,
+                                       onAdd = function() end })
+  eb:SetText("zephyr")
+  eb:__fire("OnTextChanged", "zephyr")
+  m.__fireTimers()
+  m.CreateFrame = real
+  for _, f in ipairs(made) do
+    if type(f.rows) == "table" then return f, eb end
+  end
+end
+
+test("options skin: the id-suggestion popup takes the skin, and Ka0s Default gives its edge back", function()
+  local m, Skin, lib = env()
+  F.owner(Skin, OWNER, "obsidian")
+  local popup, eb = openSuggest(m, (instance(lib, OWNER)))
+  assertTrue(popup ~= nil and popup:IsShown(), "the suggestion popup is open")
+  local T = Skin:ResolveSkin("obsidian")
+  assertEqual(F.rgba(survey(m, popup).backdropColor), F.rgba(T["popup.bg"]), "its fill is the skin's")
+  assertEqual(rgb(survey(m, popup).backdropBorderColor), rgb(T["popup.border"]), "and its edge")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  local D = Skin:ResolveSkin("ka0s")
+  assertEqual(F.rgba(survey(m, popup).backdropColor), F.rgba(D["popup.bg"]), "Ka0s Default's fill")
+  assertEqual(F.rgba({ popup:GetBackdropBorderColor() }), "1,1,1,1", "and the client's own edge again")
+  -- a reopen under Ka0s Default keeps it there
+  eb:SetText("zeph")
+  eb:__fire("OnTextChanged", "zeph")
+  m.__fireTimers()
+  assertEqual(F.rgba({ popup:GetBackdropBorderColor() }), "1,1,1,1", "a reopen leaves the edge alone")
 end)

@@ -181,13 +181,24 @@ local MENU_ALT = { fill = "menu.bg", border = "menu.borderAlt", style = "menu.bo
 --- S.MenuFrame(frame, opts): a popup menu. The flat backdrop with no insets, `menu.bg` under
 --- `menu.border` (Widgets' shared popup menu), or `menu.borderAlt` with `opts.alt` (LootHistory's
 --- row menu). `opts.popup` recolors the backdrop the frame already wears with `popup.bg` /
---- `popup.border` instead (the id-suggestion popup). Draws no Media icon.
+--- `popup.border` instead (the id-suggestion popup); a nil one restores what the frame wore before
+--- the first paint. Draws no Media icon.
 prim.MenuFrame = function(owner, frame, opts)
   if not P.hasBackdrop(frame) then return end
   local rec = P.track(owner, frame, "MenuFrame", opts)
   opts = type(opts) == "table" and opts or {}
   local T = P.T(owner)
-  if opts.popup then return P.recolor(frame, T["popup.bg"], T["popup.border"]) end
+  if opts.popup then
+    -- The frame is built once and kept, so a nil token (Ka0s Default has no `popup.border`) puts
+    -- that half back as the frame wore it before the first paint, not as the last skin left it.
+    P.saveBackdrop(rec, frame)
+    local s, bg, border = rec.regions.backdrop, T["popup.bg"], T["popup.border"]
+    if s and s.bd then
+      if not bg and s.c[1] then frame:SetBackdropColor(unpack(s.c)) end
+      if not border and s.b[1] then frame:SetBackdropBorderColor(unpack(s.b)) end
+    end
+    return P.recolor(frame, bg, border)
+  end
   P.box(rec, frame, T, opts.alt and MENU_ALT or MENU, opts)
 end
 
