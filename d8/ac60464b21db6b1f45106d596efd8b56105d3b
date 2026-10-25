@@ -1,0 +1,1 @@
+LK-A1 review (lead, inline): registerOne short-circuits on LSM:IsValid before Register; no-IsValid fake path and langmask unchanged; red-then-green held-key test; release battery 20261025-113223 green. ok
