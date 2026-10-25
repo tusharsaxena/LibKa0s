@@ -2263,6 +2263,9 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
    addons not loaded are unchanged; accepting gives each of them this owner's stored source and
    skin: `Skin:SetChoice(other, source, skin)` (its live repaint), then `Skin:WriteChoice(other,
    source, skin)` (its own registered setter). The copying addon's own seam is not written.
+   Both the click and the accept are refused in combat (`O.__combatRefused("appearance", "copy")`):
+   the confirmation sits at `DIALOG`, above the page's combat cover, so it can be accepted after
+   combat starts, and an accept then writes no owner.
 4. **The note**: "Skins change every visual element. HUD style options follow the skin unless you
    set them yourself."
 

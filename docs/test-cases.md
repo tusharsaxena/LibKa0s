@@ -1997,7 +1997,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (17)
+### test_options_appearance.lua (20)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2009,6 +2009,9 @@ Total.
 - appearance: a pick never reaches another owner, and clicking the checked skin keeps it
 - appearance: copy is disabled with its hint while no other owner is loaded
 - appearance: copy confirms with the other owners' names and writes each through its own setter
+- appearance: in combat a skin or source pick writes nothing
+- appearance: a copy clicked in combat asks nothing
+- appearance: a copy confirmation accepted after combat starts writes no other owner
 - appearance: the EllesmereUI choice is disabled while the gate is closed, each condition listed
 - appearance: with no Skin EllesmereUI provider the choice is disabled with one line
 - appearance: the open gate lets EllesmereUI in, and leaving it raises one reload popup
@@ -3462,7 +3465,7 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 17 |
+| test_options_appearance.lua | 20 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3524,4 +3527,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2998** |
+| **Total** | **3001** |

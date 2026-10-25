@@ -267,7 +267,10 @@ function lib.__AttachAppearance(O, d)
   end
 
   --- Give every other owner this owner's choice: SetChoice (the live repaint) then its own setter.
+  --- Refused in combat here too: the confirmation is a StaticPopup above the page's combat cover,
+  --- so it can be accepted after combat starts, long after onCopy's own check.
   local function copyTo(view, names)
+    if O.__combatRefused and O.__combatRefused("appearance", "copy") then return end
     local Skin = view.Skin
     local source, skin = readChoice(view)
     local reloads = {}

@@ -12,7 +12,8 @@
 -- confirmation naming the other owners that writes each one through its own registered setter; the
 -- EllesmereUI choice disabled while the gate is closed; the one reload popup on leaving an
 -- EllesmereUI that painted; spec.strings translating every string, the skins' names included; a
--- page drawn disabled; a page whose owner never registered.
+-- page drawn disabled; a page whose owner never registered; and combat, which refuses a pick, a
+-- copy click and a copy confirmation accepted after combat starts, writing nothing.
 --
 -- Every case runs on a fresh client (the paint recorder, Core, Pool, the whole Skin major and every
 -- Options file), so the owners one case registers never reach another.
@@ -306,6 +307,60 @@ test("appearance: copy confirms with the other owners' names and writes each thr
   assertEqual(select(2, Skin:GetChoice(OTHER)), "midnight", "and its applied choice moved (repainted)")
   assertEqual(select(2, Skin:GetChoice(THIRD)), "midnight")
   assertEqual(store.seamCalls, nil, "the copying addon's own seam is not written")
+end)
+
+-- ── combat (options-ui-§2: every write through the settings surface waits for REGEN_ENABLED) ──
+
+test("appearance: in combat a skin or source pick writes nothing", function()
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  lib.__combatLocked = true
+  view.skins.obsidian:__fire("OnValueChanged", true)
+  view.source.ka0s:__fire("OnValueChanged", true)
+  assertEqual(select(2, Skin:GetChoice(OWNER)), "ka0s", "the applied skin did not move")
+  assertNil(store.seamCalls, "the owner's seam was not called")
+  assertEqual(store.writes, 0, "and its profile was not written")
+  assertEqual(view.skins.obsidian.value, false, "the refused pick snaps back")
+  assertEqual(view.skins.ka0s.value, true, "the stored skin stays checked")
+  assertEqual(#m.popups, 0, "no popup")
+  lib.__combatLocked = false
+  view.skins.obsidian:__fire("OnValueChanged", true)
+  assertEqual(select(2, Skin:GetChoice(OWNER)), "obsidian", "out of combat the pick lands")
+end)
+
+test("appearance: a copy clicked in combat asks nothing", function()
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER, "ka0s", "midnight")
+  register(Skin, OTHER, "ka0s", "glass")
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  lib.__combatLocked = true
+  view.copy:__fire("OnClick")
+  assertEqual(#m.popups, 0, "no confirmation in combat")
+end)
+
+test("appearance: a copy confirmation accepted after combat starts writes no other owner", function()
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER, "ka0s", "midnight")
+  local other = register(Skin, OTHER, "ka0s", "glass")
+  local third = register(Skin, THIRD)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  view.copy:__fire("OnClick")
+  assertEqual(#m.popups, 1, "the confirmation is up before combat")
+  local p = m.popups[1]
+  lib.__combatLocked = true
+  p.dialog.OnAccept(nil, p.data)
+  assertEqual(select(2, Skin:GetChoice(OTHER)), "glass", OTHER .. "'s applied skin did not move")
+  assertEqual(select(2, Skin:GetChoice(THIRD)), "ka0s", THIRD .. "'s applied skin did not move")
+  assertEqual(other.writes, 0, OTHER .. "'s profile not written")
+  assertEqual(third.writes, 0, THIRD .. "'s profile not written")
+  assertEqual(#m.popups, 1, "no reload popup")
+  lib.__combatLocked = false
+  p.dialog.OnAccept(nil, p.data)
+  assertEqual(other.skin, "midnight", "accepted again out of combat, the copy lands")
 end)
 
 -- ── the EllesmereUI source ───────────────────────────────────────────────────────────────────

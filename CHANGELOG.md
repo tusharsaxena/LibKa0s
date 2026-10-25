@@ -480,7 +480,9 @@ in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddon
     (`COND_<key>`, `COND_<key>_HINT`) included.
 - **The write seam.** A pick calls `Skin:SetChoice(owner, source, skin)` first (the live repaint;
   idempotent, so an owner's `onChange` calling it again is a no-op), then `spec.set(source, skin)`,
-  which MUST be the owner's write seam. Refused in combat. Leaving an EllesmereUI that painted this
+  which MUST be the owner's write seam. Refused in combat, as are the copy's click and its
+  confirmation's accept (a StaticPopup above the combat cover can be accepted after combat starts).
+  Leaving an EllesmereUI that painted this
   session raises one reload popup (`LIBKA0S_SKIN_RELOAD`), from `SetChoice`'s answer. Both popups
   are Blizzard StaticPopups at `DIALOG`, never re-strata'd or restyled.
 - **Skin minor 4: `Skin:OwnerLabel(owner)` and `Skin:WriteChoice(owner, source, skin)`**, the two
@@ -491,11 +493,11 @@ in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddon
   confirmation; `tests/test_prose.lua`'s ASCII gate ratifies it for `LibKa0s/OptionsAppearance.lua`
   alone, beside the em dash and Core's close glyph.
 
-New suite `tests/test_options_appearance.lua` (17 cases), red on the previous payload: the tab entry
+New suite `tests/test_options_appearance.lua` (20 cases), red on the previous payload: the tab entry
 and its place before Keybindings, the rows, a pick moving the Skin major before the seam and
 repainting live, another owner untouched, copy disabled and enabled, the EllesmereUI gate closed and
-open, the one reload popup, translated strings, a disabled render, the refresher and the unregistered
-owner. `tests/test_options_keybinds_model.lua`'s key-length case now pins one component per file,
+open, the one reload popup, translated strings, a disabled render, the refresher, the unregistered
+owner, and combat refusing a pick, a copy click and a copy accepted after combat starts. `tests/test_options_keybinds_model.lua`'s key-length case now pins one component per file,
 `OptionsKeybinds` the twelfth. Re-vendor the whole folder: the new file must arrive with the shell.
 **What a consumer owes: every Options degradation stub gains `AppearanceTab` and
 `AppearanceRows`**, in every addon, adopted or not (`Kit.assertSurfaceParity`, `skinning-§3`); the
