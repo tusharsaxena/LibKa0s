@@ -292,7 +292,12 @@ dropdown and the copy window stay; the copy window is the next seam if the file 
 It has grown back, out of the band: 853 at v1.76.0's minor 14 (the strip's `kind`, measured
 2026-10-23), 834 at v1.75.0's minor 13 (measured 2026-10-22), 655 before
 `W.SearchBox` (#52), the hoisted `SKIN` table and `W.TestStrip` (#48) with their header notes. The
-copy window stays the next seam, and the re-check trigger is 1000 lines. `LibKa0s/DebugLog.lua` was
+copy window stayed the next seam, and the re-check trigger was 1000 lines. **It fired at Widgets
+minor 16** (`LK-06` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`, the skin owner), which
+took the file to 1010, so the copy window peeled before the commit, on that seam, to
+`LibKa0s/WidgetsCopyWindow.lua` (293), a sixth Widgets file paired on the shell's minor
+(`__copyMinor`), and the file is 758, measured 2026-10-25. The search box is the next seam; the
+re-check trigger stays 1000 lines. `LibKa0s/DebugLog.lua` was
 999 at v1.75.0's minor 20, re-measured 2026-10-22: the #57 comment correction added no line, so it
 stayed one under the band until v1.77.0's minor 21 took it in (listed above). Of v1.75.0's new files only `tests/test_sim_panel.lua` is in the band
 (1056 at v1.76.0, listed above); `LibKa0s/SimPanel.lua`, the largest payload file among them, is 956

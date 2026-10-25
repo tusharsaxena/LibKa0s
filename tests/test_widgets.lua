@@ -489,7 +489,7 @@ test("The menu built on the first dropdown open is FULLSCREEN_DIALOG and clamped
     local L = fresh.__layers(made[1])
     assertEqual(L.strata, "FULLSCREEN_DIALOG")
     assertTrue(L.clamped, "the menu is clamped to the screen")
-    assertEqual(FW.MINOR, 15)
+    assertTrue(FW.MINOR >= 15, "the clamp arrived at Widgets minor 15")
   end)
   restore()
   if not ok then error(err, 0) end

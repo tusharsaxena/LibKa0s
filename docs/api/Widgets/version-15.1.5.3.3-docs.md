@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **15** · `WidgetsReorder.lua` minor **1** · `WidgetsDragHandle.lua` minor **5** · `WidgetsLineChart.lua` minor **3** · `WidgetsAutocomplete.lua` minor **3** |
 | Shipped in | v1.77.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 14.1.4.3.2](./version-14.1.4.3.2-docs.md) (shipped in v1.76.0) — `Widgets.lua` 14, `WidgetsDragHandle.lua` 4 and `WidgetsAutocomplete.lua` 2: no `spec.level`, no `spec.ignoreParentAlpha`, no `handle:ApplyLevel()`, and neither popup clamped to the screen |
-| Superseded by | — |
+| Superseded by | [version 16.2.6.4.4.1](./version-16.2.6.4.4.1-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 15, WidgetsReorder = 1, WidgetsDragHandle = 5, WidgetsLineChart = 3, WidgetsAutocomplete = 3 }` |
 
 ## What changed at 15.1.5.3.3
@@ -1704,3 +1704,10 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
+
+## Moving to 16.2.6.4.4.1
+
+**Take it; nothing moves.** Version 16.2.6.4.4.1 is this surface. Every constructor takes an optional
+skin owner, the copy window lives in a sixth file, `WidgetsCopyWindow.lua`, and a host that names no
+registered owner draws exactly what this version draws. Re-vendor the whole folder, so the new file
+arrives with the shell. See [version 16.2.6.4.4.1](./version-16.2.6.4.4.1-docs.md).

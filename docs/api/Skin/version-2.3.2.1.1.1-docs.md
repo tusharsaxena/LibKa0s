@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 2.2.2.1.1.1
+# `LibKa0s-Skin-1.0` — version 2.3.2.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **2** · `SkinDefs.lua` minor **2** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **2** · `SkinDefs.lua` minor **3** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** |
 | Shipped in | v1.78.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 2, SkinDefs = 2, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 2, SkinDefs = 3, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1 }` |
 
 ## What this major is
 
@@ -186,6 +186,15 @@ up, so it must nil-guard the database: a getter that raises is reported through 
 (a visible Lua error) and the owner falls back to Ka0s Default. Call `SetChoice` with the
 profile's values once AceDB is up. A host's degradation arm (library absent) needs no stub of this major:
 with no `NS.Skin` the host paints today's way.
+
+**The library's own controls take the owner too.** `Core.ApplySkin(frame, nil, owner)` and
+`Core.MakeCloseButton(parent, onClick, addonName)` (`LibKa0s-Core-1.0` 13), and every Widgets
+constructor's `owner` (`LibKa0s-Widgets-1.0` 16.2.6.4.4.1: the dropdown and the shared menu it
+drops, the search box, the strip, the copy window through its `addonName`, the autocomplete, the
+drag handle, the reorder list and the line chart), paint through the owner's facade once the
+owner is registered, and draw exactly what they drew before for any other name. A host passes its
+folder name, which it already passes to `MakeCloseButton`. Each major's document lists the tokens
+its controls read.
 
 ## Ka0s Default and the token schema
 
@@ -420,6 +429,14 @@ eight skins*, below.
 | `icon.tint` | color | no | `0.7, 0.7, 0.72, 1` |
 | `icon.hot` | color | no | `1, 1, 1, 1` |
 | `handle.bg` | color | no | `0, 0, 0, 0.75` |
+| `handle.edge` | color | no | `1, 0.82, 0, 0.6 |`
+| `handle.rest` | color | no | `0.7, 0.7, 0.7, 1 |`
+| `list.dropLine` | color | no | `1, 0.82, 0, 0.9 |`
+| `list.ghostBg` | color | no | `0.12, 0.12, 0.12, 0.95 |`
+| `list.box` | color | no | `1, 1, 1, 0.06 |`
+| `list.boxDim` | color | no | `1, 1, 1, 0.03 |`
+| `list.boxEdge` | color | no | `1, 1, 1, 0.12 |`
+| `list.boxEdgeDim` | color | no | `1, 1, 1, 0.06 |`
 
 ### Overlays
 
@@ -494,8 +511,16 @@ eight skins*, below.
 | `sem.on` | color | no | `0.3, 0.85, 0.3, 1` |
 | `sem.off` | color | no | `0.9, 0.3, 0.3, 1` |
 
-**197 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
-`tab.texture`, `tab.onTexture`) joined at this version, for WoW Default's Blizzard art.
+**205 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
+`tab.texture`, `tab.onTexture`) joined at SkinDefs minor 2, for WoW Default's Blizzard art. The
+eight **Widgets tokens** (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg`, `list.box`,
+`list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`) joined at SkinDefs minor 3, so the drag handle and
+the reorder list (`LibKa0s-Widgets-1.0` 16.2.6.4.4.1, *Skin owners*) follow a skin with Ka0s
+Default's pixels unchanged: each is the constant that widget drew, where no existing token carried
+that exact value (`icon.tint` is `0.7, 0.7, 0.72`, the handle's rest gray `0.7, 0.7, 0.7`). The other
+eight skins derive them: `handle.edge` and `list.dropLine` from the skin's accent at 0.6 and 0.9
+(as `list.hover` is at 0.1), the four boxes from its body text at 0.06, 0.03, 0.12 and 0.06,
+`handle.rest` from its muted text and `list.ghostBg` from its popup fill.
 
 ## The primitives
 
@@ -943,6 +968,14 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `section.rule` | `#4DB8FF .35` | `#8E1B10 .35` | `#B69CFF .35` | `#FFE600` | `#FF7A33 .35` | `#FFD100 .35` | `#B48CFF .35` | `#C9A07A .35` |
 | `icon.tint` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `icon.hot` | `#4DB8FF` | `#8E1B10` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#C9A07A` |
+| `handle.edge` | `#4DB8FF .6` | `#8E1B10 .6` | `#B69CFF .6` | `#FFE600 .6` | `#FF7A33 .6` | `#FFD100 .6` | `#B48CFF .6` | `#C9A07A .6` |
+| `handle.rest` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `list.dropLine` | `#4DB8FF .9` | `#8E1B10 .9` | `#B69CFF .9` | `#FFE600 .9` | `#FF7A33 .9` | `#FFD100 .9` | `#B48CFF .9` | `#C9A07A .9` |
+| `list.ghostBg` | `#121214` | `#E9DDBC` | `#121622 .6` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |
+| `list.box` | `#E8E8EC .06` | `#2A1C0C .06` | `#F2F4F8 .06` | `#FFFFFF .06` | `#F4E7DC .06` | `#FFFFFF .06` | `#F2EEF8 .06` | `#FFFFFF .06` |
+| `list.boxDim` | `#E8E8EC .03` | `#2A1C0C .03` | `#F2F4F8 .03` | `#FFFFFF .03` | `#F4E7DC .03` | `#FFFFFF .03` | `#F2EEF8 .03` | `#FFFFFF .03` |
+| `list.boxEdge` | `#E8E8EC .12` | `#2A1C0C .12` | `#F2F4F8 .12` | `#FFFFFF .12` | `#F4E7DC .12` | `#FFFFFF .12` | `#F2EEF8 .12` | `#FFFFFF .12` |
+| `list.boxEdgeDim` | `#E8E8EC .06` | `#2A1C0C .06` | `#F2F4F8 .06` | `#FFFFFF .06` | `#F4E7DC .06` | `#FFFFFF .06` | `#F2EEF8 .06` | `#FFFFFF .06` |
 
 #### Overlays
 

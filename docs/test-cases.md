@@ -882,6 +882,33 @@ Total.
 - reorder: ReorderList lives in WidgetsReorder.lua at minor 1, paired on the live shell
 - reorder: a payload without WidgetsReorder.lua loads whole, with no ReorderList
 
+### test_widgets_skin.lua (24)
+
+- skin owner: Core.ApplySkin and MakeCloseButton without a registered owner are minor 12's
+- skin owner: Core.ApplySkin paints a registered owner's window from its skin and repaints it
+- skin owner: a host's own skin table wins over the owner, and is never repainted
+- skin owner: Core works with no Skin major, and resolves it at call time
+- skin owner: MakeCloseButton takes a registered owner's close colors and follows a switch
+- skin owner: Dropdown without a registered owner is minor 15's, button and menu
+- skin owner: an owned Dropdown wears its owner's skin, and two owners stay apart
+- skin owner: the shared menu follows its opener, and an owner-less open puts Ka0s Default back
+- skin owner: a LootHistory open under Obsidian, then an owner-less open, shows Ka0s Default
+- skin owner: SearchBox and TestStrip without a registered owner are minor 15's
+- skin owner: an owned SearchBox paints its box, focus line and icon from the skin
+- skin owner: an owned TestStrip takes its wash from the owner's skin
+- skin owner: CopyWindow without a registered owner is minor 15's
+- skin owner: a registered addon's CopyWindow wears its skin, dense fill and close button
+- skin owner: Autocomplete without a registered owner is minor 3's
+- skin owner: an owned Autocomplete colors its rows from the skin on every show
+- skin owner: DragHandle without a registered owner is minor 5's
+- skin owner: an owned DragHandle paints from its owner's skin and follows a switch alone
+- skin owner: ReorderList without a registered owner is minor 1's, ghost included
+- skin owner: an owned ReorderList draws boxes, handle, line and ghost from the skin
+- skin owner: Ka0s Default draws the reorder list exactly as minor 1 did
+- skin owner: LineChart without a registered owner reads lib.LINE_CHART as minor 3 did
+- skin owner: an owned LineChart takes its chrome and series from ChartStyle and re-renders
+- skin owner: Ka0s Default's eight Widgets tokens are the constants they replace
+
 ### test_debuglog.lua (75)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
@@ -3307,6 +3334,7 @@ Total.
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
+| test_widgets_skin.lua | 24 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -3399,4 +3427,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2897** |
+| **Total** | **2921** |

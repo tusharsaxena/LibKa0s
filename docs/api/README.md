@@ -68,7 +68,7 @@ the file you need:
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Skin-1.0` | `<Skin>.<SkinDefs>.<SkinPaint>.<SkinPaintExtras>.<SkinPaintControls>.<SkinEUI>` | `LibStub("LibKa0s-Skin-1.0").MODULES` |
-| `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
+| `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>.<WidgetsCopyWindow>` (five numbers through 15.1.5.3.3) | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
@@ -102,7 +102,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12](./Core/version-12-docs.md) | **`Core.lua` 12** (`RaiseStaticPopups`: the tool windows re-raise a shown StaticPopup) | v1.77.0 | **Current** |
+| [13](./Core/version-13-docs.md) | **`Core.lua` 13** (`ApplySkin`'s `owner` and `MakeCloseButton`'s `addonName` paint through a registered skin owner's facade; no new member) | v1.78.0 (unreleased) | **Current** |
+| [12](./Core/version-12-docs.md) | **`Core.lua` 12** (`RaiseStaticPopups`: the tool windows re-raise a shown StaticPopup) | v1.77.0 | Superseded |
 | [11](./Core/version-11-docs.md) | `Core.lua` 11 (comment-only: an undeclared `close` draws blank) | v1.75.0 – v1.76.0 | Superseded |
 | [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 – v1.74.0 | Superseded |
 | [9](./Core/version-9-docs.md) | `Core.lua` 9 | v1.64.0 – v1.66.0 | Superseded |
@@ -186,13 +187,14 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.2.2.1.1.1](./Skin/version-2.2.2.1.1.1-docs.md) | **`Skin.lua` 2** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots) · `SkinDefs.lua` 2 (the token schema and the nine skins) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) | v1.78.0 (unreleased) | **Current** |
+| [2.3.2.1.1.1](./Skin/version-2.3.2.1.1.1-docs.md) | **`Skin.lua` 2** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots) · **`SkinDefs.lua` 3** (the token schema and the nine skins; the eight Widgets tokens) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) | v1.78.0 (unreleased) | **Current** |
 
 ### `LibKa0s-Widgets-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1.5.3.3](./Widgets/version-15.1.5.3.3-docs.md) | **`Widgets.lua` 15** (the dropdown menu is clamped to the screen; no new member) · `WidgetsReorder.lua` 1 · **`WidgetsDragHandle.lua` 5** (`spec.level`, `spec.ignoreParentAlpha`, `handle:ApplyLevel()`: the strip and its marks sit over the content and stay opaque) · `WidgetsLineChart.lua` 3 · **`WidgetsAutocomplete.lua` 3** (the suggestion list is clamped to the screen) | v1.77.0 | **Current** |
+| [16.2.6.4.4.1](./Widgets/version-16.2.6.4.4.1-docs.md) | **`Widgets.lua` 16** · **`WidgetsReorder.lua` 2** · **`WidgetsDragHandle.lua` 6** · **`WidgetsLineChart.lua` 4** · **`WidgetsAutocomplete.lua` 4** · **`WidgetsCopyWindow.lua` 1** (new: `CopyWindow` peeled out of `Widgets.lua`): every constructor takes a skin owner, the shared menu and the reorder ghost follow their opener, `series[i].colorIndex`; no new member | v1.78.0 (unreleased) | **Current** |
+| [15.1.5.3.3](./Widgets/version-15.1.5.3.3-docs.md) | **`Widgets.lua` 15** (the dropdown menu is clamped to the screen; no new member) · `WidgetsReorder.lua` 1 · **`WidgetsDragHandle.lua` 5** (`spec.level`, `spec.ignoreParentAlpha`, `handle:ApplyLevel()`: the strip and its marks sit over the content and stay opaque) · `WidgetsLineChart.lua` 3 · **`WidgetsAutocomplete.lua` 3** (the suggestion list is clamped to the screen) | v1.77.0 | Superseded |
 | [14.1.4.3.2](./Widgets/version-14.1.4.3.2-docs.md) | `Widgets.lua` 14 (`TestStrip`'s simulation flavor: `opts.kind = "sim"`, `strip.kind`; no new member) · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.76.0 | Superseded |
 | [13.1.4.3.2](./Widgets/version-13.1.4.3.2-docs.md) | **`Widgets.lua` 13** (new: `SearchBox`, `TestStrip`, `TEST_STRIP`) · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.75.0 | Superseded |
 | [12.1.4.3.2](./Widgets/version-12.1.4.3.2-docs.md) | `Widgets.lua` 12 · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.71.0 – v1.74.0 | Superseded |

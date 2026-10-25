@@ -16,14 +16,17 @@ Opened 2026-10-25. Skinning, leg 1: the LibKa0s skin engine, its paint primitive
 choice on the settings panel, with LootHistory as the prototype consumer. The test kit's opt-in
 paint recorder opens it.
 
-Versions in this release: **Media minor 6** (`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1
-unchanged), **Skin minor 2**, **SkinDefs minor 2**, **SkinPaint minor 2**,
-**SkinPaintExtras minor 1**, **SkinPaintControls minor 1** and **SkinEUI minor 1** (the new major
-`LibKa0s-Skin-1.0`, key **2.2.2.1.1.1**), **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key **21.4.1**); every other file
-still at its v1.77.0 minor, and **test kit revision 43**, until an entry below moves one. Each change
-bumps the minor of the files it touches once, and this block names each new minor as it lands. Now
-**eighteen majors across forty-seven files**: one major added (`LibKa0s-Skin-1.0`), and no
-`NEEDS_*` floor rises.
+Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 6**
+(`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1 unchanged), **Skin minor 2**, **SkinDefs minor 3**,
+**SkinPaint minor 2**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1** and **SkinEUI
+minor 1** (the new major `LibKa0s-Skin-1.0`, key **2.3.2.1.1.1**); **Widgets minor 16**,
+**WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
+**WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
+**16.2.6.4.4.1**, a new sixth file); **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key
+**21.4.1**); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
+entry below moves one. Each change bumps the minor of the files it touches once, and this block
+names each new minor as it lands. Now **eighteen majors across forty-eight files**: one major added
+(`LibKa0s-Skin-1.0`) and one file (`WidgetsCopyWindow.lua`), and no `NEEDS_*` floor rises.
 
 ### Test kit revision 43: the paint recorder
 
@@ -79,7 +82,7 @@ path version 5.1 had resolves the same.
 ### LibKa0s-Skin-1.0 (new major, Skin minor 1, SkinDefs minor 1)
 
 The skin engine and its first skin, documented in
-[docs/api/Skin/version-2.2.2.1.1.1-docs.md](docs/api/Skin/version-2.2.2.1.1.1-docs.md). `Skin.lua` loads after
+[docs/api/Skin/version-2.3.2.1.1.1-docs.md](docs/api/Skin/version-2.3.2.1.1.1-docs.md). `Skin.lua` loads after
 `MediaIcons.lua`, floored on Core (`NEEDS_CORE = 1`, no Core member called); `SkinDefs.lua` is
 paired on its minor (`__defsMinor` / `__defsShellMinor`).
 
@@ -123,7 +126,7 @@ define functions and data tables: no frame, timer or event exists until a host r
 `LibKa0s-Skin-1.0` key 1.2 (the in-flight 1.1 document moved to it; 1.1 never shipped). Obsidian,
 Azeroth, Glass, High Contrast, Ember, WoW Default, WoW Midnight and WoW Forever join Ka0s Default,
 in that order, documented under *The eight skins* in
-[docs/api/Skin/version-2.2.2.1.1.1-docs.md](docs/api/Skin/version-2.2.2.1.1.1-docs.md) with every token each sets.
+[docs/api/Skin/version-2.3.2.1.1.1-docs.md](docs/api/Skin/version-2.3.2.1.1.1-docs.md) with every token each sets.
 
 - **Translated from the mockups.** Each skin is its entry in the mockups' token table, key for
   key (`classic` is `ka0s`, `wowdefault` is `wow`; the `eui` preview is never registered), run
@@ -158,7 +161,7 @@ each skin's recorded choices. No member change.
 
 `LibKa0s-Skin-1.0` key 1.2.1.1.1 (the in-flight 1.2 document moved to it; 1.2 never shipped),
 documented under *The primitives* in
-[docs/api/Skin/version-2.2.2.1.1.1-docs.md](docs/api/Skin/version-2.2.2.1.1.1-docs.md). Three files
+[docs/api/Skin/version-2.3.2.1.1.1-docs.md](docs/api/Skin/version-2.3.2.1.1.1-docs.md). Three files
 paired on the shell's minor, loaded after `SkinDefs.lua`; the extras and the controls paint with
 `SkinPaint.lua`'s helpers and attach only beside it. Every `VOCAB` name now has its primitive, so
 `S.Shell(frame)`, `S.Button(btn)` and the rest paint.
@@ -204,7 +207,7 @@ it adopts.
 
 `LibKa0s-Skin-1.0` key 2.2.2.1.1.1 (the in-flight 1.2.1.1.1 document moved to it; 1.2.1.1.1 never
 shipped), documented under *The EllesmereUI provider* in
-[docs/api/Skin/version-2.2.2.1.1.1-docs.md](docs/api/Skin/version-2.2.2.1.1.1-docs.md). New file
+[docs/api/Skin/version-2.3.2.1.1.1-docs.md](docs/api/Skin/version-2.3.2.1.1.1-docs.md). New file
 `SkinEUI.lua`, paired on the shell's minor (`__euiMinor` / `__euiShellMinor`), loaded after
 `SkinPaintControls.lua`. An owner on the `eui` source is painted by EllesmereUI's own skinning
 facade (its `SKINNING_API.md`, API version 3: names and token model mirrored, no code or media
@@ -259,6 +262,49 @@ in this release. **What a consumer owes:** nothing until it adopts; an adopted a
 `LibKa0s running:` line lists `Skin` and `SkinDefs` when the major runs in the client, between
 `Media` and `Widgets` in `tests/majors.lua` order. `tests/test_debuglog_diagnostics.lua` asks for it.
 No member change.
+
+### Core minor 13, Widgets 16.2.6.4.4.1 and SkinDefs minor 3: the library's controls take a skin owner
+
+`LibKa0s-Core-1.0` key 13 ([docs/api/Core/version-13-docs.md](docs/api/Core/version-13-docs.md)),
+`LibKa0s-Widgets-1.0` key 16.2.6.4.4.1
+([docs/api/Widgets/version-16.2.6.4.4.1-docs.md](docs/api/Widgets/version-16.2.6.4.4.1-docs.md)) and
+`LibKa0s-Skin-1.0` key 2.3.2.1.1.1 (the in-flight 2.2.2.1.1.1 document moved to it; 2.2.2.1.1.1 never
+shipped), LK-06 of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`. No member is added, removed or
+renamed in any of the three.
+
+- **A name counts as an owner only once its addon registered it** (`Skin:IsOwner`), resolved at call
+  time: Core and Widgets take no floor on the Skin major, which floors on Core. Every consumer
+  already passes its folder name to `MakeCloseButton` and its `CopyWindow` descriptor, so the
+  thirteen consumers that do not adopt skins in this release keep drawing exactly what they drew
+  when LootHistory's v1.78.0 copy wins the LibStub race: an unregistered name, no name and a client
+  without the Skin major are the previous minors' paint, call for call
+  (`tests/test_widgets_skin.lua`).
+- **Core minor 13.** `ApplySkin(frame[, skin[, owner]])`: a registered owner's window is handed to
+  its facade after the paint (`S.Shell`), so it wears the owner's skin and repaints on a switch; a
+  host's own `skin` table wins. `MakeCloseButton`'s `addonName`, when registered, colors the control
+  through `S.CloseButton` (`close.rest` / `close.hot`).
+- **Widgets.** `Dropdown`, `SearchBox`, `TestStrip`, `Autocomplete` (`WidgetsAutocomplete` 4),
+  `DragHandle` (`WidgetsDragHandle` 6), `ReorderList` (`WidgetsReorder` 2) and `LineChart`
+  (`WidgetsLineChart` 4) take `owner` in their options; `CopyWindow` reads its `addonName`. A skinned
+  control paints through the facade's primitive where one fits (`S.Dropdown`, `S.EditBox`,
+  `S.Strip`, `S.Shell`, `S.ScrollBar`, `S.MenuFrame`) and from `Skin:Token` otherwise, and follows
+  the owner's switches; the API document's *Skin owners* table lists each widget's tokens. **The
+  shared popup menu** is repainted on every open, to the opener's skin, or back to Ka0s Default once
+  an owner has painted it and the opener has none; **the reorder ghost** likewise on every drag.
+  `LineChart` gains `series[i].colorIndex`, an index into the owner's `chart.series`.
+- **`WidgetsCopyWindow.lua` (minor 1), a new file.** The skin owner took `Widgets.lua` to 1010 lines,
+  past the 1000-line re-check its band disposition named (`CLAUDE.md`, *Files over the 1500-line
+  cap*), so `lib.CopyWindow` peeled to a sixth file paired on the shell's minor (`__copyMinor` /
+  `__copyShellMinor`), on the seam that disposition named: `Widgets.lua` 758, `WidgetsCopyWindow.lua`
+  293. `tests/majors.lua`, `LibKa0s.xml`, the key and the docs carry it.
+- **SkinDefs minor 3: eight Widgets tokens** (205 tokens): `handle.edge`, `handle.rest`,
+  `list.dropLine`, `list.ghostBg`, `list.box`, `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`,
+  each Ka0s Default's value the constant its widget drew, where no existing token carried that exact
+  value. The other skins derive them from their accent, body text, muted text and popup fill.
+
+New suite `tests/test_widgets_skin.lua` (24 cases); five minor pins in the Widgets suites now read
+"at least" the minor their feature arrived at. Re-vendor the whole folder: the new file must arrive
+with the shell. **What a consumer owes:** nothing; an adopter passes its folder name as `owner`.
 
 ## v1.77.0 — 2026-10-24
 

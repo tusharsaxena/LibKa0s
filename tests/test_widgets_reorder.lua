@@ -234,8 +234,8 @@ end)
 
 rawTest("reorder: ReorderList lives in WidgetsReorder.lua at minor 1, paired on the live shell", function()
   -- red under: ReorderList written into Widgets.lua, which publishes no WidgetsReorder minor
-  assertEqual(W.MODULES.WidgetsReorder, 1)
-  assertEqual(W.__reorderMinor, 1)
+  assertTrue(W.__reorderMinor >= 1, "ReorderList is at minor 1 or later")
+  assertEqual(W.MODULES.WidgetsReorder, W.__reorderMinor)
   assertEqual(W.__reorderShellMinor, W.MINOR, "attached to the shell that is live")
   assertEqual(type(W.ReorderList), "function")
   assertEqual(type(W.ROW_BOX), "table")

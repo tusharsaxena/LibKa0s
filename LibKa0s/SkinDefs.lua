@@ -34,7 +34,10 @@
 local lib = LibStub and LibStub("LibKa0s-Skin-1.0", true)
 if not lib then return end   -- the shell refused (no Core, or below its floor): nothing to attach to
 
-local DEFS_MINOR = 2
+-- Minor 3: eight Widgets tokens (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg` and
+-- the four `list.box*`), so the drag handle and the reorder list follow a skin with Ka0s Default's
+-- pixels unchanged (LK-06 of the skinning run).
+local DEFS_MINOR = 3
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -86,7 +89,8 @@ local GROUPS = {
   { "Lists and cards", "list.header.bg:color? list.header.text:color list.stripe:color "
     .. "list.hover:color list.sel:color? list.selOutline:color? card.bg:color card.border:color "
     .. "panel.bg:color panel.border:color section.rule:color icon.tint:color icon.hot:color "
-    .. "handle.bg:color" },
+    .. "handle.bg:color handle.edge:color handle.rest:color list.dropLine:color list.ghostBg:color "
+    .. "list.box:color list.boxDim:color list.boxEdge:color list.boxEdgeDim:color" },
   { "Overlays", "popup.bg:color popup.border:color? popup.borderSize:number? "
     .. "popup.borderStyle:string? popup.radius:number tooltip.bg:color? tooltip.border:color? "
     .. "strip.test:color strip.sim:color cover.dim:color cover.text:color" },
@@ -195,6 +199,12 @@ local KA0S = {
   ["panel.bg"] = { 0.08, 0.08, 0.10, 0.6 }, ["panel.border"] = { 0.24, 0.24, 0.27, 0.7 },
   ["section.rule"] = { 1, 0.82, 0, 0.35 },
   ["icon.tint"] = GRAY, ["icon.hot"] = WHITE, ["handle.bg"] = { 0, 0, 0, 0.75 },
+  -- Widgets: WidgetsDragHandle's gold edge; WidgetsReorder's handle at rest, its insertion line, its
+  -- carried copy and lib.ROW_BOX's fills and edges.
+  ["handle.edge"] = { 1, 0.82, 0, 0.6 }, ["handle.rest"] = { 0.7, 0.7, 0.7, 1 },
+  ["list.dropLine"] = { 1, 0.82, 0, 0.9 }, ["list.ghostBg"] = { 0.12, 0.12, 0.12, 0.95 },
+  ["list.box"] = { 1, 1, 1, 0.06 }, ["list.boxDim"] = { 1, 1, 1, 0.03 },
+  ["list.boxEdge"] = { 1, 1, 1, 0.12 }, ["list.boxEdgeDim"] = { 1, 1, 1, 0.06 },
   -- Overlays: OptionsIds' suggestion popup, Widgets STRIP_FILL, OptionsCombat's cover.
   ["popup.bg"] = { 0, 0, 0, 0.92 }, ["popup.radius"] = 0,
   ["strip.test"] = { 1, 0.65, 0.15, 0.12 }, ["strip.sim"] = { 0.35, 0.8, 1, 0.12 },
@@ -281,7 +291,7 @@ local MOCK_MAP = {
   { "headColor", "text.heading", "text.headingAlt" }, { "titleAlign", "title.align" },
   { "divider", "divider", "tab.rule" }, { "footBg", "foot.bg" },
   { "text", "text.body", "menu.text", "drawer.text" },
-  { "muted", "text.muted", "icon.tint", "drawer.summary" },
+  { "muted", "text.muted", "icon.tint", "drawer.summary", "handle.rest" },
   { "accent", "text.accent", "text.link", "btn.hover", "input.focus", "menu.textSel",
     "drawer.textSet", "icon.hot" },
   { "closeColor", "close.rest" },
@@ -307,7 +317,7 @@ local MOCK_MAP = {
   { "navSelBg", "nav.selBg" }, { "navSelText", "nav.selText" }, { "navSelBar", "nav.selBar" },
   { "drawerBg", "drawer.bg" }, { "drawerBorder", edge = "drawer" },
   { "drawerBorder", edgeColor = "drawer.boxBorder" }, { "drawerText", "drawer.textSet" },
-  { "popBg", "popup.bg", "menu.bg" }, { "popBorder", edge = "popup" }, { "popBorder", edge = "menu" },
+  { "popBg", "popup.bg", "menu.bg", "list.ghostBg" }, { "popBorder", edge = "popup" }, { "popBorder", edge = "menu" },
   { "popBorder", edgeColor = "menu.borderAlt" }, { "popRadius", "popup.radius" },
   { "tipBg", "tooltip.bg" }, { "tipBorder", edgeColor = "tooltip.border" },
   { "tipLevel", "gtip.title" }, { "tipText", "gtip.body" }, { "tipMuted", "gtip.muted" },
@@ -318,7 +328,12 @@ local MOCK_MAP = {
 -- The accent at a fixed alpha: the hover and rule washes Ka0s Default draws in gold.
 local ACCENT_WASH = {
   { "list.hover", 0.10 }, { "menu.hover", 0.15 }, { "section.rule", 0.35 },
-  { "drawer.borderOpen", 0.6 },
+  { "drawer.borderOpen", 0.6 }, { "handle.edge", 0.6 }, { "list.dropLine", 0.9 },
+}
+
+-- The body text at a fixed alpha: the reorder list's row boxes, which Ka0s Default draws in white.
+local TEXT_WASH = {
+  { "list.box", 0.06 }, { "list.boxDim", 0.03 }, { "list.boxEdge", 0.12 }, { "list.boxEdgeDim", 0.06 },
 }
 
 local function blend(a, b)
@@ -352,17 +367,16 @@ local function putRow(out, row, v)
   end
 end
 
---- A skin's tokens: its mockup entry through MOCK_MAP, the accent washes, then its extras.
+--- A skin's tokens: its mockup entry through MOCK_MAP, the accent and text washes, then its extras.
 local function translate(mock, extra)
   local out = {}
   for _, row in ipairs(MOCK_MAP) do
     local v = mock[row[1]]
     if v ~= nil then putRow(out, row, v) end
   end
-  if mock.accent then
-    for _, w in ipairs(ACCENT_WASH) do
-      out[w[1]] = { mock.accent[1], mock.accent[2], mock.accent[3], w[2] }
-    end
+  for _, pair in ipairs({ { mock.accent, ACCENT_WASH }, { mock.text, TEXT_WASH } }) do
+    local c = pair[1]
+    for _, w in ipairs(c and pair[2] or {}) do out[w[1]] = { c[1], c[2], c[3], w[2] } end
   end
   for name, v in pairs(extra or {}) do put(out, name, v) end
   return out

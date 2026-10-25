@@ -224,7 +224,7 @@ test("autocomplete: the list built on first show is at its strata and clamped to
     L = mocks.__layers(h2.__list)
     assertEqual(L.strata, "DIALOG", "the handle's opts.strata wins")
     assertTrue(L.clamped, "a host strata is clamped too")
-    assertEqual(W.MODULES.WidgetsAutocomplete, 3)
+    assertTrue(W.MODULES.WidgetsAutocomplete >= 3, "the clamp arrived at Autocomplete minor 3")
   end)
   restore()
   if not ok then error(err, 0) end
