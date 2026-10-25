@@ -94,11 +94,12 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-DebugLog-1.0",
-    files = { "DebugLog", "DebugLogDiagnostics", "DebugLogGates" },
+    files = { "DebugLog", "DebugLogDiagnostics", "DebugLogGates", "DebugLogWindow" },
     primary = "DebugLog",
     paired = {
       { file = "DebugLogDiagnostics", minorField = "__diagMinor",  probeField = "__diagShellMinor" },
       { file = "DebugLogGates",       minorField = "__gatesMinor", probeField = "__gatesShellMinor" },
+      { file = "DebugLogWindow",      minorField = "__windowMinor", probeField = "__windowShellMinor" },
     },
   },
   {

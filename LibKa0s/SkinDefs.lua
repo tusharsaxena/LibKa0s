@@ -37,7 +37,10 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- Minor 3: eight Widgets tokens (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg` and
 -- the four `list.box*`), so the drag handle and the reorder list follow a skin with Ka0s Default's
 -- pixels unchanged (LK-06 of the skinning run).
-local DEFS_MINOR = 3
+-- Minor 4: ten tool-window tokens (`log.ts`, `log.tag`, `log.text`, `log.count`, `text.faint` and
+-- the five `sem.step*`), so the debug console and the perf and sim panels follow a skin with Ka0s
+-- Default's pixels unchanged (LK-09 of the skinning run); the other skins derive them (FOLLOW).
+local DEFS_MINOR = 4
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -59,7 +62,8 @@ local GROUPS = {
     .. "divider:color foot.bg:color? close.rest:color close.hot:color" },
   { "Text", "text.body:color text.muted:color text.heading:color text.headingAlt:color "
     .. "text.accent:color text.disabled:color text.link:color text.linkHot:color "
-    .. "gtip.title:color gtip.body:color gtip.muted:color" },
+    .. "gtip.title:color gtip.body:color gtip.muted:color text.faint:color log.ts:color "
+    .. "log.tag:color log.text:color log.count:color" },
   { "Buttons", "btn.bg:color btn.bgTop:color? btn.bgBottom:color? btn.border:color "
     .. "btn.borderSize:number? btn.borderStyle:string? btn.text:color btn.hover:color "
     .. "btn.icon:color btn.radius:number btnPrimary.bg:color btnPrimary.bgTop:color? "
@@ -103,7 +107,9 @@ local GROUPS = {
   { "Semantic", "q.poor:color? q.common:color? q.uncommon:color? q.rare:color? q.epic:color? "
     .. "q.legendary:color? sem.good:color sem.bad:color sem.neutral:color sem.warn:color "
     .. "sem.info:color sem.gold:color sem.warband:color sem.statusOk:color "
-    .. "sem.statusWarn:color sem.statusBad:color sem.modeTest:color sem.on:color sem.off:color" },
+    .. "sem.statusWarn:color sem.statusBad:color sem.modeTest:color sem.on:color sem.off:color "
+    .. "sem.stepReady:color sem.stepBusy:color sem.stepLocked:color sem.stepCancel:color "
+    .. "sem.stepCancelHot:color" },
 }
 
 local function buildSchema()
@@ -156,6 +162,12 @@ local KA0S = {
   ["text.link"] = { 1, 0.5, 0, 1 }, ["text.linkHot"] = { 1, 0.72, 0.28, 1 },
   -- Lines added to Blizzard's GameTooltip (LootHistory Compat Show*): title, body, hint.
   ["gtip.title"] = GOLD, ["gtip.body"] = BODY, ["gtip.muted"] = DIM,
+  -- The tool windows: the perf / sim panels' command column (CMD_COLOR) and their disabled button
+  -- label; DebugLog's console line (FormatColored's 6f8faf stamp and c9a66b tag, the message frame's
+  -- own white) and its line count.
+  ["text.faint"] = { 0.45, 0.45, 0.48, 1 },
+  ["log.ts"] = { 0x6f / 255, 0x8f / 255, 0xaf / 255, 1 }, ["log.tag"] = { 0xc9 / 255, 0xa6 / 255, 0x6b / 255, 1 },
+  ["log.text"] = WHITE, ["log.count"] = { 0.6, 0.6, 0.62, 1 },
   -- Buttons: LootHistory's flat buttons (BrowserFilterBar, Export, Timeline). No primary today.
   ["btn.bg"] = CTL_FILL, ["btn.border"] = CTL_LINE, ["btn.borderSize"] = 1,
   ["btn.borderStyle"] = "flat", ["btn.text"] = WHITE, ["btn.hover"] = GOLD,
@@ -229,6 +241,11 @@ local KA0S = {
   ["sem.statusWarn"] = { 1, 0.82, 0.10, 1 }, ["sem.statusBad"] = { 1, 0.32, 0.32, 1 },
   ["sem.modeTest"] = { 1, 0.15, 0.15, 1 }, ["sem.on"] = { 0.3, 0.85, 0.3, 1 },
   ["sem.off"] = { 0.9, 0.3, 0.3, 1 },
+  -- The perf / sim panels' step states (PerfPanel and SimPanel COLORS; done and used are sem.on):
+  -- ready, busy, locked, cancel, and cancel under the pointer.
+  ["sem.stepReady"] = { 0.9, 0.9, 0.92, 1 }, ["sem.stepBusy"] = GOLD,
+  ["sem.stepLocked"] = { 0.4, 0.4, 0.42, 1 }, ["sem.stepCancel"] = { 0.8, 0.32, 0.32, 1 },
+  ["sem.stepCancelHot"] = { 1, 0.45, 0.45, 1 },
 }
 
 lib:RegisterSkin({
@@ -336,6 +353,16 @@ local TEXT_WASH = {
   { "list.box", 0.06 }, { "list.boxDim", 0.03 }, { "list.boxEdge", 0.12 }, { "list.boxEdgeDim", 0.06 },
 }
 
+-- Tokens that follow another token the skin set (minor 4): a skin that sets the source and not the
+-- follower gets the source's value, so its tool windows read in its own text, accent, disabled and
+-- semantic colors; a skin that sets neither keeps Ka0s Default's constant.
+local FOLLOW = {
+  { "log.text", "text.body" }, { "log.count", "text.muted" }, { "text.faint", "text.muted" },
+  { "log.ts", "sem.info" }, { "log.tag", "text.headingAlt" },
+  { "sem.stepReady", "text.body" }, { "sem.stepBusy", "text.accent" },
+  { "sem.stepLocked", "text.disabled" }, { "sem.stepCancel", "sem.off" }, { "sem.stepCancelHot", "sem.bad" },
+}
+
 local function blend(a, b)
   return { (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, (a[3] + b[3]) / 2, ((a[4] or 1) + (b[4] or 1)) / 2 }
 end
@@ -379,6 +406,9 @@ local function translate(mock, extra)
     for _, w in ipairs(c and pair[2] or {}) do out[w[1]] = { c[1], c[2], c[3], w[2] } end
   end
   for name, v in pairs(extra or {}) do put(out, name, v) end
+  for _, f in ipairs(FOLLOW) do
+    if out[f[1]] == nil and out[f[2]] ~= nil then out[f[1]] = out[f[2]] end
+  end
   return out
 end
 

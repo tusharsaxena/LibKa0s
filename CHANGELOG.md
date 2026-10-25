@@ -17,20 +17,22 @@ choice on the settings panel, with LootHistory as the prototype consumer. The te
 paint recorder opens it.
 
 Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 6**
-(`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1 unchanged), **Skin minor 3**, **SkinDefs minor 3**,
+(`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1 unchanged), **Skin minor 3**, **SkinDefs minor 4**,
 **SkinPaint minor 2**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1**, **SkinEUI
-minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **3.3.2.1.1.1.1**); **Widgets minor 16**,
+minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **3.4.2.1.1.1.1**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
 **WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
-**16.2.6.4.4.1**, a new sixth file); **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key
-**21.4.1**); **Options minor 32**, **OptionsRegistry minor 3**, **OptionsWidgets minor 35**, **OptionsIds minor 4**,
+**16.2.6.4.4.1**, a new sixth file); **DebugLog minor 22**, **DebugLogDiagnostics minor 4** and
+**DebugLogWindow minor 1** (`LibKa0s-DebugLog-1.0` key **22.4.1.1**, a new fourth file); **Options minor 32**, **OptionsRegistry minor 3**, **OptionsWidgets minor 35**, **OptionsIds minor 4**,
 **OptionsIdList minor 6**, **OptionsTabs minor 10**, **OptionsCombat minor 3**, **OptionsCompose minor
 12**, **OptionsScroll minor 6**, **OptionsNav minor 3**, **OptionsDrawer minor 2** and
-**OptionsKeybinds minor 5** (`LibKa0s-Options-1.0` key **32.3.35.4.6.10.3.12.6.3.2.5**); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
+**OptionsKeybinds minor 5** (`LibKa0s-Options-1.0` key **32.3.35.4.6.10.3.12.6.3.2.5**); **PerfPanel
+minor 10** (`LibKa0s-Perf-1.0` key **15.1.1.10**); **SimPanel minor 7** (`LibKa0s-Sim-1.0` key
+**2.3.7**); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
 entry below moves one. Each change bumps the minor of the files it touches once, and this block
-names each new minor as it lands. Now **eighteen majors across forty-nine files**: one major added
-(`LibKa0s-Skin-1.0`) and two files (`WidgetsCopyWindow.lua`, `SkinAce.lua`), and no `NEEDS_*` floor
-rises.
+names each new minor as it lands. Now **eighteen majors across fifty files**: one major added
+(`LibKa0s-Skin-1.0`) and three files (`WidgetsCopyWindow.lua`, `SkinAce.lua`, `DebugLogWindow.lua`),
+and no `NEEDS_*` floor rises.
 
 ### Test kit revision 43: the paint recorder
 
@@ -262,7 +264,8 @@ in this release. **What a consumer owes:** nothing until it adopts; an adopted a
 ### DebugLogDiagnostics minor 4: the identity header names Skin
 
 `LibKa0s-DebugLog-1.0` key 21.4.1, documented in
-[docs/api/DebugLog/version-21.4.1-docs.md](docs/api/DebugLog/version-21.4.1-docs.md). The report's
+[docs/api/DebugLog/version-22.4.1.1-docs.md](docs/api/DebugLog/version-22.4.1.1-docs.md) (the
+in-flight 21.4.1 document moved there at DebugLog minor 22, below). The report's
 `LibKa0s running:` line lists `Skin` and `SkinDefs` when the major runs in the client, between
 `Media` and `Widgets` in `tests/majors.lua` order. `tests/test_debuglog_diagnostics.lua` asks for it.
 No member change.
@@ -361,8 +364,8 @@ OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopt
 ### SkinAce minor 1 and Options 32.3.35.4.6.10.3.12.6.3.2.5: the AceGUI rows wear their owner's skin
 
 `LibKa0s-Skin-1.0` key 3.3.2.1.1.1.1
-([docs/api/Skin/version-3.3.2.1.1.1.1-docs.md](docs/api/Skin/version-3.3.2.1.1.1.1-docs.md), a
-seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
+([docs/api/Skin/version-3.4.2.1.1.1.1-docs.md](docs/api/Skin/version-3.4.2.1.1.1.1-docs.md) since
+SkinDefs minor 4, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
 `LibKa0s-Options-1.0` key 32.3.35.4.6.10.3.12.6.3.2.5
 ([docs/api/Options/version-32.3.35.4.6.10.3.12.6.3.2.5-docs.md](docs/api/Options/version-32.3.35.4.6.10.3.12.6.3.2.5-docs.md),
 the in-flight 31.2.35.4.6.10.3.12.5.3.2.5 document moved to it), LK-08 of Ka0sAddonsCommonTasks
@@ -397,6 +400,52 @@ New suite `tests/test_skin_ace.lua` (21 cases) on a pooled AceGUI fake with AceG
 folder: the new file must arrive with the shell. **What a consumer owes:** nothing; a registered
 owner's pages paint their rows, and a host that acquires widgets outside `O.AceGUI` may call
 `Skin:PaintAce`.
+
+### DebugLog 22.4.1.1, PerfPanel minor 10, SimPanel minor 7 and SkinDefs minor 4: the tool windows follow their owner
+
+`LibKa0s-DebugLog-1.0` key 22.4.1.1
+([docs/api/DebugLog/version-22.4.1.1-docs.md](docs/api/DebugLog/version-22.4.1.1-docs.md), a fourth
+file; the in-flight 21.4.1 document moved to it, never shipped), `LibKa0s-Perf-1.0` key 15.1.1.10
+([docs/api/Perf/version-15.1.1.10-docs.md](docs/api/Perf/version-15.1.1.10-docs.md)),
+`LibKa0s-Sim-1.0` key 2.3.7 ([docs/api/Sim/version-2.3.7-docs.md](docs/api/Sim/version-2.3.7-docs.md))
+and `LibKa0s-Skin-1.0` key 3.4.2.1.1.1.1 (the in-flight 3.3.2.1.1.1.1 document moved to it, never
+shipped), LK-09 of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`. No member is added, removed or
+renamed in any of the four.
+
+- **Each window takes its owner from its own descriptor**, the folder its close mark is already built
+  from: the console's `addonName`, the perf panel's `addonName` (else `name`), the sim panel's
+  `name`. A name counts once that addon registered with `LibKa0s-Skin-1.0` (Core minor 13's
+  `__SkinFacade`, asked at build; no floor on the Skin major). An unregistered name, none and a
+  client without the Skin major build every window with the same paint calls as before, call for
+  call; a console whose host passed its own `skin` or `applySkin` is never skinned over.
+- **`DebugLogWindow.lua` (minor 1), a new file, and DebugLog minor 22.** `DebugLog.lua`'s band
+  disposition (`CLAUDE.md`, *Files over the 1500-line cap*) named the console window as its seam and
+  "the next DebugLog minor that adds a window feature" as its trigger; the skin owner is that feature,
+  so `EnsureFrame`, the drag bar and their chrome helpers peeled first, unchanged, to a file paired on
+  the shell's minor (`__windowMinor` / `__windowShellMinor`), and the owner was added there
+  (`DebugLog.lua` 1008 → 663, out of the band; `DebugLogWindow.lua` 575). An owned console wears the
+  owner's skin through its facade (`S.Shell`, `S.ScrollBar`, `S.Divider`) and draws its controls, its
+  toggle, its counter and each log line (stamp, tag, message) from the owner's tokens; on a switch it
+  recolors them and rebuilds the visible log from the plain buffer. Its copy window is painted by
+  `CopyWindow` for the same owner. `tests/majors.lua`, `LibKa0s.xml`, the key and the docs carry it.
+- **PerfPanel minor 10** paints an owned panel's window through its facade and its step colors, hover
+  and command column from the owner's tokens, repainted on a switch. `Perf.lua` is untouched (997
+  lines, its band trigger 1000).
+- **SimPanel minor 7** does the same for the sim panel, and paints each picker and control button's
+  box (`S.Shell`, no top bar) and label (`sem.stepReady`, `text.accent`, `text.faint`). `Sim.lua`
+  and `SimTimeline.lua` are untouched: the timeline draws nothing. `SimPanel.lua` is 997 lines. The
+  test strip's amber and cyan stay the library's (`W.TestStrip`, Widgets minor 16).
+- **SkinDefs minor 4: ten tool-window tokens** (215 tokens): `text.faint`, `log.ts`, `log.tag`,
+  `log.text`, `log.count`, `sem.stepReady`, `sem.stepBusy`, `sem.stepLocked`, `sem.stepCancel`,
+  `sem.stepCancelHot`, each Ka0s Default's value the constant its window drew (done and used are
+  `sem.on`, which already held that green). The other skins derive them by following a token they
+  set (body text, muted text, heading, `sem.info`, accent, disabled text, `sem.off`, `sem.bad`).
+
+New suite `tests/test_tool_windows_skin.lua` (14 cases), red on the previous payload; `tests/test_skin.lua`
+pins DebugLog's constants in their new file and the panels' command and hover colors;
+`tests/test_sim_panel.lua`'s two minor pins now read "at least". Re-vendor the whole folder: the new
+file must arrive with the shell. **What a consumer owes:** nothing; an adopter's registered owner
+reaches its console and panels through the names it already passes.
 
 ## v1.77.0 — 2026-10-24
 

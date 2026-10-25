@@ -212,7 +212,8 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
 `tests/test_options.lua`, `tests/test_schema.lua`, `LibKa0s/Widgets.lua` and `LibKa0s/Perf.lua`
 left on 2026-10-01 (below), and `LibKa0s/Slash.lua` came in and left again the same day. Seven
 at v1.76.0 (2026-10-23): `tests/test_sim_panel.lua` came in. Nine at v1.77.0 (2026-10-24): `LibKa0s/DebugLog.lua`
-and `tests/test_options_compose.lua` came in, the last two entries below. Largest first:
+and `tests/test_options_compose.lua` came in. Eight on 2026-10-25 (`LK-09` of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`): `LibKa0s/DebugLog.lua` left on its named seam (below). Largest first:
 
 - `testkit/mock_base.lua` (1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
@@ -247,12 +248,9 @@ and `tests/test_options_compose.lua` came in, the last two entries below. Larges
   beside `tests/test_sim_panel_render.lua`. **Re-check trigger: 1200 lines, or the next SimPanel
   minor that adds cases here.** SimPanel minor 6 (v1.77.0, `LK-01` of the 2026-10-24 run) added no
   case here: its cases are `tests/test_tool_windows_layering.lua`'s, and only the two minor pins moved.
-- `LibKa0s/DebugLog.lua` (1008, new to the band at v1.77.0, measured 2026-10-24: 999 → 1008 with
-  minor 21's toplevel console and its guarded StaticPopup re-raise, `LK-01` of Ka0sAddonsCommonTasks
-  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) — **accepted.** The seam is the console window
-  (`EnsureFrame`, the drag bar and their chrome helpers), to its own `LibKa0s/DebugLogWindow.lua`
-  paired on the shell's minor. **Re-check trigger: 1100 lines, or the next DebugLog minor that adds
-  a window feature.**
+  SimPanel minor 7 (the skin owner, `LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`)
+  added none either: its cases are the new `tests/test_tool_windows_skin.lua`'s, and only the two
+  pins moved, to "at least" (re-measured 2026-10-25, still 1056).
 - `tests/test_options_compose.lua` (1012, new to the band at v1.77.0, measured 2026-10-24: 944 →
   1012 with OptionsCompose minor 8's six `O.StrataTooltip` cases, `LK-20` of Ka0sAddonsCommonTasks
   `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) — **accepted.** The seam is the record-backed arm
@@ -299,9 +297,20 @@ took the file to 1010, so the copy window peeled before the commit, on that seam
 (`__copyMinor`), and the file is 758, measured 2026-10-25. The search box is the next seam; the
 re-check trigger stays 1000 lines. `LibKa0s/DebugLog.lua` was
 999 at v1.75.0's minor 20, re-measured 2026-10-22: the #57 comment correction added no line, so it
-stayed one under the band until v1.77.0's minor 21 took it in (listed above). Of v1.75.0's new files only `tests/test_sim_panel.lua` is in the band
-(1056 at v1.76.0, listed above); `LibKa0s/SimPanel.lua`, the largest payload file among them, is 956
-at SimPanel minor 6's toplevel and popup re-raise (v1.77.0, measured 2026-10-24); 949 after SimPanel
+stayed one under the band until v1.77.0's minor 21 took it in (1008, measured 2026-10-24, accepted
+with the console window as its seam and "1100 lines, or the next DebugLog minor that adds a window
+feature" as its trigger). **That trigger fired at DebugLog minor 22** (`LK-09` of
+Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`), whose window feature is the skin owner: the
+window (`EnsureFrame`, the drag bar and their chrome helpers) peeled first, unchanged, on that seam,
+to `LibKa0s/DebugLogWindow.lua` (575), a fourth DebugLog file paired on the shell's minor
+(`__windowMinor`), and the owner was added there. `LibKa0s/DebugLog.lua` left the band, 1008 → 663,
+measured 2026-10-25. The logging half (`append` through `CopyText`) is the next seam; the re-check
+trigger is 1000 lines. `LibKa0s/Perf.lua` was not touched by the same item (still 997): PerfPanel
+minor 10's skin owner is painted in `LibKa0s/PerfPanel.lua` (346). Of v1.75.0's new files only `tests/test_sim_panel.lua` is in the band
+(1056 at v1.76.0, listed above); `LibKa0s/SimPanel.lua`, the largest payload file among them, is 997
+at SimPanel minor 7's skin owner (`LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`,
+measured 2026-10-25, three under the band: the renderer section is the seam if it grows, to a file
+of its own), 956 at SimPanel minor 6's toplevel and popup re-raise (v1.77.0, measured 2026-10-24); 949 after SimPanel
 minor 5 with the step-label bound (v1.76.0; 929 before it, 919 after minor 4).
 `tests/test_options.lua` left the band on 2026-10-01, 1339 → 988, closing issue #35: the page
 registry, its combat-refusing open and the two refresh tiers, 24 of 85 cases, moved unchanged to

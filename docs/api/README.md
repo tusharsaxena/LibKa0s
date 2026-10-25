@@ -69,7 +69,7 @@ the file you need:
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Skin-1.0` | `<Skin>.<SkinDefs>.<SkinPaint>.<SkinPaintExtras>.<SkinPaintControls>.<SkinEUI>.<SkinAce>` (six numbers through 3.3.2.1.1.1, never shipped) | `LibStub("LibKa0s-Skin-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>.<WidgetsCopyWindow>` (five numbers through 15.1.5.3.3) | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
-| `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
+| `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>.<DebugLogWindow>` (three numbers through 21.4.1) | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
@@ -187,7 +187,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [3.3.2.1.1.1.1](./Skin/version-3.3.2.1.1.1.1-docs.md) | **`Skin.lua` 3** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots; `ResetToSkin` sets a media pick's `<key>FromSkin` companion) · **`SkinDefs.lua` 3** (the token schema and the nine skins; the eight Widgets tokens) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) · **`SkinAce.lua` 1** (the AceGUI rows: `PaintAce`, `PaintAceTree`, `OnRelease`, and the proxy on an Options instance's `O.AceGUI`) | v1.78.0 (unreleased) | **Current** |
+| [3.4.2.1.1.1.1](./Skin/version-3.4.2.1.1.1.1-docs.md) | **`Skin.lua` 3** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots; `ResetToSkin` sets a media pick's `<key>FromSkin` companion) · **`SkinDefs.lua` 4** (the token schema and the nine skins; the eight Widgets tokens and the ten tool-window tokens) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) · **`SkinAce.lua` 1** (the AceGUI rows: `PaintAce`, `PaintAceTree`, `OnRelease`, and the proxy on an Options instance's `O.AceGUI`) | v1.78.0 (unreleased) | **Current** |
 
 ### `LibKa0s-Widgets-1.0`
 
@@ -221,7 +221,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [21.4.1](./DebugLog/version-21.4.1-docs.md) | `DebugLog.lua` 21 · **`DebugLogDiagnostics.lua` 4** (the identity header names Skin) · `DebugLogGates.lua` 1 | v1.78.0 (unreleased) | **Current** |
+| [22.4.1.1](./DebugLog/version-22.4.1.1-docs.md) | **`DebugLog.lua` 22** · **`DebugLogDiagnostics.lua` 4** (the identity header names Skin) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 1** (new: the console window peeled out of `DebugLog.lua`; it follows the console's skin owner) | v1.78.0 (unreleased) | **Current** |
 | [21.3.1](./DebugLog/version-21.3.1-docs.md) | **`DebugLog.lua` 21** (the console is toplevel and re-raises a shown StaticPopup) · `DebugLogDiagnostics.lua` 3 · `DebugLogGates.lua` 1 | v1.77.0 | Superseded |
 | [20.3.1](./DebugLog/version-20.3.1-docs.md) | `DebugLog.lua` 20 (comment-only: undeclared `close`, `copy`, `clear` draw blank) · `DebugLogDiagnostics.lua` 3 (the identity header names Glow and Sim) · `DebugLogGates.lua` 1 | v1.75.0 – v1.76.0 | Superseded |
 | [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 – v1.74.0 | Superseded |
@@ -337,7 +337,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1.1.9](./Perf/version-15.1.1.9-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 9** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | **Current** |
+| [15.1.1.10](./Perf/version-15.1.1.10-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 10** (the panel follows its skin owner; no new member) | v1.78.0 (unreleased) | **Current** |
+| [15.1.1.9](./Perf/version-15.1.1.9-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 9** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | Superseded |
 | [15.1.1.8](./Perf/version-15.1.1.8-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 8 (a step label stops at the command column) | v1.76.0 | Superseded |
 | [15.1.1.7](./Perf/version-15.1.1.7-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 7 (comment-only: Sim's panel copies the renderer on purpose) | v1.75.0 – v1.75.2 | Superseded |
 | [15.1.1.6](./Perf/version-15.1.1.6-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 6 | v1.72.0 – v1.74.0 | Superseded |
@@ -358,7 +359,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.3.6](./Sim/version-2.3.6-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 6** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | **Current** |
+| [2.3.7](./Sim/version-2.3.7-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 7** (the panel and its buttons follow the skin owner; no new member) | v1.78.0 (unreleased) | **Current** |
+| [2.3.6](./Sim/version-2.3.6-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 6** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | Superseded |
 | [2.3.5](./Sim/version-2.3.5-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 (a verb start or restart plays on its own; a manual step or click holds the run) · `SimPanel.lua` 5 (Run all removed: Pause/Resume, Restart and Stop) | v1.76.0 | Superseded |
 | [2.2.4](./Sim/version-2.2.4-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 4** (the picker's scenario takes the width the bar leaves, on one line) | v1.75.2 | Superseded |
 | [2.2.3](./Sim/version-2.2.3-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 3** (a disabled row or control still shows its tip) | v1.75.1 | Superseded |

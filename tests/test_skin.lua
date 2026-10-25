@@ -204,9 +204,11 @@ local PINS = {
   { "OptionsScroll.lua", "THUMB_ON", "scroll.thumbOn" },
   { "OptionsScroll.lua", "THUMB_OFF", "scroll.thumbOff" },
   { "OptionsScroll.lua", "GUTTER", "scroll.gutter" },
-  { "DebugLog.lua", "DIAG_REST", "text.link" }, { "DebugLog.lua", "DIAG_HOT", "text.linkHot" },
-  { "DebugLog.lua", "REST", "text.muted" }, { "DebugLog.lua", "HOT", "text.accent" },
-  { "DebugLog.lua", "BAR_W", "scroll.width" },
+  { "DebugLogWindow.lua", "DIAG_REST", "text.link" }, { "DebugLogWindow.lua", "DIAG_HOT", "text.linkHot" },
+  { "DebugLogWindow.lua", "REST", "text.muted" }, { "DebugLogWindow.lua", "HOT", "text.accent" },
+  { "DebugLogWindow.lua", "BAR_W", "scroll.width" },
+  { "PerfPanel.lua", "CMD_COLOR", "text.faint" }, { "SimPanel.lua", "CMD_COLOR", "text.faint" },
+  { "SimPanel.lua", "HOVER_CANCEL", "sem.stepCancelHot" }, { "SimPanel.lua", "HOVER_GOLD", "text.accent" },
 }
 
 test("skin: Ka0s Default equals the file-local constants it replaces", function()

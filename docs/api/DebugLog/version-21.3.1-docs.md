@@ -12,7 +12,7 @@
 | Shipped in | v1.77.0 |
 | Status | Superseded |
 | Supersedes | [version 20.3.1](./version-20.3.1-docs.md) — the same surface; its console was DIALOG but not toplevel, and re-raised nothing on show |
-| Superseded by | [version 21.4.1](./version-21.4.1-docs.md) |
+| Superseded by | [version 22.4.1.1](./version-22.4.1.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 21, DebugLogDiagnostics = 3, DebugLogGates = 1 }` |
 
@@ -889,8 +889,11 @@ the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a c
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
 
-## Moving to version 21.4.1
+## Moving to version 22.4.1.1
 
-**Take it; nothing moves.** Version 21.4.1 is this surface; a report's identity header also lists
-`LibKa0s-Skin-1.0`'s files (`Skin`, `SkinDefs`) when that major runs in the client. See [version
-21.4.1](./version-21.4.1-docs.md).
+**Take it; nothing moves.** Version 22.4.1.1 is this surface; a report's identity header also lists
+`LibKa0s-Skin-1.0`'s files (`Skin`, `SkinDefs`) when that major runs in the client, the console
+window lives in a fourth file, `DebugLogWindow.lua`, and a console whose `addonName` is a registered
+skin owner wears and follows that skin; any other console draws exactly what this version draws.
+Re-vendor the whole folder, so the new file arrives with the shell. See [version
+22.4.1.1](./version-22.4.1.1-docs.md).

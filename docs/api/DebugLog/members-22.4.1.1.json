@@ -1,11 +1,12 @@
 {
   "major": "LibKa0s-DebugLog-1.0",
-  "versionKey": "21.4.1",
+  "versionKey": "22.4.1.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "DebugLog", "minor": 21 },
+    { "file": "DebugLog", "minor": 22 },
     { "file": "DebugLogDiagnostics", "minor": 4 },
-    { "file": "DebugLogGates", "minor": 1 }
+    { "file": "DebugLogGates", "minor": 1 },
+    { "file": "DebugLogWindow", "minor": 1 }
   ],
   "members": [
     { "name": "AT_ENABLE_MAX", "kind": "number" },

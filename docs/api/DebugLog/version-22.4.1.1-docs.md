@@ -1,4 +1,4 @@
-# `LibKa0s-DebugLog-1.0` — version 21.4.1
+# `LibKa0s-DebugLog-1.0` — version 22.4.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the DebugLog surface points here rather than restating it. It describes the
@@ -8,17 +8,17 @@
 | | |
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
-| Files and minors | `DebugLog.lua` minor **21** · `DebugLogDiagnostics.lua` minor **4** · `DebugLogGates.lua` minor **1** |
+| Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **4** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **1** |
 | Shipped in | v1.78.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 21.3.1](./version-21.3.1-docs.md) — the same surface; its report's identity header did not name Skin |
+| Supersedes | [version 21.3.1](./version-21.3.1-docs.md) (shipped in v1.77.0) — the same surface in three files; its report's identity header did not name Skin, and its console wore Core's skin whatever its `addonName` (version 21.4.1, which named Skin, never shipped) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
-| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 21, DebugLogDiagnostics = 4, DebugLogGates = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 22, DebugLogDiagnostics = 4, DebugLogGates = 1, DebugLogWindow = 1 }` |
 
 `Since` in the tables below is the DebugLog minor in which the member first appeared; a `Since` of
 **D1** is `DebugLogDiagnostics.lua` minor 1, the secondary file version 14.1 added, **D2** its
-minor 2, **D3** its minor 3 and **D4** its minor 4; a `Since` of **G1** is `DebugLogGates.lua` minor 1, the secondary file this version adds.
+minor 2, **D3** its minor 3 and **D4** its minor 4; a `Since` of **G1** is `DebugLogGates.lua` minor 1, the secondary file version 18.2.1 added; **W1** is `DebugLogWindow.lua` minor 1, the secondary file this version adds.
 Minors 1 and 2
 were never tagged, so a `Since` of 1 or 2 means "present for as long as any consumer could have had
 this major".
@@ -48,6 +48,44 @@ majors rather than one — `LibKa0s-Core-1.0` and `LibKa0s-Widgets-1.0` — and 
 `NewLibrary` if either is missing or below the minor it needs.
 
 ## What changed at this version
+
+**No member change. The window peels to a fourth file, and it follows the console's skin owner**
+(`DebugLog.lua` minor **22**, `DebugLogWindow.lua` minor **1**, W1; the key moves 21.4.1 → 22.4.1.1;
+LK-09 of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`).
+
+- **`DebugLogWindow.lua`, a new file.** `DebugLog.lua` entered `layout-§1`'s 1000-1500 band at minor
+  21 (1008 lines), and its disposition named the seam and the trigger: the next minor that adds a
+  window feature peels `EnsureFrame`, the drag bar and their chrome helpers. The skin owner is that
+  feature, so the window moved first, unchanged, to a file paired on the shell's minor
+  (`__windowMinor` / `__windowShellMinor`), and the owner was added there. The shell keeps the
+  handle: the window file builds the frame through the internal `lib.__buildConsole(D, ctx)` and hands
+  it over the moment it exists, so a raise later in the build still leaves a window that is hidden,
+  Esc-wired and never built twice. A payload without the file has consoles that never build a window;
+  logging still lands in the buffer. `DebugLog.lua` is 663 lines, `DebugLogWindow.lua` 575.
+- **The skin owner.** The console's `addonName`, once that addon called LibKa0s-Skin-1.0's
+  `RegisterOwner` (asked through Core's `__SkinFacade` when the window is built; no floor on the Skin
+  major), and only when the host passed neither `skin` nor `applySkin`, which keep owning the whole
+  skin job. An owned console's window is handed to the owner's facade (`Core.ApplySkin(f, nil,
+  owner)`, so `S.Shell`: backdrop, edge, title, divider), its scrollbar to `S.ScrollBar` (the track and
+  thumb it draws) and its status rule to `S.Divider`. Every other color it draws comes from one
+  palette read from the owner's tokens: the Copy / Clear controls (`text.muted` or `icon.tint` at rest,
+  `text.accent` under the pointer), the Diagnostics link (`text.link`, `text.linkHot`), the toggle
+  (`sem.on`, `sem.off`, `text.accent` under the pointer), the line counter (`log.count`) and each log
+  line: the stamp in `log.ts`, the tag in `log.tag`, the message in `log.text` (the message frame's
+  `AddMessage` color). The buffer stays plain. On each of the owner's skin switches the palette is
+  refilled and everything it drew is recolored, and the visible log is rebuilt from the buffer in the
+  new colors (a message frame cannot recolor a line in place). The copy window is handed no
+  `applySkin`, so `CopyWindow` paints it for the same owner (its scrollbar and its `win.bgDense`).
+  Ka0s Default's tokens are the constants below (SkinDefs minor 4), so an owned console on Ka0s
+  Default draws what an unowned one does.
+- **Without an owner nothing moves.** An unregistered `addonName`, none, a host `skin` or `applySkin`,
+  and a client without the Skin major build the console with the same paint calls as version 21.4.1,
+  call for call (`tests/test_tool_windows_skin.lua`).
+
+**What a host must change: nothing.** An adopter registers its owner (`Skin:RegisterOwner(addonName,
+...)`) and passes the same name as `addonName`, which every Ka0s host already does.
+
+## What changed at version 21.4.1
 
 **No member change. The identity header names the new major** (`DebugLogDiagnostics.lua` minor
 **4**, D4; `DebugLog.lua` and `DebugLogGates.lua` unchanged, so the key moves 21.3.1 → 21.4.1).
@@ -678,7 +716,7 @@ rather than paying it with a tooltip over the log. A host that wants the words b
 | `lib.STRINGS` | 1 (`DIAGNOSTICS`: **16**) | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
 | `lib.GATE_MAX_KEYS` | **G1** | **256**. The most keys one change gate remembers before it is wiped. |
 | `lib.AT_ENABLE_MAX` | **G1** | **32**. The most lines the at-enable queue holds; later ones are dropped and counted. |
-| `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor>, DebugLogGates = <minor> }` — the live minor of every file in this major (the second from D1, the third from G1). |
+| `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor>, DebugLogGates = <minor>, DebugLogWindow = <minor> }` — the live minor of every file in this major (the second from D1, the third from G1, the fourth from W1). |
 | `lib:New(descriptor)` | 1 | Build a console for one host. See below. |
 
 **Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
@@ -715,9 +753,9 @@ Everything a host supplies to `lib:New(descriptor)`.
 | `onClear` | function | no | **18** | Called by `Clear()` after the buffer and the change gates are wiped, under `pcall` (a raise costs one `[Debug]` line). For a host that re-arms a change gate of its own. |
 | `diagnosticsEnablesLogging` | boolean | no | **17** (D2) | `false` keeps a report run from turning logging on; any other value, or none, lets a run with logging off turn it on through `SetEnabled(true)` first. Read at every run. |
 | `L` | table | no | 1 | Locale override, keyed identically to `lib.STRINGS`. **Pass a PLAIN table holding only the keys you actually translate — never an addon-wide locale table.** See [The `L` trap](#the-l-trap). |
-| `skin` | table | no | 1 | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. |
+| `skin` | table | no | 1 | Overrides `Core.SKIN`. Handed straight to `Core.ApplySkin`, so a partial table (backdrop fields only, no `innerBorder`) degrades to a plain backdrop rather than raising. **As of minor 22 it also keeps the console out of its skin owner's skin** (see `addonName`). |
 | `applySkin` | function | no | **4** | Owns the **whole** skin job, for the console and the copy window alike, replacing the library's own. Since minor 12 the copy window's half is served by handing this same function to `CopyWindow` as its `applySkin`, which runs it instead of `Core.ApplySkin` — so the two windows still cannot drift apart. As of Core minor 3 the library's own default already draws the full Ka0s edge, so this is for chrome that differs in SHAPE rather than color, or for a host that wants its console to track its own re-skin seam. Handed the fully-built frame — `frame.title` and `frame.divider` are already assigned — and run after the Hide and the Esc wiring, so a surprise inside it cannot strand a visible window nobody can close. |
-| `addonName` | string | no | **9** | The host's own addon folder name. Given it, both windows draw this collection's art; omitted, they draw the version-8 glyph and words. **As of minor 12 the copy window's descriptor falls back to `name` when this is absent**, because `CopyWindow` refuses a descriptor without one — see [Why `addonName` gained a fallback](#why-addonname-gained-a-fallback). The field itself is still optional and still means the same thing. |
+| `addonName` | string | no | **9** (skin owner: **22**) | The host's own addon folder name. Given it, both windows draw this collection's art; omitted, they draw the version-8 glyph and words. **As of minor 22 it is also the console's skin owner** once that addon registered with `LibKa0s-Skin-1.0` and the host passed neither `skin` nor `applySkin`: both windows then wear and follow that owner's skin (see [What changed at this version](#what-changed-at-this-version)); an unregistered name draws as before. **As of minor 12 the copy window's descriptor falls back to `name` when this is absent**, because `CopyWindow` refuses a descriptor without one — see [Why `addonName` gained a fallback](#why-addonname-gained-a-fallback). The field itself is still optional and still means the same thing. |
 | `makeCloseButton` | function | no | **4** | `function(parent, onClick)` → button or nil. Overrides Core's × on **both** windows — since minor 12 the copy window's half is served by forwarding it to `CopyWindow`, which gained the matching field at Widgets minor 7 so that this published contract would not narrow. May answer `nil`, exactly as Core's own does where `CreateFrame` is unavailable. The Copy/Clear title-bar offsets are derived from the returned button's width, so a button wider than Core's 18 pushes them out of its way rather than colliding. **Rarely the right field, and it has no consumer today** — these are the library's windows, so they wear the library's close glyph, and a host whose own main window closes with something else must not push that difference onto them (`standalone-windows`). Pass it only for a close control genuinely *different in kind*. See [The empty `makeCloseButton`](#the-empty-makeclosebutton). |
 
 **Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
@@ -749,7 +787,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `_copyFrameForTest` | **12** | The frame that handle built, from `win:GetFrame()`. The copy window's `EditBox` is write-only through the frame API, which is why `CopyText()` exists — this is for the frame's own properties (its global name, its size, its named scroll child). |
 | `Show()` / `Hide()` / `IsShown()` / `Toggle()` | 1 | Window visibility. `Hide` never builds a frame: a settings panel calls `IsShown` on every refresh, and a `Hide` that constructed a window would build one nobody asked for. |
 | `IsEnabled()` | 1 | The host's flag, read through the descriptor and coerced to a boolean. |
-| `RefreshHeader()` | 1 | Repaint the title-bar toggle — `Debug: ON` green, `Debug: OFF` red. |
+| `RefreshHeader()` | 1 | Repaint the title-bar toggle — `Debug: ON` green, `Debug: OFF` red (as of minor 22, a skin owner's `sem.on` / `sem.off`). |
 | `SetEnabled(on)` | 1 | The single seam for changing debug state: writes the host's flag, repaints the header, prints the color-coded chat ack, brackets the console with a `[Debug]` line, and on enable follows it with the descriptor's `[Init]` summary and (as of minor 18) wipes the change gates' memory and then writes the at-enable queue's held lines. The slash command and the header toggle both come through here, so the ack and the header label can never disagree. |
 | `ConsoleCheckbox()` | 1 | The data contract below. |
 | `RunDiagnostics(spec?)` | **D1** (turns logging on: **D2**) | With logging off, and unless the descriptor sets `diagnosticsEnablesLogging = false`, first turn logging on through `SetEnabled(true)`; then build the report and append it to the console, repaint once, show the console if hidden, print the one `DIAG_WRITTEN` chat line, and return the number of report lines written. Never clears and never turns logging off. `spec` may carry `sections`, `maxLines` and `maxPerList`. |
@@ -852,6 +890,10 @@ tested, unused field otherwise reads as one to every reader who finds it.
 
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
+
+Version 22.4.1.1 adds a file and changes nothing a host without a registered skin owner can observe:
+the console is built by `DebugLogWindow.lua` with the same paint calls. A registered owner's console
+wears and follows its skin. Re-vendor the whole folder, so the new file arrives with the shell.
 
 Version 21.4.1 changes one thing a host can observe: a report's `LibKa0s running:` line also lists
 the Skin and SkinDefs files when that major runs in the client.

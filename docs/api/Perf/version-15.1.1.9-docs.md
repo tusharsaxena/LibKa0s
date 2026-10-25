@@ -11,9 +11,9 @@
 | Files and minors | `Perf.lua` **15** · `PerfSampler.lua` **1** · `PerfCommands.lua` **1** · `PerfPanel.lua` **9** |
 | Version key | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>`, in load order — the same four numbers `lib.MODULES` reports |
 | Shipped in | v1.77.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 15.1.1.8](./version-15.1.1.8-docs.md) — the same surface; its panel was DIALOG but not toplevel, and re-raised nothing on show |
-| Superseded by | — |
+| Superseded by | [version 15.1.1.10](./version-15.1.1.10-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 9 }` |
@@ -819,3 +819,10 @@ The four files move as one. A consumer holding `Perf.lua` from one vendored copy
 `PerfSampler.lua`, `PerfCommands.lua` or `PerfPanel.lua` from another is not a supported state; each secondary file is
 paired on the probe's minor so a mismatch re-attaches rather than persisting silently, which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 15.1.1.10
+
+**Take it; nothing moves.** Version 15.1.1.10 is this surface. `PerfPanel.lua` minor 10 paints the
+panel for its skin owner (`addonName`, else `name`) once that addon registered with
+`LibKa0s-Skin-1.0`; any other panel draws exactly what this version draws. See [version
+15.1.1.10](./version-15.1.1.10-docs.md).

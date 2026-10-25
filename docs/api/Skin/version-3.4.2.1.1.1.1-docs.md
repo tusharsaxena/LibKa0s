@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 3.3.2.1.1.1.1
+# `LibKa0s-Skin-1.0` — version 3.4.2.1.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **3** · `SkinDefs.lua` minor **3** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **3** · `SkinDefs.lua` minor **4** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
 | Shipped in | v1.78.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 3, SkinDefs = 3, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 3, SkinDefs = 4, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
 
 ## What this major is
 
@@ -207,8 +207,11 @@ with no `NS.Skin` the host paints today's way.
 `Core.MakeCloseButton(parent, onClick, addonName)` (`LibKa0s-Core-1.0` 13), and every Widgets
 constructor's `owner` (`LibKa0s-Widgets-1.0` 16.2.6.4.4.1: the dropdown and the shared menu it
 drops, the search box, the strip, the copy window through its `addonName`, the autocomplete, the
-drag handle, the reorder list and the line chart), paint through the owner's facade once the
-owner is registered, and draw exactly what they drew before for any other name. A host passes its
+drag handle, the reorder list and the line chart), and the tool windows' descriptors (the debug
+console's `addonName`, `LibKa0s-DebugLog-1.0` 22.4.1.1; the perf panel's `addonName` or `name`,
+`LibKa0s-Perf-1.0` 15.1.1.10; the sim panel's `name`, `LibKa0s-Sim-1.0` 2.3.7), paint through the
+owner's facade once the owner is registered, and draw exactly what they drew before for any other
+name. A host passes its
 folder name, which it already passes to `MakeCloseButton`. Each major's document lists the tokens
 its controls read.
 
@@ -234,7 +237,7 @@ inside a fixed inset, so content anchors never move and a live switch lays out e
 **Every Ka0s Default value is a constant drawn today**, pinned by `tests/test_skin.lua` against the
 constant it replaces: `Core.SKIN`, `LINE_CHART`, `AUTOCOMPLETE`, and the file-local tables of
 `Core.lua`, `Widgets.lua`, `OptionsNav.lua`, `OptionsDrawer.lua`, `OptionsTabs.lua`,
-`OptionsScroll.lua` and `DebugLog.lua`, read out of their source; LootHistory's constants are
+`OptionsScroll.lua`, `DebugLogWindow.lua`, `PerfPanel.lua` and `SimPanel.lua`, read out of their source; LootHistory's constants are
 restated there with their sites. None comes from the mockups' CSS.
 
 ### Split roles (candidates for leg 2)
@@ -315,6 +318,11 @@ eight skins*, below.
 | `gtip.title` | color | no | `1, 0.82, 0, 1` |
 | `gtip.body` | color | no | `0.9, 0.9, 0.9, 1` |
 | `gtip.muted` | color | no | `0.5, 0.5, 0.5, 1` |
+| `text.faint` | color | no | `0.45, 0.45, 0.48, 1` |
+| `log.ts` | color | no | `#6F8FAF` (`0.435, 0.561, 0.686, 1`) |
+| `log.tag` | color | no | `#C9A66B` (`0.788, 0.651, 0.42, 1`) |
+| `log.text` | color | no | `1, 1, 1, 1` |
+| `log.count` | color | no | `0.6, 0.6, 0.62, 1` |
 
 ### Buttons
 
@@ -526,8 +534,13 @@ eight skins*, below.
 | `sem.modeTest` | color | no | `1, 0.15, 0.15, 1` |
 | `sem.on` | color | no | `0.3, 0.85, 0.3, 1` |
 | `sem.off` | color | no | `0.9, 0.3, 0.3, 1` |
+| `sem.stepReady` | color | no | `0.9, 0.9, 0.92, 1` |
+| `sem.stepBusy` | color | no | `1, 0.82, 0, 1` |
+| `sem.stepLocked` | color | no | `0.4, 0.4, 0.42, 1` |
+| `sem.stepCancel` | color | no | `0.8, 0.32, 0.32, 1` |
+| `sem.stepCancelHot` | color | no | `1, 0.45, 0.45, 1` |
 
-**205 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
+**215 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
 `tab.texture`, `tab.onTexture`) joined at SkinDefs minor 2, for WoW Default's Blizzard art. The
 eight **Widgets tokens** (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg`, `list.box`,
 `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`) joined at SkinDefs minor 3, so the drag handle and
@@ -536,7 +549,18 @@ Default's pixels unchanged: each is the constant that widget drew, where no exis
 that exact value (`icon.tint` is `0.7, 0.7, 0.72`, the handle's rest gray `0.7, 0.7, 0.7`). The other
 eight skins derive them: `handle.edge` and `list.dropLine` from the skin's accent at 0.6 and 0.9
 (as `list.hover` is at 0.1), the four boxes from its body text at 0.06, 0.03, 0.12 and 0.06,
-`handle.rest` from its muted text and `list.ghostBg` from its popup fill.
+`handle.rest` from its muted text and `list.ghostBg` from its popup fill. The ten **tool-window
+tokens** (`text.faint`, `log.ts`, `log.tag`, `log.text`, `log.count`, `sem.stepReady`,
+`sem.stepBusy`, `sem.stepLocked`, `sem.stepCancel`, `sem.stepCancelHot`) joined at SkinDefs minor
+4, so the debug console, the perf panel and the sim panel (`LibKa0s-DebugLog-1.0` 22.4.1.1,
+`LibKa0s-Perf-1.0` 15.1.1.10, `LibKa0s-Sim-1.0` 2.3.7) follow a skin with Ka0s Default's pixels
+unchanged: each is the constant those windows drew (the command column, the console line's stamp,
+tag and white message, its line counter, the step states; done and used are `sem.on`). The other
+eight skins derive them by following a token the skin sets (`FOLLOW` in `SkinDefs.lua`): the
+message and the ready step from the body text, the counter and the command column from the muted
+text, the tag from the heading, the stamp from `sem.info`, the busy step from the accent, the
+locked step from the disabled text, cancel from `sem.off` and its hover from `sem.bad`; a skin that
+sets neither keeps the constant.
 
 ## The primitives
 
@@ -857,6 +881,11 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `gtip.title` | · | `#F5C542` | · | `#FFE600` | `#FFB45A` | · | `#F6D27A` | `#FFD100` |
 | `gtip.body` | · | `#E9DDBC` | · | `#FFFFFF` | · | · | · | · |
 | `gtip.muted` | `#9B9BA4` | `#B8955A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `text.faint` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `log.ts` | · | `#00519E` | · | · | · | · | · | · |
+| `log.tag` | `#F2F2F4` | `#5E3A14` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
+| `log.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
+| `log.count` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 
 #### Buttons
 
@@ -1049,8 +1078,13 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `sem.statusBad` | · | `#B3261E` | · | · | · | · | · | · |
 | `sem.on` | · | `#1C7B22` | · | · | · | · | · | · |
 | `sem.off` | · | `#B3261E` | · | · | · | · | · | · |
+| `sem.stepReady` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
+| `sem.stepBusy` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
+| `sem.stepLocked` | `#6A6A72` | `#7A6A50` | `#8A90A0` | `#B0B0B0` | `#8A6E5C` | `#808080` | `#7A7590` | `#7A756E` |
+| `sem.stepCancel` | · | `#B3261E` | · | · | · | · | · | · |
+| `sem.stepCancelHot` | · | `#B3261E` | · | · | · | · | · | · |
 
-Tokens each skin sets of its own: Obsidian 125, Azeroth 158, Glass 127, High Contrast 132, Ember 128, WoW Default 128, WoW Midnight 131, WoW Forever 128.
+Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 4): Obsidian 140, Azeroth 176, Glass 142, High Contrast 147, Ember 143, WoW Default 143, WoW Midnight 146, WoW Forever 143.
 
 ## The EllesmereUI provider
 

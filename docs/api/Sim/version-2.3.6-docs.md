@@ -11,9 +11,9 @@
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **6** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
 | Shipped in | v1.77.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [2.3.5](./version-2.3.5-docs.md) (shipped in v1.76.0), which superseded [2.2.4](./version-2.2.4-docs.md) (v1.75.2) |
-| Superseded by | — |
+| Superseded by | [2.3.7](./version-2.3.7-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 6 }` |
 
@@ -935,3 +935,10 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to version 2.3.7
+
+**Take it; nothing moves.** Version 2.3.7 is this surface. `SimPanel.lua` minor 7 paints the panel
+and its buttons for its skin owner (the descriptor's `name`) once that addon registered with
+`LibKa0s-Skin-1.0`; any other panel draws exactly what this version draws. See
+[version 2.3.7](./version-2.3.7-docs.md).
