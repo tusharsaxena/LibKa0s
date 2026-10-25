@@ -22,6 +22,7 @@
 --   lib.byOwner[owner]   weak-keyed set of that owner's painted frames
 --   lib.facades[owner]   the owner's facade S, one table kept across minors
 --   lib.prim[name]       the painting primitives, fn(owner, ...); SkinPaint.lua fills them
+--   lib.euiPainted[owner] true once EllesmereUI painted the owner this session (SkinEUI.lua)
 --
 -- None of these is contract: they are named so the secondary files and a newer minor can find
 -- them, and a host reads the skin only through the members below and the facade.
@@ -40,7 +41,11 @@
 --   * no SavedVariables: the host stores { source, skin } in its own profile and hands the engine
 --     a getter and a setter (`RegisterOwner`); `SetChoice` never writes the profile;
 --   * no EllesmereUI calls: the `eui` provider is SkinEUI.lua's. Here `eui` is a stored choice
---     whose tokens fall back to the owner's Ka0s skin, and leaving it asks for a reload;
+--     whose tokens fall back to the owner's Ka0s skin until that file says EllesmereUI painted the
+--     owner, and leaving it after that paint asks for a reload. SkinEUI.lua reaches this file
+--     through four hook slots, each nil without it: `__euiOnOwner(owner)` (RegisterOwner),
+--     `__euiRoute(owner, name)` (which primitive a call and a replay run), `__euiTokens(owner)`
+--     (what `Tokens` answers) and `__euiOnChoice(owner)` (SetChoice onto `eui`);
 --   * no OnUpdate, no events: a repaint is one pass over the owner's recorded frames.
 --
 -- Depends on LibStub and LibKa0s-Core-1.0. No Core member is called; the gate keeps the payload's
@@ -50,7 +55,7 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Skin-1.0", 1
+local MAJOR, MINOR = "LibKa0s-Skin-1.0", 2
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -87,6 +92,8 @@ lib.painted  = lib.painted or setmetatable({}, WEAK_KEYS)
 lib.byOwner  = lib.byOwner or {}
 lib.facades  = lib.facades or {}
 lib.prim     = lib.prim or {}
+-- Owners EllesmereUI painted this session (SkinEUI.lua writes it; its paint is one-way).
+lib.euiPainted = lib.euiPainted or {}
 -- The last first-paint stamp handed out: a record's `seq` orders the frames a repaint replays.
 lib.__paintSeq = lib.__paintSeq or 0
 -- The resolved token tables, one per skin key. A cache, rebuilt on demand: emptied here so a newer
@@ -205,23 +212,39 @@ local function cleanSkin(skin)
   return lib.DEFAULT
 end
 
+local function fnOr(v, old)
+  if type(v) == "function" then return v end
+  return old
+end
+
+--- Take a registration's hooks onto the owner's record, keeping any it leaves out.
+local function takeHooks(o, opts, owner)
+  o.reloads = o.reloads or {}
+  o.get, o.set, o.log = fnOr(opts.get, o.get), fnOr(opts.set, o.set), fnOr(opts.log, o.log)
+  o.label = type(opts.label) == "string" and opts.label or o.label or owner
+end
+
 --- Register `owner` (the addon folder name) at the consumer's file load. `opts.get()` answers the
 --- profile's `{ source, skin }`; `opts.set(source, skin)` writes it (copy to every Ka0s addon);
---- `opts.label` names the addon to the player. The choice is read once, here; afterwards it moves
---- only through `SetChoice`. A second call updates the hooks and keeps the applied choice.
---- Answers the owner's facade.
+--- `opts.label` names the addon to the player; `opts.log(line)`, optional, takes the one line the
+--- EllesmereUI provider writes when it refuses or stops (SkinEUI.lua). The choice is read once,
+--- here; afterwards it moves only through `SetChoice`. A second call updates the hooks and keeps the
+--- applied choice. Answers the owner's facade.
 function lib:RegisterOwner(owner, opts)
   requireOwner(owner, "RegisterOwner")
   opts = type(opts) == "table" and opts or {}
   local o = self.owners[owner]
   if not o then
     local source, skin = readChoice(opts.get)
-    o = { source = cleanSource(source), skin = cleanSkin(skin), listeners = {} }
+    o = { source = cleanSource(source), skin = cleanSkin(skin), listeners = {}, reloads = {} }
     self.owners[owner] = o
   end
-  o.get = type(opts.get) == "function" and opts.get or o.get
-  o.set = type(opts.set) == "function" and opts.set or o.set
-  o.label = type(opts.label) == "string" and opts.label or o.label or owner
+  takeHooks(o, opts, owner)
+  local hook = self.__euiOnOwner
+  if type(hook) == "function" then
+    local ok, err = pcall(hook, owner)
+    if not ok then report(err) end
+  end
   return self:For(owner)
 end
 
@@ -246,8 +269,8 @@ function lib:GetChoice(owner)
   return o.source, o.skin
 end
 
---- True once an owner left the `eui` source this session: EllesmereUI's paint is one-way, so only a
---- reload removes it.
+--- True once the owner needs a reload: it left the `eui` source, or a gate condition failed, after
+--- EllesmereUI painted it this session. EllesmereUI's paint is one-way, so only a reload removes it.
 function lib:PendingReload(owner)
   local o = self.owners[owner]
   return o ~= nil and o.pendingReload == true
@@ -261,11 +284,65 @@ local function notify(o)
   end
 end
 
+--- For SkinEUI.lua: fire `owner`'s OnLooksChanged listeners (EllesmereUI painted it, or its looks
+--- changed live).
+function lib:__NotifyLooks(owner)
+  local o = self.owners[owner]
+  if o then notify(o) end
+end
+
+--- Set `owner`'s pending-reload flag and, the first time, fire its OnReloadRequest listeners, each
+--- under pcall. Answers true only on the call that set the flag. SetChoice and SkinEUI.lua call it.
+function lib:__RequestReload(owner)
+  local o = self.owners[owner]
+  if not o or o.pendingReload then return false end
+  o.pendingReload = true
+  for _, fn in ipairs(o.reloads or {}) do
+    local ok, err = pcall(fn, owner)
+    if not ok then report(err) end
+  end
+  return true
+end
+
+local function addListener(list, fn)
+  for _, have in ipairs(list) do
+    if have == fn then return fn end
+  end
+  list[#list + 1] = fn
+  return fn
+end
+
+--- Call `fn(owner)` once, when `owner` first needs a reload (`PendingReload` turns true): on the
+--- switch SetChoice answers `reload = true` for, or when a gate condition fails after EllesmereUI
+--- painted it. A caller raises its reload popup from this or from SetChoice's answer, not both.
+--- Registering the same function twice keeps one entry. Answers fn.
+function lib:OnReloadRequest(owner, fn)
+  requireOwner(owner, "OnReloadRequest")
+  local o = self.owners[owner]
+  if not o or type(fn) ~= "function" then return end
+  o.reloads = o.reloads or {}
+  return addListener(o.reloads, fn)
+end
+
+--- A move onto `eui`, handed to SkinEUI.lua's slot: answers handled, reload. Handled is true when
+--- EllesmereUI painted the owner on this call, or its gate closed after an earlier paint (then the
+--- reload is asked for); otherwise SetChoice repaints as for any change.
+function lib:__EUIChoice(owner, source)
+  local hook = source == "eui" and self.__euiOnChoice
+  if type(hook) ~= "function" then return false, false end
+  local handled = hook(owner)
+  if handled == "reload" then return true, self:__RequestReload(owner) end
+  return handled == true, false
+end
+
 --- Move `owner` to (source, skin); nil keeps that half. Idempotent: a choice equal to GetChoice
 --- does nothing. Otherwise the new skin is resolved first, every frame recorded for the owner is
---- repainted, and the owner's OnLooksChanged listeners fire. Leaving `eui` cannot repaint
---- (EllesmereUI's paint is one-way): the choice is stored, the owner's pending-reload flag is set,
---- and nothing is repainted. Never writes the host's profile.
+--- repainted, and the owner's OnLooksChanged listeners fire. Leaving `eui` after EllesmereUI painted
+--- the owner cannot repaint (its paint is one-way): the choice is stored, the owner's pending-reload
+--- flag is set, and nothing is repainted. Leaving an `eui` EllesmereUI never painted is an ordinary
+--- change: the owner was wearing its Ka0s skin all along. Moving onto `eui` hands the paint to
+--- SkinEUI.lua when it is loaded, which paints with EllesmereUI when its gate holds and otherwise
+--- leaves the owner on its Ka0s skin. Never writes the host's profile.
 --- Answers changed, reload: `reload` is true exactly once per owner, on the switch that first
 --- needs a reload, so a caller raises its reload popup at most once.
 function lib:SetChoice(owner, source, skin)
@@ -278,12 +355,10 @@ function lib:SetChoice(owner, source, skin)
   local leavingEUI = o.source == "eui" and source ~= "eui"
   o.source, o.skin = source, skin
   self:ResolveSkin(skin)
-  if leavingEUI then
-    local first = not o.pendingReload
-    o.pendingReload = true
-    return true, first
-  end
+  if leavingEUI and self.euiPainted[owner] then return true, self:__RequestReload(owner) end
   if o.pendingReload then return true, false end
+  local handled, reload = self:__EUIChoice(owner, source)
+  if handled then return true, reload end
   self:Repaint(owner)
   notify(o)
   return true, false
@@ -296,20 +371,26 @@ function lib:OnLooksChanged(owner, fn)
   if type(fn) ~= "function" then return end
   local o = self.owners[owner]
   if not o then return end
-  for _, have in ipairs(o.listeners) do
-    if have == fn then return fn end
-  end
-  o.listeners[#o.listeners + 1] = fn
-  return fn
+  return addListener(o.listeners, fn)
 end
 
 -- ── tokens ───────────────────────────────────────────────────────────────────────────────────
 
---- The owner's resolved token `name`: a color is `{ r, g, b, a }`, shared, never written to. An
---- unregistered owner reads Ka0s Default. nil for a token the skin leaves alone.
-function lib:Token(owner, name)
+--- The owner's complete token table: its skin resolved (`ResolveSkin`), or, while EllesmereUI paints
+--- the owner, the table SkinEUI.lua derives from EllesmereUI's accent, panel color and font. Shared:
+--- never write to it. An unregistered owner reads Ka0s Default.
+function lib:Tokens(owner)
+  local hook = self.__euiTokens
+  local t = type(hook) == "function" and hook(owner) or nil
+  if t then return t end
   local _, skin = self:GetChoice(owner)
-  return self:ResolveSkin(skin)[name]
+  return self:ResolveSkin(skin)
+end
+
+--- The owner's resolved token `name` (from `Tokens`): a color is `{ r, g, b, a }`, shared, never
+--- written to. An unregistered owner reads Ka0s Default. nil for a token the skin leaves alone.
+function lib:Token(owner, name)
+  return self:Tokens(owner)[name]
 end
 
 --- The owner's color token as r, g, b, a (alpha 1 when the token has three components), or nil.
@@ -410,11 +491,19 @@ function lib:Untrack(frame)
   self.painted[frame] = nil
 end
 
+--- The primitive a call of `name` for `owner` runs: SkinEUI.lua's route while EllesmereUI paints the
+--- owner, else `lib.prim[name]`.
+local function primOf(owner, name)
+  local route = lib.__euiRoute
+  local fn = type(route) == "function" and route(owner, name) or nil
+  return fn or lib.prim[name]
+end
+
 --- Replay one frame's primitives, in the order they first painted it.
 local function replay(owner, frame, rec)
   local calls = 0
   for _, name in ipairs(rec.order) do
-    local fn, args = lib.prim[name], rec.calls[name]
+    local fn, args = primOf(owner, name), rec.calls[name]
     if type(fn) == "function" and args then
       local ok, err = pcall(fn, owner, frame, unpack(args, 1, args.n))
       if not ok then report(err) end
@@ -451,7 +540,7 @@ end
 
 local function trampoline(owner, name)
   return function(...)
-    local fn = lib.prim[name]
+    local fn = primOf(owner, name)
     if fn then return fn(owner, ...) end
   end
 end

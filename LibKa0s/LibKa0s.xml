@@ -15,6 +15,7 @@
 	<Script file="SkinPaint.lua"/>
 	<Script file="SkinPaintExtras.lua"/>
 	<Script file="SkinPaintControls.lua"/>
+	<Script file="SkinEUI.lua"/>
 	<Script file="Widgets.lua"/>
 	<Script file="WidgetsReorder.lua"/>
 	<Script file="WidgetsDragHandle.lua"/>

@@ -446,7 +446,7 @@ Total.
 - media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
 - media: RegisterLSM registers the Glass border and background, and counts them
 
-### test_skin.lua (26)
+### test_skin.lua (27)
 
 - skin: the major registers both files and the sentinel
 - skin: the shell refuses without Core, and SkinDefs then attaches to nothing
@@ -463,7 +463,8 @@ Total.
 - skin: RegisterOwner reads the host's choice once, in either shape
 - skin: SetChoice is idempotent
 - skin: SetChoice resolves before the listeners run
-- skin: leaving eui asks for one reload and repaints nothing
+- skin: leaving eui after EllesmereUI painted asks for one reload and repaints nothing
+- skin: leaving an eui EllesmereUI never painted is an ordinary change
 - skin: one owner switching never repaints another's frames
 - skin: a repaint replays each recorded frame once, primitives in first-paint order
 - skin: a repaint replays frames in the order they were first painted
@@ -550,6 +551,36 @@ Total.
 - skin controls: ListRow washes live under the row and follow the latest state
 - skin controls: every primitive's second call makes no new frame, region or hook
 - skin controls: every primitive's repaint reuses its regions and paints the new skin
+
+### test_skin_eui.lua (27)
+
+- skin eui: SkinEUI attaches to the shell and makes no frame until an owner registers
+- skin eui: without SkinEUI the engine keeps eui a stored choice on the owner's Ka0s skin
+- skin eui: GetEUIStatus lists the four conditions and holds only when all do
+- skin eui: gate with no EllesmereUI at all
+- skin eui: gate with the Blizzard Skin child missing
+- skin eui: gate with the master switch off
+- skin eui: gate with the owner's entry off
+- skin eui: gate with another addon's entry off
+- skin eui: gate with the owner's entry nil
+- skin eui: an owner registered before the EllesmereUI global exists is retried
+- skin eui: PLAYER_LOGIN retries too, then lets go of both events
+- skin eui: dispatch at login and registration after login both hand the facade
+- skin eui: a newer minor loaded after registration still receives the facade
+- skin eui: switching ka0s to eui hides the Ka0s paint and hands the frames to EllesmereUI
+- skin eui: a facade arriving after the owner chose eui paints the frames then (late arrival)
+- skin eui: the owner falls back to its Ka0s skin while the gate is closed
+- skin eui: leaving eui after EllesmereUI painted asks for one reload and repaints nothing
+- skin eui: leaving an eui EllesmereUI never painted repaints live, with no reload
+- skin eui: a gate that closes after the paint asks for a reload and never falls back live
+- skin eui: moving between Ka0s skins while on a painted eui with a closed gate asks for the reload
+- skin eui: a facade missing a primitive is refused before any paint, latched and logged once
+- skin eui: a primitive that raises stops EllesmereUI painting the owner, once
+- skin eui: Ka0s-only option keys are stripped before EllesmereUI sees a call
+- skin eui: an eui-owned AceGUI CheckBox makes zero calls to EllesmereUI
+- skin eui: another owner's frames and tokens never see EllesmereUI
+- skin eui: EllesmereUI's live looks change repaints the Ka0s extras
+- skin eui: EllesmereUIDB is read in LibKa0s/SkinEUI.lua and no other payload file
 
 ### test_widgets.lua (58)
 
@@ -3258,10 +3289,11 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_media.lua | 36 |
-| test_skin.lua | 26 |
+| test_skin.lua | 27 |
 | test_skin_defs.lua | 15 |
 | test_skin_paint.lua | 29 |
 | test_skin_paint_controls.lua | 23 |
+| test_skin_eui.lua | 27 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3365,4 +3397,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2867** |
+| **Total** | **2895** |

@@ -90,3 +90,10 @@ ignore = { "212/self", "212/event", "432/self" }
 files["tests/"] = {
   globals = { "LK_TEST" },
 }
+
+-- EllesmereUI's two globals, readable in LibKa0s/SkinEUI.lua and no other file, so luacheck itself
+-- holds library-stack-§6's skinning exception to its one file: the provider reads the EllesmereUI
+-- table and its EllesmereUIDB SavedVariables at call time, nil-guarded, and never writes either.
+files["LibKa0s/SkinEUI.lua"] = {
+  read_globals = { "EllesmereUI", "EllesmereUIDB" },
+}

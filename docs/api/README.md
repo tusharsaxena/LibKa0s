@@ -67,7 +67,7 @@ the file you need:
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
-| `LibKa0s-Skin-1.0` | `<Skin>.<SkinDefs>.<SkinPaint>.<SkinPaintExtras>.<SkinPaintControls>` | `LibStub("LibKa0s-Skin-1.0").MODULES` |
+| `LibKa0s-Skin-1.0` | `<Skin>.<SkinDefs>.<SkinPaint>.<SkinPaintExtras>.<SkinPaintControls>.<SkinEUI>` | `LibStub("LibKa0s-Skin-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>` | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>` | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
@@ -186,7 +186,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.2.1.1.1](./Skin/version-1.2.1.1.1-docs.md) | `Skin.lua` 1 (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`) · `SkinDefs.lua` 2 (the token schema and the nine skins) · **`SkinPaint.lua` 1**, **`SkinPaintExtras.lua` 1**, **`SkinPaintControls.lua` 1** (the paint primitives and `Skin:Release`) | v1.78.0 (unreleased) | **Current** |
+| [2.2.2.1.1.1](./Skin/version-2.2.2.1.1.1-docs.md) | **`Skin.lua` 2** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `Tokens`, `OnReloadRequest` and the provider's hook slots) · `SkinDefs.lua` 2 (the token schema and the nine skins) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`, `MarkShared`) | v1.78.0 (unreleased) | **Current** |
 
 ### `LibKa0s-Widgets-1.0`
 

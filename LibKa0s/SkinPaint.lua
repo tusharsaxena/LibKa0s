@@ -61,7 +61,7 @@
 local lib = LibStub and LibStub("LibKa0s-Skin-1.0", true)
 if not lib then return end   -- the shell refused (no Core, or below its floor): nothing to attach to
 
-local PAINT_MINOR = 1
+local PAINT_MINOR = 2
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
 lib.__paintMinor      = PAINT_MINOR
@@ -119,11 +119,18 @@ local function skinKey(owner)
   return lib.DEFAULT
 end
 
---- The owner's resolved token table (shared; never written).
-function P.T(owner) return lib:ResolveSkin(skinKey(owner)) end
+--- The owner's resolved token table (shared; never written): `Skin:Tokens`, so while EllesmereUI
+--- paints the owner the primitives read the table SkinEUI.lua derives from EllesmereUI's getters.
+function P.T(owner) return lib:Tokens(owner) end
 
---- True when the owner wears Ka0s Default (or no skin is registered at all).
-function P.isDefault(owner) return skinKey(owner) == lib.DEFAULT end
+--- True when the owner wears Ka0s Default (or no skin is registered at all). Never while EllesmereUI
+--- paints the owner: the library's own technique then paints what EllesmereUI is not handed (the
+--- Ka0s extras, pooled and shared objects) from EllesmereUI's colors, stock targets included.
+function P.isDefault(owner)
+  local eui = lib.__euiTokens
+  if type(eui) == "function" and eui(owner) then return false end
+  return skinKey(owner) == lib.DEFAULT
+end
 
 local function nilable(name)
   local e = lib.__schemaIndex and lib.__schemaIndex[name]

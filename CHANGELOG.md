@@ -17,12 +17,12 @@ choice on the settings panel, with LootHistory as the prototype consumer. The te
 paint recorder opens it.
 
 Versions in this release: **Media minor 6** (`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1
-unchanged), **Skin minor 1**, **SkinDefs minor 2**, **SkinPaint minor 1**,
-**SkinPaintExtras minor 1** and **SkinPaintControls minor 1** (the new major `LibKa0s-Skin-1.0`, key
-**1.2.1.1.1**), **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key **21.4.1**); every other file
+unchanged), **Skin minor 2**, **SkinDefs minor 2**, **SkinPaint minor 2**,
+**SkinPaintExtras minor 1**, **SkinPaintControls minor 1** and **SkinEUI minor 1** (the new major
+`LibKa0s-Skin-1.0`, key **2.2.2.1.1.1**), **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key **21.4.1**); every other file
 still at its v1.77.0 minor, and **test kit revision 43**, until an entry below moves one. Each change
 bumps the minor of the files it touches once, and this block names each new minor as it lands. Now
-**eighteen majors across forty-six files**: one major added (`LibKa0s-Skin-1.0`), and no
+**eighteen majors across forty-seven files**: one major added (`LibKa0s-Skin-1.0`), and no
 `NEEDS_*` floor rises.
 
 ### Test kit revision 43: the paint recorder
@@ -79,7 +79,7 @@ path version 5.1 had resolves the same.
 ### LibKa0s-Skin-1.0 (new major, Skin minor 1, SkinDefs minor 1)
 
 The skin engine and its first skin, documented in
-[docs/api/Skin/version-1.2.1.1.1-docs.md](docs/api/Skin/version-1.2.1.1.1-docs.md). `Skin.lua` loads after
+[docs/api/Skin/version-2.2.2.1.1.1-docs.md](docs/api/Skin/version-2.2.2.1.1.1-docs.md). `Skin.lua` loads after
 `MediaIcons.lua`, floored on Core (`NEEDS_CORE = 1`, no Core member called); `SkinDefs.lua` is
 paired on its minor (`__defsMinor` / `__defsShellMinor`).
 
@@ -123,7 +123,7 @@ define functions and data tables: no frame, timer or event exists until a host r
 `LibKa0s-Skin-1.0` key 1.2 (the in-flight 1.1 document moved to it; 1.1 never shipped). Obsidian,
 Azeroth, Glass, High Contrast, Ember, WoW Default, WoW Midnight and WoW Forever join Ka0s Default,
 in that order, documented under *The eight skins* in
-[docs/api/Skin/version-1.2.1.1.1-docs.md](docs/api/Skin/version-1.2.1.1.1-docs.md) with every token each sets.
+[docs/api/Skin/version-2.2.2.1.1.1-docs.md](docs/api/Skin/version-2.2.2.1.1.1-docs.md) with every token each sets.
 
 - **Translated from the mockups.** Each skin is its entry in the mockups' token table, key for
   key (`classic` is `ka0s`, `wowdefault` is `wow`; the `eui` preview is never registered), run
@@ -158,7 +158,7 @@ each skin's recorded choices. No member change.
 
 `LibKa0s-Skin-1.0` key 1.2.1.1.1 (the in-flight 1.2 document moved to it; 1.2 never shipped),
 documented under *The primitives* in
-[docs/api/Skin/version-1.2.1.1.1-docs.md](docs/api/Skin/version-1.2.1.1.1-docs.md). Three files
+[docs/api/Skin/version-2.2.2.1.1.1-docs.md](docs/api/Skin/version-2.2.2.1.1.1-docs.md). Three files
 paired on the shell's minor, loaded after `SkinDefs.lua`; the extras and the controls paint with
 `SkinPaint.lua`'s helpers and attach only beside it. Every `VOCAB` name now has its primitive, so
 `S.Shell(frame)`, `S.Button(btn)` and the rest paint.
@@ -199,6 +199,56 @@ New suites `tests/test_skin_paint.lua` and `tests/test_skin_paint_controls.lua`,
 recorder with a call tracer (`tests/fixture_skin_paint.lua`). `.luacheckrc` reads `CreateColor`,
 `CreateFont`, `STANDARD_TEXT_FONT` and `hooksecurefunc`. **What a consumer owes:** nothing until
 it adopts.
+
+### Skin minor 2, SkinPaint minor 2 and SkinEUI minor 1: the EllesmereUI provider
+
+`LibKa0s-Skin-1.0` key 2.2.2.1.1.1 (the in-flight 1.2.1.1.1 document moved to it; 1.2.1.1.1 never
+shipped), documented under *The EllesmereUI provider* in
+[docs/api/Skin/version-2.2.2.1.1.1-docs.md](docs/api/Skin/version-2.2.2.1.1.1-docs.md). New file
+`SkinEUI.lua`, paired on the shell's minor (`__euiMinor` / `__euiShellMinor`), loaded after
+`SkinPaintControls.lua`. An owner on the `eui` source is painted by EllesmereUI's own skinning
+facade (its `SKINNING_API.md`, API version 3: names and token model mirrored, no code or media
+copied).
+
+- **Registration.** `RegisterOwner` registers the owner with `EllesmereUI.RegisterSkin` through a
+  trampoline into the live copy of this major, so a newer minor still receives the facade; every
+  owner not yet registered is retried at each `RegisterOwner`, on `ADDON_LOADED("EllesmereUI")`
+  and at `PLAYER_LOGIN`, on one frame made at the first `RegisterOwner` and registered through
+  Core's `SafeRegisterEvent` (resolved at call time; no Core floor rises).
+- **The gate**, `Skin:GetEUIStatus(owner)`: `{ ok, painted, refused, conditions }`, the four
+  conditions `eui` (EllesmereUI and EllesmereUIBlizzardSkin loaded), `master`
+  (`EllesmereUIDB.thirdPartySkinsOff` not truthy), `own` (`thirdPartySkinAddons[owner]` not false)
+  and `facade` (EllesmereUI handed the owner its facade this session; hint "Reload the UI."), each
+  `{ key, ok, label, hint }`, strings in `EUI_STRINGS`. The two `EllesmereUIDB` reads are
+  library-stack-§6's skinning exception (WowAddonStandards v2.89.0), confined to `SkinEUI.lua`; no
+  register row is added, and `tests/test_skin_eui.lua` fails when the name appears in another payload
+  file.
+- **Entering EllesmereUI**, one step for the live switch and for a facade arriving after the owner
+  chose `eui`: the Ka0s paint of every recorded frame an EllesmereUI primitive takes is given back,
+  the owner's records replay (EllesmereUI's names to its facade, the Ka0s extras from its getters)
+  and `euiPainted[owner]` latches for the session. Before that, an owner on `eui` wears its Ka0s
+  skin; after it, leaving `eui` or a gate condition failing asks for one reload and never falls back
+  live.
+- **Fail closed.** A facade missing a needed primitive is refused before any paint, and a primitive
+  that raises stops EllesmereUI painting the owner; either is latched (`euiRefused`) and written
+  once through the owner's new `opts.log`. Ka0s-only option keys are stripped before EllesmereUI
+  sees a call. Pooled and shared objects (AceGUI widgets and their frames, and targets marked with
+  the new `Skin:MarkShared`) are never handed to EllesmereUI.
+- **`Skin.lua` minor 2**: `Skin:Tokens(owner)`, the owner's complete token table (EllesmereUI's
+  derived table while it paints the owner; `Token`, `Color` and the primitives read it);
+  `Skin:OnReloadRequest(owner, fn)`, fired once when `PendingReload` first turns true; `opts.log`
+  on `RegisterOwner`; and the provider's four hook slots. **Behavior change in the unreleased
+  engine:** leaving an `eui` that EllesmereUI never painted is now an ordinary live change, not a
+  reload (the owner was wearing its Ka0s skin all along); `tests/test_skin.lua`'s reload case now
+  sets the latch, and a new case pins the ordinary change.
+- **`SkinPaint.lua` minor 2**: the primitives read `Skin:Tokens`, and Ka0s Default's stock rule is
+  off while EllesmereUI paints the owner (a pooled stock widget is painted from EllesmereUI's colors).
+
+New suite `tests/test_skin_eui.lua` with a test-local EllesmereUI fake (`tests/fixture_skin_eui.lua`,
+modeled on PremadeGroupsFilterExtension's). `.luacheckrc` lets `LibKa0s/SkinEUI.lua`, and no other file,
+read the `EllesmereUI` and `EllesmereUIDB` globals. PremadeGroupsFilterExtension's own bridge stays as it is
+in this release. **What a consumer owes:** nothing until it adopts; an adopted addon lists
+`EllesmereUI` in `## OptionalDeps` (skinning-§5).
 
 ### DebugLogDiagnostics minor 4: the identity header names Skin
 
