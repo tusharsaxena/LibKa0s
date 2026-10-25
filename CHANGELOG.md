@@ -560,6 +560,11 @@ Keybindings.
   never calls `Skin:RegisterOwner` keeps its look, and test kit revision 43's `mock_paint.lua` is
   opt-in too.
 
+Release gate (`docs/automated-tests/20261025-100830/`): lint pass, 0/0 in 223 files;
+tests pass, 3003 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+Preview and simulation re-look: Current — SimPanel minor 7 (`7a782f0`) and Widgets minor 16, `W.TestStrip`'s file (`556946d`), paint through a registered skin owner only; tests/fixture_sim_panel.lua, tests/test_sim_panel.lua (two minor pins), tests/test_sim_panel_render.lua, tests/test_widgets_teststrip.lua (unchanged), tests/test_tool_windows_skin.lua, tests/test_widgets_skin.lua, docs/api/Sim/version-2.3.7-docs.md and docs/api/Widgets/version-16.2.6.4.4.1-docs.md re-read; no scenario, step or test-mode data changes, and an unowned panel or strip draws as at v1.77.0; hosts affected for step 8: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD (Sim and the strip), of which only LootHistory re-vendors and registers an owner in leg 1.
+
 ## v1.77.0 — 2026-10-24
 
 Opened 2026-10-24. The settings-panel Keybindings tab (`O.KeybindingsTab` / `O.KeybindRows`, a
