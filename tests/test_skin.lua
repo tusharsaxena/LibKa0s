@@ -257,6 +257,18 @@ local LOOTHISTORY = {
   { "sem.boundBoPAlt", { 0.85, 0.45, 0.45, 1 } }, { "sem.boundBoEAlt", { 0.55, 0.80, 0.60, 1 } },
   { "sem.boundNoneAlt", { 0.60, 0.60, 0.65, 1 } },
   { "sem.danger", { 1, 1 / 3, 1 / 3, 1 } },             -- the row menu's Delete / Forget |cffff5555
+  -- The rest of LootHistory's constants (SkinDefs minor 6), each where no older token matched:
+  { "text.value", { 0.8, 0.8, 0.82, 1 } },              -- AnalyticsCharts value / legend text
+  { "text.bodyAlt", { 0.86, 0.86, 0.86, 1 } },          -- Panel.lua live AH addon name
+  { "text.subtle", { 0.85, 0.85, 0.85, 1 } },           -- HoldingsTab holder total and fresh age
+  { "text.highlight", { 1, 1, 1, 1 } },                 -- HoldingsTab setCell's default
+  { "gtip.value", { 1, 1, 1, 1 } },                     -- Compat / Timeline / Insights values
+  { "gtip.subtle", { 0.7, 0.7, 0.7, 1 } },              -- LauncherSetup's record-count line
+  { "icon.dim", { 0.55, 0.55, 0.55, 1 } },              -- Panel.lua inactive info-icon tint
+  { "sem.goodAlt", { 0.25, 1, 0.25, 1 } },              -- LedgerFormat |cff40ff40
+  { "sem.badAlt", { 1, 0.25, 0.25, 1 } },               -- LedgerFormat |cffff4040
+  { "sem.warbandAlt", { 0.4, 0.78, 1, 1 } },            -- HoldingsTab Warband label
+  { "sem.unknown", { 0.6, 0.6, 0.6, 1 } },              -- AnalyticsFormat qualityColor fallback
 }
 
 test("skin: Ka0s Default equals LootHistory's constants", function()
@@ -270,6 +282,13 @@ test("skin: Ka0s Default equals LootHistory's constants", function()
   local function byte(v) return math.floor(v * 255 + 0.5) end
   assertEqual(("%02x%02x%02x"):format(byte(d[1]), byte(d[2]), byte(d[3])), "ff5555",
     "sem.danger hex-encodes to the row menu's exact |cffff5555 byte")
+  -- The escapes LootHistory writes as literals, each from the token that keeps its bytes.
+  for name, want in pairs({ ["sem.goodAlt"] = "40ff40", ["sem.badAlt"] = "ff4040",
+      ["text.disabled"] = "808080", ["text.accent"] = "ffd100" }) do
+    local c = k[name]
+    assertEqual(("%02x%02x%02x"):format(byte(c[1]), byte(c[2]), byte(c[3])), want,
+      name .. " hex-encodes to LootHistory's |cff" .. want)
+  end
 end)
 
 -- ── skins ────────────────────────────────────────────────────────────────────────────────────

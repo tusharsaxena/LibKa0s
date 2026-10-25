@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 4.5.2.1.1.1.1
+# `LibKa0s-Skin-1.0` — version 4.6.2.1.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **5** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **6** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 4, SkinDefs = 5, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 4, SkinDefs = 6, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
 
 ## What this major is
 
@@ -260,6 +260,14 @@ changing:
 | Bind on equip | `sem.boundBoE` `.92, .92, .92, .95` · `sem.boundBoEAlt` `.55, .8, .6` | the same two sites |
 | Not bound | `sem.boundNone` `.6, .6, .6, .4` · `sem.boundNoneAlt` `.6, .6, .65` | the same two sites |
 | Destructive item | `sem.danger` `1, 1/3, 1/3` · `sem.bad` `1, .33, .33` | the row menu's Delete and Forget (`\|cffff5555`) · `C.DirRGB`'s loss |
+| Secondary text | `text.muted` `.7, .7, .72` · `text.value` `.8, .8, .82` | axis labels, Insights' strip labels · Insights' value and legend column (AnalyticsCharts.lua:170/:256/:283/:393) |
+| Body text | `text.body` `.9, .9, .9` · `text.bodyAlt` `.86, .86, .86` · `text.subtle` `.85, .85, .85` · `text.highlight` `1, 1, 1` | menu rows, table cells, the AH table's price module · its live addon name (Panel.lua:707-708) · Holdings' holder total and fresh age (HoldingsTab.lua:416/:418) · Holdings' cell default (HoldingsTab.lua:391) |
+| Tooltip value | `gtip.body` `.9, .9, .9` · `gtip.value` `1, 1, 1` | a label or body line · the value column (Compat.lua:647/:661/:674, Timeline.lua:542, TimelineModel.lua:386, AnalyticsCharts.lua:29/:140, Panel.lua:647) |
+| Tooltip gray | `gtip.muted` `.5, .5, .5` · `gtip.subtle` `.7, .7, .7` | a hint line · the launcher's record count (LauncherSetup.lua:206) |
+| Dimmed icon | `icon.tint` `.7, .7, .72` · `icon.dim` `.55, .55, .55` | a resting icon · the AH table's inactive info icon (Panel.lua:721-722) |
+| Signed figure | `sem.good` / `sem.bad` · `sem.goodAlt` `.25, 1, .25` / `sem.badAlt` `1, .25, .25` | `C.DirRGB` · LedgerFormat's `\|cff40ff40` / `\|cffff4040` (LedgerFormat.lua:35-44) |
+| Warband | `sem.warband` `.25, .75, .95` · `sem.warbandAlt` `.4, .78, 1` | `C.TIMELINE.WARBAND` · Holdings' Warband label (HoldingsTab.lua:309) |
+| Missing class or quality | `text.muted` `.7, .7, .72` · `sem.unknown` `.6, .6, .6` | Insights' no-class fallback · its no-quality fallback (AnalyticsFormat.lua:99 / :106) |
 | Idle label | `tab.text` `.7, .7, .72` (LootHistory's browser tabs) · the Options tab strip's font objects (no token: stock) | Browser `SKIN.tabIdle` · `OptionsTabs` |
 | Selected vs idle | `nav.text` gold / `nav.selText` white · `drawer.text` white / `drawer.textSet` gold | `OptionsNav` · `OptionsDrawer` (opposite conventions) |
 
@@ -332,6 +340,12 @@ eight skins*, below.
 | `log.tag` | color | no | `#C9A66B` (`0.788, 0.651, 0.42, 1`) |
 | `log.text` | color | no | `1, 1, 1, 1` |
 | `log.count` | color | no | `0.6, 0.6, 0.62, 1` |
+| `text.value` | color | no | `0.8, 0.8, 0.82, 1` |
+| `text.bodyAlt` | color | no | `0.86, 0.86, 0.86, 1` |
+| `text.subtle` | color | no | `0.85, 0.85, 0.85, 1` |
+| `text.highlight` | color | no | `1, 1, 1, 1` |
+| `gtip.value` | color | no | `1, 1, 1, 1` |
+| `gtip.subtle` | color | no | `0.7, 0.7, 0.7, 1` |
 
 ### Buttons
 
@@ -470,6 +484,7 @@ eight skins*, below.
 | `list.boxDim` | color | no | `1, 1, 1, 0.03 |`
 | `list.boxEdge` | color | no | `1, 1, 1, 0.12 |`
 | `list.boxEdgeDim` | color | no | `1, 1, 1, 0.06 |`
+| `icon.dim` | color | no | `0.55, 0.55, 0.55, 1` |
 
 ### Overlays
 
@@ -557,8 +572,12 @@ eight skins*, below.
 | `sem.boundBoEAlt` | color | no | `0.55, 0.8, 0.6, 1` |
 | `sem.boundNoneAlt` | color | no | `0.6, 0.6, 0.65, 1` |
 | `sem.danger` | color | no | `1, 1/3, 1/3, 1` (hex-encodes to `ff5555`) |
+| `sem.goodAlt` | color | no | `0.25, 1, 0.25, 1` (hex-encodes to `40ff40`) |
+| `sem.badAlt` | color | no | `1, 0.25, 0.25, 1` (hex-encodes to `ff4040`) |
+| `sem.warbandAlt` | color | no | `0.4, 0.78, 1, 1` |
+| `sem.unknown` | color | no | `0.6, 0.6, 0.6, 1` |
 
-**224 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
+**235 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
 `tab.texture`, `tab.onTexture`) joined at SkinDefs minor 2, for WoW Default's Blizzard art. The
 eight **Widgets tokens** (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg`, `list.box`,
 `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`) joined at SkinDefs minor 3, so the drag handle and
@@ -588,7 +607,20 @@ table's own), and `sem.danger` the row menu's Delete and Forget, kept apart from
 the hue is the meaning, so the dark skins inherit Ka0s Default's values. Azeroth sets all nine in ink
 that reads on parchment, and High Contrast sets the gray and off-white ones (`sem.boundNone`,
 `sem.boundBoE`, `sem.boundNoneAlt`) opaque in its own palette. `tests/test_skin_defs.lua` holds every
-skin's nine to a 3:1 contrast on its window.
+skin's nine to a 3:1 contrast on its window. The eleven tokens for **the rest of LootHistory's
+constants** (`text.value`, `text.bodyAlt`, `text.subtle`, `text.highlight`, `gtip.value`,
+`gtip.subtle`, `icon.dim`, `sem.goodAlt`, `sem.badAlt`, `sem.warbandAlt`, `sem.unknown`) joined at
+SkinDefs minor 6, from one sweep of every LootHistory surface still to be skinned for a constant no
+token reproduced exactly under Ka0s Default; each pair they make with an older token is a row of
+*Split roles*, above. Every other constant there already had its token (LedgerFormat's `|cff808080`
+zero is `text.disabled`, Slash's `|cffffd100` is `text.accent`), and an alpha a call site applies to
+a token's color (the 0.95 series fills, the 0.9 flow bars) stays the call site's. They follow no
+other token, so the dark skins inherit Ka0s Default's values. Azeroth sets the nine window ones in
+ink on parchment and neither `gtip` one, because a GameTooltip line draws on Blizzard's dark
+tooltip in every skin; High Contrast sets the grays in its own palette (`text.value` and
+`gtip.subtle` `#E0E0E0`, `text.bodyAlt` and `text.subtle` white, `icon.dim` and `sem.unknown`
+`#B0B0B0`). `tests/test_skin_defs.lua` holds every skin's window ones to a 3:1 contrast on its
+window and its `gtip` ones to 4.5:1 on the dark tooltip.
 
 ## The primitives
 
@@ -914,6 +946,11 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `log.tag` | `#F2F2F4` | `#5E3A14` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
 | `log.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
 | `log.count` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `text.value` | · | `#4A3418` | · | `#E0E0E0` | · | · | · | · |
+| `text.bodyAlt` | · | `#3A2412` | · | `#FFFFFF` | · | · | · | · |
+| `text.subtle` | · | `#3A2412` | · | `#FFFFFF` | · | · | · | · |
+| `text.highlight` | · | `#2A1C0C` | · | · | · | · | · | · |
+| `gtip.subtle` | · | · | · | `#E0E0E0` | · | · | · | · |
 
 #### Buttons
 
@@ -1049,6 +1086,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `list.boxDim` | `#E8E8EC .03` | `#2A1C0C .03` | `#F2F4F8 .03` | `#FFFFFF .03` | `#F4E7DC .03` | `#FFFFFF .03` | `#F2EEF8 .03` | `#FFFFFF .03` |
 | `list.boxEdge` | `#E8E8EC .12` | `#2A1C0C .12` | `#F2F4F8 .12` | `#FFFFFF .12` | `#F4E7DC .12` | `#FFFFFF .12` | `#F2EEF8 .12` | `#FFFFFF .12` |
 | `list.boxEdgeDim` | `#E8E8EC .06` | `#2A1C0C .06` | `#F2F4F8 .06` | `#FFFFFF .06` | `#F4E7DC .06` | `#FFFFFF .06` | `#F2EEF8 .06` | `#FFFFFF .06` |
+| `icon.dim` | · | `#7A6A50` | · | `#B0B0B0` | · | · | · | · |
 
 #### Overlays
 
@@ -1120,8 +1158,14 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `sem.boundBoEAlt` | · | `#1C6B12` | · | · | · | · | · | · |
 | `sem.boundNoneAlt` | · | `#6A5233` | · | `#B0B0B0` | · | · | · | · |
 | `sem.danger` | · | `#B3261E` | · | · | · | · | · | · |
+| `sem.goodAlt` | · | `#1C7B22` | · | · | · | · | · | · |
+| `sem.badAlt` | · | `#B3261E` | · | · | · | · | · | · |
+| `sem.warbandAlt` | · | `#00519E` | · | · | · | · | · | · |
+| `sem.unknown` | · | `#5A5A5A` | · | `#B0B0B0` | · | · | · | · |
 
-Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 5): Obsidian 140, Azeroth 185, Glass 142, High Contrast 150, Ember 143, WoW Default 143, WoW Midnight 146, WoW Forever 143.
+`gtip.value` is in no row: every skin inherits Ka0s Default's white.
+
+Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 6): Obsidian 140, Azeroth 194, Glass 142, High Contrast 156, Ember 143, WoW Default 143, WoW Midnight 146, WoW Forever 143.
 
 ## The EllesmereUI provider
 

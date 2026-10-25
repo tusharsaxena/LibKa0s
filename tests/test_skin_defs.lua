@@ -198,6 +198,54 @@ test("skin defs: the bind-state tokens inherit Ka0s Default unless a skin overri
   end
 end)
 
+-- The rest of LootHistory's constants (SkinDefs minor 6): the window ones draw text, icons and
+-- signed figures on the window, the two gtip ones lines on Blizzard's always-dark GameTooltip.
+local SPLIT_WIN = { "text.value", "text.bodyAlt", "text.subtle", "text.highlight", "icon.dim",
+  "sem.goodAlt", "sem.badAlt", "sem.warbandAlt", "sem.unknown" }
+local SPLIT_TIP = { "gtip.value", "gtip.subtle" }
+
+test("skin defs: every skin's split text, icon and signed colors read where they draw", function()
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local tokens = Skin:ResolveSkin(key)
+    for _, name in ipairs(SPLIT_WIN) do
+      local ratio = contrast(tokens[name], tokens["win.bg"])
+      assertTrue(ratio >= 3, ("%s: %s contrast %.2f on win.bg, want >= 3"):format(key, name, ratio))
+    end
+    for _, name in ipairs(SPLIT_TIP) do
+      local ratio = contrast(tokens[name], TOOLTIP_DARK)
+      assertTrue(ratio >= 4.5, ("%s: %s contrast %.2f on (.05,.05,.08), want >= 4.5")
+        :format(key, name, ratio))
+    end
+  end
+end)
+
+-- The dark skins inherit them; Azeroth, the light skin, sets every window one in ink and neither
+-- gtip one (the tooltip stays dark); High Contrast sets the grays in its own palette.
+local SPLIT_OWN = {
+  azeroth = SPLIT_WIN,
+  contrast = { "text.value", "text.bodyAlt", "text.subtle", "icon.dim", "sem.unknown", "gtip.subtle" },
+}
+
+test("skin defs: the split tokens inherit Ka0s Default unless a skin overrides for legibility",
+  function()
+  local Skin = skinLib()
+  local k = Skin:ResolveSkin("ka0s")
+  local all = {}
+  for _, name in ipairs(SPLIT_WIN) do all[#all + 1] = name end
+  for _, name in ipairs(SPLIT_TIP) do all[#all + 1] = name end
+  for _, key in ipairs(KEYS) do
+    local tokens, own = Skin:ResolveSkin(key), {}
+    for _, name in ipairs(SPLIT_OWN[key] or {}) do own[name] = true end
+    for _, name in ipairs(all) do
+      local same = true
+      for i = 1, 4 do same = same and (tokens[name][i] or 1) == (k[name][i] or 1) end
+      assertEqual(same, not own[name], ("%s: %s %s Ka0s Default's"):format(key, name,
+        own[name] and "overrides" or "inherits"))
+    end
+  end
+end)
+
 -- ── per-skin choices (docs/api/Skin, "The eight skins") ──────────────────────────────────────
 
 local CONTROLS = { "btn", "btnPrimary", "input", "check", "tab", "nav", "drawer", "popup", "menu" }

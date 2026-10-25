@@ -18,12 +18,14 @@ paint recorder opens it. Extended on 2026-10-25, after the local tag and before 
 Media minor 7 (`LK-A1`): `RegisterLSM` no longer offers a key LibSharedMedia already holds, the
 defect behind the owner's "Attempt to register an invalid font" reports. Extended again the same
 day with SkinDefs minor 5 (`LK-A2`): nine Semantic tokens for LootHistory's bind-state locks and its
-row menu's destructive items, the library gap its `LH-03` item found.
+row menu's destructive items, the library gap its `LH-03` item found. Extended a third time the
+same day with SkinDefs minor 6 (`LK-A3`): eleven tokens for every other LootHistory constant no
+token held exactly, in one sweep, the library gap its `LH-04` item found.
 
 Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 7**
-(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 5**,
+(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 6**,
 **SkinPaint minor 2**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1**, **SkinEUI
-minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **4.5.2.1.1.1.1**); **Widgets minor 16**,
+minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **4.6.2.1.1.1.1**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
 **WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
 **16.2.6.4.4.1**, a new sixth file); **DebugLog minor 22**, **DebugLogDiagnostics minor 4** and
@@ -371,8 +373,8 @@ OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopt
 ### SkinAce minor 1 and Options 32.3.35.4.6.10.3.12.6.3.2.5: the AceGUI rows wear their owner's skin
 
 `LibKa0s-Skin-1.0` key 3.3.2.1.1.1.1
-([docs/api/Skin/version-4.5.2.1.1.1.1-docs.md](docs/api/Skin/version-4.5.2.1.1.1.1-docs.md) since
-SkinDefs minor 4 and Skin minor 4, and SkinDefs minor 5, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
+([docs/api/Skin/version-4.6.2.1.1.1.1-docs.md](docs/api/Skin/version-4.6.2.1.1.1.1-docs.md) since
+SkinDefs minor 4 and Skin minor 4, and SkinDefs minors 5 and 6, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
 `LibKa0s-Options-1.0` key 32.3.35.4.6.10.3.12.6.3.2.5
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md)
 since Options minor 33, below; the in-flight 31.2.35.4.6.10.3.12.5.3.2.5 document moved to it), LK-08 of Ka0sAddonsCommonTasks
@@ -460,8 +462,8 @@ reaches its console and panels through the names it already passes.
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md),
 a thirteenth file; the in-flight 32.3.35.4.6.10.3.12.6.3.2.5 document moved to it, never shipped) and
 `LibKa0s-Skin-1.0` key 4.4.2.1.1.1.1
-([docs/api/Skin/version-4.5.2.1.1.1.1-docs.md](docs/api/Skin/version-4.5.2.1.1.1.1-docs.md) since
-SkinDefs minor 5, below; the in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
+([docs/api/Skin/version-4.6.2.1.1.1.1-docs.md](docs/api/Skin/version-4.6.2.1.1.1.1-docs.md) since
+SkinDefs minors 5 and 6, below; the in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/` (`skinning-§3`; the owner's ruling R1, per addon).
 
 - **`OptionsAppearance.lua` (minor 1), a new file** paired on the shell's minor
@@ -493,7 +495,7 @@ SkinDefs minor 5, below; the in-flight 3.4.2.1.1.1.1 document moved to it, never
 - **Skin minor 4: `Skin:OwnerLabel(owner)` and `Skin:WriteChoice(owner, source, skin)`**, the two
   members the copy needs: the label an owner registered with, and a write through the `opts.set` it
   registered, under pcall, which never moves the applied choice. Both are in the regenerated
-  `members-4.4.2.1.1.1.1.json` (`members-4.5.2.1.1.1.1.json` since SkinDefs minor 5, below).
+  `members-4.4.2.1.1.1.1.json` (`members-4.6.2.1.1.1.1.json` since SkinDefs minors 5 and 6, below).
 - **The ellipsis.** `COPY` carries U+2026, which `options-ui-§21` asks of a button that opens a
   confirmation; `tests/test_prose.lua`'s ASCII gate ratifies it for `LibKa0s/OptionsAppearance.lua`
   alone, beside the em dash and Core's close glyph.
@@ -546,7 +548,8 @@ document and manifest moved to it, never shipped). No member is added and no sig
 
 Extended on 2026-10-25, after the local tag and before any push (`LK-A2` of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-03` found). `LibKa0s-Skin-1.0` key
-4.5.2.1.1.1.1 ([docs/api/Skin/version-4.5.2.1.1.1.1-docs.md](docs/api/Skin/version-4.5.2.1.1.1.1-docs.md);
+4.5.2.1.1.1.1 (4.6.2.1.1.1.1 since SkinDefs minor 6, below:
+[docs/api/Skin/version-4.6.2.1.1.1.1-docs.md](docs/api/Skin/version-4.6.2.1.1.1.1-docs.md);
 the in-flight 4.4.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
 is added, removed or renamed, and every token minor 4 had resolves the same in every skin.
 
@@ -570,6 +573,57 @@ Tests: `tests/test_skin.lua` pins the nine Ka0s Default values with LootHistory'
 3:1 contrast on its window and pin which skins inherit and which override, High Contrast's opaque.
 Red on minor 4. **What a consumer owes:** nothing; LootHistory reads the tokens at its `LH-RV`
 re-vendor.
+
+### SkinDefs minor 6: the rest of LootHistory's constants, in one sweep
+
+Extended on 2026-10-25, after the local tag and before any push (`LK-A3` of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-04` found). `LibKa0s-Skin-1.0` key
+4.6.2.1.1.1.1 ([docs/api/Skin/version-4.6.2.1.1.1.1-docs.md](docs/api/Skin/version-4.6.2.1.1.1.1-docs.md);
+the in-flight 4.5.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
+is added, removed or renamed, and every token minor 5 had resolves the same in every skin.
+
+Rather than one more gap per item, every surface LootHistory still has to skin (Insights, the
+ledger formats, Timeline, Holdings, the AH price table and the Compat tooltips for `LH-04`; its own
+settings widgets and Profiles page for `LH-06`; the tool windows, the launcher and the tooltips for
+`LH-05`) was swept for a color constant no token reproduces exactly under Ka0s Default, byte for
+byte for a `|cff` escape and to three decimals for a golden-pinned call. Eleven came out:
+
+- **Text** (six): `text.value` `.8, .8, .82` (Insights' value and legend column,
+  AnalyticsCharts.lua:170/:256/:283/:393, pinned in `analytics_golden.txt`); `text.bodyAlt`
+  `.86, .86, .86` (the AH table's live addon name, Panel.lua:707-708, pinned in
+  `panel_auction_golden.txt`); `text.subtle` `.85, .85, .85` (Holdings' holder total and fresh
+  age, HoldingsTab.lua:416/:418, kept apart from `text.bodyAlt` because exactness wins);
+  `text.highlight` `1, 1, 1` (Holdings' cell default, HoldingsTab.lua:391); `gtip.value` `1, 1, 1`
+  (the GameTooltip value column: Compat.lua:647/:661/:674, Timeline.lua:542, TimelineModel.lua:386,
+  AnalyticsCharts.lua:29/:140, Panel.lua:647); `gtip.subtle` `.7, .7, .7` (the launcher's record
+  count, LauncherSetup.lua:206).
+- **Lists** (one): `icon.dim` `.55, .55, .55` (the AH table's info icon on an inactive row,
+  Panel.lua:721-722, pinned in `panel_auction_golden.txt`; a live one is `icon.hot`).
+- **Semantic** (four): `sem.goodAlt` `.25, 1, .25` and `sem.badAlt` `1, .25, .25`, which
+  hex-encode to LedgerFormat's exact `|cff40ff40` and `|cffff4040` (LedgerFormat.lua:35-44; not
+  `C.DirRGB`); `sem.warbandAlt` `.4, .78, 1` (Holdings' Warband label, HoldingsTab.lua:309; not
+  `C.TIMELINE.WARBAND`); `sem.unknown` `.6, .6, .6` (Insights' no-quality fallback,
+  AnalyticsFormat.lua:106; the no-class one is `text.muted`).
+
+Every other constant on those surfaces already has a token that reproduces it: LedgerFormat's
+`|cff808080` zero is `text.disabled`, Slash's `|cffffd100` is `text.accent`, Timeline's toggle is
+`check.bg` / `check.mark` / `btn.text` / `btn.hover`, its strip and legend take `sem.good` /
+`sem.bad` / `sem.warband` / `chart.*`, and an alpha a call site applies to a token's color (the
+0.95 series fills, the 0.9 flow bars, the legend's hidden 0.4) stays the call site's. The 36
+per-source colors and the class colors stay identity colors, not tokens. The new pairs are
+recorded in the Skin document's *Split roles*.
+
+- **The other skins inherit them** (no `FOLLOW` entry), except where a skin overrides for
+  legibility: **Azeroth** sets all nine window ones in ink on parchment and neither `gtip` one,
+  which draws on Blizzard's always-dark GameTooltip; **High Contrast** sets `text.value` and
+  `gtip.subtle` to `#E0E0E0`, `text.bodyAlt` and `text.subtle` to white and `icon.dim` and
+  `sem.unknown` to `#B0B0B0`. 235 tokens.
+
+Tests: `tests/test_skin.lua` pins the eleven Ka0s Default values with LootHistory's constants and
+the `40ff40`, `ff4040`, `808080` and `ffd100` encodings; two new `tests/test_skin_defs.lua` cases
+hold every skin's window ones to 3:1 contrast on its window and its two `gtip` ones to 4.5:1 on the
+dark tooltip, and pin which skins inherit and which override. Red on minor 5. **What a consumer
+owes:** nothing; LootHistory reads the tokens at its next `LH-RV` re-vendor.
 
 ### Docs and process
 
