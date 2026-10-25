@@ -18,19 +18,19 @@ paint recorder opens it.
 
 Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 6**
 (`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1 unchanged), **Skin minor 3**, **SkinDefs minor 3**,
-**SkinPaint minor 2**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1** and **SkinEUI
-minor 1** (the new major `LibKa0s-Skin-1.0`, key **3.3.2.1.1.1**); **Widgets minor 16**,
+**SkinPaint minor 2**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1**, **SkinEUI
+minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **3.3.2.1.1.1.1**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
 **WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
 **16.2.6.4.4.1**, a new sixth file); **DebugLogDiagnostics minor 4** (`LibKa0s-DebugLog-1.0` key
-**21.4.1**); **Options minor 31**, **OptionsWidgets minor 35**, **OptionsIds minor 4**,
+**21.4.1**); **Options minor 32**, **OptionsRegistry minor 3**, **OptionsWidgets minor 35**, **OptionsIds minor 4**,
 **OptionsIdList minor 6**, **OptionsTabs minor 10**, **OptionsCombat minor 3**, **OptionsCompose minor
-12**, **OptionsScroll minor 5**, **OptionsNav minor 3**, **OptionsDrawer minor 2** and
-**OptionsKeybinds minor 5** (`LibKa0s-Options-1.0` key **31.2.35.4.6.10.3.12.5.3.2.5**, `OptionsRegistry` 2
-unchanged); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
+12**, **OptionsScroll minor 6**, **OptionsNav minor 3**, **OptionsDrawer minor 2** and
+**OptionsKeybinds minor 5** (`LibKa0s-Options-1.0` key **32.3.35.4.6.10.3.12.6.3.2.5**); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
 entry below moves one. Each change bumps the minor of the files it touches once, and this block
-names each new minor as it lands. Now **eighteen majors across forty-eight files**: one major added
-(`LibKa0s-Skin-1.0`) and one file (`WidgetsCopyWindow.lua`), and no `NEEDS_*` floor rises.
+names each new minor as it lands. Now **eighteen majors across forty-nine files**: one major added
+(`LibKa0s-Skin-1.0`) and two files (`WidgetsCopyWindow.lua`, `SkinAce.lua`), and no `NEEDS_*` floor
+rises.
 
 ### Test kit revision 43: the paint recorder
 
@@ -357,6 +357,46 @@ New suites `tests/test_options_skin.lua` (14 cases) and `tests/test_options_comp
 cases), red on the previous payload; four minor pins (OptionsDrawer, OptionsKeybinds twice,
 OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopter registers its owner
 (`Skin:RegisterOwner(addonName, ...)`) and its pages follow.
+
+### SkinAce minor 1 and Options 32.3.35.4.6.10.3.12.6.3.2.5: the AceGUI rows wear their owner's skin
+
+`LibKa0s-Skin-1.0` key 3.3.2.1.1.1.1
+([docs/api/Skin/version-3.3.2.1.1.1.1-docs.md](docs/api/Skin/version-3.3.2.1.1.1.1-docs.md), a
+seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
+`LibKa0s-Options-1.0` key 32.3.35.4.6.10.3.12.6.3.2.5
+([docs/api/Options/version-32.3.35.4.6.10.3.12.6.3.2.5-docs.md](docs/api/Options/version-32.3.35.4.6.10.3.12.6.3.2.5-docs.md),
+the in-flight 31.2.35.4.6.10.3.12.5.3.2.5 document moved to it), LK-08 of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`. AceGUI keeps one pool per widget type for the whole client, so a row is
+painted for exactly one acquisition and handed back stock.
+
+- **`SkinAce.lua` (minor 1), a new file** paired on the shell's minor (`__aceMinor` /
+  `__aceShellMinor`), painting with `SkinPaint.lua`'s helpers. `Skin:PaintAce(owner, widget)` paints a
+  CheckBox, Slider, Dropdown (and its pull-out, on open, put back on close), EditBox,
+  MultiLineEditBox, Button, Heading, Label, InteractiveLabel, Icon, ColorPicker swatch, InlineGroup or
+  ScrollFrame for a registered owner away from Ka0s Default: stock regions faded by alpha, fonts,
+  colors and backdrops recorded before the first change, overlays made once per widget object and
+  reused. `Skin:PaintAceTree(owner, container)` walks a host's container. `Skin:OnRelease(widget, fn)`
+  chains a release step onto the widget's own `OnRelease` (the previous one put back first, `fn` under
+  pcall and logged once, the previous one always run), which is how the restore rides the release
+  and how a host's release work coexists with it. Ka0s Default, an unregistered owner, LSM30_*
+  widgets, TabGroup, `ColorPickerFrame` and a widget ElvUI or AddOnSkins already skinned stay stock.
+  AceGUI's own recolors (`SetDisabled`, which a CheckBox's `SetValue` calls, the Slider edit box's
+  hover, a CheckBox's `SetType`, a Label's `SetFontObject`) are post-hooked once per widget object and
+  act only while it is owned. Under `eui` a pooled widget never reaches EllesmereUI.
+- **One choke point, no maker touched.** The Skin major's `__AttachSkinAce(O, d)` wraps an Options
+  instance's `O.AceGUI` in a proxy whose `Create` paints for `d.addonName` once that addon is a
+  registered owner; everything else on the proxy is AceGUI's. **Options minor 32** calls it from
+  `lib:New` (one line in `attachHalves`, no member), **OptionsRegistry minor 3** again after
+  `CreateOptionsPanel` re-resolves AceGUI, and **OptionsScroll minor 6** carries the bridge
+  (`lib.__AttachSkinAce`) and defers the owner's skin-switch re-render one frame (`C_Timer.After(0)`,
+  once per frame), so a switch releases every row stock and re-acquires it in the new skin; a row is
+  never repainted in place. `OptionsWidgets.lua` stays at 1447 lines.
+
+New suite `tests/test_skin_ace.lua` (21 cases) on a pooled AceGUI fake with AceGUI's anatomy
+(`tests/fixture_skin_ace.lua`), red on the previous payload; no kit change. Re-vendor the whole
+folder: the new file must arrive with the shell. **What a consumer owes:** nothing; a registered
+owner's pages paint their rows, and a host that acquires widgets outside `O.AceGUI` may call
+`Skin:PaintAce`.
 
 ## v1.77.0 — 2026-10-24
 

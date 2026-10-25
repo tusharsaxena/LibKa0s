@@ -69,7 +69,7 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Skin-1.0",
-    files = { "Skin", "SkinDefs", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinEUI" },
+    files = { "Skin", "SkinDefs", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinEUI", "SkinAce" },
     primary = "Skin",
     paired = {
       { file = "SkinDefs", minorField = "__defsMinor", probeField = "__defsShellMinor" },
@@ -77,6 +77,7 @@ local MAJORS = {
       { file = "SkinPaintExtras", minorField = "__extrasMinor", probeField = "__extrasShellMinor" },
       { file = "SkinPaintControls", minorField = "__controlsMinor", probeField = "__controlsShellMinor" },
       { file = "SkinEUI", minorField = "__euiMinor", probeField = "__euiShellMinor" },
+      { file = "SkinAce", minorField = "__aceMinor", probeField = "__aceShellMinor" },
     },
   },
   {

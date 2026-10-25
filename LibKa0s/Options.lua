@@ -36,7 +36,10 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 30: lib:New attaches OptionsKeybinds.lua, the Keybindings tab (options-ui-§20).
 -- Minor 31: a page wears its skin owner's skin (`addonName`, once registered with LibKa0s-Skin-1.0;
 -- OptionsScroll.lua's helpers): the header and backdrop at CreatePanel, the thumb at EnsureScroll.
-local MAJOR, MINOR = "LibKa0s-Options-1.0", 31
+-- Minor 32: lib:New hands the instance to the AceGUI rows' skin (OptionsScroll.lua's
+-- `__AttachSkinAce`, LibKa0s-Skin-1.0's SkinAce.lua): every widget made through `O.AceGUI` is
+-- painted for a registered owner and given back stock on release. One attach line, no member.
+local MAJOR, MINOR = "LibKa0s-Options-1.0", 32
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -1318,6 +1321,7 @@ function lib:New(d)
     if lib.__AttachNav     then lib.__AttachNav(O)        end
     if lib.__AttachDrawer  then lib.__AttachDrawer(O)     end
     if lib.__AttachKeybinds then lib.__AttachKeybinds(O, d) end
+    if lib.__AttachSkinAce then lib.__AttachSkinAce(O, d) end   -- minor 32: O.AceGUI's rows
   end
   attachHalves()
 

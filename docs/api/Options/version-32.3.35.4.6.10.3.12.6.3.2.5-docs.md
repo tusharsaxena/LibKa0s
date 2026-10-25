@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 31.2.35.4.6.10.3.12.5.3.2.5
+# `LibKa0s-Options-1.0` — version 32.3.35.4.6.10.3.12.6.3.2.5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,19 +8,19 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **31** · `OptionsRegistry.lua` **2** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **5** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** |
+| Files and minors | `Options.lua` **32** · `OptionsRegistry.lua` **3** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **6** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>`, in load order — the same twelve numbers `lib.MODULES` reports. |
 | Shipped in | v1.78.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 30.2.34.3.5.9.2.11.4.2.1.4](./version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md) — whose settings chrome had no skin owner, and whose group composers could not follow a skin |
+| Supersedes | [version 30.2.34.3.5.9.2.11.4.2.1.4](./version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md) — whose settings chrome had no skin owner, whose group composers could not follow a skin, and whose AceGUI rows were stock for every owner |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua` and `OptionsKeybinds.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 31, OptionsRegistry = 2, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 12, OptionsScroll = 5, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 32, OptionsRegistry = 3, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 12, OptionsScroll = 6, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
-for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
+for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `W35` for `OptionsWidgets.lua` minor 35, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `T10` for `OptionsTabs.lua` minor 10, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `C9` for `OptionsCompose.lua` minor 9, `C10` for `OptionsCompose.lua` minor 10, `C11` for `OptionsCompose.lua` minor 11, `C12` for `OptionsCompose.lua` minor 12, `S1` for
-`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `S5` for `OptionsScroll.lua` minor 5, `N1` for `OptionsNav.lua` minor 1, `N3` for `OptionsNav.lua` minor 3, `D1` for `OptionsDrawer.lua` minor 1, `D2` for `OptionsDrawer.lua` minor 2, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `K4` for `OptionsKeybinds.lua` minor 4, `K5` for `OptionsKeybinds.lua` minor 5, `I1` for
+`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `S5` for `OptionsScroll.lua` minor 5, `S6` for `OptionsScroll.lua` minor 6, `N1` for `OptionsNav.lua` minor 1, `N3` for `OptionsNav.lua` minor 3, `D1` for `OptionsDrawer.lua` minor 1, `D2` for `OptionsDrawer.lua` minor 2, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `K4` for `OptionsKeybinds.lua` minor 4, `K5` for `OptionsKeybinds.lua` minor 5, `I1` for
 `OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `I4` for `OptionsIds.lua` minor 4, `OC2` for `OptionsCombat.lua` minor 2, `OC3` for `OptionsCombat.lua` minor 3, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4, `L6` for `OptionsIdList.lua` minor 6. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -40,18 +40,20 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-Every file of the major moves except `OptionsRegistry.lua`: `Options.lua` 30 -> **31**,
+Every file of the major moves: `Options.lua` 30 -> **32**, `OptionsRegistry.lua` 2 -> **3**,
 `OptionsWidgets.lua` 34 -> **35**, `OptionsIds.lua` 3 -> **4**, `OptionsIdList.lua` 5 -> **6**,
 `OptionsTabs.lua` 9 -> **10**, `OptionsCombat.lua` 2 -> **3**, `OptionsCompose.lua` 11 -> **12**,
-`OptionsScroll.lua` 4 -> **5**, `OptionsNav.lua` 2 -> **3**, `OptionsDrawer.lua` 1 -> **2** and
-`OptionsKeybinds.lua` 4 -> **5**. Two things land: **the settings chrome follows the page's skin
-owner**, and **the group composers can follow the skin** (Ka0sAddonsCommonTasks
-`docs/2026-10-25-SKINNING/`, item LK-07; the owner's rulings R2 and R3). It needs
+`OptionsScroll.lua` 4 -> **6**, `OptionsNav.lua` 2 -> **3**, `OptionsDrawer.lua` 1 -> **2** and
+`OptionsKeybinds.lua` 4 -> **5**. Three things land: **the settings chrome follows the page's skin
+owner**, **the group composers can follow the skin** (Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`, item LK-07; the owner's rulings R2 and R3), and **the AceGUI rows a page
+acquires wear the owner's skin** (item LK-08: `Options.lua` 32, `OptionsRegistry.lua` 3,
+`OptionsScroll.lua` 6, with `LibKa0s-Skin-1.0`'s `SkinAce.lua`). It needs
 `LibKa0s-Skin-1.0` and `LibKa0s-Core-1.0` minor 13 at call time, neither as a floor: without them
 every page draws what version 30.2.34.3.5.9.2.11.4.2.1.4 drew.
 
-**No member is added to `Options.lua` or `OptionsTabs.lua`** (their band triggers, CLAUDE.md);
-the helpers are `OptionsScroll.lua`'s, internal and `__`-prefixed.
+**No member is added to `Options.lua`, `OptionsTabs.lua` or `OptionsWidgets.lua`** (their band
+triggers, CLAUDE.md); the helpers are `OptionsScroll.lua`'s, internal and `__`-prefixed.
 
 ### The page's skin owner (O31, S5)
 
@@ -83,7 +85,9 @@ tabs, the rail, the drawers, the cover, the popup and the thumbs on its own. Wha
 render from a token read (the help marks, the keybind rows) is redrawn by the instance's **one**
 `OnLooksChanged` listener, installed the first time a registered owner's page paints: it repaints
 each page's header and backdrop, then runs `O.RefreshAllPanels()` (a shown page re-renders, a hidden
-one is marked dirty and re-renders on its next show). The header and backdrop are also painted on
+one is marked dirty and re-renders on its next show) **one frame later** (`C_Timer.After(0)`, from
+**S6**; at once in a client without `C_Timer`), once however many switches land in that frame: the
+re-render is also what repaints the AceGUI rows (*The AceGUI rows*, below). The header and backdrop are also painted on
 every show of the page, so an owner that registers after `CreatePanel` gets them.
 
 **Pooled pieces are given back.** A drawer head lives on a pooled AceGUI `SimpleGroup` frame and the
@@ -96,6 +100,31 @@ The helpers, internal: `lib.__chromeSkin(owner)` (Core's `__SkinFacade`), `lib._
 `lib.__chromeGiveBack(target)`, and on the instance `O.__chromeSkin()`, `O.__chromeAway()`,
 `O.__chromePaint(prim, target, opts)` and `O.__skinPage(panel)`, closing over the descriptor's
 `addonName` (`lib.__AttachScroll(O, d)` now takes the descriptor; `lib:New` always passed it).
+
+### The AceGUI rows (O32, OptionsRegistry 3, S6)
+
+Every widget a page acquires through **`O.AceGUI`** wears the page owner's skin, and goes back to
+AceGUI's shared pool stock. The painting is `LibKa0s-Skin-1.0`'s `SkinAce.lua` (its document, *AceGUI
+rows*); this major adds only the choke point, so **no widget maker changes** and `OptionsWidgets.lua`
+does not grow:
+
+- **`lib.__AttachSkinAce(O, d)`** (internal, `OptionsScroll.lua` **S6**) hands the instance to the
+  Skin major's `__AttachSkinAce`, which, once `d.addonName` is a registered skin owner, replaces
+  `O.AceGUI` with a proxy whose `Create(type)` is AceGUI's own Create followed by
+  `Skin:PaintAce(d.addonName, widget)`. Every other field and method of the proxy is AceGUI's (a method
+  called on it runs on AceGUI itself, a write lands on AceGUI), so `O.AceGUI:Release`,
+  `O.AceGUI.FocusedWidget`, `RegisterWidgetType` and a host's own `O.AceGUI:Create` behave as before.
+- **`lib:New`** calls it once the halves are attached (**O32**, one line in `attachHalves`), and
+  **`CreateOptionsPanel`** again after it re-resolves AceGUI (OptionsRegistry minor **3**), so an owner
+  that registers between the two is still proxied.
+- **Without** the Skin major, `SkinAce.lua`, an AceGUI or a registered owner, `O.AceGUI` is AceGUI
+  itself, exactly as at version 30.2.34.3.5.9.2.11.4.2.1.4. **On Ka0s Default** the proxy paints
+  nothing and wraps nothing: the rows are stock AceGUI.
+- **A skin switch** re-renders the open pages one frame later (*Repainting*, above): the release
+  gives every row back stock and the re-acquire paints the new skin. A row is never repainted in
+  place.
+
+Cases: `tests/test_skin_ace.lua`.
 
 ### Following the skin in the group composers (C12, W35)
 

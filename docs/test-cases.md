@@ -584,6 +584,30 @@ Total.
 - skin eui: EllesmereUI's live looks change repaints the Ka0s extras
 - skin eui: EllesmereUIDB is read in LibKa0s/SkinEUI.lua and no other payload file
 
+### test_skin_ace.lua (21)
+
+- skin ace: an owned page's CheckBox is painted from the owner's skin through O.AceGUI
+- skin ace: Ka0s Default is stock AceGUI: nothing painted, nothing wrapped
+- skin ace: an unregistered owner's instance holds AceGUI itself
+- skin ace: the proxy is AceGUI for everything but Create
+- skin ace: an owner that registers after lib:New is proxied at CreateOptionsPanel
+- skin ace: a released CheckBox is stock for the next acquirer outside Ka0s
+- skin ace: another owner acquiring the pooled object wears its own skin, not the first's
+- skin ace: every painted type is painted while owned and stock on its next acquisition
+- skin ace: a SimpleGroup has no painter and is never wrapped
+- skin ace: SetDisabled and SetValue keep the skin's colors and mark
+- skin ace: the Slider's edit box keeps the skin's edge through AceGUI's hover recolor
+- skin ace: a Label keeps the skin's font through its host's SetFontObject, and gives the host's back
+- skin ace: a raising restore still returns the widget to the pool, logged once
+- skin ace: a host OnRelease and the skin's restore both run, and a re-acquire is stock
+- skin ace: a widget whose wrapper a host replaced is put back when it is acquired again
+- skin ace: the dropdown's pull-out wears the owner's skin while open and is stock on close
+- skin ace: Ka0s Default to Obsidian with a page open repaints its rows after the deferred re-render
+- skin ace: an eui owner's rows are painted from EllesmereUI's colors with zero EllesmereUI calls
+- skin ace: a widget another skinning addon skinned is left to it
+- skin ace: PaintAceTree paints a host container's widgets
+- skin ace: Skin:OnRelease chains once and answers its function
+
 ### test_widgets.lua (58)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
@@ -2181,7 +2205,7 @@ Total.
 - reset tooltip: notes.resetAll is the button's own and does not reach the member
 - reset tooltip: OptionsCompose is at minor 11 or later
 
-### test_options_skin.lua (14)
+### test_options_skin.lua (15)
 
 - options skin: a page with no registered owner is today's paint, call for call
 - options skin: an owner-less page records nothing in the Skin major
@@ -2197,6 +2221,7 @@ Total.
 - options skin: the id list's help mark takes the skin's tints away from Ka0s Default
 - options skin: the keybind rows take the skin's text roles away from Ka0s Default
 - options skin: Ka0s Default leaves the help mark and the keybind rows as they were
+- options skin: the id-suggestion popup takes the skin, and Ka0s Default gives its edge back
 
 ### test_options_compose_skin.lua (10)
 
@@ -3353,6 +3378,7 @@ Total.
 | test_skin_paint.lua | 29 |
 | test_skin_paint_controls.lua | 23 |
 | test_skin_eui.lua | 29 |
+| test_skin_ace.lua | 21 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3408,7 +3434,7 @@ Total.
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
-| test_options_skin.lua | 14 |
+| test_options_skin.lua | 15 |
 | test_options_compose_skin.lua | 10 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
@@ -3459,4 +3485,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2945** |
+| **Total** | **2967** |

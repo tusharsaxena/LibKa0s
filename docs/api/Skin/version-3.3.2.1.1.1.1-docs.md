@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 3.3.2.1.1.1
+# `LibKa0s-Skin-1.0` — version 3.3.2.1.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **3** · `SkinDefs.lua` minor **3** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **3** · `SkinDefs.lua` minor **3** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
 | Shipped in | v1.78.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 3, SkinDefs = 3, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 3, SkinDefs = 3, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
 
 ## What this major is
 
@@ -26,7 +26,9 @@ This version is the engine, the nine skins, the paint primitives and the Ellesme
 **Ka0s Default**, whose tokens are today's constants, so an addon that never picks another skin
 draws exactly what it drew before, eight more translated from the owner's mockups (*The eight
 skins*, below), the primitives the facade calls (*The primitives*, below), and the `eui` source,
-which hands the vocabulary to EllesmereUI's own skinning facade (*The EllesmereUI provider*, below).
+which hands the vocabulary to EllesmereUI's own skinning facade (*The EllesmereUI provider*, below),
+and the AceGUI rows a settings page acquires, painted for its owner and given back to AceGUI's shared
+pool stock (*AceGUI rows*, below).
 
 The engine holds four things, each keyed by **owner** (the consumer's addon folder name), because
 LibStub keeps one copy of this major for the whole client and two addons may wear different skins
@@ -43,14 +45,15 @@ The engine paints nothing itself: the primitives (`S.Shell`, `S.Button`, ...) ar
 `SkinPaint.lua`'s, `SkinPaintExtras.lua`'s and `SkinPaintControls.lua`'s (*The primitives*,
 below), and a payload without them has a facade whose every vocabulary entry answers nil and
 touches nothing. The EllesmereUI provider (`source = "eui"`) is `SkinEUI.lua`'s; without it `eui` is
-a stored choice whose tokens fall back to the owner's Ka0s skin.
+a stored choice whose tokens fall back to the owner's Ka0s skin. The AceGUI rows are `SkinAce.lua`'s;
+without it a settings page's widgets stay stock AceGUI whatever its owner wears.
 
 Depends on LibStub and `LibKa0s-Core-1.0` (minor 1 or newer), and on no addon framework; the
 primitives also read LibSharedMedia-3.0 at call time when it is loaded (faces, border art), and
 `Shell` calls `Core.ApplySkin`. `SkinDefs.lua`, the three primitive files and `SkinEUI.lua` are
 paired on the shell's minor (`__defsMinor` / `__defsShellMinor`, `__paintMinor` / `__paintShellMinor`,
 `__extrasMinor` / `__extrasShellMinor`, `__controlsMinor` / `__controlsShellMinor`, `__euiMinor` /
-`__euiShellMinor`), the Widgets
+`__euiShellMinor`, and `SkinAce.lua`'s `__aceMinor` / `__aceShellMinor`), the Widgets
 and Sim idiom, so a skin table or a primitive from one vendored copy never attaches to an engine
 from another. A payload without it
 still runs the engine: no skin is registered and every token resolves to nil.
@@ -85,6 +88,9 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `SOURCES` | `{ "ka0s", "eui" }` | The two skin sources. |
 | `SCHEMA` | array | Every token, as `{ name, kind, nilable, group }` (the reference below). Read-only. |
 | `VOCAB` | array | The names the facade carries as trampolines. |
+| `Skin:PaintAce(owner, widget)` | boolean | `SkinAce.lua`. Paints an AceGUI widget a host acquired for `owner`'s page and wraps its release so the widget goes back to the pool stock; see *AceGUI rows*. Answers false, painting nothing, for an owner that is not registered, an owner on Ka0s Default, a type with no painter, or a widget another skinning addon skinned. |
+| `Skin:PaintAceTree(owner, container)` | count | `SkinAce.lua`. `PaintAce` over `container` and every widget under it (`children`, depth first); answers how many it painted. |
+| `Skin:OnRelease(widget, fn)` | fn | `SkinAce.lua`. Chains `fn(widget)` onto the widget's own `OnRelease` for its next release: the previous `OnRelease` is put back first, `fn` runs under pcall (a failure is logged once) and the previous one always runs after it. The way a host's release work and the skin's restore coexist, since AceGUI keeps one callback per event name (options-ui-§19). |
 | `Skin:GetEUIStatus(owner)` | status | `SkinEUI.lua`. Whether the owner may choose `eui`, and why not: `{ ok, painted, refused, conditions }`; see *The EllesmereUI provider*. |
 | `skins`, `owners`, `painted`, `byOwner`, `facades`, `prim`, `euiFacade`, `euiRegistered`, `euiPainted`, `euiRefused`, `shared` | tables | The engine's state and the provider's (`SkinEUI.lua` writes the `eui*` tables and `shared`; `Skin.lua` declares `euiPainted` and reads it), named so the major's other files and a newer minor can reach it. **Not contract**, and neither are the `__`-prefixed members (`__Tokens`, the owner's whole token table, which the primitives, `Token` and `Color` read; `__MarkShared(target)`, which the library's own files use to mark a pooled or shared object, weak-keyed, so it is never handed to EllesmereUI): read the skin through the members above and the facade. `painted`, each `byOwner[owner]` and `shared` are weak-keyed. |
 
@@ -1154,13 +1160,79 @@ Register with `opts.log` (the debug console's writer), list `EllesmereUI` under 
 read the choice's availability from `GetEUIStatus`. A host never calls `EllesmereUI.RegisterSkin`
 for itself once it adopts.
 
+## AceGUI rows
+
+`SkinAce.lua` (minor 1, Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/` item LK-08). AceGUI keeps
+**one pool per widget type for the whole client**: a CheckBox one Ka0s page releases can be the next
+one another addon's options acquire. So an AceGUI row is painted outside the frame registry, for
+exactly one acquisition, and is **never repainted in place**.
+
+**Where it is painted.** One choke point: the Options major hands each instance to
+`__AttachSkinAce(O, d)` (internal) when it resolves AceGUI (`lib:New`, `CreateOptionsPanel`), which,
+once `d.addonName` is a registered owner, replaces `O.AceGUI` with a **proxy**: its `Create(type)` is
+AceGUI's own Create followed by `PaintAce(d.addonName, widget)`; every other field and method is
+AceGUI's (a method called on the proxy runs on AceGUI itself; a write lands on AceGUI). An
+unregistered name, no name, no AceGUI or no `SkinAce.lua` leave `O.AceGUI` as AceGUI itself. A host
+that acquires a widget another way paints it with `PaintAce` or `PaintAceTree`.
+
+**What a paint does.** Only for a registered owner away from Ka0s Default (Ka0s Default is stock
+AceGUI, as today: nothing is painted and nothing is wrapped). Stock regions are faded by alpha, their
+prior alpha recorded; fonts, text and vertex colors and backdrops are recorded before the first
+change; Ka0s overlays are textures made **once per widget object** and reused by every later
+acquisition. State lives in the weak `lib.__ace` table (not contract); the only things written onto a
+widget's table are the release wrapper and the durability post-hooks below.
+
+| Widget | What its owner's skin paints |
+|---|---|
+| `CheckBox` | The stock box, check and highlight faded; a box over the stock box's place (`check.texture` art or `check.bg`, a `check.border` edge) and a mark inside it (`check.markTexture` or `check.mark`) shown while AceGUI shows its check, at half alpha while disabled or in the tri-state's unknown value; the label `text.body` (`text.disabled`), the description `text.muted`; the body font |
+| `Slider` | The bar's backdrop flattened into `slider.track` / `slider.trackBorder` (when the skin sets a track), the thumb `slider.thumb`; the edit box's backdrop into `input.bg` / `input.border`, its text `input.text`; the label `text.body`, the range labels `text.muted` |
+| `Dropdown` | The template's pieces faded; a box over the 25px bar AceGUI clicks (`button_cover`) in `input.bg` / `input.border`; the value `input.text`, the label `text.body`. Its **pull-out** is painted on open for the dropdown's owner (`menu.bg` / `menu.border`, the items' text `menu.text`, their highlight `menu.hover`, the scroll thumb `scroll.thumb`) and put back on close, on `Clear` and on the dropdown's release |
+| `EditBox` | The template's pieces faded; a box in `input.bg` / `input.border` (`input.focus` while it has the keys); the text `input.text`; the label `text.body`; its "Okay" button as a `Button` |
+| `MultiLineEditBox` | The scroll backdrop into `input.bg` / `input.border`; the text `input.text`; the label `text.body`; its button as a `Button` |
+| `Button` | The template's art faded; a box in `btn.bg` (its gradient) / `btn.border`; the label `btn.text`, `btn.hover` under the pointer, `text.disabled` while disabled |
+| `Heading` | The label `text.heading`; the two stock rules faded and redrawn as 1px `section.rule` lines |
+| `Label`, `InteractiveLabel`, `Icon` | The label `text.body` and the body font (a color the host sets after acquiring wins) |
+| `ColorPicker` | The label `text.body`; a 1px `input.border` edge around the swatch |
+| `InlineGroup` | The title `text.heading`; the border frame's backdrop into `panel.bg` / `panel.border` |
+| `ScrollFrame` | The bar's stock background faded under a `scroll.track` region (the always-shown thumb is Options' own) |
+
+`SimpleGroup` has no art and no painter. **Stock, always:** LSM30_* widgets and their pull-out lists,
+TabGroup, and Blizzard's `ColorPickerFrame` (the spec's non-goals). Every field is guarded: a widget
+type or a field a later AceGUI drops is skipped.
+
+**The release.** `PaintAce` chains the restore onto the widget's own `OnRelease` (`Skin:OnRelease`):
+before AceGUI's own `OnRelease` runs, every recorded alpha, font, color and backdrop goes back, every
+overlay hides, the pull-out is put back and the owner entry clears. The wrapper puts the previous
+`OnRelease` back first, restores under pcall (a failure is logged once through the error handler) and
+always calls the previous one, because `AceGUI:Release` calls `OnRelease` raw: a failing restore never
+keeps a widget out of the pool. A widget whose wrapper a host replaced outright comes back through the
+proxy still owned, and is put back before it is painted again.
+
+**Durable.** AceGUI recolors a widget's text from `SetDisabled` (a CheckBox's `SetValue` calls it), the
+Slider recolors its edit box's edge on enter and leave, a CheckBox's `SetType` resizes its box, and a
+Label's `SetFontObject` sets a new font. Each is post-hooked **once per widget object**
+(`hooksecurefunc` / `HookScript`), and the hook re-applies the owner's tokens only while the widget is
+owned; a hook that rides the widget into another addon's hands does nothing there. A Label's
+`SetFontObject` first makes the host's new font the one its release puts back.
+
+**A skin switch** never walks AceGUI rows. The Options instance re-renders its owner's open pages one
+frame later (`OptionsScroll.lua` minor 6): the re-render releases every row, which gives it back stock,
+and acquires fresh ones, painted in the new skin (or left alone under Ka0s Default).
+
+**Other skinning addons.** A widget ElvUI or AddOnSkins already skinned (a frame carrying their
+`backdrop`, `template` or `isSkinned` mark) is left to them: `PaintAce` answers false.
+
+**Under `eui`.** A pooled widget is never handed to an EllesmereUI primitive (*The EllesmereUI
+provider*): the painting is this file's, from the provider's derived tokens.
+
+Cases: `tests/test_skin_ace.lua`, on a pooled AceGUI fake with AceGUI's anatomy
+(`tests/fixture_skin_ace.lua`).
+
 ## What is not here
 
 - **No routing yet.** The library's own windows, widgets and settings chrome still paint with
   their constants; they take an owner and route through the primitives in later files of this
   release's run.
-- **No AceGUI.** Skinning the AceGUI rows a settings page acquires, and restoring them on release,
-  is a later file of this major (`SkinAce.lua`).
 - **No SavedVariables.** The host stores `{ source, skin }` in its own profile; `SetChoice` never
   writes it.
 - **No migration stamp.** `ResetToSkin` is a helper; the step that runs it is each addon's.
@@ -1173,5 +1245,7 @@ the major is absent rather than half-wired. Without `SkinDefs.lua` the engine st
 token resolves to nil, and every primitive paints only what it has a token for (`Shell` is still
 `Core.ApplySkin(frame)`). Without `SkinPaint.lua` neither `SkinPaintExtras.lua` nor
 `SkinPaintControls.lua` attaches, and every vocabulary entry answers nil. Without `SkinEUI.lua`
-`eui` is a stored choice on the owner's Ka0s skin and nothing is registered with EllesmereUI. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
+`eui` is a stored choice on the owner's Ka0s skin and nothing is registered with EllesmereUI. Without
+`SkinAce.lua` (which needs `SkinPaint.lua`'s helpers from the same copy) no AceGUI row is painted and
+no Options instance's `O.AceGUI` is wrapped. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
 the LibStub race later keeps every owner, record and facade; the resolve cache alone is rebuilt.

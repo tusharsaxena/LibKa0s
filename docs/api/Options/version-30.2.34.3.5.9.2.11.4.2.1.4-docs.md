@@ -13,7 +13,7 @@
 | Shipped in | v1.77.0 |
 | Status | Superseded |
 | Supersedes | [version 29.2.34.2.5.9.1.7.4.2.1](./version-29.2.34.2.5.9.1.7.4.2.1-docs.md) — whose IdList suggestion list stayed open over a covered page when combat started, which had no shared strata-row tooltip, and no key binding model and no Keybindings tab |
-| Superseded by | [version 31.2.35.4.6.10.3.12.5.3.2.5](./version-31.2.35.4.6.10.3.12.5.3.2.5-docs.md) |
+| Superseded by | [version 32.3.35.4.6.10.3.12.6.3.2.5](./version-32.3.35.4.6.10.3.12.6.3.2.5-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua` and `OptionsKeybinds.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 30, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 3, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 2, OptionsCompose = 11, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1, OptionsKeybinds = 4 }` |
 
@@ -3036,10 +3036,12 @@ that can observe the difference is one passing **both** paths — which no host 
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
 
-## Moving to version 31.2.35.4.6.10.3.12.5.3.2.5
+## Moving to version 32.3.35.4.6.10.3.12.6.3.2.5
 
-**Take it; nothing moves.** Version 31.2.35.4.6.10.3.12.5.3.2.5 is this surface. The descriptor's `addonName` also
+**Take it; nothing moves.** Version 32.3.35.4.6.10.3.12.6.3.2.5 is this surface. The descriptor's `addonName` also
 names the pages' skin owner, and a registered owner's page wears its skin; an unregistered name, no
 name and a client with no `LibKa0s-Skin-1.0` draw exactly what this version draws. The group
-composers take an opt-in `fromSkin`, and `PatchAlwaysShowScrollbar` an optional owner. See
-[version 31.2.35.4.6.10.3.12.5.3.2.5](./version-31.2.35.4.6.10.3.12.5.3.2.5-docs.md).
+composers take an opt-in `fromSkin`, and `PatchAlwaysShowScrollbar` an optional owner. For a
+registered owner `O.AceGUI` is a proxy that paints each widget it creates (AceGUI's own fields and
+methods read through it unchanged). See
+[version 32.3.35.4.6.10.3.12.6.3.2.5](./version-32.3.35.4.6.10.3.12.6.3.2.5-docs.md).

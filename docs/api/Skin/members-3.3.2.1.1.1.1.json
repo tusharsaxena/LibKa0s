@@ -1,6 +1,6 @@
 {
   "major": "LibKa0s-Skin-1.0",
-  "versionKey": "3.3.2.1.1.1",
+  "versionKey": "3.3.2.1.1.1.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Skin", "minor": 3 },
@@ -8,7 +8,8 @@
     { "file": "SkinPaint", "minor": 2 },
     { "file": "SkinPaintExtras", "minor": 1 },
     { "file": "SkinPaintControls", "minor": 1 },
-    { "file": "SkinEUI", "minor": 1 }
+    { "file": "SkinEUI", "minor": 1 },
+    { "file": "SkinAce", "minor": 1 }
   ],
   "members": [
     { "name": "Color", "kind": "function" },
@@ -21,8 +22,11 @@
     { "name": "IsFromSkin", "kind": "function" },
     { "name": "IsOwner", "kind": "function" },
     { "name": "OnLooksChanged", "kind": "function" },
+    { "name": "OnRelease", "kind": "function" },
     { "name": "OnReloadRequest", "kind": "function" },
     { "name": "Owners", "kind": "function" },
+    { "name": "PaintAce", "kind": "function" },
+    { "name": "PaintAceTree", "kind": "function" },
     { "name": "PendingReload", "kind": "function" },
     { "name": "RegisterOwner", "kind": "function" },
     { "name": "RegisterSkin", "kind": "function" },

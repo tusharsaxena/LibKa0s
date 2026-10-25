@@ -19,7 +19,10 @@ if not lib then return end
 -- Minor 5: the page's skin owner (the Options descriptor's `addonName`, once that addon called
 -- LibKa0s-Skin-1.0's RegisterOwner): the always-shown bar's thumb takes the owner's scroll tints, and
 -- the chrome helpers every Options file paints through (LK-07 of the skinning run).
-local SCROLL_MINOR = 5
+-- Minor 6: `lib.__AttachSkinAce`, the bridge to LibKa0s-Skin-1.0's AceGUI rows (SkinAce.lua), and
+-- the owner's skin switch re-renders the open pages ONE FRAME LATER, so a release gives every row
+-- back stock and a re-acquire paints it in the new skin (LK-08 of the skinning run).
+local SCROLL_MINOR = 6
 -- Paired on the SHELL's minor as well as this file's own. The scroll counter alone is not enough:
 -- two vendored copies can ship the same scroll minor over different Options.lua minors, and then
 -- the higher shell wins the LibStub race while the first-loaded copy's patch stays attached to it.
@@ -307,6 +310,23 @@ local function paintPage(owner, panel)
   end
 end
 
+--- Hand an instance's `O.AceGUI` to LibKa0s-Skin-1.0's AceGUI rows (SkinAce.lua's
+--- `__AttachSkinAce`, minor 6), which wraps it in a proxy that paints every widget it creates for the
+--- descriptor's `addonName` once that addon is a registered skin owner. Options.lua's lib:New and
+--- OptionsRegistry.lua's CreateOptionsPanel call it after each resolve of AceGUI. Without the Skin
+--- major, without SkinAce.lua, without an AceGUI or without a registered owner, `O.AceGUI` is left
+--- exactly as it was. Internal.
+function lib.__AttachSkinAce(O, d)
+  local Skin = skinMajor()
+  local attach = Skin and Skin.__AttachSkinAce
+  if type(attach) ~= "function" then return end
+  local ok, err = pcall(attach, O, d)
+  if not ok then
+    local h = type(geterrorhandler) == "function" and geterrorhandler()
+    if type(h) == "function" then h(err) end
+  end
+end
+
 --- Put the patch and the chrome's skin helpers on an instance. Called from lib:New, so a host reaches
 --- the patch the same way it reaches every other member -- the patch itself is stateless and
 --- lib-level, because a scroll widget is shared pool property. The `__chrome*` members are internal:
@@ -320,9 +340,24 @@ function lib.__AttachScroll(O, d)
   local pages = setmetatable({}, { __mode = "k" })
   local hooked = false
 
+  -- The structural re-render a skin switch owes the open pages, one frame later (minor 6): an
+  -- AceGUI row is never repainted in place (SkinAce.lua), so the switch releases every row, which
+  -- gives it back stock, and re-acquires it, which paints the new skin (or nothing, on Ka0s
+  -- Default). Deferred so it runs once per frame however many switches land in it, and outside the
+  -- click that made the switch.
+  local renderPending = false
+  local function rerender()
+    renderPending = false
+    if O.RefreshAllPanels then O.RefreshAllPanels() end
+  end
+
   local function onLooks()
     for panel in pairs(pages) do pcall(paintPage, owner, panel) end
-    if O.RefreshAllPanels then O.RefreshAllPanels() end
+    if renderPending then return end
+    local after = C_Timer and C_Timer.After
+    if type(after) ~= "function" then return rerender() end
+    renderPending = true
+    after(0, rerender)
   end
 
   --- The page owner's facade, or nil; the first answer for a registered owner installs the
