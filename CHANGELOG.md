@@ -214,12 +214,13 @@ copied).
   trampoline into the live copy of this major, so a newer minor still receives the facade; every
   owner not yet registered is retried at each `RegisterOwner`, on `ADDON_LOADED("EllesmereUI")`
   and at `PLAYER_LOGIN`, on one frame made at the first `RegisterOwner` and registered through
-  Core's `SafeRegisterEvent` (resolved at call time; no Core floor rises).
+  Core's `SafeRegisterEvent` (resolved at call time; no Core floor rises; with a Core that lacks it
+  no retry frame is made and owners register only at `RegisterOwner`).
 - **The gate**, `Skin:GetEUIStatus(owner)`: `{ ok, painted, refused, conditions }`, the four
   conditions `eui` (EllesmereUI and EllesmereUIBlizzardSkin loaded), `master`
   (`EllesmereUIDB.thirdPartySkinsOff` not truthy), `own` (`thirdPartySkinAddons[owner]` not false)
   and `facade` (EllesmereUI handed the owner its facade this session; hint "Reload the UI."), each
-  `{ key, ok, label, hint }`, strings in `EUI_STRINGS`. The two `EllesmereUIDB` reads are
+  `{ key, ok, label, hint }` (US English; a caller translates by `key`). The two `EllesmereUIDB` reads are
   library-stack-§6's skinning exception (WowAddonStandards v2.89.0), confined to `SkinEUI.lua`; no
   register row is added, and `tests/test_skin_eui.lua` fails when the name appears in another payload
   file.
@@ -233,15 +234,16 @@ copied).
   that raises stops EllesmereUI painting the owner; either is latched (`euiRefused`) and written
   once through the owner's new `opts.log`. Ka0s-only option keys are stripped before EllesmereUI
   sees a call. Pooled and shared objects (AceGUI widgets and their frames, and targets marked with
-  the new `Skin:MarkShared`) are never handed to EllesmereUI.
-- **`Skin.lua` minor 2**: `Skin:Tokens(owner)`, the owner's complete token table (EllesmereUI's
-  derived table while it paints the owner; `Token`, `Color` and the primitives read it);
+  the library's internal `__MarkShared`) are never handed to EllesmereUI. A facade's shape is
+  checked the moment it arrives, so `GetEUIStatus` never offers a choice the provider would refuse.
+- **`Skin.lua` minor 2**: `Token` and `Color` answer EllesmereUI's derived tokens while it paints
+  the owner (through the internal `__Tokens`, which the primitives read too);
   `Skin:OnReloadRequest(owner, fn)`, fired once when `PendingReload` first turns true; `opts.log`
   on `RegisterOwner`; and the provider's four hook slots. **Behavior change in the unreleased
   engine:** leaving an `eui` that EllesmereUI never painted is now an ordinary live change, not a
   reload (the owner was wearing its Ka0s skin all along); `tests/test_skin.lua`'s reload case now
   sets the latch, and a new case pins the ordinary change.
-- **`SkinPaint.lua` minor 2**: the primitives read `Skin:Tokens`, and Ka0s Default's stock rule is
+- **`SkinPaint.lua` minor 2**: the primitives read `Skin:__Tokens`, and Ka0s Default's stock rule is
   off while EllesmereUI paints the owner (a pooled stock widget is painted from EllesmereUI's colors).
 
 New suite `tests/test_skin_eui.lua` with a test-local EllesmereUI fake (`tests/fixture_skin_eui.lua`,

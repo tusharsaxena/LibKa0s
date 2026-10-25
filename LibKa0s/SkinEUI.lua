@@ -30,18 +30,21 @@
 --   * Registration: `RegisterOwner` registers the owner with EllesmereUI through a trampoline into
 --     whichever copy of this major is live when EllesmereUI calls back, and every owner not yet
 --     registered is retried at each RegisterOwner, on ADDON_LOADED("EllesmereUI") and at
---     PLAYER_LOGIN (Core's SafeRegisterEvent, on a frame made at the first RegisterOwner).
+--     PLAYER_LOGIN (Core's SafeRegisterEvent, on a frame made at the first RegisterOwner). That
+--     member is resolved at call time and is the major's one Core call: with a Core that lacks it
+--     no retry frame is made, and owners register only at RegisterOwner.
 --   * EnterEUI, one function for the live switch and for the facade arriving late: it gives back
 --     the Ka0s paint of every recorded frame an EllesmereUI primitive will take, replays the owner's
 --     records (EllesmereUI's names go to EllesmereUI, the Ka0s extras repaint from its getters) and
 --     latches `lib.euiPainted[owner]` for the session. From then on a gate failure or a source change
 --     asks for a reload and never falls back live.
 --   * Before EllesmereUI paints, an owner on `eui` wears its Ka0s skin (the live fallback).
---   * Fail closed: a facade missing a needed primitive is refused before anything is painted, and
+--   * Fail closed: a facade missing a needed primitive is refused when it arrives (so the gate
+--     never offers the choice) and before anything is painted, and
 --     a primitive that raises stops EllesmereUI painting that owner; either is latched and logged
 --     once through the owner's `opts.log`.
 --   * Ka0s-only option keys (`primary`, `role`, ...) are stripped before EllesmereUI sees a call.
---   * Pooled and shared objects (AceGUI widgets, `Skin:MarkShared` targets: the library's popup
+--   * Pooled and shared objects (AceGUI widgets, `Skin:__MarkShared` targets: the library's popup
 --     menu, the reorder ghost, any library singleton) are NEVER handed to EllesmereUI: they keep the
 --     library's technique, colored from EllesmereUI's getters, because a one-way paint on a pooled
 --     frame would follow it into another addon.
@@ -192,7 +195,7 @@ local function parentOf(t)
 end
 
 --- True for a pooled or shared object: an AceGUI widget or its frame (or a region of that frame),
---- or a target marked with `Skin:MarkShared`.
+--- or a target marked with `Skin:__MarkShared`.
 local function isShared(t)
   if type(t) ~= "table" then return true end
   if lib.shared[t] or isAceWidget(t) or aceFrame(t) then return true end
@@ -202,8 +205,9 @@ end
 
 --- Mark `target` as pooled or shared (the library's popup menu, its reorder ghost, an AceGUI widget
 --- the library acquired): it is never handed to an EllesmereUI primitive, and keeps the library's
---- technique under `eui`. Weak: a collected target leaves the set. Answers target.
-function lib:MarkShared(target)
+--- technique under `eui`. Weak: a collected target leaves the set. Answers target. Internal: the
+--- library's own files mark their singletons; it is not host contract.
+function lib:__MarkShared(target)
   if type(target) == "table" then self.shared[target] = true end
   return target
 end
@@ -382,6 +386,10 @@ function lib:__OnEUIFacade(owner, S)
   if type(owner) ~= "string" or type(S) ~= "table" then return end
   self.euiFacade[owner] = S
   self.__euiTok[owner] = nil
+  -- The shape is checked on arrival, whatever the owner's source, so GetEUIStatus never offers
+  -- a choice EnterEUI would refuse.
+  local missing = missingFrom(S)
+  if missing then refuse(owner, "its facade lacks " .. missing) end
   if not self.__euiLooks[owner] and type(S.OnLooksChanged) == "function" then
     self.__euiLooks[owner] = true
     local ok, err = pcall(S.OnLooksChanged, function()
@@ -466,9 +474,9 @@ end
 
 -- ── the status the Appearance tab reads ──────────────────────────────────────────────────────
 
---- The four conditions' US English, by key; `%s` is the owner's label. A caller that translates
---- overrides them by key.
-lib.EUI_STRINGS = {
+-- The four conditions' US English, by key; `%s` is the owner's label. A caller that translates
+-- overrides them by `conditions[i].key` (the Appearance tab's spec.strings).
+local EUI_STRINGS = {
   eui = { "EllesmereUI and its Blizzard Skin module are loaded",
           "Install and enable EllesmereUI, including EllesmereUI Blizzard Skin." },
   master = { "EllesmereUI third-party skinning is on",
@@ -479,7 +487,7 @@ lib.EUI_STRINGS = {
 }
 
 local function cond(key, ok, label)
-  local s = lib.EUI_STRINGS[key]
+  local s = EUI_STRINGS[key]
   return { key = key, ok = ok and true or false, label = s[1]:format(label), hint = s[2]:format(label) }
 end
 

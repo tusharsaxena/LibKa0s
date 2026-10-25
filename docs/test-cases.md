@@ -552,7 +552,7 @@ Total.
 - skin controls: every primitive's second call makes no new frame, region or hook
 - skin controls: every primitive's repaint reuses its regions and paints the new skin
 
-### test_skin_eui.lua (27)
+### test_skin_eui.lua (29)
 
 - skin eui: SkinEUI attaches to the shell and makes no frame until an owner registers
 - skin eui: without SkinEUI the engine keeps eui a stored choice on the owner's Ka0s skin
@@ -575,6 +575,8 @@ Total.
 - skin eui: a gate that closes after the paint asks for a reload and never falls back live
 - skin eui: moving between Ka0s skins while on a painted eui with a closed gate asks for the reload
 - skin eui: a facade missing a primitive is refused before any paint, latched and logged once
+- skin eui: a misshapen facade closes the gate when it arrives, before the owner picks eui
+- skin eui: a facade lacking only the optional SetTabSelection is accepted
 - skin eui: a primitive that raises stops EllesmereUI painting the owner, once
 - skin eui: Ka0s-only option keys are stripped before EllesmereUI sees a call
 - skin eui: an eui-owned AceGUI CheckBox makes zero calls to EllesmereUI
@@ -3293,7 +3295,7 @@ Total.
 | test_skin_defs.lua | 15 |
 | test_skin_paint.lua | 29 |
 | test_skin_paint_controls.lua | 23 |
-| test_skin_eui.lua | 27 |
+| test_skin_eui.lua | 29 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3397,4 +3399,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2895** |
+| **Total** | **2897** |

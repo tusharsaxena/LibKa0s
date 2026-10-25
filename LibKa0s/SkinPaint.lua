@@ -119,9 +119,9 @@ local function skinKey(owner)
   return lib.DEFAULT
 end
 
---- The owner's resolved token table (shared; never written): `Skin:Tokens`, so while EllesmereUI
+--- The owner's resolved token table (shared; never written): `Skin:__Tokens`, so while EllesmereUI
 --- paints the owner the primitives read the table SkinEUI.lua derives from EllesmereUI's getters.
-function P.T(owner) return lib:Tokens(owner) end
+function P.T(owner) return lib:__Tokens(owner) end
 
 --- True when the owner wears Ka0s Default (or no skin is registered at all). Never while EllesmereUI
 --- paints the owner: the library's own technique then paints what EllesmereUI is not handed (the

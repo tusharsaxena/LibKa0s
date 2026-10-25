@@ -186,7 +186,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.2.2.1.1.1](./Skin/version-2.2.2.1.1.1-docs.md) | **`Skin.lua` 2** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `Tokens`, `OnReloadRequest` and the provider's hook slots) · `SkinDefs.lua` 2 (the token schema and the nine skins) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`, `MarkShared`) | v1.78.0 (unreleased) | **Current** |
+| [2.2.2.1.1.1](./Skin/version-2.2.2.1.1.1-docs.md) | **`Skin.lua` 2** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots) · `SkinDefs.lua` 2 (the token schema and the nine skins) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) | v1.78.0 (unreleased) | **Current** |
 
 ### `LibKa0s-Widgets-1.0`
 

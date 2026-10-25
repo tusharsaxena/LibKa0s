@@ -45,11 +45,13 @@
 --     owner, and leaving it after that paint asks for a reload. SkinEUI.lua reaches this file
 --     through four hook slots, each nil without it: `__euiOnOwner(owner)` (RegisterOwner),
 --     `__euiRoute(owner, name)` (which primitive a call and a replay run), `__euiTokens(owner)`
---     (what `Tokens` answers) and `__euiOnChoice(owner)` (SetChoice onto `eui`);
+--     (what `__Tokens` answers) and `__euiOnChoice(owner)` (SetChoice onto `eui`);
 --   * no OnUpdate, no events: a repaint is one pass over the owner's recorded frames.
 --
--- Depends on LibStub and LibKa0s-Core-1.0. No Core member is called; the gate keeps the payload's
--- presence a single question.
+-- Depends on LibStub and LibKa0s-Core-1.0. This file calls no Core member; the gate keeps the
+-- payload's presence a single question. The major's one Core call is SkinEUI.lua's: it resolves
+-- Core's SafeRegisterEvent at call time, and with a Core that lacks it makes no ADDON_LOADED /
+-- PLAYER_LOGIN retry frame (owners then register with EllesmereUI only at RegisterOwner).
 
 local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
@@ -378,8 +380,9 @@ end
 
 --- The owner's complete token table: its skin resolved (`ResolveSkin`), or, while EllesmereUI paints
 --- the owner, the table SkinEUI.lua derives from EllesmereUI's accent, panel color and font. Shared:
---- never write to it. An unregistered owner reads Ka0s Default.
-function lib:Tokens(owner)
+--- never write to it. An unregistered owner reads Ka0s Default. Internal (SkinPaint.lua's P.T and
+--- `Token` read it); a host reads tokens through `Token` and `Color`.
+function lib:__Tokens(owner)
   local hook = self.__euiTokens
   local t = type(hook) == "function" and hook(owner) or nil
   if t then return t end
@@ -387,10 +390,10 @@ function lib:Tokens(owner)
   return self:ResolveSkin(skin)
 end
 
---- The owner's resolved token `name` (from `Tokens`): a color is `{ r, g, b, a }`, shared, never
+--- The owner's resolved token `name` (from `__Tokens`): a color is `{ r, g, b, a }`, shared, never
 --- written to. An unregistered owner reads Ka0s Default. nil for a token the skin leaves alone.
 function lib:Token(owner, name)
-  return self:Tokens(owner)[name]
+  return self:__Tokens(owner)[name]
 end
 
 --- The owner's color token as r, g, b, a (alpha 1 when the token has three components), or nil.

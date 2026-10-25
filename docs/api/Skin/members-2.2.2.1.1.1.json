@@ -13,7 +13,6 @@
   "members": [
     { "name": "Color", "kind": "function" },
     { "name": "DEFAULT", "kind": "string" },
-    { "name": "EUI_STRINGS", "kind": "table" },
     { "name": "FROM_SKIN", "kind": "string" },
     { "name": "For", "kind": "function" },
     { "name": "GetChoice", "kind": "function" },
@@ -21,7 +20,6 @@
     { "name": "GetSkin", "kind": "function" },
     { "name": "IsFromSkin", "kind": "function" },
     { "name": "IsOwner", "kind": "function" },
-    { "name": "MarkShared", "kind": "function" },
     { "name": "OnLooksChanged", "kind": "function" },
     { "name": "OnReloadRequest", "kind": "function" },
     { "name": "Owners", "kind": "function" },
@@ -37,7 +35,6 @@
     { "name": "SetChoice", "kind": "function" },
     { "name": "Skins", "kind": "function" },
     { "name": "Token", "kind": "function" },
-    { "name": "Tokens", "kind": "function" },
     { "name": "Track", "kind": "function" },
     { "name": "Untrack", "kind": "function" },
     { "name": "VOCAB", "kind": "table" },

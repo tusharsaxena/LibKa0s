@@ -13,7 +13,7 @@
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
-| Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`; no Core member is called) |
+| Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 2, SkinDefs = 2, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1 }` |
 
 ## What this major is
@@ -68,8 +68,7 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `Skin:PendingReload(owner)` | boolean | True once the owner needs a reload: it left `eui`, or a gate condition failed, after EllesmereUI painted it this session. |
 | `Skin:OnReloadRequest(owner, fn)` | fn | Calls `fn(owner)` once, when `PendingReload` first turns true: on the switch `SetChoice` answers `reload = true` for, or when the gate closes after EllesmereUI painted the owner (read through `GetEUIStatus`). Under pcall; the same function twice is one entry. A caller raises its reload popup from this **or** from `SetChoice`'s answer, not both. |
 | `Skin:OnLooksChanged(owner, fn)` | fn | Calls `fn(source, skin)` after each change of the owner's skin, under pcall. The same function twice is one entry. |
-| `Skin:Tokens(owner)` | token table | The owner's complete token table: its skin resolved (`ResolveSkin`), or, while EllesmereUI paints the owner, Ka0s Default with EllesmereUI's accent, panel color and font over it (*The EllesmereUI provider*). Shared: never write to it. An unregistered owner reads Ka0s Default. The primitives read this. |
-| `Skin:Token(owner, name)` | value | The owner's resolved token, from `Tokens`. A color is `{ r, g, b, a }`, a shared table: never write to it. nil for a token the skin leaves alone. |
+| `Skin:Token(owner, name)` | value | The owner's resolved token: from its skin resolved (`ResolveSkin`), or, while EllesmereUI paints the owner, from Ka0s Default with EllesmereUI's accent, panel color and font over it (*The EllesmereUI provider*). An unregistered owner reads Ka0s Default. A color is `{ r, g, b, a }`, a shared table: never write to it. nil for a token the skin leaves alone. |
 | `Skin:Color(owner, name)` | r, g, b, a | A color token's components, alpha 1 when it has three; nil otherwise. |
 | `Skin:Resolve(owner, kind, value, fromSkin)` | value | `value`, or the owner's token `kind` when `value` is `FROM_SKIN` or `fromSkin` is true. |
 | `Skin.ResetToSkin(profile, keys)` | count | Puts each listed key back on the skin (R3). A key holding a color (a table) keeps its color and gets its companion `<key>FromSkin = true`; any other key takes `FROM_SKIN`. Keys may be dotted paths (`"font.face"`); a path through a missing table is skipped and no table is created. The colon form works too. |
@@ -87,9 +86,7 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `SCHEMA` | array | Every token, as `{ name, kind, nilable, group }` (the reference below). Read-only. |
 | `VOCAB` | array | The names the facade carries as trampolines. |
 | `Skin:GetEUIStatus(owner)` | status | `SkinEUI.lua`. Whether the owner may choose `eui`, and why not: `{ ok, painted, refused, conditions }`; see *The EllesmereUI provider*. |
-| `Skin:MarkShared(target)` | target | `SkinEUI.lua`. Marks a pooled or shared object (the library's popup menu, its reorder ghost, an AceGUI widget the library acquired) so it is **never** handed to an EllesmereUI primitive. Weak-keyed. |
-| `EUI_STRINGS` | table | `SkinEUI.lua`. The four conditions' US English label and hint by key (`%s` is the owner's label), for a caller that translates by key. |
-| `skins`, `owners`, `painted`, `byOwner`, `facades`, `prim`, `euiFacade`, `euiRegistered`, `euiPainted`, `euiRefused`, `shared` | tables | The engine's state and the provider's (`SkinEUI.lua` writes the `eui*` tables and `shared`; `Skin.lua` declares `euiPainted` and reads it), named so the major's other files and a newer minor can reach it. **Not contract**: read the skin through the members above and the facade. `painted`, each `byOwner[owner]` and `shared` are weak-keyed. |
+| `skins`, `owners`, `painted`, `byOwner`, `facades`, `prim`, `euiFacade`, `euiRegistered`, `euiPainted`, `euiRefused`, `shared` | tables | The engine's state and the provider's (`SkinEUI.lua` writes the `eui*` tables and `shared`; `Skin.lua` declares `euiPainted` and reads it), named so the major's other files and a newer minor can reach it. **Not contract**, and neither are the `__`-prefixed members (`__Tokens`, the owner's whole token table, which the primitives, `Token` and `Color` read; `__MarkShared(target)`, which the library's own files use to mark a pooled or shared object, weak-keyed, so it is never handed to EllesmereUI): read the skin through the members above and the facade. `painted`, each `byOwner[owner]` and `shared` are weak-keyed. |
 
 ### The facade
 
@@ -1028,7 +1025,9 @@ retried, with every other owner not yet registered, at each `RegisterOwner`, on
 `ADDON_LOADED("EllesmereUI")` and at `PLAYER_LOGIN`, on one private frame made at the first
 `RegisterOwner` (no frame exists before a host adopts) and registered through Core's
 `SafeRegisterEvent`, resolved at call time (no Core floor rises). The frame lets go of both events at
-login.
+login. With a Core that lacks `SafeRegisterEvent` no frame is made: owners register only at each
+`RegisterOwner`, so an owner registered before the EllesmereUI global exists is not retried unless
+another owner registers later.
 
 ### The gate
 
@@ -1044,8 +1043,8 @@ in display order, each `{ key, ok, label, hint }`:
 
 `ok` is true only when all four hold and nothing was refused (below): the Appearance tab offers the
 EllesmereUI source only then. `painted` is `euiPainted[owner]`; `refused` the latched reason
-EllesmereUI does not paint the owner, or nil. The strings are `EUI_STRINGS`, US English, keyed so a
-caller translates by key. Every read is made at call time, nil-guarded, and nothing is written.
+EllesmereUI does not paint the owner, or nil. The strings are US English, keyed so a
+caller translates by `key` (the strings themselves are file-local). Every read is made at call time, nil-guarded, and nothing is written.
 
 **The two `EllesmereUIDB` reads are library-stack-§6's skinning exception** (WowAddonStandards
 v2.89.0): `LibKa0s/SkinEUI.lua`, and no other file, MAY read `EllesmereUIDB.thirdPartySkinsOff` and
@@ -1072,7 +1071,7 @@ facade, the Ka0s extras repaint from its getters) and fires the owner's `OnLooks
 - **Calls while it paints.** Every call of an EllesmereUI name for the owner is recorded on the
   target (so a later repaint replays it) and handed to the facade under pcall. A Ka0s extra
   (`TitleBar`, `Divider`, `ListRow`, `Card`, `Strip`, ...) never reaches EllesmereUI: it paints with
-  the library's technique from `Skin:Tokens`, which answers Ka0s Default with these over it:
+  the library's technique from the owner's token table (`__Tokens`), which answers Ka0s Default with these over it:
 
 | From | Tokens |
 |---|---|
@@ -1090,7 +1089,7 @@ facade, the Ka0s extras repaint from its getters) and fires the owner's `OnLooks
   other options table (`primary`, `role`, ...) is dropped. The record keeps the caller's arguments
   whole.
 - **Pooled and shared objects are never handed to EllesmereUI.** An AceGUI widget or its frame
-  (AceGUI sets `frame.obj`), a region of such a frame, and any `MarkShared` target or a region of one
+  (AceGUI sets `frame.obj`), a region of such a frame, and any `__MarkShared` target or a region of one
   keep the library's technique, colored from EllesmereUI's getters, because EllesmereUI's paint is
   one-way and a pooled frame would carry it into another addon. Under `eui`, a stock target there is
   painted (Ka0s Default's stock rule does not apply while EllesmereUI paints the owner).
@@ -1098,7 +1097,8 @@ facade, the Ka0s extras repaint from its getters) and fires the owner's `OnLooks
 ### Fail closed
 
 A facade missing a primitive the provider needs (every EllesmereUI name but `SetTabSelection`, which
-arrived in its API version 2, and the three getters) is refused before anything is painted: the
+arrived in its API version 2, and the three getters) is refused the moment it arrives, whatever the
+owner's source, so `GetEUIStatus` never offers a choice the provider would refuse; nothing is painted: the
 reason is latched in `euiRefused[owner]`, written once through the owner's `opts.log`, and the owner
 stays on its Ka0s skin. A primitive that raises latches the same way; EllesmereUI's paint so far
 stays (only a reload removes it), and from then on the owner's EllesmereUI names take the library's
