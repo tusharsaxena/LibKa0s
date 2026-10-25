@@ -407,7 +407,7 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_media.lua (36)
+### test_media.lua (37)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -434,6 +434,7 @@ Total.
 - media: RegisterLSM flags the face western+ruRU, so a ruRU client keeps it
 - media: RegisterLSM counts only what LibSharedMedia kept
 - media: RegisterLSM counts a face another copy registered first
+- media: RegisterLSM never offers a key LibSharedMedia already holds
 - media: an LSM without the locale bits gets a plain Register
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
@@ -3412,7 +3413,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_media.lua | 36 |
+| test_media.lua | 37 |
 | test_skin.lua | 27 |
 | test_skin_defs.lua | 15 |
 | test_skin_paint.lua | 29 |
@@ -3527,4 +3528,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3001** |
+| **Total** | **3002** |

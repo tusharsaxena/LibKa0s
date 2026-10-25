@@ -1,9 +1,9 @@
 {
   "major": "LibKa0s-Media-1.0",
-  "versionKey": "6.1",
+  "versionKey": "7.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "Media", "minor": 6 },
+    { "file": "Media", "minor": 7 },
     { "file": "MediaIcons", "minor": 1 }
   ],
   "members": [

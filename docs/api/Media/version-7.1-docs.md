@@ -1,4 +1,4 @@
-# `LibKa0s-Media-1.0` — version 6.1
+# `LibKa0s-Media-1.0` — version 7.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Media surface points here rather than restating it. It describes the
@@ -8,12 +8,12 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Media-1.0` |
-| Files and minors | `Media.lua` minor **6** · `MediaIcons.lua` minor **1** |
+| Files and minors | `Media.lua` minor **7** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | [version 5.1](./version-5.1-docs.md) — one face (JetBrains Mono) under one global mask, statusbars only |
 | Superseded by | — |
-| Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 6, MediaIcons = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 7, MediaIcons = 1 }` |
 
 ## What changed at this version
 
@@ -23,6 +23,12 @@ gains two return values after the two it had. What arrives is the art the skin e
 Glass skin's rounded border and fill. `MediaIcons.lua` does not move; it re-attaches to the new
 shell on its own guard.
 
+**Minor 7, before the release left the machine.** Minor 6 was this version's first key, `6.1`, and
+never shipped: the owner's client reported "Attempt to register an invalid font" from every addon
+that loaded after LootHistory (see *A held key is never offered* below), so the fix bumped `Media.lua`
+to 7 inside the unpushed v1.78.0 and this document moved to `7.1` with it. The *Since* column keeps
+the minor each member arrived at.
+
 | | | Since |
 |---|---|---|
 | Five skin faces in `FONTS` | `Ka0s Barlow`, `Ka0s Barlow SemiBold`, `Ka0s Cinzel` (Cinzel SemiBold), `Ka0s Atkinson` and `Ka0s Atkinson Bold` (Atkinson Hyperlegible), SIL OFL 1.1, each license beside its file in `media/fonts/`. `FONTS` holds six entries. | **6** |
@@ -30,12 +36,15 @@ shell on its own guard.
 | `BORDERS`, `Border(addonName, name[, vendorPath])` | The LSM `border` catalog: `["Ka0s Glass"] = { file = "glass-border.tga", edgeSize = 8 }`, and its extensionless path. | **6** |
 | `BACKGROUNDS`, `Background(addonName, name[, vendorPath])` | The LSM `background` catalog: `["Ka0s Glass"] = { file = "glass-fill.tga", slice = 8 }`, and its extensionless path. | **6** |
 | `RegisterLSM` returns `fonts, bars, borders, backgrounds` | It registers the two new catalogs as `border` and `background`, each face under its own mask, and counts each kind the way it counts fonts (what LSM holds afterwards). `0, 0, 0, 0` without LSM. | **6** |
+| `RegisterLSM` never offers a held key | When `LSM:IsValid(type, name)` already answers true, `Register` is not called and the key counts as held. Minor 6 offered every key and read `IsValid` afterwards. An LSM without `IsValid` still sees every call, each counted. | **7** |
 
 **The new keys resolve into one addon's folder in leg 1.** LibSharedMedia keeps the first
 registration of a key. While LootHistory is the only consumer that vendors this version, its
 `RegisterLSM` is the first to offer the new keys, so `Ka0s Barlow` and the rest resolve into
-`Interface\AddOns\LootHistory\libs\LibKa0s\media\...`; another addon's older copy does not
-offer them at all. The skinning run's second leg re-vendors the files into every consumer. A host
+`Interface\AddOns\LootHistory\libs\LibKa0s\media\...`. An addon that loads before it runs its
+own older copy, which does not offer them at all; one that loads after it runs this version's
+`RegisterLSM` (LibStub keeps the highest minor), finds the keys held and, from minor 7, offers
+nothing. The skinning run's second leg re-vendors the files into every consumer. A host
 draws a skin face through LSM (`LSM:Fetch("font", "Ka0s Barlow")`) and falls back to its template
 font or `STANDARD_TEXT_FONT` when the key is not valid on the client's locale; it never builds the
 path of a face another addon may have registered.
@@ -178,7 +187,7 @@ Read straight off the LibStub table. Every function is stateless.
 | `Texture(addonName, name[, vendorPath])` | 3 | The path of one shipped statusbar texture, extensionless, or `nil` when `name` is not a key of `TEXTURES` or `addonName` is missing or empty. |
 | `TEXTURES` | 3 | Map of LSM display name → `{ file }`. The catalog of the seven bar textures. |
 | `Font(addonName, name[, vendorPath])` | 1 | The font path for one registered face, or `nil` when `name` is not a key of `FONTS` or `addonName` is missing or empty. |
-| `RegisterLSM(addonName[, vendorPath])` | 1 (second return: 3; langmask and counted-only-if-held: 4; per-face mask, borders and backgrounds: **6**) | Register every shipped font, statusbar texture, border and background with LibSharedMedia under its catalog name, each font under the mask its `langmask` list builds. Returns `fonts, bars, borders, backgrounds`, each counting what LSM holds afterwards (`LSM:IsValid`); **`0, 0, 0, 0` when LSM is absent, which is not an error**. |
+| `RegisterLSM(addonName[, vendorPath])` | 1 (second return: 3; langmask and counted-only-if-held: 4; per-face mask, borders and backgrounds: **6**; a held key is never offered: **7**) | Register every shipped font, statusbar texture, border and background with LibSharedMedia under its catalog name, each font under the mask its `langmask` list builds. Returns `fonts, bars, borders, backgrounds`, each counting what LSM holds afterwards (`LSM:IsValid`); **`0, 0, 0, 0` when LSM is absent, which is not an error**. |
 | `ICONS` | 1 (three sets since **5**) | Array of every icon name: the set's prefix, then the file's own basename. The catalog — enumerate it rather than hard-coding a list. The 113 hand-written names come first, in version 4's order; `MediaIcons.lua` appends the rest at load. |
 | `FONTS` | 1 (six faces and `langmask`: **6**) | Map of LSM name → `{ file, license, langmask }`: two basenames under `media/fonts/` and the array of LSM locale groups the face can draw (`"western"`, `"ruRU"`, ...). |
 | `VENDOR_PATH` | 1 | `"libs\\LibKa0s"` — where the collection vendors this library, and the default third argument above. |
@@ -335,6 +344,19 @@ every later `Register` for it. Each consumer offers a *different* path, its own
 identical triple: every one of those paths names identical bytes, the same file vendored whole into
 each addon. Whichever copy wins, the player sees the same face under the same name, and each
 consumer's `RegisterLSM` counts it, because LSM holds it.
+
+**A held key is never offered** (since **7**). A later `Register` is not silent: LibSharedMedia-3.0
+validates a font, border or background *file* before its first-registration-wins check, and reports
+a missing one through `geterrorhandler()` ("Attempt to register an invalid font"), held key or not.
+Non-fatal, but one BugSack entry per key per addon. Because LibStub keeps the highest minor, a host
+whose own vendored folder predates a key's art still runs the newest copy's `RegisterLSM`, which
+builds the path into that host's folder, where the file does not exist. Minor 6 did exactly this on
+the owner's client once LootHistory vendored it and the other addons still carried minor 5. From
+minor 7, a key `LSM:IsValid` already answers for is skipped and counted. **What remains:** a key
+nobody holds yet is still offered at the caller's own folder, so a host that vendors this version
+but never calls `RegisterLSM` at file load leaves the new keys unheld, and the next addon to call it
+reports the missing files. That case ends when every consumer re-vendors v1.78.0 and carries the
+files.
 
 **Each face carries its own mask** (western + ruRU since 4; per face since **6**). On a non-western
 client LSM refuses a font with no langmask, and one whose mask lacks the client's locale bit.

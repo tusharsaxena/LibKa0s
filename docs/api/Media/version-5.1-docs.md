@@ -12,7 +12,7 @@
 | Shipped in | v1.74.0 |
 | Status | Superseded |
 | Supersedes | [version 4](./version-4-docs.md) — 113 Open Iconic names, one flat folder, no sets |
-| Superseded by | [version 6.1](./version-6.1-docs.md) — five OFL skin faces with per-face locale masks, the `BORDERS` and `BACKGROUNDS` catalogs and the Glass art |
+| Superseded by | [version 7.1](./version-7.1-docs.md) — five OFL skin faces with per-face locale masks, the `BORDERS` and `BACKGROUNDS` catalogs and the Glass art |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 5, MediaIcons = 1 }` |
 
 ## What changed at this version
@@ -371,4 +371,4 @@ with `borders, backgrounds` after them. What arrives: five OFL faces the skins n
 (`Ka0s Barlow`, `Ka0s Barlow SemiBold`, `Ka0s Cinzel`, `Ka0s Atkinson`, `Ka0s Atkinson Bold`,
 western only), a `langmask` list on every `FONTS` entry, and the `BORDERS` / `BACKGROUNDS` catalogs
 with the Glass rounded border and fill, registered with LibSharedMedia. The payload grows by about
-0.4 MB of fonts. See [version 6.1](./version-6.1-docs.md).
+0.4 MB of fonts. See [version 7.1](./version-7.1-docs.md).

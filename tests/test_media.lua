@@ -438,16 +438,67 @@ test("media: RegisterLSM counts a face another copy registered first", function(
   assertEqual(store.font["JetBrains Mono"], first, "the first registration stays")
 end)
 
+test("media: RegisterLSM never offers a key LibSharedMedia already holds", function()
+  -- red under: minor 6, which called Register for every key and read IsValid afterwards. The real
+  -- LibSharedMedia-3.0 validates a font, border or background FILE before its first-registration-
+  -- wins check, and reports a missing one through geterrorhandler. So a later host whose vendored
+  -- copy predates the key's art, running a newer copy's RegisterLSM, offered a path into its own
+  -- folder where the file is absent, and the player's BugSack filled with "Attempt to register an
+  -- invalid font". This fake errors as the real one does: unknown file first, held key second.
+  local held, files, calls, errors = {}, {}, {}, {}
+  local function hold(kind, key, path)
+    held[kind] = held[kind] or {}
+    held[kind][key] = path
+    files[path] = true
+  end
+  for name in pairs(media.FONTS) do hold("font", name, media.Font("Other", name)) end
+  for name in pairs(media.BORDERS) do hold("border", name, media.Border("Other", name)) end
+  for name in pairs(media.BACKGROUNDS) do hold("background", name, media.Background("Other", name)) end
+  T.mocks.__libs["LibSharedMedia-3.0"] = {
+    MediaType = { FONT = "font", STATUSBAR = "statusbar", BORDER = "border", BACKGROUND = "background" },
+    Register = function(_, kind, key, path)
+      calls[#calls + 1] = kind .. ":" .. key
+      if kind ~= "statusbar" and not files[path] then
+        errors[#errors + 1] = "Attempt to register an invalid " .. kind .. " ('" .. path .. "')"
+        return false
+      end
+      held[kind] = held[kind] or {}
+      if held[kind][key] then return false end
+      held[kind][key] = path
+      return true
+    end,
+    IsValid = function(_, kind, key) return held[kind] ~= nil and held[kind][key] ~= nil end,
+  }
+  local fonts, bars, borders, backgrounds = media.RegisterLSM("Later")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+
+  assertEqual(#errors, 0, "LSM reported an error: " .. tostring(errors[1]))
+  for _, call in ipairs(calls) do
+    assertTrue(call:find("^statusbar:") ~= nil, "Register was offered a held key: " .. call)
+  end
+  assertEqual(#calls, 7, "only the seven statusbars, which nobody held, are offered")
+  assertEqual(fonts, 6, "a held face still counts")
+  assertEqual(bars, 7)
+  assertEqual(borders, 1, "the held Glass border still counts")
+  assertEqual(backgrounds, 1, "the held Glass fill still counts")
+  assertEqual(held.font["Ka0s Cinzel"], media.Font("Other", "Ka0s Cinzel"), "the first registration stays")
+  assertEqual(held.statusbar["Ka0s Gradient"], media.Texture("Later", "Ka0s Gradient"),
+    "a key nobody held still lands, at the caller's own folder")
+end)
+
 test("media: an LSM without the locale bits gets a plain Register", function()
   -- The langmask argument is only offered when LSM publishes the bits to build it from.
-  local argc = {}
+  -- IsValid answers from what landed, not a constant true: from minor 7 a key LSM already holds is
+  -- never offered, so an always-true IsValid would see no Register call at all.
+  local argc, landed = {}, {}
   T.mocks.__libs["LibSharedMedia-3.0"] = {
     MediaType = { FONT = "font", STATUSBAR = "statusbar" },
     Register = function(_, kind, ...)
       if kind == "font" then argc[#argc + 1] = select("#", ...) end
+      landed[kind .. ":" .. tostring((...))] = true
       return true
     end,
-    IsValid = function() return true end,
+    IsValid = function(_, kind, key) return landed[kind .. ":" .. key] == true end,
   }
   local fonts = media.RegisterLSM("MythicMeters")
   T.mocks.__libs["LibSharedMedia-3.0"] = nil

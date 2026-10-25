@@ -14,10 +14,12 @@ cannot drift. Release order is in
 
 Opened 2026-10-25. Skinning, leg 1: the LibKa0s skin engine, its paint primitives and the skin
 choice on the settings panel, with LootHistory as the prototype consumer. The test kit's opt-in
-paint recorder opens it.
+paint recorder opens it. Extended on 2026-10-25, after the local tag and before any push, with
+Media minor 7 (`LK-A1`): `RegisterLSM` no longer offers a key LibSharedMedia already holds, the
+defect behind the owner's "Attempt to register an invalid font" reports.
 
-Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 6**
-(`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 4**,
+Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 7**
+(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 4**,
 **SkinPaint minor 2**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1**, **SkinEUI
 minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **4.4.2.1.1.1.1**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
@@ -57,8 +59,9 @@ changes, so no file minor moves; `mock_base.lua` gains one comment line pointing
 
 ### Media minor 6: the skin faces and the Glass art
 
-`LibKa0s-Media-1.0` key 6.1, documented in
-[docs/api/Media/version-6.1-docs.md](docs/api/Media/version-6.1-docs.md). Additive: every name and
+`LibKa0s-Media-1.0` key 6.1 (the in-flight document moved to 7.1 with minor 7, below; 6.1 never
+shipped), documented in
+[docs/api/Media/version-7.1-docs.md](docs/api/Media/version-7.1-docs.md). Additive: every name and
 path version 5.1 had resolves the same.
 
 - **Five OFL faces in `FONTS`**, SIL OFL 1.1, each license beside it in `media/fonts/`:
@@ -505,6 +508,38 @@ regenerated `members-33.3.35.4.6.10.3.12.6.3.2.5.1.json` lists the lib-level tab
 `APPEARANCE_STRINGS` and not them. An adopted addon draws the tab on its General page before
 Keybindings.
 
+### Media minor 7: RegisterLSM never offers a key LibSharedMedia already holds
+
+Extended on 2026-10-25, after the local tag and before any push (`LK-A1` of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`). `LibKa0s-Media-1.0` key 7.1
+([docs/api/Media/version-7.1-docs.md](docs/api/Media/version-7.1-docs.md); the in-flight 6.1
+document and manifest moved to it, never shipped). No member is added and no signature moves.
+
+- **The owner's report.** With LootHistory on v1.78.0 and every other addon still on v1.77.0, the
+  owner's BugSack filled with LibSharedMedia-3.0 errors from many addons: "Attempt to register an
+  invalid font" for `Interface\AddOns\PartyFrameEnhanced\libs\LibKa0s\media\fonts\AtkinsonHyperlegible-Regular.ttf`,
+  the same for `Ka0s Cinzel` and the other skin faces, and for the `Ka0s Glass` border and
+  background, raised from `RegisterLSM` (`registerOne` <- `registerCatalog`) under each host's
+  own `RegisterLSM` call.
+- **The cause.** LibStub keeps the highest minor, so every addon loading after LootHistory ran
+  minor 6's `RegisterLSM` with its own name, which built the new keys' paths into its own
+  `libs\LibKa0s\` folder, where minor 5 never shipped those files. LibSharedMedia-3.0 validates a
+  font, border or background file *before* its first-registration-wins check and reports a missing
+  one through `geterrorhandler()`, so the later `Register` was not the silent no-op minor 6's
+  docblock claimed.
+- **The fix.** `registerOne` asks `LSM:IsValid(type, name)` first and, when LSM already holds the
+  key, counts it and does not call `Register`. An LSM without `IsValid` (consumers' test fakes)
+  still sees every call, each counted, and langmask handling is unchanged. A key nobody holds yet is
+  still offered at the caller's folder, so a host that vendors minor 7 but never calls
+  `RegisterLSM` at file load could leave a new key unheld for the next caller; that case ends when
+  every consumer re-vendors v1.78.0. The `RegisterLSM` docblock now says all of this.
+- **Tests.** New case `media: RegisterLSM never offers a key LibSharedMedia already holds`, red
+  under minor 6: a fake LSM that reports an unknown file before checking the key, with every font,
+  border and background already held from another folder; `RegisterLSM("Later")` makes no
+  `Register` call for them, raises no report and still counts 6, 7, 1, 1. `media: an LSM without
+  the locale bits gets a plain Register` now answers `IsValid` from what landed rather than a
+  constant `true`, which under minor 7 would offer nothing.
+
 ### Docs and process
 
 - **Released 2026-10-25 with no minor of its own.** Every minor above is the one its change moved;
@@ -525,7 +560,7 @@ Keybindings.
   `LH-RV` item in Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`); every other consumer stays on
   v1.77.0 until leg 2 re-vendors and adopts. LibStub keeps the highest minor it is offered, so in a
   client where LootHistory is installed its v1.78.0 copy wins every shared major for every addon
-  (Core 13, Media 6, Widgets 16, DebugLog 22, Options 33, Perf 15.1.1.10, Sim 2.3.7) and the Skin
+  (Core 13, Media 7, Widgets 16, DebugLog 22, Options 33, Perf 15.1.1.10, Sim 2.3.7) and the Skin
   major exists. An addon that registers no skin owner draws exactly what it drew on v1.77.0: an
   unregistered name, no name and a client without the Skin major take the previous minors' paint,
   call for call.
