@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **16** · `WidgetsReorder.lua` minor **2** · `WidgetsDragHandle.lua` minor **6** · `WidgetsLineChart.lua` minor **4** · `WidgetsAutocomplete.lua` minor **4** · `WidgetsCopyWindow.lua` minor **1** (new) |
-| Shipped in | v1.78.0 (unreleased) |
+| Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md) (shipped in v1.77.0) — the same members, none taking a skin owner, and the copy window inside `Widgets.lua` |
 | Superseded by | — |

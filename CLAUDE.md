@@ -213,9 +213,11 @@ rows claiming to be breaches. Ten files at that write-out, three fewer than the 
 left on 2026-10-01 (below), and `LibKa0s/Slash.lua` came in and left again the same day. Seven
 at v1.76.0 (2026-10-23): `tests/test_sim_panel.lua` came in. Nine at v1.77.0 (2026-10-24): `LibKa0s/DebugLog.lua`
 and `tests/test_options_compose.lua` came in. Eight on 2026-10-25 (`LK-09` of Ka0sAddonsCommonTasks
-`docs/2026-10-25-SKINNING/`): `LibKa0s/DebugLog.lua` left on its named seam (below). Largest first:
+`docs/2026-10-25-SKINNING/`): `LibKa0s/DebugLog.lua` left on its named seam (below). Re-measured at
+v1.78.0's close (2026-10-25): still eight, nothing over 1500, and every figure
+below is current. Largest first:
 
-- `testkit/mock_base.lua` (1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
+- `testkit/mock_base.lua` (1465 with kit revision 43's one comment line pointing at `testkit/mock_paint.lua`, measured 2026-10-25, under its 1490 re-check trigger; 1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
   1452 with the shown-by-default flip's four comment lines, 1448 with
   `testkit/mock_events.lua`'s load, hook and install lines, 1446 before them — it was 1499 at kit
@@ -262,6 +264,8 @@ and `tests/test_options_compose.lua` came in. Eight on 2026-10-25 (`LK-09` of Ka
   `tests/test_options_compose_tooltips.lua` (217) and `tests/test_options_reset_tooltip.lua` (105), so
   the trigger did not fire. `LibKa0s/OptionsCompose.lua` is 758 (637 at minor 8), out of the band;
   `LibKa0s/OptionsWidgets.lua` and `LibKa0s/OptionsTabs.lua` were not touched by the extension.
+  Re-measured 2026-10-25 at v1.78.0's close: still 1012, since OptionsCompose minor 12's `fromSkin`
+  cases went to `tests/test_options_compose_skin.lua` (204), so the trigger did not fire.
 
 `LibKa0s/Perf.lua` left the band on 2026-10-01, 1307 → 975, closing issue
 [#7](https://github.com/tusharsaxena/LibKa0s/issues/7) in two peels at minor 14. The first moved the

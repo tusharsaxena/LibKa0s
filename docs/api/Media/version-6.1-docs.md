@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **6** · `MediaIcons.lua` minor **1** |
-| Shipped in | v1.78.0 (unreleased) |
+| Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | [version 5.1](./version-5.1-docs.md) — one face (JetBrains Mono) under one global mask, statusbars only |
 | Superseded by | — |

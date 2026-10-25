@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **13** |
-| Shipped in | v1.78.0 (unreleased) |
+| Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | [version 12](./version-12-docs.md) — the same members; `ApplySkin` took no `owner` and `MakeCloseButton`'s `addonName` named no skin owner |
 | Superseded by | — |

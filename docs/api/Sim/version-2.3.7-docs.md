@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **7** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
-| Shipped in | v1.78.0 (unreleased) |
+| Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | [2.3.6](./version-2.3.6-docs.md) (shipped in v1.77.0) — the same surface; its panel wore Core's skin whatever its owner |
 | Superseded by | — |

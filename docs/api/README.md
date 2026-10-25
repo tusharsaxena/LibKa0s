@@ -102,7 +102,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [13](./Core/version-13-docs.md) | **`Core.lua` 13** (`ApplySkin`'s `owner` and `MakeCloseButton`'s `addonName` paint through a registered skin owner's facade; no new member) | v1.78.0 (unreleased) | **Current** |
+| [13](./Core/version-13-docs.md) | **`Core.lua` 13** (`ApplySkin`'s `owner` and `MakeCloseButton`'s `addonName` paint through a registered skin owner's facade; no new member) | v1.78.0 | **Current** |
 | [12](./Core/version-12-docs.md) | **`Core.lua` 12** (`RaiseStaticPopups`: the tool windows re-raise a shown StaticPopup) | v1.77.0 | Superseded |
 | [11](./Core/version-11-docs.md) | `Core.lua` 11 (comment-only: an undeclared `close` draws blank) | v1.75.0 – v1.76.0 | Superseded |
 | [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 – v1.74.0 | Superseded |
@@ -176,7 +176,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [6.1](./Media/version-6.1-docs.md) | **`Media.lua` 6** (five OFL skin faces with per-face masks; `BORDERS` / `BACKGROUNDS` and the Glass art) · `MediaIcons.lua` 1 | v1.78.0 (unreleased) | **Current** |
+| [6.1](./Media/version-6.1-docs.md) | **`Media.lua` 6** (five OFL skin faces with per-face masks; `BORDERS` / `BACKGROUNDS` and the Glass art) · `MediaIcons.lua` 1 | v1.78.0 | **Current** |
 | [5.1](./Media/version-5.1-docs.md) | `Media.lua` 5 · `MediaIcons.lua` 1 | v1.74.0 – v1.77.0 | Superseded |
 | [4](./Media/version-4-docs.md) | `Media.lua` 4 | v1.56.0 – v1.73.0 | Superseded |
 | [3](./Media/version-3-docs.md) | `Media.lua` 3 | v1.9.2 – v1.55.0 | Superseded |
@@ -187,13 +187,13 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [4.4.2.1.1.1.1](./Skin/version-4.4.2.1.1.1.1-docs.md) | **`Skin.lua` 4** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots; `ResetToSkin` sets a media pick's `<key>FromSkin` companion; `OwnerLabel` and `WriteChoice` for the Appearance tab's copy) · **`SkinDefs.lua` 4** (the token schema and the nine skins; the eight Widgets tokens and the ten tool-window tokens) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) · **`SkinAce.lua` 1** (the AceGUI rows: `PaintAce`, `PaintAceTree`, `OnRelease`, and the proxy on an Options instance's `O.AceGUI`) | v1.78.0 (unreleased) | **Current** |
+| [4.4.2.1.1.1.1](./Skin/version-4.4.2.1.1.1.1-docs.md) | **`Skin.lua` 4** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots; `ResetToSkin` sets a media pick's `<key>FromSkin` companion; `OwnerLabel` and `WriteChoice` for the Appearance tab's copy) · **`SkinDefs.lua` 4** (the token schema and the nine skins; the eight Widgets tokens and the ten tool-window tokens) · **`SkinPaint.lua` 2**, `SkinPaintExtras.lua` 1, `SkinPaintControls.lua` 1 (the paint primitives) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) · **`SkinAce.lua` 1** (the AceGUI rows: `PaintAce`, `PaintAceTree`, `OnRelease`, and the proxy on an Options instance's `O.AceGUI`) | v1.78.0 | **Current** |
 
 ### `LibKa0s-Widgets-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [16.2.6.4.4.1](./Widgets/version-16.2.6.4.4.1-docs.md) | **`Widgets.lua` 16** · **`WidgetsReorder.lua` 2** · **`WidgetsDragHandle.lua` 6** · **`WidgetsLineChart.lua` 4** · **`WidgetsAutocomplete.lua` 4** · **`WidgetsCopyWindow.lua` 1** (new: `CopyWindow` peeled out of `Widgets.lua`): every constructor takes a skin owner, the shared menu and the reorder ghost follow their opener, `series[i].colorIndex`; no new member | v1.78.0 (unreleased) | **Current** |
+| [16.2.6.4.4.1](./Widgets/version-16.2.6.4.4.1-docs.md) | **`Widgets.lua` 16** · **`WidgetsReorder.lua` 2** · **`WidgetsDragHandle.lua` 6** · **`WidgetsLineChart.lua` 4** · **`WidgetsAutocomplete.lua` 4** · **`WidgetsCopyWindow.lua` 1** (new: `CopyWindow` peeled out of `Widgets.lua`): every constructor takes a skin owner, the shared menu and the reorder ghost follow their opener, `series[i].colorIndex`; no new member | v1.78.0 | **Current** |
 | [15.1.5.3.3](./Widgets/version-15.1.5.3.3-docs.md) | **`Widgets.lua` 15** (the dropdown menu is clamped to the screen; no new member) · `WidgetsReorder.lua` 1 · **`WidgetsDragHandle.lua` 5** (`spec.level`, `spec.ignoreParentAlpha`, `handle:ApplyLevel()`: the strip and its marks sit over the content and stay opaque) · `WidgetsLineChart.lua` 3 · **`WidgetsAutocomplete.lua` 3** (the suggestion list is clamped to the screen) | v1.77.0 | Superseded |
 | [14.1.4.3.2](./Widgets/version-14.1.4.3.2-docs.md) | `Widgets.lua` 14 (`TestStrip`'s simulation flavor: `opts.kind = "sim"`, `strip.kind`; no new member) · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.76.0 | Superseded |
 | [13.1.4.3.2](./Widgets/version-13.1.4.3.2-docs.md) | **`Widgets.lua` 13** (new: `SearchBox`, `TestStrip`, `TEST_STRIP`) · `WidgetsReorder.lua` 1 · `WidgetsDragHandle.lua` 4 · `WidgetsLineChart.lua` 3 · `WidgetsAutocomplete.lua` 2 | v1.75.0 | Superseded |
@@ -221,7 +221,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.4.1.1](./DebugLog/version-22.4.1.1-docs.md) | **`DebugLog.lua` 22** · **`DebugLogDiagnostics.lua` 4** (the identity header names Skin) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 1** (new: the console window peeled out of `DebugLog.lua`; it follows the console's skin owner) | v1.78.0 (unreleased) | **Current** |
+| [22.4.1.1](./DebugLog/version-22.4.1.1-docs.md) | **`DebugLog.lua` 22** · **`DebugLogDiagnostics.lua` 4** (the identity header names Skin) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 1** (new: the console window peeled out of `DebugLog.lua`; it follows the console's skin owner) | v1.78.0 | **Current** |
 | [21.3.1](./DebugLog/version-21.3.1-docs.md) | **`DebugLog.lua` 21** (the console is toplevel and re-raises a shown StaticPopup) · `DebugLogDiagnostics.lua` 3 · `DebugLogGates.lua` 1 | v1.77.0 | Superseded |
 | [20.3.1](./DebugLog/version-20.3.1-docs.md) | `DebugLog.lua` 20 (comment-only: undeclared `close`, `copy`, `clear` draw blank) · `DebugLogDiagnostics.lua` 3 (the identity header names Glow and Sim) · `DebugLogGates.lua` 1 | v1.75.0 – v1.76.0 | Superseded |
 | [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 – v1.74.0 | Superseded |
@@ -278,7 +278,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [33.3.35.4.6.10.3.12.6.3.2.5.1](./Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md) | **`Options.lua` 33** (a page wears its skin owner's skin: header, backdrop, thumb; `O.AceGUI`'s rows through the Skin major; attaches `OptionsAppearance.lua`) · **`OptionsRegistry.lua` 3** (`CreateOptionsPanel` hands the re-resolved AceGUI over too) · **`OptionsWidgets.lua` 35** (the `skinValue` row field) · **`OptionsIds.lua` 4** (the suggestion list's popup colors) · **`OptionsIdList.lua` 6** (the help mark's tints) · **`OptionsTabs.lua` 10** (tabs, content box, hairline) · **`OptionsCombat.lua` 3** (the cover) · **`OptionsCompose.lua` 12** (`fromSkin`: the media pickers' `<key>FromSkin` companion) · **`OptionsScroll.lua` 6** (the chrome's skin helpers; `PatchAlwaysShowScrollbar`'s `owner`; `__AttachSkinAce`; a skin switch re-renders one frame later) · **`OptionsNav.lua` 3** (the rail) · **`OptionsDrawer.lua` 2** (the drawer) · **`OptionsKeybinds.lua` 5** (the rows' text) · **`OptionsAppearance.lua` 1** (new: the Appearance tab, `O.AppearanceTab`, `O.AppearanceRows`, `lib.APPEARANCE_STRINGS`) | v1.78.0 (unreleased) | **Current** |
+| [33.3.35.4.6.10.3.12.6.3.2.5.1](./Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md) | **`Options.lua` 33** (a page wears its skin owner's skin: header, backdrop, thumb; `O.AceGUI`'s rows through the Skin major; attaches `OptionsAppearance.lua`) · **`OptionsRegistry.lua` 3** (`CreateOptionsPanel` hands the re-resolved AceGUI over too) · **`OptionsWidgets.lua` 35** (the `skinValue` row field) · **`OptionsIds.lua` 4** (the suggestion list's popup colors) · **`OptionsIdList.lua` 6** (the help mark's tints) · **`OptionsTabs.lua` 10** (tabs, content box, hairline) · **`OptionsCombat.lua` 3** (the cover) · **`OptionsCompose.lua` 12** (`fromSkin`: the media pickers' `<key>FromSkin` companion) · **`OptionsScroll.lua` 6** (the chrome's skin helpers; `PatchAlwaysShowScrollbar`'s `owner`; `__AttachSkinAce`; a skin switch re-renders one frame later) · **`OptionsNav.lua` 3** (the rail) · **`OptionsDrawer.lua` 2** (the drawer) · **`OptionsKeybinds.lua` 5** (the rows' text) · **`OptionsAppearance.lua` 1** (new: the Appearance tab, `O.AppearanceTab`, `O.AppearanceRows`, `lib.APPEARANCE_STRINGS`) | v1.78.0 | **Current** |
 | [30.2.34.3.5.9.2.11.4.2.1.4](./Options/version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md) | **`Options.lua` 30** (attaches `OptionsKeybinds.lua`) · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · **`OptionsIds.lua` 3** (`__closeOwnedSuggest`: the suggestion list closes at combat start) · `OptionsIdList.lua` 5 · `OptionsTabs.lua` 9 · **`OptionsCombat.lua` 2** (`__releaseOwnedFocus` closes the list too) · **`OptionsCompose.lua` 11** (`StrataTooltip`: the one strata-row tooltip; Master controls `notes`, `resetPositionTooltip`, `lockIsPreview`, *Master opacity* and the frameless packing; the group composers' `tooltips` beside `labels`; `ResetAllTooltip`: the reset's tooltip for the General Defaults) · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · `OptionsDrawer.lua` 1 · **`OptionsKeybinds.lua` 4** (new: the key binding model, the Keybindings tab `KeybindingsTab` / `KeybindRows` / `KEYBINDS_UNCHANGED` with one key button and Clear per row, and its sync with Options -> Keybindings on `UPDATE_BINDINGS`) | v1.77.0 | Superseded |
 | [29.2.34.2.5.9.1.7.4.2.1](./Options/version-29.2.34.2.5.9.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · **`OptionsIdList.lua` 5** (comment-only: an undeclared `info` draws blank) · **`OptionsTabs.lua` 9** (`__releaseChrome` no longer exported) · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · `OptionsDrawer.lua` 1 | v1.75.0 – v1.76.0 | Superseded |
 | [29.2.34.2.4.8.1.7.4.2.1](./Options/version-29.2.34.2.4.8.1.7.4.2.1-docs.md) | `Options.lua` 29 · `OptionsRegistry.lua` 2 · `OptionsWidgets.lua` 34 · `OptionsIds.lua` 2 · `OptionsIdList.lua` 4 · `OptionsTabs.lua` 8 · `OptionsCombat.lua` 1 · `OptionsCompose.lua` 7 · `OptionsScroll.lua` 4 · `OptionsNav.lua` 2 · **`OptionsDrawer.lua` 1** (new: `O.Drawer`) | v1.73.0 – v1.74.0 | Superseded |
@@ -337,7 +337,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1.1.10](./Perf/version-15.1.1.10-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 10** (the panel follows its skin owner; no new member) | v1.78.0 (unreleased) | **Current** |
+| [15.1.1.10](./Perf/version-15.1.1.10-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 10** (the panel follows its skin owner; no new member) | v1.78.0 | **Current** |
 | [15.1.1.9](./Perf/version-15.1.1.9-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 9** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | Superseded |
 | [15.1.1.8](./Perf/version-15.1.1.8-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 8 (a step label stops at the command column) | v1.76.0 | Superseded |
 | [15.1.1.7](./Perf/version-15.1.1.7-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 7 (comment-only: Sim's panel copies the renderer on purpose) | v1.75.0 – v1.75.2 | Superseded |
@@ -359,7 +359,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.3.7](./Sim/version-2.3.7-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 7** (the panel and its buttons follow the skin owner; no new member) | v1.78.0 (unreleased) | **Current** |
+| [2.3.7](./Sim/version-2.3.7-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 7** (the panel and its buttons follow the skin owner; no new member) | v1.78.0 | **Current** |
 | [2.3.6](./Sim/version-2.3.6-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 6** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | Superseded |
 | [2.3.5](./Sim/version-2.3.5-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 (a verb start or restart plays on its own; a manual step or click holds the run) · `SimPanel.lua` 5 (Run all removed: Pause/Resume, Restart and Stop) | v1.76.0 | Superseded |
 | [2.2.4](./Sim/version-2.2.4-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 2 · **`SimPanel.lua` 4** (the picker's scenario takes the width the bar leaves, on one line) | v1.75.2 | Superseded |

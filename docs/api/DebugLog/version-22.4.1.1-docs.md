@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **4** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **1** |
-| Shipped in | v1.78.0 (unreleased) |
+| Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | [version 21.3.1](./version-21.3.1-docs.md) (shipped in v1.77.0) — the same surface in three files; its report's identity header did not name Skin, and its console wore Core's skin whatever its `addonName` (version 21.4.1, which named Skin, never shipped) |
 | Superseded by | — |

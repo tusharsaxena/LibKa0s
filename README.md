@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.88.0,
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.89.0,
 as a library repo. That is a scope of its own. What binds here is `library-stack-§7`'s applicability
 list, not the addon rule set, because there is no TOC, no player-facing README, no settings canvas and
 no install. [`CLAUDE.md`](CLAUDE.md) says which sections apply and which do not, and you should read it
@@ -242,8 +242,8 @@ somebody eventually runs without the pipeline.
 `testkit/` holds the registry, the assertions, the source loader and the universal half of the
 WoW-API mock. The whole collection shares it, and each addon vendors it as `tests/_kit/`. It is not a
 LibStub major and it never ships, but it does carry a plain revision integer, `Kit.VERSION` (exposed
-to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.75.0 carries revision
-41. Its full surface is in
+to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.78.0 carries revision
+43. Its full surface is in
 [`docs/api/testkit/`](docs/api/testkit/), indexed alongside the majors, and
 [`testkit/README.md`](./testkit/README.md) covers what it is and the vendoring discipline.
 

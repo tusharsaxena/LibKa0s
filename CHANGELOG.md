@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.78.0 — unreleased
+## v1.78.0 — 2026-10-25
 
 Opened 2026-10-25. Skinning, leg 1: the LibKa0s skin engine, its paint primitives and the skin
 choice on the settings panel, with LootHistory as the prototype consumer. The test kit's opt-in
@@ -504,6 +504,61 @@ owner, and combat refusing a pick, a copy click and a copy accepted after combat
 regenerated `members-33.3.35.4.6.10.3.12.6.3.2.5.1.json` lists the lib-level table only, so it names
 `APPEARANCE_STRINGS` and not them. An adopted addon draws the tab on its General page before
 Keybindings.
+
+### Docs and process
+
+- **Released 2026-10-25 with no minor of its own.** Every minor above is the one its change moved;
+  the close bumps none. The versions paragraph rechecks against every major's live `lib.MODULES`
+  (`tests/test_versioning.lua` green), and the counts against the tree: `#dofile('tests/majors.lua')`
+  answers 18 and `grep -c '<Script' LibKa0s/LibKa0s.xml` 51. `docs/test-cases.md` and the members
+  manifests regenerate from the same tree.
+- **Built to standard v2.89.0** (was v2.88.0): the README's standards pointer moves after a read of
+  v2.89.0's rulings, the new `skinning` section (§1-§8: the owner, the per-profile choice, the
+  Appearance tab, the shipped skins, the EllesmereUI provider, HUD style following the skin, what a
+  skin never touches), the look values of standalone-windows, options-ui-§5 and §8 and
+  debug-logging-§3 rescoped to the Ka0s Default skin, library-stack-§6's one skinning exception
+  (`LibKa0s/SkinEUI.lua` alone may read the two `EllesmereUIDB` switches), library-stack-§8's skin
+  media, and library-stack-§7's `LibKa0s-Skin-1.0` row with the recount to eighteen majors across
+  fifty-one files. Every `skinning-§N` citation in `LibKa0s/`, `docs/` and this file (§3, §5, §7)
+  resolves to a heading of the standard at v2.89.0.
+- **Step 8 deferred, by the lead's call.** In this run only LootHistory re-vendors v1.78.0 (its
+  `LH-RV` item in Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`); every other consumer stays on
+  v1.77.0 until leg 2 re-vendors and adopts. LibStub keeps the highest minor it is offered, so in a
+  client where LootHistory is installed its v1.78.0 copy wins every shared major for every addon
+  (Core 13, Media 6, Widgets 16, DebugLog 22, Options 33, Perf 15.1.1.10, Sim 2.3.7) and the Skin
+  major exists. An addon that registers no skin owner draws exactly what it drew on v1.77.0: an
+  unregistered name, no name and a client without the Skin major take the previous minors' paint,
+  call for call.
+- **Hosts affected by the preview and simulation re-look (step 5).** SimPanel minor 7 and Widgets
+  minor 16 (the file that defines `W.TestStrip`) moved. Sim hosts, from the Consumers table's Sim
+  row: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD; `TestStrip` hosts, from its
+  Widgets row: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD. Only LootHistory
+  registers a skin owner in this leg, so only its sim panel and strips change; the others' scenarios
+  and test-mode strips draw as before, and each re-looks at its leg-2 re-vendor.
+- **Consumers.** `docs/releasing.md`'s Consumers table gains a `LibKa0s-Skin-1.0` row: LootHistory
+  (`core/SkinSetup.lua`, adopted in `LH-01`), other consumers at leg 2. `docs/api/CONSUMERS.md`
+  keeps its v1.75.0 stamp and records that v1.78.0's new exports are not measured until the leg-2
+  census.
+- **The tag is local, and a re-cut is the lead's.** While `v1.78.0` is unpushed, a LibKa0s defect
+  found by LootHistory's items or by the owner's smoke test becomes a new LibKa0s item (`LK-A<n>`)
+  that blocks the LootHistory item that found it, bumps the minors it touches and extends this
+  block. The lead, never a workflow agent, then deletes and re-creates the local tag after a
+  clean-tree `tests/_kit/run-automated-tests.sh --release 1.78.0` with a new bundle, `ANALYSIS.md`
+  and release-gate line, and LootHistory re-vendors in an `LH-RV<n>` item. Each re-cut is recorded
+  in the run's execution record, as v1.77.0's was ("Extended on 2026-10-24, after the local tag").
+
+### What a consumer owes
+
+- **Every Options degradation stub gains `AppearanceTab` and `AppearanceRows`** (OptionsAppearance
+  minor 1), in every addon, adopted or not: `Kit.assertSurfaceParity` is red at the re-vendor until
+  the stub answers them.
+- **Re-vendor the whole folder.** Four files are new (`WidgetsCopyWindow.lua`, `DebugLogWindow.lua`,
+  `OptionsAppearance.lua`, `SkinAce.lua`) and six more come with the new major, and each must arrive
+  with its shell; `media/fonts/` gains the five skin faces and `media/textures/` the two Glass
+  textures.
+- **Nothing else is owed until an addon adopts.** Skins are opt-in (`skinning-§1`): an addon that
+  never calls `Skin:RegisterOwner` keeps its look, and test kit revision 43's `mock_paint.lua` is
+  opt-in too.
 
 ## v1.77.0 — 2026-10-24
 

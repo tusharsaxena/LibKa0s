@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **4** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
-| Shipped in | v1.78.0 (unreleased) |
+| Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
