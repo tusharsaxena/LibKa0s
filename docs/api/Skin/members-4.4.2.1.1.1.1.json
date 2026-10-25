@@ -1,9 +1,9 @@
 {
   "major": "LibKa0s-Skin-1.0",
-  "versionKey": "3.4.2.1.1.1.1",
+  "versionKey": "4.4.2.1.1.1.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "Skin", "minor": 3 },
+    { "file": "Skin", "minor": 4 },
     { "file": "SkinDefs", "minor": 4 },
     { "file": "SkinPaint", "minor": 2 },
     { "file": "SkinPaintExtras", "minor": 1 },
@@ -24,6 +24,7 @@
     { "name": "OnLooksChanged", "kind": "function" },
     { "name": "OnRelease", "kind": "function" },
     { "name": "OnReloadRequest", "kind": "function" },
+    { "name": "OwnerLabel", "kind": "function" },
     { "name": "Owners", "kind": "function" },
     { "name": "PaintAce", "kind": "function" },
     { "name": "PaintAceTree", "kind": "function" },
@@ -42,6 +43,7 @@
     { "name": "Track", "kind": "function" },
     { "name": "Untrack", "kind": "function" },
     { "name": "VOCAB", "kind": "table" },
+    { "name": "WriteChoice", "kind": "function" },
     { "name": "byOwner", "kind": "table" },
     { "name": "euiFacade", "kind": "table" },
     { "name": "euiPainted", "kind": "table" },

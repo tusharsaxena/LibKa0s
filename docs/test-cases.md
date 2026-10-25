@@ -1921,7 +1921,7 @@ Total.
 ### test_options_keybinds_model.lua (26)
 
 - keybinds: OptionsKeybinds is at minor 4 or later, paired on an Options shell at 30 or later
-- keybinds: the Options version key has twelve components
+- keybinds: the Options version key has a component per file, OptionsKeybinds the twelfth
 - keybinds: KEYBIND_STRINGS carries the exact default words, all ASCII
 - keybinds: the client's own strings win where they exist, with the library's fallbacks
 - keybinds: the API is available only when all five binding functions exist
@@ -1996,6 +1996,26 @@ Total.
 - keybinds sync: a capture in progress keeps LISTENING through a repaint
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
+
+### test_options_appearance.lua (17)
+
+- appearance: OptionsAppearance is at minor 1 or later and attaches the two members
+- appearance: the Skin major answers an owner's label and writes through its setter
+- appearance: AppearanceTab's defaults
+- appearance: spec.key, spec.before and spec.strings override
+- appearance: RenderTabbedSchema puts it immediately before Keybindings, and its render draws rows
+- appearance: the rows draw both sources, one choice per skin with swatches, the copy button and the note
+- appearance: a skin pick moves the Skin major, then writes through the seam, and repaints live
+- appearance: a pick never reaches another owner, and clicking the checked skin keeps it
+- appearance: copy is disabled with its hint while no other owner is loaded
+- appearance: copy confirms with the other owners' names and writes each through its own setter
+- appearance: the EllesmereUI choice is disabled while the gate is closed, each condition listed
+- appearance: with no Skin EllesmereUI provider the choice is disabled with one line
+- appearance: the open gate lets EllesmereUI in, and leaving it raises one reload popup
+- appearance: spec.strings translates every string, the skins' names and descriptions included
+- appearance: a page drawn disabled draws every control disabled
+- appearance: the refresher re-reads the owner's store
+- appearance: an owner that never registered, or no Skin major, draws one line and no controls
 
 ### test_options_idsuggest.lua (29)
 
@@ -3442,6 +3462,7 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
+| test_options_appearance.lua | 17 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3503,4 +3524,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2981** |
+| **Total** | **2998** |

@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 3.4.2.1.1.1.1
+# `LibKa0s-Skin-1.0` — version 4.4.2.1.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **3** · `SkinDefs.lua` minor **4** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **4** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
 | Shipped in | v1.78.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 3, SkinDefs = 4, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 4, SkinDefs = 4, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
 
 ## What this major is
 
@@ -62,9 +62,11 @@ still runs the engine: no skin is registered and every token resolves to nil.
 
 | Member | Answers | What it does |
 |---|---|---|
-| `Skin:RegisterOwner(owner, opts)` | the owner's facade | Registers `owner` at the consumer's file load. `opts.get()` answers `{ source, skin }` (or two values) from the host's profile; `opts.set(source, skin)` writes it (used by a later copy-to-every-addon action); `opts.label` names the addon; `opts.log(line)`, optional, takes the one line the EllesmereUI provider writes when it refuses a facade or stops painting (a host hands its debug console's writer). The choice is read **once**, here; an unknown source is cleaned to `"ka0s"`, a non-string skin to `"ka0s"`. A second call updates the hooks and keeps the applied choice. With `SkinEUI.lua` loaded it also registers the owner with EllesmereUI (*The EllesmereUI provider*). |
+| `Skin:RegisterOwner(owner, opts)` | the owner's facade | Registers `owner` at the consumer's file load. `opts.get()` answers `{ source, skin }` (or two values) from the host's profile; `opts.set(source, skin)` writes it (the Appearance tab's copy to every Ka0s addon calls it, through `WriteChoice`); `opts.label` names the addon; `opts.log(line)`, optional, takes the one line the EllesmereUI provider writes when it refuses a facade or stops painting (a host hands its debug console's writer). The choice is read **once**, here; an unknown source is cleaned to `"ka0s"`, a non-string skin to `"ka0s"`. A second call updates the hooks and keeps the applied choice. With `SkinEUI.lua` loaded it also registers the owner with EllesmereUI (*The EllesmereUI provider*). |
 | `Skin:IsOwner(name)` | boolean | True only after `RegisterOwner`. Every factory that takes an owner paints today's way, verbatim, for a name that is not one. |
 | `Skin:Owners()` | sorted array | The registered owners. |
+| `Skin:OwnerLabel(owner)` | string or nil | The label the owner registered with (`opts.label`, else its folder name); nil for a name that never called `RegisterOwner`. What the Appearance tab's copy confirmation names each addon by (Skin minor 4). |
+| `Skin:WriteChoice(owner, source, skin)` | boolean | Writes `(source, skin)`, cleaned as `RegisterOwner` cleans a read, into the owner's profile through the `opts.set` it registered, under pcall: the write of the Appearance tab's copy to every Ka0s addon (`LibKa0s-Options-1.0`'s `OptionsAppearance.lua`), which reaches each addon only through its own write seam. **Never moves the applied choice**: the tab calls `SetChoice` first (the live repaint), then this. Answers true when a setter ran and did not raise; false for an unregistered owner, one with no setter, or a raise, which goes to the client's error handler (Skin minor 4). |
 | `Skin:For(owner)` | facade `S` | The owner's facade, `lib.facades[owner]`: one table per owner, kept for the session and across minors. Does not register the owner; an unregistered owner's facade reads Ka0s Default. |
 | `Skin:GetChoice(owner)` | source, skin | The applied choice. An unregistered owner answers `"ka0s", "ka0s"`. |
 | `Skin:SetChoice(owner, source, skin)` | changed, reload | See *Changing the skin* below. `nil` keeps that half. Never writes the host's profile. |

@@ -511,7 +511,7 @@ end)
 -- than disagree about what is safe: the decoded em dash, bytes 226/128/148 (U+2014). It renders
 -- correctly in the owner's own screenshots and both repos keep it on that basis.
 --
--- ONE ratified, path-scoped exemption beyond that, in the same shape RATIFIED above uses:
+-- Two ratified, path-scoped exemptions beyond that, in the same shape RATIFIED above uses. The first:
 -- `LibKa0s/Core.lua`'s close-control fallback glyph, decoded bytes 195/151 (the multiplication
 -- sign, U+00D7). It predates this gate, sits in Latin-1 Supplement rather than the Arrows block
 -- the owner's screenshot actually broke on, and `Core.lua`'s own doc comment already argues at
@@ -520,9 +520,18 @@ end)
 -- Core.lua's own comment is a real prior decision, not silently overridden here — flagged instead,
 -- the same way a deviation is: confirm in-game whether it boxes too, and if it does this exemption
 -- is the row to drop first.
+--
+-- A SECOND, from 2026-10-25: `LibKa0s/OptionsAppearance.lua`'s horizontal ellipsis, decoded bytes
+-- 226/128/166 (U+2026), in the one label "Copy to every Ka0s addon...". It is not a choice this
+-- file can decline: options-ui-§21 makes the ellipsis a MUST on a button that opens a confirmation,
+-- skinning-§3 names this label with it, and AuraMaster's own locale gate already allows U+2026
+-- beside the em dash (its tests/test_locale.lua T1_ALLOWED) on the owner's in-game check. Scoped to
+-- the one file, so any other ellipsis in the payload still fails here (LK-10 of Ka0sAddonsCommonTasks
+-- docs/2026-10-25-SKINNING/).
 local ASCII_EM_DASH = string.char(226, 128, 148)   -- U+2014, decoded
 local ASCII_RATIFIED = {
   ["LibKa0s/Core.lua"] = { string.char(195, 151) },  -- U+00D7 (×), decoded
+  ["LibKa0s/OptionsAppearance.lua"] = { string.char(226, 128, 166) },  -- U+2026, decoded
 }
 
 --- Strip a `--` line comment, quote-aware: a `--` or a quote mark INSIDE a `"…"`/`'…'` string

@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 32.3.35.4.6.10.3.12.6.3.2.5
+# `LibKa0s-Options-1.0` — version 33.3.35.4.6.10.3.12.6.3.2.5.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,19 +8,19 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **32** · `OptionsRegistry.lua` **3** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **6** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** |
-| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>`, in load order — the same twelve numbers `lib.MODULES` reports. |
+| Files and minors | `Options.lua` **33** · `OptionsRegistry.lua` **3** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **6** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** · `OptionsAppearance.lua` **1** |
+| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>`, in load order — the same thirteen numbers `lib.MODULES` reports. |
 | Shipped in | v1.78.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | [version 30.2.34.3.5.9.2.11.4.2.1.4](./version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md) — whose settings chrome had no skin owner, whose group composers could not follow a skin, and whose AceGUI rows were stock for every owner |
 | Superseded by | — |
-| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua` and `OptionsKeybinds.lua`. `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 32, OptionsRegistry = 3, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 12, OptionsScroll = 6, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5 }` |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 33, OptionsRegistry = 3, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 12, OptionsScroll = 6, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5, OptionsAppearance = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
-for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
+for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `O33` for `Options.lua` minor 33, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `W35` for `OptionsWidgets.lua` minor 35, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `T10` for `OptionsTabs.lua` minor 10, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `C9` for `OptionsCompose.lua` minor 9, `C10` for `OptionsCompose.lua` minor 10, `C11` for `OptionsCompose.lua` minor 11, `C12` for `OptionsCompose.lua` minor 12, `S1` for
-`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `S5` for `OptionsScroll.lua` minor 5, `S6` for `OptionsScroll.lua` minor 6, `N1` for `OptionsNav.lua` minor 1, `N3` for `OptionsNav.lua` minor 3, `D1` for `OptionsDrawer.lua` minor 1, `D2` for `OptionsDrawer.lua` minor 2, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `K4` for `OptionsKeybinds.lua` minor 4, `K5` for `OptionsKeybinds.lua` minor 5, `I1` for
+`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `S5` for `OptionsScroll.lua` minor 5, `S6` for `OptionsScroll.lua` minor 6, `N1` for `OptionsNav.lua` minor 1, `N3` for `OptionsNav.lua` minor 3, `D1` for `OptionsDrawer.lua` minor 1, `D2` for `OptionsDrawer.lua` minor 2, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `K4` for `OptionsKeybinds.lua` minor 4, `K5` for `OptionsKeybinds.lua` minor 5, `A1` for `OptionsAppearance.lua` minor 1, `I1` for
 `OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `I4` for `OptionsIds.lua` minor 4, `OC2` for `OptionsCombat.lua` minor 2, `OC3` for `OptionsCombat.lua` minor 3, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4, `L6` for `OptionsIdList.lua` minor 6. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -40,20 +40,33 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-Every file of the major moves: `Options.lua` 30 -> **32**, `OptionsRegistry.lua` 2 -> **3**,
+Every file of the major moves: `Options.lua` 30 -> **33**, `OptionsRegistry.lua` 2 -> **3**,
 `OptionsWidgets.lua` 34 -> **35**, `OptionsIds.lua` 3 -> **4**, `OptionsIdList.lua` 5 -> **6**,
 `OptionsTabs.lua` 9 -> **10**, `OptionsCombat.lua` 2 -> **3**, `OptionsCompose.lua` 11 -> **12**,
 `OptionsScroll.lua` 4 -> **6**, `OptionsNav.lua` 2 -> **3**, `OptionsDrawer.lua` 1 -> **2** and
-`OptionsKeybinds.lua` 4 -> **5**. Three things land: **the settings chrome follows the page's skin
+`OptionsKeybinds.lua` 4 -> **5**, and a thirteenth file arrives, `OptionsAppearance.lua` at **1**. Four things land: **the settings chrome follows the page's skin
 owner**, **the group composers can follow the skin** (Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`, item LK-07; the owner's rulings R2 and R3), and **the AceGUI rows a page
 acquires wear the owner's skin** (item LK-08: `Options.lua` 32, `OptionsRegistry.lua` 3,
-`OptionsScroll.lua` 6, with `LibKa0s-Skin-1.0`'s `SkinAce.lua`). It needs
+`OptionsScroll.lua` 6, with `LibKa0s-Skin-1.0`'s `SkinAce.lua`), and **the Appearance tab** (item
+LK-10: `Options.lua` 33, `OptionsAppearance.lua` 1, with `LibKa0s-Skin-1.0` minor 4's `OwnerLabel`
+and `WriteChoice`). It needs
 `LibKa0s-Skin-1.0` and `LibKa0s-Core-1.0` minor 13 at call time, neither as a floor: without them
 every page draws what version 30.2.34.3.5.9.2.11.4.2.1.4 drew.
 
 **No member is added to `Options.lua`, `OptionsTabs.lua` or `OptionsWidgets.lua`** (their band
-triggers, CLAUDE.md); the helpers are `OptionsScroll.lua`'s, internal and `__`-prefixed.
+triggers, CLAUDE.md); the helpers are `OptionsScroll.lua`'s, internal and `__`-prefixed. The
+Appearance tab's two members are `OptionsAppearance.lua`'s, attached by one guarded line in
+`lib:New` (O33), the exception `OptionsKeybinds.lua`'s attach set (K1, O30).
+
+### The Appearance tab (O33, A1)
+
+Two public instance members and one lib-level table, `skinning-§3`: **`O.AppearanceTab(spec)`**,
+the host-tab entry a General page draws immediately before Keybindings, **`O.AppearanceRows(ctx,
+spec, parent)`**, its body for a host-drawn strip, and **`lib.APPEARANCE_STRINGS`**, its words. See
+[The Appearance tab](#the-appearance-tab-optionsappearancelua-minor-1). Without
+`LibKa0s-Skin-1.0`, or for an owner that never registered, the rows draw one line and no control.
+
 
 ### The page's skin owner (O31, S5)
 
@@ -1606,6 +1619,9 @@ file, so the thing that writes either has to be per library rather than per host
 - `lib.PatchAlwaysShowScrollbar`: no consumer as of v1.67.0, kept because `EnsureScroll` applies it to every scroll the library builds; a host calls it only for a scroll frame of its own.
 - `lib.STRINGS`: no consumer as of v1.67.0, kept because it is the English fallback for the combat lock and the other library strings.
 
+`lib.KEYBIND_STRINGS` (K1) and `lib.APPEARANCE_STRINGS` (A1) are the two tabs' words, after the
+census; see their sections.
+
 ### `lib.__PatchLSM30Border()` → boolean
 
 **Since O15.** Wrap AceGUI-3.0-SharedMediaWidgets' `LSM30_Border` so it lines up on a canvas-layout
@@ -1719,6 +1735,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `KeybindingsTab(spec)` | **K2** | The Keybindings tab's `opts.tabs` entry for `RenderTabbedSchema`: `{ key, label, tooltip, before, render }`, key `Keybindings` and last unless `spec` says otherwise. See [The Keybindings tab](#the-keybindings-tab-optionskeybindslua-minor-2). |
 | `KeybindRows(ctx, spec, parent)` | **K2** | Draws the Keybindings rows into `parent` (default the page's scroll) and returns the row records, or nil when degraded. For a host-built strip's body. |
 | `KEYBINDS_UNCHANGED` | **K2** | `"Key bindings are not changed."`, the sentence a General page's `opts.defaultsTooltip` ends with (`options-ui-§20`). |
+| `AppearanceTab(spec)` | **A1** | The Appearance tab's entry, `{ key, label, tooltip, before, render }`: for `RenderTabbedSchema`'s `opts.tabs`, key `Appearance` and `before` the Keybindings tab's key unless `spec` says otherwise, or for a host-drawn strip (`render` is the body). See [The Appearance tab](#the-appearance-tab-optionsappearancelua-minor-1). |
+| `AppearanceRows(ctx, spec, parent)` | **A1** | Draws the Appearance rows into `parent` (default the page's scroll) and returns the view, or nil when degraded. For a host-built strip's body. |
 | `Drawer(ctx, spec)` | **D1** | A header bar (chevron, name gold while set, one-line summary) that opens a bordered box joined under it, filled by `spec.body(ctx, box)` with ordinary rows. See [The drawer](#the-drawer). |
 | `NavRail(ctx, spec)` | **N1** | The pinned nav rail, the first level of a page that edits one instance out of many (options-ui-§13): `spec = { entries = { { key, label, tooltip } }, value, onSelect, width }`, `width` 120 by default. Draw after `PageBanner`, before `TabStrip`. Records `ctx.railWidth`, which `lib.__railInset` turns into the inset the strip, the content panel and the scroll start at. Entries pooled per page, released on every call; the selected entry disabled; a click refused in combat by the library; `onSelect` pcall'd. The selection is the host's, as `SubTabStrip`'s is. Returns the entry buttons in rail order, or nil having drawn nothing (an empty list releases the rail, `railWidth` 0). |
 | `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip, action }`; `action = { text, tooltip, onClick }` (**T4**) draws a `Button` in the band's right half for the picker+create band, pcall'd, refused in combat, and Released like the dropdown. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). From **T4** the previous render's dropdown is Released to AceGUI once the new one exists, rather than hidden and kept. **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing, and the action's `Button` as a second value when there is one. |
@@ -2203,6 +2221,132 @@ capture, conflict, combat and settings-window cases to this library's suite (`te
 
 Cases: `tests/test_options_keybinds.lua` (on `tests/fixture_keybinds.lua`'s bench, which fails a
 case on any touch of Blizzard's settings window), and `tests/test_kit_bindings.lua` for the driver.
+
+## The Appearance tab (OptionsAppearance.lua, minor 1)
+
+New at `OptionsAppearance.lua` minor 1, a thirteenth file paired on the shell's minor
+(`lib.__appearanceMinor` / `lib.__appearanceShellMinor`) and attached by `Options.lua` minor 33
+(`lib.__AttachAppearance(O, d)`, guarded). `skinning-§3`: the tab on an adopted addon's General
+page where the player picks the skin the addon wears (Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`, item LK-10; the owner's ruling R1, per addon). It reads
+`LibKa0s-Skin-1.0` at call time, never as a floor.
+
+### `O.AppearanceTab(spec)` → tab entry
+
+`{ key = spec.key or "Appearance", label, tooltip, before, render }`. `before` defaults to
+`"Keybindings"`, the key `O.KeybindingsTab` answers, so `RenderTabbedSchema` places the tab
+immediately before the Keybindings tab (and last on a page without one); `spec.before = false` asks
+for last outright. `render(ctx)` is `O.AppearanceRows(ctx, spec)`, so the same entry serves a
+host-drawn strip, as LootHistory's `GENERAL_TABS` takes the Keybindings entry:
+`{ key = t.key, label = t.label, tooltip = t.tooltip, build = t.render }`.
+
+### `O.AppearanceRows(ctx, spec, parent)` → view or `nil`
+
+Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
+
+1. **Skin source**, under a heading (`O.Section` on the page's scroll, an AceGUI `Heading` in a host
+   body): two radio choices, *Ka0s skins* and *EllesmereUI*. *EllesmereUI* is disabled unless
+   `Skin:GetEUIStatus(owner).ok` (or the stored source is already `eui`), and a line says whether
+   EllesmereUI can skin the addon, then one line per gate condition, in the status's order, with the
+   client's ready-check mark (`Interface\RaidFrame\ReadyCheck-Ready`) or cross
+   (`ReadyCheck-NotReady`) and, for a failing one, its fix. With a Skin copy that has no
+   `GetEUIStatus` (no `SkinEUI.lua`) the choice is disabled and one line says so.
+2. **Skin**: one radio choice per registered skin, `Skin:Skins()` order, three to a line
+   (relative width 0.32), each labeled with its four swatches (`WHITE8X8` texture markup tinted from
+   the skin's `swatches`) and its name, its description on the CheckBox's `SetDescription` and in its
+   tooltip. While the stored source is `eui` a line says the skin is used only if EllesmereUI cannot
+   skin the addon.
+3. **Copy to every Ka0s addon…** (`options-ui-§21`'s ellipsis), a button at `BUTTON_PAIR_REL`. With
+   no other registered owner (`Skin:Owners()` less this one) it is disabled and a line under it says
+   "No other loaded Ka0s addon uses skins yet." Otherwise a click opens a confirmation
+   (`LIBKA0S_SKIN_COPY`) naming the other owners by `Skin:OwnerLabel`, one per line, and saying that
+   addons not loaded are unchanged; accepting gives each of them this owner's stored source and
+   skin: `Skin:SetChoice(other, source, skin)` (its live repaint), then `Skin:WriteChoice(other,
+   source, skin)` (its own registered setter). The copying addon's own seam is not written.
+4. **The note**: "Skins change every visual element. HUD style options follow the skin unless you
+   set them yourself."
+
+`spec`:
+
+| Field | Meaning |
+|---|---|
+| `get` | The owner's read: answers `{ source, skin }` or two values. Under pcall; without it, or for a value that is not a source or a registered skin, the Skin major's `GetChoice` stands in. |
+| `set` | **MUST be the owner's write seam** (`options-ui-§1`), called as `set(source, skin)`, under pcall. |
+| `owner` | The skin owner; default the descriptor's `addonName`. |
+| `strings` | Translations of `lib.APPEARANCE_STRINGS` keys, plus `SKIN_<key>` / `SKIN_<key>_DESC` (a skin's name and description) and `COND_<key>` / `COND_<key>_HINT` (one EllesmereUI condition, `%s` the addon's label). Every string the tab draws is overridable. |
+| `key`, `before` | The tab's (`AppearanceTab`). |
+
+**A pick** (a source or a skin) is refused in combat through `O.__combatRefused("appearance",
+owner)`. Otherwise it calls `Skin:SetChoice(owner, source, skin)` **first**, so the repaint is the
+library's and an owner's `onChange` that calls `SetChoice` again is a no-op (it is idempotent), then
+`spec.set(source, skin)`. When `SetChoice` answers `reload` (leaving an EllesmereUI that painted
+this session), the tab raises the reload popup (`LIBKA0S_SKIN_RELOAD`, *Reload now* / *Later*; its
+accept calls `C_UI.Reload`, else `ReloadUI`) **once**: `SetChoice` answers it on one switch per
+owner. A pick of a skin keeps the stored source; a pick of a source keeps the stored skin. A radio
+clicked off snaps back on.
+
+Both popups are Blizzard StaticPopups, defined when shown (`timeout = 0`, `whileDead`,
+`hideOnEscape`, `preferredIndex = 3`) so their words are the spec's. A StaticPopup is a shared
+Blizzard frame at `DIALOG`, above the settings window, and the tab never re-stratas or restyles it
+(`frame-layering`, `skinning-§7`).
+
+The view: `{ owner, label, source = { ka0s, eui }, skins = { [key] = choice }, order, conditions,
+copy, note, sync }`; `sync()` re-reads `spec.get` into the choices, and a refresher calling it is
+added to `ctx.refreshers`. Drawn inside a disabled render (`ctx.__renderDisabled`) every control is
+disabled. Answers nil, drawing nothing, without AceGUI or a parent; answers nil after one line
+("Skins are not available for this addon.") without `LibKa0s-Skin-1.0` or for an owner that never
+called `RegisterOwner`. Away from Ka0s Default the tab's secondary lines take the owner's
+`text.muted`, as the Keybindings rows do.
+
+### `lib.APPEARANCE_STRINGS`
+
+The tab's US English words, a literal table like `lib.KEYBIND_STRINGS`: `TAB_LABEL` ("Appearance"),
+`TAB_TIP`, `SOURCE_HEADING`, `SOURCE_KA0S`, `SOURCE_KA0S_TIP`, `SOURCE_EUI`, `SOURCE_EUI_TIP`,
+`EUI_READY`, `EUI_NOT_READY`, `EUI_MISSING`, `SKIN_HEADING`, `SKIN_EUI_NOTE`, `COPY`, `COPY_TIP`,
+`COPY_NONE`, `COPY_CONFIRM` (`%s` this addon's label, `%s` the list), `COPY_ACCEPT`, `CANCEL`,
+`RELOAD` (`%s` the addon or addons), `RELOAD_ACCEPT`, `RELOAD_LATER`, `NOTE` and `UNAVAILABLE`.
+ASCII throughout but for `COPY`'s ellipsis (U+2026), which `options-ui-§21` asks of a button that
+opens a confirmation; `tests/test_prose.lua` ratifies it for this file alone. Read, never written
+through: `spec.strings` builds a fresh table per tab.
+
+### Declaring it
+
+A page drawn by `O.RenderTabbedSchema`:
+
+```lua
+tabs = {
+  O.AppearanceTab({ get = readAppearance, set = writeAppearance }),
+  O.KeybindingsTab({ bindings = NS.BINDINGS }),
+},
+```
+
+A hand-drawn General strip puts the entry before its Keybindings entry:
+
+```lua
+local ap = O.AppearanceTab(APPEARANCE_SPEC)
+{ key = ap.key, label = ap.label, tooltip = ap.tooltip, build = ap.render }
+```
+
+### What a consumer owes
+
+**Every Options degradation stub gains `AppearanceTab` and `AppearanceRows`**, in every addon,
+adopted or not (`skinning-§3`, *Degradation*): `Kit.assertSurfaceParity` compares the stub with the
+live instance, so the re-vendor of this version turns red until the stub answers both. The
+suggested stub is
+
+```lua
+AppearanceTab = function(spec)
+  spec = spec or {}
+  return { key = spec.key or "Appearance", label = "Appearance", before = "Keybindings",
+           render = function() end }
+end,
+AppearanceRows = function() return nil end,
+```
+
+This version's member manifest lists the lib-level tables only, as every Options manifest does, so
+it names `APPEARANCE_STRINGS` and not the two instance members.
+
+Cases: `tests/test_options_appearance.lua`.
 
 ## The choice grid
 

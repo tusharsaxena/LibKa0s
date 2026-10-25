@@ -60,7 +60,9 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 3: ResetToSkin sets a setting's `<key>FromSkin` companion where it has one, and a bool key
 -- (a companion named directly) to true, so the sentinel never lands in a media pick or a bool
 -- (OptionsCompose minor 12's companions; LK-07 of the skinning run).
-local MAJOR, MINOR = "LibKa0s-Skin-1.0", 3
+-- Minor 4: OwnerLabel and WriteChoice, the read and the write of a registration the Appearance tab's copy to
+-- every Ka0s addon needs (OptionsAppearance.lua; LK-10 of the skinning run).
+local MAJOR, MINOR = "LibKa0s-Skin-1.0", 4
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -265,6 +267,26 @@ function lib:Owners()
   for name in pairs(self.owners) do out[#out + 1] = name end
   table.sort(out)
   return out
+end
+
+--- The label `owner` registered with (`opts.label`, else its folder name), or nil for a name that
+--- never called RegisterOwner. What the Appearance tab's copy confirmation names each addon by.
+function lib:OwnerLabel(owner)
+  local o = self.owners[owner]
+  return o and o.label or nil
+end
+
+--- Write (source, skin) into `owner`'s profile through the setter it registered (`opts.set`), under
+--- pcall: the write of the Appearance tab's copy to every Ka0s addon, which reaches each addon only
+--- through its own write seam. Never moves the applied choice (SetChoice does). Answers true when a
+--- setter ran and did not raise; false for an unregistered owner, one with no setter, or a raise
+--- (handed to the client's error handler).
+function lib:WriteChoice(owner, source, skin)
+  local o = self.owners[owner]
+  if not o or type(o.set) ~= "function" then return false end
+  local ok, err = pcall(o.set, cleanSource(source), cleanSkin(skin))
+  if not ok then report(err); return false end
+  return true
 end
 
 --- The owner's applied choice: source, skin. An unregistered owner answers "ka0s", "ka0s".

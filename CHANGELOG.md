@@ -17,21 +17,23 @@ choice on the settings panel, with LootHistory as the prototype consumer. The te
 paint recorder opens it.
 
 Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 6**
-(`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1 unchanged), **Skin minor 3**, **SkinDefs minor 4**,
+(`LibKa0s-Media-1.0` key **6.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 4**,
 **SkinPaint minor 2**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1**, **SkinEUI
-minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **3.4.2.1.1.1.1**); **Widgets minor 16**,
+minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **4.4.2.1.1.1.1**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
 **WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
 **16.2.6.4.4.1**, a new sixth file); **DebugLog minor 22**, **DebugLogDiagnostics minor 4** and
-**DebugLogWindow minor 1** (`LibKa0s-DebugLog-1.0` key **22.4.1.1**, a new fourth file); **Options minor 32**, **OptionsRegistry minor 3**, **OptionsWidgets minor 35**, **OptionsIds minor 4**,
+**DebugLogWindow minor 1** (`LibKa0s-DebugLog-1.0` key **22.4.1.1**, a new fourth file); **Options minor 33**, **OptionsRegistry minor 3**, **OptionsWidgets minor 35**, **OptionsIds minor 4**,
 **OptionsIdList minor 6**, **OptionsTabs minor 10**, **OptionsCombat minor 3**, **OptionsCompose minor
-12**, **OptionsScroll minor 6**, **OptionsNav minor 3**, **OptionsDrawer minor 2** and
-**OptionsKeybinds minor 5** (`LibKa0s-Options-1.0` key **32.3.35.4.6.10.3.12.6.3.2.5**); **PerfPanel
+12**, **OptionsScroll minor 6**, **OptionsNav minor 3**, **OptionsDrawer minor 2**,
+**OptionsKeybinds minor 5** and **OptionsAppearance minor 1** (`LibKa0s-Options-1.0` key
+**33.3.35.4.6.10.3.12.6.3.2.5.1**, a new thirteenth file); **PerfPanel
 minor 10** (`LibKa0s-Perf-1.0` key **15.1.1.10**); **SimPanel minor 7** (`LibKa0s-Sim-1.0` key
 **2.3.7**); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
 entry below moves one. Each change bumps the minor of the files it touches once, and this block
-names each new minor as it lands. Now **eighteen majors across fifty files**: one major added
-(`LibKa0s-Skin-1.0`) and three files (`WidgetsCopyWindow.lua`, `SkinAce.lua`, `DebugLogWindow.lua`),
+names each new minor as it lands. Now **eighteen majors across fifty-one files**: one major added
+(`LibKa0s-Skin-1.0`) and four files (`WidgetsCopyWindow.lua`, `SkinAce.lua`, `DebugLogWindow.lua`,
+`OptionsAppearance.lua`),
 and no `NEEDS_*` floor rises.
 
 ### Test kit revision 43: the paint recorder
@@ -364,11 +366,11 @@ OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopt
 ### SkinAce minor 1 and Options 32.3.35.4.6.10.3.12.6.3.2.5: the AceGUI rows wear their owner's skin
 
 `LibKa0s-Skin-1.0` key 3.3.2.1.1.1.1
-([docs/api/Skin/version-3.4.2.1.1.1.1-docs.md](docs/api/Skin/version-3.4.2.1.1.1.1-docs.md) since
-SkinDefs minor 4, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
+([docs/api/Skin/version-4.4.2.1.1.1.1-docs.md](docs/api/Skin/version-4.4.2.1.1.1.1-docs.md) since
+SkinDefs minor 4 and Skin minor 4, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
 `LibKa0s-Options-1.0` key 32.3.35.4.6.10.3.12.6.3.2.5
-([docs/api/Options/version-32.3.35.4.6.10.3.12.6.3.2.5-docs.md](docs/api/Options/version-32.3.35.4.6.10.3.12.6.3.2.5-docs.md),
-the in-flight 31.2.35.4.6.10.3.12.5.3.2.5 document moved to it), LK-08 of Ka0sAddonsCommonTasks
+([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md)
+since Options minor 33, below; the in-flight 31.2.35.4.6.10.3.12.5.3.2.5 document moved to it), LK-08 of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`. AceGUI keeps one pool per widget type for the whole client, so a row is
 painted for exactly one acquisition and handed back stock.
 
@@ -446,6 +448,60 @@ pins DebugLog's constants in their new file and the panels' command and hover co
 `tests/test_sim_panel.lua`'s two minor pins now read "at least". Re-vendor the whole folder: the new
 file must arrive with the shell. **What a consumer owes:** nothing; an adopter's registered owner
 reaches its console and panels through the names it already passes.
+
+### Options 33.3.35.4.6.10.3.12.6.3.2.5.1 and Skin minor 4: the Appearance tab
+
+`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.6.3.2.5.1
+([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md),
+a thirteenth file; the in-flight 32.3.35.4.6.10.3.12.6.3.2.5 document moved to it, never shipped) and
+`LibKa0s-Skin-1.0` key 4.4.2.1.1.1.1
+([docs/api/Skin/version-4.4.2.1.1.1.1-docs.md](docs/api/Skin/version-4.4.2.1.1.1.1-docs.md), the
+in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/` (`skinning-§3`; the owner's ruling R1, per addon).
+
+- **`OptionsAppearance.lua` (minor 1), a new file** paired on the shell's minor
+  (`__appearanceMinor` / `__appearanceShellMinor`), loaded after `OptionsKeybinds.lua`, and
+  **Options minor 33**, which attaches it from `lib:New` (one guarded line in `attachHalves`, no
+  member: the exception `OptionsKeybinds.lua`'s attach set, so `Options.lua`'s band trigger does not
+  fire; 1332 lines). Two public instance members and one lib-level table:
+  - **`O.AppearanceTab(spec)`** returns `{ key = "Appearance", label, tooltip, before, render }`,
+    `before` defaulting to `"Keybindings"`, so `O.RenderTabbedSchema` puts it immediately before the
+    Keybindings tab; the same entry serves a host-drawn strip (`build = entry.render`).
+  - **`O.AppearanceRows(ctx, spec, parent)`** draws the body and answers its view: the **skin source**
+    (*Ka0s skins* / *EllesmereUI*, the latter disabled unless `Skin:GetEUIStatus` holds, each of the
+    gate's conditions listed with the client's ready-check mark or cross and its fix), the **skin**
+    (one radio choice per registered skin, three to a line, each with its four swatches, name and
+    description), **Copy to every Ka0s addon…** (disabled with "No other loaded Ka0s addon uses
+    skins yet." while no other owner is registered; otherwise a confirmation naming the other owners
+    by label and saying that addons not loaded are unchanged, then `Skin:SetChoice` and
+    `Skin:WriteChoice` per owner) and the fixed note.
+  - **`lib.APPEARANCE_STRINGS`**, its US English words; `spec.strings` translates every string,
+    the skins' names and descriptions (`SKIN_<key>`, `SKIN_<key>_DESC`) and the conditions
+    (`COND_<key>`, `COND_<key>_HINT`) included.
+- **The write seam.** A pick calls `Skin:SetChoice(owner, source, skin)` first (the live repaint;
+  idempotent, so an owner's `onChange` calling it again is a no-op), then `spec.set(source, skin)`,
+  which MUST be the owner's write seam. Refused in combat. Leaving an EllesmereUI that painted this
+  session raises one reload popup (`LIBKA0S_SKIN_RELOAD`), from `SetChoice`'s answer. Both popups
+  are Blizzard StaticPopups at `DIALOG`, never re-strata'd or restyled.
+- **Skin minor 4: `Skin:OwnerLabel(owner)` and `Skin:WriteChoice(owner, source, skin)`**, the two
+  members the copy needs: the label an owner registered with, and a write through the `opts.set` it
+  registered, under pcall, which never moves the applied choice. Both are in the regenerated
+  `members-4.4.2.1.1.1.1.json`.
+- **The ellipsis.** `COPY` carries U+2026, which `options-ui-§21` asks of a button that opens a
+  confirmation; `tests/test_prose.lua`'s ASCII gate ratifies it for `LibKa0s/OptionsAppearance.lua`
+  alone, beside the em dash and Core's close glyph.
+
+New suite `tests/test_options_appearance.lua` (17 cases), red on the previous payload: the tab entry
+and its place before Keybindings, the rows, a pick moving the Skin major before the seam and
+repainting live, another owner untouched, copy disabled and enabled, the EllesmereUI gate closed and
+open, the one reload popup, translated strings, a disabled render, the refresher and the unregistered
+owner. `tests/test_options_keybinds_model.lua`'s key-length case now pins one component per file,
+`OptionsKeybinds` the twelfth. Re-vendor the whole folder: the new file must arrive with the shell.
+**What a consumer owes: every Options degradation stub gains `AppearanceTab` and
+`AppearanceRows`**, in every addon, adopted or not (`Kit.assertSurfaceParity`, `skinning-§3`); the
+regenerated `members-33.3.35.4.6.10.3.12.6.3.2.5.1.json` lists the lib-level table only, so it names
+`APPEARANCE_STRINGS` and not them. An adopted addon draws the tab on its General page before
+Keybindings.
 
 ## v1.77.0 — 2026-10-24
 

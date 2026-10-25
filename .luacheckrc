@@ -63,6 +63,12 @@ read_globals = {
   -- the client's standard face (S.GetFont when a skin names none) and the hook a checkbox's mark
   -- follows SetChecked through. Each read at call time and guarded for absence.
   "CreateColor", "CreateFont", "STANDARD_TEXT_FONT", "hooksecurefunc",
+  -- The Appearance tab (OptionsAppearance.lua): its copy confirmation and its reload popup are
+  -- Blizzard StaticPopups, and the reload accept calls the client's reload. Each read at call time
+  -- and guarded. The tab defines its two dialogs in StaticPopupDialogs, keyed LIBKA0S_SKIN_*, when
+  -- it shows them, so that one table's fields are writable; the table itself is never replaced.
+  "C_UI", "ReloadUI", "StaticPopup_Show",
+  StaticPopupDialogs = { other_fields = true, read_only = false },
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes
 -- through _G[name]. That is the one sanctioned _G mutation in this library.

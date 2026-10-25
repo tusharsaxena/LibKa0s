@@ -5,7 +5,7 @@ Two version numbers, one of which is load-bearing at runtime.
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
 | Repo semver (`v1.77.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
-| File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `DEFS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
+| File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `DEFS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
 is offered for a major and discards the rest, so of the copies vendored across every installed addon,
@@ -25,7 +25,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   fifty, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   fifty-one, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
    constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
@@ -34,7 +34,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `WidgetsDragHandle.lua`, `CHART_MINOR` in `WidgetsLineChart.lua`, `AUTOCOMPLETE_MINOR` in `WidgetsAutocomplete.lua`, `COPY_MINOR` in `WidgetsCopyWindow.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WINDOW_MINOR` in `DebugLogWindow.lua`, `WIDGETS_MINOR` in
    `OptionsWidgets.lua`, `IDS_MINOR` in `OptionsIds.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
    `TABS_MINOR` in `OptionsTabs.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
-   in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
+   in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `APPEARANCE_MINOR` in `OptionsAppearance.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
    `SAMPLER_MINOR` in `PerfSampler.lua`, `COMMANDS_MINOR` in `PerfCommands.lua`, `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`, `MINOR` in `Sim.lua`,
    `TIMELINE_MINOR` in `SimTimeline.lua`, `SIM_PANEL_MINOR` in `SimPanel.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
@@ -43,17 +43,18 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 3. **A new module is also a new row in `tests/majors.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
    that table rather than naming files inline, so a module missing from it is a module nothing
-   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of twelve and a
-   `paired` array of eleven (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
+   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of thirteen and a
+   `paired` array of twelve (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
    `{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
    `{ OptionsIds, __idsMinor, __idsShellMinor }`, `{ OptionsIdList, __idListMinor, __idListShellMinor }`,
    `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`, `{ OptionsCombat, __combatMinor, __combatShellMinor }`,
    `{ OptionsCompose, __composeMinor, __composeShellMinor }`,
    `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`, `{ OptionsNav, __navMinor, __navShellMinor }`,
    `{ OptionsDrawer, __drawerMinor, __drawerShellMinor }`,
-   `{ OptionsKeybinds, __keybindsMinor, __keybindsShellMinor }`). **A file added to an existing major moves
+   `{ OptionsKeybinds, __keybindsMinor, __keybindsShellMinor }`,
+   `{ OptionsAppearance, __appearanceMinor, __appearanceShellMinor }`). **A file added to an existing major moves
    that major's version key**, because the key is every file's minor in load order — the Options key
-   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1, ten from 26.1.32.1.1.6.1.7.4.1, eleven from 29.2.34.2.4.8.1.7.4.2.1 and twelve from 30.2.34.3.5.9.2.11.4.2.1.4. The table
+   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1, ten from 26.1.32.1.1.6.1.7.4.1, eleven from 29.2.34.2.4.8.1.7.4.2.1, twelve from 30.2.34.3.5.9.2.11.4.2.1.4 and thirteen from 33.3.35.4.6.10.3.12.6.3.2.5.1. The table
    carries one row per shipped major — eighteen today, since `LibKa0s-Glow-1.0` and
    `LibKa0s-Sim-1.0` at v1.75.0 and `LibKa0s-Skin-1.0` at v1.78.0. The Sim row is the example of a three-file major paired on its
    shell: `files = { Sim, SimTimeline, SimPanel }` and a `paired`
@@ -265,7 +266,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the fifty `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the fifty-one `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,

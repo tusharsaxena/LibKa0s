@@ -42,6 +42,7 @@
 	<Script file="OptionsNav.lua"/>
 	<Script file="OptionsDrawer.lua"/>
 	<Script file="OptionsKeybinds.lua"/>
+	<Script file="OptionsAppearance.lua"/>
 	<Script file="Perf.lua"/>
 	<Script file="PerfSampler.lua"/>
 	<Script file="PerfCommands.lua"/>
