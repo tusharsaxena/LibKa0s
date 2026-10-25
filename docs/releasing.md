@@ -1054,8 +1054,9 @@ leg 1, in its `LH-RV` item of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`,
 `feat/2026-10-25-skinning`; the other fourteen consumers stay on v1.77.0 until leg 2 re-vendors and adopts
 skins. In a client where LootHistory is installed, its v1.78.0 copy wins every shared major for every addon,
 and an addon that registers no skin owner draws what it drew on v1.77.0 (the v1.78.0 `CHANGELOG.md`
-block). The step-5 hosts (Sim and `TestStrip`: BankLedger, DropWatcher, LootHistory, MultiMeters, KickCD)
-re-look at their leg-2 re-vendor. DpsRace bundles LibKa0s too and is missing from the step-9 loop and the
+block). The step-5 hosts (Sim and `TestStrip`: BankLedger, DropWatcher, LootHistory, MultiMeters, KickCD;
+`TestStrip` only: DpsRace, whose HUD test-mode strip is not yet in the Widgets row) re-look at their leg-2
+re-vendor. DpsRace bundles LibKa0s too and is missing from the step-9 loop and the
 table's module rows; the next step-9 sweep adds it.
 
 **Step 9 was run for v1.75.0 on 2026-10-23**, over the fourteen run branches: 209 lookup lines in

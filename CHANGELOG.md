@@ -532,7 +532,9 @@ Keybindings.
 - **Hosts affected by the preview and simulation re-look (step 5).** SimPanel minor 7 and Widgets
   minor 16 (the file that defines `W.TestStrip`) moved. Sim hosts, from the Consumers table's Sim
   row: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD; `TestStrip` hosts, from its
-  Widgets row: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD. Only LootHistory
+  Widgets row: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD, plus DpsRace, whose HUD
+  test-mode strip (`modules/Hud.lua` through `core/WidgetsSetup.lua`'s `NS.MakeTestStrip`) calls
+  `W.TestStrip` although the Widgets row does not name it yet. Only LootHistory
   registers a skin owner in this leg, so only its sim panel and strips change; the others' scenarios
   and test-mode strips draw as before, and each re-looks at its leg-2 re-vendor.
 - **Consumers.** `docs/releasing.md`'s Consumers table gains a `LibKa0s-Skin-1.0` row: LootHistory
@@ -563,7 +565,7 @@ Keybindings.
 Release gate (`docs/automated-tests/20261025-100830/`): lint pass, 0/0 in 223 files;
 tests pass, 3003 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
-Preview and simulation re-look: Current — SimPanel minor 7 (`7a782f0`) and Widgets minor 16, `W.TestStrip`'s file (`556946d`), paint through a registered skin owner only; tests/fixture_sim_panel.lua, tests/test_sim_panel.lua (two minor pins), tests/test_sim_panel_render.lua, tests/test_widgets_teststrip.lua (unchanged), tests/test_tool_windows_skin.lua, tests/test_widgets_skin.lua, docs/api/Sim/version-2.3.7-docs.md and docs/api/Widgets/version-16.2.6.4.4.1-docs.md re-read; no scenario, step or test-mode data changes, and an unowned panel or strip draws as at v1.77.0; hosts affected for step 8: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD (Sim and the strip), of which only LootHistory re-vendors and registers an owner in leg 1.
+Preview and simulation re-look: Current — SimPanel minor 7 (`7a782f0`) and Widgets minor 16, `W.TestStrip`'s file (`556946d`), paint through a registered skin owner only; tests/fixture_sim_panel.lua, tests/test_sim_panel.lua (two minor pins), tests/test_sim_panel_render.lua, tests/test_widgets_teststrip.lua (unchanged), tests/test_tool_windows_skin.lua, tests/test_widgets_skin.lua, docs/api/Sim/version-2.3.7-docs.md and docs/api/Widgets/version-16.2.6.4.4.1-docs.md re-read; no scenario, step or test-mode data changes, and an unowned panel or strip draws as at v1.77.0; hosts affected for step 8: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD (Sim and the strip), and DpsRace (the strip only; not yet in the Widgets row), of which only LootHistory re-vendors and registers an owner in leg 1.
 
 ## v1.77.0 — 2026-10-24
 
