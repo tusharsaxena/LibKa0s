@@ -83,16 +83,16 @@ test("skin controls: Button repaints live, primary reads btnPrimary, and the ico
   local prev = q.HookScript
   rawset(q, "HookScript", function(self, ...) hooks = hooks + 1; return prev(self, ...) end)
   S.Button(q); S.Button(q)
-  assertEqual(hooks, 2, "OnEnter and OnLeave are hooked once each, however often it is painted")
+  assertEqual(hooks, 4, "OnEnter, OnLeave, OnEnable and OnDisable are hooked once each, however often it is painted")
 end)
 
-test("skin controls: a stock button stays stock on Ka0s Default and is faded and boxed in a skin", function()
+test("skin controls: a stock button is faded and boxed under every skin, Ka0s Default too", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local b, normal = stockButton(m)
   S.Button(b)
-  assertEqual(normal:GetAlpha(), 1, "the client's art as drawn")
-  assertNil(F.region(Skin, b, "fill"), "nothing drawn")
+  assertEqual(normal:GetAlpha(), 0, "Ka0s Default fades the client's art (SkinPaint minor 6)")
+  assertEqual(F.rgba(survey(m, F.region(Skin, b, "fill")).color), F.tok(Skin, "ka0s", "btn.bg"), "and boxes it")
   Skin:SetChoice(OWNER, "ka0s", "ember")
   assertEqual(normal:GetAlpha(), 0, "faded")
   local g = survey(m, F.region(Skin, b, "fill")).gradient
@@ -100,8 +100,8 @@ test("skin controls: a stock button stays stock on Ka0s Default and is faded and
     "a fill region, Ember's gradient")
   assertEqual(F.region(Skin, b, "edgeTop"):GetParent(), F.region(Skin, b, "holder"), "its edge on the holder")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(normal:GetAlpha(), 1, "back")
-  assertFalse(F.region(Skin, b, "fill"):IsShown())
+  assertEqual(normal:GetAlpha(), 0, "still faded")
+  assertEqual(F.rgba(survey(m, F.region(Skin, b, "fill")).color), F.tok(Skin, "ka0s", "btn.bg"), "in Ka0s Default's fill")
 end)
 
 test("skin controls: Button with keepKeys paints only the label", function()
@@ -183,7 +183,10 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   -- was given (owner probe, 2026-10-26: `e:SetFontObject(GameFontHighlightSmall)` then
   -- `e:GetFontObject()` is an unnamed Font, `~= GameFontHighlightSmall`). Handing that object back
   -- through SetFontObject overflowed the client's stack: Forever -> Midnight crashed the game.
-  local m, Skin = F.env({ lsm = { ["font:Ka0s Barlow"] = "Fonts\\Barlow.ttf" } })
+  -- Every shipped skin sets a body face since SkinDefs minor 8, so the way back by path is reached
+  -- here through a skin registered with none (`false`), as a face the client cannot resolve would.
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Atkinson"] = "Fonts\\Atkinson.ttf" } })
+  Skin:RegisterSkin({ key = "bare", tokens = { ["font.body"] = false } })
   local S = F.owner(Skin, OWNER)
   local eb = m.CreateFrame("EditBox", nil, m.UIParent)
   local anon = { GetName = function() return nil end }
@@ -200,9 +203,9 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   S.EditBox(eb)
   Skin:SetChoice(OWNER, "ka0s", "forever")
   assertEqual(#objects, 1, "Forever gives the box the owner's body font object")
-  Skin:SetChoice(OWNER, "ka0s", "midnight")
+  Skin:SetChoice(OWNER, "ka0s", "bare")
   for _, obj in ipairs(objects) do assertFalse(obj == anon, "the anonymous font object is never handed back") end
-  assertEqual(#faces, 1, "Midnight has no body face: the stock face goes back by path")
+  assertEqual(#faces, 1, "a skin with no body face: the stock face goes back by path")
   assertEqual(table.concat(faces[1], "|"), "Fonts\\FRIZQT__.TTF|10|")
   assertEqual(table.concat(shadows, " "), "0,0 0,0,0,0", "and its own shadow, which SetFont leaves as the skin's")
   -- A record an older copy of the file wrote (an anonymous object saved) is checked again on restore.
@@ -210,7 +213,7 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   local rec = Skin.painted[eb]
   rec.regions.saved.font[eb].obj = anon
   local before = #objects
-  Skin:SetChoice(OWNER, "ka0s", "midnight")
+  Skin:SetChoice(OWNER, "ka0s", "bare")
   assertEqual(#objects, before, "an anonymous object recorded by an older copy is never handed back")
 end)
 
@@ -278,7 +281,9 @@ test("skin controls: Checkbox draws a box and a mark that follows the check", fu
   assertEqual(F.rgba(survey(m, F.region(Skin, cb, "hover")).color), F.tok(Skin, "obsidian", "menu.hover"))
 end)
 
-test("skin controls: WoW Default's checkbox is the client's art; Ka0s Default leaves it stock", function()
+test("skin controls: WoW Default's checkbox is the client's art; Ka0s Default draws a square box", function()
+  -- SkinPaintControls minor 2 (the owner's note): Ka0s Default no longer leaves the client's round
+  -- check button; it draws a square box in its control colors, the stock art faded.
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER, "wow")
   local cb, normal = checkButton(m)
@@ -287,7 +292,27 @@ test("skin controls: WoW Default's checkbox is the client's art; Ka0s Default le
   assertEqual(survey(m, box).texture, Skin:ResolveSkin("wow")["check.texture"])
   assertFalse(F.region(Skin, cb, "mark"):IsShown(), "stockCheck keeps the client's check")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(normal:GetAlpha(), 1); assertFalse(box:IsShown())
+  assertEqual(normal:GetAlpha(), 0, "the round stock art is faded")
+  assertTrue(box:IsShown(), "a square box is drawn")
+  local sv = survey(m, box)
+  assertEqual(F.rgba(sv.vertex or sv.color), F.tok(Skin, "ka0s", "check.bg"), "in Ka0s Default's control fill")
+end)
+
+test("skin controls: a disabled Button's label reads text.disabled, and comes back when enabled", function()
+  -- red under: a disabled button painted exactly like an enabled one (the owner's screenshots).
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local b = backdropButton(m)
+  local on = true
+  rawset(b, "IsEnabled", function() return on end)
+  S.Button(b)
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "obsidian", "btn.text"))
+  on = false; b:__fire("OnDisable")
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "obsidian", "text.disabled"), "dimmed")
+  b:__fire("OnEnter")
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "obsidian", "text.disabled"), "no hover while disabled")
+  on = true; b:__fire("OnEnable")
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "obsidian", "btn.text"), "back to rest")
 end)
 
 -- ── scroll bars and sliders ──────────────────────────────────────────────────────────────────
@@ -310,38 +335,81 @@ test("skin controls: ScrollBar's thumb states and the console's own bar match to
   assertEqual(F.only(tr, PAINT), "#4:SetColorTexture(0.240,0.240,0.270,0.300)\n#5:SetColorTexture(0.500,0.500,0.550,0.850)")
 end)
 
-test("skin controls: a bar's own thumb is left stock on Ka0s Default and tinted in a skin", function()
+test("skin controls: a skin's thumb fill lies over the bar's own thumb and follows it", function()
+  -- SkinDefs minor 9, SkinPaintControls minor 6 (the owner's note: the thumb barely visible in five
+  -- skins). red under: a ScrollBar that only tints the thumb art, or a fill that outlives a hidden thumb.
+  local m, Skin = F.env()
+  -- The client's hooksecurefunc: the fixture's is a recorder that never calls through.
+  m.hooksecurefunc = function(t, name, fn)
+    local orig = t[name]
+    rawset(t, name, function(...) local r = { orig(...) }; fn(...); return unpack(r) end)
+  end
+  local S = F.owner(Skin, OWNER, "contrast")
+  local sb = m.CreateFrame("Slider", nil, m.UIParent)
+  local thumb = sb:CreateTexture()
+  thumb:SetSize(16, 24)
+  rawset(sb, "GetThumbTexture", function() return thumb end)
+  S.ScrollBar(sb)
+  local fill = F.region(Skin, sb, "thumbFill")
+  assertTrue(fill ~= nil, "a fill is laid")
+  assertEqual(F.rgba(survey(m, fill).color), F.tok(Skin, "contrast", "scroll.thumbFill"), "in the skin's fill color")
+  assertEqual(survey(m, fill).layer, "OVERLAY", "over the thumb art")
+  local _, rel = fill:GetPoint(1)
+  assertTrue(rel == thumb, "anchored to the thumb, so it moves with it")
+  assertTrue(survey(m, fill).shown, "shown with the thumb")
+  thumb:Hide()
+  assertTrue(not survey(m, fill).shown, "hidden with the thumb")
+  thumb:Show()
+  assertTrue(survey(m, fill).shown, "and back with it")
+  S.ScrollBar(sb, { state = "off" })
+  assertEqual(survey(m, fill).color[4], F.tok(Skin, "contrast", "scroll.thumbFill"):match("([%d.]+)$") * 0.5,
+    "half alpha on a bar that is off")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertTrue(not survey(m, fill).shown, "Ka0s Default sets none, so none is drawn")
+end)
+
+test("skin controls: exactly the five skins the owner named set a thumb fill", function()
+  local _, Skin = F.env()
+  local want = { obsidian = true, contrast = true, ember = true, wow = true, midnight = true }
+  for _, def in ipairs(Skin:Skins()) do
+    local has = Skin:ResolveSkin(def.key)["scroll.thumbFill"] ~= nil
+    assertEqual(has, want[def.key] == true, def.key .. "'s thumb fill")
+  end
+end)
+
+test("skin controls: a bar's own thumb is tinted and its track drawn under every skin", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local sb = m.CreateFrame("Slider", nil, m.UIParent)
   local thumb = sb:CreateTexture()
   rawset(sb, "GetThumbTexture", function() return thumb end)
   S.ScrollBar(sb)
-  assertNil(survey(m, thumb).vertex, "untouched")
+  assertEqual(F.rgba(survey(m, thumb).vertex), F.tok(Skin, "ka0s", "scroll.thumb"), "Ka0s Default tints it (minor 6)")
   Skin:SetChoice(OWNER, "ka0s", "ember")
   assertEqual(F.rgba(survey(m, thumb).vertex), F.tok(Skin, "ember", "scroll.thumb"))
   assertEqual(F.rgba(survey(m, F.region(Skin, sb, "track")).color), F.tok(Skin, "ember", "scroll.track"))
   Skin:SetChoice(OWNER, "ka0s", "wow")
   assertEqual(survey(m, thumb).texture, Skin:ResolveSkin("wow")["scroll.thumbTexture"], "WoW Default's knob")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertFalse(F.region(Skin, sb, "track"):IsShown())
+  assertEqual(F.rgba(survey(m, F.region(Skin, sb, "track")).color), F.tok(Skin, "ka0s", "scroll.track"), "its own track")
 end)
 
-test("skin controls: Slider is left alone by Ka0s Default and painted by a skin that sets it", function()
+test("skin controls: Slider is painted under every skin, Ka0s Default's thin bar included", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local sl = m.CreateFrame("Slider", nil, m.UIParent)
   local thumb = sl:CreateTexture()
   rawset(sl, "GetThumbTexture", function() return thumb end)
   S.Slider(sl)
-  assertNil(survey(m, thumb).vertex); assertNil(F.region(Skin, sl, "track"))
+  assertEqual(F.rgba(survey(m, thumb).vertex), F.tok(Skin, "ka0s", "slider.thumb"), "Ka0s Default's thumb (minor 8)")
+  assertEqual(F.rgba(survey(m, F.region(Skin, sl, "track")).color), F.tok(Skin, "ka0s", "slider.track"), "and bar")
   Skin:RegisterSkin({ key = "sl", tokens = { ["slider.track"] = { 0.2, 0.2, 0.2, 1 },
                                              ["slider.thumb"] = { 1, 0, 0, 1 } } })
   Skin:SetChoice(OWNER, "ka0s", "sl")
   assertEqual(F.rgba(survey(m, thumb).vertex), "1,0,0,1")
   assertEqual(F.rgba(survey(m, F.region(Skin, sl, "track")).color), "0.200,0.200,0.200,1")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertFalse(F.region(Skin, sl, "track"):IsShown())
+  assertEqual(F.rgba(survey(m, F.region(Skin, sl, "track")).color), F.tok(Skin, "ka0s", "slider.track"))
 end)
 
 -- ── tabs ─────────────────────────────────────────────────────────────────────────────────────
@@ -363,7 +431,7 @@ test("skin controls: Tab paints its state, SetTabSelection moves it, and a repai
   assertFalse(F.region(Skin, tab, "line"):IsShown())
 end)
 
-test("skin controls: WoW Default's tabs are the client's tab art; a stock tab stays stock", function()
+test("skin controls: WoW Default's tabs are the client's tab art; a stock tab is faded under every skin", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER, "wow")
   local tab = m.CreateFrame("Button", nil, m.UIParent)
@@ -375,7 +443,8 @@ test("skin controls: WoW Default's tabs are the client's tab art; a stock tab st
   local stock = m.CreateFrame("Button", nil, m.UIParent)
   local art = stock:CreateTexture()
   K.Tab(stock, { stock = { art } })
-  assertNil(F.region(Skin, stock, "fill"), "Ka0s Default: the caller's stock art stands")
+  assertEqual(art:GetAlpha(), 0, "Ka0s Default fades the art the caller named (minor 6)")
+  assertTrue(F.region(Skin, stock, "fill") ~= nil, "and draws its own backing")
   Skin:SetChoice("Other", "ka0s", "glass")
   assertEqual(art:GetAlpha(), 0, "a skin fades the art the caller named")
 end)
@@ -411,12 +480,13 @@ test("skin controls: CloseButton on Ka0s Default is Core's close button, call fo
   assertEqual(F.rgba(survey(m, b.glyph).textColor), "1,0.300,0.300,1", "close.hot")
 end)
 
-test("skin controls: a stock close button gets a glyph in a skin and is left stock on Ka0s Default", function()
+test("skin controls: a stock close button gets a glyph under every skin, Ka0s Default too", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local b, normal = stockButton(m)
   S.CloseButton(b)
-  assertNil(F.region(Skin, b, "glyph"))
+  assertEqual(F.rgba(survey(m, F.region(Skin, b, "glyph")).textColor), F.tok(Skin, "ka0s", "close.rest"),
+    "Ka0s Default's glyph (minor 6)")
   Skin:SetChoice(OWNER, "ka0s", "contrast")
   assertEqual(normal:GetAlpha(), 0)
   local glyph = F.region(Skin, b, "glyph")
@@ -443,7 +513,8 @@ test("skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and Apply
                                                  ["list.header.bg"] = { 0, 0, 0.2, 1 } } })
   local ib = m.CreateFrame("Frame", nil, m.UIParent)
   S.IconBorder(ib, { size = 2 })
-  assertNil(F.region(Skin, ib, "edgeTop"), "Contrast sets no icon border")
+  assertEqual(F.rgba(survey(m, F.region(Skin, ib, "edgeTop")).color), F.tok(Skin, "contrast", "icon.border"),
+    "Contrast inherits Ka0s Default's black icon border (SkinDefs minor 8)")
   Skin:SetChoice(OWNER, "ka0s", "framed")
   assertEqual(F.rgba(survey(m, F.region(Skin, ib, "edgeTop")).color), "1,1,0,1", "repainted with one")
   local bar = m.CreateFrame("Frame", nil, m.UIParent)
@@ -505,7 +576,8 @@ test("skin controls: ListRow washes live under the row and follow the latest sta
   local row = m.CreateFrame("Button", nil, m.UIParent)
   S.ListRow(row, "stripe")
   local stripe = F.region(Skin, row, "stripe")
-  assertEqual(stripe:GetParent(), F.region(Skin, row, "under"), "on the fill holder, under the row's text")
+  assertEqual(stripe:GetParent(), row, "a region of the row (SkinPaintControls minor 5)")
+  assertEqual(survey(m, stripe).sublevel, -8, "at the bottom of BACKGROUND, under the row's text")
   assertEqual(F.rgba(survey(m, stripe).color), F.tok(Skin, "ka0s", "list.stripe"))
   S.ListRow(row, { stripe = true, hover = true })
   assertEqual(F.rgba(survey(m, F.region(Skin, row, "hover")).color), F.tok(Skin, "ka0s", "list.hover"))
@@ -663,4 +735,40 @@ test("skin controls: every primitive's repaint reuses its regions and paints the
     assertEqual(hooks(), afterHooks, name .. ": and no new hook")
     assertTrue(#tr.lines > 0 or NO_TOKEN[name], name .. ": the repaint painted")
   end)
+end)
+
+-- ── the owner's notes, round 2 (SkinPaint minor 5, SkinPaintControls minor 3) ────────────────
+
+test("skin controls: a dark label is shadowless, a light one keeps its shadow", function()
+  -- red under: one shadowed font object for every label, which smears dark text on a bright fill.
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Barlow"] = "Fonts\\Barlow.ttf" } })
+  local S = F.owner(Skin, OWNER, "glass")   -- lilac primary with dark text, a light normal label
+  local p, b = backdropButton(m), backdropButton(m)
+  S.Button(p, { primary = true }); S.Button(b)
+  assertEqual(p.text:GetFontObject().shadow[1], 0, "dark text on the primary: no shadow")
+  assertEqual(b.text:GetFontObject().shadow[1], 1, "light text on a normal button: the shadow")
+end)
+
+test("skin controls: an EditBox hint and a sort header's texts take the skin's face", function()
+  -- red under: strings a primitive only tints, left on the client's font and its shadow.
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Barlow"] = "Fonts\\Barlow.ttf" } })
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local eb = m.CreateFrame("EditBox", nil, m.UIParent, "BackdropTemplate")
+  eb.hint = eb:CreateFontString()
+  S.EditBox(eb)
+  assertEqual(eb.hint:GetFontObject().font[1], "Fonts\\Barlow.ttf", "the hint")
+  local bar = m.CreateFrame("Frame", nil, m.UIParent)
+  local name = bar:CreateFontString()
+  S.SortHeaderBar(bar, { texts = { name } })
+  assertEqual(name:GetFontObject().font[1], "Fonts\\Barlow.ttf", "the header text")
+end)
+
+test("skin controls: a slider's track is a thin bar centered in it", function()
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local sl = m.CreateFrame("Slider", nil, m.UIParent)
+  sl:SetSize(180, 18)
+  S.Slider(sl)
+  local t = F.region(Skin, sl, "track")
+  assertEqual(t:GetHeight(), 4, "a 4px bar, Ka0s Default's shape")
 end)

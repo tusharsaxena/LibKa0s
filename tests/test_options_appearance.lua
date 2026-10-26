@@ -38,7 +38,7 @@ local ELLIPSIS = "\226\128\166"
 --- Answers m, Skin, the Options major, eui.
 local function env(spec)
   spec = spec or {}
-  local m = F.env({ files = { "Core" } })
+  local m = F.env({ files = { "Core" }, lsm = spec.lsm })
   local eui = spec.eui and E.install(m, spec.eui) or nil
   local files = {}
   if not spec.noSkin then
@@ -70,7 +70,9 @@ local function register(Skin, owner, source, skin)
   Skin:RegisterOwner(owner, {
     label = owner .. " Label",
     get = function() return { source = store.source, skin = store.skin } end,
-    set = function(src, sk) store.source, store.skin, store.writes = src, sk, store.writes + 1 end,
+    set = function(src, sk, ig)
+      store.source, store.skin, store.writes, store.ignore = src, sk, store.writes + 1, ig
+    end,
   })
   return store
 end
@@ -96,9 +98,11 @@ end
 local function specFor(store, extra)
   local spec = {
     get = function() return { source = store.source, skin = store.skin } end,
-    set = function(src, sk)
+    set = function(src, sk, ig)
       store.seamCalls = (store.seamCalls or 0) + 1
-      store.source, store.skin = src, sk
+      if src ~= nil then store.source = src end
+      if sk ~= nil then store.skin = sk end
+      if ig ~= nil then store.ignore = ig end
     end,
   }
   for k, v in pairs(extra or {}) do spec[k] = v end
@@ -474,4 +478,116 @@ test("appearance: an owner that never registered, or no Skin major, draws one li
   local O2, ctx2 = page(lib2, OWNER)
   assertNil(O2.AppearanceRows(ctx2, {}))
   assertTrue(hasText(ctx2, lib2.APPEARANCE_STRINGS.UNAVAILABLE))
+end)
+
+-- ── the Scope section: Ignore settings panel, Ignore fonts (Skin minor 5, OptionsAppearance minor 2) ──
+
+local function indexOf(list, w)
+  for i, x in ipairs(list) do if x == w then return i end end
+  return nil
+end
+
+test("appearance: the Scope section draws its two exceptions between the skins and the copy button", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  local S = lib.APPEARANCE_STRINGS
+  assertEqual(view.ignore.panel.labelText, S.IGNORE_PANEL)
+  assertEqual(view.ignore.fonts.labelText, S.IGNORE_FONTS)
+  assertEqual(view.ignore.panel.value, false, "off by default")
+  assertEqual(view.ignore.fonts.value, false)
+  assertTrue(view.ignore.panel.checkType ~= "radio", "a check box, not a radio")
+  assertTrue(hasText(ctx, S.SCOPE_HEADING), "its own heading")
+  local all = flatten(ctx.scroll)
+  local lastSkin = indexOf(all, view.skins[view.order[#view.order]])
+  local panel, fonts, copy = indexOf(all, view.ignore.panel), indexOf(all, view.ignore.fonts), indexOf(all, view.copy)
+  assertTrue(lastSkin < panel and panel < fonts and fonts < copy, "below the skins, side by side, above the copy")
+end)
+
+test("appearance: Ignore fonts moves the Skin major, writes the seam's third argument, and fonts go back live", function()
+  -- red under: P.font without its __FontsIgnored gate (the string keeps the skin's face).
+  local m, Skin, lib = env({ lsm = { ["font:Ka0s Atkinson"] = "Fonts\\Atkinson.ttf",
+    ["font:Ka0s Atkinson Bold"] = "Fonts\\AtkinsonB.ttf" } })
+  local store = register(Skin, OWNER, "ka0s", "forever")
+  local frame = F.window(m)
+  -- The kit's template font strings report no prior face (the client's GameFontNormal does): give
+  -- the title one, so there is a face to hand back.
+  frame.title:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
+  Skin:For(OWNER).Shell(frame)
+  local function face() return (frame.title:GetFont()) end
+  assertEqual(face(), "Fonts\\AtkinsonB.ttf", "the skin's face on the title")
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  view.ignore.fonts:__fire("OnValueChanged", true)
+  assertEqual(select(2, Skin:GetIgnore(OWNER)), true, "the Skin major moved")
+  assertEqual(store.ignore and store.ignore.fonts, true, "written through spec.set's third argument")
+  assertEqual(store.ignore.panel, false, "with the other half as it was")
+  assertEqual(store.skin, "forever", "the skin untouched")
+  assertEqual(face(), "Fonts\\FRIZQT__.TTF", "the title's own face is back, no reload")
+  assertEqual(F.rgba(m.__paint(frame.title).textColor), F.tok(Skin, "forever", "title.text"), "still colored")
+  view.ignore.fonts:__fire("OnValueChanged", false)
+  assertEqual(face(), "Fonts\\AtkinsonB.ttf", "and the skin's face comes back")
+  assertEqual(view.ignore.fonts.value, false)
+end)
+
+test("appearance: Ignore settings panel applies live both ways, with no reload", function()
+  -- red under: a reload popup on turning it on (OptionsScroll minor 7 hands the chrome back).
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  view.ignore.panel:__fire("OnValueChanged", true)
+  assertEqual(Skin:GetIgnore(OWNER), true)
+  assertEqual(store.ignore and store.ignore.panel, true, "written")
+  assertEqual(#m.popups, 0, "no reload popup")
+  assertNil(lib.__chromeSkin(OWNER), "the chrome paints nothing now")
+  view.ignore.panel:__fire("OnValueChanged", false)
+  assertEqual(#m.popups, 0, "nor turning it off")
+  assertTrue(lib.__chromeSkin(OWNER) ~= nil, "and the chrome paints again")
+end)
+
+test("appearance: SetIgnore keeps a nil half, never asks for a reload, and WriteChoice passes it on", function()
+  local _, Skin = env()
+  assertEqual(table.concat({ tostring(Skin:GetIgnore("Nobody")) }), "false", "an unregistered owner ignores nothing")
+  local store = register(Skin, OWNER)
+  local changed, reload = Skin:SetIgnore(OWNER, true, nil)
+  assertTrue(changed, "changed")
+  assertFalse(reload, "never a reload (OptionsScroll minor 7)")
+  local panel, fonts = Skin:GetIgnore(OWNER)
+  assertEqual(panel, true); assertEqual(fonts, false, "the nil half kept")
+  assertFalse(Skin:__PanelSkinned(OWNER), "the paint paths are told to leave the panel")
+  assertFalse((Skin:SetIgnore(OWNER, true, false)), "the same pair is no change")
+  assertTrue(Skin:WriteChoice(OWNER, "ka0s", "glass", { panel = 1, fonts = true }))
+  assertEqual(store.ignore.panel, false, "only true is true")
+  assertEqual(store.ignore.fonts, true)
+  Skin:WriteChoice(OWNER, "ka0s", "glass")
+  assertNil(store.ignore, "no third argument without one")
+end)
+
+test("appearance: copy gives every other owner this owner's scope as well as its skin", function()
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER, "ka0s", "ember")
+  local other = register(Skin, OTHER)
+  Skin:SetIgnore(OWNER, false, true)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  view.copy:__fire("OnClick")
+  assertTrue(m.popups[1].dialog.text:find("skin source, skin and scope", 1, true) ~= nil, "says scope")
+  m.popups[1].dialog.OnAccept(nil, m.popups[1].data)
+  local panel, fonts = Skin:GetIgnore(OTHER)
+  assertEqual(panel, false); assertEqual(fonts, true, "the other owner ignores fonts now")
+  assertEqual(other.ignore and other.ignore.fonts, true, "and its profile says so")
+  assertEqual(other.skin, "ember")
+end)
+
+test("appearance: an instance whose owner ignores its panel still hears a skin switch", function()
+  -- red under: O.__chromeSkin installing its listener only from the gated facade (turning the
+  -- exception off would never re-render the open pages).
+  local _, Skin, lib = env()
+  register(Skin, OWNER)
+  Skin:SetIgnore(OWNER, true, nil)
+  local O = page(lib, OWNER)
+  assertNil(O.__chromeSkin(), "nothing to paint with")
+  assertTrue(#Skin.owners[OWNER].listeners > 0, "the listener is installed all the same")
 end)

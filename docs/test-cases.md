@@ -454,7 +454,7 @@ Total.
 - skin: without SkinDefs the engine runs and every token is nil
 - skin: the schema names each token once, with a known kind
 - skin: every registered skin resolves every schema token to its kind
-- skin: Ka0s Default leaves every font token nil
+- skin: Ka0s Default sets every token, faces and sizes included
 - skin: Ka0s Default equals the published constants
 - skin: Ka0s Default equals the file-local constants it replaces
 - skin: Ka0s Default equals LootHistory's constants
@@ -477,7 +477,7 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
-### test_skin_defs.lua (19)
+### test_skin_defs.lua (24)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -490,52 +490,60 @@ Total.
 - skin defs: the bind-state tokens inherit Ka0s Default unless a skin overrides for legibility
 - skin defs: every skin's split text, icon and signed colors read where they draw
 - skin defs: the split tokens inherit Ka0s Default unless a skin overrides for legibility
-- skin defs: High Contrast draws every control border at 2px or more
-- skin defs: Glass is the rounded skin, radius 8 on the Ka0s Glass nine-slice
+- skin defs: High Contrast draws 1px control edges inside a 2px window and popup edge
+- skin defs: Glass rounds its window and popups only, on the Ka0s Glass nine-slice
 - skin defs: WoW Default wears the Blizzard art docs/api/Skin names
 - skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art
 - skin defs: only WoW Default names Blizzard art
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
 - skin defs: every font and border a skin names is shipped or an LSM default
 - skin defs: the font assignments follow the spec
+- skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
+- skin defs: a hovered row is told apart from a selected one
+- skin defs: WoW Default's checkbox art is its only box
+- skin defs: in every skin a primary button differs from a normal one
+- skin defs: no skin draws a box round a slider's bar
 
-### test_skin_paint.lua (29)
+### test_skin_paint.lua (32)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
 - skin paint: with no skin registered a primitive paints nothing it has no token for
-- skin paint: Shell on Ka0s Default is Core.ApplySkin, call for call
+- skin paint: Shell on Ka0s Default draws Core.SKIN's window from its tokens
 - skin paint: Shell paints a skin's window from its tokens
 - skin paint: a second Shell call makes no new region and paints the same
 - skin paint: a skin switch repaints a Shell live, and back to Ka0s Default exactly
 - skin paint: WoW Default's window is the dialog edge on the holder over the tiled art
 - skin paint: the holder is a child frame one level up, and edges live on it
-- skin paint: Ka0s Default leaves a stock frame stock, and a skin fades its art
+- skin paint: every skin fades a stock frame's art and draws its own window, Ka0s Default too
 - skin paint: two owners on one loaded copy paint and repaint only their own frames
 - skin paint: a target painted for a second owner is given back first
 - skin paint: a target untracked and painted again reuses its regions and hooks
 - skin paint: fills and washes sit under the target's text, edges over it
+- skin paint: a bar one level above its window keeps its fill over the window
+- skin paint: a fill another fader dimmed comes back at full alpha on the next paint
 - skin paint: Panel on Ka0s Default is LootHistory's list panel, call for call
 - skin paint: Inset, noBg, noBorder and the nav rail's recolor
 - skin paint: FadeRegions fades the stock textures, records their alpha, and spares its own
-- skin paint: FadeNineSlice fades the nine pieces away from Ka0s Default
-- skin paint: TitleBar paints only the title color on Ka0s Default
+- skin paint: FadeNineSlice fades the nine pieces under every skin
+- skin paint: TitleBar on Ka0s Default fills its bar and centers its gold title
 - skin paint: TitleBar fills under its text, centers its title, and gives the alignment back
 - skin paint: Divider colors a texture in place, as Core's divider is colored
 - skin paint: Card on Ka0s Default is LootHistory's KPI card, call for call
-- skin paint: Footer draws nothing on Ka0s Default and a band in a skin that sets foot.bg
+- skin paint: Footer draws its band in every skin, Ka0s Default's foot.bg included
 - skin paint: Strip and Cover color their textures as TestStrip and the combat cover do
 - skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for call
-- skin paint: Tooltip leaves a library tooltip alone unless the skin colors tooltips
+- skin paint: Tooltip colors a library tooltip in every skin, its art kept
 - skin paint: Text colors a role, and a skin's font reaches it through the owner's font object
 - skin paint: Font and White put the body font and color on a string
 - skin paint: the getters answer the owner's skin
+- skin paint: a skin's size scales each string from its own, one font object per size
 
-### test_skin_paint_controls.lua (24)
+### test_skin_paint_controls.lua (30)
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
-- skin controls: a stock button stays stock on Ka0s Default and is faded and boxed in a skin
+- skin controls: a stock button is faded and boxed under every skin, Ka0s Default too
 - skin controls: Button with keepKeys paints only the label
 - skin controls: WhiteButtonLabel and StateButtonLabel
 - skin controls: EditBox on Ka0s Default paints the search box's backdrop, call for call
@@ -543,20 +551,26 @@ Total.
 - skin controls: leaving a skin font puts an EditBox's face back by path, never its anonymous font object
 - skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call
 - skin controls: Checkbox draws a box and a mark that follows the check
-- skin controls: WoW Default's checkbox is the client's art; Ka0s Default leaves it stock
+- skin controls: WoW Default's checkbox is the client's art; Ka0s Default draws a square box
+- skin controls: a disabled Button's label reads text.disabled, and comes back when enabled
 - skin controls: ScrollBar's thumb states and the console's own bar match today's tints
-- skin controls: a bar's own thumb is left stock on Ka0s Default and tinted in a skin
-- skin controls: Slider is left alone by Ka0s Default and painted by a skin that sets it
+- skin controls: a skin's thumb fill lies over the bar's own thumb and follows it
+- skin controls: exactly the five skins the owner named set a thumb fill
+- skin controls: a bar's own thumb is tinted and its track drawn under every skin
+- skin controls: Slider is painted under every skin, Ka0s Default's thin bar included
 - skin controls: Tab paints its state, SetTabSelection moves it, and a repaint keeps it
-- skin controls: WoW Default's tabs are the client's tab art; a stock tab stays stock
+- skin controls: WoW Default's tabs are the client's tab art; a stock tab is faded under every skin
 - skin controls: CloseButton on Ka0s Default is Core's close button, call for call
-- skin controls: a stock close button gets a glyph in a skin and is left stock on Ka0s Default
+- skin controls: a stock close button gets a glyph under every skin, Ka0s Default too
 - skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and ApplyBarFill
 - skin controls: NavItem on Ka0s Default is OptionsNav's entry paint
 - skin controls: Drawer on Ka0s Default is OptionsDrawer's header paint
 - skin controls: ListRow washes live under the row and follow the latest state
 - skin controls: every primitive's second call makes no new frame, region or hook
 - skin controls: every primitive's repaint reuses its regions and paints the new skin
+- skin controls: a dark label is shadowless, a light one keeps its shadow
+- skin controls: an EditBox hint and a sort header's texts take the skin's face
+- skin controls: a slider's track is a thin bar centered in it
 
 ### test_skin_eui.lua (29)
 
@@ -590,10 +604,11 @@ Total.
 - skin eui: EllesmereUI's live looks change repaints the Ka0s extras
 - skin eui: EllesmereUIDB is read in LibKa0s/SkinEUI.lua and no other payload file
 
-### test_skin_ace.lua (21)
+### test_skin_ace.lua (22)
 
 - skin ace: an owned page's CheckBox is painted from the owner's skin through O.AceGUI
-- skin ace: Ka0s Default is stock AceGUI: nothing painted, nothing wrapped
+- skin ace: Ka0s Default paints AceGUI rows like every skin
+- skin ace: an owner that ignores its settings panel gets stock rows until it stops
 - skin ace: an unregistered owner's instance holds AceGUI itself
 - skin ace: the proxy is AceGUI for everything but Create
 - skin ace: an owner that registers after lib:New is proxied at CreateOptionsPanel
@@ -2003,7 +2018,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (20)
+### test_options_appearance.lua (26)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2025,6 +2040,12 @@ Total.
 - appearance: a page drawn disabled draws every control disabled
 - appearance: the refresher re-reads the owner's store
 - appearance: an owner that never registered, or no Skin major, draws one line and no controls
+- appearance: the Scope section draws its two exceptions between the skins and the copy button
+- appearance: Ignore fonts moves the Skin major, writes the seam's third argument, and fonts go back live
+- appearance: Ignore settings panel applies live both ways, with no reload
+- appearance: SetIgnore keeps a nil half, never asks for a reload, and WriteChoice passes it on
+- appearance: copy gives every other owner this owner's scope as well as its skin
+- appearance: an instance whose owner ignores its panel still hears a skin switch
 
 ### test_options_idsuggest.lua (29)
 
@@ -2251,23 +2272,25 @@ Total.
 - reset tooltip: notes.resetAll is the button's own and does not reach the member
 - reset tooltip: OptionsCompose is at minor 11 or later
 
-### test_options_skin.lua (15)
+### test_options_skin.lua (17)
 
 - options skin: a page with no registered owner is today's paint, call for call
 - options skin: an owner-less page records nothing in the Skin major
 - options skin: an owned page paints its header and an opaque backdrop from the skin
+- options skin: a page whose CreateTexture answers the page keeps no backdrop and stays hidden
 - options skin: an owned page's tab strip fades the client's art and wears the tab roles
 - options skin: an owned page's rail, drawer and cover paint from the skin
-- options skin: a skin switch repaints the owned page with no reload, and Ka0s Default undoes it
-- options skin: Ka0s Default on an owned page draws no backdrop and keeps the client's art
+- options skin: a skin switch repaints the owned page with no reload, Ka0s Default included
+- options skin: Ignore settings panel hands every piece of chrome back live, and off paints again
+- options skin: Ka0s Default dresses an owned page like every skin
 - options skin: an owner that registers after the page was built gets its skin on the next show
 - options skin: two owners' pages stay apart
 - options skin: the always-shown thumb takes the owner's tints, and is given back on release
 - options skin: a pooled drawer head drawn for no owner leaves the owner's repaint
 - options skin: the id list's help mark takes the skin's tints away from Ka0s Default
 - options skin: the keybind rows take the skin's text roles away from Ka0s Default
-- options skin: Ka0s Default leaves the help mark and the keybind rows as they were
-- options skin: the id-suggestion popup takes the skin, and Ka0s Default gives its edge back
+- options skin: Ka0s Default colors the keybind rows in its own text roles
+- options skin: the id-suggestion popup takes the skin, Ka0s Default's edge included
 
 ### test_options_compose_skin.lua (10)
 
@@ -3420,11 +3443,11 @@ Total.
 | test_glow.lua | 15 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
-| test_skin_defs.lua | 19 |
-| test_skin_paint.lua | 29 |
-| test_skin_paint_controls.lua | 24 |
+| test_skin_defs.lua | 24 |
+| test_skin_paint.lua | 32 |
+| test_skin_paint_controls.lua | 30 |
 | test_skin_eui.lua | 29 |
-| test_skin_ace.lua | 21 |
+| test_skin_ace.lua | 22 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3471,7 +3494,7 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 20 |
+| test_options_appearance.lua | 26 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3482,7 +3505,7 @@ Total.
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
-| test_options_skin.lua | 15 |
+| test_options_skin.lua | 17 |
 | test_options_compose_skin.lua | 10 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
@@ -3533,4 +3556,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3007** |
+| **Total** | **3030** |

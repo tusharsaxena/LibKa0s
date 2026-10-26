@@ -122,15 +122,24 @@ test("skin: every registered skin resolves every schema token to its kind", func
   end
 end)
 
-test("skin: Ka0s Default leaves every font token nil", function()
+test("skin: Ka0s Default sets every token, faces and sizes included", function()
+  -- SkinDefs minor 8, the owner's ruling (2026-10-26): Ka0s Default leaves nothing to the client.
+  -- Every schema token carries a value or `false` (the explicit "none"); its faces are Friz
+  -- Quadrata, set rather than inherited from the client's font objects, and its sizes the reference
+  -- every skin scales against. red under: a Ka0s Default token left nil.
   local Skin = T.mocks.LibStub(MAJOR)
-  local tokens = Skin:ResolveSkin("ka0s")
+  local own = Skin.skins.ka0s.tokens
+  local missing = {}
   for _, e in ipairs(Skin.SCHEMA) do
-    if e.group == "Fonts" then assertNil(tokens[e.name], e.name .. " leaves the font object alone") end
+    if own[e.name] == nil then missing[#missing + 1] = e.name end
   end
-  for _, q in ipairs({ "poor", "common", "uncommon", "rare", "epic", "legendary" }) do
-    assertNil(tokens["q." .. q], "q." .. q .. " reads the client's ITEM_QUALITY_COLORS")
-  end
+  assertEqual(#missing, 0, "Ka0s Default leaves these to the client: " .. table.concat(missing, ", "))
+  local tokens = Skin:ResolveSkin("ka0s")
+  assertEqual(tokens["font.body"], "Friz Quadrata TT", "the body face, set")
+  assertEqual(tokens["font.title"], "Friz Quadrata TT", "the title face, set")
+  assertEqual(tokens["font.bodySize"], 12, "the body reference")
+  assertEqual(tokens["font.titleSize"], 14, "the title reference")
+  sameColor(tokens["q.epic"], { 0.64, 0.21, 0.93, 1 }, "the client's epic purple, written out")
 end)
 
 test("skin: Ka0s Default equals the published constants", function()
@@ -235,7 +244,10 @@ local LOOTHISTORY = {
   { "btn.border", { 0.24, 0.24, 0.27, 0.9 } },
   { "btn.icon", { 0.85, 0.85, 0.85 } },
   { "btn.text", { 1, 1, 1 } }, { "btn.hover", { 1, 0.82, 0 } },
-  { "check.bg", { 0.24, 0.24, 0.27, 1 } }, { "check.mark", { 1, 0.82, 0, 1 } },   -- Timeline
+  -- SkinDefs minor 7 (the owner's note): Ka0s Default's checkbox is a square box in the control
+  -- colors, Widgets SKIN.fill under SKIN.line, rather than Timeline's .24 gray.
+  { "check.bg", { 0.1, 0.1, 0.12, 0.9 } }, { "check.border", { 0.24, 0.24, 0.27, 0.9 } },
+  { "check.mark", { 1, 0.82, 0, 1 } },
   { "card.bg", { 0.1, 0.1, 0.12, 0.85 } }, { "card.border", { 0.24, 0.24, 0.27, 0.9 } },
   { "panel.bg", { 0.08, 0.08, 0.10, 0.6 } }, { "panel.border", { 0.24, 0.24, 0.27, 0.7 } },
   { "section.rule", { 1, 0.82, 0, 0.35 } }, { "chart.track", { 1, 1, 1, 0.06 } },

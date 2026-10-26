@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 4.6.3.1.1.1.1
+# `LibKa0s-Skin-1.0` — version 5.9.8.3.6.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **6** · `SkinPaint.lua` minor **3** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **5** · `SkinDefs.lua` minor **9** · `SkinPaint.lua` minor **8** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **6** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
@@ -24,7 +24,8 @@ LootHistory alone. A **skin** turns those constants into data, a token table, an
 **per addon** (Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`, the owner's rulings R1 to R4).
 This version is the engine, the nine skins, the paint primitives and the EllesmereUI provider:
 **Ka0s Default**, whose tokens are today's constants, so an addon that never picks another skin
-draws exactly what it drew before, eight more translated from the owner's mockups (*The eight
+keeps the library's own look (since SkinPaint minor 6 it is painted like any other skin, stock
+controls included: *Ka0s Default is a skin like the others*, below), eight more translated from the owner's mockups (*The eight
 skins*, below), the primitives the facade calls (*The primitives*, below), and the `eui` source,
 which hands the vocabulary to EllesmereUI's own skinning facade (*The EllesmereUI provider*, below),
 and the AceGUI rows a settings page acquires, painted for its owner and given back to AceGUI's shared
@@ -62,11 +63,13 @@ still runs the engine: no skin is registered and every token resolves to nil.
 
 | Member | Answers | What it does |
 |---|---|---|
-| `Skin:RegisterOwner(owner, opts)` | the owner's facade | Registers `owner` at the consumer's file load. `opts.get()` answers `{ source, skin }` (or two values) from the host's profile; `opts.set(source, skin)` writes it (the Appearance tab's copy to every Ka0s addon calls it, through `WriteChoice`); `opts.label` names the addon; `opts.log(line)`, optional, takes the one line the EllesmereUI provider writes when it refuses a facade or stops painting (a host hands its debug console's writer). The choice is read **once**, here; an unknown source is cleaned to `"ka0s"`, a non-string skin to `"ka0s"`. A second call updates the hooks and keeps the applied choice. With `SkinEUI.lua` loaded it also registers the owner with EllesmereUI (*The EllesmereUI provider*). |
+| `Skin:RegisterOwner(owner, opts)` | the owner's facade | Registers `owner` at the consumer's file load. `opts.get()` answers `{ source, skin }` (or two values) from the host's profile; `opts.set(source, skin, ignore)` writes it (the Appearance tab's copy to every Ka0s addon calls it, through `WriteChoice`; `ignore`, since Skin minor 5, is `{ panel, fonts }` or nil, and a setter written before it ignores it); `opts.label` names the addon; `opts.log(line)`, optional, takes the one line the EllesmereUI provider writes when it refuses a facade or stops painting (a host hands its debug console's writer). The choice is read **once**, here; an unknown source is cleaned to `"ka0s"`, a non-string skin to `"ka0s"`. A second call updates the hooks and keeps the applied choice. With `SkinEUI.lua` loaded it also registers the owner with EllesmereUI (*The EllesmereUI provider*). |
 | `Skin:IsOwner(name)` | boolean | True only after `RegisterOwner`. Every factory that takes an owner paints today's way, verbatim, for a name that is not one. |
 | `Skin:Owners()` | sorted array | The registered owners. |
 | `Skin:OwnerLabel(owner)` | string or nil | The label the owner registered with (`opts.label`, else its folder name); nil for a name that never called `RegisterOwner`. What the Appearance tab's copy confirmation names each addon by (Skin minor 4). |
-| `Skin:WriteChoice(owner, source, skin)` | boolean | Writes `(source, skin)`, cleaned as `RegisterOwner` cleans a read, into the owner's profile through the `opts.set` it registered, under pcall: the write of the Appearance tab's copy to every Ka0s addon (`LibKa0s-Options-1.0`'s `OptionsAppearance.lua`), which reaches each addon only through its own write seam. **Never moves the applied choice**: the tab calls `SetChoice` first (the live repaint), then this. Answers true when a setter ran and did not raise; false for an unregistered owner, one with no setter, or a raise, which goes to the client's error handler (Skin minor 4). |
+| `Skin:GetIgnore(owner)` | ignorePanel, ignoreFonts | The owner's two exceptions, the Appearance tab's *Ignore settings panel* and *Ignore fonts* (Skin minor 5). `false, false` for an unregistered owner. |
+| `Skin:SetIgnore(owner, panel, fonts)` | changed, reload | Sets the exceptions; nil keeps that half, any value but `true` is false. A change repaints every frame recorded for the owner and fires its `OnLooksChanged` listeners: with fonts ignored, `P.font` hands every string back its own face, size and shadow (the skin still colors it), and with the panel ignored the Options chrome (`LibKa0s-Options-1.0`'s `__chromeSkin`) and the AceGUI rows (`PaintAce`) paint nothing for the owner, and the chrome they painted is handed back as it was, live. `reload` is always false (kept so a two-value read holds). Never writes the host's profile (Skin minor 5). |
+| `Skin:WriteChoice(owner, source, skin, ignore)` | boolean | Writes `(source, skin)`, cleaned as `RegisterOwner` cleans a read, into the owner's profile through the `opts.set` it registered, under pcall: the write of the Appearance tab's copy to every Ka0s addon (`LibKa0s-Options-1.0`'s `OptionsAppearance.lua`), which reaches each addon only through its own write seam. `ignore`, optional (Skin minor 5), `{ panel, fonts }`, reaches the setter as its third argument, each half `true` or false; without it the setter gets nil. **Never moves the applied choice**: the tab calls `SetChoice` first (the live repaint), then this. Answers true when a setter ran and did not raise; false for an unregistered owner, one with no setter, or a raise, which goes to the client's error handler (Skin minor 4). |
 | `Skin:For(owner)` | facade `S` | The owner's facade, `lib.facades[owner]`: one table per owner, kept for the session and across minors. Does not register the owner; an unregistered owner's facade reads Ka0s Default. |
 | `Skin:GetChoice(owner)` | source, skin | The applied choice. An unregistered owner answers `"ka0s", "ka0s"`. |
 | `Skin:SetChoice(owner, source, skin)` | changed, reload | See *Changing the skin* below. `nil` keeps that half. Never writes the host's profile. |
@@ -225,12 +228,14 @@ texture path, an anchor word) and `bool`. A skin derives from Ka0s Default: it n
 it changes, and `false` says "none" for a token Ka0s Default sets (it resolves to nil; a `bool` token
 keeps its `false`).
 
-**Nil means "leave the stock value alone".** A token marked nilable may resolve to nil, and a
-primitive then does not touch that property: Ka0s Default leaves **every font token nil**, so a
-FontString keeps its font object, its size and whatever a font-replacement addon did to it, and a
-primitive calls `SetFont`/`SetFontObject` only for a non-nil token (recording the prior object and
-restoring it on a switch back). The `q.*` tokens are nil in Ka0s Default, which reads the client's
-`ITEM_QUALITY_COLORS`.
+**Ka0s Default sets every token** (SkinDefs minor 8, the owner's ruling of 2026-10-26: "make sure
+even the Ka0s Default has a setting for everything"). No schema token is nil in it: its faces are
+Friz Quadrata, set by name, its `q.*` the client's quality colors written out, and a decoration it
+does not draw (a gradient stop, an art texture, a selection outline) is `false`, the explicit "none".
+A skin derives from it, so every skin resolves every token. A nil that still reaches a primitive (a
+payload with no SkinDefs.lua, or a skin that names a face the client cannot resolve) leaves that
+property alone: a primitive calls `SetFont`/`SetFontObject` only for a resolved face, recording the
+prior object and restoring it on a switch away.
 
 **Geometry is skin-invariant in leg 1.** `title.height`, `scroll.width`, `scroll.gutter` and
 `win.inset` keep Ka0s Default's value in every skin, and border or nine-slice art is drawn outset or
@@ -273,9 +278,9 @@ changing:
 
 Identity colors that carry meaning by hue (LootHistory's 36 per-source colors, class colors) are
 not tokens: no skin changes what they mean. The bind states were on that list until SkinDefs minor
-5 made them tokens, because a near-white `BoE` lock and a faint gray unbound one cannot be read on
-Azeroth's parchment: the dark skins inherit Ka0s Default's hues and only the skins that need it
-override (*Token reference*, below).
+5 made them tokens, because a near-white `BoE` lock and a faint gray unbound one could not be read on
+Azeroth's light parchment (dark since SkinDefs minor 8): the skins inherit Ka0s Default's hues and
+only a skin that needs it overrides (*Token reference*, below).
 
 ### Token reference
 
@@ -286,22 +291,22 @@ eight skins*, below.
 
 | Token | Kind | Nilable | Ka0s Default |
 |---|---|---|---|
-| `font.body` | string | yes | nil (leave alone) |
-| `font.title` | string | yes | nil (leave alone) |
-| `font.mono` | string | yes | nil (leave alone) |
-| `font.bodySize` | number | yes | nil (leave alone) |
-| `font.titleSize` | number | yes | nil (leave alone) |
-| `font.outline` | string | yes | nil (leave alone) |
-| `font.shadow` | bool | yes | nil (leave alone) |
+| `font.body` | string | yes | `"Friz Quadrata TT"` |
+| `font.title` | string | yes | `"Friz Quadrata TT"` |
+| `font.mono` | string | yes | `"JetBrains Mono"` |
+| `font.bodySize` | number | yes | `12` (the reference) |
+| `font.titleSize` | number | yes | `14` (the reference) |
+| `font.outline` | string | yes | `""` |
+| `font.shadow` | bool | yes | `true` |
 
 ### Window
 
 | Token | Kind | Nilable | Ka0s Default |
 |---|---|---|---|
 | `win.bg` | color | no | `0.06, 0.06, 0.08, 0.92` |
-| `win.bgTop` | color | yes | nil (leave alone) |
-| `win.bgBottom` | color | yes | nil (leave alone) |
-| `win.bgTexture` | string | yes | nil (leave alone) |
+| `win.bgTop` | color | yes | none (`false`) |
+| `win.bgBottom` | color | yes | none (`false`) |
+| `win.bgTexture` | string | yes | none (`false`) |
 | `win.bgDense` | color | no | `0.06, 0.06, 0.08, 0.95` |
 | `win.border` | color | no | `0, 0, 0, 1` |
 | `win.borderSize` | number | no | `1` |
@@ -309,14 +314,14 @@ eight skins*, below.
 | `win.inner` | color | yes | `0.24, 0.24, 0.27, 0.85` |
 | `win.inset` | number | no | `1` |
 | `win.radius` | number | no | `0` |
-| `title.bg` | color | yes | nil (leave alone) |
-| `title.bgTop` | color | yes | nil (leave alone) |
-| `title.bgBottom` | color | yes | nil (leave alone) |
+| `title.bg` | color | yes | `0.04, 0.04, 0.05, 0.9` |
+| `title.bgTop` | color | yes | none (`false`) |
+| `title.bgBottom` | color | yes | none (`false`) |
 | `title.text` | color | no | `1, 0.82, 0, 1` |
-| `title.align` | string | yes | nil (leave alone) |
+| `title.align` | string | yes | `"CENTER"` |
 | `title.height` | number | no | `30` |
 | `divider` | color | no | `0.24, 0.24, 0.27, 0.85` |
-| `foot.bg` | color | yes | nil (leave alone) |
+| `foot.bg` | color | yes | `0.04, 0.04, 0.05, 0.9` |
 | `close.rest` | color | no | `0.7, 0.7, 0.72, 1` |
 | `close.hot` | color | no | `1, 0.3, 0.3, 1` |
 
@@ -352,8 +357,8 @@ eight skins*, below.
 | Token | Kind | Nilable | Ka0s Default |
 |---|---|---|---|
 | `btn.bg` | color | no | `0.1, 0.1, 0.12, 0.9` |
-| `btn.bgTop` | color | yes | nil (leave alone) |
-| `btn.bgBottom` | color | yes | nil (leave alone) |
+| `btn.bgTop` | color | yes | none (`false`) |
+| `btn.bgBottom` | color | yes | none (`false`) |
 | `btn.border` | color | no | `0.24, 0.24, 0.27, 0.9` |
 | `btn.borderSize` | number | yes | `1` |
 | `btn.borderStyle` | string | yes | `"flat"` |
@@ -361,14 +366,14 @@ eight skins*, below.
 | `btn.hover` | color | no | `1, 0.82, 0, 1` |
 | `btn.icon` | color | no | `0.85, 0.85, 0.85, 1` |
 | `btn.radius` | number | no | `0` |
-| `btnPrimary.bg` | color | no | `0.1, 0.1, 0.12, 0.9` |
-| `btnPrimary.bgTop` | color | yes | nil (leave alone) |
-| `btnPrimary.bgBottom` | color | yes | nil (leave alone) |
-| `btnPrimary.border` | color | no | `0.24, 0.24, 0.27, 0.9` |
+| `btnPrimary.bg` | color | no | `0.2, 0.16, 0.03, 0.95` |
+| `btnPrimary.bgTop` | color | yes | none (`false`) |
+| `btnPrimary.bgBottom` | color | yes | none (`false`) |
+| `btnPrimary.border` | color | no | `1, 0.82, 0, 0.8` |
 | `btnPrimary.borderSize` | number | yes | `1` |
 | `btnPrimary.borderStyle` | string | yes | `"flat"` |
-| `btnPrimary.text` | color | no | `1, 1, 1, 1` |
-| `btnPrimary.hover` | color | no | `1, 0.82, 0, 1` |
+| `btnPrimary.text` | color | no | `1, 0.82, 0, 1` |
+| `btnPrimary.hover` | color | no | `1, 1, 1, 1` |
 | `btnPrimary.icon` | color | no | `0.85, 0.85, 0.85, 1` |
 | `btnPrimary.radius` | number | no | `0` |
 
@@ -380,22 +385,22 @@ eight skins*, below.
 | `input.border` | color | no | `0.24, 0.24, 0.27, 0.9` |
 | `input.borderSize` | number | yes | `1` |
 | `input.borderStyle` | string | yes | `"flat"` |
-| `input.text` | color | yes | nil (leave alone) |
-| `input.placeholder` | color | yes | nil (leave alone) |
+| `input.text` | color | yes | `0.9, 0.9, 0.9, 1` |
+| `input.placeholder` | color | yes | `0.5, 0.5, 0.5, 1` |
 | `input.focus` | color | no | `1, 0.82, 0, 0.9` |
 | `input.radius` | number | no | `0` |
-| `check.bg` | color | no | `0.24, 0.24, 0.27, 1` |
-| `check.border` | color | yes | nil (leave alone) |
-| `check.borderSize` | number | yes | nil (leave alone) |
-| `check.borderStyle` | string | yes | nil (leave alone) |
+| `check.bg` | color | no | `0.1, 0.1, 0.12, 0.9` |
+| `check.border` | color | yes | `0.24, 0.24, 0.27, 0.9` |
+| `check.borderSize` | number | yes | `1` |
+| `check.borderStyle` | string | yes | `flat` |
 | `check.mark` | color | no | `1, 0.82, 0, 1` |
 | `check.radius` | number | no | `0` |
-| `check.texture` | string | yes | nil (leave alone) |
-| `check.markTexture` | string | yes | nil (leave alone) |
-| `slider.track` | color | yes | nil (leave alone) |
-| `slider.trackBorder` | color | yes | nil (leave alone) |
-| `slider.fill` | color | yes | nil (leave alone) |
-| `slider.thumb` | color | yes | nil (leave alone) |
+| `check.texture` | string | yes | none (`false`) |
+| `check.markTexture` | string | yes | none (`false`) |
+| `slider.track` | color | yes | `0.24, 0.24, 0.27, 0.9` |
+| `slider.trackBorder` | color | yes | none (`false`) |
+| `slider.fill` | color | yes | `1, 0.82, 0, 1` |
+| `slider.thumb` | color | yes | `0.9, 0.9, 0.9, 1` |
 | `scroll.track` | color | no | `0.24, 0.24, 0.27, 0.3` |
 | `scroll.thumb` | color | no | `0.5, 0.5, 0.55, 0.85` |
 | `scroll.thumbOn` | color | no | `1, 1, 1, 1` |
@@ -403,7 +408,8 @@ eight skins*, below.
 | `scroll.width` | number | no | `8` |
 | `scroll.gutter` | number | no | `20` |
 | `scroll.radius` | number | no | `0` |
-| `scroll.thumbTexture` | string | yes | nil (leave alone) |
+| `scroll.thumbTexture` | string | yes | none (`false`) |
+| `scroll.thumbFill` | color | yes | none (`false`) |
 
 ### Tabs and navigation
 
@@ -414,24 +420,24 @@ eight skins*, below.
 | `tab.bgBottom` | color | yes | `0.1, 0.1, 0.1, 0.85` |
 | `tab.glow` | color | no | `1, 1, 1, 0.15` |
 | `tab.text` | color | no | `0.7, 0.7, 0.72, 1` |
-| `tab.border` | color | yes | nil (leave alone) |
-| `tab.borderSize` | number | yes | nil (leave alone) |
-| `tab.borderStyle` | string | yes | nil (leave alone) |
-| `tab.onBg` | color | yes | nil (leave alone) |
+| `tab.border` | color | yes | `0.24, 0.24, 0.27, 0.9` |
+| `tab.borderSize` | number | yes | `1` |
+| `tab.borderStyle` | string | yes | `"flat"` |
+| `tab.onBg` | color | yes | `0.18, 0.18, 0.18, 0.9` |
 | `tab.onText` | color | no | `1, 0.82, 0, 1` |
 | `tab.onLine` | color | no | `1, 0.82, 0, 1` |
 | `tab.rule` | color | no | `1, 0.82, 0, 0.16` |
 | `tab.radius` | number | no | `0` |
-| `tab.texture` | string | yes | nil (leave alone) |
-| `tab.onTexture` | string | yes | nil (leave alone) |
+| `tab.texture` | string | yes | none (`false`) |
+| `tab.onTexture` | string | yes | none (`false`) |
 | `nav.bg` | color | no | `0.1, 0.1, 0.1, 0.5` |
 | `nav.border` | color | no | `0.4, 0.4, 0.4, 1` |
-| `nav.borderSize` | number | yes | nil (leave alone) |
-| `nav.borderStyle` | string | yes | nil (leave alone) |
+| `nav.borderSize` | number | yes | `1` |
+| `nav.borderStyle` | string | yes | `"flat"` |
 | `nav.text` | color | no | `1, 0.82, 0, 1` |
 | `nav.selBg` | color | no | `0.3, 0.5, 1, 1` |
 | `nav.selText` | color | no | `1, 1, 1, 1` |
-| `nav.selBar` | color | yes | nil (leave alone) |
+| `nav.selBar` | color | yes | none (`false`) |
 
 ### Drawers and menus
 
@@ -462,12 +468,12 @@ eight skins*, below.
 
 | Token | Kind | Nilable | Ka0s Default |
 |---|---|---|---|
-| `list.header.bg` | color | yes | nil (leave alone) |
+| `list.header.bg` | color | yes | `1, 1, 1, 0.04` |
 | `list.header.text` | color | no | `1, 0.82, 0, 1` |
 | `list.stripe` | color | no | `1, 1, 1, 0.03` |
 | `list.hover` | color | no | `1, 0.82, 0, 0.1` |
-| `list.sel` | color | yes | nil (leave alone) |
-| `list.selOutline` | color | yes | nil (leave alone) |
+| `list.sel` | color | yes | `1, 0.82, 0, 0.18` |
+| `list.selOutline` | color | yes | none (`false`) |
 | `card.bg` | color | no | `0.1, 0.1, 0.12, 0.85` |
 | `card.border` | color | no | `0.24, 0.24, 0.27, 0.9` |
 | `panel.bg` | color | no | `0.08, 0.08, 0.1, 0.6` |
@@ -491,12 +497,12 @@ eight skins*, below.
 | Token | Kind | Nilable | Ka0s Default |
 |---|---|---|---|
 | `popup.bg` | color | no | `0, 0, 0, 0.92` |
-| `popup.border` | color | yes | nil (leave alone) |
-| `popup.borderSize` | number | yes | nil (leave alone) |
-| `popup.borderStyle` | string | yes | nil (leave alone) |
+| `popup.border` | color | yes | `0.24, 0.24, 0.27, 0.9` |
+| `popup.borderSize` | number | yes | `1` |
+| `popup.borderStyle` | string | yes | `"flat"` |
 | `popup.radius` | number | no | `0` |
-| `tooltip.bg` | color | yes | nil (leave alone) |
-| `tooltip.border` | color | yes | nil (leave alone) |
+| `tooltip.bg` | color | yes | `0.05, 0.05, 0.08, 0.95` |
+| `tooltip.border` | color | yes | `0.24, 0.24, 0.27, 0.9` |
 | `strip.test` | color | no | `1, 0.65, 0.15, 0.12` |
 | `strip.sim` | color | no | `0.35, 0.8, 1, 0.12` |
 | `cover.dim` | color | no | `0, 0, 0, 0.6` |
@@ -508,12 +514,12 @@ eight skins*, below.
 |---|---|---|---|
 | `bar.texture` | string | no | `"Blizzard"` |
 | `bar.gloss` | bool | no | `false` |
-| `bar.bg` | color | yes | nil (leave alone) |
-| `bar.border` | color | yes | nil (leave alone) |
+| `bar.bg` | color | yes | `0, 0, 0, 0.5` |
+| `bar.border` | color | yes | `0, 0, 0, 1` |
 | `bar.borderStyle` | string | no | `"None"` |
 | `bar.borderSize` | number | no | `1` |
-| `icon.border` | color | yes | nil (leave alone) |
-| `glow.color` | color | yes | nil (leave alone) |
+| `icon.border` | color | yes | `0, 0, 0, 1` |
+| `glow.color` | color | yes | `1, 0.82, 0, 1` |
 | `hud.font` | string | no | `"Friz Quadrata TT"` |
 | `hud.fontSize` | number | no | `12` |
 | `hud.outline` | string | no | `"OUTLINE"` |
@@ -539,12 +545,12 @@ eight skins*, below.
 
 | Token | Kind | Nilable | Ka0s Default |
 |---|---|---|---|
-| `q.poor` | color | yes | nil (leave alone) |
-| `q.common` | color | yes | nil (leave alone) |
-| `q.uncommon` | color | yes | nil (leave alone) |
-| `q.rare` | color | yes | nil (leave alone) |
-| `q.epic` | color | yes | nil (leave alone) |
-| `q.legendary` | color | yes | nil (leave alone) |
+| `q.poor` | color | yes | `0.62, 0.62, 0.62, 1` |
+| `q.common` | color | yes | `1, 1, 1, 1` |
+| `q.uncommon` | color | yes | `0.12, 1, 0, 1` |
+| `q.rare` | color | yes | `0, 0.44, 0.87, 1` |
+| `q.epic` | color | yes | `0.64, 0.21, 0.93, 1` |
+| `q.legendary` | color | yes | `1, 0.5, 0, 1` |
 | `sem.good` | color | no | `0.35, 0.8, 0.45, 1` |
 | `sem.bad` | color | no | `1, 0.33, 0.33, 1` |
 | `sem.neutral` | color | no | `0.62, 0.62, 0.66, 1` |
@@ -577,7 +583,7 @@ eight skins*, below.
 | `sem.warbandAlt` | color | no | `0.4, 0.78, 1, 1` |
 | `sem.unknown` | color | no | `0.6, 0.6, 0.6, 1` |
 
-**235 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
+**236 tokens.** `scroll.thumbFill` joined at SkinDefs minor 9: a flat fill over the scroll bar's own thumb, for the five skins whose tinted thumb art barely read. The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
 `tab.texture`, `tab.onTexture`) joined at SkinDefs minor 2, for WoW Default's Blizzard art. The
 eight **Widgets tokens** (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg`, `list.box`,
 `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`) joined at SkinDefs minor 3, so the drag handle and
@@ -604,8 +610,8 @@ a skin with Ka0s Default's pixels unchanged: the five bind states are LootHistor
 draws bind on pickup red, bind on equip green and unbound in a cooler gray; its warband pair is the
 table's own), and `sem.danger` the row menu's Delete and Forget, kept apart from `sem.bad` because
 `1, 0.33, 0.33` hex-encodes to `ff5454` and the menu writes `|cffff5555`. They follow no other token:
-the hue is the meaning, so the dark skins inherit Ka0s Default's values. Azeroth sets all nine in ink
-that reads on parchment, and High Contrast sets the gray and off-white ones (`sem.boundNone`,
+the hue is the meaning, so the skins inherit Ka0s Default's values (Azeroth set all nine in ink until
+SkinDefs minor 8 made it dark), and High Contrast sets the gray and off-white ones (`sem.boundNone`,
 `sem.boundBoE`, `sem.boundNoneAlt`) opaque in its own palette. `tests/test_skin_defs.lua` holds every
 skin's nine to a 3:1 contrast on its window. The eleven tokens for **the rest of LootHistory's
 constants** (`text.value`, `text.bodyAlt`, `text.subtle`, `text.highlight`, `gtip.value`,
@@ -615,9 +621,8 @@ token reproduced exactly under Ka0s Default; each pair they make with an older t
 *Split roles*, above. Every other constant there already had its token (LedgerFormat's `|cff808080`
 zero is `text.disabled`, Slash's `|cffffd100` is `text.accent`), and an alpha a call site applies to
 a token's color (the 0.95 series fills, the 0.9 flow bars) stays the call site's. They follow no
-other token, so the dark skins inherit Ka0s Default's values. Azeroth sets the nine window ones in
-ink on parchment and neither `gtip` one, because a GameTooltip line draws on Blizzard's dark
-tooltip in every skin; High Contrast sets the grays in its own palette (`text.value` and
+other token, so the skins inherit Ka0s Default's values (Azeroth set the window ones in ink until
+SkinDefs minor 8); High Contrast sets the grays in its own palette (`text.value` and
 `gtip.subtle` `#E0E0E0`, `text.bodyAlt` and `text.subtle` white, `icon.dim` and `sem.unknown`
 `#B0B0B0`). `tests/test_skin_defs.lua` holds every skin's window ones to a 3:1 contrast on its
 window and its `gtip` ones to 4.5:1 on the dark tooltip.
@@ -647,24 +652,27 @@ answers nil.
   pieces, and any regions the caller names in `opts.stock`) is faded with `SetAlpha(0)` and its
   prior alpha recorded. No primitive calls `Hide`, `SetParent`, `SetScript` (bar the one below) or
   `SetTexture("")` on a frame it did not make, and none replaces a method.
-- **Ka0s Default keeps stock art.** On Ka0s Default a target that carries template art is left as
-  the client draws it: nothing is painted, and everything a previous skin faded, recolored or drew
-  on it is put back. Ka0s Default is today's look, and today a stock control is stock. A custom
-  target (a BackdropTemplate frame the library or the host built) is painted from Ka0s Default's
-  tokens, which are today's constants.
-- **The holders.** Every Ka0s overlay that is not the target's own fill lives on one of two child
-  frames of the target, each made once, `SetAllPoints` over it and made with BackdropTemplate. Never
-  a direct region of a frame an EllesmereUI primitive may reach, because EllesmereUI's FadeRegions
-  fades every direct region of the frame it skins. **Edges** (borders, a divider's line, a tab's
-  underline, a nav entry's selection bar, a list row's selection outline) go on the **holder**, at the
-  target's frame level + 1, so a nine-slice edge can be its backdrop and every edge draws over the
-  target. **Fills and washes** (a list row's stripe, hover and selection washes, the strip and cover
-  washes, the extras' fills and gradients: `TitleBar`, `Footer`, `Card`, `SortHeaderBar`, a boxed
-  `Drawer` header) go on the **fill holder**, at the target's frame level - 1 (never below 0): a region
-  of a higher frame draws over every region of a lower one whatever its layer, so a fill one level up
-  would bury the target's own text, which is how BackdropTemplate frames sit under their parent. On an
-  extra that wears a backdrop and gets a gradient, the gradient on the fill holder is the fill, and
-  the backdrop's own fill is cleared.
+- **Stock art is faded under every skin.** A target that carries template art has it faded and is
+  painted from the skin's tokens, Ka0s Default's included (SkinPaint minor 6; until then Ka0s Default
+  left a stock target as the client drew it). A custom target (a BackdropTemplate frame the library
+  or the host built) is painted the same way.
+- **The holder, and fills under the target.** **Edges** (borders, a divider's line, a tab's
+  underline, a nav entry's selection bar, a list row's selection outline) go on the **holder**, a child
+  frame of the target made once, `SetAllPoints` over it, BackdropTemplate, at the target's frame
+  level + 1, so a nine-slice edge can be its backdrop and every edge draws over the target. **Fills and
+  washes** (a list row's stripe, hover and selection washes, the strip and cover washes, the extras'
+  fills and gradients: `TitleBar`, `Footer`, `Card`, `SortHeaderBar`, a boxed `Drawer` header) are, since
+  SkinPaint minor 7, **regions of the target itself** at the bottom sublevels of BACKGROUND (`P.SUB`:
+  fill -8 and gradient -7; stripe -8, hover -7, selection -6; a wash -8), under every region the target
+  draws and, as the target's own, always drawn over its parent. Until minor 7 they sat on a fill holder
+  one frame level below the target, which tied the target's parent whenever the target was one level
+  above it, and the client draws two frames of one level in either order (Loot History's title bar
+  under its window's backdrop, 2026-10-27). They are made through `P.subTex`, which sets the region's
+  alpha back to 1 on every paint: EllesmereUI's FadeRegions fades every direct region of a frame it
+  skins, and a fade from a stint on that provider (Ka0s's regions hidden meanwhile) is undone on the
+  way back. `P.under`, the old fill holder, stays for a sibling file's older copy. On an extra that
+  wears a backdrop and gets a gradient, the gradient is the fill and the backdrop's own fill is
+  cleared.
 - **Lasting regions, and owner moves.** A target's regions, holders, saved values and hook flags are
   kept in a weak per-target table (`lib.__regions`) that outlives its record, so a record dropped by
   `Skin:Untrack` and painted again, or a target moved to another owner, reuses them: a frame is never
@@ -686,8 +694,10 @@ answers nil.
   `Blizzard Tooltip` resolve to the client's own paths when LibSharedMedia lacks them.
 - **Gradients** are `SetGradient("VERTICAL", bottom, top)` on a white color texture, from a fill
   token's `<fill>Top` / `<fill>Bottom` pair; a later flat fill resets the gradient to white.
-- **Fonts** go through one font object per owner and role (`LibKa0sSkin_<owner>_<role>`, role
-  `body`, `title` or `mono`), created with `CreateFont`, given the face, size, outline and (unless
+- **Fonts** go through one font object per owner, role and size
+  (`LibKa0sSkin_<owner>_<role>_<tenths>`, role `body`, `title` or `mono`, since SkinPaint minor 4;
+  one object per role let two strings of one role at two sizes share its last size), created with
+  `CreateFont`, given the face, size, outline and (unless
   `font.shadow` is false) a 1, -1 black shadow, then set on the string with `SetFontObject`: from
   12.0.7 a runtime `SetShadow*` on a FontString no longer renders, a font object's shadow does. A nil
   face token (every font token in Ka0s Default) leaves the string's font alone, and puts back the
@@ -696,6 +706,17 @@ answers nil.
   anonymous font object rather than the one it was given, and handing that back through
   `SetFontObject` overflows the client's stack (SkinPaint minor 3). Faces resolve through
   LibSharedMedia.
+- **Labels.** Every string a primitive colors also takes the skin's face (`P.label`, SkinPaint minor 5):
+  an EditBox's hint, a sort header's texts, a footer, a card, a cover, a nav item, a tab and a state
+  label no longer keep the client's font and its shadow under a skin that sets a face. A dark label
+  (relative luminance under .3) takes a shadowless font object (`..._ns`): the black drop shadow
+  smeared dark strokes on a bright primary button or a selected tab.
+- **Sizes are relative** (SkinPaint minor 4, `P.fontSize`). Every skin sets `font.bodySize` and
+  `font.titleSize`, and Ka0s Default's (12 and 14) are the reference: a string keeps its own stock
+  size times the skin's size over the reference, so a 10pt caption under a skin at 12.5 is about
+  10.4pt and every layout measured against the stock fonts holds. The skins sit within a point and a
+  half of the reference (`tests/test_skin_defs.lua`), each tuned to its face's measure: Barlow 12.5,
+  Cinzel titles 12.5 (a wide face), Atkinson 12 for Azeroth's body and 13.5 and 15 for High Contrast (which still reads larger).
 - **Colors.** A text or vertex color whose alpha is 1 is passed as three components, as every call
   site writes them; fills and backdrop colors as four. A color from a nilable token, or any color on
   a stock target, records the prior color first and puts it back when the token resolves to nil.
@@ -705,15 +726,17 @@ answers nil.
   replaces the hook. `S.CloseButton(btn, { own = true })` is the one primitive that SetScripts, for
   a close button the library built and that has no host script, as Core's does today.
 
-### Ka0s Default is today's paint, call for call
+### Ka0s Default is a skin like the others
 
-For a registered owner on Ka0s Default, each primitive makes the paint calls the code it stands for
-makes today, in the same order, with the same arity, on the same objects. `tests/test_skin_paint.lua`
-and `tests/test_skin_paint_controls.lua` pin each with the kit's paint recorder and a call tracer:
+Since SkinPaint minor 6 no primitive branches on Ka0s Default: it paints from Ka0s Default's tokens
+exactly as from any skin's, and those tokens carry the library's own look (Core.SKIN, Widgets' SKIN,
+LootHistory's constants). `tests/test_skin_paint.lua` and `tests/test_skin_paint_controls.lua` pin
+each primitive's Ka0s Default draw against the code it stands for; where a row below says a call is
+that code's call, the tokens carry that code's values:
 
 | Primitive | Pinned against |
 |---|---|
-| `Shell(frame)` | `Core.ApplySkin(frame)`, run on an identical frame: it **is** that call, handed Core's own `SKIN` table, for a registered owner and for an unregistered name alike |
+| `Shell(frame)` | `Core.ApplySkin(frame)`'s look: Core's backdrop built from Ka0s Default's tokens, which carry Core.SKIN's fill, edge and inner rule, for a registered owner and for an unregistered name alike |
 | `Panel(frame)` | LootHistory's list panel (`modules/AnalyticsCharts.lua`) |
 | `Panel(frame, { nav = true })` | OptionsNav's rail recolor (`PANE_FILL` four components, `PANE_BORDER` three) |
 | `Card(frame)` | LootHistory's KPI card (`modules/Analytics.lua`) |
@@ -721,8 +744,8 @@ and `tests/test_skin_paint_controls.lua` pin each with the kit's paint recorder 
 | `Divider(texture)` | Core.ApplySkin's divider |
 | `Strip(texture, opts)` | `W.TestStrip`'s fill (`STRIP_FILL`, test and sim) |
 | `Cover(texture, { text })` | OptionsCombat's dim and its line |
-| `TitleBar(bar)` | the title color only (Ka0s Default sets no title fill and no alignment) |
-| `Footer(frame)`, `Tooltip(frame)` | nothing (their tokens are nil in Ka0s Default) |
+| `TitleBar(bar)` | the gold title, centered, over Ka0s Default's `title.bg` (SkinDefs minor 8) |
+| `Footer(frame)`, `Tooltip(frame)` | Ka0s Default's `foot.bg` band and `tooltip.bg` / `tooltip.border` (SkinDefs minor 8) |
 | `Button(btn)` | LootHistory's flat button (`modules/BrowserFilterBar.lua`), its gold-on-hover label |
 | `EditBox(eb)` | `W.SearchBox`, run for real: its backdrop, fill and edge |
 | `Dropdown(dd)` | `W.Dropdown`, run for real: its backdrop, fill, edge and the arrow's gray |
@@ -753,11 +776,11 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 | `Inset(frame, opts)` | A recessed area. | `input.bg`, `input.border`, `input.borderStyle`, `input.borderSize` |
 | `FadeRegions(frame, ...)` | Fades every texture region of the frame (and of each further frame) that no primitive made. Ka0s Default fades nothing and puts them back. | none |
 | `FadeNineSlice(frame)` | Fades `frame.NineSlice`'s nine pieces. Ka0s Default puts them back. | none |
-| `TitleBar(bar, opts)` | A title bar: the fill (the bar's backdrop, or the fill holder), its text (`opts.text`, else `bar.title` / `bar.text`) in the title color, font and alignment (the prior alignment put back when the skin sets none). | `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.align`, `font.title` |
+| `TitleBar(bar, opts)` | A title bar: the fill (the bar's backdrop, or a region of the bar under its text), its text (`opts.text`, else `bar.title` / `bar.text`) in the title color, font and alignment (the prior alignment put back when the skin sets none). | `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.align`, `font.title` |
 | `Divider(target, opts)` | A texture colored in place, or a line filling a frame on its holder; `opts.token` names another color (`section.rule`, `tab.rule`). | `divider` |
 | `Footer(frame, opts)` | A footer band; its text (`opts.text`, else `frame.text`) muted. | `foot.bg`, `text.muted` |
 | `Card(frame, opts)` | A card: `opts.title` in the heading color, `opts.text` in the body color. | `card.bg`, `card.border`, `text.heading`, `text.body` |
-| `Strip(target, opts)` | The test or simulation strip's wash (`opts.kind` `"test"` / `"sim"`), a texture in place or the fill holder. The meaning colors are the library's; a skin changes only their legibility. | `strip.test`, `strip.sim` |
+| `Strip(target, opts)` | The test or simulation strip's wash (`opts.kind` `"test"` / `"sim"`), a texture in place or a region of the frame. The meaning colors are the library's; a skin changes only their legibility. | `strip.test`, `strip.sim` |
 | `Cover(target, opts)` | The combat cover's dim, and `opts.text`. | `cover.dim`, `cover.text` |
 | `Tooltip(frame)` | A **library-owned** tooltip's backdrop, recolored; never GameTooltip. | `tooltip.bg`, `tooltip.border` |
 | `MenuFrame(frame, opts)` | A popup menu's flat backdrop (no insets); `opts.alt` the alternate edge; `opts.popup` recolors the backdrop the frame already wears, and a nil `popup.*` token puts that half back as the frame wore it before the first paint (a skin switch to Ka0s Default gives the edge back). | `menu.bg`, `menu.border`, `menu.borderAlt`, `menu.borderStyle`, `menu.borderSize`; `popup.bg`, `popup.border` |
@@ -769,17 +792,17 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 
 | Primitive | Paints | Tokens |
 |---|---|---|
-| `Button(btn, keepKeys \| opts)` | A push button: its stock art faded, the flat-control box, the label (the button's font string, else `btn.text` / `btn.Text`) in the text color and body font, the hover color under the pointer, `btn.icon` tinted. `keepKeys == true` or `opts.keep` keeps the stock art and paints only the label; `opts.primary` reads `btnPrimary.*`. | `btn.*` / `btnPrimary.*` (`bg`, `bgTop`, `bgBottom`, `border`, `borderStyle`, `borderSize`, `text`, `hover`, `icon`) |
+| `Button(btn, keepKeys \| opts)` | A push button: its stock art faded, the flat-control box, the label (the button's font string, else `btn.text` / `btn.Text`) in the text color and body font, the hover color under the pointer, `text.disabled` while the button is disabled (following `OnEnable` / `OnDisable`, SkinPaintControls minor 2), `btn.icon` tinted. `keepKeys == true` or `opts.keep` keeps the stock art and paints only the label; `opts.primary` reads `btnPrimary.*`. | `btn.*` / `btnPrimary.*` (`bg`, `bgTop`, `bgBottom`, `border`, `borderStyle`, `borderSize`, `text`, `hover`, `icon`) |
 | `WhiteButtonLabel(btn)` | The label in the button text color and body font. | `btn.text` |
 | `StateButtonLabel(btn, on)` | The label in the accent while on, muted otherwise. | `text.accent`, `text.muted` |
 | `EditBox(eb, opts)` | A text input: the template's pieces faded, the flat-control box, the typed text and the hint (`opts.placeholder`, else `eb.hint`), the focus edge while it has the keys. `opts.padInput` sets 6px insets; `opts.noBorder` draws no edge and hooks no focus. | `input.*` |
-| `Checkbox(cb, opts)` | A check button: its stock art faded (the stock check too unless `opts.stockCheck`), a box `opts.borderInset` inside it, an edge on the holder, a mark three pixels inside the box shown while checked (following `OnClick`, `OnShow` and `SetChecked`), and with `opts.hover` a highlight. | `check.*`, `menu.hover` |
+| `Checkbox(cb, opts)` | A check button, under every skin including Ka0s Default (SkinPaintControls minor 2: a square box rather than the client's round check button): its stock art faded (the stock check too unless `opts.stockCheck`), a box `opts.borderInset` inside it, an edge on the holder, a mark three pixels inside the box shown while checked (following `OnClick`, `OnShow` and `SetChecked`), and with `opts.hover` a highlight. | `check.*`, `menu.hover` |
 | `Dropdown(dd, opts)` | A dropdown button: the template's pieces faded, the flat-control box, the arrow (`dd.arrow` / `dd.Arrow`), the label (`dd.text` / `dd.Text`). | `input.*`, `icon.tint` |
-| `ScrollBar(sb, opts)` | A scroll bar: `opts.track` / `opts.thumb` (textures the caller drew) filled; `opts.state` `"on"` / `"off"` tints the bar's own thumb; otherwise, away from Ka0s Default, the bar's own thumb takes the knob art or the thumb color over a track region. | `scroll.*` |
-| `Slider(slider, opts)` | A slider's track (a region, its edge on the holder), fill (`opts.fill`) and thumb (`opts.thumb`, else its own). Every slider token is nil in Ka0s Default. | `slider.*` |
+| `ScrollBar(sb, opts)` | A scroll bar: `opts.track` / `opts.thumb` (textures the caller drew) filled; `opts.state` `"on"` / `"off"` tints the bar's own thumb; otherwise the bar's own thumb takes the knob art or the thumb color over a track region. Where the skin sets `scroll.thumbFill` (SkinPaintControls minor 6), a flat fill of it lies over the bar's own thumb, inset to the knob's middle, anchored to it, shown and hidden with it, at half alpha while `opts.state` is `"off"`. | `scroll.*` |
+| `Slider(slider, opts)` | A slider's track (a 4px bar centered in the slider since SkinPaintControls minor 3, Ka0s Default's host-drawn shape; its edge on the holder, none in every shipped skin), fill (`opts.fill`) and thumb (`opts.thumb`, else its own). Every slider token is nil in Ka0s Default. | `slider.*` |
 | `Tab(tab, opts)` | A tab: its stock art (and `opts.stock`) faded, the backing (`opts.fill`, else a region: the tab art, else the color and gradient), an underline on the holder while selected, the label (`opts.text`, else its own). `opts.selected` is the first state. | `tab.*` |
 | `SetTabSelection(tab, selected)` | Moves a painted tab's state and repaints it; the state lives in the tab's record, so a skin switch keeps it. | as `Tab` |
-| `CloseButton(btn, opts)` | A close control: its art (`btn.icon`, a texture, or `btn.glyph`) at rest and under the pointer. A stock close button is left stock on Ka0s Default; in a skin its art is faded and an ASCII `x` drawn. `opts.own` SetScripts the hover pair. | `close.rest`, `close.hot` |
+| `CloseButton(btn, opts)` | A close control: its art (`btn.icon`, a texture, or `btn.glyph`) at rest and under the pointer. A stock close button has its art faded and an ASCII `x` drawn, under every skin. `opts.own` SetScripts the hover pair. | `close.rest`, `close.hot` |
 | `PageButton(btn, dir)` | A paging arrow (`prev`, `next`, `up`, `down`, `left`, `right`): the button look and the in-client arrow, turned. | `btn.*` |
 | `SquareIcon(frame, opts)` | An icon button: `opts.crop` trims the icon art (`opts.icon`, else `frame.icon` / `frame.Icon`) to .08-.92; an edge on the holder. | `icon.border` |
 | `IconBorder(frame, opts)` | An icon edge, `opts.size` pixels, on the holder. | `icon.border` |
@@ -787,7 +810,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 | `ApplyBarFill(target)` | The accent on a status bar (`SetStatusBarColor`) or a texture. | `text.accent` |
 | `NavItem(item, opts)` | A nav-rail entry: `opts.label` selected or not, `opts.sel` (the selection texture), a selection bar on the holder while `opts.selected`. | `nav.text`, `nav.selText`, `nav.selBg`, `nav.selBar` |
 | `Drawer(head, opts)` | A settings drawer: `opts.label` and `opts.summary` set or not (`opts.set`), then the edge set (`opts.edges`, OptionsDrawer's `{ fill, left, right, bottom, top }`) open or not (`opts.open`), and the box's (`opts.box`). A header with no edge set is boxed on its holders (the fill under its text, the edge over it). | `drawer.*` |
-| `ListRow(row, state)` | A list row's washes on its fill holder, under the row's text (stripe, hover, selection), and the selection outline on its holder. `state` is a table or `"stripe"`, `"hover"`, `"selected"`, `"normal"`. | `list.stripe`, `list.hover`, `list.sel`, `list.selOutline` |
+| `ListRow(row, state)` | A list row's washes as regions of the row, under its text (stripe, hover, selection), and the selection outline on its holder. `state` is a table or `"stripe"`, `"hover"`, `"selected"`, `"normal"`. | `list.stripe`, `list.hover`, `list.sel`, `list.selOutline` |
 
 **The getters** (record nothing):
 
@@ -796,7 +819,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 | `GetAccentColor()` | r, g, b, a of `text.accent` |
 | `GetPanelColor()` | r, g, b, a of `win.bg` |
 | `GetFont()` | the body face's path, or the client's `STANDARD_TEXT_FONT` when the skin names none |
-| `GlowColor()` | r, g, b, a of `glow.color`, or nil (the host's own glow color stands) |
+| `GlowColor()` | r, g, b, a of `glow.color` (Ka0s Default's gold since SkinDefs minor 8) |
 | `ChartStyle()` | a fresh table of the `chart.*` tokens by short name (`axis`, `axisAlt`, `grid`, `crosshair`, `marker`, `line`, `bar`, `track`, `total`, `other`, `otherLine`, `series`); the colors are shared |
 | `BarStyle()` | a fresh table: `texture` (the LSM path or nil), `textureKey`, `gloss`, `bg`, `border`, `borderStyle`, `borderSize`, `font` (path or nil), `fontKey`, `fontSize`, `outline`, `iconBorder` |
 
@@ -805,11 +828,13 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 The choices (*Blizzard art and the per-skin choices*, below) are drawn as follows. WoW
 Default's window is `Shell`'s nine-slice edge, `Blizzard Dialog` at 32 outset by 8 on the holder,
 the backdrop's own edge clear, over a `#1E1C19` backdrop fill with `UI-DialogBox-Background-Dark`
-tiled in a band above it; its buttons are `Button`'s red gradient under a 2px `bevelOut` gold edge on
-the holder; its tabs are `Tab`'s `UI-OptionsFrame-ActiveTab` / `-InActiveTab` art; its scroll thumb
+tiled in a band above it; its buttons are `Button`'s red gradient under a 1px dark rim (a 2px `bevelOut` gold edge until SkinDefs minor 7) on
+the holder; its tabs are `Tab`'s `UI-OptionsFrame-ActiveTab` art in both states (since SkinDefs minor 7: the
+`-InActiveTab` art is drawn shorter); its scroll thumb
 `ScrollBar`'s `UI-ScrollBar-Knob`; its checkbox `Checkbox`'s `UI-CheckBox-Up` box and
-`UI-CheckBox-Check` mark; its inputs, checkboxes and nav rail a 2px `bevelIn` edge. WoW Midnight
-draws no art: `Shell`'s window and title gradients, its 2px flat edges, `Button`'s gradients.
+`UI-CheckBox-Check` mark; its inputs and nav rail a 1px `bevelIn` edge (2px until SkinDefs minor 7). WoW Midnight
+draws no art: `Shell`'s window and title gradients, its 2px flat window edge, `Button`'s violet
+gradients under a 1px gold edge.
 
 ## The eight skins
 
@@ -833,21 +858,24 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   list panels, disabled text, the hover wash on a primary button), a skin sets that token itself
   in its `extra` table, chosen from the skin's own palette. That includes `drawer.textSet` wherever
   the mockup draws the drawer label in the body color: OptionsDrawer's label color is the set /
-  unset cue, so Obsidian, Azeroth and Glass take their accent and WoW Forever its heading gold. Azeroth, the one light skin, also sets
+  unset cue, so Obsidian, Azeroth and Glass take their accent and WoW Forever its heading gold. Azeroth, the one light skin until SkinDefs minor 8, also set
   its headings, quality colors, semantic colors and chart colors, which Ka0s Default draws for a
   dark window.
-- **Derived washes.** `list.hover`, `menu.hover`, `section.rule` and `drawer.borderOpen` are the
-  skin's accent at Ka0s Default's alphas (.10, .15, .35, .6), the way Ka0s Default draws them in
-  gold.
+- **Derived washes.** `menu.hover`, `section.rule` and `drawer.borderOpen` are the skin's accent
+  at Ka0s Default's alphas (.15, .35, .6), the way Ka0s Default draws them in gold. `list.hover` is
+  the skin's body text at .10 (SkinDefs minor 7): in the accent it sat a shade from `list.sel`, and a
+  hovered row could not be told from a selected one. Ka0s Default keeps its gold hover.
 
 ### What WoW cannot draw
 
-- **No blur.** Glass is translucency (`win.bg` alpha .55) on the shipped `Ka0s Glass` art.
+- **No blur.** Glass is translucency (`win.bg` alpha .88, popups and tooltips .92, since SkinDefs
+  minor 7; the mockup's .55 let the world through) on the shipped `Ka0s Glass` art.
 - **One rounded art.** Glass's radius-8 nine-slice (`Ka0s Glass`, `LibKa0s-Media-1.0` 6.1) is the
-  only rounded art shipped, so Glass's window, buttons, inputs, tabs, drawers, popups and menus
-  are `nine:Ka0s Glass` at radius 8 and edge size 8, and **every other mockup radius is square**
-  (0): Obsidian's 3px, Azeroth's 4px, Ember's 2px and the rest. Glass's checkbox and scroll thumb
-  are too small for 8px corners and stay square too.
+  only rounded art shipped. Since SkinDefs minor 7 only Glass's window, popups and menus wear it, at
+  radius 8 and edge size 8: its buttons, inputs, tabs and drawers looked awkward on it at control
+  size and take a flat 1px frosted edge, the tabs boxless with a lilac underline. **Every other
+  mockup radius is square** (0): Obsidian's 3px, Azeroth's 4px, Ember's 2px and the rest. Glass's
+  checkbox and scroll thumb stay square too.
 - **Gradients are vertical.** `linear-gradient(a, b)` is `<ctl>.bgTop = a`, `<ctl>.bgBottom = b`
   (drawn with `SetGradient` on a white texture), and the flat `<ctl>.bg` is their blend, the
   fallback. A radial fill (WoW Default's and WoW Forever's windows) becomes a vertical gradient or,
@@ -859,12 +887,14 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
 - **Geometry.** The mockup's scrollbar widths (`scW`) are not translated: `title.height`,
   `scroll.width`, `scroll.gutter` and `win.inset` are Ka0s Default's in all nine skins.
 - **Fonts.** A mockup family is the shipped face that stands for it: Inter (Obsidian) and Manrope
-  (Glass) are Barlow, the face WoW Forever names; Azeroth, Ember and WoW Midnight draw Cinzel
-  titles over the client body font; High Contrast is Atkinson Hyperlegible, body 2pt above the
-  Barlow skins' 12; Ka0s Default and WoW Default keep the client's fonts (no font token).
+  (Glass) are Barlow, the face WoW Forever names; Ember and WoW Midnight draw Cinzel titles over Ka0s
+  Default's Friz Quadrata body, Azeroth Cinzel titles over an Atkinson Hyperlegible body, and WoW
+  Forever Atkinson Hyperlegible throughout (SkinDefs minor 8: Barlow read blurry); High Contrast is
+  Atkinson Hyperlegible, a step larger than the rest (*Sizes are relative*, above); Ka0s Default and
+  WoW Default set Friz Quadrata, the client's own face, by name.
 - **GameTooltip lines.** `gtip.*` are drawn on Blizzard's dark GameTooltip whatever the skin, so
   each skin's `gtip.title`, `gtip.body` and `gtip.muted` read at 4.5:1 or better on
-  `(.05, .05, .08)`; Azeroth's are its parchment and gold rather than the mockup's dark ink.
+  `(.05, .05, .08)`; Azeroth's are its parchment and gold.
 - **Legibility.** Each skin's `text.body` reads at 4.5:1 or better on its own `win.bg`, and its
   other text roles at 3:1 or better.
 
@@ -875,14 +905,14 @@ Default and Midnight, and WoW Forever's window texture).
 
 | Skin | Choice |
 |---|---|
-| **WoW Default** | The window is `BACKDROP_DIALOG_32_32`'s edge, LSM `Blizzard Dialog` (`Interface\DialogFrame\UI-DialogBox-Border`), `win.borderStyle = "nine:Blizzard Dialog"` at `win.borderSize = 32`, over `win.bgTexture = Interface\DialogFrame\UI-DialogBox-Background-Dark` tiled on a `#1E1C19` fill. Popups and menus wear the same edge at 16. Buttons (and the primary button) are a red gradient `#B3200F` to `#640C05` with a 2px `bevelOut` gold `#A07C2C` edge and gold `#FFD100` text, white on hover. Tabs are `tab.texture = Interface\OptionsFrame\UI-OptionsFrame-InActiveTab` and `tab.onTexture = ...-ActiveTab`. The scroll thumb is `scroll.thumbTexture = Interface\Buttons\UI-ScrollBar-Knob`; the checkbox is `check.texture = Interface\Buttons\UI-CheckBox-Up` with `check.markTexture = ...UI-CheckBox-Check`. Inputs, checkboxes and the nav rail have a 2px `bevelIn` gray edge. The client's own fonts. |
-| **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Cinzel title, violet `#B48CFF` accent, red-gradient buttons and a gold-gradient primary. |
-| **WoW Forever** | Warm charcoal `#27231F` to `#13110F` (the mockup's radial fill as a vertical gradient, **no window texture**), black `#050505` title bars with centered white titles, a tan `#C9A07A` accent, gold `#F2B33D` headings, thin 1px edges on every control, Barlow (OWNER_SCOPE R4). |
-| **Glass** | `nine:Ka0s Glass` at radius 8 (above), translucent white washes, lilac `#B69CFF` accent, `bar.gloss = true`. |
-| **High Contrast** | Black, white 2px edges on the window and every control (3px yellow on popups and menus), yellow `#FFE600` titles, accent, selection outline and focus, Atkinson Hyperlegible 14 / 17. |
-| **Obsidian** | Near-black flat panels, hairline `#2A2A2F` edges, no inner rule, a cool blue `#4DB8FF` accent and primary button, Barlow. |
-| **Azeroth** | Parchment `#E9DDBC` window with a 3px leather `#6B4A22` edge and a `#C9A45C` inner rule, a dark `#3A2412` title bar with a gold Cinzel title, red wax-seal gradient buttons, ink `#2A1C0C` text. |
-| **Ember** | Charred brown, a `#6A2E17` edge over an amber inner rule, orange `#FF7A33` accent, gradient title bar and buttons, Cinzel titles. |
+| **WoW Default** | The window is `BACKDROP_DIALOG_32_32`'s edge, LSM `Blizzard Dialog` (`Interface\DialogFrame\UI-DialogBox-Border`), `win.borderStyle = "nine:Blizzard Dialog"` at `win.borderSize = 32`, over `win.bgTexture = Interface\DialogFrame\UI-DialogBox-Background-Dark` tiled on a `#1E1C19` fill. Popups and menus wear the same edge at 16. Buttons are the red gradient `#B3200F` to `#640C05` under a 1px `#1A0805` rim with gold `#FFD100` text, white on hover, the client's own button; the primary a brighter red `#D42A16` to `#7E1007` under a 1px gold `#E0B040` edge with white text, gold on hover (both had a 2px `bevelOut` gold edge until SkinDefs minor 7). Tabs are `tab.texture` and `tab.onTexture` = `Interface\OptionsFrame\UI-OptionsFrame-ActiveTab`, one height in both states, the selected one told by its white label. The scroll thumb is `scroll.thumbTexture = Interface\Buttons\UI-ScrollBar-Knob`; the checkbox is `check.texture = Interface\Buttons\UI-CheckBox-Up` with `check.markTexture = ...UI-CheckBox-Check`. Inputs, dropdowns and the nav rail have a 1px `bevelIn` gray edge, the primary button's size (2px until SkinDefs minor 7); the checkbox art is its own box, with no edge. The client's own fonts. |
+| **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Cinzel title, violet `#B48CFF` accent, night-violet gradient buttons (`#3A2F6B` to `#1D1838`) under a 1px `#B08A3E` gold edge with gold `#F6D27A` text, and a brighter violet primary (`#7A5AD6` to `#3F2C86`, `#F6D27A` edge, white text) since SkinDefs minor 7. |
+| **WoW Forever** | Warm brown charcoal `#2E251C` to `#18120D` (a step browner since SkinDefs minor 8) (the mockup's radial fill as a vertical gradient, **no window texture**), black `#050505` title bars with centered white titles, a tan `#C9A07A` accent, gold `#F2B33D` headings, thin 1px edges on every control, a `#9C7A58` primary with white text under its tan edge, Atkinson Hyperlegible (Barlow until SkinDefs minor 8, which read blurry; OWNER_SCOPE R4). |
+| **Glass** | A `#121622` window at .88 on `nine:Ka0s Glass` at radius 8 (above), popups the same; flat 1px frosted control edges and boxless tabs underlined in the lilac `#B69CFF` accent; translucent white washes, `bar.gloss = true`. |
+| **High Contrast** | Black, a white 2px window edge and white 1px edges on every control (2px yellow on popups and menus; controls were 2px and popups 3px until SkinDefs minor 7), yellow `#FFE600` titles, accent, selection outline and focus; the primary button and the selected tab yellow on black (since SkinDefs minor 7; black on yellow before); Atkinson Hyperlegible 13.5 / 15. |
+| **Obsidian** | True-black flat panels (a `#0A0A0B` window and a `#050506` title bar since SkinDefs minor 7, darker than Ka0s Default's navy), hairline `#202024` edges, no inner rule, a cool blue `#4DB8FF` accent, a deeper `#2A86D1` primary button with white text, Barlow. |
+| **Azeroth** | Dark tooled leather `#2B1D12` (SkinDefs minor 8; light parchment until then, which did not read in Loot History) under a 3px leather `#6B4A22` edge and a `#8A6A36` inner rule, a `#1A110A` title bar with a gold Cinzel title, parchment `#E9DDBC` text in Atkinson Hyperlegible, gold `#E2B659` headings and accent, leather buttons with cream text, and the red wax seal for the primary button and the selected tab. As a dark skin it inherits Ka0s Default's semantic, quality, tooltip and chart colors. |
+| **Ember** | Charred brown, a `#6A2E17` edge over an amber inner rule, orange `#FF7A33` accent, gradient title bar and buttons, the primary's text white, Cinzel titles. |
 
 An **art token** (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTexture`,
 `check.texture`, `check.markTexture`) draws that art at its own colors; the color token beside it
@@ -901,32 +931,32 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `font.body` | `Ka0s Barlow` | · | `Ka0s Barlow` | `Ka0s Atkinson` | · | · | · | `Ka0s Barlow` |
-| `font.title` | `Ka0s Barlow SemiBold` | `Ka0s Cinzel` | `Ka0s Barlow SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Cinzel` | · | `Ka0s Cinzel` | `Ka0s Barlow SemiBold` |
-| `font.bodySize` | `12` | · | `12` | `14` | · | · | · | `12` |
-| `font.titleSize` | `14` | `15` | `14` | `17` | `15` | · | `15` | `14` |
+| `font.body` | `Ka0s Barlow` | `Ka0s Atkinson` | `Ka0s Barlow` | `Ka0s Atkinson` | · | · | · | `Ka0s Atkinson` |
+| `font.title` | `Ka0s Barlow SemiBold` | `Ka0s Cinzel` | `Ka0s Barlow SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Cinzel` | · | `Ka0s Cinzel` | `Ka0s Atkinson Bold` |
+| `font.bodySize` | `12.5` | `12` | `12.5` | `13.5` | `12` | `12` | `12` | `12` |
+| `font.titleSize` | `14` | `12.5` | `14` | `15` | `12.5` | `14` | `12.5` | `14` |
 
 #### Window
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `win.bg` | `#121214` | `#E9DDBC` | `#121622 .55` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#1D1A17` |
-| `win.bgTop` | · | · | · | · | · | · | `#171A2E` | `#27231F` |
-| `win.bgBottom` | · | · | · | · | · | · | `#0F1020` | `#13110F` |
+| `win.bg` | `#0A0A0B` | `#2B1D12` | `#121622 .88` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#231C14` |
+| `win.bgTop` | none | none | none | none | none | none | `#171A2E` | `#2E251C` |
+| `win.bgBottom` | none | none | none | none | none | none | `#0F1020` | `#18120D` |
 | `win.bgTexture` | · | · | · | · | · | `UI-DialogBox-Background-Dark` | · | · |
-| `win.bgDense` | `#121214` | `#E9DDBC` | `#121622 .55` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#1D1A17` |
-| `win.border` | `#2A2A2F` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#6A2E17` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
+| `win.bgDense` | `#0A0A0B` | `#2B1D12` | `#121622 .88` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#231C14` |
+| `win.border` | `#202024` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#6A2E17` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
 | `win.borderSize` | `1` | `3` | `8` | `2` | `1` | `32` | `2` | `1` |
 | `win.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
-| `win.inner` | none | `#C9A45C` | none | none | `#C98A3A .45` | none | `#3D2F12` | none |
+| `win.inner` | none | `#8A6A36` | none | none | `#C98A3A .45` | none | `#3D2F12` | none |
 | `win.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
-| `title.bg` | `#0B0B0D` | `#3A2412` | `#FFFFFF .06` | `#000000` | `#2F150D` | `#383838` | `#211C39` | `#050505` |
-| `title.bgTop` | · | · | · | · | `#3A1A0F` | `#4B4B4B` | `#2A2347` | · |
-| `title.bgBottom` | · | · | · | · | `#24100A` | `#252525` | `#17142B` | · |
+| `title.bg` | `#050506` | `#1A110A` | `#FFFFFF .06` | `#000000` | `#2F150D` | `#383838` | `#211C39` | `#050505` |
+| `title.bgTop` | none | none | none | none | `#3A1A0F` | `#4B4B4B` | `#2A2347` | none |
+| `title.bgBottom` | none | none | none | none | `#24100A` | `#252525` | `#17142B` | none |
 | `title.text` | `#F2F2F4` | `#F5C542` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
 | `title.align` | · | · | · | · | · | · | `CENTER` | `CENTER` |
-| `divider` | `#26262B` | `#B8955A` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
-| `foot.bg` | `#0B0B0D` | `#D8C697` | `#FFFFFF .04` | `#000000` | `#000000 .3` | `#000000 .3` | `#000000 .3` | `#050505` |
+| `divider` | `#1C1C20` | `#6B4A22` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `foot.bg` | `#050506` | `#1A110A` | `#FFFFFF .04` | `#000000` | `#000000 .3` | `#000000 .3` | `#000000 .3` | `#050505` |
 | `close.rest` | `#9B9BA4` | `#F5C542` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#D9D9D9` | `#F6D27A` | `#FFFFFF` |
 | `close.hot` | · | `#FF6B4A` | · | `#FF5050` | · | · | · | · |
 
@@ -934,109 +964,108 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `text.body` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
-| `text.muted` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
-| `text.heading` | `#F2F2F4` | `#5E3A14` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
-| `text.headingAlt` | `#F2F2F4` | `#5E3A14` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
-| `text.accent` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
-| `text.disabled` | `#6A6A72` | `#7A6A50` | `#8A90A0` | `#B0B0B0` | `#8A6E5C` | `#808080` | `#7A7590` | `#7A756E` |
-| `text.link` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
-| `text.linkHot` | `#8FD3FF` | `#B8321F` | `#D4C4FF` | `#FFFFFF` | `#FFA36B` | · | `#D4BFFF` | `#E0C3A6` |
+| `text.body` | `#E8E8EC` | `#E9DDBC` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
+| `text.muted` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `text.heading` | `#F2F2F4` | `#E2B659` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
+| `text.headingAlt` | `#F2F2F4` | `#D4A84A` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
+| `text.accent` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
+| `text.disabled` | `#6A6A72` | `#8A7A60` | `#8A90A0` | `#B0B0B0` | `#8A6E5C` | `#808080` | `#7A7590` | `#7A756E` |
+| `text.link` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
+| `text.linkHot` | `#8FD3FF` | `#FFD866` | `#D4C4FF` | `#FFFFFF` | `#FFA36B` | · | `#D4BFFF` | `#E0C3A6` |
 | `gtip.title` | · | `#F5C542` | · | `#FFE600` | `#FFB45A` | · | `#F6D27A` | `#FFD100` |
 | `gtip.body` | · | `#E9DDBC` | · | `#FFFFFF` | · | · | · | · |
-| `gtip.muted` | `#9B9BA4` | `#B8955A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
-| `text.faint` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
-| `log.ts` | · | `#00519E` | · | · | · | · | · | · |
-| `log.tag` | `#F2F2F4` | `#5E3A14` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
-| `log.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
-| `log.count` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
-| `text.value` | · | `#4A3418` | · | `#E0E0E0` | · | · | · | · |
-| `text.bodyAlt` | · | `#3A2412` | · | `#FFFFFF` | · | · | · | · |
-| `text.subtle` | · | `#3A2412` | · | `#FFFFFF` | · | · | · | · |
-| `text.highlight` | · | `#2A1C0C` | · | · | · | · | · | · |
+| `gtip.muted` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `text.faint` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `log.tag` | `#F2F2F4` | `#D4A84A` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
+| `log.text` | `#E8E8EC` | `#E9DDBC` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
+| `log.count` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `text.value` | · | · | · | `#E0E0E0` | · | · | · | · |
+| `text.bodyAlt` | · | · | · | `#FFFFFF` | · | · | · | · |
+| `text.subtle` | · | · | · | `#FFFFFF` | · | · | · | · |
 | `gtip.subtle` | · | · | · | `#E0E0E0` | · | · | · | · |
 
 #### Buttons
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `btn.bg` | `#1D1D21` | `#811A12` | `#FFFFFF .1` | `#000000` | `#3A190E` | `#8B160A` | `#6D140E` | `#1F1D1B` |
-| `btn.bgTop` | · | `#A3241A` | · | · | `#4A2012` | `#B3200F` | `#8A1C14` | · |
-| `btn.bgBottom` | · | `#5E1009` | · | · | `#2A120A` | `#640C05` | `#4F0D08` | · |
-| `btn.border` | `#303036` | `#3A1206` | `#FFFFFF .18` | `#FFFFFF` | `#8A3C1C` | `#A07C2C` | `#C9A24A` | `#48433D` |
-| `btn.borderSize` | `1` | `1` | `8` | `2` | `1` | `2` | `1` | `1` |
-| `btn.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
-| `btn.text` | `#E8E8EC` | `#FFD866` | `#F2F4F8` | `#FFFFFF` | `#FFCF9A` | `#FFD100` | `#FFD866` | `#FFFFFF` |
+| `btn.bg` | `#141416` | `#4A3218` | `#FFFFFF .08` | `#000000` | `#3A190E` | `#8B160A` | `#2C2452` | `#1F1D1B` |
+| `btn.bgTop` | none | `#5A3D1D` | none | none | `#4A2012` | `#B3200F` | `#3A2F6B` | none |
+| `btn.bgBottom` | none | `#3A2614` | none | none | `#2A120A` | `#640C05` | `#1D1838` | none |
+| `btn.border` | `#2A2A30` | `#24160A` | `#FFFFFF .22` | `#FFFFFF` | `#8A3C1C` | `#1A0805` | `#B08A3E` | `#48433D` |
+| `btn.borderSize` | `1` | `1` | `1` | `1` | `1` | `1` | `1` | `1` |
+| `btn.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` |
+| `btn.text` | `#E8E8EC` | `#F2E3BD` | `#F2F4F8` | `#FFFFFF` | `#FFCF9A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
 | `btn.hover` | `#4DB8FF` | `#FFFFFF` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFFFFF` | `#FFFFFF` | `#C9A07A` |
-| `btn.icon` | `#E8E8EC` | `#FFD866` | `#F2F4F8` | `#FFFFFF` | `#FFCF9A` | `#FFD100` | `#FFD866` | `#FFFFFF` |
-| `btn.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
-| `btnPrimary.bg` | `#4DB8FF` | `#811A12` | `#B69CFF` | `#FFE600` | `#C3521E` | `#8B160A` | `#CC9E35` | `#1F1D1B` |
-| `btnPrimary.bgTop` | · | `#A3241A` | · | · | `#E0662A` | `#B3200F` | `#F0C14B` | · |
-| `btnPrimary.bgBottom` | · | `#5E1009` | · | · | `#A63D12` | `#640C05` | `#A87A1E` | · |
-| `btnPrimary.border` | `#4DB8FF` | `#3A1206` | `#B69CFF` | `#FFE600` | `#FF9A5A` | `#A07C2C` | `#FFE08A` | `#C9A07A` |
-| `btnPrimary.borderSize` | `1` | `1` | `8` | `2` | `1` | `2` | `1` | `1` |
-| `btnPrimary.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
-| `btnPrimary.text` | `#06121C` | `#FFD866` | `#1A1033` | `#000000` | `#1C0A04` | `#FFD100` | `#1A1205` | `#FFFFFF` |
-| `btnPrimary.hover` | `#000000` | `#FFFFFF` | `#3A2A66` | `#000000` | `#1C0A04` | `#FFFFFF` | `#1A1205` | `#C9A07A` |
-| `btnPrimary.icon` | `#06121C` | `#FFD866` | `#1A1033` | `#000000` | `#1C0A04` | `#FFD100` | `#1A1205` | `#FFFFFF` |
-| `btnPrimary.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
+| `btn.icon` | `#E8E8EC` | `#F2E3BD` | `#F2F4F8` | `#FFFFFF` | `#FFCF9A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
+| `btn.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
+| `btnPrimary.bg` | `#2A86D1` | `#811A12` | `#B69CFF` | `#000000` | `#C3521E` | `#A91D0F` | `#5D43AE` | `#9C7A58` |
+| `btnPrimary.bgTop` | none | `#A3241A` | none | none | `#E0662A` | `#D42A16` | `#7A5AD6` | none |
+| `btnPrimary.bgBottom` | none | `#5E1009` | none | none | `#A63D12` | `#7E1007` | `#3F2C86` | none |
+| `btnPrimary.border` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF9A5A` | `#E0B040` | `#F6D27A` | `#C9A07A` |
+| `btnPrimary.borderSize` | `1` | `1` | `1` | `1` | `1` | `1` | `1` | `1` |
+| `btnPrimary.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` |
+| `btnPrimary.text` | `#FFFFFF` | `#FFD866` | `#1A1033` | `#FFE600` | `#FFFFFF` | `#FFFFFF` | `#FFFFFF` | `#FFFFFF` |
+| `btnPrimary.hover` | `#D6EEFF` | `#FFFFFF` | `#3A2A66` | `#FFFFFF` | `#FFFFFF` | `#FFD100` | `#FFFFFF` | `#FFE9D2` |
+| `btnPrimary.icon` | `#FFFFFF` | `#FFD866` | `#1A1033` | `#FFE600` | `#FFFFFF` | `#FFFFFF` | `#FFFFFF` | `#FFFFFF` |
+| `btnPrimary.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 
 #### Inputs
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `input.bg` | `#0A0A0B` | `#F7EED6` | `#000000 .28` | `#000000` | `#140A07` | `#000000` | `#08091A` | `#0A0908` |
-| `input.border` | `#2E2E34` | `#A8864E` | `#FFFFFF .16` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#3E3934` |
-| `input.borderSize` | `1` | `1` | `8` | `2` | `1` | `2` | `1` | `1` |
-| `input.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
-| `input.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
-| `input.placeholder` | `#8A8A93` | `#7A6342` | `#B8BFCC` | `#D0D0D0` | `#A88A76` | `#9A9A9A` | `#9A95B0` | `#8F8A83` |
-| `input.focus` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
-| `input.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
-| `check.bg` | `#0A0A0B` | `#F7EED6` | `#000000 .3` | `#000000` | `#140A07` | `#111111` | `#08091A` | `#0A0908` |
-| `check.border` | `#3A3A42` | `#6B4A22` | `#FFFFFF .3` | `#FFFFFF` | `#8A3C1C` | `#8A8A8A` | `#B08A3E` | `#8A7A52` |
-| `check.borderSize` | `1` | `1` | `1` | `2` | `1` | `2` | `1` | `1` |
-| `check.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
-| `check.mark` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#F6D27A` | `#FFD100` |
+| `input.bg` | `#040405` | `#1C130B` | `#000000 .3` | `#000000` | `#140A07` | `#000000` | `#08091A` | `#0A0908` |
+| `input.border` | `#26262B` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#3E3934` |
+| `input.borderSize` | `1` | `1` | `1` | `1` | `1` | `1` | `1` | `1` |
+| `input.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
+| `input.text` | `#E8E8EC` | `#E9DDBC` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
+| `input.placeholder` | `#8A8A93` | `#8E7A58` | `#B8BFCC` | `#D0D0D0` | `#A88A76` | `#9A9A9A` | `#9A95B0` | `#8F8A83` |
+| `input.focus` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
+| `input.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
+| `check.bg` | `#040405` | `#1C130B` | `#000000 .3` | `#000000` | `#140A07` | `#111111` | `#08091A` | `#0A0908` |
+| `check.border` | `#34343B` | `#8A6A36` | `#FFFFFF .3` | `#FFFFFF` | `#8A3C1C` | none | `#B08A3E` | `#8A7A52` |
+| `check.borderSize` | `1` | `1` | `1` | `1` | `1` | `0` | `1` | `1` |
+| `check.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` |
+| `check.mark` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#F6D27A` | `#FFD100` |
 | `check.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 | `check.texture` | · | · | · | · | · | `UI-CheckBox-Up` | · | · |
 | `check.markTexture` | · | · | · | · | · | `UI-CheckBox-Check` | · | · |
-| `slider.track` | `#2A2A2F` | `#D0BC8E` | `#FFFFFF .15` | `#000000` | `#2A140C` | `#000000` | `#1A1730` | `#3A3632` |
-| `slider.trackBorder` | `#000000 0` | `#8A6A36` | `#000000 0` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#000000 0` |
-| `slider.fill` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#000000 0` | `#B48CFF` | `#C9A07A` |
-| `slider.thumb` | `#F2F2F4` | `#5E3A14` | `#FFFFFF` | `#FFFFFF` | `#FFCF9A` | `#C9A84A` | `#F6D27A` | `#C9A07A` |
-| `scroll.track` | `#000000 0` | `#5A3C14 .15` | `#000000 0` | `#000000` | `#000000 .4` | `#000000` | `#000000 .4` | `#000000 0` |
+| `slider.track` | `#202024` | `#5A3D1D` | `#FFFFFF .15` | `#FFFFFF` | `#4A2416` | `#3A3A3A` | `#2C2550` | `#3A3632` |
+| `slider.trackBorder` | `#000000 0` | `#000000 0` | `#000000 0` | `#000000 0` | `#000000 0` | `#000000 0` | `#000000 0` | `#000000 0` |
+| `slider.fill` | `#4DB8FF` | `#C0392B` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#C9A24A` | `#B48CFF` | `#C9A07A` |
+| `slider.thumb` | `#F2F2F4` | `#E2B659` | `#FFFFFF` | `#FFFFFF` | `#FFCF9A` | `#C9A84A` | `#F6D27A` | `#C9A07A` |
+| `scroll.track` | `#000000 0` | `#000000 .3` | `#000000 0` | `#000000` | `#000000 .4` | `#000000` | `#000000 .4` | `#000000 0` |
 | `scroll.thumb` | `#3A3A42` | `#8A6A36` | `#FFFFFF .35` | `#FFFFFF` | `#8A3C1C` | `#9A7B2A` | `#B08A3E` | `#D9D4CC` |
-| `scroll.thumbOn` | `#5A5A64` | `#5E3A14` | `#FFFFFF .6` | `#FFE600` | `#C7A993` | · | `#F6D27A` | `#FFFFFF` |
+| `scroll.thumbOn` | `#5A5A64` | `#E2B659` | `#FFFFFF .6` | `#FFE600` | `#C7A993` | · | `#F6D27A` | `#FFFFFF` |
 | `scroll.thumbOff` | `#3A3A42` | `#8A6A36` | `#FFFFFF .35` | `#FFFFFF` | `#8A3C1C` | `#9A7B2A` | `#B08A3E` | `#D9D4CC` |
 | `scroll.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 | `scroll.thumbTexture` | · | · | · | · | · | `UI-ScrollBar-Knob` | · | · |
+| `scroll.thumbFill` | `#4DB8FF .9` | · | · | `#FFE600` | `#FF7A33 .9` | `#FFD100 .9` | `#F6D27A .9` | · |
 
 #### Tabs and navigation
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `tab.bg` | `#000000 0` | `#CDB789` | `#FFFFFF .05` | `#000000` | `#2A140C` | `#262626` | `#1A1730` | `#000000 0` |
+| `tab.bg` | `#000000 0` | `#3A2614` | `#000000 0` | `#000000` | `#2A140C` | `#262626` | `#1A1730` | `#000000 0` |
 | `tab.bgTop` | none | none | none | none | none | none | none | none |
 | `tab.bgBottom` | none | none | none | none | none | none | none | none |
-| `tab.glow` | `#FFFFFF .06` | `#FFFFFF .25` | · | `#FFFFFF .25` | · | · | · | · |
-| `tab.text` | `#9B9BA4` | `#4A3418` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#C9B048` | `#B4AFC8` | `#A39E97` |
-| `tab.border` | `#000000 0` | `#8A6A36` | `#FFFFFF .1` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#000000 0` |
-| `tab.borderSize` | `1` | `1` | `8` | `2` | `1` | `2` | `1` | `1` |
-| `tab.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
-| `tab.onBg` | `#000000 0` | `#E9DDBC` | `#B69CFF .3` | `#FFE600` | `#4A2012` | `#4A4A4A` | `#2C2550` | `#000000 .4` |
-| `tab.onText` | `#F2F2F4` | `#8E1B10` | `#FFFFFF` | `#000000` | `#FFB45A` | `#FFFFFF` | `#F6D27A` | `#FFFFFF` |
-| `tab.onLine` | `#4DB8FF` | `#000000 0` | `#000000 0` | `#FFE600` | `#FF7A33` | `#000000 0` | `#B48CFF` | `#C9A07A` |
-| `tab.rule` | `#26262B` | `#B8955A` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
-| `tab.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
-| `tab.texture` | · | · | · | · | · | `UI-OptionsFrame-InActiveTab` | · | · |
+| `tab.glow` | `#FFFFFF .06` | `#FFFFFF .1` | · | `#FFFFFF .25` | · | · | · | · |
+| `tab.text` | `#9B9BA4` | `#CDB78A` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#C9B048` | `#B4AFC8` | `#A39E97` |
+| `tab.border` | `#000000 0` | `#24160A` | `#000000 0` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#000000 0` |
+| `tab.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
+| `tab.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
+| `tab.onBg` | `#000000 0` | `#7A1A10` | `#B69CFF .1` | `#000000` | `#4A2012` | `#4A4A4A` | `#2C2550` | `#000000 .4` |
+| `tab.onText` | `#F2F2F4` | `#FFD866` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFFFFF` | `#F6D27A` | `#FFFFFF` |
+| `tab.onLine` | `#4DB8FF` | `#000000 0` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#000000 0` | `#B48CFF` | `#C9A07A` |
+| `tab.rule` | `#1C1C20` | `#6B4A22` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `tab.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
+| `tab.texture` | · | · | · | · | · | `UI-OptionsFrame-ActiveTab` | · | · |
 | `tab.onTexture` | · | · | · | · | · | `UI-OptionsFrame-ActiveTab` | · | · |
-| `nav.bg` | `#000000 0` | `#78501E .08` | `#000000 0` | `#000000` | `#000000 .3` | `#000000 .4` | `#000000 .3` | `#000000 .3` |
-| `nav.border` | `#000000 0` | `#B8955A` | `#000000 0` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#000000 0` |
-| `nav.borderSize` | `1` | `1` | `1` | `2` | `1` | `2` | `1` | `1` |
+| `nav.bg` | `#000000 0` | `#000000 .25` | `#000000 0` | `#000000` | `#000000 .3` | `#000000 .4` | `#000000 .3` | `#000000 .3` |
+| `nav.border` | `#000000 0` | `#6B4A22` | `#000000 0` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#000000 0` |
+| `nav.borderSize` | `1` | `1` | `1` | `1` | `1` | `1` | `1` | `1` |
 | `nav.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
-| `nav.text` | `#9B9BA4` | `#4A3418` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#FFD100` | `#F6D27A` | `#D8D3CB` |
-| `nav.selBg` | `#FFFFFF .06` | `#8E1B10` | `#FFFFFF .12` | `#FFE600` | `#FF7A33 .2` | `#5A78DC .38` | `#B48CFF .25` | `#FFFFFF .07` |
+| `nav.text` | `#9B9BA4` | `#E2B659` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#FFD100` | `#F6D27A` | `#D8D3CB` |
+| `nav.selBg` | `#FFFFFF .06` | `#7A1A10` | `#FFFFFF .12` | `#FFE600` | `#FF7A33 .2` | `#5A78DC .38` | `#B48CFF .25` | `#FFFFFF .07` |
 | `nav.selText` | `#F2F2F4` | `#FFE7A8` | `#FFFFFF` | `#000000` | `#FFE2C4` | `#FFFFFF` | `#FFFFFF` | `#FFFFFF` |
 | `nav.selBar` | `#4DB8FF` | `#000000 0` | `#000000 0` | `#000000 0` | `#FF7A33` | `#000000 0` | `#B48CFF` | `#C9A07A` |
 
@@ -1044,65 +1073,65 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `drawer.bg` | `#18181B` | `#D8C697` | `#FFFFFF .05` | `#000000` | `#2A140C` | `#262626` | `#1A1730` | `#1C1A17` |
-| `drawer.bgOpen` | `#1D1D21` | `#CDB789` | `#FFFFFF .09` | `#000000` | `#4A2012` | `#3A3A3A` | `#2C2550` | `#24211E` |
-| `drawer.border` | `#2A2A2F` | `#8A6A36` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#5A4A26` | `#2E2A26` |
-| `drawer.borderOpen` | `#4DB8FF .6` | `#8E1B10 .6` | `#B69CFF .6` | `#FFE600` | `#FF7A33 .6` | `#FFD100 .6` | `#B48CFF .6` | `#C9A07A .6` |
-| `drawer.borderSize` | `1` | `1` | `8` | `2` | `1` | `2` | `1` | `1` |
-| `drawer.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
-| `drawer.boxBg` | `#121214` | `#F7EED6` | `#000000 .2` | `#000000` | `#140A07` | `#111111` | `#08091A` | `#0A0908` |
-| `drawer.boxBorder` | `#2A2A2F` | `#8A6A36` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#5A4A26` | `#2E2A26` |
-| `drawer.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
-| `drawer.textSet` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
-| `drawer.summary` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
-| `drawer.summarySet` | `#A8DBFF` | `#8E1B10` | `#D4C4FF` | `#FFE600` | `#FFCF9A` | · | `#F6D27A` | `#E0C3A6` |
-| `menu.bg` | `#121214` | `#E9DDBC` | `#121622 .6` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |
-| `menu.border` | `#34343A` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `menu.borderAlt` | `#34343A` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `menu.borderSize` | `1` | `3` | `8` | `3` | `1` | `16` | `2` | `1` |
+| `drawer.bg` | `#101012` | `#3A2614` | `#FFFFFF .05` | `#000000` | `#2A140C` | `#262626` | `#1A1730` | `#1C1A17` |
+| `drawer.bgOpen` | `#141416` | `#4A3018` | `#FFFFFF .09` | `#000000` | `#4A2012` | `#3A3A3A` | `#2C2550` | `#24211E` |
+| `drawer.border` | `#202024` | `#6B4A22` | `#FFFFFF .14` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#5A4A26` | `#2E2A26` |
+| `drawer.borderOpen` | `#4DB8FF .6` | `#E2B659 .6` | `#B69CFF .6` | `#FFE600` | `#FF7A33 .6` | `#FFD100 .6` | `#B48CFF .6` | `#C9A07A .6` |
+| `drawer.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
+| `drawer.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
+| `drawer.boxBg` | `#0A0A0B` | `#1C130B` | `#000000 .2` | `#000000` | `#140A07` | `#111111` | `#08091A` | `#0A0908` |
+| `drawer.boxBorder` | `#202024` | `#6B4A22` | `#FFFFFF .14` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#5A4A26` | `#2E2A26` |
+| `drawer.text` | `#E8E8EC` | `#E9DDBC` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
+| `drawer.textSet` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
+| `drawer.summary` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `drawer.summarySet` | `#A8DBFF` | `#E2B659` | `#D4C4FF` | `#FFE600` | `#FFCF9A` | · | `#F6D27A` | `#E0C3A6` |
+| `menu.bg` | `#0A0A0B` | `#2B1D12` | `#121622 .92` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#231C14` |
+| `menu.border` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
+| `menu.borderAlt` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
+| `menu.borderSize` | `1` | `2` | `8` | `2` | `1` | `16` | `2` | `1` |
 | `menu.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
-| `menu.hover` | `#4DB8FF .15` | `#8E1B10 .15` | `#B69CFF .15` | `#FFE600 .25` | `#FF7A33 .15` | `#FFD100 .15` | `#B48CFF .15` | `#C9A07A .15` |
-| `menu.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
-| `menu.textSel` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
+| `menu.hover` | `#4DB8FF .15` | `#E2B659 .15` | `#B69CFF .15` | `#FFE600 .25` | `#FF7A33 .15` | `#FFD100 .15` | `#B48CFF .15` | `#C9A07A .15` |
+| `menu.text` | `#E8E8EC` | `#E9DDBC` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
+| `menu.textSel` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
 
 #### Lists and cards
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `list.header.bg` | `#18181B` | `#D8C697` | `#FFFFFF .06` | `#1A1A1A` | `#FF7A33 .08` | `#FFFFFF .07` | `#B48CFF .08` | `#000000 .35` |
-| `list.header.text` | `#9B9BA4` | `#3A2412` | `#C9CFDB` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
-| `list.stripe` | `#FFFFFF .02` | `#78501E .07` | `#FFFFFF .03` | `#0D0D0D` | `#FFFFFF .025` | `#FFFFFF .03` | `#FFFFFF .025` | `#FFFFFF .025` |
-| `list.hover` | `#4DB8FF .1` | `#8E1B10 .1` | `#B69CFF .1` | `#FFE600 .2` | `#FF7A33 .1` | `#FFD100 .1` | `#B48CFF .1` | `#C9A07A .1` |
-| `list.sel` | `#4DB8FF .14` | `#8E1B10 .16` | `#B69CFF .24` | `#000000` | `#FF7A33 .18` | `#FFD100 .18` | `#B48CFF .2` | `#C9A07A .16` |
+| `list.header.bg` | `#101012` | `#3A2614` | `#FFFFFF .06` | `#1A1A1A` | `#FF7A33 .08` | `#FFFFFF .07` | `#B48CFF .08` | `#000000 .35` |
+| `list.header.text` | `#9B9BA4` | `#E2B659` | `#C9CFDB` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
+| `list.stripe` | `#FFFFFF .02` | `#E9DDBC .04` | `#FFFFFF .03` | `#0D0D0D` | `#FFFFFF .025` | `#FFFFFF .03` | `#FFFFFF .025` | `#FFFFFF .025` |
+| `list.hover` | `#E8E8EC .1` | `#E9DDBC .1` | `#F2F4F8 .1` | `#FFE600 .2` | `#F4E7DC .1` | `#FFFFFF .1` | `#F2EEF8 .1` | `#FFFFFF .1` |
+| `list.sel` | `#4DB8FF .14` | `#A3241A .35` | `#B69CFF .24` | `#000000` | `#FF7A33 .18` | `#FFD100 .18` | `#B48CFF .2` | `#C9A07A .16` |
 | `list.selOutline` | · | · | · | `#FFE600` | · | · | · | · |
-| `card.bg` | `#18181B` | `#F3E8CB` | `#FFFFFF .06` | `#000000` | `#2A140C .85` | `#000000 .4` | `#1A1730 .85` | `#1C1A17` |
-| `card.border` | `#2A2A2F` | `#B8955A` | `#FFFFFF .14` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
-| `panel.bg` | `#0F0F11` | `#78501E .08` | `#FFFFFF .04` | `#000000` | `#000000 .3` | `#000000 .3` | `#000000 .3` | `#000000 .3` |
-| `panel.border` | `#26262B` | `#B8955A` | `#FFFFFF .12` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
-| `section.rule` | `#4DB8FF .35` | `#8E1B10 .35` | `#B69CFF .35` | `#FFE600` | `#FF7A33 .35` | `#FFD100 .35` | `#B48CFF .35` | `#C9A07A .35` |
-| `icon.tint` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
-| `icon.hot` | `#4DB8FF` | `#8E1B10` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#C9A07A` |
-| `handle.edge` | `#4DB8FF .6` | `#8E1B10 .6` | `#B69CFF .6` | `#FFE600 .6` | `#FF7A33 .6` | `#FFD100 .6` | `#B48CFF .6` | `#C9A07A .6` |
-| `handle.rest` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
-| `list.dropLine` | `#4DB8FF .9` | `#8E1B10 .9` | `#B69CFF .9` | `#FFE600 .9` | `#FF7A33 .9` | `#FFD100 .9` | `#B48CFF .9` | `#C9A07A .9` |
-| `list.ghostBg` | `#121214` | `#E9DDBC` | `#121622 .6` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |
-| `list.box` | `#E8E8EC .06` | `#2A1C0C .06` | `#F2F4F8 .06` | `#FFFFFF .06` | `#F4E7DC .06` | `#FFFFFF .06` | `#F2EEF8 .06` | `#FFFFFF .06` |
-| `list.boxDim` | `#E8E8EC .03` | `#2A1C0C .03` | `#F2F4F8 .03` | `#FFFFFF .03` | `#F4E7DC .03` | `#FFFFFF .03` | `#F2EEF8 .03` | `#FFFFFF .03` |
-| `list.boxEdge` | `#E8E8EC .12` | `#2A1C0C .12` | `#F2F4F8 .12` | `#FFFFFF .12` | `#F4E7DC .12` | `#FFFFFF .12` | `#F2EEF8 .12` | `#FFFFFF .12` |
-| `list.boxEdgeDim` | `#E8E8EC .06` | `#2A1C0C .06` | `#F2F4F8 .06` | `#FFFFFF .06` | `#F4E7DC .06` | `#FFFFFF .06` | `#F2EEF8 .06` | `#FFFFFF .06` |
-| `icon.dim` | · | `#7A6A50` | · | `#B0B0B0` | · | · | · | · |
+| `card.bg` | `#101012` | `#3A2614` | `#FFFFFF .06` | `#000000` | `#2A140C .85` | `#000000 .4` | `#1A1730 .85` | `#1C1A17` |
+| `card.border` | `#202024` | `#6B4A22` | `#FFFFFF .14` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `panel.bg` | `#070708` | `#000000 .2` | `#FFFFFF .04` | `#000000` | `#000000 .3` | `#000000 .3` | `#000000 .3` | `#000000 .3` |
+| `panel.border` | `#1C1C20` | `#6B4A22` | `#FFFFFF .12` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `section.rule` | `#4DB8FF .35` | `#E2B659 .35` | `#B69CFF .35` | `#FFE600` | `#FF7A33 .35` | `#FFD100 .35` | `#B48CFF .35` | `#C9A07A .35` |
+| `icon.tint` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `icon.hot` | `#4DB8FF` | `#E2B659` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#C9A07A` |
+| `handle.edge` | `#4DB8FF .6` | `#E2B659 .6` | `#B69CFF .6` | `#FFE600 .6` | `#FF7A33 .6` | `#FFD100 .6` | `#B48CFF .6` | `#C9A07A .6` |
+| `handle.rest` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `list.dropLine` | `#4DB8FF .9` | `#E2B659 .9` | `#B69CFF .9` | `#FFE600 .9` | `#FF7A33 .9` | `#FFD100 .9` | `#B48CFF .9` | `#C9A07A .9` |
+| `list.ghostBg` | `#0A0A0B` | `#2B1D12` | `#121622 .92` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#231C14` |
+| `list.box` | `#E8E8EC .06` | `#E9DDBC .06` | `#F2F4F8 .06` | `#FFFFFF .06` | `#F4E7DC .06` | `#FFFFFF .06` | `#F2EEF8 .06` | `#FFFFFF .06` |
+| `list.boxDim` | `#E8E8EC .03` | `#E9DDBC .03` | `#F2F4F8 .03` | `#FFFFFF .03` | `#F4E7DC .03` | `#FFFFFF .03` | `#F2EEF8 .03` | `#FFFFFF .03` |
+| `list.boxEdge` | `#E8E8EC .12` | `#E9DDBC .12` | `#F2F4F8 .12` | `#FFFFFF .12` | `#F4E7DC .12` | `#FFFFFF .12` | `#F2EEF8 .12` | `#FFFFFF .12` |
+| `list.boxEdgeDim` | `#E8E8EC .06` | `#E9DDBC .06` | `#F2F4F8 .06` | `#FFFFFF .06` | `#F4E7DC .06` | `#FFFFFF .06` | `#F2EEF8 .06` | `#FFFFFF .06` |
+| `icon.dim` | · | · | · | `#B0B0B0` | · | · | · | · |
 
 #### Overlays
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `popup.bg` | `#121214` | `#E9DDBC` | `#121622 .6` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |
-| `popup.border` | `#34343A` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `popup.borderSize` | `1` | `3` | `8` | `3` | `1` | `16` | `2` | `1` |
+| `popup.bg` | `#0A0A0B` | `#2B1D12` | `#121622 .92` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#231C14` |
+| `popup.border` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
+| `popup.borderSize` | `1` | `2` | `8` | `2` | `1` | `16` | `2` | `1` |
 | `popup.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
 | `popup.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
-| `tooltip.bg` | `#0E0E10` | `#F3E8CB` | `#0F121C .75` | `#000000` | `#140A07` | `#000010 .92` | `#0A0A1A .95` | `#0E0D0B` |
-| `tooltip.border` | `#34343A` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#8A3C1C` | `#9A9A9A` | `#B08A3E` | `#3A3530` |
+| `tooltip.bg` | `#070708` | `#1C130B` | `#0F121C .92` | `#000000` | `#140A07` | `#000010 .92` | `#0A0A1A .95` | `#0E0D0B` |
+| `tooltip.border` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#8A3C1C` | `#9A9A9A` | `#B08A3E` | `#3A3530` |
 
 #### HUD
 
@@ -1110,66 +1139,24 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 |---|---|---|---|---|---|---|---|---|
 | `bar.gloss` | none | · | `true` | none | · | · | · | none |
 
-#### Charts
-
-| Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
-|---|---|---|---|---|---|---|---|---|
-| `chart.axis` | · | `#3A2412 .6` | · | · | · | · | · | · |
-| `chart.axisAlt` | · | `#3A2412 .75` | · | · | · | · | · | · |
-| `chart.grid` | · | `#3A2412 .12` | · | · | · | · | · | · |
-| `chart.crosshair` | · | `#3A2412 .45` | · | · | · | · | · | · |
-| `chart.marker` | · | `#3A2412 .5` | · | · | · | · | · | · |
-| `chart.line` | · | `#00519E` | · | · | · | · | · | · |
-| `chart.bar` | · | `#00519E .85` | · | · | · | · | · | · |
-| `chart.track` | · | `#3A2412 .08` | · | · | · | · | · | · |
-| `chart.total` | · | `#8E1B10` | · | · | · | · | · | · |
-| `chart.other` | · | `#6A5233` | · | · | · | · | · | · |
-| `chart.otherLine` | · | `#8A7656` | · | · | · | · | · | · |
-
 #### Semantic
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `q.poor` | · | `#5A5A5A` | · | · | · | · | · | · |
-| `q.common` | · | `#2A1C0C` | · | · | · | · | · | · |
-| `q.uncommon` | · | `#1C6B12` | `#5CFF5C` | `#5CFF5C` | · | · | · | · |
-| `q.rare` | · | `#00519E` | `#5AA9FF` | `#6DB6FF` | · | · | · | · |
-| `q.epic` | · | `#6A1FA8` | `#C58BFF` | `#D199FF` | · | · | · | · |
-| `q.legendary` | · | `#A65A00` | · | · | · | · | · | · |
-| `sem.good` | · | `#1C6B12` | · | · | · | · | · | · |
-| `sem.bad` | · | `#B3261E` | · | · | · | · | · | · |
-| `sem.neutral` | · | `#6A5233` | · | · | · | · | · | · |
-| `sem.warn` | · | `#A65A00` | · | · | · | · | · | · |
-| `sem.info` | · | `#00519E` | · | · | · | · | · | · |
-| `sem.gold` | · | `#7A5A10` | · | · | · | · | · | · |
-| `sem.warband` | · | `#00628A` | · | · | · | · | · | · |
-| `sem.statusOk` | · | `#1C7B22` | · | · | · | · | · | · |
-| `sem.statusWarn` | · | `#9A7400` | · | · | · | · | · | · |
-| `sem.statusBad` | · | `#B3261E` | · | · | · | · | · | · |
-| `sem.on` | · | `#1C7B22` | · | · | · | · | · | · |
-| `sem.off` | · | `#B3261E` | · | · | · | · | · | · |
-| `sem.stepReady` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
-| `sem.stepBusy` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
-| `sem.stepLocked` | `#6A6A72` | `#7A6A50` | `#8A90A0` | `#B0B0B0` | `#8A6E5C` | `#808080` | `#7A7590` | `#7A756E` |
-| `sem.stepCancel` | · | `#B3261E` | · | · | · | · | · | · |
-| `sem.stepCancelHot` | · | `#B3261E` | · | · | · | · | · | · |
-| `sem.boundNone` | · | `#7A6A50 .7` | · | `#B0B0B0` | · | · | · | · |
-| `sem.boundBoE` | · | `#2A1C0C` | · | `#FFFFFF` | · | · | · | · |
-| `sem.boundBoP` | · | `#1C6B12` | · | · | · | · | · | · |
-| `sem.boundWarband` | · | `#00519E` | · | · | · | · | · | · |
-| `sem.boundWarbandUE` | · | `#A65A00` | · | · | · | · | · | · |
-| `sem.boundBoPAlt` | · | `#B3261E` | · | · | · | · | · | · |
-| `sem.boundBoEAlt` | · | `#1C6B12` | · | · | · | · | · | · |
-| `sem.boundNoneAlt` | · | `#6A5233` | · | `#B0B0B0` | · | · | · | · |
-| `sem.danger` | · | `#B3261E` | · | · | · | · | · | · |
-| `sem.goodAlt` | · | `#1C7B22` | · | · | · | · | · | · |
-| `sem.badAlt` | · | `#B3261E` | · | · | · | · | · | · |
-| `sem.warbandAlt` | · | `#00519E` | · | · | · | · | · | · |
-| `sem.unknown` | · | `#5A5A5A` | · | `#B0B0B0` | · | · | · | · |
+| `q.uncommon` | · | · | `#5CFF5C` | `#5CFF5C` | · | · | · | · |
+| `q.rare` | · | · | `#5AA9FF` | `#6DB6FF` | · | · | · | · |
+| `q.epic` | · | · | `#C58BFF` | `#D199FF` | · | · | · | · |
+| `sem.stepReady` | `#E8E8EC` | `#E9DDBC` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
+| `sem.stepBusy` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
+| `sem.stepLocked` | `#6A6A72` | `#8A7A60` | `#8A90A0` | `#B0B0B0` | `#8A6E5C` | `#808080` | `#7A7590` | `#7A756E` |
+| `sem.boundNone` | · | · | · | `#B0B0B0` | · | · | · | · |
+| `sem.boundBoE` | · | · | · | `#FFFFFF` | · | · | · | · |
+| `sem.boundNoneAlt` | · | · | · | `#B0B0B0` | · | · | · | · |
+| `sem.unknown` | · | · | · | `#B0B0B0` | · | · | · | · |
 
 `gtip.value` is in no row: every skin inherits Ka0s Default's white.
 
-Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 6): Obsidian 140, Azeroth 194, Glass 142, High Contrast 156, Ember 143, WoW Default 143, WoW Midnight 146, WoW Forever 143.
+Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 9): Obsidian 149, Azeroth 150, Glass 150, High Contrast 165, Ember 147, WoW Default 148, WoW Midnight 148, WoW Forever 149.
 
 ## The EllesmereUI provider
 

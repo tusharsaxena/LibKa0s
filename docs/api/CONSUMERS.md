@@ -72,9 +72,10 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 ## What moved since v1.66.0
 
 **v1.78.0, not in the census (2026-10-25).** The release adds a major, `LibKa0s-Skin-1.0`
-(its members in `docs/api/Skin/members-4.6.3.1.1.1.1.json`), the Options instance members
+(its members in `docs/api/Skin/members-5.9.8.3.6.1.3.json`), the Options instance members
 `AppearanceTab` and `AppearanceRows` with the lib-level `APPEARANCE_STRINGS` (OptionsAppearance minor
-1), Skin's `Skin:OwnerLabel` and `Skin:WriteChoice`, an `owner` option on every Widgets constructor,
+1), Skin's `Skin:OwnerLabel` and `Skin:WriteChoice`, the Appearance tab's Scope pair `Skin:GetIgnore` and
+`Skin:SetIgnore` (Skin minor 5, 2026-10-27), an `owner` option on every Widgets constructor,
 `ApplySkin`'s `owner` (Core minor 13), the media pickers' `fromSkin` (OptionsCompose minor 12), the
 `skinValue` row field (OptionsWidgets minor 35), `series[i].colorIndex` (WidgetsLineChart minor 4) and
 the Media catalogs `BORDERS` / `BACKGROUNDS` with their readers (Media minor 6). None gets a row

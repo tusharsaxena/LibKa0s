@@ -174,8 +174,8 @@ end)
 
 -- The dark skins inherit Ka0s Default's bind colors (the hue is the meaning); Azeroth, the light
 -- skin, sets every one, and High Contrast sets the gray and off-white ones, fully opaque.
+-- Azeroth overrode all of them for its light parchment until SkinDefs minor 8 made it dark.
 local BIND_OWN = {
-  azeroth = BIND,
   contrast = { "sem.boundNone", "sem.boundBoE", "sem.boundNoneAlt" },
 }
 
@@ -223,7 +223,6 @@ end)
 -- The dark skins inherit them; Azeroth, the light skin, sets every window one in ink and neither
 -- gtip one (the tooltip stays dark); High Contrast sets the grays in its own palette.
 local SPLIT_OWN = {
-  azeroth = SPLIT_WIN,
   contrast = { "text.value", "text.bodyAlt", "text.subtle", "icon.dim", "sem.unknown", "gtip.subtle" },
 }
 
@@ -250,23 +249,31 @@ end)
 
 local CONTROLS = { "btn", "btnPrimary", "input", "check", "tab", "nav", "drawer", "popup", "menu" }
 
-test("skin defs: High Contrast draws every control border at 2px or more", function()
+test("skin defs: High Contrast draws 1px control edges inside a 2px window and popup edge", function()
+  -- SkinDefs minor 7, the owner's note of 2026-10-26: "borders are too thick on most elements".
+  -- red under: a control edge back at 2px, or the window or popup losing its heavier frame.
   local t = skinLib():ResolveSkin("contrast")
   for _, ctl in ipairs(CONTROLS) do
-    assertTrue((t[ctl .. ".borderSize"] or 0) >= 2, "contrast: " .. ctl .. ".borderSize >= 2")
+    local want = (ctl == "popup" or ctl == "menu") and 2 or 1
+    assertEqual(t[ctl .. ".borderSize"], want, "contrast: " .. ctl .. ".borderSize")
   end
-  assertTrue(t["win.borderSize"] >= 2, "contrast: the window edge is 2px")
+  assertEqual(t["win.borderSize"], 2, "contrast: the window edge is 2px")
 end)
 
-test("skin defs: Glass is the rounded skin, radius 8 on the Ka0s Glass nine-slice", function()
+test("skin defs: Glass rounds its window and popups only, on the Ka0s Glass nine-slice", function()
+  -- SkinDefs minor 7, the owner's note of 2026-10-26: Glass's buttons and tabs looked awkward on the
+  -- rounded art. The window and its popups keep it; the controls take a flat 1px edge.
   local Skin = skinLib()
   local t = Skin:ResolveSkin("glass")
   assertEqual(t["win.radius"], 8, "glass window radius")
   assertEqual(t["win.borderStyle"], "nine:Ka0s Glass", "glass window edge")
-  for _, ctl in ipairs({ "btn", "btnPrimary", "input", "popup" }) do
-    assertEqual(t[ctl .. ".radius"], 8, "glass " .. ctl .. ".radius")
-    assertEqual(t[ctl .. ".borderStyle"], "nine:Ka0s Glass", "glass " .. ctl .. ".borderStyle")
+  assertEqual(t["popup.radius"], 8, "glass popup radius")
+  assertEqual(t["popup.borderStyle"], "nine:Ka0s Glass", "glass popup edge")
+  for _, ctl in ipairs({ "btn", "btnPrimary", "input", "tab", "drawer" }) do
+    assertEqual(t[ctl .. ".borderStyle"], "flat", "glass " .. ctl .. ".borderStyle")
+    assertEqual(t[ctl .. ".borderSize"], 1, "glass " .. ctl .. ".borderSize")
   end
+  assertTrue((t["win.bg"][4] or 1) >= 0.85, "glass is dense enough to read over the world")
   for _, key in ipairs(KEYS) do
     if key ~= "glass" then
       local other = Skin:ResolveSkin(key)
@@ -284,13 +291,20 @@ test("skin defs: WoW Default wears the Blizzard art docs/api/Skin names", functi
   assertEqual(t["win.borderSize"], 32, "BACKDROP_DIALOG_32_32's edge size")
   assertEqual(t["win.bgTexture"], "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
     "the dark dialog background")
-  assertEqual(t["btn.borderStyle"], "bevelOut", "buttons: a bevelOut edge")
-  assertEqual(t["btn.borderSize"], 2, "buttons: 2px")
+  -- SkinDefs minor 7, the owner's note: the 2px bevelOut gold edge read as a frame. The client's own
+  -- button is the red gradient under a thin dark rim.
+  assertEqual(t["btn.borderStyle"], "flat", "buttons: a flat rim")
+  assertEqual(t["btn.borderSize"], 1, "buttons: 1px")
   assertEqual(("%.4f %.4f %.4f"):format(t["btn.border"][1], t["btn.border"][2], t["btn.border"][3]),
-    ("%.4f %.4f %.4f"):format(0xa0 / 255, 0x7c / 255, 0x2c / 255), "buttons: the gold #a07c2c edge")
+    ("%.4f %.4f %.4f"):format(0x1a / 255, 0x08 / 255, 0x05 / 255), "buttons: the dark #1a0805 rim")
   assertTrue(t["btn.bgTop"] ~= nil and t["btn.bgBottom"] ~= nil, "buttons: a red gradient")
   assertTrue(t["btn.bgTop"][1] > t["btn.bgTop"][2] * 3, "the gradient is red")
-  assertEqual(t["tab.texture"], "Interface\\OptionsFrame\\UI-OptionsFrame-InActiveTab", "idle tab")
+  -- The owner's note (round 3): the InActiveTab art is drawn shorter, so idle tabs wear the active art
+  -- too and stand as tall as the selected one; the white label tells the selected tab.
+  assertEqual(t["tab.texture"], "Interface\\OptionsFrame\\UI-OptionsFrame-ActiveTab", "idle tab")
+  -- ...and the inputs (the dropdown with them) and the nav rail take a 1px edge, the primary's size.
+  assertEqual(t["input.borderSize"], 1, "inputs: 1px")
+  assertEqual(t["nav.borderSize"], 1, "the nav rail: 1px")
   assertEqual(t["tab.onTexture"], "Interface\\OptionsFrame\\UI-OptionsFrame-ActiveTab", "active tab")
   assertEqual(t["scroll.thumbTexture"], "Interface\\Buttons\\UI-ScrollBar-Knob", "scroll knob")
   assertEqual(t["check.texture"], "Interface\\Buttons\\UI-CheckBox-Up", "checkbox box")
@@ -339,48 +353,130 @@ test("skin defs: WoW Forever is warm charcoal, black centered titles, tan accent
     end
     local bg = t["win.bg"]
     assertTrue(bg[1] > bg[3] and luminance(bg) < 0.03, "warm charcoal window")
-    assertEqual(t["font.body"], "Ka0s Barlow", "Barlow")
+    assertEqual(t["font.body"], "Ka0s Atkinson", "Atkinson Hyperlegible (minor 8: Barlow read blurry)")
   end)
 
 -- ── what a skin names exists ─────────────────────────────────────────────────────────────────
 
 -- LibSharedMedia's own default border keys a skin may name besides the shipped ones.
 local LSM_BORDERS = { ["Blizzard Dialog"] = true, ["Blizzard Tooltip"] = true }
+-- ...and its default font keys: Friz Quadrata, Ka0s Default's face (the client's own, set by name).
+local LSM_FONTS = { ["Friz Quadrata TT"] = true }
+
+-- One token of skin `key`: a face names a shipped or LSM font, a nine-slice a known border, a border
+-- style one of the four shapes.
+local function assertNamedMedia(Media, key, name, v)
+  if name:match("^font%.") and type(v) == "string" and name ~= "font.outline" then
+    assertTrue(Media.FONTS[v] ~= nil or LSM_FONTS[v], key .. ": " .. name .. " = " .. v .. " is shipped")
+  end
+  local nine = type(v) == "string" and v:match("^nine:(.+)$")
+  if nine then
+    assertTrue(Media.BORDERS[nine] ~= nil or LSM_BORDERS[nine],
+      key .. ": " .. name .. " names a known border, " .. nine)
+  end
+  if name:match("borderStyle$") and name ~= "bar.borderStyle" and type(v) == "string" then
+    assertTrue(v == "flat" or v == "bevelOut" or v == "bevelIn" or nine,
+      key .. ": " .. name .. " is flat | bevelOut | bevelIn | nine:<key>")
+  end
+end
 
 test("skin defs: every font and border a skin names is shipped or an LSM default", function()
   local Skin = skinLib()
   local Media = T.mocks.LibStub("LibKa0s-Media-1.0")
   for _, def in ipairs(Skin:Skins()) do
-    for name, v in pairs(def.tokens) do
-      if name:match("^font%.") and type(v) == "string" and name ~= "font.outline" then
-        assertTrue(Media.FONTS[v] ~= nil, def.key .. ": " .. name .. " = " .. v .. " is shipped")
-      end
-      local nine = type(v) == "string" and v:match("^nine:(.+)$")
-      if nine then
-        assertTrue(Media.BORDERS[nine] ~= nil or LSM_BORDERS[nine],
-          def.key .. ": " .. name .. " names a known border, " .. nine)
-      end
-      if name:match("borderStyle$") and name ~= "bar.borderStyle" and type(v) == "string" then
-        assertTrue(v == "flat" or v == "bevelOut" or v == "bevelIn" or nine,
-          def.key .. ": " .. name .. " is flat | bevelOut | bevelIn | nine:<key>")
-      end
-    end
+    for name, v in pairs(def.tokens) do assertNamedMedia(Media, def.key, name, v) end
   end
 end)
+
+local FRIZ = "Friz Quadrata TT"
 
 test("skin defs: the font assignments follow the spec", function()
   local Skin = skinLib()
   local want = {
     obsidian = { "Ka0s Barlow", "Ka0s Barlow SemiBold" }, glass = { "Ka0s Barlow", "Ka0s Barlow SemiBold" },
-    forever = { "Ka0s Barlow", "Ka0s Barlow SemiBold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
-    azeroth = { nil, "Ka0s Cinzel" }, ember = { nil, "Ka0s Cinzel" }, midnight = { nil, "Ka0s Cinzel" },
-    wow = { nil, nil }, ka0s = { nil, nil },
+    forever = { "Ka0s Atkinson", "Ka0s Atkinson Bold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
+    -- Ka0s Default's Friz Quadrata (minor 8) is inherited wherever a skin names no face of its own.
+    azeroth = { "Ka0s Atkinson", "Ka0s Cinzel" }, ember = { FRIZ, "Ka0s Cinzel" }, midnight = { FRIZ, "Ka0s Cinzel" },
+    wow = { FRIZ, FRIZ }, ka0s = { FRIZ, FRIZ },
   }
   for key, pair in pairs(want) do
     local t = Skin:ResolveSkin(key)
     assertEqual(t["font.body"], pair[1], key .. " body font")
     assertEqual(t["font.title"], pair[2], key .. " title font")
   end
+  -- Every skin draws the client's shadow now: Azeroth's shadowless body was for its light parchment,
+  -- and SkinDefs minor 8 made it dark. A dark label goes shadowless on its own (SkinPaint minor 5).
+  for key in pairs(want) do
+    assertEqual(Skin:ResolveSkin(key)["font.shadow"], true, key .. " draws the shadow")
+  end
   local base, hc = Skin:ResolveSkin("obsidian"), Skin:ResolveSkin("contrast")
-  assertEqual(hc["font.bodySize"], base["font.bodySize"] + 2, "High Contrast reads 2pt larger")
+  assertTrue(hc["font.bodySize"] > base["font.bodySize"], "High Contrast reads larger")
+end)
+
+local function sameColor(c, want, label)
+  assertTrue(type(c) == "table", label .. ": no color")
+  for i = 1, #want do
+    assertTrue(math.abs(c[i] - want[i]) < 0.005, ("%s component %d: %s, want %s"):format(label, i, tostring(c[i]), tostring(want[i])))
+  end
+end
+
+-- ── the owner's notes of 2026-10-26 (SkinDefs minor 7) ───────────────────────────────────────
+
+test("skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's", function()
+  -- red under: a skin with no size (it would not scale with the others), or one far enough from the
+  -- reference to break a layout measured against the stock fonts.
+  local Skin = skinLib()
+  local ref = Skin:ResolveSkin("ka0s")
+  for _, key in ipairs(KEYS) do
+    local own = Skin.skins[key].tokens
+    for _, name in ipairs({ "font.bodySize", "font.titleSize" }) do
+      assertTrue(type(own[name]) == "number", key .. " sets " .. name)
+      assertTrue(math.abs(own[name] - ref[name]) <= 1.5, ("%s: %s %s is near the reference %s")
+        :format(key, name, tostring(own[name]), tostring(ref[name])))
+    end
+  end
+end)
+
+test("skin defs: a hovered row is told apart from a selected one", function()
+  -- red under: hover and selection in one hue at nearly one alpha (the owner: "hard to distinguish").
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    if key ~= "ka0s" and key ~= "contrast" then
+      local t = Skin:ResolveSkin(key)
+      local h, s = t["list.hover"], t["list.sel"]
+      local same = math.abs(h[1] - s[1]) + math.abs(h[2] - s[2]) + math.abs(h[3] - s[3])
+      assertTrue(same > 0.3, key .. ": list.hover is not list.sel's hue")
+      sameColor(h, { t["text.body"][1], t["text.body"][2], t["text.body"][3], 0.10 }, key .. " hover is the body text at .10")
+    end
+  end
+end)
+
+test("skin defs: WoW Default's checkbox art is its only box", function()
+  local wow = skinLib():ResolveSkin("wow")
+  assertTrue(wow["check.border"] == nil, "no edge around UI-CheckBox-Up, which is itself a box")
+end)
+
+test("skin defs: in every skin a primary button differs from a normal one", function()
+  -- The owner's note (round 2): Ka0s Default's, Azeroth's and WoW Default's primary were their normal
+  -- button. red under: a skin whose primary fill and edge are both the normal button's.
+  local Skin = skinLib()
+  local function differs(a, b)
+    if type(a) ~= "table" or type(b) ~= "table" then return a ~= b end
+    for i = 1, 4 do if math.abs((a[i] or 1) - (b[i] or 1)) > 0.02 then return true end end
+    return false
+  end
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    assertTrue(differs(t["btnPrimary.bg"], t["btn.bg"]) or differs(t["btnPrimary.border"], t["btn.border"]),
+      key .. ": the primary button is not the normal one")
+  end
+end)
+
+test("skin defs: no skin draws a box round a slider's bar", function()
+  -- The owner's note (round 2): sliders look alike in every skin, Ka0s Default's thin bar the reference.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local b = Skin:ResolveSkin(key)["slider.trackBorder"]
+    assertTrue(b == nil or (b[4] or 1) == 0, key .. ": no slider track border")
+  end
 end)

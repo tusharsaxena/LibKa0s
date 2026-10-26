@@ -61,14 +61,33 @@ test("skin ace: an owned page's CheckBox is painted from the owner's skin throug
   assertEqual(#m.__errors, 0, "nothing raised")
 end)
 
-test("skin ace: Ka0s Default is stock AceGUI: nothing painted, nothing wrapped", function()
+test("skin ace: Ka0s Default paints AceGUI rows like every skin", function()
+  -- SkinAce minor 2 (SkinPaint minor 6): Ka0s Default was stock AceGUI, the client's look; it now
+  -- paints its rows from its tokens. red under: a Ka0s Default branch that leaves the row alone.
   local _, Skin, O = owned("ka0s")
   local cb = O.AceGUI:Create("CheckBox")
-  assertNil(Skin.__ace[cb], "no state")
-  assertNil(rawget(cb, "OnRelease"), "no wrapper")
-  assertEqual(cb.checkbg:GetAlpha(), 1, "the stock box at full alpha")
-  assertEqual(textColor(cb.text), "1,1,1,1", "AceGUI's own white")
-  assertFalse(Skin:PaintAce(OWNER, cb), "PaintAce answers false on Ka0s Default")
+  assertEqual(Skin.__ace[cb] and Skin.__ace[cb].owner, OWNER, "painted for the owner")
+  assertTrue(rawget(cb, "OnRelease") ~= nil, "and wrapped, so its release gives it back stock")
+  assertEqual(cb.checkbg:GetAlpha(), 0, "the stock box faded")
+  assertEqual(textColor(cb.text), rgb(Skin:ResolveSkin("ka0s")["text.body"]), "in Ka0s Default's body text")
+end)
+
+test("skin ace: an owner that ignores its settings panel gets stock rows until it stops", function()
+  -- Skin minor 5, SkinAce minor 3. red under: PaintAce without the __PanelSkinned question.
+  local _, Skin, O = owned("obsidian")
+  Skin:SetIgnore(OWNER, true, nil)
+  local cb = O.AceGUI:Create("CheckBox")
+  assertNil(Skin.__ace[cb] and Skin.__ace[cb].owner, "stock while the panel is ignored")
+  assertTrue(cb.checkbg:GetAlpha() ~= 0, "the stock box kept")
+  assertFalse(Skin:PaintAce(OWNER, cb), "and PaintAce refuses it")
+  Skin:SetIgnore(OWNER, false, nil)
+  local cb2 = O.AceGUI:Create("CheckBox")
+  assertEqual(Skin.__ace[cb2] and Skin.__ace[cb2].owner, OWNER, "painted once the exception is off")
+  -- A widget the host holds and repaints itself (LootHistory's AH check boxes) goes back stock.
+  Skin:SetIgnore(OWNER, true, nil)
+  assertFalse(Skin:PaintAce(OWNER, cb2), "PaintAce refuses it")
+  assertNil(Skin.__ace[cb2].owner, "and hands it back stock")
+  assertTrue(cb2.checkbg:GetAlpha() ~= 0, "the stock box back")
 end)
 
 test("skin ace: an unregistered owner's instance holds AceGUI itself", function()
@@ -314,7 +333,7 @@ test("skin ace: Ka0s Default to Obsidian with a page open repaints its rows afte
   ctx.panel:Show()
   ctx.panel:__fire("OnShow")
   assertEqual(#made, 1, "drawn on show")
-  assertNil(Skin.__ace[made[1]], "Ka0s Default: stock")
+  assertEqual(Skin.__ace[made[1]] and Skin.__ace[made[1]].owner, OWNER, "Ka0s Default paints it too")
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   assertEqual(#made, 1, "not re-rendered inside the switch")
   m.__fireTimers()

@@ -32,6 +32,14 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261027-030736`](20261027-030736/) | `42b04c1` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3030/2/3032 | skip | 66080 | 9849 | 6.6 | 2.0 | 15 | 0 | **green** |
+| [`20261027-015805`](20261027-015805/) | `0920b9a` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3028/2/3030 | skip | 66007 | 9840 | 6.6 | 2.0 | 15 | 0 | **green** |
+| [`20261027-005758`](20261027-005758/) | `854ad32` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3027/2/3029 | skip | 65926 | 9833 | 6.6 | 2.0 | 15 | 0 | **green** |
+| [`20261027-001339`](20261027-001339/) | `f70882c` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3019/2/3021 | skip | 65699 | 9810 | 6.6 | 2.0 | 15 | 0 | **green** |
+| [`20261026-222042`](20261026-222042/) | `e1fca8b` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3017/2/3019 | skip | 65672 | 9809 | 6.6 | 2.0 | 15 | 0 | **green** |
+| [`20261026-193808`](20261026-193808/) | `ce9a2a3` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3017/2/3019 | skip | 65688 | 9818 | 6.6 | 2.0 | 15 | 0 | **green** |
+| [`20261026-190317`](20261026-190317/) | `d7a610e` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3017/2/3019 | skip | 65686 | 9818 | 6.6 | 2.0 | 15 | 0 | **green** |
+| [`20261026-181407`](20261026-181407/) | `fcdbb68` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3012/2/3014 | skip | 65626 | 9810 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20261026-134954`](20261026-134954/) | `f759a5e` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3007/2/3009 | skip | 65522 | 9798 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20261025-134526`](20261025-134526/) | `d6b5bec` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3006/2/3008 | skip | 65470 | 9784 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20261025-122953`](20261025-122953/) | `dfbd0a1` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3004/2/3006 | skip | 65399 | 9782 | 6.6 | 2.0 | 15 | 0 | **green** |
@@ -152,11 +160,11 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**3009 cases** — 3007 passed, 0 failed, 2 skipped. The generated inventory
-[`20261026-134954/test-cases.md`](20261026-134954/test-cases.md) is the authority on which cases existed at this run;
+**3032 cases** — 3030 passed, 0 failed, 2 skipped. The generated inventory
+[`20261027-030736/test-cases.md`](20261027-030736/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **3008 → 3009** since the previous run.
+Moved **3030 → 3032** since the previous run.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -180,7 +188,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261026-134954`](20261026-134954/) — **this run's measurement, not its diff.** Max CCN **15** across 9798
+Current as of [`20261027-030736`](20261027-030736/) — **this run's measurement, not its diff.** Max CCN **15** across 9849
 functions, **0** of them warned on; 8 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 

@@ -15,8 +15,8 @@
 --     tab art at full alpha.
 
 local K = _G.LK_TEST
-local test, assertEqual, assertTrue, assertFalse, assertNil =
-  K.test, K.assertEqual, K.assertTrue, K.assertFalse, K.assertNil
+local test, assertEqual, assertTrue, assertNil =
+  K.test, K.assertEqual, K.assertTrue, K.assertNil
 local F = dofile("tests/fixture_skin_paint.lua")
 local installBindings = dofile("tests/_kit/mock_bindings.lua")
 
@@ -140,6 +140,22 @@ test("options skin: an owned page paints its header and an opaque backdrop from 
   assertEqual(F.rgba(p.color), rgb(Skin:ResolveSkin("azeroth")["win.bg"]), "win.bg at full alpha")
 end)
 
+test("options skin: a page whose CreateTexture answers the page keeps no backdrop and stays hidden", function()
+  -- OptionsScroll minor 7. A bare stub answers the frame itself; kept as the backdrop, its Show
+  -- would show the page on every looks change. red under: storing what CreateTexture answered.
+  local m, Skin, lib = env()
+  F.owner(Skin, OWNER, "azeroth")
+  local ctx = page((instance(lib, OWNER)))
+  local panel = ctx.panel
+  rawset(panel, "__ka0sSkinBg", nil)
+  rawset(panel, "CreateTexture", function(self) return self end)
+  panel:Hide()
+  Skin:SetChoice(OWNER, "ka0s", "ember")
+  m.__fireTimers()
+  assertNil(rawget(panel, "__ka0sSkinBg"), "the page is not its own backdrop")
+  assertTrue(not survey(m, panel).shown, "and the looks change left the page hidden")
+end)
+
 test("options skin: an owned page's tab strip fades the client's art and wears the tab roles", function()
   local m, Skin, lib = env()
   F.owner(Skin, OWNER, "obsidian")
@@ -173,7 +189,7 @@ test("options skin: an owned page's rail, drawer and cover paint from the skin",
   assertEqual(F.rgba(survey(m, cover.__line).textColor), rgb(T["cover.text"]))
 end)
 
-test("options skin: a skin switch repaints the owned page with no reload, and Ka0s Default undoes it",
+test("options skin: a skin switch repaints the owned page with no reload, Ka0s Default included",
   function()
   local m, Skin, lib = env()
   F.owner(Skin, OWNER, "obsidian")
@@ -186,19 +202,68 @@ test("options skin: a skin switch repaints the owned page with no reload, and Ka
   assertEqual(F.rgba(survey(m, ctx.__railFrame).backdropColor), F.rgba(T["nav.bg"]), "and the rail")
   assertEqual(F.rgba(survey(m, buttons[1].__ka0sTabLabel).textColor), rgb(T["tab.onText"]), "and the tabs")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertFalse(survey(m, ctx.panel.__ka0sSkinBg).shown, "Ka0s Default draws no backdrop")
-  assertEqual(survey(m, buttons[1].__ka0sTabArt.left).alpha, 1, "and puts the client's tab art back")
+  local D = Skin:ResolveSkin("ka0s")
+  assertEqual(F.rgba(survey(m, ctx.panel.__ka0sSkinBg).color), rgb(D["win.bg"]), "Ka0s Default's backdrop (minor 6)")
+  assertEqual(survey(m, buttons[1].__ka0sTabArt.left).alpha, 0, "the client's tab art stays faded")
   assertEqual(F.rgba(survey(m, ctx.panel.divider).vertex), "1,0.820,0,1", "the divider is gold again")
 end)
 
-test("options skin: Ka0s Default on an owned page draws no backdrop and keeps the client's art", function()
+test("options skin: Ignore settings panel hands every piece of chrome back live, and off paints again", function()
+  -- OptionsScroll minor 7 (lib.__chromeRelease), SkinPaint minor 8 (every tint's prior saved, the
+  -- rail's colors saved). Stock is what the same chrome looks like for an addon that never
+  -- registered. red under: an onLooks that only stops painting (the skin stays up until a reload).
+  local m, Skin, lib = env()
+  F.owner(Skin, OWNER, "ember")
+  local ctx = page((instance(lib, OWNER)))
+  local ref = page((instance(lib, "NeverRegistered")))
+  local function pieces(c)
+    local buttons, box = tabsOf(c)
+    local head = drawerHead(c)
+    return {
+      ["tab slice"] = { buttons[1].__ka0sTabArt.left, "alpha" },
+      ["tab label"] = { buttons[1].__ka0sTabLabel, "textColor" },
+      ["idle tab label"] = { buttons[2].__ka0sTabLabel, "textColor" },
+      ["content box art"] = { box.__ka0sHalves[1], "alpha" },
+      ["rail pane"] = { c.__railFrame, "backdropColor" },
+      ["rail edge"] = { c.__railFrame, "backdropBorderColor" },
+      ["nav label"] = { c.__railKids[1].__ka0sNavLabel, "textColor" },
+      ["drawer label"] = { head.__ka0sDrawerLabelFS, "textColor" },
+      ["cover line"] = { c.__combatCover.__line, "textColor" },
+      ["title"] = { c.panel.title, "textColor" },
+      ["divider"] = { c.panel.divider, "vertex" },
+    }
+  end
+  local T = Skin:ResolveSkin("ember")
+  local mine, stock = pieces(ctx), pieces(ref)
+  assertTrue(F.rgba(survey(m, mine["rail pane"][1]).backdropColor) == F.rgba(T["nav.bg"]), "painted first")
+  Skin:SetIgnore(OWNER, true, nil)
+  -- Read through the getter the client answers (a string never colored reads its font's color).
+  local GET = { alpha = "GetAlpha", textColor = "GetTextColor", backdropColor = "GetBackdropColor",
+                backdropBorderColor = "GetBackdropBorderColor", vertex = "GetVertexColor" }
+  local function read(p) return F.rgba({ p[1][GET[p[2]]](p[1]) }) end
+  for name, p in pairs(mine) do
+    assertEqual(read(p), read(stock[name]), name .. " is stock again")
+  end
+  assertTrue(not survey(m, ctx.panel.__ka0sSkinBg).shown, "the backdrop hidden")
+  for frame, rec in pairs(Skin.painted) do
+    assertTrue(not (rec.owner == OWNER and lib.__chromeTargets[frame]), "no chrome left tracked for the owner")
+  end
+  Skin:SetIgnore(OWNER, false, nil)
+  m.__fireTimers()
+  assertEqual(F.rgba(survey(m, ctx.panel.title).textColor), rgb(T["title.text"]), "off: the title is the skin's")
+  assertTrue(survey(m, ctx.panel.__ka0sSkinBg).shown, "and the backdrop back")
+end)
+
+test("options skin: Ka0s Default dresses an owned page like every skin", function()
+  -- SkinPaint minor 6: Ka0s Default draws the page's backdrop and fades the client's art too.
   local m, Skin, lib = env()
   F.owner(Skin, OWNER)
   local ctx = page((instance(lib, OWNER)))
   local buttons, box = tabsOf(ctx)
-  assertNil(ctx.panel.__ka0sSkinBg, "no backdrop")
-  assertEqual(survey(m, buttons[1].__ka0sTabArt.left).alpha, 1, "tab art at full alpha")
-  assertEqual(survey(m, box.__ka0sHalves[1]).alpha, 1, "inner-frame art at full alpha")
+  local D = Skin:ResolveSkin("ka0s")
+  assertEqual(F.rgba(survey(m, ctx.panel.__ka0sSkinBg).color), rgb(D["win.bg"]), "Ka0s Default's backdrop")
+  assertEqual(survey(m, buttons[1].__ka0sTabArt.left).alpha, 0, "tab art faded")
+  assertEqual(survey(m, box.__ka0sHalves[1]).alpha, 0, "inner-frame art faded")
   assertEqual(F.rgba(survey(m, ctx.__railFrame).backdropColor), "0.100,0.100,0.100,0.500", "PANE_FILL")
   assertEqual(F.rgba(survey(m, ctx.__combatCover.__dim).color), "0,0,0,0.600", "the cover's dim")
 end)
@@ -324,7 +389,7 @@ test("options skin: the keybind rows take the skin's text roles away from Ka0s D
   assertEqual(rgb({ s.r, s.g, s.b }), rgb(T["text.muted"]), "the outcome line muted")
 end)
 
-test("options skin: Ka0s Default leaves the help mark and the keybind rows as they were", function()
+test("options skin: Ka0s Default colors the keybind rows in its own text roles", function()
   local m, Skin, lib = env()
   installBindings(m)
   F.owner(Skin, OWNER)
@@ -332,8 +397,10 @@ test("options skin: Ka0s Default leaves the help mark and the keybind rows as th
   seq = seq + 1
   local ctx = O.CreatePanel("SkinKeysDefault" .. seq, "Keys", {})
   local rows = O.KeybindRows(ctx, { bindings = { { command = "LKSKIN_TOGGLE" } } })
-  assertNil(rows[1].label.color, "no color set on the action's name")
-  assertNil(rows[1].status.color, "nor on the outcome line")
+  local D = Skin:ResolveSkin("ka0s")
+  local c, st = rows[1].label.color, rows[1].status.color
+  assertEqual(rgb({ c.r, c.g, c.b }), rgb(D["text.body"]), "the action's name in the body role")
+  assertEqual(rgb({ st.r, st.g, st.b }), rgb(D["text.muted"]), "the outcome line muted")
 end)
 
 --- The id-suggestion popup a page's IdInput opens, typed into under the page's owner: answers the
@@ -362,7 +429,7 @@ local function openSuggest(m, O)
   end
 end
 
-test("options skin: the id-suggestion popup takes the skin, and Ka0s Default gives its edge back", function()
+test("options skin: the id-suggestion popup takes the skin, Ka0s Default's edge included", function()
   local m, Skin, lib = env()
   F.owner(Skin, OWNER, "obsidian")
   local popup, eb = openSuggest(m, (instance(lib, OWNER)))
@@ -373,10 +440,10 @@ test("options skin: the id-suggestion popup takes the skin, and Ka0s Default giv
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
   local D = Skin:ResolveSkin("ka0s")
   assertEqual(F.rgba(survey(m, popup).backdropColor), F.rgba(D["popup.bg"]), "Ka0s Default's fill")
-  assertEqual(F.rgba({ popup:GetBackdropBorderColor() }), "1,1,1,1", "and the client's own edge again")
+  assertEqual(F.rgba({ popup:GetBackdropBorderColor() }), F.rgba(D["popup.border"]), "and Ka0s Default's edge (minor 8)")
   -- a reopen under Ka0s Default keeps it there
   eb:SetText("zeph")
   eb:__fire("OnTextChanged", "zeph")
   m.__fireTimers()
-  assertEqual(F.rgba({ popup:GetBackdropBorderColor() }), "1,1,1,1", "a reopen leaves the edge alone")
+  assertEqual(F.rgba({ popup:GetBackdropBorderColor() }), F.rgba(D["popup.border"]), "a reopen keeps it")
 end)
