@@ -454,7 +454,7 @@ Total.
 - skin: without SkinDefs the engine runs and every token is nil
 - skin: the schema names each token once, with a known kind
 - skin: every registered skin resolves every schema token to its kind
-- skin: Ka0s Default leaves every font token nil
+- skin: Ka0s Default sets no face, and its sizes are the reference
 - skin: Ka0s Default equals the published constants
 - skin: Ka0s Default equals the file-local constants it replaces
 - skin: Ka0s Default equals LootHistory's constants
@@ -477,7 +477,7 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
-### test_skin_defs.lua (19)
+### test_skin_defs.lua (22)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -498,8 +498,11 @@ Total.
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
 - skin defs: every font and border a skin names is shipped or an LSM default
 - skin defs: the font assignments follow the spec
+- skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
+- skin defs: a hovered row is told apart from a selected one
+- skin defs: WoW Default's checkbox art is its only box, and Forever's primary is filled
 
-### test_skin_paint.lua (29)
+### test_skin_paint.lua (30)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -530,8 +533,9 @@ Total.
 - skin paint: Text colors a role, and a skin's font reaches it through the owner's font object
 - skin paint: Font and White put the body font and color on a string
 - skin paint: the getters answer the owner's skin
+- skin paint: a skin's size scales each string from its own, one font object per size
 
-### test_skin_paint_controls.lua (24)
+### test_skin_paint_controls.lua (25)
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
@@ -543,7 +547,8 @@ Total.
 - skin controls: leaving a skin font puts an EditBox's face back by path, never its anonymous font object
 - skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call
 - skin controls: Checkbox draws a box and a mark that follows the check
-- skin controls: WoW Default's checkbox is the client's art; Ka0s Default leaves it stock
+- skin controls: WoW Default's checkbox is the client's art; Ka0s Default draws a square box
+- skin controls: a disabled Button's label reads text.disabled, and comes back when enabled
 - skin controls: ScrollBar's thumb states and the console's own bar match today's tints
 - skin controls: a bar's own thumb is left stock on Ka0s Default and tinted in a skin
 - skin controls: Slider is left alone by Ka0s Default and painted by a skin that sets it
@@ -3420,9 +3425,9 @@ Total.
 | test_glow.lua | 15 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
-| test_skin_defs.lua | 19 |
-| test_skin_paint.lua | 29 |
-| test_skin_paint_controls.lua | 24 |
+| test_skin_defs.lua | 22 |
+| test_skin_paint.lua | 30 |
+| test_skin_paint_controls.lua | 25 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 21 |
 | test_widgets.lua | 58 |
@@ -3533,4 +3538,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3007** |
+| **Total** | **3012** |

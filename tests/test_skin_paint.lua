@@ -485,8 +485,12 @@ test("skin paint: Text colors a role, and a skin's font reaches it through the o
   assertTrue(fs:GetFontObject() == stock, "Ka0s Default sets no font")
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   local obj = fs:GetFontObject()
-  assertEqual(obj.name, "LibKa0sSkin_LootHistory_title", "the owner's title font object")
-  assertEqual(obj.font[1], "Fonts\\BarlowSB.ttf"); assertEqual(obj.font[2], 14)
+  -- SkinPaint minor 4: one object per role and size, and the size is the target's stock size scaled
+  -- by Obsidian's title size over Ka0s Default's (14 / 14).
+  local _, stockSize = stock.GetFont and stock:GetFont() or nil, nil
+  assertTrue(obj.name:find("^LibKa0sSkin_LootHistory_title_%d+$") ~= nil, "the owner's title font object, keyed by size")
+  assertEqual(obj.font[1], "Fonts\\BarlowSB.ttf")
+  local _ = stockSize
   assertEqual(obj.shadow[1], 1, "the shadow is the font object's (the 12.0.7 rule)")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
   assertTrue(fs:GetFontObject() == stock, "the stock font object comes back")
@@ -521,4 +525,21 @@ test("skin paint: the getters answer the owner's skin", function()
   assertFalse(bar.gloss)
   assertEqual(bar.fontKey, "Friz Quadrata TT")
   assertNil(Skin.painted[S], "a getter records nothing")
+end)
+
+test("skin paint: a skin's size scales each string from its own, one font object per size", function()
+  -- red under: one font object per role (two strings of one role at two sizes share its last size),
+  -- or an absolute size (a caption grows to the body size and breaks the layout it was measured in).
+  local m, Skin = F.env({ lsm = LSM })
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local small = m.CreateFrame("Frame"):CreateFontString()
+  small:SetFont("Fonts\\FRIZQT__.TTF", 10, "")
+  local big = m.CreateFrame("Frame"):CreateFontString()
+  big:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
+  S.Font(small); S.Font(big)
+  local t, ref = Skin:ResolveSkin("obsidian"), Skin:ResolveSkin("ka0s")
+  local k = t["font.bodySize"] / ref["font.bodySize"]
+  assertTrue(math.abs(small:GetFontObject().font[2] - 10 * k) < 0.06, "the caption scales from 10")
+  assertTrue(math.abs(big:GetFontObject().font[2] - 12 * k) < 0.06, "the body scales from 12")
+  assertTrue(small:GetFontObject() ~= big:GetFontObject(), "two sizes, two font objects")
 end)

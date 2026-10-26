@@ -122,11 +122,17 @@ test("skin: every registered skin resolves every schema token to its kind", func
   end
 end)
 
-test("skin: Ka0s Default leaves every font token nil", function()
+test("skin: Ka0s Default sets no face, and its sizes are the reference", function()
+  -- SkinPaint minor 4: every skin sets its sizes, Ka0s Default's are the reference the others scale
+  -- against (12 body, 14 title), and with no face Ka0s Default's text stays the client's.
   local Skin = T.mocks.LibStub(MAJOR)
   local tokens = Skin:ResolveSkin("ka0s")
+  assertEqual(tokens["font.bodySize"], 12, "the body reference")
+  assertEqual(tokens["font.titleSize"], 14, "the title reference")
   for _, e in ipairs(Skin.SCHEMA) do
-    if e.group == "Fonts" then assertNil(tokens[e.name], e.name .. " leaves the font object alone") end
+    if e.group == "Fonts" and e.name ~= "font.bodySize" and e.name ~= "font.titleSize" then
+      assertNil(tokens[e.name], e.name .. " leaves the font object alone")
+    end
   end
   for _, q in ipairs({ "poor", "common", "uncommon", "rare", "epic", "legendary" }) do
     assertNil(tokens["q." .. q], "q." .. q .. " reads the client's ITEM_QUALITY_COLORS")
@@ -235,7 +241,10 @@ local LOOTHISTORY = {
   { "btn.border", { 0.24, 0.24, 0.27, 0.9 } },
   { "btn.icon", { 0.85, 0.85, 0.85 } },
   { "btn.text", { 1, 1, 1 } }, { "btn.hover", { 1, 0.82, 0 } },
-  { "check.bg", { 0.24, 0.24, 0.27, 1 } }, { "check.mark", { 1, 0.82, 0, 1 } },   -- Timeline
+  -- SkinDefs minor 7 (the owner's note): Ka0s Default's checkbox is a square box in the control
+  -- colors, Widgets SKIN.fill under SKIN.line, rather than Timeline's .24 gray.
+  { "check.bg", { 0.1, 0.1, 0.12, 0.9 } }, { "check.border", { 0.24, 0.24, 0.27, 0.9 } },
+  { "check.mark", { 1, 0.82, 0, 1 } },
   { "card.bg", { 0.1, 0.1, 0.12, 0.85 } }, { "card.border", { 0.24, 0.24, 0.27, 0.9 } },
   { "panel.bg", { 0.08, 0.08, 0.10, 0.6 } }, { "panel.border", { 0.24, 0.24, 0.27, 0.7 } },
   { "section.rule", { 1, 0.82, 0, 0.35 } }, { "chart.track", { 1, 1, 1, 0.06 } },

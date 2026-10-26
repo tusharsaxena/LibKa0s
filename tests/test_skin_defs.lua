@@ -392,5 +392,51 @@ test("skin defs: the font assignments follow the spec", function()
   -- Azeroth's body is the one shadowless face: a drop shadow smears dark ink on parchment.
   assertEqual(Skin:ResolveSkin("azeroth")["font.shadow"], false, "azeroth draws its body without a shadow")
   local base, hc = Skin:ResolveSkin("obsidian"), Skin:ResolveSkin("contrast")
-  assertEqual(hc["font.bodySize"], base["font.bodySize"] + 2, "High Contrast reads 2pt larger")
+  assertTrue(hc["font.bodySize"] > base["font.bodySize"], "High Contrast reads larger")
+end)
+
+local function sameColor(c, want, label)
+  assertTrue(type(c) == "table", label .. ": no color")
+  for i = 1, #want do
+    assertTrue(math.abs(c[i] - want[i]) < 0.005, ("%s component %d: %s, want %s"):format(label, i, tostring(c[i]), tostring(want[i])))
+  end
+end
+
+-- ── the owner's notes of 2026-10-26 (SkinDefs minor 7) ───────────────────────────────────────
+
+test("skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's", function()
+  -- red under: a skin with no size (it would not scale with the others), or one far enough from the
+  -- reference to break a layout measured against the stock fonts.
+  local Skin = skinLib()
+  local ref = Skin:ResolveSkin("ka0s")
+  for _, key in ipairs(KEYS) do
+    local own = Skin.skins[key].tokens
+    for _, name in ipairs({ "font.bodySize", "font.titleSize" }) do
+      assertTrue(type(own[name]) == "number", key .. " sets " .. name)
+      assertTrue(math.abs(own[name] - ref[name]) <= 1.5, ("%s: %s %s is near the reference %s")
+        :format(key, name, tostring(own[name]), tostring(ref[name])))
+    end
+  end
+end)
+
+test("skin defs: a hovered row is told apart from a selected one", function()
+  -- red under: hover and selection in one hue at nearly one alpha (the owner: "hard to distinguish").
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    if key ~= "ka0s" and key ~= "contrast" then
+      local t = Skin:ResolveSkin(key)
+      local h, s = t["list.hover"], t["list.sel"]
+      local same = math.abs(h[1] - s[1]) + math.abs(h[2] - s[2]) + math.abs(h[3] - s[3])
+      assertTrue(same > 0.3, key .. ": list.hover is not list.sel's hue")
+      sameColor(h, { t["text.body"][1], t["text.body"][2], t["text.body"][3], 0.10 }, key .. " hover is the body text at .10")
+    end
+  end
+end)
+
+test("skin defs: WoW Default's checkbox art is its only box, and Forever's primary is filled", function()
+  local Skin = skinLib()
+  local wow = Skin:ResolveSkin("wow")
+  assertTrue(wow["check.border"] == nil, "no edge around UI-CheckBox-Up, which is itself a box")
+  local fv = Skin:ResolveSkin("forever")
+  sameColor(fv["btnPrimary.bg"], fv["text.accent"], "Forever's primary is the tan accent")
 end)

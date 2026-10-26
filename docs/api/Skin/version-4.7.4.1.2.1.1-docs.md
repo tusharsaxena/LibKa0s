@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 4.7.3.1.1.1.1
+# `LibKa0s-Skin-1.0` — version 4.7.4.1.2.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **7** · `SkinPaint.lua` minor **3** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **7** · `SkinPaint.lua` minor **4** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **2** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
@@ -289,8 +289,8 @@ eight skins*, below.
 | `font.body` | string | yes | nil (leave alone) |
 | `font.title` | string | yes | nil (leave alone) |
 | `font.mono` | string | yes | nil (leave alone) |
-| `font.bodySize` | number | yes | nil (leave alone) |
-| `font.titleSize` | number | yes | nil (leave alone) |
+| `font.bodySize` | number | yes | `12` (the reference) |
+| `font.titleSize` | number | yes | `14` (the reference) |
 | `font.outline` | string | yes | nil (leave alone) |
 | `font.shadow` | bool | yes | nil (leave alone) |
 
@@ -384,10 +384,10 @@ eight skins*, below.
 | `input.placeholder` | color | yes | nil (leave alone) |
 | `input.focus` | color | no | `1, 0.82, 0, 0.9` |
 | `input.radius` | number | no | `0` |
-| `check.bg` | color | no | `0.24, 0.24, 0.27, 1` |
-| `check.border` | color | yes | nil (leave alone) |
-| `check.borderSize` | number | yes | nil (leave alone) |
-| `check.borderStyle` | string | yes | nil (leave alone) |
+| `check.bg` | color | no | `0.1, 0.1, 0.12, 0.9` |
+| `check.border` | color | yes | `0.24, 0.24, 0.27, 0.9` |
+| `check.borderSize` | number | yes | `1` |
+| `check.borderStyle` | string | yes | `flat` |
 | `check.mark` | color | no | `1, 0.82, 0, 1` |
 | `check.radius` | number | no | `0` |
 | `check.texture` | string | yes | nil (leave alone) |
@@ -686,8 +686,10 @@ answers nil.
   `Blizzard Tooltip` resolve to the client's own paths when LibSharedMedia lacks them.
 - **Gradients** are `SetGradient("VERTICAL", bottom, top)` on a white color texture, from a fill
   token's `<fill>Top` / `<fill>Bottom` pair; a later flat fill resets the gradient to white.
-- **Fonts** go through one font object per owner and role (`LibKa0sSkin_<owner>_<role>`, role
-  `body`, `title` or `mono`), created with `CreateFont`, given the face, size, outline and (unless
+- **Fonts** go through one font object per owner, role and size
+  (`LibKa0sSkin_<owner>_<role>_<tenths>`, role `body`, `title` or `mono`, since SkinPaint minor 4;
+  one object per role let two strings of one role at two sizes share its last size), created with
+  `CreateFont`, given the face, size, outline and (unless
   `font.shadow` is false) a 1, -1 black shadow, then set on the string with `SetFontObject`: from
   12.0.7 a runtime `SetShadow*` on a FontString no longer renders, a font object's shadow does. A nil
   face token (every font token in Ka0s Default) leaves the string's font alone, and puts back the
@@ -696,6 +698,12 @@ answers nil.
   anonymous font object rather than the one it was given, and handing that back through
   `SetFontObject` overflows the client's stack (SkinPaint minor 3). Faces resolve through
   LibSharedMedia.
+- **Sizes are relative** (SkinPaint minor 4, `P.fontSize`). Every skin sets `font.bodySize` and
+  `font.titleSize`, and Ka0s Default's (12 and 14) are the reference: a string keeps its own stock
+  size times the skin's size over the reference, so a 10pt caption under a skin at 12.5 is about
+  10.4pt and every layout measured against the stock fonts holds. The skins sit within a point and a
+  half of the reference (`tests/test_skin_defs.lua`), each tuned to its face's measure: Barlow 12.5,
+  Cinzel titles 12.5 (a wide face), Atkinson 13.5 and 15 (High Contrast still reads larger).
 - **Colors.** A text or vertex color whose alpha is 1 is passed as three components, as every call
   site writes them; fills and backdrop colors as four. A color from a nilable token, or any color on
   a stock target, records the prior color first and puts it back when the token resolves to nil.
@@ -769,11 +777,11 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 
 | Primitive | Paints | Tokens |
 |---|---|---|
-| `Button(btn, keepKeys \| opts)` | A push button: its stock art faded, the flat-control box, the label (the button's font string, else `btn.text` / `btn.Text`) in the text color and body font, the hover color under the pointer, `btn.icon` tinted. `keepKeys == true` or `opts.keep` keeps the stock art and paints only the label; `opts.primary` reads `btnPrimary.*`. | `btn.*` / `btnPrimary.*` (`bg`, `bgTop`, `bgBottom`, `border`, `borderStyle`, `borderSize`, `text`, `hover`, `icon`) |
+| `Button(btn, keepKeys \| opts)` | A push button: its stock art faded, the flat-control box, the label (the button's font string, else `btn.text` / `btn.Text`) in the text color and body font, the hover color under the pointer, `text.disabled` while the button is disabled (following `OnEnable` / `OnDisable`, SkinPaintControls minor 2), `btn.icon` tinted. `keepKeys == true` or `opts.keep` keeps the stock art and paints only the label; `opts.primary` reads `btnPrimary.*`. | `btn.*` / `btnPrimary.*` (`bg`, `bgTop`, `bgBottom`, `border`, `borderStyle`, `borderSize`, `text`, `hover`, `icon`) |
 | `WhiteButtonLabel(btn)` | The label in the button text color and body font. | `btn.text` |
 | `StateButtonLabel(btn, on)` | The label in the accent while on, muted otherwise. | `text.accent`, `text.muted` |
 | `EditBox(eb, opts)` | A text input: the template's pieces faded, the flat-control box, the typed text and the hint (`opts.placeholder`, else `eb.hint`), the focus edge while it has the keys. `opts.padInput` sets 6px insets; `opts.noBorder` draws no edge and hooks no focus. | `input.*` |
-| `Checkbox(cb, opts)` | A check button: its stock art faded (the stock check too unless `opts.stockCheck`), a box `opts.borderInset` inside it, an edge on the holder, a mark three pixels inside the box shown while checked (following `OnClick`, `OnShow` and `SetChecked`), and with `opts.hover` a highlight. | `check.*`, `menu.hover` |
+| `Checkbox(cb, opts)` | A check button, under every skin including Ka0s Default (SkinPaintControls minor 2: a square box rather than the client's round check button): its stock art faded (the stock check too unless `opts.stockCheck`), a box `opts.borderInset` inside it, an edge on the holder, a mark three pixels inside the box shown while checked (following `OnClick`, `OnShow` and `SetChecked`), and with `opts.hover` a highlight. | `check.*`, `menu.hover` |
 | `Dropdown(dd, opts)` | A dropdown button: the template's pieces faded, the flat-control box, the arrow (`dd.arrow` / `dd.Arrow`), the label (`dd.text` / `dd.Text`). | `input.*`, `icon.tint` |
 | `ScrollBar(sb, opts)` | A scroll bar: `opts.track` / `opts.thumb` (textures the caller drew) filled; `opts.state` `"on"` / `"off"` tints the bar's own thumb; otherwise, away from Ka0s Default, the bar's own thumb takes the knob art or the thumb color over a track region. | `scroll.*` |
 | `Slider(slider, opts)` | A slider's track (a region, its edge on the holder), fill (`opts.fill`) and thumb (`opts.thumb`, else its own). Every slider token is nil in Ka0s Default. | `slider.*` |
@@ -837,9 +845,10 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   unset cue, so Obsidian, Azeroth and Glass take their accent and WoW Forever its heading gold. Azeroth, the one light skin, also sets
   its headings, quality colors, semantic colors and chart colors, which Ka0s Default draws for a
   dark window.
-- **Derived washes.** `list.hover`, `menu.hover`, `section.rule` and `drawer.borderOpen` are the
-  skin's accent at Ka0s Default's alphas (.10, .15, .35, .6), the way Ka0s Default draws them in
-  gold.
+- **Derived washes.** `menu.hover`, `section.rule` and `drawer.borderOpen` are the skin's accent
+  at Ka0s Default's alphas (.15, .35, .6), the way Ka0s Default draws them in gold. `list.hover` is
+  the skin's body text at .10 (SkinDefs minor 7): in the accent it sat a shade from `list.sel`, and a
+  hovered row could not be told from a selected one. Ka0s Default keeps its gold hover.
 
 ### What WoW cannot draw
 
@@ -863,9 +872,10 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   `scroll.width`, `scroll.gutter` and `win.inset` are Ka0s Default's in all nine skins.
 - **Fonts.** A mockup family is the shipped face that stands for it: Inter (Obsidian) and Manrope
   (Glass) are Barlow, the face WoW Forever names; Ember and WoW Midnight draw Cinzel titles over the
-  client body font, and Azeroth Cinzel titles over a Barlow 12 body with `font.shadow = false`
-  (SkinDefs minor 7: the client body's dark drop shadow smeared ink on parchment); High Contrast is Atkinson Hyperlegible, body 2pt above the
-  Barlow skins' 12; Ka0s Default and WoW Default keep the client's fonts (no font token).
+  client body font, and Azeroth Cinzel titles over a Barlow body with `font.shadow = false`
+  (SkinDefs minor 7: the client body's dark drop shadow smeared ink on parchment); High Contrast is Atkinson Hyperlegible, a step larger
+  than the rest (*Sizes are relative*, above); Ka0s Default and WoW Default keep the client's faces
+  (no face token).
 - **GameTooltip lines.** `gtip.*` are drawn on Blizzard's dark GameTooltip whatever the skin, so
   each skin's `gtip.title`, `gtip.body` and `gtip.muted` read at 4.5:1 or better on
   `(.05, .05, .08)`; Azeroth's are its parchment and gold rather than the mockup's dark ink.
@@ -883,7 +893,7 @@ Default and Midnight, and WoW Forever's window texture).
 | **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Cinzel title, violet `#B48CFF` accent, night-violet gradient buttons (`#3A2F6B` to `#1D1838`) under a 1px `#B08A3E` gold edge with gold `#F6D27A` text, and a brighter violet primary (`#7A5AD6` to `#3F2C86`, `#F6D27A` edge, white text) since SkinDefs minor 7. |
 | **WoW Forever** | Warm charcoal `#27231F` to `#13110F` (the mockup's radial fill as a vertical gradient, **no window texture**), black `#050505` title bars with centered white titles, a tan `#C9A07A` accent, gold `#F2B33D` headings, thin 1px edges on every control, Barlow (OWNER_SCOPE R4). |
 | **Glass** | A `#121622` window at .88 on `nine:Ka0s Glass` at radius 8 (above), popups the same; flat 1px frosted control edges and boxless tabs underlined in the lilac `#B69CFF` accent; translucent white washes, `bar.gloss = true`. |
-| **High Contrast** | Black, a white 2px window edge and white 1px edges on every control (2px yellow on popups and menus; controls were 2px and popups 3px until SkinDefs minor 7), yellow `#FFE600` titles, accent, selection outline and focus, Atkinson Hyperlegible 14 / 17. |
+| **High Contrast** | Black, a white 2px window edge and white 1px edges on every control (2px yellow on popups and menus; controls were 2px and popups 3px until SkinDefs minor 7), yellow `#FFE600` titles, accent, selection outline and focus, Atkinson Hyperlegible 13.5 / 15. |
 | **Obsidian** | True-black flat panels (a `#0A0A0B` window and a `#050506` title bar since SkinDefs minor 7, darker than Ka0s Default's navy), hairline `#202024` edges, no inner rule, a cool blue `#4DB8FF` accent and primary button, Barlow. |
 | **Azeroth** | Muted parchment `#D9CAA3` window (was `#E9DDBC` until SkinDefs minor 7) with a 3px leather `#6B4A22` edge and a `#C9A45C` inner rule, a dark `#3A2412` title bar with a gold Cinzel title, red wax-seal gradient buttons, ink `#2A1C0C` text in a shadowless Barlow body, and cream-on-leather tabs (`#F2E3BD` on `#5E3A14`, gold on wax red when selected). |
 | **Ember** | Charred brown, a `#6A2E17` edge over an amber inner rule, orange `#FF7A33` accent, gradient title bar and buttons, Cinzel titles. |
@@ -907,8 +917,8 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 |---|---|---|---|---|---|---|---|---|
 | `font.body` | `Ka0s Barlow` | `Ka0s Barlow` | `Ka0s Barlow` | `Ka0s Atkinson` | · | · | · | `Ka0s Barlow` |
 | `font.title` | `Ka0s Barlow SemiBold` | `Ka0s Cinzel` | `Ka0s Barlow SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Cinzel` | · | `Ka0s Cinzel` | `Ka0s Barlow SemiBold` |
-| `font.bodySize` | `12` | `12` | `12` | `14` | · | · | · | `12` |
-| `font.titleSize` | `14` | `15` | `14` | `17` | `15` | · | `15` | `14` |
+| `font.bodySize` | `12.5` | `12.5` | `12.5` | `13.5` | `12` | `12` | `12` | `12.5` |
+| `font.titleSize` | `14` | `12.5` | `14` | `15` | `12.5` | `14` | `12.5` | `14` |
 | `font.shadow` | · | none | · | · | · | · | · | · |
 
 #### Window
@@ -975,15 +985,15 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `btn.hover` | `#4DB8FF` | `#FFFFFF` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFFFFF` | `#FFFFFF` | `#C9A07A` |
 | `btn.icon` | `#E8E8EC` | `#FFD866` | `#F2F4F8` | `#FFFFFF` | `#FFCF9A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
 | `btn.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
-| `btnPrimary.bg` | `#4DB8FF` | `#811A12` | `#B69CFF` | `#FFE600` | `#C3521E` | `#8B160A` | `#5D43AE` | `#1F1D1B` |
+| `btnPrimary.bg` | `#4DB8FF` | `#811A12` | `#B69CFF` | `#FFE600` | `#C3521E` | `#8B160A` | `#5D43AE` | `#C9A07A` |
 | `btnPrimary.bgTop` | · | `#A3241A` | · | · | `#E0662A` | `#B3200F` | `#7A5AD6` | · |
 | `btnPrimary.bgBottom` | · | `#5E1009` | · | · | `#A63D12` | `#640C05` | `#3F2C86` | · |
 | `btnPrimary.border` | `#4DB8FF` | `#3A1206` | `#B69CFF` | `#FFE600` | `#FF9A5A` | `#A07C2C` | `#F6D27A` | `#C9A07A` |
 | `btnPrimary.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
 | `btnPrimary.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
-| `btnPrimary.text` | `#06121C` | `#FFD866` | `#1A1033` | `#000000` | `#1C0A04` | `#FFD100` | `#FFFFFF` | `#FFFFFF` |
-| `btnPrimary.hover` | `#000000` | `#FFFFFF` | `#3A2A66` | `#000000` | `#1C0A04` | `#FFFFFF` | `#FFFFFF` | `#C9A07A` |
-| `btnPrimary.icon` | `#06121C` | `#FFD866` | `#1A1033` | `#000000` | `#1C0A04` | `#FFD100` | `#FFFFFF` | `#FFFFFF` |
+| `btnPrimary.text` | `#06121C` | `#FFD866` | `#1A1033` | `#000000` | `#1C0A04` | `#FFD100` | `#FFFFFF` | `#1A1510` |
+| `btnPrimary.hover` | `#000000` | `#FFFFFF` | `#3A2A66` | `#000000` | `#1C0A04` | `#FFFFFF` | `#FFFFFF` | `#000000` |
+| `btnPrimary.icon` | `#06121C` | `#FFD866` | `#1A1033` | `#000000` | `#1C0A04` | `#FFD100` | `#FFFFFF` | `#1A1510` |
 | `btnPrimary.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 
 #### Inputs
@@ -999,9 +1009,9 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `input.focus` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
 | `input.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 | `check.bg` | `#040405` | `#E8DCBC` | `#000000 .3` | `#000000` | `#140A07` | `#111111` | `#08091A` | `#0A0908` |
-| `check.border` | `#34343B` | `#6B4A22` | `#FFFFFF .3` | `#FFFFFF` | `#8A3C1C` | `#8A8A8A` | `#B08A3E` | `#8A7A52` |
-| `check.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
-| `check.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
+| `check.border` | `#34343B` | `#6B4A22` | `#FFFFFF .3` | `#FFFFFF` | `#8A3C1C` | none | `#B08A3E` | `#8A7A52` |
+| `check.borderSize` | `1` | `1` | `1` | `1` | `1` | `0` | `1` | `1` |
+| `check.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` |
 | `check.mark` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#F6D27A` | `#FFD100` |
 | `check.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 | `check.texture` | · | · | · | · | · | `UI-CheckBox-Up` | · | · |
@@ -1077,7 +1087,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `list.header.bg` | `#101012` | `#C9B585` | `#FFFFFF .06` | `#1A1A1A` | `#FF7A33 .08` | `#FFFFFF .07` | `#B48CFF .08` | `#000000 .35` |
 | `list.header.text` | `#9B9BA4` | `#3A2412` | `#C9CFDB` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
 | `list.stripe` | `#FFFFFF .02` | `#78501E .07` | `#FFFFFF .03` | `#0D0D0D` | `#FFFFFF .025` | `#FFFFFF .03` | `#FFFFFF .025` | `#FFFFFF .025` |
-| `list.hover` | `#4DB8FF .1` | `#8E1B10 .1` | `#B69CFF .1` | `#FFE600 .2` | `#FF7A33 .1` | `#FFD100 .1` | `#B48CFF .1` | `#C9A07A .1` |
+| `list.hover` | `#E8E8EC .1` | `#2A1C0C .1` | `#F2F4F8 .1` | `#FFE600 .2` | `#F4E7DC .1` | `#FFFFFF .1` | `#F2EEF8 .1` | `#FFFFFF .1` |
 | `list.sel` | `#4DB8FF .14` | `#8E1B10 .16` | `#B69CFF .24` | `#000000` | `#FF7A33 .18` | `#FFD100 .18` | `#B48CFF .2` | `#C9A07A .16` |
 | `list.selOutline` | · | · | · | `#FFE600` | · | · | · | · |
 | `card.bg` | `#101012` | `#E3D6B3` | `#FFFFFF .06` | `#000000` | `#2A140C .85` | `#000000 .4` | `#1A1730 .85` | `#1C1A17` |
@@ -1174,7 +1184,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 `gtip.value` is in no row: every skin inherits Ka0s Default's white.
 
-Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 7): Obsidian 140, Azeroth 197, Glass 142, High Contrast 156, Ember 143, WoW Default 143, WoW Midnight 146, WoW Forever 143.
+Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 7): Obsidian 140, Azeroth 197, Glass 142, High Contrast 156, Ember 144, WoW Default 145, WoW Midnight 147, WoW Forever 143.
 
 ## The EllesmereUI provider
 

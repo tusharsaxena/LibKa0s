@@ -83,7 +83,7 @@ test("skin controls: Button repaints live, primary reads btnPrimary, and the ico
   local prev = q.HookScript
   rawset(q, "HookScript", function(self, ...) hooks = hooks + 1; return prev(self, ...) end)
   S.Button(q); S.Button(q)
-  assertEqual(hooks, 2, "OnEnter and OnLeave are hooked once each, however often it is painted")
+  assertEqual(hooks, 4, "OnEnter, OnLeave, OnEnable and OnDisable are hooked once each, however often it is painted")
 end)
 
 test("skin controls: a stock button stays stock on Ka0s Default and is faded and boxed in a skin", function()
@@ -278,7 +278,9 @@ test("skin controls: Checkbox draws a box and a mark that follows the check", fu
   assertEqual(F.rgba(survey(m, F.region(Skin, cb, "hover")).color), F.tok(Skin, "obsidian", "menu.hover"))
 end)
 
-test("skin controls: WoW Default's checkbox is the client's art; Ka0s Default leaves it stock", function()
+test("skin controls: WoW Default's checkbox is the client's art; Ka0s Default draws a square box", function()
+  -- SkinPaintControls minor 2 (the owner's note): Ka0s Default no longer leaves the client's round
+  -- check button; it draws a square box in its control colors, the stock art faded.
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER, "wow")
   local cb, normal = checkButton(m)
@@ -287,7 +289,27 @@ test("skin controls: WoW Default's checkbox is the client's art; Ka0s Default le
   assertEqual(survey(m, box).texture, Skin:ResolveSkin("wow")["check.texture"])
   assertFalse(F.region(Skin, cb, "mark"):IsShown(), "stockCheck keeps the client's check")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(normal:GetAlpha(), 1); assertFalse(box:IsShown())
+  assertEqual(normal:GetAlpha(), 0, "the round stock art is faded")
+  assertTrue(box:IsShown(), "a square box is drawn")
+  local sv = survey(m, box)
+  assertEqual(F.rgba(sv.vertex or sv.color), F.tok(Skin, "ka0s", "check.bg"), "in Ka0s Default's control fill")
+end)
+
+test("skin controls: a disabled Button's label reads text.disabled, and comes back when enabled", function()
+  -- red under: a disabled button painted exactly like an enabled one (the owner's screenshots).
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local b = backdropButton(m)
+  local on = true
+  rawset(b, "IsEnabled", function() return on end)
+  S.Button(b)
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "obsidian", "btn.text"))
+  on = false; b:__fire("OnDisable")
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "obsidian", "text.disabled"), "dimmed")
+  b:__fire("OnEnter")
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "obsidian", "text.disabled"), "no hover while disabled")
+  on = true; b:__fire("OnEnable")
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "obsidian", "btn.text"), "back to rest")
 end)
 
 -- ── scroll bars and sliders ──────────────────────────────────────────────────────────────────

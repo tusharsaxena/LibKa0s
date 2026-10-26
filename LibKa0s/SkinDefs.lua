@@ -204,7 +204,15 @@ local KA0S = {
   -- Inputs: Widgets SKIN (dropdown, SearchBox), LootHistory Timeline's toggle box and tick.
   ["input.bg"] = CTL_FILL, ["input.border"] = CTL_LINE, ["input.borderSize"] = 1,
   ["input.borderStyle"] = "flat", ["input.focus"] = { 1, 0.82, 0, 0.9 }, ["input.radius"] = 0,
-  ["check.bg"] = { 0.24, 0.24, 0.27, 1 },
+  -- The reference sizes (SkinPaint minor 4): every skin sets both, and a target's size under a skin
+  -- is its stock size times the skin's over these. Ka0s Default sets no face, so its text is the
+  -- client's at its own sizes.
+  ["font.bodySize"] = 12, ["font.titleSize"] = 14,
+  -- A square box in the control colors with a gold mark (minor 7, the owner's note: "more square,
+  -- like Forever, in the Ka0s Default style"); Checkbox paints it under Ka0s Default since
+  -- SkinPaintControls minor 2.
+  ["check.bg"] = CTL_FILL, ["check.border"] = CTL_LINE, ["check.borderSize"] = 1,
+  ["check.borderStyle"] = "flat",
   ["check.mark"] = GOLD, ["check.radius"] = 0,
   -- Scroll: DebugLog's console bar (BAR_W 8) and OptionsScroll's thumb tints and GUTTER.
   ["scroll.track"] = { 0.24, 0.24, 0.27, 0.3 }, ["scroll.thumb"] = { 0.5, 0.5, 0.55, 0.85 },
@@ -385,13 +393,13 @@ local MOCK_MAP = {
 
 -- The accent at a fixed alpha: the hover and rule washes Ka0s Default draws in gold.
 local ACCENT_WASH = {
-  { "list.hover", 0.10 }, { "menu.hover", 0.15 }, { "section.rule", 0.35 },
+  { "menu.hover", 0.15 }, { "section.rule", 0.35 },
   { "drawer.borderOpen", 0.6 }, { "handle.edge", 0.6 }, { "list.dropLine", 0.9 },
 }
 
 -- The body text at a fixed alpha: the reorder list's row boxes, which Ka0s Default draws in white.
 local TEXT_WASH = {
-  { "list.box", 0.06 }, { "list.boxDim", 0.03 }, { "list.boxEdge", 0.12 }, { "list.boxEdgeDim", 0.06 },
+  { "list.hover", 0.10 }, { "list.box", 0.06 }, { "list.boxDim", 0.03 }, { "list.boxEdge", 0.12 }, { "list.boxEdgeDim", 0.06 },
 }
 
 -- Tokens that follow another token the skin set (minor 4): a skin that sets the source and not the
@@ -461,7 +469,7 @@ end
 -- ── Obsidian ── mockup `obsidian`. Inter in the mockup; Barlow is the shipped face for it.
 register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool blue accent.",
   { "#0a0a0b", "#202024", "#141416", "#4db8ff" }, {
-    font = "Ka0s Barlow", tfont = "Ka0s Barlow SemiBold", fs = 12, titleSize = 14,
+    font = "Ka0s Barlow", tfont = "Ka0s Barlow SemiBold", fs = 12.5, titleSize = 14,
     win = hex("#0A0A0B"), winBorder = edge(1, "flat", hex("#202024")), winInner = false, radius = 0,
     titleBg = hex("#050506"), titleColor = hex("#F2F2F4"), divider = hex("#1c1c20"),
     text = hex("#E8E8EC"), muted = hex("#9B9BA4"), accent = hex("#4DB8FF"),
@@ -505,7 +513,7 @@ register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool 
 local INK = hex("#2A1C0C")
 register("azeroth", "Azeroth", "Parchment and leather, Cinzel titles, red wax-seal buttons.",
   { "#d9caa3", "#6b4a22", "#c9a45c", "#8e1b10" }, {
-    font = "Ka0s Barlow", fs = 12, tfont = "Ka0s Cinzel", titleSize = 15,
+    font = "Ka0s Barlow", fs = 12.5, tfont = "Ka0s Cinzel", titleSize = 12.5,
     win = hex("#D9CAA3"), winBorder = edge(3, "flat", hex("#6b4a22")), winInner = hex("#c9a45c"),
     radius = 0,
     titleBg = hex("#3a2412"), titleColor = hex("#F5C542"), divider = hex("#b8955a"),
@@ -581,7 +589,7 @@ register("azeroth", "Azeroth", "Parchment and leather, Cinzel titles, red wax-se
 local GLASS_EDGE = rgba(255, 255, 255, 0.18)
 register("glass", "Glass", "Translucent frosted panels with rounded corners and a lilac accent.",
   { "#121622", "#ffffff", "#b69cff", "#5aa9ff" }, {
-    font = "Ka0s Barlow", tfont = "Ka0s Barlow SemiBold", fs = 12, titleSize = 14,
+    font = "Ka0s Barlow", tfont = "Ka0s Barlow SemiBold", fs = 12.5, titleSize = 14,
     win = rgba(18, 22, 34, 0.88), winBorder = edge(8, "nine:Ka0s Glass", GLASS_EDGE),
     winInner = false, radius = 8,
     titleBg = rgba(255, 255, 255, 0.06), titleColor = hex("#FFFFFF"),
@@ -631,7 +639,7 @@ register("glass", "Glass", "Translucent frosted panels with rounded corners and 
 local HC_WHITE, HC_YELLOW = hex("#FFFFFF"), hex("#FFE600")
 register("contrast", "High Contrast", "Black and white with yellow focus, crisp 1px edges, larger type.",
   { "#000000", "#ffffff", "#1a1a1a", "#ffe600" }, {
-    font = "Ka0s Atkinson", tfont = "Ka0s Atkinson Bold", fs = 14, titleSize = 17,
+    font = "Ka0s Atkinson", tfont = "Ka0s Atkinson Bold", fs = 13.5, titleSize = 15,
     win = hex("#000000"), winBorder = edge(2, "flat", HC_WHITE), winInner = false, radius = 0,
     titleBg = hex("#000000"), titleColor = HC_YELLOW, divider = HC_WHITE,
     text = HC_WHITE, muted = hex("#E0E0E0"), accent = HC_YELLOW, closeColor = HC_WHITE,
@@ -678,7 +686,7 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
 -- ── Ember ── mockup `ember`: charred brown, orange accent, Cinzel titles over the client body.
 register("ember", "Ember", "Charred browns lit by an orange accent, Cinzel titles.",
   { "#1a0e0a", "#6a2e17", "#c98a3a", "#ff7a33" }, {
-    tfont = "Ka0s Cinzel", titleSize = 15,
+    fs = 12, tfont = "Ka0s Cinzel", titleSize = 12.5,
     win = rgba(26, 14, 10, 0.95), winBorder = edge(1, "flat", hex("#6a2e17")),
     winInner = rgba(201, 138, 58, 0.45), radius = 0,
     titleBg = grad(hex("#3a1a0f"), hex("#24100a")), titleColor = hex("#FFB45A"),
@@ -729,6 +737,7 @@ local GOLD_EDGE = hex("#a07c2c")
 local WOW_RED = grad(hex("#b3200f"), hex("#640c05"))
 register("wow", "WoW Default", "The vanilla client: dialog-box border, red buttons, gold text.",
   { "#1e1c19", "#a8a8a8", "#640c05", "#ffd100" }, {
+    fs = 12, titleSize = 14,
     win = hex("#1e1c19"), winBorder = edge(32, "nine:Blizzard Dialog", hex("#FFFFFF")),
     winInner = false, radius = 0,
     titleBg = grad(hex("#4b4b4b"), hex("#252525")), titleColor = hex("#FFD100"),
@@ -745,7 +754,7 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
     tabBg = hex("#262626"), tabText = hex("#C9B048"), tabBorder = edge(2, "bevelOut", hex("#7a7a7a")),
     tabRadius = 0, tabOnBg = hex("#4a4a4a"), tabOnText = hex("#FFFFFF"), tabOnLine = CLEAR,
     scTrack = hex("#000000"), scThumb = hex("#9A7B2A"), scRadius = 0,
-    chkBg = hex("#111111"), chkBorder = edge(2, "bevelIn", hex("#8a8a8a")), chkMark = hex("#FFD100"),
+    chkBg = hex("#111111"), chkBorder = edge(0, "flat", false), chkMark = hex("#FFD100"),
     chkRadius = 0,
     slTrack = hex("#000000"), slTrackBorder = edge(1, "flat", hex("#7a7a7a")), slFill = CLEAR,
     slThumb = hex("#C9A84A"),
@@ -780,7 +789,7 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
 local MN_GOLD, MN_BG = hex("#b08a3e"), grad(hex("#171a2e"), hex("#0f1020"))
 register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, centered Cinzel titles.",
   { "#171a2e", "#b08a3e", "#2a2347", "#b48cff" }, {
-    tfont = "Ka0s Cinzel", titleSize = 15,
+    fs = 12, tfont = "Ka0s Cinzel", titleSize = 12.5,
     win = MN_BG, winBorder = edge(2, "flat", MN_GOLD), winInner = hex("#3d2f12"), radius = 0,
     titleBg = grad(hex("#2a2347"), hex("#17142b")), titleColor = hex("#F6D27A"),
     titleAlign = "CENTER", divider = hex("#4a3d1e"),
@@ -827,14 +836,14 @@ local FV_TAN, FV_EDGE = hex("#C9A07A"), hex("#3a3530")
 local FV_BG = grad(hex("#27231f"), hex("#13110f"))
 register("forever", "WoW Forever", "Warm charcoal, black title bars with centered white titles, tan accent.",
   { "#1d1a17", "#3a3530", "#050505", "#c9a07a" }, {
-    font = "Ka0s Barlow", tfont = "Ka0s Barlow SemiBold", fs = 12, titleSize = 14,
+    font = "Ka0s Barlow", tfont = "Ka0s Barlow SemiBold", fs = 12.5, titleSize = 14,
     win = FV_BG, winBorder = edge(1, "flat", FV_EDGE), winInner = false, radius = 0,
     titleBg = hex("#050505"), titleColor = hex("#FFFFFF"), titleAlign = "CENTER",
     divider = hex("#2e2a26"), headColor = hex("#F2B33D"),
     text = hex("#FFFFFF"), muted = hex("#A39E97"), accent = FV_TAN, closeColor = hex("#FFFFFF"),
     btnBg = hex("#1f1d1b"), btnBorder = edge(1, "flat", hex("#48433d")), btnText = hex("#FFFFFF"),
     btnRadius = 0,
-    priBg = hex("#1f1d1b"), priBorder = edge(1, "flat", FV_TAN), priText = hex("#FFFFFF"),
+    priBg = FV_TAN, priBorder = edge(1, "flat", FV_TAN), priText = hex("#1A1510"),
     inBg = hex("#0a0908"), inBorder = edge(1, "flat", hex("#3e3934")), inRadius = 0,
     inText = hex("#FFFFFF"), inPh = hex("#8F8A83"),
     hdrBg = rgba(0, 0, 0, 0.35), hdrText = hex("#FFFFFF"), rowAlt = rgba(255, 255, 255, 0.025),
@@ -855,7 +864,7 @@ register("forever", "WoW Forever", "Warm charcoal, black title bars with centere
     tipMuted = hex("#A39E97"),
     footBg = hex("#050505"), gloss = false,
   }, {
-    ["btnPrimary.hover"] = FV_TAN, ["drawer.textSet"] = hex("#F2B33D"),
+    ["btnPrimary.hover"] = hex("#000000"), ["drawer.textSet"] = hex("#F2B33D"),
     ["text.disabled"] = hex("#7A756E"), ["text.linkHot"] = hex("#E0C3A6"),
     ["drawer.bgOpen"] = hex("#24211e"), ["drawer.boxBg"] = hex("#0a0908"),
     ["drawer.summarySet"] = hex("#E0C3A6"),
