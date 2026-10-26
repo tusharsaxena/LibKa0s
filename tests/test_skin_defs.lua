@@ -292,10 +292,12 @@ test("skin defs: WoW Default wears the Blizzard art docs/api/Skin names", functi
   assertEqual(t["win.borderSize"], 32, "BACKDROP_DIALOG_32_32's edge size")
   assertEqual(t["win.bgTexture"], "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
     "the dark dialog background")
-  assertEqual(t["btn.borderStyle"], "bevelOut", "buttons: a bevelOut edge")
-  assertEqual(t["btn.borderSize"], 2, "buttons: 2px")
+  -- SkinDefs minor 7, the owner's note: the 2px bevelOut gold edge read as a frame. The client's own
+  -- button is the red gradient under a thin dark rim.
+  assertEqual(t["btn.borderStyle"], "flat", "buttons: a flat rim")
+  assertEqual(t["btn.borderSize"], 1, "buttons: 1px")
   assertEqual(("%.4f %.4f %.4f"):format(t["btn.border"][1], t["btn.border"][2], t["btn.border"][3]),
-    ("%.4f %.4f %.4f"):format(0xa0 / 255, 0x7c / 255, 0x2c / 255), "buttons: the gold #a07c2c edge")
+    ("%.4f %.4f %.4f"):format(0x1a / 255, 0x08 / 255, 0x05 / 255), "buttons: the dark #1a0805 rim")
   assertTrue(t["btn.bgTop"] ~= nil and t["btn.bgBottom"] ~= nil, "buttons: a red gradient")
   assertTrue(t["btn.bgTop"][1] > t["btn.bgTop"][2] * 3, "the gradient is red")
   assertEqual(t["tab.texture"], "Interface\\OptionsFrame\\UI-OptionsFrame-InActiveTab", "idle tab")
@@ -381,7 +383,7 @@ test("skin defs: the font assignments follow the spec", function()
   local want = {
     obsidian = { "Ka0s Barlow", "Ka0s Barlow SemiBold" }, glass = { "Ka0s Barlow", "Ka0s Barlow SemiBold" },
     forever = { "Ka0s Barlow", "Ka0s Barlow SemiBold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
-    azeroth = { "Ka0s Barlow", "Ka0s Cinzel" }, ember = { nil, "Ka0s Cinzel" }, midnight = { nil, "Ka0s Cinzel" },
+    azeroth = { "Ka0s Atkinson", "Ka0s Cinzel" }, ember = { nil, "Ka0s Cinzel" }, midnight = { nil, "Ka0s Cinzel" },
     wow = { nil, nil }, ka0s = { nil, nil },
   }
   for key, pair in pairs(want) do
@@ -433,10 +435,32 @@ test("skin defs: a hovered row is told apart from a selected one", function()
   end
 end)
 
-test("skin defs: WoW Default's checkbox art is its only box, and Forever's primary is filled", function()
-  local Skin = skinLib()
-  local wow = Skin:ResolveSkin("wow")
+test("skin defs: WoW Default's checkbox art is its only box", function()
+  local wow = skinLib():ResolveSkin("wow")
   assertTrue(wow["check.border"] == nil, "no edge around UI-CheckBox-Up, which is itself a box")
-  local fv = Skin:ResolveSkin("forever")
-  sameColor(fv["btnPrimary.bg"], fv["text.accent"], "Forever's primary is the tan accent")
+end)
+
+test("skin defs: in every skin a primary button differs from a normal one", function()
+  -- The owner's note (round 2): Ka0s Default's, Azeroth's and WoW Default's primary were their normal
+  -- button. red under: a skin whose primary fill and edge are both the normal button's.
+  local Skin = skinLib()
+  local function differs(a, b)
+    if type(a) ~= "table" or type(b) ~= "table" then return a ~= b end
+    for i = 1, 4 do if math.abs((a[i] or 1) - (b[i] or 1)) > 0.02 then return true end end
+    return false
+  end
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    assertTrue(differs(t["btnPrimary.bg"], t["btn.bg"]) or differs(t["btnPrimary.border"], t["btn.border"]),
+      key .. ": the primary button is not the normal one")
+  end
+end)
+
+test("skin defs: no skin draws a box round a slider's bar", function()
+  -- The owner's note (round 2): sliders look alike in every skin, Ka0s Default's thin bar the reference.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local b = Skin:ResolveSkin(key)["slider.trackBorder"]
+    assertTrue(b == nil or (b[4] or 1) == 0, key .. ": no slider track border")
+  end
 end)

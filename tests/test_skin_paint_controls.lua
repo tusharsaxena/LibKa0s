@@ -686,3 +686,39 @@ test("skin controls: every primitive's repaint reuses its regions and paints the
     assertTrue(#tr.lines > 0 or NO_TOKEN[name], name .. ": the repaint painted")
   end)
 end)
+
+-- ── the owner's notes, round 2 (SkinPaint minor 5, SkinPaintControls minor 3) ────────────────
+
+test("skin controls: a dark label is shadowless, a light one keeps its shadow", function()
+  -- red under: one shadowed font object for every label, which smears dark text on a bright fill.
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Barlow"] = "Fonts\\Barlow.ttf" } })
+  local S = F.owner(Skin, OWNER, "glass")   -- lilac primary with dark text, a light normal label
+  local p, b = backdropButton(m), backdropButton(m)
+  S.Button(p, { primary = true }); S.Button(b)
+  assertEqual(p.text:GetFontObject().shadow[1], 0, "dark text on the primary: no shadow")
+  assertEqual(b.text:GetFontObject().shadow[1], 1, "light text on a normal button: the shadow")
+end)
+
+test("skin controls: an EditBox hint and a sort header's texts take the skin's face", function()
+  -- red under: strings a primitive only tints, left on the client's font and its shadow.
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Barlow"] = "Fonts\\Barlow.ttf" } })
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local eb = m.CreateFrame("EditBox", nil, m.UIParent, "BackdropTemplate")
+  eb.hint = eb:CreateFontString()
+  S.EditBox(eb)
+  assertEqual(eb.hint:GetFontObject().font[1], "Fonts\\Barlow.ttf", "the hint")
+  local bar = m.CreateFrame("Frame", nil, m.UIParent)
+  local name = bar:CreateFontString()
+  S.SortHeaderBar(bar, { texts = { name } })
+  assertEqual(name:GetFontObject().font[1], "Fonts\\Barlow.ttf", "the header text")
+end)
+
+test("skin controls: a slider's track is a thin bar centered in it", function()
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local sl = m.CreateFrame("Slider", nil, m.UIParent)
+  sl:SetSize(180, 18)
+  S.Slider(sl)
+  local t = F.region(Skin, sl, "track")
+  assertEqual(t:GetHeight(), 4, "a 4px bar, Ka0s Default's shape")
+end)

@@ -477,7 +477,7 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
-### test_skin_defs.lua (22)
+### test_skin_defs.lua (24)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -500,7 +500,9 @@ Total.
 - skin defs: the font assignments follow the spec
 - skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
 - skin defs: a hovered row is told apart from a selected one
-- skin defs: WoW Default's checkbox art is its only box, and Forever's primary is filled
+- skin defs: WoW Default's checkbox art is its only box
+- skin defs: in every skin a primary button differs from a normal one
+- skin defs: no skin draws a box round a slider's bar
 
 ### test_skin_paint.lua (30)
 
@@ -535,7 +537,7 @@ Total.
 - skin paint: the getters answer the owner's skin
 - skin paint: a skin's size scales each string from its own, one font object per size
 
-### test_skin_paint_controls.lua (25)
+### test_skin_paint_controls.lua (28)
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
@@ -562,6 +564,9 @@ Total.
 - skin controls: ListRow washes live under the row and follow the latest state
 - skin controls: every primitive's second call makes no new frame, region or hook
 - skin controls: every primitive's repaint reuses its regions and paints the new skin
+- skin controls: a dark label is shadowless, a light one keeps its shadow
+- skin controls: an EditBox hint and a sort header's texts take the skin's face
+- skin controls: a slider's track is a thin bar centered in it
 
 ### test_skin_eui.lua (29)
 
@@ -3425,9 +3430,9 @@ Total.
 | test_glow.lua | 15 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
-| test_skin_defs.lua | 22 |
+| test_skin_defs.lua | 24 |
 | test_skin_paint.lua | 30 |
-| test_skin_paint_controls.lua | 25 |
+| test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 21 |
 | test_widgets.lua | 58 |
@@ -3538,4 +3543,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3012** |
+| **Total** | **3017** |
