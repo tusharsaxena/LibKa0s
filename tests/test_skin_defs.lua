@@ -300,7 +300,12 @@ test("skin defs: WoW Default wears the Blizzard art docs/api/Skin names", functi
     ("%.4f %.4f %.4f"):format(0x1a / 255, 0x08 / 255, 0x05 / 255), "buttons: the dark #1a0805 rim")
   assertTrue(t["btn.bgTop"] ~= nil and t["btn.bgBottom"] ~= nil, "buttons: a red gradient")
   assertTrue(t["btn.bgTop"][1] > t["btn.bgTop"][2] * 3, "the gradient is red")
-  assertEqual(t["tab.texture"], "Interface\\OptionsFrame\\UI-OptionsFrame-InActiveTab", "idle tab")
+  -- The owner's note (round 3): the InActiveTab art is drawn shorter, so idle tabs wear the active art
+  -- too and stand as tall as the selected one; the white label tells the selected tab.
+  assertEqual(t["tab.texture"], "Interface\\OptionsFrame\\UI-OptionsFrame-ActiveTab", "idle tab")
+  -- ...and the inputs (the dropdown with them) and the nav rail take a 1px edge, the primary's size.
+  assertEqual(t["input.borderSize"], 1, "inputs: 1px")
+  assertEqual(t["nav.borderSize"], 1, "the nav rail: 1px")
   assertEqual(t["tab.onTexture"], "Interface\\OptionsFrame\\UI-OptionsFrame-ActiveTab", "active tab")
   assertEqual(t["scroll.thumbTexture"], "Interface\\Buttons\\UI-ScrollBar-Knob", "scroll knob")
   assertEqual(t["check.texture"], "Interface\\Buttons\\UI-CheckBox-Up", "checkbox box")

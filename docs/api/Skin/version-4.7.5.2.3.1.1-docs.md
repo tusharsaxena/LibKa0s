@@ -819,9 +819,10 @@ The choices (*Blizzard art and the per-skin choices*, below) are drawn as follow
 Default's window is `Shell`'s nine-slice edge, `Blizzard Dialog` at 32 outset by 8 on the holder,
 the backdrop's own edge clear, over a `#1E1C19` backdrop fill with `UI-DialogBox-Background-Dark`
 tiled in a band above it; its buttons are `Button`'s red gradient under a 1px dark rim (a 2px `bevelOut` gold edge until SkinDefs minor 7) on
-the holder; its tabs are `Tab`'s `UI-OptionsFrame-ActiveTab` / `-InActiveTab` art; its scroll thumb
+the holder; its tabs are `Tab`'s `UI-OptionsFrame-ActiveTab` art in both states (since SkinDefs minor 7: the
+`-InActiveTab` art is drawn shorter); its scroll thumb
 `ScrollBar`'s `UI-ScrollBar-Knob`; its checkbox `Checkbox`'s `UI-CheckBox-Up` box and
-`UI-CheckBox-Check` mark; its inputs, checkboxes and nav rail a 2px `bevelIn` edge. WoW Midnight
+`UI-CheckBox-Check` mark; its inputs and nav rail a 1px `bevelIn` edge (2px until SkinDefs minor 7). WoW Midnight
 draws no art: `Shell`'s window and title gradients, its 2px flat window edge, `Button`'s violet
 gradients under a 1px gold edge.
 
@@ -894,7 +895,7 @@ Default and Midnight, and WoW Forever's window texture).
 
 | Skin | Choice |
 |---|---|
-| **WoW Default** | The window is `BACKDROP_DIALOG_32_32`'s edge, LSM `Blizzard Dialog` (`Interface\DialogFrame\UI-DialogBox-Border`), `win.borderStyle = "nine:Blizzard Dialog"` at `win.borderSize = 32`, over `win.bgTexture = Interface\DialogFrame\UI-DialogBox-Background-Dark` tiled on a `#1E1C19` fill. Popups and menus wear the same edge at 16. Buttons are the red gradient `#B3200F` to `#640C05` under a 1px `#1A0805` rim with gold `#FFD100` text, white on hover, the client's own button; the primary a brighter red `#D42A16` to `#7E1007` under a 1px gold `#E0B040` edge with white text, gold on hover (both had a 2px `bevelOut` gold edge until SkinDefs minor 7). Tabs are `tab.texture = Interface\OptionsFrame\UI-OptionsFrame-InActiveTab` and `tab.onTexture = ...-ActiveTab`. The scroll thumb is `scroll.thumbTexture = Interface\Buttons\UI-ScrollBar-Knob`; the checkbox is `check.texture = Interface\Buttons\UI-CheckBox-Up` with `check.markTexture = ...UI-CheckBox-Check`. Inputs, checkboxes and the nav rail have a 2px `bevelIn` gray edge. The client's own fonts. |
+| **WoW Default** | The window is `BACKDROP_DIALOG_32_32`'s edge, LSM `Blizzard Dialog` (`Interface\DialogFrame\UI-DialogBox-Border`), `win.borderStyle = "nine:Blizzard Dialog"` at `win.borderSize = 32`, over `win.bgTexture = Interface\DialogFrame\UI-DialogBox-Background-Dark` tiled on a `#1E1C19` fill. Popups and menus wear the same edge at 16. Buttons are the red gradient `#B3200F` to `#640C05` under a 1px `#1A0805` rim with gold `#FFD100` text, white on hover, the client's own button; the primary a brighter red `#D42A16` to `#7E1007` under a 1px gold `#E0B040` edge with white text, gold on hover (both had a 2px `bevelOut` gold edge until SkinDefs minor 7). Tabs are `tab.texture` and `tab.onTexture` = `Interface\OptionsFrame\UI-OptionsFrame-ActiveTab`, one height in both states, the selected one told by its white label. The scroll thumb is `scroll.thumbTexture = Interface\Buttons\UI-ScrollBar-Knob`; the checkbox is `check.texture = Interface\Buttons\UI-CheckBox-Up` with `check.markTexture = ...UI-CheckBox-Check`. Inputs, dropdowns and the nav rail have a 1px `bevelIn` gray edge, the primary button's size (2px until SkinDefs minor 7); the checkbox art is its own box, with no edge. The client's own fonts. |
 | **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Cinzel title, violet `#B48CFF` accent, night-violet gradient buttons (`#3A2F6B` to `#1D1838`) under a 1px `#B08A3E` gold edge with gold `#F6D27A` text, and a brighter violet primary (`#7A5AD6` to `#3F2C86`, `#F6D27A` edge, white text) since SkinDefs minor 7. |
 | **WoW Forever** | Warm charcoal `#27231F` to `#13110F` (the mockup's radial fill as a vertical gradient, **no window texture**), black `#050505` title bars with centered white titles, a tan `#C9A07A` accent, gold `#F2B33D` headings, thin 1px edges on every control, a `#9C7A58` primary with white text under its tan edge, Barlow (OWNER_SCOPE R4). |
 | **Glass** | A `#121622` window at .88 on `nine:Ka0s Glass` at radius 8 (above), popups the same; flat 1px frosted control edges and boxless tabs underlined in the lilac `#B69CFF` accent; translucent white washes, `bar.gloss = true`. |
@@ -1007,7 +1008,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 |---|---|---|---|---|---|---|---|---|
 | `input.bg` | `#040405` | `#D8CBA6` | `#000000 .3` | `#000000` | `#140A07` | `#000000` | `#08091A` | `#0A0908` |
 | `input.border` | `#26262B` | `#A8864E` | `#FFFFFF .18` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#3E3934` |
-| `input.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
+| `input.borderSize` | `1` | `1` | `1` | `1` | `1` | `1` | `1` | `1` |
 | `input.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
 | `input.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
 | `input.placeholder` | `#8A8A93` | `#7A6342` | `#B8BFCC` | `#D0D0D0` | `#A88A76` | `#9A9A9A` | `#9A95B0` | `#8F8A83` |
@@ -1049,11 +1050,11 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `tab.onLine` | `#4DB8FF` | `#000000 0` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#000000 0` | `#B48CFF` | `#C9A07A` |
 | `tab.rule` | `#1C1C20` | `#B8955A` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
 | `tab.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
-| `tab.texture` | · | · | · | · | · | `UI-OptionsFrame-InActiveTab` | · | · |
+| `tab.texture` | · | · | · | · | · | `UI-OptionsFrame-ActiveTab` | · | · |
 | `tab.onTexture` | · | · | · | · | · | `UI-OptionsFrame-ActiveTab` | · | · |
 | `nav.bg` | `#000000 0` | `#78501E .08` | `#000000 0` | `#000000` | `#000000 .3` | `#000000 .4` | `#000000 .3` | `#000000 .3` |
 | `nav.border` | `#000000 0` | `#B8955A` | `#000000 0` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#000000 0` |
-| `nav.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
+| `nav.borderSize` | `1` | `1` | `1` | `1` | `1` | `1` | `1` | `1` |
 | `nav.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
 | `nav.text` | `#9B9BA4` | `#4A3418` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#FFD100` | `#F6D27A` | `#D8D3CB` |
 | `nav.selBg` | `#FFFFFF .06` | `#8E1B10` | `#FFFFFF .12` | `#FFE600` | `#FF7A33 .2` | `#5A78DC .38` | `#B48CFF .25` | `#FFFFFF .07` |

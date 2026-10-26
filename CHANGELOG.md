@@ -24,7 +24,7 @@ token held exactly, in one sweep, the library gap its `LH-04` item found. Extend
 2026-10-26 with SkinPaint minor 3 (`LK-A4`): leaving a skin's font puts an EditBox's face back by
 path, the defect behind the owner's Forever -> Midnight client crash. Extended a fifth time on
 2026-10-26 with SkinDefs minor 7, SkinPaint minor 5, SkinPaintExtras minor 2 and SkinPaintControls
-minor 3 (`SF-01`..`SF-22`): the skins retuned from two rounds of the owner's in-game notes, sizes made
+minor 3 (`SF-01`..`SF-26`): the skins retuned from three rounds of the owner's in-game notes, sizes made
 relative to Ka0s Default's, every labeled string in the skin's face, dark labels shadowless, primary
 buttons set apart, sliders one shape, a disabled button dimmed and Ka0s Default's checkbox square.
 
@@ -726,6 +726,13 @@ Then the owner's second round, on the showroom after the first:
   host-drawn bar, and no shipped skin draws a box round it; each skin colors the bar, fill and thumb.
 - **Azeroth again:** the parchment a step darker (`#C9B88F`), its body in Atkinson Hyperlegible, and its
   grays and semantic inks darkened to read at 3:1 on it (the contrast cases caught `#7A6A50` at 2.7).
+
+And a third round, on WoW Default alone:
+
+- **Its idle tabs stand as tall as the selected one.** Both states wear `UI-OptionsFrame-ActiveTab`; the
+  `-InActiveTab` art is drawn shorter. The selected tab is told by its white label.
+- **Its inputs, dropdowns and nav rail take a 1px edge**, the primary button's size (a 2px `bevelIn`
+  before).
 
 Tests: the pins these overturn move with them (High Contrast's 1px controls; Glass's flat controls;
 Ka0s Default's reference sizes and square checkbox; the font object keyed by size; the Button's four
