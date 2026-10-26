@@ -24,7 +24,8 @@ LootHistory alone. A **skin** turns those constants into data, a token table, an
 **per addon** (Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`, the owner's rulings R1 to R4).
 This version is the engine, the nine skins, the paint primitives and the EllesmereUI provider:
 **Ka0s Default**, whose tokens are today's constants, so an addon that never picks another skin
-draws exactly what it drew before, eight more translated from the owner's mockups (*The eight
+keeps the library's own look (since SkinPaint minor 6 it is painted like any other skin, stock
+controls included: *Ka0s Default is a skin like the others*, below), eight more translated from the owner's mockups (*The eight
 skins*, below), the primitives the facade calls (*The primitives*, below), and the `eui` source,
 which hands the vocabulary to EllesmereUI's own skinning facade (*The EllesmereUI provider*, below),
 and the AceGUI rows a settings page acquires, painted for its owner and given back to AceGUI's shared
