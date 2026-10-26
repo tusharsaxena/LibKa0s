@@ -407,17 +407,33 @@ local function namedFont(fs, obj)
 end
 
 --- Put `fs` back on the font it had before the first skin font reached it: its named font object
---- when it had one, else its face by path, size and flags.
+--- when it had one, else its face by path, size and flags with its shadow, which SetFont leaves as
+--- the skin's font object set it. The object is checked again here, so a record an older copy of
+--- this file wrote never hands an anonymous one back.
 function P.unfont(rec, fs)
   local fonts = saved(rec, "font")
   local s = fonts[fs]
   if not s then return end
-  if s.obj then
-    fs:SetFontObject(s.obj)
+  local obj = namedFont(fs, s.obj)
+  if obj then
+    fs:SetFontObject(obj)
   elseif s.path then
     fs:SetFont(s.path, s.size, s.flags)
+    if s.shadowOffset and type(fs.SetShadowOffset) == "function" then
+      fs:SetShadowOffset(unpack(s.shadowOffset))
+    end
+    if s.shadowColor and type(fs.SetShadowColor) == "function" then
+      fs:SetShadowColor(unpack(s.shadowColor))
+    end
   end
   fonts[fs] = nil
+end
+
+--- `{ getter(fs) }` when `fs` has the getter and it answers, else nil.
+local function priorOf(fs, getter)
+  if type(fs[getter]) ~= "function" then return nil end
+  local got = { fs[getter](fs) }
+  return #got > 0 and got or nil
 end
 
 --- Give `fs` (a FontString, or an EditBox) the skin's font for `role` ("body", "title", "mono"),
@@ -430,7 +446,10 @@ function P.font(owner, rec, fs, role)
   local fonts = saved(rec, "font")
   if not fonts[fs] then
     local p, s, f = fs:GetFont()
-    fonts[fs] = { obj = namedFont(fs, fs:GetFontObject()), path = p, size = s, flags = f }
+    local obj = namedFont(fs, fs:GetFontObject())
+    fonts[fs] = { obj = obj, path = p, size = s, flags = f,
+                  shadowOffset = not obj and priorOf(fs, "GetShadowOffset") or nil,
+                  shadowColor = not obj and priorOf(fs, "GetShadowColor") or nil }
   end
   local size = T[spec.size] or fonts[fs].size or 12
   local flags = T["font.outline"] or ""

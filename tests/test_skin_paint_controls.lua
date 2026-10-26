@@ -192,6 +192,11 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   rawset(eb, "GetFontObject", function() return current end)
   rawset(eb, "SetFont", function(_, path, size, flags) faces[#faces + 1] = { path, size, flags } end)
   rawset(eb, "GetFont", function() return "Fonts\\FRIZQT__.TTF", 10, "" end)
+  local shadows = {}
+  rawset(eb, "GetShadowOffset", function() return 0, 0 end)
+  rawset(eb, "GetShadowColor", function() return 0, 0, 0, 0 end)
+  rawset(eb, "SetShadowOffset", function(_, x, y) shadows[#shadows + 1] = x .. "," .. y end)
+  rawset(eb, "SetShadowColor", function(_, r, g, b, a) shadows[#shadows + 1] = r .. "," .. g .. "," .. b .. "," .. a end)
   S.EditBox(eb)
   Skin:SetChoice(OWNER, "ka0s", "forever")
   assertEqual(#objects, 1, "Forever gives the box the owner's body font object")
@@ -199,6 +204,14 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   for _, obj in ipairs(objects) do assertFalse(obj == anon, "the anonymous font object is never handed back") end
   assertEqual(#faces, 1, "Midnight has no body face: the stock face goes back by path")
   assertEqual(table.concat(faces[1], "|"), "Fonts\\FRIZQT__.TTF|10|")
+  assertEqual(table.concat(shadows, " "), "0,0 0,0,0,0", "and its own shadow, which SetFont leaves as the skin's")
+  -- A record an older copy of the file wrote (an anonymous object saved) is checked again on restore.
+  Skin:SetChoice(OWNER, "ka0s", "forever")
+  local rec = Skin.painted[eb]
+  rec.regions.saved.font[eb].obj = anon
+  local before = #objects
+  Skin:SetChoice(OWNER, "ka0s", "midnight")
+  assertEqual(#objects, before, "an anonymous object recorded by an older copy is never handed back")
 end)
 
 test("skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call", function()
