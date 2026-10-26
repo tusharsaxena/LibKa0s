@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 4.6.3.1.1.1.1
+# `LibKa0s-Skin-1.0` — version 4.7.3.1.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **6** · `SkinPaint.lua` minor **3** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **7** · `SkinPaint.lua` minor **3** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
@@ -809,7 +809,8 @@ tiled in a band above it; its buttons are `Button`'s red gradient under a 2px `b
 the holder; its tabs are `Tab`'s `UI-OptionsFrame-ActiveTab` / `-InActiveTab` art; its scroll thumb
 `ScrollBar`'s `UI-ScrollBar-Knob`; its checkbox `Checkbox`'s `UI-CheckBox-Up` box and
 `UI-CheckBox-Check` mark; its inputs, checkboxes and nav rail a 2px `bevelIn` edge. WoW Midnight
-draws no art: `Shell`'s window and title gradients, its 2px flat edges, `Button`'s gradients.
+draws no art: `Shell`'s window and title gradients, its 2px flat window edge, `Button`'s violet
+gradients under a 1px gold edge.
 
 ## The eight skins
 
@@ -842,12 +843,14 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
 
 ### What WoW cannot draw
 
-- **No blur.** Glass is translucency (`win.bg` alpha .55) on the shipped `Ka0s Glass` art.
+- **No blur.** Glass is translucency (`win.bg` alpha .88, popups and tooltips .92, since SkinDefs
+  minor 7; the mockup's .55 let the world through) on the shipped `Ka0s Glass` art.
 - **One rounded art.** Glass's radius-8 nine-slice (`Ka0s Glass`, `LibKa0s-Media-1.0` 6.1) is the
-  only rounded art shipped, so Glass's window, buttons, inputs, tabs, drawers, popups and menus
-  are `nine:Ka0s Glass` at radius 8 and edge size 8, and **every other mockup radius is square**
-  (0): Obsidian's 3px, Azeroth's 4px, Ember's 2px and the rest. Glass's checkbox and scroll thumb
-  are too small for 8px corners and stay square too.
+  only rounded art shipped. Since SkinDefs minor 7 only Glass's window, popups and menus wear it, at
+  radius 8 and edge size 8: its buttons, inputs, tabs and drawers looked awkward on it at control
+  size and take a flat 1px frosted edge, the tabs boxless with a lilac underline. **Every other
+  mockup radius is square** (0): Obsidian's 3px, Azeroth's 4px, Ember's 2px and the rest. Glass's
+  checkbox and scroll thumb stay square too.
 - **Gradients are vertical.** `linear-gradient(a, b)` is `<ctl>.bgTop = a`, `<ctl>.bgBottom = b`
   (drawn with `SetGradient` on a white texture), and the flat `<ctl>.bg` is their blend, the
   fallback. A radial fill (WoW Default's and WoW Forever's windows) becomes a vertical gradient or,
@@ -859,8 +862,9 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
 - **Geometry.** The mockup's scrollbar widths (`scW`) are not translated: `title.height`,
   `scroll.width`, `scroll.gutter` and `win.inset` are Ka0s Default's in all nine skins.
 - **Fonts.** A mockup family is the shipped face that stands for it: Inter (Obsidian) and Manrope
-  (Glass) are Barlow, the face WoW Forever names; Azeroth, Ember and WoW Midnight draw Cinzel
-  titles over the client body font; High Contrast is Atkinson Hyperlegible, body 2pt above the
+  (Glass) are Barlow, the face WoW Forever names; Ember and WoW Midnight draw Cinzel titles over the
+  client body font, and Azeroth Cinzel titles over a Barlow 12 body with `font.shadow = false`
+  (SkinDefs minor 7: the client body's dark drop shadow smeared ink on parchment); High Contrast is Atkinson Hyperlegible, body 2pt above the
   Barlow skins' 12; Ka0s Default and WoW Default keep the client's fonts (no font token).
 - **GameTooltip lines.** `gtip.*` are drawn on Blizzard's dark GameTooltip whatever the skin, so
   each skin's `gtip.title`, `gtip.body` and `gtip.muted` read at 4.5:1 or better on
@@ -876,12 +880,12 @@ Default and Midnight, and WoW Forever's window texture).
 | Skin | Choice |
 |---|---|
 | **WoW Default** | The window is `BACKDROP_DIALOG_32_32`'s edge, LSM `Blizzard Dialog` (`Interface\DialogFrame\UI-DialogBox-Border`), `win.borderStyle = "nine:Blizzard Dialog"` at `win.borderSize = 32`, over `win.bgTexture = Interface\DialogFrame\UI-DialogBox-Background-Dark` tiled on a `#1E1C19` fill. Popups and menus wear the same edge at 16. Buttons (and the primary button) are a red gradient `#B3200F` to `#640C05` with a 2px `bevelOut` gold `#A07C2C` edge and gold `#FFD100` text, white on hover. Tabs are `tab.texture = Interface\OptionsFrame\UI-OptionsFrame-InActiveTab` and `tab.onTexture = ...-ActiveTab`. The scroll thumb is `scroll.thumbTexture = Interface\Buttons\UI-ScrollBar-Knob`; the checkbox is `check.texture = Interface\Buttons\UI-CheckBox-Up` with `check.markTexture = ...UI-CheckBox-Check`. Inputs, checkboxes and the nav rail have a 2px `bevelIn` gray edge. The client's own fonts. |
-| **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Cinzel title, violet `#B48CFF` accent, red-gradient buttons and a gold-gradient primary. |
+| **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Cinzel title, violet `#B48CFF` accent, night-violet gradient buttons (`#3A2F6B` to `#1D1838`) under a 1px `#B08A3E` gold edge with gold `#F6D27A` text, and a brighter violet primary (`#7A5AD6` to `#3F2C86`, `#F6D27A` edge, white text) since SkinDefs minor 7. |
 | **WoW Forever** | Warm charcoal `#27231F` to `#13110F` (the mockup's radial fill as a vertical gradient, **no window texture**), black `#050505` title bars with centered white titles, a tan `#C9A07A` accent, gold `#F2B33D` headings, thin 1px edges on every control, Barlow (OWNER_SCOPE R4). |
-| **Glass** | `nine:Ka0s Glass` at radius 8 (above), translucent white washes, lilac `#B69CFF` accent, `bar.gloss = true`. |
-| **High Contrast** | Black, white 2px edges on the window and every control (3px yellow on popups and menus), yellow `#FFE600` titles, accent, selection outline and focus, Atkinson Hyperlegible 14 / 17. |
-| **Obsidian** | Near-black flat panels, hairline `#2A2A2F` edges, no inner rule, a cool blue `#4DB8FF` accent and primary button, Barlow. |
-| **Azeroth** | Parchment `#E9DDBC` window with a 3px leather `#6B4A22` edge and a `#C9A45C` inner rule, a dark `#3A2412` title bar with a gold Cinzel title, red wax-seal gradient buttons, ink `#2A1C0C` text. |
+| **Glass** | A `#121622` window at .88 on `nine:Ka0s Glass` at radius 8 (above), popups the same; flat 1px frosted control edges and boxless tabs underlined in the lilac `#B69CFF` accent; translucent white washes, `bar.gloss = true`. |
+| **High Contrast** | Black, a white 2px window edge and white 1px edges on every control (2px yellow on popups and menus; controls were 2px and popups 3px until SkinDefs minor 7), yellow `#FFE600` titles, accent, selection outline and focus, Atkinson Hyperlegible 14 / 17. |
+| **Obsidian** | True-black flat panels (a `#0A0A0B` window and a `#050506` title bar since SkinDefs minor 7, darker than Ka0s Default's navy), hairline `#202024` edges, no inner rule, a cool blue `#4DB8FF` accent and primary button, Barlow. |
+| **Azeroth** | Muted parchment `#D9CAA3` window (was `#E9DDBC` until SkinDefs minor 7) with a 3px leather `#6B4A22` edge and a `#C9A45C` inner rule, a dark `#3A2412` title bar with a gold Cinzel title, red wax-seal gradient buttons, ink `#2A1C0C` text in a shadowless Barlow body, and cream-on-leather tabs (`#F2E3BD` on `#5E3A14`, gold on wax red when selected). |
 | **Ember** | Charred brown, a `#6A2E17` edge over an amber inner rule, orange `#FF7A33` accent, gradient title bar and buttons, Cinzel titles. |
 
 An **art token** (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTexture`,
@@ -901,32 +905,33 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `font.body` | `Ka0s Barlow` | · | `Ka0s Barlow` | `Ka0s Atkinson` | · | · | · | `Ka0s Barlow` |
+| `font.body` | `Ka0s Barlow` | `Ka0s Barlow` | `Ka0s Barlow` | `Ka0s Atkinson` | · | · | · | `Ka0s Barlow` |
 | `font.title` | `Ka0s Barlow SemiBold` | `Ka0s Cinzel` | `Ka0s Barlow SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Cinzel` | · | `Ka0s Cinzel` | `Ka0s Barlow SemiBold` |
-| `font.bodySize` | `12` | · | `12` | `14` | · | · | · | `12` |
+| `font.bodySize` | `12` | `12` | `12` | `14` | · | · | · | `12` |
 | `font.titleSize` | `14` | `15` | `14` | `17` | `15` | · | `15` | `14` |
+| `font.shadow` | · | none | · | · | · | · | · | · |
 
 #### Window
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `win.bg` | `#121214` | `#E9DDBC` | `#121622 .55` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#1D1A17` |
+| `win.bg` | `#0A0A0B` | `#D9CAA3` | `#121622 .88` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#1D1A17` |
 | `win.bgTop` | · | · | · | · | · | · | `#171A2E` | `#27231F` |
 | `win.bgBottom` | · | · | · | · | · | · | `#0F1020` | `#13110F` |
 | `win.bgTexture` | · | · | · | · | · | `UI-DialogBox-Background-Dark` | · | · |
-| `win.bgDense` | `#121214` | `#E9DDBC` | `#121622 .55` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#1D1A17` |
-| `win.border` | `#2A2A2F` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#6A2E17` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
+| `win.bgDense` | `#0A0A0B` | `#D9CAA3` | `#121622 .88` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#1D1A17` |
+| `win.border` | `#202024` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#6A2E17` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
 | `win.borderSize` | `1` | `3` | `8` | `2` | `1` | `32` | `2` | `1` |
 | `win.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
 | `win.inner` | none | `#C9A45C` | none | none | `#C98A3A .45` | none | `#3D2F12` | none |
 | `win.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
-| `title.bg` | `#0B0B0D` | `#3A2412` | `#FFFFFF .06` | `#000000` | `#2F150D` | `#383838` | `#211C39` | `#050505` |
+| `title.bg` | `#050506` | `#3A2412` | `#FFFFFF .06` | `#000000` | `#2F150D` | `#383838` | `#211C39` | `#050505` |
 | `title.bgTop` | · | · | · | · | `#3A1A0F` | `#4B4B4B` | `#2A2347` | · |
 | `title.bgBottom` | · | · | · | · | `#24100A` | `#252525` | `#17142B` | · |
 | `title.text` | `#F2F2F4` | `#F5C542` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
 | `title.align` | · | · | · | · | · | · | `CENTER` | `CENTER` |
-| `divider` | `#26262B` | `#B8955A` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
-| `foot.bg` | `#0B0B0D` | `#D8C697` | `#FFFFFF .04` | `#000000` | `#000000 .3` | `#000000 .3` | `#000000 .3` | `#050505` |
+| `divider` | `#1C1C20` | `#B8955A` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `foot.bg` | `#050506` | `#C9B585` | `#FFFFFF .04` | `#000000` | `#000000 .3` | `#000000 .3` | `#000000 .3` | `#050505` |
 | `close.rest` | `#9B9BA4` | `#F5C542` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#D9D9D9` | `#F6D27A` | `#FFFFFF` |
 | `close.hot` | · | `#FF6B4A` | · | `#FF5050` | · | · | · | · |
 
@@ -960,48 +965,48 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `btn.bg` | `#1D1D21` | `#811A12` | `#FFFFFF .1` | `#000000` | `#3A190E` | `#8B160A` | `#6D140E` | `#1F1D1B` |
-| `btn.bgTop` | · | `#A3241A` | · | · | `#4A2012` | `#B3200F` | `#8A1C14` | · |
-| `btn.bgBottom` | · | `#5E1009` | · | · | `#2A120A` | `#640C05` | `#4F0D08` | · |
-| `btn.border` | `#303036` | `#3A1206` | `#FFFFFF .18` | `#FFFFFF` | `#8A3C1C` | `#A07C2C` | `#C9A24A` | `#48433D` |
-| `btn.borderSize` | `1` | `1` | `8` | `2` | `1` | `2` | `1` | `1` |
-| `btn.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
-| `btn.text` | `#E8E8EC` | `#FFD866` | `#F2F4F8` | `#FFFFFF` | `#FFCF9A` | `#FFD100` | `#FFD866` | `#FFFFFF` |
+| `btn.bg` | `#141416` | `#811A12` | `#FFFFFF .08` | `#000000` | `#3A190E` | `#8B160A` | `#2C2452` | `#1F1D1B` |
+| `btn.bgTop` | · | `#A3241A` | · | · | `#4A2012` | `#B3200F` | `#3A2F6B` | · |
+| `btn.bgBottom` | · | `#5E1009` | · | · | `#2A120A` | `#640C05` | `#1D1838` | · |
+| `btn.border` | `#2A2A30` | `#3A1206` | `#FFFFFF .22` | `#FFFFFF` | `#8A3C1C` | `#A07C2C` | `#B08A3E` | `#48433D` |
+| `btn.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
+| `btn.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
+| `btn.text` | `#E8E8EC` | `#FFD866` | `#F2F4F8` | `#FFFFFF` | `#FFCF9A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
 | `btn.hover` | `#4DB8FF` | `#FFFFFF` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFFFFF` | `#FFFFFF` | `#C9A07A` |
-| `btn.icon` | `#E8E8EC` | `#FFD866` | `#F2F4F8` | `#FFFFFF` | `#FFCF9A` | `#FFD100` | `#FFD866` | `#FFFFFF` |
-| `btn.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
-| `btnPrimary.bg` | `#4DB8FF` | `#811A12` | `#B69CFF` | `#FFE600` | `#C3521E` | `#8B160A` | `#CC9E35` | `#1F1D1B` |
-| `btnPrimary.bgTop` | · | `#A3241A` | · | · | `#E0662A` | `#B3200F` | `#F0C14B` | · |
-| `btnPrimary.bgBottom` | · | `#5E1009` | · | · | `#A63D12` | `#640C05` | `#A87A1E` | · |
-| `btnPrimary.border` | `#4DB8FF` | `#3A1206` | `#B69CFF` | `#FFE600` | `#FF9A5A` | `#A07C2C` | `#FFE08A` | `#C9A07A` |
-| `btnPrimary.borderSize` | `1` | `1` | `8` | `2` | `1` | `2` | `1` | `1` |
-| `btnPrimary.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
-| `btnPrimary.text` | `#06121C` | `#FFD866` | `#1A1033` | `#000000` | `#1C0A04` | `#FFD100` | `#1A1205` | `#FFFFFF` |
-| `btnPrimary.hover` | `#000000` | `#FFFFFF` | `#3A2A66` | `#000000` | `#1C0A04` | `#FFFFFF` | `#1A1205` | `#C9A07A` |
-| `btnPrimary.icon` | `#06121C` | `#FFD866` | `#1A1033` | `#000000` | `#1C0A04` | `#FFD100` | `#1A1205` | `#FFFFFF` |
-| `btnPrimary.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
+| `btn.icon` | `#E8E8EC` | `#FFD866` | `#F2F4F8` | `#FFFFFF` | `#FFCF9A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
+| `btn.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
+| `btnPrimary.bg` | `#4DB8FF` | `#811A12` | `#B69CFF` | `#FFE600` | `#C3521E` | `#8B160A` | `#5D43AE` | `#1F1D1B` |
+| `btnPrimary.bgTop` | · | `#A3241A` | · | · | `#E0662A` | `#B3200F` | `#7A5AD6` | · |
+| `btnPrimary.bgBottom` | · | `#5E1009` | · | · | `#A63D12` | `#640C05` | `#3F2C86` | · |
+| `btnPrimary.border` | `#4DB8FF` | `#3A1206` | `#B69CFF` | `#FFE600` | `#FF9A5A` | `#A07C2C` | `#F6D27A` | `#C9A07A` |
+| `btnPrimary.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
+| `btnPrimary.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
+| `btnPrimary.text` | `#06121C` | `#FFD866` | `#1A1033` | `#000000` | `#1C0A04` | `#FFD100` | `#FFFFFF` | `#FFFFFF` |
+| `btnPrimary.hover` | `#000000` | `#FFFFFF` | `#3A2A66` | `#000000` | `#1C0A04` | `#FFFFFF` | `#FFFFFF` | `#C9A07A` |
+| `btnPrimary.icon` | `#06121C` | `#FFD866` | `#1A1033` | `#000000` | `#1C0A04` | `#FFD100` | `#FFFFFF` | `#FFFFFF` |
+| `btnPrimary.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 
 #### Inputs
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `input.bg` | `#0A0A0B` | `#F7EED6` | `#000000 .28` | `#000000` | `#140A07` | `#000000` | `#08091A` | `#0A0908` |
-| `input.border` | `#2E2E34` | `#A8864E` | `#FFFFFF .16` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#3E3934` |
-| `input.borderSize` | `1` | `1` | `8` | `2` | `1` | `2` | `1` | `1` |
-| `input.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
+| `input.bg` | `#040405` | `#E8DCBC` | `#000000 .3` | `#000000` | `#140A07` | `#000000` | `#08091A` | `#0A0908` |
+| `input.border` | `#26262B` | `#A8864E` | `#FFFFFF .18` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#3E3934` |
+| `input.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
+| `input.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
 | `input.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
 | `input.placeholder` | `#8A8A93` | `#7A6342` | `#B8BFCC` | `#D0D0D0` | `#A88A76` | `#9A9A9A` | `#9A95B0` | `#8F8A83` |
 | `input.focus` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
-| `input.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
-| `check.bg` | `#0A0A0B` | `#F7EED6` | `#000000 .3` | `#000000` | `#140A07` | `#111111` | `#08091A` | `#0A0908` |
-| `check.border` | `#3A3A42` | `#6B4A22` | `#FFFFFF .3` | `#FFFFFF` | `#8A3C1C` | `#8A8A8A` | `#B08A3E` | `#8A7A52` |
-| `check.borderSize` | `1` | `1` | `1` | `2` | `1` | `2` | `1` | `1` |
+| `input.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
+| `check.bg` | `#040405` | `#E8DCBC` | `#000000 .3` | `#000000` | `#140A07` | `#111111` | `#08091A` | `#0A0908` |
+| `check.border` | `#34343B` | `#6B4A22` | `#FFFFFF .3` | `#FFFFFF` | `#8A3C1C` | `#8A8A8A` | `#B08A3E` | `#8A7A52` |
+| `check.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
 | `check.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
 | `check.mark` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#F6D27A` | `#FFD100` |
 | `check.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 | `check.texture` | · | · | · | · | · | `UI-CheckBox-Up` | · | · |
 | `check.markTexture` | · | · | · | · | · | `UI-CheckBox-Check` | · | · |
-| `slider.track` | `#2A2A2F` | `#D0BC8E` | `#FFFFFF .15` | `#000000` | `#2A140C` | `#000000` | `#1A1730` | `#3A3632` |
+| `slider.track` | `#202024` | `#C2AD7E` | `#FFFFFF .15` | `#000000` | `#2A140C` | `#000000` | `#1A1730` | `#3A3632` |
 | `slider.trackBorder` | `#000000 0` | `#8A6A36` | `#000000 0` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#000000 0` |
 | `slider.fill` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#000000 0` | `#B48CFF` | `#C9A07A` |
 | `slider.thumb` | `#F2F2F4` | `#5E3A14` | `#FFFFFF` | `#FFFFFF` | `#FFCF9A` | `#C9A84A` | `#F6D27A` | `#C9A07A` |
@@ -1016,24 +1021,24 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `tab.bg` | `#000000 0` | `#CDB789` | `#FFFFFF .05` | `#000000` | `#2A140C` | `#262626` | `#1A1730` | `#000000 0` |
+| `tab.bg` | `#000000 0` | `#5E3A14` | `#000000 0` | `#000000` | `#2A140C` | `#262626` | `#1A1730` | `#000000 0` |
 | `tab.bgTop` | none | none | none | none | none | none | none | none |
 | `tab.bgBottom` | none | none | none | none | none | none | none | none |
 | `tab.glow` | `#FFFFFF .06` | `#FFFFFF .25` | · | `#FFFFFF .25` | · | · | · | · |
-| `tab.text` | `#9B9BA4` | `#4A3418` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#C9B048` | `#B4AFC8` | `#A39E97` |
-| `tab.border` | `#000000 0` | `#8A6A36` | `#FFFFFF .1` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#000000 0` |
-| `tab.borderSize` | `1` | `1` | `8` | `2` | `1` | `2` | `1` | `1` |
-| `tab.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
-| `tab.onBg` | `#000000 0` | `#E9DDBC` | `#B69CFF .3` | `#FFE600` | `#4A2012` | `#4A4A4A` | `#2C2550` | `#000000 .4` |
-| `tab.onText` | `#F2F2F4` | `#8E1B10` | `#FFFFFF` | `#000000` | `#FFB45A` | `#FFFFFF` | `#F6D27A` | `#FFFFFF` |
-| `tab.onLine` | `#4DB8FF` | `#000000 0` | `#000000 0` | `#FFE600` | `#FF7A33` | `#000000 0` | `#B48CFF` | `#C9A07A` |
-| `tab.rule` | `#26262B` | `#B8955A` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
-| `tab.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
+| `tab.text` | `#9B9BA4` | `#F2E3BD` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#C9B048` | `#B4AFC8` | `#A39E97` |
+| `tab.border` | `#000000 0` | `#3A2412` | `#000000 0` | `#FFFFFF` | `#5A2A16` | `#7A7A7A` | `#5A4A26` | `#000000 0` |
+| `tab.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
+| `tab.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
+| `tab.onBg` | `#000000 0` | `#8E1B10` | `#B69CFF .1` | `#FFE600` | `#4A2012` | `#4A4A4A` | `#2C2550` | `#000000 .4` |
+| `tab.onText` | `#F2F2F4` | `#FFD866` | `#FFFFFF` | `#000000` | `#FFB45A` | `#FFFFFF` | `#F6D27A` | `#FFFFFF` |
+| `tab.onLine` | `#4DB8FF` | `#000000 0` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#000000 0` | `#B48CFF` | `#C9A07A` |
+| `tab.rule` | `#1C1C20` | `#B8955A` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `tab.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 | `tab.texture` | · | · | · | · | · | `UI-OptionsFrame-InActiveTab` | · | · |
 | `tab.onTexture` | · | · | · | · | · | `UI-OptionsFrame-ActiveTab` | · | · |
 | `nav.bg` | `#000000 0` | `#78501E .08` | `#000000 0` | `#000000` | `#000000 .3` | `#000000 .4` | `#000000 .3` | `#000000 .3` |
 | `nav.border` | `#000000 0` | `#B8955A` | `#000000 0` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#000000 0` |
-| `nav.borderSize` | `1` | `1` | `1` | `2` | `1` | `2` | `1` | `1` |
+| `nav.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
 | `nav.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelIn` | `flat` | `flat` |
 | `nav.text` | `#9B9BA4` | `#4A3418` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#FFD100` | `#F6D27A` | `#D8D3CB` |
 | `nav.selBg` | `#FFFFFF .06` | `#8E1B10` | `#FFFFFF .12` | `#FFE600` | `#FF7A33 .2` | `#5A78DC .38` | `#B48CFF .25` | `#FFFFFF .07` |
@@ -1044,22 +1049,22 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `drawer.bg` | `#18181B` | `#D8C697` | `#FFFFFF .05` | `#000000` | `#2A140C` | `#262626` | `#1A1730` | `#1C1A17` |
-| `drawer.bgOpen` | `#1D1D21` | `#CDB789` | `#FFFFFF .09` | `#000000` | `#4A2012` | `#3A3A3A` | `#2C2550` | `#24211E` |
-| `drawer.border` | `#2A2A2F` | `#8A6A36` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#5A4A26` | `#2E2A26` |
+| `drawer.bg` | `#101012` | `#C9B585` | `#FFFFFF .05` | `#000000` | `#2A140C` | `#262626` | `#1A1730` | `#1C1A17` |
+| `drawer.bgOpen` | `#141416` | `#BFA877` | `#FFFFFF .09` | `#000000` | `#4A2012` | `#3A3A3A` | `#2C2550` | `#24211E` |
+| `drawer.border` | `#202024` | `#8A6A36` | `#FFFFFF .14` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#5A4A26` | `#2E2A26` |
 | `drawer.borderOpen` | `#4DB8FF .6` | `#8E1B10 .6` | `#B69CFF .6` | `#FFE600` | `#FF7A33 .6` | `#FFD100 .6` | `#B48CFF .6` | `#C9A07A .6` |
-| `drawer.borderSize` | `1` | `1` | `8` | `2` | `1` | `2` | `1` | `1` |
-| `drawer.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
-| `drawer.boxBg` | `#121214` | `#F7EED6` | `#000000 .2` | `#000000` | `#140A07` | `#111111` | `#08091A` | `#0A0908` |
-| `drawer.boxBorder` | `#2A2A2F` | `#8A6A36` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#5A4A26` | `#2E2A26` |
+| `drawer.borderSize` | `1` | `1` | `1` | `1` | `1` | `2` | `1` | `1` |
+| `drawer.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `bevelOut` | `flat` | `flat` |
+| `drawer.boxBg` | `#0A0A0B` | `#E8DCBC` | `#000000 .2` | `#000000` | `#140A07` | `#111111` | `#08091A` | `#0A0908` |
+| `drawer.boxBorder` | `#202024` | `#8A6A36` | `#FFFFFF .14` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#5A4A26` | `#2E2A26` |
 | `drawer.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
 | `drawer.textSet` | `#4DB8FF` | `#8E1B10` | `#B69CFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
 | `drawer.summary` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `drawer.summarySet` | `#A8DBFF` | `#8E1B10` | `#D4C4FF` | `#FFE600` | `#FFCF9A` | · | `#F6D27A` | `#E0C3A6` |
-| `menu.bg` | `#121214` | `#E9DDBC` | `#121622 .6` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |
-| `menu.border` | `#34343A` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `menu.borderAlt` | `#34343A` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `menu.borderSize` | `1` | `3` | `8` | `3` | `1` | `16` | `2` | `1` |
+| `menu.bg` | `#0A0A0B` | `#D9CAA3` | `#121622 .92` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |
+| `menu.border` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
+| `menu.borderAlt` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
+| `menu.borderSize` | `1` | `3` | `8` | `2` | `1` | `16` | `2` | `1` |
 | `menu.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
 | `menu.hover` | `#4DB8FF .15` | `#8E1B10 .15` | `#B69CFF .15` | `#FFE600 .25` | `#FF7A33 .15` | `#FFD100 .15` | `#B48CFF .15` | `#C9A07A .15` |
 | `menu.text` | `#E8E8EC` | `#2A1C0C` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
@@ -1069,23 +1074,23 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `list.header.bg` | `#18181B` | `#D8C697` | `#FFFFFF .06` | `#1A1A1A` | `#FF7A33 .08` | `#FFFFFF .07` | `#B48CFF .08` | `#000000 .35` |
+| `list.header.bg` | `#101012` | `#C9B585` | `#FFFFFF .06` | `#1A1A1A` | `#FF7A33 .08` | `#FFFFFF .07` | `#B48CFF .08` | `#000000 .35` |
 | `list.header.text` | `#9B9BA4` | `#3A2412` | `#C9CFDB` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
 | `list.stripe` | `#FFFFFF .02` | `#78501E .07` | `#FFFFFF .03` | `#0D0D0D` | `#FFFFFF .025` | `#FFFFFF .03` | `#FFFFFF .025` | `#FFFFFF .025` |
 | `list.hover` | `#4DB8FF .1` | `#8E1B10 .1` | `#B69CFF .1` | `#FFE600 .2` | `#FF7A33 .1` | `#FFD100 .1` | `#B48CFF .1` | `#C9A07A .1` |
 | `list.sel` | `#4DB8FF .14` | `#8E1B10 .16` | `#B69CFF .24` | `#000000` | `#FF7A33 .18` | `#FFD100 .18` | `#B48CFF .2` | `#C9A07A .16` |
 | `list.selOutline` | · | · | · | `#FFE600` | · | · | · | · |
-| `card.bg` | `#18181B` | `#F3E8CB` | `#FFFFFF .06` | `#000000` | `#2A140C .85` | `#000000 .4` | `#1A1730 .85` | `#1C1A17` |
-| `card.border` | `#2A2A2F` | `#B8955A` | `#FFFFFF .14` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
-| `panel.bg` | `#0F0F11` | `#78501E .08` | `#FFFFFF .04` | `#000000` | `#000000 .3` | `#000000 .3` | `#000000 .3` | `#000000 .3` |
-| `panel.border` | `#26262B` | `#B8955A` | `#FFFFFF .12` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `card.bg` | `#101012` | `#E3D6B3` | `#FFFFFF .06` | `#000000` | `#2A140C .85` | `#000000 .4` | `#1A1730 .85` | `#1C1A17` |
+| `card.border` | `#202024` | `#B8955A` | `#FFFFFF .14` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `panel.bg` | `#070708` | `#78501E .08` | `#FFFFFF .04` | `#000000` | `#000000 .3` | `#000000 .3` | `#000000 .3` | `#000000 .3` |
+| `panel.border` | `#1C1C20` | `#B8955A` | `#FFFFFF .12` | `#FFFFFF` | `#5A2A16` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
 | `section.rule` | `#4DB8FF .35` | `#8E1B10 .35` | `#B69CFF .35` | `#FFE600` | `#FF7A33 .35` | `#FFD100 .35` | `#B48CFF .35` | `#C9A07A .35` |
 | `icon.tint` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `icon.hot` | `#4DB8FF` | `#8E1B10` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#C9A07A` |
 | `handle.edge` | `#4DB8FF .6` | `#8E1B10 .6` | `#B69CFF .6` | `#FFE600 .6` | `#FF7A33 .6` | `#FFD100 .6` | `#B48CFF .6` | `#C9A07A .6` |
 | `handle.rest` | `#9B9BA4` | `#6A5233` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `list.dropLine` | `#4DB8FF .9` | `#8E1B10 .9` | `#B69CFF .9` | `#FFE600 .9` | `#FF7A33 .9` | `#FFD100 .9` | `#B48CFF .9` | `#C9A07A .9` |
-| `list.ghostBg` | `#121214` | `#E9DDBC` | `#121622 .6` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |
+| `list.ghostBg` | `#0A0A0B` | `#D9CAA3` | `#121622 .92` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |
 | `list.box` | `#E8E8EC .06` | `#2A1C0C .06` | `#F2F4F8 .06` | `#FFFFFF .06` | `#F4E7DC .06` | `#FFFFFF .06` | `#F2EEF8 .06` | `#FFFFFF .06` |
 | `list.boxDim` | `#E8E8EC .03` | `#2A1C0C .03` | `#F2F4F8 .03` | `#FFFFFF .03` | `#F4E7DC .03` | `#FFFFFF .03` | `#F2EEF8 .03` | `#FFFFFF .03` |
 | `list.boxEdge` | `#E8E8EC .12` | `#2A1C0C .12` | `#F2F4F8 .12` | `#FFFFFF .12` | `#F4E7DC .12` | `#FFFFFF .12` | `#F2EEF8 .12` | `#FFFFFF .12` |
@@ -1096,13 +1101,13 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `popup.bg` | `#121214` | `#E9DDBC` | `#121622 .6` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |
-| `popup.border` | `#34343A` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `popup.borderSize` | `1` | `3` | `8` | `3` | `1` | `16` | `2` | `1` |
+| `popup.bg` | `#0A0A0B` | `#D9CAA3` | `#121622 .92` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#1D1A17` |
+| `popup.border` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
+| `popup.borderSize` | `1` | `3` | `8` | `2` | `1` | `16` | `2` | `1` |
 | `popup.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
 | `popup.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
-| `tooltip.bg` | `#0E0E10` | `#F3E8CB` | `#0F121C .75` | `#000000` | `#140A07` | `#000010 .92` | `#0A0A1A .95` | `#0E0D0B` |
-| `tooltip.border` | `#34343A` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#8A3C1C` | `#9A9A9A` | `#B08A3E` | `#3A3530` |
+| `tooltip.bg` | `#070708` | `#E3D6B3` | `#0F121C .92` | `#000000` | `#140A07` | `#000010 .92` | `#0A0A1A .95` | `#0E0D0B` |
+| `tooltip.border` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#8A3C1C` | `#9A9A9A` | `#B08A3E` | `#3A3530` |
 
 #### HUD
 
@@ -1169,7 +1174,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 `gtip.value` is in no row: every skin inherits Ka0s Default's white.
 
-Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 6): Obsidian 140, Azeroth 194, Glass 142, High Contrast 156, Ember 143, WoW Default 143, WoW Midnight 146, WoW Forever 143.
+Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 7): Obsidian 140, Azeroth 197, Glass 142, High Contrast 156, Ember 143, WoW Default 143, WoW Midnight 146, WoW Forever 143.
 
 ## The EllesmereUI provider
 

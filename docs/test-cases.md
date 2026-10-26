@@ -490,8 +490,8 @@ Total.
 - skin defs: the bind-state tokens inherit Ka0s Default unless a skin overrides for legibility
 - skin defs: every skin's split text, icon and signed colors read where they draw
 - skin defs: the split tokens inherit Ka0s Default unless a skin overrides for legibility
-- skin defs: High Contrast draws every control border at 2px or more
-- skin defs: Glass is the rounded skin, radius 8 on the Ka0s Glass nine-slice
+- skin defs: High Contrast draws 1px control edges inside a 2px window and popup edge
+- skin defs: Glass rounds its window and popups only, on the Ka0s Glass nine-slice
 - skin defs: WoW Default wears the Blizzard art docs/api/Skin names
 - skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art
 - skin defs: only WoW Default names Blizzard art

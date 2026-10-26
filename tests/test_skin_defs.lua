@@ -250,23 +250,31 @@ end)
 
 local CONTROLS = { "btn", "btnPrimary", "input", "check", "tab", "nav", "drawer", "popup", "menu" }
 
-test("skin defs: High Contrast draws every control border at 2px or more", function()
+test("skin defs: High Contrast draws 1px control edges inside a 2px window and popup edge", function()
+  -- SkinDefs minor 7, the owner's note of 2026-10-26: "borders are too thick on most elements".
+  -- red under: a control edge back at 2px, or the window or popup losing its heavier frame.
   local t = skinLib():ResolveSkin("contrast")
   for _, ctl in ipairs(CONTROLS) do
-    assertTrue((t[ctl .. ".borderSize"] or 0) >= 2, "contrast: " .. ctl .. ".borderSize >= 2")
+    local want = (ctl == "popup" or ctl == "menu") and 2 or 1
+    assertEqual(t[ctl .. ".borderSize"], want, "contrast: " .. ctl .. ".borderSize")
   end
-  assertTrue(t["win.borderSize"] >= 2, "contrast: the window edge is 2px")
+  assertEqual(t["win.borderSize"], 2, "contrast: the window edge is 2px")
 end)
 
-test("skin defs: Glass is the rounded skin, radius 8 on the Ka0s Glass nine-slice", function()
+test("skin defs: Glass rounds its window and popups only, on the Ka0s Glass nine-slice", function()
+  -- SkinDefs minor 7, the owner's note of 2026-10-26: Glass's buttons and tabs looked awkward on the
+  -- rounded art. The window and its popups keep it; the controls take a flat 1px edge.
   local Skin = skinLib()
   local t = Skin:ResolveSkin("glass")
   assertEqual(t["win.radius"], 8, "glass window radius")
   assertEqual(t["win.borderStyle"], "nine:Ka0s Glass", "glass window edge")
-  for _, ctl in ipairs({ "btn", "btnPrimary", "input", "popup" }) do
-    assertEqual(t[ctl .. ".radius"], 8, "glass " .. ctl .. ".radius")
-    assertEqual(t[ctl .. ".borderStyle"], "nine:Ka0s Glass", "glass " .. ctl .. ".borderStyle")
+  assertEqual(t["popup.radius"], 8, "glass popup radius")
+  assertEqual(t["popup.borderStyle"], "nine:Ka0s Glass", "glass popup edge")
+  for _, ctl in ipairs({ "btn", "btnPrimary", "input", "tab", "drawer" }) do
+    assertEqual(t[ctl .. ".borderStyle"], "flat", "glass " .. ctl .. ".borderStyle")
+    assertEqual(t[ctl .. ".borderSize"], 1, "glass " .. ctl .. ".borderSize")
   end
+  assertTrue((t["win.bg"][4] or 1) >= 0.85, "glass is dense enough to read over the world")
   for _, key in ipairs(KEYS) do
     if key ~= "glass" then
       local other = Skin:ResolveSkin(key)
@@ -373,7 +381,7 @@ test("skin defs: the font assignments follow the spec", function()
   local want = {
     obsidian = { "Ka0s Barlow", "Ka0s Barlow SemiBold" }, glass = { "Ka0s Barlow", "Ka0s Barlow SemiBold" },
     forever = { "Ka0s Barlow", "Ka0s Barlow SemiBold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
-    azeroth = { nil, "Ka0s Cinzel" }, ember = { nil, "Ka0s Cinzel" }, midnight = { nil, "Ka0s Cinzel" },
+    azeroth = { "Ka0s Barlow", "Ka0s Cinzel" }, ember = { nil, "Ka0s Cinzel" }, midnight = { nil, "Ka0s Cinzel" },
     wow = { nil, nil }, ka0s = { nil, nil },
   }
   for key, pair in pairs(want) do
@@ -381,6 +389,8 @@ test("skin defs: the font assignments follow the spec", function()
     assertEqual(t["font.body"], pair[1], key .. " body font")
     assertEqual(t["font.title"], pair[2], key .. " title font")
   end
+  -- Azeroth's body is the one shadowless face: a drop shadow smears dark ink on parchment.
+  assertEqual(Skin:ResolveSkin("azeroth")["font.shadow"], false, "azeroth draws its body without a shadow")
   local base, hc = Skin:ResolveSkin("obsidian"), Skin:ResolveSkin("contrast")
   assertEqual(hc["font.bodySize"], base["font.bodySize"] + 2, "High Contrast reads 2pt larger")
 end)
