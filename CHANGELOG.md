@@ -872,7 +872,10 @@ re-vendor.
   never calls `Skin:RegisterOwner` keeps its look, and test kit revision 43's `mock_paint.lua` is
   opt-in too.
 
-Release gate (`docs/automated-tests/20261027-001339/`, re-measured at `f70882c` after SF-35): lint pass,
+Release gate (`docs/automated-tests/20261027-005758/`, re-measured at `854ad32` after SF-38): lint pass,
+0/0 in 223 files; tests pass, 3027 passed, 2 skipped, 0 failed; complexity pass, 0 over CCN 15. Perf SKIPPED, not
+measured.
+After SF-35: (`docs/automated-tests/20261027-001339/`, re-measured at `f70882c`): lint pass,
 0/0 in 223 files; tests pass, 3019 passed, 2 skipped, 0 failed; complexity pass, 0 over CCN 15. Perf SKIPPED, not
 measured.
 After SF-30..SF-32: (`docs/automated-tests/20261026-222042/`, re-measured at `e1fca8b`): lint pass,
