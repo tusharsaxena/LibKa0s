@@ -122,21 +122,24 @@ test("skin: every registered skin resolves every schema token to its kind", func
   end
 end)
 
-test("skin: Ka0s Default sets no face, and its sizes are the reference", function()
-  -- SkinPaint minor 4: every skin sets its sizes, Ka0s Default's are the reference the others scale
-  -- against (12 body, 14 title), and with no face Ka0s Default's text stays the client's.
+test("skin: Ka0s Default sets every token, faces and sizes included", function()
+  -- SkinDefs minor 8, the owner's ruling (2026-10-26): Ka0s Default leaves nothing to the client.
+  -- Every schema token carries a value or `false` (the explicit "none"); its faces are Friz
+  -- Quadrata, set rather than inherited from the client's font objects, and its sizes the reference
+  -- every skin scales against. red under: a Ka0s Default token left nil.
   local Skin = T.mocks.LibStub(MAJOR)
+  local own = Skin.skins.ka0s.tokens
+  local missing = {}
+  for _, e in ipairs(Skin.SCHEMA) do
+    if own[e.name] == nil then missing[#missing + 1] = e.name end
+  end
+  assertEqual(#missing, 0, "Ka0s Default leaves these to the client: " .. table.concat(missing, ", "))
   local tokens = Skin:ResolveSkin("ka0s")
+  assertEqual(tokens["font.body"], "Friz Quadrata TT", "the body face, set")
+  assertEqual(tokens["font.title"], "Friz Quadrata TT", "the title face, set")
   assertEqual(tokens["font.bodySize"], 12, "the body reference")
   assertEqual(tokens["font.titleSize"], 14, "the title reference")
-  for _, e in ipairs(Skin.SCHEMA) do
-    if e.group == "Fonts" and e.name ~= "font.bodySize" and e.name ~= "font.titleSize" then
-      assertNil(tokens[e.name], e.name .. " leaves the font object alone")
-    end
-  end
-  for _, q in ipairs({ "poor", "common", "uncommon", "rare", "epic", "legendary" }) do
-    assertNil(tokens["q." .. q], "q." .. q .. " reads the client's ITEM_QUALITY_COLORS")
-  end
+  sameColor(tokens["q.epic"], { 0.64, 0.21, 0.93, 1 }, "the client's epic purple, written out")
 end)
 
 test("skin: Ka0s Default equals the published constants", function()

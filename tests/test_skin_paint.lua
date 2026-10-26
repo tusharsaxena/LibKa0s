@@ -27,11 +27,6 @@ local function traceOn(m, names, build, paint)
   return tr.text(), target
 end
 
-local function windowBuild(m)
-  local f = F.window(m)
-  return f, { f.title, f.divider }
-end
-
 -- ── attachment ───────────────────────────────────────────────────────────────────────────────
 
 test("skin paint: the three files attach to the shell and fill every vocabulary entry", function()
@@ -57,28 +52,33 @@ test("skin paint: the extras and controls attach to nothing without SkinPaint's 
 end)
 
 test("skin paint: with no skin registered a primitive paints nothing it has no token for", function()
+  -- A payload with no SkinDefs.lua: no token resolves, so nothing is painted, the window included.
   local m, Skin = F.env({ files = { "Core", "Skin", "SkinPaint", "SkinPaintExtras", "SkinPaintControls" } })
   local S = F.owner(Skin, OWNER)
   local f = F.window(m)
+  local before = survey(m, f).backdrop
   S.Card(f)
-  assertNil(survey(m, f).backdrop, "no card token, no backdrop")
+  assertTrue(survey(m, f).backdrop == before, "no card token, no backdrop")
   S.Shell(f)
-  assertTrue(survey(m, f).backdrop == m.LibStub("LibKa0s-Core-1.0").SKIN, "Shell is still today's window")
+  assertTrue(survey(m, f).backdrop == before, "no win.bg, the window is left as it was")
 end)
 
 -- ── Shell ────────────────────────────────────────────────────────────────────────────────────
 
-test("skin paint: Shell on Ka0s Default is Core.ApplySkin, call for call", function()
+test("skin paint: Shell on Ka0s Default draws Core.SKIN's window from its tokens", function()
+  -- SkinPaint minor 6: no Ka0s Default case. Shell builds Core's backdrop from Ka0s Default's tokens,
+  -- which carry Core.SKIN's values, exactly as it does for every other skin.
   local m, Skin = F.env()
-  F.owner(Skin, OWNER)
+  local S = F.owner(Skin, OWNER)
   local core = m.LibStub("LibKa0s-Core-1.0")
-  local names = { [core.SKIN] = "SKIN" }
-  local want = traceOn(m, names, windowBuild, function(f) core.ApplySkin(f) end)
-  local got = traceOn(m, names, windowBuild, function(f) Skin:For(OWNER).Shell(f) end)
-  assertTrue(want:find("#1:SetBackdrop(SKIN)", 1, true) ~= nil, "Core hands the frame its own SKIN")
-  assertEqual(got, want, "the registered owner's trace")
-  local unregistered = traceOn(m, names, windowBuild, function(f) Skin:For("Nobody").Shell(f) end)
-  assertEqual(unregistered, want, "an unregistered name's trace")
+  for _, who in ipairs({ S, Skin:For("Nobody") }) do
+    local f = F.window(m)
+    who.Shell(f)
+    local sv = survey(m, f)
+    assertEqual(F.rgba(sv.backdropColor), F.rgba(core.SKIN.bg), "Core.SKIN's fill")
+    assertEqual(F.rgba(sv.backdropBorderColor), F.rgba(core.SKIN.border), "Core.SKIN's edge")
+    assertEqual(F.rgba(survey(m, f.innerBorder).backdropBorderColor), F.rgba(core.SKIN.innerBorder), "and inner rule")
+  end
 end)
 
 test("skin paint: Shell paints a skin's window from its tokens", function()
@@ -128,9 +128,10 @@ test("skin paint: a skin switch repaints a Shell live, and back to Ka0s Default 
   assertEqual(F.rgba(survey(m, f.innerBorder).backdropBorderColor), "0,0,0,0",
     "a skin with no inner rule clears the one Core left tinted")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertTrue(survey(m, f).backdrop == core.SKIN, "Ka0s Default hands Core its SKIN again")
+  assertEqual(F.rgba(survey(m, f).backdropColor), F.rgba(core.SKIN.bg), "Ka0s Default's fill again")
   assertFalse(grad:IsShown(), "the gradient is hidden")
-  assertFalse(F.region(Skin, f, "top"):IsShown(), "the title band is hidden")
+  assertEqual(F.rgba(survey(m, F.region(Skin, f, "top")).color), F.tok(Skin, "ka0s", "title.bg"),
+    "the title band wears Ka0s Default's title.bg (minor 8)")
   assertEqual(F.rgba(survey(m, f.innerBorder).backdropBorderColor), F.rgba(core.SKIN.innerBorder))
 end)
 
@@ -176,7 +177,8 @@ test("skin paint: the holder is a child frame one level up, and edges live on it
   assertEqual(F.rgba(survey(m, edge).color), F.tok(Skin, "contrast", "win.border"))
 end)
 
-test("skin paint: Ka0s Default leaves a stock frame stock, and a skin fades its art", function()
+test("skin paint: every skin fades a stock frame's art and draws its own window, Ka0s Default too", function()
+  -- SkinPaint minor 6: Ka0s Default no longer leaves a stock frame as the client draws it.
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local f = m.CreateFrame("Frame", nil, m.UIParent, "PortraitFrameTemplate")
@@ -184,15 +186,10 @@ test("skin paint: Ka0s Default leaves a stock frame stock, and a skin fades its 
   local piece = f.NineSlice.TopEdge
   piece:SetAlpha(0.8)
   S.Shell(f)
-  assertEqual(piece:GetAlpha(), 0.8, "Ka0s Default: the client's art as drawn")
-  assertNil(survey(m, f).backdrop, "and nothing painted over it")
-  Skin:SetChoice(OWNER, "ka0s", "obsidian")
-  assertEqual(piece:GetAlpha(), 0, "a skin fades the template art")
+  assertEqual(piece:GetAlpha(), 0, "Ka0s Default fades the template art")
   assertTrue(F.region(Skin, f, "holder") ~= nil, "and draws its own window")
-  Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(piece:GetAlpha(), 0.8, "back on Ka0s Default the recorded alpha returns")
-  assertFalse(F.region(Skin, f, "holder"):IsShown(), "and every Ka0s region is hidden")
-  assertNil(survey(m, f).backdrop, "the backdrop it set is taken off")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(piece:GetAlpha(), 0, "so does a skin")
 end)
 
 -- ── per owner ────────────────────────────────────────────────────────────────────────────────
@@ -221,8 +218,8 @@ test("skin paint: a target painted for a second owner is given back first", func
   A.Button(b)
   assertEqual(normal:GetAlpha(), 0, "A's skin fades the stock art")
   B.Button(b)
-  assertEqual(normal:GetAlpha(), 1, "B on Ka0s Default sees the stock art again")
-  assertEqual(Skin.painted[b].owner, "AddonB")
+  assertEqual(Skin.painted[b].owner, "AddonB", "B takes the button over")
+  assertEqual(normal:GetAlpha(), 0, "and Ka0s Default fades the stock art too (minor 6)")
 
   local C = F.owner(Skin, "AddonC", "contrast")
   local row = m.CreateFrame("Button", nil, m.UIParent)
@@ -330,7 +327,7 @@ test("skin paint: FadeRegions fades the stock textures, records their alpha, and
   b:SetAlpha(0.5)
   local fs = f:CreateFontString()
   S.FadeRegions(f)
-  assertEqual(a:GetAlpha(), 1, "Ka0s Default fades nothing")
+  assertEqual(a:GetAlpha(), 0, "Ka0s Default fades them too (minor 6)")
   Skin:SetChoice(OWNER, "ka0s", "glass")
   assertEqual(a:GetAlpha(), 0); assertEqual(b:GetAlpha(), 0)
   assertEqual(fs:GetAlpha(), 1, "a font string is not art")
@@ -338,31 +335,33 @@ test("skin paint: FadeRegions fades the stock textures, records their alpha, and
   S.FadeRegions(f)
   assertEqual(F.region(Skin, f, "holder"):GetAlpha(), 1, "the holder is never faded")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(b:GetAlpha(), 0.5, "the recorded alpha comes back")
-  assertEqual(a:GetAlpha(), 1)
+  assertEqual(b:GetAlpha(), 0, "Ka0s Default keeps them faded")
+  assertEqual(F.region(Skin, f, "holder"):GetAlpha(), 1, "and spares its own holder")
 end)
 
-test("skin paint: FadeNineSlice fades the nine pieces away from Ka0s Default", function()
+test("skin paint: FadeNineSlice fades the nine pieces under every skin", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER, "ember")
   local f = m.CreateFrame("Frame", nil, m.UIParent, "NineSlicePanelTemplate")
   S.FadeNineSlice(f)
   for _, k in ipairs(m.__nineSliceKeys) do assertEqual(f.NineSlice[k]:GetAlpha(), 0, k) end
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  for _, k in ipairs(m.__nineSliceKeys) do assertEqual(f.NineSlice[k]:GetAlpha(), 1, k) end
+  for _, k in ipairs(m.__nineSliceKeys) do assertEqual(f.NineSlice[k]:GetAlpha(), 0, "Ka0s Default: " .. k) end
 end)
 
 -- ── the Ka0s extras ──────────────────────────────────────────────────────────────────────────
 
-test("skin paint: TitleBar paints only the title color on Ka0s Default", function()
+test("skin paint: TitleBar on Ka0s Default fills its bar and centers its gold title", function()
+  -- SkinDefs minor 8: Ka0s Default sets title.bg and title.align like every skin.
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
-  local text = traceOn(m, nil, function(mm)
-    local bar = mm.CreateFrame("Frame", nil, mm.UIParent)
-    bar.title = bar:CreateFontString()
-    return bar, { bar.title }
-  end, function(bar) S.TitleBar(bar) end)
-  assertEqual(text, "#2:SetTextColor(1,0.820,0)", "title.text, three components, and nothing else")
+  local bar = m.CreateFrame("Frame", nil, m.UIParent)
+  rawset(bar, "SetBackdrop", nil)
+  bar.title = bar:CreateFontString()
+  S.TitleBar(bar)
+  assertEqual(F.rgba(survey(m, bar.title).textColor), F.tok(Skin, "ka0s", "title.text"), "the gold title")
+  assertEqual(bar.title:GetJustifyH(), "CENTER", "centered")
+  assertEqual(F.rgba(survey(m, F.region(Skin, bar, "fill")).color), F.tok(Skin, "ka0s", "title.bg"), "the fill")
 end)
 
 test("skin paint: TitleBar fills under its text, centers its title, and gives the alignment back", function()
@@ -378,8 +377,8 @@ test("skin paint: TitleBar fills under its text, centers its title, and gives th
   assertEqual(F.rgba(survey(m, fill).color), F.tok(Skin, "forever", "title.bg"))
   assertEqual(fs:GetJustifyH(), "CENTER", "WoW Forever centers its titles")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(fs:GetJustifyH(), "LEFT", "the alignment it had comes back")
-  assertFalse(fill:IsShown(), "and the fill is hidden")
+  assertEqual(fs:GetJustifyH(), "CENTER", "so does Ka0s Default (minor 8)")
+  assertEqual(F.rgba(survey(m, fill).color), F.tok(Skin, "ka0s", "title.bg"), "in its own title fill")
 end)
 
 test("skin paint: Divider colors a texture in place, as Core's divider is colored", function()
@@ -409,11 +408,12 @@ test("skin paint: Card on Ka0s Default is LootHistory's KPI card, call for call"
   }, "\n"))
 end)
 
-test("skin paint: Footer draws nothing on Ka0s Default and a band in a skin that sets foot.bg", function()
+test("skin paint: Footer draws its band in every skin, Ka0s Default's foot.bg included", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
-  local text = traceOn(m, nil, backdropFrame, function(f) S.Footer(f) end)
-  assertEqual(text, "", "foot.bg is nil in Ka0s Default")
+  local d = backdropFrame(m)
+  S.Footer(d)
+  assertEqual(F.rgba(survey(m, d).backdropColor), F.tok(Skin, "ka0s", "foot.bg"), "Ka0s Default's band")
   Skin:SetChoice(OWNER, "ka0s", "azeroth")
   local f = backdropFrame(m)
   S.Footer(f)
@@ -456,13 +456,14 @@ test("skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for c
   assertEqual(F.rgba(survey(m, pop).backdropColor), F.tok(Skin, "ka0s", "popup.bg"))
 end)
 
-test("skin paint: Tooltip leaves a library tooltip alone unless the skin colors tooltips", function()
+test("skin paint: Tooltip colors a library tooltip in every skin, its art kept", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local f = backdropFrame(m)
   f:SetBackdrop({ bgFile = "tip" })
-  local text = traceOn(m, nil, function() return f end, function(t) S.Tooltip(t) end)
-  assertEqual(text, "", "tooltip.* are nil in Ka0s Default")
+  S.Tooltip(f)
+  assertEqual(F.rgba(survey(m, f).backdropColor), F.tok(Skin, "ka0s", "tooltip.bg"),
+    "Ka0s Default colors a library tooltip too (minor 8)")
   Skin:RegisterSkin({ key = "tips", tokens = { ["tooltip.bg"] = { 0.2, 0.1, 0, 0.9 } } })
   Skin:SetChoice(OWNER, "ka0s", "tips")
   assertEqual(F.rgba(survey(m, f).backdropColor), "0.200,0.100,0,0.900", "repainted live")
@@ -516,7 +517,7 @@ test("skin paint: the getters answer the owner's skin", function()
   assertEqual(F.rgba({ S.GetPanelColor() }), F.rgba(tokens["win.bg"]))
   assertEqual(F.owner(Skin, "Sleek", "obsidian").GetFont(), "Fonts\\Barlow.ttf", "the body face's path")
   local K = F.owner(Skin, "Plain")
-  assertNil(K.GlowColor(), "no glow color in Ka0s Default: the host's stands")
+  assertEqual(F.rgba({ K.GlowColor() }), F.tok(Skin, "ka0s", "glow.color"), "Ka0s Default's gold glow (minor 8)")
   local chart = K.ChartStyle()
   assertTrue(chart.axis == Skin:ResolveSkin("ka0s")["chart.axis"], "ChartStyle reads chart.*")
   assertEqual(#chart.series, 21, "the series palette")

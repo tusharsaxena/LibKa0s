@@ -174,8 +174,8 @@ end)
 
 -- The dark skins inherit Ka0s Default's bind colors (the hue is the meaning); Azeroth, the light
 -- skin, sets every one, and High Contrast sets the gray and off-white ones, fully opaque.
+-- Azeroth overrode all of them for its light parchment until SkinDefs minor 8 made it dark.
 local BIND_OWN = {
-  azeroth = BIND,
   contrast = { "sem.boundNone", "sem.boundBoE", "sem.boundNoneAlt" },
 }
 
@@ -223,7 +223,6 @@ end)
 -- The dark skins inherit them; Azeroth, the light skin, sets every window one in ink and neither
 -- gtip one (the tooltip stays dark); High Contrast sets the grays in its own palette.
 local SPLIT_OWN = {
-  azeroth = SPLIT_WIN,
   contrast = { "text.value", "text.bodyAlt", "text.subtle", "icon.dim", "sem.unknown", "gtip.subtle" },
 }
 
@@ -354,13 +353,15 @@ test("skin defs: WoW Forever is warm charcoal, black centered titles, tan accent
     end
     local bg = t["win.bg"]
     assertTrue(bg[1] > bg[3] and luminance(bg) < 0.03, "warm charcoal window")
-    assertEqual(t["font.body"], "Ka0s Barlow", "Barlow")
+    assertEqual(t["font.body"], "Ka0s Atkinson", "Atkinson Hyperlegible (minor 8: Barlow read blurry)")
   end)
 
 -- ── what a skin names exists ─────────────────────────────────────────────────────────────────
 
 -- LibSharedMedia's own default border keys a skin may name besides the shipped ones.
 local LSM_BORDERS = { ["Blizzard Dialog"] = true, ["Blizzard Tooltip"] = true }
+-- ...and its default font keys: Friz Quadrata, Ka0s Default's face (the client's own, set by name).
+local LSM_FONTS = { ["Friz Quadrata TT"] = true }
 
 test("skin defs: every font and border a skin names is shipped or an LSM default", function()
   local Skin = skinLib()
@@ -368,7 +369,7 @@ test("skin defs: every font and border a skin names is shipped or an LSM default
   for _, def in ipairs(Skin:Skins()) do
     for name, v in pairs(def.tokens) do
       if name:match("^font%.") and type(v) == "string" and name ~= "font.outline" then
-        assertTrue(Media.FONTS[v] ~= nil, def.key .. ": " .. name .. " = " .. v .. " is shipped")
+        assertTrue(Media.FONTS[v] ~= nil or LSM_FONTS[v], def.key .. ": " .. name .. " = " .. v .. " is shipped")
       end
       local nine = type(v) == "string" and v:match("^nine:(.+)$")
       if nine then
@@ -383,21 +384,27 @@ test("skin defs: every font and border a skin names is shipped or an LSM default
   end
 end)
 
+local FRIZ = "Friz Quadrata TT"
+
 test("skin defs: the font assignments follow the spec", function()
   local Skin = skinLib()
   local want = {
     obsidian = { "Ka0s Barlow", "Ka0s Barlow SemiBold" }, glass = { "Ka0s Barlow", "Ka0s Barlow SemiBold" },
-    forever = { "Ka0s Barlow", "Ka0s Barlow SemiBold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
-    azeroth = { "Ka0s Atkinson", "Ka0s Cinzel" }, ember = { nil, "Ka0s Cinzel" }, midnight = { nil, "Ka0s Cinzel" },
-    wow = { nil, nil }, ka0s = { nil, nil },
+    forever = { "Ka0s Atkinson", "Ka0s Atkinson Bold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
+    -- Ka0s Default's Friz Quadrata (minor 8) is inherited wherever a skin names no face of its own.
+    azeroth = { "Ka0s Atkinson", "Ka0s Cinzel" }, ember = { FRIZ, "Ka0s Cinzel" }, midnight = { FRIZ, "Ka0s Cinzel" },
+    wow = { FRIZ, FRIZ }, ka0s = { FRIZ, FRIZ },
   }
   for key, pair in pairs(want) do
     local t = Skin:ResolveSkin(key)
     assertEqual(t["font.body"], pair[1], key .. " body font")
     assertEqual(t["font.title"], pair[2], key .. " title font")
   end
-  -- Azeroth's body is the one shadowless face: a drop shadow smears dark ink on parchment.
-  assertEqual(Skin:ResolveSkin("azeroth")["font.shadow"], false, "azeroth draws its body without a shadow")
+  -- Every skin draws the client's shadow now: Azeroth's shadowless body was for its light parchment,
+  -- and SkinDefs minor 8 made it dark. A dark label goes shadowless on its own (SkinPaint minor 5).
+  for key in pairs(want) do
+    assertEqual(Skin:ResolveSkin(key)["font.shadow"], true, key .. " draws the shadow")
+  end
   local base, hc = Skin:ResolveSkin("obsidian"), Skin:ResolveSkin("contrast")
   assertTrue(hc["font.bodySize"] > base["font.bodySize"], "High Contrast reads larger")
 end)

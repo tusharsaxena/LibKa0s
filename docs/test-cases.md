@@ -454,7 +454,7 @@ Total.
 - skin: without SkinDefs the engine runs and every token is nil
 - skin: the schema names each token once, with a known kind
 - skin: every registered skin resolves every schema token to its kind
-- skin: Ka0s Default sets no face, and its sizes are the reference
+- skin: Ka0s Default sets every token, faces and sizes included
 - skin: Ka0s Default equals the published constants
 - skin: Ka0s Default equals the file-local constants it replaces
 - skin: Ka0s Default equals LootHistory's constants
@@ -509,13 +509,13 @@ Total.
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
 - skin paint: with no skin registered a primitive paints nothing it has no token for
-- skin paint: Shell on Ka0s Default is Core.ApplySkin, call for call
+- skin paint: Shell on Ka0s Default draws Core.SKIN's window from its tokens
 - skin paint: Shell paints a skin's window from its tokens
 - skin paint: a second Shell call makes no new region and paints the same
 - skin paint: a skin switch repaints a Shell live, and back to Ka0s Default exactly
 - skin paint: WoW Default's window is the dialog edge on the holder over the tiled art
 - skin paint: the holder is a child frame one level up, and edges live on it
-- skin paint: Ka0s Default leaves a stock frame stock, and a skin fades its art
+- skin paint: every skin fades a stock frame's art and draws its own window, Ka0s Default too
 - skin paint: two owners on one loaded copy paint and repaint only their own frames
 - skin paint: a target painted for a second owner is given back first
 - skin paint: a target untracked and painted again reuses its regions and hooks
@@ -523,15 +523,15 @@ Total.
 - skin paint: Panel on Ka0s Default is LootHistory's list panel, call for call
 - skin paint: Inset, noBg, noBorder and the nav rail's recolor
 - skin paint: FadeRegions fades the stock textures, records their alpha, and spares its own
-- skin paint: FadeNineSlice fades the nine pieces away from Ka0s Default
-- skin paint: TitleBar paints only the title color on Ka0s Default
+- skin paint: FadeNineSlice fades the nine pieces under every skin
+- skin paint: TitleBar on Ka0s Default fills its bar and centers its gold title
 - skin paint: TitleBar fills under its text, centers its title, and gives the alignment back
 - skin paint: Divider colors a texture in place, as Core's divider is colored
 - skin paint: Card on Ka0s Default is LootHistory's KPI card, call for call
-- skin paint: Footer draws nothing on Ka0s Default and a band in a skin that sets foot.bg
+- skin paint: Footer draws its band in every skin, Ka0s Default's foot.bg included
 - skin paint: Strip and Cover color their textures as TestStrip and the combat cover do
 - skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for call
-- skin paint: Tooltip leaves a library tooltip alone unless the skin colors tooltips
+- skin paint: Tooltip colors a library tooltip in every skin, its art kept
 - skin paint: Text colors a role, and a skin's font reaches it through the owner's font object
 - skin paint: Font and White put the body font and color on a string
 - skin paint: the getters answer the owner's skin
@@ -541,7 +541,7 @@ Total.
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
-- skin controls: a stock button stays stock on Ka0s Default and is faded and boxed in a skin
+- skin controls: a stock button is faded and boxed under every skin, Ka0s Default too
 - skin controls: Button with keepKeys paints only the label
 - skin controls: WhiteButtonLabel and StateButtonLabel
 - skin controls: EditBox on Ka0s Default paints the search box's backdrop, call for call
@@ -552,12 +552,12 @@ Total.
 - skin controls: WoW Default's checkbox is the client's art; Ka0s Default draws a square box
 - skin controls: a disabled Button's label reads text.disabled, and comes back when enabled
 - skin controls: ScrollBar's thumb states and the console's own bar match today's tints
-- skin controls: a bar's own thumb is left stock on Ka0s Default and tinted in a skin
-- skin controls: Slider is left alone by Ka0s Default and painted by a skin that sets it
+- skin controls: a bar's own thumb is tinted and its track drawn under every skin
+- skin controls: Slider is painted under every skin, Ka0s Default's thin bar included
 - skin controls: Tab paints its state, SetTabSelection moves it, and a repaint keeps it
-- skin controls: WoW Default's tabs are the client's tab art; a stock tab stays stock
+- skin controls: WoW Default's tabs are the client's tab art; a stock tab is faded under every skin
 - skin controls: CloseButton on Ka0s Default is Core's close button, call for call
-- skin controls: a stock close button gets a glyph in a skin and is left stock on Ka0s Default
+- skin controls: a stock close button gets a glyph under every skin, Ka0s Default too
 - skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and ApplyBarFill
 - skin controls: NavItem on Ka0s Default is OptionsNav's entry paint
 - skin controls: Drawer on Ka0s Default is OptionsDrawer's header paint
@@ -603,7 +603,7 @@ Total.
 ### test_skin_ace.lua (21)
 
 - skin ace: an owned page's CheckBox is painted from the owner's skin through O.AceGUI
-- skin ace: Ka0s Default is stock AceGUI: nothing painted, nothing wrapped
+- skin ace: Ka0s Default paints AceGUI rows like every skin
 - skin ace: an unregistered owner's instance holds AceGUI itself
 - skin ace: the proxy is AceGUI for everything but Create
 - skin ace: an owner that registers after lib:New is proxied at CreateOptionsPanel
@@ -2268,16 +2268,16 @@ Total.
 - options skin: an owned page paints its header and an opaque backdrop from the skin
 - options skin: an owned page's tab strip fades the client's art and wears the tab roles
 - options skin: an owned page's rail, drawer and cover paint from the skin
-- options skin: a skin switch repaints the owned page with no reload, and Ka0s Default undoes it
-- options skin: Ka0s Default on an owned page draws no backdrop and keeps the client's art
+- options skin: a skin switch repaints the owned page with no reload, Ka0s Default included
+- options skin: Ka0s Default dresses an owned page like every skin
 - options skin: an owner that registers after the page was built gets its skin on the next show
 - options skin: two owners' pages stay apart
 - options skin: the always-shown thumb takes the owner's tints, and is given back on release
 - options skin: a pooled drawer head drawn for no owner leaves the owner's repaint
 - options skin: the id list's help mark takes the skin's tints away from Ka0s Default
 - options skin: the keybind rows take the skin's text roles away from Ka0s Default
-- options skin: Ka0s Default leaves the help mark and the keybind rows as they were
-- options skin: the id-suggestion popup takes the skin, and Ka0s Default gives its edge back
+- options skin: Ka0s Default colors the keybind rows in its own text roles
+- options skin: the id-suggestion popup takes the skin, Ka0s Default's edge included
 
 ### test_options_compose_skin.lua (10)
 

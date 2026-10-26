@@ -23,15 +23,16 @@ same day with SkinDefs minor 6 (`LK-A3`): eleven tokens for every other LootHist
 token held exactly, in one sweep, the library gap its `LH-04` item found. Extended a fourth time on
 2026-10-26 with SkinPaint minor 3 (`LK-A4`): leaving a skin's font puts an EditBox's face back by
 path, the defect behind the owner's Forever -> Midnight client crash. Extended a fifth time on
-2026-10-26 with SkinDefs minor 7, SkinPaint minor 5, SkinPaintExtras minor 2 and SkinPaintControls
-minor 3 (`SF-01`..`SF-26`): the skins retuned from three rounds of the owner's in-game notes, sizes made
+2026-10-26 with SkinDefs minor 8, SkinPaint minor 6, SkinPaintExtras minor 2, SkinPaintControls
+minor 4 and SkinAce minor 2 (`SF-01`..`SF-30`): Ka0s Default sets and paints every token, Azeroth
+reworked dark, and the skins retuned from the owner's in-game notes, sizes made
 relative to Ka0s Default's, every labeled string in the skin's face, dark labels shadowless, primary
 buttons set apart, sliders one shape, a disabled button dimmed and Ka0s Default's checkbox square.
 
 Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 7**
-(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 7**,
-**SkinPaint minor 5**, **SkinPaintExtras minor 2**, **SkinPaintControls minor 3**, **SkinEUI
-minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **4.7.5.2.3.1.1**); **Widgets minor 16**,
+(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 8**,
+**SkinPaint minor 6**, **SkinPaintExtras minor 2**, **SkinPaintControls minor 4**, **SkinEUI
+minor 1** and **SkinAce minor 2** (the new major `LibKa0s-Skin-1.0`, key **4.8.6.2.4.1.2**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
 **WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
 **16.2.6.4.4.1**, a new sixth file); **DebugLog minor 22**, **DebugLogDiagnostics minor 4** and
@@ -379,7 +380,7 @@ OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopt
 ### SkinAce minor 1 and Options 32.3.35.4.6.10.3.12.6.3.2.5: the AceGUI rows wear their owner's skin
 
 `LibKa0s-Skin-1.0` key 3.3.2.1.1.1.1
-([docs/api/Skin/version-4.7.5.2.3.1.1-docs.md](docs/api/Skin/version-4.7.5.2.3.1.1-docs.md) since
+([docs/api/Skin/version-4.8.6.2.4.1.2-docs.md](docs/api/Skin/version-4.8.6.2.4.1.2-docs.md) since
 SkinDefs minor 4 and Skin minor 4, and SkinDefs minors 5 and 6 and SkinPaint minor 3, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
 `LibKa0s-Options-1.0` key 32.3.35.4.6.10.3.12.6.3.2.5
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md)
@@ -468,7 +469,7 @@ reaches its console and panels through the names it already passes.
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md),
 a thirteenth file; the in-flight 32.3.35.4.6.10.3.12.6.3.2.5 document moved to it, never shipped) and
 `LibKa0s-Skin-1.0` key 4.4.2.1.1.1.1
-([docs/api/Skin/version-4.7.5.2.3.1.1-docs.md](docs/api/Skin/version-4.7.5.2.3.1.1-docs.md) since
+([docs/api/Skin/version-4.8.6.2.4.1.2-docs.md](docs/api/Skin/version-4.8.6.2.4.1.2-docs.md) since
 SkinDefs minors 5 and 6 and SkinPaint minor 3, below; the in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/` (`skinning-§3`; the owner's ruling R1, per addon).
 
@@ -501,7 +502,7 @@ SkinDefs minors 5 and 6 and SkinPaint minor 3, below; the in-flight 3.4.2.1.1.1.
 - **Skin minor 4: `Skin:OwnerLabel(owner)` and `Skin:WriteChoice(owner, source, skin)`**, the two
   members the copy needs: the label an owner registered with, and a write through the `opts.set` it
   registered, under pcall, which never moves the applied choice. Both are in the regenerated
-  `members-4.4.2.1.1.1.1.json` (`members-4.7.5.2.3.1.1.json` since SkinDefs minors 5, 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below).
+  `members-4.4.2.1.1.1.1.json` (`members-4.8.6.2.4.1.2.json` since SkinDefs minors 5, 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below).
 - **The ellipsis.** `COPY` carries U+2026, which `options-ui-§21` asks of a button that opens a
   confirmation; `tests/test_prose.lua`'s ASCII gate ratifies it for `LibKa0s/OptionsAppearance.lua`
   alone, beside the em dash and Core's close glyph.
@@ -554,8 +555,8 @@ document and manifest moved to it, never shipped). No member is added and no sig
 
 Extended on 2026-10-25, after the local tag and before any push (`LK-A2` of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-03` found). `LibKa0s-Skin-1.0` key
-4.5.2.1.1.1.1 (4.7.5.2.3.1.1 since SkinDefs minors 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below:
-[docs/api/Skin/version-4.7.5.2.3.1.1-docs.md](docs/api/Skin/version-4.7.5.2.3.1.1-docs.md);
+4.5.2.1.1.1.1 (4.8.6.2.4.1.2 since SkinDefs minors 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below:
+[docs/api/Skin/version-4.8.6.2.4.1.2-docs.md](docs/api/Skin/version-4.8.6.2.4.1.2-docs.md);
 the in-flight 4.4.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
 is added, removed or renamed, and every token minor 4 had resolves the same in every skin.
 
@@ -584,7 +585,7 @@ re-vendor.
 
 Extended on 2026-10-25, after the local tag and before any push (`LK-A3` of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-04` found). `LibKa0s-Skin-1.0` key
-4.6.2.1.1.1.1 (4.7.5.2.3.1.1 since SkinPaint minors 3 and 4, SkinDefs minor 7 and SkinPaintControls minor 2, below: [docs/api/Skin/version-4.7.5.2.3.1.1-docs.md](docs/api/Skin/version-4.7.5.2.3.1.1-docs.md);
+4.6.2.1.1.1.1 (4.8.6.2.4.1.2 since SkinPaint minors 3 and 4, SkinDefs minor 7 and SkinPaintControls minor 2, below: [docs/api/Skin/version-4.8.6.2.4.1.2-docs.md](docs/api/Skin/version-4.8.6.2.4.1.2-docs.md);
 the in-flight 4.5.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
 is added, removed or renamed, and every token minor 5 had resolves the same in every skin.
 
@@ -634,8 +635,8 @@ owes:** nothing; LootHistory reads the tokens at its next `LH-RV` re-vendor.
 ### SkinPaint minor 3: an EditBox's face goes back by path
 
 Extended on 2026-10-26, after the local tag and before any push (`LK-A4` of Ka0sAddonsCommonTasks
-`docs/2026-10-25-SKINNING/`, found by the owner's smoke test). `LibKa0s-Skin-1.0` key 4.6.3.1.1.1.1 (4.7.5.2.3.1.1 since SkinDefs minor 7, SkinPaint minor 4 and SkinPaintControls minor 2, below;
-[docs/api/Skin/version-4.7.5.2.3.1.1-docs.md](docs/api/Skin/version-4.7.5.2.3.1.1-docs.md); the
+`docs/2026-10-25-SKINNING/`, found by the owner's smoke test). `LibKa0s-Skin-1.0` key 4.6.3.1.1.1.1 (4.8.6.2.4.1.2 since SkinDefs minor 7, SkinPaint minor 4 and SkinPaintControls minor 2, below;
+[docs/api/Skin/version-4.8.6.2.4.1.2-docs.md](docs/api/Skin/version-4.8.6.2.4.1.2-docs.md); the
 in-flight 4.6.2.1.1.1.1 document and manifest moved to it, never shipped). No member is added,
 removed or renamed.
 
@@ -657,13 +658,13 @@ never handed back and the stock face returns by path; red on minor 2. Two font f
 `tests/test_skin_paint.lua` and `tests/test_skin_ace.lua` now answer `GetName`, as the client's named
 fonts do. **What a consumer owes:** nothing; LootHistory carries it at its next `LH-RV` re-vendor.
 
-### SkinDefs minor 7, SkinPaint minor 5, SkinPaintExtras minor 2, SkinPaintControls minor 3: the owner's notes on the skins
+### SkinDefs minor 8, SkinPaint minor 6, SkinPaintExtras minor 2, SkinPaintControls minor 4, SkinAce minor 2: the owner's notes on the skins
 
 Extended on 2026-10-26, after the local tag and before any push (`SF-01`..`SF-10` of
 Ka0sAddonsCommonTasks `docs/2026-10-26-SKIN_FEEDBACK/`: the owner's notes on the leg-1 screenshots in
 `docs/skins/screenshots/2026-10-26-leg1/`, then on the Skin Tester's showroom in every skin).
-`LibKa0s-Skin-1.0` key 4.7.5.2.3.1.1
-([docs/api/Skin/version-4.7.5.2.3.1.1-docs.md](docs/api/Skin/version-4.7.5.2.3.1.1-docs.md); the
+`LibKa0s-Skin-1.0` key 4.8.6.2.4.1.2
+([docs/api/Skin/version-4.8.6.2.4.1.2-docs.md](docs/api/Skin/version-4.8.6.2.4.1.2-docs.md); the
 in-flight 4.6.3.1.1.1.1 document and manifest moved to it, never shipped). No token or member is added,
 removed or renamed.
 
@@ -733,6 +734,27 @@ And a third round, on WoW Default alone:
   `-InActiveTab` art is drawn shorter. The selected tab is told by its white label.
 - **Its inputs, dropdowns and nav rail take a 1px edge**, the primary button's size (a 2px `bevelIn`
   before).
+
+And a fourth round, after the owner tested Loot History on the skins:
+
+- **Ka0s Default sets every token, and no skin is special (SkinDefs minor 8, SkinPaint minor 6,
+  SkinPaintControls minor 4, SkinAce minor 2).** The owner's ruling: "make sure even the Ka0s Default
+  has a setting for everything." An audit found 53 tokens Ka0s Default left nil, meaning "the client's
+  look", and about fifteen engine sites that treated it specially (a stock control left stock, Core's
+  own SKIN for the window, FadeRegions and FadeNineSlice doing nothing, ScrollBar's own thumb left
+  alone, AceGUI rows left stock). Each token now carries a value from Ka0s Default's palette: Friz
+  Quadrata set by name for body and title, JetBrains Mono for mono, the client's quality colors written
+  out, the slider's bar, a title and footer band, tooltip, popup and tab edges, list selection; or
+  `false`, the explicit none, for a decoration it does not draw. The engine paints it from its tokens
+  like every skin. `P.isDefault` stays, answering false, because LibKa0s-Options-1.0's `__chromeAway`
+  asks it and an Options copy vendored beside this one may be older; its comment there is stale until
+  Options is next released. Shell paints nothing when no `win.bg` resolves (a payload with no
+  SkinDefs.lua), rather than a transparent window.
+- **Azeroth is dark.** Its light parchment did not read in Loot History. It is dark tooled leather
+  (`#2B1D12`) with parchment text, gold headings and accent, leather buttons and the red wax seal for
+  the primary and the selected tab, and it now inherits Ka0s Default's semantic, quality, tooltip and
+  chart colors rather than overriding them in ink.
+- **WoW Forever** takes Atkinson Hyperlegible (its Barlow read blurry) and a step browner charcoal.
 
 Tests: the pins these overturn move with them (High Contrast's 1px controls; Glass's flat controls;
 Ka0s Default's reference sizes and square checkbox; the font object keyed by size; the Button's four
