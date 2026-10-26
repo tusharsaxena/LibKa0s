@@ -335,6 +335,48 @@ test("skin controls: ScrollBar's thumb states and the console's own bar match to
   assertEqual(F.only(tr, PAINT), "#4:SetColorTexture(0.240,0.240,0.270,0.300)\n#5:SetColorTexture(0.500,0.500,0.550,0.850)")
 end)
 
+test("skin controls: a skin's thumb fill lies over the bar's own thumb and follows it", function()
+  -- SkinDefs minor 9, SkinPaintControls minor 6 (the owner's note: the thumb barely visible in five
+  -- skins). red under: a ScrollBar that only tints the thumb art, or a fill that outlives a hidden thumb.
+  local m, Skin = F.env()
+  -- The client's hooksecurefunc: the fixture's is a recorder that never calls through.
+  m.hooksecurefunc = function(t, name, fn)
+    local orig = t[name]
+    rawset(t, name, function(...) local r = { orig(...) }; fn(...); return unpack(r) end)
+  end
+  local S = F.owner(Skin, OWNER, "contrast")
+  local sb = m.CreateFrame("Slider", nil, m.UIParent)
+  local thumb = sb:CreateTexture()
+  thumb:SetSize(16, 24)
+  rawset(sb, "GetThumbTexture", function() return thumb end)
+  S.ScrollBar(sb)
+  local fill = F.region(Skin, sb, "thumbFill")
+  assertTrue(fill ~= nil, "a fill is laid")
+  assertEqual(F.rgba(survey(m, fill).color), F.tok(Skin, "contrast", "scroll.thumbFill"), "in the skin's fill color")
+  assertEqual(survey(m, fill).layer, "OVERLAY", "over the thumb art")
+  local _, rel = fill:GetPoint(1)
+  assertTrue(rel == thumb, "anchored to the thumb, so it moves with it")
+  assertTrue(survey(m, fill).shown, "shown with the thumb")
+  thumb:Hide()
+  assertTrue(not survey(m, fill).shown, "hidden with the thumb")
+  thumb:Show()
+  assertTrue(survey(m, fill).shown, "and back with it")
+  S.ScrollBar(sb, { state = "off" })
+  assertEqual(survey(m, fill).color[4], F.tok(Skin, "contrast", "scroll.thumbFill"):match("([%d.]+)$") * 0.5,
+    "half alpha on a bar that is off")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertTrue(not survey(m, fill).shown, "Ka0s Default sets none, so none is drawn")
+end)
+
+test("skin controls: exactly the five skins the owner named set a thumb fill", function()
+  local _, Skin = F.env()
+  local want = { obsidian = true, contrast = true, ember = true, wow = true, midnight = true }
+  for _, def in ipairs(Skin:Skins()) do
+    local has = Skin:ResolveSkin(def.key)["scroll.thumbFill"] ~= nil
+    assertEqual(has, want[def.key] == true, def.key .. "'s thumb fill")
+  end
+end)
+
 test("skin controls: a bar's own thumb is tinted and its track drawn under every skin", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)

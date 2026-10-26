@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 5.8.8.3.5.1.3
+# `LibKa0s-Skin-1.0` — version 5.9.8.3.6.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **5** · `SkinDefs.lua` minor **8** · `SkinPaint.lua` minor **8** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **5** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
+| Files and minors | `Skin.lua` minor **5** · `SkinDefs.lua` minor **9** · `SkinPaint.lua` minor **8** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **6** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
@@ -408,6 +408,7 @@ eight skins*, below.
 | `scroll.gutter` | number | no | `20` |
 | `scroll.radius` | number | no | `0` |
 | `scroll.thumbTexture` | string | yes | none (`false`) |
+| `scroll.thumbFill` | color | yes | none (`false`) |
 
 ### Tabs and navigation
 
@@ -581,7 +582,7 @@ eight skins*, below.
 | `sem.warbandAlt` | color | no | `0.4, 0.78, 1, 1` |
 | `sem.unknown` | color | no | `0.6, 0.6, 0.6, 1` |
 
-**235 tokens.** The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
+**236 tokens.** `scroll.thumbFill` joined at SkinDefs minor 9: a flat fill over the scroll bar's own thumb, for the five skins whose tinted thumb art barely read. The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
 `tab.texture`, `tab.onTexture`) joined at SkinDefs minor 2, for WoW Default's Blizzard art. The
 eight **Widgets tokens** (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg`, `list.box`,
 `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`) joined at SkinDefs minor 3, so the drag handle and
@@ -796,7 +797,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 | `EditBox(eb, opts)` | A text input: the template's pieces faded, the flat-control box, the typed text and the hint (`opts.placeholder`, else `eb.hint`), the focus edge while it has the keys. `opts.padInput` sets 6px insets; `opts.noBorder` draws no edge and hooks no focus. | `input.*` |
 | `Checkbox(cb, opts)` | A check button, under every skin including Ka0s Default (SkinPaintControls minor 2: a square box rather than the client's round check button): its stock art faded (the stock check too unless `opts.stockCheck`), a box `opts.borderInset` inside it, an edge on the holder, a mark three pixels inside the box shown while checked (following `OnClick`, `OnShow` and `SetChecked`), and with `opts.hover` a highlight. | `check.*`, `menu.hover` |
 | `Dropdown(dd, opts)` | A dropdown button: the template's pieces faded, the flat-control box, the arrow (`dd.arrow` / `dd.Arrow`), the label (`dd.text` / `dd.Text`). | `input.*`, `icon.tint` |
-| `ScrollBar(sb, opts)` | A scroll bar: `opts.track` / `opts.thumb` (textures the caller drew) filled; `opts.state` `"on"` / `"off"` tints the bar's own thumb; otherwise, away from Ka0s Default, the bar's own thumb takes the knob art or the thumb color over a track region. | `scroll.*` |
+| `ScrollBar(sb, opts)` | A scroll bar: `opts.track` / `opts.thumb` (textures the caller drew) filled; `opts.state` `"on"` / `"off"` tints the bar's own thumb; otherwise the bar's own thumb takes the knob art or the thumb color over a track region. Where the skin sets `scroll.thumbFill` (SkinPaintControls minor 6), a flat fill of it lies over the bar's own thumb, inset to the knob's middle, anchored to it, shown and hidden with it, at half alpha while `opts.state` is `"off"`. | `scroll.*` |
 | `Slider(slider, opts)` | A slider's track (a 4px bar centered in the slider since SkinPaintControls minor 3, Ka0s Default's host-drawn shape; its edge on the holder, none in every shipped skin), fill (`opts.fill`) and thumb (`opts.thumb`, else its own). Every slider token is nil in Ka0s Default. | `slider.*` |
 | `Tab(tab, opts)` | A tab: its stock art (and `opts.stock`) faded, the backing (`opts.fill`, else a region: the tab art, else the color and gradient), an underline on the holder while selected, the label (`opts.text`, else its own). `opts.selected` is the first state. | `tab.*` |
 | `SetTabSelection(tab, selected)` | Moves a painted tab's state and repaints it; the state lives in the tab's record, so a skin switch keeps it. | as `Tab` |
@@ -1037,6 +1038,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `scroll.thumbOff` | `#3A3A42` | `#8A6A36` | `#FFFFFF .35` | `#FFFFFF` | `#8A3C1C` | `#9A7B2A` | `#B08A3E` | `#D9D4CC` |
 | `scroll.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 | `scroll.thumbTexture` | · | · | · | · | · | `UI-ScrollBar-Knob` | · | · |
+| `scroll.thumbFill` | `#4DB8FF .9` | · | · | `#FFE600` | `#FF7A33 .9` | `#FFD100 .9` | `#F6D27A .9` | · |
 
 #### Tabs and navigation
 
@@ -1153,7 +1155,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 `gtip.value` is in no row: every skin inherits Ka0s Default's white.
 
-Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 8): Obsidian 148, Azeroth 150, Glass 150, High Contrast 164, Ember 146, WoW Default 147, WoW Midnight 147, WoW Forever 149.
+Tokens each skin sets of its own (re-counted from the live tables at SkinDefs minor 9): Obsidian 149, Azeroth 150, Glass 150, High Contrast 165, Ember 147, WoW Default 148, WoW Midnight 148, WoW Forever 149.
 
 ## The EllesmereUI provider
 

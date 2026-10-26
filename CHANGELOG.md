@@ -30,12 +30,14 @@ relative to Ka0s Default's, every labeled string in the skin's face, dark labels
 buttons set apart, sliders one shape, a disabled button dimmed and Ka0s Default's checkbox square.
 Extended a sixth time on 2026-10-27 with Skin minor 5, SkinPaint minor 8, SkinAce minor 3,
 OptionsScroll minor 7 and OptionsAppearance minor 2 (`SF-38`): the Appearance tab's Scope, "Ignore
-settings panel" and "Ignore fonts", per addon, copied with the skin.
+settings panel" and "Ignore fonts", per addon, copied with the skin, both live (`SF-41`). Extended a
+seventh time on 2026-10-27 with SkinDefs minor 9 and SkinPaintControls minor 6 (`SF-44`): a scroll
+thumb fill for the five skins whose thumb barely read.
 
 Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 7**
-(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 5**, **SkinDefs minor 8**,
-**SkinPaint minor 8**, **SkinPaintExtras minor 3**, **SkinPaintControls minor 5**, **SkinEUI
-minor 1** and **SkinAce minor 3** (the new major `LibKa0s-Skin-1.0`, key **5.8.8.3.5.1.3**); **Widgets minor 16**,
+(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 5**, **SkinDefs minor 9**,
+**SkinPaint minor 8**, **SkinPaintExtras minor 3**, **SkinPaintControls minor 6**, **SkinEUI
+minor 1** and **SkinAce minor 3** (the new major `LibKa0s-Skin-1.0`, key **5.9.8.3.6.1.3**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
 **WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
 **16.2.6.4.4.1**, a new sixth file); **DebugLog minor 22**, **DebugLogDiagnostics minor 4** and
@@ -383,7 +385,7 @@ OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopt
 ### SkinAce minor 1 and Options 32.3.35.4.6.10.3.12.6.3.2.5: the AceGUI rows wear their owner's skin
 
 `LibKa0s-Skin-1.0` key 3.3.2.1.1.1.1
-([docs/api/Skin/version-5.8.8.3.5.1.3-docs.md](docs/api/Skin/version-5.8.8.3.5.1.3-docs.md) since
+([docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md) since
 SkinDefs minor 4 and Skin minor 4, and SkinDefs minors 5 and 6 and SkinPaint minor 3, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
 `LibKa0s-Options-1.0` key 32.3.35.4.6.10.3.12.6.3.2.5
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md)
@@ -472,7 +474,7 @@ reaches its console and panels through the names it already passes.
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md),
 a thirteenth file; the in-flight 32.3.35.4.6.10.3.12.6.3.2.5 document moved to it, never shipped) and
 `LibKa0s-Skin-1.0` key 4.4.2.1.1.1.1
-([docs/api/Skin/version-5.8.8.3.5.1.3-docs.md](docs/api/Skin/version-5.8.8.3.5.1.3-docs.md) since
+([docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md) since
 SkinDefs minors 5 and 6 and SkinPaint minor 3, below; the in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/` (`skinning-§3`; the owner's ruling R1, per addon).
 
@@ -505,7 +507,7 @@ SkinDefs minors 5 and 6 and SkinPaint minor 3, below; the in-flight 3.4.2.1.1.1.
 - **Skin minor 4: `Skin:OwnerLabel(owner)` and `Skin:WriteChoice(owner, source, skin)`**, the two
   members the copy needs: the label an owner registered with, and a write through the `opts.set` it
   registered, under pcall, which never moves the applied choice. Both are in the regenerated
-  `members-4.4.2.1.1.1.1.json` (`members-5.8.8.3.5.1.3.json` since SkinDefs minors 5, 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below).
+  `members-4.4.2.1.1.1.1.json` (`members-5.9.8.3.6.1.3.json` since SkinDefs minors 5, 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below).
 - **The ellipsis.** `COPY` carries U+2026, which `options-ui-§21` asks of a button that opens a
   confirmation; `tests/test_prose.lua`'s ASCII gate ratifies it for `LibKa0s/OptionsAppearance.lua`
   alone, beside the em dash and Core's close glyph.
@@ -558,8 +560,8 @@ document and manifest moved to it, never shipped). No member is added and no sig
 
 Extended on 2026-10-25, after the local tag and before any push (`LK-A2` of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-03` found). `LibKa0s-Skin-1.0` key
-4.5.2.1.1.1.1 (5.8.8.3.5.1.3 since SkinDefs minors 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below:
-[docs/api/Skin/version-5.8.8.3.5.1.3-docs.md](docs/api/Skin/version-5.8.8.3.5.1.3-docs.md);
+4.5.2.1.1.1.1 (5.9.8.3.6.1.3 since SkinDefs minors 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below:
+[docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md);
 the in-flight 4.4.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
 is added, removed or renamed, and every token minor 4 had resolves the same in every skin.
 
@@ -588,7 +590,7 @@ re-vendor.
 
 Extended on 2026-10-25, after the local tag and before any push (`LK-A3` of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-04` found). `LibKa0s-Skin-1.0` key
-4.6.2.1.1.1.1 (5.8.8.3.5.1.3 since SkinPaint minors 3 and 4, SkinDefs minor 7 and SkinPaintControls minor 2, below: [docs/api/Skin/version-5.8.8.3.5.1.3-docs.md](docs/api/Skin/version-5.8.8.3.5.1.3-docs.md);
+4.6.2.1.1.1.1 (5.9.8.3.6.1.3 since SkinPaint minors 3 and 4, SkinDefs minor 7 and SkinPaintControls minor 2, below: [docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md);
 the in-flight 4.5.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
 is added, removed or renamed, and every token minor 5 had resolves the same in every skin.
 
@@ -638,8 +640,8 @@ owes:** nothing; LootHistory reads the tokens at its next `LH-RV` re-vendor.
 ### SkinPaint minor 3: an EditBox's face goes back by path
 
 Extended on 2026-10-26, after the local tag and before any push (`LK-A4` of Ka0sAddonsCommonTasks
-`docs/2026-10-25-SKINNING/`, found by the owner's smoke test). `LibKa0s-Skin-1.0` key 4.6.3.1.1.1.1 (5.8.8.3.5.1.3 since SkinDefs minor 7, SkinPaint minor 4 and SkinPaintControls minor 2, below;
-[docs/api/Skin/version-5.8.8.3.5.1.3-docs.md](docs/api/Skin/version-5.8.8.3.5.1.3-docs.md); the
+`docs/2026-10-25-SKINNING/`, found by the owner's smoke test). `LibKa0s-Skin-1.0` key 4.6.3.1.1.1.1 (5.9.8.3.6.1.3 since SkinDefs minor 7, SkinPaint minor 4 and SkinPaintControls minor 2, below;
+[docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md); the
 in-flight 4.6.2.1.1.1.1 document and manifest moved to it, never shipped). No member is added,
 removed or renamed.
 
@@ -661,11 +663,35 @@ never handed back and the stock face returns by path; red on minor 2. Two font f
 `tests/test_skin_paint.lua` and `tests/test_skin_ace.lua` now answer `GetName`, as the client's named
 fonts do. **What a consumer owes:** nothing; LootHistory carries it at its next `LH-RV` re-vendor.
 
+### SkinDefs minor 9, SkinPaintControls minor 6: the scroll thumb fill
+
+Extended on 2026-10-27, after the local tag and before any push (`SF-44` of Ka0sAddonsCommonTasks
+`docs/2026-10-26-SKIN_FEEDBACK/`). `LibKa0s-Skin-1.0` key 5.9.8.3.6.1.3
+([docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md); the
+in-flight 5.8.8.3.5.1.3 document and manifest moved to it, never shipped).
+
+The owner: the scroll bar's thumb is barely visible in Obsidian, High Contrast, Ember, WoW Default
+and WoW Midnight (good in Ka0s Default, Azeroth and Glass). The skins only ever tint the client's
+thumb art, and a tint can only darken it: High Contrast's is pure white and WoW Default leaves the
+knob as it is, so no tint could brighten them.
+
+- **`scroll.thumbFill` (SkinDefs minor 9)**, a nilable color, set in the five skins' accents
+  (Obsidian `#4DB8FF`, High Contrast yellow, Ember `#FF7A33`, WoW Default `#FFD100`, WoW Midnight
+  `#F6D27A`, each at .9 but High Contrast's); Ka0s Default sets it `false`, as every skin the owner
+  called good leaves it.
+- **ScrollBar (SkinPaintControls minor 6)** lays it as a flat OVERLAY region over the bar's own
+  thumb, inset to the knob's middle and anchored to the thumb, so it moves with it; a hook on the
+  thumb's Show / Hide / SetShown keeps it shown and hidden with the thumb; half alpha on a bar the
+  caller says is off.
+
+Tests: two new cases (the fill's color, layer, anchor and show/hide following the thumb, half alpha
+when off, none on Ka0s Default; exactly the five skins set one).
+
 ### Skin minor 5, SkinPaint minor 8, SkinAce minor 3, OptionsScroll minor 7, OptionsAppearance minor 2: the Appearance tab's Scope
 
 Extended on 2026-10-27, after the local tag and before any push (`SF-38` of Ka0sAddonsCommonTasks
-`docs/2026-10-26-SKIN_FEEDBACK/`, the owner's request). `LibKa0s-Skin-1.0` key 5.8.8.3.5.1.3
-([docs/api/Skin/version-5.8.8.3.5.1.3-docs.md](docs/api/Skin/version-5.8.8.3.5.1.3-docs.md));
+`docs/2026-10-26-SKIN_FEEDBACK/`, the owner's request). `LibKa0s-Skin-1.0` key 5.9.8.3.6.1.3
+([docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md));
 `LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.7.3.2.5.2
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md));
 both documents and manifests moved from the in-flight keys, never shipped.
@@ -707,8 +733,8 @@ Skin Tester do, at their re-vendor).
 Extended on 2026-10-26, after the local tag and before any push (`SF-01`..`SF-10` of
 Ka0sAddonsCommonTasks `docs/2026-10-26-SKIN_FEEDBACK/`: the owner's notes on the leg-1 screenshots in
 `docs/skins/screenshots/2026-10-26-leg1/`, then on the Skin Tester's showroom in every skin).
-`LibKa0s-Skin-1.0` key 5.8.8.3.5.1.3
-([docs/api/Skin/version-5.8.8.3.5.1.3-docs.md](docs/api/Skin/version-5.8.8.3.5.1.3-docs.md); the
+`LibKa0s-Skin-1.0` key 5.9.8.3.6.1.3
+([docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md); the
 in-flight 4.6.3.1.1.1.1 document and manifest moved to it, never shipped). No token or member is added,
 removed or renamed.
 
