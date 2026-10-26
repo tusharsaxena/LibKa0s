@@ -341,6 +341,41 @@ local function unpaintPage(panel)
   if bg then bg:Hide() end
 end
 
+--- The divider atlas tinted `title.text`, its own tint recorded the first time (unpaintPage's).
+local function tintDivider(S, panel)
+  local div = panel.divider
+  local r, g, b = S.Color("title.text")
+  if not (div and div.SetVertexColor and r) then return end
+  if not panel.__ka0sDividerPrior and div.GetVertexColor then
+    panel.__ka0sDividerPrior = { div:GetVertexColor() }
+  end
+  div:SetVertexColor(r, g, b)
+end
+
+--- The page's opaque `win.bg` backdrop, made once; hidden when the owner's skin draws none.
+local function pageBackdrop(owner, S, panel)
+  local bg = panel.__ka0sSkinBg
+  local br, bgG, bb = S.Color("win.bg")
+  if not (lib.__chromeAway(owner) and br) then
+    if bg then bg:Hide() end
+    return
+  end
+  if not bg and panel.CreateTexture then
+    bg = panel:CreateTexture(nil, "BACKGROUND", nil, -8)
+    -- A bare stub answers the frame itself (SkinPaint's P.tex refuses the same): never keep the
+    -- page as its own backdrop, whose Show and Hide would show and hide the page (minor 7).
+    if bg == panel then bg = nil end
+    if bg then
+      bg:SetAllPoints(panel)
+      panel.__ka0sSkinBg = bg
+    end
+  end
+  if bg then
+    bg:SetColorTexture(br, bgG, bb, 1)
+    bg:Show()
+  end
+end
+
 local function paintPage(owner, panel)
   local S = lib.__chromeSkin(owner)
   if not S then
@@ -351,35 +386,8 @@ local function paintPage(owner, panel)
     S.Text(panel.title, "title")
     lib.__chromeTargets[panel.title] = owner
   end
-  local div = panel.divider
-  local r, g, b = S.Color("title.text")
-  if div and div.SetVertexColor and r then
-    if not panel.__ka0sDividerPrior and div.GetVertexColor then
-      panel.__ka0sDividerPrior = { div:GetVertexColor() }
-    end
-    div:SetVertexColor(r, g, b)
-  end
-  local bg = panel.__ka0sSkinBg
-  local away = lib.__chromeAway(owner)
-  local br, bgG, bb = S.Color("win.bg")
-  if away and br then
-    if not bg and panel.CreateTexture then
-      bg = panel:CreateTexture(nil, "BACKGROUND", nil, -8)
-      -- A bare stub answers the frame itself (SkinPaint's P.tex refuses the same): never keep the
-      -- page as its own backdrop, whose Show and Hide would show and hide the page (minor 7).
-      if bg == panel then bg = nil end
-      if bg then
-        bg:SetAllPoints(panel)
-        panel.__ka0sSkinBg = bg
-      end
-    end
-    if bg then
-      bg:SetColorTexture(br, bgG, bb, 1)
-      bg:Show()
-    end
-  elseif bg then
-    bg:Hide()
-  end
+  tintDivider(S, panel)
+  pageBackdrop(owner, S, panel)
 end
 
 --- Hand an instance's `O.AceGUI` to LibKa0s-Skin-1.0's AceGUI rows (SkinAce.lua's
