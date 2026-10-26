@@ -20,12 +20,14 @@ defect behind the owner's "Attempt to register an invalid font" reports. Extende
 day with SkinDefs minor 5 (`LK-A2`): nine Semantic tokens for LootHistory's bind-state locks and its
 row menu's destructive items, the library gap its `LH-03` item found. Extended a third time the
 same day with SkinDefs minor 6 (`LK-A3`): eleven tokens for every other LootHistory constant no
-token held exactly, in one sweep, the library gap its `LH-04` item found.
+token held exactly, in one sweep, the library gap its `LH-04` item found. Extended a fourth time on
+2026-10-26 with SkinPaint minor 3 (`LK-A4`): leaving a skin's font puts an EditBox's face back by
+path, the defect behind the owner's Forever -> Midnight client crash.
 
 Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 7**
 (`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 6**,
-**SkinPaint minor 2**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1**, **SkinEUI
-minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **4.6.2.1.1.1.1**); **Widgets minor 16**,
+**SkinPaint minor 3**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1**, **SkinEUI
+minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **4.6.3.1.1.1.1**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
 **WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
 **16.2.6.4.4.1**, a new sixth file); **DebugLog minor 22**, **DebugLogDiagnostics minor 4** and
@@ -373,8 +375,8 @@ OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopt
 ### SkinAce minor 1 and Options 32.3.35.4.6.10.3.12.6.3.2.5: the AceGUI rows wear their owner's skin
 
 `LibKa0s-Skin-1.0` key 3.3.2.1.1.1.1
-([docs/api/Skin/version-4.6.2.1.1.1.1-docs.md](docs/api/Skin/version-4.6.2.1.1.1.1-docs.md) since
-SkinDefs minor 4 and Skin minor 4, and SkinDefs minors 5 and 6, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
+([docs/api/Skin/version-4.6.3.1.1.1.1-docs.md](docs/api/Skin/version-4.6.3.1.1.1.1-docs.md) since
+SkinDefs minor 4 and Skin minor 4, and SkinDefs minors 5 and 6 and SkinPaint minor 3, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
 `LibKa0s-Options-1.0` key 32.3.35.4.6.10.3.12.6.3.2.5
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md)
 since Options minor 33, below; the in-flight 31.2.35.4.6.10.3.12.5.3.2.5 document moved to it), LK-08 of Ka0sAddonsCommonTasks
@@ -462,8 +464,8 @@ reaches its console and panels through the names it already passes.
 ([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md),
 a thirteenth file; the in-flight 32.3.35.4.6.10.3.12.6.3.2.5 document moved to it, never shipped) and
 `LibKa0s-Skin-1.0` key 4.4.2.1.1.1.1
-([docs/api/Skin/version-4.6.2.1.1.1.1-docs.md](docs/api/Skin/version-4.6.2.1.1.1.1-docs.md) since
-SkinDefs minors 5 and 6, below; the in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
+([docs/api/Skin/version-4.6.3.1.1.1.1-docs.md](docs/api/Skin/version-4.6.3.1.1.1.1-docs.md) since
+SkinDefs minors 5 and 6 and SkinPaint minor 3, below; the in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/` (`skinning-§3`; the owner's ruling R1, per addon).
 
 - **`OptionsAppearance.lua` (minor 1), a new file** paired on the shell's minor
@@ -495,7 +497,7 @@ SkinDefs minors 5 and 6, below; the in-flight 3.4.2.1.1.1.1 document moved to it
 - **Skin minor 4: `Skin:OwnerLabel(owner)` and `Skin:WriteChoice(owner, source, skin)`**, the two
   members the copy needs: the label an owner registered with, and a write through the `opts.set` it
   registered, under pcall, which never moves the applied choice. Both are in the regenerated
-  `members-4.4.2.1.1.1.1.json` (`members-4.6.2.1.1.1.1.json` since SkinDefs minors 5 and 6, below).
+  `members-4.4.2.1.1.1.1.json` (`members-4.6.3.1.1.1.1.json` since SkinDefs minors 5 and 6 and SkinPaint minor 3, below).
 - **The ellipsis.** `COPY` carries U+2026, which `options-ui-§21` asks of a button that opens a
   confirmation; `tests/test_prose.lua`'s ASCII gate ratifies it for `LibKa0s/OptionsAppearance.lua`
   alone, beside the em dash and Core's close glyph.
@@ -548,8 +550,8 @@ document and manifest moved to it, never shipped). No member is added and no sig
 
 Extended on 2026-10-25, after the local tag and before any push (`LK-A2` of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-03` found). `LibKa0s-Skin-1.0` key
-4.5.2.1.1.1.1 (4.6.2.1.1.1.1 since SkinDefs minor 6, below:
-[docs/api/Skin/version-4.6.2.1.1.1.1-docs.md](docs/api/Skin/version-4.6.2.1.1.1.1-docs.md);
+4.5.2.1.1.1.1 (4.6.3.1.1.1.1 since SkinDefs minor 6 and SkinPaint minor 3, below:
+[docs/api/Skin/version-4.6.3.1.1.1.1-docs.md](docs/api/Skin/version-4.6.3.1.1.1.1-docs.md);
 the in-flight 4.4.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
 is added, removed or renamed, and every token minor 4 had resolves the same in every skin.
 
@@ -578,7 +580,7 @@ re-vendor.
 
 Extended on 2026-10-25, after the local tag and before any push (`LK-A3` of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-04` found). `LibKa0s-Skin-1.0` key
-4.6.2.1.1.1.1 ([docs/api/Skin/version-4.6.2.1.1.1.1-docs.md](docs/api/Skin/version-4.6.2.1.1.1.1-docs.md);
+4.6.2.1.1.1.1 (4.6.3.1.1.1.1 since SkinPaint minor 3, below: [docs/api/Skin/version-4.6.3.1.1.1.1-docs.md](docs/api/Skin/version-4.6.3.1.1.1.1-docs.md);
 the in-flight 4.5.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
 is added, removed or renamed, and every token minor 5 had resolves the same in every skin.
 
@@ -624,6 +626,32 @@ the `40ff40`, `ff4040`, `808080` and `ffd100` encodings; two new `tests/test_ski
 hold every skin's window ones to 3:1 contrast on its window and its two `gtip` ones to 4.5:1 on the
 dark tooltip, and pin which skins inherit and which override. Red on minor 5. **What a consumer
 owes:** nothing; LootHistory reads the tokens at its next `LH-RV` re-vendor.
+
+### SkinPaint minor 3: an EditBox's face goes back by path
+
+Extended on 2026-10-26, after the local tag and before any push (`LK-A4` of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`, found by the owner's smoke test). `LibKa0s-Skin-1.0` key 4.6.3.1.1.1.1
+([docs/api/Skin/version-4.6.3.1.1.1.1-docs.md](docs/api/Skin/version-4.6.3.1.1.1.1-docs.md); the
+in-flight 4.6.2.1.1.1.1 document and manifest moved to it, never shipped). No member is added,
+removed or renamed.
+
+- **The defect.** Moving LootHistory from WoW Forever to WoW Midnight crashed the client with
+  `STACK_OVERFLOW` inside `EditBox:SetFontObject` (`SkinPaint.lua:400`, from the History search
+  box's repaint). Midnight sets no body face, so `P.font` put back the font the box had before
+  Forever's reached it, and the font object it had recorded for the box was the anonymous one the
+  client's EditBox answers `GetFontObject` with: the owner's probe found
+  `e:SetFontObject(GameFontHighlightSmall)` followed by `e:GetFontObject()` to be an unnamed Font,
+  not `GameFontHighlightSmall`. Handing that object back recursed in the client without end.
+- **The fix.** `P.font` records a prior font object only when it is a named font (a global font
+  name, or an object whose `GetName` answers one) that is not the target itself; otherwise it
+  records the face, and `P.unfont` puts it back with `SetFont(path, size, flags)`. A FontString
+  keeps getting its named font object back, as before.
+
+Tests: a new `tests/test_skin_paint_controls.lua` case models the client's EditBox (an anonymous
+`GetFontObject`) through Ka0s Default -> Forever -> Midnight and asserts the anonymous object is
+never handed back and the stock face returns by path; red on minor 2. Two font fakes in
+`tests/test_skin_paint.lua` and `tests/test_skin_ace.lua` now answer `GetName`, as the client's named
+fonts do. **What a consumer owes:** nothing; LootHistory carries it at its next `LH-RV` re-vendor.
 
 ### Docs and process
 

@@ -478,7 +478,7 @@ test("skin paint: Text colors a role, and a skin's font reaches it through the o
   local m, Skin = F.env({ lsm = LSM })
   local S = F.owner(Skin, OWNER)
   local fs = m.CreateFrame("Frame"):CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  local stock = { name = "GameFontNormal" }
+  local stock = { name = "GameFontNormal", GetName = function(self) return self.name end }
   fs:SetFontObject(stock)
   S.Text(fs, "heading")
   assertEqual(F.rgba(survey(m, fs).textColor), F.tok(Skin, "ka0s", "text.heading"))

@@ -212,7 +212,7 @@ test("skin ace: a Label keeps the skin's font through its host's SetFontObject, 
   local skinFont = lbl.label:GetFontObject()
   assertTrue(type(skinFont) == "table" and tostring(skinFont.name):find("LibKa0sSkin_LootHistory_body", 1, true),
     "the owner's body font object")
-  local hostFont = { name = "HostHeadingFont" }
+  local hostFont = { name = "HostHeadingFont", GetName = function(self) return self.name end }
   lbl:SetFontObject(hostFont)
   assertTrue(lbl.label:GetFontObject() == skinFont, "the host's set is followed by the skin's font again")
   O.AceGUI:Release(lbl)

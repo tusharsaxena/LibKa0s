@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 4.6.2.1.1.1.1
+# `LibKa0s-Skin-1.0` — version 4.6.3.1.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **6** · `SkinPaint.lua` minor **2** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
+| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **6** · `SkinPaint.lua` minor **3** · `SkinPaintExtras.lua` minor **1** · `SkinPaintControls.lua` minor **1** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **1** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 4, SkinDefs = 6, SkinPaint = 2, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 4, SkinDefs = 6, SkinPaint = 3, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
 
 ## What this major is
 
@@ -691,7 +691,11 @@ answers nil.
   `font.shadow` is false) a 1, -1 black shadow, then set on the string with `SetFontObject`: from
   12.0.7 a runtime `SetShadow*` on a FontString no longer renders, a font object's shadow does. A nil
   face token (every font token in Ka0s Default) leaves the string's font alone, and puts back the
-  font object it had before a skin's face reached it. Faces resolve through LibSharedMedia.
+  font it had before a skin's face reached it: its font object when that was a named font, else
+  its face by path, size and flags. An EditBox in the client answers `GetFontObject` with an
+  anonymous font object rather than the one it was given, and handing that back through
+  `SetFontObject` overflows the client's stack (SkinPaint minor 3). Faces resolve through
+  LibSharedMedia.
 - **Colors.** A text or vertex color whose alpha is 1 is passed as three components, as every call
   site writes them; fills and backdrop colors as four. A color from a nilable token, or any color on
   a stock target, records the prior color first and puts it back when the token resolves to nil.

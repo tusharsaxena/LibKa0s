@@ -531,7 +531,7 @@ Total.
 - skin paint: Font and White put the body font and color on a string
 - skin paint: the getters answer the owner's skin
 
-### test_skin_paint_controls.lua (23)
+### test_skin_paint_controls.lua (24)
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
@@ -540,6 +540,7 @@ Total.
 - skin controls: WhiteButtonLabel and StateButtonLabel
 - skin controls: EditBox on Ka0s Default paints the search box's backdrop, call for call
 - skin controls: EditBox fades a template's pieces and colors its text and hint in a skin
+- skin controls: leaving a skin font puts an EditBox's face back by path, never its anonymous font object
 - skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call
 - skin controls: Checkbox draws a box and a mark that follows the check
 - skin controls: WoW Default's checkbox is the client's art; Ka0s Default leaves it stock
@@ -3421,7 +3422,7 @@ Total.
 | test_skin.lua | 27 |
 | test_skin_defs.lua | 19 |
 | test_skin_paint.lua | 29 |
-| test_skin_paint_controls.lua | 23 |
+| test_skin_paint_controls.lua | 24 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 21 |
 | test_widgets.lua | 58 |
@@ -3532,4 +3533,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3006** |
+| **Total** | **3007** |

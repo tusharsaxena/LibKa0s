@@ -178,6 +178,29 @@ test("skin controls: EditBox fades a template's pieces and colors its text and h
   assertEqual(colors[#colors], "1,1,1,1", "a nil input.text puts the prior color back")
 end)
 
+test("skin controls: leaving a skin font puts an EditBox's face back by path, never its anonymous font object", function()
+  -- The client's EditBox answers GetFontObject with an anonymous font object, not the named one it
+  -- was given (owner probe, 2026-10-26: `e:SetFontObject(GameFontHighlightSmall)` then
+  -- `e:GetFontObject()` is an unnamed Font, `~= GameFontHighlightSmall`). Handing that object back
+  -- through SetFontObject overflowed the client's stack: Forever -> Midnight crashed the game.
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Barlow"] = "Fonts\\Barlow.ttf" } })
+  local S = F.owner(Skin, OWNER)
+  local eb = m.CreateFrame("EditBox", nil, m.UIParent)
+  local anon = { GetName = function() return nil end }
+  local objects, faces, current = {}, {}, anon
+  rawset(eb, "SetFontObject", function(_, obj) objects[#objects + 1] = obj; current = obj end)
+  rawset(eb, "GetFontObject", function() return current end)
+  rawset(eb, "SetFont", function(_, path, size, flags) faces[#faces + 1] = { path, size, flags } end)
+  rawset(eb, "GetFont", function() return "Fonts\\FRIZQT__.TTF", 10, "" end)
+  S.EditBox(eb)
+  Skin:SetChoice(OWNER, "ka0s", "forever")
+  assertEqual(#objects, 1, "Forever gives the box the owner's body font object")
+  Skin:SetChoice(OWNER, "ka0s", "midnight")
+  for _, obj in ipairs(objects) do assertFalse(obj == anon, "the anonymous font object is never handed back") end
+  assertEqual(#faces, 1, "Midnight has no body face: the stock face goes back by path")
+  assertEqual(table.concat(faces[1], "|"), "Fonts\\FRIZQT__.TTF|10|")
+end)
+
 test("skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call", function()
   local m, Skin = F.env()
   local W = withWidgets(m)

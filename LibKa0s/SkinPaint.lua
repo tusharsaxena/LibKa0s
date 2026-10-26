@@ -61,7 +61,11 @@
 local lib = LibStub and LibStub("LibKa0s-Skin-1.0", true)
 if not lib then return end   -- the shell refused (no Core, or below its floor): nothing to attach to
 
-local PAINT_MINOR = 2
+-- Minor 3: P.font records a target's prior font OBJECT only when it is a named font that is not the
+-- target itself. The client's EditBox answers GetFontObject with an anonymous font object, not the
+-- named one it was given, and handing that back through SetFontObject overflowed the client's stack
+-- (Forever -> Midnight crashed the game, 2026-10-26); such a target gets its face back by path.
+local PAINT_MINOR = 3
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
 lib.__paintMinor      = PAINT_MINOR
@@ -391,7 +395,19 @@ local function ownerFont(owner, role, path, size, flags, shadow)
   return obj
 end
 
---- Put `fs` back on the font it had before the first skin font reached it.
+--- `obj` when it is a font a target can be handed back safely: a font's global name, or a named
+--- font object that is not the target. An anonymous one (what the client's EditBox answers, never
+--- the font it was given) is nil, so the face goes back by path instead.
+local function namedFont(fs, obj)
+  if type(obj) == "string" then return obj ~= "" and obj or nil end
+  if type(obj) ~= "table" or obj == fs or type(obj.GetName) ~= "function" then return nil end
+  local ok, name = pcall(obj.GetName, obj)
+  if ok and type(name) == "string" and name ~= "" then return obj end
+  return nil
+end
+
+--- Put `fs` back on the font it had before the first skin font reached it: its named font object
+--- when it had one, else its face by path, size and flags.
 function P.unfont(rec, fs)
   local fonts = saved(rec, "font")
   local s = fonts[fs]
@@ -414,7 +430,7 @@ function P.font(owner, rec, fs, role)
   local fonts = saved(rec, "font")
   if not fonts[fs] then
     local p, s, f = fs:GetFont()
-    fonts[fs] = { obj = fs:GetFontObject(), path = p, size = s, flags = f }
+    fonts[fs] = { obj = namedFont(fs, fs:GetFontObject()), path = p, size = s, flags = f }
   end
   local size = T[spec.size] or fonts[fs].size or 12
   local flags = T["font.outline"] or ""
