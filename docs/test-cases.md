@@ -2270,11 +2270,12 @@ Total.
 - reset tooltip: notes.resetAll is the button's own and does not reach the member
 - reset tooltip: OptionsCompose is at minor 11 or later
 
-### test_options_skin.lua (15)
+### test_options_skin.lua (16)
 
 - options skin: a page with no registered owner is today's paint, call for call
 - options skin: an owner-less page records nothing in the Skin major
 - options skin: an owned page paints its header and an opaque backdrop from the skin
+- options skin: a page whose CreateTexture answers the page keeps no backdrop and stays hidden
 - options skin: an owned page's tab strip fades the client's art and wears the tab roles
 - options skin: an owned page's rail, drawer and cover paint from the skin
 - options skin: a skin switch repaints the owned page with no reload, Ka0s Default included
@@ -3501,7 +3502,7 @@ Total.
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
-| test_options_skin.lua | 15 |
+| test_options_skin.lua | 16 |
 | test_options_compose_skin.lua | 10 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
@@ -3552,4 +3553,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3026** |
+| **Total** | **3027** |

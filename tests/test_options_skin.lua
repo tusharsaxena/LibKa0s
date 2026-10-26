@@ -140,6 +140,22 @@ test("options skin: an owned page paints its header and an opaque backdrop from 
   assertEqual(F.rgba(p.color), rgb(Skin:ResolveSkin("azeroth")["win.bg"]), "win.bg at full alpha")
 end)
 
+test("options skin: a page whose CreateTexture answers the page keeps no backdrop and stays hidden", function()
+  -- OptionsScroll minor 7. A bare stub answers the frame itself; kept as the backdrop, its Show
+  -- would show the page on every looks change. red under: storing what CreateTexture answered.
+  local m, Skin, lib = env()
+  F.owner(Skin, OWNER, "azeroth")
+  local ctx = page((instance(lib, OWNER)))
+  local panel = ctx.panel
+  rawset(panel, "__ka0sSkinBg", nil)
+  rawset(panel, "CreateTexture", function(self) return self end)
+  panel:Hide()
+  Skin:SetChoice(OWNER, "ka0s", "ember")
+  m.__fireTimers()
+  assertNil(rawget(panel, "__ka0sSkinBg"), "the page is not its own backdrop")
+  assertTrue(not survey(m, panel).shown, "and the looks change left the page hidden")
+end)
+
 test("options skin: an owned page's tab strip fades the client's art and wears the tab roles", function()
   local m, Skin, lib = env()
   F.owner(Skin, OWNER, "obsidian")

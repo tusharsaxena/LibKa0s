@@ -680,12 +680,15 @@ both documents and manifests moved from the in-flight keys, never shipped.
 - **The gates.** `P.font` hands a string back its own font while its owner ignores fonts (SkinPaint
   minor 8); `PaintAce` paints nothing while its owner ignores its panel (SkinAce minor 3), and neither
   does the Options chrome (`lib.__chromeSkin`, OptionsScroll minor 7), whose instance listener is
-  installed from the ungated facade, so turning the exception off re-renders the open pages.
+  installed from the ungated facade, so turning the exception off re-renders the open pages. Its
+  page backdrop is never the page itself: a bare `CreateTexture` stub answers the frame, and
+  keeping that as the backdrop showed the page on every looks change (LootHistory's headless
+  suite found it once its Scope rows added looks changes; the client's textures are real).
 - **The Scope section (OptionsAppearance minor 2)**, below the skins and above *Copy to every Ka0s
   addon…*: the two check boxes side by side, writing through `spec.set(nil, nil, { panel, fonts })`.
   The copy carries the scope with the source and skin, and its confirmation says so.
 
-Tests: seven new cases (the section's place and defaults; fonts back and forth live; the panel's
+Tests: eight new cases (the backdrop that is the page; the section's place and defaults; fonts back and forth live; the panel's
 reload ask and the chrome gate; SetIgnore's nil half, its no-reload on an unpainted panel and
 WriteChoice's third argument; the copy's scope; the listener installed while the panel is ignored;
 stock AceGUI rows while it is). Each gate's case was mutation-checked red. **What a consumer owes:**

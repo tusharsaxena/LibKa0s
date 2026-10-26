@@ -24,7 +24,8 @@ if not lib then return end
 -- back stock and a re-acquire paints it in the new skin (LK-08 of the skinning run).
 -- Minor 7: the chrome paints nothing while the owner ignores its settings panel (LibKa0s-Skin-1.0
 -- minor 5's __PanelSkinned); the instance's listener is still installed from the owner's facade,
--- so turning the exception off re-renders the open pages in the skin.
+-- so turning the exception off re-renders the open pages in the skin. And a page's backdrop is never
+-- the page itself, which a bare CreateTexture stub answers.
 local SCROLL_MINOR = 7
 -- Paired on the SHELL's minor as well as this file's own. The scroll counter alone is not enough:
 -- two vendored copies can ship the same scroll minor over different Options.lua minors, and then
@@ -311,8 +312,13 @@ local function paintPage(owner, panel)
   if away and br then
     if not bg and panel.CreateTexture then
       bg = panel:CreateTexture(nil, "BACKGROUND", nil, -8)
-      bg:SetAllPoints(panel)
-      panel.__ka0sSkinBg = bg
+      -- A bare stub answers the frame itself (SkinPaint's P.tex refuses the same): never keep the
+      -- page as its own backdrop, whose Show and Hide would show and hide the page (minor 7).
+      if bg == panel then bg = nil end
+      if bg then
+        bg:SetAllPoints(panel)
+        panel.__ka0sSkinBg = bg
+      end
     end
     if bg then
       bg:SetColorTexture(br, bgG, bb, 1)
