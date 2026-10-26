@@ -507,7 +507,7 @@ No commit without both of these clean, from the repo root:
 
 ```sh
 lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for why
-luacheck .          # 0 warnings / 0 errors
+~/.claude/dev-copilot/bin/ka0s-bounded luacheck .  # 0 warnings / 0 errors; luacheck loads no kit, so it runs bounded (testing-§15)
 ```
 
 That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide: everything
