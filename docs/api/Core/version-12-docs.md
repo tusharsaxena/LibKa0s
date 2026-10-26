@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **12** |
 | Shipped in | v1.77.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 11](./version-11-docs.md) — the same surface less `RaiseStaticPopups` |
-| Superseded by | — |
+| Superseded by | [version 13](./version-13-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 12 }` |
 
 `Since` in the tables below is the Core minor in which the member first appeared. Minors 1 and 2
@@ -511,3 +511,9 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
+
+## Moving to version 13
+
+**Take it; nothing moves.** Version 13 is this surface. `ApplySkin` takes an optional third argument,
+a skin owner, and a registered skin owner's `MakeCloseButton` colors its control from that owner's
+skin; an unregistered name draws exactly what this version draws. See [version 13](./version-13-docs.md).

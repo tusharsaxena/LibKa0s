@@ -10,9 +10,9 @@
 | Version | **42** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.77.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 41](version-41-docs.md) — the base answered every binding call and every frame-layer getter from its metatable (with the frame, or not at all), and no kit check read an addon's `Bindings.xml` |
-| Superseded by | — |
+| Superseded by | [version 43](version-43-docs.md) — adds the opt-in paint recorder `mock_paint.lua` |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `42` |
 
@@ -201,3 +201,10 @@ prose that names the revision it holds moves to 42 in the same commit. An addon 
 installs `mock_bindings.lua`, calls `T.assertBindingsXml` from its own suite and binds a key through
 its Keybindings tab with `T.keybindThroughTab`; an addon asserting
 strata or level installs `mock_layers.lua`.
+
+## Moving to 43
+
+Copy the kit whole. Nothing else is owed: no suite, case name or documented member changes. The paint
+recorder is opt-in, so a suite that never installs it sees the base exactly as revision 42 left it;
+install `mock_paint.lua` where a suite needs distinct textures and font strings, or paint calls
+answered.

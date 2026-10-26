@@ -12,8 +12,8 @@ local W = T.widgets
 local function M() return W.ChartMath end
 
 test("chart math: the file attaches to the Widgets shell and records its minor", function()
-  assertEqual(W.MODULES.WidgetsLineChart, 3)
-  assertEqual(W.__chartMinor, 3)
+  assertTrue(W.__chartMinor >= 3, "the chart is at minor 3 or later")
+  assertEqual(W.MODULES.WidgetsLineChart, W.__chartMinor)
   assertEqual(W.__chartShellMinor, W.MINOR, "paired on the shell's minor, as WidgetsDragHandle is")
 end)
 

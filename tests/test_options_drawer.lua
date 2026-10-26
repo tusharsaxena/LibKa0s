@@ -35,8 +35,8 @@ end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-test("drawer: OptionsDrawer is at minor 1, attached to an Options shell at 29 or later", function()
-  assertEqual(lib.MODULES.OptionsDrawer, 1)
+test("drawer: OptionsDrawer is at minor 1 or later, attached to an Options shell at 29 or later", function()
+  assertTrue(lib.MODULES.OptionsDrawer >= 1, "OptionsDrawer minor " .. tostring(lib.MODULES.OptionsDrawer))
   assertTrue(lib.MINOR >= 29, "Options.lua minor " .. tostring(lib.MINOR))
   assertEqual(lib.__drawerShellMinor, lib.MINOR)
 end)

@@ -10,6 +10,720 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.78.0 — 2026-10-25
+
+Opened 2026-10-25. Skinning, leg 1: the LibKa0s skin engine, its paint primitives and the skin
+choice on the settings panel, with LootHistory as the prototype consumer. The test kit's opt-in
+paint recorder opens it. Extended on 2026-10-25, after the local tag and before any push, with
+Media minor 7 (`LK-A1`): `RegisterLSM` no longer offers a key LibSharedMedia already holds, the
+defect behind the owner's "Attempt to register an invalid font" reports. Extended again the same
+day with SkinDefs minor 5 (`LK-A2`): nine Semantic tokens for LootHistory's bind-state locks and its
+row menu's destructive items, the library gap its `LH-03` item found. Extended a third time the
+same day with SkinDefs minor 6 (`LK-A3`): eleven tokens for every other LootHistory constant no
+token held exactly, in one sweep, the library gap its `LH-04` item found. Extended a fourth time on
+2026-10-26 with SkinPaint minor 3 (`LK-A4`): leaving a skin's font puts an EditBox's face back by
+path, the defect behind the owner's Forever -> Midnight client crash.
+
+Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 7**
+(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 4**, **SkinDefs minor 6**,
+**SkinPaint minor 3**, **SkinPaintExtras minor 1**, **SkinPaintControls minor 1**, **SkinEUI
+minor 1** and **SkinAce minor 1** (the new major `LibKa0s-Skin-1.0`, key **4.6.3.1.1.1.1**); **Widgets minor 16**,
+**WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
+**WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
+**16.2.6.4.4.1**, a new sixth file); **DebugLog minor 22**, **DebugLogDiagnostics minor 4** and
+**DebugLogWindow minor 1** (`LibKa0s-DebugLog-1.0` key **22.4.1.1**, a new fourth file); **Options minor 33**, **OptionsRegistry minor 3**, **OptionsWidgets minor 35**, **OptionsIds minor 4**,
+**OptionsIdList minor 6**, **OptionsTabs minor 10**, **OptionsCombat minor 3**, **OptionsCompose minor
+12**, **OptionsScroll minor 6**, **OptionsNav minor 3**, **OptionsDrawer minor 2**,
+**OptionsKeybinds minor 5** and **OptionsAppearance minor 1** (`LibKa0s-Options-1.0` key
+**33.3.35.4.6.10.3.12.6.3.2.5.1**, a new thirteenth file); **PerfPanel
+minor 10** (`LibKa0s-Perf-1.0` key **15.1.1.10**); **SimPanel minor 7** (`LibKa0s-Sim-1.0` key
+**2.3.7**); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
+entry below moves one. Each change bumps the minor of the files it touches once, and this block
+names each new minor as it lands. Now **eighteen majors across fifty-one files**: one major added
+(`LibKa0s-Skin-1.0`) and four files (`WidgetsCopyWindow.lua`, `SkinAce.lua`, `DebugLogWindow.lua`,
+`OptionsAppearance.lua`),
+and no `NEEDS_*` floor rises.
+
+### Test kit revision 43: the paint recorder
+
+One new kit file, `mock_paint.lua`, documented in
+[docs/api/testkit/version-43-docs.md](docs/api/testkit/version-43-docs.md). No `LibKa0s/` file
+changes, so no file minor moves; `mock_base.lua` gains one comment line pointing at it (1465 lines).
+
+- **`mock_paint.lua`**, opt-in (`local restore = dofile("tests/_kit/mock_paint.lua")(M)`): every
+  frame `M.CreateFrame` builds after install, and `M.UIParent`, answers `CreateTexture` and
+  `CreateFontString` with distinct region objects it owns (`GetRegions`; `GetChildren` over the
+  recorded frames parented to it), and records `SetBackdrop`, `SetBackdropColor`,
+  `SetBackdropBorderColor` and `SetAlpha`. Textures record `SetColorTexture`, `SetTexture`,
+  `SetAtlas` (still in `__atlas`), `SetVertexColor`, `SetGradient`, `SetTexCoord`, `SetAlpha` and
+  `SetDesaturated`; font strings record their text, `SetTextColor`, `SetFont`, `SetFontObject` and
+  the shadow. A NineSlice template builds a `NineSlice` child with the client's nine pieces
+  (`M.__paintNineSlice` attaches one by hand). A region raises on a method it does not have. Survey
+  `M.__paint(obj)`; `M.__paintFrame(frame)` decorates a frame the base built. Off by default:
+  through revision 42 `CreateTexture` and `CreateFontString` answered the frame itself, and they
+  still do for a suite that does not install it. New suite: `tests/test_mock_paint.lua`.
+
+### Media minor 6: the skin faces and the Glass art
+
+`LibKa0s-Media-1.0` key 6.1 (the in-flight document moved to 7.1 with minor 7, below; 6.1 never
+shipped), documented in
+[docs/api/Media/version-7.1-docs.md](docs/api/Media/version-7.1-docs.md). Additive: every name and
+path version 5.1 had resolves the same.
+
+- **Five OFL faces in `FONTS`**, SIL OFL 1.1, each license beside it in `media/fonts/`:
+  `Ka0s Barlow` and `Ka0s Barlow SemiBold` (Barlow), `Ka0s Cinzel` (Cinzel SemiBold) and
+  `Ka0s Atkinson` and `Ka0s Atkinson Bold` (Atkinson Hyperlegible). About 0.4 MB on every consumer.
+  New `tools/artwork/fonts.py` is their provenance record: it pins each upstream file to a
+  google/fonts commit and SHA-256, and cuts Cinzel's static SemiBold (wght 600) from upstream's
+  variable font with fontTools, which `Cinzel-OFL.txt` records above the license.
+- **A `langmask` per face.** Every `FONTS` entry lists its LibSharedMedia locale groups, and
+  `RegisterLSM` builds each face's mask from its own list. JetBrains Mono keeps western + ruRU; the
+  five skin faces are western only (Cinzel and Atkinson have no Cyrillic). Minor 5 applied one mask
+  to every face.
+- **`BORDERS` and `BACKGROUNDS`**, with `Border` and `Background` path readers, registered as LSM
+  `border` and `background` by `RegisterLSM`, which now answers `fonts, bars, borders, backgrounds`.
+  Each holds `Ka0s Glass`: `glass-border.tga` (256x32, the backdrop edge-file layout, a 1px line
+  with radius-8 corners at `edgeSize = 8`) and `glass-fill.tga` (32x32, a one-file nine-slice with
+  margins 8), white uncompressed TGAs from the new `tools/artwork/glass_textures.py`. The in-client
+  keys the skins use (`Blizzard Dialog`, `Blizzard Tooltip`, `Solid`, ...) are LibSharedMedia's own
+  defaults, so none is registered here.
+- **In leg 1 the new keys resolve into LootHistory's folder.** LibSharedMedia keeps the first
+  registration of a key, and LootHistory is the first consumer running v1.78.0 to call
+  `RegisterLSM`, so `Ka0s Barlow` and the rest point at
+  `Interface\AddOns\LootHistory\libs\LibKa0s\media\...` until leg 2's re-vendor ships the
+  files to every consumer. A skin names a face or texture by LSM key and the engine resolves it
+  with `LSM:Fetch`; it never builds a path.
+- `tools/prune-icons.lua` touches only `media/icons/`: a consumer pruned to `LibKa0s icons: none.`
+  keeps all of `fonts/` and `textures/`.
+
+### LibKa0s-Skin-1.0 (new major, Skin minor 1, SkinDefs minor 1)
+
+The skin engine and its first skin, documented in
+[docs/api/Skin/version-2.3.2.1.1.1-docs.md](docs/api/Skin/version-2.3.2.1.1.1-docs.md). `Skin.lua` loads after
+`MediaIcons.lua`, floored on Core (`NEEDS_CORE = 1`, no Core member called); `SkinDefs.lua` is
+paired on its minor (`__defsMinor` / `__defsShellMinor`).
+
+- **Owners and their choice.** `Skin:RegisterOwner(owner, opts)` at the consumer's file load, the
+  owner being its folder name: `opts.get()` answers the profile's `{ source, skin }`, read once;
+  `opts.set` writes it; `opts.label` names the addon. `IsOwner`, `Owners`, `GetChoice`.
+  `SetChoice(owner, source, skin)` is idempotent; otherwise it resolves the new skin, repaints every
+  frame recorded for that owner and no other, then fires that owner's `OnLooksChanged` listeners.
+  Leaving the `eui` source repaints nothing and sets a pending-reload flag, and its second answer is
+  true exactly once per owner, so a caller raises its reload popup at most once. It never writes the
+  host's profile.
+- **The frame registry.** `Track(owner, frame, prim, ...)` records a primitive's paint in a
+  weak-keyed table, one record per frame, moving a pooled frame to its newest owner; `Untrack`
+  forgets one; `Repaint(owner)` replays each recorded frame once, frames in the order they were first
+  painted for the owner and each frame's primitives in their first-paint order, each call
+  under pcall.
+- **The facade.** `Skin:For(owner)` answers one table per owner, kept across minors. The painting
+  vocabulary (EllesmereUI's names, then the Ka0s extras) is a set of late-bound trampolines into
+  `lib.prim`, filled by the primitives' file later in this release; a newer minor re-fills every
+  existing facade in place. `S.Token`, `S.Color`, `S.Resolve`, `S.OnLooksChanged`, `S.IsEnabled`,
+  `S.GetStyle`, `S.apiVersion` (3).
+- **FROM_SKIN.** `Skin.FROM_SKIN = "@skin"`; `Resolve(owner, kind, value, fromSkin)` answers the
+  skin's token for the sentinel or a true companion; `Skin.ResetToSkin(profile, keys)` writes the
+  sentinel, or a color's `<key>FromSkin = true`, for each listed key (dotted paths allowed);
+  `IsFromSkin`.
+- **The schema and Ka0s Default** (`SkinDefs.lua`). `Skin.SCHEMA`, 192 tokens in twelve groups
+  (fonts, window, text and the GameTooltip line roles, buttons, inputs, tabs and the nav rail,
+  drawers and menus, lists and cards, overlays, HUD, charts, semantic), with per-control
+  `borderSize` / `borderStyle`, window and title gradients and per-control radii. Ka0s Default's
+  values are today's constants, each pinned in `tests/test_skin.lua` against the constant it
+  replaces; every font token is nil, meaning the FontString keeps its font object, and the
+  quality colors are nil, meaning the client's. Where two sites draw one role in two colors, both
+  survive as two tokens. The other eight skins follow (SkinDefs minor 2, below).
+
+New suite `tests/test_skin.lua`. **What a consumer owes:** nothing until it adopts; adoption is
+required of none. Whole-folder vendoring ships the major into every consumer, and its files only
+define functions and data tables: no frame, timer or event exists until a host registers an owner.
+
+### SkinDefs minor 2: the eight other skins
+
+`LibKa0s-Skin-1.0` key 1.2 (the in-flight 1.1 document moved to it; 1.1 never shipped). Obsidian,
+Azeroth, Glass, High Contrast, Ember, WoW Default, WoW Midnight and WoW Forever join Ka0s Default,
+in that order, documented under *The eight skins* in
+[docs/api/Skin/version-2.3.2.1.1.1-docs.md](docs/api/Skin/version-2.3.2.1.1.1-docs.md) with every token each sets.
+
+- **Translated from the mockups.** Each skin is its entry in the mockups' token table, key for
+  key (`classic` is `ka0s`, `wowdefault` is `wow`; the `eui` preview is never registered), run
+  through one map onto the schema. A key a mockup skin omits inherits Ka0s Default's Lua value,
+  never the mockup's base; Ka0s Default itself is unchanged. Each skin also sets what the mockups
+  do not draw (opened drawers, cards and panels, disabled text), and Azeroth, the one light skin,
+  its headings, quality, semantic and chart colors.
+- **What WoW cannot draw.** No blur; one rounded art (Glass, `nine:Ka0s Glass` at radius 8), so
+  every other radius is square; vertical gradients through `<ctl>.bgTop` / `<ctl>.bgBottom`; CSS
+  bevels as `bevelOut` / `bevelIn` or Blizzard's dialog art. Geometry (`title.height`,
+  `scroll.width`, `scroll.gutter`, `win.inset`) is Ka0s Default's in all nine.
+- **Blizzard art, WoW Default only.** The window is `BACKDROP_DIALOG_32_32`'s edge (LSM
+  `Blizzard Dialog`) over `UI-DialogBox-Background-Dark`; buttons are a red gradient with a 2px
+  `bevelOut` gold `#A07C2C` edge; tabs `UI-OptionsFrame-ActiveTab` / `-InActiveTab`; the scroll
+  thumb `UI-ScrollBar-Knob`; the checkbox `UI-CheckBox-Up` / `-Check`. WoW Midnight is flat with a
+  2px `#B08A3E` edge and gradients; WoW Forever is warm charcoal with no window texture, black
+  title bars with centered white titles, a tan accent, gold headings and 1px edges. High Contrast
+  draws every control edge at 2px or more.
+- **Five new nilable schema tokens** for that art, `check.texture`, `check.markTexture`,
+  `scroll.thumbTexture`, `tab.texture` and `tab.onTexture` (197 tokens): an art token draws its
+  art at its own colors, and the color token beside it is the fallback.
+- **Fonts.** Obsidian, Glass and WoW Forever wear Barlow; Azeroth, Ember and WoW Midnight Cinzel
+  titles over the client body font; High Contrast Atkinson Hyperlegible 2pt larger; WoW Default
+  the client's.
+
+New suite `tests/test_skin_defs.lua`: the nine skins in order, schema names and kinds only, every
+token defined or inherited from Ka0s Default, the geometry invariant, the GameTooltip lines at 4.5:1
+on `(.05, .05, .08)`, each skin's text on its own window (body 4.5:1, the other roles 3:1), and
+each skin's recorded choices. No member change.
+
+### SkinPaint, SkinPaintExtras and SkinPaintControls minor 1: the paint primitives
+
+`LibKa0s-Skin-1.0` key 1.2.1.1.1 (the in-flight 1.2 document moved to it; 1.2 never shipped),
+documented under *The primitives* in
+[docs/api/Skin/version-2.3.2.1.1.1-docs.md](docs/api/Skin/version-2.3.2.1.1.1-docs.md). Three files
+paired on the shell's minor, loaded after `SkinDefs.lua`; the extras and the controls paint with
+`SkinPaint.lua`'s helpers and attach only beside it. Every `VOCAB` name now has its primitive, so
+`S.Shell(frame)`, `S.Button(btn)` and the rest paint.
+
+- **`SkinPaint.lua`**: the painter helpers, `Shell`, `Panel`, `Inset`, `FadeRegions` and
+  `FadeNineSlice`. A target's regions, holders and hook flags outlive its record, so a re-tracked
+  or pooled target reuses them, and a target painted for a second owner is given back first.
+  Edges draw on a holder over the target, fills and washes on a fill holder under it, so a list
+  row's or title bar's text stays legible.
+- **`SkinPaintExtras.lua`**: `TitleBar`, `Divider`, `Footer`, `Card`, `Strip`, `Cover`, `Tooltip`
+  (library-owned frames only), `MenuFrame`, `Text`, `Font`, `White`, and the getters
+  `GetAccentColor`, `GetPanelColor`, `GetFont`, `GlowColor`, `ChartStyle`, `BarStyle`.
+- **`SkinPaintControls.lua`**: `Button`, `WhiteButtonLabel`, `StateButtonLabel`, `EditBox`,
+  `Checkbox`, `Dropdown`, `ScrollBar`, `Slider`, `Tab`, `SetTabSelection`, `CloseButton`,
+  `PageButton`, `SquareIcon`, `IconBorder`, `SortHeaderBar`, `ApplyBarFill`, `NavItem`, `Drawer`,
+  `ListRow`.
+- **The technique.** Stock art is faded by alpha with its prior alpha recorded, never cleared,
+  hidden, re-parented or re-scripted; Ka0s regions are created once per target and kept in its weak
+  record, so a repaint reuses them; every overlay that is not the target's own fill lives on a
+  per-record holder frame (one level up), never as a direct region of a frame an EllesmereUI
+  primitive may reach; `SetBackdrop` only on a BackdropTemplate target or the holder; borders flat,
+  `bevelOut` / `bevelIn` or `nine:<LSM key>` drawn outset; gradients through `SetGradient`; fonts
+  through one font object per owner and role (the 12.0.7 shadow rule). A nil token leaves a property
+  alone and puts back what a previous skin changed. Hover and focus are hooked once and read the
+  record at call time.
+- **Ka0s Default keeps stock art** (a stock control is left as the client draws it and put back
+  after a skin), and for a custom target it makes **today's paint calls, call for call**: `Shell` is
+  `Core.ApplySkin(frame)` handed Core's own `SKIN`; `Dropdown` and `EditBox` are `W.Dropdown`'s
+  and `W.SearchBox`'s backdrop calls; `MenuFrame`, `CloseButton`, `NavItem`, `Drawer`, `ScrollBar`,
+  `Strip`, `Cover`, `Divider`, `Panel` and `Card` the calls of the library or LootHistory code they
+  stand for. The library's own code is not routed through them yet: that is the run's next items.
+- **WoW Default and WoW Midnight** draw the per-skin art choices: the dialog edge on the holder over the
+  tiled background, bevel edges, the tab, knob and checkbox art; Midnight's gradients with no art.
+- **No primitive draws a `LibKa0s-Media-1.0` icon**: every texture is `WHITE8X8` or in-client art,
+  so no host owes a new `LibKa0s icons:` declaration.
+
+New suites `tests/test_skin_paint.lua` and `tests/test_skin_paint_controls.lua`, on the kit's paint
+recorder with a call tracer (`tests/fixture_skin_paint.lua`). `.luacheckrc` reads `CreateColor`,
+`CreateFont`, `STANDARD_TEXT_FONT` and `hooksecurefunc`. **What a consumer owes:** nothing until
+it adopts.
+
+### Skin minor 2, SkinPaint minor 2 and SkinEUI minor 1: the EllesmereUI provider
+
+`LibKa0s-Skin-1.0` key 2.2.2.1.1.1 (the in-flight 1.2.1.1.1 document moved to it; 1.2.1.1.1 never
+shipped), documented under *The EllesmereUI provider* in
+[docs/api/Skin/version-2.3.2.1.1.1-docs.md](docs/api/Skin/version-2.3.2.1.1.1-docs.md). New file
+`SkinEUI.lua`, paired on the shell's minor (`__euiMinor` / `__euiShellMinor`), loaded after
+`SkinPaintControls.lua`. An owner on the `eui` source is painted by EllesmereUI's own skinning
+facade (its `SKINNING_API.md`, API version 3: names and token model mirrored, no code or media
+copied).
+
+- **Registration.** `RegisterOwner` registers the owner with `EllesmereUI.RegisterSkin` through a
+  trampoline into the live copy of this major, so a newer minor still receives the facade; every
+  owner not yet registered is retried at each `RegisterOwner`, on `ADDON_LOADED("EllesmereUI")`
+  and at `PLAYER_LOGIN`, on one frame made at the first `RegisterOwner` and registered through
+  Core's `SafeRegisterEvent` (resolved at call time; no Core floor rises; with a Core that lacks it
+  no retry frame is made and owners register only at `RegisterOwner`).
+- **The gate**, `Skin:GetEUIStatus(owner)`: `{ ok, painted, refused, conditions }`, the four
+  conditions `eui` (EllesmereUI and EllesmereUIBlizzardSkin loaded), `master`
+  (`EllesmereUIDB.thirdPartySkinsOff` not truthy), `own` (`thirdPartySkinAddons[owner]` not false)
+  and `facade` (EllesmereUI handed the owner its facade this session; hint "Reload the UI."), each
+  `{ key, ok, label, hint }` (US English; a caller translates by `key`). The two `EllesmereUIDB` reads are
+  library-stack-§6's skinning exception (WowAddonStandards v2.89.0), confined to `SkinEUI.lua`; no
+  register row is added, and `tests/test_skin_eui.lua` fails when the name appears in another payload
+  file.
+- **Entering EllesmereUI**, one step for the live switch and for a facade arriving after the owner
+  chose `eui`: the Ka0s paint of every recorded frame an EllesmereUI primitive takes is given back,
+  the owner's records replay (EllesmereUI's names to its facade, the Ka0s extras from its getters)
+  and `euiPainted[owner]` latches for the session. Before that, an owner on `eui` wears its Ka0s
+  skin; after it, leaving `eui` or a gate condition failing asks for one reload and never falls back
+  live.
+- **Fail closed.** A facade missing a needed primitive is refused before any paint, and a primitive
+  that raises stops EllesmereUI painting the owner; either is latched (`euiRefused`) and written
+  once through the owner's new `opts.log`. Ka0s-only option keys are stripped before EllesmereUI
+  sees a call. Pooled and shared objects (AceGUI widgets and their frames, and targets marked with
+  the library's internal `__MarkShared`) are never handed to EllesmereUI. A facade's shape is
+  checked the moment it arrives, so `GetEUIStatus` never offers a choice the provider would refuse.
+- **`Skin.lua` minor 2**: `Token` and `Color` answer EllesmereUI's derived tokens while it paints
+  the owner (through the internal `__Tokens`, which the primitives read too);
+  `Skin:OnReloadRequest(owner, fn)`, fired once when `PendingReload` first turns true; `opts.log`
+  on `RegisterOwner`; and the provider's four hook slots. **Behavior change in the unreleased
+  engine:** leaving an `eui` that EllesmereUI never painted is now an ordinary live change, not a
+  reload (the owner was wearing its Ka0s skin all along); `tests/test_skin.lua`'s reload case now
+  sets the latch, and a new case pins the ordinary change.
+- **`SkinPaint.lua` minor 2**: the primitives read `Skin:__Tokens`, and Ka0s Default's stock rule is
+  off while EllesmereUI paints the owner (a pooled stock widget is painted from EllesmereUI's colors).
+
+New suite `tests/test_skin_eui.lua` with a test-local EllesmereUI fake (`tests/fixture_skin_eui.lua`,
+modeled on PremadeGroupsFilterExtension's). `.luacheckrc` lets `LibKa0s/SkinEUI.lua`, and no other file,
+read the `EllesmereUI` and `EllesmereUIDB` globals. PremadeGroupsFilterExtension's own bridge stays as it is
+in this release. **What a consumer owes:** nothing until it adopts; an adopted addon lists
+`EllesmereUI` in `## OptionalDeps` (skinning-§5).
+
+### DebugLogDiagnostics minor 4: the identity header names Skin
+
+`LibKa0s-DebugLog-1.0` key 21.4.1, documented in
+[docs/api/DebugLog/version-22.4.1.1-docs.md](docs/api/DebugLog/version-22.4.1.1-docs.md) (the
+in-flight 21.4.1 document moved there at DebugLog minor 22, below). The report's
+`LibKa0s running:` line lists `Skin` and `SkinDefs` when the major runs in the client, between
+`Media` and `Widgets` in `tests/majors.lua` order. `tests/test_debuglog_diagnostics.lua` asks for it.
+No member change.
+
+### Core minor 13, Widgets 16.2.6.4.4.1 and SkinDefs minor 3: the library's controls take a skin owner
+
+`LibKa0s-Core-1.0` key 13 ([docs/api/Core/version-13-docs.md](docs/api/Core/version-13-docs.md)),
+`LibKa0s-Widgets-1.0` key 16.2.6.4.4.1
+([docs/api/Widgets/version-16.2.6.4.4.1-docs.md](docs/api/Widgets/version-16.2.6.4.4.1-docs.md)) and
+`LibKa0s-Skin-1.0` key 2.3.2.1.1.1 (the in-flight 2.2.2.1.1.1 document moved to it; 2.2.2.1.1.1 never
+shipped), LK-06 of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`. No member is added, removed or
+renamed in any of the three.
+
+- **A name counts as an owner only once its addon registered it** (`Skin:IsOwner`), resolved at call
+  time: Core and Widgets take no floor on the Skin major, which floors on Core. Every consumer
+  already passes its folder name to `MakeCloseButton` and its `CopyWindow` descriptor, so the
+  thirteen consumers that do not adopt skins in this release keep drawing exactly what they drew
+  when LootHistory's v1.78.0 copy wins the LibStub race: an unregistered name, no name and a client
+  without the Skin major are the previous minors' paint, call for call
+  (`tests/test_widgets_skin.lua`).
+- **Core minor 13.** `ApplySkin(frame[, skin[, owner]])`: a registered owner's window is handed to
+  its facade after the paint (`S.Shell`), so it wears the owner's skin and repaints on a switch; a
+  host's own `skin` table wins. `MakeCloseButton`'s `addonName`, when registered, colors the control
+  through `S.CloseButton` (`close.rest` / `close.hot`).
+- **Widgets.** `Dropdown`, `SearchBox`, `TestStrip`, `Autocomplete` (`WidgetsAutocomplete` 4),
+  `DragHandle` (`WidgetsDragHandle` 6), `ReorderList` (`WidgetsReorder` 2) and `LineChart`
+  (`WidgetsLineChart` 4) take `owner` in their options; `CopyWindow` reads its `addonName`. A skinned
+  control paints through the facade's primitive where one fits (`S.Dropdown`, `S.EditBox`,
+  `S.Strip`, `S.Shell`, `S.ScrollBar`, `S.MenuFrame`) and from `Skin:Token` otherwise, and follows
+  the owner's switches; the API document's *Skin owners* table lists each widget's tokens. **The
+  shared popup menu** is repainted on every open, to the opener's skin, or back to Ka0s Default once
+  an owner has painted it and the opener has none; **the reorder ghost** likewise on every drag.
+  `LineChart` gains `series[i].colorIndex`, an index into the owner's `chart.series`.
+- **`WidgetsCopyWindow.lua` (minor 1), a new file.** The skin owner took `Widgets.lua` to 1010 lines,
+  past the 1000-line re-check its band disposition named (`CLAUDE.md`, *Files over the 1500-line
+  cap*), so `lib.CopyWindow` peeled to a sixth file paired on the shell's minor (`__copyMinor` /
+  `__copyShellMinor`), on the seam that disposition named: `Widgets.lua` 758, `WidgetsCopyWindow.lua`
+  293. `tests/majors.lua`, `LibKa0s.xml`, the key and the docs carry it.
+- **SkinDefs minor 3: eight Widgets tokens** (205 tokens): `handle.edge`, `handle.rest`,
+  `list.dropLine`, `list.ghostBg`, `list.box`, `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`,
+  each Ka0s Default's value the constant its widget drew, where no existing token carried that exact
+  value. The other skins derive them from their accent, body text, muted text and popup fill.
+
+New suite `tests/test_widgets_skin.lua` (24 cases); five minor pins in the Widgets suites now read
+"at least" the minor their feature arrived at. Re-vendor the whole folder: the new file must arrive
+with the shell. **What a consumer owes:** nothing; an adopter passes its folder name as `owner`.
+
+### Options 31.2.35.4.6.10.3.12.5.3.2.5 and Skin minor 3: the settings chrome follows its skin owner
+
+`LibKa0s-Options-1.0` key 31.2.35.4.6.10.3.12.5.3.2.5
+([docs/api/Options/version-31.2.35.4.6.10.3.12.5.3.2.5-docs.md](docs/api/Options/version-31.2.35.4.6.10.3.12.5.3.2.5-docs.md))
+and `LibKa0s-Skin-1.0` key 3.3.2.1.1.1 (the in-flight 2.3.2.1.1.1 document moved to it; 2.3.2.1.1.1
+never shipped), LK-07 of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`. Every Options file but
+`OptionsRegistry.lua` moves; no member is added to `Options.lua` or `OptionsTabs.lua`, whose band
+triggers are "the next member added".
+
+- **The page's skin owner is the descriptor's `addonName`**, once that addon registered with
+  `LibKa0s-Skin-1.0` (OptionsScroll minor 5's helpers, reached at call time; Core minor 13's
+  `__SkinFacade`, no floor). An unregistered name, no name and a client without the Skin major paint
+  today's chrome, call for call; a registered owner's page is painted again through its facade after
+  the chrome's own paint.
+- **Options minor 31**: the header (the title in the title role, the divider tinted `title.text`) and,
+  away from Ka0s Default, an opaque page backdrop from `win.bg` at full alpha, so a light skin stays
+  legible over the client's Settings window; both painted at `CreatePanel` and on every show.
+  `EnsureScroll` hands the owner to the scrollbar patch.
+- **OptionsTabs minor 10**: each tab through `S.Tab` (the client's three atlases faded away from Ka0s
+  Default, the backing and the label in the tab roles), the content box (`S.FadeRegions`, `S.Panel`)
+  and the banner hairline (`S.Divider`, `tab.rule`).
+- **OptionsNav minor 3**: the rail's pane (`S.Panel`, `nav`) and each entry (`S.NavItem`).
+  **OptionsDrawer minor 2**: the head and the box (`S.Drawer`). **OptionsCombat minor 3**: the cover
+  on every show (`S.Cover`). **OptionsIds minor 4**: the suggestion list on every open
+  (`S.MenuFrame`, `popup`). **OptionsScroll minor 5**: `PatchAlwaysShowScrollbar(scroll, owner)` paints
+  the thumb's two tints through `S.ScrollBar`, and gives the pooled bar back on release.
+- **OptionsIdList minor 6** and **OptionsKeybinds minor 5**, away from Ka0s Default only, read at
+  draw: the help mark's tints (`text.accent`, `sem.bad`, `text.disabled`, `icon.hot`) and the keybind
+  rows' text (`text.body`, `text.muted`, through the Label's own `SetColor`).
+- **Live repaint**: a primitive records what it painted, so `SetChoice` repaints those; the instance's
+  one `OnLooksChanged` listener repaints each page's header and backdrop and runs
+  `O.RefreshAllPanels()` for what a render reads from a token. A pooled drawer head or scrollbar drawn
+  for no owner is untracked, so its former owner's switch no longer reaches it.
+- **OptionsCompose minor 12: `fromSkin`.** `FontGroup`, `BorderGroup` and `BarGroup` take an opt-in
+  `fromSkin = true`: one companion bool `<key>FromSkin` (*Use the skin's font / border / texture*,
+  default false) after the canonical rows, on a line of its own. While it is set the picker is disabled
+  and shows the skin's value (`hud.font`, `bar.borderStyle`, `bar.texture`) through the new row field
+  **OptionsWidgets minor 35** reads first, `skinValue()`. No sentinel enters a media list or the CLI's
+  values; without `fromSkin` the rows are minor 11's.
+- **Skin minor 3**: `ResetToSkin` sets a key's `<key>FromSkin` companion to true when one exists
+  beside it, and a bool key (a companion named directly) to true, so the sentinel never lands in a
+  media pick or a bool.
+
+New suites `tests/test_options_skin.lua` (14 cases) and `tests/test_options_compose_skin.lua` (10
+cases), red on the previous payload; four minor pins (OptionsDrawer, OptionsKeybinds twice,
+OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopter registers its owner
+(`Skin:RegisterOwner(addonName, ...)`) and its pages follow.
+
+### SkinAce minor 1 and Options 32.3.35.4.6.10.3.12.6.3.2.5: the AceGUI rows wear their owner's skin
+
+`LibKa0s-Skin-1.0` key 3.3.2.1.1.1.1
+([docs/api/Skin/version-4.6.3.1.1.1.1-docs.md](docs/api/Skin/version-4.6.3.1.1.1.1-docs.md) since
+SkinDefs minor 4 and Skin minor 4, and SkinDefs minors 5 and 6 and SkinPaint minor 3, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
+`LibKa0s-Options-1.0` key 32.3.35.4.6.10.3.12.6.3.2.5
+([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md)
+since Options minor 33, below; the in-flight 31.2.35.4.6.10.3.12.5.3.2.5 document moved to it), LK-08 of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`. AceGUI keeps one pool per widget type for the whole client, so a row is
+painted for exactly one acquisition and handed back stock.
+
+- **`SkinAce.lua` (minor 1), a new file** paired on the shell's minor (`__aceMinor` /
+  `__aceShellMinor`), painting with `SkinPaint.lua`'s helpers. `Skin:PaintAce(owner, widget)` paints a
+  CheckBox, Slider, Dropdown (and its pull-out, on open, put back on close), EditBox,
+  MultiLineEditBox, Button, Heading, Label, InteractiveLabel, Icon, ColorPicker swatch, InlineGroup or
+  ScrollFrame for a registered owner away from Ka0s Default: stock regions faded by alpha, fonts,
+  colors and backdrops recorded before the first change, overlays made once per widget object and
+  reused. `Skin:PaintAceTree(owner, container)` walks a host's container. `Skin:OnRelease(widget, fn)`
+  chains a release step onto the widget's own `OnRelease` (the previous one put back first, `fn` under
+  pcall and logged once, the previous one always run), which is how the restore rides the release
+  and how a host's release work coexists with it. Ka0s Default, an unregistered owner, LSM30_*
+  widgets, TabGroup, `ColorPickerFrame` and a widget ElvUI or AddOnSkins already skinned stay stock.
+  AceGUI's own recolors (`SetDisabled`, which a CheckBox's `SetValue` calls, the Slider edit box's
+  hover, a CheckBox's `SetType`, a Label's `SetFontObject`) are post-hooked once per widget object and
+  act only while it is owned. Under `eui` a pooled widget never reaches EllesmereUI.
+- **One choke point, no maker touched.** The Skin major's `__AttachSkinAce(O, d)` wraps an Options
+  instance's `O.AceGUI` in a proxy whose `Create` paints for `d.addonName` once that addon is a
+  registered owner; everything else on the proxy is AceGUI's. **Options minor 32** calls it from
+  `lib:New` (one line in `attachHalves`, no member), **OptionsRegistry minor 3** again after
+  `CreateOptionsPanel` re-resolves AceGUI, and **OptionsScroll minor 6** carries the bridge
+  (`lib.__AttachSkinAce`) and defers the owner's skin-switch re-render one frame (`C_Timer.After(0)`,
+  once per frame), so a switch releases every row stock and re-acquires it in the new skin; a row is
+  never repainted in place. `OptionsWidgets.lua` stays at 1447 lines.
+
+New suite `tests/test_skin_ace.lua` (21 cases) on a pooled AceGUI fake with AceGUI's anatomy
+(`tests/fixture_skin_ace.lua`), red on the previous payload; no kit change. Re-vendor the whole
+folder: the new file must arrive with the shell. **What a consumer owes:** nothing; a registered
+owner's pages paint their rows, and a host that acquires widgets outside `O.AceGUI` may call
+`Skin:PaintAce`.
+
+### DebugLog 22.4.1.1, PerfPanel minor 10, SimPanel minor 7 and SkinDefs minor 4: the tool windows follow their owner
+
+`LibKa0s-DebugLog-1.0` key 22.4.1.1
+([docs/api/DebugLog/version-22.4.1.1-docs.md](docs/api/DebugLog/version-22.4.1.1-docs.md), a fourth
+file; the in-flight 21.4.1 document moved to it, never shipped), `LibKa0s-Perf-1.0` key 15.1.1.10
+([docs/api/Perf/version-15.1.1.10-docs.md](docs/api/Perf/version-15.1.1.10-docs.md)),
+`LibKa0s-Sim-1.0` key 2.3.7 ([docs/api/Sim/version-2.3.7-docs.md](docs/api/Sim/version-2.3.7-docs.md))
+and `LibKa0s-Skin-1.0` key 3.4.2.1.1.1.1 (the in-flight 3.3.2.1.1.1.1 document moved to it, never
+shipped), LK-09 of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`. No member is added, removed or
+renamed in any of the four.
+
+- **Each window takes its owner from its own descriptor**, the folder its close mark is already built
+  from: the console's `addonName`, the perf panel's `addonName` (else `name`), the sim panel's
+  `name`. A name counts once that addon registered with `LibKa0s-Skin-1.0` (Core minor 13's
+  `__SkinFacade`, asked at build; no floor on the Skin major). An unregistered name, none and a
+  client without the Skin major build every window with the same paint calls as before, call for
+  call; a console whose host passed its own `skin` or `applySkin` is never skinned over.
+- **`DebugLogWindow.lua` (minor 1), a new file, and DebugLog minor 22.** `DebugLog.lua`'s band
+  disposition (`CLAUDE.md`, *Files over the 1500-line cap*) named the console window as its seam and
+  "the next DebugLog minor that adds a window feature" as its trigger; the skin owner is that feature,
+  so `EnsureFrame`, the drag bar and their chrome helpers peeled first, unchanged, to a file paired on
+  the shell's minor (`__windowMinor` / `__windowShellMinor`), and the owner was added there
+  (`DebugLog.lua` 1008 → 663, out of the band; `DebugLogWindow.lua` 575). An owned console wears the
+  owner's skin through its facade (`S.Shell`, `S.ScrollBar`, `S.Divider`) and draws its controls, its
+  toggle, its counter and each log line (stamp, tag, message) from the owner's tokens; on a switch it
+  recolors them and rebuilds the visible log from the plain buffer. Its copy window is painted by
+  `CopyWindow` for the same owner. `tests/majors.lua`, `LibKa0s.xml`, the key and the docs carry it.
+- **PerfPanel minor 10** paints an owned panel's window through its facade and its step colors, hover
+  and command column from the owner's tokens, repainted on a switch. `Perf.lua` is untouched (997
+  lines, its band trigger 1000).
+- **SimPanel minor 7** does the same for the sim panel, and paints each picker and control button's
+  box (`S.Shell`, no top bar) and label (`sem.stepReady`, `text.accent`, `text.faint`). `Sim.lua`
+  and `SimTimeline.lua` are untouched: the timeline draws nothing. `SimPanel.lua` is 997 lines. The
+  test strip's amber and cyan stay the library's (`W.TestStrip`, Widgets minor 16).
+- **SkinDefs minor 4: ten tool-window tokens** (215 tokens): `text.faint`, `log.ts`, `log.tag`,
+  `log.text`, `log.count`, `sem.stepReady`, `sem.stepBusy`, `sem.stepLocked`, `sem.stepCancel`,
+  `sem.stepCancelHot`, each Ka0s Default's value the constant its window drew (done and used are
+  `sem.on`, which already held that green). The other skins derive them by following a token they
+  set (body text, muted text, heading, `sem.info`, accent, disabled text, `sem.off`, `sem.bad`).
+
+New suite `tests/test_tool_windows_skin.lua` (14 cases), red on the previous payload; `tests/test_skin.lua`
+pins DebugLog's constants in their new file and the panels' command and hover colors;
+`tests/test_sim_panel.lua`'s two minor pins now read "at least". Re-vendor the whole folder: the new
+file must arrive with the shell. **What a consumer owes:** nothing; an adopter's registered owner
+reaches its console and panels through the names it already passes.
+
+### Options 33.3.35.4.6.10.3.12.6.3.2.5.1 and Skin minor 4: the Appearance tab
+
+`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.6.3.2.5.1
+([docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.6.3.2.5.1-docs.md),
+a thirteenth file; the in-flight 32.3.35.4.6.10.3.12.6.3.2.5 document moved to it, never shipped) and
+`LibKa0s-Skin-1.0` key 4.4.2.1.1.1.1
+([docs/api/Skin/version-4.6.3.1.1.1.1-docs.md](docs/api/Skin/version-4.6.3.1.1.1.1-docs.md) since
+SkinDefs minors 5 and 6 and SkinPaint minor 3, below; the in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/` (`skinning-§3`; the owner's ruling R1, per addon).
+
+- **`OptionsAppearance.lua` (minor 1), a new file** paired on the shell's minor
+  (`__appearanceMinor` / `__appearanceShellMinor`), loaded after `OptionsKeybinds.lua`, and
+  **Options minor 33**, which attaches it from `lib:New` (one guarded line in `attachHalves`, no
+  member: the exception `OptionsKeybinds.lua`'s attach set, so `Options.lua`'s band trigger does not
+  fire; 1332 lines). Two public instance members and one lib-level table:
+  - **`O.AppearanceTab(spec)`** returns `{ key = "Appearance", label, tooltip, before, render }`,
+    `before` defaulting to `"Keybindings"`, so `O.RenderTabbedSchema` puts it immediately before the
+    Keybindings tab; the same entry serves a host-drawn strip (`build = entry.render`).
+  - **`O.AppearanceRows(ctx, spec, parent)`** draws the body and answers its view: the **skin source**
+    (*Ka0s skins* / *EllesmereUI*, the latter disabled unless `Skin:GetEUIStatus` holds, each of the
+    gate's conditions listed with the client's ready-check mark or cross and its fix), the **skin**
+    (one radio choice per registered skin, three to a line, each with its four swatches, name and
+    description), **Copy to every Ka0s addon…** (disabled with "No other loaded Ka0s addon uses
+    skins yet." while no other owner is registered; otherwise a confirmation naming the other owners
+    by label and saying that addons not loaded are unchanged, then `Skin:SetChoice` and
+    `Skin:WriteChoice` per owner) and the fixed note.
+  - **`lib.APPEARANCE_STRINGS`**, its US English words; `spec.strings` translates every string,
+    the skins' names and descriptions (`SKIN_<key>`, `SKIN_<key>_DESC`) and the conditions
+    (`COND_<key>`, `COND_<key>_HINT`) included.
+- **The write seam.** A pick calls `Skin:SetChoice(owner, source, skin)` first (the live repaint;
+  idempotent, so an owner's `onChange` calling it again is a no-op), then `spec.set(source, skin)`,
+  which MUST be the owner's write seam. Refused in combat, as are the copy's click and its
+  confirmation's accept (a StaticPopup above the combat cover can be accepted after combat starts).
+  Leaving an EllesmereUI that painted this
+  session raises one reload popup (`LIBKA0S_SKIN_RELOAD`), from `SetChoice`'s answer. Both popups
+  are Blizzard StaticPopups at `DIALOG`, never re-strata'd or restyled.
+- **Skin minor 4: `Skin:OwnerLabel(owner)` and `Skin:WriteChoice(owner, source, skin)`**, the two
+  members the copy needs: the label an owner registered with, and a write through the `opts.set` it
+  registered, under pcall, which never moves the applied choice. Both are in the regenerated
+  `members-4.4.2.1.1.1.1.json` (`members-4.6.3.1.1.1.1.json` since SkinDefs minors 5 and 6 and SkinPaint minor 3, below).
+- **The ellipsis.** `COPY` carries U+2026, which `options-ui-§21` asks of a button that opens a
+  confirmation; `tests/test_prose.lua`'s ASCII gate ratifies it for `LibKa0s/OptionsAppearance.lua`
+  alone, beside the em dash and Core's close glyph.
+
+New suite `tests/test_options_appearance.lua` (20 cases), red on the previous payload: the tab entry
+and its place before Keybindings, the rows, a pick moving the Skin major before the seam and
+repainting live, another owner untouched, copy disabled and enabled, the EllesmereUI gate closed and
+open, the one reload popup, translated strings, a disabled render, the refresher, the unregistered
+owner, and combat refusing a pick, a copy click and a copy accepted after combat starts. `tests/test_options_keybinds_model.lua`'s key-length case now pins one component per file,
+`OptionsKeybinds` the twelfth. Re-vendor the whole folder: the new file must arrive with the shell.
+**What a consumer owes: every Options degradation stub gains `AppearanceTab` and
+`AppearanceRows`**, in every addon, adopted or not (`Kit.assertSurfaceParity`, `skinning-§3`); the
+regenerated `members-33.3.35.4.6.10.3.12.6.3.2.5.1.json` lists the lib-level table only, so it names
+`APPEARANCE_STRINGS` and not them. An adopted addon draws the tab on its General page before
+Keybindings.
+
+### Media minor 7: RegisterLSM never offers a key LibSharedMedia already holds
+
+Extended on 2026-10-25, after the local tag and before any push (`LK-A1` of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`). `LibKa0s-Media-1.0` key 7.1
+([docs/api/Media/version-7.1-docs.md](docs/api/Media/version-7.1-docs.md); the in-flight 6.1
+document and manifest moved to it, never shipped). No member is added and no signature moves.
+
+- **The owner's report.** With LootHistory on v1.78.0 and every other addon still on v1.77.0, the
+  owner's BugSack filled with LibSharedMedia-3.0 errors from many addons: "Attempt to register an
+  invalid font" for `Interface\AddOns\PartyFrameEnhanced\libs\LibKa0s\media\fonts\AtkinsonHyperlegible-Regular.ttf`,
+  the same for `Ka0s Cinzel` and the other skin faces, and for the `Ka0s Glass` border and
+  background, raised from `RegisterLSM` (`registerOne` <- `registerCatalog`) under each host's
+  own `RegisterLSM` call.
+- **The cause.** LibStub keeps the highest minor, so every addon loading after LootHistory ran
+  minor 6's `RegisterLSM` with its own name, which built the new keys' paths into its own
+  `libs\LibKa0s\` folder, where minor 5 never shipped those files. LibSharedMedia-3.0 validates a
+  font, border or background file *before* its first-registration-wins check and reports a missing
+  one through `geterrorhandler()`, so the later `Register` was not the silent no-op minor 6's
+  docblock claimed.
+- **The fix.** `registerOne` asks `LSM:IsValid(type, name)` first and, when LSM already holds the
+  key, counts it and does not call `Register`. An LSM without `IsValid` (consumers' test fakes)
+  still sees every call, each counted, and langmask handling is unchanged. A key nobody holds yet is
+  still offered at the caller's folder, so a host that vendors minor 7 but never calls
+  `RegisterLSM` at file load could leave a new key unheld for the next caller; that case ends when
+  every consumer re-vendors v1.78.0. The `RegisterLSM` docblock now says all of this.
+- **Tests.** New case `media: RegisterLSM never offers a key LibSharedMedia already holds`, red
+  under minor 6: a fake LSM that reports an unknown file before checking the key, with every font,
+  border and background already held from another folder; `RegisterLSM("Later")` makes no
+  `Register` call for them, raises no report and still counts 6, 7, 1, 1. `media: an LSM without
+  the locale bits gets a plain Register` now answers `IsValid` from what landed rather than a
+  constant `true`, which under minor 7 would offer nothing.
+
+### SkinDefs minor 5: bind-state and danger tokens
+
+Extended on 2026-10-25, after the local tag and before any push (`LK-A2` of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-03` found). `LibKa0s-Skin-1.0` key
+4.5.2.1.1.1.1 (4.6.3.1.1.1.1 since SkinDefs minor 6 and SkinPaint minor 3, below:
+[docs/api/Skin/version-4.6.3.1.1.1.1-docs.md](docs/api/Skin/version-4.6.3.1.1.1.1-docs.md);
+the in-flight 4.4.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
+is added, removed or renamed, and every token minor 4 had resolves the same in every skin.
+
+- **Nine Semantic tokens** (224 tokens), each Ka0s Default's value the LootHistory constant it
+  replaces: the five bind states `sem.boundNone` `.6, .6, .6, .4`, `sem.boundBoE`
+  `.92, .92, .92, .95`, `sem.boundBoP` `.3, .82, .42`, `sem.boundWarband` `.3, .58, .98` and
+  `sem.boundWarbandUE` `.95, .52, .12` (BrowserTable `BOUND_STYLE`: the table's padlocks, legend and
+  filter); Insights' split of three of them, `sem.boundBoPAlt` `.85, .45, .45`, `sem.boundBoEAlt`
+  `.55, .8, .6` and `sem.boundNoneAlt` `.6, .6, .65` (AnalyticsFormat `BOUND_COLOR`, recorded in
+  the Skin document's *Split roles*); and `sem.danger` `1, 1/3, 1/3` for the row menu's Delete and
+  Forget, which keeps the menu's exact `|cffff5555` (`sem.bad`'s `1, .33, .33` encodes to `ff5454`).
+  Bind colors used to be listed as identity colors no skin changes; on Azeroth's parchment a
+  near-white `BoE` lock cannot be read, so they became tokens.
+- **The other skins inherit them** (the hue is the meaning; no `FOLLOW` entry), except where a
+  skin overrides for legibility: **Azeroth** sets all nine in ink that reads on parchment, and
+  **High Contrast** sets `sem.boundNone`, `sem.boundBoE` and `sem.boundNoneAlt` opaque in its own
+  palette (`#B0B0B0`, `#FFFFFF`, `#B0B0B0`).
+
+Tests: `tests/test_skin.lua` pins the nine Ka0s Default values with LootHistory's constants and
+`sem.danger`'s `ff5555` encoding; two new `tests/test_skin_defs.lua` cases hold every skin's nine to
+3:1 contrast on its window and pin which skins inherit and which override, High Contrast's opaque.
+Red on minor 4. **What a consumer owes:** nothing; LootHistory reads the tokens at its `LH-RV`
+re-vendor.
+
+### SkinDefs minor 6: the rest of LootHistory's constants, in one sweep
+
+Extended on 2026-10-25, after the local tag and before any push (`LK-A3` of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-04` found). `LibKa0s-Skin-1.0` key
+4.6.2.1.1.1.1 (4.6.3.1.1.1.1 since SkinPaint minor 3, below: [docs/api/Skin/version-4.6.3.1.1.1.1-docs.md](docs/api/Skin/version-4.6.3.1.1.1.1-docs.md);
+the in-flight 4.5.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
+is added, removed or renamed, and every token minor 5 had resolves the same in every skin.
+
+Rather than one more gap per item, every surface LootHistory still has to skin (Insights, the
+ledger formats, Timeline, Holdings, the AH price table and the Compat tooltips for `LH-04`; its own
+settings widgets and Profiles page for `LH-06`; the tool windows, the launcher and the tooltips for
+`LH-05`) was swept for a color constant no token reproduces exactly under Ka0s Default, byte for
+byte for a `|cff` escape and to three decimals for a golden-pinned call. Eleven came out:
+
+- **Text** (six): `text.value` `.8, .8, .82` (Insights' value and legend column,
+  AnalyticsCharts.lua:170/:256/:283/:393, pinned in `analytics_golden.txt`); `text.bodyAlt`
+  `.86, .86, .86` (the AH table's live addon name, Panel.lua:707-708, pinned in
+  `panel_auction_golden.txt`); `text.subtle` `.85, .85, .85` (Holdings' holder total and fresh
+  age, HoldingsTab.lua:416/:418, kept apart from `text.bodyAlt` because exactness wins);
+  `text.highlight` `1, 1, 1` (Holdings' cell default, HoldingsTab.lua:391); `gtip.value` `1, 1, 1`
+  (the GameTooltip value column: Compat.lua:647/:661/:674, Timeline.lua:542, TimelineModel.lua:386,
+  AnalyticsCharts.lua:29/:140, Panel.lua:647); `gtip.subtle` `.7, .7, .7` (the launcher's record
+  count, LauncherSetup.lua:206).
+- **Lists** (one): `icon.dim` `.55, .55, .55` (the AH table's info icon on an inactive row,
+  Panel.lua:721-722, pinned in `panel_auction_golden.txt`; a live one is `icon.hot`).
+- **Semantic** (four): `sem.goodAlt` `.25, 1, .25` and `sem.badAlt` `1, .25, .25`, which
+  hex-encode to LedgerFormat's exact `|cff40ff40` and `|cffff4040` (LedgerFormat.lua:35-44; not
+  `C.DirRGB`); `sem.warbandAlt` `.4, .78, 1` (Holdings' Warband label, HoldingsTab.lua:309; not
+  `C.TIMELINE.WARBAND`); `sem.unknown` `.6, .6, .6` (Insights' no-quality fallback,
+  AnalyticsFormat.lua:106; the no-class one is `text.muted`).
+
+Every other constant on those surfaces already has a token that reproduces it: LedgerFormat's
+`|cff808080` zero is `text.disabled`, Slash's `|cffffd100` is `text.accent`, Timeline's toggle is
+`check.bg` / `check.mark` / `btn.text` / `btn.hover`, its strip and legend take `sem.good` /
+`sem.bad` / `sem.warband` / `chart.*`, and an alpha a call site applies to a token's color (the
+0.95 series fills, the 0.9 flow bars, the legend's hidden 0.4) stays the call site's. The 36
+per-source colors and the class colors stay identity colors, not tokens. The new pairs are
+recorded in the Skin document's *Split roles*.
+
+- **The other skins inherit them** (no `FOLLOW` entry), except where a skin overrides for
+  legibility: **Azeroth** sets all nine window ones in ink on parchment and neither `gtip` one,
+  which draws on Blizzard's always-dark GameTooltip; **High Contrast** sets `text.value` and
+  `gtip.subtle` to `#E0E0E0`, `text.bodyAlt` and `text.subtle` to white and `icon.dim` and
+  `sem.unknown` to `#B0B0B0`. 235 tokens.
+
+Tests: `tests/test_skin.lua` pins the eleven Ka0s Default values with LootHistory's constants and
+the `40ff40`, `ff4040`, `808080` and `ffd100` encodings; two new `tests/test_skin_defs.lua` cases
+hold every skin's window ones to 3:1 contrast on its window and its two `gtip` ones to 4.5:1 on the
+dark tooltip, and pin which skins inherit and which override. Red on minor 5. **What a consumer
+owes:** nothing; LootHistory reads the tokens at its next `LH-RV` re-vendor.
+
+### SkinPaint minor 3: an EditBox's face goes back by path
+
+Extended on 2026-10-26, after the local tag and before any push (`LK-A4` of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/`, found by the owner's smoke test). `LibKa0s-Skin-1.0` key 4.6.3.1.1.1.1
+([docs/api/Skin/version-4.6.3.1.1.1.1-docs.md](docs/api/Skin/version-4.6.3.1.1.1.1-docs.md); the
+in-flight 4.6.2.1.1.1.1 document and manifest moved to it, never shipped). No member is added,
+removed or renamed.
+
+- **The defect.** Moving LootHistory from WoW Forever to WoW Midnight crashed the client with
+  `STACK_OVERFLOW` inside `EditBox:SetFontObject` (`SkinPaint.lua:400`, from the History search
+  box's repaint). Midnight sets no body face, so `P.font` put back the font the box had before
+  Forever's reached it, and the font object it had recorded for the box was the anonymous one the
+  client's EditBox answers `GetFontObject` with: the owner's probe found
+  `e:SetFontObject(GameFontHighlightSmall)` followed by `e:GetFontObject()` to be an unnamed Font,
+  not `GameFontHighlightSmall`. Handing that object back recursed in the client without end.
+- **The fix.** `P.font` records a prior font object only when it is a named font (a global font
+  name, or an object whose `GetName` answers one) that is not the target itself; otherwise it
+  records the face, and `P.unfont` puts it back with `SetFont(path, size, flags)`. A FontString
+  keeps getting its named font object back, as before.
+
+Tests: a new `tests/test_skin_paint_controls.lua` case models the client's EditBox (an anonymous
+`GetFontObject`) through Ka0s Default -> Forever -> Midnight and asserts the anonymous object is
+never handed back and the stock face returns by path; red on minor 2. Two font fakes in
+`tests/test_skin_paint.lua` and `tests/test_skin_ace.lua` now answer `GetName`, as the client's named
+fonts do. **What a consumer owes:** nothing; LootHistory carries it at its next `LH-RV` re-vendor.
+
+### Docs and process
+
+- **Released 2026-10-25 with no minor of its own.** Every minor above is the one its change moved;
+  the close bumps none. The versions paragraph rechecks against every major's live `lib.MODULES`
+  (`tests/test_versioning.lua` green), and the counts against the tree: `#dofile('tests/majors.lua')`
+  answers 18 and `grep -c '<Script' LibKa0s/LibKa0s.xml` 51. `docs/test-cases.md` and the members
+  manifests regenerate from the same tree.
+- **Built to standard v2.89.0** (was v2.88.0): the README's standards pointer moves after a read of
+  v2.89.0's rulings, the new `skinning` section (§1-§8: the owner, the per-profile choice, the
+  Appearance tab, the shipped skins, the EllesmereUI provider, HUD style following the skin, what a
+  skin never touches), the look values of standalone-windows, options-ui-§5 and §8 and
+  debug-logging-§3 rescoped to the Ka0s Default skin, library-stack-§6's one skinning exception
+  (`LibKa0s/SkinEUI.lua` alone may read the two `EllesmereUIDB` switches), library-stack-§8's skin
+  media, and library-stack-§7's `LibKa0s-Skin-1.0` row with the recount to eighteen majors across
+  fifty-one files. Every `skinning-§N` citation in `LibKa0s/`, `docs/` and this file (§3, §5, §7)
+  resolves to a heading of the standard at v2.89.0.
+- **Step 8 deferred, by the lead's call.** In this run only LootHistory re-vendors v1.78.0 (its
+  `LH-RV` item in Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`); every other consumer stays on
+  v1.77.0 until leg 2 re-vendors and adopts. LibStub keeps the highest minor it is offered, so in a
+  client where LootHistory is installed its v1.78.0 copy wins every shared major for every addon
+  (Core 13, Media 7, Widgets 16, DebugLog 22, Options 33, Perf 15.1.1.10, Sim 2.3.7) and the Skin
+  major exists. An addon that registers no skin owner draws exactly what it drew on v1.77.0: an
+  unregistered name, no name and a client without the Skin major take the previous minors' paint,
+  call for call.
+- **Hosts affected by the preview and simulation re-look (step 5).** SimPanel minor 7 and Widgets
+  minor 16 (the file that defines `W.TestStrip`) moved. Sim hosts, from the Consumers table's Sim
+  row: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD; `TestStrip` hosts, from its
+  Widgets row: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD, plus DpsRace, whose HUD
+  test-mode strip (`modules/Hud.lua` through `core/WidgetsSetup.lua`'s `NS.MakeTestStrip`) calls
+  `W.TestStrip` although the Widgets row does not name it yet. Only LootHistory
+  registers a skin owner in this leg, so only its sim panel and strips change; the others' scenarios
+  and test-mode strips draw as before, and each re-looks at its leg-2 re-vendor.
+- **Consumers.** `docs/releasing.md`'s Consumers table gains a `LibKa0s-Skin-1.0` row: LootHistory
+  (`core/SkinSetup.lua`, adopted in `LH-01`), other consumers at leg 2. `docs/api/CONSUMERS.md`
+  keeps its v1.75.0 stamp and records that v1.78.0's new exports are not measured until the leg-2
+  census.
+- **The tag is local, and a re-cut is the lead's.** While `v1.78.0` is unpushed, a LibKa0s defect
+  found by LootHistory's items or by the owner's smoke test becomes a new LibKa0s item (`LK-A<n>`)
+  that blocks the LootHistory item that found it, bumps the minors it touches and extends this
+  block. The lead, never a workflow agent, then deletes and re-creates the local tag after a
+  clean-tree `tests/_kit/run-automated-tests.sh --release 1.78.0` with a new bundle, `ANALYSIS.md`
+  and release-gate line, and LootHistory re-vendors in an `LH-RV<n>` item. Each re-cut is recorded
+  in the run's execution record, as v1.77.0's was ("Extended on 2026-10-24, after the local tag").
+
+### What a consumer owes
+
+- **Every Options degradation stub gains `AppearanceTab` and `AppearanceRows`** (OptionsAppearance
+  minor 1), in every addon, adopted or not: `Kit.assertSurfaceParity` is red at the re-vendor until
+  the stub answers them.
+- **Re-vendor the whole folder.** Four files are new (`WidgetsCopyWindow.lua`, `DebugLogWindow.lua`,
+  `OptionsAppearance.lua`, `SkinAce.lua`) and six more come with the new major, and each must arrive
+  with its shell; `media/fonts/` gains the five skin faces and `media/textures/` the two Glass
+  textures.
+- **Nothing else is owed until an addon adopts.** Skins are opt-in (`skinning-§1`): an addon that
+  never calls `Skin:RegisterOwner` keeps its look, and test kit revision 43's `mock_paint.lua` is
+  opt-in too.
+
+Release gate (`docs/automated-tests/20261026-134954/`, re-measured at `f759a5e` after LK-A4): lint pass, 0/0 in
+223 files; tests pass, 3007 passed, 2 skipped, 0 failed; complexity pass, 0 over CCN 15. Perf SKIPPED, not measured.
+After LK-A3: (`docs/automated-tests/20261025-134526/`, re-measured at `d6b5bec` after LK-A3): lint pass, 0/0 in
+223 files; tests pass, 3006 passed, 2 skipped, 0 failed; complexity pass, 0 over CCN 15. Perf SKIPPED, not measured.
+After LK-A2: (`docs/automated-tests/20261025-122953/`, re-measured at `dfbd0a1` after LK-A2): lint pass, 0/0 in
+223 files; tests pass, 3004 passed, 2 skipped, 0 failed; complexity pass, 0 over CCN 15. Perf SKIPPED, not measured.
+After LK-A1: (`docs/automated-tests/20261025-113223/`, re-measured at `d8ac604` after LK-A1; the first close's
+record is `docs/automated-tests/20261025-100830/`): lint pass, 0/0 in 223 files; tests pass, 3002 passed,
+2 skipped, 0 failed; complexity pass, 0 over CCN 15. Perf SKIPPED, not measured. First close:
+Release gate (`docs/automated-tests/20261025-100830/`): lint pass, 0/0 in 223 files;
+tests pass, 3003 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+Preview and simulation re-look: Current — SimPanel minor 7 (`7a782f0`) and Widgets minor 16, `W.TestStrip`'s file (`556946d`), paint through a registered skin owner only; tests/fixture_sim_panel.lua, tests/test_sim_panel.lua (two minor pins), tests/test_sim_panel_render.lua, tests/test_widgets_teststrip.lua (unchanged), tests/test_tool_windows_skin.lua, tests/test_widgets_skin.lua, docs/api/Sim/version-2.3.7-docs.md and docs/api/Widgets/version-16.2.6.4.4.1-docs.md re-read; no scenario, step or test-mode data changes, and an unowned panel or strip draws as at v1.77.0; hosts affected for step 8: BankLedger, DropWatcher, LootHistory, MultiMeters and KickCD (Sim and the strip), and DpsRace (the strip only; not yet in the Widgets row), of which only LootHistory re-vendors and registers an owner in leg 1.
+
 ## v1.77.0 — 2026-10-24
 
 Opened 2026-10-24. The settings-panel Keybindings tab (`O.KeybindingsTab` / `O.KeybindRows`, a

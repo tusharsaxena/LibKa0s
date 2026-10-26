@@ -50,25 +50,28 @@ local function count(t) return #t end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-test("keybinds: OptionsKeybinds is at minor 4, paired on an Options shell at 30 or later", function()
-  assertEqual(lib.MODULES.OptionsKeybinds, 4)
-  assertEqual(lib.__keybindsMinor, 4)
+test("keybinds: OptionsKeybinds is at minor 4 or later, paired on an Options shell at 30 or later", function()
+  assertTrue(lib.MODULES.OptionsKeybinds >= 4, "OptionsKeybinds minor " .. tostring(lib.MODULES.OptionsKeybinds))
+  assertEqual(lib.__keybindsMinor, lib.MODULES.OptionsKeybinds)
   assertTrue(lib.MINOR >= 30, "Options.lua minor " .. tostring(lib.MINOR))
   assertEqual(lib.__keybindsShellMinor, lib.MINOR)
   assertEqual(type(lib.__AttachKeybinds), "function")
 end)
 
-test("keybinds: the Options version key has twelve components", function()
+-- Twelve components when OptionsKeybinds arrived; OptionsAppearance.lua (Options minor 33) made a
+-- thirteenth, so the case pins OptionsKeybinds' place and one component per file.
+test("keybinds: the Options version key has a component per file, OptionsKeybinds the twelfth", function()
   local files
   for _, row in ipairs(T.majors) do
     if row.major == "LibKa0s-Options-1.0" then files = row.files end
   end
-  assertEqual(#files, 12, "tests/majors.lua's Options row")
+  assertTrue(#files >= 12, "tests/majors.lua's Options row")
+  assertEqual(files[12], "OptionsKeybinds", "the twelfth file")
   local parts = {}
   for i, f in ipairs(files) do parts[i] = tostring(lib.MODULES[f]) end
   local key = table.concat(parts, ".")
   local n = select(2, key:gsub("%.", "")) + 1
-  assertEqual(n, 12, "key " .. key)
+  assertEqual(n, #files, "key " .. key)
 end)
 
 -- ── the strings ──────────────────────────────────────────────────────────────────────────────

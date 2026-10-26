@@ -4,8 +4,8 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.77.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
-| File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `ICONS_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
+| Repo semver (`v1.78.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `DEFS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
 is offered for a major and discards the rest, so of the copies vendored across every installed addon,
@@ -25,16 +25,16 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   forty-one, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   fifty-one, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
-   constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `DebugLog.lua`, `MINOR` in
+   constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `PARSE_MINOR` in `SlashParse.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `REORDER_MINOR` in
    `WidgetsReorder.lua`, `DRAG_MINOR` in
-   `WidgetsDragHandle.lua`, `CHART_MINOR` in `WidgetsLineChart.lua`, `AUTOCOMPLETE_MINOR` in `WidgetsAutocomplete.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WIDGETS_MINOR` in
+   `WidgetsDragHandle.lua`, `CHART_MINOR` in `WidgetsLineChart.lua`, `AUTOCOMPLETE_MINOR` in `WidgetsAutocomplete.lua`, `COPY_MINOR` in `WidgetsCopyWindow.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WINDOW_MINOR` in `DebugLogWindow.lua`, `WIDGETS_MINOR` in
    `OptionsWidgets.lua`, `IDS_MINOR` in `OptionsIds.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
    `TABS_MINOR` in `OptionsTabs.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
-   in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
+   in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `APPEARANCE_MINOR` in `OptionsAppearance.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
    `SAMPLER_MINOR` in `PerfSampler.lua`, `COMMANDS_MINOR` in `PerfCommands.lua`, `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`, `MINOR` in `Sim.lua`,
    `TIMELINE_MINOR` in `SimTimeline.lua`, `SIM_PANEL_MINOR` in `SimPanel.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
@@ -43,19 +43,20 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 3. **A new module is also a new row in `tests/majors.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
    that table rather than naming files inline, so a module missing from it is a module nothing
-   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of twelve and a
-   `paired` array of eleven (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
+   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of thirteen and a
+   `paired` array of twelve (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
    `{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
    `{ OptionsIds, __idsMinor, __idsShellMinor }`, `{ OptionsIdList, __idListMinor, __idListShellMinor }`,
    `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`, `{ OptionsCombat, __combatMinor, __combatShellMinor }`,
    `{ OptionsCompose, __composeMinor, __composeShellMinor }`,
    `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`, `{ OptionsNav, __navMinor, __navShellMinor }`,
    `{ OptionsDrawer, __drawerMinor, __drawerShellMinor }`,
-   `{ OptionsKeybinds, __keybindsMinor, __keybindsShellMinor }`). **A file added to an existing major moves
+   `{ OptionsKeybinds, __keybindsMinor, __keybindsShellMinor }`,
+   `{ OptionsAppearance, __appearanceMinor, __appearanceShellMinor }`). **A file added to an existing major moves
    that major's version key**, because the key is every file's minor in load order — the Options key
-   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1, ten from 26.1.32.1.1.6.1.7.4.1, eleven from 29.2.34.2.4.8.1.7.4.2.1 and twelve from 30.2.34.3.5.9.2.11.4.2.1.4. The table
-   carries one row per shipped major — seventeen today, since `LibKa0s-Glow-1.0` and
-   `LibKa0s-Sim-1.0` at v1.75.0. The Sim row is the example of a three-file major paired on its
+   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1, ten from 26.1.32.1.1.6.1.7.4.1, eleven from 29.2.34.2.4.8.1.7.4.2.1, twelve from 30.2.34.3.5.9.2.11.4.2.1.4 and thirteen from 33.3.35.4.6.10.3.12.6.3.2.5.1. The table
+   carries one row per shipped major — eighteen today, since `LibKa0s-Glow-1.0` and
+   `LibKa0s-Sim-1.0` at v1.75.0 and `LibKa0s-Skin-1.0` at v1.78.0. The Sim row is the example of a three-file major paired on its
    shell: `files = { Sim, SimTimeline, SimPanel }` and a `paired`
    array of two (`{ SimTimeline, __timelineMinor, __timelineShellMinor }`,
    `{ SimPanel, __panelMinor, __panelShellMinor }`), so its key is three numbers (2.2.2 at v1.75.0).
@@ -265,7 +266,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the forty-one `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the fifty-one `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -312,7 +313,7 @@ Three traps in the kit-40 sequence, one rule each:
 the copy. The tool reads the declaration under it, and on a consumer that has no line yet it finds
 none, removes nothing and the copy is committed whole:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.77.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.78.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
@@ -445,13 +446,13 @@ Rules, and the reason each exists:
   up carrying a new `Perf.lua` over an old `Core.lua`, or a `Core.lua` that never arrived at all.
   The only negotiation between majors is a floor — a dependent file names the minimum minor it needs
   (`NEEDS_CORE`, at the top of every major's primary file but Core's — `Env.lua`, `Compat.lua`,
-  `Lifecycle.lua`, `Bus.lua`, `Schema.lua`, `Pool.lua`, `Item.lua`, `Glow.lua`, `Media.lua`, `Widgets.lua`, `DebugLog.lua`, `Slash.lua`, `Launcher.lua`,
+  `Lifecycle.lua`, `Bus.lua`, `Schema.lua`, `Pool.lua`, `Item.lua`, `Glow.lua`, `Media.lua`, `Skin.lua`, `Widgets.lua`, `DebugLog.lua`, `Slash.lua`, `Launcher.lua`,
   `Options.lua`, `Perf.lua` and `Sim.lua`)
   and returns
   before `NewLibrary` if the dependency is missing or older, so the module is **absent** rather than
   half-wired. That is the honest failure, not a working one: the host's setup file reports the
   library as missing and falls back. Nothing negotiates the other direction, and the
-  paired-minor guards that protect a secondary file within a major (`SlashParse`, `OptionsRegistry`, `OptionsWidgets`,
+  paired-minor guards that protect a secondary file within a major (`SkinDefs`, `SkinPaint`, `SkinPaintExtras`, `SkinPaintControls`, `SkinEUI`, `SkinAce`, `SlashParse`, `OptionsRegistry`, `OptionsWidgets`,
   `OptionsIds`, `OptionsIdList`, `OptionsTabs`, `OptionsCombat`, `OptionsCompose`, `OptionsScroll`, `OptionsNav`, `OptionsDrawer`, `PerfSampler`, `PerfCommands`, `PerfPanel`, `SimTimeline`, `SimPanel`) do not generalize across them. Whole-folder copying is the
   mitigation.
 - **A partly-copied `LibKa0s-Options-1.0` fails at CALL time, not at load time.** ELEVEN files since
@@ -530,6 +531,7 @@ which hosts' descriptors a change to one module can reach.
 | `LibKa0s-Bus-1.0` | AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, DropWatcher, QuickComms | Two members, adopted separately. **`Catalog`** (all eleven): `core/Bus.lua` in AbsorbTracker, AuraMaster, ConsumableMaster, PartyFrameEnhanced, DropWatcher and QuickComms; `core/Constants.lua` in BankLedger, KickCD, LootHistory and MultiMeters; `core/BusSetup.lua` in PanelMaster, which offers `Catalog` alone and stubs it as an identity function (PM-12). **`New`, the stand-down record** (four, the hosts whose hand-written records it replaced): `core/Bus.lua` in AbsorbTracker, ConsumableMaster and PartyFrameEnhanced, and MultiMeters' **second lookup at `core/Namespace.lua`**. BankLedger carries the untracked-target stub's full shape but calls only `Catalog`; its receivers keep the addon's own untracked factory. AuraMaster (`core/Bus.lua`) and LootHistory (`core/Constants.lua`) stub `Catalog` alone. KickCD and MultiMeters' `core/Constants.lua` lookup carry no stub table: each falls back inline to the plain declared table (`NS.MSG = Bus and Bus.Catalog(addonName, MSG) or MSG` in KickCD, `Constants.MSG = BusLib and BusLib.Catalog(addonName, MSG) or MSG` in MultiMeters); MultiMeters' full stub sits on the `core/Namespace.lua` lookup, which calls `New`. PartyFrameEnhanced has a **second lookup at `modules/Diagnostics.lua:215`**, where its diagnostics report checks the live major (DR-PF-03). PrettyChat and WhatGroup do not look the major up. **PanelMaster and PartyFrameEnhanced's second lookup were missing from this row until the v1.61.0 sweep**; the v1.55.0 sweep had listed PanelMaster among the hosts without it QuickComms calls `Catalog` and `New` from `core/Bus.lua`, with the untracked-target stub on the absent-library path. DropWatcher calls `Catalog` and `New` from `core/Bus.lua`, from its first commit rather than in place of a hand-written record. |
 | `LibKa0s-Schema-1.0` | AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PrettyChat, WhatGroup, DropWatcher, PremadeGroupsFilterExtension, QuickComms | `settings/Schema.lua` (the first five): the host keeps its rows and hands the runtime to this major, each with the runtime-completing stub `options-ui-§1` names for a degraded install. PrettyChat passes no `resolveRoot` (every row carries its own get/set); BankLedger's and LootHistory's root is the account-wide store, PanelMaster's the active profile, and AbsorbTracker's splits on a leading `global.` segment. AbsorbTracker and PrettyChat look up `LibKa0s-Slash-1.0` in the same file as well (see the Slash row). **The other six adopted it on 2026-09-24 and were missing from this row until the v1.61.0 sweep** (the v1.55.0 and v1.56.0 sweeps had them as not looking the major up): AuraMaster (AM-15) and PartyFrameEnhanced (PF-11) at `settings/Schema.lua`, ConsumableMaster at `settings/SchemaStub.lua` (CM-17), KickCD at `settings/SchemaSetup.lua` (KC-18), MultiMeters at `settings/Schema_Paths.lua` (MM-14) and WhatGroup at `settings/SchemaSetup.lua` (WG-12). The behavior a host crosses on adoption is listed in [Adoption notes](api/Schema/version-2-docs.md#adoption-notes). **Minor 2 (v1.56.0) adds `SetMany`, `row.normalize` and `descriptor.writeThrough`, and no host passed any of them at v1.56.0**: every one of the five instance stubs gains `SetMany` on the re-vendor for surface parity; `writeThrough` is planned for AbsorbTracker and PartyFrameEnhanced (`{ "enabled", "locked" }`), and `SetMany` for the owner-scope batches of ConsumableMaster#39, KickCD#22 and MultiMeters#52, which did not look the major up then. ConsumableMaster's `settings/Panel.lua` carries its own `KCM.Schema:SetMany`, a host method the library's replaces on adoption DropWatcher looks the major up at `settings/SchemaSetup.lua`, with its rows in `settings/Schema.lua` and `settings/SchemaRows.lua`. PremadeGroupsFilterExtension looks the major up at `settings/SchemaSetup.lua`. QuickComms looks the major up at `settings/SchemaSetup.lua`. |
 | `LibKa0s-Sim-1.0` | DropWatcher, LootHistory, BankLedger | Two lookups in each, the seam and the session (v1.75.0 sweep): BankLedger and DropWatcher at `core/SimSetup.lua` (`Sim:NewSeam`) and `modules/Sim.lua` (`Sim:New`), LootHistory at `core/SimSeam.lua` and `modules/Sim.lua`. New at v1.75.0: DropWatcher migrates its own simulator onto the major, LootHistory and BankLedger gain new simulators, all on `feat/2026-10-22-libka0s-issues-45-58`. Each host keeps its own members on its own table (for example `NS.SimHost`), never on the library instance. **Planned at v1.76.0**: MultiMeters and KickCD join as Sim hosts in the v1.76.0 run (MultiMeters#60, KickCD#38), each with a seam and a session lookup; the next sweep names their sites |
+| `LibKa0s-Skin-1.0` | LootHistory | LootHistory (`core/SkinSetup.lua`, adopted in `LH-01` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`); other consumers at leg 2. New at v1.78.0. Whole-folder vendoring ships the major into every consumer at its re-vendor, and it creates no frame, timer or event until a host calls `Skin:RegisterOwner`. **Step 8 for v1.78.0 is deferred** (only LootHistory re-vendors in leg 1, `LH-RV`); the other consumers stay on v1.77.0 until leg 2, and adopt there |
 
 **A gap the Slash consumers had, found by PrettyChat and closed at Slash minor 10 (v1.34.0).**
 Through Slash minor 9, `lib.ParseValue` split the remainder on whitespace and a `string` row took the
@@ -1044,8 +1046,18 @@ and `TestStrip` in the hosts the Widgets row names; `BonusIDsFromLink` in BankLe
 LootHistory), and [`CONSUMERS.md`](api/CONSUMERS.md) is restamped at v1.75.0 to match. **The
 merges to each default branch, the pushes and the tag push wait on the owner**, and are the run's
 finalize item; until then `master` in every consumer still carries what it carried before the run.
-Step 8 for **v1.77.0** (local tag `v1.77.0`) is the `<PFX>-RV` items of M2 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`, which
-replace each addon's `libs/LibKa0s/` and `tests/_kit/` whole from the tag; none has run at the tag.
+Step 8 for **v1.77.0** ran as the `<PFX>-RV` items of M2 of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`, which
+replaced each addon's `libs/LibKa0s/` and `tests/_kit/` whole from the tag, and was merged on 2026-10-24: every
+consumer's `master` names v1.77.0 in its provenance line (re-measured 2026-10-25, DpsRace included).
+**Step 8 for v1.78.0 (local tag `v1.78.0`) is deferred, by the lead's call.** Only LootHistory re-vendors in
+leg 1, in its `LH-RV` item of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`, on its own
+`feat/2026-10-25-skinning`; the other fourteen consumers stay on v1.77.0 until leg 2 re-vendors and adopts
+skins. In a client where LootHistory is installed, its v1.78.0 copy wins every shared major for every addon,
+and an addon that registers no skin owner draws what it drew on v1.77.0 (the v1.78.0 `CHANGELOG.md`
+block). The step-5 hosts (Sim and `TestStrip`: BankLedger, DropWatcher, LootHistory, MultiMeters, KickCD;
+`TestStrip` only: DpsRace, whose HUD test-mode strip is not yet in the Widgets row) re-look at their leg-2
+re-vendor. DpsRace bundles LibKa0s too and is missing from the step-9 loop and the
+table's module rows; the next step-9 sweep adds it.
 
 **Step 9 was run for v1.75.0 on 2026-10-23**, over the fourteen run branches: 209 lookup lines in
 205 files across the fourteen. Every one is now named in the Consumers table; the sweep found

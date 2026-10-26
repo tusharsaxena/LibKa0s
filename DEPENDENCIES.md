@@ -101,15 +101,20 @@ changes. `tools/artwork/icon_cleaner.py` rebuilds `LibKa0s/media/icons/` and the
 `LibKa0s/MediaIcons.lua` from three sets — Open Iconic, Phosphor and Game-icons — and is the
 provenance record for that art, not a build step: the TGAs and the catalog it produces are committed.
 You need it to add or replace an icon; you do not need it to fix a typo, run the suite, or cut a
-release that does not touch the art. Its sibling `tools/artwork/bar_textures.py` synthesizes
-`LibKa0s/media/textures/` from named constants — no network and no input files — and needs Python 3,
-Pillow and NumPy only.
+release that does not touch the art. Its sibling `tools/artwork/bar_textures.py` synthesizes the
+statusbars in `LibKa0s/media/textures/` from named constants — no network and no input files — and
+needs Python 3, Pillow and NumPy only; `tools/artwork/glass_textures.py` does the same for the Glass
+skin's border and fill. `tools/artwork/fonts.py` is the provenance record for the OFL skin faces in
+`LibKa0s/media/fonts/`: `--fetch` downloads them from google/fonts at pinned commits, checking each
+SHA-256, into `tools/artwork/.cache/fonts/`, and `--build` copies them in and cuts Cinzel's static
+SemiBold with fontTools.
 
 | Tool | Why | Install |
 |---|---|---|
-| Python 3 | Both tools are Python scripts (`tools/artwork/icon_cleaner.py`, `tools/artwork/bar_textures.py`) | `sudo apt install python3` |
-| Pillow | Reads the source PNGs and writes the RLE TGAs (`from PIL import Image`, in both scripts) | `sudo apt install python3-pil` |
-| NumPy | The recolor, solidify and normalize stages, and the bar gradients, are array work (`import numpy as np`, in both scripts) | `sudo apt install python3-numpy` |
+| Python 3 | The artwork tools are Python scripts (`tools/artwork/icon_cleaner.py`, `bar_textures.py`, `glass_textures.py`, `fonts.py`) | `sudo apt install python3` |
+| Pillow | Reads the source PNGs and writes the TGAs (`from PIL import Image`, in `icon_cleaner.py`, `bar_textures.py` and `glass_textures.py`) | `sudo apt install python3-pil` |
+| NumPy | The recolor, solidify and normalize stages, the bar gradients and the Glass coverage are array work (`import numpy as np`, in `icon_cleaner.py`, `bar_textures.py` and `glass_textures.py`) | `sudo apt install python3-numpy` |
+| fontTools | `fonts.py --build` only: cuts the static Cinzel SemiBold from upstream's variable font (`fontTools.varLib.instancer`, inside `instance_cinzel`) | `sudo apt install python3-fonttools` |
 | GitHub CLI | Fetches the upstream PNGs through `gh api`, which the script uses in place of raw.githubusercontent.com because that host times out from here often enough to be useless in a script | `sudo apt install gh && gh auth login` |
 | resvg-py | `icon_cleaner.py` only: renders the Phosphor and Game-icons SVGs to 64×64 (`import resvg_py`, inside `render_svg`). No distro package exists, so it lives in a venv with its own Pillow and NumPy (below) | `python3 -m venv tools/artwork/.venv && tools/artwork/.venv/bin/pip install resvg-py pillow numpy` |
 | `git` | `icon_cleaner.py --fetch` clones Phosphor and Game-icons shallowly at the commits pinned in the script, into `tools/artwork/.cache/src/` | already present (see above) |
@@ -121,7 +126,8 @@ sees. Use the distro packages above.
 
 **The icon tool runs from its venv**, `tools/artwork/.venv` (gitignored, like the `.cache` beside
 it), because resvg-py is pip-only — the PEP 668 trap above is exactly why it is a venv rather than a
-system install. `bar_textures.py` keeps using the system `python3`. Run the icon tool with `-I`: the
+system install. `bar_textures.py`, `glass_textures.py` and `fonts.py` keep using the system `python3`; run `fonts.py`
+with `-I` too, since its cache holds downloaded fonts. Run the icon tool with `-I`: the
 cache holds other people's repositories, read as data and never executed, and `-I` keeps the
 interpreter from importing anything out of the working directory.
 
@@ -133,6 +139,8 @@ tools/artwork/.venv/bin/python -c "import resvg_py, PIL, numpy"
 gh --version
 tools/artwork/.venv/bin/python -I tools/artwork/icon_cleaner.py --fetch   # network: gh + git
 tools/artwork/.venv/bin/python -I tools/artwork/icon_cleaner.py --build   # from the cache; no network
+python3 tools/artwork/glass_textures.py                                    # no network
+python3 -I tools/artwork/fonts.py --fetch --build                          # network: raw.githubusercontent.com
 ```
 
 A clean rebuild must leave `git status` clean — the committed TGAs are what the tool produces.

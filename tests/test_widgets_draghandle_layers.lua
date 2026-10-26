@@ -76,8 +76,9 @@ end
 local function levelOf(f) return mocks.__layers(f).level end
 
 test("DragHandle minor 5: MODULES and the file minor say 5", function()
-  assertEqual(W.MODULES.WidgetsDragHandle, 5)
-  assertEqual(W.__dragMinor, 5)
+  -- At least 5, the minor the level arrived at; a later minor moves both together.
+  assertTrue(W.__dragMinor >= 5, "DragHandle is at minor 5 or later")
+  assertEqual(W.MODULES.WidgetsDragHandle, W.__dragMinor)
 end)
 
 test("DragHandle level: no spec.level keeps minor 4 -- handle at parent + 1, marks at handle + 1", function()

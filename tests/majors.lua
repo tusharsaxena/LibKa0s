@@ -68,23 +68,38 @@ local MAJORS = {
     },
   },
   {
+    major = "LibKa0s-Skin-1.0",
+    files = { "Skin", "SkinDefs", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinEUI", "SkinAce" },
+    primary = "Skin",
+    paired = {
+      { file = "SkinDefs", minorField = "__defsMinor", probeField = "__defsShellMinor" },
+      { file = "SkinPaint", minorField = "__paintMinor", probeField = "__paintShellMinor" },
+      { file = "SkinPaintExtras", minorField = "__extrasMinor", probeField = "__extrasShellMinor" },
+      { file = "SkinPaintControls", minorField = "__controlsMinor", probeField = "__controlsShellMinor" },
+      { file = "SkinEUI", minorField = "__euiMinor", probeField = "__euiShellMinor" },
+      { file = "SkinAce", minorField = "__aceMinor", probeField = "__aceShellMinor" },
+    },
+  },
+  {
     major = "LibKa0s-Widgets-1.0",
-    files = { "Widgets", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete" },
+    files = { "Widgets", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete", "WidgetsCopyWindow" },
     primary = "Widgets",
     paired = {
       { file = "WidgetsReorder",    minorField = "__reorderMinor", probeField = "__reorderShellMinor" },
       { file = "WidgetsDragHandle", minorField = "__dragMinor",    probeField = "__dragShellMinor" },
       { file = "WidgetsLineChart",  minorField = "__chartMinor",   probeField = "__chartShellMinor" },
       { file = "WidgetsAutocomplete", minorField = "__autocompleteMinor", probeField = "__autocompleteShellMinor" },
+      { file = "WidgetsCopyWindow", minorField = "__copyMinor", probeField = "__copyShellMinor" },
     },
   },
   {
     major = "LibKa0s-DebugLog-1.0",
-    files = { "DebugLog", "DebugLogDiagnostics", "DebugLogGates" },
+    files = { "DebugLog", "DebugLogDiagnostics", "DebugLogGates", "DebugLogWindow" },
     primary = "DebugLog",
     paired = {
       { file = "DebugLogDiagnostics", minorField = "__diagMinor",  probeField = "__diagShellMinor" },
       { file = "DebugLogGates",       minorField = "__gatesMinor", probeField = "__gatesShellMinor" },
+      { file = "DebugLogWindow",      minorField = "__windowMinor", probeField = "__windowShellMinor" },
     },
   },
   {
@@ -100,7 +115,7 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Options-1.0",
-    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds" },
+    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance" },
     primary = "Options",
     paired = {
       { file = "OptionsRegistry", minorField = "__registryMinor", probeField = "__registryShellMinor" },
@@ -114,6 +129,7 @@ local MAJORS = {
       { file = "OptionsNav",     minorField = "__navMinor",     probeField = "__navShellMinor" },
       { file = "OptionsDrawer",  minorField = "__drawerMinor",  probeField = "__drawerShellMinor" },
       { file = "OptionsKeybinds", minorField = "__keybindsMinor", probeField = "__keybindsShellMinor" },
+      { file = "OptionsAppearance", minorField = "__appearanceMinor", probeField = "__appearanceShellMinor" },
     },
   },
   {

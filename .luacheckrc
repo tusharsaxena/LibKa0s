@@ -56,6 +56,19 @@ read_globals = {
   "CreateKeyChordStringUsingMetaKeyState", "IsAltKeyDown", "IsControlKeyDown", "IsShiftKeyDown",
   "IsMetaKeyDown", "Screenshot", "NOT_BOUND", "KEY_BOUND", "KEY_UNBOUND_ERROR",
   "CHARACTER_BINDINGS", "ACCOUNT_BINDINGS",
+  -- The client's error handler, which LibKa0s-Skin-1.0 hands a raising repaint primitive or
+  -- OnLooksChanged listener so the rest of the pass still runs. Read at call time and guarded.
+  "geterrorhandler",
+  -- The Skin primitives (SkinPaint*.lua): a ColorMixin for SetGradient, the per-owner font objects,
+  -- the client's standard face (S.GetFont when a skin names none) and the hook a checkbox's mark
+  -- follows SetChecked through. Each read at call time and guarded for absence.
+  "CreateColor", "CreateFont", "STANDARD_TEXT_FONT", "hooksecurefunc",
+  -- The Appearance tab (OptionsAppearance.lua): its copy confirmation and its reload popup are
+  -- Blizzard StaticPopups, and the reload accept calls the client's reload. Each read at call time
+  -- and guarded. The tab defines its two dialogs in StaticPopupDialogs, keyed LIBKA0S_SKIN_*, when
+  -- it shows them, so that one table's fields are writable; the table itself is never replaced.
+  "C_UI", "ReloadUI", "StaticPopup_Show",
+  StaticPopupDialogs = { other_fields = true, read_only = false },
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes
 -- through _G[name]. That is the one sanctioned _G mutation in this library.
@@ -82,4 +95,11 @@ ignore = { "212/self", "212/event", "432/self" }
 -- `globals` rather than `read_globals` because tests/run.lua is the writer.
 files["tests/"] = {
   globals = { "LK_TEST" },
+}
+
+-- EllesmereUI's two globals, readable in LibKa0s/SkinEUI.lua and no other file, so luacheck itself
+-- holds library-stack-§6's skinning exception to its one file: the provider reads the EllesmereUI
+-- table and its EllesmereUIDB SavedVariables at call time, nil-guarded, and never writes either.
+files["LibKa0s/SkinEUI.lua"] = {
+  read_globals = { "EllesmereUI", "EllesmereUIDB" },
 }

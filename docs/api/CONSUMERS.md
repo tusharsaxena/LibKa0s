@@ -71,6 +71,17 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.78.0, not in the census (2026-10-25).** The release adds a major, `LibKa0s-Skin-1.0`
+(its members in `docs/api/Skin/members-4.6.3.1.1.1.1.json`), the Options instance members
+`AppearanceTab` and `AppearanceRows` with the lib-level `APPEARANCE_STRINGS` (OptionsAppearance minor
+1), Skin's `Skin:OwnerLabel` and `Skin:WriteChoice`, an `owner` option on every Widgets constructor,
+`ApplySkin`'s `owner` (Core minor 13), the media pickers' `fromSkin` (OptionsCompose minor 12), the
+`skinValue` row field (OptionsWidgets minor 35), `series[i].colorIndex` (WidgetsLineChart minor 4) and
+the Media catalogs `BORDERS` / `BACKGROUNDS` with their readers (Media minor 6). None gets a row
+here yet, and the v1.75.0 stamp and its numbers stand: in leg 1 of Ka0sAddonsCommonTasks
+`docs/2026-10-25-SKINNING/` only LootHistory re-vendors and adopts (its `LH-*` items), and the other
+consumers adopt at leg 2, whose census re-run measures them all at once.
+
 **v1.77.0 rows, planned and not measured (2026-10-24).** Eight rows are added without a re-run, and
 the v1.75.0 stamp stands: Options `KeybindingsTab`, `KeybindRows` and `KEYBINDS_UNCHANGED`
 (OptionsKeybinds minor 2) and `StrataTooltip` (OptionsCompose minor 8), all instance members;

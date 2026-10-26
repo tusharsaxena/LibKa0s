@@ -407,7 +407,7 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_media.lua (28)
+### test_media.lua (37)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -415,7 +415,7 @@ Total.
 - media: the catalog holds every set, not just the first
 - media: no Phosphor brand mark ships
 - media: the first 113 names are minor 4's, in minor 4's order
-- media: every name in TEXTURES has a file, and every file has a name
+- media: every name in TEXTURES, BORDERS and BACKGROUNDS has a file, and every file a name
 - media: Texture builds the vendored path, WITHOUT the extension
 - media: the texture keys are the labels a player reads
 - media: every font in FONTS ships with its license
@@ -434,9 +434,185 @@ Total.
 - media: RegisterLSM flags the face western+ruRU, so a ruRU client keeps it
 - media: RegisterLSM counts only what LibSharedMedia kept
 - media: RegisterLSM counts a face another copy registered first
+- media: RegisterLSM never offers a key LibSharedMedia already holds
 - media: an LSM without the locale bits gets a plain Register
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
+- media: FONTS carries the five skin faces beside JetBrains Mono
+- media: each face names its own locales, and only JetBrains Mono reaches ruRU
+- media: every OFL face ships with its license text beside it
+- media: RegisterLSM('X') registers 'Ka0s Barlow' under X's own libs folder, western only
+- media: a ruRU client keeps JetBrains Mono and is refused the western-only faces
+- media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
+- media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
+- media: RegisterLSM registers the Glass border and background, and counts them
+
+### test_skin.lua (27)
+
+- skin: the major registers both files and the sentinel
+- skin: the shell refuses without Core, and SkinDefs then attaches to nothing
+- skin: without SkinDefs the engine runs and every token is nil
+- skin: the schema names each token once, with a known kind
+- skin: every registered skin resolves every schema token to its kind
+- skin: Ka0s Default leaves every font token nil
+- skin: Ka0s Default equals the published constants
+- skin: Ka0s Default equals the file-local constants it replaces
+- skin: Ka0s Default equals LootHistory's constants
+- skin: a skin derives from Ka0s Default, and false means none
+- skin: RegisterSkin validates, orders and replaces
+- skin: an unregistered owner is not an owner and reads Ka0s Default
+- skin: RegisterOwner reads the host's choice once, in either shape
+- skin: SetChoice is idempotent
+- skin: SetChoice resolves before the listeners run
+- skin: leaving eui after EllesmereUI painted asks for one reload and repaints nothing
+- skin: leaving an eui EllesmereUI never painted is an ordinary change
+- skin: one owner switching never repaints another's frames
+- skin: a repaint replays each recorded frame once, primitives in first-paint order
+- skin: a repaint replays frames in the order they were first painted
+- skin: the repaint flag is up only while replaying, and a raising primitive stops nothing
+- skin: a frame painted for a second owner moves to it; Untrack forgets it
+- skin: the frame registry holds its frames weakly
+- skin: the facade is late-bound: swapping lib.prim reaches a cached S
+- skin: a newer minor keeps every facade table and re-fills it
+- skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
+- skin: ResetToSkin puts listed keys back on the skin
+
+### test_skin_defs.lua (19)
+
+- skin defs: the nine skins register in order with their labels
+- skin defs: every skin names only schema tokens, each of its kind
+- skin defs: every skin defines every schema token or inherits it from Ka0s Default
+- skin defs: geometry tokens equal Ka0s Default in all nine skins
+- skin defs: every skin's GameTooltip lines read on the client's dark tooltip
+- skin defs: every skin's text reads on its own window
+- skin defs: every skin's set drawer label differs from its unset one
+- skin defs: every skin's bind-state and danger colors read on its own window
+- skin defs: the bind-state tokens inherit Ka0s Default unless a skin overrides for legibility
+- skin defs: every skin's split text, icon and signed colors read where they draw
+- skin defs: the split tokens inherit Ka0s Default unless a skin overrides for legibility
+- skin defs: High Contrast draws every control border at 2px or more
+- skin defs: Glass is the rounded skin, radius 8 on the Ka0s Glass nine-slice
+- skin defs: WoW Default wears the Blizzard art docs/api/Skin names
+- skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art
+- skin defs: only WoW Default names Blizzard art
+- skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
+- skin defs: every font and border a skin names is shipped or an LSM default
+- skin defs: the font assignments follow the spec
+
+### test_skin_paint.lua (29)
+
+- skin paint: the three files attach to the shell and fill every vocabulary entry
+- skin paint: the extras and controls attach to nothing without SkinPaint's helpers
+- skin paint: with no skin registered a primitive paints nothing it has no token for
+- skin paint: Shell on Ka0s Default is Core.ApplySkin, call for call
+- skin paint: Shell paints a skin's window from its tokens
+- skin paint: a second Shell call makes no new region and paints the same
+- skin paint: a skin switch repaints a Shell live, and back to Ka0s Default exactly
+- skin paint: WoW Default's window is the dialog edge on the holder over the tiled art
+- skin paint: the holder is a child frame one level up, and edges live on it
+- skin paint: Ka0s Default leaves a stock frame stock, and a skin fades its art
+- skin paint: two owners on one loaded copy paint and repaint only their own frames
+- skin paint: a target painted for a second owner is given back first
+- skin paint: a target untracked and painted again reuses its regions and hooks
+- skin paint: fills and washes sit under the target's text, edges over it
+- skin paint: Panel on Ka0s Default is LootHistory's list panel, call for call
+- skin paint: Inset, noBg, noBorder and the nav rail's recolor
+- skin paint: FadeRegions fades the stock textures, records their alpha, and spares its own
+- skin paint: FadeNineSlice fades the nine pieces away from Ka0s Default
+- skin paint: TitleBar paints only the title color on Ka0s Default
+- skin paint: TitleBar fills under its text, centers its title, and gives the alignment back
+- skin paint: Divider colors a texture in place, as Core's divider is colored
+- skin paint: Card on Ka0s Default is LootHistory's KPI card, call for call
+- skin paint: Footer draws nothing on Ka0s Default and a band in a skin that sets foot.bg
+- skin paint: Strip and Cover color their textures as TestStrip and the combat cover do
+- skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for call
+- skin paint: Tooltip leaves a library tooltip alone unless the skin colors tooltips
+- skin paint: Text colors a role, and a skin's font reaches it through the owner's font object
+- skin paint: Font and White put the body font and color on a string
+- skin paint: the getters answer the owner's skin
+
+### test_skin_paint_controls.lua (24)
+
+- skin controls: Button on Ka0s Default is LootHistory's flat button's paint
+- skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
+- skin controls: a stock button stays stock on Ka0s Default and is faded and boxed in a skin
+- skin controls: Button with keepKeys paints only the label
+- skin controls: WhiteButtonLabel and StateButtonLabel
+- skin controls: EditBox on Ka0s Default paints the search box's backdrop, call for call
+- skin controls: EditBox fades a template's pieces and colors its text and hint in a skin
+- skin controls: leaving a skin font puts an EditBox's face back by path, never its anonymous font object
+- skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call
+- skin controls: Checkbox draws a box and a mark that follows the check
+- skin controls: WoW Default's checkbox is the client's art; Ka0s Default leaves it stock
+- skin controls: ScrollBar's thumb states and the console's own bar match today's tints
+- skin controls: a bar's own thumb is left stock on Ka0s Default and tinted in a skin
+- skin controls: Slider is left alone by Ka0s Default and painted by a skin that sets it
+- skin controls: Tab paints its state, SetTabSelection moves it, and a repaint keeps it
+- skin controls: WoW Default's tabs are the client's tab art; a stock tab stays stock
+- skin controls: CloseButton on Ka0s Default is Core's close button, call for call
+- skin controls: a stock close button gets a glyph in a skin and is left stock on Ka0s Default
+- skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and ApplyBarFill
+- skin controls: NavItem on Ka0s Default is OptionsNav's entry paint
+- skin controls: Drawer on Ka0s Default is OptionsDrawer's header paint
+- skin controls: ListRow washes live under the row and follow the latest state
+- skin controls: every primitive's second call makes no new frame, region or hook
+- skin controls: every primitive's repaint reuses its regions and paints the new skin
+
+### test_skin_eui.lua (29)
+
+- skin eui: SkinEUI attaches to the shell and makes no frame until an owner registers
+- skin eui: without SkinEUI the engine keeps eui a stored choice on the owner's Ka0s skin
+- skin eui: GetEUIStatus lists the four conditions and holds only when all do
+- skin eui: gate with no EllesmereUI at all
+- skin eui: gate with the Blizzard Skin child missing
+- skin eui: gate with the master switch off
+- skin eui: gate with the owner's entry off
+- skin eui: gate with another addon's entry off
+- skin eui: gate with the owner's entry nil
+- skin eui: an owner registered before the EllesmereUI global exists is retried
+- skin eui: PLAYER_LOGIN retries too, then lets go of both events
+- skin eui: dispatch at login and registration after login both hand the facade
+- skin eui: a newer minor loaded after registration still receives the facade
+- skin eui: switching ka0s to eui hides the Ka0s paint and hands the frames to EllesmereUI
+- skin eui: a facade arriving after the owner chose eui paints the frames then (late arrival)
+- skin eui: the owner falls back to its Ka0s skin while the gate is closed
+- skin eui: leaving eui after EllesmereUI painted asks for one reload and repaints nothing
+- skin eui: leaving an eui EllesmereUI never painted repaints live, with no reload
+- skin eui: a gate that closes after the paint asks for a reload and never falls back live
+- skin eui: moving between Ka0s skins while on a painted eui with a closed gate asks for the reload
+- skin eui: a facade missing a primitive is refused before any paint, latched and logged once
+- skin eui: a misshapen facade closes the gate when it arrives, before the owner picks eui
+- skin eui: a facade lacking only the optional SetTabSelection is accepted
+- skin eui: a primitive that raises stops EllesmereUI painting the owner, once
+- skin eui: Ka0s-only option keys are stripped before EllesmereUI sees a call
+- skin eui: an eui-owned AceGUI CheckBox makes zero calls to EllesmereUI
+- skin eui: another owner's frames and tokens never see EllesmereUI
+- skin eui: EllesmereUI's live looks change repaints the Ka0s extras
+- skin eui: EllesmereUIDB is read in LibKa0s/SkinEUI.lua and no other payload file
+
+### test_skin_ace.lua (21)
+
+- skin ace: an owned page's CheckBox is painted from the owner's skin through O.AceGUI
+- skin ace: Ka0s Default is stock AceGUI: nothing painted, nothing wrapped
+- skin ace: an unregistered owner's instance holds AceGUI itself
+- skin ace: the proxy is AceGUI for everything but Create
+- skin ace: an owner that registers after lib:New is proxied at CreateOptionsPanel
+- skin ace: a released CheckBox is stock for the next acquirer outside Ka0s
+- skin ace: another owner acquiring the pooled object wears its own skin, not the first's
+- skin ace: every painted type is painted while owned and stock on its next acquisition
+- skin ace: a SimpleGroup has no painter and is never wrapped
+- skin ace: SetDisabled and SetValue keep the skin's colors and mark
+- skin ace: the Slider's edit box keeps the skin's edge through AceGUI's hover recolor
+- skin ace: a Label keeps the skin's font through its host's SetFontObject, and gives the host's back
+- skin ace: a raising restore still returns the widget to the pool, logged once
+- skin ace: a host OnRelease and the skin's restore both run, and a re-acquire is stock
+- skin ace: a widget whose wrapper a host replaced is put back when it is acquired again
+- skin ace: the dropdown's pull-out wears the owner's skin while open and is stock on close
+- skin ace: Ka0s Default to Obsidian with a page open repaints its rows after the deferred re-render
+- skin ace: an eui owner's rows are painted from EllesmereUI's colors with zero EllesmereUI calls
+- skin ace: a widget another skinning addon skinned is left to it
+- skin ace: PaintAceTree paints a host container's widgets
+- skin ace: Skin:OnRelease chains once and answers its function
 
 ### test_widgets.lua (58)
 
@@ -736,6 +912,33 @@ Total.
 - reorder: ReorderList lives in WidgetsReorder.lua at minor 1, paired on the live shell
 - reorder: a payload without WidgetsReorder.lua loads whole, with no ReorderList
 
+### test_widgets_skin.lua (24)
+
+- skin owner: Core.ApplySkin and MakeCloseButton without a registered owner are minor 12's
+- skin owner: Core.ApplySkin paints a registered owner's window from its skin and repaints it
+- skin owner: a host's own skin table wins over the owner, and is never repainted
+- skin owner: Core works with no Skin major, and resolves it at call time
+- skin owner: MakeCloseButton takes a registered owner's close colors and follows a switch
+- skin owner: Dropdown without a registered owner is minor 15's, button and menu
+- skin owner: an owned Dropdown wears its owner's skin, and two owners stay apart
+- skin owner: the shared menu follows its opener, and an owner-less open puts Ka0s Default back
+- skin owner: a LootHistory open under Obsidian, then an owner-less open, shows Ka0s Default
+- skin owner: SearchBox and TestStrip without a registered owner are minor 15's
+- skin owner: an owned SearchBox paints its box, focus line and icon from the skin
+- skin owner: an owned TestStrip takes its wash from the owner's skin
+- skin owner: CopyWindow without a registered owner is minor 15's
+- skin owner: a registered addon's CopyWindow wears its skin, dense fill and close button
+- skin owner: Autocomplete without a registered owner is minor 3's
+- skin owner: an owned Autocomplete colors its rows from the skin on every show
+- skin owner: DragHandle without a registered owner is minor 5's
+- skin owner: an owned DragHandle paints from its owner's skin and follows a switch alone
+- skin owner: ReorderList without a registered owner is minor 1's, ghost included
+- skin owner: an owned ReorderList draws boxes, handle, line and ghost from the skin
+- skin owner: Ka0s Default draws the reorder list exactly as minor 1 did
+- skin owner: LineChart without a registered owner reads lib.LINE_CHART as minor 3 did
+- skin owner: an owned LineChart takes its chrome and series from ChartStyle and re-renders
+- skin owner: Ka0s Default's eight Widgets tokens are the constants they replace
+
 ### test_debuglog.lua (75)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
@@ -946,6 +1149,23 @@ Total.
 - core: RaiseStaticPopups answers the count raised and honors STATICPOPUP_NUMDIALOGS
 - core: RaiseStaticPopups never shows, hides or re-stratas a popup
 - tool windows: with no RaiseStaticPopups in Core the three windows build and show
+
+### test_tool_windows_skin.lua (14)
+
+- tool windows skin: without a registered owner each window is the previous minors' paint
+- tool windows skin: an unregistered console logs Ka0s Default's colored line, as before
+- tool windows skin: a registered owner's console paints from its skin
+- tool windows skin: an owned console logs in its skin's colors and re-colors the log on a switch
+- tool windows skin: a skin switch repaints the console, and Ka0s Default is today's paint
+- tool windows skin: an owned console's copy window wears the owner's skin
+- tool windows skin: a host's own skin or applySkin keeps the console out of the owner's skin
+- tool windows skin: two owners' consoles stay isolated
+- tool windows skin: a registered owner's perf panel paints its window and step colors
+- tool windows skin: an owned perf panel on Ka0s Default draws the constants
+- tool windows skin: a registered owner's sim panel paints its window, rows and buttons
+- tool windows skin: an owned sim panel on Ka0s Default draws the constants
+- tool windows skin: Ka0s Default's tool-window tokens are the constants the windows drew
+- tool windows skin: every skin's tool-window text reads on its own window
 
 ### test_slash.lua (74)
 
@@ -1677,7 +1897,7 @@ Total.
 
 ### test_options_drawer.lua (26)
 
-- drawer: OptionsDrawer is at minor 1, attached to an Options shell at 29 or later
+- drawer: OptionsDrawer is at minor 1 or later, attached to an Options shell at 29 or later
 - drawer: a closed drawer is one full-width group on the page, a header and no body
 - drawer: the header carries the label and the summary; set is gold, unset white and gray
 - drawer: summary and set may be functions, read when the drawer is drawn
@@ -1706,8 +1926,8 @@ Total.
 
 ### test_options_keybinds_model.lua (26)
 
-- keybinds: OptionsKeybinds is at minor 4, paired on an Options shell at 30 or later
-- keybinds: the Options version key has twelve components
+- keybinds: OptionsKeybinds is at minor 4 or later, paired on an Options shell at 30 or later
+- keybinds: the Options version key has a component per file, OptionsKeybinds the twelfth
 - keybinds: KEYBIND_STRINGS carries the exact default words, all ASCII
 - keybinds: the client's own strings win where they exist, with the library's fallbacks
 - keybinds: the API is available only when all five binding functions exist
@@ -1735,7 +1955,7 @@ Total.
 
 ### test_options_keybinds.lua (30)
 
-- keybinds tab: OptionsKeybinds is at minor 4 and attaches the three members
+- keybinds tab: OptionsKeybinds is at minor 4 or later and attaches the three members
 - keybinds tab: KeybindingsTab's defaults
 - keybinds tab: spec.key, spec.before and spec.strings override
 - keybinds tab: RenderTabbedSchema puts it LAST, after every group tab, and its render draws rows
@@ -1782,6 +2002,29 @@ Total.
 - keybinds sync: a capture in progress keeps LISTENING through a repaint
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
+
+### test_options_appearance.lua (20)
+
+- appearance: OptionsAppearance is at minor 1 or later and attaches the two members
+- appearance: the Skin major answers an owner's label and writes through its setter
+- appearance: AppearanceTab's defaults
+- appearance: spec.key, spec.before and spec.strings override
+- appearance: RenderTabbedSchema puts it immediately before Keybindings, and its render draws rows
+- appearance: the rows draw both sources, one choice per skin with swatches, the copy button and the note
+- appearance: a skin pick moves the Skin major, then writes through the seam, and repaints live
+- appearance: a pick never reaches another owner, and clicking the checked skin keeps it
+- appearance: copy is disabled with its hint while no other owner is loaded
+- appearance: copy confirms with the other owners' names and writes each through its own setter
+- appearance: in combat a skin or source pick writes nothing
+- appearance: a copy clicked in combat asks nothing
+- appearance: a copy confirmation accepted after combat starts writes no other owner
+- appearance: the EllesmereUI choice is disabled while the gate is closed, each condition listed
+- appearance: with no Skin EllesmereUI provider the choice is disabled with one line
+- appearance: the open gate lets EllesmereUI in, and leaving it raises one reload popup
+- appearance: spec.strings translates every string, the skins' names and descriptions included
+- appearance: a page drawn disabled draws every control disabled
+- appearance: the refresher re-reads the owner's store
+- appearance: an owner that never registered, or no Skin major, draws one line and no controls
 
 ### test_options_idsuggest.lua (29)
 
@@ -2006,7 +2249,38 @@ Total.
 - reset tooltip: the key-bindings tail follows after one space
 - reset tooltip: an empty, nil or non-string tail adds nothing
 - reset tooltip: notes.resetAll is the button's own and does not reach the member
-- reset tooltip: OptionsCompose is at minor 11
+- reset tooltip: OptionsCompose is at minor 11 or later
+
+### test_options_skin.lua (15)
+
+- options skin: a page with no registered owner is today's paint, call for call
+- options skin: an owner-less page records nothing in the Skin major
+- options skin: an owned page paints its header and an opaque backdrop from the skin
+- options skin: an owned page's tab strip fades the client's art and wears the tab roles
+- options skin: an owned page's rail, drawer and cover paint from the skin
+- options skin: a skin switch repaints the owned page with no reload, and Ka0s Default undoes it
+- options skin: Ka0s Default on an owned page draws no backdrop and keeps the client's art
+- options skin: an owner that registers after the page was built gets its skin on the next show
+- options skin: two owners' pages stay apart
+- options skin: the always-shown thumb takes the owner's tints, and is given back on release
+- options skin: a pooled drawer head drawn for no owner leaves the owner's repaint
+- options skin: the id list's help mark takes the skin's tints away from Ka0s Default
+- options skin: the keybind rows take the skin's text roles away from Ka0s Default
+- options skin: Ka0s Default leaves the help mark and the keybind rows as they were
+- options skin: the id-suggestion popup takes the skin, and Ka0s Default gives its edge back
+
+### test_options_compose_skin.lua (10)
+
+- compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
+- compose skin: without fromSkin the three groups emit exactly the rows they did
+- compose skin: fromSkin appends one companion per picker, after the canonical rows
+- compose skin: the canonical rows are unchanged beside the companion, and so is every list
+- compose skin: omit and keys reach the companion like any canonical leaf
+- compose skin: the picker shows the skin's value while its companion is set, its own otherwise
+- compose skin: a rendered picker is disabled while the companion is set and the companion writes
+- compose skin: a record-backed group reads its companion from the record
+- compose skin: ResetToSkin sets companions to true and never writes the sentinel into a pick
+- compose skin: Skin is at minor 3 or later
 
 ### test_options_throttle.lua (4)
 
@@ -2879,6 +3153,22 @@ Total.
 - layer mock: UIParent carries the recorder too
 - layer mock: restore() puts CreateFrame back, and later frames are plain
 
+### test_mock_paint.lua (13)
+
+- paint mock: CreateTexture and CreateFontString answer distinct regions the frame owns
+- paint mock: texture paint calls are recorded and answered back
+- paint mock: SetAtlas on a texture records the art and sizes it from the fixture
+- paint mock: font string text, color, font, font object and shadow are recorded
+- paint mock: regions show, hide and answer IsVisible through their owner
+- paint mock: backdrop and its two colors are recorded on the frame
+- paint mock: GetChildren answers the frames parented here, in creation order
+- paint mock: a NineSlice template carries the standard pieces as regions of a child
+- paint mock: HookScript still chains on a recorded frame
+- paint mock: a method a region does not have raises, naming itself
+- paint mock: UIParent records too, and frames from __paintFrame
+- paint mock: off by default, and restore() puts everything back
+- paint mock: composes with the layer recorder in either order
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -2951,7 +3241,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 42
+- the kit is revision 43
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -3128,7 +3418,13 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_media.lua | 28 |
+| test_media.lua | 37 |
+| test_skin.lua | 27 |
+| test_skin_defs.lua | 19 |
+| test_skin_paint.lua | 29 |
+| test_skin_paint_controls.lua | 24 |
+| test_skin_eui.lua | 29 |
+| test_skin_ace.lua | 21 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3140,6 +3436,7 @@ Total.
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
+| test_widgets_skin.lua | 24 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -3147,6 +3444,7 @@ Total.
 | test_debuglog_descriptor.lua | 7 |
 | test_resize_windows.lua | 23 |
 | test_tool_windows_layering.lua | 8 |
+| test_tool_windows_skin.lua | 14 |
 | test_slash.lua | 74 |
 | test_slash_parse.lua | 33 |
 | test_slash_disabled.lua | 16 |
@@ -3173,6 +3471,7 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
+| test_options_appearance.lua | 20 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3183,6 +3482,8 @@ Total.
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
+| test_options_skin.lua | 15 |
+| test_options_compose_skin.lua | 10 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3216,6 +3517,7 @@ Total.
 | test_mock_lines.lua | 5 |
 | test_mock_bindings.lua | 17 |
 | test_mock_layers.lua | 7 |
+| test_mock_paint.lua | 13 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -3231,4 +3533,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **2753** |
+| **Total** | **3007** |
