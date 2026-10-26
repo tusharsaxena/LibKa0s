@@ -43,3 +43,28 @@ The token tables in the page's script (one table of colors, fonts and borders pe
 point for `LibKa0s/SkinDefs.lua`. The page's own caption says `LibKa0s/Skins/*.lua`, the layout
 planned when it was drawn; the skin engine keeps every definition in that one file instead. Where the
 mockup and the code disagree, the code wins, and the mockup is not updated to follow it.
+
+## In-game screenshots
+
+[`screenshots/2026-10-26-leg1/`](screenshots/2026-10-26-leg1/) holds the owner's screenshots from the
+leg-1 smoke test (LibKa0s v1.78.0 at `7bc3e9b`, Ka0s Loot History as the only adopter). There is one
+pair per skin:
+
+- `NN-<skin>-window.png` is the Loot History window on its History tab.
+- `NN-<skin>-settings.png` is the settings panel open on General → Appearance.
+
+Unlike the mockups above, these show what the code actually draws. The owner's notes from the same
+round (2026-10-26) are in the table.
+
+| # | Skin | Owner's notes, round 1 |
+|---|---|---|
+| 01 | Ka0s Default | — |
+| 02 | Obsidian | Too close to Ka0s Default; darken it. |
+| 03 | Azeroth | The title font is hard to read, the tabs do not work, and the parchment is too bright; mute it. |
+| 04 | Glass | Too transparent; the buttons and tabs look awkward. |
+| 05 | High Contrast | The borders are too thick on most elements. |
+| 06 | Ember | — |
+| 07 | WoW Default | — |
+| 08 | WoW Midnight | The buttons are not Midnight-themed. |
+| 09 | WoW Forever | — |
+| 10 | EllesmereUI | EllesmereUI painting the addon itself (skin source EllesmereUI), for comparison. |
