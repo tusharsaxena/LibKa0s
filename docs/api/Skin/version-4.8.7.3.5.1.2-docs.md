@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 4.8.6.2.4.1.2
+# `LibKa0s-Skin-1.0` — version 4.8.7.3.5.1.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **8** · `SkinPaint.lua` minor **6** · `SkinPaintExtras.lua` minor **2** · `SkinPaintControls.lua` minor **4** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **2** |
+| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **8** · `SkinPaint.lua` minor **7** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **5** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **2** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
@@ -652,19 +652,23 @@ answers nil.
   painted from the skin's tokens, Ka0s Default's included (SkinPaint minor 6; until then Ka0s Default
   left a stock target as the client drew it). A custom target (a BackdropTemplate frame the library
   or the host built) is painted the same way.
-- **The holders.** Every Ka0s overlay that is not the target's own fill lives on one of two child
-  frames of the target, each made once, `SetAllPoints` over it and made with BackdropTemplate. Never
-  a direct region of a frame an EllesmereUI primitive may reach, because EllesmereUI's FadeRegions
-  fades every direct region of the frame it skins. **Edges** (borders, a divider's line, a tab's
-  underline, a nav entry's selection bar, a list row's selection outline) go on the **holder**, at the
-  target's frame level + 1, so a nine-slice edge can be its backdrop and every edge draws over the
-  target. **Fills and washes** (a list row's stripe, hover and selection washes, the strip and cover
-  washes, the extras' fills and gradients: `TitleBar`, `Footer`, `Card`, `SortHeaderBar`, a boxed
-  `Drawer` header) go on the **fill holder**, at the target's frame level - 1 (never below 0): a region
-  of a higher frame draws over every region of a lower one whatever its layer, so a fill one level up
-  would bury the target's own text, which is how BackdropTemplate frames sit under their parent. On an
-  extra that wears a backdrop and gets a gradient, the gradient on the fill holder is the fill, and
-  the backdrop's own fill is cleared.
+- **The holder, and fills under the target.** **Edges** (borders, a divider's line, a tab's
+  underline, a nav entry's selection bar, a list row's selection outline) go on the **holder**, a child
+  frame of the target made once, `SetAllPoints` over it, BackdropTemplate, at the target's frame
+  level + 1, so a nine-slice edge can be its backdrop and every edge draws over the target. **Fills and
+  washes** (a list row's stripe, hover and selection washes, the strip and cover washes, the extras'
+  fills and gradients: `TitleBar`, `Footer`, `Card`, `SortHeaderBar`, a boxed `Drawer` header) are, since
+  SkinPaint minor 7, **regions of the target itself** at the bottom sublevels of BACKGROUND (`P.SUB`:
+  fill -8 and gradient -7; stripe -8, hover -7, selection -6; a wash -8), under every region the target
+  draws and, as the target's own, always drawn over its parent. Until minor 7 they sat on a fill holder
+  one frame level below the target, which tied the target's parent whenever the target was one level
+  above it, and the client draws two frames of one level in either order (Loot History's title bar
+  under its window's backdrop, 2026-10-27). They are made through `P.subTex`, which sets the region's
+  alpha back to 1 on every paint: EllesmereUI's FadeRegions fades every direct region of a frame it
+  skins, and a fade from a stint on that provider (Ka0s's regions hidden meanwhile) is undone on the
+  way back. `P.under`, the old fill holder, stays for a sibling file's older copy. On an extra that
+  wears a backdrop and gets a gradient, the gradient is the fill and the backdrop's own fill is
+  cleared.
 - **Lasting regions, and owner moves.** A target's regions, holders, saved values and hook flags are
   kept in a weak per-target table (`lib.__regions`) that outlives its record, so a record dropped by
   `Skin:Untrack` and painted again, or a target moved to another owner, reuses them: a frame is never
@@ -768,11 +772,11 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 | `Inset(frame, opts)` | A recessed area. | `input.bg`, `input.border`, `input.borderStyle`, `input.borderSize` |
 | `FadeRegions(frame, ...)` | Fades every texture region of the frame (and of each further frame) that no primitive made. Ka0s Default fades nothing and puts them back. | none |
 | `FadeNineSlice(frame)` | Fades `frame.NineSlice`'s nine pieces. Ka0s Default puts them back. | none |
-| `TitleBar(bar, opts)` | A title bar: the fill (the bar's backdrop, or the fill holder), its text (`opts.text`, else `bar.title` / `bar.text`) in the title color, font and alignment (the prior alignment put back when the skin sets none). | `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.align`, `font.title` |
+| `TitleBar(bar, opts)` | A title bar: the fill (the bar's backdrop, or a region of the bar under its text), its text (`opts.text`, else `bar.title` / `bar.text`) in the title color, font and alignment (the prior alignment put back when the skin sets none). | `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.align`, `font.title` |
 | `Divider(target, opts)` | A texture colored in place, or a line filling a frame on its holder; `opts.token` names another color (`section.rule`, `tab.rule`). | `divider` |
 | `Footer(frame, opts)` | A footer band; its text (`opts.text`, else `frame.text`) muted. | `foot.bg`, `text.muted` |
 | `Card(frame, opts)` | A card: `opts.title` in the heading color, `opts.text` in the body color. | `card.bg`, `card.border`, `text.heading`, `text.body` |
-| `Strip(target, opts)` | The test or simulation strip's wash (`opts.kind` `"test"` / `"sim"`), a texture in place or the fill holder. The meaning colors are the library's; a skin changes only their legibility. | `strip.test`, `strip.sim` |
+| `Strip(target, opts)` | The test or simulation strip's wash (`opts.kind` `"test"` / `"sim"`), a texture in place or a region of the frame. The meaning colors are the library's; a skin changes only their legibility. | `strip.test`, `strip.sim` |
 | `Cover(target, opts)` | The combat cover's dim, and `opts.text`. | `cover.dim`, `cover.text` |
 | `Tooltip(frame)` | A **library-owned** tooltip's backdrop, recolored; never GameTooltip. | `tooltip.bg`, `tooltip.border` |
 | `MenuFrame(frame, opts)` | A popup menu's flat backdrop (no insets); `opts.alt` the alternate edge; `opts.popup` recolors the backdrop the frame already wears, and a nil `popup.*` token puts that half back as the frame wore it before the first paint (a skin switch to Ka0s Default gives the edge back). | `menu.bg`, `menu.border`, `menu.borderAlt`, `menu.borderStyle`, `menu.borderSize`; `popup.bg`, `popup.border` |
@@ -802,7 +806,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 | `ApplyBarFill(target)` | The accent on a status bar (`SetStatusBarColor`) or a texture. | `text.accent` |
 | `NavItem(item, opts)` | A nav-rail entry: `opts.label` selected or not, `opts.sel` (the selection texture), a selection bar on the holder while `opts.selected`. | `nav.text`, `nav.selText`, `nav.selBg`, `nav.selBar` |
 | `Drawer(head, opts)` | A settings drawer: `opts.label` and `opts.summary` set or not (`opts.set`), then the edge set (`opts.edges`, OptionsDrawer's `{ fill, left, right, bottom, top }`) open or not (`opts.open`), and the box's (`opts.box`). A header with no edge set is boxed on its holders (the fill under its text, the edge over it). | `drawer.*` |
-| `ListRow(row, state)` | A list row's washes on its fill holder, under the row's text (stripe, hover, selection), and the selection outline on its holder. `state` is a table or `"stripe"`, `"hover"`, `"selected"`, `"normal"`. | `list.stripe`, `list.hover`, `list.sel`, `list.selOutline` |
+| `ListRow(row, state)` | A list row's washes as regions of the row, under its text (stripe, hover, selection), and the selection outline on its holder. `state` is a table or `"stripe"`, `"hover"`, `"selected"`, `"normal"`. | `list.stripe`, `list.hover`, `list.sel`, `list.selOutline` |
 
 **The getters** (record nothing):
 

@@ -504,7 +504,7 @@ Total.
 - skin defs: in every skin a primary button differs from a normal one
 - skin defs: no skin draws a box round a slider's bar
 
-### test_skin_paint.lua (30)
+### test_skin_paint.lua (32)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -520,6 +520,8 @@ Total.
 - skin paint: a target painted for a second owner is given back first
 - skin paint: a target untracked and painted again reuses its regions and hooks
 - skin paint: fills and washes sit under the target's text, edges over it
+- skin paint: a bar one level above its window keeps its fill over the window
+- skin paint: a fill another fader dimmed comes back at full alpha on the next paint
 - skin paint: Panel on Ka0s Default is LootHistory's list panel, call for call
 - skin paint: Inset, noBg, noBorder and the nav rail's recolor
 - skin paint: FadeRegions fades the stock textures, records their alpha, and spares its own
@@ -3431,7 +3433,7 @@ Total.
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
 | test_skin_defs.lua | 24 |
-| test_skin_paint.lua | 30 |
+| test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 21 |
@@ -3543,4 +3545,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3017** |
+| **Total** | **3019** |

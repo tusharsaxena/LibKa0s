@@ -237,15 +237,15 @@ test("skin paint: a target untracked and painted again reuses its regions and ho
   local A, B = F.owner(Skin, "AddonA", "contrast"), F.owner(Skin, "AddonB", "obsidian")
   local row = m.CreateFrame("Button", nil, m.UIParent)
   A.ListRow(row, "selected")
-  local holder, under = F.region(Skin, row, "holder"), F.region(Skin, row, "under")
+  local holder, sel = F.region(Skin, row, "holder"), F.region(Skin, row, "sel")
   for _ = 1, 3 do
     Skin:Untrack(row)
     A.ListRow(row, "selected")
   end
   B.ListRow(row, "selected")
   assertTrue(F.region(Skin, row, "holder") == holder, "the same holder")
-  assertTrue(F.region(Skin, row, "under") == under, "the same fill holder")
-  assertEqual(row:GetNumChildren(), 2, "two holders on the row, ever")
+  assertTrue(F.region(Skin, row, "sel") == sel, "the same selection wash")
+  assertEqual(row:GetNumChildren(), 1, "one holder on the row, ever (its washes are its own regions)")
 
   local secure, scripts = 0, 0
   m.hooksecurefunc = function() secure = secure + 1 end
@@ -258,27 +258,64 @@ test("skin paint: a target untracked and painted again reuses its regions and ho
   assertEqual(scripts .. "/" .. secure, first, "no hook is added twice")
 end)
 
+-- Where a region sits: its parent and its draw layer.
+local function placed(m, t)
+  local s = survey(m, t)
+  return tostring(t:GetParent()) .. " " .. tostring(s.layer) .. " " .. tostring(s.sublevel)
+end
+
 test("skin paint: fills and washes sit under the target's text, edges over it", function()
+  -- SkinPaint minor 7: a fill or wash is a region of the target at the bottom of BACKGROUND.
+  -- red under: putting them back on a fill holder one frame level down.
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER, "contrast")
-  local tr = F.tracer(m)
   local row = m.CreateFrame("Button", nil, m.UIParent)
-  rawset(row, "GetFrameLevel", function() return 5 end)
-  tr.start(); S.ListRow(row, { stripe = true, selected = true }); tr.stop(); tr.restore()
-  local under, holder = F.region(Skin, row, "under"), F.region(Skin, row, "holder")
-  assertTrue(under ~= nil and under.__parent == row, "the fill holder is the row's child")
-  assertTrue(tr.text():find("SetFrameLevel(4)", 1, true) ~= nil, "one level below the row")
-  assertEqual(F.region(Skin, row, "stripe"):GetParent(), under, "the stripe under the row's text")
-  assertEqual(F.region(Skin, row, "sel"):GetParent(), under, "the selection wash too")
-  assertEqual(F.region(Skin, row, "edgeTop"):GetParent(), holder, "the outline over it")
+  S.ListRow(row, { stripe = true, selected = true })
+  local on = tostring(row) .. " BACKGROUND "
+  assertEqual(placed(m, F.region(Skin, row, "stripe")), on .. "-8", "the stripe under the row's own regions")
+  assertEqual(placed(m, F.region(Skin, row, "sel")), on .. "-6", "the selection wash over the stripe")
+  assertEqual(F.region(Skin, row, "under"), nil, "no fill holder")
+  assertEqual(F.region(Skin, row, "edgeTop"):GetParent(), F.region(Skin, row, "holder"), "the outline over it")
 
-  local lv0 = m.CreateFrame("Frame", nil, m.UIParent)
-  rawset(lv0, "SetBackdrop", nil)
-  rawset(lv0, "GetFrameLevel", function() return 0 end)
-  local tr0 = F.tracer(m)
-  tr0.start(); S.Strip(lv0); tr0.stop(); tr0.restore()
-  assertTrue(tr0.text():find("SetFrameLevel(0)", 1, true) ~= nil, "never below level 0")
-  assertEqual(F.region(Skin, lv0, "wash"):GetParent(), F.region(Skin, lv0, "under"))
+  local strip = m.CreateFrame("Frame", nil, m.UIParent)
+  rawset(strip, "SetBackdrop", nil)
+  S.Strip(strip)
+  assertEqual(placed(m, F.region(Skin, strip, "wash")), tostring(strip) .. " BACKGROUND -8", "a wash too")
+end)
+
+test("skin paint: a bar one level above its window keeps its fill over the window", function()
+  -- The owner's probe (2026-10-27): Loot History's window at level 1, its plain title bar at 2, and
+  -- the bar's fill holder at 1, tied with the window's backdrop, which the client drew over it.
+  -- red under: a fill holder one level below the bar.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "azeroth")
+  local win = m.CreateFrame("Frame", nil, m.UIParent, "BackdropTemplate")
+  win:SetFrameLevel(1)
+  local bar = m.CreateFrame("Frame", nil, win)
+  rawset(bar, "SetBackdrop", nil)
+  bar:SetFrameLevel(2)
+  S.Shell(win)
+  S.TitleBar(bar)
+  local fill = F.region(Skin, bar, "fill")
+  assertTrue(fill:GetParent() == bar, "the fill is the bar's own region, drawn after the window")
+  local level = 2
+  for _, child in ipairs({ bar:GetChildren() }) do
+    if child:GetFrameLevel() < level then level = child:GetFrameLevel() end
+  end
+  assertEqual(level, 2, "nothing of the bar's sits at the window's level")
+end)
+
+test("skin paint: a fill another fader dimmed comes back at full alpha on the next paint", function()
+  -- red under: P.subTex without its SetAlpha(1) (an EllesmereUI fade survives the switch back).
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "azeroth")
+  local bar = m.CreateFrame("Frame", nil, m.UIParent)
+  rawset(bar, "SetBackdrop", nil)
+  S.TitleBar(bar)
+  local fill = F.region(Skin, bar, "fill")
+  fill:SetAlpha(0)
+  Skin:SetChoice(OWNER, "ka0s", "forever")
+  assertEqual(survey(m, fill).alpha, 1, "the repaint puts the alpha back")
 end)
 
 -- ── Panel, Inset, the faders ─────────────────────────────────────────────────────────────────
@@ -373,7 +410,7 @@ test("skin paint: TitleBar fills under its text, centers its title, and gives th
   fs:SetJustifyH("LEFT")
   S.TitleBar(bar, { text = fs })
   local fill = F.region(Skin, bar, "fill")
-  assertTrue(fill:GetParent() == F.region(Skin, bar, "under"), "the fill is under the bar's text")
+  assertEqual(placed(m, fill), tostring(bar) .. " BACKGROUND -8", "the fill is under the bar's text")
   assertEqual(F.rgba(survey(m, fill).color), F.tok(Skin, "forever", "title.bg"))
   assertEqual(fs:GetJustifyH(), "CENTER", "WoW Forever centers its titles")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
