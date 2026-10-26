@@ -602,10 +602,11 @@ Total.
 - skin eui: EllesmereUI's live looks change repaints the Ka0s extras
 - skin eui: EllesmereUIDB is read in LibKa0s/SkinEUI.lua and no other payload file
 
-### test_skin_ace.lua (21)
+### test_skin_ace.lua (22)
 
 - skin ace: an owned page's CheckBox is painted from the owner's skin through O.AceGUI
 - skin ace: Ka0s Default paints AceGUI rows like every skin
+- skin ace: an owner that ignores its settings panel gets stock rows until it stops
 - skin ace: an unregistered owner's instance holds AceGUI itself
 - skin ace: the proxy is AceGUI for everything but Create
 - skin ace: an owner that registers after lib:New is proxied at CreateOptionsPanel
@@ -2015,7 +2016,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (20)
+### test_options_appearance.lua (26)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2037,6 +2038,12 @@ Total.
 - appearance: a page drawn disabled draws every control disabled
 - appearance: the refresher re-reads the owner's store
 - appearance: an owner that never registered, or no Skin major, draws one line and no controls
+- appearance: the Scope section draws its two exceptions between the skins and the copy button
+- appearance: Ignore fonts moves the Skin major, writes the seam's third argument, and fonts go back live
+- appearance: Ignore settings panel after the panel was painted asks for one reload
+- appearance: SetIgnore keeps a nil half, needs no reload on an unpainted panel, and WriteChoice passes it on
+- appearance: copy gives every other owner this owner's scope as well as its skin
+- appearance: an instance whose owner ignores its panel still hears a skin switch
 
 ### test_options_idsuggest.lua (29)
 
@@ -3436,7 +3443,7 @@ Total.
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
-| test_skin_ace.lua | 21 |
+| test_skin_ace.lua | 22 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3483,7 +3490,7 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 20 |
+| test_options_appearance.lua | 26 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3545,4 +3552,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3019** |
+| **Total** | **3026** |

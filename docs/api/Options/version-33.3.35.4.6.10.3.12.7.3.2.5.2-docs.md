@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 33.3.35.4.6.10.3.12.6.3.2.5.1
+# `LibKa0s-Options-1.0` — version 33.3.35.4.6.10.3.12.7.3.2.5.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **33** · `OptionsRegistry.lua` **3** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **6** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** · `OptionsAppearance.lua` **1** |
+| Files and minors | `Options.lua` **33** · `OptionsRegistry.lua` **3** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **7** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** · `OptionsAppearance.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>`, in load order — the same thirteen numbers `lib.MODULES` reports. |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
@@ -2256,17 +2256,27 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
    the skin's `swatches`) and its name, its description on the CheckBox's `SetDescription` and in its
    tooltip. While the stored source is `eui` a line says the skin is used only if EllesmereUI cannot
    skin the addon.
-3. **Copy to every Ka0s addon…** (`options-ui-§21`'s ellipsis), a button at `BUTTON_PAIR_REL`. With
+3. **Scope** (OptionsAppearance minor 2, `LibKa0s-Skin-1.0` minor 5), under its own heading: two check
+   boxes side by side, *Ignore settings panel* (this addon's settings pages stay the client's: the
+   Options chrome and the AceGUI rows paint nothing for the owner) and *Ignore fonts* (every string
+   keeps its own face, size and shadow; the skin still colors it). A flip is refused in combat; it
+   calls `Skin:SetIgnore(owner, panel, fonts)` first (the live repaint: fonts go back or come back,
+   open pages re-render), then `spec.set(nil, nil, { panel = bool, fonts = bool })`. Turning *Ignore
+   settings panel* on after the panel was painted this session raises the reload popup with
+   `RELOAD_PANEL`, because the chrome cannot be handed back in place; turning it off needs none.
+   Absent with a Skin copy that has no `SetIgnore`.
+4. **Copy to every Ka0s addon…** (`options-ui-§21`'s ellipsis), a button at `BUTTON_PAIR_REL`. With
    no other registered owner (`Skin:Owners()` less this one) it is disabled and a line under it says
    "No other loaded Ka0s addon uses skins yet." Otherwise a click opens a confirmation
    (`LIBKA0S_SKIN_COPY`) naming the other owners by `Skin:OwnerLabel`, one per line, and saying that
-   addons not loaded are unchanged; accepting gives each of them this owner's stored source and
-   skin: `Skin:SetChoice(other, source, skin)` (its live repaint), then `Skin:WriteChoice(other,
-   source, skin)` (its own registered setter). The copying addon's own seam is not written.
+   addons not loaded are unchanged; accepting gives each of them this owner's stored source, skin
+   and scope: `Skin:SetChoice(other, source, skin)` and `Skin:SetIgnore(other, panel, fonts)` (its
+   live repaint), then `Skin:WriteChoice(other, source, skin, { panel, fonts })` (its own registered
+   setter). The copying addon's own seam is not written.
    Both the click and the accept are refused in combat (`O.__combatRefused("appearance", "copy")`):
    the confirmation sits at `DIALOG`, above the page's combat cover, so it can be accepted after
    combat starts, and an accept then writes no owner.
-4. **The note**: "Skins change every visual element. HUD style options follow the skin unless you
+5. **The note**: "Skins change every visual element. HUD style options follow the skin unless you
    set them yourself."
 
 `spec`:
@@ -2274,7 +2284,7 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
 | Field | Meaning |
 |---|---|
 | `get` | The owner's read: answers `{ source, skin }` or two values. Under pcall; without it, or for a value that is not a source or a registered skin, the Skin major's `GetChoice` stands in. |
-| `set` | **MUST be the owner's write seam** (`options-ui-§1`), called as `set(source, skin)`, under pcall. |
+| `set` | **MUST be the owner's write seam** (`options-ui-§1`), called as `set(source, skin)` by a pick and as `set(nil, nil, { panel, fonts })` by the Scope section, under pcall; a nil half is not written. |
 | `owner` | The skin owner; default the descriptor's `addonName`. |
 | `strings` | Translations of `lib.APPEARANCE_STRINGS` keys, plus `SKIN_<key>` / `SKIN_<key>_DESC` (a skin's name and description) and `COND_<key>` / `COND_<key>_HINT` (one EllesmereUI condition, `%s` the addon's label). Every string the tab draws is overridable. |
 | `key`, `before` | The tab's (`AppearanceTab`). |
@@ -2293,8 +2303,9 @@ Both popups are Blizzard StaticPopups, defined when shown (`timeout = 0`, `while
 Blizzard frame at `DIALOG`, above the settings window, and the tab never re-stratas or restyles it
 (`frame-layering`, `skinning-§7`).
 
-The view: `{ owner, label, source = { ka0s, eui }, skins = { [key] = choice }, order, conditions,
-copy, note, sync }`; `sync()` re-reads `spec.get` into the choices, and a refresher calling it is
+The view: `{ owner, label, source = { ka0s, eui }, skins = { [key] = choice }, ignore = { panel,
+fonts }, order, conditions, copy, note, sync }`; `sync()` re-reads `spec.get` into the choices and
+`Skin:GetIgnore` into the two check boxes, and a refresher calling it is
 added to `ctx.refreshers`. Drawn inside a disabled render (`ctx.__renderDisabled`) every control is
 disabled. Answers nil, drawing nothing, without AceGUI or a parent; answers nil after one line
 ("Skins are not available for this addon.") without `LibKa0s-Skin-1.0` or for an owner that never
@@ -2305,7 +2316,9 @@ called `RegisterOwner`. Away from Ka0s Default the tab's secondary lines take th
 
 The tab's US English words, a literal table like `lib.KEYBIND_STRINGS`: `TAB_LABEL` ("Appearance"),
 `TAB_TIP`, `SOURCE_HEADING`, `SOURCE_KA0S`, `SOURCE_KA0S_TIP`, `SOURCE_EUI`, `SOURCE_EUI_TIP`,
-`EUI_READY`, `EUI_NOT_READY`, `EUI_MISSING`, `SKIN_HEADING`, `SKIN_EUI_NOTE`, `COPY`, `COPY_TIP`,
+`EUI_READY`, `EUI_NOT_READY`, `EUI_MISSING`, `SKIN_HEADING`, `SKIN_EUI_NOTE`, `SCOPE_HEADING`,
+`IGNORE_PANEL`, `IGNORE_PANEL_TIP`, `IGNORE_FONTS`, `IGNORE_FONTS_TIP`, `RELOAD_PANEL` (`%s` the
+addon), `COPY`, `COPY_TIP`,
 `COPY_NONE`, `COPY_CONFIRM` (`%s` this addon's label, `%s` the list), `COPY_ACCEPT`, `CANCEL`,
 `RELOAD` (`%s` the addon or addons), `RELOAD_ACCEPT`, `RELOAD_LATER`, `NOTE` and `UNAVAILABLE`.
 ASCII throughout but for `COPY`'s ellipsis (U+2026), which `options-ui-§21` asks of a button that

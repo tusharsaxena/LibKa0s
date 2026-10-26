@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 4.8.7.3.5.1.2
+# `LibKa0s-Skin-1.0` — version 5.8.8.3.5.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **4** · `SkinDefs.lua` minor **8** · `SkinPaint.lua` minor **7** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **5** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **2** |
+| Files and minors | `Skin.lua` minor **5** · `SkinDefs.lua` minor **8** · `SkinPaint.lua` minor **8** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **5** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
@@ -62,11 +62,13 @@ still runs the engine: no skin is registered and every token resolves to nil.
 
 | Member | Answers | What it does |
 |---|---|---|
-| `Skin:RegisterOwner(owner, opts)` | the owner's facade | Registers `owner` at the consumer's file load. `opts.get()` answers `{ source, skin }` (or two values) from the host's profile; `opts.set(source, skin)` writes it (the Appearance tab's copy to every Ka0s addon calls it, through `WriteChoice`); `opts.label` names the addon; `opts.log(line)`, optional, takes the one line the EllesmereUI provider writes when it refuses a facade or stops painting (a host hands its debug console's writer). The choice is read **once**, here; an unknown source is cleaned to `"ka0s"`, a non-string skin to `"ka0s"`. A second call updates the hooks and keeps the applied choice. With `SkinEUI.lua` loaded it also registers the owner with EllesmereUI (*The EllesmereUI provider*). |
+| `Skin:RegisterOwner(owner, opts)` | the owner's facade | Registers `owner` at the consumer's file load. `opts.get()` answers `{ source, skin }` (or two values) from the host's profile; `opts.set(source, skin, ignore)` writes it (the Appearance tab's copy to every Ka0s addon calls it, through `WriteChoice`; `ignore`, since Skin minor 5, is `{ panel, fonts }` or nil, and a setter written before it ignores it); `opts.label` names the addon; `opts.log(line)`, optional, takes the one line the EllesmereUI provider writes when it refuses a facade or stops painting (a host hands its debug console's writer). The choice is read **once**, here; an unknown source is cleaned to `"ka0s"`, a non-string skin to `"ka0s"`. A second call updates the hooks and keeps the applied choice. With `SkinEUI.lua` loaded it also registers the owner with EllesmereUI (*The EllesmereUI provider*). |
 | `Skin:IsOwner(name)` | boolean | True only after `RegisterOwner`. Every factory that takes an owner paints today's way, verbatim, for a name that is not one. |
 | `Skin:Owners()` | sorted array | The registered owners. |
 | `Skin:OwnerLabel(owner)` | string or nil | The label the owner registered with (`opts.label`, else its folder name); nil for a name that never called `RegisterOwner`. What the Appearance tab's copy confirmation names each addon by (Skin minor 4). |
-| `Skin:WriteChoice(owner, source, skin)` | boolean | Writes `(source, skin)`, cleaned as `RegisterOwner` cleans a read, into the owner's profile through the `opts.set` it registered, under pcall: the write of the Appearance tab's copy to every Ka0s addon (`LibKa0s-Options-1.0`'s `OptionsAppearance.lua`), which reaches each addon only through its own write seam. **Never moves the applied choice**: the tab calls `SetChoice` first (the live repaint), then this. Answers true when a setter ran and did not raise; false for an unregistered owner, one with no setter, or a raise, which goes to the client's error handler (Skin minor 4). |
+| `Skin:GetIgnore(owner)` | ignorePanel, ignoreFonts | The owner's two exceptions, the Appearance tab's *Ignore settings panel* and *Ignore fonts* (Skin minor 5). `false, false` for an unregistered owner. |
+| `Skin:SetIgnore(owner, panel, fonts)` | changed, reload | Sets the exceptions; nil keeps that half, any value but `true` is false. A change repaints every frame recorded for the owner and fires its `OnLooksChanged` listeners: with fonts ignored, `P.font` hands every string back its own face, size and shadow (the skin still colors it), and with the panel ignored the Options chrome (`LibKa0s-Options-1.0`'s `__chromeSkin`) and the AceGUI rows (`PaintAce`) paint nothing for the owner. `reload` is true when the panel exception turns on after the owner's settings panel was painted this session, whose chrome cannot be handed back in place. Never writes the host's profile (Skin minor 5). |
+| `Skin:WriteChoice(owner, source, skin, ignore)` | boolean | Writes `(source, skin)`, cleaned as `RegisterOwner` cleans a read, into the owner's profile through the `opts.set` it registered, under pcall: the write of the Appearance tab's copy to every Ka0s addon (`LibKa0s-Options-1.0`'s `OptionsAppearance.lua`), which reaches each addon only through its own write seam. `ignore`, optional (Skin minor 5), `{ panel, fonts }`, reaches the setter as its third argument, each half `true` or false; without it the setter gets nil. **Never moves the applied choice**: the tab calls `SetChoice` first (the live repaint), then this. Answers true when a setter ran and did not raise; false for an unregistered owner, one with no setter, or a raise, which goes to the client's error handler (Skin minor 4). |
 | `Skin:For(owner)` | facade `S` | The owner's facade, `lib.facades[owner]`: one table per owner, kept for the session and across minors. Does not register the owner; an unregistered owner's facade reads Ka0s Default. |
 | `Skin:GetChoice(owner)` | source, skin | The applied choice. An unregistered owner answers `"ka0s", "ka0s"`. |
 | `Skin:SetChoice(owner, source, skin)` | changed, reload | See *Changing the skin* below. `nil` keeps that half. Never writes the host's profile. |
