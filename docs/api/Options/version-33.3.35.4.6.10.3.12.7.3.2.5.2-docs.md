@@ -2261,9 +2261,9 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
    Options chrome and the AceGUI rows paint nothing for the owner) and *Ignore fonts* (every string
    keeps its own face, size and shadow; the skin still colors it). A flip is refused in combat; it
    calls `Skin:SetIgnore(owner, panel, fonts)` first (the live repaint: fonts go back or come back,
-   open pages re-render), then `spec.set(nil, nil, { panel = bool, fonts = bool })`. Turning *Ignore
-   settings panel* on after the panel was painted this session raises the reload popup with
-   `RELOAD_PANEL`, because the chrome cannot be handed back in place; turning it off needs none.
+   open pages re-render), then `spec.set(nil, nil, { panel = bool, fonts = bool })`. Neither needs a
+   reload: turning *Ignore settings panel* on hands every chrome target the skin painted back as it
+   was (OptionsScroll minor 7's `lib.__chromeRelease`), and turning it off paints the pages again.
    Absent with a Skin copy that has no `SetIgnore`.
 4. **Copy to every Ka0s addon…** (`options-ui-§21`'s ellipsis), a button at `BUTTON_PAIR_REL`. With
    no other registered owner (`Skin:Owners()` less this one) it is disabled and a line under it says
@@ -2317,8 +2317,7 @@ called `RegisterOwner`. Away from Ka0s Default the tab's secondary lines take th
 The tab's US English words, a literal table like `lib.KEYBIND_STRINGS`: `TAB_LABEL` ("Appearance"),
 `TAB_TIP`, `SOURCE_HEADING`, `SOURCE_KA0S`, `SOURCE_KA0S_TIP`, `SOURCE_EUI`, `SOURCE_EUI_TIP`,
 `EUI_READY`, `EUI_NOT_READY`, `EUI_MISSING`, `SKIN_HEADING`, `SKIN_EUI_NOTE`, `SCOPE_HEADING`,
-`IGNORE_PANEL`, `IGNORE_PANEL_TIP`, `IGNORE_FONTS`, `IGNORE_FONTS_TIP`, `RELOAD_PANEL` (`%s` the
-addon), `COPY`, `COPY_TIP`,
+`IGNORE_PANEL`, `IGNORE_PANEL_TIP`, `IGNORE_FONTS`, `IGNORE_FONTS_TIP`, `COPY`, `COPY_TIP`,
 `COPY_NONE`, `COPY_CONFIRM` (`%s` this addon's label, `%s` the list), `COPY_ACCEPT`, `CANCEL`,
 `RELOAD` (`%s` the addon or addons), `RELOAD_ACCEPT`, `RELOAD_LATER`, `NOTE` and `UNAVAILABLE`.
 ASCII throughout but for `COPY`'s ellipsis (U+2026), which `options-ui-§21` asks of a button that

@@ -208,6 +208,52 @@ test("options skin: a skin switch repaints the owned page with no reload, Ka0s D
   assertEqual(F.rgba(survey(m, ctx.panel.divider).vertex), "1,0.820,0,1", "the divider is gold again")
 end)
 
+test("options skin: Ignore settings panel hands every piece of chrome back live, and off paints again", function()
+  -- OptionsScroll minor 7 (lib.__chromeRelease), SkinPaint minor 8 (every tint's prior saved, the
+  -- rail's colors saved). Stock is what the same chrome looks like for an addon that never
+  -- registered. red under: an onLooks that only stops painting (the skin stays up until a reload).
+  local m, Skin, lib = env()
+  F.owner(Skin, OWNER, "ember")
+  local ctx = page((instance(lib, OWNER)))
+  local ref = page((instance(lib, "NeverRegistered")))
+  local function pieces(c)
+    local buttons, box = tabsOf(c)
+    local head = drawerHead(c)
+    return {
+      ["tab slice"] = { buttons[1].__ka0sTabArt.left, "alpha" },
+      ["tab label"] = { buttons[1].__ka0sTabLabel, "textColor" },
+      ["idle tab label"] = { buttons[2].__ka0sTabLabel, "textColor" },
+      ["content box art"] = { box.__ka0sHalves[1], "alpha" },
+      ["rail pane"] = { c.__railFrame, "backdropColor" },
+      ["rail edge"] = { c.__railFrame, "backdropBorderColor" },
+      ["nav label"] = { c.__railKids[1].__ka0sNavLabel, "textColor" },
+      ["drawer label"] = { head.__ka0sDrawerLabelFS, "textColor" },
+      ["cover line"] = { c.__combatCover.__line, "textColor" },
+      ["title"] = { c.panel.title, "textColor" },
+      ["divider"] = { c.panel.divider, "vertex" },
+    }
+  end
+  local T = Skin:ResolveSkin("ember")
+  local mine, stock = pieces(ctx), pieces(ref)
+  assertTrue(F.rgba(survey(m, mine["rail pane"][1]).backdropColor) == F.rgba(T["nav.bg"]), "painted first")
+  Skin:SetIgnore(OWNER, true, nil)
+  -- Read through the getter the client answers (a string never colored reads its font's color).
+  local GET = { alpha = "GetAlpha", textColor = "GetTextColor", backdropColor = "GetBackdropColor",
+                backdropBorderColor = "GetBackdropBorderColor", vertex = "GetVertexColor" }
+  local function read(p) return F.rgba({ p[1][GET[p[2]]](p[1]) }) end
+  for name, p in pairs(mine) do
+    assertEqual(read(p), read(stock[name]), name .. " is stock again")
+  end
+  assertTrue(not survey(m, ctx.panel.__ka0sSkinBg).shown, "the backdrop hidden")
+  for frame, rec in pairs(Skin.painted) do
+    assertTrue(not (rec.owner == OWNER and lib.__chromeTargets[frame]), "no chrome left tracked for the owner")
+  end
+  Skin:SetIgnore(OWNER, false, nil)
+  m.__fireTimers()
+  assertEqual(F.rgba(survey(m, ctx.panel.title).textColor), rgb(T["title.text"]), "off: the title is the skin's")
+  assertTrue(survey(m, ctx.panel.__ka0sSkinBg).shown, "and the backdrop back")
+end)
+
 test("options skin: Ka0s Default dresses an owned page like every skin", function()
   -- SkinPaint minor 6: Ka0s Default draws the page's backdrop and fades the client's art too.
   local m, Skin, lib = env()

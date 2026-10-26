@@ -83,6 +83,11 @@ test("skin ace: an owner that ignores its settings panel gets stock rows until i
   Skin:SetIgnore(OWNER, false, nil)
   local cb2 = O.AceGUI:Create("CheckBox")
   assertEqual(Skin.__ace[cb2] and Skin.__ace[cb2].owner, OWNER, "painted once the exception is off")
+  -- A widget the host holds and repaints itself (LootHistory's AH check boxes) goes back stock.
+  Skin:SetIgnore(OWNER, true, nil)
+  assertFalse(Skin:PaintAce(OWNER, cb2), "PaintAce refuses it")
+  assertNil(Skin.__ace[cb2].owner, "and hands it back stock")
+  assertTrue(cb2.checkbg:GetAlpha() ~= 0, "the stock box back")
 end)
 
 test("skin ace: an unregistered owner's instance holds AceGUI itself", function()

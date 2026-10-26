@@ -673,14 +673,19 @@ both documents and manifests moved from the in-flight keys, never shipped.
 - **Two exceptions per owner (Skin minor 5).** `Skin:GetIgnore(owner)` and `Skin:SetIgnore(owner,
   panel, fonts)`: *Ignore settings panel* leaves the owner's settings pages the client's, *Ignore
   fonts* leaves every string its own face, size and shadow while the skin still colors it. A change
-  repaints the owner and fires its listeners, so fonts and settings pages follow live; turning the
-  panel exception on after the panel was painted this session answers `reload`, because the chrome
-  cannot be handed back in place. `WriteChoice` gains a third argument, `{ panel, fonts }`, handed to
+  repaints the owner and fires its listeners, so both apply live, both ways, with no reload (the
+  second answer, `reload`, is always false). `WriteChoice` gains a third argument, `{ panel, fonts }`, handed to
   the owner's setter as its third; a setter written before minor 5 ignores it.
 - **The gates.** `P.font` hands a string back its own font while its owner ignores fonts (SkinPaint
   minor 8); `PaintAce` paints nothing while its owner ignores its panel (SkinAce minor 3), and neither
   does the Options chrome (`lib.__chromeSkin`, OptionsScroll minor 7), whose instance listener is
-  installed from the ungated facade, so turning the exception off re-renders the open pages. Its
+  installed from the ungated facade, so turning the exception off re-renders the open pages. Turning
+  it on hands every chrome target the owner's skin painted back as it was (`lib.__chromeRelease`,
+  from the Skin major's records): tabs, rail, drawers, cover, scroll thumbs, the page title, the
+  divider's own tint, the backdrop hidden. For that, every `P.tint` now records the color it replaced
+  (until now only a nilable token's or a stock target's), and Panel's nav-rail recolor saves the
+  rail's backdrop colors first (both SkinPaint minor 8); a `PaintAce` refused for the exception hands
+  back a widget this owner painted before (the rows a host holds). Its
   page backdrop is never the page itself: a bare `CreateTexture` stub answers the frame, and
   keeping that as the backdrop showed the page on every looks change (LootHistory's headless
   suite found it once its Scope rows added looks changes; the client's textures are real).
@@ -688,8 +693,10 @@ both documents and manifests moved from the in-flight keys, never shipped.
   addon…*: the two check boxes side by side, writing through `spec.set(nil, nil, { panel, fonts })`.
   The copy carries the scope with the source and skin, and its confirmation says so.
 
-Tests: eight new cases (the backdrop that is the page; the section's place and defaults; fonts back and forth live; the panel's
-reload ask and the chrome gate; SetIgnore's nil half, its no-reload on an unpainted panel and
+Tests: nine new cases (the backdrop that is the page; every chrome piece back to an unregistered
+page's look, live, and painted again on the way off; the section's place and defaults; fonts back
+and forth live; the panel exception live with no popup and the chrome gate; SetIgnore's nil half, no
+reload and
 WriteChoice's third argument; the copy's scope; the listener installed while the panel is ignored;
 stock AceGUI rows while it is). Each gate's case was mutation-checked red. **What a consumer owes:**
 store the two flags and pass them back through its setter's third argument (LootHistory and the

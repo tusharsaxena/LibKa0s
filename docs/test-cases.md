@@ -2040,8 +2040,8 @@ Total.
 - appearance: an owner that never registered, or no Skin major, draws one line and no controls
 - appearance: the Scope section draws its two exceptions between the skins and the copy button
 - appearance: Ignore fonts moves the Skin major, writes the seam's third argument, and fonts go back live
-- appearance: Ignore settings panel after the panel was painted asks for one reload
-- appearance: SetIgnore keeps a nil half, needs no reload on an unpainted panel, and WriteChoice passes it on
+- appearance: Ignore settings panel applies live both ways, with no reload
+- appearance: SetIgnore keeps a nil half, never asks for a reload, and WriteChoice passes it on
 - appearance: copy gives every other owner this owner's scope as well as its skin
 - appearance: an instance whose owner ignores its panel still hears a skin switch
 
@@ -2270,7 +2270,7 @@ Total.
 - reset tooltip: notes.resetAll is the button's own and does not reach the member
 - reset tooltip: OptionsCompose is at minor 11 or later
 
-### test_options_skin.lua (16)
+### test_options_skin.lua (17)
 
 - options skin: a page with no registered owner is today's paint, call for call
 - options skin: an owner-less page records nothing in the Skin major
@@ -2279,6 +2279,7 @@ Total.
 - options skin: an owned page's tab strip fades the client's art and wears the tab roles
 - options skin: an owned page's rail, drawer and cover paint from the skin
 - options skin: a skin switch repaints the owned page with no reload, Ka0s Default included
+- options skin: Ignore settings panel hands every piece of chrome back live, and off paints again
 - options skin: Ka0s Default dresses an owned page like every skin
 - options skin: an owner that registers after the page was built gets its skin on the next show
 - options skin: two owners' pages stay apart
@@ -3502,7 +3503,7 @@ Total.
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
-| test_options_skin.lua | 16 |
+| test_options_skin.lua | 17 |
 | test_options_compose_skin.lua | 10 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
@@ -3553,4 +3554,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3027** |
+| **Total** | **3028** |
