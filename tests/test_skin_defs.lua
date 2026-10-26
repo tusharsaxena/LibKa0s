@@ -363,24 +363,28 @@ local LSM_BORDERS = { ["Blizzard Dialog"] = true, ["Blizzard Tooltip"] = true }
 -- ...and its default font keys: Friz Quadrata, Ka0s Default's face (the client's own, set by name).
 local LSM_FONTS = { ["Friz Quadrata TT"] = true }
 
+-- One token of skin `key`: a face names a shipped or LSM font, a nine-slice a known border, a border
+-- style one of the four shapes.
+local function assertNamedMedia(Media, key, name, v)
+  if name:match("^font%.") and type(v) == "string" and name ~= "font.outline" then
+    assertTrue(Media.FONTS[v] ~= nil or LSM_FONTS[v], key .. ": " .. name .. " = " .. v .. " is shipped")
+  end
+  local nine = type(v) == "string" and v:match("^nine:(.+)$")
+  if nine then
+    assertTrue(Media.BORDERS[nine] ~= nil or LSM_BORDERS[nine],
+      key .. ": " .. name .. " names a known border, " .. nine)
+  end
+  if name:match("borderStyle$") and name ~= "bar.borderStyle" and type(v) == "string" then
+    assertTrue(v == "flat" or v == "bevelOut" or v == "bevelIn" or nine,
+      key .. ": " .. name .. " is flat | bevelOut | bevelIn | nine:<key>")
+  end
+end
+
 test("skin defs: every font and border a skin names is shipped or an LSM default", function()
   local Skin = skinLib()
   local Media = T.mocks.LibStub("LibKa0s-Media-1.0")
   for _, def in ipairs(Skin:Skins()) do
-    for name, v in pairs(def.tokens) do
-      if name:match("^font%.") and type(v) == "string" and name ~= "font.outline" then
-        assertTrue(Media.FONTS[v] ~= nil or LSM_FONTS[v], def.key .. ": " .. name .. " = " .. v .. " is shipped")
-      end
-      local nine = type(v) == "string" and v:match("^nine:(.+)$")
-      if nine then
-        assertTrue(Media.BORDERS[nine] ~= nil or LSM_BORDERS[nine],
-          def.key .. ": " .. name .. " names a known border, " .. nine)
-      end
-      if name:match("borderStyle$") and name ~= "bar.borderStyle" and type(v) == "string" then
-        assertTrue(v == "flat" or v == "bevelOut" or v == "bevelIn" or nine,
-          def.key .. ": " .. name .. " is flat | bevelOut | bevelIn | nine:<key>")
-      end
-    end
+    for name, v in pairs(def.tokens) do assertNamedMedia(Media, def.key, name, v) end
   end
 end)
 
