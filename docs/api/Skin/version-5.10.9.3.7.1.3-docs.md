@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 5.10.8.3.7.1.3
+# `LibKa0s-Skin-1.0` — version 5.10.9.3.7.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -657,7 +657,11 @@ answers nil.
 - **The holder, and fills under the target.** **Edges** (borders, a divider's line, a tab's
   underline, a nav entry's selection bar, a list row's selection outline) go on the **holder**, a child
   frame of the target made once, `SetAllPoints` over it, BackdropTemplate, at the target's frame
-  level + 1, so a nine-slice edge can be its backdrop and every edge draws over the target. **Fills and
+  level + 1, so a nine-slice edge can be its backdrop and every edge draws over the target. A
+  **window's** edge and inner rule (`Shell`, since SkinPaint minor 9) go on the **edge holder**
+  instead, the same kind of child at the window's level + 10, over the window's own children: a title
+  bar or footer one level up reached into a 2px or 3px edge and covered it at the four corners (the
+  owner's round-5 notes on Azeroth, High Contrast and WoW Midnight). **Fills and
   washes** (a list row's stripe, hover and selection washes, the strip and cover washes, the extras'
   fills and gradients: `TitleBar`, `Footer`, `Card`, `SortHeaderBar`, a boxed `Drawer` header) are, since
   SkinPaint minor 7, **regions of the target itself** at the bottom sublevels of BACKGROUND (`P.SUB`:
@@ -769,7 +773,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 
 | Primitive | Paints | Tokens |
 |---|---|---|
-| `Shell(frame, opts)` | A window. On a backdrop frame, `Core.ApplySkin` with the skin's table (backdrop, inner rule, `frame.title`'s color, `frame.divider`'s), an inner rule cleared when the skin has none, a non-flat edge on the holder; on any frame the window gradient, the tiled art, the top bar (unless `opts.noTopBar`) and the bottom bar (`opts.bottomBar`, true or a height), and the title font on `frame.title`. A frame with no backdrop gets its fill as a region and its edge on the holder. `opts.noBorder` draws no edge and no inner rule. | `win.*`, `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.height`, `divider`, `foot.bg`, `font.title` |
+| `Shell(frame, opts)` | A window. On a backdrop frame, `Core.ApplySkin` with the skin's table (the backdrop with its own edge clear, `frame.title`'s color, `frame.divider`'s); a frame with no backdrop gets its fill as a region. On any frame the edge (`win.border*`, flat, bevel or nine-slice) and the inner rule (`win.inner`, 1px inside the edge) on the edge holder, over the window's children (SkinPaint minor 9; Core's own inner rule is cleared and given back on unpaint), the window gradient, the tiled art, the top bar (unless `opts.noTopBar`) and the bottom bar (`opts.bottomBar`, true or a height), and the title font on `frame.title`. `opts.noBorder` draws no edge and no inner rule. | `win.*`, `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.height`, `divider`, `foot.bg`, `font.title` |
 | `Panel(frame, opts)` | A flat panel; `opts.inset` paints it as an inset, `opts.noBg` / `opts.noBorder` leave out a half, `opts.nav` recolors the backdrop the frame already wears. | `panel.bg`, `panel.border`; `nav.bg`, `nav.border` |
 | `Inset(frame, opts)` | A recessed area. | `input.bg`, `input.border`, `input.borderStyle`, `input.borderSize` |
 | `FadeRegions(frame, ...)` | Fades every texture region of the frame (and of each further frame) that no primitive made. Ka0s Default fades nothing and puts them back. | none |

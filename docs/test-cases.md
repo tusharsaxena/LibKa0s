@@ -515,7 +515,7 @@ Total.
 - skin paint: a second Shell call makes no new region and paints the same
 - skin paint: a skin switch repaints a Shell live, and back to Ka0s Default exactly
 - skin paint: WoW Default's window is the dialog edge on the holder over the tiled art
-- skin paint: the holder is a child frame one level up, and edges live on it
+- skin paint: a window's edge lives on a child frame above the window's children
 - skin paint: every skin fades a stock frame's art and draws its own window, Ka0s Default too
 - skin paint: two owners on one loaded copy paint and repaint only their own frames
 - skin paint: a target painted for a second owner is given back first

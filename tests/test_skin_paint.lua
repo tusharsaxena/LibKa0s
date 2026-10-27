@@ -76,8 +76,10 @@ test("skin paint: Shell on Ka0s Default draws Core.SKIN's window from its tokens
     who.Shell(f)
     local sv = survey(m, f)
     assertEqual(F.rgba(sv.backdropColor), F.rgba(core.SKIN.bg), "Core.SKIN's fill")
-    assertEqual(F.rgba(sv.backdropBorderColor), F.rgba(core.SKIN.border), "Core.SKIN's edge")
-    assertEqual(F.rgba(survey(m, f.innerBorder).backdropBorderColor), F.rgba(core.SKIN.innerBorder), "and inner rule")
+    assertEqual(F.rgba(sv.backdropBorderColor), "0,0,0,0", "the backdrop's own edge clear (minor 9)")
+    local rules = Skin.__regions[f]
+    assertEqual(F.rgba(survey(m, rules.edgeTop).color), F.rgba(core.SKIN.border), "Core.SKIN's edge, on the edge holder")
+    assertEqual(F.rgba(survey(m, rules.innerTop).color), F.rgba(core.SKIN.innerBorder), "and inner rule")
   end
 end)
 
@@ -88,7 +90,7 @@ test("skin paint: Shell paints a skin's window from its tokens", function()
   S.Shell(f)
   local s = survey(m, f)
   assertEqual(F.rgba(s.backdropColor), F.tok(Skin, "obsidian", "win.bg"), "win.bg")
-  assertEqual(F.rgba(s.backdropBorderColor), F.tok(Skin, "obsidian", "win.border"), "win.border")
+  assertEqual(F.rgba(survey(m, F.region(Skin, f, "edgeTop")).color), F.tok(Skin, "obsidian", "win.border"), "win.border")
   assertEqual(F.rgba(survey(m, f.title).textColor), F.tok(Skin, "obsidian", "title.text"), "title.text")
   assertEqual(F.rgba(survey(m, f.divider).color), F.tok(Skin, "obsidian", "divider"), "divider")
   assertNil(rawget(f, "innerBorder"), "Obsidian has no inner rule: Core makes none")
@@ -123,16 +125,17 @@ test("skin paint: a skin switch repaints a Shell live, and back to Ka0s Default 
   assertEqual(g.orientation, "VERTICAL")
   assertEqual(F.rgba({ g.max.r, g.max.g, g.max.b, g.max.a }), F.tok(Skin, "midnight", "win.bgTop"), "top")
   assertEqual(F.rgba(survey(m, f.title).textColor), F.tok(Skin, "midnight", "title.text"))
-  assertEqual(F.rgba(survey(m, f.innerBorder).backdropBorderColor), F.tok(Skin, "midnight", "win.inner"))
+  local inner = F.region(Skin, f, "innerTop")
+  assertEqual(F.rgba(survey(m, inner).color), F.tok(Skin, "midnight", "win.inner"))
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
-  assertEqual(F.rgba(survey(m, f.innerBorder).backdropBorderColor), "0,0,0,0",
-    "a skin with no inner rule clears the one Core left tinted")
+  assertFalse(inner:IsShown(), "a skin with no inner rule draws none")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
   assertEqual(F.rgba(survey(m, f).backdropColor), F.rgba(core.SKIN.bg), "Ka0s Default's fill again")
   assertFalse(grad:IsShown(), "the gradient is hidden")
   assertEqual(F.rgba(survey(m, F.region(Skin, f, "top")).color), F.tok(Skin, "ka0s", "title.bg"),
     "the title band wears Ka0s Default's title.bg (minor 8)")
-  assertEqual(F.rgba(survey(m, f.innerBorder).backdropBorderColor), F.rgba(core.SKIN.innerBorder))
+  assertEqual(F.rgba(survey(m, inner).color), F.rgba(core.SKIN.innerBorder))
+  assertTrue(inner:IsShown(), "Ka0s Default's inner rule again")
 end)
 
 test("skin paint: WoW Default's window is the dialog edge on the holder over the tiled art", function()
@@ -142,7 +145,7 @@ test("skin paint: WoW Default's window is the dialog edge on the holder over the
   local f = F.window(m)
   tr.watch(f)
   tr.start(); S.Shell(f); tr.stop(); tr.restore()
-  local h = F.region(Skin, f, "holder")
+  local h = F.region(Skin, f, "over")
   local bd = survey(m, h).backdrop
   assertEqual(bd.edgeFile, "Interface\\DialogFrame\\UI-DialogBox-Border",
     "Blizzard Dialog, from the client's path when LibSharedMedia lacks it")
@@ -158,7 +161,10 @@ test("skin paint: WoW Default's window is the dialog edge on the holder over the
   assertFalse(art:IsShown())
 end)
 
-test("skin paint: the holder is a child frame one level up, and edges live on it", function()
+test("skin paint: a window's edge lives on a child frame above the window's children", function()
+  -- SkinPaint minor 9 (the owner's round-5 notes: a title bar and footer one level above the window
+  -- covered Azeroth's 3px edge at the corners). red under: the edge on the window's backdrop, or on
+  -- a holder one level up, which ties the bars.
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER, "contrast")
   local tr = F.tracer(m)
@@ -166,9 +172,10 @@ test("skin paint: the holder is a child frame one level up, and edges live on it
   rawset(f, "SetBackdrop", nil)   -- no BackdropTemplate: the fill a region, every edge on the holder
   rawset(f, "GetFrameLevel", function() return 5 end)
   tr.start(); S.Shell(f); tr.stop(); tr.restore()
-  local h = F.region(Skin, f, "holder")
-  assertTrue(h ~= nil and h.__parent == f, "the holder is the frame's child")
-  assertTrue(tr.text():find("SetFrameLevel(6)", 1, true) ~= nil, "at the frame's level + 1")
+  local h = F.region(Skin, f, "over")
+  assertTrue(h ~= nil and h.__parent == f, "the edge holder is the frame's child")
+  assertTrue(tr.text():find("SetFrameLevel(15)", 1, true) ~= nil,
+    "ten levels up: over a title bar (6), its buttons (7) and the rows under them")
   local edge = F.region(Skin, f, "edgeTop")
   assertTrue(edge:GetParent() == h, "an edge is a region of the holder")
   for _, r in ipairs({ f:GetRegions() }) do
@@ -187,7 +194,7 @@ test("skin paint: every skin fades a stock frame's art and draws its own window,
   piece:SetAlpha(0.8)
   S.Shell(f)
   assertEqual(piece:GetAlpha(), 0, "Ka0s Default fades the template art")
-  assertTrue(F.region(Skin, f, "holder") ~= nil, "and draws its own window")
+  assertTrue(F.region(Skin, f, "over") ~= nil, "and draws its own window")
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   assertEqual(piece:GetAlpha(), 0, "so does a skin")
 end)
