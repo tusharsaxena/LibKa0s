@@ -885,7 +885,7 @@ local function shellRegions(rec, frame, T)
 end
 
 -- A frame with a backdrop: Core.ApplySkin with the skin's table, its edge clear (shellEdges draws it).
-local function shellBackdrop(owner, rec, frame, T, style)
+local function shellBackdrop(owner, frame, T, style)
   local c = core()
   if c and type(c.ApplySkin) == "function" then c.ApplySkin(frame, shellSkin(owner, T, style == "flat")) end
 end
@@ -908,7 +908,7 @@ prim.Shell = function(owner, frame, opts)
   local style = T["win.borderStyle"] or "flat"
   if rec.regions.stock then P.fadeAll(rec, P.stockRegions(frame, opts)) end
   if P.hasBackdrop(frame) then
-    shellBackdrop(owner, rec, frame, T, style)
+    shellBackdrop(owner, frame, T, style)
   else
     shellRegions(rec, frame, T)
   end
